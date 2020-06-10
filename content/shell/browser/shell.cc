@@ -675,6 +675,18 @@ bool Shell::ShouldResumeRequestsForCreatedWindow() {
   return !delay_popup_contents_delegate_for_testing_;
 }
 
+void Shell::SetContentsBounds(WebContents* source, const gfx::Rect& bounds) {
+  DCHECK(source == web_contents());  // There's only one WebContents per Shell.
+
+  if (switches::IsRunWebTestsSwitchPresent()) {
+    // Note that chrome drops these requests on normal windows.
+    // TODO(danakj): The position is dropped here but we use the size. Web tests
+    // can't move the window in headless mode anyways, but maybe we should be
+    // letting them pretend?
+    g_platform->ResizeWebContent(this, bounds.size());
+  }
+}
+
 gfx::Size Shell::GetShellDefaultSize() {
   static gfx::Size default_shell_size;
   if (!default_shell_size.IsEmpty())

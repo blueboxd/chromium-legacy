@@ -327,6 +327,7 @@ target(link_target_type, "renderer") {
   deps = [
     "//base",
     "//base:i18n",
+    "//build:chromecast_buildflags",
     "//cc",
     "//cc/animation",
     "//cc/mojo_embedder",
@@ -368,7 +369,6 @@ target(link_target_type, "renderer") {
     "//media/mojo:buildflags",
     "//media/mojo/clients",
     "//media/mojo/mojom",
-    "//media/mojo/mojom:remoting",
     "//media/webrtc",
     "//mojo/public/cpp/bindings",
     "//net",
@@ -479,8 +479,19 @@ target(link_target_type, "renderer") {
     ]
   }
 
-  if (enable_media_remoting) {
-    deps += [ "//media/remoting:remoting_sender" ]
+  if (enable_media_remoting || is_chromecast) {
+    deps += [ "//media/mojo/mojom:remoting" ]
+
+    if (enable_media_remoting) {
+      deps += [ "//media/remoting:remoting_sender" ]
+    }
+
+    if (is_chromecast) {
+      deps += [
+        "//media/remoting:remoting_constants",
+        "//media/remoting:remoting_renderer",
+      ]
+    }
   }
 
   if (enable_plugins) {

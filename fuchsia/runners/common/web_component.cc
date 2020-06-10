@@ -25,9 +25,9 @@ WebComponent::WebComponent(
     : runner_(runner),
       startup_context_(std::move(context)),
       controller_binding_(this),
-      module_context_(startup_context()
-                          ->svc()
-                          ->Connect<fuchsia::modular::ModuleContext>()) {
+      module_context_(
+          startup_context()->svc()->Connect<fuchsia::modular::ModuleContext>()),
+      navigation_listener_binding_(this) {
   DCHECK(runner);
 
   // If the ComponentController request is valid then bind it, and configure it
@@ -77,6 +77,9 @@ void WebComponent::StartComponent() {
     DestroyComponent(status, fuchsia::sys::TerminationReason::EXITED);
   });
 
+  // Observe the Frame for failures, via navigation state change events.
+  frame_->SetNavigationEventListener(navigation_listener_binding_.NewBinding());
+
   if (startup_context()->has_outgoing_directory_request()) {
     // Publish outgoing services and start serving component's outgoing
     // directory.
@@ -113,8 +116,8 @@ void WebComponent::LoadUrl(
 }
 
 void WebComponent::Kill() {
-  // Signal abnormal process termination.
-  DestroyComponent(1, fuchsia::sys::TerminationReason::RUNNER_TERMINATED);
+  // Signal normal termination, since the caller requested it.
+  DestroyComponent(ZX_OK, fuchsia::sys::TerminationReason::EXITED);
 }
 
 void WebComponent::Detach() {
@@ -133,6 +136,25 @@ void WebComponent::CreateView(
   frame_->CreateView(std::move(view_token));
 
   view_is_bound_ = true;
+}
+
+void WebComponent::OnNavigationStateChanged(
+    fuchsia::web::NavigationState change,
+    OnNavigationStateChangedCallback callback) {
+  if (change.has_page_type()) {
+    switch (change.page_type()) {
+      case fuchsia::web::PageType::ERROR:
+        DestroyComponent(ZX_ERR_INTERNAL,
+                         fuchsia::sys::TerminationReason::EXITED);
+        break;
+      case fuchsia::web::PageType::NORMAL:
+        break;
+    }
+  }
+  // Do not touch |this|, which may have been deleted by DestroyComponent().
+
+  // |callback| is safe to run, since it is on the stack.
+  callback();
 }
 
 void WebComponent::DestroyComponent(int64_t exit_code,

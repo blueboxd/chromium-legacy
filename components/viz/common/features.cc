@@ -69,6 +69,10 @@ const base::Feature kUsePreferredIntervalForVideo{
 const base::Feature kWebRtcLogCapturePipeline{
     "WebRtcLogCapturePipeline", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// The number of frames to wait before toggling to a lower frame rate.
+const base::FeatureParam<int> kNumOfFramesToToggleInterval{
+    &kUsePreferredIntervalForVideo, "NumOfFramesToToggleInterval", 60};
+
 bool IsVizHitTestingDebugEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableVizHitTestDebug);
@@ -131,6 +135,10 @@ bool IsUsingVizFrameSubmissionForWebView() {
 
 bool IsUsingPreferredIntervalForVideo() {
   return base::FeatureList::IsEnabled(kUsePreferredIntervalForVideo);
+}
+
+int NumOfFramesToToggleInterval() {
+  return kNumOfFramesToToggleInterval.Get();
 }
 
 bool ShouldUseRealBuffersForPageFlipTest() {

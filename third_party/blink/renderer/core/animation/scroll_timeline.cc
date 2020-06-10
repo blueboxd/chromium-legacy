@@ -166,7 +166,7 @@ bool ScrollTimeline::IsActive() const {
 }
 
 void ScrollTimeline::Invalidate() {
-  ScheduleNextService();
+  ScheduleNextServiceInternal(/* time_check = */ false);
 }
 
 bool ScrollTimeline::ComputeIsActive() const {
@@ -285,14 +285,21 @@ void ScrollTimeline::ServiceAnimations(TimingUpdateReason reason) {
   AnimationTimeline::ServiceAnimations(reason);
 }
 
-void ScrollTimeline::ScheduleNextService() {
+void ScrollTimeline::ScheduleNextServiceInternal(bool time_check) {
   if (AnimationsNeedingUpdateCount() == 0)
     return;
 
-  auto state = ComputeTimelineState();
-  PhaseAndTime current_phase_and_time{state.phase, state.current_time};
-  if (current_phase_and_time != last_current_phase_and_time_)
-    ScheduleServiceOnNextFrame();
+  if (time_check) {
+    auto state = ComputeTimelineState();
+    PhaseAndTime current_phase_and_time{state.phase, state.current_time};
+    if (current_phase_and_time == last_current_phase_and_time_)
+      return;
+  }
+  ScheduleServiceOnNextFrame();
+}
+
+void ScrollTimeline::ScheduleNextService() {
+  ScheduleNextServiceInternal(/* time_check = */ true);
 }
 
 void ScrollTimeline::SnapshotState() {
@@ -378,6 +385,20 @@ void ScrollTimeline::GetCurrentAndMaxOffset(const LayoutBox* layout_box,
   current_offset = std::abs(current_offset);
 }
 
+void ScrollTimeline::AnimationAttached(Animation* animation) {
+  AnimationTimeline::AnimationAttached(animation);
+  if (resolved_scroll_source_ && scroll_animations_.IsEmpty())
+    resolved_scroll_source_->RegisterScrollTimeline(this);
+
+  scroll_animations_.insert(animation);
+}
+
+void ScrollTimeline::AnimationDetached(Animation* animation) {
+  AnimationTimeline::AnimationDetached(animation);
+  scroll_animations_.erase(animation);
+  if (resolved_scroll_source_ && scroll_animations_.IsEmpty())
+    resolved_scroll_source_->UnregisterScrollTimeline(this);
+}
 
 void ScrollTimeline::WorkletAnimationAttached() {
   if (!resolved_scroll_source_)
@@ -392,6 +413,7 @@ void ScrollTimeline::WorkletAnimationDetached() {
 }
 
 void ScrollTimeline::Trace(Visitor* visitor) const {
+  visitor->Trace(scroll_animations_);
   visitor->Trace(scroll_source_);
   visitor->Trace(resolved_scroll_source_);
   visitor->Trace(start_scroll_offset_);

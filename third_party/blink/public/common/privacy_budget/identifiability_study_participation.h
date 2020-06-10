@@ -15,6 +15,8 @@ namespace blink {
 // This method can be used to avoid computation that is only needed for the
 // study, such as complex digest calculation on canvas operations; for UKM
 // reporting, filtering should happen automatically.
+//
+// TODO(asanka): Migrate callers to IdentifiabilityStudySettings.
 bool BLINK_COMMON_EXPORT IsUserInIdentifiabilityStudy();
 
 }  // namespace blink

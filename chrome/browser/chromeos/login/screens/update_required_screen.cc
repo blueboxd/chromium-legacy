@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/settings/cros_settings_names.h"
 #include "ui/chromeos/devicetype_utils.h"
 
 namespace {
@@ -57,6 +58,11 @@ UpdateRequiredScreen::UpdateRequiredScreen(UpdateRequiredView* view,
       version_updater_(std::make_unique<VersionUpdater>(this)),
       clock_(base::DefaultClock::GetInstance()) {
   error_message_delay_ = kDelayErrorMessage;
+
+  eol_message_subscription_ = CrosSettings::Get()->AddSettingsObserver(
+      chromeos::kMinimumChromeVersionEolMessage,
+      base::Bind(&UpdateRequiredScreen::OnEolMessageChanged,
+                 weak_factory_.GetWeakPtr()));
   if (view_)
     view_->Bind(this);
 }
@@ -90,6 +96,8 @@ void UpdateRequiredScreen::ShowImpl() {
   }
   // Check network state to set initial screen UI.
   RefreshNetworkState();
+  // Fire it once so we're sure we get an invocation on startup.
+  OnEolMessageChanged();
 
   version_updater_->GetEolInfo(base::BindOnce(
       &UpdateRequiredScreen::OnGetEolInfo, weak_factory_.GetWeakPtr()));
@@ -108,6 +116,21 @@ void UpdateRequiredScreen::OnGetEolInfo(
     // Subscribe to network state change notifications to adapt the UI as
     // network changes till update is started.
     ObserveNetworkState();
+  }
+}
+
+void UpdateRequiredScreen::OnEolMessageChanged() {
+  chromeos::CrosSettingsProvider::TrustedStatus status =
+      CrosSettings::Get()->PrepareTrustedValues(
+          base::BindOnce(&UpdateRequiredScreen::OnEolMessageChanged,
+                         weak_factory_.GetWeakPtr()));
+  if (status != chromeos::CrosSettingsProvider::TRUSTED)
+    return;
+
+  std::string eol_message;
+  if (view_ && CrosSettings::Get()->GetString(
+                   chromeos::kMinimumChromeVersionEolMessage, &eol_message)) {
+    view_->SetEolMessage(eol_message);
   }
 }
 

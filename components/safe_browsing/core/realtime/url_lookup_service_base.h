@@ -60,6 +60,10 @@ class RealTimeUrlLookupServiceBase : public KeyedService {
   // Returns true if this profile has opted-in to check subresource URLs.
   virtual bool CanCheckSubresourceURL() const = 0;
 
+  // Returns whether safe browsing database can be checked when real time URL
+  // check is enabled.
+  virtual bool CanCheckSafeBrowsingDb() const = 0;
+
   // Start the full URL lookup for |url|, call |request_callback| on the same
   // thread when request is sent, call |response_callback| on the same thread
   // when response is received.

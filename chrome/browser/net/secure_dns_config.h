@@ -18,6 +18,8 @@ struct DnsOverHttpsServerConfig;
 // Representation of a complete Secure DNS configuration.
 class SecureDnsConfig {
  public:
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.net
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: SecureDnsManagementMode
   // Forced management description types. We will check for the override cases
   // in the order they are listed in the enum.
   enum class ManagementMode {

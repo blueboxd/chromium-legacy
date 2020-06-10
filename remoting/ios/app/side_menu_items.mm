@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 #import "remoting/ios/app/side_menu_items.h"
 
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #import "remoting/ios/app/app_delegate.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/persistence/remoting_preferences.h"
-
 #include "remoting/base/string_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 static NSString* const kFeedbackContext = @"SideMenuFeedbackContext";
 

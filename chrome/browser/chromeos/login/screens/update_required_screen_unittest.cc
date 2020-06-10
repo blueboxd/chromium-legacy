@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ui/ash/test_login_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/fake_update_required_screen_handler.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
@@ -111,6 +112,7 @@ class UpdateRequiredScreenUnitTest : public testing::Test {
   // Test versions of core browser infrastructure.
   content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state_;
+  ScopedTestingCrosSettings scoped_testing_cros_settings_;
   // This is used for |GetEnterpriseDisplayDomain|.
   ScopedStubInstallAttributes test_install_attributes_;
 

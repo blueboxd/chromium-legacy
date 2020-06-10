@@ -224,7 +224,7 @@ Polymer({
    * @return {boolean} Whether this credential has been selected for removal.
    */
   isEmpty_(str) {
-    return !str || str.length == 0;
+    return !str || str.length === 0;
   },
 
   /**
@@ -249,7 +249,7 @@ Polymer({
     } else {
       this.checkedCredentialIds_.delete(credentialId);
     }
-    this.confirmButtonDisabled_ = this.checkedCredentialIds_.size == 0;
+    this.confirmButtonDisabled_ = this.checkedCredentialIds_.size === 0;
   },
 
   /**
@@ -263,7 +263,7 @@ Polymer({
 
   /** @private */
   deleteSelectedCredentials_() {
-    assert(this.dialogPage_ == CredentialManagementDialogPage.CREDENTIALS);
+    assert(this.dialogPage_ === CredentialManagementDialogPage.CREDENTIALS);
     assert(this.credentials_ && this.credentials_.length > 0);
     assert(this.checkedCredentialIds_.size > 0);
 

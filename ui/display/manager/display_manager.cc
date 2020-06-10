@@ -990,6 +990,11 @@ void DisplayManager::UpdateDisplaysWith(
         metrics |= DisplayObserver::DISPLAY_METRIC_REFRESH_RATE;
       }
 
+      if (current_display_info.is_interlaced() !=
+          new_display_info.is_interlaced()) {
+        metrics |= DisplayObserver::DISPLAY_METRIC_INTERLACED;
+      }
+
       if (metrics != DisplayObserver::DISPLAY_METRIC_NONE) {
         display_changes.insert(
             std::pair<size_t, uint32_t>(new_displays.size(), metrics));

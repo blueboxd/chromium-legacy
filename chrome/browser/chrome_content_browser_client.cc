@@ -4348,33 +4348,30 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   bool matches_enterprise_whitelist = safe_browsing::IsURLWhitelistedByPolicy(
       request.url, *profile->GetPrefs());
   if (!matches_enterprise_whitelist) {
-    // |url_lookup_service| is used when real time url check is enabled.
-    safe_browsing::RealTimeUrlLookupServiceBase* url_lookup_service = nullptr;
-
+    bool is_enterprise_lookup_enabled =
 #if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
-    if (safe_browsing::RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
+        safe_browsing::RealTimePolicyEngine::CanPerformEnterpriseFullURLLookup(
             safe_browsing::GetDMToken(profile).is_valid(),
-            profile->IsOffTheRecord())) {
-      url_lookup_service =
-          safe_browsing::ChromeEnterpriseRealTimeUrlLookupServiceFactory::
-              GetForProfile(profile);
-    }
+            profile->IsOffTheRecord());
+#else
+        false;
 #endif
-
-    // |safe_browsing_service_| may be unavailable in tests.
-    if (!url_lookup_service && safe_browsing_service_ &&
+    bool is_consumer_lookup_enabled =
         safe_browsing::RealTimePolicyEngine::CanPerformFullURLLookup(
             profile->GetPrefs(), profile->IsOffTheRecord(),
-            g_browser_process->variations_service())) {
-      url_lookup_service =
-          safe_browsing::RealTimeUrlLookupServiceFactory::GetForProfile(
-              profile);
-    }
+            g_browser_process->variations_service());
+
+    // |url_lookup_service| is used when real time url check is enabled.
+    safe_browsing::RealTimeUrlLookupServiceBase* url_lookup_service =
+        GetUrlLookupService(browser_context, is_enterprise_lookup_enabled,
+                            is_consumer_lookup_enabled);
     result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
         base::BindOnce(
             &ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
             base::Unretained(this),
-            safe_browsing::IsSafeBrowsingEnabled(*profile->GetPrefs())),
+            safe_browsing::IsSafeBrowsingEnabled(*profile->GetPrefs()),
+            // Should check for enterprise when safe browsing is disabled.
+            /*should_check_on_sb_disabled=*/is_enterprise_lookup_enabled),
         wc_getter, frame_tree_node_id,
         url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr));
   }
@@ -5119,10 +5116,13 @@ const ui::NativeTheme* ChromeContentBrowserClient::GetWebTheme() const {
 
 scoped_refptr<safe_browsing::UrlCheckerDelegate>
 ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate(
-    bool safe_browsing_enabled_for_profile) {
+    bool safe_browsing_enabled_for_profile,
+    bool should_check_on_sb_disabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!safe_browsing_enabled_for_profile)
+  // Should not bypass safe browsing check if the check is for enterprise
+  // lookup.
+  if (!safe_browsing_enabled_for_profile && !should_check_on_sb_disabled)
     return nullptr;
 
   // |safe_browsing_service_| may be unavailable in tests.
@@ -5134,6 +5134,32 @@ ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate(
   }
 
   return safe_browsing_url_checker_delegate_;
+}
+
+safe_browsing::RealTimeUrlLookupServiceBase*
+ChromeContentBrowserClient::GetUrlLookupService(
+    content::BrowserContext* browser_context,
+    bool is_enterprise_lookup_enabled,
+    bool is_consumer_lookup_enabled) {
+  // |safe_browsing_service_| may be unavailable in tests.
+  if (!safe_browsing_service_) {
+    return nullptr;
+  }
+
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
+  if (is_enterprise_lookup_enabled) {
+    return safe_browsing::ChromeEnterpriseRealTimeUrlLookupServiceFactory::
+        GetForProfile(profile);
+  }
+#endif
+
+  if (is_consumer_lookup_enabled) {
+    return safe_browsing::RealTimeUrlLookupServiceFactory::GetForProfile(
+        profile);
+  }
+  return nullptr;
 }
 
 base::Optional<std::string>

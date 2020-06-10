@@ -15,6 +15,10 @@
   font-weight: bold;
 }
 
+#adminMessageContainer {
+  color: var(--oobe-subheader-text-color);
+}
+
 .update-illustration {
   height: 264px;
   width: 264px;

@@ -138,6 +138,11 @@ namespace chromeos {
 
 namespace {
 
+const test::UIPath kPasswordInput = {"saml-confirm-password", "passwordInput"};
+const test::UIPath kPasswordConfirmInput = {"saml-confirm-password",
+                                            "confirmPasswordInput"};
+const test::UIPath kPasswordSubmit = {"saml-confirm-password", "next"};
+
 constexpr char kGAIASIDCookieName[] = "SID";
 constexpr char kGAIALSIDCookieName[] = "LSID";
 
@@ -664,25 +669,15 @@ class SamlTest : public OobeBaseTest {
   }
 
   void SendConfirmPassword(const std::string& password_to_confirm) {
-    std::string js =
-        "$('saml-confirm-password').$.passwordInput.value='$Password';"
-        "$('saml-confirm-password').$.inputForm.submit();";
-    base::ReplaceSubstringsAfterOffset(&js, 0, "$Password",
-                                       password_to_confirm);
-    ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(), js));
+    test::OobeJS().TypeIntoPath(password_to_confirm, kPasswordInput);
+    test::OobeJS().TapOnPath(kPasswordSubmit);
   }
 
   void SetManualPasswords(const std::string& password,
                           const std::string& confirm_password) {
-    std::string js =
-        "$('saml-confirm-password').$.passwordInput.value='$Password';"
-        "$('saml-confirm-password').$$('#confirmPasswordInput').value="
-        "    '$ConfirmPassword';"
-        "$('saml-confirm-password').$.inputForm.submit();";
-    base::ReplaceSubstringsAfterOffset(&js, 0, "$Password", password);
-    base::ReplaceSubstringsAfterOffset(&js, 0, "$ConfirmPassword",
-                                       confirm_password);
-    ASSERT_TRUE(content::ExecuteScript(GetLoginUI()->GetWebContents(), js));
+    test::OobeJS().TypeIntoPath(password, kPasswordInput);
+    test::OobeJS().TypeIntoPath(confirm_password, kPasswordConfirmInput);
+    test::OobeJS().TapOnPath(kPasswordSubmit);
   }
 
   std::string WaitForAndGetFatalErrorMessage() {
@@ -971,11 +966,11 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedMultiple) {
   SigninFrameJS().TapOn("Submit");
   // Lands on confirm password screen.
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
-  test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
+  test::OobeJS().ExpectHiddenPath(kPasswordConfirmInput);
   // Entering an unknown password should go back to the confirm password screen.
   SendConfirmPassword("wrong_password");
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
-  test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
+  test::OobeJS().ExpectHiddenPath(kPasswordConfirmInput);
   // Either scraped password should be able to sign-in.
   SendConfirmPassword("password1");
   test::WaitForPrimaryUserSessionStart();
@@ -1003,12 +998,12 @@ IN_PROC_BROWSER_TEST_F(SamlTest, ScrapedNone) {
 
   // Lands on confirm password screen with manual input state.
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
-  test::OobeJS().ExpectTrue("$('saml-confirm-password').manualInput");
+  test::OobeJS().ExpectTrue("$('saml-confirm-password').isManualInput");
   // Entering passwords that don't match will make us land again in the same
   // page.
   SetManualPasswords("Test1", "Test2");
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
-  test::OobeJS().ExpectTrue("$('saml-confirm-password').manualInput");
+  test::OobeJS().ExpectTrue("$('saml-confirm-password').isManualInput");
 
   // Two matching passwords should let the user to sign in.
   SetManualPasswords("Test1", "Test1");
@@ -1081,7 +1076,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
 
   // Lands on confirm password screen with no error message.
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
-  test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
+  test::OobeJS().ExpectHiddenPath(kPasswordConfirmInput);
   test::OobeJS().ExpectTrue(
       "!$('saml-confirm-password').$.passwordInput.invalid");
 
@@ -1089,7 +1084,7 @@ IN_PROC_BROWSER_TEST_F(SamlTest, PasswordConfirmFlow) {
   // password screen with error message.
   SendConfirmPassword("wrong_password");
   OobeScreenWaiter(OobeScreen::SCREEN_CONFIRM_PASSWORD).Wait();
-  test::OobeJS().ExpectTrue("!$('saml-confirm-password').manualInput");
+  test::OobeJS().ExpectHiddenPath(kPasswordConfirmInput);
   test::OobeJS().ExpectTrue(
       "$('saml-confirm-password').$.passwordInput.invalid");
 

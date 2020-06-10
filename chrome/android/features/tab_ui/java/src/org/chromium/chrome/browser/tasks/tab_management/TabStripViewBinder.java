@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import static org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider.FAVICON_BACKGROUND_DEFAULT_ALPHA;
+import static org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider.FAVICON_BACKGROUND_SELECTED_ALPHA;
+
 import android.graphics.drawable.Drawable;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -39,10 +42,14 @@ class TabStripViewBinder {
         }
         if (TabProperties.IS_SELECTED == propertyKey) {
             ImageButton button = (ImageButton) view.fastFindViewById(R.id.tab_strip_item_button);
+            int selectedDrawableId = model.get(TabProperties.IS_INCOGNITO)
+                    ? R.drawable.tab_strip_selected_ring_incognito
+                    : R.drawable.tab_strip_selected_ring;
             view.setForeground(model.get(TabProperties.IS_SELECTED)
-                            ? ResourcesCompat.getDrawable(view.getResources(),
-                                    R.drawable.tabstrip_selected, view.getContext().getTheme())
+                            ? ResourcesCompat.getDrawable(view.getResources(), selectedDrawableId,
+                                    view.getContext().getTheme())
                             : null);
+
             String title = model.get(TabProperties.TITLE);
             if (model.get(TabProperties.IS_SELECTED)) {
                 button.setOnClickListener(v -> {
@@ -51,6 +58,7 @@ class TabStripViewBinder {
                 });
                 button.setContentDescription(view.getContext().getString(
                         R.string.accessibility_tabstrip_btn_close_tab, title));
+                button.getBackground().setAlpha(FAVICON_BACKGROUND_SELECTED_ALPHA);
             } else {
                 button.setOnClickListener(v -> {
                     model.get(TabProperties.TAB_SELECTED_LISTENER)
@@ -58,6 +66,7 @@ class TabStripViewBinder {
                 });
                 button.setContentDescription(
                         view.getContext().getString(R.string.accessibility_tabstrip_tab, title));
+                button.getBackground().setAlpha(FAVICON_BACKGROUND_DEFAULT_ALPHA);
             }
         } else if (TabProperties.FAVICON == propertyKey) {
             Drawable faviconDrawable = model.get(TabProperties.FAVICON);
@@ -66,6 +75,11 @@ class TabStripViewBinder {
             ViewCompat.setBackgroundTintList(button,
                     AppCompatResources.getColorStateList(view.getContext(),
                             model.get(TabProperties.TABSTRIP_FAVICON_BACKGROUND_COLOR_ID)));
+            if (!model.get(TabProperties.IS_SELECTED)) {
+                button.getBackground().setAlpha(FAVICON_BACKGROUND_DEFAULT_ALPHA);
+            } else {
+                button.getBackground().setAlpha(FAVICON_BACKGROUND_SELECTED_ALPHA);
+            }
             if (faviconDrawable != null) {
                 button.setImageDrawable(faviconDrawable);
             }

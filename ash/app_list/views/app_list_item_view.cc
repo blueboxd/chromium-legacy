@@ -355,10 +355,12 @@ void AppListItemView::SetUIState(UIState ui_state) {
   switch (ui_state) {
     case UI_STATE_NORMAL:
       title_->SetVisible(true);
-      if (ui_state_ == UI_STATE_DRAGGING)
+      if (ui_state_ == UI_STATE_DRAGGING) {
         ScaleAppIcon(false);
-      else if (ui_state_ == UI_STATE_CARDIFY)
+      } else if (ui_state_ == UI_STATE_CARDIFY) {
+        title_->SetFontList(GetAppListConfig().app_title_font());
         ScaleIconImmediatly(1.0f);
+      }
       break;
     case UI_STATE_DRAGGING:
       title_->SetVisible(false);
@@ -368,6 +370,9 @@ void AppListItemView::SetUIState(UIState ui_state) {
     case UI_STATE_DROPPING_IN_FOLDER:
       break;
     case UI_STATE_CARDIFY:
+      gfx::FontList font_size = GetAppListConfig().app_title_font();
+      const int size_delta = font_size.GetFontSize() * (1 - kCardifyIconScale);
+      title_->SetFontList(font_size.DeriveWithSizeDelta(-size_delta));
       ScaleIconImmediatly(kCardifyIconScale);
       break;
   }
@@ -673,7 +678,7 @@ void AppListItemView::Layout() {
   }
 
   gfx::Rect title_bounds = GetTitleBoundsForTargetViewBounds(
-      GetAppListConfig(), rect, title_->GetPreferredSize());
+      GetAppListConfig(), rect, title_->GetPreferredSize(), icon_scale_);
   if (!apps_grid_view_->is_in_folder())
     title_bounds.Inset(title_shadow_margins_);
   title_->SetBoundsRect(title_bounds);
@@ -967,12 +972,13 @@ gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
 gfx::Rect AppListItemView::GetTitleBoundsForTargetViewBounds(
     const AppListConfig& config,
     const gfx::Rect& target_bounds,
-    const gfx::Size& title_size) {
+    const gfx::Size& title_size,
+    float icon_scale) {
   gfx::Rect rect(target_bounds);
-  rect.Inset(config.grid_title_horizontal_padding(),
-             config.grid_title_top_padding(),
-             config.grid_title_horizontal_padding(),
-             config.grid_title_bottom_padding());
+  rect.Inset(config.grid_title_horizontal_padding() * icon_scale,
+             config.grid_title_top_padding() * icon_scale,
+             config.grid_title_horizontal_padding() * icon_scale,
+             config.grid_title_bottom_padding() * icon_scale);
   rect.ClampToCenteredSize(title_size);
   // Respect the title preferred height, to ensure the text does not get clipped
   // due to padding if the item view gets too small.

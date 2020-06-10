@@ -128,7 +128,7 @@ Polymer({
         this.creditCard.guid ? 'editCreditCardTitle' : 'addCreditCardTitle');
 
     // Add a leading '0' if a month is 1 char.
-    if (this.creditCard.expirationMonth.length == 1) {
+    if (this.creditCard.expirationMonth.length === 1) {
       this.creditCard.expirationMonth = '0' + this.creditCard.expirationMonth;
     }
 

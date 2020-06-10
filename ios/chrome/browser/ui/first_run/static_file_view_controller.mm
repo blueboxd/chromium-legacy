@@ -6,13 +6,14 @@
 
 #import <WebKit/WebKit.h>
 
+#import <MaterialComponents/MDCAppBarViewController.h>
+
 #include "base/check.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
-#import "ios/third_party/material_components_ios/src/components/AppBar/src/MDCAppBarViewController.h"
 #import "ios/web/common/web_view_creation_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -57,8 +57,8 @@ Polymer({
     const lazyRender =
         /** @type {!CrLazyRenderElement} */ (this.$.resetProfileDialog);
 
-    if (route == routes.TRIGGERED_RESET_DIALOG ||
-        route == routes.RESET_DIALOG) {
+    if (route === routes.TRIGGERED_RESET_DIALOG ||
+        route === routes.RESET_DIALOG) {
       /** @type {!SettingsResetProfileDialogElement} */ (lazyRender.get())
           .show();
     } else {

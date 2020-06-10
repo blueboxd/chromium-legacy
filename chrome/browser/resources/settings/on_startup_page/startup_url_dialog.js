@@ -89,7 +89,7 @@ Polymer({
    * @private
    */
   hasError_() {
-    return this.error_ != UrlInputError.NONE;
+    return this.error_ !== UrlInputError.NONE;
   },
 
   /**
@@ -124,7 +124,7 @@ Polymer({
 
   /** @private */
   validate_() {
-    if (this.url_.length == 0) {
+    if (this.url_.length === 0) {
       this.$.actionButton.disabled = true;
       this.error_ = UrlInputError.NONE;
       return;

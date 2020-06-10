@@ -31,7 +31,7 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
       'setIsConnected', 'setUpdateProgressUnavailable',
       'setUpdateProgressValue', 'setUpdateProgressMessage',
       'setEstimatedTimeLeftVisible', 'setEstimatedTimeLeft', 'setUIState',
-      'setEnterpriseAndDeviceName'
+      'setEnterpriseAndDeviceName', 'setEolMessage'
     ],
 
     /** Initial UI State for screen */
@@ -52,6 +52,14 @@ login.createScreen('UpdateRequiredScreen', 'update-required', function() {
     setEnterpriseAndDeviceName(enterpriseDomain, device) {
       $('update-required-card').enterpriseDomain = enterpriseDomain;
       $('update-required-card').deviceName = device;
+    },
+
+    /**
+       @param {string} eolMessage Not sanitized end of life message from policy
+         */
+    setEolMessage(eolMessage) {
+      $('update-required-card').eolAdminMessage_ =
+          loadTimeData.sanitizeInnerHtml(eolMessage);
     },
 
     /** @param {boolean} connected */

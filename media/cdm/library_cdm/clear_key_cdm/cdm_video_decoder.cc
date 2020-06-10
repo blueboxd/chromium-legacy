@@ -42,7 +42,7 @@
 #include "media/filters/dav1d_video_decoder.h"
 #endif
 
-#if BUILDFLAG(ENABLE_FFMPEG)
+#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 #include "media/filters/ffmpeg_video_decoder.h"
 #endif
 
@@ -326,7 +326,7 @@ std::unique_ptr<CdmVideoDecoder> CreateVideoDecoder(
 #endif
   }
 
-#if BUILDFLAG(ENABLE_FFMPEG)
+#if BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
   if (!video_decoder)
     video_decoder.reset(new FFmpegVideoDecoder(null_media_log.get()));
 #endif

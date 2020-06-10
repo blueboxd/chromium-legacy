@@ -79,7 +79,7 @@ Polymer({
           this.address.emailAddresses ? this.address.emailAddresses[0] : '';
 
       this.async(() => {
-        if (this.countryCode_ == this.address.countryCode) {
+        if (this.countryCode_ === this.address.countryCode) {
           this.updateAddressWrapper_();
         } else {
           this.countryCode_ = this.address.countryCode;
@@ -234,7 +234,7 @@ class AddressComponentUI {
     this.address_ = address;
     this.component = component;
     this.isTextArea =
-        component.field == chrome.autofillPrivate.AddressField.ADDRESS_LINES;
+        component.field === chrome.autofillPrivate.AddressField.ADDRESS_LINES;
   }
 
   /**

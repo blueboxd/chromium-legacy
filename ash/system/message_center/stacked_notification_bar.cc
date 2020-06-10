@@ -326,23 +326,23 @@ void StackedNotificationBar::SetExpanded() {
 void StackedNotificationBar::AddNotificationIcon(
     message_center::Notification* notification,
     bool at_front) {
-  views::ImageView* icon_view_ =
+  views::ImageView* icon_view =
       new StackedNotificationBarIcon(this, notification->id());
   if (at_front)
-    notification_icons_container_->AddChildViewAt(icon_view_, 0);
+    notification_icons_container_->AddChildViewAt(icon_view, 0);
   else
-    notification_icons_container_->AddChildView(icon_view_);
+    notification_icons_container_->AddChildView(icon_view);
 
   gfx::Image masked_small_icon = notification->GenerateMaskedSmallIcon(
       kStackedNotificationIconSize,
       message_center::kNotificationDefaultAccentColor);
 
   if (masked_small_icon.IsEmpty()) {
-    icon_view_->SetImage(gfx::CreateVectorIcon(
+    icon_view->SetImage(gfx::CreateVectorIcon(
         message_center::kProductIcon, kStackedNotificationIconSize,
         message_center::kNotificationDefaultAccentColor));
   } else {
-    icon_view_->SetImage(masked_small_icon.AsImageSkia());
+    icon_view->SetImage(masked_small_icon.AsImageSkia());
   }
 }
 

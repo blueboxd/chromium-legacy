@@ -387,7 +387,7 @@ Polymer({
 
   /** @private */
   onSafeBrowsingReportingPrefChange_() {
-    if (this.prefs == undefined) {
+    if (this.prefs === undefined) {
       return;
     }
     const safeBrowsingScoutPref =
@@ -415,7 +415,7 @@ Polymer({
   /** @protected */
   currentRouteChanged() {
     this.showClearBrowsingDataDialog_ =
-        Router.getInstance().getCurrentRoute() == routes.CLEAR_BROWSER_DATA;
+        Router.getInstance().getCurrentRoute() === routes.CLEAR_BROWSER_DATA;
   },
 
 

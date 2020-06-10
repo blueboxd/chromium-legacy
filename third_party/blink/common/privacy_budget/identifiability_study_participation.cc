@@ -4,11 +4,12 @@
 
 #include "third_party/blink/public/common/privacy_budget/identifiability_study_participation.h"
 
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_settings.h"
+
 namespace blink {
 
 bool IsUserInIdentifiabilityStudy() {
-  // TODO(crbug.com/973801): Implement.
-  return false;
+  return IdentifiabilityStudySettings::Get()->IsActive();
 }
 
 }  // namespace blink

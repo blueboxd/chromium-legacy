@@ -15,13 +15,19 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.net.SecureDnsManagementMode;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.survey.SurveyController;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 import org.chromium.components.minidump_uploader.util.NetworkPermissionUtil;
 import org.chromium.content_public.browser.BrowserStartupController;
+import org.chromium.net.SecureDnsMode;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Reads, writes, and migrates preferences related to network usage and privacy.
@@ -29,6 +35,27 @@ import org.chromium.content_public.browser.BrowserStartupController;
 public class PrivacyPreferencesManager implements CrashReportingPermissionManager {
     @SuppressLint("StaticFieldLeak")
     private static PrivacyPreferencesManager sInstance;
+
+    /**
+     * A DohEntry represents the subset of a net::DohProviderEntry that is relevant
+     * for display in the UI.
+     */
+    static class DohEntry {
+        final String mName; // Display name
+        final String mTemplate; // URI template, or "" for the custom entry.
+        final String mPrivacy; // Privacy policy link
+
+        DohEntry(String name, String template, String privacy) {
+            mName = name;
+            mTemplate = template;
+            mPrivacy = privacy;
+        }
+
+        @Override
+        public String toString() {
+            return mName;
+        }
+    }
 
     private final Context mContext;
     private final SharedPreferencesManager mPrefs;
@@ -315,6 +342,119 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
         return PrivacyPreferencesManagerJni.get().isMetricsReportingManaged();
     }
 
+    /**
+     * @return Whether the DoH UI field trial is active on this instance.
+     */
+    public boolean isDnsOverHttpsUiEnabled() {
+        // Must match features::kDnsOverHttpsShowUiParam.
+        final String showUiParam = "ShowUi";
+        // Must match the default value for this param.
+        final boolean showUiParamDefault = false;
+
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.DNS_OVER_HTTPS, showUiParam, showUiParamDefault);
+    }
+
+    /**
+     * @return The current Secure DNS mode (off, automatic, or secure).
+     */
+    public @SecureDnsMode int getSecureDnsMode() {
+        return PrivacyPreferencesManagerJni.get().getSecureDnsMode();
+    }
+
+    /**
+     * Sets the current Secure DNS mode.  Callers must successfully set a DoH template
+     * before changing the mode to "secure".
+     *
+     * @param mode The desired new Secure DNS mode.
+     */
+    public void setSecureDnsModeMode(@SecureDnsMode int mode) {
+        PrivacyPreferencesManagerJni.get().setSecureDnsMode(mode);
+    }
+
+    /**
+     * @return True if the Secure DNS mode is controlled by a policy.
+     */
+    public boolean isSecureDnsModeManaged() {
+        return PrivacyPreferencesManagerJni.get().isSecureDnsModeManaged();
+    }
+
+    /**
+     * @return The built-in DoH providers that should be displayed to the user.
+     */
+    public List<DohEntry> getDohProviders() {
+        String[][] values = PrivacyPreferencesManagerJni.get().getDohProviders();
+        ArrayList<DohEntry> entries = new ArrayList<>(values.length);
+        for (String[] v : values) {
+            entries.add(new DohEntry(v[0], v[1], v[2]));
+        }
+        return entries;
+    }
+
+    /**
+     * @return The templates (separated by spaces) of the DoH server
+     *     currently selected for use in "secure" mode, or "" if there is none.
+     */
+    public String getDnsOverHttpsTemplates() {
+        return PrivacyPreferencesManagerJni.get().getDnsOverHttpsTemplates();
+    }
+
+    /**
+     * Sets the templates to use for DoH in secure mode, if they are valid.
+     *
+     * @param templates The templates (separated by spaces) to store, or "" to clear
+     *     the setting.
+     * @return True if the input was valid.
+     */
+    public boolean setDnsOverHttpsTemplates(String templates) {
+        return PrivacyPreferencesManagerJni.get().setDnsOverHttpsTemplates(templates);
+    }
+
+    /**
+     * @return The current Secure DNS management mode.  Note that this is entirely
+     *     independent of isDnsOverHttpsModeManaged.
+     */
+    public @SecureDnsManagementMode int getSecureDnsManagementMode() {
+        return PrivacyPreferencesManagerJni.get().getSecureDnsManagementMode();
+    }
+
+    /**
+     * Record a DoH selection action for statistical purposes.
+     * @param oldEntry The previous selection.
+     * @param newEntry The current selection.
+     */
+    public void updateDohDropdownHistograms(DohEntry oldEntry, DohEntry newEntry) {
+        PrivacyPreferencesManagerJni.get().updateDohDropdownHistograms(
+                oldEntry.mTemplate, newEntry.mTemplate);
+    }
+
+    /**
+     * Record whether a custom template entered was valid for statistical purposes.
+     * @param valid True if the template was valid.
+     */
+    public void updateDohValidationHistogram(boolean valid) {
+        PrivacyPreferencesManagerJni.get().updateDohValidationHistogram(valid);
+    }
+
+    /**
+     * @param group A collection of DoH templates in textual format.
+     * @return All templates in the group, or an empty array if the group is not valid.
+     */
+    public String[] splitDohTemplateGroup(String group) {
+        return PrivacyPreferencesManagerJni.get().splitDohTemplateGroup(group);
+    }
+
+    /**
+     * Perform a probe to see if a server is working.  This function blocks until the
+     * probe completes.
+     *
+     * @param template A valid DoH URI template.
+     * @return True if the server is reachable and functioning correctly.
+     */
+    public boolean probeDohServer(String template) {
+        return PrivacyPreferencesManagerJni.get().probeDohServer(template);
+    }
+
     @NativeMethods
     public interface Natives {
         boolean canPrefetchAndPrerender();
@@ -325,5 +465,18 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
         boolean isMetricsReportingEnabled();
         void setMetricsReportingEnabled(boolean enabled);
         boolean isMetricsReportingManaged();
+        @SecureDnsMode
+        int getSecureDnsMode();
+        void setSecureDnsMode(@SecureDnsMode int mode);
+        boolean isSecureDnsModeManaged();
+        String[][] getDohProviders();
+        String getDnsOverHttpsTemplates();
+        boolean setDnsOverHttpsTemplates(String templates);
+        @SecureDnsManagementMode
+        int getSecureDnsManagementMode();
+        void updateDohDropdownHistograms(String oldTemplate, String newTemplate);
+        void updateDohValidationHistogram(boolean valid);
+        String[] splitDohTemplateGroup(String group);
+        boolean probeDohServer(String dohTemplate);
     }
 }

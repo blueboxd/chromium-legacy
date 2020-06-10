@@ -8,7 +8,6 @@ modules_idl_files = [
   "file_system_file_handle.idl",
   "file_system_handle.idl",
   "file_system_writable_file_stream.idl",
-  "file_system_writer.idl",
 ]
 
 modules_dictionary_idl_files = [

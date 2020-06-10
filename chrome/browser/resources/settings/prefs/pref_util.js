@@ -18,7 +18,7 @@ cr.define('Settings.PrefUtil', function() {
   /* #export */ function stringToPrefValue(value, pref) {
     switch (pref.type) {
       case chrome.settingsPrivate.PrefType.BOOLEAN:
-        return value == 'true';
+        return value === 'true';
       case chrome.settingsPrivate.PrefType.NUMBER:
         const n = parseFloat(value);
         if (isNaN(n)) {

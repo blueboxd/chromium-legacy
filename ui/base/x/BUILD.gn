@@ -83,10 +83,6 @@ jumbo_component("x") {
     "//ui/gfx/x",
     "//ui/platform_window/common",
   ]
-
-  # Needed for tests.
-  # TODO(dpranke): move that to appropriate place after test() template is reworked.
-  deps += [ "//ui/base/x/xwmstartupcheck" ]
 }
 
 source_set("gl") {

@@ -107,7 +107,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
     UNKNOWN = 0,
     // Download is not mixed content.
     SAFE = 1,
-    // Download has been explicitly OK'd by the user.
+    // Download has been explicitly OK'd by the user. Only used on Desktop.
     VALIDATED = 2,
     // Download is mixed content, and the user should be warned.
     WARN = 3,

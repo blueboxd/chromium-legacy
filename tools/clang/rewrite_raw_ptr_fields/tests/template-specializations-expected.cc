@@ -153,3 +153,32 @@ void foo2() {
 }
 
 }  // namespace nested_iterator_test
+
+// Example based on base/trace_event/memory_usage_estimator.h where a function
+// template |EstimateMemoryUsage| had a nested struct |SharedPointer| definition
+// with a pointer field |value| that was leading to conflicting replacements.
+namespace template_function {
+
+template <typename T>
+void foo(T* arg) {
+  struct NestedStruct {
+    // Expected rewrite: CheckedPtr<T> ptr_field;
+    CheckedPtr<T> ptr_field;
+
+    // Expected rewrite: CheckedPtr<MyTemplate<T, T>> ptr_field2;
+    CheckedPtr<MyTemplate<T, T>> ptr_field2;
+  } var;
+
+  var.ptr_field = nullptr;
+}
+
+void bar() {
+  // Triggering implicit specializations of foo that in the past led the
+  // rewriter to generate conflicting replacements.
+  int i = 123;
+  SomeClass* p = nullptr;
+  foo(p);
+  foo(&i);
+}
+
+}  // namespace template_function

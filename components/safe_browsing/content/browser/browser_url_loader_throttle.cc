@@ -35,6 +35,7 @@ class BrowserURLLoaderThrottle::CheckerOnIO
       base::WeakPtr<BrowserURLLoaderThrottle> throttle,
       bool real_time_lookup_enabled,
       bool can_rt_check_subresource_url,
+      bool can_check_db,
       base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service)
       : delegate_getter_(std::move(delegate_getter)),
         frame_tree_node_id_(frame_tree_node_id),
@@ -42,6 +43,7 @@ class BrowserURLLoaderThrottle::CheckerOnIO
         throttle_(std::move(throttle)),
         real_time_lookup_enabled_(real_time_lookup_enabled),
         can_rt_check_subresource_url_(can_rt_check_subresource_url),
+        can_check_db_(can_check_db),
         url_lookup_service_(url_lookup_service) {}
 
   // Starts the initial safe browsing check. This check and future checks may be
@@ -72,7 +74,7 @@ class BrowserURLLoaderThrottle::CheckerOnIO
     url_checker_ = std::make_unique<SafeBrowsingUrlCheckerImpl>(
         headers, load_flags, resource_type, has_user_gesture,
         url_checker_delegate, web_contents_getter_, real_time_lookup_enabled_,
-        can_rt_check_subresource_url_, url_lookup_service_);
+        can_rt_check_subresource_url_, can_check_db_, url_lookup_service_);
 
     CheckUrl(url, method);
   }
@@ -140,6 +142,7 @@ class BrowserURLLoaderThrottle::CheckerOnIO
   base::WeakPtr<BrowserURLLoaderThrottle> throttle_;
   bool real_time_lookup_enabled_ = false;
   bool can_rt_check_subresource_url_ = false;
+  bool can_check_db_ = true;
   base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_;
 };
 
@@ -170,10 +173,15 @@ BrowserURLLoaderThrottle::BrowserURLLoaderThrottle(
   bool can_rt_check_subresource_url =
       url_lookup_service && url_lookup_service->CanCheckSubresourceURL();
 
+  // Decide whether safe browsing database can be checked.
+  // If url_lookup_service is null, safe browsing database should be checked by
+  // default.
+  bool can_check_db =
+      url_lookup_service ? url_lookup_service->CanCheckSafeBrowsingDb() : true;
   io_checker_ = std::make_unique<CheckerOnIO>(
       std::move(delegate_getter), frame_tree_node_id, web_contents_getter,
       weak_factory_.GetWeakPtr(), real_time_lookup_enabled,
-      can_rt_check_subresource_url, url_lookup_service);
+      can_rt_check_subresource_url, can_check_db, url_lookup_service);
 }
 
 BrowserURLLoaderThrottle::~BrowserURLLoaderThrottle() {

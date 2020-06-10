@@ -876,8 +876,13 @@ Document& HTMLConstructionSite::OwnerDocumentForCurrentNode() {
   // used in those places. The spec needs to be updated to reflect this
   // behavior, and when that happens, a link to the spec should be placed here.
   if (auto* template_element = DynamicTo<HTMLTemplateElement>(*CurrentNode())) {
-    return template_element->TemplateContentForHTMLConstructionSite()
-        ->GetDocument();
+    // If the Document was detached in the middle of parsing, The template
+    // element won't be able to initialize its contents. Fallback to the
+    // current node's document in that case..
+    if (auto* content =
+            template_element->TemplateContentForHTMLConstructionSite()) {
+      return content->GetDocument();
+    }
   }
   return CurrentNode()->GetDocument();
 }

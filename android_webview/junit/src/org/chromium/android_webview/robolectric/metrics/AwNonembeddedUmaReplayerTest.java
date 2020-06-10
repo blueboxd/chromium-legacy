@@ -110,4 +110,18 @@ public class AwNonembeddedUmaReplayerTest {
         AwNonembeddedUmaReplayer.replayMethodCall(recordProto);
         verify(mUmaRecorder).recordSparseHistogram(histogramName, sample);
     }
+
+    @Test
+    @SmallTest
+    public void testReplayUserAction() {
+        String histogramName = "testReplayUserAction";
+        long elapsedRealtimeMillis = 123456789101112L;
+        HistogramRecord recordProto = HistogramRecord.newBuilder()
+                                              .setRecordType(RecordType.USER_ACTION)
+                                              .setHistogramName(histogramName)
+                                              .setElapsedRealtimeMillis(elapsedRealtimeMillis)
+                                              .build();
+        AwNonembeddedUmaReplayer.replayMethodCall(recordProto);
+        verify(mUmaRecorder).recordUserAction(histogramName, elapsedRealtimeMillis);
+    }
 }

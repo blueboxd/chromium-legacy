@@ -109,10 +109,6 @@ namespace {
 constexpr base::Feature kOmniboxCanCopyHyperlinksToClipboard{
     "OmniboxCanCopyHyperlinksToClipboard", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// When certain field trials are enabled, the path is hidden and reshown after
-// the user hovers on the omnibox for at least this long.
-const uint32_t kExtendedHoverThresholdMs = 500;
-
 // When certain field trials are enabled, the path is hidden this long after
 // page load.
 const uint32_t kPathFadeOutDelayMs = 4000;
@@ -664,7 +660,7 @@ void OmniboxViewViews::OnThemeChanged() {
       // both the fade-in and fade-out animations now.
       path_fade_in_animation_ = std::make_unique<PathFadeAnimation>(
           this, SK_ColorTRANSPARENT, dimmed_text_color,
-          kExtendedHoverThresholdMs);
+          OmniboxFieldTrial::RevealPathQueryRefOnHoverThresholdMs());
       path_fade_out_fast_animation_ = std::make_unique<PathFadeAnimation>(
           this, dimmed_text_color, SK_ColorTRANSPARENT, 0);
     } else {
@@ -1629,7 +1625,7 @@ void OmniboxViewViews::DidGetUserInteraction(
         this, SK_ColorTRANSPARENT,
         GetOmniboxColor(GetThemeProvider(),
                         OmniboxPart::LOCATION_BAR_TEXT_DIMMED),
-        kExtendedHoverThresholdMs);
+        OmniboxFieldTrial::RevealPathQueryRefOnHoverThresholdMs());
   }
   Observe(nullptr);
 }

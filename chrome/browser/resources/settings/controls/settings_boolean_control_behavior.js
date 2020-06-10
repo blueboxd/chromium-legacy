@@ -95,7 +95,7 @@ const SettingsBooleanControlBehaviorImpl = {
   sendPrefChange() {
     // Ensure that newValue is the correct type for the pref type, either
     // a boolean or a number.
-    if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER) {
+    if (this.pref.type === chrome.settingsPrivate.PrefType.NUMBER) {
       assert(!this.inverted);
       this.set('pref.value', this.checked ? 1 : this.numericUncheckedValue);
       return;
@@ -120,9 +120,9 @@ const SettingsBooleanControlBehaviorImpl = {
   getNewValue_(value) {
     // For numeric prefs, the control is only false if the value is exactly
     // equal to the unchecked-equivalent value.
-    if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER) {
+    if (this.pref.type === chrome.settingsPrivate.PrefType.NUMBER) {
       assert(!this.inverted);
-      return value != this.numericUncheckedValue;
+      return value !== this.numericUncheckedValue;
     }
     return this.inverted ? !value : !!value;
   },

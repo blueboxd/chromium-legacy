@@ -184,10 +184,10 @@ Polymer({
    * @private
    */
   onSafeBrowsingRadioChange_: function(event) {
-    if (event.detail.value == SafeBrowsing.ENHANCED) {
+    if (event.detail.value === SafeBrowsing.ENHANCED) {
       this.setPrefValue('safebrowsing.enabled', true);
       this.setPrefValue('safebrowsing.enhanced', true);
-    } else if (event.detail.value == SafeBrowsing.STANDARD) {
+    } else if (event.detail.value === SafeBrowsing.STANDARD) {
       this.setPrefValue('safebrowsing.enabled', true);
       this.setPrefValue('safebrowsing.enhanced', false);
     } else {  // disabled state

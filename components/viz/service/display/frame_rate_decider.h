@@ -59,7 +59,8 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
   FrameRateDecider(SurfaceManager* surface_manager,
                    Client* client,
                    bool hw_support_for_multiple_refresh_rates,
-                   bool supports_set_frame_rate);
+                   bool supports_set_frame_rate,
+                   size_t num_of_frames_to_toggle_interval);
   ~FrameRateDecider() override;
 
   void SetSupportedFrameIntervals(
@@ -95,7 +96,7 @@ class VIZ_SERVICE_EXPORT FrameRateDecider : public SurfaceObserver {
   base::TimeDelta last_computed_preferred_frame_interval_;
   base::TimeDelta current_preferred_frame_interval_;
 
-  size_t min_num_of_frames_to_toggle_interval_ = 60u;
+  size_t min_num_of_frames_to_toggle_interval_;
   SurfaceManager* const surface_manager_;
   Client* const client_;
   const bool hw_support_for_multiple_refresh_rates_;

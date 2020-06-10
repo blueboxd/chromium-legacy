@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
@@ -20,6 +21,7 @@
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/dom_distiller/core/pref_names.h"
+#include "components/dom_distiller/core/url_utils.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/security_interstitials/core/controller_client.h"
@@ -58,6 +60,10 @@ class ReaderModeIconViewBrowserTest : public InProcessBrowserTest {
     return https_server_secure_.get();
   }
 
+  bool IsReaderModeIconActive() {
+    return reader_mode_icon_ && reader_mode_icon_->active();
+  }
+
   PageActionIconView* reader_mode_icon_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_secure_;
 
@@ -68,7 +74,6 @@ class ReaderModeIconViewBrowserTest : public InProcessBrowserTest {
 };
 
 // TODO(gilmanmh): Add tests for the following cases:
-//  * Icon is visible on the distilled page.
 //  * Icon is not visible on about://blank, both initially and after navigating
 //    to a distillable page.
 IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTest,
@@ -100,6 +105,16 @@ IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTest,
   observer.WaitForResult(expected_result);
   const bool is_visible_on_article = reader_mode_icon_->GetVisible();
   EXPECT_TRUE(is_visible_on_article);
+  EXPECT_FALSE(IsReaderModeIconActive());
+
+  // The icon should be active after going to the distilled page.
+  GURL reader_url = dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
+      "chrome-distiller", https_server_secure()->GetURL(kSimpleArticlePath),
+      kArticleTitle);
+  ui_test_utils::NavigateToURL(browser(), reader_url);
+  const bool is_visible_on_reader = reader_mode_icon_->GetVisible();
+  EXPECT_TRUE(is_visible_on_reader);
+  EXPECT_TRUE(IsReaderModeIconActive());
 
   // Navigating back to a non-distillable page hides the icon again.
   ui_test_utils::NavigateToURL(browser(),
@@ -244,6 +259,60 @@ IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTest,
   // The page should not be distillable.
   observer.WaitForResult(expected_result);
   EXPECT_FALSE(reader_mode_icon_->GetVisible());
+}
+
+IN_PROC_BROWSER_TEST_F(ReaderModeIconViewBrowserTest,
+                       CannotEnterWithBackwardOrForward) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  dom_distiller::TestDistillabilityObserver observer(web_contents);
+  dom_distiller::DistillabilityResult expected_result;
+  expected_result.is_distillable = true;
+  expected_result.is_last = false;
+  expected_result.is_mobile_friendly = false;
+
+  // Load original page.
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_secure()->GetURL(kSimpleArticlePath));
+  observer.WaitForResult(expected_result);
+
+  // Navigate to the reader mode page.
+  GURL reader_url = dom_distiller::url_utils::GetDistillerViewUrlFromUrl(
+      "chrome-distiller", https_server_secure()->GetURL(kSimpleArticlePath),
+      kArticleTitle);
+  ui_test_utils::NavigateToURL(browser(), reader_url);
+
+  // Load some other page.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_secure()->GetURL(kNonArticlePath));
+  expected_result.is_distillable = false;
+  observer.WaitForResult(expected_result);
+
+  // "back" should go to the original page, not the reader mode page.
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+  expected_result.is_distillable = true;
+  observer.WaitForResult(expected_result);
+  EXPECT_EQ(https_server_secure()->GetURL(kSimpleArticlePath),
+            web_contents->GetLastCommittedURL());
+
+  // "forward" will also not go to the reader mode page.
+  chrome::GoForward(browser(), WindowOpenDisposition::CURRENT_TAB);
+  expected_result.is_distillable = false;
+  observer.WaitForResult(expected_result);
+  EXPECT_EQ(https_server_secure()->GetURL(kNonArticlePath),
+            web_contents->GetLastCommittedURL());
+  EXPECT_FALSE(chrome::CanGoForward(browser()));
+
+  // Load the article again, then go to Reader Mode, and then back.
+  // We shouldn't be able to go "forward".
+  expected_result.is_distillable = true;
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_secure()->GetURL(kSimpleArticlePath));
+  observer.WaitForResult(expected_result);
+  ui_test_utils::NavigateToURL(browser(), reader_url);
+  chrome::GoBack(browser(), WindowOpenDisposition::CURRENT_TAB);
+  observer.WaitForResult(expected_result);
+  EXPECT_FALSE(chrome::CanGoForward(browser()));
 }
 
 }  // namespace

@@ -13,7 +13,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
@@ -22,6 +21,8 @@
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/video_frame_utils.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -87,34 +88,35 @@ class VideoTrackRecorderTest
                                           media::VideoFrame::StorageType>> {
  public:
   VideoTrackRecorderTest() : mock_source_(new MockMediaStreamVideoSource()) {
-    const WebString webkit_track_id(WebString::FromASCII("dummy"));
-    blink_source_.Initialize(webkit_track_id, WebMediaStreamSource::kTypeVideo,
-                             webkit_track_id, false /*remote*/);
-    blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
-    blink_track_.Initialize(blink_source_);
+    const String track_id("dummy");
+    source_ = MakeGarbageCollected<MediaStreamSource>(
+        track_id, MediaStreamSource::kTypeVideo, track_id, false /*remote*/);
+    mock_source_->SetOwner(source_);
+    source_->SetPlatformSource(base::WrapUnique(mock_source_));
+    component_ = MakeGarbageCollected<MediaStreamComponent>(source_);
 
     track_ = new MediaStreamVideoTrack(
         mock_source_, WebPlatformMediaStreamSource::ConstraintsOnceCallback(),
         true /* enabled */);
-    blink_track_.SetPlatformTrack(base::WrapUnique(track_));
+    component_->SetPlatformTrack(base::WrapUnique(track_));
 
     // Paranoia checks.
-    EXPECT_EQ(blink_track_.Source().GetPlatformSource(),
-              blink_source_.GetPlatformSource());
+    EXPECT_EQ(component_->Source()->GetPlatformSource(),
+              source_->GetPlatformSource());
     EXPECT_TRUE(scheduler::GetSingleThreadTaskRunnerForTesting()
                     ->BelongsToCurrentThread());
   }
 
   ~VideoTrackRecorderTest() {
-    blink_track_.Reset();
-    blink_source_.Reset();
-    video_track_recorder_ = nullptr;
+    component_ = nullptr;
+    source_ = nullptr;
+    video_track_recorder_.reset();
     WebHeap::CollectAllGarbageForTesting();
   }
 
   void InitializeRecorder(VideoTrackRecorder::CodecId codec) {
     video_track_recorder_ = std::make_unique<VideoTrackRecorderImpl>(
-        codec, blink_track_,
+        codec, WebMediaStreamTrack(component_.Get()),
         ConvertToBaseRepeatingCallback(
             CrossThreadBindRepeating(&VideoTrackRecorderTest::OnEncodedVideo,
                                      CrossThreadUnretained(this))),
@@ -156,11 +158,11 @@ class VideoTrackRecorderTest
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
 
   // All members are non-const due to the series of initialize() calls needed.
-  // |mock_source_| is owned by |blink_source_|, |track_| by |blink_track_|.
+  // |mock_source_| is owned by |source_|, |track_| by |component_|.
   MockMediaStreamVideoSource* mock_source_;
-  WebMediaStreamSource blink_source_;
+  Persistent<MediaStreamSource> source_;
   MediaStreamVideoTrack* track_;
-  WebMediaStreamTrack blink_track_;
+  Persistent<MediaStreamComponent> component_;
 
   std::unique_ptr<VideoTrackRecorderImpl> video_track_recorder_;
 
@@ -443,34 +445,35 @@ class VideoTrackRecorderPassthroughTest
   VideoTrackRecorderPassthroughTest()
       : mock_source_(new MockMediaStreamVideoSource()) {
     ON_CALL(*mock_source_, SupportsEncodedOutput).WillByDefault(Return(true));
-    const WebString webkit_track_id(WebString::FromASCII("dummy"));
-    blink_source_.Initialize(webkit_track_id, WebMediaStreamSource::kTypeVideo,
-                             webkit_track_id, false /*remote*/);
-    blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
-    blink_track_.Initialize(blink_source_);
+    const String track_id("dummy");
+    source_ = MakeGarbageCollected<MediaStreamSource>(
+        track_id, MediaStreamSource::kTypeVideo, track_id, false /*remote*/);
+    mock_source_->SetOwner(source_);
+    source_->SetPlatformSource(base::WrapUnique(mock_source_));
+    component_ = MakeGarbageCollected<MediaStreamComponent>(source_);
 
     track_ = new MediaStreamVideoTrack(
         mock_source_, WebPlatformMediaStreamSource::ConstraintsOnceCallback(),
         true /* enabled */);
-    blink_track_.SetPlatformTrack(base::WrapUnique(track_));
+    component_->SetPlatformTrack(base::WrapUnique(track_));
 
     // Paranoia checks.
-    EXPECT_EQ(blink_track_.Source().GetPlatformSource(),
-              blink_source_.GetPlatformSource());
+    EXPECT_EQ(component_->Source()->GetPlatformSource(),
+              source_->GetPlatformSource());
     EXPECT_TRUE(scheduler::GetSingleThreadTaskRunnerForTesting()
                     ->BelongsToCurrentThread());
   }
 
   ~VideoTrackRecorderPassthroughTest() {
-    blink_track_.Reset();
-    blink_source_.Reset();
+    component_ = nullptr;
+    source_ = nullptr;
     video_track_recorder_.reset();
     WebHeap::CollectAllGarbageForTesting();
   }
 
   void InitializeRecorder() {
     video_track_recorder_ = std::make_unique<VideoTrackRecorderPassthrough>(
-        blink_track_,
+        WebMediaStreamTrack(component_.Get()),
         ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
             &VideoTrackRecorderPassthroughTest::OnEncodedVideo,
             CrossThreadUnretained(this))),
@@ -488,11 +491,11 @@ class VideoTrackRecorderPassthroughTest
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
 
   // All members are non-const due to the series of initialize() calls needed.
-  // |mock_source_| is owned by |blink_source_|, |track_| by |blink_track_|.
+  // |mock_source_| is owned by |source_|, |track_| by |component_|.
   MockMediaStreamVideoSource* mock_source_;
-  WebMediaStreamSource blink_source_;
+  Persistent<MediaStreamSource> source_;
   MediaStreamVideoTrack* track_;
-  WebMediaStreamTrack blink_track_;
+  Persistent<MediaStreamComponent> component_;
 
   std::unique_ptr<VideoTrackRecorderPassthrough> video_track_recorder_;
 };

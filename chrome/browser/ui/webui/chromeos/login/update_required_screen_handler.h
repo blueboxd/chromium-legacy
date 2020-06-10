@@ -65,6 +65,7 @@ class UpdateRequiredView {
   // Set enterprise and device name to be used in strings in the UI.
   virtual void SetEnterpriseAndDeviceName(const std::string& enterpriseDomain,
                                           const base::string16& deviceName) = 0;
+  virtual void SetEolMessage(const std::string& eolMessage) = 0;
 };
 
 class UpdateRequiredScreenHandler : public UpdateRequiredView,
@@ -90,6 +91,7 @@ class UpdateRequiredScreenHandler : public UpdateRequiredView,
   void SetUIState(UpdateRequiredView::UIState ui_state) override;
   void SetEnterpriseAndDeviceName(const std::string& enterpriseDomain,
                                   const base::string16& deviceName) override;
+  void SetEolMessage(const std::string& eolMessage) override;
 
   // BaseScreenHandler:
   void DeclareLocalizedValues(

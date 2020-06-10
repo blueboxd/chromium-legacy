@@ -210,7 +210,7 @@ Polymer({
    * @private
    */
   canEnableSomeSupportedLanguage_(languages) {
-    return languages == undefined || languages.supported.some(language => {
+    return languages === undefined || languages.supported.some(language => {
       return this.languageHelper.canEnableLanguage(language);
     });
   },
@@ -228,7 +228,7 @@ Polymer({
       return false;
     }
     // </if>
-    return this.languages != undefined && this.languages.enabled.length > 1;
+    return this.languages !== undefined && this.languages.enabled.length > 1;
   },
 
   /**
@@ -240,7 +240,7 @@ Polymer({
    * @private
    */
   isNthLanguage_(n) {
-    if (this.languages == undefined || this.detailLanguage_ == undefined) {
+    if (this.languages === undefined || this.detailLanguage_ === undefined) {
       return false;
     }
 
@@ -249,7 +249,7 @@ Polymer({
     }
 
     const compareLanguage = assert(this.languages.enabled[n]);
-    return this.detailLanguage_.language == compareLanguage.language;
+    return this.detailLanguage_.language === compareLanguage.language;
   },
 
   /**
@@ -269,7 +269,7 @@ Polymer({
    * @private
    */
   showMoveDown_() {
-    return this.languages != undefined &&
+    return this.languages !== undefined &&
         !this.isNthLanguage_(this.languages.enabled.length - 1);
   },
 
@@ -278,7 +278,7 @@ Polymer({
    * @return {boolean} True if there are less than 2 languages.
    */
   isHelpTextHidden_(change) {
-    return this.languages != undefined && this.languages.enabled.length <= 1;
+    return this.languages !== undefined && this.languages.enabled.length <= 1;
   },
 
   /**
@@ -288,7 +288,7 @@ Polymer({
    'non-target' otherwise.
    */
   isTranslationTarget_(languageCode, translateTarget) {
-    if (this.languageHelper.convertLanguageCodeForTranslate(languageCode) ==
+    if (this.languageHelper.convertLanguageCodeForTranslate(languageCode) ===
         translateTarget) {
       return 'target';
     } else {
@@ -335,7 +335,7 @@ Polymer({
    * @private
    */
   isRestartRequired_(languageCode, prospectiveUILanguage) {
-    return prospectiveUILanguage == languageCode &&
+    return prospectiveUILanguage === languageCode &&
         this.languageHelper.requiresRestart();
   },
 
@@ -377,7 +377,7 @@ Polymer({
     }
 
     // Unchecking the currently chosen language doesn't make much sense.
-    if (languageState.language.code == prospectiveUILanguage) {
+    if (languageState.language.code === prospectiveUILanguage) {
       return true;
     }
 
@@ -420,7 +420,7 @@ Polymer({
    * @private
    */
   isProspectiveUILanguage_(languageCode, prospectiveUILanguage) {
-    return languageCode == prospectiveUILanguage;
+    return languageCode === prospectiveUILanguage;
   },
 
   /**
@@ -453,7 +453,7 @@ Polymer({
    * @private
    */
   disableTranslateCheckbox_(languageState, targetLanguageCode) {
-    if (languageState == undefined || languageState.language == undefined ||
+    if (languageState === undefined || languageState.language === undefined ||
         !languageState.language.supportsTranslate) {
       return true;
     }
@@ -463,7 +463,7 @@ Polymer({
     }
 
     return this.languageHelper.convertLanguageCodeForTranslate(
-               languageState.language.code) == targetLanguageCode;
+               languageState.language.code) === targetLanguageCode;
   },
 
   /**
@@ -570,7 +570,7 @@ Polymer({
 
   /** @private */
   updateSpellcheckLanguages_() {
-    if (this.languages == undefined) {
+    if (this.languages === undefined) {
       return;
     }
 
@@ -630,7 +630,7 @@ Polymer({
 
   /** @private */
   updateSpellcheckEnabled_() {
-    if (this.prefs == undefined) {
+    if (this.prefs === undefined) {
       return;
     }
 
@@ -724,7 +724,7 @@ Polymer({
    * @private
    */
   getLanguageItemClass_(languageCode, prospectiveUILanguage) {
-    if ((isChromeOS || isWindows) && languageCode == prospectiveUILanguage) {
+    if ((isChromeOS || isWindows) && languageCode === prospectiveUILanguage) {
       return 'selected';
     }
     return '';
@@ -803,7 +803,7 @@ Polymer({
   toggleExpandButton_(e) {
     // The expand button handles toggling itself.
     const expandButtonTag = 'CR-EXPAND-BUTTON';
-    if (e.target.tagName == expandButtonTag) {
+    if (e.target.tagName === expandButtonTag) {
       return;
     }
 

@@ -9,7 +9,7 @@
 load('//project.star', 'master_only_exec')
 
 lucicfg.check_version(
-    min = '1.13.1',
+    min = '1.15.0',
     message = 'Update depot_tools',
 )
 

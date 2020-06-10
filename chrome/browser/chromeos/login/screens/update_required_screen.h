@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/version_updater/version_updater.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 
 namespace base {
 class Clock;
@@ -68,6 +69,9 @@ class UpdateRequiredScreen : public BaseScreen,
   void OnUserAction(const std::string& action_id) override;
 
   void EnsureScreenIsShown();
+
+  // Callback for changes to chromeos::kMinimumChromeVersionEolMessage.
+  void OnEolMessageChanged();
 
   void OnSelectNetworkButtonClicked();
   void OnUpdateButtonClicked();
@@ -125,6 +129,9 @@ class UpdateRequiredScreen : public BaseScreen,
   base::Clock* clock_;
 
   base::TimeDelta error_message_delay_;
+
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      eol_message_subscription_;
 
   ErrorScreen::ConnectRequestCallbackSubscription connect_request_subscription_;
 

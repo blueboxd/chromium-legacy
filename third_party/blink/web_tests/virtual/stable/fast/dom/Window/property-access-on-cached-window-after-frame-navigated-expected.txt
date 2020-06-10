@@ -1,18 +1,8 @@
 CONSOLE WARNING: line 138: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 138: Application Cache API use is deprecated and will be removed in M85, around August 2020. See https://www.chromestatus.com/features/6192449487634432 for more details.
 Tests property access on a cached DOMWindow after the associated frame is navigated. Test should not crash and properties read from the cached DOMWindow should be identical to properties through the 'current' DOMWindow.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS oldChildWindow.applicationCache.oncached is newChildWindow.applicationCache.oncached
-PASS oldChildWindow.applicationCache.onchecking is newChildWindow.applicationCache.onchecking
-PASS oldChildWindow.applicationCache.ondownloading is newChildWindow.applicationCache.ondownloading
-PASS oldChildWindow.applicationCache.onerror is newChildWindow.applicationCache.onerror
-PASS oldChildWindow.applicationCache.onnoupdate is newChildWindow.applicationCache.onnoupdate
-PASS oldChildWindow.applicationCache.onobsolete is newChildWindow.applicationCache.onobsolete
-PASS oldChildWindow.applicationCache.onprogress is newChildWindow.applicationCache.onprogress
-PASS oldChildWindow.applicationCache.onupdateready is newChildWindow.applicationCache.onupdateready
-PASS oldChildWindow.applicationCache.status is newChildWindow.applicationCache.status
 PASS oldChildWindow.closed is newChildWindow.closed
 PASS oldChildWindow.defaultStatus is newChildWindow.defaultStatus
 PASS oldChildWindow.defaultstatus is newChildWindow.defaultstatus

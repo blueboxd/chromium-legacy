@@ -265,7 +265,7 @@ Polymer({
     if (!tab) {
       return;
     }
-    this.clearButtonDisabled_ = this.getSelectedDataTypes_(tab).length == 0;
+    this.clearButtonDisabled_ = this.getSelectedDataTypes_(tab).length === 0;
   },
 
   /**
@@ -276,7 +276,7 @@ Polymer({
    * @protected
    */
   currentRouteChanged(currentRoute) {
-    if (currentRoute == routes.CLEAR_BROWSER_DATA) {
+    if (currentRoute === routes.CLEAR_BROWSER_DATA) {
       chrome.metricsPrivate.recordUserAction('ClearBrowsingData_DialogCreated');
       this.dialogOpenedTime_ = Date.now();
     }
@@ -424,7 +424,7 @@ Polymer({
     const dataTypes = this.getSelectedDataTypes_(tab);
     const timePeriod = tab.querySelector('.time-range-select').pref.value;
 
-    if (tab.id == 'basic-tab') {
+    if (tab.id === 'basic-tab') {
       chrome.metricsPrivate.recordUserAction('ClearBrowsingData_BasicTab');
     } else {
       chrome.metricsPrivate.recordUserAction('ClearBrowsingData_AdvancedTab');
@@ -479,7 +479,7 @@ Polymer({
    * @private
    */
   recordTabChange_(event) {
-    if (event.detail.value == 0) {
+    if (event.detail.value === 0) {
       chrome.metricsPrivate.recordUserAction(
           'ClearBrowsingData_SwitchTo_BasicTab');
     } else {

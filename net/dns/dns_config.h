@@ -51,6 +51,7 @@ struct NET_EXPORT DnsConfig {
     return !nameservers.empty() || !dns_over_https_servers.empty();
   }
 
+  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.net
   // The SecureDnsMode specifies what types of lookups (secure/insecure) should
   // be performed and in what order when resolving a specific query. The int
   // values should not be changed as they are logged.

@@ -1,18 +1,8 @@
 CONSOLE WARNING: line 138: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
-CONSOLE WARNING: line 138: Application Cache API use is deprecated and will be removed in M85, around August 2020. See https://www.chromestatus.com/features/6192449487634432 for more details.
 Tests access of cached DOMWindow properties after the associated frame is removed from a web page and garbage collected. Test should not crash and properties should be set to sane defaults.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS window.cached_applicationCache.oncached is null
-PASS window.cached_applicationCache.onchecking is null
-PASS window.cached_applicationCache.ondownloading is null
-PASS window.cached_applicationCache.onerror is null
-PASS window.cached_applicationCache.onnoupdate is null
-PASS window.cached_applicationCache.onobsolete is null
-PASS window.cached_applicationCache.onprogress is null
-PASS window.cached_applicationCache.onupdateready is null
-PASS window.cached_applicationCache.status is 0
 FAIL window.cached_location.hash should be  (of type string). Was undefined (of type undefined).
 FAIL window.cached_location.host should be  (of type string). Was undefined (of type undefined).
 FAIL window.cached_location.hostname should be  (of type string). Was undefined (of type undefined).

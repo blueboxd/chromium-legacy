@@ -2671,10 +2671,11 @@ RTCRtpReceiver* RTCPeerConnection::CreateOrUpdateReceiver(
 
 RTCRtpTransceiver* RTCPeerConnection::CreateOrUpdateTransceiver(
     std::unique_ptr<RTCRtpTransceiverPlatform> platform_transceiver) {
-  String kind = (platform_transceiver->Receiver()->Track().Source().GetType() ==
-                 WebMediaStreamSource::kTypeAudio)
-                    ? "audio"
-                    : "video";
+  String kind =
+      (platform_transceiver->Receiver()->Track()->Source()->GetType() ==
+       MediaStreamSource::kTypeAudio)
+          ? "audio"
+          : "video";
   RTCRtpSender* sender =
       CreateOrUpdateSender(platform_transceiver->Sender(), kind);
   RTCRtpReceiver* receiver =

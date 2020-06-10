@@ -501,12 +501,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method seek
 [Worker]     method truncate
 [Worker]     method write
-[Worker] interface FileSystemWriter
-[Worker]     attribute @@toStringTag
-[Worker]     method close
-[Worker]     method constructor
-[Worker]     method truncate
-[Worker]     method write
 [Worker] interface FontFace
 [Worker]     attribute @@toStringTag
 [Worker]     getter display

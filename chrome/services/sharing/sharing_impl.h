@@ -34,6 +34,8 @@ class NearbyConnections;
 
 namespace sharing {
 
+class NearbySharingDecoder;
+
 class SharingWebRtcConnection;
 
 class SharingImpl : public mojom::Sharing {
@@ -61,6 +63,8 @@ class SharingImpl : public mojom::Sharing {
   void CreateNearbyConnections(
       mojo::PendingRemote<NearbyConnectionsHostMojom> host,
       CreateNearbyConnectionsCallback callback) override;
+  void CreateNearbySharingDecoder(
+      CreateNearbySharingDecoderCallback callback) override;
 
   size_t GetWebRtcConnectionCountForTesting() const;
 
@@ -79,6 +83,8 @@ class SharingImpl : public mojom::Sharing {
       webrtc_peer_connection_factory_;
 
   std::unique_ptr<NearbyConnections> nearby_connections_;
+
+  std::unique_ptr<NearbySharingDecoder> nearby_decoder_;
 
   base::WeakPtrFactory<SharingImpl> weak_ptr_factory_{this};
 };

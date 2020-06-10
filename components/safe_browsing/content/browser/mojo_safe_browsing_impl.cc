@@ -158,6 +158,7 @@ void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
                           static_cast<int>(render_frame_id)),
       /*real_time_lookup_enabled=*/false,
       /*can_rt_check_subresource_url=*/false,
+      /*can_check_db=*/true,
       /*url_lookup_service=*/nullptr);
 
   checker_impl->CheckUrl(

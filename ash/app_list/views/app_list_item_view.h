@@ -115,11 +115,13 @@ class APP_LIST_EXPORT AppListItemView : public views::Button,
       float icon_scale);
 
   // Returns the title bounds for with |target_bounds| as the bounds of this
-  // view and given |title_size|.
+  // view and given |title_size| and the |icon_scale| if the icon was scaled
+  // from the original display size.
   static gfx::Rect GetTitleBoundsForTargetViewBounds(
       const AppListConfig& config,
       const gfx::Rect& target_bounds,
-      const gfx::Size& title_size);
+      const gfx::Size& title_size,
+      float icon_scale);
 
   // views::Button overrides:
   void OnGestureEvent(ui::GestureEvent* event) override;

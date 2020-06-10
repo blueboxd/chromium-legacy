@@ -80,21 +80,6 @@ void OnTraceBufferUsageResult(WebUIDataSource::GotDataCallback callback,
   std::move(callback).Run(base::RefCountedString::TakeString(&str));
 }
 
-void OnTraceBufferStatusResult(WebUIDataSource::GotDataCallback callback,
-                               float percent_full,
-                               size_t approximate_event_count) {
-  base::DictionaryValue status;
-  status.SetDouble("percentFull", percent_full);
-  status.SetInteger("approximateEventCount", approximate_event_count);
-
-  std::string status_json;
-  base::JSONWriter::Write(status, &status_json);
-
-  base::RefCountedString* status_base64 = new base::RefCountedString();
-  base::Base64Encode(status_json, &status_base64->data());
-  std::move(callback).Run(status_base64);
-}
-
 void TracingCallbackWrapperBase64(WebUIDataSource::GotDataCallback callback,
                                   std::unique_ptr<std::string> data) {
   base::RefCountedString* data_base64 = new base::RefCountedString();
@@ -118,10 +103,6 @@ bool OnBeginJSONRequest(const std::string& path,
   if (path == "json/get_buffer_percent_full") {
     return TracingController::GetInstance()->GetTraceBufferUsage(
         base::BindOnce(OnTraceBufferUsageResult, std::move(callback)));
-  }
-  if (path == "json/get_buffer_status") {
-    return TracingController::GetInstance()->GetTraceBufferUsage(
-        base::BindOnce(OnTraceBufferStatusResult, std::move(callback)));
   }
   if (path == "json/end_recording_compressed") {
     if (!TracingController::GetInstance()->IsTracing())
@@ -213,30 +194,7 @@ bool TracingUI::GetTracingOptions(
   }
 
   // New style options dictionary.
-  if (options->HasKey("included_categories")) {
-    *trace_config = base::trace_event::TraceConfig(*options);
-    return true;
-  }
-
-  bool options_ok = true;
-  std::string category_filter_string;
-  options_ok &= options->GetString("categoryFilter", &category_filter_string);
-
-  std::string record_mode;
-  options_ok &= options->GetString("tracingRecordMode", &record_mode);
-
-  *trace_config =
-      base::trace_event::TraceConfig(category_filter_string, record_mode);
-
-  bool enable_systrace;
-  options_ok &= options->GetBoolean("useSystemTracing", &enable_systrace);
-  if (enable_systrace)
-    trace_config->EnableSystrace();
-
-  if (!options_ok) {
-    LOG(ERROR) << "Malformed options";
-    return false;
-  }
+  *trace_config = base::trace_event::TraceConfig(*options);
   return true;
 }
 

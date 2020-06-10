@@ -486,6 +486,7 @@ android_library("chrome_java") {
     "//chrome:supervised_user_url_filter_enum_javagen",
     "//chrome/browser:sharing_dialog_type_generated_enum",
     "//chrome/browser:sharing_send_message_result_generated_enum",
+    "//chrome/browser/net:secure_dns_management_mode_generated_enum",
     "//chrome/browser/notifications/scheduler/public:jni_enums",
     "//chrome/browser/supervised_user/supervised_user_error_page:enums_srcjar",
     "//chrome/browser/updates/announcement_notification:jni_enums",
@@ -505,6 +506,7 @@ android_library("chrome_java") {
     "//components/ui_metrics:ui_metrics_enums_java",
     "//content/public/browser:contacts_picker_properties_requested_javagen",
     "//net:effective_connection_type_java",
+    "//net/dns:secure_dns_mode_generated_enum",
   ]
 
   # From java_sources.gni.

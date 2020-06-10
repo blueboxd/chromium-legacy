@@ -93,11 +93,11 @@ Polymer({
         this.focusConfig.get(this.previousRoute_.path);
     if (pathConfig) {
       let handler;
-      if (typeof pathConfig == 'function') {
+      if (typeof pathConfig === 'function') {
         handler = pathConfig;
       } else {
         handler = () => {
-          if (typeof pathConfig == 'string') {
+          if (typeof pathConfig === 'string') {
             pathConfig = assert(this.querySelector(pathConfig));
           }
           cr.ui.focusWithoutInk(/** @type {!Element} */ (pathConfig));
@@ -138,7 +138,7 @@ Polymer({
   currentRouteChanged(newRoute, oldRoute) {
     this.previousRoute_ = oldRoute;
 
-    if (newRoute.section == this.section && newRoute.isSubpage()) {
+    if (newRoute.section === this.section && newRoute.isSubpage()) {
       this.switchToSubpage_(newRoute, oldRoute);
     } else {
       this.$.animatedPages.selected = 'default';

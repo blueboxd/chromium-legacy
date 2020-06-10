@@ -20,7 +20,7 @@ Polymer({
    * @private
    */
   getLabel_(extensionId, extensionName) {
-    if (this.extensionId == undefined || this.extensionName == undefined) {
+    if (this.extensionId === undefined || this.extensionName === undefined) {
       return '';
     }
 

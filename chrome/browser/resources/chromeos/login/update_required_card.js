@@ -25,6 +25,8 @@ Polymer({
 
     deviceName: {type: String, value: ''},
 
+    eolAdminMessage_: {type: String, value: ''},
+
     /**
      * Estimated time left in seconds.
      */
@@ -89,5 +91,12 @@ Polymer({
   showOn_(ui_state) {
     // Negate the value as it used as |hidden| attribute's value.
     return !(Array.prototype.slice.call(arguments, 1).includes(ui_state));
+  },
+
+  /**
+   * @private
+   */
+  isEmpty_(eolAdminMessage) {
+    return !eolAdminMessage || eolAdminMessage.trim().length == 0;
   },
 });

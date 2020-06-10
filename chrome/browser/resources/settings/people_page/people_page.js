@@ -225,9 +225,9 @@ Polymer({
   /** @protected */
   currentRouteChanged() {
     this.showImportDataDialog_ =
-        Router.getInstance().getCurrentRoute() == routes.IMPORT_DATA;
+        Router.getInstance().getCurrentRoute() === routes.IMPORT_DATA;
 
-    if (Router.getInstance().getCurrentRoute() == routes.SIGN_OUT) {
+    if (Router.getInstance().getCurrentRoute() === routes.SIGN_OUT) {
       // If the sync status has not been fetched yet, optimistically display
       // the sign-out dialog. There is another check when the sync status is
       // fetched. The dialog will be closed when the user is not signed in.
@@ -293,7 +293,7 @@ Polymer({
     // The user might not have any GAIA accounts (e.g. guest mode, Kerberos,
     // Active Directory). In these cases the profile row is hidden, so there's
     // nothing to do.
-    if (accounts.length == 0) {
+    if (accounts.length === 0) {
       return;
     }
     this.profileName_ = accounts[0].fullName;
@@ -354,7 +354,7 @@ Polymer({
   onDisconnectDialogClosed_(e) {
     this.showSignoutDialog_ = false;
 
-    if (Router.getInstance().getCurrentRoute() == routes.SIGN_OUT) {
+    if (Router.getInstance().getCurrentRoute() === routes.SIGN_OUT) {
       Router.getInstance().navigateToPreviousRoute();
     }
   },
@@ -393,7 +393,7 @@ Polymer({
    * @private
    */
   shouldShowSyncAccountControl_() {
-    if (this.syncStatus == undefined) {
+    if (this.syncStatus === undefined) {
       return false;
     }
     // <if expr="chromeos">

@@ -17,7 +17,7 @@ Polymer({
   /** @private */
   updateDisabled_() {
     this.disabled =
-        this.pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
+        this.pref.enforcement === chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 
   /**
@@ -26,7 +26,7 @@ Polymer({
    */
   showIndicator_() {
     return this.disabled &&
-        this.name == Settings.PrefUtil.prefToString(assert(this.pref));
+        this.name === Settings.PrefUtil.prefToString(assert(this.pref));
   },
 
   /**

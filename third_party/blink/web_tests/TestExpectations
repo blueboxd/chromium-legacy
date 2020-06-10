@@ -1313,7 +1313,6 @@ crbug.com/1087671 [ Mac ] virtual/font-access/http/tests/font-access/font-access
 # ====== Style team owned tests from here ======
 
 crbug.com/753671 external/wpt/css/css-content/quotes-001.html [ Failure ]
-crbug.com/753671 external/wpt/css/css-content/quotes-002.html [ Failure ]
 crbug.com/753671 [ Mac10.11 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
 crbug.com/753671 [ Mac10.12 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
 crbug.com/753671 [ Mac10.13 ] external/wpt/css/css-content/quotes-006.html [ Failure ]
@@ -1335,7 +1334,6 @@ crbug.com/753671 [ Mac ] external/wpt/css/css-content/quotes-014.html [ Failure 
 crbug.com/753671 [ Mac10.15 ] external/wpt/css/css-content/quotes-020.html [ Failure ]
 crbug.com/753671 external/wpt/css/css-content/quotes-021.html [ Failure ]
 crbug.com/753671 external/wpt/css/css-content/quotes-022.html [ Failure ]
-crbug.com/753671 external/wpt/css/css-content/quotes-025.html [ Failure ]
 crbug.com/753671 external/wpt/css/css-content/quotes-033.html [ Failure ]
 crbug.com/989123 external/wpt/css/css-typed-om/the-stylepropertymap/computed/get-auto-min-size.html [ Failure ]
 
@@ -1355,32 +1353,6 @@ crbug.com/929098 external/wpt/css/css-color-adjust/rendering/dark-color-scheme/c
 crbug.com/929098 virtual/dark-color-scheme/external/wpt/css/css-color-adjust/rendering/dark-color-scheme/color-scheme-change-checkbox.html [ Pass ]
 
 # ====== Style team owned tests to here ======
-
-# ====== OOPIF-mode failures from here ======
-
-# See crbug.com/891427. These tests either fail or become flaky on one or more
-# platforms when --enable-display-compositor-pixel-dump is turned on. They need
-# triage. Note that these overlap with several existing entries in this
-# TestExpectations file. All of those have been commented out with a pointer back
-# up to this section. So if you close one of these, you should search for the
-# same test elsewhere, to see if perhaps you need to uncomment the old line.
-### These fail on all platforms:
-## Next 10 can be viewed in this run, by clicking on "Did not pass 11183":
-## https://test-results.appspot.com/data/layout_results/linux-blink-rel/1237/webkit_layout_tests%20%28with%20patch%29/layout-test-results/results.html
-crbug.com/891427 virtual/threaded-no-composited-antialiasing/animations/responsive/viewport-unit-transform-responsive.html [ Timeout ]
-crbug.com/891427 virtual/threaded-no-composited-antialiasing/animations/responsive/viewport-unit-translate-responsive.html [ Timeout ]
-crbug.com/891427 virtual/android/fullscreen/rendering/backdrop-video.html [ Failure ]
-## Next 4 here: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/linux_chromium_rel_ng/216317
-crbug.com/891427 virtual/threaded-no-composited-antialiasing/animations/timing/animation-duration-infinite.html [ Failure ]
-
-### Flaky on trybots:
-### Note: this list includes anything that flaked even once during my (many)
-### test runs with the flag enabled. It is very possible that some of these
-### were random flakes, or were already flaky before the flag was turned on.
-# Next 3 here: https://ci.chromium.org/buildbot/tryserver.blink/linux-blink-rel/1215
-crbug.com/891427 animations/responsive/viewport-unit-transform-responsive.html [ Pass Failure Timeout Crash ]
-crbug.com/891427 animations/responsive/viewport-unit-translate-responsive.html [ Pass Failure Timeout Crash ]
-# ====== OOPIF-mode failures until here ======
 
 # ====== Form Controls Refresh (chrome://flags/#form-controls-refresh) failures from here ======
 
@@ -1533,6 +1505,9 @@ crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progr
 crbug.com/520736 [ Win10 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 crbug.com/520736 [ Linux ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 crbug.com/909095 [ Mac ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
+
+# Hiding video::-webkit-media-controls breaks --force-overlay-fullscreen-video.
+crbug.com/1093447 virtual/android/fullscreen/rendering/backdrop-video.html [ Failure ]
 
 # gpuBenchmarking.pinchBy is busted on desktops for touchscreen pinch
 crbug.com/787615 [ Win ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Failure Pass ]
@@ -2675,7 +2650,7 @@ crbug.com/1086855 external/wpt/css/css-pseudo/file-chooser-button-001.tentative.
 crbug.com/626703 [ Mac10.11 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
-crbug.com/626703 [ Win7 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
+crbug.com/626703 [ Win7 ] virtual/cors/external/wpt/preload/download-resources.html [ Failure Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-3.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-3.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/mathml/presentation-markup/fractions/frac-invalid-3.html [ Failure ]
@@ -6743,3 +6718,4 @@ crbug.com/1093003 [ Mac ] external/wpt/html/rendering/replaced-elements/embedded
 
 # Sheriff 2020-06-10
 crbug.com/1093203 [ Retina ] virtual/text-antialias/color-emoji.html [ Pass Failure ]
+crbug.com/1093429 [ Mac ] external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Failure ]

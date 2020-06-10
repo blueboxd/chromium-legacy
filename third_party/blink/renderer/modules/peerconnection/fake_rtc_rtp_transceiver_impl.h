@@ -13,6 +13,7 @@
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_receiver_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_rtp_sender_platform.h"
@@ -23,7 +24,7 @@ namespace blink {
 
 // TODO(https://crbug.com/868868): Similar methods to this exist in many blink
 // unittests. Move to a separate file and reuse it in all of them.
-blink::WebMediaStreamTrack CreateWebMediaStreamTrack(
+MediaStreamComponent* CreateWebMediaStreamTrack(
     const std::string& id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -73,7 +74,7 @@ class FakeRTCRtpReceiverImpl : public RTCRtpReceiverPlatform {
   uintptr_t Id() const override;
   rtc::scoped_refptr<webrtc::DtlsTransportInterface> DtlsTransport() override;
   webrtc::DtlsTransportInformation DtlsTransportInformation() override;
-  const blink::WebMediaStreamTrack& Track() const override;
+  MediaStreamComponent* Track() const override;
   Vector<String> StreamIds() const override;
   Vector<std::unique_ptr<RTCRtpSource>> GetSources() override;
   void GetStats(RTCStatsReportCallback,
@@ -83,7 +84,7 @@ class FakeRTCRtpReceiverImpl : public RTCRtpReceiverPlatform {
       base::Optional<double> delay_seconds) override;
 
  private:
-  blink::WebMediaStreamTrack track_;
+  Persistent<MediaStreamComponent> component_;
   std::vector<std::string> stream_ids_;
 };
 

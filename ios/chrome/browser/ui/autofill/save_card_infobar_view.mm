@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_view.h"
 
+#import <MaterialComponents/MaterialButtons.h>
+#import <MaterialComponents/MaterialTypography.h>
+
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "components/strings/grit/components_strings.h"
@@ -20,8 +23,6 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
-#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/gfx/ios/uikit_util.h"
 #include "url/gurl.h"

@@ -7,7 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
+#import <MaterialComponents/MaterialCollections.h>
+
 #import "remoting/ios/app/settings/setting_option.h"
 
 @interface SettingsViewCell : MDCCollectionViewCell

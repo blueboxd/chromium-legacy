@@ -33,8 +33,10 @@ FrameRateDecider::ScopedAggregate::~ScopedAggregate() {
 FrameRateDecider::FrameRateDecider(SurfaceManager* surface_manager,
                                    Client* client,
                                    bool hw_support_for_multiple_refresh_rates,
-                                   bool supports_set_frame_rate)
+                                   bool supports_set_frame_rate,
+                                   size_t num_of_frames_to_toggle_interval)
     : supported_intervals_{BeginFrameArgs::DefaultInterval()},
+      min_num_of_frames_to_toggle_interval_(num_of_frames_to_toggle_interval),
       surface_manager_(surface_manager),
       client_(client),
       hw_support_for_multiple_refresh_rates_(

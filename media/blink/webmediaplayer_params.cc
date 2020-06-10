@@ -33,7 +33,6 @@ WebMediaPlayerParams::WebMediaPlayerParams(
     bool is_background_suspend_enabled,
     bool is_background_video_playback_enabled,
     bool is_background_video_track_optimization_supported,
-    bool is_remoting_renderer_enabled,
     std::unique_ptr<Demuxer> demuxer_override,
     std::unique_ptr<PowerStatusHelper> power_status_helper)
     : defer_load_cb_(defer_load_cb),
@@ -58,7 +57,6 @@ WebMediaPlayerParams::WebMediaPlayerParams(
           is_background_video_playback_enabled),
       is_background_video_track_optimization_supported_(
           is_background_video_track_optimization_supported),
-      is_remoting_renderer_enabled_(is_remoting_renderer_enabled),
       demuxer_override_(std::move(demuxer_override)),
       power_status_helper_(std::move(power_status_helper)) {}
 

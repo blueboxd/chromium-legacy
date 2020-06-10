@@ -436,7 +436,7 @@ class WebMediaPlayerImplTest
         viz::TestContextProvider::Create(),
         blink::WebMediaPlayer::SurfaceLayerMode::kAlways,
         is_background_suspend_enabled_, is_background_video_playback_enabled_,
-        true, false, std::move(demuxer_override), nullptr);
+        true, std::move(demuxer_override), nullptr);
 
     auto compositor = std::make_unique<NiceMock<MockVideoFrameCompositor>>(
         params->video_frame_compositor_task_runner());

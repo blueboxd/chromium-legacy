@@ -86,6 +86,7 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
           web_contents_getter,
       bool real_time_lookup_enabled,
       bool can_rt_check_subresource_url,
+      bool can_check_db,
       base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui);
 
   // Constructor that takes only a ResourceType and a UrlCheckerDelegate,
@@ -257,6 +258,11 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
 
   // Whether non mainframe url can be checked for this profile.
   bool can_rt_check_subresource_url_;
+
+  // Whether safe browsing database can be checked. It is set to false when
+  // enterprise real time URL lookup is enabled and safe browsing is disabled
+  // for this profile.
+  bool can_check_db_;
 
   // This object is used to perform real time url check. Can only be accessed in
   // UI thread.

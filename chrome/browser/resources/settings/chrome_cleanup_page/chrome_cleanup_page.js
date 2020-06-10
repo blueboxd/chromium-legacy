@@ -337,7 +337,7 @@ Polymer({
    * @private
    */
   computeShowExplanation_(explanation) {
-    return explanation != '';
+    return explanation !== '';
   },
 
   /**
@@ -406,10 +406,10 @@ Polymer({
         break;
 
       case ChromeCleanupIdleReason.CONNECTION_LOST:
-        if (this.ongoingAction_ == ChromeCleanupOngoingAction.SCANNING) {
+        if (this.ongoingAction_ === ChromeCleanupOngoingAction.SCANNING) {
           this.renderCleanupCard_(ChromeCleanerCardState.SCANNING_FAILED);
         } else {
-          assert(this.ongoingAction_ == ChromeCleanupOngoingAction.CLEANING);
+          assert(this.ongoingAction_ === ChromeCleanupOngoingAction.CLEANING);
           this.renderCleanupCard_(ChromeCleanerCardState.CLEANING_FAILED);
         }
         break;
@@ -539,11 +539,11 @@ Polymer({
    */
   updateCardFlags_(flags) {
     this.showLogsPermission_ =
-        (flags & ChromeCleanupCardFlags.SHOW_LOGS_PERMISSIONS) != 0;
+        (flags & ChromeCleanupCardFlags.SHOW_LOGS_PERMISSIONS) !== 0;
     this.isWaitingForResult_ =
-        (flags & ChromeCleanupCardFlags.WAITING_FOR_RESULT) != 0;
+        (flags & ChromeCleanupCardFlags.WAITING_FOR_RESULT) !== 0;
     this.showItemsToRemove_ =
-        (flags & ChromeCleanupCardFlags.SHOW_ITEMS_TO_REMOVE) != 0;
+        (flags & ChromeCleanupCardFlags.SHOW_ITEMS_TO_REMOVE) !== 0;
 
     // Files to remove list should only be expandable if details are being
     // shown, otherwise it will add extra padding at the bottom of the card.

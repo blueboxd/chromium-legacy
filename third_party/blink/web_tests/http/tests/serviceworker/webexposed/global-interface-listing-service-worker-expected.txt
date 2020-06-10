@@ -566,12 +566,6 @@ interface FileSystemWritableFileStream : WritableStream
     method seek
     method truncate
     method write
-interface FileSystemWriter
-    attribute @@toStringTag
-    method close
-    method constructor
-    method truncate
-    method write
 interface FontFace
     attribute @@toStringTag
     getter display

@@ -110,7 +110,7 @@ Polymer({
    * @private
    */
   onNewPassphraseInputKeypress_(e) {
-    if (e.type == 'keypress' && e.key != 'Enter') {
+    if (e.type === 'keypress' && e.key !== 'Enter') {
       return;
     }
     this.saveNewPassphrase_();
@@ -157,7 +157,7 @@ Polymer({
    */
   onEncryptionRadioSelectionChanged_(event) {
     this.creatingNewPassphrase_ =
-        event.detail.value == RadioButtonNames.ENCRYPT_WITH_PASSPHRASE;
+        event.detail.value === RadioButtonNames.ENCRYPT_WITH_PASSPHRASE;
   },
 
   /**
@@ -179,7 +179,7 @@ Polymer({
    */
   validateCreatedPassphrases_() {
     const emptyPassphrase = !this.passphrase_;
-    const mismatchedPassphrase = this.passphrase_ != this.confirmation_;
+    const mismatchedPassphrase = this.passphrase_ !== this.confirmation_;
 
     this.$$('#passphraseInput').invalid = emptyPassphrase;
     this.$$('#passphraseConfirmationInput').invalid =
@@ -193,7 +193,7 @@ Polymer({
    * @private
    */
   onLearnMoreClick_(event) {
-    if (event.target.tagName == 'A') {
+    if (event.target.tagName === 'A') {
       // Stop the propagation of events, so that clicking on links inside
       // checkboxes or radio buttons won't change the value.
       event.stopPropagation();

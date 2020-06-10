@@ -664,6 +664,7 @@ def GenerateCredits(
   entries.append(
       MetadataToTemplateEntry(chromium_license_metadata, entry_template))
 
+  entries_by_name = {}
   for path in third_party_dirs:
     try:
       metadata = ParseDir(path, _REPOSITORY_ROOT)
@@ -680,7 +681,15 @@ def GenerateCredits(
       # updated to provide --gn-target to this script.
       if path in KNOWN_NON_IOS_LIBRARIES:
         continue
-    entries.append(MetadataToTemplateEntry(metadata, entry_template))
+
+    new_entry = MetadataToTemplateEntry(metadata, entry_template)
+    # Skip entries that we've already seen (it exists in multiple directories).
+    prev_entry = entries_by_name.setdefault(new_entry['name'], new_entry)
+    if prev_entry is not new_entry and (
+        prev_entry['content'] == new_entry['content']):
+      continue
+
+    entries.append(new_entry)
 
   entries.sort(key=lambda entry: (entry['name'].lower(), entry['content']))
   for entry_id, entry in enumerate(entries):

@@ -264,7 +264,7 @@ Polymer({
    * @private
    */
   computePadding_(size) {
-    if (size == '') {
+    if (size === '') {
       return '1%';
     }
 

@@ -25,7 +25,7 @@ Polymer({
   wasConfirmed() {
     return /** @type {!CrDialogElement} */ (this.$.dialog)
                .getNative()
-               .returnValue == 'success';
+               .returnValue === 'success';
   },
 
   /** @private */

@@ -74,6 +74,8 @@ cast_source_set("renderer") {
     "//gin",
     "//ipc",
     "//media",
+    "//media/remoting:remoting_constants",
+    "//media/remoting:remoting_renderer",
     "//services/network/public/cpp:cpp",
     "//services/service_manager/public/cpp",
     "//v8",

@@ -222,7 +222,7 @@ Polymer({
    */
   currentRouteChanged(currentRoute) {
     GlobalScrollTargetBehaviorImpl.currentRouteChanged.call(this, currentRoute);
-    if (currentRoute == routes.SITE_SETTINGS_ALL) {
+    if (currentRoute === routes.SITE_SETTINGS_ALL) {
       this.populateList_();
     }
   },
@@ -318,11 +318,11 @@ Polymer({
       return siteGroupList;
     }
 
-    if (sortMethod == SortMethod.MOST_VISITED) {
+    if (sortMethod === SortMethod.MOST_VISITED) {
       siteGroupList.sort(this.mostVisitedComparator_);
-    } else if (sortMethod == SortMethod.STORAGE) {
+    } else if (sortMethod === SortMethod.STORAGE) {
       siteGroupList.sort(this.storageComparator_);
-    } else if (sortMethod == SortMethod.NAME) {
+    } else if (sortMethod === SortMethod.NAME) {
       siteGroupList.sort(this.nameComparator_);
     }
     return siteGroupList;
@@ -424,7 +424,7 @@ Polymer({
    * @private
    */
   focusOnLastSelectedEntry_() {
-    if (this.selectedItem_ == null || this.siteGroupMap.size == 0) {
+    if (!this.selectedItem_ || this.siteGroupMap.size === 0) {
       return;
     }
     // Focus the site-entry to ensure the iron-list renders it, otherwise

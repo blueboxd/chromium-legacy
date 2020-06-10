@@ -23,6 +23,9 @@ class OriginTrialPolicy {
   virtual bool IsFeatureDisabled(base::StringPiece feature) const {
     return false;
   }
+  virtual bool IsFeatureDisabledForUser(base::StringPiece feature) const {
+    return false;
+  }
   virtual bool IsTokenDisabled(base::StringPiece token_signature) const {
     return false;
   }

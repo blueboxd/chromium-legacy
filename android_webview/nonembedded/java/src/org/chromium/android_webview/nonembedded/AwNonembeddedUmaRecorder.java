@@ -142,9 +142,13 @@ public class AwNonembeddedUmaRecorder implements UmaRecorder {
      */
     @Override
     public void recordUserAction(String name, long elapsedRealtimeMillis) {
-        // Assertion is disabled in release
-        // TODO(https://crbug.com/1082475) support recording user actions.
-        assert false : "Recording UserAction in non-embedded WebView processes isn't supported yet";
+        HistogramRecord record = HistogramRecord.newBuilder()
+                                         .setRecordType(RecordType.USER_ACTION)
+                                         .setHistogramName(name)
+                                         .setElapsedRealtimeMillis(elapsedRealtimeMillis)
+                                         .build();
+
+        recordHistogram(record);
     }
 
     private final Object mLock = new Object();

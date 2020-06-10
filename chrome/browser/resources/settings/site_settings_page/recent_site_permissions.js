@@ -96,7 +96,7 @@ Polymer({
    * @protected
    */
   currentRouteChanged(currentRoute) {
-    if (currentRoute.path == routes.SITE_SETTINGS.path) {
+    if (currentRoute.path === routes.SITE_SETTINGS.path) {
       this.populateList_();
     }
   },

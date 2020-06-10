@@ -84,7 +84,7 @@ Polymer({
    * @protected
    */
   currentRouteChanged(route) {
-    if (Router.getInstance().getCurrentRoute() !=
+    if (Router.getInstance().getCurrentRoute() !==
         routes.SITE_SETTINGS_DATA_DETAILS) {
       return;
     }
@@ -149,10 +149,10 @@ Polymer({
     // Frequently there are multiple cookies per site. To avoid showing a list
     // of '1 cookie', '1 cookie', ... etc, it is better to show the title of the
     // cookie to differentiate them.
-    if (item.type == 'cookie') {
+    if (item.type === 'cookie') {
       return item.title;
     }
-    if (item.type == 'quota') {
+    if (item.type === 'quota') {
       return item.totalUsage;
     }
     return categoryLabels[item.type];

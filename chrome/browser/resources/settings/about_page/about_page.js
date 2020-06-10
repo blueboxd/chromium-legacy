@@ -124,7 +124,7 @@ Polymer({
 
     // <if expr="not chromeos">
     this.startListening_();
-    if (Router.getInstance().getQueryParameters().get('checkForUpdate') ==
+    if (Router.getInstance().getQueryParameters().get('checkForUpdate') ===
         'true') {
       this.onUpdateStatusChanged_({status: UpdateStatus.CHECKING});
       this.aboutBrowserProxy_.requestUpdate();
@@ -224,7 +224,7 @@ Polymer({
       return;
     }
     this.showUpdateStatus_ =
-        this.currentUpdateStatusEvent_.status != UpdateStatus.DISABLED;
+        this.currentUpdateStatusEvent_.status !== UpdateStatus.DISABLED;
   },
 
   /**
@@ -246,7 +246,7 @@ Polymer({
    * @private
    */
   shouldShowLearnMoreLink_() {
-    return this.currentUpdateStatusEvent_.status == UpdateStatus.FAILED;
+    return this.currentUpdateStatusEvent_.status === UpdateStatus.FAILED;
   },
 
   /**
@@ -263,7 +263,7 @@ Polymer({
       case UpdateStatus.UPDATED:
         return this.i18nAdvanced('aboutUpgradeUpToDate');
       case UpdateStatus.UPDATING:
-        assert(typeof this.currentUpdateStatusEvent_.progress == 'number');
+        assert(typeof this.currentUpdateStatusEvent_.progress === 'number');
         const progressPercent = this.currentUpdateStatusEvent_.progress + '%';
 
         if (this.currentUpdateStatusEvent_.progress > 0) {
@@ -344,7 +344,7 @@ Polymer({
    * @private
    */
   checkStatus_(status) {
-    return this.currentUpdateStatusEvent_.status == status;
+    return this.currentUpdateStatusEvent_.status === status;
   },
 
   /** @private */

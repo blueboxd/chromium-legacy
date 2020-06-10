@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/infobars/coordinators/infobar_translate_coordinator.h"
 
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/sys_string_conversions.h"
@@ -29,7 +31,6 @@
 #import "ios/chrome/browser/ui/infobars/modals/infobar_translate_table_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

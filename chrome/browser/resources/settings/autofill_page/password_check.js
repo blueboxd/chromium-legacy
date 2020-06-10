@@ -219,9 +219,9 @@ Polymer({
   currentRouteChanged(currentRoute) {
     const router = Router.getInstance();
 
-    if (currentRoute.path == routes.CHECK_PASSWORDS.path &&
+    if (currentRoute.path === routes.CHECK_PASSWORDS.path &&
         !this.startCheckAutomaticallySucceeded &&
-        router.getQueryParameters().get('start') == 'true') {
+        router.getQueryParameters().get('start') === 'true') {
       this.passwordManager.recordPasswordCheckInteraction(
           PasswordManagerProxy.PasswordCheckInteraction
               .START_CHECK_AUTOMATICALLY);
@@ -444,7 +444,7 @@ Polymer({
    * @private
    */
   isCheckInProgress_() {
-    return this.status.state == CheckState.RUNNING;
+    return this.status.state === CheckState.RUNNING;
   },
 
   /**
@@ -453,7 +453,7 @@ Polymer({
    * @private
    */
   showsTimestamp_() {
-    return this.status.state == CheckState.IDLE &&
+    return this.status.state === CheckState.IDLE &&
         !!this.status.elapsedTimeSinceLastCheck;
   },
 
@@ -523,7 +523,7 @@ Polymer({
    */
   bannerImageSrc_(isDarkMode) {
     const type =
-        (this.status.state == CheckState.IDLE && !this.waitsForFirstCheck_()) ?
+        (this.status.state === CheckState.IDLE && !this.waitsForFirstCheck_()) ?
         'positive' :
         'neutral';
     const suffix = isDarkMode ? '_dark' : '';
@@ -539,7 +539,7 @@ Polymer({
     if (this.hasLeakedCredentials_()) {
       return false;
     }
-    return this.status.state == CheckState.CANCELED ||
+    return this.status.state === CheckState.CANCELED ||
         !this.hasLeaksOrErrors_();
   },
 
@@ -612,7 +612,7 @@ Polymer({
    */
   computeIsSignedOut_() {
     if (!this.syncStatus_ || !this.syncStatus_.signedIn) {
-      return !this.storedAccounts_ || this.storedAccounts_.length == 0;
+      return !this.storedAccounts_ || this.storedAccounts_.length === 0;
     }
     return !!this.syncStatus_.hasError;
   },

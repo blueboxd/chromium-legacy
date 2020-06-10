@@ -2,22 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 #import <UIKit/UIKit.h>
 
-#import "remoting/ios/app/host_collection_view_cell.h"
-
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
-#import "remoting/ios/app/remoting_theme.h"
-#import "remoting/ios/app/view_utils.h"
-#import "remoting/ios/domain/host_info.h"
+#import <MaterialComponents/MaterialTypography.h>
 
 #include "base/strings/sys_string_conversions.h"
 #include "remoting/base/string_resources.h"
+#import "remoting/ios/app/host_collection_view_cell.h"
+#import "remoting/ios/app/remoting_theme.h"
+#import "remoting/ios/app/view_utils.h"
+#import "remoting/ios/domain/host_info.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 static const CGFloat kLinePadding = 2.f;
 static const CGFloat kHostCardIconInset = 10.f;

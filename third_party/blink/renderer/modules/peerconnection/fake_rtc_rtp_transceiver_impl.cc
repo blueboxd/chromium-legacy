@@ -9,7 +9,7 @@
 
 namespace blink {
 
-blink::WebMediaStreamTrack CreateWebMediaStreamTrack(
+MediaStreamComponent* CreateWebMediaStreamTrack(
     const std::string& id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   blink::WebMediaStreamSource web_source;
@@ -23,10 +23,10 @@ blink::WebMediaStreamTrack CreateWebMediaStreamTrack(
   // Takes ownership of |audio_source_ptr|.
   web_source.SetPlatformSource(std::move(audio_source_ptr));
 
-  blink::WebMediaStreamTrack web_track;
-  web_track.Initialize(web_source.Id(), web_source);
-  audio_source->ConnectToTrack(web_track);
-  return web_track;
+  MediaStreamComponent* component =
+      MakeGarbageCollected<MediaStreamComponent>(web_source.Id(), web_source);
+  audio_source->ConnectToTrack(component);
+  return component;
 }
 
 FakeRTCRtpSenderImpl::FakeRTCRtpSenderImpl(
@@ -71,7 +71,7 @@ FakeRTCRtpSenderImpl::DtlsTransportInformation() {
 
 blink::WebMediaStreamTrack FakeRTCRtpSenderImpl::Track() const {
   return track_id_ ? CreateWebMediaStreamTrack(*track_id_, task_runner_)
-                   : blink::WebMediaStreamTrack();  // null
+                   : nullptr;
 }
 
 Vector<String> FakeRTCRtpSenderImpl::StreamIds() const {
@@ -120,7 +120,7 @@ FakeRTCRtpReceiverImpl::FakeRTCRtpReceiverImpl(
     const std::string& track_id,
     std::vector<std::string> stream_ids,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : track_(CreateWebMediaStreamTrack(track_id, task_runner)),
+    : component_(CreateWebMediaStreamTrack(track_id, task_runner)),
       stream_ids_(std::move(stream_ids)) {}
 
 FakeRTCRtpReceiverImpl::FakeRTCRtpReceiverImpl(const FakeRTCRtpReceiverImpl&) =
@@ -155,8 +155,8 @@ FakeRTCRtpReceiverImpl::DtlsTransportInformation() {
   return dummy;
 }
 
-const blink::WebMediaStreamTrack& FakeRTCRtpReceiverImpl::Track() const {
-  return track_;
+MediaStreamComponent* FakeRTCRtpReceiverImpl::Track() const {
+  return component_;
 }
 
 Vector<String> FakeRTCRtpReceiverImpl::StreamIds() const {

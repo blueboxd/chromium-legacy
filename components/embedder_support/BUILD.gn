@@ -17,6 +17,7 @@ source_set("unit_tests") {
 
   deps = [
     "//base",
+    "//base/test:test_support",
     "//components/embedder_support",
     "//components/embedder_support/origin_trials",
     "//testing/gtest",

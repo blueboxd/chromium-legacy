@@ -9,6 +9,5 @@
     <ImageButton
         android:id="@+id/tab_strip_item_button"
         style="@style/BottomToolbarButton"
-        android:layout_width="@dimen/tab_strip_item_width"
         android:contentDescription="@string/accessibility_tabstrip_btn_close_tab" />
 </org.chromium.ui.widget.ViewLookupCachingFrameLayout>

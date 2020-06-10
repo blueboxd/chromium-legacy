@@ -107,7 +107,7 @@ Polymer({
    * @private
    */
   disableAddButton_() {
-    return this.getTrimmedNewWord_().length == 0 || this.isWordInvalid_();
+    return this.getTrimmedNewWord_().length === 0 || this.isWordInvalid_();
   },
 
   /**
@@ -173,7 +173,7 @@ Polymer({
    * @param {!Array<string>} removed
    */
   onCustomDictionaryChanged_(added, removed) {
-    const wasEmpty = this.words_.length == 0;
+    const wasEmpty = this.words_.length === 0;
 
     for (const word of removed) {
       this.arrayDelete('words_', word);
@@ -212,9 +212,9 @@ Polymer({
    * @param {!CustomEvent<!{key: string}>} e
    */
   onKeysPress_(e) {
-    if (e.detail.key == 'enter' && !this.disableAddButton_()) {
+    if (e.detail.key === 'enter' && !this.disableAddButton_()) {
       this.addWordFromInput_();
-    } else if (e.detail.key == 'esc') {
+    } else if (e.detail.key === 'esc') {
       e.detail.keyboardEvent.target.value = '';
     }
   },

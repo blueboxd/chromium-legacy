@@ -34,6 +34,7 @@ if (enable_java_templates) {
     "android_tool_prefix=" + rebase_path(android_tool_prefix, root_build_dir),
     "android_configuration_failure_dir=" +
         rebase_path(android_configuration_failure_dir, root_build_dir),
+    "final_android_sdk=$final_android_sdk"
   ]
   if (defined(android_secondary_abi_cpu)) {
     _secondary_label_info =

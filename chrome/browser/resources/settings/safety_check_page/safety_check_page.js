@@ -179,7 +179,7 @@ Polymer({
    * @return {boolean}
    */
   shouldShowChildren_: function() {
-    return this.parentStatus_ != SafetyCheckParentStatus.BEFORE;
+    return this.parentStatus_ !== SafetyCheckParentStatus.BEFORE;
   },
 
   /**

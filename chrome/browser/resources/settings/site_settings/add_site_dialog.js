@@ -64,7 +64,7 @@ Polymer({
   attached() {
     assert(this.category);
     assert(this.contentSetting);
-    assert(typeof this.hasIncognito != 'undefined');
+    assert(typeof this.hasIncognito !== 'undefined');
 
     this.$.dialog.showModal();
   },
@@ -76,7 +76,7 @@ Polymer({
   validate_() {
     // If input is empty, disable the action button, but don't show the red
     // invalid message.
-    if (this.$.site.value.trim() == '') {
+    if (this.$.site.value.trim() === '') {
       this.$.site.invalid = false;
       this.$.add.disabled = true;
       return;
@@ -120,7 +120,7 @@ Polymer({
   /** @private */
   showIncognitoSessionOnly_() {
     return this.hasIncognito && !loadTimeData.getBoolean('isGuest') &&
-        this.contentSetting != ContentSetting.SESSION_ONLY;
+        this.contentSetting !== ContentSetting.SESSION_ONLY;
   },
 
   /** @private */

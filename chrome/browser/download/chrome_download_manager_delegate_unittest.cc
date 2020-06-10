@@ -1136,17 +1136,10 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedAsActiveContent_Block) {
       download::DownloadItem::MixedContentStatus::BLOCK);
 }
 
-// TODO(crbug.com/1048957): Checking content settings crashes unit tests on
-// Android. It shouldn't.
-#if defined(OS_ANDROID)
-#define MAYBE_BlockedAsActiveContent_PolicyOverride \
-  DISABLED_BlockedAsActiveContent_PolicyOverride
-#else
-#define MAYBE_BlockedAsActiveContent_PolicyOverride \
-  BlockedAsActiveContent_PolicyOverride
-#endif
+// MIXEDSCRIPT content setting only applies to Desktop.
+#if !defined(OS_ANDROID)
 TEST_F(ChromeDownloadManagerDelegateTest,
-       MAYBE_BlockedAsActiveContent_PolicyOverride) {
+       BlockedAsActiveContent_PolicyOverride) {
   // Verifies that active mixed content download blocking is overridden by the
   // "Insecure content" site setting.
   const GURL kInsecureWarnableFile("http://example.com/foo.warn_for_testing");
@@ -1191,6 +1184,7 @@ TEST_F(ChromeDownloadManagerDelegateTest,
       download::DOWNLOAD_INTERRUPT_REASON_NONE,
       download::DownloadItem::MixedContentStatus::SAFE);
 }
+#endif  // !OS_ANDROID
 
 TEST_F(ChromeDownloadManagerDelegateTest, WithoutHistoryDbNextId) {
   delegate()->GetNextId(base::BindOnce(

@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_handler.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_answer_options_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_ice_candidate_platform.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_offer_options_platform.h"
@@ -185,10 +186,10 @@ String SerializeReceiver(const String& indent,
   StringBuilder result;
   result.Append("{\n");
   // track:'id',
-  DCHECK(!receiver.Track().IsNull());
+  DCHECK(receiver.Track());
   result.Append(indent);
   result.Append("  track:'");
-  result.Append(String(receiver.Track().Source().Id()));
+  result.Append(receiver.Track()->Source()->Id());
   result.Append("',\n");
   // streams:['id,'id'],
   result.Append(indent);

@@ -74,7 +74,12 @@ blink::PersistentBase::raw_
 extensions::GlobalShortcutListenerX11::x_display_
 gl::GLVisualPickerGLX::display_
 media::(anonymous namespace)::UserInputMonitorLinuxCore::x_record_display_
+media::cast::test::LinuxOutputWindow::display_
+remoting::(anonymous namespace)::LocalHotkeyInputMonitorX11::Core::x_record_display_
 remoting::(anonymous namespace)::LocalMouseInputMonitorX11::Core::x_record_display_
+remoting::ClipboardX11::display_
+remoting::XServerClipboard::display_
+Simulator::display_
 ui::ClipboardX11::X11Details::x_display_
 ui::X11EventSource::display_
 ui::X11MenuRegistrar::xdisplay_
@@ -96,6 +101,11 @@ net::(anonymous namespace)::SettingGetterImplGSettings::http_client_
 net::(anonymous namespace)::SettingGetterImplGSettings::https_client_
 net::(anonymous namespace)::SettingGetterImplGSettings::ftp_client_
 net::(anonymous namespace)::SettingGetterImplGSettings::socks_client_
+remoting::(anonymous namespace)::DisconnectWindowGtk::disconnect_window_
+remoting::(anonymous namespace)::DisconnectWindowGtk::message_
+remoting::(anonymous namespace)::GtkFileChooserOnUiThread::file_dialog_
+remoting::(anonymous namespace)::It2MeConfirmationDialogLinux::confirmation_window_
+remoting::ContinueWindowGtk::continue_window_
 ui::AXPlatformNodeAuraLinux::atk_hyperlink_
 PrintDialogGtk::dialog_
 

@@ -16,4 +16,10 @@ extern NSString* const kManageSyncCellAccessibilityIdentifier;
 // Accessibility identifier for the account list cell.
 extern NSString* const kAccountListItemAccessibilityIdentifier;
 
+// Accessibility identifier for the password leak check cell.
+extern NSString* const kPasswordLeakCheckItemAccessibilityIdentifier;
+
+// Accessibility identifier for the Safe Browsing cell.
+extern NSString* const kSafeBrowsingItemAccessibilityIdentifier;
+
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_GOOGLE_SERVICES_SETTINGS_CONSTANTS_H_

@@ -54,6 +54,8 @@ class ReaderModeIconView : public PageActionIconView,
   void OnResult(const dom_distiller::DistillabilityResult& result) override;
 
  private:
+  friend class ReaderModeIconViewBrowserTest;
+
   PrefService* pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ReaderModeIconView);

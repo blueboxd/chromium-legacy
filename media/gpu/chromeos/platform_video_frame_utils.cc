@@ -4,12 +4,15 @@
 
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
 
-#include "base/atomic_sequence_num.h"
+#include <limits>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/files/scoped_file.h"
+#include "base/no_destructor.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/synchronization/lock.h"
 #include "gpu/ipc/common/gpu_client_ids.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
@@ -37,11 +40,19 @@ gfx::GpuMemoryBufferHandle AllocateGpuMemoryBufferHandle(
   if (!buffer_format)
     return gmb_handle;
 
-  static base::AtomicSequenceNumber buffer_id_generator;
+  int gpu_memory_buffer_id;
+  {
+    static base::NoDestructor<base::Lock> id_lock;
+    static int next_gpu_memory_buffer_id = 0;
+    base::AutoLock lock(*id_lock);
+    CHECK_LT(next_gpu_memory_buffer_id, std::numeric_limits<int>::max());
+    gpu_memory_buffer_id = next_gpu_memory_buffer_id++;
+  }
+
   // TODO(hiroh): Rename the client id to more generic one.
   gmb_handle = factory->CreateGpuMemoryBuffer(
-      gfx::GpuMemoryBufferId(buffer_id_generator.GetNext()), coded_size,
-      *buffer_format, buffer_usage, gpu::kPlatformVideoFramePoolClientId,
+      gfx::GpuMemoryBufferId(gpu_memory_buffer_id), coded_size, *buffer_format,
+      buffer_usage, gpu::kPlatformVideoFramePoolClientId,
       gfx::kNullAcceleratedWidget);
   DCHECK(gmb_handle.is_null() || gmb_handle.type != gfx::NATIVE_PIXMAP ||
          VideoFrame::NumPlanes(pixel_format) ==

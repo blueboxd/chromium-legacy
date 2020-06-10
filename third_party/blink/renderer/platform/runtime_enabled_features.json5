@@ -386,10 +386,6 @@
       status: "experimental",
     },
     {
-      name: "CSS3TextBreakAnywhere",
-      status: "stable",
-    },
-    {
       name: "CSSAspectRatioProperty",
       status: "experimental",
     },

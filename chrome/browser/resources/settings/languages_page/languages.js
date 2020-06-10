@@ -305,7 +305,7 @@ Polymer({
    * @private
    */
   preferredLanguagesPrefChanged_() {
-    if (this.prefs == undefined || this.languages == undefined) {
+    if (this.prefs === undefined || this.languages === undefined) {
       return;
     }
 
@@ -346,7 +346,7 @@ Polymer({
    * @private
    */
   spellCheckDictionariesPrefChanged_() {
-    if (this.prefs == undefined || this.languages == undefined) {
+    if (this.prefs === undefined || this.languages === undefined) {
       return;
     }
 
@@ -407,7 +407,7 @@ Polymer({
 
   /** @private */
   translateLanguagesPrefChanged_() {
-    if (this.prefs == undefined || this.languages == undefined) {
+    if (this.prefs === undefined || this.languages === undefined) {
       return;
     }
 
@@ -602,8 +602,8 @@ Polymer({
       prospectiveUILanguage) {
     const translateCode = this.convertLanguageCodeForTranslate(code);
     return supportsTranslate && !translateBlockedSet.has(translateCode) &&
-        translateCode != translateTarget &&
-        (!prospectiveUILanguage || code != prospectiveUILanguage);
+        translateCode !== translateTarget &&
+        (!prospectiveUILanguage || code !== prospectiveUILanguage);
   },
 
   // <if expr="not is_macosx">
@@ -707,7 +707,7 @@ Polymer({
    * @private
    */
   updateRemovableLanguages_() {
-    if (this.prefs == undefined || this.languages == undefined) {
+    if (this.prefs === undefined || this.languages === undefined) {
       return;
     }
 
@@ -761,7 +761,7 @@ Polymer({
    * @return {boolean}
    */
   requiresRestart() {
-    return this.originalProspectiveUILanguage_ !=
+    return this.originalProspectiveUILanguage_ !==
         this.languages.prospectiveUILanguage;
   },
   // </if>
@@ -778,7 +778,7 @@ Polymer({
    * @return {boolean} True if the language is for ARC IMEs.
    */
   isLanguageCodeForArcIme(languageCode) {
-    return languageCode == kArcImeLanguage;
+    return languageCode === kArcImeLanguage;
   },
 
   /**
@@ -819,7 +819,7 @@ Polymer({
       for (let i = 0; i < inputMethods.length; i++) {
         const inputMethod = inputMethods[i];
         const supportsOtherEnabledLanguages = inputMethod.languageCodes.some(
-            otherLanguageCode => otherLanguageCode != languageCode &&
+            otherLanguageCode => otherLanguageCode !== languageCode &&
                 this.isLanguageEnabled(otherLanguageCode));
         if (!supportsOtherEnabledLanguages) {
           this.removeInputMethod(inputMethod.id);
@@ -837,7 +837,7 @@ Polymer({
    */
   isOnlyTranslateBlockedLanguage(languageState) {
     return !languageState.translateEnabled &&
-        this.languages.enabled.filter(lang => !lang.translateEnabled).length ==
+        this.languages.enabled.filter(lang => !lang.translateEnabled).length ===
         1;
   },
 
@@ -847,12 +847,12 @@ Polymer({
    */
   canDisableLanguage(languageState) {
     // Cannot disable the prospective UI language.
-    if (languageState.language.code == this.languages.prospectiveUILanguage) {
+    if (languageState.language.code === this.languages.prospectiveUILanguage) {
       return false;
     }
 
     // Cannot disable the only enabled language.
-    if (this.languages.enabled.length == 1) {
+    if (this.languages.enabled.length === 1) {
       return false;
     }
 
@@ -870,7 +870,7 @@ Polymer({
     const otherInputMethodsEnabled =
         this.languages.enabled.some(function(otherLanguageState) {
           const otherLanguageCode = otherLanguageState.language.code;
-          if (otherLanguageCode == languageState.language.code) {
+          if (otherLanguageCode === languageState.language.code) {
             return false;
           }
           const inputMethods =
@@ -976,7 +976,7 @@ Polymer({
     }
 
     const main = languageCode.split('-')[0];
-    if (main == 'zh') {
+    if (main === 'zh') {
       // In Translate, general Chinese is not used, and the sub code is
       // necessary as a language code for the Translate server.
       return languageCode;
@@ -996,7 +996,7 @@ Polymer({
    */
   getLanguageCodeWithoutRegion(languageCode) {
     // The Norwegian languages fall under the 'no' macrolanguage.
-    if (languageCode == 'nb' || languageCode == 'nn') {
+    if (languageCode === 'nb' || languageCode === 'nn') {
       return 'no';
     }
 
@@ -1007,13 +1007,13 @@ Polymer({
     // Note that this value is saved in the user's local state. Even
     // if the installer is changed to use "he", because the installer does not
     // overwrite this value, the conversion is still needed for old users.
-    if (languageCode == 'iw') {
+    if (languageCode === 'iw') {
       return 'he';
     }
 
     // Match the characters before the hyphen.
     const result = languageCode.match(/^([^-]+)-?/);
-    assert(result.length == 2);
+    assert(result.length === 2);
     return result[1];
   },
 

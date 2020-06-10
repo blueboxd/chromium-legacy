@@ -31,6 +31,9 @@
 #include "content/public/renderer/render_view.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media.h"
+#include "media/remoting/receiver_controller.h"
+#include "media/remoting/remoting_constants.h"
+#include "media/remoting/stream_provider.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -346,6 +349,20 @@ bool CastContentRendererClient::DeferMediaLoad(
     bool render_frame_has_played_media_before,
     base::OnceClosure closure) {
   return RunWhenInForeground(render_frame, std::move(closure));
+}
+
+std::unique_ptr<::media::Demuxer>
+CastContentRendererClient::OverrideDemuxerForUrl(
+    content::RenderFrame* render_frame,
+    const GURL& url,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  if (render_frame->GetRenderFrameMediaPlaybackOptions()
+          .is_remoting_renderer_enabled() &&
+      url.SchemeIs(::media::remoting::kRemotingScheme)) {
+    return std::make_unique<::media::remoting::StreamProvider>(
+        ::media::remoting::ReceiverController::GetInstance(), task_runner);
+  }
+  return nullptr;
 }
 
 bool CastContentRendererClient::RunWhenInForeground(

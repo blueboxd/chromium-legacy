@@ -31,11 +31,6 @@
 namespace blink {
 namespace {
 
-bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
-  return frame && frame->GetPage()->GetChromeClient().IsPopup() &&
-         WebTestSupport::IsRunningWebTest();
-}
-
 // Helper function to filter out features that are not in origin trial in
 // ParsedDocumentPolicy.
 DocumentPolicy::ParsedDocumentPolicy FilterByOriginTrial(
@@ -84,10 +79,8 @@ SecurityContextInit::SecurityContextInit(scoped_refptr<SecurityOrigin> origin,
 // process of constructing the document.
 SecurityContextInit::SecurityContextInit(const DocumentInit& initializer)
     : csp_(initializer.GetContentSecurityPolicy()),
-      sandbox_flags_(initializer.GetSandboxFlags()) {
-  // The origin can be opaque based on sandbox flags.
-  InitializeOrigin(initializer);
-
+      sandbox_flags_(initializer.GetSandboxFlags()),
+      security_origin_(initializer.GetDocumentOrigin()) {
   // The secure context state is based on the origin.
   InitializeSecureContextMode(initializer);
 
@@ -140,78 +133,6 @@ void SecurityContextInit::ApplyPendingDataToDocument(Document& document) const {
   for (const auto& policy_entry : document_policy_.feature_state) {
     UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.DocumentPolicy.Header",
                               policy_entry.first);
-  }
-}
-
-void SecurityContextInit::InitializeOrigin(const DocumentInit& initializer) {
-  scoped_refptr<SecurityOrigin> document_origin =
-      initializer.GetDocumentOrigin();
-  if ((sandbox_flags_ & network::mojom::blink::WebSandboxFlags::kOrigin) !=
-      network::mojom::blink::WebSandboxFlags::kNone) {
-    scoped_refptr<SecurityOrigin> sandboxed_origin =
-        initializer.OriginToCommit() ? initializer.OriginToCommit()
-                                     : document_origin->DeriveNewOpaqueOrigin();
-
-    // If we're supposed to inherit our security origin from our
-    // owner, but we're also sandboxed, the only things we inherit are
-    // the origin's potential trustworthiness and the ability to
-    // load local resources. The latter lets about:blank iframes in
-    // file:// URL documents load images and other resources from
-    // the file system.
-    //
-    // Note: Sandboxed about:srcdoc iframe without "allow-same-origin" aren't
-    // allowed to load user's file, even if its parent can.
-    if (initializer.OwnerDocument()) {
-      if (document_origin->IsPotentiallyTrustworthy())
-        sandboxed_origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
-      if (document_origin->CanLoadLocalResources() &&
-          !initializer.IsSrcdocDocument())
-        sandboxed_origin->GrantLoadLocalResources();
-    }
-    security_origin_ = sandboxed_origin;
-  } else {
-    security_origin_ = document_origin;
-  }
-
-  // If we are a page popup in LayoutTests ensure we use the popup
-  // owner's security origin so the tests can possibly access the
-  // document via internals API.
-  auto* frame = initializer.GetFrame();
-  if (IsPagePopupRunningInWebTest(frame)) {
-    security_origin_ = frame->PagePopupOwner()
-                           ->GetDocument()
-                           .GetSecurityOrigin()
-                           ->IsolatedCopy();
-  }
-
-  if (initializer.HasSecurityContext()) {
-    if (Settings* settings = initializer.GetSettings()) {
-      if (!settings->GetWebSecurityEnabled()) {
-        // Web security is turned off. We should let this document access
-        // every other document. This is used primary by testing harnesses for
-        // web sites.
-        security_origin_->GrantUniversalAccess();
-      } else if (security_origin_->IsLocal()) {
-        if (settings->GetAllowUniversalAccessFromFileURLs()) {
-          // Some clients want local URLs to have universal access, but that
-          // setting is dangerous for other clients.
-          security_origin_->GrantUniversalAccess();
-        } else if (!settings->GetAllowFileAccessFromFileURLs()) {
-          // Some clients do not want local URLs to have access to other local
-          // URLs.
-          security_origin_->BlockLocalAccessFromLocalOrigin();
-        }
-      }
-    }
-  }
-
-  if (initializer.GrantLoadLocalResources())
-    security_origin_->GrantLoadLocalResources();
-
-  if (security_origin_->IsOpaque() && initializer.ShouldSetURL()) {
-    KURL url = initializer.Url().IsEmpty() ? BlankURL() : initializer.Url();
-    if (SecurityOrigin::Create(url)->IsPotentiallyTrustworthy())
-      security_origin_->SetOpaqueOriginIsPotentiallyTrustworthy(true);
   }
 }
 

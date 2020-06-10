@@ -115,18 +115,25 @@
     </oobe-dialog>
 
     <oobe-dialog
-        hidden="[[showOn_(ui_state, 'eol')]]" id="eol-dialog"
+        hidden="[[showOn_(ui_state, 'eol')]]" id="eolDialog"
         title-key="eolTitle"
         subtitle-key="eolMessage">
-      <hd-iron-icon slot="oobe-icon" id="eol-alert-icon"
+      <hd-iron-icon slot="oobe-icon" id="eolAlertIcon"
           icon1x="oobe-32:warning" icon2x="oobe-64:warning">
       </hd-iron-icon>
-      <div slot="footer" class="flex layout vertical center-justified center">
-        <!-- Use lock image indicating that end-of-life has been reached and
+      <div slot="footer" class="flex layout vertical">
+        <div id="adminMessageContainer"
+            hidden="[[isEmpty_(eolAdminMessage_)]]">
+          <div>[[i18nDynamic(locale, 'eolAdminMessageTitle')]]</div>
+          <div id="adminMessage">[[eolAdminMessage_]]</div>
+        </div>
+        <div class="flex layout vertical center-justified center">
+          <!-- Use lock image indicating that end-of-life has been reached and
              the device is disabled for further use  -->
-        <img class="update-illustration oobe-illustration"
-            srcset="images/1x/device-disabled.svg 1x,
-                    images/2x/device-disabled.svg 2x">
+          <img class="update-illustration oobe-illustration"
+          srcset="images/1x/device-disabled.svg 1x,
+                  images/2x/device-disabled.svg 2x">
+        </div>
       </div>
     </oobe-dialog>
 

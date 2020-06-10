@@ -108,8 +108,8 @@ Polymer({
   },
 
   show() {
-    this.isTriggered_ =
-        Router.getInstance().getCurrentRoute() == routes.TRIGGERED_RESET_DIALOG;
+    this.isTriggered_ = Router.getInstance().getCurrentRoute() ===
+        routes.TRIGGERED_RESET_DIALOG;
     if (this.isTriggered_) {
       this.browserProxy_.getTriggeredResetToolName().then(name => {
         this.resetRequestOrigin_ = 'triggeredreset';
@@ -120,7 +120,7 @@ Polymer({
       // For the non-triggered reset dialog, a '#cct' hash indicates that the
       // reset request came from the Chrome Cleanup Tool by launching Chrome
       // with the startup URL chrome://settings/resetProfileSettings#cct.
-      const origin = window.location.hash.slice(1).toLowerCase() == 'cct' ?
+      const origin = window.location.hash.slice(1).toLowerCase() === 'cct' ?
           'cct' :
           Router.getInstance().getQueryParameters().get('origin');
       this.resetRequestOrigin_ = origin || '';

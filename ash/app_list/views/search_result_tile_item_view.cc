@@ -545,7 +545,8 @@ void SearchResultTileItemView::Layout() {
         AppListConfig::instance(), rect, icon_->GetImage().size(),
         /*icon_scale=*/1.0f));
     title_->SetBoundsRect(AppListItemView::GetTitleBoundsForTargetViewBounds(
-        AppListConfig::instance(), rect, title_->GetPreferredSize()));
+        AppListConfig::instance(), rect, title_->GetPreferredSize(),
+        /*icon_scale=*/1.0f));
   } else {
     gfx::Rect icon_rect(rect);
     icon_rect.ClampToCenteredSize(icon_->GetImage().size());

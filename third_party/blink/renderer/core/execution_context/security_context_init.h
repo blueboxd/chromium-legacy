@@ -81,7 +81,6 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   void ApplyPendingDataToDocument(Document&) const;
 
  private:
-  void InitializeOrigin(const DocumentInit&);
   void InitializeDocumentPolicy(const DocumentInit&);
   void InitializeFeaturePolicy(const DocumentInit&);
   void InitializeSecureContextMode(const DocumentInit&);

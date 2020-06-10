@@ -42,6 +42,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
+#include "third_party/blink/public/common/privacy_budget/identifiability_study_participation.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/resources/grit/blink_image_resources.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -285,11 +286,14 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
 
   // Log the aliased context type used.
   if (!context_) {
-    RecordIdentifiabilityMetric(
-        blink::IdentifiableSurface::FromTypeAndInput(
-            blink::IdentifiableSurface::Type::kWebFeature,
-            static_cast<uint64_t>(blink::WebFeature::kCanvasRenderingContext)),
-        blink::IdentifiabilityDigestHelper(context_type));
+    if (IsUserInIdentifiabilityStudy()) {
+      RecordIdentifiabilityMetric(
+          blink::IdentifiableSurface::FromTypeAndInput(
+              blink::IdentifiableSurface::Type::kWebFeature,
+              static_cast<uint64_t>(
+                  blink::WebFeature::kCanvasRenderingContext)),
+          blink::IdentifiabilityDigestHelper(context_type));
+    }
     UMA_HISTOGRAM_ENUMERATION("Blink.Canvas.ContextType", context_type);
   }
 
@@ -377,12 +381,14 @@ ScriptPromise HTMLCanvasElement::convertToBlob(
     ScriptState* script_state,
     const ImageEncodeOptions* options,
     ExceptionState& exception_state) {
-  RecordIdentifiabilityMetric(
-      blink::IdentifiableSurface::FromTypeAndInput(
-          blink::IdentifiableSurface::Type::kCanvasReadback,
-          context_ ? context_->GetContextType()
-                   : CanvasRenderingContext::kContextTypeUnknown),
-      0);
+  if (IsUserInIdentifiabilityStudy()) {
+    RecordIdentifiabilityMetric(
+        blink::IdentifiableSurface::FromTypeAndInput(
+            blink::IdentifiableSurface::Type::kCanvasReadback,
+            context_ ? context_->GetContextType()
+                     : CanvasRenderingContext::kContextTypeUnknown),
+        0);
+  }
   return CanvasRenderingContextHost::convertToBlob(script_state, options,
                                                    exception_state);
 }
@@ -958,19 +964,22 @@ String HTMLCanvasElement::ToDataURLInternal(
       // Currently we only support three encoding types.
       NOTREACHED();
     }
-    const uint64_t context_digest =
-        context_ ? context_->IdentifiabilityTextDigest() : 0;
-    const uint64_t canvas_digest =
-        ResourceProvider() ? ResourceProvider()->GetIdentifiabilityDigest() : 0;
-    const uint64_t context_type =
-        context_ ? context_->GetContextType()
-                 : CanvasRenderingContext::kContextTypeUnknown;
-    const uint64_t final_digest =
-        ((context_digest ^ canvas_digest) << 4) | context_type;
-    RecordIdentifiabilityMetric(
-        blink::IdentifiableSurface::FromTypeAndInput(
-            blink::IdentifiableSurface::Type::kCanvasReadback, final_digest),
-        blink::IdentifiabilityDigestOfBytes(data_url.Span8()));
+    if (IsUserInIdentifiabilityStudy()) {
+      const uint64_t context_digest =
+          context_ ? context_->IdentifiabilityTextDigest() : 0;
+      const uint64_t canvas_digest =
+          ResourceProvider() ? ResourceProvider()->GetIdentifiabilityDigest()
+                             : 0;
+      const uint64_t context_type =
+          context_ ? context_->GetContextType()
+                   : CanvasRenderingContext::kContextTypeUnknown;
+      const uint64_t final_digest =
+          ((context_digest ^ canvas_digest) << 4) | context_type;
+      RecordIdentifiabilityMetric(
+          blink::IdentifiableSurface::FromTypeAndInput(
+              blink::IdentifiableSurface::Type::kCanvasReadback, final_digest),
+          blink::IdentifiabilityDigestOfBytes(data_url.Span8()));
+    }
     return data_url;
   }
 
@@ -1040,12 +1049,14 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
         GetExecutionContext());
   }
 
-  RecordIdentifiabilityMetric(
-      blink::IdentifiableSurface::FromTypeAndInput(
-          blink::IdentifiableSurface::Type::kCanvasReadback,
-          context_ ? context_->GetContextType()
-                   : CanvasRenderingContext::kContextTypeUnknown),
-      0);
+  if (IsUserInIdentifiabilityStudy()) {
+    RecordIdentifiabilityMetric(
+        blink::IdentifiableSurface::FromTypeAndInput(
+            blink::IdentifiableSurface::Type::kCanvasReadback,
+            context_ ? context_->GetContextType()
+                     : CanvasRenderingContext::kContextTypeUnknown),
+        0);
+  }
 
   if (async_creator) {
     async_creator->ScheduleAsyncBlobCreation(quality);

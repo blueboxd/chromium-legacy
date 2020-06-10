@@ -4,6 +4,9 @@
 
 #include "chrome/browser/nearby_sharing/nearby_process_manager.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "build/build_config.h"
@@ -129,6 +132,18 @@ NearbyProcessManager::GetOrStartNearbyConnections(Profile* profile) {
   return connections_.get();
 }
 
+sharing::mojom::NearbySharingDecoder*
+NearbyProcessManager::GetOrStartNearbySharingDecoder(Profile* profile) {
+  if (!IsActiveProfile(profile))
+    return nullptr;
+
+  // Launch a new Nearby Sharing Decoder interface if required.
+  if (!decoder_.is_bound())
+    BindNearbySharingDecoder();
+
+  return decoder_.get();
+}
+
 void NearbyProcessManager::StopProcess(Profile* profile) {
   if (!IsActiveProfile(profile))
     return;
@@ -137,6 +152,7 @@ void NearbyProcessManager::StopProcess(Profile* profile) {
 
   connections_host_.reset();
   connections_.reset();
+  decoder_.reset();
   sharing_process_.reset();
 
   if (was_running) {
@@ -239,6 +255,36 @@ void NearbyProcessManager::OnNearbyConnections(
 
 void NearbyProcessManager::OnNearbyProcessStopped() {
   StopProcess(active_profile_);
+}
+
+void NearbyProcessManager::BindNearbySharingDecoder() {
+  // Start a new process if there is none running yet.
+  if (!sharing_process_.is_bound())
+    LaunchNewProcess();
+
+  // Create the Nearby Sharing Decoder stack in the sandboxed process.
+  // base::Unretained() calls below are safe as |this| is a singleton.
+  sharing_process_->CreateNearbySharingDecoder(base::BindOnce(
+      &NearbyProcessManager::OnNearbySharingDecoder, base::Unretained(this),
+      decoder_.BindNewPipeAndPassReceiver()));
+
+  // Terminate the process if the Nearby Sharing Decoder interface disconnects
+  // as that indicated an incorrect state and we have to restart the process.
+  decoder_.set_disconnect_handler(base::BindOnce(
+      &NearbyProcessManager::OnNearbyProcessStopped, base::Unretained(this)));
+}
+
+void NearbyProcessManager::OnNearbySharingDecoder(
+    mojo::PendingReceiver<NearbySharingDecoderMojom> receiver,
+    mojo::PendingRemote<NearbySharingDecoderMojom> remote) {
+  if (!mojo::FusePipes(std::move(receiver), std::move(remote))) {
+    LOG(WARNING) << "Failed to initialize Nearby Sharing Decoder process";
+    StopProcess(active_profile_);
+    return;
+  }
+
+  for (auto& observer : observers_)
+    observer.OnNearbyProcessStarted();
 }
 
 void NearbyProcessManager::OnGetBluetoothAdapter(

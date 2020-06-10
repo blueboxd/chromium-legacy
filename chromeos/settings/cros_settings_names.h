@@ -216,6 +216,9 @@ extern const char kTPMFirmwareUpdateSettings[];
 COMPONENT_EXPORT(CHROMEOS_SETTINGS)
 extern const char kMinimumChromeVersionEnforced[];
 
+COMPONENT_EXPORT(CHROMEOS_SETTINGS)
+extern const char kMinimumChromeVersionEolMessage[];
+
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kCastReceiverName[];
 
 COMPONENT_EXPORT(CHROMEOS_SETTINGS) extern const char kUnaffiliatedArcAllowed[];

@@ -893,7 +893,8 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
   DCHECK(ddl);
   DCHECK(!scoped_output_device_paint_);
 
-  if (!MakeCurrent(true /* need_fbo0 */))
+  bool need_fbo0 = gl_surface_ && !gl_surface_->IsSurfaceless();
+  if (!MakeCurrent(need_fbo0))
     return false;
 
   if (draw_rectangle)
@@ -1076,7 +1077,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ddl);
 
-  if (!MakeCurrent(true /* need_fbo0 */))
+  if (!MakeCurrent(false /* need_fbo0 */))
     return;
 
   PullTextureUpdates(std::move(sync_tokens));

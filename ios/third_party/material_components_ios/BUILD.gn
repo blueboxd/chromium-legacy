@@ -1555,16 +1555,6 @@ _mdc_sources = [
   "src/components/schemes/Typography/src/Scheming/MaterialTypographyScheme+Scheming.h",
 ]
 
-config("public_configs") {
-  visibility = [ ":*" ]
-
-  # This is a hack to allow to include the header using the full path but
-  # still have them function as if they were included using framework style.
-  # TODO(crbug.com/1017165): remove once MaterialComponents is always built
-  # as a framework
-  include_dirs = [ "$root_out_dir/MaterialComponents.framework/Headers" ]
-}
-
 config("config") {
   visibility = [ ":*" ]
   include_dirs = _mdc_include_dirs
@@ -1575,10 +1565,6 @@ config("disable_deprecated_errors") {
     "-Wno-deprecated",
     "-Wno-deprecated-declarations",
   ]
-}
-
-source_set("material_components_ios_public_headers") {
-  public = _mdc_public_headers
 }
 
 target("ios_framework_bundle", "material_components_ios") {
@@ -1604,10 +1590,6 @@ target("ios_framework_bundle", "material_components_ios") {
     "//ios/third_party/motion_animator_objc",
     "//ios/third_party/motion_transitioning_objc",
   ]
-
-  public_deps = [ ":material_components_ios_public_headers" ]
-
-  public_configs = [ ":public_configs" ]
 
   configs -= [
     "//build/config/compiler:chromium_code",

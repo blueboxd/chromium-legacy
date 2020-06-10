@@ -30,7 +30,8 @@ enum class OriginTrialTokenStatus {
   kWrongVersion = 7,
   kFeatureDisabled = 8,
   kTokenDisabled = 9,
-  kMaxValue = kTokenDisabled
+  kFeatureDisabledForUser = 10,
+  kMaxValue = kFeatureDisabledForUser
 };
 
 // The Origin Trials Framework (OT) provides limited access to experimental

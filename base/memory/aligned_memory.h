@@ -11,8 +11,8 @@
 #include <type_traits>
 
 #include "base/base_export.h"
-#include "base/compiler_specific.h"
-#include "base/logging.h"
+#include "base/bits.h"
+#include "base/check.h"
 #include "base/process/process_metrics.h"
 #include "build/build_config.h"
 
@@ -68,8 +68,7 @@ inline bool IsAligned(uintptr_t val, size_t alignment) {
 #if SUPPORTS_BUILTIN_IS_ALIGNED
   return __builtin_is_aligned(val, alignment);
 #else
-  DCHECK(!((alignment - 1) & alignment))
-      << alignment << " is not a power of two";
+  DCHECK(bits::IsPowerOfTwo(alignment)) << alignment << " is not a power of 2";
   return (val & (alignment - 1)) == 0;
 #endif
 }
@@ -84,7 +83,7 @@ template <typename Type>
 inline bool IsPageAligned(Type val) {
   static_assert(std::is_integral<Type>::value || std::is_pointer<Type>::value,
                 "Integral or pointer type required");
-  return base::IsAligned(val, base::GetPageSize());
+  return IsAligned(val, GetPageSize());
 }
 
 }  // namespace base

@@ -81,10 +81,10 @@ Polymer({
     this.browserProxy_.reset().then(code => {
       // code is a CTAP error code. See
       // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#error-responses
-      if (code == 1 /* INVALID_COMMAND */) {
+      if (code === 1 /* INVALID_COMMAND */) {
         this.shown_ = ResetDialogPage.NO_RESET;
         this.finish_();
-      } else if (code != 0 /* unknown error */) {
+      } else if (code !== 0 /* unknown error */) {
         this.errorCode_ = code;
         this.shown_ = ResetDialogPage.RESET_FAILED;
         this.finish_();
@@ -93,9 +93,9 @@ Polymer({
         this.shown_ = ResetDialogPage.RESET_CONFIRM;
         this.browserProxy_.completeReset().then(code => {
           this.title_ = this.i18n('securityKeysResetTitle');
-          if (code == 0 /* SUCCESS */) {
+          if (code === 0 /* SUCCESS */) {
             this.shown_ = ResetDialogPage.RESET_SUCCESS;
-          } else if (code == 48 /* NOT_ALLOWED */) {
+          } else if (code === 48 /* NOT_ALLOWED */) {
             this.shown_ = ResetDialogPage.RESET_NOT_ALLOWED;
           } else /* unknown error */ {
             this.errorCode_ = code;

@@ -215,7 +215,7 @@ Polymer({
   /** @private */
   syncStatusChanged_() {
     const router = settings.Router.getInstance();
-    if (router.getCurrentRoute() == router.getRoutes().SYNC_ADVANCED &&
+    if (router.getCurrentRoute() === router.getRoutes().SYNC_ADVANCED &&
         this.syncControlsHidden_()) {
       router.navigateTo(router.getRoutes().SYNC);
     }

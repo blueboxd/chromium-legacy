@@ -206,7 +206,7 @@ Polymer({
 
   /** @private */
   addButtonClick_() {
-    assert(this.dialogPage_ == BioEnrollDialogPage.ENROLLMENTS);
+    assert(this.dialogPage_ === BioEnrollDialogPage.ENROLLMENTS);
 
     this.maxSamples_ = -1;  // Reset maxSamples_ before enrolling starts.
     /** @type {!CrFingerprintProgressArcElement} */ (this.$.arc).reset();
@@ -228,7 +228,7 @@ Polymer({
    * @param {!SampleResponse} response
    */
   onEnrollmentSample_(response) {
-    if (response.status != SampleStatus.OK) {
+    if (response.status !== SampleStatus.OK) {
       this.progressArcLabel_ =
           this.i18n('securityKeysBioEnrollmentTryAgainLabel');
       this.fire('iron-announce', {text: this.progressArcLabel_});
@@ -240,7 +240,7 @@ Polymer({
 
     assert(response.remaining >= 0);
 
-    if (this.maxSamples_ == -1) {
+    if (this.maxSamples_ === -1) {
       this.maxSamples_ = response.remaining + 1;
     }
 
@@ -257,11 +257,11 @@ Polymer({
    * @param {!EnrollmentResponse} response
    */
   onEnrollmentComplete_(response) {
-    if (response.code == Ctap2Status.ERR_KEEPALIVE_CANCEL) {
+    if (response.code === Ctap2Status.ERR_KEEPALIVE_CANCEL) {
       this.showEnrollmentsPage_();
       return;
     }
-    if (response.code != Ctap2Status.OK) {
+    if (response.code !== Ctap2Status.OK) {
       this.onError_(this.i18n('securityKeysBioEnrollmentEnrollingFailedLabel'));
       return;
     }
@@ -306,7 +306,7 @@ Polymer({
 
   /** @private */
   renameNewEnrollment_() {
-    assert(this.dialogPage_ == BioEnrollDialogPage.CHOOSE_NAME);
+    assert(this.dialogPage_ === BioEnrollDialogPage.CHOOSE_NAME);
     // Disable the confirm button to prevent concurrent submissions. It will
     // be re-enabled by dialogPageChanged_() where appropriate.
     this.confirmButtonDisabled_ = true;
@@ -326,7 +326,7 @@ Polymer({
 
   /** @private */
   cancel_() {
-    if (this.dialogPage_ == BioEnrollDialogPage.ENROLL) {
+    if (this.dialogPage_ === BioEnrollDialogPage.ENROLL) {
       // Cancel an ongoing enrollment.  Will cause the pending
       // enumerateEnrollments() promise to be resolved and proceed to the
       // enrollments page.
@@ -385,8 +385,8 @@ Polymer({
    * @return {string} The title string for the current dialog page.
    */
   dialogTitle_(dialogPage) {
-    if (dialogPage == BioEnrollDialogPage.ENROLL ||
-        dialogPage == BioEnrollDialogPage.CHOOSE_NAME) {
+    if (dialogPage === BioEnrollDialogPage.ENROLL ||
+        dialogPage === BioEnrollDialogPage.CHOOSE_NAME) {
       return this.i18n('securityKeysBioEnrollmentAddTitle');
     }
     return this.i18n('securityKeysBioEnrollmentDialogTitle');

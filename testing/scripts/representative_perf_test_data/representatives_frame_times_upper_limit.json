@@ -57,7 +57,9 @@
     },
     "css_value_type_shadow": {
       "ci_095": 1.284,
-      "avg": 49.386
+      "avg": 49.386,
+      "experimental": true,
+      "_comment": "crbug.com/1093313"
     },
     "nvidia_vertex_buffer_object": {
       "ci_095": 3.37,
@@ -87,7 +89,9 @@
     },
     "css_value_type_shadow": {
       "ci_095": 13.611,
-      "avg": 61.261
+      "avg": 61.261,
+      "experimental": true,
+      "_comment": "crbug.com/1093313"
     },
     "animometer_webgl_attrib_arrays": {
       "ci_095": 0.495,

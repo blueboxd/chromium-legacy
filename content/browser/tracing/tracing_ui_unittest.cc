@@ -20,22 +20,7 @@ class TracingUITest : public testing::Test {
   TracingUITest() {}
 };
 
-std::string GetOldStyleConfig() {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("categoryFilter", "filter1,-filter2");
-  dict->SetString("tracingRecordMode", "record-continuously");
-  dict->SetBoolean("useSystemTracing", true);
-
-  std::string results;
-  if (!base::JSONWriter::Write(*dict.get(), &results))
-    return "";
-
-  std::string data;
-  base::Base64Encode(results, &data);
-  return data;
-}
-
-std::string GetNewStyleConfig() {
+std::string GetConfig() {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   std::unique_ptr<base::Value> filter1(
       new base::Value(base::trace_event::MemoryDumpManager::kTraceCategory));
@@ -69,18 +54,9 @@ std::string GetNewStyleConfig() {
   return data;
 }
 
-TEST_F(TracingUITest, OldStyleConfig) {
+TEST_F(TracingUITest, ConfigParsing) {
   base::trace_event::TraceConfig config;
-  ASSERT_TRUE(TracingUI::GetTracingOptions(GetOldStyleConfig(), &config));
-  EXPECT_EQ(config.GetTraceRecordMode(),
-            base::trace_event::RECORD_CONTINUOUSLY);
-  EXPECT_EQ(config.ToCategoryFilterString(), "filter1,-filter2");
-  EXPECT_TRUE(config.IsSystraceEnabled());
-}
-
-TEST_F(TracingUITest, NewStyleConfig) {
-  base::trace_event::TraceConfig config;
-  ASSERT_TRUE(TracingUI::GetTracingOptions(GetNewStyleConfig(), &config));
+  ASSERT_TRUE(TracingUI::GetTracingOptions(GetConfig(), &config));
   EXPECT_EQ(config.GetTraceRecordMode(),
             base::trace_event::RECORD_CONTINUOUSLY);
   std::string expected(base::trace_event::MemoryDumpManager::kTraceCategory);

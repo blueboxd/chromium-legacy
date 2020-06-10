@@ -226,6 +226,7 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
 void ShutdownGLPlatform() {
   ClearBindingsGL();
 #if defined(USE_EGL)
+  GLSurfaceEGL::ShutdownOneOff();
   ClearBindingsEGL();
 #endif  // defined(USE_EGL)
 }

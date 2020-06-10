@@ -222,7 +222,8 @@ class SafeBrowsingUrlCheckerTest : public PlatformTest {
   }
 
   std::unique_ptr<SafeBrowsingUrlCheckerImpl> CreateSafeBrowsingUrlChecker(
-      bool real_time_lookup_enabled) {
+      bool real_time_lookup_enabled,
+      bool can_check_safe_browsing_db) {
     base::MockCallback<base::RepeatingCallback<content::WebContents*()>>
         mock_web_contents_getter;
     return std::make_unique<SafeBrowsingUrlCheckerImpl>(
@@ -230,7 +231,7 @@ class SafeBrowsingUrlCheckerTest : public PlatformTest {
         blink::mojom::ResourceType::kMainFrame,
         /*has_user_gesture=*/false, url_checker_delegate_,
         mock_web_contents_getter.Get(), real_time_lookup_enabled,
-        /*can_rt_check_subresource_url=*/false,
+        /*can_rt_check_subresource_url=*/false, can_check_safe_browsing_db,
         real_time_lookup_enabled ? url_lookup_service_->GetWeakPtr() : nullptr);
   }
 
@@ -242,8 +243,8 @@ class SafeBrowsingUrlCheckerTest : public PlatformTest {
 };
 
 TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_SafeUrl) {
-  auto safe_browsing_url_checker =
-      CreateSafeBrowsingUrlChecker(/*real_time_lookup_enabled=*/false);
+  auto safe_browsing_url_checker = CreateSafeBrowsingUrlChecker(
+      /*real_time_lookup_enabled=*/false, /*can_check_safe_browsing_db=*/true);
 
   GURL url("https://example.test/");
   database_manager_->SetThreatTypeForUrl(url, SB_THREAT_TYPE_SAFE,
@@ -261,8 +262,8 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_SafeUrl) {
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_DangerousUrl) {
-  auto safe_browsing_url_checker =
-      CreateSafeBrowsingUrlChecker(/*real_time_lookup_enabled=*/false);
+  auto safe_browsing_url_checker = CreateSafeBrowsingUrlChecker(
+      /*real_time_lookup_enabled=*/false, /*can_check_safe_browsing_db=*/true);
 
   GURL url("https://example.test/");
   database_manager_->SetThreatTypeForUrl(url, SB_THREAT_TYPE_URL_PHISHING,
@@ -280,8 +281,8 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_DangerousUrl) {
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_RedirectUrlsSafe) {
-  auto safe_browsing_url_checker =
-      CreateSafeBrowsingUrlChecker(/*real_time_lookup_enabled=*/false);
+  auto safe_browsing_url_checker = CreateSafeBrowsingUrlChecker(
+      /*real_time_lookup_enabled=*/false, /*can_check_safe_browsing_db=*/true);
 
   GURL origin_url("https://example.test/");
   database_manager_->SetThreatTypeForUrl(origin_url, SB_THREAT_TYPE_SAFE,
@@ -312,8 +313,8 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_RedirectUrlsSafe) {
 
 TEST_F(SafeBrowsingUrlCheckerTest,
        CheckUrl_RedirectUrlsOriginDangerousRedirectSafe) {
-  auto safe_browsing_url_checker =
-      CreateSafeBrowsingUrlChecker(/*real_time_lookup_enabled=*/false);
+  auto safe_browsing_url_checker = CreateSafeBrowsingUrlChecker(
+      /*real_time_lookup_enabled=*/false, /*can_check_safe_browsing_db=*/true);
 
   GURL origin_url("https://example.test/");
   database_manager_->SetThreatTypeForUrl(
@@ -348,8 +349,8 @@ TEST_F(SafeBrowsingUrlCheckerTest,
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_RealTimeEnabledAllowlistMatch) {
-  auto safe_browsing_url_checker =
-      CreateSafeBrowsingUrlChecker(/*real_time_lookup_enabled=*/true);
+  auto safe_browsing_url_checker = CreateSafeBrowsingUrlChecker(
+      /*real_time_lookup_enabled=*/true, /*can_check_safe_browsing_db=*/true);
 
   GURL url("https://example.test/");
   database_manager_->SetAllowlistResultForUrl(url, AsyncMatch::MATCH);
@@ -372,8 +373,8 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_RealTimeEnabledAllowlistMatch) {
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_RealTimeEnabledSafeUrl) {
-  auto safe_browsing_url_checker =
-      CreateSafeBrowsingUrlChecker(/*real_time_lookup_enabled=*/true);
+  auto safe_browsing_url_checker = CreateSafeBrowsingUrlChecker(
+      /*real_time_lookup_enabled=*/true, /*can_check_safe_browsing_db=*/true);
 
   GURL url("https://example.test/");
   database_manager_->SetAllowlistResultForUrl(url, AsyncMatch::NO_MATCH);
@@ -386,6 +387,25 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_RealTimeEnabledSafeUrl) {
   EXPECT_CALL(*url_checker_delegate_,
               StartDisplayingBlockingPageHelper(_, _, _, _, _))
       .Times(0);
+  safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
+
+  task_environment_->RunUntilIdle();
+}
+
+TEST_F(SafeBrowsingUrlCheckerTest,
+       CheckUrl_RealTimeEnabledSafeBrowsingDisabled) {
+  auto safe_browsing_url_checker = CreateSafeBrowsingUrlChecker(
+      /*real_time_lookup_enabled=*/true, /*can_check_safe_browsing_db=*/false);
+
+  GURL url("https://example.test/");
+  url_lookup_service_->SetThreatTypeForUrl(url, SB_THREAT_TYPE_URL_PHISHING);
+
+  base::MockCallback<SafeBrowsingUrlCheckerImpl::NativeCheckUrlCallback>
+      callback;
+  // Should still show blocking page because real time lookup is enabled.
+  EXPECT_CALL(*url_checker_delegate_,
+              StartDisplayingBlockingPageHelper(_, _, _, _, _))
+      .Times(1);
   safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
 
   task_environment_->RunUntilIdle();

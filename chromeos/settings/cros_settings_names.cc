@@ -383,6 +383,12 @@ const char kTPMFirmwareUpdateSettings[] = "cros.tpm_firmware_update_settings";
 // If the list is empty no restrictions will be applied.
 const char kMinimumChromeVersionEnforced[] = "cros.min_version_enforced.chrome";
 
+// String shown on the update required dialog on the the login screen containing
+// return instructions from the device administrator. It is shown when update
+// is required but the device has reached end of life.
+const char kMinimumChromeVersionEolMessage[] =
+    "cros.min_version_eol_message.chrome";
+
 // String indicating what name should be advertised for casting to.
 // If the string is empty or blank the system name will be used.
 const char kCastReceiverName[] = "cros.device.cast_receiver.name";

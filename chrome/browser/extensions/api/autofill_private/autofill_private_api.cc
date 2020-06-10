@@ -353,7 +353,19 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
   }
 
   if (use_existing_card) {
+    // Only updates when the card info changes.
+    if (existing_card && existing_card->Compare(credit_card) == 0)
+      return RespondNow(NoArguments());
+
+    // Record when nickname is updated.
+    if (credit_card.HasValidNickname() &&
+        existing_card->nickname() != credit_card.nickname()) {
+      base::RecordAction(
+          base::UserMetricsAction("AutofillCreditCardsEditedWithNickname"));
+    }
+
     personal_data->UpdateCreditCard(credit_card);
+    base::RecordAction(base::UserMetricsAction("AutofillCreditCardsEdited"));
   } else {
     personal_data->AddCreditCard(credit_card);
     base::RecordAction(base::UserMetricsAction("AutofillCreditCardsAdded"));

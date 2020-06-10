@@ -22,6 +22,8 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/version_updater/version_updater.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/policy/device_policy_builder.h"
+#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -36,6 +38,8 @@
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
+namespace em = enterprise_management;
+
 namespace chromeos {
 
 namespace {
@@ -44,7 +48,9 @@ constexpr char kUpdateRequiredScreen[] = "update-required-card";
 constexpr char kUpdateRequiredDialog[] = "update-required-dialog";
 constexpr char kUpdateRequiredUpdateButton[] = "update-button";
 constexpr char kUpdateProcess[] = "checking-downloading-update";
-constexpr char kUpdateRequiredEolDialog[] = "eol-dialog";
+constexpr char kUpdateRequiredEolDialog[] = "eolDialog";
+constexpr char kEolAdminMessageContainer[] = "adminMessageContainer";
+constexpr char kEolAdminMessage[] = "adminMessage";
 constexpr char kMeteredNetworkDialog[] = "update-need-permission-dialog";
 constexpr char KMeteredNetworkAcceptButton[] =
     "cellular-permission-accept-button";
@@ -59,6 +65,7 @@ constexpr char kUpdatingProgress[] = "updating-progress";
 
 constexpr char kWifiServicePath[] = "/service/wifi2";
 constexpr char kCellularServicePath[] = "/service/cellular1";
+constexpr char kDemoEolMessage[] = "Please return your device.";
 
 chromeos::OobeUI* GetOobeUI() {
   auto* host = chromeos::LoginDisplayHost::default_host();
@@ -138,6 +145,15 @@ class UpdateRequiredScreenTest : public OobeBaseTest {
     test::OobeJS().ExpectVisible(kUpdateRequiredScreen);
   }
 
+  void SetEolMessageAndWaitForSettingsChange(std::string eol_message) {
+    policy::DevicePolicyBuilder* const device_policy(
+        policy_helper_.device_policy());
+    em::ChromeDeviceSettingsProto& proto(device_policy->payload());
+    proto.mutable_minimum_chrome_version_eol_message()->set_value(eol_message);
+    policy_helper_.RefreshPolicyAndWaitUntilDeviceSettingsUpdated(
+        {chromeos::kMinimumChromeVersionEolMessage});
+  }
+
  protected:
   UpdateRequiredScreen* update_required_screen_;
   // Error screen - owned by OobeUI.
@@ -149,6 +165,7 @@ class UpdateRequiredScreenTest : public OobeBaseTest {
 
   // Handles network connections
   std::unique_ptr<chromeos::NetworkStateTestHelper> network_state_test_helper_;
+  policy::DevicePolicyCrosTestHelper policy_helper_;
   chromeos::DeviceStateMixin device_state_mixin_{
       &mixin_host_,
       chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
@@ -205,6 +222,22 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestEolReached) {
 
   test::OobeJS().ExpectVisiblePath(
       {kUpdateRequiredScreen, kUpdateRequiredEolDialog});
+  test::OobeJS().ExpectHiddenPath(
+      {kUpdateRequiredScreen, kUpdateRequiredDialog});
+}
+
+IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestEolReachedAdminMessage) {
+  update_engine_client()->set_eol_date(
+      base::DefaultClock::GetInstance()->Now() - base::TimeDelta::FromDays(1));
+  SetEolMessageAndWaitForSettingsChange(kDemoEolMessage);
+  ShowUpdateRequiredScreen();
+
+  test::OobeJS().ExpectVisiblePath(
+      {kUpdateRequiredScreen, kUpdateRequiredEolDialog});
+  test::OobeJS().ExpectVisiblePath(
+      {kUpdateRequiredScreen, kEolAdminMessageContainer});
+  test::OobeJS().ExpectElementText(kDemoEolMessage,
+                                   {kUpdateRequiredScreen, kEolAdminMessage});
   test::OobeJS().ExpectHiddenPath(
       {kUpdateRequiredScreen, kUpdateRequiredDialog});
 }

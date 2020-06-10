@@ -4,8 +4,12 @@
 
 #include "chrome/services/sharing/sharing_impl.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "chrome/services/sharing/nearby/nearby_connections.h"
+#include "chrome/services/sharing/nearby_decoder/nearby_decoder.h"
+#include "chrome/services/sharing/public/mojom/nearby_decoder.mojom.h"
 #include "chrome/services/sharing/webrtc/sharing_webrtc_connection.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
@@ -53,6 +57,17 @@ void SharingImpl::CreateNearbyConnections(
       remote.InitWithNewPipeAndPassReceiver(), std::move(host),
       base::BindOnce(&SharingImpl::NearbyConnectionsDisconnected,
                      weak_ptr_factory_.GetWeakPtr()));
+  std::move(callback).Run(std::move(remote));
+}
+
+void SharingImpl::CreateNearbySharingDecoder(
+    CreateNearbySharingDecoderCallback callback) {
+  // Reset old instance of Nearby Sharing Decoder stack.
+  nearby_decoder_.reset();
+
+  mojo::PendingRemote<sharing::mojom::NearbySharingDecoder> remote;
+  nearby_decoder_ = std::make_unique<NearbySharingDecoder>(
+      remote.InitWithNewPipeAndPassReceiver());
   std::move(callback).Run(std::move(remote));
 }
 

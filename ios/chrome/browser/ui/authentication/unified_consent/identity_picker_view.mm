@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_picker_view.h"
 
+#import <MaterialComponents/MaterialInk.h>
+
 #include "base/check.h"
 #include "base/feature_list.h"
 #import "ios/chrome/browser/ui/authentication/authentication_constants.h"
@@ -14,7 +16,6 @@
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
-#import "ios/third_party/material_components_ios/src/components/Ink/src/MaterialInk.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

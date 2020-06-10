@@ -39,10 +39,10 @@ export let CategoryListItem;
  * @param {?string} other Tristate value (maybe, 'session only').
  */
 export function defaultSettingLabel(setting, enabled, disabled, other) {
-  if (setting == ContentSetting.BLOCK) {
+  if (setting === ContentSetting.BLOCK) {
     return disabled;
   }
-  if (setting == ContentSetting.ALLOW) {
+  if (setting === ContentSetting.ALLOW) {
     return enabled;
   }
 
@@ -150,7 +150,7 @@ Polymer({
       return Promise.resolve();
     }
 
-    if (category == ContentSettingsTypes.COOKIES &&
+    if (category === ContentSettingsTypes.COOKIES &&
         loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
       // Updates to the cookies label are handled by the
       // cookieSettingDescriptionChanged event listener.

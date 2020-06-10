@@ -295,4 +295,10 @@ bool RealTimeUrlLookupService::CanCheckSubresourceURL() const {
   return IsEnhancedProtectionEnabled(*pref_service_);
 }
 
+bool RealTimeUrlLookupService::CanCheckSafeBrowsingDb() const {
+  // Always return true, because consumer real time URL check only works when
+  // safe browsing is enabled.
+  return true;
+}
+
 }  // namespace safe_browsing

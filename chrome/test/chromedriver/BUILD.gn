@@ -184,9 +184,6 @@ source_set("automation_client_lib") {
     "net/websocket.h",
   ]
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
   # Also compile the generated files.
   sources += get_target_outputs(":embed_extension_in_cpp")
   sources += get_target_outputs(":embed_js_in_cpp")
@@ -266,9 +263,6 @@ source_set("lib") {
     "window_commands.h",
   ]
 
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-
   if (use_x11) {
     sources += [ "keycode_text_conversion_x.cc" ]
   }
@@ -316,9 +310,6 @@ source_set("lib") {
 executable("chromedriver") {
   testonly = true
   sources = [ "server/chromedriver_server.cc" ]
-
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   deps = [
     ":lib",
@@ -423,9 +414,6 @@ test("chromedriver_unittests") {
     "util_unittest.cc",
     "window_commands_unittest.cc",
   ]
-
-  # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   data = [
     "//chrome/test/data/chromedriver/",

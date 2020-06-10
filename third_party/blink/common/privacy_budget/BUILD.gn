@@ -11,6 +11,7 @@ source_set("privacy_budget") {
     "identifiability_metric_builder.cc",
     "identifiability_metrics.cc",
     "identifiability_study_participation.cc",
+    "identifiability_study_settings.cc",
     "identifiable_token_builder.cc",
   ]
 
@@ -29,6 +30,7 @@ source_set("unit_tests") {
     "identifiability_internal_templates_unittest.cc",
     "identifiability_metric_builder_unittest.cc",
     "identifiability_metrics_unittest.cc",
+    "identifiability_study_settings_unittest.cc",
     "identifiable_surface_unittest.cc",
     "identifiable_token_builder_unittest.cc",
     "identifiable_token_unittest.cc",

@@ -76,6 +76,11 @@ build directories under `out` for Release and Debug device and simulator
 builds, and generates an appropriate Xcode workspace
 (`out/build/all.xcworkspace`) as well.
 
+Warning: *do not open `out/build/products.xcodeproj` as this file does not
+configure the "Legacy Build System". If you do open this file, many things
+won't work properly (clicking on an error won't open the corresponding file,
+...).*
+
 More information about [developing with Xcode](xcode_tips.md).
 
 You can customize the build by editing the file `$HOME/.setup-gn` (create it if

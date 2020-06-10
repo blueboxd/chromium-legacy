@@ -24,9 +24,6 @@ XVFB_TEST_SCRIPT = TEST_FILE.replace('_unittest', '_test_script')
 
 def launch_process(args):
   """Launches a sub process to run through xvfb.py."""
-  # Disable openbox as long as xvfb requires xwmstartupcheck program to be
-  # compiled and run so that it can check when Openbox starts.
-  args.append("--no-openbox")
   return subprocess.Popen(
       [XVFB, XVFB_TEST_SCRIPT] + args, stdout=subprocess.PIPE,
       stderr=subprocess.STDOUT, env=os.environ.copy())

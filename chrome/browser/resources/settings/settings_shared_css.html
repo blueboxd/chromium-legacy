@@ -296,8 +296,8 @@
       }
 
       /* The |:empty| CSS selector only works when there is no whitespace.
-       * E.g. <div>[[foo]]</div> will be |:empty| when foo == ""; and
-       * <div> [[foo]] </div> will not be |:empty| when foo == "". Ensure there
+       * E.g. <div>[[foo]]</div> will be |:empty| when foo === ""; and
+       * <div> [[foo]] </div> will not be |:empty| when foo === "". Ensure there
        * is no extra whitespace when the contents of .secondary may be "".
        */
       .secondary:empty {

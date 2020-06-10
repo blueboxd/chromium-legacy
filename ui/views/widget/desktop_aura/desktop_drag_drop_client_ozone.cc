@@ -354,7 +354,8 @@ DesktopDragDropClientOzone::UpdateTargetAndCreateDropEvent(
 }
 
 void DesktopDragDropClientOzone::UpdateDragWidgetLocation() {
-  DCHECK(drag_context_);
+  if (!drag_context_)
+    return;
 
   float scale_factor =
       ui::GetScaleFactorForNativeView(drag_context_->widget->GetNativeWindow());

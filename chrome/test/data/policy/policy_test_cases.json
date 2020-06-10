@@ -5479,6 +5479,18 @@
     ]
   },
 
+  "MinimumChromeVersionEolMessage": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "MinimumChromeVersionEolMessage": "Please return your device."
+        },
+        "prefs": { "cros.min_version_eol_message.chrome": {} }
+      }
+    ]
+  },
+
   "DeviceLoginScreenAutoSelectCertificateForUrls": {},
 
   "UnaffiliatedArcAllowed": {

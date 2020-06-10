@@ -59,7 +59,7 @@ class TestManageProfileBrowserProxy extends TestBrowserProxy {
   /** @override */
   getProfileShortcutStatus() {
     this.methodCalled('getProfileShortcutStatus');
-    return Promise.resolve([this.profileShortcutStatus_]);
+    return Promise.resolve(this.profileShortcutStatus_);
   }
 
   /** @override */

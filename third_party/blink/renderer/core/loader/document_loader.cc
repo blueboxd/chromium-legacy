@@ -1617,6 +1617,11 @@ void DocumentLoader::InstallNewDocument(
     init = init.WithSandboxFlags(owner_document->GetSandboxFlags());
   }
 
+  // We've not set the requisite state on the DocumentInit. Calculate the origin
+  // and cache it, so repeated GetDocumentOrigin() invocations return the same
+  // object.
+  init.CalculateAndCacheDocumentOrigin();
+
   // A javascript: url or XSLT inherits CSP from the document in which it was
   // executed.
   ContentSecurityPolicy* csp =

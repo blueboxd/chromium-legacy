@@ -4,6 +4,10 @@
 
 #include "chrome/browser/sharing/webrtc/sharing_service_host.h"
 
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/sharing/mock_sharing_device_source.h"
@@ -47,6 +51,10 @@ class FakeSharingMojoService : public sharing::mojom::Sharing,
   void CreateNearbyConnections(
       mojo::PendingRemote<NearbyConnectionsHostMojom> host,
       CreateNearbyConnectionsCallback callback) override {
+    NOTIMPLEMENTED();
+  }
+  void CreateNearbySharingDecoder(
+      CreateNearbySharingDecoderCallback callback) override {
     NOTIMPLEMENTED();
   }
 

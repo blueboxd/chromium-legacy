@@ -2815,6 +2815,9 @@
   <message name="IDS_UPDATE_REQUIRED_UPDATING_MESSAGE" desc="The message of the update required dialog on the login screen to inform the user that the device is updating and will restart after the update is complete.">
     Device will restart when updates are complete.
   </message>
+  <message name="IDS_UPDATE_REQUIRED_EOL_ADMIN_MESSAGE" desc="The title of the message on the update required dialog on the login screen showing return instructions from the device administrator as the device has reached its end of life.">
+    Instructions from your device administrator:
+  </message>
 
   <!-- Update Required Notiifcation Strings-->
   <message name="IDS_UPDATE_REQUIRED_NO_NETWORK_TITLE_IMMEDIATE" desc="The title of the notification dialog informing the user that the device is not connected to the internet and it is last day to update the device.">

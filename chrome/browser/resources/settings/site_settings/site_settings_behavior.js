@@ -73,7 +73,7 @@ const SiteSettingsBehaviorImpl = {
    * @return {string} The URL with a scheme, or an empty string.
    */
   ensureUrlHasScheme(url) {
-    if (url.length == 0) {
+    if (url.length === 0) {
       return url;
     }
     return url.includes('://') ? url : 'http://' + url;
@@ -103,7 +103,7 @@ const SiteSettingsBehaviorImpl = {
    * @protected
    */
   computeIsSettingEnabled(setting) {
-    return setting != ContentSetting.BLOCK;
+    return setting !== ContentSetting.BLOCK;
   },
 
   /**
@@ -113,7 +113,7 @@ const SiteSettingsBehaviorImpl = {
    * @protected
    */
   toUrl(originOrPattern) {
-    if (originOrPattern.length == 0) {
+    if (originOrPattern.length === 0) {
       return null;
     }
     // TODO(finnur): Hmm, it would probably be better to ensure scheme on the
@@ -155,8 +155,8 @@ const SiteSettingsBehaviorImpl = {
     // TODO(patricialor): |exception.source| should be one of the values defined
     // in |SiteSettingSource|.
     let enforcement = /** @type {?chrome.settingsPrivate.Enforcement} */ (null);
-    if (exception.source == 'extension' || exception.source == 'HostedApp' ||
-        exception.source == 'platform_app' || exception.source == 'policy') {
+    if (exception.source === 'extension' || exception.source === 'HostedApp' ||
+        exception.source === 'platform_app' || exception.source === 'policy') {
       enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
     }
 
@@ -183,18 +183,18 @@ const SiteSettingsBehaviorImpl = {
    * @return {!Array<!ContentSettingsTypes>}
    */
   getCategoryList() {
-    if (this.contentTypes_.length == 0) {
+    if (this.contentTypes_.length === 0) {
       for (const typeName in ContentSettingsTypes) {
         const contentType = ContentSettingsTypes[typeName];
         // <if expr="not chromeos">
-        if (contentType == ContentSettingsTypes.PROTECTED_CONTENT) {
+        if (contentType === ContentSettingsTypes.PROTECTED_CONTENT) {
           continue;
         }
         // </if>
         // Some categories store their data in a custom way.
-        if (contentType == ContentSettingsTypes.COOKIES ||
-            contentType == ContentSettingsTypes.PROTOCOL_HANDLERS ||
-            contentType == ContentSettingsTypes.ZOOM_LEVELS) {
+        if (contentType === ContentSettingsTypes.COOKIES ||
+            contentType === ContentSettingsTypes.PROTOCOL_HANDLERS ||
+            contentType === ContentSettingsTypes.ZOOM_LEVELS) {
           continue;
         }
         this.contentTypes_.push(contentType);

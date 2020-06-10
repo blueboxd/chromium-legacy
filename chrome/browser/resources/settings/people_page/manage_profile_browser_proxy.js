@@ -50,7 +50,7 @@ export class ManageProfileBrowserProxy {
 
   /**
    * Returns whether the current profile has a shortcut.
-   * @return {!Promise<ProfileShortcutStatus>}
+   * @return {!Promise<!ProfileShortcutStatus>}
    */
   getProfileShortcutStatus() {}
 

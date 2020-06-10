@@ -470,13 +470,13 @@ Polymer({
     const numberOfMigratableCreditCard =
         creditCards.filter(card => card.metadata.isMigratable).length;
     // Check whether exist at least one local valid card for migration.
-    if (numberOfMigratableCreditCard == 0) {
+    if (numberOfMigratableCreditCard === 0) {
       return false;
     }
 
     // Update the display text depends on the number of migratable credit
     // cards.
-    this.migratableCreditCardsInfo_ = numberOfMigratableCreditCard == 1 ?
+    this.migratableCreditCardsInfo_ = numberOfMigratableCreditCard === 1 ?
         this.i18n('migratableCardsInfoSingle') :
         this.i18n('migratableCardsInfoMultiple');
 

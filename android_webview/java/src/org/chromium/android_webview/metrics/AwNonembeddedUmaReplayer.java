@@ -68,6 +68,17 @@ public class AwNonembeddedUmaReplayer {
     }
 
     /**
+     * Extract method arguments from the given {@link HistogramRecord} and call
+     * {@link org.chromium.base.metrics.UmaRecorder#recordUserAction}.
+     */
+    private static void replayUserAction(HistogramRecord proto) {
+        assert proto.getRecordType() == RecordType.USER_ACTION;
+
+        UmaRecorderHolder.get().recordUserAction(
+                proto.getHistogramName(), proto.getElapsedRealtimeMillis());
+    }
+
+    /**
      * Replay UMA API call record by calling that API method.
      *
      * @param methodCall {@link Bundle} that contains the UMA API type and arguments.
@@ -85,6 +96,9 @@ public class AwNonembeddedUmaReplayer {
                 break;
             case HISTOGRAM_SPARSE:
                 replaySparseHistogram(methodCall);
+                break;
+            case USER_ACTION:
+                replayUserAction(methodCall);
                 break;
             default:
                 Log.d(TAG, "Unrecognized record type");

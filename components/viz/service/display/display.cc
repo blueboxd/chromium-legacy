@@ -330,7 +330,8 @@ Display::~Display() {
 void Display::Initialize(DisplayClient* client,
                          SurfaceManager* surface_manager,
                          bool enable_shared_images,
-                         bool hw_support_for_multiple_refresh_rates) {
+                         bool hw_support_for_multiple_refresh_rates,
+                         size_t num_of_frames_to_toggle_interval) {
   DCHECK(client);
   DCHECK(surface_manager);
   gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
@@ -343,7 +344,8 @@ void Display::Initialize(DisplayClient* client,
 
   frame_rate_decider_ = std::make_unique<FrameRateDecider>(
       surface_manager_, this, hw_support_for_multiple_refresh_rates,
-      SupportsSetFrameRate(output_surface_.get()));
+      SupportsSetFrameRate(output_surface_.get()),
+      num_of_frames_to_toggle_interval);
 
   InitializeRenderer(enable_shared_images);
 

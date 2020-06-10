@@ -185,13 +185,13 @@ Polymer({
       if (success) {
         // Operation is complete. errorCode is a CTAP error code. See
         // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#error-responses
-        if (errorCode == 1 /* INVALID_COMMAND */) {
+        if (errorCode === 1 /* INVALID_COMMAND */) {
           this.shown_ = SetPINDialogPage.NO_PIN_SUPPORT;
           this.finish_();
-        } else if (errorCode == 52 /* temporarily locked */) {
+        } else if (errorCode === 52 /* temporarily locked */) {
           this.shown_ = SetPINDialogPage.REINSERT;
           this.finish_();
-        } else if (errorCode == 50 /* locked */) {
+        } else if (errorCode === 50 /* locked */) {
           this.shown_ = SetPINDialogPage.LOCKED;
           this.finish_();
         } else {
@@ -199,7 +199,7 @@ Polymer({
           this.shown_ = SetPINDialogPage.ERROR;
           this.finish_();
         }
-      } else if (errorCode == 0) {
+      } else if (errorCode === 0) {
         // A device can also signal that it is locked by returning zero
         // retries.
         this.shown_ = SetPINDialogPage.LOCKED;
@@ -304,13 +304,13 @@ Polymer({
         // is so obscure that we don't try to message it. Rather we just say
         // that it's too long because trimming the final character is the best
         // response by the user.
-        utf8Encoded[utf8Encoded.length - 1] == 0) {
+        utf8Encoded[utf8Encoded.length - 1] === 0) {
       return this.i18n('securityKeysPINTooLong');
     }
 
     // A PIN must contain at least four code-points. Javascript strings are
     // UCS-2 and the |length| property counts UCS-2 elements, not code-points.
-    // (For example, '\u{1f6b4}'.length == 2, but it's a single code-point.)
+    // (For example, '\u{1f6b4}'.length === 2, but it's a single code-point.)
     // Therefore, iterate over the string (which does yield codepoints) and
     // check that four or more were seen.
     let length = 0;
@@ -335,7 +335,7 @@ Polymer({
     if (1 < retries && retries <= 3) {
       return this.i18n('securityKeysPINIncorrectRetriesPl', retries.toString());
     }
-    if (retries == 1) {
+    if (retries === 1) {
       return this.i18n('securityKeysPINIncorrectRetriesSin');
     }
     return this.i18n('securityKeysPINIncorrect');
@@ -351,7 +351,7 @@ Polymer({
     // focus something else first, which is a hack that seems to solve the
     // problem.
     let preFocusTarget = this.$.newPIN;
-    if (preFocusTarget == focusTarget) {
+    if (preFocusTarget === focusTarget) {
       preFocusTarget = this.$.currentPIN;
     }
     window.setTimeout(function() {
@@ -367,7 +367,7 @@ Polymer({
   pinSubmitNew_() {
     if (this.showCurrentEntry_) {
       this.currentPINError_ = this.isValidPIN_(this.currentPIN_);
-      if (this.currentPINError_ != '') {
+      if (this.currentPINError_ !== '') {
         this.focusOn_(this.$.currentPIN);
         this.fire('iron-announce', {text: this.currentPINError_});
         this.fire('ui-ready');  // for test synchronization.
@@ -376,14 +376,14 @@ Polymer({
     }
 
     this.newPINError_ = this.isValidPIN_(this.newPIN_);
-    if (this.newPINError_ != '') {
+    if (this.newPINError_ !== '') {
       this.focusOn_(this.$.newPIN);
       this.fire('iron-announce', {text: this.newPINError_});
       this.fire('ui-ready');  // for test synchronization.
       return;
     }
 
-    if (this.newPIN_ != this.confirmPIN_) {
+    if (this.newPIN_ !== this.confirmPIN_) {
       this.confirmPINError_ = this.i18n('securityKeysPINMismatch');
       this.focusOn_(this.$.confirmPIN);
       this.fire('iron-announce', {text: this.confirmPINError_});
@@ -396,16 +396,16 @@ Polymer({
       // This call always completes the process so result[0] is always 1.
       // result[1] is a CTAP2 error code. See
       // https://fidoalliance.org/specs/fido-v2.0-rd-20180702/fido-client-to-authenticator-protocol-v2.0-rd-20180702.html#error-responses
-      if (result[1] == 0 /* SUCCESS */) {
+      if (result[1] === 0 /* SUCCESS */) {
         this.shown_ = SetPINDialogPage.SUCCESS;
         this.finish_();
-      } else if (result[1] == 52 /* temporarily locked */) {
+      } else if (result[1] === 52 /* temporarily locked */) {
         this.shown_ = SetPINDialogPage.REINSERT;
         this.finish_();
-      } else if (result[1] == 50 /* locked */) {
+      } else if (result[1] === 50 /* locked */) {
         this.shown_ = SetPINDialogPage.LOCKED;
         this.finish_();
-      } else if (result[1] == 49 /* PIN_INVALID */) {
+      } else if (result[1] === 49 /* PIN_INVALID */) {
         this.currentPINValid_ = false;
         this.retries_--;
         this.currentPINError_ = this.mismatchError_(this.retries_);
@@ -437,7 +437,7 @@ Polymer({
    * @private
    */
   isNonEmpty_(s) {
-    return s != '';
+    return s !== '';
   },
 
   /**

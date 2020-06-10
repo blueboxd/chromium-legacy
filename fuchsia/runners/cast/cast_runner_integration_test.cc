@@ -951,8 +951,8 @@ TEST_F(CastRunnerIntegrationTest, OnTerminated_WindowClose) {
   component_controller_.Unbind();
 }
 
-// Verifies that the ComponentController reports
-// TerminationReason::RUNNER_TERMINATED if Kill() is used.
+// Verifies that the ComponentController reports TerminationReason::EXITED and
+// exit code ZX_OK if Kill() is used.
 // TODO(https://crbug.com/1066833): Make this a WebRunner test.
 TEST_F(CastRunnerIntegrationTest, OnTerminated_ComponentKill) {
   const GURL url = test_server_.GetURL(kBlankAppUrl);
@@ -970,9 +970,10 @@ TEST_F(CastRunnerIntegrationTest, OnTerminated_ComponentKill) {
       });
   component_controller_.events().OnTerminated =
       [quit_loop = exit_code_loop.QuitClosure()](
-          int64_t, fuchsia::sys::TerminationReason reason) {
+          int64_t exit_code, fuchsia::sys::TerminationReason reason) {
         quit_loop.Run();
-        EXPECT_EQ(reason, fuchsia::sys::TerminationReason::RUNNER_TERMINATED);
+        EXPECT_EQ(reason, fuchsia::sys::TerminationReason::EXITED);
+        EXPECT_EQ(exit_code, ZX_OK);
       };
 
   // Kill() the component and wait for OnTerminated().

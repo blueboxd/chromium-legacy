@@ -14,7 +14,7 @@ test(t => {
     'FileSystemHandle': ['isFile', 'isDirectory', 'name', 'queryPermission', 'requestPermission'],
     'FileSystemFileHandle': ['getFile', 'createWritable'],
     'FileSystemDirectoryHandle': ['getFile', 'getDirectory', 'getEntries', 'removeEntry'],
-    'FileSystemWriter': ['write', 'truncate', 'close'],
+    'FileSystemWritableFileStream': ['write', 'truncate', 'close', 'seek'],
     'global': ['chooseFileSystemEntries'],
   });
   assert_true('getSystemDirectory' in self.FileSystemDirectoryHandle);

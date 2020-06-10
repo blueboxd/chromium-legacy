@@ -7,10 +7,11 @@
 
 #import <Foundation/Foundation.h>
 
+#import <MaterialComponents/MaterialCollectionCells.h>
+
 #include "base/compiler_specific.h"
 #import "base/ios/block_types.h"
 #import "ios/chrome/test/block_cleanup_test.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 @class CollectionViewController;
 

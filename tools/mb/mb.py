@@ -1445,7 +1445,6 @@ class MetaBuildWrapper(object):
                       or vals.get('cros_passthrough', False))
     is_mac = self.platform == 'darwin'
     is_win = self.platform == 'win32' or 'target_os="win"' in vals['gn_args']
-    is_cast_audio_only = 'is_cast_audio_only=true' in vals['gn_args']
 
     # This should be true if tests with type='windowed_test_launcher' are
     # expected to run using xvfb. For example, Linux Desktop, X11 CrOS and
@@ -1456,7 +1455,7 @@ class MetaBuildWrapper(object):
     # TODO(tonikitoo,msisov,fwang): Find a way to run tests for the Wayland
     # backend.
     use_xvfb = (self.platform == 'linux2' and not is_android and not is_fuchsia
-                and not is_cros_device and not is_cast_audio_only)
+                and not is_cros_device)
 
     asan = 'is_asan=true' in vals['gn_args']
     msan = 'is_msan=true' in vals['gn_args']
@@ -1533,7 +1532,6 @@ class MetaBuildWrapper(object):
       ]
     elif use_xvfb and test_type == 'windowed_test_launcher':
       extra_files.append('../../testing/xvfb.py')
-      extra_files.append('xwmstartupcheck')
       cmdline += [
           '../../testing/xvfb.py',
           './' + str(executable) + executable_suffix,
@@ -1547,8 +1545,6 @@ class MetaBuildWrapper(object):
           '--msan=%d' % msan,
           '--tsan=%d' % tsan,
           '--cfi-diag=%d' % cfi_diag,
-          # Bringing up openbox is racy. See xvfb.py
-          '--wait-for-openbox',
       ]
     elif test_type in ('windowed_test_launcher', 'console_test_launcher'):
       cmdline += [

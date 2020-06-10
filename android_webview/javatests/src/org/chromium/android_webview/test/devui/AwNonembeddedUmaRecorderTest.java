@@ -148,6 +148,22 @@ public class AwNonembeddedUmaRecorderTest {
 
     @Test
     @MediumTest
+    public void testRecordUserAction() throws Throwable {
+        String histogramName = "testRecordUserAction";
+        long elapsedRealtimeMillis = 123456789101112L;
+        HistogramRecord recordProto = HistogramRecord.newBuilder()
+                                              .setRecordType(RecordType.USER_ACTION)
+                                              .setHistogramName(histogramName)
+                                              .setElapsedRealtimeMillis(elapsedRealtimeMillis)
+                                              .setMetadata(TEST_METADATA)
+                                              .build();
+        mUmaRecorder.recordUserAction(histogramName, elapsedRealtimeMillis);
+        byte[] recordedData = MockMetricsBridgeService.getReceivedDataAfter(1);
+        Assert.assertArrayEquals(recordProto.toByteArray(), recordedData);
+    }
+
+    @Test
+    @MediumTest
     public void testRecordMultipleHistograms() throws Throwable {
         String histogramName = "testRecordMultipleSparseHistograms";
         HistogramRecord recordProto = HistogramRecord.newBuilder()

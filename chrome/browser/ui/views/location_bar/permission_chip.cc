@@ -135,11 +135,12 @@ void PermissionChip::Show(permissions::PermissionPrompt::Delegate* delegate) {
 
 void PermissionChip::Hide() {
   SetVisible(false);
-  animation_->Hide();
+  timer_.AbandonAndStop();
   delegate_ = nullptr;
   if (prompt_bubble_)
     prompt_bubble_->GetWidget()->Close();
   already_recorded_interaction_ = false;
+  PreferredSizeChanged();
 }
 
 gfx::Size PermissionChip::CalculatePreferredSize() const {

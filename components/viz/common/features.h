@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_COMMON_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "components/viz/common/viz_common_export.h"
 
@@ -36,6 +37,7 @@ VIZ_COMMON_EXPORT bool IsDynamicColorGamutEnabled();
 VIZ_COMMON_EXPORT bool IsUsingVizForWebView();
 VIZ_COMMON_EXPORT bool IsUsingVizFrameSubmissionForWebView();
 VIZ_COMMON_EXPORT bool IsUsingPreferredIntervalForVideo();
+VIZ_COMMON_EXPORT int NumOfFramesToToggleInterval();
 VIZ_COMMON_EXPORT bool ShouldUseRealBuffersForPageFlipTest();
 VIZ_COMMON_EXPORT bool ShouldSplitPartiallyOccludedQuads();
 VIZ_COMMON_EXPORT bool ShouldWebRtcLogCapturePipeline();

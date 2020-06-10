@@ -1187,7 +1187,7 @@
   },
   "midi_unittests": {
     "label": "//media/midi:midi_unittests",
-    "type": "console_test_launcher",
+    "type": "windowed_test_launcher",
   },
   "mini_installer": {
     "label": "//chrome/installer/mini_installer:mini_installer",

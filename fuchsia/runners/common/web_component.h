@@ -30,7 +30,8 @@ class WebContentRunner;
 // (e.g. Cast applications) can extend this class to configure the Frame to
 // their needs, publish additional APIs, etc.
 class WebComponent : public fuchsia::sys::ComponentController,
-                     public fuchsia::ui::app::ViewProvider {
+                     public fuchsia::ui::app::ViewProvider,
+                     public fuchsia::web::NavigationEventListener {
  public:
   // Creates a WebComponent encapsulating a web.Frame. A ViewProvider service
   // will be published to the service-directory specified by |startup_context|,
@@ -71,6 +72,13 @@ class WebComponent : public fuchsia::sys::ComponentController,
       fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
       fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services)
       override;
+
+  // fuchsia::web::NavigationEventListener implementation.
+  // Used to detect when the Frame enters an error state (e.g. the top-level
+  // content's Renderer process crashes).
+  void OnNavigationStateChanged(
+      fuchsia::web::NavigationState change,
+      OnNavigationStateChangedCallback callback) override;
 
   // Reports the supplied exit-code and reason to the |controller_binding_| and
   // requests that the |runner_| delete this component. The EXITED |reason| is
@@ -113,6 +121,11 @@ class WebComponent : public fuchsia::sys::ComponentController,
 
   bool component_started_ = false;
   bool enable_remote_debugging_ = false;
+
+  // Used to watch for failures of the Frame's web content, including Renderer
+  // process crashes.
+  fidl::Binding<fuchsia::web::NavigationEventListener>
+      navigation_listener_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(WebComponent);
 };

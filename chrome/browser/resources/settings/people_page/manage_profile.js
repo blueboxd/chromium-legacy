@@ -109,20 +109,21 @@ Polymer({
 
   /** @protected */
   currentRouteChanged() {
-    if (Router.getInstance().getCurrentRoute() == routes.MANAGE_PROFILE) {
+    if (Router.getInstance().getCurrentRoute() === routes.MANAGE_PROFILE) {
       if (this.profileName) {
         this.$.name.value = this.profileName;
       }
       if (loadTimeData.getBoolean('profileShortcutsEnabled')) {
         this.browserProxy_.getProfileShortcutStatus().then(status => {
-          if (status == ProfileShortcutStatus.PROFILE_SHORTCUT_SETTING_HIDDEN) {
+          if (status ===
+              ProfileShortcutStatus.PROFILE_SHORTCUT_SETTING_HIDDEN) {
             this.isProfileShortcutSettingVisible_ = false;
             return;
           }
 
           this.isProfileShortcutSettingVisible_ = true;
           this.hasProfileShortcut_ =
-              status == ProfileShortcutStatus.PROFILE_SHORTCUT_FOUND;
+              status === ProfileShortcutStatus.PROFILE_SHORTCUT_FOUND;
         });
       }
     }
@@ -147,7 +148,7 @@ Polymer({
    * @private
    */
   onProfileNameKeydown_(event) {
-    if (event.key == 'Escape') {
+    if (event.key === 'Escape') {
       event.target.value = this.profileName;
       event.target.blur();
     }

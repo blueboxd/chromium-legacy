@@ -238,8 +238,24 @@ const QuotesData* QuotesDataForLanguage(const AtomicString& lang) {
   std::string lowercase_lang = lang.LowerASCII().Utf8();
   Language key = {lowercase_lang.c_str(), 0, 0, 0, 0, nullptr};
   Language* match = std::lower_bound(g_languages, languages_end, key);
-  if (match == languages_end || strcmp(match->lang, key.lang))
-    return nullptr;
+
+  if (match == languages_end)
+    --match;
+
+  if (strcmp(match->lang, key.lang)) {
+    // No exact match, try to find without subtags.
+    std::size_t hyphen_offset = lowercase_lang.find('-');
+    if (hyphen_offset == std::string::npos)
+      return nullptr;
+
+    std::string locale = lowercase_lang.substr(0, hyphen_offset);
+    while (match != g_languages && strcmp(match->lang, locale.c_str()) > 0) {
+      --match;
+    }
+
+    if (strcmp(match->lang, locale.c_str()))
+      return nullptr;
+  }
 
   if (!match->data) {
     auto data = QuotesData::Create(match->open1, match->close1, match->open2,

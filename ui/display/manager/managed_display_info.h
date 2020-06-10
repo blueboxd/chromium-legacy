@@ -40,6 +40,7 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayMode {
   ~ManagedDisplayMode();
   ManagedDisplayMode(const ManagedDisplayMode& other);
   ManagedDisplayMode& operator=(const ManagedDisplayMode& other);
+  bool operator==(const ManagedDisplayMode& other) const;
 
   // Returns the size in DIP which is visible to the user.
   gfx::Size GetSizeInDIP() const;
@@ -65,15 +66,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayMode {
   bool native_ = false;         // True if mode is native mode of the display.
   float device_scale_factor_ = 1.0f;  // The device scale factor of the mode.
 };
-
-inline bool operator==(const ManagedDisplayMode& lhs,
-                       const ManagedDisplayMode& rhs) {
-  return lhs.size() == rhs.size() &&
-         lhs.is_interlaced() == rhs.is_interlaced() &&
-         lhs.refresh_rate() == rhs.refresh_rate() &&
-         lhs.native() == rhs.native() &&
-         lhs.device_scale_factor() == rhs.device_scale_factor();
-}
 
 inline bool operator!=(const ManagedDisplayMode& lhs,
                        const ManagedDisplayMode& rhs) {

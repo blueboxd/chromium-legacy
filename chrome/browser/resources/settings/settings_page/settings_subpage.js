@@ -164,7 +164,7 @@ Polymer({
 
   /** @protected */
   currentRouteChanged(route) {
-    this.active_ = this.getAttribute('route-path') == route.path;
+    this.active_ = this.getAttribute('route-path') === route.path;
     if (this.active_ && this.searchLabel && this.preserveSearchTerm) {
       this.getSearchField_().then(() => this.restoreSearchInput_());
     }
@@ -172,7 +172,7 @@ Polymer({
 
   /** @private */
   onActiveChanged_() {
-    if (this.lastActiveValue_ == this.active_) {
+    if (this.lastActiveValue_ === this.active_) {
       return;
     }
     this.lastActiveValue_ = this.active_;
@@ -246,6 +246,6 @@ Polymer({
   // Override FindShortcutBehavior methods.
   searchInputHasFocus() {
     const field = this.$$('cr-search-field');
-    return field.getSearchInput() == field.shadowRoot.activeElement;
+    return field.getSearchInput() === field.shadowRoot.activeElement;
   },
 });

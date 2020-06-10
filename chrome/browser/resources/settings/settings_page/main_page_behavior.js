@@ -148,9 +148,9 @@ cr.define('settings', function() {
       const routes = /** @type {!settings.MinimumRoutes} */ (
           settings.Router.getInstance().getRoutes());
       return (
-                 this.tagName == 'SETTINGS-BASIC-PAGE'
+                 this.tagName === 'SETTINGS-BASIC-PAGE'
                  // <if expr="chromeos">
-                 || this.tagName == 'OS-SETTINGS-PAGE'
+                 || this.tagName === 'OS-SETTINGS-PAGE'
                  // </if>
                  ) &&
           routes.ADVANCED && routes.ADVANCED.contains(route);
@@ -168,7 +168,7 @@ cr.define('settings', function() {
      */
     ensureSectionForRoute_(route) {
       const section = this.getSection(route.section);
-      if (section != null) {
+      if (section !== null) {
         return Promise.resolve(section);
       }
 
@@ -310,10 +310,10 @@ cr.define('settings', function() {
       const newState = transition[1];
       assert(this.validTransitions_.get(oldState).has(newState));
 
-      if (oldState == RouteState.TOP_LEVEL) {
-        if (newState == RouteState.SECTION) {
+      if (oldState === RouteState.TOP_LEVEL) {
+        if (newState === RouteState.SECTION) {
           this.scrollToSection_(newRoute);
-        } else if (newState == RouteState.SUBPAGE) {
+        } else if (newState === RouteState.SUBPAGE) {
           this.enterSubpage_(newRoute);
         }
         // Nothing to do here for the case of RouteState.DIALOG or TOP_LEVEL.
@@ -322,20 +322,20 @@ cr.define('settings', function() {
         return;
       }
 
-      if (oldState == RouteState.SECTION) {
-        if (newState == RouteState.SECTION) {
+      if (oldState === RouteState.SECTION) {
+        if (newState === RouteState.SECTION) {
           this.scrollToSection_(newRoute);
-        } else if (newState == RouteState.SUBPAGE) {
+        } else if (newState === RouteState.SUBPAGE) {
           this.enterSubpage_(newRoute);
-        } else if (newState == RouteState.TOP_LEVEL) {
+        } else if (newState === RouteState.TOP_LEVEL) {
           this.scroller.scrollTop = 0;
         }
         // Nothing to do here for the case of RouteState.DIALOG.
         return;
       }
 
-      if (oldState == RouteState.SUBPAGE) {
-        if (newState == RouteState.SECTION) {
+      if (oldState === RouteState.SUBPAGE) {
+        if (newState === RouteState.SECTION) {
           this.enterMainPage_(oldRoute);
 
           // Scroll to the corresponding section, only if the user explicitly
@@ -343,7 +343,7 @@ cr.define('settings', function() {
           if (!settings.Router.getInstance().lastRouteChangeWasPopstate()) {
             this.scrollToSection_(newRoute);
           }
-        } else if (newState == RouteState.SUBPAGE) {
+        } else if (newState === RouteState.SUBPAGE) {
           // Handle case where the two subpages belong to
           // different sections, but are linked to each other. For example
           // /storage and /accounts (in ChromeOS).
@@ -362,9 +362,9 @@ cr.define('settings', function() {
           // When going from a sub-subpage to its parent subpage, scroll
           // position is automatically restored, because we focus the
           // sub-subpage entry point.
-        } else if (newState == RouteState.TOP_LEVEL) {
+        } else if (newState === RouteState.TOP_LEVEL) {
           this.enterMainPage_(oldRoute);
-        } else if (newState == RouteState.DIALOG) {
+        } else if (newState === RouteState.DIALOG) {
           // The only known case currently for such a transition is from
           // /storage to /clearBrowserData.
           this.enterMainPage_(oldRoute);
@@ -372,18 +372,18 @@ cr.define('settings', function() {
         return;
       }
 
-      if (oldState == RouteState.INITIAL) {
-        if (newState == RouteState.SECTION) {
+      if (oldState === RouteState.INITIAL) {
+        if (newState === RouteState.SECTION) {
           this.scrollToSection_(newRoute);
-        } else if (newState == RouteState.SUBPAGE) {
+        } else if (newState === RouteState.SUBPAGE) {
           this.enterSubpage_(newRoute);
         }
         // Nothing to do here for the case of RouteState.DIALOG and TOP_LEVEL.
         return;
       }
 
-      if (oldState == RouteState.DIALOG) {
-        if (newState == RouteState.SUBPAGE) {
+      if (oldState === RouteState.DIALOG) {
+        if (newState === RouteState.SUBPAGE) {
           // The only known case currently for such a transition is from
           // /clearBrowserData back to /storage.
           this.enterSubpage_(newRoute);

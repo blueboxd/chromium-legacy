@@ -57,9 +57,10 @@
                 }
 
                 // Test resize wont reset scroll position.
-                window.resizeTo(window.innerWidth, 1000);
+                const oldHeight = window.innerHeight;
+                window.resizeTo(window.innerWidth, oldHeight - 100);
                 window.scrollTo(expectedScrollX, expectedScrollY);
-                window.resizeTo(window.innerWidth, 2000);
+                window.resizeTo(window.innerWidth, oldHeight);
                 assertEqual("resize preserves scroll position", window.scrollY, expectedScrollY);
 
                 // Test HOME/END operation.

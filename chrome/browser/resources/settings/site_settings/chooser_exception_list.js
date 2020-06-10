@@ -114,7 +114,7 @@ Polymer({
    * @private
    */
   chooserTypeChanged_() {
-    if (this.chooserType == ChooserType.NONE) {
+    if (this.chooserType === ChooserType.NONE) {
       return;
     }
 

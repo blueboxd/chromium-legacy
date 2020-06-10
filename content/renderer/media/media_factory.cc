@@ -18,6 +18,7 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/render_frame_media_playback_options.h"
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/batching_media_log.h"
 #include "content/renderer/media/inspector_media_event_handler.h"
@@ -91,8 +92,16 @@
 #endif
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
+// Enable remoting sender
 #include "media/remoting/courier_renderer_factory.h"    // nogncheck
 #include "media/remoting/renderer_controller.h"         // nogncheck
+#endif
+
+#if BUILDFLAG(IS_CHROMECAST)
+// Enable remoting receiver
+#include "media/remoting/receiver_controller.h"        // nogncheck
+#include "media/remoting/remoting_constants.h"         // nogncheck
+#include "media/remoting/remoting_renderer_factory.h"  // nogncheck
 #endif
 
 namespace {
@@ -155,6 +164,26 @@ void LogRoughness(media::MediaLog* media_log,
   media_log->SetProperty<media::MediaLogProperty::kVideoPlaybackRoughness>(
       roughness);
   media_log->SetProperty<media::MediaLogProperty::kFramerate>(fps);
+}
+
+std::unique_ptr<media::DefaultRendererFactory> CreateDefaultRendererFactory(
+    media::MediaLog* media_log,
+    media::DecoderFactory* decoder_factory,
+    content::RenderThreadImpl* render_thread,
+    content::RenderFrameImpl* render_frame) {
+#if defined(OS_ANDROID)
+  auto default_factory = std::make_unique<media::DefaultRendererFactory>(
+      media_log, decoder_factory,
+      base::BindRepeating(&content::RenderThreadImpl::GetGpuFactories,
+                          base::Unretained(render_thread)));
+#else
+  auto default_factory = std::make_unique<media::DefaultRendererFactory>(
+      media_log, decoder_factory,
+      base::BindRepeating(&content::RenderThreadImpl::GetGpuFactories,
+                          base::Unretained(render_thread)),
+      render_frame->CreateSpeechRecognitionClient());
+#endif
+  return default_factory;
 }
 
 }  // namespace
@@ -327,9 +356,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
   const WebPreferences webkit_preferences =
       render_frame_->GetWebkitPreferences();
   bool embedded_media_experience_enabled = false;
-  bool use_media_player_renderer = false;
 #if defined(OS_ANDROID)
-  use_media_player_renderer = UseMediaPlayerRenderer(url);
   embedded_media_experience_enabled =
       webkit_preferences.embedded_media_experience_enabled;
 #endif  // defined(OS_ANDROID)
@@ -360,9 +387,7 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
 
   base::WeakPtr<media::MediaObserver> media_observer;
   auto factory_selector = CreateRendererFactorySelector(
-      media_log.get(), use_media_player_renderer,
-      render_frame_->GetRenderFrameMediaPlaybackOptions()
-          .is_mojo_renderer_enabled(),
+      media_log.get(), url, render_frame_->GetRenderFrameMediaPlaybackOptions(),
       GetDecoderFactory(),
       std::make_unique<media::RemotePlaybackClientWrapperImpl>(client),
       &media_observer);
@@ -446,8 +471,6 @@ blink::WebMediaPlayer* MediaFactory::CreateMediaPlayer(
               .is_background_video_playback_enabled,
           render_frame_->GetRenderFrameMediaPlaybackOptions()
               .is_background_video_track_optimization_supported,
-          render_frame_->GetRenderFrameMediaPlaybackOptions()
-              .is_remoting_renderer_enabled(),
           GetContentClient()->renderer()->OverrideDemuxerForUrl(
               render_frame_, url, media_task_runner),
           std::move(power_status_helper)));
@@ -475,8 +498,8 @@ blink::WebEncryptedMediaClient* MediaFactory::EncryptedMediaClient() {
 std::unique_ptr<media::RendererFactorySelector>
 MediaFactory::CreateRendererFactorySelector(
     media::MediaLog* media_log,
-    bool use_media_player,
-    bool enable_mojo_renderer,
+    blink::WebURL url,
+    const RenderFrameMediaPlaybackOptions& renderer_media_playback_options,
     media::DecoderFactory* decoder_factory,
     std::unique_ptr<media::RemotePlaybackClientWrapper> client_wrapper,
     base::WeakPtr<media::MediaObserver>* out_media_observer) {
@@ -489,6 +512,11 @@ MediaFactory::CreateRendererFactorySelector(
 
   auto factory_selector = std::make_unique<media::RendererFactorySelector>();
   bool use_default_renderer_factory = true;
+  bool use_media_player_renderer = false;
+
+#if defined(OS_ANDROID)
+  use_media_player_renderer = UseMediaPlayerRenderer(url);
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
   DCHECK(interface_broker_);
@@ -503,7 +531,7 @@ MediaFactory::CreateRendererFactorySelector(
               render_thread->GetStreamTexureFactory(),
               render_frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
 
-  if (use_media_player) {
+  if (use_media_player_renderer) {
     factory_selector->AddBaseFactory(FactoryType::kMediaPlayer,
                                      std::move(media_player_factory));
     use_default_renderer_factory = false;
@@ -534,8 +562,8 @@ MediaFactory::CreateRendererFactorySelector(
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_MOJO_RENDERER)
-  DCHECK(!use_media_player);
-  if (enable_mojo_renderer) {
+  DCHECK(!use_media_player_renderer);
+  if (renderer_media_playback_options.is_mojo_renderer_enabled()) {
     use_default_renderer_factory = false;
 #if BUILDFLAG(ENABLE_CAST_RENDERER)
     factory_selector->AddBaseFactory(
@@ -565,18 +593,9 @@ MediaFactory::CreateRendererFactorySelector(
 #endif  // defined(OS_FUCHSIA)
 
   if (use_default_renderer_factory) {
-#if defined(OS_ANDROID)
-    auto default_factory = std::make_unique<media::DefaultRendererFactory>(
-        media_log, decoder_factory,
-        base::BindRepeating(&RenderThreadImpl::GetGpuFactories,
-                            base::Unretained(render_thread)));
-#else
-    auto default_factory = std::make_unique<media::DefaultRendererFactory>(
-        media_log, decoder_factory,
-        base::BindRepeating(&RenderThreadImpl::GetGpuFactories,
-                            base::Unretained(render_thread)),
-        render_frame_->CreateSpeechRecognitionClient());
-#endif
+    DCHECK(!use_media_player_renderer);
+    auto default_factory = CreateDefaultRendererFactory(
+        media_log, decoder_factory, render_thread, render_frame_);
     factory_selector->AddBaseFactory(FactoryType::kDefault,
                                      std::move(default_factory));
   }
@@ -605,6 +624,27 @@ MediaFactory::CreateRendererFactorySelector(
   factory_selector->AddConditionalFactory(
       FactoryType::kCourier, std::move(courier_factory), is_remoting_cb);
 #endif
+
+#if BUILDFLAG(IS_CHROMECAST)
+  if (renderer_media_playback_options.is_remoting_renderer_enabled()) {
+    auto default_factory = CreateDefaultRendererFactory(
+        media_log, decoder_factory, render_thread, render_frame_);
+    mojo::PendingRemote<media::mojom::Remotee> remotee;
+    interface_broker_->GetInterface(remotee.InitWithNewPipeAndPassReceiver());
+    auto remoting_renderer_factory =
+        std::make_unique<media::remoting::RemotingRendererFactory>(
+            std::move(remotee), std::move(default_factory),
+            render_thread->GetMediaThreadTaskRunner());
+    auto is_remoting_media = base::BindRepeating(
+        [](const GURL& url) -> bool {
+          return url.SchemeIs(media::remoting::kRemotingScheme);
+        },
+        url);
+    factory_selector->AddConditionalFactory(
+        FactoryType::kRemoting, std::move(remoting_renderer_factory),
+        is_remoting_media);
+  }
+#endif  // BUILDFLAG(IS_CHROMECAST)
 
   return factory_selector;
 }

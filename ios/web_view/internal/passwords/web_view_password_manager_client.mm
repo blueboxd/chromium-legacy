@@ -76,8 +76,8 @@ WebViewPasswordManagerClient::WebViewPasswordManagerClient(
       password_feature_manager_(pref_service, sync_service),
       credentials_filter_(
           this,
-          base::Bind(&WebViewPasswordManagerClient::GetSyncService,
-                     base::Unretained(this))),
+          base::BindRepeating(&WebViewPasswordManagerClient::GetSyncService,
+                              base::Unretained(this))),
       helper_(this) {
   saving_passwords_enabled_.Init(
       password_manager::prefs::kCredentialsEnableService, GetPrefs());

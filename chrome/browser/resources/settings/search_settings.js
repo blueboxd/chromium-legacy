@@ -78,7 +78,7 @@ cr.define('settings', function() {
       //
       // The latter throws an error during the automatic Polymer 2 conversion to
       // <dom-if><template...></dom-if> syntax.
-      if (node.nodeName == 'DOM-IF' && node.hasAttribute('route-path') &&
+      if (node.nodeName === 'DOM-IF' && node.hasAttribute('route-path') &&
           !node.if && !node['noSearch'] &&
           !node.hasAttribute(SKIP_SEARCH_CSS_ATTRIBUTE)) {
         request.queue_.addRenderTask(new RenderTask(request, node));
@@ -92,12 +92,13 @@ cr.define('settings', function() {
       if (node instanceof HTMLElement) {
         const element = /** @type {HTMLElement} */ (node);
         if (element.hasAttribute(SKIP_SEARCH_CSS_ATTRIBUTE) ||
-            element.hasAttribute('hidden') || element.style.display == 'none') {
+            element.hasAttribute('hidden') ||
+            element.style.display === 'none') {
           return;
         }
       }
 
-      if (node.nodeType == Node.TEXT_NODE) {
+      if (node.nodeType === Node.TEXT_NODE) {
         const textContent = node.nodeValue;
         if (textContent.trim().length === 0) {
           return;
@@ -174,14 +175,14 @@ cr.define('settings', function() {
     // Find corresponding SETTINGS-SECTION parent and make it visible.
     let parent = node;
     while (parent.nodeName !== 'SETTINGS-SECTION') {
-      parent = parent.nodeType == Node.DOCUMENT_FRAGMENT_NODE ?
+      parent = parent.nodeType === Node.DOCUMENT_FRAGMENT_NODE ?
           parent.host :
           parent.parentNode;
       if (!parent) {
         // |node| wasn't inside a SETTINGS-SECTION.
         return;
       }
-      if (parent.nodeName == 'SETTINGS-SUBPAGE') {
+      if (parent.nodeName === 'SETTINGS-SUBPAGE') {
         // TODO(dpapad): Cast to SettingsSubpageElement here.
         associatedControl = assert(
             parent.associatedControl,
@@ -498,7 +499,7 @@ cr.define('settings', function() {
       const observer = new MutationObserver(mutations => {
         const oldValue = mutations[0].oldValue.trim();
         const newValue = textNode.nodeValue.trim();
-        if (oldValue != newValue) {
+        if (oldValue !== newValue) {
           observer.disconnect();
           this.textObservers_.delete(observer);
           cr.search_highlight_utils.findAndRemoveHighlights(originalParentNode);
@@ -540,7 +541,7 @@ cr.define('settings', function() {
      *     query.
      */
     isSame(rawQuery) {
-      return this.rawQuery_ == rawQuery;
+      return this.rawQuery_ === rawQuery;
     }
 
     /**
@@ -588,7 +589,7 @@ cr.define('settings', function() {
     search(text, page) {
       // Cancel any pending requests if a request with different text is
       // submitted.
-      if (text != this.lastSearchedText_) {
+      if (text !== this.lastSearchedText_) {
         this.activeRequests_.forEach(function(request) {
           request.removeAllTextObservers();
           request.removeAllHighlightsAndBubbles();

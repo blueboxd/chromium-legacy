@@ -4,9 +4,10 @@
 
 #import <UIKit/UIKit.h>
 
+#import <MaterialComponents/MaterialTypography.h>
+
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/ui/util/text_region_mapper.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"

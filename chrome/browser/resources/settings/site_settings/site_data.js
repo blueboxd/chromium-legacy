@@ -127,7 +127,7 @@ Polymer({
    */
   currentRouteChanged(currentRoute) {
     GlobalScrollTargetBehaviorImpl.currentRouteChanged.call(this, currentRoute);
-    if (currentRoute == routes.SITE_SETTINGS_SITE_DATA) {
+    if (currentRoute === routes.SITE_SETTINGS_SITE_DATA) {
       this.isLoading_ = true;
       // Needed to fix iron-list rendering issue. The list will not render
       // correctly until a scroll occurs.
@@ -153,7 +153,7 @@ Polymer({
     // elements residing in this element's Shadow DOM.
     if (routes.SITE_SETTINGS_DATA_DETAILS) {
       const onNavigatedTo = () => this.async(() => {
-        if (this.lastSelected_ == null || this.sites.length == 0) {
+        if (this.lastSelected_ === null || this.sites.length === 0) {
           return;
         }
 
@@ -162,7 +162,7 @@ Polymer({
         this.lastSelected_ = null;
 
         const indexFromId =
-            this.sites.findIndex(site => site.site == lastSelectedSite);
+            this.sites.findIndex(site => site.site === lastSelectedSite);
 
         // If the site is no longer in |sites|, use the index as a fallback.
         // Since the sites are sorted, an alternative could be to select the
@@ -223,7 +223,7 @@ Polymer({
    * @private
    */
   computeRemoveLabel_(filter) {
-    if (filter.length == 0) {
+    if (filter.length === 0) {
       return loadTimeData.getString('siteSettingsCookieRemoveAll');
     }
     return loadTimeData.getString('siteSettingsCookieRemoveAllShown');
@@ -275,7 +275,7 @@ Polymer({
    */
   onConfirmDelete_() {
     this.$.confirmDeleteDialog.close();
-    if (this.filter.length == 0) {
+    if (this.filter.length === 0) {
       this.browserProxy_.removeAll().then(() => {
         this.sites = [];
       });
@@ -319,6 +319,6 @@ Polymer({
    */
   showRemoveThirdPartyCookies_() {
     return loadTimeData.getBoolean('enableRemovingAllThirdPartyCookies') &&
-        this.sites.length > 0 && this.filter.length == 0;
+        this.sites.length > 0 && this.filter.length === 0;
   },
 });

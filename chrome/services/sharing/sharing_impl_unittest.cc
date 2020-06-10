@@ -4,9 +4,12 @@
 
 #include "chrome/services/sharing/sharing_impl.h"
 
+#include <utility>
+
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "chrome/services/sharing/nearby/test/mock_nearby_connections_host.h"
+#include "chrome/services/sharing/public/mojom/nearby_decoder.mojom.h"
 #include "chrome/services/sharing/webrtc/test/mock_sharing_connection_host.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,6 +22,7 @@ class SharingImplTest : public testing::Test {
       location::nearby::connections::MockNearbyConnectionsHost;
   using NearbyConnectionsMojom =
       location::nearby::connections::mojom::NearbyConnections;
+  using NearbySharingDecoderMojom = sharing::mojom::NearbySharingDecoder;
 
   SharingImplTest() {
     service_ =
@@ -55,6 +59,14 @@ class SharingImplTest : public testing::Test {
               remote->Bind(std::move(pending_remote));
             }));
     return host;
+  }
+
+  void CreateNearbySharingDecoder(
+      mojo::Remote<NearbySharingDecoderMojom>* remote) {
+    service()->CreateNearbySharingDecoder(base::BindLambdaForTesting(
+        [&](mojo::PendingRemote<NearbySharingDecoderMojom> pending_remote) {
+          remote->Bind(std::move(pending_remote));
+        }));
   }
 
  protected:
@@ -127,6 +139,29 @@ TEST_F(SharingImplTest, NearbyConnections_Disconnects) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(connections.is_connected());
+}
+
+TEST_F(SharingImplTest, NearbySharingDecoder_Create) {
+  mojo::Remote<NearbySharingDecoderMojom> remote;
+  CreateNearbySharingDecoder(&remote);
+  EXPECT_TRUE(remote.is_connected());
+}
+
+TEST_F(SharingImplTest, NearbySharingDecoder_CreateMultiple) {
+  mojo::Remote<NearbySharingDecoderMojom> remote_1;
+  CreateNearbySharingDecoder(&remote_1);
+  EXPECT_TRUE(remote_1.is_connected());
+
+  // Calling CreateNearbySharingDecoder() again should disconnect the old
+  // instance.
+  mojo::Remote<NearbySharingDecoderMojom> remote_2;
+  CreateNearbySharingDecoder(&remote_2);
+
+  // Run mojo disconnect handlers.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(remote_1.is_connected());
+  EXPECT_TRUE(remote_2.is_connected());
 }
 
 }  // namespace sharing

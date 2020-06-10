@@ -85,7 +85,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
       bool is_background_suspend_enabled,
       bool is_background_video_play_enabled,
       bool is_background_video_track_optimization_supported,
-      bool is_remoting_renderer_enabled,
       std::unique_ptr<Demuxer> demuxer_override,
       std::unique_ptr<PowerStatusHelper> power_status_helper);
 
@@ -170,10 +169,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
     return is_background_video_track_optimization_supported_;
   }
 
-  bool IsRemotingRendererEnabled() const {
-    return is_remoting_renderer_enabled_;
-  }
-
   std::unique_ptr<Demuxer> TakeDemuxerOverride();
 
   std::unique_ptr<PowerStatusHelper> TakePowerStatusHelper() {
@@ -208,8 +203,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   bool is_background_video_playback_enabled_ = true;
   // Whether background video optimization is supported on current platform.
   bool is_background_video_track_optimization_supported_ = true;
-  // Whether the media in this frame is a remoting media.
-  bool is_remoting_renderer_enabled_ = false;
 
   // Optional custom demuxer to use instead of the standard demuxers.
   std::unique_ptr<Demuxer> demuxer_override_;

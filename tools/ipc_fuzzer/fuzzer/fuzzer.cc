@@ -155,6 +155,14 @@ struct FuzzTraits<unsigned short> {
 };
 
 template <>
+struct FuzzTraits<char> {
+  static bool Fuzz(char* p, Fuzzer* fuzzer) {
+    fuzzer->FuzzUChar(reinterpret_cast<unsigned char*>(p));
+    return true;
+  }
+};
+
+template <>
 struct FuzzTraits<signed char> {
   static bool Fuzz(signed char* p, Fuzzer* fuzzer) {
     fuzzer->FuzzUChar(reinterpret_cast<unsigned char*>(p));
@@ -667,6 +675,20 @@ struct FuzzTraits<viz::CompositorFrame> {
         // Fuzz nothing to handle the no frame case.
         return true;
     }
+  }
+};
+
+template <>
+struct FuzzTraits<viz::FrameSinkId> {
+  static bool Fuzz(viz::FrameSinkId* p, Fuzzer* fuzzer) {
+    uint32_t client_id;
+    uint32_t sink_id;
+    if (!FuzzParam(&client_id, fuzzer))
+      return false;
+    if (!FuzzParam(&sink_id, fuzzer))
+      return false;
+    *p = viz::FrameSinkId(client_id, sink_id);
+    return true;
   }
 };
 

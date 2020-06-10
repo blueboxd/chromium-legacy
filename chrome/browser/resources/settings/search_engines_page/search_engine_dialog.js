@@ -105,7 +105,7 @@ Polymer({
     if (this.model) {
       const engineWasRemoved = ['defaults', 'others', 'extensions'].every(
           engineType =>
-              searchEnginesInfo[engineType].every(e => e.id != this.model.id));
+              searchEnginesInfo[engineType].every(e => e.id !== this.model.id));
       if (engineWasRemoved) {
         this.cancel_();
         return;
@@ -135,7 +135,7 @@ Polymer({
   validateElement_(inputElement) {
     // If element is empty, disable the action button, but don't show the red
     // invalid message.
-    if (inputElement.value == '') {
+    if (inputElement.value === '') {
       inputElement.invalid = false;
       this.updateActionButtonState_();
       return;

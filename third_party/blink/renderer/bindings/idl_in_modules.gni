@@ -376,7 +376,6 @@ static_idl_files_in_modules = get_path_info(
           "//third_party/blink/renderer/modules/native_file_system/file_system_handle_permission_descriptor.idl",
           "//third_party/blink/renderer/modules/native_file_system/file_system_remove_options.idl",
           "//third_party/blink/renderer/modules/native_file_system/file_system_writable_file_stream.idl",
-          "//third_party/blink/renderer/modules/native_file_system/file_system_writer.idl",
           "//third_party/blink/renderer/modules/native_file_system/get_system_directory_options.idl",
           "//third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator.idl",
           "//third_party/blink/renderer/modules/native_file_system/native_file_system_directory_iterator_entry.idl",

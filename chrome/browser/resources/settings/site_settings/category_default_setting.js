@@ -163,7 +163,7 @@ Polymer({
     }
 
     // Don't override user settings with enforced settings.
-    if (this.controlParams_.enforcement ==
+    if (this.controlParams_.enforcement ===
         chrome.settingsPrivate.Enforcement.ENFORCED) {
       return;
     }
@@ -235,8 +235,8 @@ Polymer({
    */
   updateControlParams_(update) {
     // Early out if there is no actual change.
-    if (this.priorDefaultContentSetting_.setting == update.setting &&
-        this.priorDefaultContentSetting_.source == update.source) {
+    if (this.priorDefaultContentSetting_.setting === update.setting &&
+        this.priorDefaultContentSetting_.source === update.source) {
       return;
     }
     this.priorDefaultContentSetting_ = update;
@@ -246,7 +246,7 @@ Polymer({
       'type': chrome.settingsPrivate.PrefType.BOOLEAN,
     };
     if (update.source !== undefined &&
-        update.source != ContentSettingProvider.PREFERENCE) {
+        update.source !== ContentSettingProvider.PREFERENCE) {
       basePref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
       switch (update.source) {
         case ContentSettingProvider.POLICY:
@@ -278,8 +278,8 @@ Polymer({
           'Cookie specific category logic should be removed when M82 settings' +
           'redesign solidifies.');
     } else {
-      const subPrefValue = this.category == ContentSettingsTypes.COOKIES &&
-          update.setting == ContentSetting.SESSION_ONLY;
+      const subPrefValue = this.category === ContentSettingsTypes.COOKIES &&
+          update.setting === ContentSetting.SESSION_ONLY;
       // The subControlParams_ must be replaced (rather than just value changes)
       // so that observers will be notified of the change.
       this.subControlParams_ =
@@ -311,7 +311,7 @@ Polymer({
    * @private
    */
   isToggleDisabled_() {
-    return this.category == ContentSettingsTypes.POPUPS &&
+    return this.category === ContentSettingsTypes.POPUPS &&
         loadTimeData.getBoolean('isGuest');
   },
 
@@ -320,7 +320,7 @@ Polymer({
    * @private
    */
   showCookiesSubOption_(subOptionMode) {
-    return (subOptionMode == SubOptionMode.COOKIES_SESSION_ONLY);
+    return (subOptionMode === SubOptionMode.COOKIES_SESSION_ONLY);
   },
 
   /**
@@ -328,6 +328,6 @@ Polymer({
    * @private
    */
   showPrefSubOption_(subOptionMode) {
-    return (subOptionMode == SubOptionMode.PREF);
+    return (subOptionMode === SubOptionMode.PREF);
   },
 });

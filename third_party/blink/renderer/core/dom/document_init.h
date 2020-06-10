@@ -51,7 +51,6 @@ class ExecutionContext;
 class HTMLImportsController;
 class LocalFrame;
 class PluginData;
-class Settings;
 class UseCounter;
 
 class CORE_EXPORT DocumentInit final {
@@ -113,9 +112,6 @@ class CORE_EXPORT DocumentInit final {
   mojom::blink::InsecureRequestPolicy GetInsecureRequestPolicy() const;
   const SecurityContext::InsecureNavigationsSet* InsecureNavigationsToUpgrade()
       const;
-  bool GrantLoadLocalResources() const { return grant_load_local_resources_; }
-
-  Settings* GetSettings() const;
 
   DocumentInit& WithDocumentLoader(DocumentLoader*, ContentSecurityPolicy*);
   LocalFrame* GetFrame() const;
@@ -144,6 +140,10 @@ class CORE_EXPORT DocumentInit final {
   DocumentInit& WithURL(const KURL&);
   const KURL& Url() const { return url_; }
 
+  // Pre-calculates the origin. This is needed for DocumentLoader, which wants
+  // to inspect the origin multiple times and should receive the same object
+  // back each time.
+  void CalculateAndCacheDocumentOrigin();
   scoped_refptr<SecurityOrigin> GetDocumentOrigin() const;
 
   // Specifies the Document to inherit security configurations from.
@@ -230,6 +230,9 @@ class CORE_EXPORT DocumentInit final {
   ExecutionContext* execution_context_ = nullptr;
   KURL url_;
   Document* owner_document_ = nullptr;
+
+  // Used to cache the final origin for the Document to be created.
+  scoped_refptr<SecurityOrigin> cached_document_origin_;
 
   // Initiator origin is used for calculating the document origin when the
   // navigation is started in a different process. In such cases, the document

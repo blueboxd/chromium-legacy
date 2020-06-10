@@ -205,7 +205,7 @@ Polymer({
   currentRouteChanged(route) {
     const urlSearchQuery =
         Router.getInstance().getQueryParameters().get('search') || '';
-    if (urlSearchQuery == this.lastSearchQuery_) {
+    if (urlSearchQuery === this.lastSearchQuery_) {
       return;
     }
 
@@ -217,7 +217,7 @@ Polymer({
 
     // If the search was initiated by directly entering a search URL, need to
     // sync the URL parameter to the textbox.
-    if (urlSearchQuery != searchField.getValue()) {
+    if (urlSearchQuery !== searchField.getValue()) {
       // Setting the search box value without triggering a 'search-changed'
       // event, to prevent an unnecessary duplicate entry in |window.history|.
       searchField.setValue(urlSearchQuery, true /* noEvent */);

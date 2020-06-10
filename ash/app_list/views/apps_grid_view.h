@@ -117,6 +117,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // Returns the maximum size of the entire tile grid.
   gfx::Size GetMaximumTileGridSize(int cols, int rows_per_page) const;
 
+  // Returns the padding between each page of the apps grid.
+  int GetPaddingBetweenPages() const;
+
   // This resets the grid view to a fresh state for showing the app list.
   void ResetForShowApps();
 
@@ -300,6 +303,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void EndAppsGridCardifiedView();
   // Animates individual elements of the apps grid to and from cardified state.
   void AnimateCardifiedState();
+  // Translates the items container view to center the current page in the apps
+  // grid.
+  void RecenterItemsContainer();
   // Appends a background card to the back of |background_cards_| with a defined
   // |opacity|.
   void AppendBackgroundCard(float opacity);

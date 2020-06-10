@@ -5,6 +5,7 @@
 module sharing.mojom;
 
 import "chrome/services/sharing/public/mojom/nearby_connections.mojom";
+import "chrome/services/sharing/public/mojom/nearby_decoder.mojom";
 import "chrome/services/sharing/public/mojom/webrtc.mojom";
 import "services/network/public/mojom/p2p.mojom";
 import "services/network/public/mojom/mdns_responder.mojom";
@@ -41,4 +42,8 @@ interface Sharing {
           host)
       => (pending_remote<location.nearby.connections.mojom.NearbyConnections>
               connections);
+
+  // Creates a new Nearby Sharing Decoder.
+  CreateNearbySharingDecoder()
+      => (pending_remote<sharing.mojom.NearbySharingDecoder> decoder);
 };

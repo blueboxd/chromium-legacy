@@ -117,13 +117,13 @@ export const PasswordCheckBehavior = {
       // Phished passwords are always shown above leaked passwords.
       const isPhished = cred =>
           cred.compromiseType !== chrome.passwordsPrivate.CompromiseType.LEAKED;
-      if (isPhished(lhs) != isPhished(rhs)) {
+      if (isPhished(lhs) !== isPhished(rhs)) {
         return isPhished(lhs) ? -1 : 1;
       }
 
       // Sort by time only if the displayed elapsed time since compromise is
       // different.
-      if (lhs.elapsedTimeSinceCompromise != rhs.elapsedTimeSinceCompromise) {
+      if (lhs.elapsedTimeSinceCompromise !== rhs.elapsedTimeSinceCompromise) {
         return rhs.compromiseTime - lhs.compromiseTime;
       }
 

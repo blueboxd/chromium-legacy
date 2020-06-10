@@ -1560,6 +1560,17 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
+  if (policy.has_minimum_chrome_version_eol_message()) {
+    const em::StringPolicyProto& container(
+        policy.minimum_chrome_version_eol_message());
+    if (container.has_value()) {
+      policies->Set(key::kMinimumChromeVersionEolMessage,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD,
+                    std::make_unique<base::Value>(container.value()), nullptr);
+    }
+  }
+
   if (policy.has_unaffiliated_arc_allowed()) {
     const em::UnaffiliatedArcAllowedProto& container(
         policy.unaffiliated_arc_allowed());

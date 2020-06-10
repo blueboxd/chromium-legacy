@@ -12,6 +12,7 @@
 #include "components/network_hints/common/network_hints.mojom.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "media/mojo/mojom/remoting.mojom.h"
 
 namespace chromecast {
 namespace shell {
@@ -39,6 +40,20 @@ void BindApplicationMediaCapabilities(
       mojom::ApplicationMediaCapabilities::Name_, &interface_pipe);
 }
 
+void BindMediaRemotingRemotee(
+    content::RenderFrameHost* frame_host,
+    mojo::PendingReceiver<::media::mojom::Remotee> receiver) {
+  auto* web_contents = content::WebContents::FromRenderFrameHost(frame_host);
+  if (!web_contents)
+    return;
+  auto* cast_web_contents = CastWebContents::FromWebContents(web_contents);
+  if (!cast_web_contents || !cast_web_contents->can_bind_interfaces())
+    return;
+  auto interface_pipe = receiver.PassPipe();
+  cast_web_contents->binder_registry()->TryBindInterface(
+      ::media::mojom::Remotee::Name_, &interface_pipe);
+}
+
 }  // namespace
 
 void PopulateCastFrameBinders(
@@ -48,6 +63,8 @@ void PopulateCastFrameBinders(
       base::BindRepeating(&BindNetworkHintsHandler));
   binder_map->Add<mojom::ApplicationMediaCapabilities>(
       base::BindRepeating(&BindApplicationMediaCapabilities));
+  binder_map->Add<::media::mojom::Remotee>(
+      base::BindRepeating(&BindMediaRemotingRemotee));
 }
 
 }  // namespace shell

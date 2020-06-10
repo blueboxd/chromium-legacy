@@ -111,6 +111,12 @@ TrialTokenResult TrialTokenValidator::ValidateToken(
   if (policy->IsTokenDisabled(trial_token->signature()))
     return TrialTokenResult(OriginTrialTokenStatus::kTokenDisabled);
 
+  if (trial_token->is_third_party() &&
+      trial_token->usage_restriction() ==
+          TrialToken::UsageRestriction::kSubset &&
+      policy->IsFeatureDisabledForUser(trial_token->feature_name()))
+    return TrialTokenResult(OriginTrialTokenStatus::kFeatureDisabledForUser);
+
   return TrialTokenResult(status, trial_token->feature_name(),
                           trial_token->expiry_time(),
                           trial_token->is_third_party());

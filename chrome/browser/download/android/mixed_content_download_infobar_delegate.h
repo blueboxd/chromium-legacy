@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_ANDROID_MIXED_CONTENT_DOWNLOAD_INFOBAR_DELEGATE_H_
 #define CHROME_BROWSER_DOWNLOAD_ANDROID_MIXED_CONTENT_DOWNLOAD_INFOBAR_DELEGATE_H_
 
+#include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "components/download/public/common/download_item.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -15,21 +17,23 @@ class InfoBarService;
 // initiated from a secure context.  Note that this infobar does not expire if
 // the user subsequently navigates, since such navigations won't automatically
 // cancel the underlying download.
-class MixedContentDownloadInfoBarDelegate
-    : public ConfirmInfoBarDelegate,
-      public download::DownloadItem::Observer {
+class MixedContentDownloadInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  static void Create(InfoBarService* infobar_service,
-                     download::DownloadItem* download_item);
+  using ResultCallback = base::OnceCallback<void(bool should_download)>;
+
+  static void Create(
+      InfoBarService* infobar_service,
+      const base::FilePath& basename,
+      download::DownloadItem::MixedContentStatus mixed_content_status,
+      ResultCallback callback);
 
   ~MixedContentDownloadInfoBarDelegate() override;
 
-  // download::DownloadItem::Observer:
-  void OnDownloadDestroyed(download::DownloadItem* download_item) override;
-
  private:
   explicit MixedContentDownloadInfoBarDelegate(
-      download::DownloadItem* download_item);
+      const base::FilePath& basename,
+      download::DownloadItem::MixedContentStatus mixed_content_status,
+      ResultCallback callback);
 
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
@@ -41,11 +45,12 @@ class MixedContentDownloadInfoBarDelegate
   bool Accept() override;
   bool Cancel() override;
 
-  // The download item that is requesting the infobar. Could get deleted while
-  // the infobar is showing, so we also copy the info we need from it.
-  download::DownloadItem* download_item_;
+  // Calls callback_ with the appropriate result.
+  void PostReply(bool should_download);
+
   base::string16 message_text_;
   download::DownloadItem::MixedContentStatus mixed_content_status_;
+  ResultCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(MixedContentDownloadInfoBarDelegate);
 };

@@ -230,7 +230,8 @@ public class TabListCoordinator implements Destroyable {
         // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
         // incognito profile) instead of always using regular profile. It works correctly now, but
         // it is not safe.
-        TabListFaviconProvider tabListFaviconProvider = new TabListFaviconProvider(mContext);
+        TabListFaviconProvider tabListFaviconProvider =
+                new TabListFaviconProvider(mContext, mMode == TabListMode.STRIP);
 
         mMediator = new TabListMediator(context, mModel, tabModelSelector, thumbnailProvider,
                 titleProvider, tabListFaviconProvider, actionOnRelatedTabs,

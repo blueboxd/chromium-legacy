@@ -39,7 +39,7 @@ class SingleTabSwitcherCoordinator implements TabSwitcher {
         container.addView(singleTabView);
         mPropertyModelChangeProcessor = PropertyModelChangeProcessor.create(
                 propertyModel, singleTabView, SingleTabViewBinder::bind);
-        mTabListFaviconProvider = new TabListFaviconProvider(activity);
+        mTabListFaviconProvider = new TabListFaviconProvider(activity, false);
         mMediator = new SingleTabSwitcherMediator(
                 propertyModel, activity.getTabModelSelector(), mTabListFaviconProvider);
 

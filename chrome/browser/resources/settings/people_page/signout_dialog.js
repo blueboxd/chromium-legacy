@@ -61,7 +61,7 @@ Polymer({
   wasConfirmed() {
     return /** @type {!CrDialogElement} */ (this.$.dialog)
                .getNative()
-               .returnValue == 'success';
+               .returnValue === 'success';
   },
 
   /**
@@ -71,10 +71,10 @@ Polymer({
    */
   handleProfileStatsCount_(count) {
     const username = this.syncStatus.signedInUsername || '';
-    if (count == 0) {
+    if (count === 0) {
       this.deleteProfileWarning_ = loadTimeData.getStringF(
           'deleteProfileWarningWithoutCounts', username);
-    } else if (count == 1) {
+    } else if (count === 1) {
       this.deleteProfileWarning_ = loadTimeData.getStringF(
           'deleteProfileWarningWithCountsSingular', username);
     } else {

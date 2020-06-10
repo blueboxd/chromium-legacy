@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_writable_file_stream.h"
-#include "third_party/blink/renderer/modules/native_file_system/native_file_system_writer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -31,40 +30,6 @@ NativeFileSystemFileHandle::NativeFileSystemFileHandle(
   mojo_ptr_.Bind(std::move(mojo_ptr),
                  context->GetTaskRunner(TaskType::kMiscPlatformAPI));
   DCHECK(mojo_ptr_.is_bound());
-}
-
-ScriptPromise NativeFileSystemFileHandle::createWriter(
-    ScriptState* script_state,
-    const FileSystemCreateWriterOptions* options) {
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  ScriptPromise result = resolver->Promise();
-
-  if (!mojo_ptr_.is_bound()) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kInvalidStateError));
-    return result;
-  }
-
-  mojo_ptr_->CreateFileWriter(
-      options->keepExistingData(),
-      WTF::Bind(
-          [](ScriptPromiseResolver* resolver,
-             mojom::blink::NativeFileSystemErrorPtr result,
-             mojo::PendingRemote<mojom::blink::NativeFileSystemFileWriter>
-                 writer) {
-            ExecutionContext* context = resolver->GetExecutionContext();
-            if (!context)
-              return;
-            if (result->status != mojom::blink::NativeFileSystemStatus::kOk) {
-              native_file_system_error::Reject(resolver, *result);
-              return;
-            }
-            resolver->Resolve(MakeGarbageCollected<NativeFileSystemWriter>(
-                context, std::move(writer)));
-          },
-          WrapPersistent(resolver)));
-
-  return result;
 }
 
 ScriptPromise NativeFileSystemFileHandle::createWritable(

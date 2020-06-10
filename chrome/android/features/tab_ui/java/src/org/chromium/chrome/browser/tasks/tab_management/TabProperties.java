@@ -120,5 +120,5 @@ public class TabProperties {
 
     public static final PropertyKey[] ALL_KEYS_TAB_STRIP =
             new PropertyKey[] {TAB_ID, TAB_SELECTED_LISTENER, TAB_CLOSED_LISTENER, FAVICON,
-                    IS_SELECTED, TITLE, TABSTRIP_FAVICON_BACKGROUND_COLOR_ID};
+                    IS_SELECTED, TITLE, TABSTRIP_FAVICON_BACKGROUND_COLOR_ID, IS_INCOGNITO};
 }

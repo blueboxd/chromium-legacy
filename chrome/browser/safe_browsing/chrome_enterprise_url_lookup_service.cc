@@ -45,6 +45,10 @@ bool ChromeEnterpriseRealTimeUrlLookupService::CanCheckSubresourceURL() const {
   return false;
 }
 
+bool ChromeEnterpriseRealTimeUrlLookupService::CanCheckSafeBrowsingDb() const {
+  return safe_browsing::IsSafeBrowsingEnabled(*profile_->GetPrefs());
+}
+
 policy::DMToken ChromeEnterpriseRealTimeUrlLookupService::GetDMToken() const {
   return ::safe_browsing::GetDMToken(profile_);
 }

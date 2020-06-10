@@ -56,6 +56,7 @@
 #include "media/filters/memory_data_source.h"
 #include "media/learning/mojo/public/cpp/mojo_learning_task_controller.h"
 #include "media/media_buildflags.h"
+#include "media/remoting/remoting_constants.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/data_url.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
@@ -355,7 +356,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
           params->IsBackgroundVideoPlaybackEnabled()),
       is_background_video_track_optimization_supported_(
           params->IsBackgroundVideoTrackOptimizationSupported()),
-      is_remoting_renderer_enabled_(params->IsRemotingRendererEnabled()),
       simple_watch_timer_(
           base::BindRepeating(&WebMediaPlayerImpl::OnSimpleWatchTimerTick,
                               base::Unretained(this)),
@@ -761,6 +761,12 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
     // used, the pipeline can start immediately.
     StartPipeline();
   } else {
+    // If |loaded_url_| is remoting media, starting the pipeline.
+    if (loaded_url_.SchemeIs(remoting::kRemotingScheme)) {
+      StartPipeline();
+      return;
+    }
+
     // Short circuit the more complex loading path for data:// URLs. Sending
     // them through the network based loading path just wastes memory and causes
     // worse performance since reads become asynchronous.

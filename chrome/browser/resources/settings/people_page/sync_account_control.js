@@ -248,7 +248,7 @@ cr.define('settings', function() {
       if (this.syncStatus.hasUnrecoverableError) {
         return 'sync-problem';
       }
-      if (this.syncStatus.statusAction ==
+      if (this.syncStatus.statusAction ===
           settings.StatusAction.REAUTHENTICATE) {
         return 'sync-paused';
       }
@@ -293,7 +293,7 @@ cr.define('settings', function() {
       if (this.syncStatus.hasUnrecoverableError) {
         return syncErrorLabel;
       }
-      if (this.syncStatus.statusAction ==
+      if (this.syncStatus.statusAction ===
           settings.StatusAction.REAUTHENTICATE) {
         return authErrorLabel;
       }
@@ -340,14 +340,14 @@ cr.define('settings', function() {
      */
     shouldShowErrorActionButton_() {
       if (this.embeddedInSubpage &&
-          this.syncStatus.statusAction ==
+          this.syncStatus.statusAction ===
               settings.StatusAction.ENTER_PASSPHRASE) {
         // In a subpage the passphrase button is not required.
         return false;
       }
       return !this.hideButtons && !this.showSetupButtons_ &&
           !!this.syncStatus.signedIn && !!this.syncStatus.hasError &&
-          this.syncStatus.statusAction != settings.StatusAction.NO_ACTION;
+          this.syncStatus.statusAction !== settings.StatusAction.NO_ACTION;
     },
 
     /**
@@ -428,7 +428,7 @@ cr.define('settings', function() {
       assert(this.shownAccount_);
       assert(this.storedAccounts_.length > 0);
       const isDefaultPromoAccount =
-          (this.shownAccount_.email == this.storedAccounts_[0].email);
+          (this.shownAccount_.email === this.storedAccounts_[0].email);
 
       this.syncBrowserProxy_.startSyncingWithEmail(
           this.shownAccount_.email, isDefaultPromoAccount);
@@ -479,7 +479,7 @@ cr.define('settings', function() {
 
       if (this.syncStatus.signedIn) {
         for (let i = 0; i < this.storedAccounts_.length; i++) {
-          if (this.storedAccounts_[i].email ==
+          if (this.storedAccounts_[i].email ===
               this.syncStatus.signedInUsername) {
             this.shownAccount_ = this.storedAccounts_[i];
             return;

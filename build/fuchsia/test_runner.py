@@ -139,6 +139,12 @@ def main():
   if args.child_args:
     child_args.extend(args.child_args)
 
+  # TODO(https://crbug.com/1092054): When running in bot-mode dump a list of
+  # processes running under the bot's test user account, to help diagnose
+  # potential leaks of test processes.
+  if args.test_launcher_bot_mode:
+    subprocess.call(['ps', 'f'])
+
   try:
     with GetDeploymentTargetForArgs(args) as target:
       with SystemLogReader() as system_logger:

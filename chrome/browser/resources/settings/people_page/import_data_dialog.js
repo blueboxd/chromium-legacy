@@ -117,14 +117,14 @@ Polymer({
    * @private
    */
   hasImportStatus_(status) {
-    return this.importStatus_ == status;
+    return this.importStatus_ === status;
   },
 
   /** @private */
   isImportFromFileSelected_() {
     // The last entry in |browserProfiles_| always refers to dummy profile for
     // importing from a bookmarks file.
-    return this.selected_.index == this.browserProfiles_.length - 1;
+    return this.selected_.index === this.browserProfiles_.length - 1;
   },
 
   /**

@@ -40,6 +40,8 @@ class ChromeEnterpriseRealTimeUrlLookupService
 
   bool CanCheckSubresourceURL() const override;
 
+  bool CanCheckSafeBrowsingDb() const override;
+
   void StartLookup(const GURL& url,
                    RTLookupRequestCallback request_callback,
                    RTLookupResponseCallback response_callback) override;

@@ -285,9 +285,6 @@ crbug.com/angleproject/3354 [ win amd-0x699f ] deqp/functional/gles3/fborender/s
 # Flaky on AMD Win7
 crbug.com/989050 [ d3d11 win7 amd ] conformance2/textures/misc/tex-unpack-params-imagedata.html [ RetryOnFailure ]
 
-# Passthrough command decoder
-crbug.com/953120 [ passthrough ] conformance/programs/program-test.html [ Failure ]
-
 # Passthrough command decoder / OpenGL / Windows
 crbug.com/835364 [ opengl win passthrough nvidia ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 crbug.com/835364 [ opengl win passthrough ] conformance/renderbuffers/depth-renderbuffer-initialization.html [ RetryOnFailure ]

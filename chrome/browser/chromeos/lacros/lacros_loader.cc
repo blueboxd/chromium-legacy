@@ -10,6 +10,8 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/process/launch.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
@@ -148,6 +150,7 @@ void LacrosLoader::Start() {
   if (already_running) {
     base::LaunchProcess(argv, options);
   } else {
+    base::RecordAction(base::UserMetricsAction("Lacros.Launch"));
     lacros_process_ = base::LaunchProcess(argv, options);
   }
   LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();

@@ -71,7 +71,7 @@ Polymer({
    */
   validate_() {
     const error = this.isValidPIN_(this.value_);
-    if (error != '') {
+    if (error !== '') {
       this.error_ = error;
       return false;
     }
@@ -109,7 +109,7 @@ Polymer({
     if (1 < retries && retries <= 3) {
       error =
           this.i18n('securityKeysPINIncorrectRetriesPl', retries.toString());
-    } else if (retries == 1) {
+    } else if (retries === 1) {
       error = this.i18n('securityKeysPINIncorrectRetriesSin');
     } else {
       error = this.i18n('securityKeysPINIncorrect');
@@ -131,7 +131,7 @@ Polymer({
    * @private
    */
   isNonEmpty_(s) {
-    return s != '';
+    return s !== '';
   },
 
   /**
@@ -184,13 +184,13 @@ Polymer({
         // is so obscure that we don't try to message it. Rather we just say
         // that it's too long because trimming the final character is the best
         // response by the user.
-        utf8Encoded[utf8Encoded.length - 1] == 0) {
+        utf8Encoded[utf8Encoded.length - 1] === 0) {
       return this.i18n('securityKeysPINTooLong');
     }
 
     // A PIN must contain at least four code-points. Javascript strings are
     // UCS-2 and the |length| property counts UCS-2 elements, not code-points.
-    // (For example, '\u{1f6b4}'.length == 2, but it's a single code-point.)
+    // (For example, '\u{1f6b4}'.length === 2, but it's a single code-point.)
     // Therefore, iterate over the string (which does yield codepoints) and
     // check that four or more were seen.
     let length = 0;

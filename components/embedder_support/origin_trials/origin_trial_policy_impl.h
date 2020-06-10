@@ -25,6 +25,7 @@ class OriginTrialPolicyImpl : public blink::OriginTrialPolicy {
   bool IsOriginTrialsSupported() const override;
   std::vector<base::StringPiece> GetPublicKeys() const override;
   bool IsFeatureDisabled(base::StringPiece feature) const override;
+  bool IsFeatureDisabledForUser(base::StringPiece feature) const override;
   bool IsTokenDisabled(base::StringPiece token_signature) const override;
   bool IsOriginSecure(const GURL& url) const override;
 

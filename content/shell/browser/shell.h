@@ -179,6 +179,7 @@ class Shell : public WebContentsDelegate,
       const viz::SurfaceId&,
       const gfx::Size& natural_size) override;
   bool ShouldResumeRequestsForCreatedWindow() override;
+  void SetContentsBounds(WebContents* source, const gfx::Rect& bounds) override;
 
   static gfx::Size GetShellDefaultSize();
 

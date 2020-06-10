@@ -53,7 +53,7 @@ cr.define('settings', function() {
 
       // |path| extends this route's path if it doesn't have a leading slash.
       // If it does have a leading slash, it's just set as the new route's URL.
-      const newUrl = path[0] == '/' ? path : `${this.path}/${path}`;
+      const newUrl = path[0] === '/' ? path : `${this.path}/${path}`;
 
       const route = new Route(newUrl);
       route.parent = this;
@@ -92,7 +92,7 @@ cr.define('settings', function() {
      */
     contains(route) {
       for (let r = route; r != null; r = r.parent) {
-        if (this == r) {
+        if (this === r) {
           return true;
         }
       }
@@ -105,7 +105,7 @@ cr.define('settings', function() {
      */
     isSubpage() {
       return !!this.parent && !!this.section &&
-          this.parent.section == this.section;
+          this.parent.section === this.section;
     }
   }
 
@@ -239,7 +239,7 @@ cr.define('settings', function() {
       // TODO(tommycli): Use Object.values once Closure compilation supports it.
       const matchingKey =
           Object.keys(this.routes_)
-              .find((key) => this.routes_[key].path == canonicalPath);
+              .find((key) => this.routes_[key].path === canonicalPath);
 
       return matchingKey ? this.routes_[matchingKey] : null;
     }
@@ -255,7 +255,7 @@ cr.define('settings', function() {
     navigateTo(route, opt_dynamicParameters, opt_removeSearch) {
       // The ADVANCED route only serves as a parent of subpages, and should not
       // be possible to navigate to it directly.
-      if (route == this.routes_.ADVANCED) {
+      if (route === this.routes_.ADVANCED) {
         route = this.routes_.BASIC;
       }
 
@@ -312,7 +312,7 @@ cr.define('settings', function() {
       this.recordMetrics(route ? route.path : this.routes_.BASIC.path);
 
       // Never allow direct navigation to ADVANCED.
-      if (route && route != this.routes_.ADVANCED) {
+      if (route && route !== this.routes_.ADVANCED) {
         this.currentRoute = route;
         this.currentQueryParameters_ =
             new URLSearchParams(window.location.search);

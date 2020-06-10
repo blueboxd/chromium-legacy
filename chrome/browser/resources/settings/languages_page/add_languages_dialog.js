@@ -78,7 +78,7 @@ Polymer({
 
   // Override FindShortcutBehavior methods.
   searchInputHasFocus() {
-    return this.$.search.getSearchInput() ==
+    return this.$.search.getSearchInput() ===
         this.$.search.shadowRoot.activeElement;
   },
 
@@ -120,7 +120,7 @@ Polymer({
   getDisplayText_(language) {
     let displayText = language.displayName;
     // If the native name is different, add it.
-    if (language.displayName != language.nativeDisplayName) {
+    if (language.displayName !== language.nativeDisplayName) {
       displayText += ' - ' + language.nativeDisplayName;
     }
     return displayText;
@@ -179,9 +179,9 @@ Polymer({
    */
   onKeydown_(e) {
     // Close dialog if 'esc' is pressed and the search box is already empty.
-    if (e.key == 'Escape' && !this.$.search.getValue().trim()) {
+    if (e.key === 'Escape' && !this.$.search.getValue().trim()) {
       this.$.dialog.close();
-    } else if (e.key != 'PageDown' && e.key != 'PageUp') {
+    } else if (e.key !== 'PageDown' && e.key !== 'PageUp') {
       this.$.search.scrollIntoViewIfNeeded();
     }
   },

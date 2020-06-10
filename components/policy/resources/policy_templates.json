@@ -916,6 +916,7 @@
         'DeviceRollbackAllowedMilestones',
         'DeviceQuickFixBuildToken',
         'MinimumChromeVersionEnforced',
+        'MinimumChromeVersionEolMessage',
       ],
     },
     {
@@ -14625,6 +14626,31 @@
       The "warning_period" and "eol_warning_period" are optional values specified in number of days. Default value for them is 0 days, which means that there is no waiting period. ''',
     },
     {
+      'name': 'MinimumChromeVersionEolMessage',
+      'owners': ['snijhara@google.com', 'marcgrimme@chromium.org'],
+      'supported_on': ['chrome_os:85-'],
+      'future': True,
+      'device_only': True,
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 'This device has reached end-of-life. Kindly return it.',
+      'id': 714,
+      'caption': '''Configure end of life message for MinimumChromeVersionEnforced policy''',
+      'tags': [],
+      'desc': '''This policy is only effective when the device has reached end-of-life and does not meet the minimum allowed version of <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> set through <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME">MinimumChromeVersionEnforced</ph> policy.
+
+      When this policy is set to a non-empty string :
+      If the warning time mentioned in <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME">MinimumChromeVersionEnforced</ph> policy has expired, this message is shown at the login screen when the device is blocked for any user to sign in.
+      If the warning time mentioned in <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME">MinimumChromeVersionEnforced</ph> policy has not expired, this message is shown in the Settings page after user sign in.
+
+      If this policy is not set or set to empty, the default end-of-life message is shown to the user in both of the above cases.
+      The end of life message must be plain text without any formatting. No markup is allowed. ''',
+    },
+    {
       'name': 'QuickUnlockModeWhitelist',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'list',
@@ -21693,6 +21719,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenPrivacyScreenEnabled': 'device_login_screen_privacy_screen_enabled.enabled',
     'RequiredClientCertificateForDevice': 'required_client_certificate_for_device.required_client_certificate_for_device',
     'DeviceCrostiniArcAdbSideloadingAllowed': 'device_crostini_arc_adb_sideloading_allowed.mode',
+    'MinimumChromeVersionEolMessage' : 'minimum_chrome_version_eol_message.value',
   },
   'policy_atomic_group_definitions': [
     {
@@ -22156,6 +22183,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 713,
+  'highest_id_currently_used': 714,
   'highest_atomic_group_id_currently_used': 38
 }

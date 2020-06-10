@@ -145,9 +145,10 @@ class DnsAttempt {
   // Returns the net log bound to the source of the socket.
   virtual const NetLogWithSource& GetSocketNetLog() const = 0;
 
-  // Returns the index of the destination server within DnsConfig::nameservers.
-  // If the server index is -1, indicates that no request was sent and that the
-  // attempt was resolved synchronously with failure.
+  // Returns the index of the destination server within DnsConfig::nameservers
+  // (or DnsConfig::dns_over_https_servers for secure transactions). If the
+  // server index is -1, indicates that no request was sent and that the attempt
+  // was resolved synchronously with failure.
   int server_index() const { return server_index_; }
 
   // Returns a Value representing the received response, along with a reference

@@ -84,7 +84,7 @@ Polymer({
 
   /** @private */
   setInputValueFromPref_() {
-    assert(this.pref.type == chrome.settingsPrivate.PrefType.URL);
+    assert(this.pref.type === chrome.settingsPrivate.PrefType.URL);
     this.value = /** @type {string} */ (this.pref.value);
   },
 
@@ -109,7 +109,7 @@ Polymer({
       return;
     }
 
-    assert(this.pref.type == chrome.settingsPrivate.PrefType.URL);
+    assert(this.pref.type === chrome.settingsPrivate.PrefType.URL);
     this.set('pref.value', this.value);
   },
 
@@ -127,9 +127,9 @@ Polymer({
    */
   onKeydown_(event) {
     // If pressed enter when input is invalid, do not trigger on-change.
-    if (event.key == 'Enter' && this.invalid) {
+    if (event.key === 'Enter' && this.invalid) {
       event.preventDefault();
-    } else if (event.key == 'Escape') {
+    } else if (event.key === 'Escape') {
       this.resetValue_();
     }
 
@@ -157,7 +157,7 @@ Polymer({
 
   /** @private */
   validate_() {
-    if (this.value == '') {
+    if (this.value === '') {
       this.invalid = false;
       return;
     }

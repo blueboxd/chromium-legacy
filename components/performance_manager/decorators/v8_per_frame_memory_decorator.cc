@@ -21,41 +21,63 @@
 
 namespace performance_manager {
 
-class V8PerFrameMemoryDecorator::FrameData
-    : public ExternalNodeAttachedDataImpl<
-          V8PerFrameMemoryDecorator::FrameData> {
+namespace internal {
+
+// Provides access to V8PerFrameMemoryDecorator's private
+// BindReceiverWithProxyHost method.
+class ProxyHostReceiverBinder {
  public:
-  explicit FrameData(const FrameNode* frame_node) {}
-  ~FrameData() override = default;
-
-  FrameData(const FrameData&) = delete;
-  FrameData& operator=(const FrameData&) = delete;
-
-  void set_v8_bytes_used(uint64_t v8_bytes_used) {
-    v8_bytes_used_ = v8_bytes_used;
+  static void Bind(const V8PerFrameMemoryDecorator& decorator,
+                   mojo::PendingReceiver<
+                       performance_manager::mojom::V8PerFrameMemoryReporter>
+                       pending_receiver,
+                   RenderProcessHostProxy proxy) {
+    decorator.BindReceiverWithProxyHost(std::move(pending_receiver), proxy);
   }
-  uint64_t v8_bytes_used() const { return v8_bytes_used_; }
-
- private:
-  uint64_t v8_bytes_used_ = 0;
 };
 
-class V8PerFrameMemoryDecorator::ProcessData
-    : public ExternalNodeAttachedDataImpl<
-          V8PerFrameMemoryDecorator::ProcessData> {
- public:
-  explicit ProcessData(const ProcessNode* process_node)
-      : process_node_(process_node) {}
-  ~ProcessData() override = default;
+}  // namespace internal
 
-  ProcessData(const ProcessData&) = delete;
-  ProcessData& operator=(const ProcessData&) = delete;
+namespace {
+
+// Private implementations of the node attached data. This keeps the complexity
+// out of the header file.
+
+class NodeAttachedFrameData
+    : public ExternalNodeAttachedDataImpl<NodeAttachedFrameData> {
+ public:
+  explicit NodeAttachedFrameData(const FrameNode* frame_node) {}
+  ~NodeAttachedFrameData() override = default;
+
+  NodeAttachedFrameData(const NodeAttachedFrameData&) = delete;
+  NodeAttachedFrameData& operator=(const NodeAttachedFrameData&) = delete;
+
+  const V8PerFrameMemoryDecorator::FrameData* data() const {
+    return data_available_ ? &data_ : nullptr;
+  }
+
+ private:
+  friend class NodeAttachedProcessData;
+
+  V8PerFrameMemoryDecorator::FrameData data_;
+  bool data_available_ = false;
+};
+
+class NodeAttachedProcessData
+    : public ExternalNodeAttachedDataImpl<NodeAttachedProcessData> {
+ public:
+  explicit NodeAttachedProcessData(const ProcessNode* process_node)
+      : process_node_(process_node) {}
+  ~NodeAttachedProcessData() override = default;
+
+  NodeAttachedProcessData(const NodeAttachedProcessData&) = delete;
+  NodeAttachedProcessData& operator=(const NodeAttachedProcessData&) = delete;
+
+  const V8PerFrameMemoryDecorator::ProcessData* data() const {
+    return data_available_ ? &data_ : nullptr;
+  }
 
   void Initialize(const V8PerFrameMemoryDecorator* decorator);
-
-  uint64_t unassociated_v8_bytes_used() const {
-    return unassociated_v8_bytes_used_;
-  }
 
  private:
   void StartMeasurement();
@@ -74,10 +96,11 @@ class V8PerFrameMemoryDecorator::ProcessData
   base::TimeTicks last_request_time_;
   base::OneShotTimer timer_;
 
-  uint64_t unassociated_v8_bytes_used_ = 0;
+  V8PerFrameMemoryDecorator::ProcessData data_;
+  bool data_available_ = false;
 };
 
-void V8PerFrameMemoryDecorator::ProcessData::Initialize(
+void NodeAttachedProcessData::Initialize(
     const V8PerFrameMemoryDecorator* decorator) {
   DCHECK_EQ(nullptr, decorator_);
   decorator_ = decorator;
@@ -85,32 +108,31 @@ void V8PerFrameMemoryDecorator::ProcessData::Initialize(
   StartMeasurement();
 }
 
-void V8PerFrameMemoryDecorator::ProcessData::StartMeasurement() {
-  DCHECK(process_node_);
-
+void NodeAttachedProcessData::StartMeasurement() {
   last_request_time_ = base::TimeTicks::Now();
 
   EnsureRemote();
-  resource_usage_reporter_->GetPerFrameV8MemoryUsageData(base::BindOnce(
-      &V8PerFrameMemoryDecorator::ProcessData::OnPerFrameV8MemoryUsageData,
-      base::Unretained(this)));
+  resource_usage_reporter_->GetPerFrameV8MemoryUsageData(
+      base::BindOnce(&NodeAttachedProcessData::OnPerFrameV8MemoryUsageData,
+                     base::Unretained(this)));
 }
 
-void V8PerFrameMemoryDecorator::ProcessData::ScheduleNextMeasurement() {
+void NodeAttachedProcessData::ScheduleNextMeasurement() {
+  DCHECK_NE(nullptr, decorator_);
   base::TimeTicks next_request_time =
       last_request_time_ + decorator_->min_time_between_requests_per_process();
 
   timer_.Start(FROM_HERE, next_request_time - base::TimeTicks::Now(), this,
-               &ProcessData::StartMeasurement);
+               &NodeAttachedProcessData::StartMeasurement);
 }
 
-void V8PerFrameMemoryDecorator::ProcessData::OnPerFrameV8MemoryUsageData(
+void NodeAttachedProcessData::OnPerFrameV8MemoryUsageData(
     performance_manager::mojom::PerProcessV8MemoryUsageDataPtr result) {
   // Distribute the data to the frames.
   // If a frame doesn't have corresponding data in the result, clear any data
   // it may have had. Any datum in the result that doesn't correspond to an
   // existing frame is likewise accured to unassociated usage.
-  unassociated_v8_bytes_used_ = result->unassociated_bytes_used;
+  uint64_t unassociated_v8_bytes_used = result->unassociated_bytes_used;
 
   base::flat_map<base::UnguessableToken, mojom::PerFrameV8MemoryUsageDataPtr>
       associated_memory;
@@ -121,15 +143,17 @@ void V8PerFrameMemoryDecorator::ProcessData::OnPerFrameV8MemoryUsageData(
     auto it = associated_memory.find(frame_node->GetDevToolsToken());
     if (it == associated_memory.end()) {
       // No data for this node, clear any data associated with it.
-      FrameData::Destroy(frame_node);
+      NodeAttachedFrameData::Destroy(frame_node);
     } else {
       // There should always be data for the main isolated world for each frame.
       DCHECK(base::Contains(it->second->associated_bytes, 0));
 
-      FrameData* frame_data = FrameData::GetOrCreate(frame_node);
+      NodeAttachedFrameData* frame_data =
+          NodeAttachedFrameData::GetOrCreate(frame_node);
       for (const auto& kv : it->second->associated_bytes) {
         if (kv.first == 0) {
-          frame_data->set_v8_bytes_used(kv.second->bytes_used);
+          frame_data->data_available_ = true;
+          frame_data->data_.set_v8_bytes_used(kv.second->bytes_used);
         } else {
           // TODO(siggi): Where to stash the rest of the data?
         }
@@ -142,14 +166,17 @@ void V8PerFrameMemoryDecorator::ProcessData::OnPerFrameV8MemoryUsageData(
 
   for (const auto& it : associated_memory) {
     // Accrue the data for non-existent frames to unassociated bytes.
-    unassociated_v8_bytes_used_ += it.second->associated_bytes[0]->bytes_used;
+    unassociated_v8_bytes_used += it.second->associated_bytes[0]->bytes_used;
   }
+
+  data_available_ = true;
+  data_.set_unassociated_v8_bytes_used(unassociated_v8_bytes_used);
 
   // Schedule another measurement for this process node.
   ScheduleNextMeasurement();
 }
 
-void V8PerFrameMemoryDecorator::ProcessData::EnsureRemote() {
+void NodeAttachedProcessData::EnsureRemote() {
   if (resource_usage_reporter_.is_bound())
     return;
 
@@ -159,7 +186,24 @@ void V8PerFrameMemoryDecorator::ProcessData::EnsureRemote() {
 
   RenderProcessHostProxy proxy = process_node_->GetRenderProcessHostProxy();
 
-  decorator_->BindReceiverWithProxyHost(std::move(pending_receiver), proxy);
+  DCHECK_NE(nullptr, decorator_);
+  internal::ProxyHostReceiverBinder::Bind(*decorator_,
+                                          std::move(pending_receiver), proxy);
+}
+
+}  // namespace
+
+const V8PerFrameMemoryDecorator::FrameData*
+V8PerFrameMemoryDecorator::FrameData::ForFrameNode(const FrameNode* node) {
+  auto* node_data = NodeAttachedFrameData::Get(node);
+  return node_data ? node_data->data() : nullptr;
+}
+
+const V8PerFrameMemoryDecorator::ProcessData*
+V8PerFrameMemoryDecorator::ProcessData::ForProcessNode(
+    const ProcessNode* node) {
+  auto* node_data = NodeAttachedProcessData::Get(node);
+  return node_data ? node_data->data() : nullptr;
 }
 
 V8PerFrameMemoryDecorator::V8PerFrameMemoryDecorator(
@@ -189,65 +233,42 @@ void V8PerFrameMemoryDecorator::OnTakenFromGraph(Graph* graph) {
 
 void V8PerFrameMemoryDecorator::OnProcessNodeAdded(
     const ProcessNode* process_node) {
-  DCHECK_EQ(nullptr, V8PerFrameMemoryDecorator::ProcessData::Get(process_node));
+  DCHECK_EQ(nullptr, NodeAttachedProcessData::Get(process_node));
 
   // Only renderer processes have frames. Don't attempt to connect to other
   // process types.
   if (process_node->GetProcessType() != content::PROCESS_TYPE_RENDERER)
     return;
 
-  V8PerFrameMemoryDecorator::ProcessData* process_data =
-      V8PerFrameMemoryDecorator::ProcessData::GetOrCreate(process_node);
-  DCHECK_NE(nullptr, process_data);
+  NodeAttachedProcessData* process_data =
+      NodeAttachedProcessData::GetOrCreate(process_node);
   process_data->Initialize(this);
 }
 
 base::Value V8PerFrameMemoryDecorator::DescribeFrameNodeData(
     const FrameNode* frame_node) const {
-  FrameData* frame_data = FrameData::Get(frame_node);
+  const FrameData* const frame_data = FrameData::ForFrameNode(frame_node);
   if (!frame_data)
     return base::Value();
 
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetIntKey("v8_bytes_used_", frame_data->v8_bytes_used());
+  dict.SetIntKey("v8_bytes_used", frame_data->v8_bytes_used());
   return dict;
 }
 
 base::Value V8PerFrameMemoryDecorator::DescribeProcessNodeData(
     const ProcessNode* process_node) const {
-  ProcessData* process_data = ProcessData::Get(process_node);
+  const ProcessData* const process_data =
+      ProcessData::ForProcessNode(process_node);
   if (!process_data)
     return base::Value();
 
   DCHECK_EQ(content::PROCESS_TYPE_RENDERER, process_node->GetProcessType());
 
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetIntKey("unassociated_v8_bytes_used_",
+  dict.SetIntKey("unassociated_v8_bytes_used",
                  process_data->unassociated_v8_bytes_used());
   return dict;
-}
-
-uint64_t V8PerFrameMemoryDecorator::GetUnassociatedBytesForTesting(
-    const ProcessNode* process_node) {
-  ProcessData* process_data = ProcessData::Get(process_node);
-  if (!process_data)
-    return 0u;
-
-  return process_data->unassociated_v8_bytes_used();
-}
-
-uint64_t V8PerFrameMemoryDecorator::GetAssociatedBytesForTesting(
-    const FrameNode* frame_node) {
-  FrameData* frame_data = FrameData::Get(frame_node);
-  if (!frame_data)
-    return 0u;
-
-  return frame_data->v8_bytes_used();
-}
-
-bool V8PerFrameMemoryDecorator::HasAssociatedBytesForTesting(
-    const FrameNode* frame_node) {
-  return FrameData::Get(frame_node);
 }
 
 void V8PerFrameMemoryDecorator::BindReceiverWithProxyHost(

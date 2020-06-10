@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL SignedHTTPExchange inner resp should take precedence to appcache. promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'addEventListener' of undefined"
+Harness: the test ran to completion.
+

@@ -4,11 +4,12 @@
 
 #import "ios/chrome/browser/ui/snackbar/snackbar_coordinator.h"
 
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

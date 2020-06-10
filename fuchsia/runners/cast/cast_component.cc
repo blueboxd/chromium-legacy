@@ -58,8 +58,7 @@ CastComponent::CastComponent(WebContentRunner* runner,
           std::move(params.initial_url_rewrite_rules.value())),
       api_bindings_client_(std::move(params.api_bindings_client)),
       media_session_id_(params.media_session_id.value()),
-      headless_disconnect_watch_(FROM_HERE),
-      navigation_listener_binding_(this) {
+      headless_disconnect_watch_(FROM_HERE) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
 }
 
@@ -90,8 +89,6 @@ void CastComponent::StartComponent() {
   frame()->SetMediaSessionId(media_session_id_);
   frame()->ConfigureInputTypes(fuchsia::web::InputTypes::ALL,
                                fuchsia::web::AllowInputState::DENY);
-  frame()->SetNavigationEventListener(
-      navigation_listener_binding_.NewBinding());
   frame()->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::WARN);
 
   if (IsAppConfigForCastStreaming(application_config_)) {
@@ -183,7 +180,8 @@ void CastComponent::OnNavigationStateChanged(
     OnNavigationStateChangedCallback callback) {
   if (change.has_is_main_document_loaded() && change.is_main_document_loaded())
     connector_->OnPageLoad();
-  callback();
+  WebComponent::OnNavigationStateChanged(std::move(change),
+                                         std::move(callback));
 }
 
 void CastComponent::CreateView(

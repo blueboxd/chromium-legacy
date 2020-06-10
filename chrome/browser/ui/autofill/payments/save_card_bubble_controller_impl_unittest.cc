@@ -148,6 +148,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
 
   void ClickSaveButton() {
     controller()->OnSaveButton({});
+    controller()->OnBubbleClosed(PaymentsBubbleClosedReason::kAccepted);
     if (controller()->ShouldShowCardSavedLabelAnimation())
       controller()->OnAnimationEnded();
   }
@@ -1243,9 +1244,11 @@ TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
        Metrics_Local_ClickManageCardsDoneButton) {
   base::HistogramTester histogram_tester;
   ShowLocalBubble();
-  controller()->OnSaveButton({});
+  ClickSaveButton();
   CloseAndReshowBubble();
-  controller()->OnSaveButton({});
+  EXPECT_EQ(BubbleType::MANAGE_CARDS, controller()->GetBubbleType());
+
+  ClickSaveButton();
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Autofill.ManageCardsPrompt.Local"),
       ElementsAre(Bucket(AutofillMetrics::MANAGE_CARDS_SHOWN, 1),
@@ -1256,7 +1259,7 @@ TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
        Metrics_Local_ClickManageCardsManageCardsButton) {
   base::HistogramTester histogram_tester;
   ShowLocalBubble();
-  controller()->OnSaveButton({});
+  ClickSaveButton();
   CloseAndReshowBubble();
   controller()->OnManageCardsClicked();
   EXPECT_THAT(
@@ -1270,7 +1273,7 @@ TEST_F(
     Metrics_Local_FirstShow_SaveButton_Close_Reshow_Close_Reshow_ManageCards) {
   base::HistogramTester histogram_tester;
   ShowLocalBubble();
-  controller()->OnSaveButton({});
+  ClickSaveButton();
   CloseAndReshowBubble();
   CloseAndReshowBubble();
   // After closing the sign-in promo, clicking the icon should bring
@@ -1285,7 +1288,7 @@ TEST_F(
     Metrics_Local_FirstShow_SaveButton_SigninPromo_Close_Reshow_Close_Navigate) {
   base::HistogramTester histogram_tester;
   ShowLocalBubble();
-  controller()->OnSaveButton({});
+  ClickSaveButton();
   CloseAndReshowBubble();
   CloseBubble();
   test_clock_.Advance(base::TimeDelta::FromSeconds(6));
@@ -1300,7 +1303,7 @@ TEST_F(
     Metrics_Local_FirstShow_SaveButton_SigninPromo_Close_Reshow_ManageCards) {
   base::HistogramTester histogram_tester;
   ShowLocalBubble();
-  controller()->OnSaveButton({});
+  ClickSaveButton();
   CloseAndReshowBubble();
   // After closing the sign-in promo, clicking the icon should bring
   // up the Manage cards bubble.
@@ -1313,7 +1316,7 @@ TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
        Metrics_Local_FirstShow_SaveButton_SigninPromo_Close_Reshow_Navigate) {
   base::HistogramTester histogram_tester;
   ShowLocalBubble();
-  controller()->OnSaveButton({});
+  ClickSaveButton();
   CloseAndReshowBubble();
   test_clock_.Advance(base::TimeDelta::FromSeconds(6));
   controller()->SimulateNavigation();
@@ -1336,7 +1339,7 @@ TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
        Metrics_Upload_FirstShow_SaveButton_NoSigninPromo) {
   base::HistogramTester histogram_tester;
   ShowUploadBubble();
-  controller()->OnSaveButton({});
+  ClickSaveButton();
   // No other bubbles should have popped up.
   histogram_tester.ExpectTotalCount("Autofill.SignInPromo", 0);
   histogram_tester.ExpectTotalCount("Autofill.ManageCardsPrompt.Local", 0);
@@ -1347,7 +1350,7 @@ TEST_F(SaveCardBubbleControllerImplTestWithoutStatusChip,
        Metrics_Upload_FirstShow_ManageCards) {
   base::HistogramTester histogram_tester;
   ShowUploadBubble();
-  controller()->OnSaveButton({});
+  ClickSaveButton();
   controller()->ShowBubbleForManageCardsForTesting(
       autofill::test::GetCreditCard());
   // Icon should disappear after an upload save,

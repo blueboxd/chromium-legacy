@@ -103,6 +103,7 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
     const base::RepeatingCallback<content::WebContents*()>& web_contents_getter,
     bool real_time_lookup_enabled,
     bool can_rt_check_subresource_url,
+    bool can_check_db,
     base::WeakPtr<RealTimeUrlLookupServiceBase> url_lookup_service_on_ui)
     : headers_(headers),
       load_flags_(load_flags),
@@ -113,9 +114,11 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       database_manager_(url_checker_delegate_->GetDatabaseManager()),
       real_time_lookup_enabled_(real_time_lookup_enabled),
       can_rt_check_subresource_url_(can_rt_check_subresource_url),
+      can_check_db_(can_check_db),
       url_lookup_service_on_ui_(url_lookup_service_on_ui) {
   DCHECK(!web_contents_getter_.is_null());
   DCHECK(!can_rt_check_subresource_url_ || real_time_lookup_enabled_);
+  DCHECK(real_time_lookup_enabled_ || can_check_db_);
 }
 
 SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
@@ -128,7 +131,9 @@ SafeBrowsingUrlCheckerImpl::SafeBrowsingUrlCheckerImpl(
       web_state_getter_(web_state_getter),
       url_checker_delegate_(url_checker_delegate),
       database_manager_(url_checker_delegate_->GetDatabaseManager()),
-      real_time_lookup_enabled_(false) {
+      real_time_lookup_enabled_(false),
+      can_rt_check_subresource_url_(false),
+      can_check_db_(true) {
   DCHECK(!web_state_getter_.is_null());
 }
 
@@ -136,7 +141,9 @@ SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
 
   if (state_ == STATE_CHECKING_URL) {
-    database_manager_->CancelCheck(this);
+    if (can_check_db_) {
+      database_manager_->CancelCheck(this);
+    }
     const GURL& url = urls_[next_index_].url;
     TRACE_EVENT_ASYNC_END1("safe_browsing", "CheckUrl", this, "url",
                            url.spec());
@@ -270,7 +277,9 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
 void SafeBrowsingUrlCheckerImpl::OnTimeout() {
   RecordCheckUrlTimeout(/*timed_out=*/true);
 
-  database_manager_->CancelCheck(this);
+  if (can_check_db_) {
+    database_manager_->CancelCheck(this);
+  }
 
   // Any pending callbacks on this URL check should be skipped.
   weak_factory_.InvalidateWeakPtrs();
@@ -363,7 +372,9 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
                                 resource_type_);
       safe_synchronously = false;
       AsyncMatch match =
-          database_manager_->CheckUrlForHighConfidenceAllowlist(url, this);
+          can_check_db_
+              ? database_manager_->CheckUrlForHighConfidenceAllowlist(url, this)
+              : AsyncMatch::NO_MATCH;
       UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.RT.LocalMatch.Result", match);
       switch (match) {
         case AsyncMatch::ASYNC:
@@ -382,8 +393,8 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
                              /*did_match_allowlist=*/true));
           break;
         case AsyncMatch::NO_MATCH:
-          // No match found locally. Queue the call to
-          // |OnCheckUrlForHighConfidenceAllowlist| to perform the full URL
+          // No match found locally or |can_check_db_| is false. Queue the call
+          // to |OnCheckUrlForHighConfidenceAllowlist| to perform the full URL
           // lookup.
           base::PostTask(
               FROM_HERE, CreateTaskTraits(ThreadID::IO),
@@ -394,8 +405,13 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
           break;
       }
     } else {
-      safe_synchronously = database_manager_->CheckBrowseUrl(
-          url, url_checker_delegate_->GetThreatTypes(), this);
+      // TODO(crbug.com/1085261): Add a metric to track how often
+      // |can_check_db_| is false.
+      safe_synchronously =
+          can_check_db_
+              ? database_manager_->CheckBrowseUrl(
+                    url, url_checker_delegate_->GetThreatTypes(), this)
+              : true;
     }
 
     if (safe_synchronously) {
@@ -541,7 +557,8 @@ void SafeBrowsingUrlCheckerImpl::StartLookupOnUIThread(
 
 void SafeBrowsingUrlCheckerImpl::PerformHashBasedCheck(const GURL& url) {
   DCHECK(CurrentlyOnThread(ThreadID::IO));
-  if (database_manager_->CheckBrowseUrl(
+  if (!can_check_db_ ||
+      database_manager_->CheckBrowseUrl(
           url, url_checker_delegate_->GetThreatTypes(), this)) {
     // No match found in the local database. Safe to call |OnUrlResult| here
     // directly.

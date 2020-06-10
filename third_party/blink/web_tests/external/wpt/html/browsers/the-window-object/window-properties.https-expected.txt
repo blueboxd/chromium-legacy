@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 174 tests; 166 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 174 tests; 165 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Value Properties of the Global Object
 PASS Value Property: NaN
 PASS Value Property: Infinity
@@ -70,7 +70,7 @@ PASS Window method: scrollBy
 PASS Window readonly attribute: history
 PASS Window readonly attribute: frameElement
 PASS Window readonly attribute: navigator
-PASS Window readonly attribute: applicationCache
+FAIL Window readonly attribute: applicationCache assert_true: applicationCache in window expected true got false
 PASS Window readonly attribute: sessionStorage
 PASS Window readonly attribute: localStorage
 PASS Window attribute: name

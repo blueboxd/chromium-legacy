@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/ui/settings/password/passwords_settings_app_interface.h"
 
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -17,7 +19,6 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/password_test_util.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

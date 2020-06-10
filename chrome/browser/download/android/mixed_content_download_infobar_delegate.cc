@@ -5,6 +5,7 @@
 #include "chrome/browser/download/android/mixed_content_download_infobar_delegate.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,35 +22,26 @@ using MixedContentStatus = download::DownloadItem::MixedContentStatus;
 // static
 void MixedContentDownloadInfoBarDelegate::Create(
     InfoBarService* infobar_service,
-    download::DownloadItem* download_item) {
-  infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(base::WrapUnique(
-          new MixedContentDownloadInfoBarDelegate(download_item))));
+    const base::FilePath& basename,
+    download::DownloadItem::MixedContentStatus mixed_content_status,
+    ResultCallback callback) {
+  infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
+      base::WrapUnique(new MixedContentDownloadInfoBarDelegate(
+          basename, mixed_content_status, std::move(callback)))));
 }
 
 MixedContentDownloadInfoBarDelegate::MixedContentDownloadInfoBarDelegate(
-    download::DownloadItem* download_item)
-    : download_item_(download_item) {
-  download_item_->AddObserver(this);
-
-  DCHECK(download_item->IsMixedContent());
-
-  mixed_content_status_ = download_item->GetMixedContentStatus();
-  message_text_ = l10n_util::GetStringFUTF16(
-      IDS_PROMPT_CONFIRM_MIXED_CONTENT_DOWNLOAD,
-      base::UTF8ToUTF16(download_item_->GetFileNameToReportUser().value()));
+    const base::FilePath& basename,
+    download::DownloadItem::MixedContentStatus mixed_content_status,
+    ResultCallback callback)
+    : mixed_content_status_(mixed_content_status),
+      callback_(std::move(callback)) {
+  message_text_ =
+      l10n_util::GetStringFUTF16(IDS_PROMPT_CONFIRM_MIXED_CONTENT_DOWNLOAD,
+                                 base::UTF8ToUTF16(basename.value()));
 }
 
-MixedContentDownloadInfoBarDelegate::~MixedContentDownloadInfoBarDelegate() {
-  if (download_item_)
-    download_item_->RemoveObserver(this);
-}
-
-void MixedContentDownloadInfoBarDelegate::OnDownloadDestroyed(
-    download::DownloadItem* download_item) {
-  DCHECK_EQ(download_item, download_item_);
-  download_item_ = nullptr;
-}
+MixedContentDownloadInfoBarDelegate::~MixedContentDownloadInfoBarDelegate() {}
 
 infobars::InfoBarDelegate::InfoBarIdentifier
 MixedContentDownloadInfoBarDelegate::GetIdentifier() const {
@@ -66,8 +58,7 @@ bool MixedContentDownloadInfoBarDelegate::ShouldExpire(
 }
 
 void MixedContentDownloadInfoBarDelegate::InfoBarDismissed() {
-  if (download_item_)
-    download_item_->Remove();
+  PostReply(false);
 }
 
 base::string16 MixedContentDownloadInfoBarDelegate::GetMessageText() const {
@@ -88,33 +79,31 @@ base::string16 MixedContentDownloadInfoBarDelegate::GetButtonLabel(
 }
 
 bool MixedContentDownloadInfoBarDelegate::Accept() {
-  if (!download_item_) {
-    return true;
-  }
-
   if (mixed_content_status_ == MixedContentStatus::WARN) {
-    download_item_->ValidateMixedContentDownload();
+    PostReply(true);
     return true;
   }
 
   DCHECK_EQ(mixed_content_status_, MixedContentStatus::BLOCK);
   // Default button is Discard when blocking.
-  download_item_->Remove();
+  PostReply(false);
   return true;
 }
 
 bool MixedContentDownloadInfoBarDelegate::Cancel() {
-  if (!download_item_) {
-    return true;
-  }
-
   if (mixed_content_status_ == MixedContentStatus::WARN) {
-    download_item_->Remove();
+    PostReply(false);
     return true;
   }
 
   DCHECK_EQ(mixed_content_status_, MixedContentStatus::BLOCK);
   // Cancel button is Keep when blocking.
-  download_item_->ValidateMixedContentDownload();
+  PostReply(true);
   return true;
+}
+
+void MixedContentDownloadInfoBarDelegate::PostReply(bool should_download) {
+  DCHECK(callback_);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback_), should_download));
 }

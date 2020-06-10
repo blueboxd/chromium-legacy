@@ -12,6 +12,7 @@
 #include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
+#include "components/embedder_support/origin_trials/features.h"
 #include "components/embedder_support/switches.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
@@ -71,6 +72,25 @@ bool OriginTrialPolicyImpl::IsFeatureDisabled(base::StringPiece feature) const {
 bool OriginTrialPolicyImpl::IsTokenDisabled(
     base::StringPiece token_signature) const {
   return disabled_tokens_.count(token_signature.as_string()) > 0;
+}
+
+// Exclude users in Field trial control group from the corresponding origin
+// trial. Users from experiment group/default group will have access to the
+// origin trial.
+bool OriginTrialPolicyImpl::IsFeatureDisabledForUser(
+    base::StringPiece feature) const {
+  struct OriginTrialFeatureToBaseFeatureMap {
+    const char* origin_trial_feature_name;
+    const base::Feature field_trial_feature;
+  } origin_trial_feature_to_field_trial_feature_map[] = {
+      {"FrobulateThirdParty",
+       kOriginTrialsSampleAPIThirdPartyAlternativeUsage}};
+  for (const auto& mapping : origin_trial_feature_to_field_trial_feature_map) {
+    if (feature == mapping.origin_trial_feature_name) {
+      return !base::FeatureList::IsEnabled(mapping.field_trial_feature);
+    }
+  }
+  return false;
 }
 
 bool OriginTrialPolicyImpl::IsOriginSecure(const GURL& url) const {

@@ -12,6 +12,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/services/sharing/public/mojom/nearby_connections.mojom.h"
+#include "chrome/services/sharing/public/mojom/nearby_decoder.mojom.h"
 #include "chrome/services/sharing/public/mojom/sharing.mojom.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -33,6 +34,7 @@ class NearbyProcessManager
       location::nearby::connections::mojom::NearbyConnections;
   using NearbyConnectionsHostMojom =
       location::nearby::connections::mojom::NearbyConnectionsHost;
+  using NearbySharingDecoderMojom = sharing::mojom::NearbySharingDecoder;
 
   // Returns an instance to the singleton of this class. This is used from
   // multiple BCKS and only allows the first one to launch a process.
@@ -90,12 +92,11 @@ class NearbyProcessManager
   // process (e.g. via backoff timer) if it is still the active profile.
   NearbyConnectionsMojom* GetOrStartNearbyConnections(Profile* profile);
 
-  // TODO(knollr): Add once the mojo interface for the decoder is submitted.
   // Gets a pointer to the Nearby Decoder interface. Starts a new process if
   // there is none running already or reuses an existing one. The same
   // limitations around profiles and lifetime in GetOrStartNearbyConnections()
   // apply here as well.
-  // NearbySharingDecoderMojom* GetOrStartNearbyDecoder(Profile* profile);
+  NearbySharingDecoderMojom* GetOrStartNearbySharingDecoder(Profile* profile);
 
   // Stops the Nearby process if the |profile| is the active profile. This may
   // be used to save resources or to force stop any communication of the
@@ -148,6 +149,16 @@ class NearbyProcessManager
   // Observer::OnNearbyProcessStopped().
   void OnNearbyProcessStopped();
 
+  // Binds a new pipe to the Nearby Sharing Decoder. May start a new process
+  // if there is none running yet.
+  void BindNearbySharingDecoder();
+
+  // Called by the sandboxed process after initializing the Nearby Sharing
+  // Decoder.
+  void OnNearbySharingDecoder(
+      mojo::PendingReceiver<NearbySharingDecoderMojom> receiver,
+      mojo::PendingRemote<NearbySharingDecoderMojom> remote);
+
   // Called when a bluetooth adapter is acquired and we can finish
   // the GetBluetoothAdapter mojo call
   void OnGetBluetoothAdapter(GetBluetoothAdapterCallback callback,
@@ -157,9 +168,8 @@ class NearbyProcessManager
   mojo::Remote<sharing::mojom::Sharing> sharing_process_;
   // The bound remote to the Nearby Connections library inside the sandbox.
   mojo::Remote<NearbyConnectionsMojom> connections_;
-  // TODO(knollr): Add once the mojo interface for the decoder is submitted.
   // The bound remote to the Nearby Decoder interface inside the sandbox.
-  // mojo::Remote<NearbySharingDecoderMojom> decoder_;
+  mojo::Remote<NearbySharingDecoderMojom> decoder_;
 
   // Host interface for the Nearby Connections interface.
   mojo::Receiver<NearbyConnectionsHostMojom> connections_host_{this};

@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_coordinator.h"
 
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #include "base/check.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
@@ -20,7 +22,6 @@
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_table_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

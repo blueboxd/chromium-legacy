@@ -204,7 +204,7 @@ Polymer({
    * @private
    */
   computeMatchingEngines_(list) {
-    if (this.filter == '') {
+    if (this.filter === '') {
       return list;
     }
 
@@ -222,6 +222,6 @@ Polymer({
    * @private
    */
   showNoResultsMessage_(list, filteredList) {
-    return list.length > 0 && filteredList.length == 0;
+    return list.length > 0 && filteredList.length === 0;
   },
 });

@@ -65,6 +65,7 @@ void UpdateRequiredScreenHandler::DeclareLocalizedValues(
                IDS_OFFERS_CONSENT_INFOBAR_DISABLE_BUTTON);
   builder->Add("noNetworkMessage",
                IDS_UPDATE_REQUIRED_SCREEN_NO_NETWORK_MESSAGE);
+  builder->Add("eolAdminMessageTitle", IDS_UPDATE_REQUIRED_EOL_ADMIN_MESSAGE);
 }
 
 void UpdateRequiredScreenHandler::Initialize() {
@@ -79,6 +80,10 @@ void UpdateRequiredScreenHandler::SetEnterpriseAndDeviceName(
     const base::string16& deviceName) {
   CallJS("login.UpdateRequiredScreen.setEnterpriseAndDeviceName",
          enterpriseDomain, deviceName);
+}
+
+void UpdateRequiredScreenHandler::SetEolMessage(const std::string& eolMessage) {
+  CallJS("login.UpdateRequiredScreen.setEolMessage", eolMessage);
 }
 
 void UpdateRequiredScreenHandler::Show() {

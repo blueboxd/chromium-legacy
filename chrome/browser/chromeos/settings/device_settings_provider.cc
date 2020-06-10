@@ -106,6 +106,7 @@ const char* const kKnownSettings[] = {
     kLoginAuthenticationBehavior,
     kLoginVideoCaptureAllowedUrls,
     kMinimumChromeVersionEnforced,
+    kMinimumChromeVersionEolMessage,
     kPluginVmAllowed,
     kPluginVmLicenseKey,
     kPolicyMissingMitigationMode,
@@ -785,6 +786,15 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
       SetJsonDeviceSetting(kMinimumChromeVersionEnforced,
                            policy::key::kMinimumChromeVersionEnforced,
                            container.value(), new_values_cache);
+    }
+  }
+
+  if (policy.has_minimum_chrome_version_eol_message()) {
+    const em::StringPolicyProto& container(
+        policy.minimum_chrome_version_eol_message());
+    if (container.has_value()) {
+      new_values_cache->SetValue(kMinimumChromeVersionEolMessage,
+                                 base::Value(container.value()));
     }
   }
 

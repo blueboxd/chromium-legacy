@@ -93,42 +93,6 @@ interface AnimationTimeline
     attribute @@toStringTag
     getter currentTime
     method constructor
-interface ApplicationCache : EventTarget
-    attribute @@toStringTag
-    attribute CHECKING
-    attribute DOWNLOADING
-    attribute IDLE
-    attribute OBSOLETE
-    attribute UNCACHED
-    attribute UPDATEREADY
-    getter oncached
-    getter onchecking
-    getter ondownloading
-    getter onerror
-    getter onnoupdate
-    getter onobsolete
-    getter onprogress
-    getter onupdateready
-    getter status
-    method abort
-    method constructor
-    method swapCache
-    method update
-    setter oncached
-    setter onchecking
-    setter ondownloading
-    setter onerror
-    setter onnoupdate
-    setter onobsolete
-    setter onprogress
-    setter onupdateready
-interface ApplicationCacheErrorEvent : Event
-    attribute @@toStringTag
-    getter message
-    getter reason
-    getter status
-    getter url
-    method constructor
 interface Attr : Node
     attribute @@toStringTag
     getter localName
@@ -9497,7 +9461,6 @@ interface webkitURL
     attribute textInputController
     attribute top
     attribute window
-    getter applicationCache
     getter caches
     getter clientInformation
     getter crypto

@@ -420,5 +420,5 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_server_pto_timeout, false)
 // If true, default-enable 5RTO blachole detection.
 QUIC_FLAG(
     bool,
-    FLAGS_quic_reloadable_flag_quic_default_enable_5rto_blackhole_detection,
+    FLAGS_quic_reloadable_flag_quic_default_enable_5rto_blackhole_detection2,
     true)

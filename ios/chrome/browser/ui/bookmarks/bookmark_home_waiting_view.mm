@@ -4,12 +4,13 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_waiting_view.h"
 
+#import <MaterialComponents/MaterialActivityIndicator.h>
+#import <MaterialComponents/MaterialPalettes.h>
+
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/material_components/activity_indicator.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
-#import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

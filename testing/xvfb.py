@@ -142,16 +142,9 @@ def _run_with_xvfb(cmd, env, stdoutfile, use_openbox, use_xcompmgr):
   openbox_proc = None
   xcompmgr_proc = None
   xvfb_proc = None
-  xwmstartupcheck_proc = None
   xvfb_ready = MutableBoolean()
   def set_xvfb_ready(*_):
     xvfb_ready.setvalue(True)
-
-  # Allow to wait for openbox. See comment below near xwmstartupcheck_proc.
-  wait_for_openbox = False
-  if '--wait-for-openbox' in cmd:
-    wait_for_openbox = True
-    cmd.remove('--wait-for-openbox')
 
   try:
     signal.signal(signal.SIGTERM, raise_xvfb_error)
@@ -188,24 +181,8 @@ def _run_with_xvfb(cmd, env, stdoutfile, use_openbox, use_xcompmgr):
     dbus_pid = launch_dbus(env)
 
     if use_openbox:
-      # Creates a dummy window that waits for a ReparentNotify event that is
-      # sent whenever Openbox WM starts. Must be started before the OpenBox WM
-      # so that it does not miss the event. This helper program is located in
-      # the current build directory. The program terminates automatically after
-      # 1 second of waiting for the event.
-      if wait_for_openbox:
-        xwmstartupcheck_proc = subprocess.Popen(
-            './xwmstartupcheck', stderr=subprocess.STDOUT, env=env)
-
       openbox_proc = subprocess.Popen(
           ['openbox', '--sm-disable'], stderr=subprocess.STDOUT, env=env)
-
-      # Wait until execution is done. Does not block if the process has already
-      # been terminated. In that case, it's safe to read the return value.
-      if wait_for_openbox:
-        xwmstartupcheck_proc.wait()
-        if xwmstartupcheck_proc.returncode is not 0:
-          raise _XvfbProcessError('Failed to get OpenBox up.')
 
     if use_xcompmgr:
       xcompmgr_proc = subprocess.Popen(
@@ -380,8 +357,7 @@ def _set_xdg_runtime_dir(env):
 
 
 def main():
-  usage = 'Usage: xvfb.py [command [--no-xvfb, or --use-weston, or ' \
-    '--wait-for-openbox] args...]'
+  usage = 'Usage: xvfb.py [command [--no-xvfb or --use-weston] args...]'
   if len(sys.argv) < 2:
     print >> sys.stderr, usage
     return 2

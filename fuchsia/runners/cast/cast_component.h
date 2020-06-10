@@ -28,7 +28,6 @@ FORWARD_DECLARE_TEST(HeadlessCastRunnerIntegrationTest, Headless);
 
 // A specialization of WebComponent which adds Cast-specific services.
 class CastComponent : public WebComponent,
-                      public fuchsia::web::NavigationEventListener,
                       public base::MessagePumpFuchsia::ZxHandleWatcher {
  public:
   struct Params {
@@ -111,9 +110,6 @@ class CastComponent : public WebComponent,
   uint64_t media_session_id_ = 0;
   zx::eventpair headless_view_token_;
   base::MessagePumpForIO::ZxHandleWatchController headless_disconnect_watch_;
-
-  fidl::Binding<fuchsia::web::NavigationEventListener>
-      navigation_listener_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(CastComponent);
 };

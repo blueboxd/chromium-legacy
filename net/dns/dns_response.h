@@ -202,9 +202,9 @@ class NET_EXPORT_PRIVATE DnsResponse {
   bool WriteHeader(base::BigEndianWriter* writer,
                    const dns_protocol::Header& header);
   bool WriteQuestion(base::BigEndianWriter* writer, const DnsQuery& query);
-  bool WriteRecord(base::BigEndianWriter* wirter,
+  bool WriteRecord(base::BigEndianWriter* writer,
                    const DnsResourceRecord& record);
-  bool WriteAnswer(base::BigEndianWriter* wirter,
+  bool WriteAnswer(base::BigEndianWriter* writer,
                    const DnsResourceRecord& answer,
                    const base::Optional<DnsQuery>& query);
 

@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -69,6 +70,11 @@ static Document* ParentDocument(DocumentLoader* loader) {
   if (!owner_element)
     return nullptr;
   return &owner_element->GetDocument();
+}
+
+bool IsPagePopupRunningInWebTest(LocalFrame* frame) {
+  return frame && frame->GetPage()->GetChromeClient().IsPopup() &&
+         WebTestSupport::IsRunningWebTest();
 }
 
 // static
@@ -148,11 +154,6 @@ DocumentInit::InsecureNavigationsToUpgrade() const {
 
 network::mojom::IPAddressSpace DocumentInit::GetIPAddressSpace() const {
   return ip_address_space_;
-}
-
-Settings* DocumentInit::GetSettings() const {
-  DCHECK(MasterDocumentLoader());
-  return MasterDocumentLoader()->GetFrame()->GetSettings();
 }
 
 DocumentInit& DocumentInit::WithDocumentLoader(DocumentLoader* loader,
@@ -290,23 +291,94 @@ DocumentInit& DocumentInit::WithURL(const KURL& url) {
   return *this;
 }
 
+void DocumentInit::CalculateAndCacheDocumentOrigin() {
+  DCHECK(!cached_document_origin_);
+  cached_document_origin_ = GetDocumentOrigin();
+}
+
 scoped_refptr<SecurityOrigin> DocumentInit::GetDocumentOrigin() const {
-  // Origin to commit is specified by the browser process, it must be taken
-  // and used directly. It is currently supplied only for session history
-  // navigations, where the origin was already calcuated previously and
-  // stored on the session history entry.
-  if (origin_to_commit_)
-    return origin_to_commit_;
+  if (cached_document_origin_)
+    return cached_document_origin_;
 
-  if (owner_document_)
-    return owner_document_->GetMutableSecurityOrigin();
+  scoped_refptr<SecurityOrigin> document_origin;
+  if (origin_to_commit_) {
+    // Origin to commit is specified by the browser process, it must be taken
+    // and used directly. It is currently supplied only for session history
+    // navigations, where the origin was already calcuated previously and
+    // stored on the session history entry.
+    document_origin = origin_to_commit_;
+  } else if (IsPagePopupRunningInWebTest(GetFrame())) {
+    // If we are a page popup in LayoutTests ensure we use the popup
+    // owner's security origin so the tests can possibly access the
+    // document via internals API.
+    document_origin = GetFrame()
+                          ->PagePopupOwner()
+                          ->GetDocument()
+                          .GetSecurityOrigin()
+                          ->IsolatedCopy();
+  } else if (owner_document_) {
+    document_origin = owner_document_->GetMutableSecurityOrigin();
+  } else {
+    // Otherwise, create an origin that propagates precursor information
+    // as needed. For non-opaque origins, this creates a standard tuple
+    // origin, but for opaque origins, it creates an origin with the
+    // initiator origin as the precursor.
+    document_origin = SecurityOrigin::CreateWithReferenceOrigin(
+        url_, initiator_origin_.get());
+  }
 
-  // Otherwise, create an origin that propagates precursor information
-  // as needed. For non-opaque origins, this creates a standard tuple
-  // origin, but for opaque origins, it creates an origin with the
-  // initiator origin as the precursor.
-  return SecurityOrigin::CreateWithReferenceOrigin(url_,
-                                                   initiator_origin_.get());
+  if ((GetSandboxFlags() & network::mojom::blink::WebSandboxFlags::kOrigin) !=
+      network::mojom::blink::WebSandboxFlags::kNone) {
+    auto sandbox_origin = document_origin->DeriveNewOpaqueOrigin();
+
+    // If we're supposed to inherit our security origin from our
+    // owner, but we're also sandboxed, the only things we inherit are
+    // the origin's potential trustworthiness and the ability to
+    // load local resources. The latter lets about:blank iframes in
+    // file:// URL documents load images and other resources from
+    // the file system.
+    //
+    // Note: Sandboxed about:srcdoc iframe without "allow-same-origin" aren't
+    // allowed to load user's file, even if its parent can.
+    if (owner_document_) {
+      if (document_origin->IsPotentiallyTrustworthy())
+        sandbox_origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
+      if (document_origin->CanLoadLocalResources() && !IsSrcdocDocument())
+        sandbox_origin->GrantLoadLocalResources();
+    }
+    document_origin = sandbox_origin;
+  }
+
+  if (MasterDocumentLoader() &&
+      MasterDocumentLoader()->GetFrame()->GetSettings()) {
+    Settings* settings = MasterDocumentLoader()->GetFrame()->GetSettings();
+    if (!settings->GetWebSecurityEnabled()) {
+      // Web security is turned off. We should let this document access
+      // every other document. This is used primary by testing harnesses for
+      // web sites.
+      document_origin->GrantUniversalAccess();
+    } else if (document_origin->IsLocal()) {
+      if (settings->GetAllowUniversalAccessFromFileURLs()) {
+        // Some clients want local URLs to have universal access, but that
+        // setting is dangerous for other clients.
+        document_origin->GrantUniversalAccess();
+      } else if (!settings->GetAllowFileAccessFromFileURLs()) {
+        // Some clients do not want local URLs to have access to other local
+        // URLs.
+        document_origin->BlockLocalAccessFromLocalOrigin();
+      }
+    }
+  }
+
+  if (grant_load_local_resources_)
+    document_origin->GrantLoadLocalResources();
+
+  if (document_origin->IsOpaque() && ShouldSetURL()) {
+    KURL url = url_.IsEmpty() ? BlankURL() : url_;
+    if (SecurityOrigin::Create(url)->IsPotentiallyTrustworthy())
+      document_origin->SetOpaqueOriginIsPotentiallyTrustworthy(true);
+  }
+  return document_origin;
 }
 
 DocumentInit& DocumentInit::WithOwnerDocument(Document* owner_document) {

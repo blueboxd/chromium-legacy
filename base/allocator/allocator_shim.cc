@@ -67,16 +67,8 @@ bool CallNewHandler(size_t size) {
 }
 
 inline const base::allocator::AllocatorDispatch* GetChainHead() {
-  // TODO(primiano): Just use NoBarrier_Load once crbug.com/593344 is fixed.
-  // Unfortunately due to that bug NoBarrier_Load() is mistakenly fully
-  // barriered on Linux+Clang, and that causes visible perf regressons.
   return reinterpret_cast<const base::allocator::AllocatorDispatch*>(
-#if defined(OS_LINUX) && defined(__clang__)
-      *static_cast<const volatile base::subtle::AtomicWord*>(&g_chain_head)
-#else
-      base::subtle::NoBarrier_Load(&g_chain_head)
-#endif
-  );
+      base::subtle::NoBarrier_Load(&g_chain_head));
 }
 
 }  // namespace

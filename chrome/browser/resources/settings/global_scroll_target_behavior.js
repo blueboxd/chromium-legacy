@@ -56,7 +56,7 @@ cr.define('settings', function() {
     /** @override */
     attached() {
       this.active_ =
-          settings.Router.getInstance().getCurrentRoute() == this.subpageRoute;
+          settings.Router.getInstance().getCurrentRoute() === this.subpageRoute;
       scrollTargetResolver.promise.then(this._setScrollTarget.bind(this));
     },
 
@@ -69,7 +69,7 @@ cr.define('settings', function() {
       // TODO(https://crbug.com/859794): Having this timeout can result some
       // jumpy behaviour in the scroll handlers. |this.active_| can be set
       // immediately when this bug is fixed.
-      if (route == this.subpageRoute) {
+      if (route === this.subpageRoute) {
         this.active_ = true;
       } else {
         setTimeout(() => {

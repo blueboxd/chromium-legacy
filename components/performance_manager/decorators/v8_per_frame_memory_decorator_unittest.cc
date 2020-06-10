@@ -27,6 +27,9 @@ constexpr uint64_t kUnassociatedBytes = 0xABBA;
 
 namespace {
 
+using FrameData = V8PerFrameMemoryDecorator::FrameData;
+using ProcessData = V8PerFrameMemoryDecorator::ProcessData;
+
 class TestV8PerFrameMemoryDecorator : public V8PerFrameMemoryDecorator {
  public:
   explicit TestV8PerFrameMemoryDecorator(
@@ -97,13 +100,12 @@ class V8PerFrameMemoryDecoratorTest : public GraphTestHarness {
     }
   }
 
-  TestV8PerFrameMemoryDecorator* CreateDecorator() {
+  void CreateDecorator() {
     std::unique_ptr<TestV8PerFrameMemoryDecorator> decorator =
         std::make_unique<TestV8PerFrameMemoryDecorator>(kMinTimeBetweenRequests,
                                                         this);
     test_decorator_raw_ = decorator.get();
     graph()->PassToGraph(std::move(decorator));
-    return test_decorator_raw_;
   }
 
   void ExpectQuery(
@@ -168,7 +170,7 @@ void TestV8PerFrameMemoryDecorator::BindReceiverWithProxyHost(
 }
 
 TEST_F(V8PerFrameMemoryDecoratorTest, InstantiateOnEmptyGraph) {
-  auto* decorator = CreateDecorator();
+  CreateDecorator();
 
   MockV8PerFrameMemoryReporter mock_reporter;
   auto data = mojom::PerProcessV8MemoryUsageData::New();
@@ -180,11 +182,16 @@ TEST_F(V8PerFrameMemoryDecoratorTest, InstantiateOnEmptyGraph) {
       content::PROCESS_TYPE_RENDERER,
       RenderProcessHostProxy::CreateForTesting(kTestProcessID));
 
+  // Data should not be available until the measurement is taken.
+  EXPECT_FALSE(ProcessData::ForProcessNode(process.get()));
+
   // Run until idle to make sure the measurement isn't a hard loop.
   task_env().RunUntilIdle();
 
-  EXPECT_EQ(kUnassociatedBytes,
-            decorator->GetUnassociatedBytesForTesting(process.get()));
+  EXPECT_TRUE(ProcessData::ForProcessNode(process.get()));
+  EXPECT_EQ(
+      kUnassociatedBytes,
+      ProcessData::ForProcessNode(process.get())->unassociated_v8_bytes_used());
 }
 
 TEST_F(V8PerFrameMemoryDecoratorTest, InstantiateOnNonEmptyGraph) {
@@ -199,13 +206,18 @@ TEST_F(V8PerFrameMemoryDecoratorTest, InstantiateOnNonEmptyGraph) {
   data->unassociated_bytes_used = kUnassociatedBytes;
   ExpectBindAndRespondToQuery(&mock_reporter, std::move(data));
 
-  auto* decorator = CreateDecorator();
+  CreateDecorator();
+
+  // Data should not be available until the measurement is taken.
+  EXPECT_FALSE(ProcessData::ForProcessNode(process.get()));
 
   // Run until idle to make sure the measurement isn't a hard loop.
   task_env().RunUntilIdle();
 
-  EXPECT_EQ(kUnassociatedBytes,
-            decorator->GetUnassociatedBytesForTesting(process.get()));
+  EXPECT_TRUE(ProcessData::ForProcessNode(process.get()));
+  EXPECT_EQ(
+      kUnassociatedBytes,
+      ProcessData::ForProcessNode(process.get())->unassociated_v8_bytes_used());
 }
 
 TEST_F(V8PerFrameMemoryDecoratorTest, OnlyMeasureRenderers) {
@@ -240,12 +252,15 @@ TEST_F(V8PerFrameMemoryDecoratorTest, QueryRateIsLimited) {
     ExpectBindAndRespondToQuery(&mock_reporter, std::move(data));
   }
 
-  auto* decorator = CreateDecorator();
+  CreateDecorator();
 
   // Run until idle to make sure the measurement isn't a hard loop.
   task_env().RunUntilIdle();
 
-  EXPECT_EQ(1u, decorator->GetUnassociatedBytesForTesting(process.get()));
+  EXPECT_TRUE(ProcessData::ForProcessNode(process.get()));
+  EXPECT_EQ(
+      1u,
+      ProcessData::ForProcessNode(process.get())->unassociated_v8_bytes_used());
 
   // There shouldn't be an additional request this soon.
   task_env().FastForwardBy(kMinTimeBetweenRequests / 2);
@@ -269,7 +284,10 @@ TEST_F(V8PerFrameMemoryDecoratorTest, QueryRateIsLimited) {
   task_env().FastForwardBy(10 * kMinTimeBetweenRequests);
   testing::Mock::VerifyAndClearExpectations(&mock_reporter);
 
-  EXPECT_EQ(1u, decorator->GetUnassociatedBytesForTesting(process.get()));
+  EXPECT_TRUE(ProcessData::ForProcessNode(process.get()));
+  EXPECT_EQ(
+      1u,
+      ProcessData::ForProcessNode(process.get())->unassociated_v8_bytes_used());
 
   // Expect another query once completing the query above.
   {
@@ -290,7 +308,10 @@ TEST_F(V8PerFrameMemoryDecoratorTest, QueryRateIsLimited) {
   task_env().RunUntilIdle();
 
   // This should have updated all the way to the third response.
-  EXPECT_EQ(3u, decorator->GetUnassociatedBytesForTesting(process.get()));
+  EXPECT_TRUE(ProcessData::ForProcessNode(process.get()));
+  EXPECT_EQ(
+      3u,
+      ProcessData::ForProcessNode(process.get())->unassociated_v8_bytes_used());
 
   // Despite the long delay to respond to request 2, there shouldn't be another
   // request until kMinTimeBetweenRequests has expired.
@@ -299,7 +320,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, QueryRateIsLimited) {
 }
 
 TEST_F(V8PerFrameMemoryDecoratorTest, MultipleProcessesHaveDistinctSchedules) {
-  auto* decorator = CreateDecorator();
+  CreateDecorator();
 
   // Create a process node and validate that it gets a request.
   MockV8PerFrameMemoryReporter reporter1;
@@ -331,8 +352,12 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MultipleProcessesHaveDistinctSchedules) {
   task_env().RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(&reporter2);
 
-  EXPECT_EQ(1u, decorator->GetUnassociatedBytesForTesting(process1.get()));
-  EXPECT_EQ(2u, decorator->GetUnassociatedBytesForTesting(process2.get()));
+  EXPECT_TRUE(ProcessData::ForProcessNode(process1.get()));
+  EXPECT_EQ(1u, ProcessData::ForProcessNode(process1.get())
+                    ->unassociated_v8_bytes_used());
+  EXPECT_TRUE(ProcessData::ForProcessNode(process2.get()));
+  EXPECT_EQ(2u, ProcessData::ForProcessNode(process2.get())
+                    ->unassociated_v8_bytes_used());
 
   // Capture the request time from each process.
   auto capture_time_lambda =
@@ -362,7 +387,7 @@ TEST_F(V8PerFrameMemoryDecoratorTest, MultipleProcessesHaveDistinctSchedules) {
 }
 
 TEST_F(V8PerFrameMemoryDecoratorTest, PerFrameDataIsDistributed) {
-  auto* decorator = CreateDecorator();
+  CreateDecorator();
 
   MockV8PerFrameMemoryReporter reporter;
   {
@@ -382,7 +407,10 @@ TEST_F(V8PerFrameMemoryDecoratorTest, PerFrameDataIsDistributed) {
   testing::Mock::VerifyAndClearExpectations(&reporter);
 
   // Since the frame was unknown, the usage should have accrued to unassociated.
-  EXPECT_EQ(1024u, decorator->GetUnassociatedBytesForTesting(process.get()));
+  EXPECT_TRUE(ProcessData::ForProcessNode(process.get()));
+  EXPECT_EQ(
+      1024u,
+      ProcessData::ForProcessNode(process.get())->unassociated_v8_bytes_used());
 
   // Create a couple of frames with specified IDs.
   auto page = CreateNode<PageNodeImpl>();
@@ -404,8 +432,10 @@ TEST_F(V8PerFrameMemoryDecoratorTest, PerFrameDataIsDistributed) {
   task_env().FastForwardBy(kMinTimeBetweenRequests * 1.5);
   testing::Mock::VerifyAndClearExpectations(&reporter);
 
-  EXPECT_EQ(1001u, decorator->GetAssociatedBytesForTesting(frame1.get()));
-  EXPECT_EQ(1002u, decorator->GetAssociatedBytesForTesting(frame2.get()));
+  ASSERT_TRUE(FrameData::ForFrameNode(frame1.get()));
+  EXPECT_EQ(1001u, FrameData::ForFrameNode(frame1.get())->v8_bytes_used());
+  ASSERT_TRUE(FrameData::ForFrameNode(frame2.get()));
+  EXPECT_EQ(1002u, FrameData::ForFrameNode(frame2.get())->v8_bytes_used());
 
   // Now verify that data is cleared for any frame that doesn't get an update,
   // plus verify that unknown frame data toes to unassociated bytes.
@@ -419,10 +449,13 @@ TEST_F(V8PerFrameMemoryDecoratorTest, PerFrameDataIsDistributed) {
   task_env().FastForwardBy(kMinTimeBetweenRequests);
   testing::Mock::VerifyAndClearExpectations(&reporter);
 
-  EXPECT_EQ(1003u, decorator->GetAssociatedBytesForTesting(frame1.get()));
-  EXPECT_FALSE(decorator->HasAssociatedBytesForTesting(frame2.get()));
-  EXPECT_EQ(0u, decorator->GetAssociatedBytesForTesting(frame2.get()));
-  EXPECT_EQ(2233u, decorator->GetUnassociatedBytesForTesting(process.get()));
+  ASSERT_TRUE(FrameData::ForFrameNode(frame1.get()));
+  EXPECT_EQ(1003u, FrameData::ForFrameNode(frame1.get())->v8_bytes_used());
+  EXPECT_FALSE(FrameData::ForFrameNode(frame2.get()));
+  ASSERT_TRUE(ProcessData::ForProcessNode(process.get()));
+  EXPECT_EQ(
+      2233u,
+      ProcessData::ForProcessNode(process.get())->unassociated_v8_bytes_used());
 }
 
 }  // namespace performance_manager

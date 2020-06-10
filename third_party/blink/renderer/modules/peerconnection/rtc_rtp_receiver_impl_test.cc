@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/test_webrtc_stats_report_obtainer.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/webrtc/api/stats/rtc_stats_report.h"
@@ -118,8 +119,8 @@ TEST_F(RTCRtpReceiverImplTest, CreateReceiver) {
   scoped_refptr<blink::MockWebRtcAudioTrack> webrtc_track =
       blink::MockWebRtcAudioTrack::Create("webrtc_track");
   receiver_ = CreateReceiver(webrtc_track);
-  EXPECT_FALSE(receiver_->Track().IsNull());
-  EXPECT_EQ(receiver_->Track().Id().Utf8(), webrtc_track->id());
+  EXPECT_FALSE(!receiver_->Track());
+  EXPECT_EQ(receiver_->Track()->Id().Utf8(), webrtc_track->id());
   EXPECT_EQ(receiver_->state().track_ref()->webrtc_track(), webrtc_track);
   EXPECT_FALSE(receiver_->GetEncodedAudioStreamTransformer());
   EXPECT_FALSE(receiver_->GetEncodedVideoStreamTransformer());
@@ -132,16 +133,16 @@ TEST_F(RTCRtpReceiverImplTest, ShallowCopy) {
   auto copy = std::make_unique<RTCRtpReceiverImpl>(*receiver_);
   EXPECT_EQ(receiver_->state().track_ref()->webrtc_track(), webrtc_track);
   const auto& webrtc_receiver = receiver_->state().webrtc_receiver();
-  auto web_track_unique_id = receiver_->Track().UniqueId();
+  auto web_track_unique_id = receiver_->Track()->UniqueId();
   // Copy is identical to original.
   EXPECT_EQ(copy->state().webrtc_receiver(), webrtc_receiver);
   EXPECT_EQ(copy->state().track_ref()->webrtc_track(), webrtc_track);
-  EXPECT_EQ(copy->Track().UniqueId(), web_track_unique_id);
+  EXPECT_EQ(copy->Track()->UniqueId(), web_track_unique_id);
   // Copy keeps the internal state alive.
   receiver_.reset();
   EXPECT_EQ(copy->state().webrtc_receiver(), webrtc_receiver);
   EXPECT_EQ(copy->state().track_ref()->webrtc_track(), webrtc_track);
-  EXPECT_EQ(copy->Track().UniqueId(), web_track_unique_id);
+  EXPECT_EQ(copy->Track()->UniqueId(), web_track_unique_id);
 }
 
 TEST_F(RTCRtpReceiverImplTest, GetStats) {

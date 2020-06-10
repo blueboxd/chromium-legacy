@@ -124,7 +124,7 @@ Polymer({
     // If export started on a different tab and is still in progress, display a
     // busy UI.
     this.passwordManager_.requestExportProgressStatus(status => {
-      if (status == ProgressStatus.IN_PROGRESS) {
+      if (status === ProgressStatus.IN_PROGRESS) {
         this.switchToDialog_(States.IN_PROGRESS);
       }
     });
@@ -219,7 +219,7 @@ Polymer({
   exportPasswords_() {
     this.passwordManager_.exportPasswords(() => {
       if (chrome.runtime.lastError &&
-          chrome.runtime.lastError.message == 'in-progress') {
+          chrome.runtime.lastError.message === 'in-progress') {
         // Exporting was started by a different call to exportPasswords() and is
         // is still in progress. This UI needs to be updated to the current
         // status.
@@ -234,16 +234,16 @@ Polymer({
    * @private
    */
   processProgress_(progress) {
-    if (progress.status == ProgressStatus.IN_PROGRESS) {
+    if (progress.status === ProgressStatus.IN_PROGRESS) {
       this.progressTaskToken_ =
           setTimeout(this.progressTask_.bind(this), progressBarDelayMs);
       return;
     }
-    if (progress.status == ProgressStatus.SUCCEEDED) {
+    if (progress.status === ProgressStatus.SUCCEEDED) {
       this.close();
       return;
     }
-    if (progress.status == ProgressStatus.FAILED_WRITE_FAILED) {
+    if (progress.status === ProgressStatus.FAILED_WRITE_FAILED) {
       this.exportErrorMessage = this.i18n(
           'exportPasswordsFailTitle',
           /** @type {string} */ (progress.folderName));
@@ -258,9 +258,9 @@ Polymer({
    * @private
    */
   switchToDialog_(state) {
-    this.showStartDialog_ = state == States.START;
-    this.showProgressDialog_ = state == States.IN_PROGRESS;
-    this.showErrorDialog_ = state == States.ERROR;
+    this.showStartDialog_ = state === States.START;
+    this.showProgressDialog_ = state === States.IN_PROGRESS;
+    this.showErrorDialog_ = state === States.ERROR;
   },
 
   /**

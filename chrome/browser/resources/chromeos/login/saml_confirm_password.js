@@ -2,20 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+(function() {
+
+/**
+ * UI mode for the dialog.
+ * @enum {string}
+ */
+const UIState = {
+  PASSWORD: 'password',
+  PROGRESS: 'progress',
+};
+
 Polymer({
   is: 'saml-confirm-password',
 
-  behaviors: [OobeI18nBehavior, LoginScreenBehavior],
+  behaviors: [
+    OobeI18nBehavior,
+    OobeDialogHostBehavior,
+    LoginScreenBehavior,
+    MultiStepBehavior,
+  ],
 
   properties: {
     email: String,
 
-    disabled: {type: Boolean, value: false, observer: 'disabledChanged_'},
-
-    manualInput: {type: Boolean, value: false, observer: 'manualInputChanged_'}
+    isManualInput: {
+      type: Boolean,
+      value: false,
+    }
   },
 
   EXTERNAL_API: ['show'],
+
+  defaultUIStep() {
+    return UIState.PASSWORD;
+  },
+
+  UI_STEPS: UIState,
 
   /**
    * Callback to run when the screen is dismissed.
@@ -27,19 +52,13 @@ Polymer({
     this.initializeLoginScreen('ConfirmSamlPasswordScreen', {
       resetAllowed: true,
     });
+    this.addSubmitListener(this.$.passwordInput, 'password');
+    this.addSubmitListener(this.$.confirmPasswordInput, 'confirm');
   },
 
   /** Initial UI State for screen */
   getOobeUIInitialState() {
     return OOBE_UI_STATE.SAML_PASSWORD_CONFIRM;
-  },
-
-  onAfterShow(data) {
-    this.focus();
-  },
-
-  onBeforeHide() {
-    this.reset();
   },
 
   /**
@@ -55,7 +74,7 @@ Polymer({
     this.callback_ = callback;
     this.reset();
     this.email = email;
-    this.manualInput = manualPasswordInput;
+    this.isManualInput = manualPasswordInput;
     if (attemptCount > 0)
       this.$.passwordInput.invalid = true;
     cr.ui.Oobe.showScreen({id: 'saml-confirm-password'});
@@ -64,29 +83,16 @@ Polymer({
   reset() {
     if (this.$.cancelConfirmDlg.open)
       this.$.cancelConfirmDlg.close();
-    this.disabled = false;
-    this.$.navigation.closeVisible = true;
-    if (this.$.animatedPages.selected != 0)
-      this.$.animatedPages.selected = 0;
+    this.setUIStep(UIState.PASSWORD);
     this.$.passwordInput.invalid = false;
     this.$.passwordInput.value = '';
-    if (this.manualInput) {
+    if (this.isManualInput) {
       this.$$('#confirmPasswordInput').invalid = false;
       this.$$('#confirmPasswordInput').value = '';
     }
   },
 
-  invalidate() {
-    this.$.passwordInput.invalid = true;
-  },
-
-  focus() {
-    if (this.$.animatedPages.selected == 0)
-      this.$.passwordInput.focus();
-  },
-
-  onClose_() {
-    this.disabled = true;
+  onCancel_() {
     this.$.cancelConfirmDlg.showModal();
   },
 
@@ -101,10 +107,10 @@ Polymer({
     cr.ui.Oobe.resetSigninUI(true);
   },
 
-  onPasswordSubmitted_() {
+  submit_() {
     if (!this.$.passwordInput.validate())
       return;
-    if (this.manualInput) {
+    if (this.isManualInput) {
       // When using manual password entry, both passwords must match.
       var confirmPasswordInput = this.$$('#confirmPasswordInput');
       if (!confirmPasswordInput.validate())
@@ -117,44 +123,33 @@ Polymer({
       }
     }
 
-    this.$.animatedPages.selected = 1;
-    this.$.navigation.closeVisible = false;
-
+    this.setUIStep(UIState.PROGRESS);
     this.callback_(this.$.passwordInput.value);
+    this.reset();
+  },
+
+  onFieldSubmit(id) {
+    this.submit_();
   },
 
   onDialogOverlayClosed_() {
     this.disabled = false;
   },
 
-  disabledChanged_(disabled) {
-    this.$.confirmPasswordCard.classList.toggle('full-disabled', disabled);
+  subtitleText_(locale, manual) {
+    const key = manual ? 'manualPasswordTitle' : 'confirmPasswordTitle';
+    return this.i18n(key);
   },
 
-  onAnimationFinish_() {
-    if (this.$.animatedPages.selected == 1)
-      this.$.passwordInput.value = '';
+  passwordPlaceholder_(locale, manual) {
+    const key = manual ? 'manualPasswordInputLabel' : 'confirmPasswordLabel';
+    return this.i18n(key);
   },
 
-  manualInputChanged_() {
-    var titleId =
-        this.manualInput ? 'manualPasswordTitle' : 'confirmPasswordTitle';
-    var passwordInputLabelId =
-        this.manualInput ? 'manualPasswordInputLabel' : 'confirmPasswordLabel';
-    var passwordInputErrorId = this.manualInput ?
-        'manualPasswordMismatch' :
-        'confirmPasswordIncorrectPassword';
-
-    this.$.title.textContent = loadTimeData.getString(titleId);
-    this.$.passwordInput.label = loadTimeData.getString(passwordInputLabelId);
-    this.$.passwordInput.error = loadTimeData.getString(passwordInputErrorId);
-  },
-
-  getConfirmPasswordInputLabel_() {
-    return loadTimeData.getString('confirmPasswordLabel');
-  },
-
-  getConfirmPasswordInputError_() {
-    return loadTimeData.getString('manualPasswordMismatch');
+  passwordErrorText_(locale, manual) {
+    const key =
+        manual ? 'manualPasswordMismatch' : 'confirmPasswordIncorrectPassword';
+    return this.i18n(key);
   },
 });
+})();

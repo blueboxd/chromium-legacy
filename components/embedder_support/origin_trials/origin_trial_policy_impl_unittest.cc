@@ -11,6 +11,8 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
+#include "components/embedder_support/origin_trials/features.h"
 #include "components/embedder_support/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -263,6 +265,17 @@ TEST_F(OriginTrialPolicyImplTest, DisableThreeTokens) {
   EXPECT_TRUE(manager()->IsTokenDisabled(token1_signature_));
   EXPECT_TRUE(manager()->IsTokenDisabled(token2_signature_));
   EXPECT_TRUE(manager()->IsTokenDisabled(token3_signature_));
+}
+
+TEST_F(OriginTrialPolicyImplTest, DisableFeatureForUser) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      kOriginTrialsSampleAPIThirdPartyAlternativeUsage);
+  EXPECT_FALSE(manager()->IsFeatureDisabledForUser("FrobulateThirdParty"));
+  feature_list.Reset();
+  feature_list.InitAndDisableFeature(
+      kOriginTrialsSampleAPIThirdPartyAlternativeUsage);
+  EXPECT_TRUE(manager()->IsFeatureDisabledForUser("FrobulateThirdParty"));
 }
 
 // Tests for initialization from command line

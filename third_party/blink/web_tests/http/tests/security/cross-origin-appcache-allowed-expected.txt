@@ -7,9 +7,9 @@ This iframe should have a cache:
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
 --------
-Cache found
+Cache not found 
 
 --------
 Frame: '<!--framePath //<!--frame1-->-->'
 --------
-Cache found
+Cache not found 

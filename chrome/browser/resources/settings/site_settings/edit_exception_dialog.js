@@ -68,7 +68,7 @@ Polymer({
 
   /** @private */
   onActionButtonTap_() {
-    if (this.model.origin != this.origin_) {
+    if (this.model.origin !== this.origin_) {
       // The way to "edit" an exception is to remove it and and a new one.
       this.browserProxy_.resetCategoryPermissionForPattern(
           this.model.origin, this.model.embeddingOrigin, this.model.category,
@@ -84,7 +84,7 @@ Polymer({
 
   /** @private */
   validate_() {
-    if (this.$$('cr-input').value.trim() == '') {
+    if (this.$$('cr-input').value.trim() === '') {
       this.invalid_ = true;
       return;
     }

@@ -217,15 +217,17 @@ def _RunLint(lint_binary_path,
                             stderr_filter=stderr_filter)
     end = time.time() - start
     logging.info('Lint command took %ss', end)
-  except build_utils.CalledProcessError:
+  except build_utils.CalledProcessError as e:
     if not silent:
-      logging.error(
-          'Lint found new issues.\n'
-          ' - Here is the project.xml file passed to lint: %s\n'
-          ' - For more information about lint and how to fix lint issues,'
-          ' please refer to %s\n', _SrcRelative(project_xml_path), _LINT_MD_URL)
+      print('Lint found new issues.\n'
+            ' - Here is the project.xml file passed to lint: {}\n'
+            ' - For more information about lint and how to fix lint issues,'
+            ' please refer to {}\n'.format(_SrcRelative(project_xml_path),
+                                           _LINT_MD_URL))
     if can_fail_build:
       raise
+    else:
+      print(e)
   else:
     # Lint succeeded, no need to keep generated files for debugging purposes.
     shutil.rmtree(resource_root_dir, ignore_errors=True)

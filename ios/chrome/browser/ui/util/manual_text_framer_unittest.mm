@@ -4,11 +4,12 @@
 
 #include "ios/chrome/browser/ui/util/manual_text_framer.h"
 
+#import <MaterialComponents/MaterialTypography.h>
+
 #include "base/mac/foundation_util.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/util/core_text_util.h"
 #import "ios/chrome/browser/ui/util/text_frame.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"

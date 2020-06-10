@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/storage_partition.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
@@ -258,11 +257,9 @@ std::unique_ptr<views::Combobox> CreateDestinationCombobox(
     std::string primary_account_email,
     ui::ImageModel primary_account_avatar,
     bool is_using_account_store) {
-  // TODO(crbug.com/1044038): Use a proper device logo instead of this place
-  // holder icon.
-  ui::ImageModel device = ui::ImageModel::FromImageSkia(gfx::CreateVectorIcon(
-      vector_icons::kDevicesIcon, ComboboxIconSize(), gfx::kGoogleGrey700));
-
+  ui::ImageModel computer_image = ui::ImageModel::FromVectorIcon(
+      kHardwareComputerIcon, ui::NativeTheme::kColorId_DefaultIconColor,
+      ComboboxIconSize());
   // TODO(crbug.com/1044038): Use an internationalized string instead.
   std::vector<ComboboxItem> destinations = {
       {.combobox_text = "in your Google Acccount",
@@ -272,7 +269,7 @@ std::unique_ptr<views::Combobox> CreateDestinationCombobox(
       {.combobox_text = "only on this device",
        .dropdown_text = "only on this device",
        .dropdown_secondary_text = "",
-       .icon = device}};
+       .icon = computer_image}};
 
   auto combobox = std::make_unique<views::Combobox>(
       std::make_unique<ComboboxModelWithIcons>(std::move(destinations)));
@@ -537,15 +534,16 @@ void PasswordSaveUpdateWithAccountStoreView::OnThemeChanged() {
                ? IDR_SAVE_PASSWORD_DARK
                : IDR_SAVE_PASSWORD;
   GetBubbleFrameView()->SetHeaderView(CreateHeaderImage(id));
-
-  const SkColor icon_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_DefaultIconColor);
-  views::SetImageFromVectorIconWithColor(password_view_button_, kEyeIcon,
-                                         GetDefaultSizeOfVectorIcon(kEyeIcon),
-                                         icon_color);
-  views::SetToggledImageFromVectorIconWithColor(
-      password_view_button_, kEyeCrossedIcon,
-      GetDefaultSizeOfVectorIcon(kEyeCrossedIcon), icon_color);
+  if (password_view_button_) {
+    const SkColor icon_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_DefaultIconColor);
+    views::SetImageFromVectorIconWithColor(password_view_button_, kEyeIcon,
+                                           GetDefaultSizeOfVectorIcon(kEyeIcon),
+                                           icon_color);
+    views::SetToggledImageFromVectorIconWithColor(
+        password_view_button_, kEyeCrossedIcon,
+        GetDefaultSizeOfVectorIcon(kEyeCrossedIcon), icon_color);
+  }
 }
 
 void PasswordSaveUpdateWithAccountStoreView::TogglePasswordVisibility() {

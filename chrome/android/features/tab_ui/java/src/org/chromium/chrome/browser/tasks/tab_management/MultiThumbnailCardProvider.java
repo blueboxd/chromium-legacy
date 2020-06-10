@@ -205,7 +205,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
         // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
         // incognito profile) instead of always using regular profile. It works correctly now, but
         // it is not safe.
-        mTabListFaviconProvider = new TabListFaviconProvider(context);
+        mTabListFaviconProvider = new TabListFaviconProvider(context, false);
 
         // Initialize Paints to use.
         mEmptyThumbnailPaint = new Paint();

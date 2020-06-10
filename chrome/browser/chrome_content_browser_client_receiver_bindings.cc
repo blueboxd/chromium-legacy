@@ -76,7 +76,8 @@ void MaybeCreateSafeBrowsingForRenderer(
     int process_id,
     content::ResourceContext* resource_context,
     base::RepeatingCallback<scoped_refptr<safe_browsing::UrlCheckerDelegate>(
-        bool safe_browsing_enabled)> get_checker_delegate,
+        bool safe_browsing_enabled,
+        bool should_check_on_sb_disabled)> get_checker_delegate,
     mojo::PendingReceiver<safe_browsing::mojom::SafeBrowsing> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -93,7 +94,11 @@ void MaybeCreateSafeBrowsingForRenderer(
       base::BindOnce(
           &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate, process_id,
           resource_context,
-          base::BindRepeating(get_checker_delegate, safe_browsing_enabled),
+          base::BindRepeating(get_checker_delegate, safe_browsing_enabled,
+                              // Navigation initiated from renderer should never
+                              // check when safe browsing is disabled, because
+                              // enterprise check only supports mainframe URL.
+                              /*should_check_on_sb_disabled=*/false),
           std::move(receiver)));
 }
 

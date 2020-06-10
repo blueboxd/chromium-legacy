@@ -829,14 +829,12 @@ static bool PrefersColorSchemeMediaFeatureEval(
       media_values.GetPreferredColorScheme();
 
   if (!value.IsValid())
-    return preferred_scheme != PreferredColorScheme::kNoPreference;
+    return true;
 
   if (!value.is_id)
     return false;
 
-  return (preferred_scheme == PreferredColorScheme::kNoPreference &&
-          value.id == CSSValueID::kNoPreference) ||
-         (preferred_scheme == PreferredColorScheme::kDark &&
+  return (preferred_scheme == PreferredColorScheme::kDark &&
           value.id == CSSValueID::kDark) ||
          (preferred_scheme == PreferredColorScheme::kLight &&
           value.id == CSSValueID::kLight);

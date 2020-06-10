@@ -4,157 +4,148 @@
 
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 
+#include <gtk-primary-selection-client-protocol.h>
+#include <wayland-client-protocol.h>
+
+#include <cstdint>
 #include <vector>
 
 #include "base/files/file_util.h"
-#include "base/optional.h"
-#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
-#include "ui/ozone/platform/wayland/host/wayland_data_device.h"
-#include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
-#include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
-#include "ui/ozone/platform/wayland/host/wayland_window.h"
 
-namespace ui {
+namespace wl {
 
-WaylandDataSource::WaylandDataSource(wl_data_source* data_source,
-                                     WaylandConnection* connection)
-    : data_source_(data_source), connection_(connection) {
+template <typename T>
+DataSource<T>::DataSource(T* data_source,
+                          ui::WaylandConnection* connection,
+                          Delegate* delegate)
+    : data_source_(data_source), connection_(connection), delegate_(delegate) {
   DCHECK(data_source_);
   DCHECK(connection_);
-  static const struct wl_data_source_listener kDataSourceListener = {
-      WaylandDataSource::OnTarget,      WaylandDataSource::OnSend,
-      WaylandDataSource::OnCancel,      WaylandDataSource::OnDnDDropPerformed,
-      WaylandDataSource::OnDnDFinished, WaylandDataSource::OnAction};
-  wl_data_source_add_listener(data_source, &kDataSourceListener, this);
+  DCHECK(delegate_);
+
+  Initialize();
 }
 
-WaylandDataSource::~WaylandDataSource() = default;
-
-void WaylandDataSource::WriteToClipboard(
-    const PlatformClipboard::DataMap& data_map) {
-  for (const auto& data : data_map) {
-    wl_data_source_offer(data_source_.get(), data.first.c_str());
-    if (strcmp(data.first.c_str(), kMimeTypeText) == 0)
-      wl_data_source_offer(data_source_.get(), kMimeTypeTextUtf8);
-  }
-  auto* device = connection_->data_device_manager()->GetDevice();
-  wl_data_device_set_selection(device->data_device(), data_source_.get(),
-                               connection_->serial());
-  connection_->ScheduleFlush();
+template <typename T>
+void DataSource<T>::HandleFinishEvent(bool completed) {
+  delegate_->OnDataSourceFinish(/*completed=*/false);
 }
 
-void WaylandDataSource::Offer(const ui::OSExchangeData& data,
-                              DragDelegate* drag_delegate) {
-  DCHECK(drag_delegate);
-  drag_delegate_ = drag_delegate;
-
-  // Drag'n'drop manuals usually suggest putting data in order so the more
-  // specific a MIME type is, the earlier it occurs in the list.  Wayland
-  // specs don't say anything like that, but here we follow that common
-  // practice: begin with URIs and end with plain text.  Just in case.
-  std::vector<std::string> mime_types;
-  if (data.HasFile()) {
-    mime_types.push_back(kMimeTypeURIList);
-  }
-  if (data.HasURL(FilenameToURLPolicy::CONVERT_FILENAMES)) {
-    mime_types.push_back(kMimeTypeMozillaURL);
-  }
-  if (data.HasHtml()) {
-    mime_types.push_back(kMimeTypeHTML);
-  }
-  if (data.HasString()) {
-    mime_types.push_back(kMimeTypeTextUtf8);
-    mime_types.push_back(kMimeTypeText);
-  }
-
-  for (auto& mime_type : mime_types)
-    wl_data_source_offer(data_source_.get(), mime_type.data());
-}
-
-void WaylandDataSource::SetAction(int operation) {
-  if (wl_data_source_get_version(data_source_.get()) >=
-      WL_DATA_SOURCE_SET_ACTIONS_SINCE_VERSION) {
-    uint32_t dnd_actions = WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE;
-    if (operation & DragDropTypes::DRAG_COPY)
-      dnd_actions |= WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY;
-    if (operation & DragDropTypes::DRAG_MOVE)
-      dnd_actions |= WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE;
-    wl_data_source_set_actions(data_source_.get(), dnd_actions);
-  }
-}
-
-// static
-void WaylandDataSource::OnTarget(void* data,
-                                 wl_data_source* source,
-                                 const char* mime_type) {
-  NOTIMPLEMENTED_LOG_ONCE();
-}
-
-// static
-void WaylandDataSource::OnSend(void* data,
-                               wl_data_source* source,
-                               const char* mime_type,
-                               int32_t fd) {
-  WaylandDataSource* self = static_cast<WaylandDataSource*>(data);
+template <typename T>
+void DataSource<T>::HandleSendEvent(const std::string& mime_type, int32_t fd) {
   std::string contents;
-
-  if (self->drag_delegate_) {
-    self->GetDragData(mime_type, &contents);
-  } else {
-    base::Optional<std::vector<uint8_t>> mime_data;
-    self->GetClipboardData(mime_type, &mime_data);
-    if (!mime_data.has_value() && strcmp(mime_type, kMimeTypeTextUtf8) == 0)
-      self->GetClipboardData(kMimeTypeText, &mime_data);
-    contents.assign(mime_data->begin(), mime_data->end());
-  }
-
+  delegate_->OnDataSourceSend(mime_type, &contents);
   bool done = base::WriteFileDescriptor(fd, contents.data(), contents.length());
   DCHECK(done);
   close(fd);
 }
 
 // static
-void WaylandDataSource::OnCancel(void* data, wl_data_source* source) {
-  WaylandDataSource* self = static_cast<WaylandDataSource*>(data);
-  if (self->drag_delegate_) {
-    self->drag_delegate_->OnDragSourceFinish(/*completed=*/false);
-    self->drag_delegate_ = nullptr;
-  } else {
-    self->connection_->clipboard()->DataSourceCancelled(
-        ClipboardBuffer::kCopyPaste);
-  }
+template <typename T>
+void DataSource<T>::OnSend(void* data,
+                           T* source,
+                           const char* mime_type,
+                           int32_t fd) {
+  auto* self = static_cast<DataSource<T>*>(data);
+  self->HandleSendEvent(mime_type, fd);
 }
 
-void WaylandDataSource::OnDnDDropPerformed(void* data, wl_data_source* source) {
-  NOTIMPLEMENTED_LOG_ONCE();
+template <typename T>
+void DataSource<T>::OnCancel(void* data, T* source) {
+  auto* self = static_cast<DataSource<T>*>(data);
+  self->HandleFinishEvent(/*completed=*/false);
 }
 
-void WaylandDataSource::OnDnDFinished(void* data, wl_data_source* source) {
-  WaylandDataSource* self = static_cast<WaylandDataSource*>(data);
-  if (self->drag_delegate_) {
-    self->drag_delegate_->OnDragSourceFinish(/*completed=*/true);
-    self->drag_delegate_ = nullptr;
-  }
+template <typename T>
+void DataSource<T>::OnDnDFinished(void* data, T* source) {
+  auto* self = static_cast<DataSource<T>*>(data);
+  self->HandleFinishEvent(/*completed=*/true);
 }
 
-void WaylandDataSource::OnAction(void* data,
-                                 wl_data_source* source,
-                                 uint32_t dnd_action) {
-  WaylandDataSource* self = static_cast<WaylandDataSource*>(data);
+template <typename T>
+void DataSource<T>::OnAction(void* data, T* source, uint32_t dnd_action) {
+  auto* self = static_cast<DataSource<T>*>(data);
   self->dnd_action_ = dnd_action;
 }
 
-void WaylandDataSource::GetDragData(const std::string& mime_type,
-                                    std::string* contents) {
-  auto it = drag_data_map_.find(mime_type);
-  if (it != drag_data_map_.end()) {
-    *contents = it->second;
-    return;
-  }
-  drag_delegate_->OnDragSourceSend(mime_type, contents);
+template <typename T>
+void DataSource<T>::OnTarget(void* data, T* source, const char* mime_type) {
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
-}  // namespace ui
+template <typename T>
+void DataSource<T>::OnDnDDropPerformed(void* data, T* source) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// wl_data_source specializations and instantiation
+//////////////////////////////////////////////////////////////////////////////
+
+template <>
+void DataSource<wl_data_source>::Initialize() {
+  static const struct wl_data_source_listener kDataSourceListener = {
+      DataSource<wl_data_source>::OnTarget,
+      DataSource<wl_data_source>::OnSend,
+      DataSource<wl_data_source>::OnCancel,
+      DataSource<wl_data_source>::OnDnDDropPerformed,
+      DataSource<wl_data_source>::OnDnDFinished,
+      DataSource<wl_data_source>::OnAction};
+  wl_data_source_add_listener(data_source_.get(), &kDataSourceListener, this);
+}
+
+template <>
+void DataSource<wl_data_source>::Offer(
+    const std::vector<std::string>& mime_types) {
+  for (auto& mime_type : mime_types)
+    wl_data_source_offer(data_source_.get(), mime_type.c_str());
+  connection_->ScheduleFlush();
+}
+
+template <typename T>
+void DataSource<T>::SetAction(int operation) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+template <>
+void DataSource<wl_data_source>::SetAction(int operation) {
+  if (wl_data_source_get_version(data_source_.get()) >=
+      WL_DATA_SOURCE_SET_ACTIONS_SINCE_VERSION) {
+    uint32_t dnd_actions = WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE;
+    if (operation & ui::DragDropTypes::DRAG_COPY)
+      dnd_actions |= WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY;
+    if (operation & ui::DragDropTypes::DRAG_MOVE)
+      dnd_actions |= WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE;
+    wl_data_source_set_actions(data_source_.get(), dnd_actions);
+  }
+}
+
+template class DataSource<wl_data_source>;
+
+//////////////////////////////////////////////////////////////////////////////
+// gtk_primary_selection_source specializations and instantiation
+//////////////////////////////////////////////////////////////////////////////
+
+template <>
+void DataSource<gtk_primary_selection_source>::Initialize() {
+  static const struct gtk_primary_selection_source_listener
+      kDataSourceListener = {
+          DataSource<gtk_primary_selection_source>::OnSend,
+          DataSource<gtk_primary_selection_source>::OnCancel};
+  gtk_primary_selection_source_add_listener(data_source_.get(),
+                                            &kDataSourceListener, this);
+}
+
+template <>
+void DataSource<gtk_primary_selection_source>::Offer(
+    const std::vector<std::string>& mime_types) {
+  for (const auto& mime_type : mime_types)
+    gtk_primary_selection_source_offer(data_source_.get(), mime_type.c_str());
+  connection_->ScheduleFlush();
+}
+
+template class DataSource<gtk_primary_selection_source>;
+
+}  // namespace wl

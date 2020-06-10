@@ -120,79 +120,6 @@ bool ShouldSwapBrowsingInstancesForDynamicIsolation(
       future_isolation_context, destination_effective_url);
 }
 
-// This function implements the COOP matching algorithm as detailed in [1].
-// Note that COEP is also provided since the COOP enum does not have a
-// "same-origin + COEP" value.
-// [1] https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e
-bool CrossOriginOpenerPolicyMatch(
-    network::mojom::CrossOriginOpenerPolicyValue initiator_coop,
-    network::mojom::CrossOriginEmbedderPolicyValue initiator_coep,
-    const url::Origin& initiator_origin,
-    network::mojom::CrossOriginOpenerPolicyValue destination_coop,
-    network::mojom::CrossOriginEmbedderPolicyValue destination_coep,
-    const url::Origin& destination_origin) {
-  if (initiator_coop != destination_coop)
-    return false;
-  if (initiator_coop ==
-      network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone) {
-    return true;
-  }
-  if (initiator_coop ==
-          network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin &&
-      initiator_coep != destination_coep) {
-    return false;
-  }
-  if (!initiator_origin.IsSameOriginWith(destination_origin))
-    return false;
-  return true;
-}
-
-// This function returns whether the BrowsingInstance should change following
-// COOP rules defined in:
-// https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#changes-to-navigation
-// TODO(ahemery): This should be a member of NavigationRequest.
-bool ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
-    network::mojom::CrossOriginOpenerPolicyValue initiator_coop,
-    network::mojom::CrossOriginEmbedderPolicyValue initiator_coep,
-    const url::Origin& initiator_origin,
-    bool is_initiator_aboutblank,
-    network::mojom::CrossOriginOpenerPolicyValue destination_coop,
-    network::mojom::CrossOriginEmbedderPolicyValue destination_coep,
-    const url::Origin& destination_origin) {
-  using network::mojom::CrossOriginEmbedderPolicyValue;
-  using network::mojom::CrossOriginOpenerPolicyValue;
-
-  if (!base::FeatureList::IsEnabled(
-          network::features::kCrossOriginOpenerPolicy))
-    return false;
-
-  // If policies match there is no reason to switch BrowsingInstances.
-  if (CrossOriginOpenerPolicyMatch(initiator_coop, initiator_coep,
-                                   initiator_origin, destination_coop,
-                                   destination_coep, destination_origin)) {
-    return false;
-  }
-
-  // "same-origin-allow-popups" is used to stay in the same BrowsingInstance
-  // despite COOP mismatch. This case is defined in the spec [1] as follow.
-  // ```
-  // If the result of matching currentCOOP, currentOrigin, potentialCOOP, and
-  // potentialOrigin is false and one of the following is false:
-  //  - doc is the initial about:blank document
-  //  - currentCOOP is "same-origin-allow-popups"
-  //  - potentialCOOP is "unsafe-none"
-  // Then create a new browsing context group.
-  // ```
-  // [1]
-  // https://gist.github.com/annevk/6f2dd8c79c77123f39797f6bdac43f3e#changes-to-navigation
-  if (is_initiator_aboutblank &&
-      initiator_coop == CrossOriginOpenerPolicyValue::kSameOriginAllowPopups &&
-      destination_coop == CrossOriginOpenerPolicyValue::kUnsafeNone) {
-    return false;
-  }
-  return true;
-}
-
 bool IsSiteInstanceCompatibleWithErrorIsolation(SiteInstance* site_instance,
                                                 bool is_main_frame,
                                                 bool is_failure) {
@@ -2443,55 +2370,6 @@ RenderFrameHostManager::GetSiteInstanceForNavigationRequest(
                        mojom::NavigationType::RELOAD_BYPASSING_CACHE ||
                    request->common_params().navigation_type ==
                        mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL;
-
-  // Retrieve COOP and COEP from the response headers. If we don't have the
-  // headers yet we try to inherit the current page COOP/COEP to have a
-  // relevant speculative RFH.
-  network::mojom::CrossOriginOpenerPolicyValue coop;
-  network::mojom::CrossOriginEmbedderPolicyValue coep;
-  if (auto* response = request->response()) {
-    coop = response->parsed_headers->cross_origin_opener_policy.value;
-    coep = response->parsed_headers->cross_origin_embedder_policy.value;
-  } else {
-    // The heuristic for inheriting is to have the most conservative approach
-    // towards BrowsingInstance switching. Every same-origin navigation should
-    // yield a no swap decision. This is done to work with the renderer crash
-    // optimization that instantly commits the speculative RenderFrameHost.
-    bool inherit_coop =
-        render_frame_host_->has_committed_any_navigation() ||
-        render_frame_host_->cross_origin_opener_policy().value ==
-            network::mojom::CrossOriginOpenerPolicyValue::kSameOrigin;
-    coop = inherit_coop
-               ? render_frame_host_->cross_origin_opener_policy().value
-               : network::mojom::CrossOriginOpenerPolicyValue::kUnsafeNone;
-    coep = render_frame_host_->cross_origin_embedder_policy().value;
-  }
-
-  bool cross_origin_policy_swap =
-      frame_tree_node_->IsMainFrame() &&
-      !request->common_params().url.IsAboutBlank() &&
-      ShouldSwapBrowsingInstanceForCrossOriginOpenerPolicy(
-          render_frame_host_->cross_origin_opener_policy().value,
-          render_frame_host_->cross_origin_embedder_policy().value,
-          render_frame_host_->GetLastCommittedOrigin(),
-          !render_frame_host_->has_committed_any_navigation(), coop, coep,
-          url::Origin::Create(request->common_params().url));
-
-  if (cross_origin_policy_swap) {
-    request->coop_status().require_browsing_instance_swap = true;
-    if (frame_tree_node_->opener()) {
-      request->coop_status().had_opener_before_browsing_instance_swap = true;
-      // TODO(ahemery): Redirects should be able to report.
-      if (render_frame_host_->coop_reporter() &&
-          request->state() >
-              NavigationRequest::NavigationState::WILL_REDIRECT_REQUEST) {
-        render_frame_host_->coop_reporter()->QueueOpenerBreakageReport(
-            render_frame_host_->coop_reporter()->GetNextDocumentUrlForReporting(
-                request->GetRedirectChain(), request->GetInitiatorRoutingId()),
-            true /* is_reported_from_document */, false /* is_report_only */);
-      }
-    }
-  }
 
   scoped_refptr<SiteInstance> dest_site_instance = GetSiteInstanceForNavigation(
       request->common_params().url, request->GetSourceSiteInstance(),

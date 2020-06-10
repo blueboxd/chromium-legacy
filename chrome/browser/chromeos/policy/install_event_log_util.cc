@@ -1,8 +1,8 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/app_install_event_log_util.h"
+#include "chrome/browser/chromeos/policy/install_event_log_util.h"
 
 #include <set>
 
@@ -19,20 +19,28 @@ namespace em = enterprise_management;
 namespace policy {
 
 namespace {
-// Key names used when building the dictionary to pass to the Chrome Reporting
-// API.
-constexpr char kAndroidId[] = "androidId";
-constexpr char kAppPackage[] = "appPackage";
+// Common Key names used when building the dictionary to pass to the Chrome
+// Reporting API.
+constexpr char kEventId[] = "eventId";
 constexpr char kEventType[] = "eventType";
+constexpr char kOnline[] = "online";
+constexpr char kSerialNumber[] = "serialNumber";
+constexpr char kSessionStateChangeType[] = "sessionStateChangeType";
 constexpr char kStatefulTotal[] = "statefulTotal";
 constexpr char kStatefulFree[] = "statefulFree";
-constexpr char kCloudDpsResponse[] = "clouddpsResponse";
-constexpr char kOnline[] = "online";
-constexpr char kSessionStateChangeType[] = "sessionStateChangeType";
-constexpr char kSerialNumber[] = "serialNumber";
-constexpr char kAndroidAppInstallEvent[] = "androidAppInstallEvent";
 constexpr char kTime[] = "time";
-constexpr char kEventId[] = "eventId";
+
+// Key names used for ARC++ apps when building the dictionary to pass to the
+// Chrome Reporting API.
+constexpr char kAndroidId[] = "androidId";
+constexpr char kAppPackage[] = "appPackage";
+constexpr char kCloudDpsResponse[] = "clouddpsResponse";
+constexpr char kAndroidAppInstallEvent[] = "androidAppInstallEvent";
+
+// Key names used for extensions when building the dictionary to pass to the
+// Chrome Reporting API.
+constexpr char kExtensionId[] = "extensionId";
+constexpr char kExtensionInstallEvent[] = "extensionInstallEvent";
 
 // Calculates hash for the given |event| and |context|, and stores the hash in
 // |hash|. Returns true if |event| and |context| are json serializable and
@@ -62,6 +70,16 @@ bool GetHash(const base::Value& event,
   return true;
 }
 
+std::string GetTimeString(const base::Time& timestamp) {
+  base::Time::Exploded time_exploded;
+  timestamp.UTCExplode(&time_exploded);
+  std::string time_str = base::StringPrintf(
+      "%d-%02d-%02dT%02d:%02d:%02d.%03dZ", time_exploded.year,
+      time_exploded.month, time_exploded.day_of_month, time_exploded.hour,
+      time_exploded.minute, time_exploded.second, time_exploded.millisecond);
+  return time_str;
+}
+
 }  // namespace
 
 std::string GetSerialNumber() {
@@ -69,7 +87,100 @@ std::string GetSerialNumber() {
       ->GetEnterpriseMachineID();
 }
 
-base::Value ConvertProtoToValue(
+base::Value ConvertExtensionProtoToValue(
+    const em::ExtensionInstallReportRequest* extension_install_report_request,
+    const base::Value& context) {
+  DCHECK(extension_install_report_request);
+
+  base::Value event_list(base::Value::Type::LIST);
+  std::set<extensions::ExtensionId> seen_ids;
+
+  for (const em::ExtensionInstallReport& extension_install_report :
+       extension_install_report_request->extension_install_reports()) {
+    for (const em::ExtensionInstallReportLogEvent&
+             extension_install_report_log_event :
+         extension_install_report.logs()) {
+      base::Value wrapper;
+      wrapper = ConvertExtensionEventToValue(
+          extension_install_report.has_extension_id()
+              ? extension_install_report.extension_id()
+              : "",
+          extension_install_report_log_event, context);
+      auto* id = wrapper.FindStringKey(kEventId);
+      if (id) {
+        if (seen_ids.find(*id) != seen_ids.end()) {
+          LOG(WARNING) << "Skipping duplicate event (" << *id
+                       << "): " << wrapper;
+          continue;
+        }
+        seen_ids.insert(*id);
+      }
+      event_list.Append(std::move(wrapper));
+    }
+  }
+
+  return event_list;
+}
+
+base::Value ConvertExtensionEventToValue(
+    const extensions::ExtensionId& extension_id,
+    const em::ExtensionInstallReportLogEvent&
+        extension_install_report_log_event,
+    const base::Value& context) {
+  base::Value event(base::Value::Type::DICTIONARY);
+  if (!extension_id.empty())
+    event.SetStringKey(kExtensionId, extension_id);
+
+  if (extension_install_report_log_event.has_event_type()) {
+    event.SetIntKey(kEventType,
+                    extension_install_report_log_event.event_type());
+  }
+
+  if (extension_install_report_log_event.has_stateful_total()) {
+    // 64-bit ints aren't supported by JSON - must be stored as strings
+    std::ostringstream str;
+    str << extension_install_report_log_event.stateful_total();
+    event.SetStringKey(kStatefulTotal, str.str());
+  }
+
+  if (extension_install_report_log_event.has_stateful_free()) {
+    // 64-bit ints aren't supported by JSON - must be stored as strings
+    std::ostringstream str;
+    str << extension_install_report_log_event.stateful_free();
+    event.SetStringKey(kStatefulFree, str.str());
+  }
+
+  if (extension_install_report_log_event.has_online())
+    event.SetBoolKey(kOnline, extension_install_report_log_event.online());
+
+  if (extension_install_report_log_event.has_session_state_change_type()) {
+    event.SetIntKey(
+        kSessionStateChangeType,
+        extension_install_report_log_event.session_state_change_type());
+  }
+
+  event.SetStringKey(kSerialNumber, GetSerialNumber());
+
+  base::Value wrapper(base::Value::Type::DICTIONARY);
+  wrapper.SetKey(kExtensionInstallEvent, std::move(event));
+
+  if (extension_install_report_log_event.has_timestamp()) {
+    // Format the current time (UTC) in RFC3339 format
+    base::Time timestamp = base::Time::UnixEpoch() +
+                           base::TimeDelta::FromMicroseconds(
+                               extension_install_report_log_event.timestamp());
+    wrapper.SetStringKey(kTime, GetTimeString(timestamp));
+  }
+
+  std::string event_id;
+  if (GetHash(wrapper, context, &event_id)) {
+    wrapper.SetStringKey(kEventId, event_id);
+  }
+
+  return wrapper;
+}
+
+base::Value ConvertArcAppProtoToValue(
     const em::AppInstallReportRequest* app_install_report_request,
     const base::Value& context) {
   DCHECK(app_install_report_request);
@@ -82,7 +193,7 @@ base::Value ConvertProtoToValue(
     for (const em::AppInstallReportLogEvent& app_install_report_log_event :
          app_install_report.logs()) {
       base::Value wrapper;
-      wrapper = ConvertEventToValue(
+      wrapper = ConvertArcAppEventToValue(
           app_install_report.has_package() ? app_install_report.package() : "",
           app_install_report_log_event, context);
       auto* id = wrapper.FindStringKey(kEventId);
@@ -101,7 +212,7 @@ base::Value ConvertProtoToValue(
   return event_list;
 }
 
-base::Value ConvertEventToValue(
+base::Value ConvertArcAppEventToValue(
     const std::string& package,
     const em::AppInstallReportLogEvent& app_install_report_log_event,
     const base::Value& context) {
@@ -158,13 +269,7 @@ base::Value ConvertEventToValue(
     base::Time timestamp =
         base::Time::UnixEpoch() + base::TimeDelta::FromMicroseconds(
                                       app_install_report_log_event.timestamp());
-    base::Time::Exploded time_exploded;
-    timestamp.UTCExplode(&time_exploded);
-    std::string time_str = base::StringPrintf(
-        "%d-%02d-%02dT%02d:%02d:%02d.%03dZ", time_exploded.year,
-        time_exploded.month, time_exploded.day_of_month, time_exploded.hour,
-        time_exploded.minute, time_exploded.second, time_exploded.millisecond);
-    wrapper.SetStringKey(kTime, time_str);
+    wrapper.SetStringKey(kTime, GetTimeString(timestamp));
   }
 
   std::string event_id;

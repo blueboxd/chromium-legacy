@@ -350,6 +350,9 @@ TEST_F(WebAppDataRetrieverTest, GetIcons_WebContentsDestroyed) {
 TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_FrameNavigated) {
   SetFakeChromeRenderFrame();
 
+  const auto web_contents_title = base::UTF8ToUTF16(kFooTitle);
+  web_contents_tester()->SetTitle(web_contents_title);
+
   web_contents_tester()->NavigateAndCommit(FooUrl());
 
   base::RunLoop run_loop;
@@ -361,7 +364,8 @@ TEST_F(WebAppDataRetrieverTest, GetWebApplicationInfo_FrameNavigated) {
   web_contents_tester()->NavigateAndCommit(FooUrl2());
   run_loop.Run();
 
-  EXPECT_EQ(nullptr, web_app_info());
+  EXPECT_EQ(FooUrl(), web_app_info()->app_url);
+  EXPECT_EQ(web_contents_title, web_app_info()->title);
 }
 
 TEST_F(WebAppDataRetrieverTest, CheckInstallabilityAndRetrieveManifest) {

@@ -297,7 +297,9 @@ class SyncedBookmarkTracker {
     UNTRACKED_BOOKMARK = 8,
     BOOKMARK_GUID_MISMATCH = 9,
     DUPLICATED_CLIENT_TAG_HASH = 10,
-    kMaxValue = DUPLICATED_CLIENT_TAG_HASH
+    TRACKED_MANAGED_NODE = 11,
+
+    kMaxValue = TRACKED_MANAGED_NODE
   };
 
   SyncedBookmarkTracker(sync_pb::ModelTypeState model_type_state,

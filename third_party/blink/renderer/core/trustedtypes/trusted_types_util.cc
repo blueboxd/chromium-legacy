@@ -152,11 +152,19 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
   if (execution_context->GetTrustedTypes())
     execution_context->GetTrustedTypes()->CountTrustedTypeAssignmentError();
 
+  const char* kAnonymousPrefix = "(function anonymous";
+  String prefix = GetSamplePrefix(exception_state);
+  if (prefix == "eval" && value.StartsWith(kAnonymousPrefix)) {
+    prefix = "Function";
+  }
   bool allow =
       execution_context->GetSecurityContext()
           .GetContentSecurityPolicy()
-          ->AllowTrustedTypeAssignmentFailure(GetMessage(kind), value,
-                                              GetSamplePrefix(exception_state));
+          ->AllowTrustedTypeAssignmentFailure(
+              GetMessage(kind),
+              prefix == "Function" ? value.Substring(strlen(kAnonymousPrefix))
+                                   : value,
+              prefix);
   if (!allow) {
     exception_state.ThrowTypeError(GetMessage(kind));
   }

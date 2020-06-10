@@ -21,6 +21,8 @@ void PropertyRegistry::DeclareProperty(const AtomicString& name,
 }
 
 void PropertyRegistry::RemoveDeclaredProperties() {
+  if (declared_properties_.IsEmpty())
+    return;
   declared_properties_.clear();
   version_++;
 }

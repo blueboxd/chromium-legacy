@@ -19,6 +19,7 @@ POLICY_EXPORT extern const char kSystemFeaturesDisableList[];
 POLICY_EXPORT extern const char kUrlBlacklist[];
 POLICY_EXPORT extern const char kUrlWhitelist[];
 POLICY_EXPORT extern const char kUserPolicyRefreshRate[];
+POLICY_EXPORT extern const char kIntensiveWakeUpThrottlingEnabled[];
 
 }  // namespace policy_prefs
 }  // namespace policy

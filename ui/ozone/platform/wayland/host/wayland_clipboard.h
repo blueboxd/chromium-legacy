@@ -5,30 +5,36 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CLIPBOARD_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_CLIPBOARD_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "ui/base/clipboard/clipboard_buffer.h"
 #include "ui/ozone/public/platform_clipboard.h"
+
+namespace wl {
+class Clipboard;
+}  // namespace wl
 
 namespace ui {
 
-class GtkPrimarySelectionSource;
 class WaylandConnection;
-class WaylandDataDeviceBase;
 class WaylandDataDeviceManager;
-class WaylandDataSourceBase;
-class WaylandDataSource;
 
 // Handles clipboard operations.
 //
-// WaylandConnection's wl_data_device_manager wrapper object is required to be
-// non-null for objects of this class so it can provide basic functionality.
+// WaylandDataDeviceManager singleton is required to be up and running for
+// WaylandClipboard to be minimally functional.
 class WaylandClipboard : public PlatformClipboard {
  public:
   WaylandClipboard(WaylandConnection* connection,
-                   WaylandDataDeviceManager* data_device_manager);
+                   WaylandDataDeviceManager* device_manager);
+  WaylandClipboard(const WaylandClipboard&) = delete;
+  WaylandClipboard& operator=(const WaylandClipboard&) = delete;
   ~WaylandClipboard() override;
 
   // PlatformClipboard.
@@ -48,23 +54,20 @@ class WaylandClipboard : public PlatformClipboard {
   void SetSequenceNumberUpdateCb(
       PlatformClipboard::SequenceNumberUpdateCb cb) override;
 
-  void DataSourceCancelled(ClipboardBuffer buffer);
+  // TODO(nickdiego): Get rid of these methods once DataDevice implementations
+  // are decoupled from WaylandClipboard.
   void SetData(const std::vector<uint8_t>& contents,
                const std::string& mime_type);
   void UpdateSequenceNumber(ClipboardBuffer buffer);
 
  private:
-  bool IsPrimarySelectionSupported() const;
-  WaylandDataDeviceBase* GetDataDevice(ClipboardBuffer buffer) const;
-  WaylandDataSourceBase* GetDataSource(ClipboardBuffer buffer);
+  // Get the wl::Clipboard instance owning a given |buffer|. Can return null in
+  // case |buffer| is unsupported. E.g: primary selection is not available.
+  wl::Clipboard* GetClipboard(ClipboardBuffer buffer);
 
   // WaylandConnection providing optional data device managers, e.g: gtk
   // primary selection.
   WaylandConnection* const connection_;
-
-  // Owned by WaylandConnection and required to be non-null so that
-  // WaylandConnection can be of some usefulness.
-  WaylandDataDeviceManager* const data_device_manager_;
 
   // Holds a temporary instance of the client's clipboard content
   // so that we can asynchronously write to it.
@@ -77,10 +80,8 @@ class WaylandClipboard : public PlatformClipboard {
   // Stores the callback to be invoked upon data reading from clipboard.
   PlatformClipboard::RequestDataClosure read_clipboard_closure_;
 
-  std::unique_ptr<WaylandDataSource> clipboard_data_source_;
-  std::unique_ptr<GtkPrimarySelectionSource> primary_data_source_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandClipboard);
+  const std::unique_ptr<wl::Clipboard> copypaste_clipboard_;
+  std::unique_ptr<wl::Clipboard> primary_selection_clipboard_;
 };
 
 }  // namespace ui

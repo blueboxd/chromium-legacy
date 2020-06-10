@@ -4,16 +4,96 @@
 
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
 
+#include "base/command_line.h"
+#include "third_party/blink/public/common/switches.h"
+
 namespace blink {
 namespace scheduler {
 
+namespace {
+
+enum class PolicyOverride { NO_OVERRIDE, FORCE_DISABLE, FORCE_ENABLE };
+
+bool g_intensive_wake_up_throttling_policy_override_cached_ = false;
+
+// Returns the IntensiveWakeUpThrottling policy settings. This is checked once
+// on first access and cached. Note that that this is *not* thread-safe!
+PolicyOverride GetIntensiveWakeUpThrottlingPolicyOverride() {
+  static PolicyOverride policy = PolicyOverride::NO_OVERRIDE;
+  if (g_intensive_wake_up_throttling_policy_override_cached_)
+    return policy;
+
+  // Otherwise, check the command-line. Only values of "0" and "1" are valid,
+  // anything else is ignored (and allows the base::Feature to control the
+  // feature). This slow path will only be hit once per renderer process.
+  g_intensive_wake_up_throttling_policy_override_cached_ = true;
+  std::string value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kIntensiveWakeUpThrottlingPolicy);
+  if (value == switches::kIntensiveWakeUpThrottlingPolicy_ForceEnable) {
+    policy = PolicyOverride::FORCE_ENABLE;
+  } else if (value == switches::kIntensiveWakeUpThrottlingPolicy_ForceDisable) {
+    policy = PolicyOverride::FORCE_DISABLE;
+  } else {
+    // Necessary in testing configurations, as the policy can be parsed
+    // repeatedly.
+    policy = PolicyOverride::NO_OVERRIDE;
+  }
+
+  return policy;
+}
+
+}  // namespace
+
 const base::Feature kIntensiveWakeUpThrottling{
     "IntensiveWakeUpThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::FeatureParam<int>
     kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds{
-        &kIntensiveWakeUpThrottling, "duration_between_wake_ups_seconds", 60};
+        &kIntensiveWakeUpThrottling, "duration_between_wake_ups_seconds",
+        kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Default};
+
 const base::FeatureParam<int> kIntensiveWakeUpThrottling_GracePeriodSeconds{
-    &kIntensiveWakeUpThrottling, "grace_period_seconds", 5 * 60};
+    &kIntensiveWakeUpThrottling, "grace_period_seconds",
+    kIntensiveWakeUpThrottling_GracePeriodSeconds_Default};
+
+void ClearIntensiveWakeUpThrottlingPolicyOverrideCacheForTesting() {
+  g_intensive_wake_up_throttling_policy_override_cached_ = false;
+}
+
+bool IsIntensiveWakeUpThrottlingEnabled() {
+  // If policy is present then respect it.
+  auto policy = GetIntensiveWakeUpThrottlingPolicyOverride();
+  if (policy != PolicyOverride::NO_OVERRIDE)
+    return policy == PolicyOverride::FORCE_ENABLE;
+  // Otherwise respect the base::Feature.
+  return base::FeatureList::IsEnabled(kIntensiveWakeUpThrottling);
+}
+
+// If a policy override is specified then stick to the published defaults so
+// that admins get consistent behaviour that clients can't override. Otherwise
+// use the base::FeatureParams.
+
+base::TimeDelta GetIntensiveWakeUpThrottlingDurationBetweenWakeUps() {
+  DCHECK(IsIntensiveWakeUpThrottlingEnabled());
+  int seconds =
+      kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Default;
+  if (GetIntensiveWakeUpThrottlingPolicyOverride() ==
+      PolicyOverride::NO_OVERRIDE) {
+    seconds = kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds.Get();
+  }
+  return base::TimeDelta::FromSeconds(seconds);
+}
+
+base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod() {
+  DCHECK(IsIntensiveWakeUpThrottlingEnabled());
+  int seconds = kIntensiveWakeUpThrottling_GracePeriodSeconds_Default;
+  if (GetIntensiveWakeUpThrottlingPolicyOverride() ==
+      PolicyOverride::NO_OVERRIDE) {
+    seconds = kIntensiveWakeUpThrottling_GracePeriodSeconds.Get();
+  }
+  return base::TimeDelta::FromSeconds(seconds);
+}
 
 }  // namespace scheduler
 }  // namespace blink

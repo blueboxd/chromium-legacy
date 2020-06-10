@@ -75,6 +75,10 @@ const char kPermissionBlockedFeaturePolicyMessage[] =
     "%s permission has been blocked because of a Feature Policy applied to the "
     "current document. See https://goo.gl/EuHzyv for more details.";
 
+const char kPermissionBlockedPortalsMessage[] =
+    "%s permission has been blocked because it was requested inside a portal. "
+    "Portals don't currently support permission requests.";
+
 void LogPermissionBlockedMessage(content::WebContents* web_contents,
                                  const char* message,
                                  ContentSettingsType type) {
@@ -164,6 +168,11 @@ void PermissionContextBase::RequestPermission(
                                     kPermissionBlockedFeaturePolicyMessage,
                                     content_settings_type_);
         break;
+      case PermissionStatusSource::PORTAL:
+        LogPermissionBlockedMessage(web_contents,
+                                    kPermissionBlockedPortalsMessage,
+                                    content_settings_type_);
+        break;
       case PermissionStatusSource::INSECURE_ORIGIN:
       case PermissionStatusSource::UNSPECIFIED:
       case PermissionStatusSource::VIRTUAL_URL_DIFFERENT_ORIGIN:
@@ -230,6 +239,12 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
   if (render_frame_host) {
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(render_frame_host);
+
+    // Permissions are denied for portals.
+    if (web_contents && web_contents->IsPortal()) {
+      return PermissionResult(CONTENT_SETTING_BLOCK,
+                              PermissionStatusSource::PORTAL);
+    }
 
     // Automatically deny all HTTP or HTTPS requests where the virtual URL and
     // the loaded URL are for different origins. The loaded URL is the one

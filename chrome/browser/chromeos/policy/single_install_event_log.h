@@ -50,6 +50,18 @@ class SingleInstallEventLog {
   static const int kMaxBufferSize = 65536;
 
  protected:
+  // Tries to parse the app name. Returns true if parsing app name is
+  // successful.
+  static bool ParseIdFromFile(base::File* file,
+                              ssize_t* size,
+                              std::unique_ptr<char[]>* package_buffer);
+
+  // Restores the event log from |file| into |log|. Returns |true| if the
+  // self-delimiting format of the log was parsed successfully and further logs
+  // stored in the file may be loaded.
+  static bool LoadEventLogFromFile(base::File* file,
+                                   SingleInstallEventLog<T>* log);
+
   // The app this event log pertains to.
   const std::string id_;
 
@@ -152,6 +164,73 @@ void SingleInstallEventLog<T>::ClearSerialized() {
   events_.erase(events_.begin(), events_.begin() + serialized_entries_);
   serialized_entries_ = -1;
   incomplete_ = false;
+}
+
+template <typename T>
+bool SingleInstallEventLog<T>::ParseIdFromFile(
+    base::File* file,
+    ssize_t* size,
+    std::unique_ptr<char[]>* package_buffer) {
+  if (!file->IsValid())
+    return false;
+  if (file->ReadAtCurrentPos(reinterpret_cast<char*>(size), sizeof(*size)) !=
+          sizeof(*size) ||
+      *size > kMaxBufferSize) {
+    return false;
+  }
+  *package_buffer = std::make_unique<char[]>(*size);
+
+  if (file->ReadAtCurrentPos((*package_buffer).get(), *size) != *size)
+    return false;
+  return true;
+}
+
+template <typename T>
+bool SingleInstallEventLog<T>::LoadEventLogFromFile(
+    base::File* file,
+    SingleInstallEventLog<T>* log) {
+  int64_t incomplete;
+  if (file->ReadAtCurrentPos(reinterpret_cast<char*>(&incomplete),
+                             sizeof(incomplete)) != sizeof(incomplete)) {
+    return false;
+  }
+  log->incomplete_ = incomplete;
+  ssize_t entries;
+  if (file->ReadAtCurrentPos(reinterpret_cast<char*>(&entries),
+                             sizeof(entries)) != sizeof(entries)) {
+    return false;
+  }
+  for (ssize_t i = 0; i < entries; ++i) {
+    ssize_t size;
+    if (file->ReadAtCurrentPos(reinterpret_cast<char*>(&size), sizeof(size)) !=
+            sizeof(size) ||
+        size > kMaxBufferSize) {
+      log->incomplete_ = true;
+      return false;
+    }
+
+    if (size == 0) {
+      // Zero-size entries are written if serialization of a log entry fails.
+      // Skip these on read.
+      log->incomplete_ = true;
+      continue;
+    }
+
+    std::unique_ptr<char[]> buffer = std::make_unique<char[]>(size);
+    if (file->ReadAtCurrentPos(buffer.get(), size) != size) {
+      log->incomplete_ = true;
+      return false;
+    }
+
+    T event;
+    if (event.ParseFromArray(buffer.get(), size)) {
+      log->Add(event);
+    } else {
+      log->incomplete_ = true;
+    }
+  }
+
+  return true;
 }
 
 }  // namespace policy

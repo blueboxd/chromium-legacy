@@ -282,7 +282,7 @@ class TestContentAutofillDriver : public ContentAutofillDriver {
     return static_cast<MockAutofillManager*>(autofill_manager());
   }
 
-  using ContentAutofillDriver::DidNavigateMainFrame;
+  using ContentAutofillDriver::DidNavigateFrame;
 };
 
 class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
@@ -316,7 +316,7 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
     content::MockNavigationHandle navigation_handle(GURL(), main_rfh());
     navigation_handle.set_has_committed(true);
     navigation_handle.set_is_same_document(same_document);
-    driver_->DidNavigateMainFrame(&navigation_handle);
+    driver_->DidNavigateFrame(&navigation_handle);
   }
 
  protected:

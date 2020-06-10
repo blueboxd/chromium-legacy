@@ -44,5 +44,10 @@ const char kCloudPolicyOverridesPlatformPolicy[] = "policy.cloud_override";
 const char kNativeWindowOcclusionEnabled[] =
     "policy.native_window_occlusion_enabled";
 
+// Boolean policy preference for force enabling or disabling the
+// IntensiveWakeUpThrottling web feature. Only applied if the policy is managed.
+const char kIntensiveWakeUpThrottlingEnabled[] =
+    "policy.intensive_wake_up_throttling_enabled";
+
 }  // namespace policy_prefs
 }  // namespace policy

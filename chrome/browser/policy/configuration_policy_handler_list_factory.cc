@@ -1288,6 +1288,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAppCacheForceEnabled,
     prefs::kAppCacheForceEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kIntensiveWakeUpThrottlingEnabled,
+    policy::policy_prefs::kIntensiveWakeUpThrottlingEnabled,
+    base::Value::Type::BOOLEAN },
 };
 // clang-format on
 

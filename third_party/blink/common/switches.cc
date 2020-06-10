@@ -12,5 +12,15 @@ namespace switches {
 // involving a command line switch.
 const char kAllowPreCommitInput[] = "allow-pre-commit-input";
 
+// Used to communicate managed policy for the IntensiveWakeUpThrottling feature.
+// This feature is typically controlled by base::Feature (see
+// renderer/platform/scheduler/common/features.*) but requires an enterprise
+// policy override. This is implicitly a tri-state, and can be either unset, or
+// set to "1" for force enable, or "0" for force disable.
+extern const char kIntensiveWakeUpThrottlingPolicy[] =
+    "intensive-wake-up-throttling-policy";
+extern const char kIntensiveWakeUpThrottlingPolicy_ForceDisable[] = "0";
+extern const char kIntensiveWakeUpThrottlingPolicy_ForceEnable[] = "1";
+
 }  // namespace switches
 }  // namespace blink

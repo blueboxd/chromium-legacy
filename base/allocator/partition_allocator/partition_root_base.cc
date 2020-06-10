@@ -38,11 +38,6 @@ void PartitionRootBase<thread_safe>::DecommitEmptyPages() {
   }
 }
 
-template <bool thread_safe>
-internal::PartitionRootBase<thread_safe>::PartitionRootBase() = default;
-template <bool thread_safe>
-internal::PartitionRootBase<thread_safe>::~PartitionRootBase() = default;
-
 template struct PartitionRootBase<ThreadSafe>;
 template struct PartitionRootBase<NotThreadSafe>;
 

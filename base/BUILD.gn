@@ -1313,12 +1313,22 @@ jumbo_component("base") {
       deps += [ "//base/allocator:tcmalloc" ]
     } else if (is_linux && use_allocator == "none") {
       sources += [ "allocator/allocator_shim_default_dispatch_to_glibc.cc" ]
-    } else if (is_android && use_allocator == "none") {
-      sources += [
-        "allocator/allocator_shim_default_dispatch_to_linker_wrapped_symbols.cc",
-        "allocator/allocator_shim_override_linker_wrapped_symbols.h",
-      ]
+    } else if ((is_linux || is_android) && use_allocator == "partition") {
+      # Cannot use the same dispatching for host-side binaries.
+      if (is_a_target_toolchain) {
+        sources += [
+          "allocator/allocator_shim_default_dispatch_to_partition_alloc.cc",
+        ]
+      } else {
+        sources += [ "allocator/allocator_shim_default_dispatch_to_glibc.cc" ]
+      }
+    } else if (is_android) {
+      sources +=
+          [ "allocator/allocator_shim_override_linker_wrapped_symbols.h" ]
       all_dependent_configs += [ "//base/allocator:wrap_malloc_symbols" ]
+      if (use_allocator == "none") {
+        sources += [ "allocator/allocator_shim_default_dispatch_to_linker_wrapped_symbols.cc" ]
+      }
     } else if (is_mac || is_ios) {
       sources += [
         "allocator/allocator_shim_default_dispatch_to_mac_zoned_malloc.cc",

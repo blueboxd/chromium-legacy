@@ -49,7 +49,7 @@ public class DarkModeTest {
     @SmallTest
     public void testUAOnlyDarkening() throws Throwable {
         // If WebView uses UA only darkening strategy prefer-color-scheme should always been set to
-        // NoPreference to avoid double darkening regardless whether web-page supports dark theme.
+        // 'light' to avoid double darkening regardless whether web-page supports dark theme.
         mSettings.setForceDarkMode(ForceDarkMode.FORCE_DARK_ON);
         mSettings.setForceDarkBehavior(ForceDarkBehavior.FORCE_DARK_ONLY);
 
@@ -89,7 +89,7 @@ public class DarkModeTest {
         mSettings.setForceDarkMode(ForceDarkMode.FORCE_DARK_ON);
         mSettings.setForceDarkBehavior(ForceDarkBehavior.PREFER_MEDIA_QUERY_OVER_FORCE_DARK);
 
-        // If web page does not support dark theme prefer-color-scheme should be set to NoPreference
+        // If web page does not support dark theme prefer-color-scheme should be set to 'light'
         assertNotDarkScheme(mContents);
 
         final String supportsDarkScheme =

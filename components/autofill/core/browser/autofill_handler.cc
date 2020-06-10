@@ -256,7 +256,7 @@ bool AutofillHandler::FindCachedForm(const FormData& form,
   // of form signature. Compare it to all the forms in the cache to look for a
   // match.
   for (const auto& it : form_structures_) {
-    if (*it.second == form) {
+    if (it.second->unique_renderer_id() == form.unique_renderer_id) {
       *form_structure = it.second.get();
       return true;
     }

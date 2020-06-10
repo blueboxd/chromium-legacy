@@ -608,6 +608,9 @@ SyncedBookmarkTracker::InitEntitiesFromModelAndMetadata(
   while (iterator.has_next()) {
     const bookmarks::BookmarkNode* node = iterator.Next();
     if (!model->client()->CanSyncNode(node)) {
+      if (bookmark_node_to_entities_map_.count(node) != 0) {
+        return CorruptionReason::TRACKED_MANAGED_NODE;
+      }
       continue;
     }
     if (bookmark_node_to_entities_map_.count(node) == 0) {

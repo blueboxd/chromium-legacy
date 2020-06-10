@@ -381,6 +381,8 @@
                                         toBrowser:self.bvcContainer
                                    withCompletion:^{
                                      extendedCompletion();
+                                     [self.bvcContainer
+                                             .currentBVC becomeFirstResponder];
                                    }];
 
   } else {

@@ -111,7 +111,7 @@ std::string GetHeavyAdReportMessage(const FrameData& frame_data,
   base::StringPiece intervention_mode =
       will_unload_adframe ? kInterventionMessage : kReportingOnlyMessage;
 
-  switch (frame_data.heavy_ad_status()) {
+  switch (frame_data.heavy_ad_status_with_noise()) {
     case FrameData::HeavyAdStatus::kNetwork:
       return base::StrCat({intervention_mode,
                            " because its network usage exceeded the limit. ",

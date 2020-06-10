@@ -9,8 +9,8 @@
 #include <memory>
 
 #include "ui/ozone/platform/wayland/host/gtk_primary_selection_device.h"
-#include "ui/ozone/platform/wayland/host/gtk_primary_selection_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 
 namespace ui {
 
@@ -36,10 +36,12 @@ GtkPrimarySelectionDevice* GtkPrimarySelectionDeviceManager::GetDevice() {
 }
 
 std::unique_ptr<GtkPrimarySelectionSource>
-GtkPrimarySelectionDeviceManager::CreateSource() {
+GtkPrimarySelectionDeviceManager::CreateSource(
+    GtkPrimarySelectionSource::Delegate* delegate) {
   auto* data_source =
       gtk_primary_selection_device_manager_create_source(device_manager_.get());
-  return std::make_unique<GtkPrimarySelectionSource>(data_source, connection_);
+  return std::make_unique<GtkPrimarySelectionSource>(data_source, connection_,
+                                                     delegate);
 }
 
 }  // namespace ui

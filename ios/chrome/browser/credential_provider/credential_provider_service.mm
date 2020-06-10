@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_store_change.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "ios/chrome/browser/credential_provider/archivable_credential+password_form.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #import "ios/chrome/common/credential_provider/archivable_credential.h"
@@ -99,9 +100,11 @@ ArchivableCredential* CredentialFromForm(const PasswordForm& form,
 CredentialProviderService::CredentialProviderService(
     scoped_refptr<PasswordStore> password_store,
     AuthenticationService* authentication_service,
-    ArchivableCredentialStore* credential_store)
+    ArchivableCredentialStore* credential_store,
+    signin::IdentityManager* identity_manager)
     : password_store_(password_store),
       authentication_service_(authentication_service),
+      identity_manager_(identity_manager),
       archivable_credential_store_(credential_store) {
   DCHECK(password_store_);
   password_store_->AddObserver(this);
@@ -109,6 +112,11 @@ CredentialProviderService::CredentialProviderService(
   DCHECK(authentication_service_);
   account_validation_id_ =
       authentication_service_->GetAuthenticatedIdentity().gaiaID;
+
+  if (identity_manager_) {
+    identity_manager_->AddObserver(this);
+  }
+
   // TODO(crbug.com/1066803): Wait for things to settle down before
   // syncs, and sync credentials after Sync finishes or some
   // seconds in the future.
@@ -122,7 +130,26 @@ CredentialProviderService::CredentialProviderService(
 
 CredentialProviderService::~CredentialProviderService() {}
 
-void CredentialProviderService::Shutdown() {}
+void CredentialProviderService::Shutdown() {
+  password_store_->RemoveObserver(this);
+  if (identity_manager_) {
+    identity_manager_->RemoveObserver(this);
+  }
+}
+
+void CredentialProviderService::OnPrimaryAccountSet(
+    const CoreAccountInfo& primary_account_info) {
+  account_validation_id_ =
+      authentication_service_->GetAuthenticatedIdentity().gaiaID;
+  RequestSyncAllCredentials();
+}
+
+void CredentialProviderService::OnPrimaryAccountCleared(
+    const CoreAccountInfo& previous_primary_account_info) {
+  account_validation_id_ =
+      authentication_service_->GetAuthenticatedIdentity().gaiaID;
+  RequestSyncAllCredentials();
+}
 
 void CredentialProviderService::RequestSyncAllCredentials() {
   password_store_->GetAutofillableLogins(this);

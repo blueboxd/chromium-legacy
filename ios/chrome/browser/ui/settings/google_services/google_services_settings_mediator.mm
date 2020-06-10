@@ -187,10 +187,12 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         initWithPrefService:userPrefService
                    prefName:prefs::kSearchSuggestEnabled];
     _autocompleteSearchPreference.observer = self;
-    _safeBrowsingPreference = [[PrefBackedBoolean alloc]
-        initWithPrefService:userPrefService
-                   prefName:prefs::kSafeBrowsingEnabled];
-    _safeBrowsingPreference.observer = self;
+    if (base::FeatureList::IsEnabled(kSafeBrowsingAvailableOnIOS)) {
+      _safeBrowsingPreference = [[PrefBackedBoolean alloc]
+          initWithPrefService:userPrefService
+                     prefName:prefs::kSafeBrowsingEnabled];
+      _safeBrowsingPreference.observer = self;
+    }
     _sendDataUsagePreference = [[PrefBackedBoolean alloc]
         initWithPrefService:localPrefService
                    prefName:metrics::prefs::kMetricsReportingEnabled];
@@ -452,8 +454,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       needsUpdate = YES;
     }
     needsUpdate =
-        needsUpdate || self.manageSyncItem.enabled != !self.isSyncDisabled;
-    self.manageSyncItem.enabled = !self.isSyncDisabled;
+        needsUpdate || self.manageSyncItem.enabled != self.isSyncEnabled;
+    self.manageSyncItem.enabled = self.isSyncEnabled;
     self.manageSyncItem.textColor =
         self.manageSyncItem.enabled ? nil : UIColor.cr_secondaryLabelColor;
     return needsUpdate;
@@ -483,15 +485,9 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
           toSectionWithIdentifier:SyncSectionIdentifier];
       needsUpdate = YES;
     }
-    // Sync is not active when |syncSetupService->IsFirstSetupComplete()| is
-    // false. Show sync being turned off in the UI in this cases.
-    BOOL isSyncEnabled =
-        self.syncSetupService->IsSyncEnabled() &&
-        (self.syncSetupService->IsFirstSetupComplete() ||
-         self.mode == GoogleServicesSettingsModeAdvancedSigninSettings);
     needsUpdate =
-        needsUpdate || isSyncEnabled != self.syncChromeDataSwitchItem.on;
-    self.syncChromeDataSwitchItem.on = isSyncEnabled;
+        needsUpdate || self.isSyncEnabled != self.syncChromeDataSwitchItem.on;
+    self.syncChromeDataSwitchItem.on = self.isSyncEnabled;
     return needsUpdate;
   }
   if (!self.syncChromeDataSwitchItem)
@@ -570,8 +566,12 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
 }
 
-- (BOOL)isSyncDisabled {
-  return !self.syncService->GetDisableReasons().Empty();
+- (BOOL)isSyncEnabled {
+  // Sync is not active when |syncSetupService->IsFirstSetupComplete()| is
+  // false. Show sync being turned off in the UI in this cases.
+  return self.syncSetupService->IsSyncEnabled() &&
+         (self.syncSetupService->IsFirstSetupComplete() ||
+          self.mode == GoogleServicesSettingsModeAdvancedSigninSettings);
 }
 
 - (BOOL)isSyncCanBeAvailable {
@@ -597,8 +597,6 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
                   detailStringID:
                       IDS_IOS_GOOGLE_SERVICES_SETTINGS_SAFE_BROWSING_DETAIL
                         dataType:0];
-      safeBrowsingItem.accessibilityIdentifier =
-          kSafeBrowsingItemAccessibilityIdentifier;
       [items addObject:safeBrowsingItem];
     }
     [items addObject:self.passwordLeakCheckItem];
@@ -633,7 +631,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
         l10n_util::GetNSString(IDS_IOS_LEAK_CHECK_SWITCH);
     passwordLeakCheckItem.on = [self passwordLeakCheckItemOnState];
     passwordLeakCheckItem.accessibilityIdentifier =
-        kPasswordLeakCheckItemAccessibilityIdentifier;
+        @"passwordLeakCheckItem_switch";
     passwordLeakCheckItem.enabled = self.isAuthenticated;
     _passwordLeakCheckItem = passwordLeakCheckItem;
   }

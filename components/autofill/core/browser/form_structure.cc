@@ -1401,23 +1401,6 @@ FormData FormStructure::ToFormData() const {
   return data;
 }
 
-bool FormStructure::operator==(const FormData& form) const {
-  // TODO(jhawkins): Is this enough to differentiate a form?
-  if (form_name_ == form.name && source_url_ == form.url &&
-      target_url_ == form.action) {
-    return true;
-  }
-
-  // TODO(jhawkins): Compare field names, IDs and labels once we have labels
-  // set up.
-
-  return false;
-}
-
-bool FormStructure::operator!=(const FormData& form) const {
-  return !operator==(form);
-}
-
 FormStructure::SectionedFieldsIndexes::SectionedFieldsIndexes() {}
 
 FormStructure::SectionedFieldsIndexes::~SectionedFieldsIndexes() {}

@@ -141,7 +141,7 @@ struct BASE_EXPORT PartitionRoot
 // PartitionAllocatorGeneric.
 struct BASE_EXPORT PartitionRootGeneric
     : public internal::PartitionRootBase<internal::ThreadSafe> {
-  PartitionRootGeneric();
+  PartitionRootGeneric() = default;
   ~PartitionRootGeneric() override;
   // Some pre-computed constants.
   size_t order_index_shifts[kBitsPerSizeT + 1] = {};
@@ -156,7 +156,14 @@ struct BASE_EXPORT PartitionRootGeneric
   Bucket buckets[kGenericNumBuckets] = {};
 
   // Public API.
-  void Init();
+  ALWAYS_INLINE void Init() {
+    if (LIKELY(this->initialized.load(std::memory_order_relaxed)))
+      return;
+
+    InitSlowPath();
+  }
+
+  NOINLINE void InitSlowPath();
 
   ALWAYS_INLINE void* Alloc(size_t size, const char* type_name);
   ALWAYS_INLINE void* AllocFlags(int flags, size_t size, const char* type_name);

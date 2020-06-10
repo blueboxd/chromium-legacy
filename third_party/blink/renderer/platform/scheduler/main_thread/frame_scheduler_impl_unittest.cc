@@ -15,12 +15,14 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
 #include "base/task/sequence_manager/test/sequence_manager_for_test.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_task_queue_controller.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
@@ -462,6 +464,8 @@ void RunTaskOfLength(base::test::TaskEnvironment* task_environment,
 class FrameSchedulerImplTestWithIntensiveWakeUpThrottling
     : public FrameSchedulerImplTest {
  public:
+  using Super = FrameSchedulerImplTest;
+
   FrameSchedulerImplTestWithIntensiveWakeUpThrottling()
       : FrameSchedulerImplTest(
             {{kIntensiveWakeUpThrottling,
@@ -469,6 +473,34 @@ class FrameSchedulerImplTestWithIntensiveWakeUpThrottling
                // the grace period for freezing, because freezing hides the
                // effect of intensive throttling.
                {kIntensiveWakeUpThrottling_GracePeriodSeconds.name, "60"}}}}) {}
+
+  void SetUp() override {
+    Super::SetUp();
+    ClearIntensiveWakeUpThrottlingPolicyOverrideCacheForTesting();
+  }
+
+  void TearDown() override {
+    ClearIntensiveWakeUpThrottlingPolicyOverrideCacheForTesting();
+    Super::TearDown();
+  }
+};
+
+class FrameSchedulerImplTestWithIntensiveWakeUpThrottlingPolicyOverride
+    : public FrameSchedulerImplTestWithIntensiveWakeUpThrottling {
+ public:
+  // This should only be called once per test, and prior to the
+  // PageSchedulerImpl logic actually parsing the policy switch.
+  void SetPolicyOverride(bool enabled) {
+    DCHECK(!scoped_command_line_.GetProcessCommandLine()->HasSwitch(
+        switches::kIntensiveWakeUpThrottlingPolicy));
+    scoped_command_line_.GetProcessCommandLine()->AppendSwitchASCII(
+        switches::kIntensiveWakeUpThrottlingPolicy,
+        enabled ? switches::kIntensiveWakeUpThrottlingPolicy_ForceEnable
+                : switches::kIntensiveWakeUpThrottlingPolicy_ForceDisable);
+  }
+
+ private:
+  base::test::ScopedCommandLine scoped_command_line_;
 };
 
 }  // namespace
@@ -2492,10 +2524,10 @@ TEST_F(FrameSchedulerImplTest, ThrottledJSTimerTasksRunTime) {
 TEST_F(FrameSchedulerImplTestWithIntensiveWakeUpThrottling, TaskExecution) {
   constexpr int kNumTasks = 5;
   constexpr base::TimeDelta kShortDelay = base::TimeDelta::FromSeconds(1);
-  const base::TimeDelta kGracePeriod = base::TimeDelta::FromSeconds(
-      kIntensiveWakeUpThrottling_GracePeriodSeconds.Get());
-  const base::TimeDelta kDurationBetweenWakeUps = base::TimeDelta::FromSeconds(
-      kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds.Get());
+  const base::TimeDelta kGracePeriod =
+      GetIntensiveWakeUpThrottlingGracePeriod();
+  const base::TimeDelta kDurationBetweenWakeUps =
+      GetIntensiveWakeUpThrottlingDurationBetweenWakeUps();
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       frame_scheduler_->GetTaskRunner(TaskType::kJavascriptTimer);
 
@@ -2563,6 +2595,28 @@ TEST_F(FrameSchedulerImplTestWithIntensiveWakeUpThrottling, TaskExecution) {
     task_environment_.FastForwardBy(kDurationBetweenWakeUps - kShortDelay);
     EXPECT_EQ(1, counter);
   }
+}
+
+TEST_F(FrameSchedulerImplTestWithIntensiveWakeUpThrottlingPolicyOverride,
+       PolicyForceEnable) {
+  SetPolicyOverride(/* enabled = */ true);
+  EXPECT_TRUE(IsIntensiveWakeUpThrottlingEnabled());
+
+  // The parameters should be the defaults, even though they were changed by the
+  // ScopedFeatureList.
+  EXPECT_EQ(base::TimeDelta::FromSeconds(
+                kIntensiveWakeUpThrottling_GracePeriodSeconds_Default),
+            GetIntensiveWakeUpThrottlingGracePeriod());
+  EXPECT_EQ(
+      base::TimeDelta::FromSeconds(
+          kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Default),
+      GetIntensiveWakeUpThrottlingDurationBetweenWakeUps());
+}
+
+TEST_F(FrameSchedulerImplTestWithIntensiveWakeUpThrottlingPolicyOverride,
+       PolicyForceDisable) {
+  SetPolicyOverride(/* enabled = */ false);
+  EXPECT_FALSE(IsIntensiveWakeUpThrottlingEnabled());
 }
 
 }  // namespace frame_scheduler_impl_unittest

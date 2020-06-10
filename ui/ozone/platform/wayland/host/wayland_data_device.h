@@ -15,6 +15,7 @@
 #include "base/files/scoped_file.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_base.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 #include "ui/ozone/public/platform_clipboard.h"
 
 namespace gfx {
@@ -24,7 +25,6 @@ class PointF;
 namespace ui {
 
 class WaylandDataOffer;
-class WaylandDataSource;
 class WaylandConnection;
 class WaylandWindow;
 
@@ -71,6 +71,8 @@ class WaylandDataDevice : public WaylandDataDeviceBase {
 
   // Returns the underlying wl_data_device singleton object.
   wl_data_device* data_device() const { return data_device_.get(); }
+
+  void SetSelectionSource(WaylandDataSource* source);
 
  private:
   void ReadDragDataFromFD(base::ScopedFD fd, RequestDataCallback callback);

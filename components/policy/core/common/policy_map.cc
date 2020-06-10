@@ -74,10 +74,6 @@ PolicyMap::Entry PolicyMap::Entry::DeepCopy() const {
   return copy;
 }
 
-void PolicyMap::Entry::set_value(std::unique_ptr<base::Value> val) {
-  value_ = val ? base::make_optional(std::move(*val)) : base::nullopt;
-}
-
 void PolicyMap::Entry::set_value(base::Optional<base::Value> val) {
   value_ = std::move(val);
 }

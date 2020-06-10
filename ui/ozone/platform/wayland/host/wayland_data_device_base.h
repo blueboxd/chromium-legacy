@@ -25,6 +25,7 @@ class WaylandDataDeviceBase {
 
   // Returns MIME types given by the current data offer.
   const std::vector<std::string>& GetAvailableMimeTypes() const;
+
   // Extracts data of the specified MIME type from the data offer.
   bool RequestSelectionData(const std::string& mime_type);
 

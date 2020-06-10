@@ -191,17 +191,31 @@ const base::Feature kHighPriorityDatabaseTaskType{
 //  - 1% CPU time in a page that has been backgrounded for 10 seconds
 //
 // Feature tracking bug: https://crbug.com/1075553
+//
+// Note that the base::Feature and base::FeatureParams should not be read from;
+// rather the provided accessors should be used, which also take into account
+// the managed policy override of the feature.
 PLATFORM_EXPORT extern const base::Feature kIntensiveWakeUpThrottling;
-
-// Duration between wake ups in seconds. For the kIntensiveWakeUpThrottling
-// feature.
 PLATFORM_EXPORT extern const base::FeatureParam<int>
     kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds;
-
-// Grace period after backgrounding a page during which there is no intensive
-// wake up throttling, in seconds. For the kIntensiveWakeUpThrottling feature.
 PLATFORM_EXPORT extern const base::FeatureParam<int>
     kIntensiveWakeUpThrottling_GracePeriodSeconds;
+// Default parameter values, exposed for testing.
+constexpr int kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Default =
+    60;
+constexpr int kIntensiveWakeUpThrottling_GracePeriodSeconds_Default = 5 * 60;
+// Exposed so that multiple tests can tinker with the policy override.
+PLATFORM_EXPORT void
+ClearIntensiveWakeUpThrottlingPolicyOverrideCacheForTesting();
+// Determines if the feature is enabled, taking into account base::Feature
+// settings and policy overrides.
+PLATFORM_EXPORT bool IsIntensiveWakeUpThrottlingEnabled();
+// Duration between wake ups for the kIntensiveWakeUpThrottling feature.
+PLATFORM_EXPORT base::TimeDelta
+GetIntensiveWakeUpThrottlingDurationBetweenWakeUps();
+// Grace period after backgrounding a page during which there is no intensive
+// wake up throttling for the kIntensiveWakeUpThrottling feature.
+PLATFORM_EXPORT base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod();
 
 }  // namespace scheduler
 }  // namespace blink

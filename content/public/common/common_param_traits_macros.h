@@ -77,7 +77,7 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(
     content::AutoplayPolicy::kNoUserGestureRequired,
     content::AutoplayPolicy::kDocumentUserActivationRequired)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::PreferredColorScheme,
-                              blink::PreferredColorScheme::kNoPreference,
+                              blink::PreferredColorScheme::kDark,
                               blink::PreferredColorScheme::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebRect)

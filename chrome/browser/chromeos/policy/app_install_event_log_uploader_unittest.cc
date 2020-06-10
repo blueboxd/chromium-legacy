@@ -16,7 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/policy/app_install_event_log_util.h"
+#include "chrome/browser/chromeos/policy/install_event_log_util.h"
 #include "chrome/browser/profiles/reporting_util.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -126,7 +126,7 @@ class AppInstallEventLogUploaderTest : public testing::Test {
     ClearReportDict();
     base::Value context = reporting::GetContext(/*profile=*/nullptr);
     value_report_ = RealtimeReportingJobConfiguration::BuildReport(
-        ConvertProtoToValue(&log_, context), std::move(context));
+        ConvertArcAppProtoToValue(&log_, context), std::move(context));
 
     EXPECT_CALL(client_, UploadAppInstallReport_(MatchValue(&value_report_), _))
         .WillOnce(WithArgs<1>(
@@ -139,7 +139,7 @@ class AppInstallEventLogUploaderTest : public testing::Test {
     ClearReportDict();
     base::Value context = reporting::GetContext(/*profile=*/nullptr);
     value_report_ = RealtimeReportingJobConfiguration::BuildReport(
-        ConvertProtoToValue(&log_, context), std::move(context));
+        ConvertArcAppProtoToValue(&log_, context), std::move(context));
 
     CloudPolicyClient::StatusCallback status_callback;
     EXPECT_CALL(client_, UploadAppInstallReport_(MatchValue(&value_report_), _))

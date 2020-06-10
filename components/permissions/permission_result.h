@@ -37,6 +37,10 @@ enum class PermissionStatusSource {
   // seen by the user. This may be very confusing for a user to see in a
   // permissions request.
   VIRTUAL_URL_DIFFERENT_ORIGIN,
+
+  // The status is the result of a permissions being requested inside a portal.
+  // Permissions are currently always denied inside a portal.
+  PORTAL
 };
 
 struct PermissionResult {

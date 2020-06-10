@@ -7306,5 +7306,19 @@
         }
       }
     ]
+  },
+  "IntensiveWakeUpThrottlingEnabled": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "IntensiveWakeUpThrottlingEnabled": true },
+        "prefs": {
+          "policy.intensive_wake_up_throttling_enabled": {
+            "local_state":  true,
+            "value": true
+          }
+        }
+      }
+    ]
   }
 }

@@ -80,7 +80,7 @@ TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogClose) {
 
 TEST_F(CredentialLeakDialogControllerTest, CredentialLeakDialogOk) {
   SetUpController(
-      CreateLeakType(IsSaved(true), IsReused(true), IsSyncing(false)));
+      CreateLeakType(IsSaved(true), IsReused(false), IsSyncing(false)));
 
   EXPECT_CALL(leak_prompt(), ShowCredentialLeakPrompt());
   controller().ShowCredentialLeakPrompt(&leak_prompt());

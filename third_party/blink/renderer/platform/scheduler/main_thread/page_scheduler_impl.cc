@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
@@ -645,12 +646,10 @@ void PageSchedulerImpl::UpdateBackgroundSchedulingLifecycleState(
           FROM_HERE, do_throttle_cpu_time_callback_.GetCallback(),
           kThrottlingDelayAfterBackgrounding);
     }
-    if (wake_up_budget_pool_ &&
-        base::FeatureList::IsEnabled(kIntensiveWakeUpThrottling)) {
+    if (wake_up_budget_pool_ && IsIntensiveWakeUpThrottlingEnabled()) {
       main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
           FROM_HERE, do_intensively_throttle_wake_ups_callback_.GetCallback(),
-          base::TimeDelta::FromSeconds(
-              kIntensiveWakeUpThrottling_GracePeriodSeconds.Get()));
+          GetIntensiveWakeUpThrottlingGracePeriod());
     }
   }
   if (notification_policy == NotificationPolicy::kNotifyFrames)
@@ -668,7 +667,7 @@ void PageSchedulerImpl::DoThrottleCPUTime() {
 }
 
 void PageSchedulerImpl::DoIntensivelyThrottleWakeUps() {
-  DCHECK(base::FeatureList::IsEnabled(kIntensiveWakeUpThrottling));
+  DCHECK(IsIntensiveWakeUpThrottlingEnabled());
 
   do_intensively_throttle_wake_ups_callback_.Cancel();
   are_wake_ups_intensively_throttled_ = true;
@@ -699,9 +698,7 @@ void PageSchedulerImpl::UpdateWakeUpBudgetPool(
   if (are_wake_ups_intensively_throttled_ &&
       !opted_out_from_aggressive_throttling_) {
     wake_up_budget_pool_->SetWakeUpInterval(
-        lazy_now->Now(),
-        base::TimeDelta::FromSeconds(
-            kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds.Get()));
+        lazy_now->Now(), GetIntensiveWakeUpThrottlingDurationBetweenWakeUps());
   } else {
     wake_up_budget_pool_->SetWakeUpInterval(lazy_now->Now(),
                                             kDefaultThrottledWakeUpInterval);

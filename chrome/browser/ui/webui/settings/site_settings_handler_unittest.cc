@@ -999,6 +999,74 @@ TEST_F(SiteSettingsHandlerTest, InstalledApps) {
   EXPECT_FALSE(origin_info->FindKey("isInstalled")->GetBool());
 }
 
+TEST_F(SiteSettingsHandlerTest, IncognitoExceptions) {
+  constexpr char kOriginToBlock[] = "https://www.blocked.com:443";
+
+  CreateIncognitoProfile();
+
+  {
+    base::ListValue set_args;
+    set_args.AppendString(kOriginToBlock);  // Primary pattern.
+    set_args.AppendString(kOriginToBlock);  // Secondary pattern.
+    set_args.AppendString(kNotifications);
+    set_args.AppendString(
+        content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+    set_args.AppendBoolean(true);  // Incognito.
+
+    handler()->HandleSetCategoryPermissionForPattern(&set_args);
+
+    base::ListValue get_exception_list_args;
+    get_exception_list_args.AppendString(kCallbackId);
+    get_exception_list_args.AppendString(kNotifications);
+    handler()->HandleGetExceptionList(&get_exception_list_args);
+
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    const base::ListValue* exceptions;
+    ASSERT_TRUE(data.arg3()->GetAsList(&exceptions));
+    ASSERT_EQ(1U, exceptions->GetSize());
+
+    const base::DictionaryValue* exception;
+    ASSERT_TRUE(exceptions->GetDictionary(0, &exception));
+    std::string origin;
+    ASSERT_TRUE(exception->GetString(site_settings::kOrigin, &origin));
+    EXPECT_EQ(kOriginToBlock, origin);
+  }
+
+  {
+    base::ListValue set_args;
+    set_args.AppendString(kOriginToBlock);  // Primary pattern.
+    set_args.AppendString(kOriginToBlock);  // Secondary pattern.
+    set_args.AppendString(kNotifications);
+    set_args.AppendString(
+        content_settings::ContentSettingToString(CONTENT_SETTING_BLOCK));
+    set_args.AppendBoolean(false);  // Incognito.
+
+    handler()->HandleSetCategoryPermissionForPattern(&set_args);
+
+    base::ListValue get_exception_list_args;
+    get_exception_list_args.AppendString(kCallbackId);
+    get_exception_list_args.AppendString(kNotifications);
+    handler()->HandleGetExceptionList(&get_exception_list_args);
+
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    const base::ListValue* exceptions;
+    ASSERT_TRUE(data.arg3()->GetAsList(&exceptions));
+    ASSERT_EQ(2U, exceptions->GetSize());
+
+    const base::DictionaryValue* exception;
+    ASSERT_TRUE(exceptions->GetDictionary(0, &exception));
+    std::string origin;
+    ASSERT_TRUE(exception->GetString(site_settings::kOrigin, &origin));
+    ASSERT_EQ(kOriginToBlock, origin);
+
+    ASSERT_TRUE(exceptions->GetDictionary(1, &exception));
+    ASSERT_TRUE(exception->GetString(site_settings::kOrigin, &origin));
+    EXPECT_EQ(kOriginToBlock, origin);
+  }
+
+  DestroyIncognitoProfile();
+}
+
 TEST_F(SiteSettingsHandlerTest, ResetCategoryPermissionForEmbargoedOrigins) {
   constexpr char kOriginToBlock[] = "https://www.blocked.com:443";
   constexpr char kOriginToEmbargo[] = "https://embargoed.co.uk";

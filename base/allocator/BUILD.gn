@@ -276,12 +276,14 @@ if (use_allocator == "tcmalloc") {
 
 buildflag_header("buildflags") {
   header = "buildflags.h"
-  flags = [ "USE_ALLOCATOR_SHIM=$use_allocator_shim" ]
-  if (use_allocator == "tcmalloc") {
-    flags += [ "USE_TCMALLOC=1" ]
-  } else {
-    flags += [ "USE_TCMALLOC=0" ]
-  }
+  _use_partition_alloc = use_allocator == "partition"
+  _use_tcmalloc = use_allocator == "tcmalloc"
+
+  flags = [
+    "USE_ALLOCATOR_SHIM=$use_allocator_shim",
+    "USE_TCMALLOC=$_use_tcmalloc",
+    "USE_PARTITION_ALLOC_AS_MALLOC=$_use_partition_alloc",
+  ]
 }
 
 # Used to shim malloc symbols on Android. see //base/allocator/README.md.

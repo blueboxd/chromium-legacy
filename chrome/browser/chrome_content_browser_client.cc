@@ -224,6 +224,7 @@
 #include "components/permissions/quota_permission_context_impl.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/policy/content/policy_blacklist_service.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -346,6 +347,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
+#include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/site_engagement/site_engagement.mojom.h"
 #include "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom.h"
@@ -2286,6 +2288,22 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           prefs->GetBoolean(prefs::kAppCacheForceEnabled)) {
         command_line->AppendSwitch(switches::kAppCacheForceEnabled);
       }
+
+      // The IntensiveWakeUpThrottling feature is typically managed via a
+      // base::Feature, but it has a managed policy override. The override is
+      // communicated to blink via a custom command-line flag. See
+      // PageSchedulerImpl for the other half of related logic.
+      PrefService* local_state = g_browser_process->local_state();
+      const PrefService::Preference* pref = local_state->FindPreference(
+          policy::policy_prefs::kIntensiveWakeUpThrottlingEnabled);
+      if (pref && pref->IsManaged()) {
+        command_line->AppendSwitchASCII(
+            blink::switches::kIntensiveWakeUpThrottlingPolicy,
+            pref->GetValue()->GetBool()
+                ? blink::switches::kIntensiveWakeUpThrottlingPolicy_ForceEnable
+                : blink::switches::
+                      kIntensiveWakeUpThrottlingPolicy_ForceDisable);
+      }
     }
 
     if (IsAutoReloadEnabled())
@@ -3436,11 +3454,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
       break;
     case ui::NativeTheme::PreferredColorScheme::kLight:
+    case ui::NativeTheme::PreferredColorScheme::kNoPreference:
       web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
       break;
-    case ui::NativeTheme::PreferredColorScheme::kNoPreference:
-      web_prefs->preferred_color_scheme =
-          blink::PreferredColorScheme::kNoPreference;
   }
 #endif  // !defined(OS_ANDROID)
 

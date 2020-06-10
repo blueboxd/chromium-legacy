@@ -68,6 +68,13 @@ void WaylandDataDevice::RequestData(WaylandDataOffer* offer,
   RegisterDeferredReadCallback();
 }
 
+void WaylandDataDevice::SetSelectionSource(WaylandDataSource* source) {
+  DCHECK(source);
+  wl_data_device_set_selection(data_device_.get(), source->data_source(),
+                               connection()->serial());
+  connection()->ScheduleFlush();
+}
+
 void WaylandDataDevice::ReadDragDataFromFD(
     base::ScopedFD fd,
     base::OnceCallback<void(const PlatformClipboard::Data&)> callback) {

@@ -100,6 +100,9 @@ TEST_F(LeakDetectionCheckFactoryImplTest, BulkCheck_SignedInAndSyncing) {
 }
 
 TEST_F(LeakDetectionCheckFactoryImplTest, BulkCheck_FeatureOff) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      password_manager::features::kPasswordCheck);
   identity_env().SetPrimaryAccount(kTestAccount);
   EXPECT_FALSE(request_factory().TryCreateBulkLeakCheck(
       &bulk_delegate(), identity_env().identity_manager(),

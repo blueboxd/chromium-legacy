@@ -626,8 +626,8 @@ TEST_P(AppContextMenuTest, InternalAppMenu) {
   }
 }
 
-// TODO(crbug.com/1082877): Test with BMO enabled.
 INSTANTIATE_TEST_SUITE_P(All,
                          AppContextMenuTest,
-                         ::testing::Values(ProviderType::kBookmarkApps),
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
                          web_app::ProviderTypeParamToString);

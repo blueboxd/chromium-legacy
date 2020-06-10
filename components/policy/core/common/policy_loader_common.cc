@@ -54,11 +54,11 @@ void FilterSensitivePolicies(PolicyMap* policy) {
     if (!map_entry->value()->GetAsList(&policy_list_value))
       return;
 
-    std::unique_ptr<base::ListValue> filtered_values(new base::ListValue);
+    base::Value filtered_values(base::Value::Type::LIST);
     for (const auto& list_entry : *policy_list_value) {
-      std::string entry;
-      if (!list_entry.GetAsString(&entry))
+      if (!list_entry.is_string())
         continue;
+      std::string entry = list_entry.GetString();
       size_t pos = entry.find(';');
       if (pos == std::string::npos)
         continue;
@@ -69,7 +69,7 @@ void FilterSensitivePolicies(PolicyMap* policy) {
         invalid_policies++;
       }
 
-      filtered_values->AppendString(entry);
+      filtered_values.Append(entry);
     }
     if (invalid_policies) {
       PolicyMap::Entry filtered_entry = map_entry->DeepCopy();

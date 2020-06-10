@@ -623,4 +623,117 @@ public class PortalsTest {
                                           .findObject(new UiSelector().text(expectedDialogTitle));
         Assert.assertTrue(dialogUiObject.waitForExists(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL));
     }
+
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testPermissionDeniedWhenRequestedByPortal() throws Exception {
+        String mainUrl = mTestServer.getURL("/chrome/test/data/android/portals/geolocation.html");
+        mActivityTestRule.startMainActivityWithURL(mainUrl);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        final WebContents portalContents = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            List<? extends WebContents> innerContents = tab.getWebContents().getInnerWebContents();
+            Assert.assertEquals(1, innerContents.size());
+            return innerContents.get(0);
+        });
+        Assert.assertEquals("false",
+                JavaScriptUtils.runJavascriptWithAsyncResult(portalContents, "requestLocation()"));
+        Assert.assertEquals("\"denied\"",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        portalContents, "queryGeolocationPermission()"));
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Portals"})
+    public void testPermissionDeniedInPortalAfterBeingGrantedInPortalHost() throws Exception {
+        String mainUrl = mTestServer.getURL("/chrome/test/data/android/portals/geolocation.html");
+        mActivityTestRule.startMainActivityWithURL(mainUrl);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        // Request geolocation.
+        JavaScriptUtils.executeJavaScript(tab.getWebContents(), "requestLocation()");
+        // Wait for permissions dialog.
+        CriteriaHelper.pollUiThread(() -> {
+            PermissionDialogController permissionDialogController =
+                    PermissionDialogController.getInstance();
+            return permissionDialogController.isDialogShownForTest();
+        });
+        // Accept permissions request by clicking button on permissions dialog.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PermissionDialogController permissionDialogController =
+                    PermissionDialogController.getInstance();
+            permissionDialogController.clickButtonForTest(
+                    ModalDialogProperties.ButtonType.POSITIVE);
+        });
+        // Assert that main page has geolocation permissions.
+        Assert.assertEquals("\"granted\"",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        tab.getWebContents(), "queryGeolocationPermission()"));
+        // Check portal for geolocation permission status and assert that it is denied.
+        final WebContents portalContents = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            List<? extends WebContents> innerContents = tab.getWebContents().getInnerWebContents();
+            Assert.assertEquals(1, innerContents.size());
+            return innerContents.get(0);
+        });
+        Assert.assertEquals("\"denied\"",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        portalContents, "queryGeolocationPermission()"));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testPermissionShouldBeDeniedAfterActivatingPortal() throws Exception {
+        String mainUrl = mTestServer.getURL("/chrome/test/data/android/portals/geolocation.html");
+        mActivityTestRule.startMainActivityWithURL(mainUrl);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        WebContents webContents = tab.getWebContents();
+        JavaScriptUtils.executeJavaScript(webContents, "requestLocation()");
+        // Wait for permissions dialog.
+        CriteriaHelper.pollUiThread(() -> {
+            PermissionDialogController permissionDialogController =
+                    PermissionDialogController.getInstance();
+            return permissionDialogController.isDialogShownForTest();
+        });
+        // Activate portal while dialog is visible.
+        executeScriptAndAwaitSwap(tab, "activatePortal()");
+        final WebContents portalContents = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            List<? extends WebContents> innerContents = tab.getWebContents().getInnerWebContents();
+            Assert.assertEquals(1, innerContents.size());
+            return innerContents.get(0);
+        });
+        // Permission should be denied.
+        Assert.assertEquals("false",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        portalContents, "waitForRequestLocationToResolve()"));
+        // Permission dialog should not be visible anymore.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PermissionDialogController permissionDialogController =
+                    PermissionDialogController.getInstance();
+            Assert.assertFalse(permissionDialogController.isDialogShownForTest());
+        });
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Portals"})
+    public void testPermissionDeniedWhenRequestedByAdoptedPortal() throws Exception {
+        String mainUrl = mTestServer.getURL("/chrome/test/data/android/portals/geolocation.html");
+        mActivityTestRule.startMainActivityWithURL(mainUrl);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        // Activate portal and adopt predecessor.
+        executeScriptAndAwaitSwap(tab, "activatePortal()");
+        JavaScriptUtils.runJavascriptWithAsyncResult(tab.getWebContents(), "waitForAdoption()");
+        final WebContents portalContents = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            List<? extends WebContents> innerContents = tab.getWebContents().getInnerWebContents();
+            Assert.assertEquals(1, innerContents.size());
+            return innerContents.get(0);
+        });
+        // Request for geolocation should be denied.
+        JavaScriptUtils.executeJavaScript(portalContents, "requestLocation()");
+        Assert.assertEquals("false",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        portalContents, "waitForRequestLocationToResolve()"));
+    }
 }

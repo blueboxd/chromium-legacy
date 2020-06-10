@@ -28,15 +28,13 @@ namespace blink {
 
 PreferredColorScheme CSSValueIDToPreferredColorScheme(CSSValueID id) {
   switch (id) {
-    case CSSValueID::kNoPreference:
-      return PreferredColorScheme::kNoPreference;
     case CSSValueID::kLight:
       return PreferredColorScheme::kLight;
     case CSSValueID::kDark:
       return PreferredColorScheme::kDark;
     default:
       NOTREACHED();
-      return PreferredColorScheme::kNoPreference;
+      return PreferredColorScheme::kLight;
   }
 }
 

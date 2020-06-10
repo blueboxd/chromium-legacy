@@ -11,6 +11,7 @@
 #include "base/check.h"
 #include "base/notreached.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_non_backed.h"
@@ -91,9 +92,8 @@ void WaylandDataDragController::StartSession(const OSExchangeData& data,
 
   // Create new new data source and offers |data|.
   if (!data_source_)
-    data_source_ = data_device_manager_->CreateSource();
-  data_source_->Offer(data, this);
-  data_source_->SetAction(operation);
+    data_source_ = data_device_manager_->CreateSource(this);
+  Offer(data, operation);
 
   // Create drag icon surface (if any) and store the data to be exchanged.
   icon_surface_.reset(CreateIconSurfaceIfNeeded(data));
@@ -214,7 +214,7 @@ void WaylandDataDragController::OnDragDrop() {
   HandleUnprocessedMimeTypes();
 }
 
-void WaylandDataDragController::OnDragSourceFinish(bool completed) {
+void WaylandDataDragController::OnDataSourceFinish(bool completed) {
   DCHECK(data_source_);
   if (origin_window_)
     origin_window_->OnDragSessionClose(data_source_->dnd_action());
@@ -226,13 +226,43 @@ void WaylandDataDragController::OnDragSourceFinish(bool completed) {
   state_ = State::kIdle;
 }
 
-void WaylandDataDragController::OnDragSourceSend(const std::string& mime_type,
+void WaylandDataDragController::OnDataSourceSend(const std::string& mime_type,
                                                  std::string* buffer) {
+  DCHECK(data_source_);
   DCHECK(buffer);
   DCHECK(data_);
-  if (!wl::ExtractOSExchangeData(*data_, mime_type, buffer))
+  if (!wl::ExtractOSExchangeData(*data_, mime_type, buffer)) {
     LOG(WARNING) << "Cannot deliver data of type " << mime_type
                  << " and no text representation is available.";
+  }
+}
+
+void WaylandDataDragController::Offer(const OSExchangeData& data,
+                                      int operation) {
+  DCHECK(data_source_);
+
+  // Drag'n'drop manuals usually suggest putting data in order so the more
+  // specific a MIME type is, the earlier it occurs in the list.  Wayland
+  // specs don't say anything like that, but here we follow that common
+  // practice: begin with URIs and end with plain text.  Just in case.
+  std::vector<std::string> mime_types;
+  if (data.HasFile()) {
+    mime_types.push_back(kMimeTypeURIList);
+  }
+  if (data.HasURL(FilenameToURLPolicy::CONVERT_FILENAMES)) {
+    mime_types.push_back(kMimeTypeMozillaURL);
+  }
+  if (data.HasHtml()) {
+    mime_types.push_back(kMimeTypeHTML);
+  }
+  if (data.HasString()) {
+    mime_types.push_back(kMimeTypeTextUtf8);
+    mime_types.push_back(kMimeTypeText);
+  }
+
+  DCHECK(!mime_types.empty());
+  data_source_->Offer(mime_types);
+  data_source_->SetAction(operation);
 }
 
 wl_surface* WaylandDataDragController::CreateIconSurfaceIfNeeded(

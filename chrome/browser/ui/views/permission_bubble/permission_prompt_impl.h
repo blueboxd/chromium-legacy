@@ -19,7 +19,8 @@ class WebContents;
 // This object will create or trigger UI to reflect that a website is requesting
 // a permission. The UI is usually a popup bubble, but may instead be a location
 // bar icon (the "quiet" prompt).
-class PermissionPromptImpl : public permissions::PermissionPrompt {
+class PermissionPromptImpl : public permissions::PermissionPrompt,
+                             public views::WidgetObserver {
  public:
   PermissionPromptImpl(Browser* browser,
                        content::WebContents* web_contents,
@@ -33,6 +34,9 @@ class PermissionPromptImpl : public permissions::PermissionPrompt {
   PermissionPromptBubbleView* prompt_bubble_for_testing() {
     return prompt_bubble_;
   }
+
+  // views::WidgetObserver:
+  void OnWidgetClosing(views::Widget* widget) override;
 
  private:
   enum class PromptStyle;

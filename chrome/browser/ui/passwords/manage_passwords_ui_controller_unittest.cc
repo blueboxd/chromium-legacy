@@ -1347,7 +1347,7 @@ TEST_F(ManagePasswordsUIControllerTest, UpdateBubbleAfterLeakCheck) {
   EXPECT_CALL(dialog_prompt, ShowCredentialLeakPrompt);
   controller()->OnCredentialLeak(
       password_manager::CreateLeakType(password_manager::IsSaved(true),
-                                       password_manager::IsReused(true),
+                                       password_manager::IsReused(false),
                                        password_manager::IsSyncing(false)),
       GURL(kExampleUrl));
   // The bubble is gone.

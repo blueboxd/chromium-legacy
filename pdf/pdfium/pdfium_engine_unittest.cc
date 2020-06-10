@@ -329,6 +329,10 @@ class PDFiumEngineTabbingTest : public PDFiumTestBase {
     return engine->link_under_cursor_;
   }
 
+  void ScrollFocusedAnnotationIntoView(PDFiumEngine* engine) {
+    engine->ScrollFocusedAnnotationIntoView();
+  }
+
  protected:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
@@ -866,6 +870,53 @@ TEST_F(PDFiumEngineTabbingTest, MaintainViewportWhenFocusIsUpdated) {
   EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
             GetFocusedElementType(engine.get()));
   EXPECT_EQ(0, GetLastFocusedPage(engine.get()));
+}
+
+TEST_F(PDFiumEngineTabbingTest, ScrollFocusedAnnotationIntoView) {
+  StrictMock<ScrollingTestClient> client;
+  std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
+      &client, FILE_PATH_LITERAL("annotation_form_fields.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(2, engine->GetNumberOfPages());
+  engine->PluginSizeUpdated(pp::Size(60, 40));
+
+  {
+    InSequence sequence;
+    static constexpr PP_Point kScrollValues[] = {{510, 478}, {510, 478}};
+
+    for (const auto& scroll_value : kScrollValues) {
+      EXPECT_CALL(client, ScrollToY(scroll_value.y, false))
+          .WillOnce(Invoke([&engine, &scroll_value]() {
+            engine->ScrolledToYPosition(scroll_value.y);
+          }));
+      EXPECT_CALL(client, ScrollToX(scroll_value.x))
+          .WillOnce(Invoke([&engine, &scroll_value]() {
+            engine->ScrolledToXPosition(scroll_value.x);
+          }));
+    }
+  }
+
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kNone,
+            GetFocusedElementType(engine.get()));
+  EXPECT_EQ(-1, GetLastFocusedPage(engine.get()));
+
+  // Tabbing to bring the document into focus.
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kDocument,
+            GetFocusedElementType(engine.get()));
+
+  // Tab to an annotation.
+  ASSERT_TRUE(HandleTabEvent(engine.get(), 0));
+  EXPECT_EQ(PDFiumEngine::FocusElementType::kPage,
+            GetFocusedElementType(engine.get()));
+
+  // Scroll focused annotation out of viewport.
+  static constexpr PP_Point kScrollPosition = {242, 746};
+  engine->ScrolledToXPosition(kScrollPosition.x);
+  engine->ScrolledToYPosition(kScrollPosition.y);
+
+  // Scroll the focused annotation into view.
+  ScrollFocusedAnnotationIntoView(engine.get());
 }
 
 }  // namespace chrome_pdf

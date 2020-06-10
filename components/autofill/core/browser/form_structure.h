@@ -351,8 +351,6 @@ class FormStructure {
   void set_submission_source(mojom::SubmissionSource submission_source) {
     submission_source_ = submission_source;
   }
-  bool operator==(const FormData& form) const;
-  bool operator!=(const FormData& form) const;
 
   // Returns an identifier that is used by the refill logic. Takes the first non
   // empty of these or returns an empty string:

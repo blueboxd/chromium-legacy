@@ -230,6 +230,9 @@ TEST_F(PropertyRegistryTest, Version) {
 
   Registry().RemoveDeclaredProperties();
   EXPECT_EQ(6u, Registry().Version());
+
+  Registry().RemoveDeclaredProperties();
+  EXPECT_EQ(6u, Registry().Version());
 }
 
 TEST_F(PropertyRegistryTest, RemoveDeclaredProperties) {

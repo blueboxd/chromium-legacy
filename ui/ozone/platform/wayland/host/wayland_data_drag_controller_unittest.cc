@@ -18,6 +18,7 @@
 #include "ui/base/dragdrop/file_info/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/ozone/platform/wayland/common/data_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
@@ -114,6 +115,11 @@ class WaylandDataDragControllerTest : public WaylandTest {
     return connection_->data_device_manager()->GetDevice();
   }
 
+  base::string16 sample_text_for_dnd() const {
+    static auto text = base::ASCIIToUTF16(wl::kSampleTextForDragAndDrop);
+    return text;
+  }
+
  protected:
   wl::TestDataDeviceManager* data_device_manager_;
   std::unique_ptr<MockDropHandler> drop_handler_;
@@ -125,12 +131,9 @@ TEST_P(WaylandDataDragControllerTest, StartDrag) {
 
   // The client starts dragging.
   OSExchangeData os_exchange_data;
+  os_exchange_data.SetString(sample_text_for_dnd());
   int operation = DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE;
   drag_controller()->StartSession(os_exchange_data, operation);
-
-  WaylandDataSource::DragDataMap data;
-  data[wl::kTextMimeTypeUtf8] = wl::kSampleTextForDragAndDrop;
-  drag_controller()->data_source_->drag_data_map_ = data;
   Sync();
 
   // The server reads the data and the callback gets it.
@@ -152,28 +155,52 @@ TEST_P(WaylandDataDragControllerTest, StartDragWithWrongMimeType) {
   bool restored_focus = window_->has_pointer_focus();
   window_->SetPointerFocus(true);
 
-  // The client starts dragging offering data with wl::kTextMimeTypeUtf8
-  // mime type.
+  // The client starts dragging offering data with |kMimeTypeHTML|
   OSExchangeData os_exchange_data;
+  os_exchange_data.SetHtml(sample_text_for_dnd(), {});
   int operation = DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE;
   drag_controller()->StartSession(os_exchange_data, operation);
-
-  WaylandDataSource::DragDataMap data;
-  data[wl::kTextMimeTypeUtf8] = wl::kSampleTextForDragAndDrop;
-  drag_controller()->data_source_->drag_data_map_ = data;
   Sync();
 
-  // The server should get an empty data buffer in ReadData callback
-  // when trying to read it.
+  // The server should get an empty data buffer in ReadData callback when trying
+  // to read it with a different mime type.
   base::RunLoop run_loop;
   auto callback = base::BindOnce(
       [](base::RunLoop* loop, PlatformClipboard::Data&& data) {
         std::string result(data.begin(), data.end());
-        EXPECT_EQ("", result);
+        EXPECT_TRUE(result.empty());
         loop->Quit();
       },
       &run_loop);
   data_device_manager_->data_source()->ReadData(kMimeTypeText,
+                                                std::move(callback));
+  run_loop.Run();
+  window_->SetPointerFocus(restored_focus);
+}
+
+TEST_P(WaylandDataDragControllerTest, StartDragWithText) {
+  bool restored_focus = window_->has_pointer_focus();
+  window_->SetPointerFocus(true);
+
+  // The client starts dragging offering text mime type.
+  OSExchangeData os_exchange_data;
+  os_exchange_data.SetString(sample_text_for_dnd());
+  int operation = DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE;
+  drag_controller()->StartSession(os_exchange_data, operation);
+  Sync();
+
+  // The server should get a "text" representation in ReadData callback when
+  // trying to read it as mime type other than |kMimeTypeText| and
+  // |kTextMimeTypeUtf8|.
+  base::RunLoop run_loop;
+  auto callback = base::BindOnce(
+      [](base::RunLoop* loop, PlatformClipboard::Data&& data) {
+        std::string result(data.begin(), data.end());
+        EXPECT_EQ(wl::kSampleTextForDragAndDrop, result);
+        loop->Quit();
+      },
+      &run_loop);
+  data_device_manager_->data_source()->ReadData(kMimeTypeMozillaURL,
                                                 std::move(callback));
   run_loop.Run();
   window_->SetPointerFocus(restored_focus);

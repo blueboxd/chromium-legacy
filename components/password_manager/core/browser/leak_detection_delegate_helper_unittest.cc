@@ -122,6 +122,8 @@ TEST_F(LeakDetectionDelegateHelperTest, SavedLeakedCredentials) {
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
   SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(false));
+  EXPECT_CALL(*store_, AddCompromisedCredentialsImpl)
+      .Times(base::FeatureList::IsEnabled(features::kPasswordCheck));
   InitiateGetCredentialLeakType();
 }
 
@@ -134,6 +136,8 @@ TEST_F(LeakDetectionDelegateHelperTest,
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
   SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(true));
+  EXPECT_CALL(*store_, AddCompromisedCredentialsImpl)
+      .Times(2 * base::FeatureList::IsEnabled(features::kPasswordCheck));
   InitiateGetCredentialLeakType();
 }
 
@@ -147,6 +151,8 @@ TEST_F(LeakDetectionDelegateHelperTest,
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
   SetOnShowLeakDetectionNotificationExpectation(IsSaved(true), IsReused(true));
+  EXPECT_CALL(*store_, AddCompromisedCredentialsImpl)
+      .Times(base::FeatureList::IsEnabled(features::kPasswordCheck));
   InitiateGetCredentialLeakType();
 }
 
@@ -167,6 +173,8 @@ TEST_F(LeakDetectionDelegateHelperTest, ReusedPasswordOnOtherOrigin) {
 
   SetGetLoginByPasswordConsumerInvocation(std::move(password_forms));
   SetOnShowLeakDetectionNotificationExpectation(IsSaved(false), IsReused(true));
+  EXPECT_CALL(*store_, AddCompromisedCredentialsImpl)
+      .Times(base::FeatureList::IsEnabled(features::kPasswordCheck));
   InitiateGetCredentialLeakType();
 }
 

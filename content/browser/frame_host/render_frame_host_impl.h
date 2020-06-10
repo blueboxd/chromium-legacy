@@ -476,7 +476,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int previous_sibling_routing_id);
 
   // Deletes the RenderFrame in the renderer process.
-  // Postcondition: |is_active()| will return false.
+  // Postcondition: |IsPendingDeletion()| is true.
   void DeleteRenderFrame(FrameDeleteIntention intent);
 
   // Tracks whether the RenderFrame for this RenderFrameHost has been created in
@@ -700,7 +700,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Remove this frame and its children. This happens asynchronously, an IPC
   // round trip with the renderer process is needed to ensure children's unload
   // handlers are run.
-  // Postcondition: is_active() is false.
+  // Postcondition: |IsPendingDeletion()| is true.
   void DetachFromProxy();
 
   // Whether an ongoing navigation in this frame is waiting for a BeforeUnload
@@ -722,15 +722,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // out.
   void OnUnloaded();
 
-  // This method returns true from the time this RenderFrameHost is created
-  // until it is pending deletion. Pending deletion starts when Unload() is
-  // called on the frame or one of its ancestors.
-  // Returns false when the frame is in the BackForwardCache.
-  // TODO(https://crbug.com/1073449): Replace all occurrences of is_active.
-  bool is_active() const {
-    return lifecycle_state_ == LifecycleState::kActive ||
-           lifecycle_state_ == LifecycleState::kSpeculative;
-  }
 
   // Stop the load in progress.
   void Stop();

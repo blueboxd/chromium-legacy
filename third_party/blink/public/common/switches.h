@@ -15,6 +15,11 @@ namespace switches {
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 BLINK_COMMON_EXPORT extern const char kAllowPreCommitInput[];
+BLINK_COMMON_EXPORT extern const char kIntensiveWakeUpThrottlingPolicy[];
+BLINK_COMMON_EXPORT extern const char
+    kIntensiveWakeUpThrottlingPolicy_ForceDisable[];
+BLINK_COMMON_EXPORT extern const char
+    kIntensiveWakeUpThrottlingPolicy_ForceEnable[];
 
 }  // namespace switches
 }  // namespace blink

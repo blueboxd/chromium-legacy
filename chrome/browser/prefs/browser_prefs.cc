@@ -655,7 +655,9 @@ void RegisterProfilePrefsForMigration(
 }  // namespace
 
 void RegisterLocalState(PrefRegistrySimple* registry) {
-  // Please keep this list alphabetized.
+  // Call outs to individual subsystems that register Local State (browser-wide)
+  // prefs en masse. See RegisterProfilePrefs for per-profile prefs. Please
+  // keep this list alphabetized.
   browser_shutdown::RegisterPrefs(registry);
   data_reduction_proxy::RegisterPrefs(registry);
   data_use_measurement::ChromeDataUseMeasurement::RegisterPrefs(registry);
@@ -693,6 +695,19 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
 
+  // Individual preferences. If you have multiple preferences that should
+  // clearly be grouped together, please group them together into a helper
+  // function called above. Please keep this list alphabetized.
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kIntensiveWakeUpThrottlingEnabled, false);
+  registry->RegisterInt64Pref(kLastStartupTimestamp, 0);
+  registry->RegisterStringPref(kLastStartupVersion, std::string());
+  registry->RegisterIntegerPref(kSameVersionStartupCount, 0);
+
+  // Below this point is for platform-specific and compile-time conditional
+  // calls. Please follow the helper-function-first-then-direct-calls pattern
+  // established above, and keep things alphabetized.
+
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
   BackgroundModeManager::RegisterPrefs(registry);
 #endif
@@ -714,6 +729,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   StartupBrowserCreator::RegisterLocalStatePrefs(registry);
   task_manager::TaskManagerInterface::RegisterPrefs(registry);
   UpgradeDetector::RegisterPrefs(registry);
+
+  registry->RegisterBooleanPref(kNtpActivateHideShortcutsFieldTrial, false);
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -795,9 +812,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if defined(OS_WIN)
   OSCrypt::RegisterLocalPrefs(registry);
-#endif
-
-#if defined(OS_WIN)
   registry->RegisterBooleanPref(prefs::kRendererCodeIntegrityEnabled, true);
   registry->RegisterBooleanPref(
       policy::policy_prefs::kNativeWindowOcclusionEnabled, true);
@@ -815,17 +829,11 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   DeviceOAuth2TokenStoreDesktop::RegisterPrefs(registry);
 #endif
 
-#if !defined(OS_ANDROID)
-  registry->RegisterBooleanPref(kNtpActivateHideShortcutsFieldTrial, false);
-#endif  // !defined(OS_ANDROID)
-  registry->RegisterInt64Pref(kLastStartupTimestamp, 0);
-  registry->RegisterStringPref(kLastStartupVersion, std::string());
-  registry->RegisterIntegerPref(kSameVersionStartupCount, 0);
-
 #if defined(TOOLKIT_VIEWS)
   RegisterBrowserViewLocalPrefs(registry);
 #endif
 
+  // This is intentionally last.
   RegisterLocalStatePrefsForMigration(registry);
 }
 

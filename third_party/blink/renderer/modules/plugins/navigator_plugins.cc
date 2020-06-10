@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/plugins/navigator_plugins.h"
 
+#include "third_party/blink/public/common/privacy_budget/identifiability_metric_builder.h"
+#include "third_party/blink/public/common/privacy_budget/identifiable_token_builder.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -51,7 +53,38 @@ bool NavigatorPlugins::javaEnabled(Navigator& navigator) {
 DOMPluginArray* NavigatorPlugins::plugins(LocalFrame* frame) const {
   if (!plugins_)
     plugins_ = MakeGarbageCollected<DOMPluginArray>(frame);
-  return plugins_.Get();
+
+  DOMPluginArray* result = plugins_.Get();
+  if (!frame)
+    return result;
+  Document* document = frame->GetDocument();
+  if (!document)
+    return result;
+
+  // Build digest...
+  IdentifiableTokenBuilder builder;
+  for (unsigned i = 0; i < result->length(); i++) {
+    DOMPlugin* plugin = result->item(i);
+    builder.AddAtomic(StringToBytesSafe(plugin->name()))
+        .AddAtomic(StringToBytesSafe(plugin->description()))
+        .AddAtomic(StringToBytesSafe(plugin->filename()));
+    for (unsigned j = 0; j < plugin->length(); j++) {
+      DOMMimeType* mimeType = plugin->item(j);
+      builder.AddAtomic(StringToBytesSafe(mimeType->type()))
+          .AddAtomic(StringToBytesSafe(mimeType->description()))
+          .AddAtomic(StringToBytesSafe(mimeType->suffixes()));
+    }
+  }
+  // ...and report to UKM.
+  IdentifiabilityMetricBuilder(document->UkmSourceID())
+      .SetWebfeature(WebFeature::kNavigatorPlugins, builder.GetToken())
+      .Record(document->UkmRecorder());
+
+  return result;
+}
+
+base::span<const uint8_t> NavigatorPlugins::StringToBytesSafe(String str) const {
+  return str.Is8Bit() ? str.Span8() : as_bytes(str.Span16());
 }
 
 DOMMimeTypeArray* NavigatorPlugins::mimeTypes(LocalFrame* frame) const {

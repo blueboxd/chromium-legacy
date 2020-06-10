@@ -5466,11 +5466,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLegacyTLSEnforcedDescription, kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(net::features::kLegacyTLSEnforced)},
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
     {"password-check", flag_descriptions::kPasswordCheckName,
-     flag_descriptions::kPasswordCheckDescription, kOsDesktop,
+     flag_descriptions::kPasswordCheckDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordCheck)},
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID)
 
     {"export-tagged-pdf", flag_descriptions::kExportTaggedPDFName,
      flag_descriptions::kExportTaggedPDFDescription, kOsDesktop,

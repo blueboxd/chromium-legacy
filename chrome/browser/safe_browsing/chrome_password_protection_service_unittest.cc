@@ -1261,7 +1261,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   feature_list.InitWithFeaturesAndParameters(
       {{safe_browsing::kPasswordProtectionForSavedPasswords, {}},
        {safe_browsing::kPasswordProtectionShowDomainsForSavedPasswords, {}}},
-      {});
+      {password_manager::features::kPasswordCheck});
   ReusedPasswordAccountType reused_password_type;
   reused_password_type.set_account_type(
       ReusedPasswordAccountType::SAVED_PASSWORD);

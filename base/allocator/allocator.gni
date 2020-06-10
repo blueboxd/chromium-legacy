@@ -33,7 +33,11 @@ declare_args() {
   use_allocator_shim = _default_use_allocator_shim
 }
 
-assert(use_allocator == "none" || use_allocator == "tcmalloc")
+assert(use_allocator == "none" || use_allocator == "tcmalloc" ||
+       use_allocator == "partition")
+
+# Don't ship this configuration, not ready yet.
+assert(!(use_allocator == "partition" && is_official_build))
 
 assert(!is_win || use_allocator == "none", "Tcmalloc doesn't work on Windows.")
 assert(!is_mac || use_allocator == "none", "Tcmalloc doesn't work on macOS.")

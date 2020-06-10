@@ -14,7 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/policy/app_install_event_log_util.h"
+#include "chrome/browser/chromeos/policy/install_event_log_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/reporting_util.h"
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
@@ -100,7 +100,7 @@ void AppInstallEventLogUploader::StartSerialization() {
 void AppInstallEventLogUploader::OnSerialized(
     const em::AppInstallReportRequest* report) {
   base::Value context = reporting::GetContext(profile_);
-  base::Value event_list = ConvertProtoToValue(report, context);
+  base::Value event_list = ConvertArcAppProtoToValue(report, context);
 
   base::Value value_report = RealtimeReportingJobConfiguration::BuildReport(
       std::move(event_list), std::move(context));

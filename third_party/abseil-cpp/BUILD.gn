@@ -9,6 +9,32 @@
 import("//build/toolchain/toolchain.gni")
 import("//testing/test.gni")
 
+
+# This is a placeholder target (that will become a "component" in a follow up
+# CL) to allow both WebRTC and OpenScreen to depend on
+# //third_party/abseil-cpp:absl. This is beneficial for the
+# migration from an always statically linked Abseil to an Abseil that
+# will respect the value of is_component_build.
+group("absl") {
+  public_deps = [
+    "//third_party/abseil-cpp/absl/algorithm:container",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+    "//third_party/abseil-cpp/absl/container:inlined_vector",
+
+    # Disabled because of static initializers:
+    # "//third_party/abseil-cpp/absl/debugging:failure_signal_handler",
+    # "//third_party/abseil-cpp/absl/debugging:symbolize",
+
+    "//third_party/abseil-cpp/absl/hash",
+    "//third_party/abseil-cpp/absl/memory",
+    "//third_party/abseil-cpp/absl/meta:type_traits",
+    "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/types:optional",
+    "//third_party/abseil-cpp/absl/types:variant",
+  ]
+}
+
 group("default") {
   deps = [
     "absl/types:any",

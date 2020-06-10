@@ -17,12 +17,13 @@ const testDisplayString = 'Test display string';
 
 /**
  * Fire a safety check Chrome cleaner event.
- * @param {SafetyCheckChromeCleanerStatus} state
+ * @param {!SafetyCheckChromeCleanerStatus} state
  */
 function fireSafetyCheckChromeCleanerEvent(state) {
-  const event = {};
-  event.newState = state;
-  event.displayString = testDisplayString;
+  const event = {
+    newState: state,
+    displayString: testDisplayString,
+  };
   webUIListenerCallback(
       SafetyCheckCallbackConstants.CHROME_CLEANER_CHANGED, event);
 }

@@ -7,26 +7,31 @@
 
 #include <memory>
 
-#include "base/macros.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
-
-struct gtk_primary_selection_device_manager;
+#include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 
 namespace ui {
 
 class GtkPrimarySelectionDevice;
-class GtkPrimarySelectionSource;
 class WaylandConnection;
 
 class GtkPrimarySelectionDeviceManager {
  public:
+  using DataSource = GtkPrimarySelectionSource;
+  using DataDevice = GtkPrimarySelectionDevice;
+
   GtkPrimarySelectionDeviceManager(
       gtk_primary_selection_device_manager* manager,
       WaylandConnection* connection);
+  GtkPrimarySelectionDeviceManager(const GtkPrimarySelectionDeviceManager&) =
+      delete;
+  GtkPrimarySelectionDeviceManager& operator=(
+      const GtkPrimarySelectionDeviceManager&) = delete;
   ~GtkPrimarySelectionDeviceManager();
 
   GtkPrimarySelectionDevice* GetDevice();
-  std::unique_ptr<GtkPrimarySelectionSource> CreateSource();
+  std::unique_ptr<GtkPrimarySelectionSource> CreateSource(
+      GtkPrimarySelectionSource::Delegate* delegate);
 
  private:
   wl::Object<gtk_primary_selection_device_manager> device_manager_;
@@ -34,8 +39,6 @@ class GtkPrimarySelectionDeviceManager {
   WaylandConnection* const connection_;
 
   std::unique_ptr<GtkPrimarySelectionDevice> device_;
-
-  DISALLOW_COPY_AND_ASSIGN(GtkPrimarySelectionDeviceManager);
 };
 
 }  // namespace ui

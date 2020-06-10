@@ -72,7 +72,6 @@ static_assert(kMaxSystemPagesPerSlotSpan < (1 << 8),
 
 PartitionRoot::PartitionRoot() = default;
 PartitionRoot::~PartitionRoot() = default;
-PartitionRootGeneric::PartitionRootGeneric() = default;
 PartitionRootGeneric::~PartitionRootGeneric() = default;
 PartitionAllocatorGeneric::PartitionAllocatorGeneric() = default;
 
@@ -228,8 +227,11 @@ void PartitionRoot::Init(size_t bucket_count, size_t maximum_allocation) {
   }
 }
 
-void PartitionRootGeneric::Init() {
+void PartitionRootGeneric::InitSlowPath() {
   ScopedGuard guard{lock_};
+
+  if (this->initialized.load(std::memory_order_relaxed))
+    return;
 
   PartitionAllocBaseInit(this);
 

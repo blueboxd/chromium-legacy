@@ -5,36 +5,37 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_DATA_DEVICE_MANAGER_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_DATA_DEVICE_MANAGER_H_
 
-#include <wayland-client.h>
-
 #include <memory>
 
-#include "base/macros.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 
 namespace ui {
 
 class WaylandConnection;
 class WaylandDataDevice;
-class WaylandDataSource;
 
 class WaylandDataDeviceManager {
  public:
+  using DataSource = WaylandDataSource;
+  using DataDevice = WaylandDataDevice;
+
   WaylandDataDeviceManager(wl_data_device_manager* device_manager,
                            WaylandConnection* connection);
+  WaylandDataDeviceManager(const WaylandDataDeviceManager&) = delete;
+  WaylandDataDeviceManager& operator=(const WaylandDataDeviceManager&) = delete;
   ~WaylandDataDeviceManager();
 
   WaylandDataDevice* GetDevice();
-  std::unique_ptr<WaylandDataSource> CreateSource();
+  std::unique_ptr<WaylandDataSource> CreateSource(
+      WaylandDataSource::Delegate* delegate);
 
  private:
   wl::Object<wl_data_device_manager> device_manager_;
 
   WaylandConnection* const connection_;
 
-  std::unique_ptr<WaylandDataDevice> data_device_;
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandDataDeviceManager);
+  std::unique_ptr<WaylandDataDevice> device_;
 };
 
 }  // namespace ui

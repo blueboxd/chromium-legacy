@@ -319,7 +319,7 @@ struct CONTENT_EXPORT WebPreferences {
   // evaluate the prefers-color-scheme media query and resolve UA color scheme
   // to be used based on the supported-color-schemes META tag and CSS property.
   blink::PreferredColorScheme preferred_color_scheme =
-      blink::PreferredColorScheme::kNoPreference;
+      blink::PreferredColorScheme::kLight;
 
   // Network quality threshold below which resources from iframes are assigned
   // either kVeryLow or kVeryLow Blink priority.

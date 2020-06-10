@@ -49,6 +49,16 @@ void WebAppDataRetriever::GetWebApplicationInfo(
     return;
   }
 
+  // Makes a copy of WebContents fields right after Commit but before a mojo
+  // request to the renderer process.
+  default_web_application_info_ = std::make_unique<WebApplicationInfo>();
+  default_web_application_info_->app_url = web_contents->GetLastCommittedURL();
+  default_web_application_info_->title = web_contents->GetTitle();
+  if (default_web_application_info_->title.empty()) {
+    default_web_application_info_->title =
+        base::UTF8ToUTF16(default_web_application_info_->app_url.spec());
+  }
+
   mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> chrome_render_frame;
   web_contents->GetMainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(
       &chrome_render_frame);
@@ -135,24 +145,31 @@ void WebAppDataRetriever::OnGetWebApplicationInfo(
   if (ShouldStopRetrieval())
     return;
 
+  DCHECK(default_web_application_info_);
+
   content::WebContents* contents = web_contents();
   Observe(nullptr);
 
+  std::unique_ptr<WebApplicationInfo> info;
+
   content::NavigationEntry* entry =
       contents->GetController().GetLastCommittedEntry();
-  if (!entry || last_committed_nav_entry_unique_id != entry->GetUniqueID()) {
-    std::move(get_web_app_info_callback_).Run(nullptr);
-    return;
+
+  if (entry) {
+    if (entry->GetUniqueID() == last_committed_nav_entry_unique_id) {
+      info = std::make_unique<WebApplicationInfo>(web_app_info);
+      if (info->app_url.is_empty())
+        info->app_url = std::move(default_web_application_info_->app_url);
+      if (info->title.empty())
+        info->title = std::move(default_web_application_info_->title);
+    } else {
+      // WebContents navigation state changed during the call. Ignore the mojo
+      // request result. Use default initial info instead.
+      info = std::move(default_web_application_info_);
+    }
   }
 
-  auto info = std::make_unique<WebApplicationInfo>(web_app_info);
-  if (info->app_url.is_empty())
-    info->app_url = contents->GetLastCommittedURL();
-
-  if (info->title.empty())
-    info->title = contents->GetTitle();
-  if (info->title.empty())
-    info->title = base::UTF8ToUTF16(info->app_url.spec());
+  default_web_application_info_.reset();
 
   std::move(get_web_app_info_callback_).Run(std::move(info));
 }
@@ -189,6 +206,8 @@ void WebAppDataRetriever::OnIconsDownloaded(bool success, IconsMap icons_map) {
 void WebAppDataRetriever::CallCallbackOnError() {
   Observe(nullptr);
   DCHECK(ShouldStopRetrieval());
+
+  default_web_application_info_.reset();
 
   // Call a callback as a tail call. The callback may destroy |this|.
   if (get_web_app_info_callback_) {

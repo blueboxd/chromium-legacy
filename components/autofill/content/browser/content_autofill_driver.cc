@@ -292,7 +292,7 @@ void ContentAutofillDriver::SelectFieldOptionsDidChange(const FormData& form) {
   autofill_handler_->SelectFieldOptionsDidChange(form);
 }
 
-void ContentAutofillDriver::DidNavigateMainFrame(
+void ContentAutofillDriver::DidNavigateFrame(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsSameDocument())
     return;

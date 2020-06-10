@@ -233,8 +233,17 @@ void PropertyRegistration::registerProperty(
 }
 
 void PropertyRegistration::RemoveDeclaredProperties(Document& document) {
-  document.EnsurePropertyRegistry().RemoveDeclaredProperties();
-  document.GetStyleEngine().PropertyRegistryChanged();
+  if (!document.GetPropertyRegistry())
+    return;
+
+  PropertyRegistry& registry = document.EnsurePropertyRegistry();
+
+  size_t version_before = registry.Version();
+  registry.RemoveDeclaredProperties();
+  size_t version_after = registry.Version();
+
+  if (version_before != version_after)
+    document.GetStyleEngine().PropertyRegistryChanged();
 }
 
 }  // namespace blink

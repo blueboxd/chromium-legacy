@@ -26,6 +26,7 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/presentation/presentation_test_utils.h"
+#include "content/browser/web_contents/file_chooser_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/public/browser/back_forward_cache.h"
@@ -6061,6 +6062,53 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   ExpectBlocklistedFeature(
       blink::scheduler::WebSchedulerTrackedFeature::kSpeechSynthesis,
       FROM_HERE);
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DoesNotCacheIfRunFileChooserIsInvoked) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to url_a and open file chooser.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver deleted_rfh_a(rfh_a);
+  content::BackForwardCacheDisabledTester tester;
+
+  // 2) Bind FileChooser to RenderFrameHost.
+  mojo::Remote<blink::mojom::FileChooser> chooser =
+      FileChooserImpl::CreateBoundForTesting(rfh_a);
+
+  auto quit_run_loop = [](base::OnceClosure callback,
+                          blink::mojom::FileChooserResultPtr result) {
+    std::move(callback).Run();
+  };
+
+  // 3) Run OpenFileChooser and wait till its run.
+  base::RunLoop run_loop;
+  chooser->OpenFileChooser(
+      blink::mojom::FileChooserParams::New(),
+      base::BindOnce(quit_run_loop, run_loop.QuitClosure()));
+  run_loop.Run();
+
+  // 4) rfh_a should be disabled for BackForwardCache after opening file
+  // chooser.
+  EXPECT_TRUE(rfh_a->IsBackForwardCacheDisabled());
+  EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
+      rfh_a->GetProcess()->GetID(), rfh_a->GetRoutingID(), "FileChooser"));
+
+  // 5) Navigate to B having the file chooser open.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // The page uses FileChooser so it should be deleted.
+  deleted_rfh_a.WaitUntilDeleted();
+
+  // 6) Go back to the page with FileChooser.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
+                FROM_HERE);
 }
 
 }  // namespace content

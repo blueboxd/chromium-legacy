@@ -117,6 +117,12 @@ void FileChooserImpl::OpenFileChooser(blink::mojom::FileChooserParamsPtr params,
     listener->FileSelectionCanceled();
     return;
   }
+
+  // Don't allow page with open FileChooser to enter BackForwardCache to avoid
+  // any unexpected behaviour from BackForwardCache.
+  BackForwardCache::DisableForRenderFrameHost(render_frame_host_,
+                                              "FileChooser");
+
   static_cast<WebContentsImpl*>(web_contents())
       ->RunFileChooser(render_frame_host_, std::move(listener), *params);
 }

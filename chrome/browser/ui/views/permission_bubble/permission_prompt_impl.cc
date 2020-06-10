@@ -59,9 +59,16 @@ PermissionPromptImpl::PermissionPromptImpl(Browser* browser,
       prompt_bubble_ = new PermissionPromptBubbleView(browser, delegate,
                                                       base::TimeTicks::Now());
       prompt_bubble_->Show();
+      prompt_bubble_->GetWidget()->AddObserver(this);
       prompt_style_ = PromptStyle::kBubble;
     }
   }
+}
+
+void PermissionPromptImpl::OnWidgetClosing(views::Widget* widget) {
+  DCHECK_EQ(widget, prompt_bubble_->GetWidget());
+  widget->RemoveObserver(this);
+  prompt_bubble_ = nullptr;
 }
 
 PermissionPromptImpl::~PermissionPromptImpl() {

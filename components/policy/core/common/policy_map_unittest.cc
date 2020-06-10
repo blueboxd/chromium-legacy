@@ -913,10 +913,10 @@ TEST_F(PolicyMapTest, EntryAddConflict) {
   PolicyMap::Entry entry_a;
   entry_a.level = POLICY_LEVEL_MANDATORY;
   entry_a.source = POLICY_SOURCE_CLOUD;
-  entry_a.set_value(std::make_unique<base::Value>(true));
+  entry_a.set_value(base::Value(true));
   entry_a.scope = POLICY_SCOPE_USER;
   PolicyMap::Entry entry_b = entry_a.DeepCopy();
-  entry_b.set_value(std::make_unique<base::Value>(false));
+  entry_b.set_value(base::Value(false));
   PolicyMap::Entry entry_b_no_conflicts = entry_b.DeepCopy();
   PolicyMap::Entry entry_c = entry_a.DeepCopy();
   entry_c.source = POLICY_SOURCE_PLATFORM;
@@ -937,9 +937,9 @@ TEST_F(PolicyMapTest, BlockedEntry) {
   PolicyMap::Entry entry_a(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                            POLICY_SOURCE_CLOUD, base::Value("a"), nullptr);
   PolicyMap::Entry entry_b = entry_a.DeepCopy();
-  entry_b.set_value(std::make_unique<base::Value>("b"));
+  entry_b.set_value(base::Value("b"));
   PolicyMap::Entry entry_c_blocked = entry_a.DeepCopy();
-  entry_c_blocked.set_value(std::make_unique<base::Value>("c"));
+  entry_c_blocked.set_value(base::Value("c"));
   entry_c_blocked.SetBlocked();
 
   PolicyMap policies;
@@ -989,7 +989,7 @@ TEST_F(PolicyMapTest, InvalidEntry) {
   PolicyMap::Entry entry_a(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                            POLICY_SOURCE_CLOUD, base::Value("a"), nullptr);
   PolicyMap::Entry entry_b_invalid = entry_a.DeepCopy();
-  entry_b_invalid.set_value(std::make_unique<base::Value>("b"));
+  entry_b_invalid.set_value(base::Value("b"));
   entry_b_invalid.SetInvalid();
 
   PolicyMap policies;

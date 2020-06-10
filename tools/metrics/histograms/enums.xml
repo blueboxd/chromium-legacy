@@ -20479,6 +20479,7 @@ Called by update_document_policy_enum.py.-->
   <int value="710" label="ReportDeviceVpdInfo"/>
   <int value="711" label="EnableExperimentalPolicies"/>
   <int value="712" label="PluginVmDataCollectionAllowed"/>
+  <int value="713" label="IntensiveWakeUpThrottlingEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -66180,6 +66181,7 @@ would be helpful to identify which type is being sent.
   <int value="8" label="Bookmark in model is missing sync metadata"/>
   <int value="9" label="Client tag hash does not match bookmark GUID"/>
   <int value="10" label="Duplicate client tag hashes exist"/>
+  <int value="11" label="Managed bookmark has sync metadata"/>
 </enum>
 
 <enum name="SyncBookmarkModelSyncState">

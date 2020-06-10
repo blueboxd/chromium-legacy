@@ -27,9 +27,10 @@ class SingleArcAppInstallEventLog
   // Restores the event log from |file| into |log|. Returns |true| if the
   // self-delimiting format of the log was parsed successfully and further logs
   // stored in the file may be loaded.
-  // |incomplete_| is set to |true| if it was set when storing the log to the
-  // file, the buffer wraps around or any log entries cannot be fully parsed. If
-  // not even the app name can be parsed, |log| is set to |nullptr|.
+  // |InstallEventLog::incomplete_| is set to |true| if it was set when storing
+  // the log to the file, the buffer wraps around or any log entries cannot be
+  // fully parsed. If not even the app name can be parsed, |log| is set to
+  // |nullptr|.
   static bool Load(base::File* file,
                    std::unique_ptr<SingleArcAppInstallEventLog>* log);
 

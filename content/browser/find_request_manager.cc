@@ -679,9 +679,14 @@ RenderFrameHost* FindRequestManager::Traverse(RenderFrameHost* from_rfh,
   DCHECK(from_rfh);
   // If |from_rfh| is being detached, it might already be removed from
   // its parent's list of children, meaning we can't traverse it correctly.
+  // We also don't traverse when |from_rfh| is in back-forward cache as we don't
+  // allow any updates in this state.
   auto* from_rfh_impl = static_cast<RenderFrameHostImpl*>(from_rfh);
-  if (!from_rfh_impl->is_active())
+  if (from_rfh_impl->IsPendingDeletion() ||
+      from_rfh_impl->IsInBackForwardCache()) {
     return nullptr;
+  }
+
   FrameTreeNode* node = from_rfh_impl->frame_tree_node();
   FrameTreeNode* last_node = node;
   while ((node = TraverseNode(node, forward, wrap)) != nullptr) {

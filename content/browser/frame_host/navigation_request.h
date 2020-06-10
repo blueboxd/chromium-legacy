@@ -658,7 +658,7 @@ class CONTENT_EXPORT NavigationRequest
   base::Optional<network::mojom::WebSandboxFlags> SandboxFlagsToCommit();
 
   // Returns the coop status information relevant to the current navigation.
-  CrossOriginOpenerPolicyStatus& coop_status();
+  const CrossOriginOpenerPolicyStatus& coop_status() const;
 
  private:
   friend class NavigationRequestTest;
@@ -984,7 +984,7 @@ class CONTENT_EXPORT NavigationRequest
   void CreateCoepReporter(StoragePartition* storage_partition);
   void CreateCoopReporter(StoragePartition* storage_partition);
 
-  base::Optional<network::mojom::BlockedByResponseReason> IsBlockedByCorp();
+  base::Optional<network::mojom::BlockedByResponseReason> IsBlockedByResponse();
 
   bool IsOverridingUserAgent() const {
     return commit_params_->is_overriding_user_agent || entry_overrides_ua_;
@@ -1017,6 +1017,14 @@ class CONTENT_EXPORT NavigationRequest
   // Set |state_| to |state| and also DCHECK that this state transition is
   // valid.
   void SetState(NavigationState state);
+
+  // Make sure COOP is relevant or clear the COOP headers.
+  void SanitizeCoopHeaders();
+
+  // Updates the internal coop_status assuming the page navigated to has
+  // cross-origin-opener-policy |coop| and cross-origin-embedder-policy |coep|.
+  void UpdateCoopStatus(network::mojom::CrossOriginOpenerPolicyValue coop,
+                        network::mojom::CrossOriginEmbedderPolicyValue coep);
 
   FrameTreeNode* const frame_tree_node_;
 

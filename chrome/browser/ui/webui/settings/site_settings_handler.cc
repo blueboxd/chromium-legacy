@@ -959,7 +959,7 @@ void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
   if (incognito && incognito != profile_) {
     extension_registry = extensions::ExtensionRegistry::Get(incognito);
     site_settings::GetExceptionsForContentType(
-        content_type, profile_, extension_registry, web_ui(),
+        content_type, incognito, extension_registry, web_ui(),
         /*incognito=*/true, exceptions.get());
   }
 

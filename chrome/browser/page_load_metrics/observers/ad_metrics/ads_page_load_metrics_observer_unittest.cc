@@ -2010,11 +2010,17 @@ TEST_F(AdsPageLoadMetricsObserverTest,
   UseCpuTimeUnderThreshold(ad_frame, base::TimeDelta::FromMilliseconds(
                                          heavy_ad_thresholds::kMaxCpuTime + 1));
 
-  // Verify we did not trigger the intervention.
+  // Verify we did trigger the intervention and that the message matches the
+  // intervention type with noise.
+  const char kReportOnlyMessage[] =
+      "Ad was removed because its "
+      "total CPU usage exceeded the limit. "
+      "See https://www.chromestatus.com/feature/4800491902992384";
   EXPECT_TRUE(HasInterventionReportsAfterFlush(ad_frame));
   histogram_tester().ExpectUniqueSample(
       SuffixedHistogram("HeavyAds.InterventionType2"),
       FrameData::HeavyAdStatus::kTotalCpu, 1);
+  EXPECT_EQ(kReportOnlyMessage, PopLastInterventionReportMessage());
 
   // Navigate again to trigger histograms.
   NavigateFrame(kNonAdUrl, main_frame);

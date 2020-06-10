@@ -2786,7 +2786,7 @@ message AppInstallReportLogEvent {
   optional int64 android_id = 9;
 }
 
-// Log bucket for an app.
+// Log bucket for an extension.
 message ExtensionInstallReport {
   // Extension id for the extension.
   optional string extension_id = 1;
@@ -2799,7 +2799,7 @@ message ExtensionInstallReport {
   repeated ExtensionInstallReportLogEvent logs = 3;
 }
 
-// Log bucket for an app.
+// Log bucket for an ARC++ app.
 message AppInstallReport {
   // Package name of the app.
   optional string package = 1;
@@ -2812,10 +2812,16 @@ message AppInstallReport {
   repeated AppInstallReportLogEvent logs = 3;
 }
 
-// Push-install logs for all apps.
+// Push-install logs for all ARC++ apps.
 message AppInstallReportRequest {
   // Log buckets for each app.
   repeated AppInstallReport app_install_reports = 1;
+}
+
+// Installation logs for all extensions.
+message ExtensionInstallReportRequest {
+  // Log buckets for each extension.
+  repeated ExtensionInstallReport extension_install_reports = 1;
 }
 
 // Response from server after receiving a report on the status of app
@@ -3301,7 +3307,10 @@ message DeviceManagementRequest {
   optional ClientCertificateProvisioningRequest
       client_certificate_provisioning_request = 34;
 
-  // Next id: 35.
+  // A report on the status of extension install process.
+  optional ExtensionInstallReportRequest extension_install_report_request = 35;
+
+  // Next id: 36.
 }
 
 // Response from server to device.

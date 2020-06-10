@@ -1337,6 +1337,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - UIResponder
 
+- (BOOL)canBecomeFirstResponder {
+  return YES;
+}
+
 - (NSArray*)keyCommands {
   if (![self shouldRegisterKeyboardCommands]) {
     return nil;

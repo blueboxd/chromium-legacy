@@ -583,6 +583,9 @@ class PDFiumEngine : public PDFEngine,
   void SetSelection(const PP_PdfPageCharacterIndex& selection_start_index,
                     const PP_PdfPageCharacterIndex& selection_end_index);
 
+  // Scroll the current focused annotation into view if not already in view.
+  void ScrollFocusedAnnotationIntoView();
+
   // Given |annot|, scroll the |annot| into view if not already in view.
   void ScrollAnnotationIntoView(FPDF_ANNOTATION annot, int page_index);
 

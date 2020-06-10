@@ -175,7 +175,10 @@ jumbo_component("accessibility") {
     "platform/compute_attributes.h",
   ]
 
-  deps = [ "//third_party/cld_3/src/src:cld_3" ]
+  deps = [
+    "//base/util/values:values_util",
+    "//third_party/cld_3/src/src:cld_3",
+  ]
 
   public_deps = [
     ":ax_base",

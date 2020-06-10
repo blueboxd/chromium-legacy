@@ -300,10 +300,6 @@
     Passwords on this device
   </message>
   <!-- TODO(crbug.com/1062344): Make it translateable once final strings are available. Also add screenshot file. -->
-  <message name="IDS_SETTINGS_DEVICE_PASSWORDS_EMPTY_SUBSECTION_TEXT" translateable="false" desc="Fallback text displayed under a subsection of the 'device passwords' page, in case that subsection is empty.">
-    No passwords
-  </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable once final strings are available. Also add screenshot file. -->
   <message name="IDS_SETTINGS_DEVICE_PASSWORDS_ON_DEVICE_ONLY_HEADING" translateable="false" desc="Title of a subsection in the 'device passwords' page displaying passwords/exceptions that are stored only on the device.">
     On this device only
   </message>

@@ -34,7 +34,7 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData()
       strict_mode(true),
       display_mode(blink::mojom::DisplayMode::kBrowser),
       color_gamut(ColorSpaceGamut::kUnknown),
-      preferred_color_scheme(PreferredColorScheme::kNoPreference),
+      preferred_color_scheme(PreferredColorScheme::kLight),
       prefers_reduced_motion(false),
       forced_colors(ForcedColors::kNone),
       navigation_controls(NavigationControls::kNone),

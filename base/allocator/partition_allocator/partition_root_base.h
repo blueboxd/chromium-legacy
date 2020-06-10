@@ -5,6 +5,8 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ROOT_BASE_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ROOT_BASE_H_
 
+#include <atomic>
+
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
@@ -169,13 +171,13 @@ static_assert(
 static OomFunction g_oom_handling_function = nullptr;
 
 template <bool thread_safety>
-struct BASE_EXPORT PartitionRootBase {
+struct PartitionRootBase {
   using Page = PartitionPage<thread_safety>;
   using Bucket = PartitionBucket<thread_safety>;
   using ScopedGuard = internal::ScopedGuard<thread_safety>;
 
-  PartitionRootBase();
-  virtual ~PartitionRootBase();
+  PartitionRootBase() = default;
+  virtual ~PartitionRootBase() = default;
   MaybeSpinLock<thread_safety> lock_;
   size_t total_size_of_committed_pages = 0;
   size_t total_size_of_super_pages = 0;
@@ -185,7 +187,8 @@ struct BASE_EXPORT PartitionRootBase {
   //                total_size_of_direct_mapped_pages.
   unsigned num_buckets = 0;
   unsigned max_allocation = 0;
-  bool initialized = false;
+  // Atomic as initialization can be concurrent.
+  std::atomic<bool> initialized = {};
   char* next_super_page = nullptr;
   char* next_partition_page = nullptr;
   char* next_partition_page_end = nullptr;
@@ -263,7 +266,7 @@ ALWAYS_INLINE void* PartitionRootBase<thread_safety>::AllocFromBucket(
     DCHECK(!ret || IsValidPage(Page::FromPointer(ret)));
   }
 
-#if DCHECK_IS_ON()
+#if DCHECK_IS_ON() && !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   if (!ret) {
     return nullptr;
   }

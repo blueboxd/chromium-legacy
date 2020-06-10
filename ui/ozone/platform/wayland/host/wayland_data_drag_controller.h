@@ -30,11 +30,11 @@ class WaylandShmBuffer;
 
 // WaylandDataDragController implements regular data exchanging between Chromium
 // and other client applications on top of the Wayland Drag and Drop protocol.
-// By implementing both DataDevice::DragDelegate and DataSource::DragDelegate,
+// By implementing both DataDevice::DragDelegate and DataSource::Delegate,
 // it is responsible for handling both DND sessions initiated from Chromium
 // windows as well as those triggered by other clients.
 class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
-                                  public WaylandDataSource::DragDelegate {
+                                  public WaylandDataSource::Delegate {
  public:
   enum class State { kIdle, kStarted, kTransferring };
 
@@ -57,6 +57,7 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
  private:
   FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest, ReceiveDrag);
   FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest, StartDrag);
+  FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest, StartDragWithText);
   FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest,
                            StartDragWithWrongMimeType);
 
@@ -71,11 +72,12 @@ class WaylandDataDragController : public WaylandDataDevice::DragDelegate,
   void OnDragLeave() override;
   void OnDragDrop() override;
 
-  // WaylandDataSource::DragDelegate:
-  void OnDragSourceFinish(bool completed) override;
-  void OnDragSourceSend(const std::string& mime_type,
+  // WaylandDataSource::Delegate:
+  void OnDataSourceFinish(bool completed) override;
+  void OnDataSourceSend(const std::string& mime_type,
                         std::string* contents) override;
 
+  void Offer(const OSExchangeData& data, int operation);
   wl_surface* CreateIconSurfaceIfNeeded(const OSExchangeData& data);
   void HandleUnprocessedMimeTypes();
   void OnMimeTypeDataTransferred(const PlatformClipboard::Data& contents);

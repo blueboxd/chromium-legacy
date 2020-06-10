@@ -47,7 +47,9 @@ enum class ExpectedCorruptionReason {
   UNTRACKED_BOOKMARK = 8,
   BOOKMARK_GUID_MISMATCH = 9,
   DUPLICATED_CLIENT_TAG_HASH = 10,
-  kMaxValue = DUPLICATED_CLIENT_TAG_HASH
+  TRACKED_MANAGED_NODE = 11,
+
+  kMaxValue = TRACKED_MANAGED_NODE
 };
 
 sync_pb::EntitySpecifics GenerateSpecifics(const std::string& title,
@@ -741,6 +743,41 @@ TEST(SyncedBookmarkTrackerTest,
       "Sync.BookmarksModelMetadataCorruptionReason",
       /*sample=*/ExpectedCorruptionReason::DUPLICATED_CLIENT_TAG_HASH,
       /*count=*/1);
+}
+
+TEST(SyncedBookmarkTrackerTest,
+     ShouldNotMatchModelAndMetadataIfUnsyncableNodeIsTracked) {
+  // Add a managed node with an arbitrary id 100.
+  const int64_t kManagedNodeId = 100;
+  auto owned_managed_node = std::make_unique<bookmarks::BookmarkPermanentNode>(
+      kManagedNodeId, bookmarks::BookmarkNode::FOLDER);
+  auto client = std::make_unique<bookmarks::TestBookmarkClient>();
+  bookmarks::BookmarkNode* managed_node = client->EnableManagedNode();
+
+  std::unique_ptr<bookmarks::BookmarkModel> model =
+      bookmarks::TestBookmarkClient::CreateModelWithClient(std::move(client));
+
+  // The model should contain the managed node now.
+  ASSERT_THAT(GetBookmarkNodeByID(model.get(), kManagedNodeId),
+              Eq(managed_node));
+
+  // Add entries for all the permanent nodes. TestBookmarkClient creates all the
+  // 3 permanent nodes.
+  sync_pb::BookmarkModelMetadata model_metadata =
+      CreateMetadataForPermanentNodes(model.get());
+
+  // Add unsyncable node to metadata.
+  *model_metadata.add_bookmarks_metadata() =
+      CreateNodeMetadata(managed_node->id(),
+                         /*server_id=*/"server_id");
+
+  base::HistogramTester histogram_tester;
+  EXPECT_THAT(SyncedBookmarkTracker::CreateFromBookmarkModelAndMetadata(
+                  model.get(), std::move(model_metadata)),
+              IsNull());
+  histogram_tester.ExpectUniqueSample(
+      "Sync.BookmarksModelMetadataCorruptionReason",
+      /*sample=*/ExpectedCorruptionReason::TRACKED_MANAGED_NODE, /*count=*/1);
 }
 
 TEST(SyncedBookmarkTrackerTest,

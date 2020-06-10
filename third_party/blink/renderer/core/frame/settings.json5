@@ -1057,7 +1057,7 @@
     // evaluating the prefers-color-scheme media query.
     {
       name: "preferredColorScheme",
-      initial: "PreferredColorScheme::kNoPreference",
+      initial: "PreferredColorScheme::kLight",
       invalidate: "ColorScheme",
       type: "PreferredColorScheme",
     },

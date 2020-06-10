@@ -80,7 +80,7 @@ TestHarness::TestHarness()
                                 POLICY_SOURCE_PLATFORM),
       next_policy_file_index_(100) {}
 
-TestHarness::~TestHarness() {}
+TestHarness::~TestHarness() = default;
 
 void TestHarness::SetUp() {
   ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
@@ -243,7 +243,7 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
             .Get(kHomepageLocation)
             ->DeepCopy();
     conflict_policy.conflicts.clear();
-    conflict_policy.set_value(std::make_unique<base::Value>("http://bar.com"));
+    conflict_policy.set_value(base::Value("http://bar.com"));
     expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .GetMutable(kHomepageLocation)
         ->AddConflictingPolicy(std::move(conflict_policy));

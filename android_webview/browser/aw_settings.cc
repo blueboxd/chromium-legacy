@@ -529,14 +529,13 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
       break;
     }
   }
-  web_prefs->preferred_color_scheme =
-      is_dark_mode ? blink::PreferredColorScheme::kDark
-                   : blink::PreferredColorScheme::kNoPreference;
+  web_prefs->preferred_color_scheme = is_dark_mode
+                                          ? blink::PreferredColorScheme::kDark
+                                          : blink::PreferredColorScheme::kLight;
   if (is_dark_mode) {
     switch (Java_AwSettings_getForceDarkBehaviorLocked(env, obj)) {
       case ForceDarkBehavior::FORCE_DARK_ONLY: {
-        web_prefs->preferred_color_scheme =
-            blink::PreferredColorScheme::kNoPreference;
+        web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
         web_prefs->force_dark_mode_enabled = true;
         break;
       }
@@ -547,7 +546,7 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
       }
       // Blink's behavior is that if the preferred color scheme matches the
       // supported color scheme, then force dark will be disabled, otherwise
-      // the preferred color scheme will be reset to no preference. Therefore
+      // the preferred color scheme will be reset to 'light'. Therefore
       // when enabling force dark, we also set the preferred color scheme to
       // dark so that dark themed content will be preferred over force
       // darkening.
@@ -558,8 +557,7 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
       }
     }
   } else {
-    web_prefs->preferred_color_scheme =
-        blink::PreferredColorScheme::kNoPreference;
+    web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
     web_prefs->force_dark_mode_enabled = false;
   }
 }

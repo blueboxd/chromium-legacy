@@ -132,18 +132,13 @@ void ContentAutofillDriverFactory::RenderFrameDeleted(
 
 void ContentAutofillDriverFactory::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // For the purposes of this code, a navigation is not important if it has not
-  // committed yet or if it's in a subframe.
-  if (!navigation_handle->HasCommitted() ||
-      !navigation_handle->IsInMainFrame()) {
-    return;
+  if (navigation_handle->HasCommitted() &&
+      (navigation_handle->IsInMainFrame() ||
+       navigation_handle->HasSubframeNavigationEntryCommitted())) {
+    NavigationFinished();
+    DriverForFrame(navigation_handle->GetRenderFrameHost())
+        ->DidNavigateFrame(navigation_handle);
   }
-
-  // A main frame navigation has occured. We suppress the autofill popup and
-  // tell the autofill driver.
-  NavigationFinished();
-  DriverForFrame(navigation_handle->GetRenderFrameHost())
-      ->DidNavigateMainFrame(navigation_handle);
 }
 
 void ContentAutofillDriverFactory::OnVisibilityChanged(

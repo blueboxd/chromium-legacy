@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/common/password_manager_features.h"
 
+#include "build/build_config.h"
+
 namespace password_manager {
 
 // NOTE: It is strongly recommended to use UpperCamelCase style for feature
@@ -54,7 +56,12 @@ const base::Feature kPasswordChange = {"PasswordChange",
 
 // Enables the bulk Password Check feature for signed in users.
 const base::Feature kPasswordCheck = {"PasswordCheck",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+#if defined(OS_ANDROID) || defined(OS_IOS)
+                                      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+                                      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Enables editing saved passwords for Android.
 const base::Feature kPasswordEditingAndroid = {

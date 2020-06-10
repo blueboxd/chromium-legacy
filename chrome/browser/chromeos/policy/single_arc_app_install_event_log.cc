@@ -21,68 +21,15 @@ bool SingleArcAppInstallEventLog::Load(
     std::unique_ptr<SingleArcAppInstallEventLog>* log) {
   log->reset();
 
-  if (!file->IsValid()) {
-    return false;
-  }
-
   ssize_t size;
-  if (file->ReadAtCurrentPos(reinterpret_cast<char*>(&size), sizeof(size)) !=
-          sizeof(size) ||
-      size > kMaxBufferSize) {
+  std::unique_ptr<char[]> package_buffer;
+  if (!ParseIdFromFile(file, &size, &package_buffer))
     return false;
-  }
-
-  std::unique_ptr<char[]> package_buffer = std::make_unique<char[]>(size);
-  if (file->ReadAtCurrentPos(package_buffer.get(), size) != size) {
-    return false;
-  }
 
   *log = std::make_unique<SingleArcAppInstallEventLog>(
       std::string(package_buffer.get(), size));
 
-  int64_t incomplete;
-  if (file->ReadAtCurrentPos(reinterpret_cast<char*>(&incomplete),
-                             sizeof(incomplete)) != sizeof(incomplete)) {
-    return false;
-  }
-  (*log)->incomplete_ = incomplete;
-
-  ssize_t entries;
-  if (file->ReadAtCurrentPos(reinterpret_cast<char*>(&entries),
-                             sizeof(entries)) != sizeof(entries)) {
-    return false;
-  }
-
-  for (ssize_t i = 0; i < entries; ++i) {
-    if (file->ReadAtCurrentPos(reinterpret_cast<char*>(&size), sizeof(size)) !=
-            sizeof(size) ||
-        size > kMaxBufferSize) {
-      (*log)->incomplete_ = true;
-      return false;
-    }
-
-    if (size == 0) {
-      // Zero-size entries are written if serialization of a log entry fails.
-      // Skip these on read.
-      (*log)->incomplete_ = true;
-      continue;
-    }
-
-    std::unique_ptr<char[]> buffer = std::make_unique<char[]>(size);
-    if (file->ReadAtCurrentPos(buffer.get(), size) != size) {
-      (*log)->incomplete_ = true;
-      return false;
-    }
-
-    em::AppInstallReportLogEvent event;
-    if (event.ParseFromArray(buffer.get(), size)) {
-      (*log)->Add(event);
-    } else {
-      (*log)->incomplete_ = true;
-    }
-  }
-
-  return true;
+  return LoadEventLogFromFile(file, (*log).get());
 }
 
 void SingleArcAppInstallEventLog::Serialize(em::AppInstallReport* report) {

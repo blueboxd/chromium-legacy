@@ -740,6 +740,24 @@ DetermineAfterCommitWhetherToForbidTrustTokenRedemption(
              : network::mojom::TrustTokenRedemptionPolicy::kForbid;
 }
 
+// Returns the string corresponding to LifecycleState, used for logging crash
+// keys.
+const char* LifecycleStateToString(RenderFrameHostImpl::LifecycleState state) {
+  using LifecycleState = RenderFrameHostImpl::LifecycleState;
+  switch (state) {
+    case LifecycleState::kSpeculative:
+      return "Speculative";
+    case LifecycleState::kActive:
+      return "Active";
+    case LifecycleState::kInBackForwardCache:
+      return "InBackForwardCache";
+    case LifecycleState::kRunningUnloadHandlers:
+      return "RunningUnloadHandlers";
+    case LifecycleState::kReadyToBeDeleted:
+      return "ReadyToDeleted";
+  }
+}
+
 }  // namespace
 
 bool CreateNewHostForCrashedFrame() {
@@ -1117,7 +1135,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // follows that |GetMainFrame()| will never return the speculative main frame
   // being deleted, since it must have already been unset.
   if (was_created && render_view_host_->GetMainFrame() != this)
-    CHECK(!is_active());
+    CHECK(IsPendingDeletion() || IsInBackForwardCache());
 
   GetProcess()->RemoveRoute(routing_id_);
   g_routing_id_frame_map.Get().erase(
@@ -1771,7 +1789,9 @@ void RenderFrameHostImpl::AccessibilityPerformAction(
 }
 
 bool RenderFrameHostImpl::AccessibilityViewHasFocus() {
-  if (!is_active())
+  // TODO(sreejakshetty): Clean up the checks which aren't necessary when
+  // reading the properties of per-page objects.
+  if (lifecycle_state_ != LifecycleState::kActive)
     return false;
 
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
@@ -1781,6 +1801,7 @@ bool RenderFrameHostImpl::AccessibilityViewHasFocus() {
 }
 
 void RenderFrameHostImpl::AccessibilityViewSetFocus() {
+  // Don't update Accessibility for inactive frames.
   if (IsInactiveAndDisallowReactivation())
     return;
 
@@ -1790,7 +1811,9 @@ void RenderFrameHostImpl::AccessibilityViewSetFocus() {
 }
 
 gfx::Rect RenderFrameHostImpl::AccessibilityGetViewBounds() {
-  if (!is_active())
+  // TODO(sreejakshetty): Clean up the checks which aren't necessary when
+  // reading the properties of per-page objects.
+  if (lifecycle_state_ != LifecycleState::kActive)
     return gfx::Rect();
 
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
@@ -1800,7 +1823,9 @@ gfx::Rect RenderFrameHostImpl::AccessibilityGetViewBounds() {
 }
 
 float RenderFrameHostImpl::AccessibilityGetDeviceScaleFactor() {
-  if (!is_active())
+  // TODO(sreejakshetty): Clean up the checks which aren't necessary when
+  // reading the properties of per-page objects.
+  if (lifecycle_state_ != LifecycleState::kActive)
     return 1.0f;
 
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
@@ -1835,7 +1860,7 @@ RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
   // Only the main frame's current frame host is connected to the native
   // widget tree for accessibility, so return null if this is queried on
   // any other frame.
-  if (!is_active() || !is_main_frame() || !IsCurrent())
+  if (!is_main_frame() || !IsCurrent())
     return gfx::kNullAcceleratedWidget;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
@@ -1847,6 +1872,9 @@ RenderFrameHostImpl::AccessibilityGetAcceleratedWidget() {
 
 gfx::NativeViewAccessible
 RenderFrameHostImpl::AccessibilityGetNativeViewAccessible() {
+  // If this method is called when the document is in BackForwardCache, evict
+  // the document to avoid ignoring any accessibility related events which the
+  // document might not expect.
   if (IsInactiveAndDisallowReactivation())
     return nullptr;
 
@@ -1859,7 +1887,10 @@ RenderFrameHostImpl::AccessibilityGetNativeViewAccessible() {
 
 gfx::NativeViewAccessible
 RenderFrameHostImpl::AccessibilityGetNativeViewAccessibleForWindow() {
-  if (!is_active())
+  // If this method is called when the frame is in BackForwardCache, evict
+  // the frame to avoid ignoring any accessibility related events which are not
+  // expected.
+  if (IsInactiveAndDisallowReactivation())
     return nullptr;
 
   RenderWidgetHostViewBase* view = static_cast<RenderWidgetHostViewBase*>(
@@ -1870,15 +1901,20 @@ RenderFrameHostImpl::AccessibilityGetNativeViewAccessibleForWindow() {
 }
 
 WebContents* RenderFrameHostImpl::AccessibilityWebContents() {
-  if (!is_active())
+  // If this method is called when the frame is in BackForwardCache, evict
+  // the frame to avoid ignoring any accessibility related events which are not
+  // expected.
+  if (IsInactiveAndDisallowReactivation())
     return nullptr;
   return delegate()->GetAsWebContents();
 }
 
 bool RenderFrameHostImpl::AccessibilityIsMainFrame() {
-  if (!is_active())
+  // TODO(sreejakshetty): Clean up checks which aren't necessary when reading
+  // the properties of per-page objects.
+  if (lifecycle_state_ != LifecycleState::kActive)
     return false;
-  return frame_tree_node()->IsMainFrame();
+  return is_main_frame();
 }
 
 void RenderFrameHostImpl::RenderProcessExited(
@@ -2630,7 +2666,10 @@ void RenderFrameHostImpl::DidFailLoadWithError(const GURL& url,
 }
 
 void RenderFrameHostImpl::DidFocusFrame() {
-  if (!is_active())
+  // We don't handle this IPC signal for non-current frames. For frames in
+  // BackForwardCache, it is safe to ignore this IPC as there is a renderer side
+  // check (see Document::IsFocusedAllowed) which returns false.
+  if (!IsCurrent())
     return;
 
   // We need to handle receiving this IPC from a frame that is inside a portal
@@ -2807,9 +2846,9 @@ void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
   // See https://crbug.com/805705 and https://crbug.com/930132.
   // TODO(ahemery): Investigate to see if this can be removed when the
   // NavigationClient interface is implemented.
-  // If this is called when the frame is in BackForwardCache, evict the document
-  // to avoid ignoring the renderer-initiated navigation, which the page might
-  // not expect.
+  // If this is called when the frame is in BackForwardCache, evict the frame
+  // to avoid ignoring the renderer-initiated navigation, which the frame
+  // might not expect.
   if (IsInactiveAndDisallowReactivation())
     return;
 
@@ -3273,9 +3312,10 @@ void RenderFrameHostImpl::RunJavaScriptDialog(
     const base::string16& default_prompt,
     JavaScriptDialogType dialog_type,
     JavaScriptDialogCallback ipc_response_callback) {
-  // Don't show the dialog if it's triggered on a frame that's pending deletion
-  // (e.g., from an unload handler), or when the tab is being closed.
-  if (!is_active()) {
+  // Don't show the dialog if it's triggered on a non-current RenderFrameHost.
+  // This happens when the RenderFrameHost is pending deletion or in the
+  // back-forward cache.
+  if (!IsCurrent()) {
     std::move(ipc_response_callback).Run(true, base::string16());
     return;
   }
@@ -3709,7 +3749,21 @@ void RenderFrameHostImpl::DidSetFramePolicyHeaders(
     network::mojom::WebSandboxFlags sandbox_flags,
     const blink::ParsedFeaturePolicy& feature_policy_header,
     const blink::DocumentPolicy::FeatureState& document_policy_header) {
-  if (!is_active())
+  // TODO(https://crbug.com/1093268): Investigate why this IPC can be received
+  // before the navigation commit. This can be triggered when loading an error
+  // page using the test:
+  // CrossOriginOpenerPolicyBrowserTest.NetworkErrorOnSandboxedPopups.
+  if (lifecycle_state() == LifecycleState::kSpeculative)
+    return;
+
+  // We should not be updating policy headers when the RenderFrameHost is in
+  // BackForwardCache. If this is called when the RenderFrameHost is in
+  // BackForwardCache, evict the document.
+  if (IsInactiveAndDisallowReactivation())
+    return;
+
+  // We shouldn't update policy headers for non-current frames.
+  if (!IsCurrent())
     return;
   // Rebuild |feature_policy_| for this frame.
   ResetFeaturePolicy();
@@ -4037,8 +4091,14 @@ void RenderFrameHostImpl::GoToEntryAtOffset(int32_t offset,
 
 void RenderFrameHostImpl::HandleAccessibilityFindInPageResult(
     blink::mojom::FindInPageResultAXParamsPtr params) {
+  // Only update FindInPageResult on current RenderFrameHost. Note that, it is
+  // safe to ignore this call for BackForwardCache, as we terminate the
+  // FindInPage session once the page enters BackForwardCache.
+  if (!IsCurrent())
+    return;
+
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs) && is_active()) {
+  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
     BrowserAccessibilityManager* manager =
         GetOrCreateBrowserAccessibilityManager();
     if (manager) {
@@ -4050,8 +4110,14 @@ void RenderFrameHostImpl::HandleAccessibilityFindInPageResult(
 }
 
 void RenderFrameHostImpl::HandleAccessibilityFindInPageTermination() {
+  // Only update FindInPageTermination on current RenderFrameHost. Note that, it
+  // is safe to ignore this call for BackForwardCache, as we terminate the
+  // FindInPage session once the page enters BackForwardCache.
+  if (!IsCurrent())
+    return;
+
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs) && is_active()) {
+  if (accessibility_mode.has_mode(ui::AXMode::kNativeAPIs)) {
     BrowserAccessibilityManager* manager =
         GetOrCreateBrowserAccessibilityManager();
     if (manager)
@@ -4393,7 +4459,7 @@ void RenderFrameHostImpl::OnDidStopLoading() {
 
   // Only inform the FrameTreeNode of a change in load state if the load state
   // of this RenderFrameHost is being tracked.
-  if (is_active())
+  if (!IsPendingDeletion())
     frame_tree_node_->DidStopLoading();
 }
 
@@ -4424,7 +4490,10 @@ void RenderFrameHostImpl::DidReceiveFirstUserActivation() {
 
 void RenderFrameHostImpl::UpdateUserActivationState(
     blink::mojom::UserActivationUpdateType update_type) {
-  if (!is_active())
+  // Don't update UserActivationState for non-current RenderFrameHost. In case
+  // of BackForwardCache, this is only called for tests and it is safe to ignore
+  // such requests.
+  if (!IsCurrent())
     return;
   frame_tree_node_->UpdateUserActivationState(update_type);
 }
@@ -5261,7 +5330,11 @@ RenderFrameHostImpl::GetRecordAggregateWatchTimeCallback() {
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {
-  DCHECK(is_active());
+  // We don't allow resetting waiting state when the RenderFrameHost is either
+  // in BackForwardCache or in pending deletion state, as we don't allow
+  // navigations from either of these two states.
+  DCHECK(!IsInBackForwardCache());
+  DCHECK(!IsPendingDeletion());
 
   // Whenever we reset the RFH state, we should not be waiting for beforeunload
   // or close acks.  We clear them here to be safe, since they can cause
@@ -6520,7 +6593,7 @@ void RenderFrameHostImpl::ResetLoadingState() {
     // When pending deletion, just set the loading state to not loading.
     // Otherwise, OnDidStopLoading will take care of that, as well as sending
     // notification to the FrameTreeNode about the change in loading state.
-    if (!is_active())
+    if (IsPendingDeletion() || IsInBackForwardCache())
       is_loading_ = false;
     else
       OnDidStopLoading();
@@ -8281,6 +8354,15 @@ void RenderFrameHostImpl::DidCommitNavigation(
     std::unique_ptr<NavigationRequest> committing_navigation_request,
     std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params) {
+  // BackForwardCacheImpl::CanStoreRenderFrameHost prevents placing the pages
+  // with in-flight navigation requests in the back-forward cache and it's not
+  // possible to start/commit a new one after the RenderFrameHost is in the
+  // BackForwardCache (see the check IsInactiveAndDisallowReactivation in
+  // RFH::DidCommitSameDocumentNavigation() and RFH::BeginNavigation()) so it
+  // isn't possible to get a DidCommitNavigation IPC from the renderer in
+  // kInBackForwardCache state.
+  DCHECK(!IsInBackForwardCache());
+
   NavigationRequest* request;
   if (committing_navigation_request) {
     request = committing_navigation_request.get();
@@ -8330,7 +8412,7 @@ void RenderFrameHostImpl::DidCommitNavigation(
   // destroying this RenderFrameHost. Note that we intentionally do not ignore
   // commits that happen while the current tab is being closed - see
   // https://crbug.com/805705.
-  if (!is_active())
+  if (IsPendingDeletion())
     return;
 
   // Retroactive sanity check:
@@ -8803,9 +8885,9 @@ void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
       bool_to_crash_key(!frame_tree_node_->IsMainFrame()));
 
   base::debug::SetCrashKeyString(
-      base::debug::AllocateCrashKeyString("is_active",
+      base::debug::AllocateCrashKeyString("lifecycle_state",
                                           base::debug::CrashKeySize::Size32),
-      bool_to_crash_key(is_active()));
+      LifecycleStateToString(lifecycle_state_));
 
   base::debug::SetCrashKeyString(
       base::debug::AllocateCrashKeyString("is_current",

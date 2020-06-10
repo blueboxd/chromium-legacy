@@ -1561,6 +1561,9 @@ extern const char kPageInfoPerformanceHintsDescription[];
 extern const char kPageInfoV2Name[];
 extern const char kPageInfoV2Description[];
 
+extern const char kPasswordCheckName[];
+extern const char kPasswordCheckDescription[];
+
 extern const char kPasswordManagerOnboardingAndroidName[];
 extern const char kPasswordManagerOnboardingAndroidDescription[];
 
@@ -1743,9 +1746,6 @@ extern const char kOmniboxTabSwitchSuggestionsDescription[];
 
 extern const char kOmniboxTabSwitchSuggestionsDedicatedRowName[];
 extern const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[];
-
-extern const char kPasswordCheckName[];
-extern const char kPasswordCheckDescription[];
 
 extern const char kTabFreezeName[];
 extern const char kTabFreezeDescription[];

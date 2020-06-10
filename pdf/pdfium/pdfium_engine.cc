@@ -1554,6 +1554,17 @@ bool PDFiumEngine::OnKeyDown(const pp::KeyboardInputEvent& event) {
     OnChar(synthesized);
   }
 
+#if !defined(OS_MACOSX)
+  // macOS doesn't have keyboard-triggered context menus.
+  // Scroll focused annotation into view when context menu is invoked through
+  // keyboard <Shift-F10>.
+  if (event.GetKeyCode() == FWL_VKEY_F10 &&
+      (event.GetModifiers() & PP_INPUTEVENT_MODIFIER_SHIFTKEY)) {
+    DCHECK(!rv);
+    ScrollFocusedAnnotationIntoView();
+  }
+#endif
+
   return rv;
 }
 
@@ -1574,8 +1585,17 @@ bool PDFiumEngine::OnChar(const pp::KeyboardInputEvent& event) {
     return false;
 
   base::string16 str = base::UTF8ToUTF16(event.GetCharacterText().AsString());
-  return !!FORM_OnChar(form(), pages_[last_focused_page_]->GetPage(), str[0],
-                       event.GetModifiers());
+  bool rv = !!FORM_OnChar(form(), pages_[last_focused_page_]->GetPage(), str[0],
+                          event.GetModifiers());
+
+  // Scroll editable form text into view on char events. We should not scroll
+  // focused annotation on escape char event since escape char is used to
+  // dismiss focus from form controls.
+  if (rv && editable_form_text_area_ && event.GetKeyCode() != ui::VKEY_ESCAPE) {
+    ScrollFocusedAnnotationIntoView();
+  }
+
+  return rv;
 }
 
 void PDFiumEngine::StartFind(const std::string& text, bool case_sensitive) {
@@ -3668,6 +3688,16 @@ void PDFiumEngine::SetSelection(
     selection_.push_back(PDFiumRange(pages_[i].get(), start_char_index,
                                      end_char_index - start_char_index));
   }
+}
+
+void PDFiumEngine::ScrollFocusedAnnotationIntoView() {
+  FPDF_ANNOTATION annot;
+  int page_index;
+  if (!FORM_GetFocusedAnnot(form(), &page_index, &annot))
+    return;
+
+  ScrollAnnotationIntoView(annot, page_index);
+  FPDFPage_CloseAnnot(annot);
 }
 
 void PDFiumEngine::ScrollAnnotationIntoView(FPDF_ANNOTATION annot,

@@ -1599,6 +1599,19 @@ void StyleEngine::ApplyUserRuleSetChanges(
     ScopedStyleResolver::KeyframesRulesAdded(GetDocument());
   }
 
+  if (changed_rule_flags & kPropertyRules) {
+    ClearPropertyRules();
+    AddPropertyRulesFromSheets(new_style_sheets);
+
+    // We just cleared all the rules, which includes any author rules. They
+    // must be forcibly re-added.
+    if (ScopedStyleResolver* scoped_resolver =
+            GetDocument().GetScopedStyleResolver()) {
+      scoped_resolver->SetNeedsAppendAllSheets();
+      MarkDocumentDirty();
+    }
+  }
+
   if ((changed_rule_flags & kFontFaceRules) || has_rebuilt_font_face_cache) {
     GetFontSelector()->FontFaceInvalidated(
         FontInvalidationReason::kGeneralInvalidation);
@@ -1624,9 +1637,11 @@ void StyleEngine::ApplyRuleSetChanges(
   bool rebuild_font_face_cache = change == kActiveSheetsChanged &&
                                  (changed_rule_flags & kFontFaceRules) &&
                                  tree_scope.RootNode().IsDocumentNode();
+  bool rebuild_at_property_registry = false;
   ScopedStyleResolver* scoped_resolver = tree_scope.GetScopedStyleResolver();
   if (scoped_resolver && scoped_resolver->NeedsAppendAllSheets()) {
     rebuild_font_face_cache = true;
+    rebuild_at_property_registry = true;
     change = kActiveSheetsChanged;
   }
 
@@ -1639,16 +1654,13 @@ void StyleEngine::ApplyRuleSetChanges(
   if (changed_rule_flags & kKeyframesRules)
     ScopedStyleResolver::KeyframesRulesAdded(tree_scope);
 
-  if (changed_rule_flags & kPropertyRules) {
+  if ((changed_rule_flags & kPropertyRules) || rebuild_at_property_registry) {
     // @property rules are (for now) ignored in shadow trees, per spec.
     // https://drafts.css-houdini.org/css-properties-values-api-1/#at-property-rule
     if (tree_scope.RootNode().IsDocumentNode()) {
-      PropertyRegistration::RemoveDeclaredProperties(GetDocument());
-
-      for (const ActiveStyleSheet& active_sheet : new_style_sheets) {
-        if (RuleSet* rule_set = active_sheet.second)
-          AddPropertyRules(*rule_set);
-      }
+      ClearPropertyRules();
+      AddPropertyRulesFromSheets(active_user_style_sheets_);
+      AddPropertyRulesFromSheets(new_style_sheets);
     }
   }
 
@@ -1856,6 +1868,18 @@ void StyleEngine::CollectMatchingUserRules(
     collector.CollectMatchingRules(
         MatchRequest(active_user_style_sheets_[i].second, nullptr,
                      active_user_style_sheets_[i].first, i));
+  }
+}
+
+void StyleEngine::ClearPropertyRules() {
+  PropertyRegistration::RemoveDeclaredProperties(GetDocument());
+}
+
+void StyleEngine::AddPropertyRulesFromSheets(
+    const ActiveStyleSheetVector& sheets) {
+  for (const ActiveStyleSheet& active_sheet : sheets) {
+    if (RuleSet* rule_set = active_sheet.second)
+      AddPropertyRules(*rule_set);
   }
 }
 
@@ -2120,7 +2144,7 @@ void StyleEngine::UpdateColorScheme() {
   if (!SupportsDarkColorScheme() && settings->GetForceDarkModeEnabled()) {
     // Make sure we don't match (prefers-color-scheme: dark) when forced
     // darkening is enabled.
-    preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
+    preferred_color_scheme_ = PreferredColorScheme::kLight;
   }
   if (GetDocument().Printing())
     preferred_color_scheme_ = PreferredColorScheme::kLight;

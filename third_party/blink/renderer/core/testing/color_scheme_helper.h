@@ -33,7 +33,7 @@ class ColorSchemeHelper {
   WebThemeEngine* web_theme_engine_ = nullptr;
   Settings& settings_;
   PreferredColorScheme default_preferred_color_scheme_ =
-      PreferredColorScheme::kNoPreference;
+      PreferredColorScheme::kLight;
   ForcedColors default_forced_colors_ = ForcedColors::kNone;
 };
 

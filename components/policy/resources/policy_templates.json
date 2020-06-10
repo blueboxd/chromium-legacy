@@ -21256,6 +21256,43 @@ If you disable this policy, web page scrolling to specific text fragments via UR
 
           If you set this policy, users cannot change or override it.''',
     },
+    {
+      'name': 'IntensiveWakeUpThrottlingEnabled',
+      'owners': ['file://components/performance_manager/OWNERS', 'chrisha@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:85-', 'chrome.*:85-', 'android:85-'],
+      'features': {
+        'per_profile': False,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 713,
+      'caption': '''Control the <ph name="PRODUCT_NAME">IntensiveWakeUpThrottling</ph> feature.''',
+      'tags': [],
+      'desc': '''When enabled the <ph name="PRODUCT_NAME">IntensiveWakeUpThrottling</ph> feature causes Javascript timers in background tabs to be aggressively throttled and coalesced, running no more than once per minute after a page has been backgrounded for 5 minutes or more.
+
+          This is a web standards compliant feature, but it may break functionality
+          on some websites by causing certain actions to be delayed by up to a
+          minute. However, it results in significant CPU and battery savings when
+          enabled. See https://bit.ly/30b1XR4 for more details.
+
+          If this policy is set to enabled then the feature will be force enabled, and
+          users will not be able to override this.
+
+          If this policy is set to disabled then the feature will be force disabled, and
+          users will not be able to override this.
+
+          If this policy is left unset then the feature will be controlled by its
+          own internal logic, which can be manually configured by users.
+
+          Note that the policy is applied per renderer process, with the most recent
+          value of the policy setting in force when a renderer process starts. A full
+          restart is required to ensure that all loaded tabs receive a consistent
+          policy setting. It is harmless for processes to be running with different
+          values of this policy.
+          ''',
+    },
   ],
 
   'messages': {
@@ -22119,6 +22156,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 712,
+  'highest_id_currently_used': 713,
   'highest_atomic_group_id_currently_used': 38
 }

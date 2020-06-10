@@ -773,7 +773,24 @@ SkiaOutputSurfaceImpl::CreateSkSurfaceCharacterization(
         impl_on_gpu_->GetGpuPreferences().enforce_vulkan_protected_memory
             ? GrProtected::kYes
             : GrProtected::kNo);
-    DCHECK(characterization.isValid());
+    VkFormat vk_format = VK_FORMAT_UNDEFINED;
+    LOG_IF(FATAL, !characterization.isValid())
+        << "\n  surface_size=" << surface_size.ToString()
+        << "\n  format=" << static_cast<int>(format)
+        << "\n  color_type=" << static_cast<int>(color_type)
+        << "\n  backend_format.isValid()=" << backend_format.isValid()
+        << "\n  backend_format.backend()="
+        << static_cast<int>(backend_format.backend())
+        << "\n  backend_format.asGLFormat()="
+        << static_cast<int>(backend_format.asGLFormat())
+        << "\n  backend_format.asVkFormat()="
+        << static_cast<int>(backend_format.asVkFormat(&vk_format))
+        << "\n  backend_format.asVkFormat() vk_format="
+        << static_cast<int>(vk_format)
+        << "\n  surface_origin=" << static_cast<int>(surface_origin)
+        << "\n  willGlFBO0=" << capabilities_.uses_default_gl_framebuffer
+        << "\n  isProtected="
+        << impl_on_gpu_->GetGpuPreferences().enforce_vulkan_protected_memory;
     return characterization;
   }
 

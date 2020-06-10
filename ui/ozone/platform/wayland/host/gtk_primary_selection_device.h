@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_base.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 
 struct gtk_primary_selection_device;
 
@@ -30,6 +31,8 @@ class GtkPrimarySelectionDevice : public WaylandDataDeviceBase {
   gtk_primary_selection_device* data_device() const {
     return data_device_.get();
   }
+
+  void SetSelectionSource(GtkPrimarySelectionSource* source);
 
  private:
   // gtk_primary_selection_device_listener callbacks

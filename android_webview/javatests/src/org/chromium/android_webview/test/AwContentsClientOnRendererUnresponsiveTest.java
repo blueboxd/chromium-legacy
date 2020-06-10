@@ -20,6 +20,7 @@ import org.chromium.android_webview.AwRenderProcess;
 import org.chromium.android_webview.AwRenderProcessGoneDetail;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.common.ContentUrlConstants;
@@ -157,6 +158,7 @@ public class AwContentsClientOnRendererUnresponsiveTest {
     @Feature({"AndroidWebView"})
     @LargeTest
     @OnlyRunIn(MULTI_PROCESS)
+    @DisabledTest(message = "crbug.com/1093270")
     public void testOnRendererUnresponsive() throws Throwable {
         RendererUnresponsiveTestAwContentsClient contentsClient =
                 new RendererUnresponsiveTestAwContentsClient();
@@ -179,6 +181,7 @@ public class AwContentsClientOnRendererUnresponsiveTest {
     @Test
     @Feature({"AndroidWebView"})
     @LargeTest
+    @DisabledTest(message = "crbug.com/1093270")
     public void testTransientUnresponsiveness() throws Throwable {
         RendererTransientlyUnresponsiveTestAwContentsClient contentsClient =
                 new RendererTransientlyUnresponsiveTestAwContentsClient();

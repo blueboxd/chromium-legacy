@@ -39,8 +39,10 @@ ExtensionFunction::ResponseAction SystemIndicatorSetIconFunction::Run() {
   if (const base::Value* canvas_set = set_icon_details.FindKeyOfType(
           "imageData", base::Value::Type::DICTIONARY)) {
     gfx::ImageSkia icon;
-    EXTENSION_FUNCTION_VALIDATE(ExtensionAction::ParseIconFromCanvasDictionary(
-        static_cast<const base::DictionaryValue&>(*canvas_set), &icon));
+    EXTENSION_FUNCTION_VALIDATE(
+        ExtensionAction::ParseIconFromCanvasDictionary(
+            static_cast<const base::DictionaryValue&>(*canvas_set), &icon) ==
+        ExtensionAction::IconParseResult::kSuccess);
 
     if (icon.isNull())
       return RespondNow(Error("Icon invalid."));

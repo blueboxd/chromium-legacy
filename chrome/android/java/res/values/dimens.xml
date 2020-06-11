@@ -609,10 +609,12 @@
     <dimen name="navigation_sheet_content_wrap_padding">12dp</dimen>
     <dimen name="navigation_sheet_peek_height">120dp</dimen>
 
+    <!-- RadioButtonWithDescriptionLayout dimensions -->
+    <dimen name="radio_button_accessory_view_padding_start">60dp</dimen>
+    <dimen name="radio_button_accessory_view_padding_end">16dp</dimen>
+
     <!-- Appearance Settings dimensions -->
     <dimen name="theme_preferences_checkbox_margin_end">8dp</dimen>
-    <dimen name="theme_preferences_checkbox_container_padding_start">60dp</dimen>
-    <dimen name="theme_preferences_checkbox_container_padding_end">16dp</dimen>
     <dimen name="homepage_preference_title_lateral_padding">16dp</dimen>
     <dimen name="homepage_preference_title_vertical_padding">10dp</dimen>
 

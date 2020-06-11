@@ -174,6 +174,7 @@
 #include "rlz/buildflags/buildflags.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
+#include "ui/base/buildflags.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -290,6 +291,10 @@
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
 #include "components/rlz/rlz_tracker.h"
 #endif  // BUILDFLAG(ENABLE_RLZ)
+
+#if BUILDFLAG(LACROS)
+#include "ui/shell_dialogs/select_file_dialog_lacros.h"
+#endif
 
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
@@ -1172,6 +1177,8 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   }
 
   ui::SelectFileDialog::SetFactory(new ChromeSelectFileDialogFactory());
+#elif BUILDFLAG(LACROS)
+  ui::SelectFileDialog::SetFactory(new ui::SelectFileDialogLacros::Factory());
 #endif  // defined(OS_WIN)
 
   if (parsed_command_line().HasSwitch(switches::kMakeDefaultBrowser)) {

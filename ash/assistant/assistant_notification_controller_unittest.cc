@@ -8,6 +8,7 @@
 
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/model/assistant_notification_model_observer.h"
+#include "ash/assistant/test/test_assistant_service.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/task_environment.h"
@@ -82,6 +83,11 @@ class AssistantNotificationBuilder {
     } else {
       notification_->buttons.push_back(std::move(button));
     }
+    return *this;
+  }
+
+  AssistantNotificationBuilder& WithFromServer(bool from_server) {
+    notification_->from_server = from_server;
     return *this;
   }
 
@@ -175,6 +181,14 @@ class AssistantNotificationModelObserverMock
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AssistantNotificationModelObserverMock);
+};
+
+class AssistantServiceMock : public TestAssistantService {
+ public:
+  MOCK_METHOD(void,
+              RetrieveNotification,
+              (AssistantNotificationPtr notification, int action_index),
+              (override));
 };
 
 // AssistantNotificationControllerTest -----------------------------------------
@@ -539,6 +553,40 @@ TEST_F(AssistantNotificationControllerTest, ShouldPropagateIsPinned) {
       message_center::MessageCenter::Get()->FindVisibleNotificationById(kId);
   ASSERT_NE(nullptr, system_notification);
   EXPECT_TRUE(system_notification->pinned());
+}
+
+TEST_F(AssistantNotificationControllerTest,
+       ShouldMaybeRetrieveNotificationPayload) {
+  constexpr char kId[] = "id";
+
+  // Mock the Assistant service.
+  StrictMock<AssistantServiceMock> service;
+  controller().SetAssistant(&service);
+
+  // Create an Assistant notification w/ default |from_server|.
+  AddOrUpdateNotification(AssistantNotificationBuilder().WithId(kId).Build());
+
+  // Click notification and verify we do *not* attempt to retrieve payload.
+  EXPECT_CALL(service, RetrieveNotification).Times(0);
+  message_center::MessageCenter::Get()->ClickOnNotification(kId);
+  Mock::VerifyAndClearExpectations(&service);
+
+  // Create an Assistant notification explicitly *not* |from_server|.
+  AddOrUpdateNotification(
+      AssistantNotificationBuilder().WithId(kId).WithFromServer(false).Build());
+
+  // Click notification and verify we do *not* attempt to retrieve payload.
+  EXPECT_CALL(service, RetrieveNotification).Times(0);
+  message_center::MessageCenter::Get()->ClickOnNotification(kId);
+  Mock::VerifyAndClearExpectations(&service);
+
+  // Create an Assistant notification explicitly |from_server|.
+  AddOrUpdateNotification(
+      AssistantNotificationBuilder().WithId(kId).WithFromServer(true).Build());
+
+  // Click notification and verify we *do* attempt to retrieve payload.
+  EXPECT_CALL(service, RetrieveNotification);
+  message_center::MessageCenter::Get()->ClickOnNotification(kId);
 }
 
 }  // namespace ash

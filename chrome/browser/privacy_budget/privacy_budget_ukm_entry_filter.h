@@ -8,17 +8,16 @@
 #include <cstdint>
 #include <memory>
 
-#include "chrome/browser/privacy_budget/identifiability_study_settings.h"
+#include "chrome/browser/privacy_budget/identifiability_study_state.h"
 #include "components/ukm/ukm_entry_filter.h"
 
-// A ukm::UkmEntryFilter that enforces the current identifiability study
-// settings.
+// A ukm::UkmEntryFilter that enforces the current identifiability study state.
 //
 // Doesn't affect any other kind of UKM event other than Identifiability events.
 class PrivacyBudgetUkmEntryFilter : public ukm::UkmEntryFilter {
  public:
   // |settings| must outlive PrivacyBudgetUkmEntryFilter.
-  explicit PrivacyBudgetUkmEntryFilter(IdentifiabilityStudySettings* settings);
+  explicit PrivacyBudgetUkmEntryFilter(IdentifiabilityStudyState* settings);
 
   PrivacyBudgetUkmEntryFilter(const PrivacyBudgetUkmEntryFilter&) = delete;
   PrivacyBudgetUkmEntryFilter& operator=(const PrivacyBudgetUkmEntryFilter&) =
@@ -30,7 +29,7 @@ class PrivacyBudgetUkmEntryFilter : public ukm::UkmEntryFilter {
       base::flat_set<uint64_t>* removed_metric_hashes) const override;
 
  private:
-  IdentifiabilityStudySettings* const identifiability_study_settings_;
+  IdentifiabilityStudyState* const identifiability_study_settings_;
 };
 
 #endif  // CHROME_BROWSER_PRIVACY_BUDGET_PRIVACY_BUDGET_UKM_ENTRY_FILTER_H_

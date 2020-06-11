@@ -103,8 +103,8 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       element_created_by_parser_(created_by_parser),
       is_fallback_image_(false),
       is_default_overridden_intrinsic_size_(
-          !document.IsImageDocument() &&
-          !document.IsFeatureEnabled(
+          !document.IsImageDocument() && GetExecutionContext() &&
+          !GetExecutionContext()->IsFeatureEnabled(
               mojom::blink::DocumentPolicyFeature::kUnsizedMedia)),
       is_legacy_format_or_unoptimized_image_(false),
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {

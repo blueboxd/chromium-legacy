@@ -82,14 +82,17 @@ class CreatePlaneAttachedAnchorRequest {
 
   ArCore::CreateAnchorCallback TakeCallback();
 
-  CreatePlaneAttachedAnchorRequest(const gfx::Transform& plane_from_anchor,
-                                   uint64_t plane_id,
-                                   ArCore::CreateAnchorCallback callback);
+  CreatePlaneAttachedAnchorRequest(
+      const mojom::XRNativeOriginInformation& native_origin_information,
+      const gfx::Transform& native_origin_from_anchor,
+      uint64_t plane_id,
+      ArCore::CreateAnchorCallback callback);
   CreatePlaneAttachedAnchorRequest(CreatePlaneAttachedAnchorRequest&& other);
   ~CreatePlaneAttachedAnchorRequest();
 
  private:
-  const gfx::Transform plane_from_anchor_;
+  const mojom::XRNativeOriginInformation native_origin_information_;
+  const gfx::Transform native_origin_from_anchor_;
   const uint64_t plane_id_;
   const base::TimeTicks request_start_time_;
 
@@ -153,9 +156,11 @@ class ArCoreImpl : public ArCore {
       const mojom::XRNativeOriginInformation& native_origin_information,
       const mojom::Pose& native_origin_from_anchor,
       CreateAnchorCallback callback) override;
-  void CreatePlaneAttachedAnchor(const mojom::Pose& plane_from_anchor,
-                                 uint64_t plane_id,
-                                 CreateAnchorCallback callback) override;
+  void CreatePlaneAttachedAnchor(
+      const mojom::XRNativeOriginInformation& native_origin_information,
+      const mojom::Pose& native_origin_from_anchor,
+      uint64_t plane_id,
+      CreateAnchorCallback callback) override;
 
   void ProcessAnchorCreationRequests(
       const gfx::Transform& mojo_from_viewer,

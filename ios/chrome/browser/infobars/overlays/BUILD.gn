@@ -9,6 +9,8 @@ source_set("overlays") {
     "infobar_banner_overlay_request_cancel_handler.mm",
     "infobar_modal_completion_notifier.h",
     "infobar_modal_completion_notifier.mm",
+    "infobar_modal_overlay_request_cancel_handler.h",
+    "infobar_modal_overlay_request_cancel_handler.mm",
     "infobar_overlay_request_cancel_handler.h",
     "infobar_overlay_request_cancel_handler.mm",
     "infobar_overlay_request_factory.h",
@@ -86,6 +88,7 @@ source_set("unit_tests") {
   sources = [
     "infobar_banner_overlay_request_cancel_handler_unittest.mm",
     "infobar_modal_completion_notifier_unittest.mm",
+    "infobar_modal_overlay_request_cancel_handler_unittest.mm",
     "infobar_overlay_request_cancel_handler_unittest.mm",
     "infobar_overlay_request_factory_impl_unittest.mm",
     "infobar_overlay_request_inserter_unittest.mm",

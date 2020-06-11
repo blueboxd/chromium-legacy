@@ -18,12 +18,10 @@
                file="media_internals.html"
                flattenhtml="true"
                allowexternalscript="true"
-               compress="gzip"
                type="BINDATA" />
       <include name="IDR_MEDIA_INTERNALS_JS"
                file="media_internals.js"
                flattenhtml="true"
-               compress="gzip"
                type="BINDATA" />
     </includes>
   </release>

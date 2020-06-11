@@ -497,13 +497,14 @@ HTMLIFrameElement::ConstructTrustTokenParams() const {
           network::mojom::blink::TrustTokenOperationType::kSigning;
 
   if (operation_requires_feature_policy &&
-      (!GetDocument().IsFeatureEnabled(
+      (!GetExecutionContext()->IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kTrustTokenRedemption))) {
-    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kOther,
-        mojom::blink::ConsoleMessageLevel::kError,
-        "Trust Tokens: Attempted redemption or signing without the "
-        "trust-token-redemption Feature Policy feature present."));
+    GetExecutionContext()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kOther,
+            mojom::blink::ConsoleMessageLevel::kError,
+            "Trust Tokens: Attempted redemption or signing without the "
+            "trust-token-redemption Feature Policy feature present."));
     return nullptr;
   }
 

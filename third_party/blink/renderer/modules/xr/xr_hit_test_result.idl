@@ -7,5 +7,5 @@ interface XRHitTestResult {
   XRPose? getPose(XRSpace relative_to);
 
   [RuntimeEnabled=WebXRAnchors, CallWith=ScriptState, RaisesException, MeasureAs=XRHitTestResultCreateAnchor]
-  Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose);
+  Promise<XRAnchor> createAnchor();
 };

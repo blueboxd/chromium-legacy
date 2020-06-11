@@ -520,8 +520,9 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask(bool /* event */) {
 
   // Dequeue V4L2 output buffer first to reduce output latency.
   bool success;
-  V4L2ReadableBufferRef dequeued_buffer;
   while (output_queue_->QueuedBuffersCount() > 0) {
+    V4L2ReadableBufferRef dequeued_buffer;
+
     std::tie(success, dequeued_buffer) = output_queue_->DequeueBuffer();
     if (!success) {
       SetState(State::kError);
@@ -535,6 +536,8 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask(bool /* event */) {
 
   // Dequeue V4L2 input buffer.
   while (input_queue_->QueuedBuffersCount() > 0) {
+    V4L2ReadableBufferRef dequeued_buffer;
+
     std::tie(success, dequeued_buffer) = input_queue_->DequeueBuffer();
     if (!success) {
       SetState(State::kError);

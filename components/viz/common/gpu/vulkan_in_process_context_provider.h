@@ -16,6 +16,8 @@
 #include "third_party/skia/include/gpu/vk/GrVkBackendContext.h"
 #endif
 
+class SkExecutor;
+
 namespace gpu {
 class VulkanImplementation;
 class VulkanDeviceQueue;
@@ -53,6 +55,7 @@ class VIZ_VULKAN_CONTEXT_PROVIDER_EXPORT VulkanInProcessContextProvider
 
 #if BUILDFLAG(ENABLE_VULKAN)
   sk_sp<GrContext> gr_context_;
+  std::unique_ptr<SkExecutor> executor_;
   gpu::VulkanImplementation* vulkan_implementation_;
   std::unique_ptr<gpu::VulkanDeviceQueue> device_queue_;
 #endif

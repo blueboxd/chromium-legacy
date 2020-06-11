@@ -51,7 +51,7 @@ ScopedDecodeTrace::ScopedDecodeTrace(const char* trace_name,
     : trace_name_(trace_name) {
   DCHECK(trace_name_);
   TRACE_EVENT_ASYNC_BEGIN1("media", trace_name_, this, "decoder_buffer",
-                           buffer.AsHumanReadableString());
+                           buffer.AsHumanReadableString(/*verbose=*/true));
 }
 
 ScopedDecodeTrace::~ScopedDecodeTrace() {

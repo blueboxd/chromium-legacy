@@ -125,8 +125,9 @@ def _CategorizeGenerated(symbols):
       symbols.WherePathMatches('gl_bindings_autogen'))
 
   symbols = symbols.WhereSourceIsGenerated()
-  symbols = g.Add('Java Protocol Buffers', symbols.Filter(lambda s: (
-      s.source_path.endswith('Proto.java'))))
+  symbols = g.Add(
+      'Java Protocol Buffers',
+      symbols.Filter(lambda s: '__protoc_java.srcjar' in s.source_path))
   symbols = g.Add('C++ Protocol Buffers', symbols.Filter(lambda s: (
       '/protobuf/' in s.object_path or
       s.object_path.endswith('.pbzero.o') or

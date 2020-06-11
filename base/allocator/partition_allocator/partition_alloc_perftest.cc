@@ -63,8 +63,7 @@ class SystemAllocator : public Allocator {
 
 class PartitionAllocator : public Allocator {
  public:
-  PartitionAllocator()
-      : alloc_(std::make_unique<PartitionAllocatorGeneric>()) {}
+  PartitionAllocator() : alloc_(std::make_unique<base::PartitionAllocator>()) {}
   ~PartitionAllocator() override = default;
 
   void Init() override { alloc_->init(); }
@@ -72,7 +71,7 @@ class PartitionAllocator : public Allocator {
   void Free(void* data) override { return alloc_->root()->Free(data); }
 
  private:
-  std::unique_ptr<PartitionAllocatorGeneric> alloc_;
+  std::unique_ptr<base::PartitionAllocator> alloc_;
 };
 
 class TestLoopThread : public PlatformThread::Delegate {

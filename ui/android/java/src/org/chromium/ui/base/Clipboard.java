@@ -241,9 +241,7 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(
                     ContextUtils.getApplicationContext().getContentResolver(), uri);
 
-            if (bitmap != null && bitmap.getConfig() == null) {
-                // If bitmap do not have the config info, gfx::CreateSkBitmapFromJavaBitmap cannot
-                // handle it on native side.
+            if (!bitmapSupportByGfx(bitmap)) {
                 return bitmap.copy(Bitmap.Config.ARGB_8888, /*mutable=*/false);
             }
             return bitmap;
@@ -469,6 +467,16 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         mContext.revokeUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         // Clear uri to avoid revoke over and over.
         mImageFileProvider.clearLastCopiedImageUri();
+    }
+
+    /**
+     * Check if |bitmap| is support by native side. gfx::CreateSkBitmapFromJavaBitmap only support
+     * ARGB_8888 and ALPHA_8.
+     */
+    private boolean bitmapSupportByGfx(Bitmap bitmap) {
+        return bitmap != null
+                && (bitmap.getConfig() == Bitmap.Config.ARGB_8888
+                        || bitmap.getConfig() == Bitmap.Config.ALPHA_8);
     }
 
     @NativeMethods

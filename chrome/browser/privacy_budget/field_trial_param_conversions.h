@@ -11,7 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/privacy_budget/identifiability_study_settings.h"
+#include "chrome/browser/privacy_budget/identifiability_study_state.h"
 #include "third_party/blink/public/common/privacy_budget/identifiable_surface.h"
 
 // The Encode/Decode families of functions are meant to be used to encode
@@ -48,7 +48,7 @@ std::pair<V, bool> DecodeIdentifiabilityTypePair(base::StringPiece s) {
   if (!DecodeIdentifiabilityType(pieces[0], &from) ||
       !base::StringToInt(pieces[1], &to))
     return {V(), false};
-  if (to < 0 || to > IdentifiabilityStudySettings::kMaxSamplingRateDenominator)
+  if (to < 0 || to > IdentifiabilityStudyState::kMaxSamplingRateDenominator)
     return {V(), false};
   return {V(from, to), true};
 }

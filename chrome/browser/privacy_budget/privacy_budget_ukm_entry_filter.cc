@@ -13,7 +13,7 @@
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 
 PrivacyBudgetUkmEntryFilter::PrivacyBudgetUkmEntryFilter(
-    IdentifiabilityStudySettings* settings)
+    IdentifiabilityStudyState* settings)
     : identifiability_study_settings_(settings) {}
 
 bool PrivacyBudgetUkmEntryFilter::FilterEntry(
@@ -31,7 +31,7 @@ bool PrivacyBudgetUkmEntryFilter::FilterEntry(
     return false;
 
   base::EraseIf(entry->metrics, [&](auto metric) {
-    return !identifiability_study_settings_->ShouldRecordSurface(
+    return !identifiability_study_settings_->ShouldSampleSurface(
         blink::IdentifiableSurface::FromMetricHash(metric.first));
   });
 

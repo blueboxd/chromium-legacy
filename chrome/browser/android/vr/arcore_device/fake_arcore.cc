@@ -208,8 +208,9 @@ bool FakeArCore::RequestHitTest(
     const mojom::XRRayPtr& ray,
     std::vector<mojom::XRHitResultPtr>* hit_results) {
   mojom::XRHitResultPtr hit = mojom::XRHitResult::New();
-  // Identity matrix - no translation and default orientation.
-  hit->hit_matrix = gfx::Transform();
+  // Default-constructed `hit->mojo_from_result` is fine, no need to set
+  // anything.
+  hit->mojo_from_result = mojom::Pose::New();
   hit_results->push_back(std::move(hit));
 
   return true;
@@ -307,9 +308,11 @@ mojom::XRLightEstimationDataPtr FakeArCore::GetLightEstimationData() {
   return result;
 }
 
-void FakeArCore::CreatePlaneAttachedAnchor(const mojom::Pose& plane_from_anchor,
-                                           uint64_t plane_id,
-                                           CreateAnchorCallback callback) {
+void FakeArCore::CreatePlaneAttachedAnchor(
+    const mojom::XRNativeOriginInformation& native_origin_information,
+    const mojom::Pose& native_origin_from_anchor,
+    uint64_t plane_id,
+    CreateAnchorCallback callback) {
   // TODO(992035): Fix this when implementing tests.
   std::move(callback).Run(mojom::CreateAnchorResult::FAILURE, 0);
 }

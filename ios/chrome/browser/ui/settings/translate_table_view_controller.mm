@@ -5,7 +5,10 @@
 #import "ios/chrome/browser/ui/settings/translate_table_view_controller.h"
 
 #import <Foundation/Foundation.h>
+
 #include <memory>
+
+#import <MaterialComponents/MaterialSnackbar.h>
 
 #include "base/mac/foundation_util.h"
 #include "components/google/core/common/google_util.h"
@@ -28,7 +31,6 @@
 #include "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ANDROID_SHORTCUT_HELPER_H_
 
 #include <memory>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -105,6 +106,9 @@ class ShortcutHelper {
   // otherwise.
   static bool DoesOriginContainAnyInstalledTrustedWebActivity(
       const GURL& origin);
+
+  // Returns a set of origins that have an installed WebAPK or TWA.
+  static std::set<GURL> GetOriginsWithInstalledWebApksOrTwas();
 
   // Sets a flag to force an update for the WebAPK corresponding to |id| on next
   // launch.

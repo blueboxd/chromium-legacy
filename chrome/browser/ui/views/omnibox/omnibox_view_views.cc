@@ -73,7 +73,6 @@
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
-#include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
@@ -84,7 +83,6 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -160,74 +158,65 @@ bool IsClipboardDataMarkedAsConfidential() {
 
 }  // namespace
 
-// Animates the path from |starting_color| to |ending_color|. The fading starts
-// after |delay_ms| ms.
-class OmniboxViewViews::PathFadeAnimation
-    : public views::AnimationDelegateViews {
- public:
-  PathFadeAnimation(OmniboxViewViews* view,
-                    SkColor starting_color,
-                    SkColor ending_color,
-                    uint32_t delay_ms)
-      : AnimationDelegateViews(view),
-        view_(view),
-        starting_color_(starting_color),
-        ending_color_(ending_color),
-        animation_(gfx::MultiAnimation::Parts({
-                       gfx::MultiAnimation::Part(
-                           base::TimeDelta::FromMilliseconds(delay_ms),
-                           gfx::Tween::ZERO),
-                       gfx::MultiAnimation::Part(
-                           base::TimeDelta::FromMilliseconds(300),
-                           gfx::Tween::FAST_OUT_SLOW_IN),
-                   }),
-                   gfx::MultiAnimation::kDefaultTimerInterval) {
-    DCHECK(view_);
+OmniboxViewViews::PathFadeAnimation::PathFadeAnimation(OmniboxViewViews* view,
+                                                       SkColor starting_color,
+                                                       SkColor ending_color,
+                                                       uint32_t delay_ms)
+    : AnimationDelegateViews(view),
+      view_(view),
+      starting_color_(starting_color),
+      ending_color_(ending_color),
+      animation_(
+          gfx::MultiAnimation::Parts({
+              gfx::MultiAnimation::Part(
+                  base::TimeDelta::FromMilliseconds(delay_ms),
+                  gfx::Tween::ZERO),
+              gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(300),
+                                        gfx::Tween::FAST_OUT_SLOW_IN),
+          }),
+          gfx::MultiAnimation::kDefaultTimerInterval) {
+  DCHECK(view_);
 
-    animation_.set_delegate(this);
-    animation_.set_continuous(false);
-  }
+  animation_.set_delegate(this);
+  animation_.set_continuous(false);
+}
 
-  // Starts the animation over |path_bounds|. The caller is responsible for
-  // calling Stop() if the text changes and |path_bounds| is no longer valid.
-  void Start(const gfx::Range& path_bounds) {
-    path_bounds_ = path_bounds;
-    animation_.Start();
-  }
+void OmniboxViewViews::PathFadeAnimation::Start(const gfx::Range& path_bounds) {
+  path_bounds_ = path_bounds;
+  animation_.Start();
+}
 
-  void Stop() { animation_.Stop(); }
+void OmniboxViewViews::PathFadeAnimation::Stop() {
+  animation_.Stop();
+}
 
-  bool IsAnimating() { return animation_.is_animating(); }
+bool OmniboxViewViews::PathFadeAnimation::IsAnimating() {
+  return animation_.is_animating();
+}
 
-  // Stops the animation if currently running and sets the starting color to
-  // |starting_color|.
-  void ResetStartingColor(SkColor starting_color) {
-    Stop();
-    starting_color_ = starting_color;
-  }
+// Stops the animation if currently running and sets the starting color to
+// |starting_color|.
+void OmniboxViewViews::PathFadeAnimation::ResetStartingColor(
+    SkColor starting_color) {
+  Stop();
+  starting_color_ = starting_color;
+}
 
-  SkColor GetCurrentColor() {
-    return gfx::Tween::ColorValueBetween(animation_.GetCurrentValue(),
-                                         starting_color_, ending_color_);
-  }
+SkColor OmniboxViewViews::PathFadeAnimation::GetCurrentColor() {
+  return gfx::Tween::ColorValueBetween(animation_.GetCurrentValue(),
+                                       starting_color_, ending_color_);
+}
 
-  // views::AnimationDelegateViews:
-  void AnimationProgressed(const gfx::Animation* animation) override {
-    DCHECK(!view_->model()->user_input_in_progress());
-    view_->ApplyColor(GetCurrentColor(), path_bounds_);
-  }
+void OmniboxViewViews::PathFadeAnimation::AnimationProgressed(
+    const gfx::Animation* animation) {
+  DCHECK(!view_->model()->user_input_in_progress());
+  view_->ApplyColor(GetCurrentColor(), path_bounds_);
+}
 
- private:
-  // Non-owning pointer. |view_| must always outlive this class.
-  OmniboxViewViews* view_;
-  SkColor starting_color_;
-  SkColor ending_color_;
-
-  // The path text range we are fading.
-  gfx::Range path_bounds_;
-
-  gfx::MultiAnimation animation_;
-};
+gfx::MultiAnimation*
+OmniboxViewViews::PathFadeAnimation::GetAnimationForTesting() {
+  return &animation_;
+}
 
 // OmniboxViewViews -----------------------------------------------------------
 
@@ -410,7 +399,7 @@ void OmniboxViewViews::EmphasizeURLComponents() {
     path_fade_out_animation_->Start(GetPathBounds());
   }
 
-  if (OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() ||
+  if (OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() &&
       !OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
     // If reveal-on-hover is enabled and hide-on-interaction is disabled, hide
     // the path now.
@@ -2160,4 +2149,14 @@ void OmniboxViewViews::ResetToHideOnInteraction() {
                                OmniboxPart::LOCATION_BAR_TEXT_DIMMED),
                GetPathBounds());
   }
+}
+
+OmniboxViewViews::PathFadeAnimation*
+OmniboxViewViews::GetPathFadeInAnimationForTesting() {
+  return path_fade_in_animation_.get();
+}
+
+OmniboxViewViews::PathFadeAnimation*
+OmniboxViewViews::GetPathFadeOutFastAnimationForTesting() {
+  return path_fade_out_fast_animation_.get();
 }

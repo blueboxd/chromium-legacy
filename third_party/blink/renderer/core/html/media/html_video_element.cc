@@ -86,8 +86,8 @@ HTMLVideoElement::HTMLVideoElement(Document& document)
       in_overlay_fullscreen_video_(false),
       is_effectively_fullscreen_(false),
       is_default_overridden_intrinsic_size_(
-          !document.IsMediaDocument() &&
-          !document.IsFeatureEnabled(
+          !document.IsMediaDocument() && GetExecutionContext() &&
+          !GetExecutionContext()->IsFeatureEnabled(
               mojom::blink::DocumentPolicyFeature::kUnsizedMedia)),
       video_has_played_(false),
       mostly_filling_viewport_(false) {

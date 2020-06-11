@@ -262,7 +262,7 @@ struct XRRay {
 };
 
 struct XRHitResult {
-  gfx.mojom.Transform hit_matrix;
+  Pose mojo_from_result;  // Pose of the result (aka intersection point).
   uint64 plane_id;  // If the hit test result was computed based off of a plane,
                     // the plane ID will be stored here. 0 signifies no plane.
                     // TODO(https://crbug.com/657632) - make it optional once
@@ -795,7 +795,11 @@ interface XREnvironmentIntegrationProvider {
   // ignored.
   UnsubscribeFromHitTest(uint64 subscription_id);
 
-  // Issues a request to create an anchor attached to a session.
+  // Issues a request to create a free-floating anchor (not attached to any
+  // particular real world entity).
+  // |native_origin_information| specifies native origin relative to which the
+  // anchor is supposed to be created. |native_origin_from_anchor| describes the
+  // desired pose of the newly created anchor.
   // |result| will contain status code of the request. |anchor_id| will be valid
   // only if the |result| is SUCCESS.
   CreateAnchor(
@@ -807,11 +811,18 @@ interface XREnvironmentIntegrationProvider {
   // not interested in obtaining detailed error information from the device.
 
   // Issues a request to create an anchor attached to a plane.
+  // |native_origin_information| specifies native origin relative to which the
+  // anchor is supposed to be created. |native_origin_from_anchor| describes the
+  // desired pose of the newly created anchor. |plane_id| identifies which plane
+  // the anchor will be attached to.
   // |result| will contain status code of the request. |anchor_id| will be valid
   // only if the |result| is SUCCESS.
-  CreatePlaneAnchor(Pose plane_from_anchor, uint64 plane_id) =>
-    (CreateAnchorResult result, uint64 anchor_id);
-  // TODO(https://crbug.com/657632): Ditto - make anchor_id a nullable integer..
+  CreatePlaneAnchor(
+    XRNativeOriginInformation native_origin_information,
+    Pose native_origin_from_anchor,
+    uint64 plane_id)
+      => (CreateAnchorResult result, uint64 anchor_id);
+  // TODO(https://crbug.com/657632): Ditto - make anchor_id a nullable integer.
 
   // Detaches an existing anchor. The |anchor_id| must be a valid id of an
   // anchor created by one of the CreateAnchor calls, otherwise the call will be

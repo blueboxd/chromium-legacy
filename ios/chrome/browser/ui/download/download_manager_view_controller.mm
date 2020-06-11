@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 
+#import <MaterialComponents/MaterialPalettes.h>
+#import <MaterialComponents/MaterialTypography.h>
+
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
@@ -19,8 +22,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/images/branded_image_provider.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

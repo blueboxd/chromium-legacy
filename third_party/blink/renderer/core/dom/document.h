@@ -356,21 +356,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void SetReferrerPolicy(network::mojom::ReferrerPolicy);
   Agent* GetAgent() const;
   OriginTrialContext* GetOriginTrialContext() const;
-  bool IsFeatureEnabled(
-      mojom::blink::FeaturePolicyFeature,
-      ReportOptions report_on_failure = ReportOptions::kDoNotReport,
-      const String& message = g_empty_string) const;
-  bool IsFeatureEnabled(
-      mojom::blink::DocumentPolicyFeature,
-      ReportOptions report_option = ReportOptions::kDoNotReport,
-      const String& message = g_empty_string,
-      const String& source_file = g_empty_string) const;
-  bool IsFeatureEnabled(
-      mojom::blink::DocumentPolicyFeature,
-      PolicyValue threshold_value,
-      ReportOptions report_option = ReportOptions::kDoNotReport,
-      const String& message = g_empty_string,
-      const String& source_file = g_empty_string) const;
 
   String addressSpaceForBindings(ScriptState*) const;
 

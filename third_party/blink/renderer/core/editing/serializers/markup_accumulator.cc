@@ -141,9 +141,11 @@ class MarkupAccumulator::ElementSerializationData final {
 
 MarkupAccumulator::MarkupAccumulator(AbsoluteURLs resolve_urls_method,
                                      SerializationType serialization_type,
-                                     IncludeShadowRoots include_shadow_roots)
+                                     IncludeShadowRoots include_shadow_roots,
+                                     ClosedRootsSet include_closed_roots)
     : formatter_(resolve_urls_method, serialization_type),
-      include_shadow_roots_(include_shadow_roots) {}
+      include_shadow_roots_(include_shadow_roots),
+      include_closed_roots_(include_closed_roots) {}
 
 MarkupAccumulator::~MarkupAccumulator() = default;
 
@@ -545,10 +547,8 @@ bool MarkupAccumulator::SerializeAsHTML() const {
 std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
     const Element& element) const {
   ShadowRoot* shadow_root = element.GetShadowRoot();
-  if (!shadow_root || include_shadow_roots_ != kIncludeShadowRoots ||
-      shadow_root->GetType() != ShadowRootType::kOpen) {
+  if (!shadow_root || include_shadow_roots_ != kIncludeShadowRoots)
     return std::pair<Node*, Element*>();
-  }
   DCHECK(RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled());
   AtomicString shadowroot_type;
   switch (shadow_root->GetType()) {
@@ -563,6 +563,11 @@ std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
       shadowroot_type = "closed";
       break;
   }
+  if (shadow_root->GetType() == ShadowRootType::kClosed &&
+      !include_closed_roots_.Contains(shadow_root)) {
+    return std::pair<Node*, Element*>();
+  }
+
   // Wrap the shadowroot into a declarative Shadow DOM <template shadowroot>
   // element.
   auto* template_element = MakeGarbageCollected<Element>(

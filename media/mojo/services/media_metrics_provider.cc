@@ -50,7 +50,7 @@ MediaMetricsProvider::MediaMetricsProvider(
       source_id_(source_id),
       origin_(origin),
       save_cb_(std::move(save_cb)),
-      learning_session_cb_(learning_session_cb),
+      learning_session_cb_(std::move(learning_session_cb)),
       record_playback_cb_(std::move(record_playback_cb)),
       uma_info_(is_incognito == BrowsingMode::kIncognito) {}
 
@@ -89,37 +89,31 @@ std::string MediaMetricsProvider::GetUMANameForAVStream(
     const PipelineInfo& player_info) {
   constexpr char kPipelineUmaPrefix[] = "Media.PipelineStatus.AudioVideo.";
   std::string uma_name = kPipelineUmaPrefix;
-  if (player_info.video_codec == kCodecVP8) {
+  if (player_info.video_codec == kCodecVP8)
     uma_name += "VP8.";
-  } else if (player_info.video_codec == kCodecVP9) {
+  else if (player_info.video_codec == kCodecVP9)
     uma_name += "VP9.";
-  } else if (player_info.video_codec == kCodecH264) {
+  else if (player_info.video_codec == kCodecH264)
     uma_name += "H264.";
-  } else if (player_info.video_codec == kCodecAV1) {
+  else if (player_info.video_codec == kCodecAV1)
     uma_name += "AV1.";
-  } else {
+  else
     return uma_name + "Other";
-  }
 
 #if !defined(OS_ANDROID)
   if (player_info.video_pipeline_info.decoder_name ==
-      media::DecryptingVideoDecoder::kDecoderName) {
+      DecryptingVideoDecoder::kDecoderName) {
     return uma_name + "DVD";
   }
 #endif
 
-  if (player_info.video_pipeline_info.has_decrypting_demuxer_stream) {
+  if (player_info.video_pipeline_info.has_decrypting_demuxer_stream)
     uma_name += "DDS.";
-  }
 
   // Note that HW essentially means 'platform' anyway. MediaCodec has been
   // reported as HW forever, regardless of the underlying platform
   // implementation.
-  if (player_info.video_pipeline_info.is_platform_decoder) {
-    uma_name += "HW";
-  } else {
-    uma_name += "SW";
-  }
+  uma_name += player_info.video_pipeline_info.is_platform_decoder ? "HW" : "SW";
   return uma_name;
 }
 
@@ -127,22 +121,22 @@ void MediaMetricsProvider::ReportPipelineUMA() {
   if (uma_info_.has_video && uma_info_.has_audio) {
     base::UmaHistogramExactLinear(GetUMANameForAVStream(uma_info_),
                                   uma_info_.last_pipeline_status,
-                                  media::PIPELINE_STATUS_MAX + 1);
+                                  PIPELINE_STATUS_MAX + 1);
   } else if (uma_info_.has_audio) {
     base::UmaHistogramExactLinear("Media.PipelineStatus.AudioOnly",
                                   uma_info_.last_pipeline_status,
-                                  media::PIPELINE_STATUS_MAX + 1);
+                                  PIPELINE_STATUS_MAX + 1);
   } else if (uma_info_.has_video) {
     base::UmaHistogramExactLinear("Media.PipelineStatus.VideoOnly",
                                   uma_info_.last_pipeline_status,
-                                  media::PIPELINE_STATUS_MAX + 1);
+                                  PIPELINE_STATUS_MAX + 1);
   } else {
     // Note: This metric can be recorded as a result of normal operation with
     // Media Source Extensions. If a site creates a MediaSource object but never
     // creates a source buffer or appends data, PIPELINE_OK will be recorded.
     base::UmaHistogramExactLinear("Media.PipelineStatus.Unsupported",
                                   uma_info_.last_pipeline_status,
-                                  media::PIPELINE_STATUS_MAX + 1);
+                                  PIPELINE_STATUS_MAX + 1);
   }
 
   // Report whether video decoder fallback happened, but only if a video decoder
@@ -154,15 +148,13 @@ void MediaMetricsProvider::ReportPipelineUMA() {
 
   // Report whether this player ever saw a playback event. Used to measure the
   // effectiveness of efforts to reduce loaded-but-never-used players.
-  if (uma_info_.has_reached_have_enough) {
+  if (uma_info_.has_reached_have_enough)
     base::UmaHistogramBoolean("Media.HasEverPlayed", uma_info_.has_ever_played);
-  }
 
   // Report whether an encrypted playback is in incognito window, excluding
   // never-used players.
-  if (uma_info_.is_eme && uma_info_.has_ever_played) {
+  if (uma_info_.is_eme && uma_info_.has_ever_played)
     base::UmaHistogramBoolean("Media.EME.IsIncognito", uma_info_.is_incognito);
-  }
 }
 
 // static
@@ -178,7 +170,8 @@ void MediaMetricsProvider::Create(
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<MediaMetricsProvider>(
           is_incognito, is_top_frame, get_source_id_cb.Run(),
-          get_origin_cb.Run(), std::move(save_cb), learning_session_cb,
+          get_origin_cb.Run(), std::move(save_cb),
+          std::move(learning_session_cb),
           std::move(get_record_playback_cb).Run()),
       std::move(receiver));
 }
@@ -303,8 +296,7 @@ void MediaMetricsProvider::AcquirePlaybackEventsRecorder(
 
 void MediaMetricsProvider::AcquireLearningTaskController(
     const std::string& taskName,
-    mojo::PendingReceiver<media::learning::mojom::LearningTaskController>
-        receiver) {
+    mojo::PendingReceiver<learning::mojom::LearningTaskController> receiver) {
   learning::LearningSession* session = learning_session_cb_.Run();
   if (!session) {
     DVLOG(3) << __func__ << " Ignoring request, unable to get LearningSession.";

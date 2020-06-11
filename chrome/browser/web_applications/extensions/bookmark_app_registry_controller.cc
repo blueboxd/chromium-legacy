@@ -89,6 +89,16 @@ void BookmarkAppRegistryController::SetAppIsLocallyInstalled(
                                                        is_locally_installed);
 }
 
+void BookmarkAppRegistryController::SetAppLastLaunchTime(
+    const web_app::AppId& app_id,
+    const base::Time& time) {
+  const Extension* extension = GetExtension(app_id);
+  if (!extension)
+    return;
+  ExtensionPrefs::Get(profile())->SetLastLaunchTime(extension->id(), time);
+  registrar_->NotifyWebAppLastLaunchTimeChanged(app_id, time);
+}
+
 web_app::WebAppSyncBridge* BookmarkAppRegistryController::AsWebAppSyncBridge() {
   return nullptr;
 }

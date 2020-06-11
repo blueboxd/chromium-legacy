@@ -9,6 +9,11 @@
 #include <X11/Xlibint.h>
 #include <xcb/xcb.h>
 
+// Xlibint.h defines those as macros, which breaks the C++ versions in
+// the std namespace.
+#undef max
+#undef min
+
 #include <algorithm>
 
 #include "base/command_line.h"

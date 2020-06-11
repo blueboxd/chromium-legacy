@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/no_destructor.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
@@ -188,10 +189,21 @@ void SerialPortManager::OnGotDevicesToGetPort(
 
   for (auto& device : devices) {
     if (device->path.AsUTF8Unsafe() == path) {
-      port_manager_->GetPort(device->token, std::move(receiver),
+      port_manager_->GetPort(device->token, /*use_alternate_path=*/false,
+                             std::move(receiver),
                              /*watcher=*/mojo::NullRemote());
       return;
     }
+
+#if defined(OS_MACOSX)
+    if (device->alternate_path &&
+        device->alternate_path->AsUTF8Unsafe() == path) {
+      port_manager_->GetPort(device->token, /*use_alternate_path=*/true,
+                             std::move(receiver),
+                             /*watcher=*/mojo::NullRemote());
+      return;
+    }
+#endif  // defined(OS_MACOSX)
   }
 }
 

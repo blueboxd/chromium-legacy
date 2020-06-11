@@ -58,31 +58,6 @@ static const HashSet<String>& SupportedSchemes() {
   return supported_schemes;
 }
 
-bool VerifyCustomHandlerURLSyntax(const KURL& full_url,
-                                  const KURL& base_url,
-                                  const String& user_url,
-                                  String& error_message) {
-  // The specification requires that it is a SyntaxError if the "%s" token is
-  // not present.
-  int index = user_url.Find(kToken);
-  if (-1 == index) {
-    error_message =
-        "The url provided ('" + user_url + "') does not contain '%s'.";
-    return false;
-  }
-
-  // It is also a SyntaxError if the custom handler URL, as created by removing
-  // the "%s" token and prepending the base url, does not resolve.
-  if (full_url.IsEmpty() || !full_url.IsValid()) {
-    error_message =
-        "The custom handler URL created by removing '%s' and prepending '" +
-        base_url.GetString() + "' is invalid.";
-    return false;
-  }
-
-  return true;
-}
-
 static bool VerifyCustomHandlerURLSecurity(const Document& document,
                                            const KURL& full_url,
                                            String& error_message) {
@@ -149,6 +124,8 @@ static bool IsValidWebSchemeName(const String& protocol) {
   return true;
 }
 
+}  // namespace
+
 bool VerifyCustomHandlerScheme(const String& scheme, String& error_string) {
   if (!IsValidProtocol(scheme)) {
     error_string = "The scheme name '" + scheme +
@@ -176,7 +153,30 @@ bool VerifyCustomHandlerScheme(const String& scheme, String& error_string) {
   return false;
 }
 
-}  // namespace
+bool VerifyCustomHandlerURLSyntax(const KURL& full_url,
+                                  const KURL& base_url,
+                                  const String& user_url,
+                                  String& error_message) {
+  // The specification requires that it is a SyntaxError if the "%s" token is
+  // not present.
+  int index = user_url.Find(kToken);
+  if (-1 == index) {
+    error_message =
+        "The url provided ('" + user_url + "') does not contain '%s'.";
+    return false;
+  }
+
+  // It is also a SyntaxError if the custom handler URL, as created by removing
+  // the "%s" token and prepending the base url, does not resolve.
+  if (full_url.IsEmpty() || !full_url.IsValid()) {
+    error_message =
+        "The custom handler URL created by removing '%s' and prepending '" +
+        base_url.GetString() + "' is invalid.";
+    return false;
+  }
+
+  return true;
+}
 
 NavigatorContentUtils& NavigatorContentUtils::From(Navigator& navigator,
                                                    LocalFrame& frame) {

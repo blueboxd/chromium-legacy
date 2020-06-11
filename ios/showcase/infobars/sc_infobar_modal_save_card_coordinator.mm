@@ -28,6 +28,8 @@ class GURL;
     InfobarModalTransitionDriver* modalTransitionDriver;
 @property(nonatomic, strong)
     InfobarSaveCardTableViewController* modalViewController;
+// Consumer that is configured by this coordinator.
+@property(nonatomic, weak) id<InfobarSaveCardModalConsumer> modalConsumer;
 @end
 
 @implementation SCInfobarModalSaveCardCoordinator
@@ -90,10 +92,8 @@ class GURL;
 
   self.modalViewController =
       [[InfobarSaveCardTableViewController alloc] initWithModalDelegate:self];
+  self.modalConsumer = self.modalViewController;
   self.modalViewController.title = @"Title";
-  self.modalViewController.cardIssuerIcon =
-      [UIImage imageNamed:@"infobar_save_card_icon"];
-  self.modalViewController.cardNumber = @"•••• 1234";
 
   SaveCardMessageWithLinks* message = [[SaveCardMessageWithLinks alloc] init];
   message.messageText = @"Terms of Service";
@@ -103,9 +103,17 @@ class GURL;
   message.linkRanges = [[NSArray alloc]
       initWithObjects:[NSValue valueWithRange:NSMakeRange(0, 5)], nil];
 
-  self.modalViewController.legalMessages =
-      [NSMutableArray arrayWithObject:message];
-  self.modalViewController.supportsEditing = YES;
+  NSDictionary* prefs = @{
+    kCardholderNamePrefKey : @"Visa",
+    kCardIssuerIconNamePrefKey : [UIImage imageNamed:@"infobar_save_card_icon"],
+    kCardNumberPrefKey : @"•••• 1234",
+    kExpirationMonthPrefKey : @"09",
+    kExpirationYearPrefKey : @"2023",
+    kLegalMessagesPrefKey : [NSMutableArray arrayWithObject:message],
+    kCurrentCardSavedPrefKey : @(NO),
+    kSupportsEditingPrefKey : @(YES)
+  };
+  [self.modalConsumer setupModalViewControllerWithPrefs:prefs];
 
   UINavigationController* navController = [[UINavigationController alloc]
       initWithRootViewController:self.modalViewController];

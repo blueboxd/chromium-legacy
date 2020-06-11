@@ -11112,4 +11112,72 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   }
 }
 
+// Checks that a browser-initiated same-document navigation on a page which has
+// a valid base URL preserves the base URL.
+// See https://crbug.com/1082141.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       LoadDataWithBaseURLSameDocumentNavigation) {
+  // LoadDataWithBaseURL is never subject to --site-per-process policy today
+  // (this API is only used by Android WebView [where OOPIFs have not shipped
+  // yet] and GuestView cases [which always hosts guests inside a renderer
+  // without an origin lock]).  Therefore, skip the test in --site-per-process
+  // mode to avoid renderer kills which won't happen in practice as described
+  // above.
+  //
+  // TODO(https://crbug.com/962643): Consider enabling this test once Android
+  // Webview or WebView guests support OOPIFs and/or origin locks.
+  if (AreAllSitesIsolatedForTesting())
+    return;
+
+  const GURL base_url("http://baseurl");
+  const GURL history_url("http://history");
+  const std::string data = "<html><title>One</title><body>foo</body></html>";
+  const GURL data_url = GURL("data:text/html;charset=utf-8," + data);
+
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  {
+    TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+    shell()->LoadDataWithBaseURL(history_url, data, base_url);
+    same_tab_observer.Wait();
+  }
+
+  // Verify the last committed NavigationEntry.
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(base_url, entry->GetBaseURLForDataURL());
+  EXPECT_EQ(history_url, entry->GetVirtualURL());
+  EXPECT_EQ(history_url, entry->GetHistoryURLForDataURL());
+  EXPECT_EQ(data_url, entry->GetURL());
+
+  {
+    // Make a same-document navigation via history.pushState.
+    TestNavigationObserver same_tab_observer(shell()->web_contents(), 1);
+    EXPECT_TRUE(ExecuteScript(shell(), "history.pushState('', 'test', '#')"));
+    same_tab_observer.Wait();
+  }
+
+  // Verify the last committed NavigationEntry.
+  entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(base_url, entry->GetBaseURLForDataURL());
+  EXPECT_EQ(history_url, entry->GetVirtualURL());
+  EXPECT_EQ(history_url, entry->GetHistoryURLForDataURL());
+  EXPECT_EQ(data_url, entry->GetURL());
+
+  {
+    // Go back.
+    TestNavigationObserver back_load_observer(shell()->web_contents());
+    controller.GoBack();
+    back_load_observer.Wait();
+  }
+
+  // Verify the last committed NavigationEntry.
+  entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(base_url, entry->GetBaseURLForDataURL());
+  EXPECT_EQ(history_url, entry->GetVirtualURL());
+  EXPECT_EQ(history_url, entry->GetHistoryURLForDataURL());
+  EXPECT_EQ(data_url, entry->GetURL());
+  EXPECT_EQ(base_url, EvalJs(shell(), "document.URL"));
+}
+
 }  // namespace content

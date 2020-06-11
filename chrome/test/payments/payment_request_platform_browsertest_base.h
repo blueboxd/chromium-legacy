@@ -31,6 +31,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #endif
 
+namespace content {
+class RenderFrameHost;
+}  // namespace content
+
 namespace payments {
 
 // Base class for any PaymentRequest test that is shared between Android and
@@ -55,8 +59,17 @@ class PaymentRequestPlatformBrowserTestBase
 
   content::WebContents* GetActiveWebContents();
 
-  // Set up test manifest downloader that knows how to fake origin for each
-  // 'payment method' and 'server' pair, (e.g. {"google.com", &gpay_server_}).
+  // Set up test manifest downloader in |frame| that knows how to fake origin
+  // for each 'payment method' and 'server' pair, (e.g. {"google.com",
+  // &gpay_server_}). Must be called while on the page that will invoke the
+  // PaymentRequest API, because the test manifest downloader is owned by
+  // ServiceWorkerPaymentAppFinder, which in turn is owned by the |frame|.
+  void SetDownloaderAndIgnorePortInOriginComparisonForTestingInFrame(
+      const std::vector<std::pair<const std::string&,
+                                  net::EmbeddedTestServer*>>& payment_methods,
+      content::RenderFrameHost* frame);
+
+  // Same as above, but uses the top-level frame of the web contents.
   void SetDownloaderAndIgnorePortInOriginComparisonForTesting(
       const std::vector<std::pair<const std::string&,
                                   net::EmbeddedTestServer*>>& payment_methods);

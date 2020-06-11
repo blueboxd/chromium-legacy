@@ -513,9 +513,9 @@ chrome.automation.FindParams;
 
 /**
  * @typedef {{
- *   anchorObject: AutomationNode,
+ *   anchorObject: chrome.automation.AutomationNode,
  *   anchorOffset: number,
- *   focusObject: AutomationNode,
+ *   focusObject: chrome.automation.AutomationNode,
  *   focusOffset: number
  * }}
  * @see https://developer.chrome.com/extensions/automation#type-SetDocumentSelectionParams

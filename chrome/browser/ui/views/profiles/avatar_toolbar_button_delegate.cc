@@ -155,7 +155,7 @@ gfx::Image AvatarToolbarButtonDelegate::GetProfileAvatarImage(
 }
 
 int AvatarToolbarButtonDelegate::GetIncognitoWindowsCount() const {
-  return BrowserList::GetIncognitoSessionsActiveForProfile(profile_);
+  return BrowserList::GetOffTheRecordBrowsersActiveForProfile(profile_);
 }
 
 AvatarToolbarButton::State AvatarToolbarButtonDelegate::GetState() const {

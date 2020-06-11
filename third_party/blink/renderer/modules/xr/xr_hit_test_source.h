@@ -40,7 +40,7 @@ class XRHitTestSource : public ScriptWrappable {
   const uint64_t id_;
   Member<XRSession> xr_session_;
 
-  Vector<device::mojom::blink::XRHitResult> last_frame_results_;
+  Vector<device::mojom::blink::XRHitResultPtr> last_frame_results_;
 };
 
 }  // namespace blink

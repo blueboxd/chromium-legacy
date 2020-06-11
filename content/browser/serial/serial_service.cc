@@ -126,7 +126,8 @@ void SerialService::GetPort(
   mojo::PendingRemote<device::mojom::SerialPortConnectionWatcher> watcher;
   watchers_.Add(this, watcher.InitWithNewPipeAndPassReceiver());
   delegate->GetPortManager(render_frame_host_)
-      ->GetPort(token, std::move(receiver), std::move(watcher));
+      ->GetPort(token, /*use_alternate_path=*/false, std::move(receiver),
+                std::move(watcher));
 }
 
 void SerialService::OnPortAdded(const device::mojom::SerialPortInfo& port) {

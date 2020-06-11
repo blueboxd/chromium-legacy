@@ -14874,6 +14874,9 @@
     ]
   },
   "WebKit Linux Leak": {
+    "additional_compile_targets": [
+      "blink_tests"
+    ],
     "isolated_scripts": [
       {
         "args": [

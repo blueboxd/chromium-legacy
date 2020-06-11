@@ -2076,6 +2076,9 @@ crbug.com/582750 http/tests/loading/appcache-delay/appcache-loads-subresource.ht
 crbug.com/582750 http/tests/security/cors-rfc1918/addressspace-document-appcache.https.html [ Skip ]
 crbug.com/582750 http/tests/security/cors-rfc1918/addressspace-document-csp-appcache.https.html [ Skip ]
 
+# These appcache tests fail differently in release and debug, so skip them.
+crbug.com/582750 http/tests/devtools/appcache/* [ Skip ]
+
 # Remove these from virtual tests when Network Error Logging is turned on by default
 crbug.com/748549 external/wpt/network-error-logging/* [ Skip ]
 virtual/network-error-logging/external/wpt/network-error-logging/* [ Pass ]

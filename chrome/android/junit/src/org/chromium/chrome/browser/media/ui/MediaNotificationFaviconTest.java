@@ -157,7 +157,7 @@ public class MediaNotificationFaviconTest extends MediaNotificationManagerTestBa
     }
 
     private Bitmap getDisplayedIcon() {
-        return mTabHolder.mMediaSessionTabHelper.mFavicon;
+        return mTabHolder.mMediaSessionTabHelper.mMediaSessionHelper.mFavicon;
     }
 
     @Override

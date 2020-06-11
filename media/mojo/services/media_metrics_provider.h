@@ -125,8 +125,8 @@ class MEDIA_MOJO_EXPORT MediaMetricsProvider
       mojo::PendingReceiver<mojom::PlaybackEventsRecorder> receiver) override;
   void AcquireLearningTaskController(
       const std::string& taskName,
-      mojo::PendingReceiver<media::learning::mojom::LearningTaskController>
-          receiver) override;
+      mojo::PendingReceiver<learning::mojom::LearningTaskController> receiver)
+      override;
 
   void ReportPipelineUMA();
   std::string GetUMANameForAVStream(const PipelineInfo& player_info);

@@ -125,10 +125,6 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
     return (IsDocumentElement() || IsBody());
   }
 
-  // CSS defines certain cases to synthesize inline block baselines from box.
-  // See comments in UseLogicalBottomMarginEdgeForInlineBlockBaseline().
-  bool UseLogicalBottomMarginEdgeForInlineBlockBaseline() const;
-
   // Returns true if the custom layout node is in its loaded state (all script
   // for the web-developer defined layout is ready).
   bool IsCustomLayoutLoaded() const;

@@ -30,6 +30,7 @@ component("gpu") {
     "//chrome/gpu",
     "//chromecast/*",
     "//components/arc/mojom:media",
+    "//components/arc/mojom:media_mojolpm",
     "//components/arc/video_accelerator",
     "//components/mirroring/service:mirroring_service",
     "//components/chromeos_camera/*",

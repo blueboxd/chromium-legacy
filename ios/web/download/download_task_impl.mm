@@ -246,8 +246,8 @@ void DownloadTaskImpl::Start(
   if (original_url_.SchemeIs(url::kDataScheme)) {
     StartDataUrlParsing();
   } else {
-    GetCookies(base::Bind(&DownloadTaskImpl::StartWithCookies,
-                          weak_factory_.GetWeakPtr()));
+    GetCookies(base::BindRepeating(&DownloadTaskImpl::StartWithCookies,
+                                   weak_factory_.GetWeakPtr()));
   }
 }
 

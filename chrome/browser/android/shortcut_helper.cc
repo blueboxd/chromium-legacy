@@ -353,6 +353,23 @@ bool ShortcutHelper::DoesOriginContainAnyInstalledTrustedWebActivity(
   return Java_ShortcutHelper_doesOriginContainAnyInstalledTwa(env, java_origin);
 }
 
+std::set<GURL> ShortcutHelper::GetOriginsWithInstalledWebApksOrTwas() {
+  std::set<GURL> installed_origins;
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  base::android::ScopedJavaLocalRef<jobjectArray> j_installed_origins =
+      Java_ShortcutHelper_getOriginsWithInstalledWebApksOrTwas(env);
+
+  if (j_installed_origins) {
+    std::vector<std::string> installed_origins_list;
+    base::android::AppendJavaStringArrayToStringVector(env, j_installed_origins,
+                                                       &installed_origins_list);
+    for (auto& origin : installed_origins_list)
+      installed_origins.emplace(GURL(origin));
+  }
+  return installed_origins;
+}
+
 void ShortcutHelper::SetForceWebApkUpdate(const std::string& id) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ShortcutHelper_setForceWebApkUpdate(

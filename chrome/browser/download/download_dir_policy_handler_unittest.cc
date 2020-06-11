@@ -89,19 +89,19 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
   const base::Value* value = NULL;
   bool prompt_for_download;
   EXPECT_TRUE(store_->GetValue(prefs::kPromptForDownload, &value));
-  EXPECT_TRUE(value);
+  ASSERT_TRUE(value);
   EXPECT_TRUE(value->GetAsBoolean(&prompt_for_download));
   EXPECT_FALSE(prompt_for_download);
 
   bool disable_drive;
   EXPECT_TRUE(store_->GetValue(drive::prefs::kDisableDrive, &value));
-  EXPECT_TRUE(value);
+  ASSERT_TRUE(value);
   EXPECT_TRUE(value->GetAsBoolean(&disable_drive));
   EXPECT_FALSE(disable_drive);
 
   std::string download_directory;
   EXPECT_TRUE(store_->GetValue(prefs::kDownloadDefaultDirectory, &value));
-  EXPECT_TRUE(value);
+  ASSERT_TRUE(value);
   EXPECT_TRUE(value->GetAsString(&download_directory));
   EXPECT_EQ(download_dir_util::kDriveNamePolicyVariableName,
             download_directory);
@@ -125,7 +125,7 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
 
   EXPECT_TRUE(
       recommended_store_->GetValue(prefs::kDownloadDefaultDirectory, &value));
-  EXPECT_TRUE(value);
+  ASSERT_TRUE(value);
   EXPECT_TRUE(value->GetAsString(&download_directory));
   EXPECT_EQ(std::string(download_dir_util::kDriveNamePolicyVariableName) +
                 kRelativeToDriveRoot,
@@ -141,7 +141,7 @@ TEST_F(DownloadDirPolicyHandlerTest, SetDownloadToDrive) {
 
   EXPECT_TRUE(
       recommended_store_->GetValue(prefs::kDownloadDefaultDirectory, &value));
-  EXPECT_TRUE(value);
+  ASSERT_TRUE(value);
   EXPECT_TRUE(value->GetAsString(&download_directory));
   EXPECT_EQ(kUserIDHash, download_directory);
 }

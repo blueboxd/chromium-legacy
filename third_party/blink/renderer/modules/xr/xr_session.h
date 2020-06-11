@@ -148,9 +148,9 @@ class XRSession final
                                       ExceptionState&);
 
   // Helper, not IDL-exposed
-  // |native_origin_from_anchor| is a matrix describing transform from native
-  // origin to the initial anchor's position.
-  // |native_origin_information| describes native origin telative to which the
+  // |native_origin_from_anchor| is a matrix describing transform between native
+  // origin and the initial anchor's position.
+  // |native_origin_information| describes native origin relative to which the
   // transform is expressed.
   ScriptPromise CreateAnchorHelper(
       ScriptState* script_state,
@@ -160,12 +160,16 @@ class XRSession final
       ExceptionState& exception_state);
 
   // Helper, not IDL-exposed
-  // |plane_from_anchor| is a matrix describing transform from plane to the
-  // initial anchor's position.
+  // |native_origin_from_anchor| is a matrix describing transform between native
+  // origin and the initial anchor's position.
+  // |native_origin_information| describes native origin relative to which the
+  // transform is expressed.
   // |plane_id| is the id of the plane to which the anchor should be attached.
   ScriptPromise CreatePlaneAnchorHelper(
       ScriptState* script_state,
-      const blink::TransformationMatrix& plane_from_anchor,
+      const blink::TransformationMatrix& native_origin_from_anchor,
+      const device::mojom::blink::XRNativeOriginInformation&
+          native_origin_information,
       uint64_t plane_id,
       ExceptionState& exception_state);
 

@@ -53,12 +53,12 @@ class HybridRequestSkipUITest
         "components/test/data/payments/google.com/");
     ASSERT_TRUE(gpay_server_.Start());
 
+    NavigateTo("/hybrid_request_skip_ui_test.html");
+
     // Set up test manifest downloader that knows how to fake origin.
     const std::string method_name = "google.com";
     SetDownloaderAndIgnorePortInOriginComparisonForTesting(
         {{method_name, &gpay_server_}});
-
-    NavigateTo("/hybrid_request_skip_ui_test.html");
 
     // Inject autofill instrument based on test config.
     if (GetTestConfig() == TEST_HAS_COMPLETE_AUTOFILL_INSTRUMENT) {

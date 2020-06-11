@@ -694,7 +694,7 @@ TEST_F(WebStateImplTest, PolicyDeciderTest) {
           RunOnceCallback<2>(WebStatePolicyDecider::PolicyDecision::Allow()));
 
   policy_decision = WebStatePolicyDecider::PolicyDecision::Cancel();
-  auto callback = base::Bind(
+  auto callback = base::BindRepeating(
       [](WebStatePolicyDecider::PolicyDecision* policy_decision,
          WebStatePolicyDecider::PolicyDecision result) {
         *policy_decision = result;
@@ -743,10 +743,11 @@ TEST_F(WebStateImplTest, AsyncShouldAllowResponseTest) {
   __block bool callback_called = false;
 
   base::RepeatingCallback<void(WebStatePolicyDecider::PolicyDecision)>
-      callback = base::Bind(^(WebStatePolicyDecider::PolicyDecision result) {
-        policy_decision = result;
-        callback_called = true;
-      });
+      callback =
+          base::BindRepeating(^(WebStatePolicyDecider::PolicyDecision result) {
+            policy_decision = result;
+            callback_called = true;
+          });
 
   // Case 1: All deciders allow the navigation.
   EXPECT_CALL(sync_decider, ShouldAllowResponse(response, true, _))

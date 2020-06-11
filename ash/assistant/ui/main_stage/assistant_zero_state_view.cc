@@ -6,9 +6,11 @@
 
 #include <memory>
 
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/main_stage/assistant_onboarding_view.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -18,13 +20,27 @@
 
 namespace ash {
 
+namespace {
+
+using chromeos::assistant::features::IsBetterOnboardingEnabled;
+
+}  // namespace
+
 AssistantZeroStateView::AssistantZeroStateView(AssistantViewDelegate* delegate)
     : delegate_(delegate) {
   SetID(AssistantViewID::kZeroStateView);
+
   InitLayout();
+  UpdateLayout();
+
+  assistant_controller_observer_.Add(AssistantController::Get());
+  AssistantUiController::Get()->GetModel()->AddObserver(this);
 }
 
-AssistantZeroStateView::~AssistantZeroStateView() = default;
+AssistantZeroStateView::~AssistantZeroStateView() {
+  if (AssistantUiController::Get())
+    AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+}
 
 const char* AssistantZeroStateView::GetClassName() const {
   return "AssistantZeroStateView";
@@ -38,30 +54,56 @@ void AssistantZeroStateView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-// TODO(dmblack): Update conditions under which onboarding view is shown.
+void AssistantZeroStateView::OnAssistantControllerDestroying() {
+  AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+  assistant_controller_observer_.Remove(AssistantController::Get());
+}
+
+void AssistantZeroStateView::OnUiVisibilityChanged(
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    base::Optional<AssistantEntryPoint> entry_point,
+    base::Optional<AssistantExitPoint> exit_point) {
+  if (new_visibility == AssistantVisibility::kClosed)
+    UpdateLayout();
+}
+
 void AssistantZeroStateView::InitLayout() {
-  SetLayoutManager(std::make_unique<views::FillLayout>());
+  // Layout.
+  auto* layout = SetLayoutManager(std::make_unique<views::FillLayout>());
+  layout->SetIncludeHiddenViews(false);
 
   // Onboarding.
-  if (chromeos::assistant::features::IsBetterOnboardingEnabled()) {
-    AddChildView(std::make_unique<AssistantOnboardingView>(delegate_));
-    return;
+  if (IsBetterOnboardingEnabled()) {
+    onboarding_view_ =
+        AddChildView(std::make_unique<AssistantOnboardingView>(delegate_));
   }
 
-  // Greeting label.
-  auto greeting_label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
-  greeting_label->SetID(AssistantViewID::kGreetingLabel);
-  greeting_label->SetAutoColorReadabilityEnabled(false);
-  greeting_label->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
-  greeting_label->SetEnabledColor(kTextColorPrimary);
-  greeting_label->SetFontList(assistant::ui::GetDefaultFontList()
-                                  .DeriveWithSizeDelta(8)
-                                  .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
-  greeting_label->SetHorizontalAlignment(
+  // Greeting.
+  greeting_label_ = AddChildView(std::make_unique<views::Label>());
+  greeting_label_->SetID(AssistantViewID::kGreetingLabel);
+  greeting_label_->SetAutoColorReadabilityEnabled(false);
+  greeting_label_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+  greeting_label_->SetEnabledColor(kTextColorPrimary);
+  greeting_label_->SetFontList(
+      assistant::ui::GetDefaultFontList()
+          .DeriveWithSizeDelta(8)
+          .DeriveWithWeight(gfx::Font::Weight::MEDIUM));
+  greeting_label_->SetHorizontalAlignment(
       gfx::HorizontalAlignment::ALIGN_CENTER);
-  greeting_label->SetMultiLine(true);
-  AddChildView(std::move(greeting_label));
+  greeting_label_->SetMultiLine(true);
+  greeting_label_->SetText(
+      l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
+}
+
+// TODO(dmblack): Update conditions under which onboarding view is shown.
+void AssistantZeroStateView::UpdateLayout() {
+  if (!IsBetterOnboardingEnabled())
+    return;
+
+  constexpr bool show_onboarding = true;
+  onboarding_view_->SetVisible(show_onboarding);
+  greeting_label_->SetVisible(!show_onboarding);
 }
 
 }  // namespace ash

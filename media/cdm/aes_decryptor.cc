@@ -488,7 +488,8 @@ void AesDecryptor::RegisterNewKeyCB(StreamType stream_type,
 void AesDecryptor::Decrypt(StreamType stream_type,
                            scoped_refptr<DecoderBuffer> encrypted,
                            DecryptCB decrypt_cb) {
-  DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
+  DVLOG(3) << __func__ << ": "
+           << encrypted->AsHumanReadableString(/*verbose=*/true);
 
   if (!encrypted->decrypt_config()) {
     // If there is no DecryptConfig, then the data is unencrypted so return it

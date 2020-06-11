@@ -52,6 +52,11 @@ void MoveCursorTo(AshWindowTreeHost* ash_host,
 void ShowDisplayErrorNotification(const base::string16& message,
                                   bool allow_feedback);
 
+// Takes a refresh rate represented as a float and rounds it to two decimal
+// places. If the rounded refresh rate is a whole number, the mantissa is
+// removed. Ex: 54.60712 -> "54.61"
+ASH_EXPORT base::string16 ConvertRefreshRateToString16(float refresh_rate);
+
 ASH_EXPORT base::string16 GetDisplayErrorNotificationMessageForTest();
 
 }  // namespace ash

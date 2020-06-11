@@ -31,14 +31,14 @@ class PaymentHandlerJustInTimeInstallationTest
         "components/test/data/payments/henrypay.com");
     ASSERT_TRUE(henrypay_server_.Start());
 
+    NavigateTo("/payment_request_bobpay_and_cards_test.html");
+
     // Set up test manifest downloader that knows how to fake origin.
     const std::string kyle_method_name = "kylepay.com";
     const std::string henry_method_name = "henrypay.com";
     SetDownloaderAndIgnorePortInOriginComparisonForTesting(
         {{kyle_method_name, &kylepay_server_},
          {henry_method_name, &henrypay_server_}});
-
-    NavigateTo("/payment_request_bobpay_and_cards_test.html");
   }
 
  private:

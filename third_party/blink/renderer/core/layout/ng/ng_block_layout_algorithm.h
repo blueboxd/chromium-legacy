@@ -250,9 +250,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   void PropagateBaselineFromChild(const NGPhysicalContainerFragment& child,
                                   LayoutUnit block_offset);
 
-  // Performs any final baseline adjustments needed.
-  void FinalizeBaseline();
-
   // If still unresolved, resolve the fragment's BFC block offset.
   //
   // This includes applying clearance, so the |bfc_block_offset| passed won't

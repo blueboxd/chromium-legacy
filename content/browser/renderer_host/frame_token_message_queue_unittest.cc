@@ -476,9 +476,11 @@ TEST_F(FrameTokenMessageQueueTest, DifferentFrameTokensEnqueuedNonIPC) {
   EXPECT_TRUE(second_enqueuer.frame_token_callback_called());
 }
 
+// TODO(jonross): Re-enable this once the DCHECKs have been removed.
+// (crbug.com/1087744)
 // An empty frame token is considered invalid, so this tests that attempting to
 // enqueue for that is rejected.
-TEST_F(FrameTokenMessageQueueTest, EmptyTokenForIPCMessageIsRejected) {
+TEST_F(FrameTokenMessageQueueTest, DISABLED_EmptyTokenForIPCMessageIsRejected) {
   FrameTokenMessageQueue* queue = frame_token_message_queue();
   TestFrameTokenMessageQueueClient* client = test_client();
   ASSERT_EQ(0u, queue->size());
@@ -526,9 +528,12 @@ TEST_F(FrameTokenMessageQueueTest, EarlierTokenForIPCMessageIsNotRejected) {
   EXPECT_EQ(0, client->on_process_swap_message_count());
 }
 
+// TODO(jonross): Re-enable this once the DCHECKs have been removed.
+// (crbug.com/1087744)
 // Tests that if DidProcessFrame is called with an invalid token, that it is
 // rejected, and that no callbacks are processed.
-TEST_F(FrameTokenMessageQueueTest, InvalidDidProcessFrameTokenNotProcessed) {
+TEST_F(FrameTokenMessageQueueTest,
+       DISABLED_InvalidDidProcessFrameTokenNotProcessed) {
   FrameTokenMessageQueue* queue = frame_token_message_queue();
   TestFrameTokenMessageQueueClient* client = test_client();
   TestNonIPCMessageEnqueuer* enqueuer = test_non_ipc_enqueuer();
@@ -561,9 +566,12 @@ TEST_F(FrameTokenMessageQueueTest, InvalidDidProcessFrameTokenNotProcessed) {
   EXPECT_FALSE(enqueuer->frame_token_callback_called());
 }
 
+// TODO(jonross): Re-enable this once the DCHECKs have been removed.
+// (crbug.com/1087744)
 // Test that if DidProcessFrame is called with an earlier frame token, that it
 // is rejected, and that no callbacks are processed.
-TEST_F(FrameTokenMessageQueueTest, EarlierTokenForDidProcessFrameRejected) {
+TEST_F(FrameTokenMessageQueueTest,
+       DISABLED_EarlierTokenForDidProcessFrameRejected) {
   FrameTokenMessageQueue* queue = frame_token_message_queue();
   TestFrameTokenMessageQueueClient* client = test_client();
   TestNonIPCMessageEnqueuer* enqueuer = test_non_ipc_enqueuer();

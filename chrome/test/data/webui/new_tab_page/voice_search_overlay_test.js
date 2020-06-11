@@ -2,10 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {$$, BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flushTasks, isVisible} from 'chrome://test/test_util.m.js';
-import {assertStyle, createTestProxy} from './test_support.js';
+import {assertStyle, createTestProxy, keydown} from './test_support.js';
+
+function createResults(n) {
+  return {
+    results: Array.from(Array(n)).map(() => {
+      return {
+        isFinal: false,
+        0: {
+          transcript: 'foo',
+          confidence: 1,
+        },
+      };
+    }),
+    resultIndex: 0,
+  };
+}
 
 class MockSpeechRecognition {
   constructor() {
@@ -99,27 +114,13 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
   test('on result received shows recognized text', () => {
     // Arrange.
     testProxy.setResultFor('random', 0.5);
+    const result = createResults(2);
+    result.results[1][0].confidence = 0;
+    result.results[0][0].transcript = 'hello';
+    result.results[1][0].transcript = 'world';
 
     // Act.
-    mockSpeechRecognition.onresult({
-      results: [
-        {
-          isFinal: false,
-          0: {
-            transcript: 'hello',
-            confidence: 1,
-          },
-        },
-        {
-          isFinal: false,
-          0: {
-            transcript: 'world',
-            confidence: 0,
-          },
-        },
-      ],
-      resultIndex: 0,
-    });
+    mockSpeechRecognition.onresult(result);
 
     // Assert.
     const [intermediateResult, finalResult] =
@@ -139,20 +140,12 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
     const googleBaseUrl = 'https://google.com';
     loadTimeData.overrideValues({googleBaseUrl: googleBaseUrl});
     testProxy.setResultFor('random', 0);
+    const result = createResults(1);
+    result.results[0].isFinal = true;
+    result.results[0][0].transcript = 'hello world';
 
     // Act.
-    mockSpeechRecognition.onresult({
-      results: [
-        {
-          isFinal: true,
-          0: {
-            transcript: 'hello world',
-            confidence: 1,
-          },
-        },
-      ],
-      resultIndex: 0,
-    });
+    mockSpeechRecognition.onresult(result);
 
     // Assert.
     const href = await testProxy.whenCalled('navigate');
@@ -192,19 +185,12 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
   });
 
   test('on end received shows result text if final result', () => {
+    // Arrange.
+    const result = createResults(1);
+    result.results[0].isFinal = true;
+
     // Act.
-    mockSpeechRecognition.onresult({
-      results: [
-        {
-          isFinal: true,
-          0: {
-            transcript: 'hello world',
-            confidence: 1,
-          },
-        },
-      ],
-      resultIndex: 0,
-    });
+    mockSpeechRecognition.onresult(result);
     mockSpeechRecognition.onend();
 
     // Assert.
@@ -223,18 +209,7 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
     },
     {
       functionName: 'onresult',
-      arguments: [{
-        results: [
-          {
-            isFinal: false,
-            0: {
-              transcript: 'hello',
-              confidence: 1,
-            },
-          },
-        ],
-        resultIndex: 0,
-      }],
+      arguments: [createResults(1)],
     },
     {
       functionName: 'onend',
@@ -321,6 +296,48 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
 
       // Assert.
       assertTrue(mockSpeechRecognition.startCalled);
+    });
+  });
+
+  [' ', 'Enter'].forEach(key => {
+    test(`'${key}' submits query if result`, () => {
+      // Arrange.
+      mockSpeechRecognition.onresult(createResults(1));
+      assertEquals(0, testProxy.getCallCount('navigate'));
+
+      // Act.
+      keydown(voiceSearchOverlay.shadowRoot.activeElement, key);
+
+      // Assert.
+      assertEquals(1, testProxy.getCallCount('navigate'));
+      assertTrue(voiceSearchOverlay.$.dialog.open);
+    });
+
+    test(`'${key}' does not submit query if no result`, () => {
+      // Act.
+      keydown(voiceSearchOverlay.shadowRoot.activeElement, key);
+
+      // Assert.
+      assertEquals(0, testProxy.getCallCount('navigate'));
+      assertTrue(voiceSearchOverlay.$.dialog.open);
+    });
+
+    test(`'${key}' triggers link`, () => {
+      // Arrange.
+      mockSpeechRecognition.onerror({error: 'audio-capture'});
+      const link = $$(voiceSearchOverlay, '[link=learn-more]');
+      link.href = '#';
+      link.target = '_self';
+      let clicked = false;
+      link.addEventListener('click', () => clicked = true);
+
+      // Act.
+      keydown(link, key);
+
+      // Assert.
+      assertTrue(clicked);
+      assertEquals(0, testProxy.getCallCount('navigate'));
+      assertFalse(voiceSearchOverlay.$.dialog.open);
     });
   });
 });

@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
 
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #import "base/ios/block_types.h"
 #import "base/mac/foundation_util.h"
 #include "base/notreached.h"
@@ -23,7 +25,6 @@
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"

@@ -90,7 +90,7 @@ class BinaryUploadService : public KeyedService {
   class Request {
    public:
     // |callback| will run on the UI thread.
-    explicit Request(Callback callback);
+    explicit Request(Callback callback, GURL url);
     virtual ~Request();
     Request(const Request&) = delete;
     Request& operator=(const Request&) = delete;
@@ -129,6 +129,9 @@ class BinaryUploadService : public KeyedService {
       return deep_scanning_request_;
     }
 
+    // Returns the URL to send the request to.
+    const GURL& url() const { return url_; }
+
     // Methods for modifying the DeepScanningClientRequest.
     void set_request_dlp_scan(DlpDeepScanningClientRequest dlp_request);
     void set_request_malware_scan(
@@ -147,6 +150,7 @@ class BinaryUploadService : public KeyedService {
    private:
     DeepScanningClientRequest deep_scanning_request_;
     Callback callback_;
+    GURL url_;
   };
 
   // Upload the given file contents for deep scanning if the browser is
@@ -155,13 +159,13 @@ class BinaryUploadService : public KeyedService {
 
   // Indicates whether the browser is allowed to upload data.
   using AuthorizationCallback = base::OnceCallback<void(bool)>;
-  void IsAuthorized(AuthorizationCallback callback);
+  void IsAuthorized(const GURL& url, AuthorizationCallback callback);
 
   // Run every callback in |authorization_callbacks_| and empty it.
   void RunAuthorizationCallbacks();
 
   // Resets |can_upload_data_|. Called every 24 hour by |timer_|.
-  void ResetAuthorizationData();
+  void ResetAuthorizationData(const GURL& url);
 
   // Performs cleanup needed at shutdown.
   void Shutdown() override;

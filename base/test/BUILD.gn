@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//base/trace_event/features.gni")
 import("//build/compiled_action.gni")
 import("//build/config/nacl/config.gni")
 import("//build/config/ui.gni")
+import("//build_overrides/build.gni")
 
 # Reset sources_assignment_filter for the BUILD.gn file to prevent
 # regression during the migration of Chromium away from the feature.

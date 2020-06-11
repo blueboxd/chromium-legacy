@@ -977,10 +977,8 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   TRACE_EVENT0("browser", "ProfileManager::InitProfileUserPrefs");
   ProfileAttributesStorage& storage = GetProfileAttributesStorage();
 
-  if (!IsAllowedProfilePath(profile->GetPath())) {
-    UMA_HISTOGRAM_BOOLEAN("Profile.InitProfileUserPrefs.OutsideUserDir", true);
+  if (!IsAllowedProfilePath(profile->GetPath()))
     return;
-  }
 
 #if defined(OS_CHROMEOS)
   // User object may already have changed user type, so we apply that
@@ -1623,10 +1621,8 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
   TRACE_EVENT0("browser", "ProfileManager::AddProfileToCache");
   if (profile->IsGuestSession() || profile->IsSystemProfile())
     return;
-  if (!IsAllowedProfilePath(profile->GetPath())) {
-    UMA_HISTOGRAM_BOOLEAN("Profile.GetProfileInfoPath.OutsideUserDir", true);
+  if (!IsAllowedProfilePath(profile->GetPath()))
     return;
-  }
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);

@@ -6102,9 +6102,6 @@ crbug.com/892983 external/wpt/css/css-pseudo/first-line-with-before-after.html [
 crbug.com/1025123 external/wpt/longtask-timing/longtask-in-sibling-iframe-crossorigin.html [ Pass Failure ]
 crbug.com/1025321 [ Win ] http/tests/devtools/tracing/console-timeline.js [ Pass Failure ]
 
-# Sheriff 2019-11-18
-crbug.com/1025944 [ Linux ] external/wpt/pointerevents/pointerlock/pointerevent_pointermove_on_chorded_mouse_button_when_locked.html [ Pass Failure ]
-
 # Timeout media preload test until preloading media destinations gets enabled.
 crbug.com/977033 http/tests/priorities/resource-load-priorities-media-preload.html [ Timeout ]
 
@@ -6727,6 +6724,5 @@ crbug.com/1093003 [ Mac ] external/wpt/html/rendering/replaced-elements/embedded
 
 # Sheriff 2020-06-10
 crbug.com/1093429 [ Mac ] external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Failure ]
-crbug.com/1093620 [ Debug ] http/tests/devtools/appcache/* [ Pass Failure ]
 crbug.com/1093709 [ Mac ] external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.resize.html [ Pass Failure ]
 crbug.com/1093709 [ Linux ] external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.resize.html [ Pass Failure ]

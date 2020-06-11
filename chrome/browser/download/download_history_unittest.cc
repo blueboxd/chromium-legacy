@@ -117,7 +117,7 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
 
   void ExpectQueryDownloadsDone() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    EXPECT_TRUE(!expect_query_downloads_.has_value());
+    EXPECT_FALSE(expect_query_downloads_.has_value());
   }
 
   void FailCreateDownload() {
@@ -164,10 +164,8 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::RunAllPendingInMessageLoop(content::BrowserThread::UI);
     IdSet differences = base::STLSetDifference<IdSet>(ids, remove_downloads_);
-    for (auto different = differences.begin(); different != differences.end();
-         ++different) {
-      EXPECT_TRUE(false) << *different;
-    }
+    for (int different : differences)
+      ADD_FAILURE() << different;
     remove_downloads_.clear();
   }
 

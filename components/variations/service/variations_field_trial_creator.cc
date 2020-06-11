@@ -84,28 +84,6 @@ base::Time GetReferenceDateForExpiryChecks(PrefService* local_state) {
   return reference_date;
 }
 
-// TODO(b/957197): Improve how we handle OS versions.
-// Add os_version.h and os_version_<platform>.cc that handle retrieving and
-// parsing OS versions. Then get rid of all the platform-dependent code here.
-base::Version GetOSVersion() {
-  base::Version ret;
-
-#if defined(OS_WIN)
-  std::string win_version = base::SysInfo::OperatingSystemVersion();
-  base::ReplaceSubstringsAfterOffset(&win_version, 0, " SP", ".");
-  ret = base::Version(win_version);
-  DCHECK(ret.IsValid()) << win_version;
-#else
-  // Every other OS is supported by OperatingSystemVersionNumbers
-  int major, minor, build;
-  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &build);
-  ret = base::Version(base::StringPrintf("%d.%d.%d", major, minor, build));
-  DCHECK(ret.IsValid());
-#endif
-
-  return ret;
-}
-
 // Just maps one set of enum values to another. Nothing to see here.
 Study::Channel ConvertProductChannelToStudyChannel(
     version_info::Channel product_channel) {
@@ -257,7 +235,7 @@ VariationsFieldTrialCreator::GetClientFilterableStateForVersion(
   state->locale = application_locale_;
   state->reference_date = GetReferenceDateForExpiryChecks(local_state());
   state->version = version;
-  state->os_version = GetOSVersion();
+  state->os_version = ClientFilterableState::GetOSVersion();
   state->channel =
       ConvertProductChannelToStudyChannel(client_->GetChannelForVariations());
   state->form_factor = GetCurrentFormFactor();

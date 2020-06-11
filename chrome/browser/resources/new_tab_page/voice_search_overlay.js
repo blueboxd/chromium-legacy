@@ -5,6 +5,7 @@
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -243,6 +244,34 @@ class VoiceSearchOverlayElement extends PolymerElement {
   /** @private */
   onOverlayClick_() {
     this.$.dialog.close();
+  }
+
+  /**
+   * Handles <ENTER> or <SPACE> to trigger a query if we have recognized speech.
+   * @param {KeyboardEvent} e
+   * @private
+   */
+  onOverlayKeydown_(e) {
+    if (!['Enter', ' '].includes(e.key) || !this.finalResult_) {
+      return;
+    }
+    this.onFinalResult_();
+  }
+
+  /**
+   * Handles <ENTER> or <SPACE> to simulate click.
+   * @param {KeyboardEvent} e
+   * @private
+   */
+  onLinkKeydown_(e) {
+    if (!['Enter', ' '].includes(e.key)) {
+      return;
+    }
+    // Otherwise, we may trigger overlay-wide keyboard shortcuts.
+    e.stopPropagation();
+    // Otherwise, we open the link twice.
+    e.preventDefault();
+    e.target.click();
   }
 
   /**

@@ -792,6 +792,7 @@ void AssistantManagerServiceImpl::OnShowNotification(
   notification_ptr->opaque_token = notification.opaque_token;
   notification_ptr->grouping_key = notification.grouping_key;
   notification_ptr->obfuscated_gaia_id = notification.obfuscated_gaia_id;
+  notification_ptr->from_server = true;
 
   if (notification.expiry_timestamp_ms) {
     notification_ptr->expiry_time =

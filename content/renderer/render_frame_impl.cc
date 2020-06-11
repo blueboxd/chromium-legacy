@@ -3469,6 +3469,20 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
 
   if (commit_status == blink::mojom::CommitResult::Ok) {
     base::WeakPtr<RenderFrameImpl> weak_this = weak_factory_.GetWeakPtr();
+    // Same-document navigations on data URLs loaded with a valid base URL
+    // should keep the base URL as document URL.
+    bool use_base_url_for_data_url =
+        !common_params->base_url_for_data_url.is_empty();
+#if defined(OS_ANDROID)
+    use_base_url_for_data_url |= !commit_params->data_url_as_string.empty();
+#endif
+
+    GURL url;
+    if (is_main_frame_ && use_base_url_for_data_url) {
+      url = common_params->base_url_for_data_url;
+    } else {
+      url = common_params->url;
+    }
     bool is_client_redirect =
         !!(common_params->transition & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
     DocumentState* original_document_state =
@@ -3481,7 +3495,6 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
         InternalDocumentStateData::FromDocumentState(original_document_state));
     // This is a browser-initiated same-document navigation (as opposed to a
     // fragment link click), therefore |was_initiated_in_this_frame| is false.
-    auto url = common_params->url;
     internal_data->set_navigation_state(NavigationState::CreateBrowserInitiated(
         std::move(common_params), std::move(commit_params),
         mojom::NavigationClient::CommitNavigationCallback(), nullptr,

@@ -44,6 +44,11 @@ const base::Feature kEnableDocumentsProviderInFilesAppFeature{
 const base::Feature kEnableRegularToChildTransitionFeature{
     "ArcEnableRegularToChildTransition", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether secondary accounts are added to ARC++ for child user.
+// This is added temporarily to allow further investigation.
+const base::Feature kEnableSecondaryAccountsForChildExperiment{
+    "ArcEnableSecondaryAccountForChild", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether we should delegate audio focus requests from ARC to Chrome.
 const base::Feature kEnableUnifiedAudioFocusFeature{
     "ArcEnableUnifiedAudioFocus", base::FEATURE_ENABLED_BY_DEFAULT};

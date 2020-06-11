@@ -17,32 +17,34 @@
 
     function testFunction()
     {
-        var proto = Object.create(HTMLElement.prototype);
-        proto.createdCallback = function createdCallback()
-        {
-            output('Invoked createdCallback.');
-        };
-        proto.attachedCallback = function attachedCallback()
-        {
-            output('Invoked attachedCallback.');
-        };
-        proto.detachedCallback = function detachedCallback()
-        {
-            output('Invoked detachedCallback.');
-        };
-        proto.attributeChangedCallback = function attributeChangedCallback()
-        {
-            output('Invoked attributeChangedCallback.');
-        };
-        var FooElement = document.registerElement('x-foo', { prototype: proto });
-        debugger;
-        var foo = new FooElement();
-        debugger;
-        foo.setAttribute('a', 'b');
-        debugger;
-        document.body.appendChild(foo);
-        debugger;
-        foo.remove();
+      class FooElement extends HTMLElement {
+        constructor() {
+          super();
+          output('Invoked constructor.');
+        }
+        connectedCallback() {
+          output('Invoked connectedCallback.');
+        }
+        disconnectedCallback() {
+          output('Invoked disconnectedCallback.');
+        }
+        adoptedCallback() {
+          output('Invoked adoptedCallback.');
+        }
+        attributeChangedCallback() {
+          output('Invoked attributeChangedCallback.');
+        }
+        static get observedAttributes() { return ['x']; }
+      }
+      customElements.define('x-foo', FooElement);
+      debugger;
+      var foo = new FooElement();
+      debugger;
+      foo.setAttribute('x', 'b');
+      debugger;
+      document.body.appendChild(foo);
+      debugger;
+      foo.remove();
     }
   `);
 
@@ -77,7 +79,7 @@
   }
 
   function step3(callFrames) {
-    checkTopFrameFunction(callFrames, 'createdCallback');
+    checkTopFrameFunction(callFrames, 'FooElement');
     SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(SourcesTestRunner, step4));
   }
 
@@ -91,20 +93,20 @@
   }
 
   function step6() {
-    stepOverThenIn('attachedCallback', step7);
+    stepOverThenIn('connectedCallback', step7);
   }
 
   function step7(callFrames) {
-    checkTopFrameFunction(callFrames, 'attachedCallback');
+    checkTopFrameFunction(callFrames, 'connectedCallback');
     SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(SourcesTestRunner, step8));
   }
 
   function step8() {
-    stepOverThenIn('detachedCallback', step9);
+    stepOverThenIn('disconnectedCallback', step9);
   }
 
   function step9(callFrames) {
-    checkTopFrameFunction(callFrames, 'detachedCallback');
+    checkTopFrameFunction(callFrames, 'disconnectedCallback');
     SourcesTestRunner.resumeExecution(step10);
   }
 

@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/parser_content_policy.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/editing/serializers/create_markup_options.h"
 #include "third_party/blink/renderer/core/editing/serializers/html_interchange.h"
@@ -84,10 +85,13 @@ void ReplaceChildrenWithFragment(ContainerNode*,
                                  ExceptionState&);
 void ReplaceChildrenWithText(ContainerNode*, const String&, ExceptionState&);
 
-CORE_EXPORT String CreateMarkup(const Node*,
-                                ChildrenOnly = kIncludeNode,
-                                AbsoluteURLs = kDoNotResolveURLs,
-                                IncludeShadowRoots = kNoShadowRoots);
+using ClosedRootsSet = HeapHashSet<Member<ShadowRoot>>;
+CORE_EXPORT String
+CreateMarkup(const Node*,
+             ChildrenOnly = kIncludeNode,
+             AbsoluteURLs = kDoNotResolveURLs,
+             IncludeShadowRoots = kNoShadowRoots,
+             ClosedRootsSet include_closed_roots = ClosedRootsSet());
 
 CORE_EXPORT String
 CreateMarkup(const Position& start,

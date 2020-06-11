@@ -351,7 +351,12 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     // a DCHECK during TestServiceDiscoveryClient construction.
     media_router::DualMediaSinkService::SetInstanceForTest(
         new media_router::NoopDualMediaSinkService());
-    feature_list_.InitAndDisableFeature(media_router::kDialMediaRouteProvider);
+    // The Media Route Providers must be disabled because they rely on the
+    // presence of a valid DualMediaSinkService.
+    // TODO(crbug.com/1028753): Enable the Media Route Provider features.
+    feature_list_.InitWithFeatures(
+        {}, /* disabled_features */ {media_router::kDialMediaRouteProvider,
+                                     media_router::kCastMediaRouteProvider});
     WebUIBrowserTest::SetUp();
   }
 

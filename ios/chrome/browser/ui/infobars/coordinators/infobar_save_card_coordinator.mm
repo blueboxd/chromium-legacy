@@ -33,6 +33,8 @@
 // InfobarSaveCardTableViewController owned by this Coordinator.
 @property(nonatomic, strong)
     InfobarSaveCardTableViewController* modalViewController;
+// Consumer that is configured by this coordinator.
+@property(nonatomic, weak) id<InfobarSaveCardModalConsumer> modalConsumer;
 // Delegate that holds the Infobar information and actions.
 @property(nonatomic, readonly)
     autofill::AutofillSaveCardInfoBarDelegateMobile* saveCardInfoBarDelegate;
@@ -184,26 +186,32 @@
       [[InfobarSaveCardTableViewController alloc] initWithModalDelegate:self];
   self.modalViewController.title =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_CARD);
-  self.modalViewController.cardIssuerIcon =
-      NativeImage(self.saveCardInfoBarDelegate->issuer_icon_id());
-  self.modalViewController.cardNumber = [NSString
+  self.modalConsumer = self.modalViewController;
+
+  NSString* cardNumber = [NSString
       stringWithFormat:@"•••• %@",
                        base::SysUTF16ToNSString(self.saveCardInfoBarDelegate
                                                     ->card_last_four_digits())];
-  self.modalViewController.cardholderName = self.cardholderName;
-  self.modalViewController.expirationMonth = self.expirationMonth;
-  self.modalViewController.expirationYear = self.expirationYear;
-  self.modalViewController.currentCardSaved = !self.infobarAccepted;
-  self.modalViewController.legalMessages = [self legalMessagesForModal];
-  if ((base::FeatureList::IsEnabled(
-          autofill::features::kAutofillSaveCardInfobarEditSupport))) {
-    // Only allow editing if the card will be uploaded and it hasn't been
-    // previously saved.
-    self.modalViewController.supportsEditing =
-        self.saveCardInfoBarDelegate->upload() && !self.infobarAccepted;
-  } else {
-    self.modalViewController.supportsEditing = NO;
-  }
+  // Only allow editing if the card will be uploaded and it hasn't been
+  // previously saved.
+  BOOL supportsEditing =
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillSaveCardInfobarEditSupport)
+          ? self.saveCardInfoBarDelegate->upload() && !self.infobarAccepted
+          : NO;
+
+  NSDictionary* prefs = @{
+    kCardholderNamePrefKey : self.cardholderName,
+    kCardIssuerIconNamePrefKey :
+        NativeImage(self.saveCardInfoBarDelegate->issuer_icon_id()),
+    kCardNumberPrefKey : cardNumber,
+    kExpirationMonthPrefKey : self.expirationMonth,
+    kExpirationYearPrefKey : self.expirationYear,
+    kLegalMessagesPrefKey : [self legalMessagesForModal],
+    kCurrentCardSavedPrefKey : @(!self.infobarAccepted),
+    kSupportsEditingPrefKey : @(supportsEditing)
+  };
+  [self.modalConsumer setupModalViewControllerWithPrefs:prefs];
 
   return YES;
 }

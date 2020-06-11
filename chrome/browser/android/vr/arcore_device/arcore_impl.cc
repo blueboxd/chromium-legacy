@@ -647,6 +647,11 @@ ArCoreImpl::GetHitTestSubscriptionResults(
   mojom::XRHitTestSubscriptionResultsDataPtr result =
       mojom::XRHitTestSubscriptionResultsData::New();
 
+  DVLOG(3) << __func__
+           << ": calculating hit test subscription results, "
+              "hit_test_subscription_id_to_data_.size()="
+           << hit_test_subscription_id_to_data_.size();
+
   for (auto& subscription_id_and_data : hit_test_subscription_id_to_data_) {
     // First, check if we can find the current transformation for a ray. If not,
     // skip processing this subscription.
@@ -666,17 +671,23 @@ ArCoreImpl::GetHitTestSubscriptionResults(
         *maybe_mojo_from_native_origin));
   }
 
-  for (const auto& subscribtion_id_and_data :
+  DVLOG(3)
+      << __func__
+      << ": calculating hit test subscription results for transient input, "
+         "hit_test_subscription_id_to_transient_hit_test_data_.size()="
+      << hit_test_subscription_id_to_transient_hit_test_data_.size();
+
+  for (const auto& subscription_id_and_data :
        hit_test_subscription_id_to_transient_hit_test_data_) {
     auto input_source_ids_and_transforms =
-        GetMojoFromInputSources(subscribtion_id_and_data.second.profile_name,
+        GetMojoFromInputSources(subscription_id_and_data.second.profile_name,
                                 mojo_from_viewer, input_state);
 
     result->transient_input_results.push_back(
         GetTransientHitTestSubscriptionResult(
-            HitTestSubscriptionId(subscribtion_id_and_data.first),
-            *subscribtion_id_and_data.second.ray,
-            subscribtion_id_and_data.second.entity_types,
+            HitTestSubscriptionId(subscription_id_and_data.first),
+            *subscription_id_and_data.second.ray,
+            subscription_id_and_data.second.entity_types,
             input_source_ids_and_transforms));
   }
 
@@ -954,9 +965,10 @@ bool ArCoreImpl::RequestHitTest(
 
     // Only consider trackables listed in arcore_entity_types.
     if (!base::Contains(arcore_entity_types, ar_trackable_type)) {
-      DVLOG(2)
-          << __func__
-          << ": hit a trackable that is not in entity types set, ignoring it";
+      DVLOG(2) << __func__
+               << ": hit a trackable that is not in entity types set, ignoring "
+                  "it. ar_trackable_type="
+               << ar_trackable_type;
       continue;
     }
 
@@ -976,16 +988,19 @@ bool ArCoreImpl::RequestHitTest(
     // within the actual detected polygon and not just within than the larger
     // plane.
     uint64_t plane_id = 0;
-    if (!hit_results->empty() && ar_trackable_type == AR_TRACKABLE_PLANE) {
-      int32_t in_polygon = 0;
+    if (ar_trackable_type == AR_TRACKABLE_PLANE) {
       ArPlane* ar_plane = ArAsPlane(ar_trackable.get());
-      ArPlane_isPoseInPolygon(arcore_session_.get(), ar_plane,
-                              arcore_pose.get(), &in_polygon);
-      if (!in_polygon) {
-        DVLOG(2) << __func__
-                 << ": hit a trackable that is not within detected polygon, "
-                    "ignoring it";
-        continue;
+
+      if (!hit_results->empty()) {
+        int32_t in_polygon = 0;
+        ArPlane_isPoseInPolygon(arcore_session_.get(), ar_plane,
+                                arcore_pose.get(), &in_polygon);
+        if (!in_polygon) {
+          DVLOG(2) << __func__
+                   << ": hit a trackable that is not within detected polygon, "
+                      "ignoring it";
+          continue;
+        }
       }
 
       base::Optional<PlaneId> maybe_plane_id =
@@ -995,23 +1010,26 @@ bool ArCoreImpl::RequestHitTest(
       }
     }
 
-    std::array<float, 16> matrix;
-    ArPose_getMatrix(arcore_session_.get(), arcore_pose.get(), matrix.data());
-
     mojom::XRHitResultPtr mojo_hit = mojom::XRHitResult::New();
 
-    // ArPose_getMatrix returns the matrix in WebGL style column-major order
-    // and gfx::Transform expects row major order.
-    // clang-format off
-    mojo_hit->hit_matrix = gfx::Transform(
-      matrix[0], matrix[4], matrix[8],  matrix[12],
-      matrix[1], matrix[5], matrix[9],  matrix[13],
-      matrix[2], matrix[6], matrix[10], matrix[14],
-      matrix[3], matrix[7], matrix[11], matrix[15]
-    );
-    // clang-format on
-
     mojo_hit->plane_id = plane_id;
+
+    {
+      std::array<float, 7> raw_pose;
+      ArPose_getPoseRaw(arcore_session_.get(), arcore_pose.get(),
+                        raw_pose.data());
+
+      gfx::Quaternion orientation(raw_pose[0], raw_pose[1], raw_pose[2],
+                                  raw_pose[3]);
+      gfx::Point3F position(raw_pose[4], raw_pose[5], raw_pose[6]);
+
+      mojo_hit->mojo_from_result = mojom::Pose::New(orientation, position);
+
+      DVLOG(3) << __func__
+               << ": adding hit test result, position=" << position.ToString()
+               << ", orientation=" << orientation.ToString()
+               << ", plane_id=" << plane_id << " (0 means no plane)";
+    }
 
     // Insert new results at head to preserver order from ArCore
     hit_results->insert(hit_results->begin(), std::move(mojo_hit));
@@ -1040,20 +1058,25 @@ void ArCoreImpl::CreateAnchor(
                                        std::move(callback));
 }
 
-void ArCoreImpl::CreatePlaneAttachedAnchor(const mojom::Pose& plane_from_anchor,
-                                           uint64_t plane_id,
-                                           CreateAnchorCallback callback) {
-  DVLOG(2) << __func__ << ": plane_id=" << plane_id
-           << ", plane_from_anchor.position="
-           << plane_from_anchor.position.ToString()
-           << ", plane_from_anchor.orientation="
-           << plane_from_anchor.orientation.ToString();
+void ArCoreImpl::CreatePlaneAttachedAnchor(
+    const mojom::XRNativeOriginInformation& native_origin_information,
+    const mojom::Pose& native_origin_from_anchor,
+    uint64_t plane_id,
+    CreateAnchorCallback callback) {
+  DVLOG(2) << __func__ << ": native_origin_information.which()="
+           << static_cast<uint32_t>(native_origin_information.which())
+           << ", plane_id=" << plane_id
+           << ", native_origin_from_anchor.position="
+           << native_origin_from_anchor.position.ToString()
+           << ", native_origin_from_anchor.orientation="
+           << native_origin_from_anchor.orientation.ToString();
 
-  gfx::Transform plane_from_anchor_transform =
-      mojo::ConvertTo<gfx::Transform>(plane_from_anchor);
+  gfx::Transform native_origin_from_anchor_transform =
+      mojo::ConvertTo<gfx::Transform>(native_origin_from_anchor);
 
   create_plane_attached_anchor_requests_.emplace_back(
-      plane_from_anchor_transform, plane_id, std::move(callback));
+      native_origin_information, native_origin_from_anchor_transform, plane_id,
+      std::move(callback));
 }
 
 void ArCoreImpl::ProcessAnchorCreationRequests(
@@ -1231,10 +1254,12 @@ ArCore::CreateAnchorCallback CreateAnchorRequest::TakeCallback() {
 }
 
 CreatePlaneAttachedAnchorRequest::CreatePlaneAttachedAnchorRequest(
-    const gfx::Transform& plane_from_anchor,
+    const mojom::XRNativeOriginInformation& native_origin_information,
+    const gfx::Transform& native_origin_from_anchor,
     uint64_t plane_id,
     ArCore::CreateAnchorCallback callback)
-    : plane_from_anchor_(plane_from_anchor),
+    : native_origin_information_(native_origin_information),
+      native_origin_from_anchor_(native_origin_from_anchor),
       plane_id_(plane_id),
       request_start_time_(base::TimeTicks::Now()),
       callback_(std::move(callback)) {}
@@ -1244,9 +1269,7 @@ CreatePlaneAttachedAnchorRequest::~CreatePlaneAttachedAnchorRequest() = default;
 
 mojom::XRNativeOriginInformation
 CreatePlaneAttachedAnchorRequest::GetNativeOriginInformation() const {
-  mojom::XRNativeOriginInformation result;
-  result.set_plane_id(plane_id_);
-  return result;
+  return native_origin_information_;
 }
 
 uint64_t CreatePlaneAttachedAnchorRequest::GetPlaneId() const {
@@ -1255,7 +1278,7 @@ uint64_t CreatePlaneAttachedAnchorRequest::GetPlaneId() const {
 
 gfx::Transform CreatePlaneAttachedAnchorRequest::GetNativeOriginFromAnchor()
     const {
-  return plane_from_anchor_;
+  return native_origin_from_anchor_;
 }
 
 base::TimeTicks CreatePlaneAttachedAnchorRequest::GetRequestStartTime() const {

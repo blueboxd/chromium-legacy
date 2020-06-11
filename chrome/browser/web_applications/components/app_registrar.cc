@@ -72,6 +72,12 @@ void AppRegistrar::NotifyWebAppDisabledStateChanged(const AppId& app_id,
     observer.OnWebAppDisabledStateChanged(app_id, is_disabled);
 }
 
+void AppRegistrar::NotifyWebAppLastLaunchTimeChanged(const AppId& app_id,
+                                                     const base::Time& time) {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppLastLaunchTimeChanged(app_id, time);
+}
+
 void AppRegistrar::NotifyWebAppProfileWillBeDeleted(const AppId& app_id) {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnWebAppProfileWillBeDeleted(app_id);

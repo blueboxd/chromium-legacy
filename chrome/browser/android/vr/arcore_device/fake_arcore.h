@@ -64,9 +64,11 @@ class FakeArCore : public ArCore {
       const mojom::XRNativeOriginInformation& native_origin_information,
       const mojom::Pose& native_origin_from_anchor,
       CreateAnchorCallback callback) override;
-  void CreatePlaneAttachedAnchor(const mojom::Pose& plane_from_anchor,
-                                 uint64_t plane_id,
-                                 CreateAnchorCallback callback) override;
+  void CreatePlaneAttachedAnchor(
+      const mojom::XRNativeOriginInformation& native_origin_information,
+      const mojom::Pose& native_origin_from_anchor,
+      uint64_t plane_id,
+      CreateAnchorCallback callback) override;
 
   void ProcessAnchorCreationRequests(
       const gfx::Transform& mojo_from_viewer,

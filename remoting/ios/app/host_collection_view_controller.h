@@ -7,7 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
+#import <MaterialComponents/MaterialCollections.h>
+
 #import "remoting/ios/app/host_collection_view_cell.h"
 #import "remoting/ios/domain/host_info.h"
 

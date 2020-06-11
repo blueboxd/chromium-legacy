@@ -193,7 +193,7 @@ void DeepScanningRequest::Start() {
   callback_.Run(DownloadCheckResult::ASYNC_SCANNING);
 
   auto request = std::make_unique<FileSourceRequest>(
-      analysis_settings_.block_unsupported_file_types, item_->GetFullPath(),
+      analysis_settings_, item_->GetFullPath(),
       item_->GetTargetFilePath().BaseName(),
       base::BindOnce(&DeepScanningRequest::OnScanComplete,
                      weak_ptr_factory_.GetWeakPtr()));

@@ -71,7 +71,7 @@ struct ManagedDisplayModeSorter {
 };
 
 bool IsWithinEpsilon(float a, float b) {
-  const float kEpsilon = 0.0001f;
+  constexpr float kEpsilon = 0.0001f;
   return std::abs(a - b) < kEpsilon;
 }
 
@@ -219,7 +219,7 @@ ManagedDisplayInfo ManagedDisplayInfo::CreateFromSpecWithID(
                               base::SPLIT_WANT_NONEMPTY);
     for (size_t i = 0; i < parts.size(); ++i) {
       gfx::Size size;
-      float refresh_rate = 0.0f;
+      float refresh_rate = 60.0f;
       bool is_interlaced = false;
 
       gfx::Rect mode_bounds;

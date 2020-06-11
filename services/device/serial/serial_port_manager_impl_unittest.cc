@@ -98,6 +98,7 @@ TEST_F(SerialPortManagerImplTest, SimpleConnectTest) {
         for (auto& device : results) {
           mojo::Remote<mojom::SerialPort> serial_port;
           port_manager->GetPort(device->token,
+                                /*use_alternate_path=*/false,
                                 serial_port.BindNewPipeAndPassReceiver(),
                                 /*watcher=*/mojo::NullRemote());
           // Send a message on the pipe and wait for the response to make sure
@@ -189,6 +190,7 @@ TEST_F(SerialPortManagerImplTest, GetPort) {
 
         mojo::Remote<mojom::SerialPort> serial_port;
         port_manager->GetPort(results[0]->token,
+                              /*use_alternate_path=*/false,
                               serial_port.BindNewPipeAndPassReceiver(),
                               /*watcher=*/mojo::NullRemote());
         // Send a message on the pipe and wait for the response to make sure

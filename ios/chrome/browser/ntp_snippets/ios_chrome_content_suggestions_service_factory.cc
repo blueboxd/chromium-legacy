@@ -24,7 +24,6 @@ using ntp_snippets::ContentSuggestionsService;
 ContentSuggestionsService*
 IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
     ChromeBrowserState* browser_state) {
-  DCHECK(!browser_state->IsOffTheRecord());
   return static_cast<ContentSuggestionsService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }

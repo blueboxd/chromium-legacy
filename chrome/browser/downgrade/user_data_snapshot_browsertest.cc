@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/downgrade/user_data_downgrade.h"
-
 #include <map>
 #include <memory>
 #include <string>
@@ -11,6 +9,7 @@
 #include <vector>
 
 #include "base/files/file_util.h"
+#include "base/guid.h"
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,8 +19,11 @@
 #include "base/version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "chrome/browser/autofill/autofill_uitest_util.h"
+#include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/downgrade/downgrade_manager.h"
+#include "chrome/browser/downgrade/user_data_downgrade.h"
 #include "chrome/browser/first_run/scoped_relaunch_chrome_browser_override.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,6 +34,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -430,6 +437,94 @@ IN_PROC_BROWSER_TEST_F(TabsSnapshotTest, PRE_PRE_PRE_Test) {}
 IN_PROC_BROWSER_TEST_F(TabsSnapshotTest, PRE_PRE_Test) {}
 IN_PROC_BROWSER_TEST_F(TabsSnapshotTest, PRE_Test) {}
 IN_PROC_BROWSER_TEST_F(TabsSnapshotTest, Test) {}
+
+class AutofillProfileSnapshotTest : public UserDataSnapshotBrowserTestBase {
+ protected:
+  autofill::PersonalDataManager* personal_data_manager() {
+    return autofill::PersonalDataManagerFactory::GetForProfile(
+        browser()->profile());
+  }
+
+  std::vector<autofill::AutofillProfile> test_profiles() {
+    std::vector<autofill::AutofillProfile> profiles;
+    autofill::AutofillProfile profile0("01234567-89ab-cdef-fedc-ba9876543210",
+                                       autofill::test::kEmptyOrigin);
+    autofill::test::SetProfileInfo(&profile0, "Marion", "Mitchell", "Morrison",
+                                   "johnwayne@me.xyz", "Fox", "123 Zoo St.",
+                                   "unit 5", "Hollywood", "CA", "91601", "US",
+                                   "12345678910");
+    profiles.push_back(std::move(profile0));
+    autofill::AutofillProfile profile1("98765432-10ab-cdef-fedc-ba0123456789",
+                                       autofill::test::kEmptyOrigin);
+    autofill::test::SetProfileInfo(&profile1, "Josephine", "Alicia", "Saenz",
+                                   "joewayne@me.xyz", "Fox", "903 Apple Ct.",
+                                   nullptr, "Orlando", "FL", "32801", "US",
+                                   "19482937549");
+    profiles.push_back(std::move(profile1));
+    return profiles;
+  }
+
+  void SimulateUserActions() override {
+    for (const auto& profile : test_profiles())
+      autofill::AddTestProfile(browser(), profile);
+  }
+
+  void ValidateUserActions() override {
+    ASSERT_EQ(personal_data_manager()->GetProfiles().size(), 2u);
+    for (const auto& profile : test_profiles()) {
+      EXPECT_EQ(profile.Compare(
+                    *personal_data_manager()->GetProfileByGUID(profile.guid())),
+                0);
+    }
+  }
+};  // namespace downgrade
+
+IN_PROC_BROWSER_TEST_F(AutofillProfileSnapshotTest, PRE_PRE_PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(AutofillProfileSnapshotTest, PRE_PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(AutofillProfileSnapshotTest, PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(AutofillProfileSnapshotTest, Test) {}
+
+class AutofillCreditCardSnapshotTest : public UserDataSnapshotBrowserTestBase {
+ protected:
+  autofill::PersonalDataManager* personal_data_manager() {
+    return autofill::PersonalDataManagerFactory::GetForProfile(
+        browser()->profile());
+  }
+
+  std::vector<autofill::CreditCard> test_credit_cards() {
+    std::vector<autofill::CreditCard> credit_cards;
+    autofill::CreditCard card0("01234567-89ab-cdef-fedc-ba9876543210", "");
+    autofill::test::SetCreditCardInfo(&card0, "Milton Waddams",
+                                      "4111111111111111", "09", "2999", "");
+    credit_cards.push_back(std::move(card0));
+    autofill::CreditCard card1("98765432-10ab-cdef-fedc-ba0123456789", "");
+    autofill::test::SetCreditCardInfo(&card1, "That Person", "5111111111111111",
+                                      "098", "3000", "");
+    credit_cards.push_back(std::move(card1));
+    return credit_cards;
+  }
+
+  void SimulateUserActions() override {
+    auto credit_cards = test_credit_cards();
+    for (const auto& card : credit_cards)
+      AddTestCreditCard(browser(), card);
+  }
+
+  void ValidateUserActions() override {
+    ASSERT_EQ(personal_data_manager()->GetCreditCards().size(), 2u);
+    for (const auto& credit_card : test_credit_cards()) {
+      EXPECT_EQ(
+          credit_card.Compare(*personal_data_manager()->GetCreditCardByGUID(
+              credit_card.guid())),
+          0);
+    }
+  }
+};  // namespace downgrade
+
+IN_PROC_BROWSER_TEST_F(AutofillCreditCardSnapshotTest, PRE_PRE_PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(AutofillCreditCardSnapshotTest, PRE_PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(AutofillCreditCardSnapshotTest, PRE_Test) {}
+IN_PROC_BROWSER_TEST_F(AutofillCreditCardSnapshotTest, Test) {}
 
 // Tests that Google Chrome does not takes snapshots on mid-milestone updates.
 IN_PROC_BROWSER_TEST_F(InProcessBrowserTest, SameMilestoneSnapshot) {

@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/containers/small_map.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/location.h"
@@ -40,6 +41,13 @@ using base::File;
 using base::FilePath;
 
 namespace storage {
+
+// static
+const base::Feature
+    BlobMemoryController::kInhibitBlobMemoryControllerMemoryPressureResponse{
+        "InhibitBlobMemoryControllerMemoryPressureResponse",
+        base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
 constexpr int64_t kUnknownDiskAvailability = -1ll;
 constexpr uint64_t kMegabyte = 1024ull * 1024;
@@ -1046,6 +1054,11 @@ void BlobMemoryController::OnMemoryPressure(
   // not take any action on critical memory pressure.
   if (memory_pressure_level ==
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL) {
+    return;
+  }
+
+  if (base::FeatureList::IsEnabled(
+          kInhibitBlobMemoryControllerMemoryPressureResponse)) {
     return;
   }
 

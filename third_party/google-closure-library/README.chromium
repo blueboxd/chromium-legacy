@@ -1,0 +1,17 @@
+Name: Google Closure Library
+Short Name: closure-library
+URL: https://github.com/google/closure-library
+Version: v20191111
+Date: 2019-11-12
+Revision: 6115b7a08f559b5ccf9c1b2a088eabf424ac00d7
+License: Apache 2.0
+License File: LICENSE
+Security Critical: No
+CPEPrefix: cpe:/a:google:closure_library:20191111
+
+Description:
+Google Closure Library is Google's common JavaScript library. It is used in
+Chromium to allow protocol buffers to be serialized/deserialized in JavaScript.
+
+Local Modifications:
+None

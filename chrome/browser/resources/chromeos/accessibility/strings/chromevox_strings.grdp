@@ -2978,5 +2978,8 @@
   <message desc="Describes a gesture to be performed on a touch screen." name="IDS_CHROMEVOX_CLICK_GESTURE">
     Double tap with one finger
   </message>
+  <message desc="The text label for the use pitch changes checkbox." name="IDS_CHROMEVOX_OPTIONS_USE_PITCH_CHANGES_CHECKBOX_LABEL">
+    Change pitch when speaking element types and quoted, deleted, bolded, parenthesized, or capitalized text.
+  </message>
 
 </grit-part>

@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 
+#import <MaterialComponents/MaterialOverlayWindow.h>
+
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
-#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/gtest_support.h"
 

@@ -8,6 +8,10 @@
 #include "base/observer_list_types.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 
+namespace base {
+class Time;
+}
+
 namespace web_app {
 
 class AppRegistrarObserver : public base::CheckedObserver {
@@ -41,6 +45,8 @@ class AppRegistrarObserver : public base::CheckedObserver {
   // |app_id| changed.
   virtual void OnWebAppDisabledStateChanged(const AppId& app_id,
                                             bool is_disabled) {}
+  virtual void OnWebAppLastLaunchTimeChanged(const AppId& app_id,
+                                             const base::Time& time) {}
 };
 
 }  // namespace web_app

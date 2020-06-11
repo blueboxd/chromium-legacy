@@ -438,7 +438,8 @@ void CdmAdapter::RegisterNewKeyCB(StreamType stream_type,
 void CdmAdapter::Decrypt(StreamType stream_type,
                          scoped_refptr<DecoderBuffer> encrypted,
                          DecryptCB decrypt_cb) {
-  DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
+  DVLOG(3) << __func__ << ": "
+           << encrypted->AsHumanReadableString(/*verbose=*/true);
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   ScopedCrashKeyString scoped_crash_key(&g_origin_crash_key, cdm_origin_);
@@ -557,7 +558,8 @@ void CdmAdapter::InitializeVideoDecoder(const VideoDecoderConfig& config,
 
 void CdmAdapter::DecryptAndDecodeAudio(scoped_refptr<DecoderBuffer> encrypted,
                                        const AudioDecodeCB& audio_decode_cb) {
-  DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
+  DVLOG(3) << __func__ << ": "
+           << encrypted->AsHumanReadableString(/*verbose=*/true);
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   ScopedCrashKeyString scoped_crash_key(&g_origin_crash_key, cdm_origin_);
@@ -595,7 +597,8 @@ void CdmAdapter::DecryptAndDecodeAudio(scoped_refptr<DecoderBuffer> encrypted,
 
 void CdmAdapter::DecryptAndDecodeVideo(scoped_refptr<DecoderBuffer> encrypted,
                                        const VideoDecodeCB& video_decode_cb) {
-  DVLOG(3) << __func__ << ": " << encrypted->AsHumanReadableString();
+  DVLOG(3) << __func__ << ": "
+           << encrypted->AsHumanReadableString(/*verbose=*/true);
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   ScopedCrashKeyString scoped_crash_key(&g_origin_crash_key, cdm_origin_);

@@ -390,7 +390,7 @@ public class Fido2ApiTestHelper {
      * @param response The response from the Fido2 API.
      */
     public static void validateGetAssertionResponse(GetAssertionAuthenticatorResponse response) {
-        Assert.assertArrayEquals(response.authenticatorData, TEST_AUTHENTICATOR_DATA);
+        Assert.assertArrayEquals(response.info.authenticatorData, TEST_AUTHENTICATOR_DATA);
         Assert.assertArrayEquals(response.signature, TEST_SIGNATURE);
         Assert.assertArrayEquals(response.info.rawId, TEST_KEY_HANDLE);
         Assert.assertEquals(response.info.id, TEST_ENCODED_KEY_HANDLE);

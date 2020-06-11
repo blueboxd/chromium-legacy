@@ -124,6 +124,17 @@ cipd_archive("http") {
   sources = [ "${root_gen_dir}/fuchsia/http/http/http.far" ]
 }
 
+cipd_archive("web_engine_shell") {
+  package_definition_yaml = "web_engine_shell.yaml"
+  package = "chromium/fuchsia/web_engine_shell-\${targetarch}"
+  description = "Simple command-line embedder for WebEngine."
+
+  deps = [ "//fuchsia/engine:web_engine_shell_pkg" ]
+
+  sources =
+      [ "${root_gen_dir}/fuchsia/engine/web_engine_shell/web_engine_shell.far" ]
+}
+
 _stripped_chromedriver_file = "${root_out_dir}/clang_x64/stripped/chromedriver"
 
 action("strip_chromedriver_binary") {
@@ -249,6 +260,7 @@ group("cipd") {
     ":debug_symbols",
     ":http",
     ":tests",
+    ":web_engine_shell",
     ":webrunner",
   ]
 }

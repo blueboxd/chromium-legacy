@@ -41,7 +41,8 @@ IncognitoMenuView::~IncognitoMenuView() = default;
 
 void IncognitoMenuView::BuildMenu() {
   int incognito_window_count =
-      BrowserList::GetIncognitoSessionsActiveForProfile(browser()->profile());
+      BrowserList::GetOffTheRecordBrowsersActiveForProfile(
+          browser()->profile());
 
   SetIdentityInfo(
       gfx::ImageSkia(),
@@ -62,7 +63,8 @@ void IncognitoMenuView::BuildMenu() {
 base::string16 IncognitoMenuView::GetAccessibleWindowTitle() const {
   return l10n_util::GetPluralStringFUTF16(
       IDS_INCOGNITO_BUBBLE_ACCESSIBLE_TITLE,
-      BrowserList::GetIncognitoSessionsActiveForProfile(browser()->profile()));
+      BrowserList::GetOffTheRecordBrowsersActiveForProfile(
+          browser()->profile()));
 }
 
 void IncognitoMenuView::OnExitButtonClicked() {

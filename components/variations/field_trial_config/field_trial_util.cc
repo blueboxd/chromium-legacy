@@ -19,6 +19,7 @@
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "components/variations/client_filterable_state.h"
 #include "components/variations/field_trial_config/fieldtrial_testing_config.h"
 #include "components/variations/variations_seed_processor.h"
 #include "net/base/escape.h"
@@ -68,6 +69,15 @@ bool HasFormFactor(const FieldTrialTestingExperiment& experiment) {
       return true;
   }
   return experiment.form_factors_size == 0;
+}
+
+// Returns true if the experiment config has a missing |min_os_version| or
+// GetOSVersion() >= |min_os_version|.
+bool HasMinOSVersion(const FieldTrialTestingExperiment& experiment) {
+  if (!experiment.min_os_version)
+    return true;
+  return base::Version(experiment.min_os_version) <=
+         ClientFilterableState::GetOSVersion();
 }
 
 // Records the override ui string config. Mainly used for testing.
@@ -137,9 +147,8 @@ void ChooseExperiment(
   for (size_t i = 0; i < study.experiments_size; ++i) {
     const FieldTrialTestingExperiment* experiment = study.experiments + i;
     if (HasPlatform(*experiment, platform)) {
-      if (!chosen_experiment &&
-          !HasDeviceLevelMismatch(*experiment) &&
-          HasFormFactor(*experiment)) {
+      if (!chosen_experiment && !HasDeviceLevelMismatch(*experiment) &&
+          HasFormFactor(*experiment) && HasMinOSVersion(*experiment)) {
         chosen_experiment = experiment;
       }
 

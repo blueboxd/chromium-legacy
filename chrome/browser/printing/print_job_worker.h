@@ -18,6 +18,10 @@
 #include "printing/print_job_constants.h"
 #include "printing/printing_context.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace printing {
 
 class PrintJob;
@@ -96,6 +100,9 @@ class PrintJobWorker {
 
   // Starts the thread.
   bool Start();
+
+  // Returns the WebContents this work corresponds to.
+  content::WebContents* GetWebContents();
 
  protected:
   // Retrieves the context for testing only.

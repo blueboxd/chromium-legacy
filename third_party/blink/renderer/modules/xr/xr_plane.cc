@@ -8,8 +8,13 @@
 #include "third_party/blink/renderer/modules/xr/type_converters.h"
 #include "third_party/blink/renderer/modules/xr/xr_object_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
-#include "third_party/blink/renderer/modules/xr/xr_rigid_transform.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
+
+namespace {
+
+const char kUnknownPlanePose[] = "Plane pose is unknown.";
+
+}
 
 namespace blink {
 
@@ -92,7 +97,6 @@ HeapVector<Member<DOMPointReadOnly>> XRPlane::polygon() const {
 }
 
 ScriptPromise XRPlane::createAnchor(ScriptState* script_state,
-                                    XRRigidTransform* initial_pose,
                                     ExceptionState& exception_state) {
   DVLOG(2) << __func__;
 
@@ -102,14 +106,37 @@ ScriptPromise XRPlane::createAnchor(ScriptState* script_state,
     return {};
   }
 
-  if (!initial_pose) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      XRSession::kNoRigidTransformSpecified);
+  if (!mojo_from_plane_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                      kUnknownPlanePose);
     return {};
   }
 
+  // Planes are not considered stationary for the purpose of anchor creation
+  // (their poses may change dramatically on a frame-by-frame basis). Grab an
+  // information about reference space that is well-suited for anchor creation
+  // from session:
+  base::Optional<XRSession::ReferenceSpaceInformation>
+      reference_space_information = session_->GetStationaryReferenceSpace();
+
+  if (!reference_space_information) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      XRSession::kUnableToRetrieveMatrix);
+    return {};
+  }
+
+  const TransformationMatrix& mojo_from_space =
+      reference_space_information->mojo_from_space;
+
+  DCHECK(mojo_from_space.IsInvertible());
+
+  auto space_from_mojo = mojo_from_space.Inverse();
+  // We'll create an anchor located at the current plane's pose:
+  auto space_from_anchor = space_from_mojo * (*mojo_from_plane_);
+
   return session_->CreatePlaneAnchorHelper(
-      script_state, initial_pose->TransformMatrix(), id_, exception_state);
+      script_state, space_from_anchor,
+      reference_space_information->native_origin, id_, exception_state);
 }
 
 void XRPlane::Update(const device::mojom::blink::XRPlaneData& plane_data,

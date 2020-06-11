@@ -11,8 +11,8 @@
 #include "base/callback.h"
 #include "base/check.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
 #include "base/stl_util.h"
+#include "base/supports_user_data.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/payments/content/developer_console_logger.h"
 #include "components/payments/content/installable_payment_app_crawler.h"
@@ -88,10 +88,28 @@ void RemovePortNumbersFromScopesForTest(
   }
 }
 
-class SelfDeletingServiceWorkerPaymentAppFinder {
+class SelfDeletingServiceWorkerPaymentAppFinder
+    : public base::SupportsUserData::Data {
  public:
-  SelfDeletingServiceWorkerPaymentAppFinder() {}
-  ~SelfDeletingServiceWorkerPaymentAppFinder() {}
+  static base::WeakPtr<SelfDeletingServiceWorkerPaymentAppFinder>
+  CreateAndSetOwnedBy(base::SupportsUserData* owner) {
+    auto owned =
+        std::make_unique<SelfDeletingServiceWorkerPaymentAppFinder>(owner);
+    auto* pointer = owned.get();
+    owner->SetUserData(pointer, std::move(owned));
+    return pointer->weak_ptr_factory_.GetWeakPtr();
+  }
+
+  explicit SelfDeletingServiceWorkerPaymentAppFinder(
+      base::SupportsUserData* owner)
+      : owner_(owner) {}
+
+  SelfDeletingServiceWorkerPaymentAppFinder(
+      const SelfDeletingServiceWorkerPaymentAppFinder& other) = delete;
+  SelfDeletingServiceWorkerPaymentAppFinder& operator=(
+      const SelfDeletingServiceWorkerPaymentAppFinder& other) = delete;
+
+  ~SelfDeletingServiceWorkerPaymentAppFinder() override = default;
 
   // After |callback| has fired, the factory refreshes its own cache in the
   // background. Once the cache has been refreshed, the factory invokes the
@@ -101,7 +119,6 @@ class SelfDeletingServiceWorkerPaymentAppFinder {
   void GetAllPaymentApps(
       const url::Origin& merchant_origin,
       content::RenderFrameHost* initiator_render_frame_host,
-      content::WebContents* web_contents,
       std::unique_ptr<PaymentManifestDownloader> downloader,
       scoped_refptr<PaymentManifestWebDataService> cache,
       const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
@@ -111,6 +128,8 @@ class SelfDeletingServiceWorkerPaymentAppFinder {
     DCHECK(!verifier_);
 
     downloader_ = std::move(downloader);
+    content::WebContents* web_contents =
+        content::WebContents::FromRenderFrameHost(initiator_render_frame_host);
     parser_ = std::make_unique<PaymentManifestParser>(
         std::make_unique<DeveloperConsoleLogger>(web_contents));
     cache_ = cache;
@@ -149,6 +168,11 @@ class SelfDeletingServiceWorkerPaymentAppFinder {
   }
 
  private:
+  // base::SupportsUserData::Data implementation.
+  std::unique_ptr<Data> Clone() override {
+    return nullptr;  // Cloning is not supported.
+  }
+
   static void RemoveUnrequestedMethods(
       const std::vector<mojom::PaymentMethodDataPtr>& requested_method_data,
       content::PaymentAppProvider::PaymentApps* apps) {
@@ -251,9 +275,18 @@ class SelfDeletingServiceWorkerPaymentAppFinder {
       parser_.reset();
       std::move(finished_using_resources_callback_).Run();
 
-      base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+      base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
+          FROM_HERE,
+          base::BindOnce(&SelfDeletingServiceWorkerPaymentAppFinder::DeleteSelf,
+                         weak_ptr_factory_.GetWeakPtr()));
     }
   }
+
+  void DeleteSelf() { owner_->RemoveUserData(this); }
+
+  // |owner_| owns this SelfDeletingServiceWorkerPaymentAppFinder, so it is
+  // always valid.
+  base::SupportsUserData* owner_;
 
   std::unique_ptr<PaymentManifestDownloader> downloader_;
   std::unique_ptr<PaymentManifestParser> parser_;
@@ -273,21 +306,14 @@ class SelfDeletingServiceWorkerPaymentAppFinder {
 
   base::WeakPtrFactory<SelfDeletingServiceWorkerPaymentAppFinder>
       weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SelfDeletingServiceWorkerPaymentAppFinder);
 };
 
 }  // namespace
 
-// static
-ServiceWorkerPaymentAppFinder* ServiceWorkerPaymentAppFinder::GetInstance() {
-  return base::Singleton<ServiceWorkerPaymentAppFinder>::get();
-}
+ServiceWorkerPaymentAppFinder::~ServiceWorkerPaymentAppFinder() = default;
 
 void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
     const url::Origin& merchant_origin,
-    content::RenderFrameHost* initiator_render_frame_host,
-    content::WebContents* web_contents,
     scoped_refptr<PaymentManifestWebDataService> cache,
     std::vector<mojom::PaymentMethodDataPtr> requested_method_data,
     bool may_crawl_for_installable_payment_apps,
@@ -308,8 +334,12 @@ void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
     return;
   }
 
-  SelfDeletingServiceWorkerPaymentAppFinder* self_delete_factory =
-      new SelfDeletingServiceWorkerPaymentAppFinder();
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh_);
+  auto self_delete_factory =
+      SelfDeletingServiceWorkerPaymentAppFinder::CreateAndSetOwnedBy(
+          web_contents);
+
   std::unique_ptr<PaymentManifestDownloader> downloader;
   if (test_downloader_ != nullptr) {
     downloader = std::move(test_downloader_);
@@ -323,9 +353,9 @@ void ServiceWorkerPaymentAppFinder::GetAllPaymentApps(
   }
 
   self_delete_factory->GetAllPaymentApps(
-      merchant_origin, initiator_render_frame_host, web_contents,
-      std::move(downloader), cache, requested_method_data,
-      may_crawl_for_installable_payment_apps, std::move(callback),
+      merchant_origin, rfh_, std::move(downloader), cache,
+      requested_method_data, may_crawl_for_installable_payment_apps,
+      std::move(callback),
       std::move(finished_writing_cache_callback_for_testing));
 }
 
@@ -348,16 +378,18 @@ void ServiceWorkerPaymentAppFinder::IgnorePaymentMethodForTest(
   ignored_methods_.insert(method);
 }
 
-ServiceWorkerPaymentAppFinder::ServiceWorkerPaymentAppFinder()
-    : ignored_methods_({methods::kGooglePlayBilling}),
+ServiceWorkerPaymentAppFinder::ServiceWorkerPaymentAppFinder(
+    content::RenderFrameHost* rfh)
+    : rfh_(rfh),
+      ignored_methods_({methods::kGooglePlayBilling}),
       test_downloader_(nullptr) {}
-
-ServiceWorkerPaymentAppFinder::~ServiceWorkerPaymentAppFinder() = default;
 
 void ServiceWorkerPaymentAppFinder::
     SetDownloaderAndIgnorePortInOriginComparisonForTesting(
         std::unique_ptr<PaymentManifestDownloader> downloader) {
   test_downloader_ = std::move(downloader);
 }
+
+RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(ServiceWorkerPaymentAppFinder)
 
 }  // namespace payments

@@ -17,19 +17,35 @@
     }
   `);
 
-  var setup = [
-    'var proto = Object.create(HTMLElement.prototype);',
-    'proto.createdCallback = function() { output(\'Invoked createdCallback.\'); };',
-    'proto.attachedCallback = function() { output(\'Invoked attachedCallback.\'); };',
-    'proto.detachedCallback = function() { output(\'Invoked detachedCallback.\'); };',
-    'proto.attributeChangedCallback = function() { output(\'Invoked attributeChangedCallback.\'); };',
-    'CustomElement = document.registerElement(\'x-foo\', {prototype: proto});'
-  ].join('\n');
+  var setup = `
+      class CustomElement extends HTMLElement {
+        constructor() {
+          super();
+          output('Invoked constructor.');
+        }
+        connectedCallback() {
+          output('Invoked connectedCallback.');
+        }
+        disconnectedCallback() {
+          output('Invoked disconnectedCallback.');
+        }
+        adoptedCallback() {
+          output('Invoked adoptedCallback.');
+        }
+        attributeChangedCallback() {
+          output('Invoked attributeChangedCallback.');
+        }
+        static get observedAttributes() { return ['x']; }
+      }
+      customElements.define('x-foo', CustomElement);
+    `;
 
-  var lifecycleCallbacks = [
-    'created = new CustomElement();', 'created.setAttribute(\'x\', \'1\');', 'document.body.appendChild(created);',
-    'created.remove();'
-  ].join('\n');
+  var lifecycleCallbacks = `
+    created = new CustomElement();
+    created.setAttribute('x', '1');
+    document.body.appendChild(created);
+    created.remove();
+  `;
 
   SourcesTestRunner.startDebuggerTest(step1);
 

@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -56,6 +57,26 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // query the corresponding SaveCardMessageWithLinks from legalMessages when
 // configuring the cell.
 @property(nonatomic, assign) int legalMessagesStartingIndex;
+
+// Prefs updated by InfobarSaveCardModalConsumer.
+// Cardholder name to be displayed.
+@property(nonatomic, copy) NSString* cardholderName;
+// Card Issuer icon image to be displayed.
+@property(nonatomic, strong) UIImage* cardIssuerIcon;
+// Card Number to be displayed.
+@property(nonatomic, copy) NSString* cardNumber;
+// Card Expiration Month to be displayed
+@property(nonatomic, copy) NSString* expirationMonth;
+// Card Expiration Year to be displayed.
+@property(nonatomic, copy) NSString* expirationYear;
+// Card related Legal Messages to be displayed.
+@property(nonatomic, copy)
+    NSMutableArray<SaveCardMessageWithLinks*>* legalMessages;
+// YES if the Card being displayed has been saved.
+@property(nonatomic, assign) BOOL currentCardSaved;
+// Set to YES if the Modal should support editing.
+@property(nonatomic, assign) BOOL supportsEditing;
+
 // Item for displaying and editing the cardholder name.
 @property(nonatomic, strong) TableViewTextEditItem* cardholderNameItem;
 // Item for displaying and editing the expiration month.
@@ -194,6 +215,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
         setHasValidText:[self isExpirationYearValid:self.expirationYear]];
     [self updateSaveCardButtonState];
   }
+}
+
+#pragma mark - InfobarSaveCardModalConsumer
+
+- (void)setupModalViewControllerWithPrefs:(NSDictionary*)prefs {
+  self.cardholderName = [prefs[kCardholderNamePrefKey] stringValue];
+  self.cardIssuerIcon = prefs[kCardIssuerIconNamePrefKey];
+  self.cardNumber = prefs[kCardNumberPrefKey];
+  self.expirationMonth = prefs[kExpirationMonthPrefKey];
+  self.expirationYear = prefs[kExpirationYearPrefKey];
+  self.legalMessages = prefs[kLegalMessagesPrefKey];
+  self.currentCardSaved = [prefs[kCurrentCardSavedPrefKey] boolValue];
+  self.supportsEditing = [prefs[kSupportsEditingPrefKey] boolValue];
+  [self.tableView reloadData];
 }
 
 #pragma mark - UITableViewDataSource

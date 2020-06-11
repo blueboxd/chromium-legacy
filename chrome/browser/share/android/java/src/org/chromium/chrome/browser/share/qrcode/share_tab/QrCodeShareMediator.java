@@ -134,12 +134,11 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
     }
 
     private Bitmap addUrlToBitmap(Bitmap bitmap, String url) {
-        // Assumes QR code bitmap is a square.
         int qrCodeSize = mContext.getResources().getDimensionPixelSize(
                 org.chromium.chrome.browser.share.R.dimen.qrcode_size);
         int fontSize = mContext.getResources().getDimensionPixelSize(R.dimen.text_size_large);
-        int textLeftPadding = mContext.getResources().getDimensionPixelSize(
-                org.chromium.chrome.browser.share.R.dimen.url_box_left_padding);
+        int sidePadding = mContext.getResources().getDimensionPixelSize(
+                org.chromium.chrome.browser.share.R.dimen.side_padding);
         int textTopPadding = mContext.getResources().getDimensionPixelSize(
                 org.chromium.chrome.browser.share.R.dimen.url_box_top_padding);
         int textBottomPadding = mContext.getResources().getDimensionPixelSize(
@@ -150,24 +149,22 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
         mTextPaint.setColor(android.graphics.Color.BLACK);
         mTextPaint.setTextSize(fontSize);
 
-        // New bitmap should have left and right margins of 25% of QR code bitmap.
-        int width = (int) (qrCodeSize * 1.5);
-        FixedLineCountLayout mTextLayout = new FixedLineCountLayout(url, mTextPaint,
-                width - textLeftPadding * 2, Alignment.ALIGN_CENTER, 1.0f, 0.0f, true, 2);
+        // Text is as wide as the QR code.
+        FixedLineCountLayout mTextLayout = new FixedLineCountLayout(
+                url, mTextPaint, qrCodeSize, Alignment.ALIGN_CENTER, 1.0f, 0.0f, true, 2);
 
         // New bitmap should be long enough to fit the url with its margins, the QR code bitmap and
-        // 25% of it as bottom margin.
-        int height = textTopPadding + mTextLayout.getHeight() + textBottomPadding
-                + (int) (qrCodeSize * 1.25);
+        // equal padding from the bottom.
+        int height =
+                (textTopPadding + mTextLayout.getHeight() + textBottomPadding) * 2 + qrCodeSize;
+        int width = qrCodeSize + 2 * sidePadding;
         Bitmap newBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         Canvas canvas = new Canvas(newBitmap);
         canvas.drawColor(android.graphics.Color.WHITE);
-        canvas.translate(textLeftPadding, textTopPadding);
+        canvas.translate(sidePadding, textTopPadding);
         mTextLayout.draw(canvas);
-        canvas.drawBitmap(Bitmap.createScaledBitmap(bitmap, qrCodeSize, qrCodeSize, false),
-                (int) ((width - qrCodeSize) / 2) - textLeftPadding,
+        canvas.drawBitmap(Bitmap.createScaledBitmap(bitmap, qrCodeSize, qrCodeSize, false), 0,
                 mTextLayout.getHeight() + textBottomPadding, mTextPaint);
-
         return newBitmap;
     }
 

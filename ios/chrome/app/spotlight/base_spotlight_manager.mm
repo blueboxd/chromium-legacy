@@ -6,6 +6,8 @@
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
+#import <MaterialComponents/MaterialTypography.h>
+
 #include "base/bind.h"
 #include "base/hash/md5.h"
 #include "base/strings/sys_string_conversions.h"
@@ -17,7 +19,6 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/spotlight/spotlight_provider.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "net/base/mac/url_conversions.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "ui/base/l10n/l10n_util.h"

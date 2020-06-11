@@ -21,6 +21,8 @@ class TestAppRegistryController : public AppRegistryController {
   void SetAppIsDisabled(const AppId& app_id, bool is_disabled) override;
   void SetAppIsLocallyInstalled(const AppId& app_id,
                                 bool is_locally_installed) override;
+  void SetAppLastLaunchTime(const AppId& app_id,
+                            const base::Time& time) override;
   WebAppSyncBridge* AsWebAppSyncBridge() override;
 };
 

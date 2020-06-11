@@ -72,6 +72,8 @@ class AdTaggingClusterTelemetry(perf_benchmark.PerfBenchmark):
         'Ads.ResourceUsage.Size.Network.Mainframe.VanillaResource',
         'Ads.ResourceUsage.Size.Network.Subframe.AdResource',
         'Ads.ResourceUsage.Size.Network.Subframe.VanillaResource',
+        'PageLoad.Clients.Ads.AllPages.NonAdNetworkBytes',
+        'PageLoad.Clients.Ads.AllPages.PercentNetworkBytesAds',
         'PageLoad.Clients.Ads.Cpu.AdFrames.Aggregate.TotalUsage',
         'PageLoad.Clients.Ads.Cpu.FullPage.TotalUsage',
         'PageLoad.Clients.Ads.FrameCounts.AdFrames.Total',

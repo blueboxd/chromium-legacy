@@ -46,6 +46,7 @@ class SerialPortManagerImpl : public mojom::SerialPortManager,
   void GetDevices(GetDevicesCallback callback) override;
   void GetPort(
       const base::UnguessableToken& token,
+      bool use_alternate_path,
       mojo::PendingReceiver<mojom::SerialPort> receiver,
       mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher) override;
 

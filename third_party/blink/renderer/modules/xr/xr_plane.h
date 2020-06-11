@@ -17,7 +17,6 @@
 namespace blink {
 
 class ExceptionState;
-class XRRigidTransform;
 class XRSession;
 class XRSpace;
 
@@ -43,7 +42,6 @@ class XRPlane : public ScriptWrappable {
   double lastChangedTime() const;
 
   ScriptPromise createAnchor(ScriptState* script_state,
-                             XRRigidTransform* initial_pose,
                              ExceptionState& exception_state);
 
   // Updates plane data from passed in |plane_data|. The resulting instance

@@ -78,8 +78,7 @@ void TextPainterBase::UpdateGraphicsContext(
   if (text_style.stroke_width > 0) {
     TextDrawingModeFlags new_mode = mode | kTextModeStroke;
     if (mode != new_mode) {
-      if (!state_saver.Saved())
-        state_saver.Save();
+      state_saver.SaveIfNeeded();
       context.SetTextDrawingMode(new_mode);
       mode = new_mode;
     }
@@ -96,8 +95,7 @@ void TextPainterBase::UpdateGraphicsContext(
   }
 
   if (text_style.shadow) {
-    if (!state_saver.Saved())
-      state_saver.Save();
+    state_saver.SaveIfNeeded();
     context.SetDrawLooper(text_style.shadow->CreateDrawLooper(
         DrawLooperBuilder::kShadowIgnoresAlpha, text_style.current_color,
         horizontal));

@@ -311,6 +311,7 @@ class FakeSerialPortManager : public device::mojom::SerialPortManager {
   }
 
   void GetPort(const base::UnguessableToken& token,
+               bool use_alternate_path,
                mojo::PendingReceiver<device::mojom::SerialPort> receiver,
                mojo::PendingRemote<device::mojom::SerialPortConnectionWatcher>
                    watcher) override {

@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
+#include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -222,7 +224,8 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
   // app launch will provide an engagement boost to the origin.
   SiteEngagementService::Get(profile_)->SetLastShortcutLaunchTime(web_contents,
                                                                   url);
-
+  provider_->registry_controller().SetAppLastLaunchTime(params.app_id,
+                                                        base::Time::Now());
   // Refresh the app banner added to homescreen event. The user may have
   // cleared their browsing data since installing the app, which removes the
   // event and will potentially permit a banner to be shown for the site.

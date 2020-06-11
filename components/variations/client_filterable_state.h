@@ -34,6 +34,9 @@ using IsEnterpriseFunction = base::OnceCallback<bool()>;
 struct ClientFilterableState {
   static Study::Platform GetCurrentPlatform();
 
+  // base::Version used in {min,max}_os_version filtering.
+  static base::Version GetOSVersion();
+
   explicit ClientFilterableState(IsEnterpriseFunction is_enterprise_function);
   ~ClientFilterableState();
 

@@ -396,7 +396,7 @@ TEST_F(AssistantPageViewTest, ShouldShowOnboardingWhenOpening) {
   ShowAssistantUi();
 
   EXPECT_TRUE(onboarding_view()->IsDrawn());
-  EXPECT_EQ(nullptr, greeting_label());
+  EXPECT_FALSE(greeting_label()->IsDrawn());
 }
 
 TEST_F(AssistantPageViewTest, ShouldDismissGreetingLabelAfterQuery) {
@@ -422,7 +422,7 @@ TEST_F(AssistantPageViewTest, ShouldDismissOnboardingAfterQuery) {
   MockTextInteraction().WithTextResponse("The response");
 
   EXPECT_FALSE(onboarding_view()->IsDrawn());
-  EXPECT_EQ(nullptr, greeting_label());
+  EXPECT_FALSE(greeting_label()->IsDrawn());
 }
 
 TEST_F(AssistantPageViewTest, ShouldShowGreetingLabelAgainAfterReopening) {
@@ -460,7 +460,7 @@ TEST_F(AssistantPageViewTest, ShouldShowOnboardingAgainAfterReopening) {
   ShowAssistantUi();
 
   EXPECT_TRUE(onboarding_view()->IsDrawn());
-  EXPECT_EQ(nullptr, greeting_label());
+  EXPECT_FALSE(greeting_label()->IsDrawn());
 }
 
 TEST_F(AssistantPageViewTest,
@@ -484,7 +484,7 @@ TEST_F(AssistantPageViewTest,
   ShowAssistantUi(AssistantEntryPoint::kLauncherSearchResult);
 
   EXPECT_FALSE(onboarding_view()->IsDrawn());
-  EXPECT_EQ(nullptr, greeting_label());
+  EXPECT_FALSE(greeting_label()->IsDrawn());
 }
 
 TEST_F(AssistantPageViewTest, ShouldFocusMicViewWhenPressingVoiceInputToggle) {

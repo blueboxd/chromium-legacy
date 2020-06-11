@@ -612,8 +612,9 @@ TEST_F(DisplayPrefsTest, PreventStore) {
   // display preferences should not stored meanwhile.
   Shell* shell = Shell::Get();
 
-  display::ManagedDisplayMode old_mode(gfx::Size(400, 300));
-  display::ManagedDisplayMode new_mode(gfx::Size(500, 400));
+  display::ManagedDisplayMode old_mode(gfx::Size(400, 300), 60.0f, false,
+                                       false);
+  display::ManagedDisplayMode new_mode(gfx::Size(500, 400), 60.0f, false, true);
   EXPECT_TRUE(shell->resolution_notification_controller()
                   ->PrepareNotificationAndSetDisplayMode(
                       id, old_mode, new_mode, mojom::DisplayConfigSource::kUser,

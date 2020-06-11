@@ -406,8 +406,6 @@ const char kInfobarOverflowBadgeShownUserAction[] =
     params.source = InfobarOverlayInsertionSource::kBadge;
     InfobarOverlayRequestInserter::FromWebState(self.webState)
         ->InsertOverlayRequest(params);
-    // TODO(crbug.com/1071914): Add a placeholder request to the banner queue
-    // to prevent banners from displaying during the modal presentation.
   } else {
     [self.dispatcher displayModalInfobar:infobarType];
   }

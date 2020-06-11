@@ -106,7 +106,10 @@ void BinaryUploadService::MaybeUploadForDeepScanning(
   }
 
   if (!can_upload_enterprise_data_.has_value()) {
+    // Get the URL first since |request| is about to move.
+    GURL url = request->url();
     IsAuthorized(
+        std::move(url),
         base::BindOnce(&BinaryUploadService::MaybeUploadForDeepScanningCallback,
                        weakptr_factory_.GetWeakPtr(), std::move(request)));
     return;
@@ -237,9 +240,12 @@ void BinaryUploadService::OnGetRequestData(Request* request,
   request->deep_scanning_request().SerializeToString(&metadata);
   base::Base64Encode(metadata, &metadata);
 
+  GURL url = request->url().is_valid()
+                 ? request->url()
+                 : GetUploadUrl(IsAdvancedProtectionRequest(*request));
   auto upload_request = MultipartUploadRequest::Create(
-      url_loader_factory_, GetUploadUrl(IsAdvancedProtectionRequest(*request)),
-      metadata, data.contents, traffic_annotation,
+      url_loader_factory_, std::move(url), metadata, data.contents,
+      traffic_annotation,
       base::BindOnce(&BinaryUploadService::OnUploadComplete,
                      weakptr_factory_.GetWeakPtr(), request));
   upload_request->Start();
@@ -418,10 +424,10 @@ void BinaryUploadService::RecordRequestMetrics(
 
 BinaryUploadService::Request::Data::Data() = default;
 
-BinaryUploadService::Request::Request(Callback callback)
-    : callback_(std::move(callback)) {}
+BinaryUploadService::Request::Request(Callback callback, GURL url)
+    : callback_(std::move(callback)), url_(url) {}
 
-BinaryUploadService::Request::~Request() {}
+BinaryUploadService::Request::~Request() = default;
 
 void BinaryUploadService::Request::set_request_dlp_scan(
     DlpDeepScanningClientRequest dlp_request) {
@@ -470,8 +476,9 @@ bool BinaryUploadService::IsActive(Request* request) {
 
 class ValidateDataUploadRequest : public BinaryUploadService::Request {
  public:
-  explicit ValidateDataUploadRequest(BinaryUploadService::Callback callback)
-      : BinaryUploadService::Request(std::move(callback)) {}
+  explicit ValidateDataUploadRequest(BinaryUploadService::Callback callback,
+                                     GURL url)
+      : BinaryUploadService::Request(std::move(callback), url) {}
   ValidateDataUploadRequest(const ValidateDataUploadRequest&) = delete;
   ValidateDataUploadRequest& operator=(const ValidateDataUploadRequest&) =
       delete;
@@ -487,12 +494,15 @@ inline void ValidateDataUploadRequest::GetRequestData(DataCallback callback) {
                           BinaryUploadService::Request::Data());
 }
 
-void BinaryUploadService::IsAuthorized(AuthorizationCallback callback) {
+void BinaryUploadService::IsAuthorized(const GURL& url,
+                                       AuthorizationCallback callback) {
   // Start |timer_| on the first call to IsAuthorized. This is necessary in
   // order to invalidate the authorization every 24 hours.
   if (!timer_.IsRunning()) {
-    timer_.Start(FROM_HERE, base::TimeDelta::FromHours(24), this,
-                 &BinaryUploadService::ResetAuthorizationData);
+    timer_.Start(
+        FROM_HERE, base::TimeDelta::FromHours(24),
+        base::BindRepeating(&BinaryUploadService::ResetAuthorizationData,
+                            weakptr_factory_.GetWeakPtr(), url));
   }
 
   if (!can_upload_enterprise_data_.has_value()) {
@@ -507,9 +517,11 @@ void BinaryUploadService::IsAuthorized(AuthorizationCallback callback) {
       }
 
       pending_validate_data_upload_request_ = true;
-      auto request = std::make_unique<ValidateDataUploadRequest>(base::BindOnce(
-          &BinaryUploadService::ValidateDataUploadRequestCallback,
-          weakptr_factory_.GetWeakPtr()));
+      auto request = std::make_unique<ValidateDataUploadRequest>(
+          base::BindOnce(
+              &BinaryUploadService::ValidateDataUploadRequestCallback,
+              weakptr_factory_.GetWeakPtr()),
+          url);
       request->set_device_token(dm_token.value());
       UploadForDeepScanning(std::move(request));
     }
@@ -533,13 +545,13 @@ void BinaryUploadService::RunAuthorizationCallbacks() {
   authorization_callbacks_.clear();
 }
 
-void BinaryUploadService::ResetAuthorizationData() {
+void BinaryUploadService::ResetAuthorizationData(const GURL& url) {
   // Setting |can_upload_enterprise_data_| to base::nullopt will make the next
   // call to IsAuthorized send out a request to validate data uploads.
   can_upload_enterprise_data_ = base::nullopt;
 
   // Call IsAuthorized  to update |can_upload_enterprise_data_| right away.
-  IsAuthorized(base::DoNothing());
+  IsAuthorized(url, base::DoNothing());
 }
 
 void BinaryUploadService::Shutdown() {

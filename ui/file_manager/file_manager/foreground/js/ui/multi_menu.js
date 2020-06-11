@@ -530,7 +530,7 @@ cr.define('cr.ui', () => {
       this.showingEvents_.add(this.menu, 'contextmenu', this);
       this.showingEvents_.add(this.menu, 'activate', this);
       this.observedElement_ = this.parentElement;
-      this.observer_.observe(this.observedElement_);
+      this.observer_.observe(assert(this.observedElement_));
       this.positionMenu_();
 
       if (shouldSetFocus) {
@@ -610,7 +610,7 @@ cr.define('cr.ui', () => {
         this.focus();
       }
 
-      this.observer_.unobserve(this.observedElement_);
+      this.observer_.unobserve(assert(this.observedElement_));
 
       const event = new UIEvent(
           'menuhide', {bubbles: true, cancelable: false, view: window});

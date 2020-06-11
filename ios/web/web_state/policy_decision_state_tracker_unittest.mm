@@ -19,9 +19,9 @@ namespace web {
 class PolicyDecisionStateTrackerTest : public PlatformTest {
  public:
   PolicyDecisionStateTrackerTest()
-      : policy_decision_state_tracker_(
-            base::Bind(&PolicyDecisionStateTrackerTest::OnDecisionDetermined,
-                       base::Unretained(this))) {}
+      : policy_decision_state_tracker_(base::BindOnce(
+            &PolicyDecisionStateTrackerTest::OnDecisionDetermined,
+            base::Unretained(this))) {}
 
   void OnDecisionDetermined(
       WebStatePolicyDecider::PolicyDecision policy_decision) {

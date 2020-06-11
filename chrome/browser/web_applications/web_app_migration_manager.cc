@@ -191,7 +191,8 @@ std::unique_ptr<WebApp> WebAppMigrationManager::MigrateBookmarkApp(
   web_app->SetName(bookmark_app_registrar_.GetAppShortName(app_id));
   web_app->SetDescription(bookmark_app_registrar_.GetAppDescription(app_id));
   web_app->SetLaunchUrl(bookmark_app_registrar_.GetAppLaunchURL(app_id));
-
+  web_app->SetLastLaunchTime(
+      bookmark_app_registrar_.GetAppLastLaunchTime(app_id));
   base::Optional<GURL> scope = bookmark_app_registrar_.GetAppScope(app_id);
   if (scope)
     web_app->SetScope(*scope);

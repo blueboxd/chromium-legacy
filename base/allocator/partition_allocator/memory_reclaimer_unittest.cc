@@ -37,7 +37,7 @@ class PartitionAllocMemoryReclaimerTest : public ::testing::Test {
   void SetUp() override {
     PartitionAllocGlobalInit(HandleOOM);
     PartitionAllocMemoryReclaimer::Instance()->ResetForTesting();
-    allocator_ = std::make_unique<PartitionAllocatorGeneric>();
+    allocator_ = std::make_unique<PartitionAllocator>();
     allocator_->init();
   }
 
@@ -59,7 +59,7 @@ class PartitionAllocMemoryReclaimerTest : public ::testing::Test {
   }
 
   test::TaskEnvironment task_environment_;
-  std::unique_ptr<PartitionAllocatorGeneric> allocator_;
+  std::unique_ptr<PartitionAllocator> allocator_;
 };
 
 TEST_F(PartitionAllocMemoryReclaimerTest, Simple) {
@@ -70,7 +70,7 @@ TEST_F(PartitionAllocMemoryReclaimerTest, Simple) {
 }
 
 TEST_F(PartitionAllocMemoryReclaimerTest, FreesMemory) {
-  PartitionRootGeneric* root = allocator_->root();
+  PartitionRoot<internal::ThreadSafe>* root = allocator_->root();
 
   size_t committed_initially = root->total_size_of_committed_pages;
   AllocateAndFree();
@@ -87,7 +87,7 @@ TEST_F(PartitionAllocMemoryReclaimerTest, FreesMemory) {
 }
 
 TEST_F(PartitionAllocMemoryReclaimerTest, Reclaim) {
-  PartitionRootGeneric* root = allocator_->root();
+  PartitionRoot<internal::ThreadSafe>* root = allocator_->root();
   size_t committed_initially = root->total_size_of_committed_pages;
 
   {

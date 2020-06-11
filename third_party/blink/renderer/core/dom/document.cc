@@ -1092,32 +1092,6 @@ void Document::SetSecureContextModeForTesting(SecureContextMode mode) {
   GetSecurityContext().SetSecureContextModeForTesting(mode);
 }
 
-bool Document::IsFeatureEnabled(mojom::blink::FeaturePolicyFeature feature,
-                                ReportOptions report_on_failure,
-                                const String& message) const {
-  return GetExecutionContext() && GetExecutionContext()->IsFeatureEnabled(
-                                      feature, report_on_failure, message);
-}
-
-bool Document::IsFeatureEnabled(mojom::blink::DocumentPolicyFeature feature,
-                                ReportOptions report_option,
-                                const String& message,
-                                const String& source_file) const {
-  return GetExecutionContext() &&
-         GetExecutionContext()->IsFeatureEnabled(feature, report_option,
-                                                 message, source_file);
-}
-
-bool Document::IsFeatureEnabled(mojom::blink::DocumentPolicyFeature feature,
-                                PolicyValue threshold_value,
-                                ReportOptions report_option,
-                                const String& message,
-                                const String& source_file) const {
-  return GetExecutionContext() &&
-         GetExecutionContext()->IsFeatureEnabled(
-             feature, threshold_value, report_option, message, source_file);
-}
-
 String Document::addressSpaceForBindings(ScriptState* script_state) const {
   // "public" is the lowest-privilege value.
   if (!script_state->ContextIsValid())
@@ -5977,18 +5951,18 @@ void Document::setDomain(const String& raw_domain,
                          ExceptionState& exception_state) {
   UseCounter::Count(*this, WebFeature::kDocumentSetDomain);
 
-  const String feature_policy_error =
-      "Setting `document.domain` is disabled by Feature Policy.";
-  if (!IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kDocumentDomain,
-                        ReportOptions::kReportOnFailure,
-                        feature_policy_error)) {
-    exception_state.ThrowSecurityError(feature_policy_error);
-    return;
-  }
-
   if (!dom_window_) {
     exception_state.ThrowSecurityError(
         "A browsing context is required to set a domain.");
+    return;
+  }
+
+  const String feature_policy_error =
+      "Setting `document.domain` is disabled by Feature Policy.";
+  if (!GetExecutionContext()->IsFeatureEnabled(
+          mojom::blink::FeaturePolicyFeature::kDocumentDomain,
+          ReportOptions::kReportOnFailure, feature_policy_error)) {
+    exception_state.ThrowSecurityError(feature_policy_error);
     return;
   }
 
@@ -7217,9 +7191,9 @@ bool Document::AllowedToUseDynamicMarkUpInsertion(
   if (!RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
     return true;
   }
-  if (!GetFrame() ||
-      IsFeatureEnabled(mojom::blink::FeaturePolicyFeature::kDocumentWrite,
-                       ReportOptions::kReportOnFailure)) {
+  if (!GetFrame() || GetExecutionContext()->IsFeatureEnabled(
+                         mojom::blink::FeaturePolicyFeature::kDocumentWrite,
+                         ReportOptions::kReportOnFailure)) {
     return true;
   }
 
@@ -8454,7 +8428,7 @@ bool Document::IsFocusAllowed() const {
   CountUse(uma_type);
   if (!RuntimeEnabledFeatures::BlockingFocusWithoutUserActivationEnabled())
     return true;
-  return IsFeatureEnabled(
+  return GetExecutionContext()->IsFeatureEnabled(
       mojom::blink::FeaturePolicyFeature::kFocusWithoutUserActivation);
 }
 

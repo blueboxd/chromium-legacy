@@ -59,6 +59,11 @@ bool RelList::ValidateTokenValue(const AtomicString& token_value,
         token_value == "webbundle") {
       return true;
     }
+    if (RuntimeEnabledFeatures::MediaFeedsEnabled(
+            &GetElement().GetDocument()) ||
+        token_value == "media-feed") {
+      return true;
+    }
   } else if ((GetElement().HasTagName(html_names::kATag) ||
               GetElement().HasTagName(html_names::kAreaTag)) &&
              SupportedTokensAnchorAndArea().Contains(token_value)) {

@@ -144,8 +144,8 @@ void SearchHandler::AddParentResults(
         }
 
         // Top-level subpage.
-        it = AddSectionResultIfPossible(
-            it, metadata.section, result->relevance_score, search_results);
+        it = AddSectionResultIfPossible(it, result, metadata.section,
+                                        search_results);
         break;
       }
 
@@ -162,9 +162,8 @@ void SearchHandler::AddParentResults(
         }
 
         // Top-level setting.
-        it =
-            AddSectionResultIfPossible(it, metadata.primary.first,
-                                       result->relevance_score, search_results);
+        it = AddSectionResultIfPossible(it, result, metadata.primary.first,
+                                        search_results);
         break;
       }
     }
@@ -176,16 +175,23 @@ void SearchHandler::AddParentResults(
 std::vector<mojom::SearchResultPtr>::iterator
 SearchHandler::AddSectionResultIfPossible(
     const std::vector<mojom::SearchResultPtr>::iterator& curr_position,
+    const mojom::SearchResultPtr& child_result,
     mojom::Section section,
-    double relevance_score,
     std::vector<mojom::SearchResultPtr>* results) const {
   // If |results| already includes |section|, do not add it again.
   if (ContainsSectionResult(*results, section))
     return curr_position;
 
-  return results->insert(
-      curr_position + 1,
-      hierarchy_->GetSectionMetadata(section).ToSearchResult(relevance_score));
+  mojom::SearchResultPtr section_result =
+      hierarchy_->GetSectionMetadata(section).ToSearchResult(
+          child_result->relevance_score);
+
+  // Don't add a result for a parent section if it has the exact same text as
+  // the child result, since this results in a broken-looking UI.
+  if (section_result->result_text == child_result->result_text)
+    return curr_position;
+
+  return results->insert(curr_position + 1, std::move(section_result));
 }
 
 std::vector<mojom::SearchResultPtr>::iterator

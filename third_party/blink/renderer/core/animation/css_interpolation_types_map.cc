@@ -60,7 +60,7 @@ CSSInterpolationTypesMap::CSSInterpolationTypesMap(
     const PropertyRegistry* registry,
     const Document& document)
     : registry_(registry) {
-  allow_all_animations_ = document.IsFeatureEnabled(
+  allow_all_animations_ = document.GetExecutionContext()->IsFeatureEnabled(
       blink::mojom::blink::DocumentPolicyFeature::kLayoutAnimations);
 }
 

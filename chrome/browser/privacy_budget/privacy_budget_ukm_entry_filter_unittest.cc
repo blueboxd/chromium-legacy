@@ -39,7 +39,7 @@ TEST(PrivacyBudgetUkmEntryFilterStandaloneTest,
      BlocksIdentifiabilityMetricsByDefault) {
   TestingPrefServiceSimple pref_service;
   prefs::RegisterPrivacyBudgetPrefs(pref_service.registry());
-  auto settings = std::make_unique<IdentifiabilityStudySettings>(&pref_service);
+  auto settings = std::make_unique<IdentifiabilityStudyState>(&pref_service);
   auto filter = std::make_unique<PrivacyBudgetUkmEntryFilter>(settings.get());
 
   // By default the filter should reject all Identifiability events:
@@ -56,7 +56,7 @@ TEST(PrivacyBudgetUkmEntryFilterStandaloneTest,
 TEST(PrivacyBudgetUkmEntryFilterStandaloneTest, AllowsOtherMetricsByDefault) {
   TestingPrefServiceSimple pref_service;
   prefs::RegisterPrivacyBudgetPrefs(pref_service.registry());
-  auto settings = std::make_unique<IdentifiabilityStudySettings>(&pref_service);
+  auto settings = std::make_unique<IdentifiabilityStudyState>(&pref_service);
   auto filter = std::make_unique<PrivacyBudgetUkmEntryFilter>(settings.get());
 
   base::flat_map<uint64_t, int64_t> events = {{1, 1}, {2, 2}};
@@ -82,7 +82,7 @@ TEST(PrivacyBudgetUkmEntryFilterStandaloneTest, BlockListedMetrics) {
 
   TestingPrefServiceSimple pref_service;
   prefs::RegisterPrivacyBudgetPrefs(pref_service.registry());
-  auto settings = std::make_unique<IdentifiabilityStudySettings>(&pref_service);
+  auto settings = std::make_unique<IdentifiabilityStudyState>(&pref_service);
   auto filter = std::make_unique<PrivacyBudgetUkmEntryFilter>(settings.get());
 
   base::flat_map<uint64_t, int64_t> metrics = {{kBlockedSurface, 1},

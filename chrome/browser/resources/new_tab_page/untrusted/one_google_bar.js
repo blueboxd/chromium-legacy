@@ -60,41 +60,107 @@ const overlayUpdater = (() => {
 
   /** @type {!Set<!Element>} */
   const overlays = new Set();
+  /** @type {!Array<!DOMRect>} */
+  let lastOverlayRects = [];
+  /** @type {number} */
+  let elementsTransitioningCount = 0;
+  /** @type {?number} */
+  let updateIntervalId = null;
+  /** @type {boolean} */
+  let initialElementsAdded = false;
+
+  const transitionStart = () => {
+    elementsTransitioningCount++;
+    if (!updateIntervalId) {
+      updateIntervalId = setInterval(() => {
+        update([]);
+      });
+    }
+  };
+
+  const transitionStop = () => {
+    if (elementsTransitioningCount > 0) {
+      elementsTransitioningCount--;
+    }
+    if (updateIntervalId && elementsTransitioningCount === 0) {
+      clearInterval(updateIntervalId);
+      updateIntervalId = null;
+    }
+  };
+
+  /** @param {!Element} potentialNewOverlays */
+  const addOverlay = overlay => {
+    // If an overlay starts a transition, the updated bounding rects need to
+    // be sent to the top frame during the transition. The MutationObserver
+    // will only handle new elements and changes to the element attributes.
+    overlay.addEventListener('animationstart', transitionStart);
+    overlay.addEventListener('animationend', transitionStop);
+    overlay.addEventListener('animationcancel', transitionStop);
+    overlay.addEventListener('transitionstart', transitionStart);
+    overlay.addEventListener('transitionend', transitionStop);
+    overlay.addEventListener('transitioncancel', transitionStop);
+    // Update links that are loaded dynamically to ensure target is "_blank"
+    // or "_top".
+    // TODO(crbug.com/1039913): remove after OneGoogleBar links are updated.
+    overlay.parentElement.querySelectorAll('a').forEach(el => {
+      if (el.target !== '_blank' && el.target !== '_top') {
+        el.target = '_top';
+      }
+    });
+    overlays.add(overlay);
+  };
 
   /** @param {!Array<!Element>} potentialNewOverlays */
-  const update = (potentialNewOverlays) => {
+  const update = potentialNewOverlays => {
+    const barRect = document.body.querySelector('#gb').getBoundingClientRect();
+    if (barRect.bottom === 0) {
+      return;
+    }
+    // After loaded, there could exist overlays that are shown, but not
+    // mutated. Add all elements that could be an overlay. The children of the
+    // actual overlay element are removed before sending any overlay update
+    // message.
+    if (!modalOverlays && !initialElementsAdded) {
+      initialElementsAdded = true;
+      Array.from(document.body.querySelectorAll('*')).forEach(el => {
+        potentialNewOverlays.push(el);
+      });
+    }
     Array.from(potentialNewOverlays).forEach(overlay => {
-      if (overlay.getBoundingClientRect().width > 0) {
-        overlays.add(overlay);
+      const rect = overlay.getBoundingClientRect();
+      if (overlay.parentElement && rect.width > 0 &&
+          rect.bottom > barRect.bottom) {
+        addOverlay(overlay);
       }
     });
     // Remove overlays detached from DOM.
     Array.from(overlays).forEach(overlay => {
       if (!overlay.parentElement) {
         overlays.delete(overlay);
-        return;
       }
     });
-    const barHeight = document.body.querySelector('#gb').offsetHeight;
     // Check if an overlay and its parents are visible.
-    const overlayRects =
-        Array.from(overlays)
-            .filter(overlay => {
-              if (window.getComputedStyle(overlay).visibility === 'hidden') {
-                return false;
-              }
-              let current = overlay;
-              while (current) {
-                if (window.getComputedStyle(current).display === 'none') {
-                  return false;
-                }
-                current = current.parentElement;
-              }
-              return true;
-            })
-            .map(el => el.getBoundingClientRect())
-            .filter(rect => !modalOverlays || rect.bottom > barHeight);
+    const overlayRects = [];
+    overlays.forEach(overlay => {
+      const {display, visibility} = window.getComputedStyle(overlay);
+      const rect = overlay.getBoundingClientRect();
+      if (display !== 'none' && visibility !== 'hidden' &&
+          rect.bottom > barRect.bottom) {
+        overlayRects.push(rect);
+      }
+    });
     if (!modalOverlays) {
+      overlayRects.push(barRect);
+      const noChange = overlayRects.length === lastOverlayRects.length &&
+          lastOverlayRects.every((rect, i) => {
+            const newRect = overlayRects[i];
+            return newRect.left === rect.left && newRect.top === rect.top &&
+                newRect.right === rect.right && newRect.bottom === rect.bottom;
+          });
+      lastOverlayRects = overlayRects;
+      if (noChange) {
+        return;
+      }
       postMessage('overlaysUpdated', overlayRects);
       return;
     }
@@ -117,49 +183,25 @@ const overlayUpdater = (() => {
   const track = () => {
     const observer = new MutationObserver(mutations => {
       const potentialNewOverlays = [];
-      // After loaded, there could exist overlays that are shown, but not
-      // mutated. Add all elements that could be an overlay. The children of the
-      // actual overlay element are removed before sending any overlay update
-      // message.
-      if (!modalOverlays && overlays.size === 0) {
-        Array.from(document.body.querySelectorAll('*')).forEach(el => {
-          potentialNewOverlays.push(el);
-        });
-      }
       // Add any mutated element that is an overlay to |overlays|.
       mutations.forEach(({target}) => {
-        if (target.id === 'gb' || target.tagName === 'BODY' ||
-            overlays.has(target)) {
+        if (overlays.has(target) || !target.parentElement) {
           return;
         }
         // When overlays are modal, the tooltips should not be treated like an
         // overlay.
-        if (modalOverlays && target.parentElement &&
-            target.parentElement.tagName === 'BODY') {
+        if (modalOverlays && target.parentElement.tagName === 'BODY') {
           return;
         }
         potentialNewOverlays.push(target);
-        // Update links that are loaded dynamically to ensure target is "_blank"
-        // or "_top".
-        // TODO(crbug.com/1039913): remove after OneGoogleBar links are updated.
-        if (target.parentElement) {
-          target.parentElement.querySelectorAll('a').forEach(el => {
-            if (el.target !== '_blank' && el.target !== '_top') {
-              el.target = '_top';
-            }
-          });
-        }
       });
       update(potentialNewOverlays);
     });
-    observer.observe(document, {
+    observer.observe(document.body, {
       attributes: true,
       childList: true,
       subtree: true,
     });
-    if (!modalOverlays) {
-      update([document.body.querySelector('#gb')]);
-    }
   };
 
   return {track, update};

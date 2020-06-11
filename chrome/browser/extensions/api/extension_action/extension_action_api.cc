@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -355,7 +356,26 @@ void ExtensionActionSetIconFunction::SetReportErrorForInvisibleIconForTesting(
 
 ExtensionFunction::ResponseAction
 ExtensionActionSetIconFunction::RunExtensionAction() {
-  EXTENSION_FUNCTION_VALIDATE(details_);
+  // TODO(devlin): Temporary logging to track down https://crbug.com/1087948.
+  // Remove this (and the redundant `if (!x) { VALIDATE(x); }`) checks after
+  // the bug is fixed.
+  // Don't reorder or remove values.
+  enum class FailureType {
+    kFailedToParseDetails = 0,
+    kFailedToDecodeCanvas = 1,
+    kFailedToUnpickleCanvas = 2,
+    kNoImageDataOrIconIndex = 3,
+    kMaxValue = kNoImageDataOrIconIndex,
+  };
+
+  auto log_set_icon_failure = [](FailureType type) {
+    base::UmaHistogramEnumeration("Extensions.ActionSetIconFailureType", type);
+  };
+
+  if (!details_) {
+    log_set_icon_failure(FailureType::kFailedToParseDetails);
+    EXTENSION_FUNCTION_VALIDATE(details_);
+  }
 
   // setIcon can take a variant argument: either a dictionary of canvas
   // ImageData, or an icon index.
@@ -364,8 +384,23 @@ ExtensionActionSetIconFunction::RunExtensionAction() {
   if (details_->GetDictionary("imageData", &canvas_set)) {
     gfx::ImageSkia icon;
 
-    EXTENSION_FUNCTION_VALIDATE(
-        ExtensionAction::ParseIconFromCanvasDictionary(*canvas_set, &icon));
+    ExtensionAction::IconParseResult parse_result =
+        ExtensionAction::ParseIconFromCanvasDictionary(*canvas_set, &icon);
+
+    if (parse_result != ExtensionAction::IconParseResult::kSuccess) {
+      switch (parse_result) {
+        case ExtensionAction::IconParseResult::kDecodeFailure:
+          log_set_icon_failure(FailureType::kFailedToDecodeCanvas);
+          break;
+        case ExtensionAction::IconParseResult::kUnpickleFailure:
+          log_set_icon_failure(FailureType::kFailedToUnpickleCanvas);
+          break;
+        case ExtensionAction::IconParseResult::kSuccess:
+          NOTREACHED();
+          break;
+      }
+      EXTENSION_FUNCTION_VALIDATE(false);
+    }
 
     if (icon.isNull())
       return RespondNow(Error("Icon invalid."));
@@ -390,6 +425,7 @@ ExtensionActionSetIconFunction::RunExtensionAction() {
     // Obsolete argument: ignore it.
     return RespondNow(NoArguments());
   } else {
+    log_set_icon_failure(FailureType::kNoImageDataOrIconIndex);
     EXTENSION_FUNCTION_VALIDATE(false);
   }
   NotifyChange();

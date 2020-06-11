@@ -10,6 +10,10 @@
 
 class Profile;
 
+namespace base {
+class Time;
+}
+
 namespace extensions {
 
 class Extension;
@@ -30,6 +34,8 @@ class BookmarkAppRegistryController : public web_app::AppRegistryController {
                         bool is_disabled) override;
   void SetAppIsLocallyInstalled(const web_app::AppId& app_id,
                                 bool is_locally_installed) override;
+  void SetAppLastLaunchTime(const web_app::AppId& app_id,
+                            const base::Time& time) override;
   web_app::WebAppSyncBridge* AsWebAppSyncBridge() override;
 
  private:

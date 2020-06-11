@@ -323,6 +323,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      kUseFeatureState},
     {wf::EnableVideoWakeLockOptimisationHiddenMuted,
      media::kWakeLockOptimisationHiddenMuted, kUseFeatureState},
+    {wf::EnableMediaFeeds, media::kMediaFeeds, kUseFeatureState},
+
   };
   for (const auto& mapping : blinkFeatureToBaseFeatureMapping) {
     SetRuntimeFeatureFromChromiumFeature(
@@ -372,6 +374,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            kEnableOnly},
           {"LayoutNG", blink::features::kLayoutNG, kUseFeatureState},
           {"LayoutNGFlexBox", blink::features::kFlexNG, kUseFeatureState},
+          {"LayoutNGFragmentItem", blink::features::kFragmentItem,
+           kUseFeatureState},
           {"LegacyWindowsDWriteFontFallback",
            features::kLegacyWindowsDWriteFontFallback, kUseFeatureState},
           {"LinkDisabledNewSpecBehavior",

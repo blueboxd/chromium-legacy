@@ -7,9 +7,10 @@
 
 #import <UIKit/UIKit.h>
 
+#import <MaterialComponents/MaterialCollectionCells.h>
+
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
-#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 // Item displaying the text showing a label inviting the user to ask for
 // information about the suggested content.

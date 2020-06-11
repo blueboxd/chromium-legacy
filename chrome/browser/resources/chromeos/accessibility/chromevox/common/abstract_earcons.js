@@ -46,6 +46,7 @@ Earcon = {
   SELECTION_REVERSE: 'selection_reverse',
   SKIP: 'skip',
   SLIDER: 'slider',
+  TOUCH_EXIT: 'touch_exit',
   WRAP: 'wrap',
   WRAP_EDGE: 'wrap_edge',
 };

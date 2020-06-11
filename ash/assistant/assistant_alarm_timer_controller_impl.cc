@@ -163,6 +163,10 @@ std::string CreateTimerNotificationMessage(const AssistantTimer& timer) {
 
 // Creates notification action URL for the given |timer|.
 GURL CreateTimerNotificationActionUrl(const AssistantTimer& timer) {
+  // In timers v2, clicking the notification does nothing.
+  if (IsTimersV2Enabled())
+    return GURL();
+  // In timers v1, clicking the notification removes the |timer|.
   return assistant::util::CreateAlarmTimerDeepLink(
              AlarmTimerAction::kRemoveAlarmOrTimer, timer.id)
       .value();
@@ -278,6 +282,7 @@ AssistantNotificationPtr CreateTimerNotification(const AssistantTimer& timer) {
   notification->client_id = CreateTimerNotificationId(timer);
   notification->grouping_key = kTimerNotificationGroupingKey;
   notification->priority = CreateTimerNotificationPriority(timer);
+  notification->remove_on_click = !IsTimersV2Enabled();
   notification->is_pinned = IsTimersV2Enabled();
   return notification;
 }

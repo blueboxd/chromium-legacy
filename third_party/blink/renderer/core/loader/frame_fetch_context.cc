@@ -1038,7 +1038,7 @@ bool FrameFetchContext::SendConversionRequestInsteadOfRedirecting(
   if (url.GetPath() != kWellKnownConversionRegsitrationPath)
     return false;
 
-  if (!document_->IsFeatureEnabled(
+  if (!document_->domWindow()->IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kConversionMeasurement)) {
     String message =
         "The 'conversion-measurement' feature policy must be enabled to "

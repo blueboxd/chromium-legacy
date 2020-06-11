@@ -14,7 +14,7 @@ TEST(PrintSettingsTest, IsColorModelSelected) {
     EXPECT_TRUE(IsColorModelSelected(IsColorModelSelected(model).has_value()));
 }
 
-TEST(PrintSettingsDeathTest, IsColorModelSelectedUnknown) {
+TEST(PrintSettingsDeathTest, IsColorModelSelectedEdges) {
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DCHECK_DEATH(IsColorModelSelected(UNKNOWN_COLOR_MODEL));
   EXPECT_DCHECK_DEATH(IsColorModelSelected(UNKNOWN_COLOR_MODEL - 1));
@@ -32,6 +32,16 @@ TEST(PrintSettingsTest, GetColorModelForMode) {
     color_setting_name.clear();
     color_value.clear();
   }
+}
+
+TEST(PrintSettingsDeathTest, GetColorModelForModeEdges) {
+  ::testing::FLAGS_gtest_death_test_style = "threadsafe";
+  std::string color_setting_name;
+  std::string color_value;
+  EXPECT_DCHECK_DEATH(GetColorModelForMode(UNKNOWN_COLOR_MODEL - 1,
+                                           &color_setting_name, &color_value));
+  EXPECT_DCHECK_DEATH(GetColorModelForMode(COLOR_MODEL_LAST + 1,
+                                           &color_setting_name, &color_value));
 }
 #endif  // defined(USE_CUPS)
 

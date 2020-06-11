@@ -4654,9 +4654,17 @@ void Element::setInnerHTML(const String& html,
 }
 
 String Element::getInnerHTML(const GetInnerHTMLOptions* options) const {
+  DCHECK(RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled());
+  ClosedRootsSet include_closed_roots;
+  if (options->hasClosedRoots()) {
+    for (auto& shadow_root : options->closedRoots()) {
+      include_closed_roots.insert(shadow_root);
+    }
+  }
   return CreateMarkup(
       this, kChildrenOnly, kDoNotResolveURLs,
-      options->includeShadowRoots() ? kIncludeShadowRoots : kNoShadowRoots);
+      options->includeShadowRoots() ? kIncludeShadowRoots : kNoShadowRoots,
+      include_closed_roots);
 }
 
 void Element::setOuterHTML(const String& html,

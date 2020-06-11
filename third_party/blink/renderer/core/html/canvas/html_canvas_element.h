@@ -156,7 +156,6 @@ class CORE_EXPORT HTMLCanvasElement final
   void DidDraw(const FloatRect&) override;
   void DidDraw() override;
 
-  void UpdateFilterQuality();
   void Paint(GraphicsContext&,
              const PhysicalRect&,
              bool flatten_composited_layers);
@@ -323,6 +322,7 @@ class CORE_EXPORT HTMLCanvasElement final
                                    int64_t value) const;
 
   void PaintInternal(GraphicsContext&, const PhysicalRect&);
+  void UpdateFilterQuality(SkFilterQuality filter_quality);
 
   using ContextFactoryVector =
       Vector<std::unique_ptr<CanvasRenderingContextFactory>>;

@@ -48,8 +48,8 @@ void PolicyDecisionStateTracker::FinishedRequestingDecisions(
     return;
   decision_closure_ = base::BarrierClosure(
       num_decisions_requested - num_decisions_received_,
-      base::Bind(&PolicyDecisionStateTracker::OnFinalResultDetermined,
-                 AsWeakPtr()));
+      base::BindOnce(&PolicyDecisionStateTracker::OnFinalResultDetermined,
+                     AsWeakPtr()));
 }
 
 void PolicyDecisionStateTracker::OnFinalResultDetermined() {

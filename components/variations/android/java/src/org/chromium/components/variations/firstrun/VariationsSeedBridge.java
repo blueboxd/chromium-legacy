@@ -38,7 +38,8 @@ public class VariationsSeedBridge {
     private static final int DEBUG_PREFS_CLEARED = 1;
     private static final int DEBUG_PREFS_RETRIEVED_DATA_EMPTY = 2;
     private static final int DEBUG_PREFS_RETRIEVED_DATA_NON_EMPTY = 3;
-    private static final int DEBUG_PREFS_MAX = 4;
+    private static final int DEBUG_PREFS_CLEARED_NON_EMPTY = 4;
+    private static final int DEBUG_PREFS_MAX = 5;
 
     // TODO(crbug.com/1090968): Debug histogram to investigate a regression. Remove when resolved.
     private static void logDebugHistogram(int value) {
@@ -71,6 +72,9 @@ public class VariationsSeedBridge {
 
     @CalledByNative
     private static void clearFirstRunPrefs() {
+        if (hasJavaPref()) {
+            logDebugHistogram(DEBUG_PREFS_CLEARED_NON_EMPTY);
+        }
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .remove(VARIATIONS_FIRST_RUN_SEED_BASE64)

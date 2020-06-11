@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/device_event_log/device_event_log.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/fido/ble_adapter_manager.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_discovery_factory.h"
@@ -75,8 +76,14 @@ void FidoRequestHandlerBase::InitDiscoveries(
     discoveries_.push_back(std::move(discovery));
   }
 
+  // Check if the platform supports BLE before trying to get a power manager.
+  // CaBLE might be in |available_transports| without actual BLE support under
+  // the virtual environment.
+  // TODO(nsatragno): Move the BLE power manager logic to CableDiscoveryFactory
+  // so we don't need this additional check.
   bool has_ble = false;
-  if (base::Contains(transport_availability_info_.available_transports,
+  if (device::BluetoothAdapterFactory::Get()->IsLowEnergySupported() &&
+      base::Contains(transport_availability_info_.available_transports,
                      FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy)) {
     has_ble = true;
     base::SequencedTaskRunnerHandle::Get()->PostTask(

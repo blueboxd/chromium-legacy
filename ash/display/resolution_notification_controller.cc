@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/display/display_change_dialog.h"
+#include "ash/display/display_util.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -14,8 +15,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/screen_layout_observer.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
@@ -25,19 +24,6 @@
 #include "ui/display/screen.h"
 
 namespace ash {
-namespace {
-
-base::string16 ConvertRefreshRateToString16(float refresh_rate) {
-  std::string str = base::StringPrintf("%.2f", refresh_rate);
-
-  // Remove the mantissa for whole numbers.
-  if (EndsWith(str, ".00", base::CompareCase::INSENSITIVE_ASCII))
-    str.erase(str.length() - 3);
-
-  return base::UTF8ToUTF16(str);
-}
-
-}  // namespace
 
 struct ResolutionNotificationController::ResolutionChangeInfo {
   ResolutionChangeInfo(int64_t display_id,

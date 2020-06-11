@@ -1280,12 +1280,6 @@ LogicalSize NGBlockNode::GetAspectRatio() const {
                      LayoutUnit(legacy_sizing_info.aspect_ratio.Height()));
 }
 
-bool NGBlockNode::UseLogicalBottomMarginEdgeForInlineBlockBaseline() const {
-  auto* layout_box = DynamicTo<LayoutBlock>(GetLayoutBox());
-  return layout_box &&
-         layout_box->UseLogicalBottomMarginEdgeForInlineBlockBaseline();
-}
-
 bool NGBlockNode::IsCustomLayoutLoaded() const {
   DCHECK(box_->IsLayoutNGCustom());
   return To<LayoutNGCustom>(box_)->IsLoaded();

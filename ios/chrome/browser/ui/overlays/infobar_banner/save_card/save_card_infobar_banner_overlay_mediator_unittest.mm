@@ -43,6 +43,7 @@ class SaveCardInfobarBannerOverlayMediatorTest : public PlatformTest {
 // Tests that a SaveCardInfobarBannerOverlayMediator correctly sets up its
 // consumer.
 TEST_F(SaveCardInfobarBannerOverlayMediatorTest, SetUpConsumer) {
+  // Create an InfoBarIOS with a ConfirmInfoBarDelegate.
   autofill::CreditCard credit_card(base::GenerateGUID(),
                                    "https://www.example.com/");
   std::unique_ptr<PrefService> prefs = autofill::test::PrefServiceForTesting();

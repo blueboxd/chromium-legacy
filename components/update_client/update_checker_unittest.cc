@@ -492,10 +492,10 @@ TEST_P(UpdateCheckerTest, UpdateCheckDownloadPreference) {
 
   // The request must contain dlpref="cacheable".
   const auto request = post_interceptor_->GetRequestBody(0);
-    const auto root = base::JSONReader().Read(request);
-    ASSERT_TRUE(root);
-    EXPECT_EQ("cacheable",
-              root->FindKey("request")->FindKey("dlpref")->GetString());
+  const auto root = base::JSONReader::Read(request);
+  ASSERT_TRUE(root);
+  EXPECT_EQ("cacheable",
+            root->FindKey("request")->FindKey("dlpref")->GetString());
 }
 
 // This test is checking that an update check signed with CUP fails, since there

@@ -57,6 +57,9 @@ class WebAppsBase : public apps::PublisherBase,
 
   // web_app::AppRegistrarObserver:
   void OnWebAppUninstalled(const web_app::AppId& app_id) override;
+  void OnWebAppLastLaunchTimeChanged(
+      const std::string& app_id,
+      const base::Time& last_launch_time) override;
 
   apps::mojom::AppPtr ConvertImpl(const web_app::WebApp* web_app,
                                   apps::mojom::Readiness readiness);

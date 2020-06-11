@@ -299,6 +299,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
               NGBaselineAlgorithmType::kInlineBlock);
     last_baseline_ = baseline;
   }
+  base::Optional<LayoutUnit> LastBaseline() const { return last_baseline_; }
+
+  // The inline block baseline is at the block end margin edge under some
+  // circumstances. This function updates |LastBaseline| in such cases.
+  void SetLastBaselineToBlockEndMarginEdgeIfNeeded();
 
   // The |NGFragmentItemsBuilder| for the inline formatting context of this box.
   NGFragmentItemsBuilder* ItemsBuilder() { return items_builder_; }

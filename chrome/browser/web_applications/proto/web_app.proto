@@ -96,4 +96,8 @@ message WebAppProto {
   // Even though |chromeos_data| is optional, it should always exist on
   // ChromeOS.
   optional ChromeOSDataProto chromeos_data = 14;
+
+  // Last time the app is launched.
+  // ms since the Unix epoch. See sync/base/time.h.
+  optional int64 last_launch_time = 15;
 }

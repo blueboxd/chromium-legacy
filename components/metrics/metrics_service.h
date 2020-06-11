@@ -186,13 +186,6 @@ class MetricsService : public base::HistogramFlattener {
   bool StageCurrentLogForTest();
 
  protected:
-  // Exposed for testing.
-  // TODO(1034679): migrate these to public FooForTest() methods.
-  MetricsLogManager* log_manager() { return &log_manager_; }
-  MetricsLogStore* log_store() {
-    return reporting_service_.metrics_log_store();
-  }
-
   // Sets the persistent system profile. Virtual for tests.
   virtual void SetPersistentSystemProfile(const std::string& serialized_proto,
                                           bool complete);
@@ -228,6 +221,11 @@ class MetricsService : public base::HistogramFlattener {
     ACTIVE,
     UNSET
   };
+
+  // Gets the LogStore for UMA logs.
+  MetricsLogStore* log_store() {
+    return reporting_service_.metrics_log_store();
+  }
 
   // Calls into the client to initialize some system profile metrics.
   void StartInitTask();

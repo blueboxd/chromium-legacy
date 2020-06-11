@@ -25,6 +25,9 @@ void TestAppRegistryController::SetAppIsLocallyInstalled(
     const AppId& app_id,
     bool is_locally_installed) {}
 
+void TestAppRegistryController::SetAppLastLaunchTime(const AppId& app_id,
+                                                     const base::Time& time) {}
+
 WebAppSyncBridge* TestAppRegistryController::AsWebAppSyncBridge() {
   return nullptr;
 }

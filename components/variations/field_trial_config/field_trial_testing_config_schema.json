@@ -39,6 +39,10 @@
                 "optional": "True"
               },
               {
+                "field": "min_os_version",
+                "type": "string"
+              },
+              {
                 "field": "params",
                 "type": "array",
                 "contents": {

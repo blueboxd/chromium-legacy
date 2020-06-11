@@ -138,6 +138,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
       PreserveDrawingBuffer,
       WebGLVersion,
       ChromiumImageUsage,
+      SkFilterQuality,
       const CanvasColorParams&,
       gl::GpuPreference);
 
@@ -299,6 +300,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
                 bool wants_depth,
                 bool wants_stencil,
                 ChromiumImageUsage,
+                SkFilterQuality,
                 const CanvasColorParams&,
                 gl::GpuPreference gpu_preference);
 

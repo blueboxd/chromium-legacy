@@ -1,4 +1,4 @@
-<style>
+<style include="cr-icons">
   :host {
     --receiving-audio-color: var(--google-red-refresh-500);
     --speak-shown-duration: 2s;
@@ -28,27 +28,10 @@
   }
 
   #closeButton {
-    background: none;
-    border: none;
-    color: var(--ntp-secondary-text-color);
-    cursor: pointer;
-    font-family: inherit;
-    font-size: 26px;
-    height: 15px;
-    line-height: 0;
-    outline: none;
-    padding: 0;
+    --cr-icon-button-fill-color: var(--ntp-secondary-text-color);
+    margin: 0;
     position: absolute;
     top: 16px;
-    width: 15px;
-  }
-
-  #closeButton:hover {
-    color: var(--ntp-secondary-text-hover-color);
-  }
-
-  :host-context(.focus-outline-visible) #closeButton:focus {
-    box-shadow: var(--ntp-focus-shadow);
   }
 
   :host-context([dir='ltr']) #closeButton {
@@ -188,8 +171,12 @@
     background-color: white;
   }
 </style>
-<dialog id="dialog" on-close="onOverlayClose_" on-click="onOverlayClick_">
-  <button id="closeButton" tabindex="0" title="$i18n{close}">×</button>
+<dialog id="dialog" on-close="onOverlayClose_" on-click="onOverlayClick_"
+    on-keydown="onOverlayKeydown_">
+  <!-- Purely exists to capture focus upon opening the dialog. -->
+  <div tabindex="-1"></div>
+  <cr-icon-button id="closeButton" class="icon-clear" title="$i18n{close}">
+  </cr-icon-button>
   <div id="content">
     <iron-selector id="texts" selected="[[getText_(state_)]]"
         attr-for-selected="text" fallback-selection="none" aria-live="polite"
@@ -218,14 +205,16 @@
         <iron-pages id="errorLinks" selected="[[getErrorLink_(error_)]]"
             attr-for-selected="link" fallback-selection="none">
           <span link="none"></span>
-          <a link="learn-more" target="_blank" href="[[helpUrl_]]"><!--
+          <a link="learn-more" target="_blank" href="[[helpUrl_]]"
+              on-keydown="onLinkKeydown_"><!--
             -->$i18n{learnMore}
           </a>
-          <a link="details" target="_blank" href="[[helpUrl_]]"><!--
+          <a link="details" target="_blank" href="[[helpUrl_]]"
+              on-keydown="onLinkKeydown_"><!--
             -->$i18n{details}
           </a>
           <a link="try-again" id="retryLink" href="#"
-              on-click="onRetryClick_"><!--
+              on-click="onRetryClick_" on-keydown="onLinkKeydown_"><!--
             -->$i18n{tryAgain}
           </a>
         </iron-pages>

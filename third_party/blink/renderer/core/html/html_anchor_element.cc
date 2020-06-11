@@ -549,28 +549,8 @@ void HTMLAnchorElement::HandleClick(Event& event) {
       frame_request.SetImpression(*impression);
   }
 
-  if (target_frame) {
-    // If we also have a pending form submission, make sure this anchor
-    // navigation takes precedence over it, except in the case of href being
-    // a fragment, in which case pending form submissions should go through.
-    // In the case of a target RemoteFrame, don't cancel form submissions
-    // because we can't be sure what the remote document's urlForBinding is.
-    // In the case of href="javascript:", don't cancel form submissions because
-    // we have always let form submissions take precedence in this case.
-    // TODO(crbug.com/1053679): Remove this after making anchor navigations
-    //   async like the spec says to do, which will also provide the desired
-    //   behavior.
-    if (LocalFrame* target_local_frame = DynamicTo<LocalFrame>(target_frame)) {
-      KURL document_url = target_local_frame->GetDocument()->urlForBinding();
-      bool equal_ignoring_fragment =
-          completed_url.HasFragmentIdentifier() &&
-          EqualIgnoringFragmentIdentifier(completed_url, document_url);
-      if (!equal_ignoring_fragment && !completed_url.ProtocolIsJavaScript())
-        target_frame->CancelFormSubmission();
-    }
-
+  if (target_frame)
     target_frame->Navigate(frame_request, WebFrameLoadType::kStandard);
-  }
 }
 
 bool IsEnterKeyKeydownEvent(Event& event) {

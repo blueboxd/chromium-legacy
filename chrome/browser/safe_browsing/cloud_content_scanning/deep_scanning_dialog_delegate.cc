@@ -70,7 +70,9 @@ DeepScanningDialogDelegate::Factory* GetFactoryStorage() {
 // from a string.
 class StringSourceRequest : public BinaryUploadService::Request {
  public:
-  StringSourceRequest(std::string text, BinaryUploadService::Callback callback);
+  StringSourceRequest(GURL analysis_url,
+                      std::string text,
+                      BinaryUploadService::Callback callback);
   ~StringSourceRequest() override;
 
   StringSourceRequest(const StringSourceRequest&) = delete;
@@ -85,9 +87,10 @@ class StringSourceRequest : public BinaryUploadService::Request {
       BinaryUploadService::Result::FILE_TOO_LARGE;
 };
 
-StringSourceRequest::StringSourceRequest(std::string text,
+StringSourceRequest::StringSourceRequest(GURL analysis_url,
+                                         std::string text,
                                          BinaryUploadService::Callback callback)
-    : Request(std::move(callback)) {
+    : Request(std::move(callback), analysis_url) {
   // Only remember strings less than the maximum allowed.
   if (text.size() < BinaryUploadService::kMaxUploadSizeBytes) {
     data_.contents = std::move(text);
@@ -518,7 +521,7 @@ bool DeepScanningDialogDelegate::UploadData() {
     text_request_complete_ = full_text.empty();
     if (!text_request_complete_) {
       auto request = std::make_unique<StringSourceRequest>(
-          std::move(full_text),
+          data_.settings.analysis_url, std::move(full_text),
           base::BindOnce(&DeepScanningDialogDelegate::StringRequestCallback,
                          weak_ptr_factory_.GetWeakPtr()));
 
@@ -541,7 +544,7 @@ bool DeepScanningDialogDelegate::UploadData() {
 void DeepScanningDialogDelegate::PrepareFileRequest(
     const base::FilePath& path) {
   auto request = std::make_unique<FileSourceRequest>(
-      data_.settings.block_unsupported_file_types, path, path.BaseName(),
+      data_.settings, path, path.BaseName(),
       base::BindOnce(&DeepScanningDialogDelegate::FileRequestCallback,
                      weak_ptr_factory_.GetWeakPtr(), path));
 

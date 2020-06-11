@@ -135,18 +135,19 @@ void ServiceWorkerPaymentAppFactory::Create(base::WeakPtr<Delegate> delegate) {
   ServiceWorkerPaymentAppCreator* creator_raw_pointer = creator.get();
   creators_[creator_raw_pointer] = std::move(creator);
 
-  ServiceWorkerPaymentAppFinder::GetInstance()->GetAllPaymentApps(
-      delegate->GetFrameSecurityOrigin(),
-      delegate->GetInitiatorRenderFrameHost(), delegate->GetWebContents(),
-      delegate->GetPaymentManifestWebDataService(),
-      Clone(delegate->GetMethodData()),
-      delegate->MayCrawlForInstallablePaymentApps(),
-      base::BindOnce(&ServiceWorkerPaymentAppCreator::CreatePaymentApps,
-                     creator_raw_pointer->GetWeakPtr()),
-      base::BindOnce([]() {
-        // Nothing needs to be done after writing cache. This callback is used
-        // only in tests.
-      }));
+  ServiceWorkerPaymentAppFinder::GetOrCreateForCurrentDocument(
+      delegate->GetInitiatorRenderFrameHost())
+      ->GetAllPaymentApps(
+          delegate->GetFrameSecurityOrigin(),
+          delegate->GetPaymentManifestWebDataService(),
+          Clone(delegate->GetMethodData()),
+          delegate->MayCrawlForInstallablePaymentApps(),
+          base::BindOnce(&ServiceWorkerPaymentAppCreator::CreatePaymentApps,
+                         creator_raw_pointer->GetWeakPtr()),
+          base::BindOnce([]() {
+            // Nothing needs to be done after writing cache. This callback is
+            // used only in tests.
+          }));
 }
 
 void ServiceWorkerPaymentAppFactory::DeleteCreator(

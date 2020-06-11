@@ -77,8 +77,6 @@ class TestMetricsService : public MetricsService {
       : MetricsService(state_manager, client, local_state) {}
   ~TestMetricsService() override = default;
 
-  using MetricsService::log_manager;
-  using MetricsService::log_store;
   using MetricsService::RecordCurrentEnvironmentHelper;
 
   // MetricsService:
@@ -277,9 +275,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   service.InitializeMetricsRecordingState();
 
   // The initial stability log should be generated and persisted in unsent logs.
-  MetricsLogStore* log_store = service.log_store();
-  EXPECT_TRUE(log_store->has_unsent_logs());
-  EXPECT_FALSE(log_store->has_staged_log());
+  MetricsLogStore* test_log_store = service.LogStoreForTest();
+  EXPECT_TRUE(test_log_store->has_unsent_logs());
+  EXPECT_FALSE(test_log_store->has_staged_log());
 
   // Ensure that HasPreviousSessionData() is always called on providers,
   // for consistency, even if other conditions already indicate their presence.
@@ -291,11 +289,11 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAtProviderRequest) {
   EXPECT_TRUE(test_provider->provide_stability_metrics_called());
 
   // Stage the log and retrieve it.
-  log_store->StageNextLog();
-  EXPECT_TRUE(log_store->has_staged_log());
+  test_log_store->StageNextLog();
+  EXPECT_TRUE(test_log_store->has_staged_log());
 
   ChromeUserMetricsExtension uma_log;
-  EXPECT_TRUE(DecodeLogDataToProto(log_store->staged_log(), &uma_log));
+  EXPECT_TRUE(DecodeLogDataToProto(test_log_store->staged_log(), &uma_log));
 
   EXPECT_TRUE(uma_log.has_client_id());
   EXPECT_TRUE(uma_log.has_session_id());
@@ -340,9 +338,9 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   service.InitializeMetricsRecordingState();
 
   // The initial stability log should be generated and persisted in unsent logs.
-  MetricsLogStore* log_store = service.log_store();
-  EXPECT_TRUE(log_store->has_unsent_logs());
-  EXPECT_FALSE(log_store->has_staged_log());
+  MetricsLogStore* test_log_store = service.LogStoreForTest();
+  EXPECT_TRUE(test_log_store->has_unsent_logs());
+  EXPECT_FALSE(test_log_store->has_staged_log());
 
   // Ensure that HasPreviousSessionData() is always called on providers,
   // for consistency, even if other conditions already indicate their presence.
@@ -354,11 +352,11 @@ TEST_F(MetricsServiceTest, InitialStabilityLogAfterCrash) {
   EXPECT_TRUE(test_provider->provide_stability_metrics_called());
 
   // Stage the log and retrieve it.
-  log_store->StageNextLog();
-  EXPECT_TRUE(log_store->has_staged_log());
+  test_log_store->StageNextLog();
+  EXPECT_TRUE(test_log_store->has_staged_log());
 
   ChromeUserMetricsExtension uma_log;
-  EXPECT_TRUE(DecodeLogDataToProto(log_store->staged_log(), &uma_log));
+  EXPECT_TRUE(DecodeLogDataToProto(test_log_store->staged_log(), &uma_log));
 
   EXPECT_TRUE(uma_log.has_client_id());
   EXPECT_TRUE(uma_log.has_session_id());

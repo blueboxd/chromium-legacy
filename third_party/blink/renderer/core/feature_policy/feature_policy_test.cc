@@ -9,6 +9,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -878,23 +879,23 @@ TEST_F(FeaturePolicyViolationHistogramTest, PotentialViolation) {
       "Blink.UseCounter.FeaturePolicy.PotentialViolation";
   auto dummy_page_holder_ = std::make_unique<DummyPageHolder>();
   // Probing feature state should not count.
-  dummy_page_holder_->GetDocument().IsFeatureEnabled(
+  dummy_page_holder_->GetFrame().DomWindow()->IsFeatureEnabled(
       mojom::blink::FeaturePolicyFeature::kPayment);
   tester.ExpectTotalCount(histogram_name, 0);
   // Checking the feature state with reporting intent should record a potential
   // violation.
-  dummy_page_holder_->GetDocument().IsFeatureEnabled(
+  dummy_page_holder_->GetFrame().DomWindow()->IsFeatureEnabled(
       mojom::blink::FeaturePolicyFeature::kPayment,
       ReportOptions::kReportOnFailure);
   tester.ExpectTotalCount(histogram_name, 1);
   // The potential violation for an already recorded violation does not count
   // again.
-  dummy_page_holder_->GetDocument().IsFeatureEnabled(
+  dummy_page_holder_->GetFrame().DomWindow()->IsFeatureEnabled(
       mojom::blink::FeaturePolicyFeature::kPayment,
       ReportOptions::kReportOnFailure);
   tester.ExpectTotalCount(histogram_name, 1);
   // Sanity check: check some other feature to increase the count.
-  dummy_page_holder_->GetDocument().IsFeatureEnabled(
+  dummy_page_holder_->GetFrame().DomWindow()->IsFeatureEnabled(
       mojom::blink::FeaturePolicyFeature::kFullscreen,
       ReportOptions::kReportOnFailure);
   tester.ExpectTotalCount(histogram_name, 2);

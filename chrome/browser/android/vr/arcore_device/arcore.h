@@ -114,9 +114,11 @@ class ArCore {
   // Creates plane-attached anchor. This call will be deferred and the actual
   // call may be postponed until ARCore is in correct state and the pose of
   // the plane is known.
-  virtual void CreatePlaneAttachedAnchor(const mojom::Pose& plane_from_anchor,
-                                         uint64_t plane_id,
-                                         CreateAnchorCallback callback) = 0;
+  virtual void CreatePlaneAttachedAnchor(
+      const mojom::XRNativeOriginInformation& native_origin_information,
+      const mojom::Pose& native_origin_from_anchor,
+      uint64_t plane_id,
+      CreateAnchorCallback callback) = 0;
 
   // Starts processing anchor creation requests created by calls to
   // |CreateAnchor()| & |CreatePlaneAttachedAnchor()| (see above). It should be

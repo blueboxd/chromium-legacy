@@ -93,6 +93,12 @@ class CONTENT_EXPORT FrameTokenMessageQueue {
   // Sorted by frame token.
   std::multimap<uint32_t, base::OnceClosure> callback_map_;
 
+  // TODO(jonross): Remove this once root cause of flaking tests is found.
+  // (crbug.com/1087744)
+  // The frame token last seen when Reset() is called. To determine if we are
+  // getting delayed frame acknowledgements after a reset.
+  uint32_t last_received_frame_token_reset_ = 0u;
+
   DISALLOW_COPY_AND_ASSIGN(FrameTokenMessageQueue);
 };
 

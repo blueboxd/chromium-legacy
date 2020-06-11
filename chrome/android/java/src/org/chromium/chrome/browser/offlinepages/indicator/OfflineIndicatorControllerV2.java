@@ -50,7 +50,6 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
 
     static final long STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS = 2000;
     static final long STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS = 5000;
-    static final long STATUS_INDICATOR_WAIT_ON_OFFLINE_DURATION_MS = 2000;
 
     private static ConnectivityDetector sMockConnectivityDetector;
     private static Supplier<Long> sMockElapsedTimeSupplier;
@@ -70,7 +69,6 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
     private long mLastActionTime;
     private boolean mIsOffline;
     private long mTimeShownMs;
-    private long mLastOfflineTime;
 
     /**
      * Constructs the offline indicator.
@@ -180,11 +178,6 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
             return;
         }
 
-        // Connection was online and now it's offline.
-        if (offline) {
-            mLastOfflineTime = System.currentTimeMillis();
-        }
-
         mHandler.removeCallbacks(mUpdateStatusIndicatorDelayedRunnable);
         // TODO(crbug.com/1081427): This currently only protects the widget from going into a bad
         // state. We need a better way to handle flaky connections.
@@ -192,15 +185,6 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
         if (elapsedTimeSinceLastAction < STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS) {
             mHandler.postDelayed(mUpdateStatusIndicatorDelayedRunnable,
                     STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS - elapsedTimeSinceLastAction);
-            return;
-        }
-
-        // If the time since the connection last changed to offline has been short, then post a task
-        // to update the indicator after some time.
-        final long elapsedTimeSinceLastOffline = System.currentTimeMillis() - mLastOfflineTime;
-        if (offline && elapsedTimeSinceLastOffline < STATUS_INDICATOR_WAIT_ON_OFFLINE_DURATION_MS) {
-            mHandler.postDelayed(mUpdateStatusIndicatorDelayedRunnable,
-                    STATUS_INDICATOR_WAIT_ON_OFFLINE_DURATION_MS - elapsedTimeSinceLastOffline);
             return;
         }
 

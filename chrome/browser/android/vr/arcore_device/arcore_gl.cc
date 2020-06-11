@@ -797,14 +797,19 @@ void ArCoreGl::CreateAnchor(
                         std::move(callback));
 }
 
-void ArCoreGl::CreatePlaneAnchor(mojom::PosePtr plane_from_anchor,
-                                 uint64_t plane_id,
-                                 CreatePlaneAnchorCallback callback) {
+void ArCoreGl::CreatePlaneAnchor(
+    mojom::XRNativeOriginInformationPtr native_origin_information,
+    mojom::PosePtr native_origin_from_anchor,
+    uint64_t plane_id,
+    CreatePlaneAnchorCallback callback) {
   DVLOG(2) << __func__ << ": plane_id=" << plane_id;
 
-  DCHECK(plane_from_anchor);
+  DCHECK(native_origin_information);
+  DCHECK(native_origin_from_anchor);
+  DCHECK(plane_id);
 
-  arcore_->CreatePlaneAttachedAnchor(*plane_from_anchor, plane_id,
+  arcore_->CreatePlaneAttachedAnchor(*native_origin_information,
+                                     *native_origin_from_anchor, plane_id,
                                      std::move(callback));
 }
 

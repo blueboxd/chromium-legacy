@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
+#include "components/sync/base/time.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
 #include "ui/gfx/color_utils.h"
 
@@ -188,6 +189,10 @@ void WebApp::SetDownloadedShortcutsMenuIconsSizes(
   downloaded_shortcuts_menu_icons_sizes_ = std::move(sizes);
 }
 
+void WebApp::SetLastLaunchTime(const base::Time& time) {
+  last_launch_time_ = time;
+}
+
 void WebApp::SetSyncData(SyncData sync_data) {
   sync_data_ = std::move(sync_data);
 }
@@ -224,7 +229,8 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
       << "  is_locally_installed: " << is_locally_installed << std::endl
       << "  is_in_sync_install: " << is_in_sync_install << std::endl
       << "  sync_data: " << app.sync_data_ << std::endl
-      << "  description: " << app.description_ << std::endl;
+      << "  description: " << app.description_ << std::endl
+      << "  last_launch_time: " << app.last_launch_time_ << std::endl;
   for (const WebApplicationIconInfo& icon : app.icon_infos_)
     out << "  icon_url: " << icon << std::endl;
   for (SquareSizePx size : app.downloaded_icon_sizes_)
@@ -259,14 +265,16 @@ bool operator==(const WebApp& app1, const WebApp& app2) {
                   app1.display_mode_, app1.user_display_mode_,
                   app1.chromeos_data_, app1.is_locally_installed_,
                   app1.is_in_sync_install_, app1.file_handlers_,
-                  app1.additional_search_terms_, app1.sync_data_) ==
+                  app1.additional_search_terms_, app1.sync_data_,
+                  app1.last_launch_time_) ==
          std::tie(app2.app_id_, app2.sources_, app2.name_, app2.launch_url_,
                   app2.description_, app2.scope_, app2.theme_color_,
                   app2.icon_infos_, app2.downloaded_icon_sizes_,
                   app2.display_mode_, app2.user_display_mode_,
                   app2.chromeos_data_, app2.is_locally_installed_,
                   app2.is_in_sync_install_, app2.file_handlers_,
-                  app2.additional_search_terms_, app2.sync_data_);
+                  app2.additional_search_terms_, app2.sync_data_,
+                  app2.last_launch_time_);
 }
 
 bool operator!=(const WebApp& app1, const WebApp& app2) {

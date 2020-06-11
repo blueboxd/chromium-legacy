@@ -61,7 +61,7 @@ std::string_view GeneratedLens::ParentName(const BaseSymbol& symbol) {
     return "Not generated";
   }
 
-  static LazyRE2 java_protobuf_regex = {R"(Proto\.java$)"};
+  static LazyRE2 java_protobuf_regex = {R"(__protoc_java\.srcjar)"};
   if (PartialMatch(symbol.SourcePath(), *java_protobuf_regex)) {
     return "Java Protocol Buffers";
   }

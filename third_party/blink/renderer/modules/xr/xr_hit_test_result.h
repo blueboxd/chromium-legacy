@@ -16,7 +16,6 @@ class ExceptionState;
 class ScriptState;
 class TransformationMatrix;
 class XRPose;
-class XRRigidTransform;
 class XRSession;
 class XRSpace;
 
@@ -30,7 +29,6 @@ class XRHitTestResult : public ScriptWrappable {
   XRPose* getPose(XRSpace* relative_to);
 
   ScriptPromise createAnchor(ScriptState* script_state,
-                             XRRigidTransform* initial_pose,
                              ExceptionState& exception_state);
 
   void Trace(Visitor* visitor) const override;

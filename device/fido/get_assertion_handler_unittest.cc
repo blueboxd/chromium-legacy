@@ -57,6 +57,9 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
   FidoGetAssertionHandlerTest() {
     mock_adapter_ =
         base::MakeRefCounted<::testing::NiceMock<MockBluetoothAdapter>>();
+    bluetooth_config_ =
+        BluetoothAdapterFactory::Get()->InitGlobalValuesForTesting();
+    bluetooth_config_->SetLESupported(true);
     BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
   }
 
@@ -176,6 +179,8 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
       FidoTransportProtocol::kInternal,
       FidoTransportProtocol::kNearFieldCommunication,
       FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
+  std::unique_ptr<BluetoothAdapterFactory::GlobalValuesForTesting>
+      bluetooth_config_;
 };
 
 TEST_F(FidoGetAssertionHandlerTest, TransportAvailabilityInfo) {

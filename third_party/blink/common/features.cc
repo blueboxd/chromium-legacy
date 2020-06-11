@@ -71,6 +71,9 @@ const base::Feature kTopLevelAwait{"TopLevelAwait",
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kFragmentItem{"FragmentItem",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 

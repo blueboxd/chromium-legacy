@@ -201,6 +201,10 @@ AbstractTts = class {
       }
     }
 
+    if (localStorage['usePitchChanges'] === 'false') {
+      delete properties.relativePitch;
+    }
+
     // Substitute all symbols in the substitution dictionary. This is pretty
     // efficient because we use a single regexp that matches all symbols
     // simultaneously.

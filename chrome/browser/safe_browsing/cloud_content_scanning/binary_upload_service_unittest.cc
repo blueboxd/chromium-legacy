@@ -33,7 +33,7 @@ using ::testing::SaveArg;
 class MockRequest : public BinaryUploadService::Request {
  public:
   explicit MockRequest(BinaryUploadService::Callback callback)
-      : BinaryUploadService::Request(std::move(callback)) {}
+      : BinaryUploadService::Request(std::move(callback), GURL()) {}
   MOCK_METHOD1(GetRequestData, void(DataCallback));
 };
 
@@ -450,7 +450,7 @@ TEST_F(BinaryUploadServiceTest, ReturnsAsynchronouslyWithNoFCM) {
 TEST_F(BinaryUploadServiceTest, IsAuthorizedValidTimer) {
   // The 24 hours timer should be started on the first IsAuthorized call.
   ValidateAuthorizationTimerIdle();
-  service_->IsAuthorized(base::DoNothing());
+  service_->IsAuthorized(GURL(), base::DoNothing());
   ValidateAuthorizationTimerStarted();
 }
 

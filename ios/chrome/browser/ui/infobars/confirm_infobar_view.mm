@@ -7,6 +7,8 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <QuartzCore/QuartzCore.h>
 
+#import <MaterialComponents/MaterialButtons.h>
+
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/format_macros.h"
@@ -25,7 +27,6 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
-#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"

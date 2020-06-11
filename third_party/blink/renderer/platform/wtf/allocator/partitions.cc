@@ -33,7 +33,6 @@
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
-#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_root_base.h"
 #include "base/debug/alias.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
@@ -48,10 +47,10 @@ bool Partitions::initialized_ = false;
 
 // These statics are inlined, so cannot be LazyInstances. We create the values,
 // and then set the pointers correctly in Initialize().
-base::PartitionRootGeneric* Partitions::fast_malloc_root_ = nullptr;
-base::PartitionRootGeneric* Partitions::array_buffer_root_ = nullptr;
-base::PartitionRootGeneric* Partitions::buffer_root_ = nullptr;
-base::PartitionRoot* Partitions::layout_root_ = nullptr;
+base::ThreadSafePartitionRoot* Partitions::fast_malloc_root_ = nullptr;
+base::ThreadSafePartitionRoot* Partitions::array_buffer_root_ = nullptr;
+base::ThreadSafePartitionRoot* Partitions::buffer_root_ = nullptr;
+base::ThreadUnsafePartitionRoot* Partitions::layout_root_ = nullptr;
 
 // static
 void Partitions::Initialize() {
@@ -61,10 +60,10 @@ void Partitions::Initialize() {
 
 // static
 bool Partitions::InitializeOnce() {
-  static base::PartitionAllocatorGeneric fast_malloc_allocator{};
-  static base::PartitionAllocatorGeneric array_buffer_allocator{};
-  static base::PartitionAllocatorGeneric buffer_allocator{};
-  static base::SizeSpecificPartitionAllocator<1024> layout_allocator{};
+  static base::PartitionAllocator fast_malloc_allocator{};
+  static base::PartitionAllocator array_buffer_allocator{};
+  static base::PartitionAllocator buffer_allocator{};
+  static base::ThreadUnsafePartitionAllocator layout_allocator{};
 
   base::PartitionAllocGlobalInit(&Partitions::HandleOutOfMemory);
 

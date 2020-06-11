@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//base/trace_event/features.gni")
 import("//build/config/gclient_args.gni")
 
 # Uncomment these to specify a different NDK location and version in
@@ -12,6 +11,22 @@ import("//build/config/gclient_args.gni")
 
 # Some non-Chromium builds don't support building java targets.
 enable_java_templates = true
+
+# Features used by //base/trace_event and //services/tracing.
+declare_args() {
+  # Tracing support requires //third_party/perfetto, which is not available in
+  # libchrome (CrOS's version of //base). This flag can disable tracing support
+  # altogether, in which case all tracing instrumentation in //base becomes a
+  # no-op.
+  # TODO(crbug/1065905): Add dependency on perfetto to support typed events.
+  enable_base_tracing = true
+
+  # Switches the TRACE_EVENT instrumentation from base's TraceLog implementation
+  # to //third_party/perfetto's client library. Not implemented yet, currently a
+  # no-op to set up trybot infrastructure.
+  # TODO(crbug/1006769): Switch to perfetto's client library.
+  use_perfetto_client_library = false
+}
 
 # Allows different projects to specify their own suppressions and blacklist
 # files for sanitizer tools.

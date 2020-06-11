@@ -15,7 +15,7 @@
      function logObjects()
     {
         console.dir(window);
-        console.dir(document.getElementById("foo").createShadowRoot());
+        console.dir((document.createRange()).expand('document'));
     }
   `);
 

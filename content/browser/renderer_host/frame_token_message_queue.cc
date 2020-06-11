@@ -35,6 +35,14 @@ void FrameTokenMessageQueue::DidProcessFrame(uint32_t frame_token) {
                                    base::NumberToString(frame_token));
     base::debug::DumpWithoutCrashing();
 
+    // TODO(jonross): Remove this once root cause of flaking tests is found.
+    // (crbug.com/1087744)
+    DCHECK(false) << "FrameTokenMessageQueue invalid order of acknowledged "
+                     "token. Current: "
+                  << frame_token
+                  << " Last Received: " << last_received_frame_token_
+                  << " Last Before Reset: " << last_received_frame_token_reset_
+                  << " queue size " << callback_map_.size();
     client_->OnInvalidFrameToken(frame_token);
     return;
   }
@@ -59,6 +67,11 @@ void FrameTokenMessageQueue::EnqueueOrRunFrameTokenCallback(
     base::OnceClosure callback) {
   // Zero token is invalid.
   if (!frame_token) {
+    // TODO(jonross): Remove this once root cause of flaking tests is found.
+    // (crbug.com/1087744)
+    DCHECK(false) << "FrameTokenMessageQueue invalid enqueued frame token. "
+                     "Last Received: "
+                  << last_received_frame_token_;
     client_->OnInvalidFrameToken(frame_token);
     return;
   }
@@ -84,6 +97,7 @@ void FrameTokenMessageQueue::OnFrameSwapMessagesReceived(
 }
 
 void FrameTokenMessageQueue::Reset() {
+  last_received_frame_token_reset_ = last_received_frame_token_;
   last_received_frame_token_ = 0;
   callback_map_.clear();
 }

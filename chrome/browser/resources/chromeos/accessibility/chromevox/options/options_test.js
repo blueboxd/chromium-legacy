@@ -111,3 +111,73 @@ TEST_F('ChromeVoxOptionsTest', 'SmartStickyMode', function() {
         .replay();
   });
 });
+
+TEST_F('ChromeVoxOptionsTest', 'UsePitchChanges', function() {
+  this.runOnOptionsPage((mockFeedback, evt) => {
+    const pitchChangesCheckbox = evt.target.find({
+      role: chrome.automation.RoleType.CHECK_BOX,
+      attributes: {
+        name: 'Change pitch when speaking element types and quoted, deleted, ' +
+            'bolded, parenthesized, or capitalized text.'
+      }
+    });
+    const capitalStrategySelect = evt.target.find({
+      role: chrome.automation.RoleType.POP_UP_BUTTON,
+      attributes: {name: 'When reading capitals:'}
+    });
+    assertNotNullNorUndefined(pitchChangesCheckbox);
+    assertNotNullNorUndefined(capitalStrategySelect);
+
+    // Assert initial pref values.
+    assertEquals('true', localStorage['usePitchChanges']);
+    assertEquals('increasePitch', localStorage['capitalStrategy']);
+
+    mockFeedback.call(pitchChangesCheckbox.focus.bind(pitchChangesCheckbox))
+        .expectSpeech(
+            'Change pitch when speaking element types and quoted, ' +
+                'deleted, bolded, parenthesized, or capitalized text.',
+            'Check box', 'Checked')
+        .call(pitchChangesCheckbox.doDefault.bind(pitchChangesCheckbox))
+        .expectSpeech(
+            'Change pitch when speaking element types and quoted, ' +
+                'deleted, bolded, parenthesized, or capitalized text.',
+            'Check box', 'Not checked')
+        .call(() => {
+          assertEquals('false', localStorage['usePitchChanges']);
+          // Toggling usePitchChanges affects capitalStrategy. Ensure that the
+          // preference has been changed and that the 'Increase pitch' option
+          // is hidden.
+          assertEquals('announceCapitals', localStorage['capitalStrategy']);
+          const increasePitchOption = evt.target.find({
+            role: chrome.automation.RoleType.MENU_LIST_OPTION,
+            attributes: {name: 'Increase pitch'}
+          });
+          assertNotNullNorUndefined(increasePitchOption);
+          assertTrue(increasePitchOption.state.invisible);
+        })
+        .call(capitalStrategySelect.focus.bind(capitalStrategySelect))
+        .expectSpeech(
+            'When reading capitals:', 'Speak "cap" before letter', 'Collapsed')
+        .call(pitchChangesCheckbox.doDefault.bind(pitchChangesCheckbox))
+        .expectSpeech(
+            'Change pitch when speaking element types and quoted, ' +
+                'deleted, bolded, parenthesized, or capitalized text.',
+            'Check box', 'Checked')
+        .call(() => {
+          assertEquals('true', localStorage['usePitchChanges']);
+          // Ensure that the capitalStrategy preference is restored to its
+          // initial setting and that the 'Increase pitch' option is visible
+          // again.
+          assertEquals('increasePitch', localStorage['capitalStrategy']);
+          const increasePitchOption = evt.target.find({
+            role: chrome.automation.RoleType.MENU_LIST_OPTION,
+            attributes: {name: 'Increase pitch'}
+          });
+          assertNotNullNorUndefined(increasePitchOption);
+          assertEquals(undefined, increasePitchOption.state.invisible);
+        })
+        .call(capitalStrategySelect.focus.bind(capitalStrategySelect))
+        .expectSpeech('When reading capitals:', 'Increase pitch', 'Collapsed');
+    mockFeedback.replay();
+  });
+});

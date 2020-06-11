@@ -289,3 +289,15 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Phonetics', function() {
   assertTrue(spokenStrings.includes('T'));
   assertEquals(1, spokenStrings.length);
 });
+
+SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'PitchChanges', function() {
+  const tts = new TtsBackground(false);
+  const preprocess = tts.preprocess.bind(tts);
+  const props = {relativePitch: -0.3};
+  localStorage['usePitchChanges'] = 'true';
+  preprocess('Hello world', props);
+  assertTrue(props.hasOwnProperty('relativePitch'));
+  localStorage['usePitchChanges'] = 'false';
+  preprocess('Hello world', props);
+  assertFalse(props.hasOwnProperty('relativePitch'));
+});

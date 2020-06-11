@@ -153,12 +153,25 @@ suite('NewTabPageAppTest', () => {
     assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
   });
 
-  test('keyboard shortcut opens voice search overlay', async () => {
+  test('voice search keyboard shortcut', async () => {
+    // Test correct shortcut opens voice search.
     // Act.
     window.dispatchEvent(new KeyboardEvent('keydown', {
       ctrlKey: true,
       shiftKey: true,
       code: 'Period',
+    }));
+    await flushTasks();
+
+    // Assert.
+    assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
+
+    // Test other shortcut doesn't close voice search.
+    // Act
+    window.dispatchEvent(new KeyboardEvent('keydown', {
+      ctrlKey: true,
+      shiftKey: true,
+      code: 'Enter',
     }));
     await flushTasks();
 

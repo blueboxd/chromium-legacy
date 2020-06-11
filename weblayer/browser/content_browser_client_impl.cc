@@ -27,12 +27,15 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service_factory.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
 #include "components/security_interstitials/content/ssl_error_navigation_throttle.h"
+#include "components/site_isolation/pref_names.h"
 #include "components/site_isolation/preloaded_isolated_origins.h"
 #include "components/site_isolation/site_isolation_policy.h"
 #include "components/strings/grit/components_locale_settings.h"
+#include "components/user_prefs/user_prefs.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/devtools_manager_delegate.h"
@@ -69,6 +72,7 @@
 #include "weblayer/browser/http_auth_handler_impl.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/navigation_controller_impl.h"
+#include "weblayer/browser/password_manager_driver_factory.h"
 #include "weblayer/browser/popup_navigation_delegate_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/system_network_context_manager.h"
@@ -430,6 +434,18 @@ ContentBrowserClientImpl::GetAdditionalSiteIsolationModes() {
   return {};
 }
 
+void ContentBrowserClientImpl::PersistIsolatedOrigin(
+    content::BrowserContext* context,
+    const url::Origin& origin) {
+  DCHECK(!context->IsOffTheRecord());
+  ListPrefUpdate update(user_prefs::UserPrefs::Get(context),
+                        site_isolation::prefs::kUserTriggeredIsolatedOrigins);
+  base::ListValue* list = update.Get();
+  base::Value value(origin.Serialize());
+  if (!base::Contains(list->GetList(), value))
+    list->Append(std::move(value));
+}
+
 bool ContentBrowserClientImpl::CanCreateWindow(
     content::RenderFrameHost* opener,
     const GURL& opener_url,
@@ -566,6 +582,13 @@ bool ContentBrowserClientImpl::BindAssociatedReceiverFromFrame(
   if (interface_name == autofill::mojom::AutofillDriver::Name_) {
     autofill::ContentAutofillDriverFactory::BindAutofillDriver(
         mojo::PendingAssociatedReceiver<autofill::mojom::AutofillDriver>(
+            std::move(*handle)),
+        render_frame_host);
+    return true;
+  }
+  if (interface_name == autofill::mojom::PasswordManagerDriver::Name_) {
+    PasswordManagerDriverFactory::BindPasswordManagerDriver(
+        mojo::PendingAssociatedReceiver<autofill::mojom::PasswordManagerDriver>(
             std::move(*handle)),
         render_frame_host);
     return true;

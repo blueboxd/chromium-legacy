@@ -204,8 +204,11 @@ void AssistantNotificationController::OnNotificationClicked(
     return;
   }
 
-  // Otherwise, we retrieve the notification payload from the server using the
-  // following indexing scheme:
+  if (!notification->from_server)
+    return;
+
+  // If the notification is from the server, we retrieve the notification
+  // payload using the following indexing scheme:
   //
   // Index:  |    [0]    |   [1]    |   [2]    | ...
   // -------------------------------------------------

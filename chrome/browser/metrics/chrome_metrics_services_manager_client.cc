@@ -322,7 +322,7 @@ bool ChromeMetricsServicesManagerClient::IsIncognitoSessionActive() {
 #else
   // Depending directly on BrowserList, since that is the implementation
   // that we get correct notifications for.
-  return BrowserList::IsIncognitoSessionActive();
+  return BrowserList::IsOffTheRecordBrowserActive();
 #endif
 }
 

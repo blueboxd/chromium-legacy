@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/time.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
@@ -123,6 +124,10 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     local_data->set_scope(web_app.scope().spec());
   if (web_app.theme_color().has_value())
     local_data->set_theme_color(web_app.theme_color().value());
+  if (!web_app.last_launch_time().is_null()) {
+    local_data->set_last_launch_time(
+        syncer::TimeToProtoTime(web_app.last_launch_time()));
+  }
 
   if (web_app.chromeos_data().has_value()) {
     auto& chromeos_data = web_app.chromeos_data().value();
@@ -282,6 +287,11 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
 
   if (local_data.has_is_in_sync_install())
     web_app->SetIsInSyncInstall(local_data.is_in_sync_install());
+
+  if (local_data.has_last_launch_time()) {
+    web_app->SetLastLaunchTime(
+        syncer::ProtoTimeToTime(local_data.last_launch_time()));
+  }
 
   // Parse sync_data from sync proto.
   WebApp::SyncData parsed_sync_data;

@@ -5,15 +5,25 @@
 #ifndef ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_ONBOARDING_VIEW_H_
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_ONBOARDING_VIEW_H_
 
+#include "ash/assistant/model/assistant_ui_model_observer.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "base/component_export.h"
+#include "base/scoped_observer.h"
 #include "ui/views/view.h"
+
+namespace views {
+class Label;
+}  // namespace views
 
 namespace ash {
 
 class AssistantViewDelegate;
 
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOnboardingView
-    : public views::View {
+    : public views::View,
+      public AssistantControllerObserver,
+      public AssistantUiModelObserver {
  public:
   explicit AssistantOnboardingView(AssistantViewDelegate* delegate);
   AssistantOnboardingView(const AssistantOnboardingView&) = delete;
@@ -25,10 +35,26 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOnboardingView
   gfx::Size CalculatePreferredSize() const override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
+  // AssistantController:
+  void OnAssistantControllerDestroying() override;
+
+  // AssistantUiModelObserver:
+  void OnUiVisibilityChanged(
+      AssistantVisibility new_visibility,
+      AssistantVisibility old_visibility,
+      base::Optional<AssistantEntryPoint> entry_point,
+      base::Optional<AssistantExitPoint> exit_point) override;
+
  private:
   void InitLayout();
+  void InitSuggestions();
+  void UpdateGreeting();
 
-  AssistantViewDelegate* const delegate_;
+  AssistantViewDelegate* const delegate_;  // Owned by AssistantController.
+  views::Label* greeting_ = nullptr;       // Owned by view hierarchy.
+
+  ScopedObserver<AssistantController, AssistantControllerObserver>
+      assistant_controller_observer_{this};
 };
 
 }  // namespace ash

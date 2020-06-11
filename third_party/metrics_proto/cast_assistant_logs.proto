@@ -11,6 +11,7 @@ option java_package = "org.chromium.components.metrics";
 
 package metrics;
 
+// Deprecated. Use CastLogsProto instead.
 // CastAssistant specific device information.
 // Next id: 13
 message CastAssistantLogsProto {

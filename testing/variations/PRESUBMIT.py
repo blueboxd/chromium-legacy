@@ -15,7 +15,8 @@ from collections import OrderedDict
 
 VALID_EXPERIMENT_KEYS = [
     'name', 'forcing_flag', 'params', 'enable_features', 'disable_features',
-    '//0', '//1', '//2', '//3', '//4', '//5', '//6', '//7', '//8', '//9'
+    'min_os_version', '//0', '//1', '//2', '//3', '//4', '//5', '//6', '//7',
+    '//8', '//9'
 ]
 
 FIELDTRIAL_CONFIG_FILE_NAME = 'fieldtrial_testing_config.json'
@@ -93,6 +94,8 @@ def PrettyPrint(contents):
           ordered_experiment['disable_features'] = \
               sorted(experiment['disable_features'])
         ordered_experiment_config['experiments'].append(ordered_experiment)
+        if 'min_os_version' in experiment:
+          ordered_experiment['min_os_version'] = experiment['min_os_version']
       ordered_study.append(ordered_experiment_config)
     ordered_config[key] = ordered_study
   return json.dumps(

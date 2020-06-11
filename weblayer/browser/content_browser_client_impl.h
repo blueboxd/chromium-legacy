@@ -68,6 +68,8 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
   std::vector<url::Origin> GetOriginsRequiringDedicatedProcess() override;
   bool ShouldDisableSiteIsolation() override;
   std::vector<std::string> GetAdditionalSiteIsolationModes() override;
+  void PersistIsolatedOrigin(content::BrowserContext* context,
+                             const url::Origin& origin) override;
   bool CanCreateWindow(content::RenderFrameHost* opener,
                        const GURL& opener_url,
                        const GURL& opener_top_level_frame_url,

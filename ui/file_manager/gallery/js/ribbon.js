@@ -212,7 +212,7 @@ Ribbon.prototype.onSplice_ = function(event) {
       const nextItem = this.dataModel_.item(index + 1);
       const nextElement =
           nextItem && this.renderCache_[nextItem.getEntry().toURL()];
-      this.insertBefore(element, nextElement);
+      this.insertBefore(element, /** @type {!HTMLElement} */ (nextElement));
     }
     return;
   }

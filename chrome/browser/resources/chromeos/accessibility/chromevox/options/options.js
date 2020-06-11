@@ -201,6 +201,31 @@ OptionsPage = class {
     if (bluetoothBraille) {
       OptionsPage.bluetoothBrailleDisplayUI.attach(bluetoothBraille);
     }
+
+    $('usePitchChanges').addEventListener('click', (evt) => {
+      // The capitalStrategy pref depends on the value of usePitchChanges.
+      // When usePitchChanges is toggled, we should update the preference value
+      // and options for capitalStrategy.
+      const checked = evt.target.checked;
+      if (!checked) {
+        $('announceCapitals').selected = true;
+        $('increasePitch').selected = false;
+        $('increasePitch').disabled = true;
+        localStorage['capitalStrategyBackup'] = localStorage['capitalStrategy'];
+        OptionsPage.prefs.setPref('capitalStrategy', 'announceCapitals');
+      } else {
+        $('increasePitch').disabled = false;
+        const capitalStrategyBackup = localStorage['capitalStrategyBackup'];
+        if (capitalStrategyBackup) {
+          // Restore original capitalStrategy setting.
+          $('announceCapitals').selected =
+              (capitalStrategyBackup == 'announceCapitals');
+          $('increasePitch').selected =
+              (capitalStrategyBackup == 'increasePitch');
+          OptionsPage.prefs.setPref('capitalStrategy', capitalStrategyBackup);
+        }
+      }
+    });
   }
 
   /**

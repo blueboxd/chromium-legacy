@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -197,6 +198,22 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, AppInfoOpensPageInfo) {
   // The test closure should have run. But clear the global in case it hasn't.
   EXPECT_FALSE(GetPageInfoDialogCreatedCallbackForTesting());
   GetPageInfoDialogCreatedCallbackForTesting().Reset();
+}
+
+// Check that last launch time is set after launch.
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, AppLastLaunchTime) {
+  const GURL app_url(kExampleURL);
+  const AppId app_id = InstallPWA(app_url);
+  auto* provider = WebAppProviderBase::GetProviderBase(profile());
+
+  // last_launch_time is not set before launch
+  EXPECT_TRUE(provider->registrar().GetAppLastLaunchTime(app_id).is_null());
+
+  auto before_launch = base::Time::Now();
+  LaunchWebAppBrowser(app_id);
+
+  EXPECT_TRUE(provider->registrar().GetAppLastLaunchTime(app_id) >=
+              before_launch);
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, HasMinimalUiButtons) {

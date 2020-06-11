@@ -33,7 +33,7 @@ namespace web {
 class ErrorPageHelperIntTest : public WebIntTest {
  protected:
   ErrorPageHelperIntTest() {
-    server_.RegisterRequestHandler(base::Bind(
+    server_.RegisterRequestHandler(base::BindRepeating(
         &ErrorPageHelperIntTest::HandleRequest, base::Unretained(this)));
     EXPECT_TRUE(server_.Start()) << "Server didn't start";
   }

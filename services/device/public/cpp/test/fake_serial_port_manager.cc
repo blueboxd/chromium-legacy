@@ -126,6 +126,7 @@ void FakeSerialPortManager::GetDevices(GetDevicesCallback callback) {
 
 void FakeSerialPortManager::GetPort(
     const base::UnguessableToken& token,
+    bool use_alternate_path,
     mojo::PendingReceiver<mojom::SerialPort> receiver,
     mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher) {
   // The new FakeSerialPort instance is owned by the |receiver| and |watcher|

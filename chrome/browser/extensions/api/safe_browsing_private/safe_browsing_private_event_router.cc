@@ -807,8 +807,9 @@ void SafeBrowsingPrivateEventRouter::IfAuthorized(
             Profile::FromBrowserContext(context_));
   }
 
+  // TODO(crbug/1069049): Use reporting URL.
   if (binary_upload_service_)
-    binary_upload_service_->IsAuthorized(std::move(cont));
+    binary_upload_service_->IsAuthorized(GURL(), std::move(cont));
 }
 
 void SafeBrowsingPrivateEventRouter::ReportRealtimeEvent(

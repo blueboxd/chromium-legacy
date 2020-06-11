@@ -60,8 +60,16 @@ class OverlayMediaNotificationViewTest : public ChromeViewsTestBase {
     GetView()->UpdateWithMediaMetadata(metadata);
   }
 
+  void SimulateExpandStateChanged(bool expand) {
+    overlay_->notification_for_testing()->OnExpanded(expand);
+  }
+
   base::string16 GetWindowTitle() {
     return overlay_->widget_delegate()->GetWindowTitle();
+  }
+
+  gfx::Size GetWindowSize() {
+    return overlay_->GetWindowBoundsInScreen().size();
   }
 
  private:
@@ -82,4 +90,17 @@ TEST_F(OverlayMediaNotificationViewTest, TaskBarTitle) {
   base::string16 title2 = base::ASCIIToUTF16("title");
   SimulateTitleChange(title2);
   EXPECT_EQ(GetWindowTitle(), title2);
+}
+
+TEST_F(OverlayMediaNotificationViewTest, ResizeOnExpandStateChanged) {
+  constexpr int kExpandedHeight = 150;
+  constexpr int kNormalHeight = 100;
+
+  EXPECT_EQ(kNormalHeight, GetWindowSize().height());
+
+  SimulateExpandStateChanged(true);
+  EXPECT_EQ(kExpandedHeight, GetWindowSize().height());
+
+  SimulateExpandStateChanged(false);
+  EXPECT_EQ(kNormalHeight, GetWindowSize().height());
 }

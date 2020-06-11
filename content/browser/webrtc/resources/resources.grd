@@ -14,12 +14,10 @@
                file="webrtc_internals.html"
                flattenhtml="true"
                allowexternalscript="true"
-               compress="gzip"
                type="BINDATA" />
       <include name="IDR_WEBRTC_INTERNALS_JS"
                file="webrtc_internals.js"
                flattenhtml="true"
-               compress="gzip"
                type="BINDATA" />
     </includes>
   </release>

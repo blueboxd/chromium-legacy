@@ -10,6 +10,7 @@ assert(is_chromeos)
 # Determine the real paths for various items in the SDK, which may be used
 # in the 'generate_runner_script' template below. We do so outside the template
 # to confine exec_script to a single invocation.
+cros_is_vm = false
 if (is_chromeos_device && cros_sdk_version != "") {
   _cache_path_prefix =
       "//build/cros_cache/chrome-sdk/symlinks/${cros_board}+${cros_sdk_version}"

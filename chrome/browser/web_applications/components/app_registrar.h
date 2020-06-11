@@ -18,7 +18,9 @@
 
 class GURL;
 class Profile;
-
+namespace base {
+class Time;
+}
 // Forward declared to support safe downcast;
 namespace extensions {
 class BookmarkAppRegistrar;
@@ -93,6 +95,8 @@ class AppRegistrar {
   virtual DisplayMode GetAppDisplayMode(const AppId& app_id) const = 0;
   virtual DisplayMode GetAppUserDisplayMode(const AppId& app_id) const = 0;
 
+  virtual base::Time GetAppLastLaunchTime(const AppId& app_id) const = 0;
+
   // Returns the "icons" field from the app manifest, use |AppIconManager| to
   // load icon bitmap data.
   virtual std::vector<WebApplicationIconInfo> GetAppIconInfos(
@@ -159,6 +163,8 @@ class AppRegistrar {
   void NotifyWebAppLocallyInstalledStateChanged(const AppId& app_id,
                                                 bool is_locally_installed);
   void NotifyWebAppDisabledStateChanged(const AppId& app_id, bool is_disabled);
+  void NotifyWebAppLastLaunchTimeChanged(const AppId& app_id,
+                                         const base::Time& time);
 
  protected:
   Profile* profile() const { return profile_; }

@@ -1987,6 +1987,54 @@ TEST_F(ManifestParserTest, ProtocolHandlerParseRules) {
     ASSERT_EQ(0u, protocol_handlers.size());
   }
 
+  // An invalid protocol handler with a url that doesn't contain the %s token.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"protocol_handlers\": ["
+        "    {"
+        "      \"protocol\": \"web+github\","
+        "      \"url\": \"http://foo.com/?profile=\""
+        "    }"
+        "  ]"
+        "}");
+    auto& protocol_handlers = manifest->protocol_handlers;
+
+    ASSERT_EQ(2u, GetErrorCount());
+    EXPECT_EQ(
+        "The url provided ('http://foo.com/?profile=') does not contain '%s'.",
+        errors()[0]);
+    EXPECT_EQ(
+        "protocol_handlers entry ignored, required property 'url' is invalid.",
+        errors()[1]);
+    ASSERT_EQ(0u, protocol_handlers.size());
+  }
+
+  // An invalid protocol handler with a non-allowed protocol.
+  {
+    auto& manifest = ParseManifest(
+        "{"
+        "  \"protocol_handlers\": ["
+        "    {"
+        "      \"protocol\": \"github\","
+        "      \"url\": \"http://foo.com/?profile=\""
+        "    }"
+        "  ]"
+        "}");
+    auto& protocol_handlers = manifest->protocol_handlers;
+
+    ASSERT_EQ(2u, GetErrorCount());
+    EXPECT_EQ(
+        "The scheme 'github' doesn't belong to the scheme allowlist. Please "
+        "prefix non-allowlisted schemes with the string 'web+'.",
+        errors()[0]);
+    EXPECT_EQ(
+        "protocol_handlers entry ignored, required property 'protocol' is "
+        "invalid.",
+        errors()[1]);
+    ASSERT_EQ(0u, protocol_handlers.size());
+  }
+
   // Multiple valid protocol handlers
   {
     auto& manifest = ParseManifest(
@@ -1999,18 +2047,24 @@ TEST_F(ManifestParserTest, ProtocolHandlerParseRules) {
         "    {"
         "      \"protocol\": \"web+test\","
         "      \"url\": \"http://foo.com/?test=%s\""
+        "    },"
+        "    {"
+        "      \"protocol\": \"web+relative\","
+        "      \"url\": \"relativeURL=%s\""
         "    }"
         "  ]"
         "}");
     auto& protocol_handlers = manifest->protocol_handlers;
 
     ASSERT_EQ(0u, GetErrorCount());
-    ASSERT_EQ(2u, protocol_handlers.size());
+    ASSERT_EQ(3u, protocol_handlers.size());
 
     ASSERT_EQ("web+github", protocol_handlers[0]->protocol);
     ASSERT_EQ("http://foo.com/?profile=%s", protocol_handlers[0]->url);
     ASSERT_EQ("web+test", protocol_handlers[1]->protocol);
     ASSERT_EQ("http://foo.com/?test=%s", protocol_handlers[1]->url);
+    ASSERT_EQ("web+relative", protocol_handlers[2]->protocol);
+    ASSERT_EQ("http://foo.com/relativeURL=%s", protocol_handlers[2]->url);
   }
 }
 

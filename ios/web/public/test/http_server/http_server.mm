@@ -112,7 +112,7 @@ void HttpServer::StartOrDie(const base::FilePath& files_path) {
   embedded_test_server_ = std::make_unique<net::EmbeddedTestServer>();
   embedded_test_server_->ServeFilesFromDirectory(files_path);
   embedded_test_server_->RegisterDefaultHandler(
-      base::Bind(&HttpServer::GetResponse, this));
+      base::BindRepeating(&HttpServer::GetResponse, this));
 
   if (embedded_test_server_->Start()) {
     SetPort((NSUInteger)embedded_test_server_->port());

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/privacy_budget/privacy_budget_features.h"
 
-#include "chrome/browser/privacy_budget/identifiability_study_settings.h"
+#include "chrome/browser/privacy_budget/identifiability_study_state.h"
 
 namespace features {
 
@@ -25,7 +25,7 @@ const base::FeatureParam<int> kIdentifiabilityStudySurfaceSelectionRate = {
 
 const base::FeatureParam<int> kIdentifiabilityStudyMaxSurfaces = {
     &kIdentifiabilityStudy, "Max",
-    IdentifiabilityStudySettings::kMaxSampledIdentifiableSurfaces};
+    IdentifiabilityStudyState::kMaxSampledIdentifiableSurfaces};
 
 const base::FeatureParam<std::string> kIdentifiabilityStudyPerSurfaceSettings =
     {&kIdentifiabilityStudy, "HashRate", ""};

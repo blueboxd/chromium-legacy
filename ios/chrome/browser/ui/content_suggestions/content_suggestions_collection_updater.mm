@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
 
+#import <MaterialComponents/MaterialPalettes.h>
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #include "base/check.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -27,8 +30,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -359,18 +359,18 @@ class DownloadsHistoryDataCollector {
   explicit DownloadsHistoryDataCollector(Profile* profile)
       : profile_(profile) {}
 
-  bool WaitForDownloadInfo(std::vector<history::DownloadRow>* results) {
-    EXPECT_TRUE(results);
+  std::vector<history::DownloadRow> WaitForDownloadInfo() {
+    std::vector<history::DownloadRow> results;
     HistoryServiceFactory::GetForProfile(profile_,
                                          ServiceAccessType::EXPLICIT_ACCESS)
         ->QueryDownloads(base::BindLambdaForTesting(
             [&](std::vector<history::DownloadRow> rows) {
-              *results = std::move(rows);
+              results = std::move(rows);
               base::RunLoop::QuitCurrentWhenIdleDeprecated();
             }));
 
     content::RunMessageLoop();
-    return true;
+    return results;
   }
 
  private:
@@ -2011,7 +2011,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab4) {
   manager->GetAllDownloads(&items);
   ASSERT_NE(0u, items.size());
   DownloadItem* item = items[0];
-  EXPECT_TRUE(item);
+  ASSERT_TRUE(item);
 
   // When the download is canceled, the second tab should close.
   EXPECT_EQ(item->GetState(), DownloadItem::CANCELLED);
@@ -2116,9 +2116,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadHistoryCheck) {
   // Get what was stored in the history.
   observer.WaitForStored();
   // Get the details on what was stored into the history.
-  std::vector<history::DownloadRow> downloads_in_database;
-  ASSERT_TRUE(DownloadsHistoryDataCollector(
-      browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
+  std::vector<history::DownloadRow> downloads_in_database =
+      DownloadsHistoryDataCollector(browser()->profile()).WaitForDownloadInfo();
   ASSERT_EQ(1u, downloads_in_database.size());
 
   // Confirm history storage is what you expect for an interrupted slow download
@@ -2181,9 +2180,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadHistoryDangerCheck) {
 
   // Get history details and confirm it's what you expect.
   observer.WaitForStored();
-  std::vector<history::DownloadRow> downloads_in_database;
-  ASSERT_TRUE(DownloadsHistoryDataCollector(
-      browser()->profile()).WaitForDownloadInfo(&downloads_in_database));
+  std::vector<history::DownloadRow> downloads_in_database =
+      DownloadsHistoryDataCollector(browser()->profile()).WaitForDownloadInfo();
   ASSERT_EQ(1u, downloads_in_database.size());
   history::DownloadRow& row1(downloads_in_database[0]);
   base::FilePath file(FILE_PATH_LITERAL("downloads/dangerous/dangerous.swf"));

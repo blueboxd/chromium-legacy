@@ -6,6 +6,8 @@
 
 #import <UIKit/UIKit.h>
 
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -29,7 +31,6 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 

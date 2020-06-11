@@ -70,10 +70,10 @@ static_assert(kGenericMaxBucketed == 983040, "generic max bucketed");
 static_assert(kMaxSystemPagesPerSlotSpan < (1 << 8),
               "System pages per slot span must be less than 128.");
 
-PartitionRoot::PartitionRoot() = default;
-PartitionRoot::~PartitionRoot() = default;
-PartitionRootGeneric::~PartitionRootGeneric() = default;
-PartitionAllocatorGeneric::PartitionAllocatorGeneric() = default;
+template <bool thread_safe>
+PartitionRoot<thread_safe>::PartitionRoot() = default;
+template <bool thread_safe>
+PartitionRoot<thread_safe>::~PartitionRoot() = default;
 
 Lock& GetHooksLock() {
   static NoDestructor<Lock> lock;
@@ -216,19 +216,9 @@ void PartitionAllocGlobalUninitForTesting() {
   internal::g_oom_handling_function = nullptr;
 }
 
-void PartitionRoot::Init(size_t bucket_count, size_t maximum_allocation) {
-  PartitionAllocBaseInit(this);
-
-  num_buckets = bucket_count;
-  max_allocation = maximum_allocation;
-  for (size_t i = 0; i < num_buckets; ++i) {
-    Bucket& bucket = buckets()[i];
-    bucket.Init(i == 0 ? kAllocationGranularity : (i << kBucketShift));
-  }
-}
-
-void PartitionRootGeneric::InitSlowPath() {
-  ScopedGuard guard{lock_};
+template <bool thread_safe>
+void PartitionRoot<thread_safe>::InitSlowPath() {
+  ScopedGuard guard{this->lock_};
 
   if (this->initialized.load(std::memory_order_relaxed))
     return;
@@ -315,9 +305,10 @@ void PartitionRootGeneric::InitSlowPath() {
   *bucket_ptr = Bucket::get_sentinel_bucket();
 }
 
+template <bool thread_safe>
 bool PartitionReallocDirectMappedInPlace(
-    PartitionRootGeneric* root,
-    internal::PartitionPage<internal::ThreadSafe>* page,
+    PartitionRoot<thread_safe>* root,
+    internal::PartitionPage<thread_safe>* page,
     size_t raw_size) EXCLUSIVE_LOCKS_REQUIRED(root->lock_) {
   DCHECK(page->bucket->is_direct_mapped());
 
@@ -325,19 +316,20 @@ bool PartitionReallocDirectMappedInPlace(
 
   // Note that the new size might be a bucketed size; this function is called
   // whenever we're reallocating a direct mapped allocation.
-  size_t new_size = PartitionRootGeneric::Bucket::get_direct_map_size(raw_size);
+  size_t new_size =
+      PartitionRoot<thread_safe>::Bucket::get_direct_map_size(raw_size);
   if (new_size < kGenericMinDirectMappedDownsize)
     return false;
 
   // bucket->slot_size is the current size of the allocation.
   size_t current_size = page->bucket->slot_size;
   char* char_ptr =
-      static_cast<char*>(PartitionRootGeneric::Page::ToPointer(page));
+      static_cast<char*>(PartitionRoot<thread_safe>::Page::ToPointer(page));
   if (new_size == current_size) {
     // No need to move any memory around, but update size and cookie below.
   } else if (new_size < current_size) {
     size_t map_size =
-        internal::PartitionDirectMapExtent<internal::ThreadSafe>::FromPage(page)
+        internal::PartitionDirectMapExtent<thread_safe>::FromPage(page)
             ->map_size;
 
     // Don't reallocate in-place if new size is less than 80 % of the full
@@ -350,8 +342,7 @@ bool PartitionReallocDirectMappedInPlace(
     root->DecommitSystemPages(char_ptr + new_size, decommit_size);
     SetSystemPagesAccess(char_ptr + new_size, decommit_size, PageInaccessible);
   } else if (new_size <=
-             internal::PartitionDirectMapExtent<internal::ThreadSafe>::FromPage(
-                 page)
+             internal::PartitionDirectMapExtent<thread_safe>::FromPage(page)
                  ->map_size) {
     // Grow within the actually allocated memory. Just need to make the
     // pages accessible again.
@@ -381,7 +372,8 @@ bool PartitionReallocDirectMappedInPlace(
   return true;
 }
 
-void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
+template <bool thread_safe>
+void* PartitionReallocGenericFlags(PartitionRoot<thread_safe>* root,
                                    int flags,
                                    void* ptr,
                                    size_t new_size,
@@ -393,7 +385,7 @@ void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
   return result;
 #else
   if (UNLIKELY(!ptr))
-    return PartitionAllocGenericFlags(root, flags, new_size, type_name);
+    return root->AllocFlags(flags, new_size, type_name);
   if (UNLIKELY(!new_size)) {
     root->Free(ptr);
     return nullptr;
@@ -413,11 +405,11 @@ void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
         &actual_old_size, ptr);
   }
   if (LIKELY(!overridden)) {
-    PartitionRootGeneric::Page* page = PartitionRootGeneric::Page::FromPointer(
+    auto* page = PartitionRoot<thread_safe>::Page::FromPointer(
         internal::PartitionCookieFreePointerAdjust(ptr));
     bool success = false;
     {
-      PartitionRootGeneric::ScopedGuard guard{root->lock_};
+      internal::ScopedGuard<thread_safe> guard{root->lock_};
       // TODO(palmer): See if we can afford to make this a CHECK.
       DCHECK(root->IsValidPage(page));
 
@@ -437,7 +429,7 @@ void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
     }
 
     const size_t actual_new_size = root->ActualSize(new_size);
-    actual_old_size = PartitionAllocGetSize(ptr);
+    actual_old_size = PartitionAllocGetSize<thread_safe>(ptr);
 
     // TODO: note that tcmalloc will "ignore" a downsizing realloc() unless the
     // new size is a significant percentage smaller. We could do the same if we
@@ -458,7 +450,7 @@ void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
   }
 
   // This realloc cannot be resized in-place. Sadness.
-  void* ret = PartitionAllocGenericFlags(root, flags, new_size, type_name);
+  void* ret = root->AllocFlags(flags, new_size, type_name);
   if (!ret) {
     if (flags & PartitionAllocReturnNull)
       return nullptr;
@@ -475,15 +467,17 @@ void* PartitionReallocGenericFlags(PartitionRootGeneric* root,
 #endif
 }  // namespace base
 
-void* PartitionRootGeneric::Realloc(void* ptr,
-                                    size_t new_size,
-                                    const char* type_name) {
+template <bool thread_safe>
+void* PartitionRoot<thread_safe>::Realloc(void* ptr,
+                                          size_t new_size,
+                                          const char* type_name) {
   return PartitionReallocGenericFlags(this, 0, ptr, new_size, type_name);
 }
 
-void* PartitionRootGeneric::TryRealloc(void* ptr,
-                                       size_t new_size,
-                                       const char* type_name) {
+template <bool thread_safe>
+void* PartitionRoot<thread_safe>::TryRealloc(void* ptr,
+                                             size_t new_size,
+                                             const char* type_name) {
   return PartitionReallocGenericFlags(this, PartitionAllocReturnNull, ptr,
                                       new_size, type_name);
 }
@@ -651,20 +645,11 @@ static void PartitionPurgeBucket(
   }
 }
 
-void PartitionRoot::PurgeMemory(int flags) {
-  ScopedGuard guard{lock_};
+template <bool thread_safe>
+void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
+  ScopedGuard guard{this->lock_};
   if (flags & PartitionPurgeDecommitEmptyPages)
-    DecommitEmptyPages();
-  // We don't currently do anything for PartitionPurgeDiscardUnusedSystemPages
-  // here because that flag is only useful for allocations >= system page size.
-  // We only have allocations that large inside generic partitions at the
-  // moment.
-}
-
-void PartitionRootGeneric::PurgeMemory(int flags) {
-  ScopedGuard guard{lock_};
-  if (flags & PartitionPurgeDecommitEmptyPages)
-    DecommitEmptyPages();
+    this->DecommitEmptyPages();
   if (flags & PartitionPurgeDiscardUnusedSystemPages) {
     for (size_t i = 0; i < kGenericNumBuckets; ++i) {
       Bucket* bucket = &buckets[i];
@@ -758,14 +743,15 @@ static void PartitionDumpBucketStats(
   }
 }
 
-void PartitionRootGeneric::DumpStats(const char* partition_name,
-                                     bool is_light_dump,
-                                     PartitionStatsDumper* dumper) {
-  ScopedGuard guard{lock_};
+template <bool thread_safe>
+void PartitionRoot<thread_safe>::DumpStats(const char* partition_name,
+                                           bool is_light_dump,
+                                           PartitionStatsDumper* dumper) {
+  ScopedGuard guard{this->lock_};
   PartitionMemoryStats stats = {0};
   stats.total_mmapped_bytes =
-      total_size_of_super_pages + total_size_of_direct_mapped_pages;
-  stats.total_committed_bytes = total_size_of_committed_pages;
+      this->total_size_of_super_pages + this->total_size_of_direct_mapped_pages;
+  stats.total_committed_bytes = this->total_size_of_committed_pages;
 
   size_t direct_mapped_allocations_total_size = 0;
 
@@ -786,7 +772,7 @@ void PartitionRootGeneric::DumpStats(const char* partition_name,
       const Bucket* bucket = &buckets[i];
       // Don't report the pseudo buckets that the generic allocator sets up in
       // order to preserve a fast size->bucket map (see
-      // PartitionRootGeneric::Init() for details).
+      // PartitionRoot::Init() for details).
       if (!bucket->active_pages_head)
         bucket_stats[i].is_valid = false;
       else
@@ -799,8 +785,8 @@ void PartitionRootGeneric::DumpStats(const char* partition_name,
       }
     }
 
-    for (internal::PartitionDirectMapExtent<internal::ThreadSafe>* extent =
-             direct_map_list;
+    for (internal::PartitionDirectMapExtent<thread_safe>* extent =
+             this->direct_map_list;
          extent && num_direct_mapped_allocations < kMaxReportableDirectMaps;
          extent = extent->next_extent, ++num_direct_mapped_allocations) {
       DCHECK(!extent->next_extent ||
@@ -815,7 +801,7 @@ void PartitionRootGeneric::DumpStats(const char* partition_name,
 
   if (!is_light_dump) {
     // Call |PartitionsDumpBucketStats| after collecting stats because it can
-    // try to allocate using |PartitionRootGeneric::Alloc()| and it can't
+    // try to allocate using |PartitionRoot::Alloc()| and it can't
     // obtain the lock.
     for (size_t i = 0; i < kGenericNumBuckets; ++i) {
       if (bucket_stats[i].is_valid)
@@ -842,52 +828,7 @@ void PartitionRootGeneric::DumpStats(const char* partition_name,
   dumper->PartitionDumpTotals(partition_name, &stats);
 }
 
-void PartitionRoot::DumpStats(const char* partition_name,
-                              bool is_light_dump,
-                              PartitionStatsDumper* dumper) {
-  ScopedGuard guard{lock_};
-
-  PartitionMemoryStats stats = {0};
-  stats.total_mmapped_bytes = total_size_of_super_pages;
-  stats.total_committed_bytes = total_size_of_committed_pages;
-  DCHECK(!total_size_of_direct_mapped_pages);
-
-  static constexpr size_t kMaxReportableBuckets = 4096 / sizeof(void*);
-  std::unique_ptr<PartitionBucketMemoryStats[]> memory_stats;
-  if (!is_light_dump) {
-    memory_stats =
-        std::make_unique<PartitionBucketMemoryStats[]>(kMaxReportableBuckets);
-  }
-
-  const size_t partition_num_buckets = num_buckets;
-  DCHECK(partition_num_buckets <= kMaxReportableBuckets);
-
-  for (size_t i = 0; i < partition_num_buckets; ++i) {
-    PartitionBucketMemoryStats bucket_stats = {0};
-    PartitionDumpBucketStats(&bucket_stats, &buckets()[i]);
-    if (bucket_stats.is_valid) {
-      stats.total_resident_bytes += bucket_stats.resident_bytes;
-      stats.total_active_bytes += bucket_stats.active_bytes;
-      stats.total_decommittable_bytes += bucket_stats.decommittable_bytes;
-      stats.total_discardable_bytes += bucket_stats.discardable_bytes;
-    }
-    if (!is_light_dump) {
-      if (bucket_stats.is_valid)
-        memory_stats[i] = bucket_stats;
-      else
-        memory_stats[i].is_valid = false;
-    }
-  }
-  if (!is_light_dump) {
-    // PartitionsDumpBucketStats is called after collecting stats because it
-    // can use PartitionRoot::Alloc() to allocate and this can affect the
-    // statistics.
-    for (size_t i = 0; i < partition_num_buckets; ++i) {
-      if (memory_stats[i].is_valid)
-        dumper->PartitionsDumpBucketStats(partition_name, &memory_stats[i]);
-    }
-  }
-  dumper->PartitionDumpTotals(partition_name, &stats);
-}
+template struct PartitionRoot<internal::ThreadSafe>;
+template struct PartitionRoot<internal::NotThreadSafe>;
 
 }  // namespace base

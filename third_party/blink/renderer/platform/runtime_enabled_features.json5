@@ -1080,6 +1080,12 @@
     {
       name: "MediaEngagementBypassAutoplayPolicies",
     },
+    // Media Feeds: https://wicg.github.io/media-feeds/
+    // Set to reflect the kMediaFeeds feature.
+    {
+      name: "MediaFeeds",
+      status: "experimental",
+    },
     {
       name: "MediaLatencyHint",
       status: "test",

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -450,6 +451,20 @@ void NGBoxFragmentBuilder::ComputeInlineContainerGeometry(
                                             inline_containing_block_map,
                                             &containing_linebox_map);
   }
+}
+
+void NGBoxFragmentBuilder::SetLastBaselineToBlockEndMarginEdgeIfNeeded() {
+  if (ConstraintSpace()->BaselineAlgorithmType() !=
+      NGBaselineAlgorithmType::kInlineBlock)
+    return;
+
+  if (!node_.UseBlockEndMarginEdgeForInlineBlockBaseline())
+    return;
+
+  // When overflow is present (within an atomic-inline baseline context) we
+  // should always use the block-end margin edge as the baseline.
+  NGBoxStrut margins = ComputeMarginsForSelf(*ConstraintSpace(), Style());
+  SetLastBaseline(BlockSize() + margins.block_end);
 }
 
 #if DCHECK_IS_ON()

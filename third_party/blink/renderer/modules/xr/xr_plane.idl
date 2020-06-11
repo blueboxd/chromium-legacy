@@ -21,5 +21,5 @@ interface XRPlane {
     readonly attribute DOMHighResTimeStamp lastChangedTime;
 
     [CallWith=ScriptState, RaisesException, RuntimeEnabled=WebXRAnchors]
-    Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose);
+    Promise<XRAnchor> createAnchor();
 };

@@ -81,8 +81,35 @@ ExtensionFunction::ResponseAction SerialGetDevicesFunction::Run() {
 
 void SerialGetDevicesFunction::OnGotDevices(
     std::vector<device::mojom::SerialPortInfoPtr> devices) {
-  Respond(ArgumentList(serial::GetDevices::Results::Create(
-      mojo::ConvertTo<std::vector<serial::DeviceInfo>>(devices))));
+  std::vector<extensions::api::serial::DeviceInfo> results;
+  for (const auto& device : devices) {
+    extensions::api::serial::DeviceInfo info;
+    info.path = device->path.AsUTF8Unsafe();
+    if (device->has_vendor_id)
+      info.vendor_id = std::make_unique<int>(device->vendor_id);
+    if (device->has_product_id)
+      info.product_id = std::make_unique<int>(device->product_id);
+    if (device->display_name)
+      info.display_name = std::make_unique<std::string>(*device->display_name);
+    results.push_back(std::move(info));
+
+#if defined(OS_MACOSX)
+    if (device->alternate_path) {
+      extensions::api::serial::DeviceInfo alternate_info;
+      alternate_info.path = device->alternate_path->AsUTF8Unsafe();
+      if (device->has_vendor_id)
+        alternate_info.vendor_id = std::make_unique<int>(device->vendor_id);
+      if (device->has_product_id)
+        alternate_info.product_id = std::make_unique<int>(device->product_id);
+      if (device->display_name) {
+        alternate_info.display_name =
+            std::make_unique<std::string>(*device->display_name);
+      }
+      results.push_back(std::move(alternate_info));
+    }
+#endif  // defined(OS_MACOSX)
+  }
+  Respond(ArgumentList(serial::GetDevices::Results::Create(results)));
 }
 
 SerialConnectFunction::SerialConnectFunction() {}
@@ -438,23 +465,3 @@ void SerialClearBreakFunction::OnClearBreak(bool success) {
 }  // namespace api
 
 }  // namespace extensions
-
-namespace mojo {
-
-// static
-extensions::api::serial::DeviceInfo
-TypeConverter<extensions::api::serial::DeviceInfo,
-              device::mojom::SerialPortInfoPtr>::
-    Convert(const device::mojom::SerialPortInfoPtr& device) {
-  extensions::api::serial::DeviceInfo info;
-  info.path = device->path.AsUTF8Unsafe();
-  if (device->has_vendor_id)
-    info.vendor_id.reset(new int(static_cast<int>(device->vendor_id)));
-  if (device->has_product_id)
-    info.product_id.reset(new int(static_cast<int>(device->product_id)));
-  if (device->display_name)
-    info.display_name.reset(new std::string(device->display_name.value()));
-  return info;
-}
-
-}  // namespace mojo

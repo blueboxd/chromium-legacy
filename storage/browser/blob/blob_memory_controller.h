@@ -20,6 +20,7 @@
 #include "base/callback_helpers.h"
 #include "base/component_export.h"
 #include "base/containers/mru_cache.h"
+#include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
@@ -54,6 +55,8 @@ class ShareableFileReference;
 // This class can only be interacted with on the IO thread.
 class COMPONENT_EXPORT(STORAGE_BROWSER) BlobMemoryController {
  public:
+  static const base::Feature kInhibitBlobMemoryControllerMemoryPressureResponse;
+
   enum class Strategy {
     // We don't have enough memory for this blob.
     TOO_LARGE,

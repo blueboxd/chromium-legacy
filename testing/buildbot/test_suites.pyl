@@ -2453,6 +2453,10 @@
           '${buildername}',
           '--extra-browser-args=--enable-features=UseSkiaRenderer --use-gl=egl --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-software-compositing-fallback --disable-headless-mode',
         ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
+        ],
         'mixins': [
           'chrome-gpu-gold-service-account',
           'skia_gold_test',

@@ -58,12 +58,18 @@ void SerialDeviceEnumerator::RemoveObserver(Observer* observer) {
 }
 
 base::Optional<base::FilePath> SerialDeviceEnumerator::GetPathFromToken(
-    const base::UnguessableToken& token) {
+    const base::UnguessableToken& token,
+    bool use_alternate_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto it = ports_.find(token);
   if (it == ports_.end())
     return base::nullopt;
+
+#if defined(OS_MACOSX)
+  if (use_alternate_path)
+    return it->second->alternate_path;
+#endif
 
   return it->second->path;
 }

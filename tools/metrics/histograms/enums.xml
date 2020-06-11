@@ -21120,6 +21120,13 @@ Called by update_document_policy_enum.py.-->
   <int value="4" label="Programmatic API Call"/>
 </enum>
 
+<enum name="ExtensionActionSetIconFailureType">
+  <int value="0" label="Failed to parse function details"/>
+  <int value="1" label="Failed to decode image canvas string"/>
+  <int value="2" label="Failed to unpickle image canvas"/>
+  <int value="3" label="Arguments provided neither image data nor icon index"/>
+</enum>
+
 <enum name="ExtensionBackgroundPageType">
   <int value="0" label="None"/>
   <int value="1" label="Persistent"/>
@@ -69523,6 +69530,7 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Prefs cleared"/>
   <int value="2" label="Prefs retrieved - empty"/>
   <int value="3" label="Prefs retrieved - non-empty"/>
+  <int value="4" label="Prefs cleared and were not empty"/>
 </enum>
 
 <enum name="VariationsFirstRunResult">

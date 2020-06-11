@@ -75,8 +75,8 @@ class SearchHandler : public mojom::SearchHandler {
 
   std::vector<mojom::SearchResultPtr>::iterator AddSectionResultIfPossible(
       const std::vector<mojom::SearchResultPtr>::iterator& position,
+      const mojom::SearchResultPtr& child_result,
       mojom::Section section,
-      double relevance_score,
       std::vector<mojom::SearchResultPtr>* results) const;
 
   std::vector<mojom::SearchResultPtr>::iterator AddSubpageResultIfPossible(

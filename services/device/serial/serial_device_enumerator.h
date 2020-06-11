@@ -41,8 +41,9 @@ class SerialDeviceEnumerator {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  virtual base::Optional<base::FilePath> GetPathFromToken(
-      const base::UnguessableToken& token);
+  base::Optional<base::FilePath> GetPathFromToken(
+      const base::UnguessableToken& token,
+      bool use_alternate_path);
 
  protected:
   // These helper methods take care of managing |ports_| and notifying

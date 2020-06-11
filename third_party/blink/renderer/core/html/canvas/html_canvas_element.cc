@@ -714,6 +714,12 @@ static std::pair<blink::Image*, float> BrokenCanvas(float device_scale_factor) {
   return std::make_pair(broken_canvas_lo_res, 1);
 }
 
+static SkFilterQuality FilterQualityFromStyle(const ComputedStyle* style) {
+  if (style && style->ImageRendering() == EImageRendering::kPixelated)
+    return kNone_SkFilterQuality;
+  return kLow_SkFilterQuality;
+}
+
 SkFilterQuality HTMLCanvasElement::FilterQuality() const {
   if (!isConnected())
     return kLow_SkFilterQuality;
@@ -724,23 +730,21 @@ SkFilterQuality HTMLCanvasElement::FilterQuality() const {
     HTMLCanvasElement* non_const_this = const_cast<HTMLCanvasElement*>(this);
     style = non_const_this->EnsureComputedStyle();
   }
-  return (style && style->ImageRendering() == EImageRendering::kPixelated)
-             ? kNone_SkFilterQuality
-             : kLow_SkFilterQuality;
+  return FilterQualityFromStyle(style);
 }
 
 bool HTMLCanvasElement::LowLatencyEnabled() const {
   return !!frame_dispatcher_;
 }
 
-void HTMLCanvasElement::UpdateFilterQuality() {
+void HTMLCanvasElement::UpdateFilterQuality(SkFilterQuality filter_quality) {
   if (IsOffscreenCanvasRegistered())
-    UpdateOffscreenCanvasFilterQuality(FilterQuality());
+    UpdateOffscreenCanvasFilterQuality(filter_quality);
 
   if (context_ && Is3d())
-    context_->SetFilterQuality(FilterQuality());
+    context_->SetFilterQuality(filter_quality);
   else if (canvas2d_bridge_)
-    canvas2d_bridge_->UpdateFilterQuality();
+    canvas2d_bridge_->SetFilterQuality(filter_quality);
 }
 
 // In some instances we don't actually want to paint to the parent layer
@@ -1249,6 +1253,7 @@ void HTMLCanvasElement::ContextDestroyed() {
 
 void HTMLCanvasElement::StyleDidChange(const ComputedStyle* old_style,
                                        const ComputedStyle& new_style) {
+  UpdateFilterQuality(FilterQualityFromStyle(&new_style));
   if (context_)
     context_->StyleDidChange(old_style, new_style);
 }

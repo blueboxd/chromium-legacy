@@ -331,10 +331,9 @@ cc::PaintCanvas* Canvas2DLayerBridge::GetPaintCanvas() {
   return ResourceProvider()->Canvas();
 }
 
-void Canvas2DLayerBridge::UpdateFilterQuality() {
-  SkFilterQuality filter_quality = resource_host_->FilterQuality();
-  if (GetOrCreateResourceProvider())
-    ResourceProvider()->SetFilterQuality(filter_quality);
+void Canvas2DLayerBridge::SetFilterQuality(SkFilterQuality filter_quality) {
+  if (CanvasResourceProvider* resource_provider = ResourceProvider())
+    resource_provider->SetFilterQuality(filter_quality);
   if (layer_)
     layer_->SetNearestNeighbor(filter_quality == kNone_SkFilterQuality);
 }

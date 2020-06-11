@@ -549,55 +549,6 @@ class MetaBuildWrapper(object):
       if zip_dir:
         self.RemoveDirectory(zip_dir)
 
-  def _AddBaseSoftware(self, cmd):
-    # HACK(iannucci): These packages SHOULD NOT BE HERE.
-    # Remove method once Swarming Pool Task Templates are implemented.
-    # crbug.com/812428
-
-    # Read vpython version from pinned depot_tools manifest. Better than
-    # duplicating the pin here. The pin file format is simple enough to parse
-    # it inline here.
-    manifest_path = self.PathJoin(self.chromium_src_dir, 'third_party',
-                                  'depot_tools', 'cipd_manifest.txt')
-    vpython_pkg = vpython_version = None
-    for line in self.ReadFile(manifest_path).splitlines():
-      # lines look like:
-      # name/of/package version
-      if 'vpython' in line and 'git_revision' in line:
-        vpython_pkg, vpython_version = line.split()
-        break
-    if vpython_pkg is None:
-      raise ValueError('unable to read vpython pin from %s' % (manifest_path, ))
-
-    # Add in required base software. This should be kept in sync with the
-    # `chromium_swarming` recipe module in build.git. All references to
-    # `swarming_module` below are purely due to this.
-    cipd_packages = [
-      ('infra/python/cpython/${platform}',
-       'version:2.7.15.chromium14'),
-      ('infra/tools/luci/logdog/butler/${platform}',
-       'git_revision:e1abc57be62d198b5c2f487bfb2fa2d2eb0e867c'),
-    ]
-    cipd_packages.append((vpython_pkg, vpython_version))
-    cipd_packages.append((vpython_pkg.replace('vpython', 'vpython-native'),
-                          vpython_version))
-
-    for pkg, vers in cipd_packages:
-      cmd.append('--cipd-package=.swarming_module:%s:%s' % (pkg, vers))
-
-    # Add packages to $PATH
-    cmd.extend([
-      '--env-prefix=PATH', '.swarming_module',
-      '--env-prefix=PATH', '.swarming_module/bin',
-    ])
-
-    # Add cache directives for vpython.
-    vpython_cache_path = '.swarming_module_cache/vpython'
-    cmd.extend([
-      '--named-cache=swarming_module_cache_vpython', vpython_cache_path,
-      '--env-prefix=VPYTHON_VIRTUALENV_ROOT', vpython_cache_path,
-    ])
-
   def _RunUnderSwarming(self, build_dir, target):
     isolate_server = 'isolateserver.appspot.com'
     namespace = 'default-gzip'
@@ -609,11 +560,8 @@ class MetaBuildWrapper(object):
     #
     # TODO(dpranke): Also, add support for sharding and merging results.
     dimensions = []
-    swarming_pool = ''
     for k, v in self._DefaultDimensions() + self.args.dimensions:
       dimensions += ['-d', k, v]
-      if k == 'pool':
-        swarming_pool = v
 
     archive_json_path = self.ToSrcRelPath(
         '%s/%s.archive.json' % (build_dir, target))
@@ -677,10 +625,6 @@ class MetaBuildWrapper(object):
           '-S', swarming_server,
           '--tags=purpose:user-debug-mb',
       ] + dimensions
-    # TODO(crbug.com/812428): Remove this once all pools have migrated to task
-    # templates.
-    if not swarming_pool.endswith('.template'):
-      self._AddBaseSoftware(cmd)
     if self.args.extra_args:
       cmd += ['--'] + self.args.extra_args
     self.Print('')

@@ -4,12 +4,13 @@
 
 #import "ios/chrome/browser/ui/translate/translate_notification_presenter.h"
 
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/translate/translate_notification_delegate.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

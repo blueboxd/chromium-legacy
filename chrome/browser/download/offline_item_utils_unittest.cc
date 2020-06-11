@@ -201,7 +201,7 @@ TEST_F(OfflineItemUtilsTest, BasicConversions) {
   EXPECT_EQ(allow_metered, offline_item.allow_metered);
   EXPECT_EQ(received_bytes, offline_item.received_bytes);
   EXPECT_EQ(received_bytes, offline_item.progress.value);
-  EXPECT_TRUE(offline_item.progress.max.has_value());
+  ASSERT_TRUE(offline_item.progress.max.has_value());
   EXPECT_EQ(total_bytes, offline_item.progress.max.value());
   EXPECT_EQ(OfflineItemProgressUnit::BYTES, offline_item.progress.unit);
   EXPECT_EQ(time_remaining_ms, offline_item.time_remaining_ms);

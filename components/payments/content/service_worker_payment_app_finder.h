@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "components/payments/content/web_app_manifest.h"
 #include "content/public/browser/payment_app_provider.h"
+#include "content/public/browser/render_document_host_user_data.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 class GURL;
@@ -21,14 +22,8 @@ class GURL;
 template <class T>
 class scoped_refptr;
 
-namespace base {
-template <typename Type>
-struct DefaultSingletonTraits;
-}  // namespace base
-
 namespace content {
 class RenderFrameHost;
-class WebContents;
 }  // namespace content
 
 namespace url {
@@ -41,7 +36,9 @@ class PaymentManifestDownloader;
 class PaymentManifestWebDataService;
 
 // Retrieves service worker payment apps.
-class ServiceWorkerPaymentAppFinder {
+class ServiceWorkerPaymentAppFinder
+    : public content::RenderDocumentHostUserData<
+          ServiceWorkerPaymentAppFinder> {
  public:
   using InstallablePaymentApps =
       std::map<GURL, std::unique_ptr<WebAppInstallationInfo>>;
@@ -50,7 +47,7 @@ class ServiceWorkerPaymentAppFinder {
                               InstallablePaymentApps,
                               const std::string& error_message)>;
 
-  static ServiceWorkerPaymentAppFinder* GetInstance();
+  ~ServiceWorkerPaymentAppFinder() override;
 
   // Retrieves all service worker payment apps that can handle payments for
   // |requested_method_data|, verifies these apps are allowed to handle these
@@ -71,8 +68,6 @@ class ServiceWorkerPaymentAppFinder {
   // The method should be called on the UI thread.
   void GetAllPaymentApps(
       const url::Origin& merchant_origin,
-      content::RenderFrameHost* initiator_render_frame_host,
-      content::WebContents* web_contents,
       scoped_refptr<PaymentManifestWebDataService> cache,
       std::vector<mojom::PaymentMethodDataPtr> requested_method_data,
       bool may_crawl_for_installable_payment_apps,
@@ -91,20 +86,26 @@ class ServiceWorkerPaymentAppFinder {
   void IgnorePaymentMethodForTest(const std::string& method);
 
  private:
-  friend struct base::DefaultSingletonTraits<ServiceWorkerPaymentAppFinder>;
+  friend class content::RenderDocumentHostUserData<
+      ServiceWorkerPaymentAppFinder>;
+  friend class IframeCspTest;
   friend class PaymentRequestPaymentAppTest;
   friend class ServiceWorkerPaymentAppFinderBrowserTest;
   friend class PaymentRequestPlatformBrowserTestBase;
   friend class PaymentMethodViewControllerTest;
 
-  ServiceWorkerPaymentAppFinder();
-  ~ServiceWorkerPaymentAppFinder();
+  explicit ServiceWorkerPaymentAppFinder(content::RenderFrameHost* rfh);
 
   // Should be used only in tests.
   // Should be called before every call to GetAllPaymentApps() (because the test
   // downloader is moved into the SelfDeletingServiceWorkerPaymentAppFinder).
   void SetDownloaderAndIgnorePortInOriginComparisonForTesting(
       std::unique_ptr<PaymentManifestDownloader> downloader);
+
+  RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
+
+  // |rfh_| owns this ServiceWorkerPaymentAppFinder, so it is always valid.
+  content::RenderFrameHost* rfh_;
 
   std::set<std::string> ignored_methods_;
   std::unique_ptr<PaymentManifestDownloader> test_downloader_;

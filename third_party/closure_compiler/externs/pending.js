@@ -37,33 +37,6 @@ class DOMMatrix {
 }
 
 /**
- * @see https://wicg.github.io/ResizeObserver/#resizeobserverentry
- * @typedef {{contentRect: DOMRectReadOnly,
- *            target: Element}}
- * TODO(dpapad): Remove this once it is added to Closure Compiler itself.
- */
-let ResizeObserverEntry;
-
-/**
- * @see https://wicg.github.io/ResizeObserver/#api
- * TODO(dpapad): Remove this once it is added to Closure Compiler itself.
- */
-class ResizeObserver {
-  /**
-   * @param {!function(Array<ResizeObserverEntry>, ResizeObserver)} callback
-   */
-  constructor(callback) {}
-
-  disconnect() {}
-
-  /** @param {Element} target */
-  observe(target) {}
-
-  /** @param {Element} target */
-  unobserve(target) {}
-}
-
-/**
  * @see
  * https://github.com/tc39/proposal-bigint
  * This supports wrapping and operating on arbitrarily large integers.
@@ -72,9 +45,6 @@ class ResizeObserver {
  * @return {number}
  */
 let BigInt = function(value) {};
-
-/** @const {!Clipboard} */
-Navigator.prototype.clipboard;
 
 /**
  * TODO(katie): Remove this once length is added to the Closure

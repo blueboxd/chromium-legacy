@@ -108,6 +108,9 @@ def _CreateExperiment(experiment_data,
   forcing_flags_data = experiment_data.get('forcing_flag')
   if forcing_flags_data:
     experiment['forcing_flag'] = forcing_flags_data
+  min_os_version_data = experiment_data.get('min_os_version')
+  if min_os_version_data:
+    experiment['min_os_version'] = min_os_version_data
   params_data = experiment_data.get('params')
   if (params_data):
     experiment['params'] = [{'key': param, 'value': params_data[param]}

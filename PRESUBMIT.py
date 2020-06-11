@@ -1823,6 +1823,11 @@ def _GetMessageForMatchingType(input_api, affected_file, line_number, line,
   match has been found and the additional text passed as |message| in case the
   target type name matches the text inside the line passed as parameter.
   """
+  result = []
+
+  if line.endswith(" nocheck"):
+    return result
+
   matched = False
   if type_name[0:1] == '/':
     regex = type_name[1:]
@@ -1831,7 +1836,6 @@ def _GetMessageForMatchingType(input_api, affected_file, line_number, line,
   elif type_name in line:
     matched = True
 
-  result = []
   if matched:
     result.append('    %s:%d:' % (affected_file.LocalPath(), line_number))
     for message_line in message:

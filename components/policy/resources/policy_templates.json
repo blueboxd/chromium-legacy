@@ -763,12 +763,15 @@
       ],
     },
     {
-      'name': 'ChromeReportingExtension',
+      'name': 'CloudReporting',
       'type': 'group',
-      'caption': '''Chrome Reporting Extension''',
-      'desc': '''Configure Chrome Reporting Extension related policies.
+      'caption': '''Cloud Reporting''',
+      'desc': '''Configure cloud reporting policies.
 
-      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME">CloudManagementEnrollmentToken</ph>.''',
+      When the policy <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME">CloudReportingEnabled</ph> is left unset or set to disabled, these policies will be ignored.
+
+      These policies are only effective when the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN">CloudManagementEnrollmentToken</ph> for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      These policies are always effective for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.''',
       'policies': [
         'ReportVersionData',
         'ReportPolicyData',
@@ -17325,10 +17328,13 @@
       'example_value': False,
       'desc': '''This policy controls whether to report version information, such as OS version, OS platform, OS architecture, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> channel.
 
+      When the policy <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME">CloudReportingEnabled</ph> is left unset or set to disabled, this policy will be ignored.
+
       When this policy is left unset or set to True, version information is gathered.
       When this policy is set to False, version information is not gathered.
 
-      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME">CloudManagementEnrollmentToken</ph>.'''
+      This policy is only effective when the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN">CloudManagementEnrollmentToken</ph> for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      This policy is always effective for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.'''
     },
     {
       'id': 471,
@@ -17348,10 +17354,13 @@
       'example_value': False,
       'desc': '''This policy controls whether to report policy data and time of policy fetch.
 
+      When the policy <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME">CloudReportingEnabled</ph> is left unset or set to disabled, this policy will be ignored.
+
       When this policy is left unset or set to True, policy data and time of policy fetch are gathered.
       When this policy is set to False, policy data and time of policy fetch are not gathered.
 
-      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME">CloudManagementEnrollmentToken</ph>.'''
+      This policy is only effective when the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN">CloudManagementEnrollmentToken</ph> for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      This policy is always effective for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.'''
     },
     {
       'id': 472,
@@ -17371,10 +17380,12 @@
       'example_value': False,
       'desc': '''This policy controls whether to report information that can be used to identify machines, such as machine name and network addresses.
 
+      When the policy <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME">CloudReportingEnabled</ph> is left unset or set to disabled, this policy will be ignored.
+
       When this policy is left unset or set to True, information that can be used to identify machines is gathered.
       When this policy is set to False, information that can be used to identify machines is not gathered.
 
-      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME">CloudManagementEnrollmentToken</ph>.'''
+      This policy is only effective when the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN">CloudManagementEnrollmentToken</ph> for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.'''
     },
     {
       'id': 473,
@@ -17394,10 +17405,13 @@
       'example_value': False,
       'desc': '''This policy controls whether to report information that can be used to identify users, such as OS login, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Profile login, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Profile name, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> Profile path and <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> executable path.
 
+      When the policy <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME">CloudReportingEnabled</ph> is left unset or set to disabled, this policy will be ignored.
+
       When this policy is left unset or set to True, information that can be used to identify users is gathered.
       When this policy is set to False, information that can be used to identify users is not gathered.
 
-      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME">CloudManagementEnrollmentToken</ph>.'''
+      This policy is only effective when the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN">CloudManagementEnrollmentToken</ph> for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      This policy is always effective for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.'''
     },
     {
       'id': 499,
@@ -17417,10 +17431,13 @@
       'example_value': False,
       'desc': '''This policy controls whether to report extensions and plugins information.
 
+      When the policy <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME">CloudReportingEnabled</ph> is left unset or set to disabled, this policy will be ignored.
+
       When this policy is left unset or set to True, extension and plugins data are gathered.
       When this policy is set to False, extensions and plugins data are not gathered.
 
-      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME">CloudManagementEnrollmentToken</ph>.'''
+      This policy is only effective when the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN">CloudManagementEnrollmentToken</ph> for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      This policy is always effective for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.'''
     },
     {
       'id': 500,
@@ -17440,10 +17457,13 @@
       'example_value': False,
       'desc': '''This policy controls whether to report Safe Browsing information including the number of Safe Browsing warning and the number of safe browsering warning click through.
 
+      When the policy <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME">CloudReportingEnabled</ph> is left unset or set to disabled, this policy will be ignored.
+
       When this policy is left unset or set to True, Safe Browsing data are gathered.
       When this policy is set to False, Safe Browsing data are not gathered.
 
-      This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME">CloudManagementEnrollmentToken</ph>.'''
+      This policy is only effective when the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN">CloudManagementEnrollmentToken</ph> for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      This policy is always effective for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.'''
     },
     {
       'id': 608,
@@ -17463,13 +17483,14 @@
       'example_value': True,
       'desc': '''This policy controls <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extension installation requests which allows users to send the requests to the Google Admin console for approval.
 
-      When policy CloudReportingEnabled is left unset or set to disabled, this policy will be ignored, extension installation requests are not created or uploaded.
+      When the policy <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME">CloudReportingEnabled</ph> is left unset or set to disabled, this policy will be ignored, extension installation requests are not created or uploaded.
       When this policy is left unset or set to disabled, extension installation requests are not created or uploaded.
       When this policy is set to enabled, extension installation requests are created and uploaded to Google Admin console.
 
       Extension installation requests are created when users try to install an extension that is not whitelisted by <ph name="EXTENSION_INSTALL_WHITELIST">ExtesionInstallWhitelist</ph> or <ph name="EXTENSION_SETTINGS">ExtensionSettings</ph>.
 
-      This policy is only effective when the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN">CloudManagementEnrollmentToken</ph> and <ph name="CLOUD_REPORTING_ENABLED">CloudReportingEnabled</ph> is enabled.'''
+      This policy is only effective when the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN">CloudManagementEnrollmentToken</ph> for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      This policy is always effective for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.'''
     },
     {
       'id': 493,
@@ -17490,7 +17511,6 @@
 
       When this policy is left unset or set to False, there is no data collected or uploaded.
       When this policy is set to True, the data is collected and uploaded to Google Admin console.
-      To control what data is uploaded, please use policies in the group Chrome Reporting Extension.
 
       For <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, this policy is only effective when the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN">CloudManagementEnrollmentToken</ph>.
       For <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, this policy is always effective.'''
@@ -20747,7 +20767,6 @@
       'name': 'PrintRasterizationMode',
       'owners': ['thestig@chromium.org', 'file://printing/OWNERS'],
       'type': 'int-enum',
-      'future': True,
       'schema': {
         'type': 'integer',
         'enum': [ 0, 1 ],
@@ -22046,14 +22065,15 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
     {
       'id': 27,
-      'name': 'ChromeReportingExtension',
-      'caption': '''Chrome Reporting Extension''',
+      'name': 'CloudReporting',
+      'caption': '''Cloud Reporting''',
       'policies': [
         'ReportVersionData',
         'ReportPolicyData',
         'ReportMachineIDData',
         'ReportUserIDData',
         'ReportExtensionsAndPluginsData',
+        'CloudExtensionRequestEnabled',
         'CloudReportingEnabled',
       ],
     },

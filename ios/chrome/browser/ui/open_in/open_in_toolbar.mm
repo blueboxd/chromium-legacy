@@ -6,6 +6,8 @@
 
 #include <cmath>
 
+#import <MaterialComponents/MaterialButtons.h>
+
 #include "base/check.h"
 #include "base/notreached.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -14,7 +16,6 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -536,8 +536,8 @@ void URLDataManagerIOSBackend::CallStartRequest(
     const std::string& path,
     int request_id) {
   source->source()->StartDataRequest(
-      path,
-      base::Bind(&URLDataSourceIOSImpl::SendResponse, source, request_id));
+      path, base::BindRepeating(&URLDataSourceIOSImpl::SendResponse, source,
+                                request_id));
 }
 
 void URLDataManagerIOSBackend::RemoveRequest(URLRequestChromeJob* job) {

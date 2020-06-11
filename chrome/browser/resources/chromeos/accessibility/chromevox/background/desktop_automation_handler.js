@@ -190,7 +190,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
       // Play a earcon to let the user know they're in the middle of nowhere.
       if ((new Date() - this.lastHoverExit_) >
           DesktopAutomationHandler.MIN_HOVER_EXIT_SOUND_DELAY_MS) {
-        ChromeVoxState.instance.nextEarcons_.engine_.onTouchExitAnchor();
+        ChromeVox.earcons.playEarcon(Earcon.TOUCH_EXIT);
         this.lastHoverExit_ = new Date();
       }
       chrome.tts.stop();
@@ -206,7 +206,6 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
       this.textEditHandler_ = null;
     }
 
-    ChromeVoxState.instance.nextEarcons_.engine_.onTouchEnterAnchor();
     Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
     this.onEventDefault(new CustomAutomationEvent(
         evt.type, target, evt.eventFrom, evt.intents));

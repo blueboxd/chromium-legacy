@@ -12,6 +12,7 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_uma_util.h"
+#include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils.h"
 #include "third_party/blink/renderer/platform/json/json_parser.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -895,11 +896,17 @@ ManifestParser::ParseProtocolHandler(const JSONObject* object) {
   }
 
   auto protocol_handler = mojom::blink::ManifestProtocolHandler::New();
-  // TODO(crbug.com/1019239): The parsed protocol will need validation
-  // matching those accepted by navigator.registerProtocolHandler() in a follow
-  // up CL.
   base::Optional<String> protocol = ParseString(object, "protocol", Trim);
-  if (!protocol.has_value()) {
+  String error_message;
+  bool is_valid_protocol = protocol.has_value();
+
+  if (is_valid_protocol &&
+      !VerifyCustomHandlerScheme(protocol.value(), error_message)) {
+    AddErrorInfo(error_message);
+    is_valid_protocol = false;
+  }
+
+  if (!is_valid_protocol) {
     AddErrorInfo(
         "protocol_handlers entry ignored, required property 'protocol' is "
         "invalid.");
@@ -914,7 +921,22 @@ ManifestParser::ParseProtocolHandler(const JSONObject* object) {
   }
   protocol_handler->url = ParseURL(object, "url", manifest_url_,
                                    ParseURLOriginRestrictions::kSameOriginOnly);
-  if (!protocol_handler->url.IsValid()) {
+  bool is_valid_url = protocol_handler->url.IsValid();
+  if (is_valid_url) {
+    const char kToken[] = "%s";
+    String user_url = protocol_handler->url.GetString();
+    String tokenless_url = protocol_handler->url.GetString();
+    tokenless_url.Remove(user_url.Find(kToken), base::size(kToken) - 1);
+    KURL full_url(manifest_url_, tokenless_url);
+
+    if (!VerifyCustomHandlerURLSyntax(full_url, manifest_url_, user_url,
+                                      error_message)) {
+      AddErrorInfo(error_message);
+      is_valid_url = false;
+    }
+  }
+
+  if (!is_valid_url) {
     AddErrorInfo(
         "protocol_handlers entry ignored, required property 'url' is invalid.");
     return base::nullopt;

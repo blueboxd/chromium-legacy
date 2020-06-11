@@ -596,7 +596,7 @@ Browser::~Browser() {
   // The system incognito profile should not try be destroyed using
   // ProfileDestroyer::DestroyProfileWhenAppropriate(). This profile can be
   // used, at least, by the user manager window. This window is not a browser,
-  // therefore, BrowserList::IsIncognitoSessionActiveForProfile(profile_)
+  // therefore, BrowserList::IsOffTheRecordBrowserActiveForProfile(profile_)
   // returns false, while the user manager window is still opened.
   // This cannot be fixed in ProfileDestroyer::DestroyProfileWhenAppropriate(),
   // because the ProfileManager needs to be able to destroy all profiles when
@@ -605,7 +605,7 @@ Browser::~Browser() {
   // Non-primary OffTheRecord profiles should not be destroyed directly by
   // Browser (e.g. for offscreen tabs, https://crbug.com/664351).
   if (profile_->IsPrimaryOTRProfile() &&
-      !BrowserList::IsIncognitoSessionInUse(profile_) &&
+      !BrowserList::IsOffTheRecordBrowserInUse(profile_) &&
       !profile_->GetOriginalProfile()->IsSystemProfile()) {
     if (profile_->IsGuestSession()) {
 // ChromeOS handles guest data independently.

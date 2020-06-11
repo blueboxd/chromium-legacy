@@ -141,7 +141,7 @@ ScriptPromise HID::requestDevice(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  if (!frame->GetDocument()->IsFeatureEnabled(
+  if (!GetExecutionContext()->IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kHid,
           ReportOptions::kReportOnFailure)) {
     exception_state.ThrowSecurityError(kFeaturePolicyBlocked);

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/tag_collection.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
@@ -2437,6 +2438,52 @@ TEST_F(NGBlockLayoutAlgorithmTest, RootFragmentOffsetInsideLegacy) {
   // TODO(crbug.com/781241: Re-enable when we calculate inline offset at
   // the right time.
   // EXPECT_EQ(PhysicalOffset(20, 10), fragment->Offset());
+}
+
+// This test checks if the inline block baseline is computed correctly when it
+// is from the logical bottom margin edge, even after the simplified layout.
+TEST_F(NGBlockLayoutAlgorithmTest,
+       BaselineAtBlockEndMarginEdgeAfterSimplifiedLayout) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #outer {
+      height: 200px;
+    }
+    #outer.after {
+      height: 400px;
+    }
+    #target {
+      display: inline-block;
+      overflow: hidden;
+      width: 300px;
+      height: 100%;
+    }
+    </style>
+    <div id="outer">
+        <div id="target">
+        </div>
+    </div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  // #target uses the logical bottom margin edge for the inline block baseline.
+  auto* target_block_flow =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("target"));
+  NGBlockNode target(target_block_flow);
+  ASSERT_TRUE(target.UseBlockEndMarginEdgeForInlineBlockBaseline());
+  scoped_refptr<const NGPhysicalBoxFragment> before =
+      To<NGPhysicalBoxFragment>(target_block_flow->CurrentFragment());
+  EXPECT_EQ(*before->LastBaseline(), LayoutUnit(200));
+
+  // Change the height of the container. This should kick the simplified layout.
+  Element* outer_element = GetElementById("outer");
+  outer_element->classList().Add("after");
+  UpdateAllLifecyclePhasesForTest();
+
+  scoped_refptr<const NGPhysicalBoxFragment> after =
+      To<NGPhysicalBoxFragment>(target_block_flow->CurrentFragment());
+  EXPECT_EQ(*after->LastBaseline(), LayoutUnit(400));
 }
 
 // TODO(dgrogan): Move this to ng_flex_layout_algorithm_test.cc if there ever is

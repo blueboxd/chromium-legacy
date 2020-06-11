@@ -91,13 +91,14 @@ GetFileDataBlocking(const base::FilePath& path) {
 
 }  // namespace
 
-FileSourceRequest::FileSourceRequest(bool block_unsupported_types,
-                                     base::FilePath path,
-                                     base::FilePath file_name,
-                                     BinaryUploadService::Callback callback)
-    : Request(std::move(callback)),
+FileSourceRequest::FileSourceRequest(
+    const enterprise_connectors::AnalysisSettings& analysis_settings,
+    base::FilePath path,
+    base::FilePath file_name,
+    BinaryUploadService::Callback callback)
+    : Request(std::move(callback), analysis_settings.analysis_url),
       has_cached_result_(false),
-      block_unsupported_types_(block_unsupported_types),
+      block_unsupported_types_(analysis_settings.block_unsupported_file_types),
       path_(std::move(path)),
       file_name_(std::move(file_name)) {
   set_filename(file_name_.AsUTF8Unsafe());

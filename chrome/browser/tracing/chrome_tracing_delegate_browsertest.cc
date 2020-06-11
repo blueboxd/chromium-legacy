@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
                        ExistingIncognitoSessionBlockingTraceStart) {
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
-  EXPECT_TRUE(BrowserList::IsIncognitoSessionActive());
+  EXPECT_TRUE(BrowserList::IsOffTheRecordBrowserActive());
   EXPECT_FALSE(StartPreemptiveScenario(
       content::BackgroundTracingManager::ANONYMIZE_DATA));
 }
@@ -232,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
       content::BackgroundTracingManager::ANONYMIZE_DATA));
 
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
-  EXPECT_TRUE(BrowserList::IsIncognitoSessionActive());
+  EXPECT_TRUE(BrowserList::IsOffTheRecordBrowserActive());
 
   base::RunLoop wait_for_finalization_start;
   TriggerPreemptiveScenario(wait_for_finalization_start.QuitClosure());

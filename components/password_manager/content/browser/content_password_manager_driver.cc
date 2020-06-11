@@ -256,10 +256,11 @@ void ContentPasswordManagerDriver::ShowManualFallbackForSaving(
   GetPasswordManager()->ShowManualFallbackForSaving(this, form_data);
 
   if (client_->IsIsolationForPasswordSitesEnabled()) {
-    // This function signals that the user is typing a password into
-    // password form.  Use this as a heuristic to start site-isolating the
-    // form's site.  This is intended to be used primarily when full site
-    // isolation is not used, such as on Android.
+    // This function signals that a password field has been filled (whether by
+    // the user, JS, autofill, or some other means) or a password form has been
+    // submitted. Use this as a heuristic to start site-isolating the form's
+    // site. This is intended to be used primarily when full site isolation is
+    // not used, such as on Android.
     content::SiteInstance::StartIsolatingSite(
         render_frame_host_->GetSiteInstance()->GetBrowserContext(),
         form_data.url);

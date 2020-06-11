@@ -14,6 +14,10 @@
 
 class Profile;
 
+namespace base {
+class Time;
+}
+
 namespace extensions {
 
 class Extension;
@@ -41,6 +45,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   web_app::DisplayMode GetAppUserDisplayMode(
       const web_app::AppId& app_id) const override;
+  base::Time GetAppLastLaunchTime(const web_app::AppId& app_id) const override;
   std::vector<WebApplicationIconInfo> GetAppIconInfos(
       const web_app::AppId& app_id) const override;
   std::vector<SquareSizePx> GetAppDownloadedIconSizes(

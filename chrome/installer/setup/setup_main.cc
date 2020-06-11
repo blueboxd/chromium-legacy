@@ -1483,9 +1483,9 @@ int WINAPI wWinMain(HINSTANCE instance,
   auto process_metrics = base::ProcessMetrics::CreateCurrentProcessMetrics();
   auto disk_usage = process_metrics->GetCumulativeDiskUsageInBytes();
   base::UmaHistogramMemoryMB(
-      "Setup.Install.CumulativeDiskUsage",
+      "Setup.Install.CumulativeDiskUsage2",
       base::saturated_cast<int>(base::ClampAdd(disk_usage, 1024 * 1024 / 2) /
-                                1024 * 1024));
+                                (1024 * 1024)));
 
   int return_code = 0;
   // MSI demands that custom actions always return 0 (ERROR_SUCCESS) or it will

@@ -147,8 +147,7 @@ void LegacyMetricsClient::DrainBuffer() {
 }
 
 void LegacyMetricsClient::OnMetricsRecorderDisconnected(zx_status_t status) {
-  ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
-      << "MetricsRecorder connection lost.";
+  ZX_LOG(ERROR, status) << "MetricsRecorder connection lost.";
 
   // Stop recording & reporting user events.
   user_events_recorder_.reset();

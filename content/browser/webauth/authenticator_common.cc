@@ -36,7 +36,6 @@
 #include "content/public/common/origin_util.h"
 #include "crypto/sha2.h"
 #include "device/base/features.h"
-#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/fido/attestation_statement.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/features.h"
@@ -45,6 +44,7 @@
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/get_assertion_request_handler.h"
 #include "device/fido/make_credential_request_handler.h"
+#include "device/fido/public_key.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_params.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -318,6 +318,9 @@ CreateMakeCredentialResponse(
   auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json.begin(),
                                        client_data_json.end());
+  common_info->authenticator_data = response_data.attestation_object()
+                                        .authenticator_data()
+                                        .SerializeToByteArray();
   if (response_data.android_client_data_ext()) {
     DCHECK(base::FeatureList::IsEnabled(device::kWebAuthPhoneSupport));
     common_info->client_data_json = *response_data.android_client_data_ext();
@@ -373,6 +376,17 @@ CreateMakeCredentialResponse(
   response->attestation_object =
       response_data.GetCBOREncodedAttestationObject();
 
+  const device::PublicKey* public_key = response_data.attestation_object()
+                                            .authenticator_data()
+                                            .attested_data()
+                                            ->public_key();
+  response->public_key_algo = public_key->algorithm;
+  const base::Optional<std::vector<uint8_t>>& public_key_der =
+      public_key->der_bytes;
+  if (public_key_der) {
+    response->public_key_der.emplace(public_key_der.value());
+  }
+
   return response;
 }
 
@@ -391,7 +405,7 @@ blink::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
   common_info->raw_id = response_data.raw_credential_id();
   common_info->id = response_data.GetId();
   response->info = std::move(common_info);
-  response->authenticator_data =
+  response->info->authenticator_data =
       response_data.auth_data().SerializeToByteArray();
   response->signature = response_data.signature();
   if (echo_appid_extension) {
@@ -456,14 +470,6 @@ base::flat_set<device::FidoTransportProtocol> GetAvailableTransports(
         {device::FidoTransportProtocol::kUsbHumanInterfaceDevice});
   }
 
-  // Try all transports if the FidoDiscoveryFactory has been injected in tests
-  // or via the testing API.
-  if (AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
-          static_cast<RenderFrameHostImpl*>(render_frame_host)
-              ->frame_tree_node())) {
-    return device::GetAllTransportProtocols();
-  }
-
   base::flat_set<device::FidoTransportProtocol> transports;
   transports.insert(device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
 
@@ -471,25 +477,28 @@ base::flat_set<device::FidoTransportProtocol> GetAvailableTransports(
       AuthenticatorEnvironmentImpl::GetInstance()->GetDiscoveryFactoryOverride(
           static_cast<RenderFrameHostImpl*>(render_frame_host)
               ->frame_tree_node());
-  if (!discovery_factory) {
-    discovery_factory = delegate->GetDiscoveryFactory();
-  }
+  if (discovery_factory) {
+    // The desktop implementation does not support BLE or NFC, but we emulate
+    // them if the testing API is enabled.
+    transports.insert(device::FidoTransportProtocol::kBluetoothLowEnergy);
+    transports.insert(device::FidoTransportProtocol::kNearFieldCommunication);
 
-  // Don't instantiate a platform discovery in contexts where IsUVPAA() would
-  // return false. This avoids platform authenticators mistakenly being
-  // available when e.g. an embedder provided implementation of
-  // IsUserVerifyingPlatformAuthenticatorAvailableOverride() returned false.
-  if (IsUserVerifyingPlatformAuthenticatorAvailableImpl(
-          delegate, discovery_factory,
-          content::WebContents::FromRenderFrameHost(render_frame_host)
-              ->GetBrowserContext())) {
+    // Instantiate a virtual platform discovery regardless of IsUVPAA() to
+    // support non-uv, platform authenticators.
     transports.insert(device::FidoTransportProtocol::kInternal);
-  }
+  } else {
+    discovery_factory = delegate->GetDiscoveryFactory();
 
-  // FIXME(martinkr): Check whether this can be moved in front of the BLE
-  // adapter enumeration logic in FidoRequestHandlerBase.
-  if (!device::BluetoothAdapterFactory::Get()->IsLowEnergySupported()) {
-    return transports;
+    // Don't instantiate a platform discovery in contexts where IsUVPAA() would
+    // return false. This avoids platform authenticators mistakenly being
+    // available when e.g. an embedder provided implementation of
+    // IsUserVerifyingPlatformAuthenticatorAvailableOverride() returned false.
+    if (IsUserVerifyingPlatformAuthenticatorAvailableImpl(
+            delegate, discovery_factory,
+            content::WebContents::FromRenderFrameHost(render_frame_host)
+                ->GetBrowserContext())) {
+      transports.insert(device::FidoTransportProtocol::kInternal);
+    }
   }
 
   if (base::FeatureList::IsEnabled(features::kWebAuthCable) ||

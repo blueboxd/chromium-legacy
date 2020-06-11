@@ -18,7 +18,6 @@
 # huge sequence of random-looking conditionals.
 
 import("//base/allocator/allocator.gni")
-import("//base/trace_event/features.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/allocator.gni")
 import("//build/config/arm.gni")
@@ -34,6 +33,7 @@ import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
 import("//build/nocompile.gni")
 import("//build/timestamp.gni")
+import("//build_overrides/build.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/icu/config.gni")

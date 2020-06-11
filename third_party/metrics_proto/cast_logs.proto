@@ -164,7 +164,7 @@ message CastLogsProto {
   repeated CastConnectionInfo cast_connection_info = 2;
 
   // Stores Cast-enabled device specific events with a various context data.
-  // Next tag: 23
+  // Next tag: 26
   message CastEventProto {
     // The name of the action, hashed by same logic used to hash user action
     // event and histogram.
@@ -233,6 +233,16 @@ message CastLogsProto {
 
     // Optional field to log SELINUX audit detail.
     optional string selinux_audit_detail = 22;
+
+    // List of event ids belonging to a particular interaction. One interaction
+    // could receive multiple assistant outputs, hence multiple event ids.
+    repeated string event_id_list = 23;
+
+    // Duo core version.
+    optional fixed64 duo_core_version = 24;
+
+    // Model version of hotword detector.
+    optional string hotword_model_id = 25;
   }
   repeated CastEventProto cast_event = 3;
 

@@ -100,11 +100,11 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   void FinalizeFrame();
   void SetIsInHiddenPage(bool);
   void SetIsBeingDisplayed(bool);
+  void SetFilterQuality(SkFilterQuality filter_quality);
   void DidDraw(const FloatRect&);
   void DoPaintInvalidation(const FloatRect& dirty_rect);
   cc::Layer* Layer();
   bool Restore();
-  void UpdateFilterQuality();
 
   // virtual for unit testing
   virtual void WillOverwriteCanvas();

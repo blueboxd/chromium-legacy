@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/variations/client_filterable_state.h"
 #include "components/variations/field_trial_config/fieldtrial_testing_config.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_seed_processor.h"
@@ -113,19 +114,58 @@ TEST_F(FieldTrialUtilTest, AssociateParamsFromFieldTrialConfig) {
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params_0[] =
       {{"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
-      {"TestGroup1", &platform, 1, {}, 0, base::nullopt,
-       array_kFieldTrialConfig_params_0, 2, nullptr, 0, nullptr, 0, nullptr,
-       nullptr, 0},
+      {"TestGroup1",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       nullptr,
+       array_kFieldTrialConfig_params_0,
+       2,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       nullptr,
+       0},
   };
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params_1[] =
       {{"x", "3"}, {"y", "4"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
-      {"TestGroup2", &platform, 1, {}, 0, base::nullopt,
-       array_kFieldTrialConfig_params_0, 2, nullptr, 0, nullptr, 0, nullptr,
-       nullptr, 0},
-      {"TestGroup2-2", &platform, 1, {}, 0, base::nullopt,
-       array_kFieldTrialConfig_params_1, 2, nullptr, 0, nullptr, 0, nullptr,
-       nullptr, 0},
+      {"TestGroup2",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       nullptr,
+       array_kFieldTrialConfig_params_0,
+       2,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       nullptr,
+       0},
+      {"TestGroup2-2",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       nullptr,
+       array_kFieldTrialConfig_params_1,
+       2,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       nullptr,
+       0},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
       {"TestTrial1", array_kFieldTrialConfig_experiments_0, 1},
@@ -178,9 +218,22 @@ TEST_F(FieldTrialUtilTest,
   for (size_t i = 0; i < base::size(all_platforms); ++i) {
     const Study::Platform platform = all_platforms[i];
     const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
-        {"TestGroup", &platform, 1, {}, 0, base::nullopt,
-         array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr,
-         nullptr, 0},
+        {"TestGroup",
+         &platform,
+         1,
+         {},
+         0,
+         base::nullopt,
+         nullptr,
+         array_kFieldTrialConfig_params,
+         2,
+         nullptr,
+         0,
+         nullptr,
+         0,
+         nullptr,
+         nullptr,
+         0},
     };
     const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
         {"TestTrial", array_kFieldTrialConfig_experiments, 1}
@@ -214,9 +267,22 @@ TEST_F(FieldTrialUtilTest,
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] =
       {{"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
-      {"TestGroup", &platform, 1, {}, 0, base::nullopt,
-       array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr,
-       nullptr, 0},
+      {"TestGroup",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       nullptr,
+       array_kFieldTrialConfig_params,
+       2,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       nullptr,
+       0},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] =
       {{"TestTrial", array_kFieldTrialConfig_experiments, 1}};
@@ -245,9 +311,22 @@ TEST_F(FieldTrialUtilTest,
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] =
       {{"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
-      {"TestGroup", platforms, 2, {}, 0, base::nullopt,
-       array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr,
-       nullptr, 0},
+      {"TestGroup",
+       platforms,
+       2,
+       {},
+       0,
+       base::nullopt,
+       nullptr,
+       array_kFieldTrialConfig_params,
+       2,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       nullptr,
+       0},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] =
       {{"TestTrial", array_kFieldTrialConfig_experiments, 1}};
@@ -280,7 +359,7 @@ TEST_F(FieldTrialUtilTest,
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] =
       {{"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
-      {"TestGroup", &platform, 1, form_factors, 4, base::nullopt,
+      {"TestGroup", &platform, 1, form_factors, 4, base::nullopt, nullptr,
        array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr,
        nullptr, 0},
   };
@@ -315,7 +394,7 @@ TEST_F(FieldTrialUtilTest,
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] =
         {{"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
-      {"TestGroup", &platform, 1, &form_factor, 1, base::nullopt,
+      {"TestGroup", &platform, 1, &form_factor, 1, base::nullopt, nullptr,
        array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr,
        nullptr, 0},
   };
@@ -358,7 +437,7 @@ TEST_F(FieldTrialUtilTest,
     const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] =
         {{"x", "1"}, {"y", "2"}};
     const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
-        {"TestGroup", &platform, 1, &form_factor, 1, base::nullopt,
+        {"TestGroup", &platform, 1, &form_factor, 1, base::nullopt, nullptr,
          array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr,
          nullptr, 0},
     };
@@ -394,14 +473,56 @@ TEST_F(FieldTrialUtilTest, AssociateFeaturesFromFieldTrialConfig) {
 
   const Study::Platform platform = Study::PLATFORM_LINUX;
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
-      {"TestGroup1", &platform, 1, {}, 0, base::nullopt, nullptr,
-       0, enable_features, 2, nullptr, 0, nullptr, nullptr, 0},
+      {"TestGroup1",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       nullptr,
+       nullptr,
+       0,
+       enable_features,
+       2,
+       nullptr,
+       0,
+       nullptr,
+       nullptr,
+       0},
   };
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
-      {"TestGroup2", &platform, 1, {}, 0, base::nullopt, nullptr,
-       0, nullptr, 0, disable_features, 2, nullptr, nullptr, 0},
-      {"TestGroup2-2", &platform, 1, {}, 0, base::nullopt,
-       nullptr, 0, nullptr, 0, nullptr, 0, nullptr, nullptr, 0},
+      {"TestGroup2",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       nullptr,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       disable_features,
+       2,
+       nullptr,
+       nullptr,
+       0},
+      {"TestGroup2-2",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       nullptr,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       nullptr,
+       0},
   };
 
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
@@ -437,21 +558,105 @@ TEST_F(FieldTrialUtilTest, AssociateFeaturesFromFieldTrialConfig) {
 TEST_F(FieldTrialUtilTest, AssociateForcingFlagsFromFieldTrialConfig) {
   const Study::Platform platform = Study::PLATFORM_LINUX;
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_0[] = {
-      {"TestGroup1", &platform, 1, {}, 0, base::nullopt, nullptr,
-       0, nullptr, 0, nullptr, 0, nullptr, nullptr, 0}};
+      {"TestGroup1",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       nullptr,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       nullptr,
+       0}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_1[] = {
-      {"TestGroup2", &platform, 1, {}, 0, base::nullopt, nullptr,
-       0, nullptr, 0, nullptr, 0, nullptr, nullptr, 0},
-      {"ForcedGroup2", &platform, 1, {}, 0, base::nullopt,
-       nullptr, 0, nullptr, 0, nullptr, 0, "flag-2", nullptr, 0},
+      {"TestGroup2",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       nullptr,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       nullptr,
+       0},
+      {"ForcedGroup2",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       nullptr,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       "flag-2",
+       nullptr,
+       0},
   };
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments_2[] = {
-      {"TestGroup3", &platform, 1, {}, 0, base::nullopt, nullptr,
-       0, nullptr, 0, nullptr, 0, nullptr, nullptr, 0},
-      {"ForcedGroup3", &platform, 1, {}, 0, base::nullopt,
-       nullptr, 0, nullptr, 0, nullptr, 0, "flag-3", nullptr, 0},
-      {"ForcedGroup3-2", &platform, 1, {}, 0, base::nullopt,
-       nullptr, 0, nullptr, 0, nullptr, 0, "flag-3-2", nullptr, 0},
+      {"TestGroup3",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       nullptr,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       nullptr,
+       0},
+      {"ForcedGroup3",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       nullptr,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       "flag-3",
+       nullptr,
+       0},
+      {"ForcedGroup3-2",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       nullptr,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       "flag-3-2",
+       nullptr,
+       0},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
       {"TestTrial1", array_kFieldTrialConfig_experiments_0, 1},
@@ -484,7 +689,7 @@ TEST_F(FieldTrialUtilTest,
   const OverrideUIString array_kFieldTrialConfig_override_ui_string[] =
         {{1234, "test1"}, {5678, "test2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
-      {"TestGroup", &platform, 1, nullptr, 0, base::nullopt,
+      {"TestGroup", &platform, 1, nullptr, 0, base::nullopt, nullptr,
        array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr,
        array_kFieldTrialConfig_override_ui_string, 2},
   };
@@ -527,8 +732,20 @@ TEST_F(FieldTrialUtilTest,
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] = {
       {"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
-      {"TestGroup", &platform, 1, {}, 0, base::SysInfo::IsLowEndDevice(),
-       array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr},
+      {"TestGroup",
+       &platform,
+       1,
+       {},
+       0,
+       base::SysInfo::IsLowEndDevice(),
+       nullptr,
+       array_kFieldTrialConfig_params,
+       2,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
       {"TestTrial", array_kFieldTrialConfig_experiments, 1}};
@@ -557,14 +774,113 @@ TEST_F(FieldTrialUtilTest,
   const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] = {
       {"x", "1"}, {"y", "2"}};
   const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
-      {"TestGroup", &platform, 1, {}, 0, !base::SysInfo::IsLowEndDevice(),
-       array_kFieldTrialConfig_params, 2, nullptr, 0, nullptr, 0, nullptr},
+      {"TestGroup",
+       &platform,
+       1,
+       {},
+       0,
+       !base::SysInfo::IsLowEndDevice(),
+       nullptr,
+       array_kFieldTrialConfig_params,
+       2,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr},
   };
   const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
       {"TestTrial", array_kFieldTrialConfig_experiments, 1}};
   const FieldTrialTestingConfig kConfig = {array_kFieldTrialConfig_studies, 1};
 
   // The is_low_end_device don't match, so trial shouldn't be added.
+  base::FeatureList feature_list;
+  AssociateParamsFromFieldTrialConfig(kConfig, override_callback_.callback(),
+                                      platform, &feature_list);
+
+  EXPECT_EQ("", GetVariationParamValue("TestTrial", "x"));
+  EXPECT_EQ("", GetVariationParamValue("TestTrial", "y"));
+
+  std::map<std::string, std::string> params;
+  EXPECT_FALSE(GetVariationParams("TestTrial", &params));
+
+  EXPECT_EQ("", base::FieldTrialList::FindFullName("TestTrial"));
+}
+
+TEST_F(FieldTrialUtilTest,
+       AssociateParamsFromFieldTrialConfigWithMinOsVersionMatch) {
+  base::Version version = ClientFilterableState::GetOSVersion();
+  std::string min_os_version = version.GetString();
+  const Study::Platform platform = Study::PLATFORM_WINDOWS;
+  const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] = {
+      {"x", "1"}, {"y", "2"}};
+  const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
+      {"TestGroup",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       min_os_version.c_str(),
+       array_kFieldTrialConfig_params,
+       2,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr},
+  };
+  const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
+      {"TestTrial", array_kFieldTrialConfig_experiments, 1}};
+  const FieldTrialTestingConfig kConfig = {array_kFieldTrialConfig_studies, 1};
+
+  // The min_os_version filter matches, so trial should be added.
+  base::FeatureList feature_list;
+  AssociateParamsFromFieldTrialConfig(kConfig, override_callback_.callback(),
+                                      platform, &feature_list);
+
+  EXPECT_EQ("1", GetVariationParamValue("TestTrial", "x"));
+  EXPECT_EQ("2", GetVariationParamValue("TestTrial", "y"));
+
+  std::map<std::string, std::string> params;
+  EXPECT_TRUE(GetVariationParams("TestTrial", &params));
+  EXPECT_EQ(2U, params.size());
+  EXPECT_EQ("1", params["x"]);
+  EXPECT_EQ("2", params["y"]);
+
+  EXPECT_EQ("TestGroup", base::FieldTrialList::FindFullName("TestTrial"));
+}
+
+TEST_F(FieldTrialUtilTest,
+       AssociateParamsFromFieldTrialConfigWithMinOsVersionMismatch) {
+  base::Version version = ClientFilterableState::GetOSVersion();
+  base::Version higher_version =
+      base::Version({version.components()[0] + 1, 0, 0});
+  std::string min_os_version = higher_version.GetString();
+  const Study::Platform platform = Study::PLATFORM_WINDOWS;
+  const FieldTrialTestingExperimentParams array_kFieldTrialConfig_params[] = {
+      {"x", "1"}, {"y", "2"}};
+  const FieldTrialTestingExperiment array_kFieldTrialConfig_experiments[] = {
+      {"TestGroup",
+       &platform,
+       1,
+       {},
+       0,
+       base::nullopt,
+       min_os_version.c_str(),
+       array_kFieldTrialConfig_params,
+       2,
+       nullptr,
+       0,
+       nullptr,
+       0,
+       nullptr},
+  };
+  const FieldTrialTestingStudy array_kFieldTrialConfig_studies[] = {
+      {"TestTrial", array_kFieldTrialConfig_experiments, 1}};
+  const FieldTrialTestingConfig kConfig = {array_kFieldTrialConfig_studies, 1};
+
+  // The min_os_version doesn't match, so trial shouldn't be added.
   base::FeatureList feature_list;
   AssociateParamsFromFieldTrialConfig(kConfig, override_callback_.callback(),
                                       platform, &feature_list);

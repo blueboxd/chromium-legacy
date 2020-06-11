@@ -1331,6 +1331,34 @@
             ]
         }
     ],
+    "CastMediaRouteProviderAndGlobalMediaControlsForCast": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "CMRP_and_GMCFC_enabled",
+                    "enable_features": [
+                        "CastMediaRouteProvider",
+                        "GlobalMediaControlsForCast"
+                    ]
+                },
+                {
+                    "name": "CMRP_enabled_GMCFC_disabled",
+                    "enable_features": [
+                        "CastMediaRouteProvider"
+                    ],
+                    "disable_features": [
+                        "GlobalMediaControlsForCast"
+                    ]
+                }
+            ]
+        }
+    ],
     "CctClientDataHeader": [
         {
             "platforms": [
@@ -3923,6 +3951,25 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MirroringService"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MojoDedicatedThread": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MojoDedicatedThread"
                     ]
                 }
             ]

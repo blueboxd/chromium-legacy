@@ -1209,8 +1209,8 @@ scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
       std::move(context_provider), using_gpu_compositing, using_swap_chain,
       this, ClampedCanvasSize(), premultiplied_alpha, want_alpha_channel,
       want_depth_buffer, want_stencil_buffer, want_antialiasing, preserve,
-      web_gl_version, chromium_image_usage, ColorParams(),
-      PowerPreferenceToGpuPreference(attrs.power_preference));
+      web_gl_version, chromium_image_usage, Host()->FilterQuality(),
+      ColorParams(), PowerPreferenceToGpuPreference(attrs.power_preference));
 }
 
 void WebGLRenderingContextBase::InitializeNewContext() {

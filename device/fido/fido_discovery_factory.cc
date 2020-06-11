@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/fido/cable/fido_cable_discovery.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_discovery_base.h"
@@ -55,7 +56,8 @@ std::unique_ptr<FidoDiscoveryBase> FidoDiscoveryFactory::Create(
     case FidoTransportProtocol::kBluetoothLowEnergy:
       return nullptr;
     case FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
-      if (cable_data_.has_value() || qr_generator_key_.has_value()) {
+      if (device::BluetoothAdapterFactory::Get()->IsLowEnergySupported() &&
+          (cable_data_.has_value() || qr_generator_key_.has_value())) {
         return std::make_unique<FidoCableDiscovery>(
             cable_data_.value_or(std::vector<CableDiscoveryData>()),
             qr_generator_key_, cable_pairing_callback_);

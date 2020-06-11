@@ -257,6 +257,10 @@ void WebRuntimeFeatures::EnableMediaCapture(bool enable) {
   RuntimeEnabledFeatures::SetMediaCaptureEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableMediaFeeds(bool enable) {
+  RuntimeEnabledFeatures::SetMediaFeedsEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableMediaSession(bool enable) {
   RuntimeEnabledFeatures::SetMediaSessionEnabled(enable);
 }

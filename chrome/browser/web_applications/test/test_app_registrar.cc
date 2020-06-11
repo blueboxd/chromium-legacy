@@ -123,6 +123,10 @@ DisplayMode TestAppRegistrar::GetAppUserDisplayMode(const AppId& app_id) const {
   return DisplayMode::kBrowser;
 }
 
+base::Time TestAppRegistrar::GetAppLastLaunchTime(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return base::Time();
+}
 std::vector<WebApplicationIconInfo> TestAppRegistrar::GetAppIconInfos(
     const AppId& app_id) const {
   NOTIMPLEMENTED();

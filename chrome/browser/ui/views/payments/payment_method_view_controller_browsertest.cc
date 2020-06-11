@@ -49,7 +49,8 @@ class PaymentMethodViewControllerTest : public PaymentRequestBrowserTestBase {
                                  kylepay_server_.GetURL("kylepay.com", "/"));
     downloader->AddTestServerURL("https://google.com/",
                                  gpay_server_.GetURL("google.com", "/"));
-    ServiceWorkerPaymentAppFinder::GetInstance()
+    ServiceWorkerPaymentAppFinder::GetOrCreateForCurrentDocument(
+        GetActiveWebContents()->GetMainFrame())
         ->SetDownloaderAndIgnorePortInOriginComparisonForTesting(
             std::move(downloader));
   }
@@ -171,8 +172,8 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest, EditButtonOpensEditor) {
 
 IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
                        DoNotShowAddCardWhenBasicCardIsNotSupported) {
-  SetDownloaderAndIgnorePortInOriginComparisonForTesting();
   NavigateTo("/payment_request_bobpay_and_cards_test.html");
+  SetDownloaderAndIgnorePortInOriginComparisonForTesting();
 
   ResetEventWaiterForDialogOpened();
   EXPECT_TRUE(content::ExecJs(GetActiveWebContents(),

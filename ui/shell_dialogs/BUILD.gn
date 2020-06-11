@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
@@ -105,6 +106,14 @@ jumbo_component("shell_dialogs") {
 
   if (is_fuchsia) {
     sources += [ "select_file_dialog_fuchsia.cc" ]
+  }
+
+  # TODO(crbug.com/1052397): Rename chromeos_is_browser_only.
+  if (chromeos_is_browser_only) {
+    sources += [
+      "select_file_dialog_lacros.cc",
+      "select_file_dialog_lacros.h",
+    ]
   }
 }
 

@@ -32,6 +32,7 @@ struct FieldTrialTestingExperiment {
   const Study::FormFactor * form_factors;
   const size_t form_factors_size;
   const base::Optional<bool> is_low_end_device;
+  const char* const min_os_version;
   const FieldTrialTestingExperimentParams * params;
   const size_t params_size;
   const char* const * enable_features;

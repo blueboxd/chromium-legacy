@@ -235,6 +235,9 @@ interface AuthenticatorAttestationResponse : AuthenticatorResponse
     attribute @@toStringTag
     getter attestationObject
     method constructor
+    method getAuthenticatorData
+    method getPublicKey
+    method getPublicKeyAlgorithm
     method getTransports
 interface AuthenticatorResponse
     attribute @@toStringTag

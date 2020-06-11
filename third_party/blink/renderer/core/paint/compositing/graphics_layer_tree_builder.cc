@@ -137,6 +137,9 @@ void GraphicsLayerTreeBuilder::RebuildRecursive(
   }
 
   if (has_composited_layer_mapping) {
+    // TODO(szager): Remove after diagnosing crash crbug.com/1092673
+    CHECK(current_composited_layer_mapping);
+
     // Apply all pending reparents by inserting the overflow controls
     // root layers into |this_layer_children|. To do this, first sort
     // them by index. Then insert them one-by-one into the array,

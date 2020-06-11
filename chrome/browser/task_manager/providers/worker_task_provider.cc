@@ -76,10 +76,10 @@ void WorkerTaskProvider::StartUpdating() {
     for (auto* profile : loaded_profiles) {
       OnProfileAdded(profile);
 
-      // If the incognito window is open, we have to check its profile and
-      // create the tasks if there are any.
-      if (profile->HasOffTheRecordProfile())
-        OnProfileAdded(profile->GetOffTheRecordProfile());
+      // If any off-the-record profile exists, we have to check them and create
+      // the tasks if there are any.
+      for (Profile* otr : profile->GetAllOffTheRecordProfiles())
+        OnProfileAdded(otr);
     }
   }
 }

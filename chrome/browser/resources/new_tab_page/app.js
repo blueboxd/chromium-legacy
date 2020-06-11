@@ -457,18 +457,19 @@ class AppElement extends PolymerElement {
   }
 
   /**
+   * Handles <CTRL> + <SHIFT> + <.> (also <CMD> + <SHIFT> + <.> on mac) to open
+   * voice search.
    * @param {KeyboardEvent} e
    * @private
    */
   onWindowKeydown_(e) {
-    // Open voice search with <CTRL> + <SHIFT> + <.> (also <CMD> + <SHIFT> + <.>
-    // on mac) keyboard shortcut.
     let ctrlKeyPressed = e.ctrlKey;
     // <if expr="is_macosx">
     ctrlKeyPressed = ctrlKeyPressed || e.metaKey;
     // </if>
-    this.showVoiceSearchOverlay_ =
-        ctrlKeyPressed && e.code === 'Period' && e.shiftKey;
+    if (ctrlKeyPressed && e.code === 'Period' && e.shiftKey) {
+      this.showVoiceSearchOverlay_ = true;
+    }
   }
 
   /**

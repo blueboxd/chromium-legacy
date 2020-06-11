@@ -15,11 +15,6 @@
 
 namespace base {
 
-// Allocation granularity of sizeof(void*) bytes.
-static const size_t kAllocationGranularity = sizeof(void*);
-static const size_t kAllocationGranularityMask = kAllocationGranularity - 1;
-static const size_t kBucketShift = (kAllocationGranularity == 8) ? 3 : 2;
-
 // Underlying partition storage pages (`PartitionPage`s) are a power-of-2 size.
 // It is typical for a `PartitionPage` to be based on multiple system pages.
 // Most references to "page" refer to `PartitionPage`s.

@@ -27,12 +27,6 @@ example, if a partition has 3 buckets for 64 bytes, 256 bytes, and 1024 bytes,
 then PartitionAlloc will satisfy an allocation request for 128 bytes by rounding
 it up to 256 bytes and allocating from the second bucket.
 
-The special allocator class `template <size_t N> class
-SizeSpecificPartitionAllocator` will satisfy allocations only of size
-`kMaxAllocation = N - kAllocationGranularity` or less, and contains buckets for
-all `n * kAllocationGranularity` (n = 1, 2, ..., `kMaxAllocation`). Attempts to
-allocate more than `kMaxAllocation` will fail.
-
 ## Performance
 
 The current implementation is optimized for the main thread use-case. For
@@ -52,16 +46,16 @@ bucket size is 1MB = 0x100000 which is greater than 1/2 the available space in
 a SuperPage meaning it would not be possible to pack even 2 sequential
 allocations in a SuperPage.
 
-`PartitionRootGeneric::Alloc()` acquires a lock for thread safety. (The current
-implementation uses a spin lock on the assumption that thread contention will be
-rare in its callers. The original caller was Blink, where this is generally
-true. Spin locks also have the benefit of simplicity.)
+`PartitionRoot<internal::ThreadSafe>::Alloc()` acquires a lock for thread
+safety. (The current implementation uses a spin lock on the assumption that
+thread contention will be rare in its callers. The original caller was Blink,
+where this is generally true. Spin locks also have the benefit of simplicity.)
 
 Callers can get thread-unsafe performance using a
-`SizeSpecificPartitionAllocator` or otherwise using `PartitionAlloc` (instead of
-`PartitionRootGeneric::Alloc()`). Callers can also arrange for low contention,
-such as by using a dedicated partition for single-threaded, latency-critical
-allocations.
+`PartitionRoot<internal::NotThreadSafe>::Alloc()` or otherwise using
+`PartitionAlloc<internal::NotThreadSafe>`. Callers can also arrange for low
+contention, such as by using a dedicated partition for single-threaded,
+latency-critical allocations.
 
 Because PartitionAlloc guarantees that address space regions used for one
 partition are never reused for other partitions, partitions can eat a large

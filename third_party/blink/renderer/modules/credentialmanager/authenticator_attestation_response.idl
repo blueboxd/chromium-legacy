@@ -11,4 +11,8 @@
 ] interface AuthenticatorAttestationResponse : AuthenticatorResponse {
     [SameObject] readonly attribute ArrayBuffer attestationObject;
     sequence<DOMString> getTransports();
+
+    ArrayBuffer getAuthenticatorData();
+    ArrayBuffer? getPublicKey();
+    COSEAlgorithmIdentifier getPublicKeyAlgorithm();
 };

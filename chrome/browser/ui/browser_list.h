@@ -116,24 +116,23 @@ class BrowserList {
       const CloseCallback& on_close_aborted,
       bool skip_beforeunload);
 
-  // Returns true if at least one incognito session is active across all
+  // Returns true if at least one off-the-record browser is active across all
   // desktops.
-  static bool IsIncognitoSessionActive();
+  static bool IsOffTheRecordBrowserActive();
 
-  // Returns the number of active incognito sessions for |profile| across all
-  // desktops. Note that this function does not count devtools windows opened
-  // for incognito windows.
-  // TODO(crbug.com/1014002) : Refactor the name from IncognitoSessions to
-  // IncognitoBrowser here and elsewhere in this file, wherever applicable.
-  static int GetIncognitoSessionsActiveForProfile(Profile* profile);
+  // Returns the number of active off-the-record browsers for |profile| across
+  // all desktops. Note that this function does not count devtools windows
+  // opened for off-the-record windows.
+  static int GetOffTheRecordBrowsersActiveForProfile(Profile* profile);
 
   // Returns the number of active incognito browsers except devtools windows
   // across all desktops.
   static size_t GetIncognitoBrowserCount();
 
-  // Returns true if the incognito session for |profile| is in use in any window
-  // across all desktops. This function considers devtools windows as well.
-  static bool IsIncognitoSessionInUse(Profile* profile);
+  // Returns true if the off-the-record browser for |profile| is in use in any
+  // window across all desktops. This function considers devtools windows as
+  // well.
+  static bool IsOffTheRecordBrowserInUse(Profile* profile);
 
  private:
   BrowserList();

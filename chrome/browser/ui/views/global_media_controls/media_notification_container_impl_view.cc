@@ -203,7 +203,12 @@ void MediaNotificationContainerImplView::OnDidChangeFocus(
 }
 
 void MediaNotificationContainerImplView::OnExpanded(bool expanded) {
-  SetPreferredSize(expanded ? kExpandedSize : kNormalSize);
+  gfx::Size new_size = expanded ? kExpandedSize : kNormalSize;
+
+  if (overlay_)
+    overlay_->SetSize(new_size);
+
+  SetPreferredSize(new_size);
   PreferredSizeChanged();
 
   for (auto& observer : observers_)

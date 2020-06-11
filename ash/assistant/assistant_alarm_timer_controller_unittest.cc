@@ -142,6 +142,8 @@ class ExpectedNotification {
 
   friend std::ostream& operator<<(std::ostream& os,
                                   const ExpectedNotification& notif) {
+    if (notif.action_url_.has_value())
+      os << "\naction_url: '" << notif.action_url_.value() << "'";
     if (notif.client_id_.has_value())
       os << "\nclient_id: '" << notif.client_id_.value() << "'";
     if (notif.is_pinned_.has_value())
@@ -156,13 +158,19 @@ class ExpectedNotification {
   }
 
   bool operator==(const AssistantNotificationPtr& ptr) const {
-    return ptr && ptr->client_id == client_id_.value_or(ptr->client_id) &&
+    return ptr && ptr->action_url == action_url_.value_or(ptr->action_url) &&
+           ptr->client_id == client_id_.value_or(ptr->client_id) &&
            ptr->is_pinned == is_pinned_.value_or(ptr->is_pinned) &&
            ptr->message == message_.value_or(ptr->message) &&
            ptr->priority == priority_.value_or(ptr->priority) &&
            ptr->remove_on_click ==
                remove_on_click_.value_or(ptr->remove_on_click) &&
            ptr->title == title_.value_or(ptr->title);
+  }
+
+  ExpectedNotification& WithActionUrl(const GURL& action_url) {
+    action_url_ = action_url;
+    return *this;
   }
 
   ExpectedNotification& WithClientId(const std::string& client_id) {
@@ -200,6 +208,7 @@ class ExpectedNotification {
   }
 
  private:
+  base::Optional<GURL> action_url_;
   base::Optional<std::string> client_id_;
   base::Optional<bool> is_pinned_;
   base::Optional<std::string> message_;
@@ -631,6 +640,48 @@ TEST_F(AssistantAlarmTimerControllerTest,
   }
 }
 
+// Tests that a notification is added for a timer and has the expected action.
+// NOTE: This test is only applicable to timers v1.
+TEST_F(AssistantAlarmTimerControllerTest, TimerNotificationHasExpectedAction) {
+  ASSERT_FALSE(chromeos::assistant::features::IsTimersV2Enabled());
+
+  // Observe notifications.
+  ScopedNotificationModelObserver observer;
+
+  // Fire a timer.
+  FireTimer{kTimerId};
+
+  // We expect that the notification action will cause removal of the timer.
+  EXPECT_EQ(
+      ExpectedNotification().WithClientId(kClientId).WithActionUrl(
+          assistant::util::CreateAlarmTimerDeepLink(
+              assistant::util::AlarmTimerAction::kRemoveAlarmOrTimer, kTimerId)
+              .value()),
+      observer.last_notification());
+}
+
+// Tests that a notification is added for a timer and has the expected action.
+// NOTE: This test is only applicable to timers v2.
+TEST_F(AssistantAlarmTimerControllerTest,
+       TimerNotificationHasExpectedActionV2) {
+  // Enable timers v2.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantTimersV2);
+  ASSERT_TRUE(chromeos::assistant::features::IsTimersV2Enabled());
+
+  // Observe notifications.
+  ScopedNotificationModelObserver observer;
+
+  // Schedule a timer.
+  ScheduleTimer{kTimerId};
+
+  // We expect that the notification action will result in a no-op on click.
+  EXPECT_EQ(
+      ExpectedNotification().WithClientId(kClientId).WithActionUrl(GURL()),
+      observer.last_notification());
+}
+
 // Tests that a notification is added when a timer is fired and has the expected
 // buttons.
 // NOTE: This test is only applicable to timers v1.
@@ -776,8 +827,11 @@ TEST_F(AssistantAlarmTimerControllerTest,
 
 // Tests that a notification is added for a timer and has the expected value to
 // cause removal on click.
+// NOTE: This test is only applicable to timers v1.
 TEST_F(AssistantAlarmTimerControllerTest,
        TimerNotificationHasExpectedRemoveOnClick) {
+  ASSERT_FALSE(chromeos::assistant::features::IsTimersV2Enabled());
+
   // Observe notifications.
   ScopedNotificationModelObserver observer;
 
@@ -787,6 +841,29 @@ TEST_F(AssistantAlarmTimerControllerTest,
   // Make assertions about the notification.
   EXPECT_EQ(
       ExpectedNotification().WithClientId(kClientId).WithRemoveOnClick(true),
+      observer.last_notification());
+}
+
+// Tests that a notification is added for a timer and has the expected value to
+// *not* cause removal on click.
+// Note: This test is only applicable to timers v2.
+TEST_F(AssistantAlarmTimerControllerTest,
+       TimerNotificationHasExpectedRemoveOnClickV2) {
+  // Enable timers v2.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantTimersV2);
+  ASSERT_TRUE(chromeos::assistant::features::IsTimersV2Enabled());
+
+  // Observe notifications.
+  ScopedNotificationModelObserver observer;
+
+  // Schedule a timer.
+  ScheduleTimer{kTimerId};
+
+  // Make assertions about the notification.
+  EXPECT_EQ(
+      ExpectedNotification().WithClientId(kClientId).WithRemoveOnClick(false),
       observer.last_notification());
 }
 

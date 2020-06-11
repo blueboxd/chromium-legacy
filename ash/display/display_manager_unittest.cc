@@ -1748,7 +1748,7 @@ TEST_F(DisplayManagerTest, DontRememberBestResolution) {
   display_info_list.push_back(native_display_info);
   display_manager()->OnNativeDisplaysChanged(display_info_list);
 
-  display::ManagedDisplayMode expected_mode(gfx::Size(1000, 500), 0.0f, false,
+  display::ManagedDisplayMode expected_mode(gfx::Size(1000, 500), 58.0f, false,
                                             false);
 
   display::ManagedDisplayMode mode;
@@ -1778,7 +1778,7 @@ TEST_F(DisplayManagerTest, DontRememberBestResolution) {
   EXPECT_FALSE(mode.native());
 
   expected_mode =
-      display::ManagedDisplayMode(gfx::Size(800, 300), 0.0f, false, false);
+      display::ManagedDisplayMode(gfx::Size(800, 300), 59.0f, false, false);
 
   EXPECT_TRUE(
       display_manager()->GetActiveModeForDisplayId(display_id, &active_mode));
@@ -1794,7 +1794,7 @@ TEST_F(DisplayManagerTest, DontRememberBestResolution) {
   EXPECT_TRUE(mode.native());
 
   expected_mode =
-      display::ManagedDisplayMode(gfx::Size(1000, 500), 0.0f, false, false);
+      display::ManagedDisplayMode(gfx::Size(1000, 500), 58.0f, false, false);
 
   EXPECT_TRUE(
       display_manager()->GetActiveModeForDisplayId(display_id, &active_mode));
@@ -1807,7 +1807,7 @@ TEST_F(DisplayManagerTest, ResolutionFallback) {
       display::CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1000, 500));
   display::ManagedDisplayInfo::ManagedDisplayModeList display_modes;
   display_modes.push_back(
-      display::ManagedDisplayMode(gfx::Size(1000, 500), 58.0f, false, true));
+      display::ManagedDisplayMode(gfx::Size(1000, 500), 60.0f, false, true));
   display_modes.push_back(
       display::ManagedDisplayMode(gfx::Size(800, 300), 59.0f, false, false));
   display_modes.push_back(
@@ -1853,7 +1853,7 @@ TEST_F(DisplayManagerTest, ResolutionFallback) {
     EXPECT_TRUE(
         display_manager()->GetSelectedModeForDisplayId(display_id, &mode));
     EXPECT_EQ("1000x500", mode.size().ToString());
-    EXPECT_EQ(58.0f, mode.refresh_rate());
+    EXPECT_EQ(60.0f, mode.refresh_rate());
     EXPECT_TRUE(mode.native());
   }
 }

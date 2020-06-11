@@ -4067,6 +4067,8 @@ if (enable_java_templates) {
     _template_name = target_name
 
     action_with_pydeps("${_template_name}__protoc_java") {
+      # The suffix "__protoc_java.srcjar" is used by SuperSize to identify
+      # protobuf symbols.
       _srcjar_path = "$target_gen_dir/$target_name.srcjar"
       script = "//build/protoc_java.py"
 
@@ -4254,8 +4256,14 @@ if (enable_java_templates) {
       outputs +=
           get_path_info(rebase_path(_scanned_files.subjars, "", _output_path),
                         "abspath")
-      if (!_ignore_proguard_configs && _scanned_files.has_proguard_flags) {
-        outputs += [ "${_output_path}/proguard.txt" ]
+      if (!_ignore_proguard_configs) {
+        if (_scanned_files.has_proguard_flags) {
+          outputs += [ "${_output_path}/proguard.txt" ]
+        }
+        if (defined(_scanned_files.has_proguard_check_flags) &&
+            _scanned_files.has_proguard_check_flags) {
+          outputs += [ "${_output_path}/proguard-checks.txt" ]
+        }
       }
 
       if (_extract_native_libraries && _scanned_files.has_native_libraries) {
@@ -4356,11 +4364,17 @@ if (enable_java_templates) {
         jar_path = "$_output_path/classes.jar"
         output_name = invoker.target_name
 
-        if (!_ignore_proguard_configs && _scanned_files.has_proguard_flags) {
+        if (!_ignore_proguard_configs) {
           if (!defined(proguard_configs)) {
             proguard_configs = []
           }
-          proguard_configs += [ "$_output_path/proguard.txt" ]
+          if (_scanned_files.has_proguard_flags) {
+            proguard_configs += [ "$_output_path/proguard.txt" ]
+          }
+          if (defined(_scanned_files.has_proguard_check_flags) &&
+              _scanned_files.has_proguard_check_flags) {
+            proguard_configs += [ "$_output_path/proguard-checks.txt" ]
+          }
         }
         public_target_label = invoker.target_name
       }

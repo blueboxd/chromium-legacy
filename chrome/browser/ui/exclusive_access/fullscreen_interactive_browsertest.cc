@@ -68,14 +68,10 @@ class FullscreenInteractiveBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(FullscreenInteractiveBrowserTest);
 };
 
-// https://crbug.com/1087875: Flaky on Linux and Mac.
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_NotifyFullscreenAcquired DISABLED_NotifyFullscreenAcquired
-#else
-#define MAYBE_NotifyFullscreenAcquired NotifyFullscreenAcquired
-#endif
+// TODO(jonross): Investigate the flakiness on Linux and Mac. Sheriff if this
+// fails update (https://crbug.com/1087875).
 IN_PROC_BROWSER_TEST_F(FullscreenInteractiveBrowserTest,
-                       MAYBE_NotifyFullscreenAcquired) {
+                       NotifyFullscreenAcquired) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 

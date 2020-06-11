@@ -20,7 +20,9 @@
 #include "components/sync/model/model_type_sync_bridge.h"
 
 class Profile;
-
+namespace base {
+class Time;
+}
 namespace syncer {
 class MetadataBatch;
 class MetadataChangeList;
@@ -72,6 +74,8 @@ class WebAppSyncBridge : public AppRegistryController,
   void SetAppIsDisabled(const AppId& app_id, bool is_disabled) override;
   void SetAppIsLocallyInstalled(const AppId& app_id,
                                 bool is_locally_installed) override;
+  void SetAppLastLaunchTime(const AppId& app_id,
+                            const base::Time& time) override;
   WebAppSyncBridge* AsWebAppSyncBridge() override;
 
   // An access to read-only registry. Does an upcast to read-only type.

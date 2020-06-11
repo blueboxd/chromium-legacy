@@ -654,6 +654,28 @@ struct FuzzTraits<base::UnguessableToken> {
 };
 
 template <>
+struct FuzzTraits<base::UnsafeSharedMemoryRegion> {
+  static bool Fuzz(base::UnsafeSharedMemoryRegion* p, Fuzzer* fuzzer) {
+    size_t size = RandInRange(16 * 1024 * 1024 * sizeof(char));
+    *p = base::UnsafeSharedMemoryRegion::Create(size);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<blink::WebDeviceEmulationParams::ScreenPosition> {
+  static bool Fuzz(blink::WebDeviceEmulationParams::ScreenPosition* p,
+                   Fuzzer* fuzzer) {
+    int screen_position = RandInRange(
+        blink::WebDeviceEmulationParams::ScreenPosition::kScreenPositionLast +
+        1);
+    *p = static_cast<blink::WebDeviceEmulationParams::ScreenPosition>(
+        screen_position);
+    return true;
+  }
+};
+
+template <>
 struct FuzzTraits<viz::CompositorFrame> {
   static bool Fuzz(viz::CompositorFrame* p, Fuzzer* fuzzer) {
     // TODO(mbarbella): Support mutation.
@@ -978,6 +1000,18 @@ struct FuzzTraits<util::IdType<TypeMarker, WrappedType, kInvalidValue>> {
 };
 
 template <>
+struct FuzzTraits<util::StrongAlias<extensions::ActivationSequenceTag, int>> {
+  static bool Fuzz(util::StrongAlias<extensions::ActivationSequenceTag, int>* p,
+                   Fuzzer* fuzzer) {
+    int value;
+    if (!FuzzParam(&value, fuzzer))
+      return false;
+    *p = util::StrongAlias<extensions::ActivationSequenceTag, int>(value);
+    return true;
+  }
+};
+
+template <>
 struct FuzzTraits<gpu::Mailbox> {
   static bool Fuzz(gpu::Mailbox* p, Fuzzer* fuzzer) {
     fuzzer->FuzzBytes(p->name, sizeof(p->name));
@@ -1164,6 +1198,22 @@ struct FuzzTraits<media::AudioParameters> {
 };
 
 template <>
+struct FuzzTraits<media::cast::FrameId> {
+  static bool Fuzz(media::cast::FrameId* p, Fuzzer* fuzzer) {
+    int64_t rhs;
+    if (!FuzzParam(&rhs, fuzzer))
+      return false;
+    if (RandEvent(2)) {
+      *p += rhs;
+      return true;
+    } else {
+      *p -= rhs;
+      return true;
+    }
+  }
+};
+
+template <>
 struct FuzzTraits<media::cast::RtpTimeTicks> {
   static bool Fuzz(media::cast::RtpTimeTicks* p, Fuzzer* fuzzer) {
     base::TimeDelta delta;
@@ -1173,6 +1223,28 @@ struct FuzzTraits<media::cast::RtpTimeTicks> {
     if (!FuzzParam(&base, fuzzer))
       return false;
     *p = media::cast::RtpTimeTicks::FromTimeDelta(delta, base);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<media::OverlayInfo> {
+  static bool Fuzz(media::OverlayInfo* p, Fuzzer* fuzzer) {
+    if (!FuzzParam(&p->is_fullscreen, fuzzer))
+      return false;
+    if (!FuzzParam(&p->is_persistent_video, fuzzer))
+      return false;
+    if (!FuzzParam(&p->routing_token, fuzzer))
+      return false;
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<media::VideoPixelFormat> {
+  static bool Fuzz(media::VideoPixelFormat* p, Fuzzer* fuzzer) {
+    int format = RandInRange(media::VideoPixelFormat::PIXEL_FORMAT_MAX + 1);
+    *p = static_cast<media::VideoPixelFormat>(format);
     return true;
   }
 };

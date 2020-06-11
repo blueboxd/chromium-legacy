@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 #include "chrome/common/chrome_paths.h"
@@ -22,6 +23,12 @@ namespace safe_browsing {
 
 namespace {
 
+enterprise_connectors::AnalysisSettings settings(bool block_unsupported_types) {
+  enterprise_connectors::AnalysisSettings settings;
+  settings.block_unsupported_file_types = block_unsupported_types;
+  return settings;
+}
+
 void GetResultsForFileContents(const std::string& file_contents,
                                BinaryUploadService::Result* out_result,
                                BinaryUploadService::Request::Data* out_data) {
@@ -30,7 +37,7 @@ void GetResultsForFileContents(const std::string& file_contents,
   base::FilePath file_path = temp_dir.GetPath().AppendASCII("normal.doc");
   base::WriteFile(file_path, file_contents.data(), file_contents.size());
 
-  FileSourceRequest request(false, file_path, file_path.BaseName(),
+  FileSourceRequest request(settings(false), file_path, file_path.BaseName(),
                             base::DoNothing());
 
   bool called = false;
@@ -59,7 +66,8 @@ TEST(FileSourceRequestTest, InvalidFiles) {
   {
     // Non-existent files should return UNKNOWN and have no information set.
     base::FilePath path = temp_dir.GetPath().AppendASCII("not_a_real.doc");
-    FileSourceRequest request(false, path, path.BaseName(), base::DoNothing());
+    FileSourceRequest request(settings(false), path, path.BaseName(),
+                              base::DoNothing());
 
     bool called = false;
     base::RunLoop run_loop;
@@ -83,7 +91,8 @@ TEST(FileSourceRequestTest, InvalidFiles) {
     // Directories should not be used as paths passed to GetFileSHA256Blocking,
     // so they should return UNKNOWN and have no information set.
     base::FilePath path = temp_dir.GetPath();
-    FileSourceRequest request(false, path, path.BaseName(), base::DoNothing());
+    FileSourceRequest request(settings(false), path, path.BaseName(),
+                              base::DoNothing());
 
     bool called = false;
     base::RunLoop run_loop;
@@ -170,7 +179,7 @@ TEST(FileSourceRequestTest, PopulatesDigest) {
   base::File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
   file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
 
-  FileSourceRequest request(false, file_path, file_path.BaseName(),
+  FileSourceRequest request(settings(false), file_path, file_path.BaseName(),
                             base::DoNothing());
 
   base::RunLoop run_loop;
@@ -197,7 +206,7 @@ TEST(FileSourceRequestTest, PopulatesFilename) {
   base::File file(file_path, base::File::FLAG_CREATE | base::File::FLAG_WRITE);
   file.WriteAtCurrentPos(file_contents.data(), file_contents.size());
 
-  FileSourceRequest request(false, file_path, file_path.BaseName(),
+  FileSourceRequest request(settings(false), file_path, file_path.BaseName(),
                             base::DoNothing());
 
   base::RunLoop run_loop;
@@ -223,7 +232,7 @@ TEST(FileSourceRequestTest, CachesResults) {
   BinaryUploadService::Result async_result;
   BinaryUploadService::Request::Data async_data;
 
-  FileSourceRequest request(false, file_path, file_path.BaseName(),
+  FileSourceRequest request(settings(false), file_path, file_path.BaseName(),
                             base::DoNothing());
 
   bool called = false;
@@ -271,7 +280,7 @@ TEST(FileSourceRequestTest, Encrypted) {
                  .AppendASCII("download_protection")
                  .AppendASCII("encrypted.zip");
 
-  FileSourceRequest request(false, test_zip, test_zip.BaseName(),
+  FileSourceRequest request(settings(false), test_zip, test_zip.BaseName(),
                             base::DoNothing());
 
   bool called = false;
@@ -309,7 +318,7 @@ TEST(FileSourceRequestTest, UnsupportedFileTypeBlock) {
   base::FilePath file_path = temp_dir.GetPath().AppendASCII("normal.xyz");
   base::WriteFile(file_path, normal_contents.data(), normal_contents.size());
 
-  FileSourceRequest request(true, file_path, file_path.BaseName(),
+  FileSourceRequest request(settings(true), file_path, file_path.BaseName(),
                             base::DoNothing());
   request.set_request_dlp_scan(DlpDeepScanningClientRequest());
   request.set_request_malware_scan(MalwareDeepScanningClientRequest());
@@ -349,7 +358,7 @@ TEST(FileSourceRequestTest, UnsupportedFileTypeNoBlock) {
   base::FilePath file_path = temp_dir.GetPath().AppendASCII("normal.xyz");
   base::WriteFile(file_path, normal_contents.data(), normal_contents.size());
 
-  FileSourceRequest request(false, file_path, file_path.BaseName(),
+  FileSourceRequest request(settings(false), file_path, file_path.BaseName(),
                             base::DoNothing());
   request.set_request_dlp_scan(DlpDeepScanningClientRequest());
   request.set_request_malware_scan(MalwareDeepScanningClientRequest());

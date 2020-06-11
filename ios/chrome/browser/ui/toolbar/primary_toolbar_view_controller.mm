@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/toolbar/primary_toolbar_view_controller.h"
 
+#import <MaterialComponents/MaterialProgressView.h>
+
 #include "base/check.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
@@ -21,7 +23,6 @@
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

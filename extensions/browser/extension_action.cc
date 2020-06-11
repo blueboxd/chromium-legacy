@@ -117,7 +117,7 @@ void ExtensionAction::SetIcon(int tab_id, const gfx::Image& image) {
   SetValue(&icon_, tab_id, image);
 }
 
-bool ExtensionAction::ParseIconFromCanvasDictionary(
+ExtensionAction::IconParseResult ExtensionAction::ParseIconFromCanvasDictionary(
     const base::DictionaryValue& dict,
     gfx::ImageSkia* icon) {
   for (base::DictionaryValue::Iterator iter(dict); !iter.IsAtEnd();
@@ -131,7 +131,7 @@ bool ExtensionAction::ParseIconFromCanvasDictionary(
     } else if (iter.value().GetAsString(&binary_string64)) {
       std::string binary_string;
       if (!base::Base64Decode(binary_string64, &binary_string))
-        return false;
+        return IconParseResult::kDecodeFailure;
       pickle = IPC::Message(binary_string.c_str(), binary_string.length());
     } else {
       continue;
@@ -139,7 +139,7 @@ bool ExtensionAction::ParseIconFromCanvasDictionary(
     base::PickleIterator pickle_iter(pickle);
     SkBitmap bitmap;
     if (!IPC::ReadParam(&pickle, &pickle_iter, &bitmap))
-      return false;
+      return IconParseResult::kUnpickleFailure;
     CHECK(!bitmap.isNull());
 
     // Chrome helpfully scales the provided icon(s), but let's not go overboard.
@@ -150,7 +150,7 @@ bool ExtensionAction::ParseIconFromCanvasDictionary(
     float scale = static_cast<float>(bitmap.width()) / ActionIconSize();
     icon->AddRepresentation(gfx::ImageSkiaRep(bitmap, scale));
   }
-  return true;
+  return IconParseResult::kSuccess;
 }
 
 gfx::Image ExtensionAction::GetExplicitlySetIcon(int tab_id) const {

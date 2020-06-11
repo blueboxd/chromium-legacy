@@ -24,7 +24,9 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_observer.h"
+#include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/range/range.h"
+#include "ui/views/animation/animation_delegate_views.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 
@@ -169,13 +171,54 @@ class OmniboxViewViews : public OmniboxView,
   bool IsDropCursorForInsertion() const override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, RevealOnHover);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest,
+                           HideOnInteractionAndRevealOnHover);
   // TODO(tommycli): Remove the rest of these friends after porting these
   // browser tests to unit tests.
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, FriendlyAccessibleLabel);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, DoNotNavigateOnDrop);
 
-  class PathFadeAnimation;
+  // Animates the path from |starting_color| to |ending_color|. The fading
+  // starts after |delay_ms| ms. Declared here for testing.
+  class PathFadeAnimation : public views::AnimationDelegateViews {
+   public:
+    PathFadeAnimation(OmniboxViewViews* view,
+                      SkColor starting_color,
+                      SkColor ending_color,
+                      uint32_t delay_ms);
+
+    // Starts the animation over |path_bounds|. The caller is responsible for
+    // calling Stop() if the text changes and |path_bounds| is no longer valid.
+    void Start(const gfx::Range& path_bounds);
+
+    void Stop();
+
+    bool IsAnimating();
+
+    // Stops the animation if currently running and sets the starting color to
+    // |starting_color|.
+    void ResetStartingColor(SkColor starting_color);
+
+    SkColor GetCurrentColor();
+
+    // views::AnimationDelegateViews:
+    void AnimationProgressed(const gfx::Animation* animation) override;
+
+    gfx::MultiAnimation* GetAnimationForTesting();
+
+   private:
+    // Non-owning pointer. |view_| must always outlive this class.
+    OmniboxViewViews* view_;
+    SkColor starting_color_;
+    SkColor ending_color_;
+
+    // The path text range we are fading.
+    gfx::Range path_bounds_;
+
+    gfx::MultiAnimation animation_;
+  };
 
   enum class UnelisionGesture {
     HOME_KEY_PRESSED,
@@ -328,6 +371,9 @@ class OmniboxViewViews : public OmniboxView,
   // back to the on-page-load state. That is, it unhides the path (if currently
   // hidden) and resets state so that the path will show until user interaction.
   void ResetToHideOnInteraction();
+
+  PathFadeAnimation* GetPathFadeInAnimationForTesting();
+  PathFadeAnimation* GetPathFadeOutFastAnimationForTesting();
 
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (smaller font size). This is used for popups.

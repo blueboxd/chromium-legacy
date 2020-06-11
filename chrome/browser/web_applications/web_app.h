@@ -66,6 +66,9 @@ class WebApp {
   // using |sync_data| fields.
   bool is_in_sync_install() const { return is_in_sync_install_; }
 
+  // Represents the last time this app is launched.
+  const base::Time& last_launch_time() const { return last_launch_time_; }
+
   // Represents the "icons" field in the manifest.
   const std::vector<WebApplicationIconInfo>& icon_infos() const {
     return icon_infos_;
@@ -148,7 +151,7 @@ class WebApp {
   void SetFileHandlers(apps::FileHandlers file_handlers);
   void SetAdditionalSearchTerms(
       std::vector<std::string> additional_search_terms);
-
+  void SetLastLaunchTime(const base::Time& time);
   void SetSyncData(SyncData sync_data);
 
  private:
@@ -184,7 +187,7 @@ class WebApp {
   std::vector<std::vector<SquareSizePx>> downloaded_shortcuts_menu_icons_sizes_;
   apps::FileHandlers file_handlers_;
   std::vector<std::string> additional_search_terms_;
-
+  base::Time last_launch_time_;
   SyncData sync_data_;
 };
 

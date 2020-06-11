@@ -7,11 +7,14 @@
 #include <memory>
 #include <string>
 
+#include "ash/assistant/model/assistant_ui_model.h"
+#include "ash/assistant/test/assistant_ash_test_base.h"
 #include "ash/assistant/ui/test_support/mock_assistant_view_delegate.h"
-#include "ash/test/ash_test_base.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/label.h"
 
@@ -24,32 +27,59 @@ using testing::Return;
 // Constants.
 constexpr char kPrimaryUserGivenName[] = "Foo";
 
+// ScopedShowUi ----------------------------------------------------------------
+
+class ScopedShowUi {
+ public:
+  ScopedShowUi()
+      : original_visibility_(
+            AssistantUiController::Get()->GetModel()->visibility()) {
+    AssistantUiController::Get()->ShowUi(
+        chromeos::assistant::mojom::AssistantEntryPoint::kUnspecified);
+  }
+
+  ScopedShowUi(const ScopedShowUi&) = delete;
+  ScopedShowUi& operator=(const ScopedShowUi&) = delete;
+
+  ~ScopedShowUi() {
+    switch (original_visibility_) {
+      case AssistantVisibility::kClosed:
+        AssistantUiController::Get()->CloseUi(
+            chromeos::assistant::mojom::AssistantExitPoint::kUnspecified);
+        return;
+      case AssistantVisibility::kVisible:
+        // No action necessary.
+        return;
+    }
+  }
+
+ private:
+  const AssistantVisibility original_visibility_;
+};
+
 // AssistantOnboardingViewTest -------------------------------------------------
 
-class AssistantOnboardingViewTest : public AshTestBase {
+class AssistantOnboardingViewTest : public AssistantAshTestBase {
  public:
   AssistantOnboardingViewTest()
-      : AshTestBase(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
+      : AssistantAshTestBase(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~AssistantOnboardingViewTest() override = default;
 
-  // AshTestBase:
+  // AssistantAshTestBase:
   void SetUp() override {
-    AshTestBase::SetUp();
+    AssistantAshTestBase::SetUp();
 
     delegate_ = std::make_unique<MockAssistantViewDelegate>();
 
     ON_CALL(*delegate_, GetPrimaryUserGivenName())
         .WillByDefault(Return(kPrimaryUserGivenName));
 
-    RecreateView();
+    view_ = std::make_unique<AssistantOnboardingView>(delegate_.get());
   }
 
   void AdvanceClock(base::TimeDelta time_delta) {
     task_environment()->AdvanceClock(time_delta);
-  }
-
-  void RecreateView() {
-    view_ = std::make_unique<AssistantOnboardingView>(delegate_.get());
   }
 
   AssistantOnboardingView* view() { return view_.get(); }
@@ -77,65 +107,81 @@ TEST_F(AssistantOnboardingViewTest, ShouldHaveExpectedGreeting) {
   AdvanceClock(base::Time::Now().LocalMidnight() +
                base::TimeDelta::FromHours(24) - base::Time::Now());
 
-  // Verify 4:59 AM.
-  AdvanceClock(base::TimeDelta::FromHours(4) +
-               base::TimeDelta::FromMinutes(59));
-  RecreateView();
-  EXPECT_EQ(greeting_label()->GetText(),
-            base::UTF8ToUTF16(
-                base::StringPrintf("Good night %s,", kPrimaryUserGivenName)));
+  {
+    // Verify 4:59 AM.
+    AdvanceClock(base::TimeDelta::FromHours(4) +
+                 base::TimeDelta::FromMinutes(59));
+    ScopedShowUi scoped_show_ui;
+    EXPECT_EQ(greeting_label()->GetText(),
+              base::UTF8ToUTF16(
+                  base::StringPrintf("Good night %s,", kPrimaryUserGivenName)));
+  }
 
-  // Verify 5:00 AM.
-  AdvanceClock(base::TimeDelta::FromMinutes(1));
-  RecreateView();
-  EXPECT_EQ(greeting_label()->GetText(),
-            base::UTF8ToUTF16(
-                base::StringPrintf("Good morning %s,", kPrimaryUserGivenName)));
+  {
+    // Verify 5:00 AM.
+    AdvanceClock(base::TimeDelta::FromMinutes(1));
+    ScopedShowUi scoped_show_ui;
+    EXPECT_EQ(greeting_label()->GetText(),
+              base::UTF8ToUTF16(base::StringPrintf("Good morning %s,",
+                                                   kPrimaryUserGivenName)));
+  }
 
-  // Verify 11:59 AM.
-  AdvanceClock(base::TimeDelta::FromHours(6) +
-               base::TimeDelta::FromMinutes(59));
-  RecreateView();
-  EXPECT_EQ(greeting_label()->GetText(),
-            base::UTF8ToUTF16(
-                base::StringPrintf("Good morning %s,", kPrimaryUserGivenName)));
+  {
+    // Verify 11:59 AM.
+    AdvanceClock(base::TimeDelta::FromHours(6) +
+                 base::TimeDelta::FromMinutes(59));
+    ScopedShowUi scoped_show_ui;
+    EXPECT_EQ(greeting_label()->GetText(),
+              base::UTF8ToUTF16(base::StringPrintf("Good morning %s,",
+                                                   kPrimaryUserGivenName)));
+  }
 
-  // Verify 12:00 PM.
-  AdvanceClock(base::TimeDelta::FromMinutes(1));
-  RecreateView();
-  EXPECT_EQ(greeting_label()->GetText(),
-            base::UTF8ToUTF16(base::StringPrintf("Good afternoon %s,",
-                                                 kPrimaryUserGivenName)));
+  {
+    // Verify 12:00 PM.
+    AdvanceClock(base::TimeDelta::FromMinutes(1));
+    ScopedShowUi scoped_show_ui;
+    EXPECT_EQ(greeting_label()->GetText(),
+              base::UTF8ToUTF16(base::StringPrintf("Good afternoon %s,",
+                                                   kPrimaryUserGivenName)));
+  }
 
-  // Verify 4:59 PM.
-  AdvanceClock(base::TimeDelta::FromHours(4) +
-               base::TimeDelta::FromMinutes(59));
-  RecreateView();
-  EXPECT_EQ(greeting_label()->GetText(),
-            base::UTF8ToUTF16(base::StringPrintf("Good afternoon %s,",
-                                                 kPrimaryUserGivenName)));
+  {
+    // Verify 4:59 PM.
+    AdvanceClock(base::TimeDelta::FromHours(4) +
+                 base::TimeDelta::FromMinutes(59));
+    ScopedShowUi scoped_show_ui;
+    EXPECT_EQ(greeting_label()->GetText(),
+              base::UTF8ToUTF16(base::StringPrintf("Good afternoon %s,",
+                                                   kPrimaryUserGivenName)));
+  }
 
-  // Verify 5:00 PM.
-  AdvanceClock(base::TimeDelta::FromMinutes(1));
-  RecreateView();
-  EXPECT_EQ(greeting_label()->GetText(),
-            base::UTF8ToUTF16(
-                base::StringPrintf("Good evening %s,", kPrimaryUserGivenName)));
+  {
+    // Verify 5:00 PM.
+    AdvanceClock(base::TimeDelta::FromMinutes(1));
+    ScopedShowUi scoped_show_ui;
+    EXPECT_EQ(greeting_label()->GetText(),
+              base::UTF8ToUTF16(base::StringPrintf("Good evening %s,",
+                                                   kPrimaryUserGivenName)));
+  }
 
-  // Verify 10:59 PM.
-  AdvanceClock(base::TimeDelta::FromHours(5) +
-               base::TimeDelta::FromMinutes(59));
-  RecreateView();
-  EXPECT_EQ(greeting_label()->GetText(),
-            base::UTF8ToUTF16(
-                base::StringPrintf("Good evening %s,", kPrimaryUserGivenName)));
+  {
+    // Verify 10:59 PM.
+    AdvanceClock(base::TimeDelta::FromHours(5) +
+                 base::TimeDelta::FromMinutes(59));
+    ScopedShowUi scoped_show_ui;
+    EXPECT_EQ(greeting_label()->GetText(),
+              base::UTF8ToUTF16(base::StringPrintf("Good evening %s,",
+                                                   kPrimaryUserGivenName)));
+  }
 
-  // Verify 11:00 PM.
-  AdvanceClock(base::TimeDelta::FromMinutes(1));
-  RecreateView();
-  EXPECT_EQ(greeting_label()->GetText(),
-            base::UTF8ToUTF16(
-                base::StringPrintf("Good night %s,", kPrimaryUserGivenName)));
+  {
+    // Verify 11:00 PM.
+    AdvanceClock(base::TimeDelta::FromMinutes(1));
+    ScopedShowUi scoped_show_ui;
+    EXPECT_EQ(greeting_label()->GetText(),
+              base::UTF8ToUTF16(
+                  base::StringPrintf("Good night %s,", kPrimaryUserGivenName)));
+  }
 }
 
 TEST_F(AssistantOnboardingViewTest, ShouldHaveExpectedIntro) {

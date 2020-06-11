@@ -29,8 +29,6 @@ enum FeaturePolicyFeature {
   kMidiFeature = 7,
   // Controls access to PaymentRequest interface.
   kPayment = 8,
-  // Controls access to document.cookie attribute.
-  kDocumentCookie = 10,
   // Controls access to document.domain attribute.
   kDocumentDomain = 11,
   // Controls whether synchronous script elements will run.

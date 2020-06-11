@@ -50,13 +50,15 @@ void SerialPortManagerImpl::GetDevices(GetDevicesCallback callback) {
 
 void SerialPortManagerImpl::GetPort(
     const base::UnguessableToken& token,
+    bool use_alternate_path,
     mojo::PendingReceiver<mojom::SerialPort> receiver,
     mojo::PendingRemote<mojom::SerialPortConnectionWatcher> watcher) {
   if (!enumerator_) {
     enumerator_ = SerialDeviceEnumerator::Create(ui_task_runner_);
     observed_enumerator_.Add(enumerator_.get());
   }
-  base::Optional<base::FilePath> path = enumerator_->GetPathFromToken(token);
+  base::Optional<base::FilePath> path =
+      enumerator_->GetPathFromToken(token, use_alternate_path);
   if (path) {
     io_task_runner_->PostTask(
         FROM_HERE,

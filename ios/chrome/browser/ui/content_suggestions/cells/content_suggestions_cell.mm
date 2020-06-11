@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cell.h"
 
+#import <MaterialComponents/MaterialTypography.h>
+
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/i18n_string.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
@@ -11,7 +13,6 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

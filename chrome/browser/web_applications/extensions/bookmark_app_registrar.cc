@@ -173,6 +173,15 @@ DisplayMode BookmarkAppRegistrar::GetAppUserDisplayMode(
   }
 }
 
+base::Time BookmarkAppRegistrar::GetAppLastLaunchTime(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetBookmarkAppDchecked(app_id);
+  return extension
+             ? extensions::ExtensionPrefs::Get(profile())->GetLastLaunchTime(
+                   extension->id())
+             : base::Time();
+}
+
 std::vector<WebApplicationIconInfo> BookmarkAppRegistrar::GetAppIconInfos(
     const web_app::AppId& app_id) const {
   std::vector<WebApplicationIconInfo> result;

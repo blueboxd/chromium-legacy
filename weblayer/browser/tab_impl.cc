@@ -53,6 +53,7 @@
 #include "weblayer/browser/infobar_service.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/page_load_metrics_initialize.h"
+#include "weblayer/browser/password_manager_driver_factory.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/persistence/browser_persister.h"
 #include "weblayer/browser/popup_navigation_delegate_impl.h"
@@ -304,6 +305,7 @@ TabImpl::TabImpl(ProfileImpl* profile,
       web_contents_.get(), base::DefaultTickClock::GetInstance(),
       HostContentSettingsMapFactory::GetForBrowserContext(
           web_contents_->GetBrowserContext()));
+  PasswordManagerDriverFactory::CreateForWebContents(web_contents_.get());
 
   InitializePageLoadMetricsForWebContents(web_contents_.get());
 

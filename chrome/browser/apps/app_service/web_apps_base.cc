@@ -112,10 +112,10 @@ apps::mojom::AppPtr WebAppsBase::ConvertImpl(const web_app::WebApp* web_app,
 
   app->description = web_app->description();
   app->additional_search_terms = web_app->additional_search_terms();
+  app->last_launch_time = web_app->last_launch_time();
 
   // app->version is left empty here.
-  // TODO(loyso): Populate app->last_launch_time and app->install_time.
-
+  // TODO(loyso): Populate app->install_time.
   PopulatePermissions(web_app, &app->permissions);
 
   SetShowInFields(app, web_app);
@@ -360,6 +360,15 @@ void WebAppsBase::OnContentSettingChanged(
 }
 
 void WebAppsBase::OnWebAppInstalled(const web_app::AppId& app_id) {
+  const web_app::WebApp* web_app = GetWebApp(app_id);
+  if (web_app && Accepts(app_id)) {
+    Publish(Convert(web_app, apps::mojom::Readiness::kReady), subscribers_);
+  }
+}
+
+void WebAppsBase::OnWebAppLastLaunchTimeChanged(
+    const std::string& app_id,
+    const base::Time& last_launch_time) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
   if (web_app && Accepts(app_id)) {
     Publish(Convert(web_app, apps::mojom::Readiness::kReady), subscribers_);

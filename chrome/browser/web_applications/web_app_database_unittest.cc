@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
@@ -80,7 +81,6 @@ class WebAppDatabaseTest : public WebAppTest {
         base_url + "/scope" + base::NumberToString(suffix);
     const base::Optional<SkColor> theme_color = suffix;
     const base::Optional<SkColor> synced_theme_color = suffix ^ UINT_MAX;
-
     auto app = std::make_unique<WebApp>(app_id);
 
     // Generate all possible permutations of field values in a random way:
@@ -106,6 +106,10 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetIsInSyncInstall(!(suffix & 4));
     app->SetUserDisplayMode((suffix & 1) ? DisplayMode::kBrowser
                                          : DisplayMode::kStandalone);
+
+    const base::Time last_launch_time =
+        base::Time::UnixEpoch() + base::TimeDelta::FromMilliseconds(suffix);
+    app->SetLastLaunchTime(last_launch_time);
 
     const DisplayMode display_modes[4] = {
         DisplayMode::kBrowser, DisplayMode::kMinimalUi,
@@ -336,6 +340,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_FALSE(app->sync_data().theme_color.has_value());
   EXPECT_TRUE(app->file_handlers().empty());
   EXPECT_TRUE(app->additional_search_terms().empty());
+  EXPECT_TRUE(app->last_launch_time().is_null());
   controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
@@ -371,6 +376,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->description().empty());
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());
+  EXPECT_TRUE(app_copy->last_launch_time().is_null());
   EXPECT_TRUE(app_copy->icon_infos().empty());
   EXPECT_TRUE(app_copy->downloaded_icon_sizes().empty());
   EXPECT_FALSE(app_copy->is_in_sync_install());

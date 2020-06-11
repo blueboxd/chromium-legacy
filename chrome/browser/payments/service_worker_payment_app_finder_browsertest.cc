@@ -174,9 +174,14 @@ class ServiceWorkerPaymentAppFinderBrowserTest : public InProcessBrowserTest {
     downloader->AddTestServerURL(
         "https://larry.example.com/",
         larry_example_.GetURL("larry.example.com", "/"));
-    ServiceWorkerPaymentAppFinder::GetInstance()
-        ->SetDownloaderAndIgnorePortInOriginComparisonForTesting(
-            std::move(downloader));
+
+    ui_test_utils::NavigateToURL(browser(),
+                                 alicepay_.GetURL("chromium.org", "/"));
+
+    auto* finder = ServiceWorkerPaymentAppFinder::GetOrCreateForCurrentDocument(
+        browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame());
+    finder->SetDownloaderAndIgnorePortInOriginComparisonForTesting(
+        std::move(downloader));
 
     std::vector<mojom::PaymentMethodDataPtr> method_data;
     for (const auto& identifier : payment_method_identifiers) {
@@ -185,9 +190,8 @@ class ServiceWorkerPaymentAppFinderBrowserTest : public InProcessBrowserTest {
     }
 
     base::RunLoop run_loop;
-    ServiceWorkerPaymentAppFinder::GetInstance()->GetAllPaymentApps(
+    finder->GetAllPaymentApps(
         url::Origin::Create(GURL("https://chromium.org")),
-        web_contents->GetMainFrame(), web_contents,
         WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
             Profile::FromBrowserContext(context),
             ServiceAccessType::EXPLICIT_ACCESS),

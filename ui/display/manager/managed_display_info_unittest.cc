@@ -68,11 +68,11 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   EXPECT_EQ("200x200", info.display_modes()[3].size().ToString());
   EXPECT_EQ("300x200", info.display_modes()[4].size().ToString());
 
-  EXPECT_EQ(0.0f, info.display_modes()[0].refresh_rate());
+  EXPECT_EQ(60.0f, info.display_modes()[0].refresh_rate());
   EXPECT_EQ(60.0f, info.display_modes()[1].refresh_rate());
   EXPECT_EQ(30.0f, info.display_modes()[2].refresh_rate());
   EXPECT_EQ(59.9f, info.display_modes()[3].refresh_rate());
-  EXPECT_EQ(0.0f, info.display_modes()[4].refresh_rate());
+  EXPECT_EQ(60.0f, info.display_modes()[4].refresh_rate());
 
   EXPECT_EQ(2.0f, info.display_modes()[0].device_scale_factor());
   EXPECT_EQ(1.0f, info.display_modes()[1].device_scale_factor());

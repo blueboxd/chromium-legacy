@@ -251,29 +251,30 @@ class RenderingRepresentativePerfTest(object):
         csv_obj = csv.DictReader(csv_file)
         values_per_story = self.parse_csv_results(csv_obj)
 
-      # Clearing the result of run_benchmark and write the gated perf results
-      resultsFile.seek(0)
-      resultsFile.truncate(0)
+      if not rerun:
+        # Clearing the result of run_benchmark and write the gated perf results
+        resultsFile.seek(0)
+        resultsFile.truncate(0)
 
     self.compare_values(values_per_story, rerun)
 
-  def run_perf_tests(self, rerun=False):
-    self.return_code |= run_performance_tests.main(
-      self.re_run_args if rerun else self.args)
-    self.interpret_run_benchmark_results(rerun)
+  def run_perf_tests(self):
+    self.return_code |= run_performance_tests.main(self.args)
+    self.interpret_run_benchmark_results(False)
 
-    if not rerun and len(self.result_recorder[rerun].failed_stories) > 0:
+    if len(self.result_recorder[False].failed_stories) > 0:
       # For failed stories we run_tests again to make sure it's not a false
       # positive.
       print('============ Re_run the failed tests ============')
       all_failed_stories = '('+'|'.join(
-        self.result_recorder[rerun].failed_stories)+')'
+        self.result_recorder[True].failed_stories)+')'
       # TODO(crbug.com/1055893): Remove the extra chrome categories after
       # investigation of flakes in representative perf tests.
       self.re_run_args.extend(
         ['--story-filter', all_failed_stories, '--pageset-repeat=3',
          '--extra-chrome-categories=blink,blink_gc,gpu,v8,viz'])
-      self.run_perf_tests(True)
+      self.return_code |= run_performance_tests.main(self.re_run_args)
+      self.interpret_run_benchmark_results(True)
 
       for story_name in self.result_recorder[False].failed_stories.copy():
         if story_name not in self.result_recorder[True].failed_stories:
@@ -290,7 +291,7 @@ class RenderingRepresentativePerfTest(object):
       self.return_code
     ) = self.result_recorder[False].get_output(self.return_code)
 
-    with open(self.output_path[rerun], 'r+') as resultsFile:
+    with open(self.output_path[False], 'r+') as resultsFile:
       json.dump(finalOut, resultsFile, indent=4)
     with open(self.options.isolated_script_test_output, 'w') as outputFile:
       json.dump(finalOut, outputFile, indent=4)

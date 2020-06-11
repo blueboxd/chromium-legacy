@@ -42,6 +42,12 @@ class ExtensionAction {
     // the UI.
   };
 
+  enum class IconParseResult {
+    kSuccess,
+    kDecodeFailure,
+    kUnpickleFailure,
+  };
+
   static extension_misc::ExtensionIcons ActionIconSize();
 
   // Returns the default icon to use when no other is available (the puzzle
@@ -95,9 +101,10 @@ class ExtensionAction {
   void SetIcon(int tab_id, const gfx::Image& image);
 
   // Tries to parse |*icon| from a dictionary {"19": imageData19, "38":
-  // imageData38}, returning false if a value is corrupt.
-  static bool ParseIconFromCanvasDictionary(const base::DictionaryValue& dict,
-                                            gfx::ImageSkia* icon);
+  // imageData38}, and returns the result of the parsing attempt.
+  static IconParseResult ParseIconFromCanvasDictionary(
+      const base::DictionaryValue& dict,
+      gfx::ImageSkia* icon);
 
   // Gets the icon that has been set using |SetIcon| for the tab.
   gfx::Image GetExplicitlySetIcon(int tab_id) const;

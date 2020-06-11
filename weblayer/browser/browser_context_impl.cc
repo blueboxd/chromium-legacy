@@ -21,6 +21,8 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_state/core/security_state.h"
+#include "components/site_isolation/pref_names.h"
+#include "components/site_isolation/site_isolation_policy.h"
 #include "components/translate/core/browser/translate_pref_names.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/user_prefs/user_prefs.h"
@@ -30,6 +32,8 @@
 #include "content/public/browser/download_request_utils.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "weblayer/browser/browsing_data_remover_delegate.h"
+#include "weblayer/browser/browsing_data_remover_delegate_factory.h"
 #include "weblayer/browser/client_hints_factory.h"
 #include "weblayer/browser/permissions/permission_manager_factory.h"
 #include "weblayer/browser/stateful_ssl_host_state_delegate_factory.h"
@@ -83,6 +87,8 @@ BrowserContextImpl::BrowserContextImpl(ProfileImpl* profile_impl,
 
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       this);
+
+  site_isolation::SiteIsolationPolicy::ApplyPersistedIsolatedOrigins(this);
 }
 
 BrowserContextImpl::~BrowserContextImpl() {
@@ -179,7 +185,7 @@ BrowserContextImpl::GetBackgroundSyncController() {
 
 content::BrowsingDataRemoverDelegate*
 BrowserContextImpl::GetBrowsingDataRemoverDelegate() {
-  return nullptr;
+  return BrowsingDataRemoverDelegateFactory::GetForBrowserContext(this);
 }
 
 download::InProgressDownloadManager*
@@ -234,6 +240,8 @@ void BrowserContextImpl::RegisterPrefs(
   // through //chrome).
   pref_registry->RegisterBooleanPref(
       embedder_support::kAlternateErrorPagesEnabled, true);
+  pref_registry->RegisterListPref(
+      site_isolation::prefs::kUserTriggeredIsolatedOrigins);
 
   StatefulSSLHostStateDelegate::RegisterProfilePrefs(pref_registry);
   HostContentSettingsMap::RegisterProfilePrefs(pref_registry);

@@ -956,7 +956,7 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
 #endif
 
   // Adjust the position of the final baseline if needed.
-  FinalizeBaseline();
+  container_builder_.SetLastBaselineToBlockEndMarginEdgeIfNeeded();
 
   // An exclusion space is confined to nodes within the same formatting context.
   if (!ConstraintSpace().IsNewFormattingContext()) {
@@ -2594,21 +2594,6 @@ void NGBlockLayoutAlgorithm::PropagateBaselineFromChild(
     if (auto last_baseline = fragment.Baseline())
       container_builder_.SetLastBaseline(block_offset + *last_baseline);
   }
-}
-
-void NGBlockLayoutAlgorithm::FinalizeBaseline() {
-  if (ConstraintSpace().BaselineAlgorithmType() !=
-      NGBaselineAlgorithmType::kInlineBlock)
-    return;
-
-  if (!Node().UseLogicalBottomMarginEdgeForInlineBlockBaseline())
-    return;
-
-  // When overflow is present (within an atomic-inline baseline context) we
-  // should always use the block-end margin edge as the baseline.
-  NGBoxStrut margins = ComputeMarginsForSelf(ConstraintSpace(), Style());
-  container_builder_.SetLastBaseline(container_builder_.BlockSize() +
-                                     margins.block_end);
 }
 
 bool NGBlockLayoutAlgorithm::ResolveBfcBlockOffset(

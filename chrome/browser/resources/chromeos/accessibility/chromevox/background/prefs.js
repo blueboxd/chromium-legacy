@@ -222,6 +222,7 @@ ChromeVoxPrefs.DEFAULT_PREFS = {
   'typingEcho': 0,
   'useIBeamCursor': false,
   'useClassic': false,
+  'usePitchChanges': true,
   'useVerboseMode': true,
 
   // eventStreamFilters

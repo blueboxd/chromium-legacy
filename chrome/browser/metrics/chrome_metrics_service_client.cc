@@ -586,8 +586,8 @@ void ChromeMetricsServiceClient::Initialize() {
     // We only need to restrict to whitelisted Entries if metrics reporting
     // is not forced.
     bool restrict_to_whitelist_entries = !IsMetricsReportingForceEnabled();
-    identifiability_study_settings_ =
-        std::make_unique<IdentifiabilityStudySettings>(local_state);
+    identifiability_study_state_ =
+        std::make_unique<IdentifiabilityStudyState>(local_state);
     ukm_service_ = std::make_unique<ukm::UkmService>(
         local_state, this, restrict_to_whitelist_entries,
         MakeDemographicMetricsProvider(
@@ -596,7 +596,7 @@ void ChromeMetricsServiceClient::Initialize() {
         base::BindRepeating(&IsWebstoreExtension));
     ukm_service_->RegisterEventFilter(
         std::make_unique<PrivacyBudgetUkmEntryFilter>(
-            identifiability_study_settings_.get()));
+            identifiability_study_state_.get()));
 
     RegisterUKMProviders();
   }

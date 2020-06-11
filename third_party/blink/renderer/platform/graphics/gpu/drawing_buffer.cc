@@ -103,6 +103,7 @@ scoped_refptr<DrawingBuffer> DrawingBuffer::Create(
     PreserveDrawingBuffer preserve,
     WebGLVersion webgl_version,
     ChromiumImageUsage chromium_image_usage,
+    SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
     gl::GpuPreference gpu_preference) {
   if (g_should_fail_drawing_buffer_creation_for_testing) {
@@ -155,7 +156,7 @@ scoped_refptr<DrawingBuffer> DrawingBuffer::Create(
           std::move(extensions_util), client, discard_framebuffer_supported,
           want_alpha_channel, premultiplied_alpha, preserve, webgl_version,
           want_depth_buffer, want_stencil_buffer, chromium_image_usage,
-          color_params, gpu_preference));
+          filter_quality, color_params, gpu_preference));
   if (!drawing_buffer->Initialize(size, multisample_supported)) {
     drawing_buffer->BeginDestruction();
     return scoped_refptr<DrawingBuffer>();
@@ -177,6 +178,7 @@ DrawingBuffer::DrawingBuffer(
     bool want_depth,
     bool want_stencil,
     ChromiumImageUsage chromium_image_usage,
+    SkFilterQuality filter_quality,
     const CanvasColorParams& color_params,
     gl::GpuPreference gpu_preference)
     : client_(client),
@@ -197,6 +199,7 @@ DrawingBuffer::DrawingBuffer(
       sampler_color_space_(color_params.GetSamplerGfxColorSpace()),
       use_half_float_storage_(color_params.PixelFormat() ==
                               CanvasPixelFormat::kF16),
+      filter_quality_(filter_quality),
       chromium_image_usage_(chromium_image_usage),
       opengl_flip_y_extension_(
           ContextProvider()->GetCapabilities().mesa_framebuffer_flip_y),

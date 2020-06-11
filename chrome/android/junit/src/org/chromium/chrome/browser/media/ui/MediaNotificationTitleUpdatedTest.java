@@ -40,7 +40,7 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
     private static final int TAB_ID_2 = 2;
     private static final int THROTTLE_MILLIS = MediaNotificationManager.Throttler.THROTTLE_MILLIS;
     private static final int HIDE_NOTIFICATION_DELAY_MILLIS =
-            MediaSessionTabHelper.HIDE_NOTIFICATION_DELAY_MILLIS;
+            MediaSessionHelper.HIDE_NOTIFICATION_DELAY_MILLIS;
 
     private MediaNotificationTestTabHolder mTabHolder;
 

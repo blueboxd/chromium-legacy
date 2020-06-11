@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_FILE_SOURCE_REQUEST_H_
 #define CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_FILE_SOURCE_REQUEST_H_
 
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 
@@ -15,10 +16,11 @@ namespace safe_browsing {
 // GetRequestData will return quickly.
 class FileSourceRequest : public BinaryUploadService::Request {
  public:
-  FileSourceRequest(bool block_unsupported_types,
-                    base::FilePath path,
-                    base::FilePath file_name,
-                    BinaryUploadService::Callback callback);
+  FileSourceRequest(
+      const enterprise_connectors::AnalysisSettings& analysis_settings,
+      base::FilePath path,
+      base::FilePath file_name,
+      BinaryUploadService::Callback callback);
   FileSourceRequest(const FileSourceRequest&) = delete;
   FileSourceRequest& operator=(const FileSourceRequest&) = delete;
   ~FileSourceRequest() override;

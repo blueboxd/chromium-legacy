@@ -33,10 +33,9 @@ class SerialDeviceEnumeratorMac : public SerialDeviceEnumerator {
   void AddDevices();
   void RemoveDevices();
 
-  // Each IORegistry entry potentially creates two serial ports for the dialin
-  // and callout device nodes.
-  std::map<uint64_t, std::pair<base::UnguessableToken, base::UnguessableToken>>
-      entries_;
+  // Map from IORegistry entry IDs to the token used to refer to the device
+  // internally.
+  std::map<uint64_t, base::UnguessableToken> entries_;
 
   base::mac::ScopedIONotificationPortRef notify_port_;
   base::mac::ScopedIOObject<io_iterator_t> devices_added_iterator_;

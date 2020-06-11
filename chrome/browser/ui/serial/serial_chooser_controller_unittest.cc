@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
+#include "build/build_config.h"
 #include "chrome/browser/chooser_controller/mock_chooser_controller_view.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
@@ -87,6 +88,11 @@ TEST_F(SerialChooserControllerTest, PortsAddedAndRemoved) {
   port->token = base::UnguessableToken::Create();
   port->display_name = "Test Port 1";
   port->path = base::FilePath(FILE_PATH_LITERAL("/dev/ttyS0"));
+#if defined(OS_MACOSX)
+  // This path will be ignored and not generate additional chooser entries or
+  // be displayed in the device name.
+  port->alternate_path = base::FilePath(FILE_PATH_LITERAL("/dev/alternateS0"));
+#endif
   base::UnguessableToken port1_token = port->token;
   port_manager().AddPort(std::move(port));
   {

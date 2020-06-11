@@ -104,7 +104,7 @@ ScriptPromise Serial::requestPort(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  if (!frame->GetDocument()->IsFeatureEnabled(
+  if (!GetExecutionContext()->IsFeatureEnabled(
           mojom::blink::FeaturePolicyFeature::kSerial,
           ReportOptions::kReportOnFailure)) {
     exception_state.ThrowSecurityError(kFeaturePolicyBlocked);

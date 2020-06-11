@@ -25,6 +25,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "weblayer/browser/browser_context_impl.h"
+#include "weblayer/browser/browsing_data_remover_delegate.h"
 #include "weblayer/browser/cookie_manager_impl.h"
 #include "weblayer/browser/tab_impl.h"
 
@@ -177,6 +178,7 @@ void ProfileImpl::ClearBrowsingData(
         remove_mask |= content::BrowsingDataRemover::DATA_TYPE_COOKIES;
         remove_mask |= content::BrowsingDataRemover::DATA_TYPE_DOM_STORAGE;
         remove_mask |= content::BrowsingDataRemover::DATA_TYPE_MEDIA_LICENSES;
+        remove_mask |= BrowsingDataRemoverDelegate::DATA_TYPE_ISOLATED_ORIGINS;
         break;
       case BrowsingDataType::CACHE:
         remove_mask |= content::BrowsingDataRemover::DATA_TYPE_CACHE;

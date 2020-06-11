@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_view_controller.h"
 
+#import <MaterialComponents/MaterialActivityIndicator.h>
+
 #include "base/feature_list.h"
 #import "base/logging.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
@@ -16,7 +18,6 @@
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #import "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 #import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

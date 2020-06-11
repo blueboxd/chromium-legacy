@@ -422,3 +422,8 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_default_enable_5rto_blackhole_detection2,
     true)
+
+// If true, session does not send duplicate MAX_STREAMS.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_stop_sending_duplicate_max_streams,
+          false)

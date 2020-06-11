@@ -2,25 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 #import "remoting/ios/app/remoting_menu_view_controller.h"
 
-#import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
-#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
+#import <MaterialComponents/MaterialAppBar.h>
+#import <MaterialComponents/MaterialButtons.h>
+
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/side_menu_items.h"
 #import "remoting/ios/facade/remoting_authentication.h"
 #import "remoting/ios/facade/remoting_service.h"
-
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "remoting/base/string_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // TODO(nicholss): This should be generated from a remoting/base class:
 

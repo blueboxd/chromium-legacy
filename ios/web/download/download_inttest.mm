@@ -59,7 +59,7 @@ std::unique_ptr<net::test_server::HttpResponse> GetDownloadResponse(
 class DownloadTest : public WebTestWithWebState {
  protected:
   DownloadTest() : delegate_(download_controller()) {
-    server_.RegisterRequestHandler(base::Bind(&GetDownloadResponse));
+    server_.RegisterRequestHandler(base::BindRepeating(&GetDownloadResponse));
   }
 
   DownloadController* download_controller() {

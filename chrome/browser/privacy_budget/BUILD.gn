@@ -9,8 +9,8 @@ source_set("privacy_budget") {
     "container_ops.h",
     "field_trial_param_conversions.cc",
     "field_trial_param_conversions.h",
-    "identifiability_study_settings.cc",
-    "identifiability_study_settings.h",
+    "identifiability_study_state.cc",
+    "identifiability_study_state.h",
     "privacy_budget_features.cc",
     "privacy_budget_features.h",
     "privacy_budget_prefs.cc",
@@ -32,7 +32,7 @@ source_set("unit_tests") {
   sources = [
     "container_ops_unittest.cc",
     "field_trial_param_conversions_unittest.cc",
-    "identifiability_study_settings_unittest.cc",
+    "identifiability_study_state_unittest.cc",
     "privacy_budget_ukm_entry_filter_unittest.cc",
   ]
   deps = [

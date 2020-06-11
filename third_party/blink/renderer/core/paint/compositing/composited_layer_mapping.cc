@@ -1546,6 +1546,9 @@ void CompositedLayerMapping::SetSublayers(
     const GraphicsLayerVector& sublayers) {
   GraphicsLayer* parent = ParentForSublayers();
 
+  // TODO(szager): Remove after diagnosing crash crbug.com/1092673
+  CHECK(parent);
+
   // Some layers are managed by CompositedLayerMapping under |parent| need to
   // be reattached after SetChildren() below which will clobber all children.
   GraphicsLayerVector layers_needing_reattachment;

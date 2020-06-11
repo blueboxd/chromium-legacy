@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_LAYOUT_H_
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_LAYOUT_H_
 
-#import "ios/third_party/material_components_ios/src/components/Collections/src/MDCCollectionViewFlowLayout.h"
+#import <MaterialComponents/MDCCollectionViewFlowLayout.h>
 
 // Layout used for ContentSuggestions. It makes sure the collection is high
 // enough to be scrolled up to the point the fake omnibox is hidden. For size

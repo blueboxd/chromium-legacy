@@ -9,9 +9,11 @@
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_banner_overlay_request_cancel_handler.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_modal_completion_notifier.h"
+#import "ios/chrome/browser/infobars/overlays/infobar_modal_overlay_request_cancel_handler.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_cancel_handler.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_request_factory.h"
 #import "ios/chrome/browser/overlays/public/common/infobars/infobar_overlay_request_config.h"
+#import "ios/chrome/browser/overlays/public/infobar_banner/infobar_banner_placeholder_request_config.h"
 #include "ios/chrome/browser/overlays/public/overlay_modality.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
@@ -91,8 +93,22 @@ void InfobarOverlayRequestInserter::InsertOverlayRequest(
       break;
     case InfobarOverlayType::kDetailSheet:
     case InfobarOverlayType::kModal:
+      // Add placeholder request in front of banner queue so no banner get
+      // presented behind the modal.
       cancel_handler = std::make_unique<InfobarOverlayRequestCancelHandler>(
           request.get(), queue, infobar_ios);
+      OverlayRequestQueue* banner_queue =
+          queues_.at(InfobarOverlayType::kBanner);
+      std::unique_ptr<OverlayRequest> request =
+          OverlayRequest::CreateWithConfig<
+              InfobarBannerPlaceholderRequestConfig>(infobar_ios);
+      std::unique_ptr<InfobarModalOverlayRequestCancelHandler>
+          modal_cancel_handler =
+              std::make_unique<InfobarModalOverlayRequestCancelHandler>(
+                  request.get(), banner_queue, infobar_ios,
+                  modal_completion_notifier_.get());
+      banner_queue->InsertRequest(0, std::move(request),
+                                  std::move(modal_cancel_handler));
       break;
   }
   for (auto& observer : observers_) {

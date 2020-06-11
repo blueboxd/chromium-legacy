@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/css_property_rule.h"
 
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
+#include "third_party/blink/renderer/core/css/css_markup.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_string_value.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
@@ -24,7 +25,7 @@ String CSSPropertyRule::cssText() const {
   // https://drafts.css-houdini.org/css-properties-values-api-1/#serialize-a-csspropertyrule
   StringBuilder builder;
   builder.Append("@property ");
-  builder.Append(property_rule_->GetName());
+  SerializeIdentifier(property_rule_->GetName(), builder);
   builder.Append(" { ");
   if (const CSSValue* syntax = property_rule_->GetSyntax()) {
     DCHECK(syntax->IsStringValue());

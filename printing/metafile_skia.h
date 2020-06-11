@@ -15,6 +15,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "printing/common/metafile_utils.h"
 #include "printing/metafile.h"
+#include "printing/mojom/print.mojom-forward.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/accessibility/ax_tree_update.h"
 
@@ -29,11 +30,11 @@ struct MetafileSkiaData;
 // This class uses Skia graphics library to generate a PDF or MSKP document.
 class PRINTING_EXPORT MetafileSkia : public Metafile {
  public:
-  // Default constructor, for SkiaDocumentType::PDF type only.
+  // Default constructor, for mojom::SkiaDocumentType::kPDF type only.
   // TODO(weili): we should split up this use case into a different class, see
   //              comments before InitFromData()'s implementation.
   MetafileSkia();
-  MetafileSkia(SkiaDocumentType type, int document_cookie);
+  MetafileSkia(mojom::SkiaDocumentType type, int document_cookie);
   ~MetafileSkia() override;
 
   // Metafile methods.
@@ -80,7 +81,7 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
 
   // Return a new metafile containing just the current page in draft mode.
   std::unique_ptr<MetafileSkia> GetMetafileForCurrentPage(
-      SkiaDocumentType type);
+      mojom::SkiaDocumentType type);
 
   // This method calls StartPage and then returns an appropriate
   // PlatformCanvas implementation bound to the context created by

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/autofill_field_formatter.h"
+#include "components/autofill_assistant/browser/field_formatter.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -13,28 +13,28 @@
 #include "third_party/re2/src/re2/stringpiece.h"
 
 namespace {
-// Regex to find placeholders of the form ${N}, where N is an integer (possibly
-// negative).
-const char kPlaceholderExtractor[] = R"re(\$\{(-?\d+)\})re";
+// Regex to find placeholders of the form ${key}, where key is an arbitrary
+// string that does not contain curly braces.
+const char kPlaceholderExtractor[] = R"re(\$\{([^{}]+)\})re";
 
 base::Optional<std::string> GetFieldValue(
-    const std::map<int, std::string>& mappings,
-    int i) {
-  auto it = mappings.find(i);
+    const std::map<std::string, std::string>& mappings,
+    const std::string& key) {
+  auto it = mappings.find(key);
   if (it == mappings.end()) {
     return base::nullopt;
   }
   return it->second;
 }
 
-std::map<int, std::string> CreateFormGroupMappings(
+std::map<std::string, std::string> CreateFormGroupMappings(
     const autofill::FormGroup& form_group,
     const std::string& locale) {
-  std::map<int, std::string> mappings;
+  std::map<std::string, std::string> mappings;
   autofill::ServerFieldTypeSet available_fields;
   form_group.GetNonEmptyTypes(locale, &available_fields);
   for (const auto& field : available_fields) {
-    mappings.emplace(static_cast<int>(field),
+    mappings.emplace(base::NumberToString(static_cast<int>(field)),
                      base::UTF16ToUTF8(form_group.GetInfo(
                          autofill::AutofillType(field), locale)));
   }
@@ -44,11 +44,11 @@ std::map<int, std::string> CreateFormGroupMappings(
 }  // namespace
 
 namespace autofill_assistant {
-namespace autofill_field_formatter {
+namespace field_formatter {
 
-base::Optional<std::string> FormatString(
+base::Optional<std::string> FormatAutofillString(
     const std::string& pattern,
-    const std::map<int, std::string> mappings) {
+    const std::map<std::string, std::string>& mappings) {
   if (pattern.empty()) {
     return std::string();
   }
@@ -56,15 +56,26 @@ base::Optional<std::string> FormatString(
   // Special case: if the input is a single number, interpret as ${N}.
   int field_type;
   if (base::StringToInt(pattern, &field_type)) {
-    return GetFieldValue(mappings, field_type);
+    return GetFieldValue(mappings, pattern);
   }
 
+  return FormatString(pattern, mappings);
+}
+
+base::Optional<std::string> FormatString(
+    const std::string& pattern,
+    const std::map<std::string, std::string>& mappings) {
+  if (pattern.empty()) {
+    return std::string();
+  }
+
+  std::string key;
   std::string out = pattern;
   re2::StringPiece input(pattern);
-  while (re2::RE2::FindAndConsume(&input, kPlaceholderExtractor, &field_type)) {
-    auto rewrite_value = GetFieldValue(mappings, field_type);
+  while (re2::RE2::FindAndConsume(&input, kPlaceholderExtractor, &key)) {
+    auto rewrite_value = GetFieldValue(mappings, key);
     if (!rewrite_value.has_value()) {
-      VLOG(2) << "No value for " << field_type << " in " << pattern;
+      VLOG(2) << "No value for " << key << " in " << pattern;
       return base::nullopt;
     }
 
@@ -76,14 +87,15 @@ base::Optional<std::string> FormatString(
 }
 
 template <>
-std::map<int, std::string> CreateAutofillMappings<autofill::AutofillProfile>(
+std::map<std::string, std::string>
+CreateAutofillMappings<autofill::AutofillProfile>(
     const autofill::AutofillProfile& profile,
     const std::string& locale) {
   return CreateFormGroupMappings(profile, locale);
 }
 
 template <>
-std::map<int, std::string> CreateAutofillMappings<autofill::CreditCard>(
+std::map<std::string, std::string> CreateAutofillMappings<autofill::CreditCard>(
     const autofill::CreditCard& credit_card,
     const std::string& locale) {
   auto mappings = CreateFormGroupMappings(credit_card, locale);
@@ -92,24 +104,24 @@ std::map<int, std::string> CreateAutofillMappings<autofill::CreditCard>(
       autofill::data_util::GetPaymentRequestData(credit_card.network())
           .basic_card_issuer_network);
   if (!network.empty()) {
-    mappings[static_cast<int>(AutofillFormatProto::CREDIT_CARD_NETWORK)] =
-        network;
+    mappings[base::NumberToString(
+        static_cast<int>(AutofillFormatProto::CREDIT_CARD_NETWORK))] = network;
   }
   auto network_for_display = base::UTF16ToUTF8(credit_card.NetworkForDisplay());
   if (!network_for_display.empty()) {
-    mappings[static_cast<int>(
-        AutofillFormatProto::CREDIT_CARD_NETWORK_FOR_DISPLAY)] =
+    mappings[base::NumberToString(static_cast<int>(
+        AutofillFormatProto::CREDIT_CARD_NETWORK_FOR_DISPLAY))] =
         network_for_display;
   }
   auto last_four_digits = base::UTF16ToUTF8(credit_card.LastFourDigits());
   if (!last_four_digits.empty()) {
-    mappings[static_cast<int>(
-        AutofillFormatProto::CREDIT_CARD_NUMBER_LAST_FOUR_DIGITS)] =
+    mappings[base::NumberToString(static_cast<int>(
+        AutofillFormatProto::CREDIT_CARD_NUMBER_LAST_FOUR_DIGITS))] =
         last_four_digits;
   }
 
   return mappings;
 }
 
-}  // namespace autofill_field_formatter
+}  // namespace field_formatter
 }  // namespace autofill_assistant

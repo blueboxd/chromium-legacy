@@ -1290,6 +1290,16 @@ bool HTMLDocumentParser::IsWaitingForScripts() const {
 }
 
 void HTMLDocumentParser::ResumeParsingAfterPause() {
+  // This function runs after a parser-blocking script has completed. There are
+  // four possible cases:
+  // 1) Parsing with kForceSynchronousParsing, where there is no background
+  //    parser and a tokenizer_'s defined.
+  // 2) Parsing with kAllowAsynchronousParsing, without a background parser. In
+  //    this case, the document is usually being completed or parsing has
+  //    otherwise stopped.
+  // 3) Parsing with kAllowAsynchronousParsing with a background parser. In this
+  //    case, need to add any pending speculations to the document.
+  // 4) Parsing with kAllowDeferredParsing, with a tokenizer_.
   TRACE_EVENT1("blink", "HTMLDocumentParser::ResumeParsingAfterPause", "parser",
                (void*)this);
   DCHECK(!IsExecutingScript());
@@ -1299,7 +1309,7 @@ void HTMLDocumentParser::ResumeParsingAfterPause() {
   if (IsStopped() || IsPaused())
     return;
 
-  if (have_background_parser_) {
+  if (have_background_parser_) {  // Case 3)
     // If we paused in the middle of processing a token chunk,
     // deal with that before starting to pump.
     if (last_chunk_before_pause_) {
@@ -1312,28 +1322,21 @@ void HTMLDocumentParser::ResumeParsingAfterPause() {
       PumpPendingSpeculations();
     }
     return;
-  } else if (!tokenizer_) {
-    // Attempted fix for test_installer failures. Appears that
-    // HTMLDocumentParser::ExecuteScriptsWaitingForResources is queued from a
-    // callback tasks, which calls this, possibly after Detach.
-    DCHECK(!token_);
-    token_ = std::make_unique<HTMLToken>();
-    tokenizer_ = std::make_unique<HTMLTokenizer>(options_);
   }
 
   insertion_preload_scanner_.reset();
-  task_runner_state_->SetEndIfDelayed(true);
-  if (task_runner_state_->GetMode() !=
-      ParserSynchronizationPolicy::kAllowDeferredParsing) {
+  if (tokenizer_) {
+    // Case 1) or 4): kForceSynchronousParsing, kAllowDeferredParsing.
+    // kForceSynchronousParsing must pump the tokenizer synchronously.
+    // kDeferredParsing could (theoretically) defer the tokenizer pump.
+    // TODO(Richard.Townsend@arm.com) investigate this.
+    task_runner_state_->SetEndIfDelayed(true);
+    task_runner_state_->SetShouldComplete(true);
     PumpTokenizerIfPossible();
   } else {
-    DCHECK(RuntimeEnabledFeatures::ForceSynchronousHTMLParsingEnabled());
-    loading_task_runner_->PostTask(
-        FROM_HERE,
-        WTF::Bind(&HTMLDocumentParser::DeferredPumpTokenizerIfPossible,
-                  WrapPersistent(this)));
-    task_runner_state_->SetState(
-        HTMLDocumentParserState::DeferredParserState::kScheduled);
+    // Case 2): kAllowAsynchronousParsing, no background parser available
+    // (indicating possible Document shutdown).
+    EndIfDelayed();
   }
 }
 

@@ -11,7 +11,11 @@ absl_source_set("traits") {
 
 absl_source_set("distribution_caller") {
   public = [ "distribution_caller.h" ]
-  deps = [ "//third_party/abseil-cpp/absl/base:config" ]
+  deps = [
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/base:fast_type_id",
+    "//third_party/abseil-cpp/absl/utility",
+  ]
 }
 
 absl_source_set("fast_uniform_bits") {
@@ -225,14 +229,6 @@ absl_source_set("distribution_test_util") {
   ]
 }
 
-absl_source_set("mocking_bit_gen_base") {
-  public = [ "mocking_bit_gen_base.h" ]
-  deps = [
-    "//third_party/abseil-cpp/absl/random",
-    "//third_party/abseil-cpp/absl/strings",
-  ]
-}
-
 absl_source_set("nanobenchmark") {
   sources = [ "nanobenchmark.cc" ]
   deps = [
@@ -249,6 +245,6 @@ absl_source_set("uniform_helper") {
   deps = [
     ":traits",
     "//third_party/abseil-cpp/absl/base:config",
-    "//third_party/abseil-cpp/absl/meta:type_traits"
+    "//third_party/abseil-cpp/absl/meta:type_traits",
   ]
 }

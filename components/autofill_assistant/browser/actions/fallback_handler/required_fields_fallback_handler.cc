@@ -11,9 +11,9 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
-#include "components/autofill_assistant/browser/autofill_field_formatter.h"
 #include "components/autofill_assistant/browser/batch_element_checker.h"
 #include "components/autofill_assistant/browser/client_status.h"
+#include "components/autofill_assistant/browser/field_formatter.h"
 
 namespace autofill_assistant {
 namespace {
@@ -51,7 +51,7 @@ RequiredFieldsFallbackHandler::~RequiredFieldsFallbackHandler() = default;
 
 RequiredFieldsFallbackHandler::RequiredFieldsFallbackHandler(
     const std::vector<RequiredField>& required_fields,
-    const std::map<int, std::string>& fallback_values,
+    const std::map<std::string, std::string>& fallback_values,
     ActionDelegate* delegate)
     : required_fields_(required_fields),
       fallback_values_(fallback_values),
@@ -154,8 +154,8 @@ void RequiredFieldsFallbackHandler::OnCheckRequiredFieldsDone(
       continue;
     }
 
-    if (autofill_field_formatter::FormatString(required_field.value_expression,
-                                               fallback_values_)
+    if (field_formatter::FormatAutofillString(required_field.value_expression,
+                                              fallback_values_)
             .has_value()) {
       has_fallbacks = true;
     } else {
@@ -192,7 +192,7 @@ void RequiredFieldsFallbackHandler::SetFallbackFieldValuesSequentially(
 
   // Set the next field to its fallback value.
   const RequiredField& required_field = required_fields_[required_fields_index];
-  auto fallback_value = autofill_field_formatter::FormatString(
+  auto fallback_value = field_formatter::FormatAutofillString(
       required_field.value_expression, fallback_values_);
   if (!fallback_value.has_value()) {
     VLOG(3) << "No fallback for " << required_field.selector;

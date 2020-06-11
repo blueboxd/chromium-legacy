@@ -5,7 +5,7 @@
 #ifndef REMOTING_IOS_APP_REMOTING_MENU_VIEW_CONTROLLER_H_
 #define REMOTING_IOS_APP_REMOTING_MENU_VIEW_CONTROLLER_H_
 
-#import <MaterialComponents/MaterialCollections.h>
+#import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
 
 @interface RemotingMenuViewController : MDCCollectionViewController
 @end

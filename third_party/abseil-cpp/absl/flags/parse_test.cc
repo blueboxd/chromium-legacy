@@ -28,7 +28,7 @@
 #include "absl/flags/declare.h"
 #include "absl/flags/flag.h"
 #include "absl/flags/internal/parse.h"
-#include "absl/flags/internal/registry.h"
+#include "absl/flags/reflection.h"
 #include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
 #include "absl/strings/substitute.h"
@@ -208,7 +208,7 @@ using testing::ElementsAreArray;
 
 class ParseTest : public testing::Test {
  private:
-  flags::FlagSaver flag_saver_;
+  absl::FlagSaver flag_saver_;
 };
 
 // --------------------------------------------------------------------
@@ -636,6 +636,10 @@ TEST_F(ParseTest, TestFlagfileInFlagfile) {
       "--flagfile=$0/parse_test.ff1",
       "--flagfile=$0/parse_test.ff2",
   };
+
+  GetFlagfileFlag({{"parse_test.ff2", absl::MakeConstSpan(ff2_data)},
+                   {"parse_test.ff1", absl::MakeConstSpan(ff1_data)}},
+                      flagfile_flag);
 
   const char* in_args1[] = {
       "testbin",

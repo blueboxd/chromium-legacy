@@ -80,6 +80,11 @@ void TestWebAppUrlLoader::SetAboutBlankResultLoaded() {
                        WebAppUrlLoader::Result::kUrlLoaded);
 }
 
+void TestWebAppUrlLoader::AddAboutBlankResults(
+    const std::vector<Result>& results) {
+  AddNextLoadUrlResults(GURL("about:blank"), results);
+}
+
 TestWebAppUrlLoader::UrlResponses::UrlResponses() = default;
 
 TestWebAppUrlLoader::UrlResponses::~UrlResponses() = default;

@@ -376,7 +376,10 @@ def make_default_value_expr(idl_type, default_value):
     initializer_deps = []
     assignment_deps = []
     if default_value.idl_type.is_nullable:
-        if idl_type.unwrap().type_definition_object is not None:
+        if not type_info.has_null_value:
+            initializer_expr = None  # !base::Optional::has_value() by default
+            assignment_value = "base::nullopt"
+        elif idl_type.unwrap().type_definition_object is not None:
             initializer_expr = "nullptr"
             is_initialization_lightweight = True
             assignment_value = "nullptr"
@@ -396,9 +399,7 @@ def make_default_value_expr(idl_type, default_value):
             initializer_expr = None  # <union_type>::IsNull() by default
             assignment_value = "{}()".format(type_info.value_t)
         else:
-            assert not type_info.has_null_value
-            initializer_expr = None  # !base::Optional::has_value() by default
-            assignment_value = "base::nullopt"
+            assert False
     elif default_value.idl_type.is_sequence:
         initializer_expr = None  # VectorOf<T>::size() == 0 by default
         assignment_value = "{}()".format(type_info.value_t)

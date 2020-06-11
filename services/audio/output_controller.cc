@@ -183,7 +183,6 @@ bool OutputController::CreateStream() {
 
 void OutputController::RecreateStreamWithTimingUMA(
     OutputController::RecreateReason reason) {
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CreateTime");
   RecreateStream(reason);
 }
 
@@ -300,7 +299,6 @@ void OutputController::RecreateStream(OutputController::RecreateReason reason) {
 
 void OutputController::Play() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.PlayTime");
   TRACE_EVENT0("audio", "OutputController::Play");
   SendLogMessage("%s([state=%s])", __func__, StateToString(state_));
 
@@ -347,7 +345,6 @@ void OutputController::StopStream() {
 
 void OutputController::Pause() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.PauseTime");
   TRACE_EVENT0("audio", "OutputController::Pause");
   SendLogMessage("%s([state=%s])", __func__, StateToString(state_));
 
@@ -384,7 +381,6 @@ void OutputController::Flush() {
 void OutputController::Close() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("audio", "OutputController::Close");
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CloseTime");
   SendLogMessage("%s([state=%s])", __func__, StateToString(state_));
 
   if (state_ != kClosed) {
@@ -612,7 +608,6 @@ void OutputController::OnDeviceChange() {
   if (disable_local_output_)
     return;  // No actions need to be taken while local output is disabled.
 
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.DeviceChangeTime");
   SendLogMessage("%s([state=%s])", __func__, StateToString(state_));
 
   // TODO(dalecurtis): Notify the renderer side that a device change has

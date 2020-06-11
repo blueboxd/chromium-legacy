@@ -32,6 +32,7 @@ import {Layout} from './camera/layout.js';
 import {
   Modes,
   PhotoResult,  // eslint-disable-line no-unused-vars
+  Video,
   VideoResult,  // eslint-disable-line no-unused-vars
 } from './camera/modes.js';
 import {Options} from './camera/options.js';
@@ -137,7 +138,8 @@ export class Camera extends View {
     this.modes_ = new Modes(
         this.defaultMode_, photoPreferrer, videoPreferrer,
         this.start.bind(this), this.doSavePhoto_.bind(this), createVideoSaver,
-        this.doSaveVideo_.bind(this), playShutterEffect);
+        this.doSaveVideo_.bind(this), playShutterEffect,
+        () => this.preview_.toImage());
 
     /**
      * @type {!Facing}
@@ -211,6 +213,17 @@ export class Camera extends View {
         this.endTake_();
       }
     });
+
+    document.querySelector('#video-snapshot').addEventListener('click', () => {
+      const videoMode = assertInstanceof(this.modes_.current, Video);
+      videoMode.takeSnapshot();
+    });
+
+    document.querySelector('#pause-recordvideo')
+        .addEventListener('click', () => {
+          const videoMode = assertInstanceof(this.modes_.current, Video);
+          videoMode.togglePaused();
+        });
 
     // TODO(shik): Tune the timing for playing video shutter button
     // animation. Currently the |TAKING| state is ended when the file is saved.

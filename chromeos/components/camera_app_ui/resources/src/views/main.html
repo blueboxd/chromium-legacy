@@ -70,6 +70,9 @@
         </div>
         <div class="centered-overlay" id="camera-mode"></div>
       </div>
+      <div id="video-snapshot-holder" class="buttons right-stripe circle">
+        <button id="video-snapshot" tabindex="0"></button>
+      </div>
       <div id="shutters-group" class="buttons right-stripe circle">
         <button id="recordvideo" class="shutter" tabindex="0"
                 i18n-label="record_video_start_button">
@@ -80,6 +83,12 @@
                 i18n-label="take_photo_button"></button>
         <button id="stop-takephoto" class="shutter" tabindex="0"
                 i18n-label="take_photo_cancel_button"></button>
+      </div>
+      <div id="pause-recordvideo-holder" class="buttons right-stripe circle">
+        <button id="pause-recordvideo" tabindex="0">
+          <div class="red-dot"></div>
+          <div class="two-bar"></div>
+        </button>
       </div>
       <div id="modes-group" class="buttons right-stripe hide">
         <div class="mode-item">
@@ -145,6 +154,7 @@
       </div>
       <div class="top-stripe horizontal-center-stripe" id="record-time" hidden>
         <div class="icon"></div>
+        <div i18n-content="record_video_paused_msg" id="paused-msg"></div>
         <div id="record-time-msg"></div>
       </div>
       <div class="top-stripe right-stripe buttons">

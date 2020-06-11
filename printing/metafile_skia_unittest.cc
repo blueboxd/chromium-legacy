@@ -6,6 +6,7 @@
 
 #include "cc/paint/paint_record.h"
 #include "printing/common/metafile_utils.h"
+#include "printing/mojom/print.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 
@@ -31,7 +32,7 @@ TEST(MetafileSkiaTest, TestFrameContent) {
   SkSize page_size = SkSize::Make(kPageSideLen, kPageSideLen);
 
   // Finish creating the entire metafile.
-  MetafileSkia metafile(SkiaDocumentType::MSKP, 1);
+  MetafileSkia metafile(mojom::SkiaDocumentType::kMSKP, 1);
   metafile.AppendPage(page_size, std::move(record));
   metafile.AppendSubframeInfo(content_id, 2, std::move(pic_holder));
   metafile.FinishFrameContent();

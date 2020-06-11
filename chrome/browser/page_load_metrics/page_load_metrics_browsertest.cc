@@ -1119,6 +1119,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       "Prerender.none_PrefetchTTFCP.Reference.NoStore.Visible", 0);
   histogram_tester_.ExpectTotalCount(
       "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 1);
+  histogram_tester_.ExpectTotalCount(
+      "PageLoad.PaintTiming.ParseStartToFirstContentfulPaint", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,

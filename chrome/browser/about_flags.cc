@@ -5730,6 +5730,13 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kSafetyCheckChromeCleanerChild)},
 #endif  // !defined(OS_WIN)
 
+#if defined(OS_CHROMEOS)
+    {"enable-launcher-app-paging",
+     flag_descriptions::kNewDragSpecInLauncherName,
+     flag_descriptions::kNewDragSpecInLauncherDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list_features::kNewDragSpecInLauncher)},
+#endif  // OS_CHROMEOS
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

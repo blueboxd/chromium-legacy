@@ -19,13 +19,6 @@ namespace printing {
 
 using ContentToProxyIdMap = base::flat_map<uint32_t, int>;
 
-enum class SkiaDocumentType {
-  PDF,
-  // MSKP is an experimental, fragile, and diagnostic-only document type.
-  MSKP,
-  MAX = MSKP
-};
-
 // Stores the mapping between a content's unique id and its actual content.
 using DeserializationContext = base::flat_map<uint32_t, sk_sp<SkPicture>>;
 

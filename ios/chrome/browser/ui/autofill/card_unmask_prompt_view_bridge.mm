@@ -4,8 +4,6 @@
 
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 
-#import <MaterialComponents/MaterialTypography.h>
-
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/mac/foundation_util.h"
@@ -23,6 +21,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/util/rtl_geometry.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

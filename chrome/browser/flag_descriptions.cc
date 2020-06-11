@@ -3551,6 +3551,11 @@ const char kEnableHighResolutionMouseScrollingDescription[] =
     "Enable use of high-resolution scrolling events from supported mice (those "
     "which report REL_WHEEL_HI_RES from the Linux kernel).";
 
+const char kNewDragSpecInLauncherName[] = "Enable Launcher App Paging";
+const char kNewDragSpecInLauncherDescription[] =
+    "Show visual affordance of launcher app pages and enable page previews "
+    "when dragging apps.";
+
 const char kEnableNeuralStylusPalmRejectionName[] =
     "Enable Neural Palm Detection";
 const char kEnableNeuralStylusPalmRejectionDescription[] =

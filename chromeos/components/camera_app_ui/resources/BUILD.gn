@@ -78,6 +78,7 @@ copy("chrome_camera_app_images") {
     "src/images/camera_shutter_photo_start_hover.svg",
     "src/images/camera_shutter_photo_stop.svg",
     "src/images/camera_shutter_photo_stop_hover.svg",
+    "src/images/camera_shutter_video_pause.svg",
     "src/images/settings_button_back.svg",
     "src/images/settings_button_expand.svg",
     "src/images/settings_feedback.svg",

@@ -156,8 +156,6 @@ class WebAppInstallManagerTest : public WebAppTest {
 
     auto test_url_loader = std::make_unique<TestWebAppUrlLoader>();
 
-    test_url_loader->SetAboutBlankResultLoaded();
-
     test_url_loader_ = test_url_loader.get();
     install_manager_->SetUrlLoaderForTesting(std::move(test_url_loader));
 
@@ -443,6 +441,9 @@ class WebAppInstallManagerTest : public WebAppTest {
 
 TEST_F(WebAppInstallManagerTest,
        InstallWebAppsAfterSync_TwoConcurrentInstallsAreRunInOrder) {
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded,
+                                     WebAppUrlLoader::Result::kUrlLoaded});
+
   const GURL url1{"https://example.com/path"};
   const AppId app1_id = GenerateAppIdFromURL(url1);
 
@@ -625,6 +626,7 @@ TEST_F(WebAppInstallManagerTest,
 
   WebApp* web_app = controller().mutable_registrar().GetAppByIdMutable(app_id);
 
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded});
   url_loader().SetNextLoadUrlResult(launch_url,
                                     WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -690,6 +692,7 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Success) {
   WebApp* app = controller().mutable_registrar().GetAppByIdMutable(
       expected_app->app_id());
 
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded});
   url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
 
   install_manager().SetDataRetrieverFactoryForTesting(
@@ -755,6 +758,7 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Fallback) {
   // Simulate if the web app publisher's website is down.
   url_loader().SetNextLoadUrlResult(
       url, WebAppUrlLoader::Result::kFailedPageTookTooLong);
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded});
 
   install_manager().SetDataRetrieverFactoryForTesting(
       base::BindLambdaForTesting([]() {
@@ -958,7 +962,10 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_LoadSuccess) {
   const auto url1 = GURL("https://example.com/");
   const auto url2 = GURL("https://example.org/");
 
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded,
+                                     WebAppUrlLoader::Result::kUrlLoaded});
   url_loader().SetNextLoadUrlResult(url1, WebAppUrlLoader::Result::kUrlLoaded);
+
   install_manager().SetDataRetrieverFactoryForTesting(
       base::BindLambdaForTesting([&]() {
         auto data_retriever = std::make_unique<TestDataRetriever>();
@@ -974,7 +981,7 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_LoadSuccess) {
       InstallBookmarkAppFromSync(url1, /*server_open_as_window=*/true);
 
   url_loader().SetNextLoadUrlResult(url2, WebAppUrlLoader::Result::kUrlLoaded);
-  url_loader().SetAboutBlankResultLoaded();
+
   install_manager().SetDataRetrieverFactoryForTesting(
       base::BindLambdaForTesting([&]() {
         auto data_retriever = std::make_unique<TestDataRetriever>();
@@ -1008,6 +1015,10 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_LoadFailed) {
 
   const auto url1 = GURL("https://example.com/");
   const auto url2 = GURL("https://example.org/");
+
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded,
+                                     WebAppUrlLoader::Result::kUrlLoaded});
+
   // Induce a load failure:
   url_loader().SetNextLoadUrlResult(
       url1, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
@@ -1017,7 +1028,6 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_LoadFailed) {
   auto app_id1 =
       InstallBookmarkAppFromSync(url1, /*server_open_as_window=*/false);
 
-  url_loader().SetAboutBlankResultLoaded();
   auto app_id2 =
       InstallBookmarkAppFromSync(url2, /*server_open_as_window=*/true);
 
@@ -1041,6 +1051,8 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_TwoIcons_Success) {
   const GURL url{"https://example.com/path"};
   const GURL icon1_url{"https://example.com/path/icon1.png"};
   const GURL icon2_url{"https://example.com/path/icon2.png"};
+
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded});
   url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
 
   const AppId app_id = GenerateAppIdFromURL(url);
@@ -1113,6 +1125,8 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_TwoIcons_Fallback) {
   const GURL url{"https://example.com/path"};
   const GURL icon1_url{"https://example.com/path/icon1.png"};
   const GURL icon2_url{"https://example.com/path/icon2.png"};
+
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded});
   // Induce a load failure:
   url_loader().SetNextLoadUrlResult(
       url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
@@ -1169,6 +1183,8 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_NoIcons) {
   InitEmptyRegistrar();
 
   const GURL url{"https://example.com/path"};
+
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded});
   // Induce a load failure:
   url_loader().SetNextLoadUrlResult(
       url, WebAppUrlLoader::Result::kRedirectedUrlLoaded);
@@ -1201,6 +1217,8 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_ExpectAppIdFailed) {
   InitEmptyRegistrar();
 
   const GURL old_url{"https://example.com/path"};
+
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded});
   url_loader().SetNextLoadUrlResult(old_url,
                                     WebAppUrlLoader::Result::kUrlLoaded);
 
@@ -1237,6 +1255,8 @@ TEST_F(WebAppInstallManagerTest, InstallBookmarkAppFromSync_QueueNewInstall) {
   EXPECT_EQ(0u, install_manager().tasks_size_for_testing());
 
   const GURL url{"https://example.com/path"};
+
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded});
   url_loader().SetNextLoadUrlResult(url, WebAppUrlLoader::Result::kUrlLoaded);
 
   UseDefaultDataRetriever(url);
@@ -1326,6 +1346,8 @@ TEST_F(WebAppInstallManagerTest,
   const GURL url{"https://example.com/path"};
   const AppId app_id = GenerateAppIdFromURL(url);
 
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded,
+                                     WebAppUrlLoader::Result::kUrlLoaded});
   // The web site url will be loaded twice in a sequence.
   url_loader().AddNextLoadUrlResults(url,
                                      {WebAppUrlLoader::Result::kUrlLoaded,
@@ -1385,6 +1407,8 @@ TEST_F(WebAppInstallManagerTest,
   const GURL url{"https://example.com/path"};
   const AppId app_id = GenerateAppIdFromURL(url);
 
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded,
+                                     WebAppUrlLoader::Result::kUrlLoaded});
   // The web site url will be loaded twice in a sequence. The second load fails
   // (the web app).
   url_loader().AddNextLoadUrlResults(

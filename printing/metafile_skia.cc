@@ -83,7 +83,7 @@ struct MetafileSkiaData {
   // meaningful for a vector canvas as for a raster canvas.
   float scale_factor;
   SkSize size;
-  SkiaDocumentType type;
+  mojom::SkiaDocumentType type;
 
 #if defined(OS_MACOSX)
   PdfMetafileCg pdf_cg;
@@ -91,10 +91,10 @@ struct MetafileSkiaData {
 };
 
 MetafileSkia::MetafileSkia() : data_(std::make_unique<MetafileSkiaData>()) {
-  data_->type = SkiaDocumentType::PDF;
+  data_->type = mojom::SkiaDocumentType::kPDF;
 }
 
-MetafileSkia::MetafileSkia(SkiaDocumentType type, int document_cookie)
+MetafileSkia::MetafileSkia(mojom::SkiaDocumentType type, int document_cookie)
     : data_(std::make_unique<MetafileSkiaData>()) {
   data_->type = type;
   data_->document_cookie = document_cookie;
@@ -196,10 +196,10 @@ bool MetafileSkia::FinishDocument() {
   sk_sp<SkDocument> doc;
   cc::PlaybackParams::CustomDataRasterCallback custom_callback;
   switch (data_->type) {
-    case SkiaDocumentType::PDF:
+    case mojom::SkiaDocumentType::kPDF:
       doc = MakePdfDocument(printing::GetAgent(), accessibility_tree_, &stream);
       break;
-    case SkiaDocumentType::MSKP:
+    case mojom::SkiaDocumentType::kMSKP:
       SkSerialProcs procs = SerializationProcs(&data_->subframe_content_info);
       doc = SkMakeMultiPictureDocument(&stream, &procs);
       // It is safe to use base::Unretained(this) because the callback
@@ -227,7 +227,7 @@ void MetafileSkia::FinishFrameContent() {
   // content.
   DCHECK_EQ(data_->pages.size(), 1u);
   // Also make sure it is in skia multi-picture document format.
-  DCHECK_EQ(data_->type, SkiaDocumentType::MSKP);
+  DCHECK_EQ(data_->type, mojom::SkiaDocumentType::kMSKP);
   DCHECK(!data_->data_stream);
 
   cc::PlaybackParams::CustomDataRasterCallback custom_callback =
@@ -360,7 +360,7 @@ bool MetafileSkia::SaveTo(base::File* file) const {
 #endif  // defined(OS_ANDROID)
 
 std::unique_ptr<MetafileSkia> MetafileSkia::GetMetafileForCurrentPage(
-    SkiaDocumentType type) {
+    mojom::SkiaDocumentType type) {
   // If we only ever need the metafile for the last page, should we
   // only keep a handle on one PaintRecord?
   auto metafile = std::make_unique<MetafileSkia>(type, data_->document_cookie);

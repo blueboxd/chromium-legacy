@@ -28,6 +28,33 @@ namespace content {
 
 namespace {
 
+// Limits to 20 the number of family names that can be accessed by a renderer.
+// This feature will be enabled for a subset of users to assess the impact on
+// input delay. It will not ship as-is, because it breaks some pages. Local
+// experiments show that accessing >20 fonts is typically done by fingerprinting
+// scripts.
+// TODO(https://crbug.com/1089390): Remove this feature when the experiment is
+// complete. If the experiment shows a significant input delay improvement,
+// replace with a more refined mitigation for pages that access many fonts.
+const base::Feature kLimitFontFamilyNamesPerRenderer{
+    "LimitFontFamilyNamesPerRenderer", base::FEATURE_DISABLED_BY_DEFAULT};
+constexpr size_t kFamilyNamesLimit = 20;
+
+// Family names that opted-out from the limit enforced by
+// |kLimitFontFamilyNamesPerRenderer|. This is required because Blink uses these
+// fonts as last resort and crashes if they can't be loaded.
+const wchar_t* kLastResortFontNames[] = {
+    L"Sans",     L"Arial",   L"MS UI Gothic",    L"Microsoft Sans Serif",
+    L"Segoe UI", L"Calibri", L"Times New Roman", L"Courier New"};
+
+bool IsLastResortFontName(const base::string16& font_name) {
+  for (const wchar_t* last_resort_font_name : kLastResortFontNames) {
+    if (font_name == last_resort_font_name)
+      return true;
+  }
+  return false;
+}
+
 // This enum is used to define the buckets for an enumerated UMA histogram.
 // Hence,
 //   (a) existing enumerated constants should never be deleted or reordered, and
@@ -101,7 +128,6 @@ HRESULT DWriteFontCollectionProxy::FindFamilyName(const WCHAR* family_name,
   DCHECK(exists);
   TRACE_EVENT0("dwrite,fonts", "FontProxy::FindFamilyName");
 
-  uint32_t family_index = 0;
   base::string16 name(family_name);
 
   auto iter = family_names_.find(name);
@@ -111,6 +137,14 @@ HRESULT DWriteFontCollectionProxy::FindFamilyName(const WCHAR* family_name,
     return S_OK;
   }
 
+  if (base::FeatureList::IsEnabled(kLimitFontFamilyNamesPerRenderer) &&
+      family_names_.size() > kFamilyNamesLimit && !IsLastResortFontName(name)) {
+    *exists = FALSE;
+    *index = UINT32_MAX;
+    return S_OK;
+  }
+
+  uint32_t family_index = 0;
   if (!GetFontProxy().FindFamily(name, &family_index)) {
     LogFontProxyError(FIND_FAMILY_SEND_FAILED);
     return E_FAIL;

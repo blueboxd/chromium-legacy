@@ -417,7 +417,12 @@ void WebAppInstallManager::OnQueuedTaskCompleted(WebAppInstallTask* task,
     web_contents_.reset();
     web_contents_ready_ = false;
   } else {
-    MaybeStartQueuedTask();
+    // Load about:blank to clean up the renderer process.
+    url_loader_->LoadUrl(
+        GURL("about:blank"), web_contents_.get(),
+        WebAppUrlLoader::UrlComparison::kExact,
+        base::BindOnce(&WebAppInstallManager::OnWebContentsReady,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

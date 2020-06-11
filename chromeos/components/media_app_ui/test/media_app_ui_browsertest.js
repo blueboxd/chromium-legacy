@@ -29,7 +29,7 @@ let driver = null;
  * @return {!Promise<string>} alt= text of the element showing the error.
  */
 function waitForErrorUX() {
-  const ERROR_UX_SELECTOR = 'img[src^="/assets/error.png"]';
+  const ERROR_UX_SELECTOR = 'img[alt^="Unable to decode"]';
   return driver.waitForElementInGuest(ERROR_UX_SELECTOR, 'alt');
 }
 
@@ -315,11 +315,9 @@ TEST_F('MediaAppUIBrowserTest', 'CanFullscreenVideo', async () => {
       new FakeFileSystemFileHandle());
 
   const SELECTOR = 'video';
-  const tagName = await driver.waitForElementInGuest(
-      SELECTOR, 'tagName', {pathToRoot: ['backlight-video-container']});
+  const tagName = await driver.waitForElementInGuest(SELECTOR, 'tagName');
   const result = await driver.waitForElementInGuest(
-      SELECTOR, undefined,
-      {pathToRoot: ['backlight-video-container'], requestFullscreen: true});
+      SELECTOR, undefined, {requestFullscreen: true});
 
   // A TypeError of 'fullscreen error' results if fullscreen fails.
   assertEquals(result, 'hooray');

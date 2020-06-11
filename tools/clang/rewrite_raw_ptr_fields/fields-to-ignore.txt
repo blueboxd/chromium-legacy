@@ -81,6 +81,7 @@ remoting::ClipboardX11::display_
 remoting::XServerClipboard::display_
 Simulator::display_
 ui::ClipboardX11::X11Details::x_display_
+ui::SelectionRequestorTest::x_display_
 ui::X11EventSource::display_
 ui::X11MenuRegistrar::xdisplay_
 ui::X11WorkspaceHandler::xdisplay_

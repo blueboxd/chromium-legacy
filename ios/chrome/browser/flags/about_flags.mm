@@ -649,6 +649,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBlockPopupInfobarMessagesUIName,
      flag_descriptions::kBlockPopupInfobarMessagesUIDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kBlockPopupInfobarMessagesUI)},
+    {"enable-native-context-menus",
+     flag_descriptions::kEnableNativeContextMenusName,
+     flag_descriptions::kEnableNativeContextMenusDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEnableNativeContextMenus)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

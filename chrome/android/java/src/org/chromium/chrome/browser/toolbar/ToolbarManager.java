@@ -9,7 +9,6 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnAttachStateChangeListener;
@@ -23,7 +22,6 @@ import androidx.appcompat.app.ActionBar;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
@@ -52,7 +50,6 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.identity_disc.IdentityDiscController;
-import org.chromium.chrome.browser.metrics.OmniboxStartupMetrics;
 import org.chromium.chrome.browser.ntp.FakeboxDelegate;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -118,11 +115,6 @@ import java.util.List;
  */
 public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserver, TintObserver,
                                        MenuButtonDelegate, ChromeAccessibilityUtil.Observer {
-    /**
-     * The number of ms to wait before reporting to UMA omnibox interaction metrics.
-     */
-    private static final int RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS = 30000;
-
     private final IncognitoStateProvider mIncognitoStateProvider;
     private final TabCountProvider mTabCountProvider;
     private final ThemeColorProvider mTabThemeColorProvider;
@@ -188,8 +180,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
     private boolean mShouldUpdateToolbarPrimaryColor = true;
     private int mCurrentThemeColor;
-
-    private OmniboxStartupMetrics mOmniboxStartupMetrics;
 
     private boolean mIsBottomToolbarVisible;
 
@@ -349,8 +339,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 new LoadProgressCoordinator(mActivityTabProvider, mToolbar.getProgressBar());
 
         mToolbar.addUrlExpansionObserver(activity.getStatusBarColorController());
-
-        mOmniboxStartupMetrics = new OmniboxStartupMetrics(activity);
 
         mActivityTabTabObserver = new ActivityTabProvider.ActivityTabTabObserver(
                 mActivityTabProvider) {
@@ -926,13 +914,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             mBottomControlsCoordinator = null;
         }
 
-        if (mOmniboxStartupMetrics != null) {
-            // Record the histogram before destroying, if we have the data.
-            if (mInitializedWithNative) mOmniboxStartupMetrics.maybeRecordHistograms();
-            mOmniboxStartupMetrics.destroy();
-            mOmniboxStartupMetrics = null;
-        }
-
         if (mLocationBar != null) {
             mLocationBar.removeUrlFocusChangeListener(this);
         }
@@ -1079,8 +1060,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     @Override
     public void onUrlFocusChange(boolean hasFocus) {
         mToolbar.onUrlFocusChange(hasFocus);
-
-        if (hasFocus) mOmniboxStartupMetrics.onUrlBarFocused();
 
         if (mFindToolbarManager != null && hasFocus) mFindToolbarManager.hideToolbar();
 
@@ -1237,34 +1216,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      * @param activityName Simple class name for the activity this toolbar belongs to.
      */
     public void onDeferredStartup(final long activityCreationTimeMs, final String activityName) {
-        recordStartupHistograms(activityCreationTimeMs, activityName);
         mLocationBar.onDeferredStartup();
-    }
-
-    /**
-     * Record histograms covering Chrome startup.
-     * This method will collect metrics no sooner than RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS since
-     * Activity creation to ensure availability of collected data.
-     *
-     * Histograms will not be collected if Chrome is destroyed before the above timeout passed.
-     */
-    private void recordStartupHistograms(
-            final long activityCreationTimeMs, final String activityName) {
-        // Schedule call to self if minimum time since activity creation has not yet passed.
-        long elapsedTime = SystemClock.elapsedRealtime() - activityCreationTimeMs;
-        if (elapsedTime < RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS) {
-            // clang-format off
-            mHandler.postDelayed(
-                    () -> recordStartupHistograms(activityCreationTimeMs, activityName),
-                    RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS - elapsedTime);
-            // clang-format on
-            return;
-        }
-
-        RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarFirstDrawTime2." + activityName,
-                mToolbar.getFirstDrawTime() - activityCreationTimeMs);
-
-        mOmniboxStartupMetrics.maybeRecordHistograms();
     }
 
     /**

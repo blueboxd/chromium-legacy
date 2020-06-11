@@ -7,7 +7,7 @@
 
 #import <CoreGraphics/CoreGraphics.h>
 
-#import <MaterialComponents/MaterialCollectionCells.h>
+#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 @class CollectionViewItem;
 

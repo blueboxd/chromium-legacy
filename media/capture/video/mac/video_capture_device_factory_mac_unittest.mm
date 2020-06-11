@@ -46,4 +46,19 @@ TEST(VideoCaptureDeviceFactoryMacTest, ListDevicesAVFoundation) {
   }));
 }
 
+TEST(VideoCaptureDeviceFactoryMacTest, ListDevicesWithNoPanTiltZoomSupport) {
+  RunTestCase(base::BindOnce([]() {
+    VideoCaptureDeviceFactoryMac video_capture_device_factory;
+
+    VideoCaptureDeviceDescriptors descriptors;
+    video_capture_device_factory.GetDeviceDescriptors(&descriptors);
+    if (descriptors.empty()) {
+      DVLOG(1) << "No camera available. Exiting test.";
+      return;
+    }
+    for (const auto& descriptor : descriptors)
+      EXPECT_FALSE(descriptor.pan_tilt_zoom_supported());
+  }));
+}
+
 }  // namespace media

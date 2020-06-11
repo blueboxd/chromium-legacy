@@ -41,6 +41,7 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "printing/mojom/print.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
@@ -133,8 +134,8 @@ class NupPrintingTestDelegate : public PrintingMessageFilter::TestDelegate {
     params.dpi = gfx::Size(72, 72);
     params.document_cookie = kDefaultDocumentCookie;
     params.pages_per_sheet = 4;
-    params.printed_doc_type =
-        IsOopifEnabled() ? SkiaDocumentType::MSKP : SkiaDocumentType::PDF;
+    params.printed_doc_type = IsOopifEnabled() ? mojom::SkiaDocumentType::kMSKP
+                                               : mojom::SkiaDocumentType::kPDF;
     return params;
   }
 

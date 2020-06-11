@@ -59,7 +59,6 @@ source_set("unit_tests") {
     "//ios/public/provider/chrome/browser:test_support",
     "//ios/public/provider/chrome/browser/distribution",
     "//ios/testing:block_swizzler",
-    "//ios/third_party/material_components_ios",
     "//ios/web/public/test:test",
     "//testing/gtest",
     "//third_party/ocmock",

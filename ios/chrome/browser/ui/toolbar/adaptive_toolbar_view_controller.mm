@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller.h"
 
-#import <MaterialComponents/MaterialProgressView.h>
-
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -24,6 +22,7 @@
 #import "ios/chrome/browser/ui/util/force_touch_long_press_gesture_recognizer.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
+#import "ios/third_party/material_components_ios/src/components/ProgressView/src/MaterialProgressView.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

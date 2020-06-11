@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -20,8 +21,8 @@
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/actions/fallback_handler/required_field.h"
 #include "components/autofill_assistant/browser/actions/fallback_handler/required_fields_fallback_handler.h"
-#include "components/autofill_assistant/browser/autofill_field_formatter.h"
 #include "components/autofill_assistant/browser/client_status.h"
+#include "components/autofill_assistant/browser/field_formatter.h"
 #include "components/autofill_assistant/browser/user_model.h"
 
 namespace autofill_assistant {
@@ -150,14 +151,16 @@ void UseCreditCardAction::OnGetFullCard(
     required_fields.emplace_back(required_field);
   }
 
-  std::map<int, std::string> fallback_values =
-      autofill_field_formatter::CreateAutofillMappings(*card,
-                                                       /* locale = */ "en-US");
+  std::map<std::string, std::string> fallback_values =
+      field_formatter::CreateAutofillMappings(*card,
+                                              /* locale = */ "en-US");
   fallback_values.emplace(
-      static_cast<int>(AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE),
+      base::NumberToString(
+          static_cast<int>(AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
       base::UTF16ToUTF8(cvc));
   fallback_values.emplace(
-      (int)AutofillFormatProto::CREDIT_CARD_RAW_NUMBER,
+      base::NumberToString(
+          static_cast<int>(AutofillFormatProto::CREDIT_CARD_RAW_NUMBER)),
       base::UTF16ToUTF8(card->GetRawInfo(autofill::CREDIT_CARD_NUMBER)));
 
   DCHECK(fallback_handler_ == nullptr);

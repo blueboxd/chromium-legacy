@@ -16,11 +16,6 @@ TextDecorationThickness::TextDecorationThickness(CSSValueID from_font_keyword) {
   thickness_from_font_ = true;
 }
 
-Length TextDecorationThickness::Thickness() const {
-  DCHECK(!thickness_from_font_);
-  return thickness_;
-}
-
 bool TextDecorationThickness::operator==(
     const TextDecorationThickness& other) const {
   return thickness_from_font_ == other.thickness_from_font_ &&

@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view.h"
 
-#import <MaterialComponents/MaterialTypography.h>
-
 #include "base/check_op.h"
 #include "base/i18n/rtl.h"
 #include "base/notreached.h"
@@ -21,6 +19,7 @@
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 

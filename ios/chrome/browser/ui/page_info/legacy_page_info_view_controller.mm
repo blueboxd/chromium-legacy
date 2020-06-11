@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/page_info/legacy_page_info_view_controller.h"
 
-#import <MaterialComponents/MaterialTypography.h>
-
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/mac/bundle_locations.h"
@@ -27,6 +25,7 @@
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"

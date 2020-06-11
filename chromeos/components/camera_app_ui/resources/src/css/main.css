@@ -140,6 +140,12 @@ body.taking.video .left-stripe {
   transform: translateX(-50%);
 }
 
+.vertical-center-stripe {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 .top-stripe.right-stripe {
   transform: translate(50%, -50%);
 }
@@ -161,7 +167,12 @@ body.taking.video .left-stripe {
 }
 
 #shutters-group {
-  bottom: calc((var(--modes-bottom) + var(--modes-height)) + 22px);
+  --shutter-size: 60px;
+
+  bottom: var(--shutter-vertical-center);
+  display: flex;
+  flex-direction: column;
+  transform: translate(50%, 50%);
 }
 
 body.review-result #shutters-group {
@@ -169,7 +180,7 @@ body.review-result #shutters-group {
 }
 
 body.should-handle-intent-result #shutters-group {
-  bottom: var(--modes-bottom);
+  bottom: calc(var(--modes-bottom) + (var(--shutter-size) / 2));
 }
 
 body.tablet-landscape .actions-group {
@@ -196,6 +207,11 @@ body.taking:not(.video) #shutters-group {
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0, rgba(0,0,0,1) var(--modes-gradient-padding) calc(100% - var(--modes-gradient-padding)), rgba(0,0,0,0) 100%);
   height: calc(var(--modes-height) - var(--modes-gradient-padding) * 2);
   padding: var(--modes-gradient-padding) 8px;
+}
+
+body.taking.video #gallery-enter,
+body.taking.video #modes-group {
+  display: none;
 }
 
 body.should-handle-intent-result #modes-group {
@@ -317,15 +333,36 @@ body.taking.timer:not(.video) #stop-takephoto {
   display: inline-block;
 }
 
-#start-takephoto {
+body:not(.recording) #video-snapshot,
+body:not(.recording) #pause-recordvideo,
+body.should-handle-intent-result #video-snapshot,
+body.should-handle-intent-result #pause-recordvideo {
+  display: none;
+}
+
+#video-snapshot-holder {
+  bottom: calc(var(--shutter-vertical-center) + 100px);
+  transform: translate(50%, 50%);
+}
+
+#video-snapshot {
+  background-size: 44px 44px;
+  height: 44px;
+  width: 44px;
+}
+
+#start-takephoto,
+#video-snapshot {
   background-image: url(../images/camera_shutter_photo_start.svg);
 }
 
-#start-takephoto:hover {
+#start-takephoto:hover,
+#video-snapshot:hover {
   background-image: url(../images/camera_shutter_photo_start_hover.svg);
 }
 
-#start-takephoto:active {
+#start-takephoto:active,
+#video-snapshot:active {
   background-image: url(../images/camera_shutter_photo_start_active.svg);
 }
 
@@ -338,11 +375,24 @@ body.taking.timer:not(.video) #stop-takephoto {
 }
 
 #recordvideo {
+  --size: 60px;
+}
+
+#pause-recordvideo-holder {
+  bottom: calc(var(--shutter-vertical-center) - 100px);
+  transform: translate(50%, 50%);
+}
+
+#pause-recordvideo {
+  --size: 44px;
+}
+
+#recordvideo,
+#pause-recordvideo {
   --curve: cubic-bezier(0.4, 0, 0.2, 1);
   --dot-size: 25%;
   --durtaion: 180ms;
   --red: #f44336;
-  --size: 60px;
   --square-delay: 45ms;
   --square-size: calc(100% / 3);
   --white: #ffffff;
@@ -351,10 +401,12 @@ body.taking.timer:not(.video) #stop-takephoto {
   border-radius: 50%;
   height: var(--size);
   position: relative;
+  transition: var(--durtaion) var(--curve);
   width: var(--size);
 }
 
-#recordvideo:hover {
+#recordvideo:hover,
+#pause-recordvideo:hover {
   --red: #f44336;
   --white: #e8eaed;
 }
@@ -363,23 +415,27 @@ body.taking.video #recordvideo:hover {
   --red: #d93025;
 }
 
-#recordvideo .red-dot {
+#recordvideo .red-dot,
+#pause-recordvideo .red-dot {
   background: var(--red);
   border-radius: 50%;
   box-sizing: border-box;
   height: var(--dot-size);
-  left: calc(50% - var(--dot-size) / 2);
+  left: 50%;
   position: absolute;
-  top: calc(50% - var(--dot-size) / 2);
+  top: 50%;
+  transform: translate(-50%, -50%);
   transition: var(--durtaion) var(--curve);
   width: var(--dot-size);
 }
 
 body.taking.video #recordvideo .red-dot {
   height: var(--size);
-  left: 0;
-  top: 0;
   width: var(--size);
+}
+
+body:not(.recording-paused).video #pause-recordvideo .red-dot {
+  --dot-size: 0px;
 }
 
 #recordvideo .white-square {
@@ -400,6 +456,29 @@ body.taking.video #recordvideo .white-square {
   opacity: 1;
   top: calc(50% - var(--square-size) / 2);
   width: var(--square-size);
+}
+
+#pause-recordvideo .two-bar {
+  --bar-size: 20px;
+
+  background-image: url(../images/camera_shutter_video_pause.svg);
+  height: var(--bar-size);
+  left: calc(50% - var(--bar-size) / 2);
+  position: absolute;
+  top: calc(50% - var(--bar-size) / 2);
+  width: var(--bar-size);
+}
+
+body.video.recording.recording-paused #recordvideo {
+  --size: 44px;
+}
+
+body.video.recording-paused #pause-recordvideo {
+  --size: 60px;
+}
+
+body.video.recording-paused #pause-recordvideo .two-bar {
+  --bar-size: 0px;
 }
 
 body:not(.video) #toggle-mic,
@@ -645,6 +724,7 @@ body.view-expert-settings #view-settings {
   --modes-gradient-padding: 16px;
   --modes-height: calc(var(--mode-item-height) * 3);
   --small-icon: 40px;
+  --shutter-vertical-center: calc((var(--modes-bottom) + var(--modes-height)) + 52px);
 }
 
 body.max-wnd #view-camera {
@@ -913,6 +993,10 @@ body:not(.grid):not(.view-grid-settings) #preview-grid-vertical::before {
   pointer-events: none;
 }
 
+body.recording-paused #record-time {
+  background-color: black;
+}
+
 #record-time[hidden],
 .menu-item[hidden] {
   display: none;  /* Required for flexbox hidden. */
@@ -926,11 +1010,20 @@ body:not(.grid):not(.view-grid-settings) #preview-grid-vertical::before {
   width: 6px;
 }
 
-#record-time #record-time-msg {
+body.recording-paused #record-time .icon,
+body:not(.recording-paused) #record-time [i18n-content=record_video_paused_msg] {
+  display: none;
+}
+
+#record-time #record-time-msg,
+#record-time [i18n-content=record_video_paused_msg] {
   color: white;
   flex-shrink: 0;
   font-family: 'Roboto', sans-serif;
   font-size: 13px;
+}
+
+#record-time #record-time-msg {
   margin-left: 8px;
 }
 

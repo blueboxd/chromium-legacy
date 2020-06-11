@@ -18,7 +18,6 @@
 #include "components/printing/common/printing_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "printing/buildflags/buildflags.h"
-#include "printing/common/metafile_utils.h"
 #include "printing/mojom/print.mojom.h"
 #include "printing/page_range.h"
 #include "printing/print_job_constants.h"
@@ -62,7 +61,7 @@ struct PrintMsg_Print_Params {
   base::string16 header_template;
   base::string16 footer_template;
   bool should_print_backgrounds;
-  printing::SkiaDocumentType printed_doc_type;
+  printing::mojom::SkiaDocumentType printed_doc_type;
   bool prefer_css_page_size;
   int pages_per_sheet;
 };
@@ -106,8 +105,8 @@ struct PrintHostMsg_PreviewIds {
 
 IPC_ENUM_TRAITS_MAX_VALUE(printing::mojom::PrintScalingOption,
                           printing::mojom::PrintScalingOption::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(printing::SkiaDocumentType,
-                          printing::SkiaDocumentType::MAX)
+IPC_ENUM_TRAITS_MAX_VALUE(printing::mojom::SkiaDocumentType,
+                          printing::mojom::SkiaDocumentType::kMaxValue)
 
 // Parameters for a render request.
 IPC_STRUCT_TRAITS_BEGIN(PrintMsg_Print_Params)

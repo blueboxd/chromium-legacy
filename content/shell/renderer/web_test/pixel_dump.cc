@@ -20,6 +20,7 @@
 #include "content/shell/renderer/web_test/web_test_runtime_flags.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "printing/metafile_skia.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_settings.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "skia/ext/platform_canvas.h"
@@ -64,7 +65,7 @@ void CapturePixelsForPrinting(
     return;
   }
 
-  printing::MetafileSkia metafile(printing::SkiaDocumentType::MSKP,
+  printing::MetafileSkia metafile(printing::mojom::SkiaDocumentType::kMSKP,
                                   printing::PrintSettings::NewCookie());
   cc::SkiaPaintCanvas canvas(bitmap);
   canvas.SetPrintingMetafile(&metafile);

@@ -1776,6 +1776,9 @@ void AutofillMetrics::LogAutofillSuggestionAcceptedIndex(int index,
   }
 
   base::RecordAction(base::UserMetricsAction("Autofill_SelectedSuggestion"));
+
+  base::UmaHistogramBoolean("Autofill.SuggestionAccepted.OffTheRecord",
+                            off_the_record);
 }
 
 // static
@@ -2045,7 +2048,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogInteractedWithForm(
 void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown(
     const FormStructure& form,
     const AutofillField& field,
-    const base::TimeTicks& form_parsed_timestamp) {
+    const base::TimeTicks& form_parsed_timestamp,
+    bool off_the_record) {
   if (!CanLog())
     return;
 
@@ -2058,6 +2062,9 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown(
       .SetMillisecondsSinceFormParsed(
           MillisecondsSinceFormParsed(form_parsed_timestamp))
       .Record(ukm_recorder_);
+
+  base::UmaHistogramBoolean("Autofill.SuggestionShown.OffTheRecord",
+                            off_the_record);
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(

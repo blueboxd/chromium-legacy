@@ -178,9 +178,9 @@ const CGFloat kHeaderHeight = 70;
   }
   cell.imageView.contentMode = UIViewContentModeScaleAspectFit;
   cell.accessoryView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
-  cell.textLabel.text = credential.user;
+  cell.textLabel.text = credential.serviceName;
   cell.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
-  cell.detailTextLabel.text = credential.serviceName;
+  cell.detailTextLabel.text = credential.user;
   cell.detailTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
   cell.selectionStyle = UITableViewCellSelectionStyleNone;
 

@@ -79,7 +79,7 @@ PrintMsg_Print_Params::PrintMsg_Print_Params()
       print_to_pdf(false),
       display_header_footer(false),
       should_print_backgrounds(false),
-      printed_doc_type(printing::SkiaDocumentType::PDF),
+      printed_doc_type(printing::mojom::SkiaDocumentType::kPDF),
       prefer_css_page_size(false),
       pages_per_sheet(1) {}
 
@@ -112,7 +112,7 @@ void PrintMsg_Print_Params::Reset() {
   header_template = base::string16();
   footer_template = base::string16();
   should_print_backgrounds = false;
-  printed_doc_type = printing::SkiaDocumentType::PDF;
+  printed_doc_type = printing::mojom::SkiaDocumentType::kPDF;
   prefer_css_page_size = false;
   pages_per_sheet = 1;
 }

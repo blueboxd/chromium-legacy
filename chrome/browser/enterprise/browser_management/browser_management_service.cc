@@ -9,7 +9,7 @@
 namespace policy {
 
 BrowserManagementService::BrowserManagementService(Profile* profile)
-    : profile_(profile) {
+    : ManagementService(ManagementTarget::BROWSER), profile_(profile) {
   InitManagementStatusProviders();
 }
 

@@ -136,6 +136,12 @@ void TestPasswordsPrivateDelegate::RequestPlaintextPassword(
   std::move(callback).Run(plaintext_password_);
 }
 
+void TestPasswordsPrivateDelegate::MovePasswordToAccount(
+    int id,
+    content::WebContents* web_contents) {
+  last_moved_password_ = id;
+}
+
 void TestPasswordsPrivateDelegate::ImportPasswords(
     content::WebContents* web_contents) {
   // The testing of password importing itself should be handled via

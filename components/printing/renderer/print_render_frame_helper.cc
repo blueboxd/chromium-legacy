@@ -1344,7 +1344,8 @@ void PrintRenderFrameHelper::PrintFrameContent(
   if (!weak_this)
     return;
 
-  MetafileSkia metafile(SkiaDocumentType::MSKP, params->document_cookie);
+  MetafileSkia metafile(mojom::SkiaDocumentType::kMSKP,
+                        params->document_cookie);
   gfx::Size area_size = params->printable_area.size();
   // Since GetVectorCanvasForNewPage() starts a new recording, it will return
   // a valid canvas.
@@ -1492,7 +1493,7 @@ PrintRenderFrameHelper::CreatePreviewDocument() {
 
   bool require_document_metafile =
       print_renderer_ ||
-      print_params.printed_doc_type != SkiaDocumentType::MSKP;
+      print_params.printed_doc_type != mojom::SkiaDocumentType::kMSKP;
   if (!print_preview_context_.CreatePreviewDocument(
           std::move(prep_frame_view_), pages, print_params.printed_doc_type,
           print_params.document_cookie, require_document_metafile)) {
@@ -1549,7 +1550,8 @@ PrintRenderFrameHelper::CreatePreviewDocument() {
     return CREATE_IN_PROGRESS;
   }
 
-  if (print_pages_params_->params.printed_doc_type == SkiaDocumentType::MSKP) {
+  if (print_pages_params_->params.printed_doc_type ==
+      mojom::SkiaDocumentType::kMSKP) {
     // Want modifiable content of MSKP type to be collected into a document
     // during individual page preview generation (to avoid separate document
     // version for composition), notify to prepare to do this collection.
@@ -2522,7 +2524,7 @@ void PrintRenderFrameHelper::PrintPreviewContext::OnPrintPreview() {
 bool PrintRenderFrameHelper::PrintPreviewContext::CreatePreviewDocument(
     std::unique_ptr<PrepareFrameAndViewForPrint> prepared_frame,
     const std::vector<int>& pages,
-    SkiaDocumentType doc_type,
+    mojom::SkiaDocumentType doc_type,
     int document_cookie,
     bool require_document_metafile) {
   DCHECK_EQ(INITIALIZED, state_);

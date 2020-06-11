@@ -8,8 +8,7 @@
 
 #import "remoting/ios/app/host_fetching_view_controller.h"
 
-#import <MaterialComponents/MDCActivityIndicator.h>
-
+#import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MDCActivityIndicator.h"
 #import "remoting/ios/app/remoting_theme.h"
 
 static const CGFloat kActivityIndicatorStrokeWidth = 2.5f;

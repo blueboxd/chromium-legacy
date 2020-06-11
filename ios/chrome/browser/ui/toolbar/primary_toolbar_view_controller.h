@@ -21,6 +21,9 @@
 
 @property(nonatomic, weak) id<PrimaryToolbarViewControllerDelegate> delegate;
 
+// Whether the omnibox should be hidden on NTP.
+@property(nonatomic, assign) BOOL shouldHideOmniboxOnNTP;
+
 // Sets the location bar view controller, containing the omnibox.
 - (void)setLocationBarViewController:(UIViewController*)locationBarView;
 

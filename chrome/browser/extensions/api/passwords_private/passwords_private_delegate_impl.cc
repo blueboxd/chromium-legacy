@@ -403,6 +403,12 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
   get_password_exception_list_callbacks_.clear();
 }
 
+void PasswordsPrivateDelegateImpl::MovePasswordToAccount(
+    int id,
+    content::WebContents* web_contents) {
+  NOTIMPLEMENTED();
+}
+
 void PasswordsPrivateDelegateImpl::ImportPasswords(
     content::WebContents* web_contents) {
   password_manager_porter_->set_web_contents(web_contents);

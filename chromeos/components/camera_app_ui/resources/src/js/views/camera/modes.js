@@ -27,6 +27,8 @@ import {
   ResolutionList,  // eslint-disable-line no-unused-vars
 } from '../../type.js';
 import * as util from '../../util.js';
+import {WaitableEvent} from '../../waitable_event.js';
+
 import {RecordTime} from './recordtime.js';
 
 /**
@@ -83,6 +85,12 @@ export let DoSaveVideo;
  * @typedef {function()}
  */
 export let PlayShutterEffect;
+
+/**
+ * Callback for getting frame image blob from current preview.
+ * @typedef {function(): !Promise<!Blob>}
+ */
+export let GetPreviewFrame;
 
 /* eslint-disable no-unused-vars */
 
@@ -155,10 +163,11 @@ export class Modes {
    * @param {!CreateVideoSaver} createVideoSaver
    * @param {!DoSaveVideo} doSaveVideo
    * @param {!PlayShutterEffect} playShutterEffect
+   * @param {!GetPreviewFrame} getPreviewFrame
    */
   constructor(
       defaultMode, photoPreferrer, videoPreferrer, doSwitchMode, doSavePhoto,
-      createVideoSaver, doSaveVideo, playShutterEffect) {
+      createVideoSaver, doSaveVideo, playShutterEffect, getPreviewFrame) {
     /**
      * @type {!DoSwitchMode}
      * @private
@@ -241,7 +250,8 @@ export class Modes {
       [Mode.VIDEO]: {
         captureFactory: () => new Video(
             assertInstanceof(this.stream_, MediaStream), this.facing_,
-            createVideoSaver, doSaveVideo),
+            createVideoSaver, doSaveVideo, doSavePhoto, getPreviewFrame,
+            playShutterEffect),
         isSupported: async () => true,
         constraintsPreferrer: videoPreferrer,
         getV1Constraints: getV1Constraints.bind(this, true),
@@ -596,14 +606,19 @@ const VIDEO_MIMETYPE = browserProxy.isMp4RecordingEnabled() ?
 /**
  * Video mode capture controller.
  */
-class Video extends ModeBase {
+export class Video extends ModeBase {
   /**
    * @param {!MediaStream} stream
    * @param {!Facing} facing
    * @param {!CreateVideoSaver} createVideoSaver
    * @param {!DoSaveVideo} doSaveVideo
+   * @param {!DoSavePhoto} doSaveSnapshot
+   * @param {!GetPreviewFrame} getPreviewFrame
+   * @param {!PlayShutterEffect} playShutterEffect
    */
-  constructor(stream, facing, createVideoSaver, doSaveVideo) {
+  constructor(
+      stream, facing, createVideoSaver, doSaveVideo, doSaveSnapshot,
+      getPreviewFrame, playShutterEffect) {
     super(stream, facing, null);
 
     /**
@@ -617,6 +632,24 @@ class Video extends ModeBase {
      * @private
      */
     this.doSaveVideo_ = doSaveVideo;
+
+    /**
+     * @type {!DoSavePhoto}
+     * @private
+     */
+    this.doSaveSnapshot_ = doSaveSnapshot;
+
+    /**
+     * @type {!GetPreviewFrame}
+     * @private
+     */
+    this.getPreviewFrame_ = getPreviewFrame;
+
+    /**
+     * @type {!PlayShutterEffect}
+     * @private
+     */
+    this.playShutterEffect_ = playShutterEffect;
 
     /**
      * Promise for play start sound delay.
@@ -638,12 +671,79 @@ class Video extends ModeBase {
      * @private
      */
     this.recordTime_ = new RecordTime();
+
+    /**
+     * Promise for the snapshot actions during current recording session.
+     * @type {!Promise}
+     * @private
+     */
+    this.snapshots_ = Promise.resolve();
+
+    /**
+     * Promise for process of toggling video pause/resume. Sets to null if CCA
+     * is already paused or resumed.
+     * @type {?Promise}
+     * @private
+     */
+    this.togglePaused_ = null;
+  }
+
+  /**
+   * Takes a video snapshot during recording.
+   * @return {!Promise} Promise resolved when video snapshot is finished.
+   */
+  takeSnapshot() {
+    const snapshot = (async () => {
+      const blob = await this.getPreviewFrame_();
+      this.playShutterEffect_();
+      const {width, height} = await util.blobToImage(blob);
+      const imageName = (new Filenamer()).newImageName();
+      await this.doSaveSnapshot_(
+          {resolution: {width, height}, blob}, imageName);
+    })();
+    this.snapshots_ = this.snapshots_.then(() => snapshot);
+    return this.snapshots_;
+  }
+
+  /**
+   * Toggles pause/resume state of video recording.
+   * @return {!Promise} Promise resolved when recording is paused/resumed.
+   */
+  togglePaused() {
+    if (this.togglePaused_ !== null) {
+      return this.togglePaused_;
+    }
+    const waitable = new WaitableEvent();
+    this.togglePaused_ = waitable.wait();
+
+    assert(this.mediaRecorder_.state !== 'inactive');
+    const toPaused = this.mediaRecorder_.state !== 'paused';
+    const toggledEvent = toPaused ? 'pause' : 'resume';
+    const onToggled = () => {
+      this.mediaRecorder_.removeEventListener(toggledEvent, onToggled);
+      state.set(state.State.RECORDING_PAUSED, toPaused);
+      this.togglePaused_ = null;
+      waitable.signal();
+    };
+    this.mediaRecorder_.addEventListener(toggledEvent, onToggled);
+
+    if (toPaused) {
+      this.recordTime_.stop(true);
+      this.mediaRecorder_.pause();
+    } else {
+      this.recordTime_.start(true);
+      this.mediaRecorder_.resume();
+    }
+
+    return waitable.wait();
   }
 
   /**
    * @override
    */
   async start_() {
+    this.snapshots_ = Promise.resolve();
+    this.togglePaused_ = null;
     this.startSound_ = sound.play('#sound-rec-start');
     try {
       await this.startSound_;
@@ -690,6 +790,8 @@ class Video extends ModeBase {
           PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, false, {hasError: true});
       throw e;
     }
+
+    await this.snapshots_;
   }
 
   /**
@@ -699,7 +801,9 @@ class Video extends ModeBase {
     if (this.startSound_ && this.startSound_.cancel) {
       this.startSound_.cancel();
     }
-    if (this.mediaRecorder_ && this.mediaRecorder_.state === 'recording') {
+    if (this.mediaRecorder_ &&
+        (this.mediaRecorder_.state === 'recording' ||
+         this.mediaRecorder_.state === 'paused')) {
       this.mediaRecorder_.stop();
     }
   }
@@ -723,6 +827,9 @@ class Video extends ModeBase {
         }
       };
       const onstop = (event) => {
+        state.set(state.State.RECORDING, false);
+        state.set(state.State.RECORDING_PAUSED, false);
+
         this.mediaRecorder_.removeEventListener(
             'dataavailable', ondataavailable);
         this.mediaRecorder_.removeEventListener('stop', onstop);
@@ -737,6 +844,8 @@ class Video extends ModeBase {
       this.mediaRecorder_.addEventListener('dataavailable', ondataavailable);
       this.mediaRecorder_.addEventListener('stop', onstop);
       this.mediaRecorder_.start(100);
+      state.set(state.State.RECORDING, true);
+      state.set(state.State.RECORDING_PAUSED, false);
     });
   }
 }

@@ -46,9 +46,8 @@ if (is_android || is_chromeos) {
     enable_chrome_android_internal = has_chrome_android_internal
 
     # The default to use for android:minSdkVersion for targets that do
-    # not explicitly set it. This can generally be set higher than the
-    # default, but not lower.
-    default_min_sdk_version = 19
+    # not explicitly set it.
+    default_min_sdk_version = 21
 
     # Android API level for 32 bits platforms
     android32_ndk_api_level = 16

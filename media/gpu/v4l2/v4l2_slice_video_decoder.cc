@@ -193,6 +193,14 @@ void V4L2SliceVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
+  // Start streaming input queue and polling. This is required for the stateful
+  // decoder, and doesn't hurt for the stateless one.
+  if (!StartStreamV4L2Queue(false)) {
+    VLOGF(1) << "Failed to start streaming.";
+    std::move(init_cb).Run(StatusCode::kV4L2FailedToStartStreamQueue);
+    return;
+  }
+
   // Call init_cb
   output_cb_ = output_cb;
   SetState(State::kDecoding);

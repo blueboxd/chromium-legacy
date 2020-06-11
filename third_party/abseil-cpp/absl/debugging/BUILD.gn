@@ -29,6 +29,7 @@ absl_source_set("stacktrace") {
 absl_source_set("symbolize") {
   sources = [
     "symbolize.cc",
+    "symbolize_darwin.inc",
     "symbolize_elf.inc",
     "symbolize_unimplemented.inc",
     "symbolize_win32.inc",
@@ -46,6 +47,7 @@ absl_source_set("symbolize") {
     "//third_party/abseil-cpp/absl/base:dynamic_annotations",
     "//third_party/abseil-cpp/absl/base:malloc_internal",
     "//third_party/abseil-cpp/absl/base:raw_logging_internal",
+    "//third_party/abseil-cpp/absl/strings",
   ]
 
   # TODO(mbonadei): The bazel file has:

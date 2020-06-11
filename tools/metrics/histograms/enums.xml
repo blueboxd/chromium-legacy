@@ -23230,6 +23230,7 @@ Called by update_extension_histograms.py.-->
   <int value="1477" label="PASSWORDSPRIVATE_REMOVEPASSWORDEXCEPTIONS"/>
   <int value="1478" label="AUTOTESTPRIVATE_WAITFORAMBIENTPHOTOANIMATION"/>
   <int value="1479" label="INPUT_IME_SETASSISTIVEWINDOWPROPERTIES"/>
+  <int value="1480" label="PASSWORDSPRIVATE_MOVEPASSWORDTOACCOUNT"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -38746,6 +38747,7 @@ from previous Chrome versions.
   <int value="-2001869199" label="ShillSandboxing:enabled"/>
   <int value="-2000567059" label="SimplifyHttpsIndicator:enabled"/>
   <int value="-1999892428" label="force-ui-direction"/>
+  <int value="-1999824144" label="NewDragSpecInLauncher:disabled"/>
   <int value="-1999617045" label="PDFAnnotations:disabled"/>
   <int value="-1998927516" label="enable-md-settings"/>
   <int value="-1996233283"
@@ -41599,6 +41601,7 @@ from previous Chrome versions.
   <int value="1179936481" label="enable-android-pay-integration-v1"/>
   <int value="1180722846" label="OculusVR:disabled"/>
   <int value="1181056275" label="enable-cloud-backup"/>
+  <int value="1181825084" label="NewDragSpecInLauncher:enabled"/>
   <int value="1182356056" label="MacV2GPUSandbox:enabled"/>
   <int value="1183260592" label="WebAssemblyBaseline:enabled"/>
   <int value="1183431946" label="v8-cache-options"/>

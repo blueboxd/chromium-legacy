@@ -910,7 +910,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/metrics/MainIntentBehaviorMetrics.java",
   "java/src/org/chromium/chrome/browser/metrics/MediaNotificationUma.java",
   "java/src/org/chromium/chrome/browser/metrics/MediaSessionUMA.java",
-  "java/src/org/chromium/chrome/browser/metrics/OmniboxStartupMetrics.java",
   "java/src/org/chromium/chrome/browser/metrics/PackageMetrics.java",
   "java/src/org/chromium/chrome/browser/metrics/PageLoadMetrics.java",
   "java/src/org/chromium/chrome/browser/metrics/UkmRecorder.java",

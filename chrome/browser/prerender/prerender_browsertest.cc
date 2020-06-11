@@ -913,28 +913,6 @@ class PrerenderBrowserTest : public test_utils::PrerenderInProcessBrowserTest {
   std::unique_ptr<content::URLLoaderInterceptor> interceptor_;
 };
 
-// Checks that the correct page load metrics observers are produced without a
-// prerender.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PageLoadMetricsSimple) {
-  // The prefetch page is used as a simple page with a nonempty layout; no
-  // prefetching is performed.
-  test_utils::FirstContentfulPaintManagerWaiter* simple_fcp_waiter =
-      test_utils::FirstContentfulPaintManagerWaiter::Create(
-          GetPrerenderManager());
-  ui_test_utils::NavigateToURL(
-      current_browser(), src_server()->GetURL("/prerender/prefetch_page.html"));
-  simple_fcp_waiter->Wait();
-
-  histogram_tester().ExpectTotalCount(
-      "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 1);
-  histogram_tester().ExpectTotalCount(
-      "PageLoad.PaintTiming.ParseStartToFirstContentfulPaint", 1);
-
-  // Histogram only emitted during a prerender, which should not happen here.
-  histogram_tester().ExpectTotalCount(
-      "Prerender.websame_PrefetchTTFCP.Warm.Cacheable.Visible", 0);
-}
-
 // Checks that pending prerenders which are canceled before they are launched
 // never get started.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderPageRemovesPending) {
@@ -1797,16 +1775,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderIncognitoBrowserTest, PrerenderIncognito) {
   NavigateToDestURL();
 }
 
-// Checks that prerenders are aborted when an incognito profile is closed.
-// ToDo(crbug.com/994068): The test is crashing on multiple platforms.
-IN_PROC_BROWSER_TEST_F(PrerenderIncognitoBrowserTest,
-                       DISABLED_PrerenderIncognitoClosed) {
-  std::unique_ptr<TestPrerender> prerender = PrerenderTestURL(
-      "/prerender/prerender_page.html", FINAL_STATUS_PROFILE_DESTROYED, 1);
-  current_browser()->window()->Close();
-  prerender->WaitForStop();
-}
-
 class PrerenderOmniboxBrowserTest : public PrerenderBrowserTest {
  public:
   LocationBar* GetLocationBar() {
@@ -1834,55 +1802,6 @@ class PrerenderOmniboxBrowserTest : public PrerenderBrowserTest {
     return prerender;
   }
 };
-
-// Checks that closing the omnibox popup cancels an omnibox prerender.
-// http://crbug.com/395152
-IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
-                       DISABLED_PrerenderOmniboxCancel) {
-  // Fake an omnibox prerender.
-  std::unique_ptr<TestPrerender> prerender = StartOmniboxPrerender(
-      embedded_test_server()->GetURL("/empty.html"), FINAL_STATUS_CANCELLED);
-
-  // Revert the location bar. This should cancel the prerender.
-  GetLocationBar()->Revert();
-  prerender->WaitForStop();
-}
-
-// Checks that accepting omnibox input abandons an omnibox prerender.
-// http://crbug.com/394592
-IN_PROC_BROWSER_TEST_F(PrerenderOmniboxBrowserTest,
-                       DISABLED_PrerenderOmniboxAbandon) {
-  // Set the abandon timeout to something high so it does not introduce
-  // flakiness if the prerender times out before the test completes.
-  GetPrerenderManager()->mutable_config().abandon_time_to_live =
-      base::TimeDelta::FromDays(999);
-
-  // Enter a URL into the Omnibox.
-  OmniboxView* omnibox_view = GetOmniboxView();
-  omnibox_view->OnBeforePossibleChange();
-  omnibox_view->SetUserText(base::UTF8ToUTF16(
-      embedded_test_server()->GetURL("/empty.html?1").spec()));
-  omnibox_view->OnAfterPossibleChange(true);
-  ui_test_utils::WaitForAutocompleteDone(current_browser());
-
-  // Fake an omnibox prerender for a different URL.
-  std::unique_ptr<TestPrerender> prerender =
-      StartOmniboxPrerender(embedded_test_server()->GetURL("/empty.html?2"),
-                            FINAL_STATUS_APP_TERMINATING);
-
-  // The final status may be either FINAL_STATUS_APP_TERMINATING or
-  // FINAL_STATUS_CANCELLED. Although closing the omnibox will not cancel an
-  // abandoned prerender, the AutocompleteActionPredictor will cancel the
-  // predictor on destruction.
-  prerender->contents()->set_skip_final_checks(true);
-
-  // Navigate to the URL entered.
-  omnibox_view->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB);
-
-  // Prerender should be running, but abandoned.
-  EXPECT_TRUE(
-      GetAutocompleteActionPredictor()->IsPrerenderAbandonedForTesting());
-}
 
 // Can't run tests with NaCl plugins if built without ENABLE_NACL.
 #if BUILDFLAG(ENABLE_NACL)

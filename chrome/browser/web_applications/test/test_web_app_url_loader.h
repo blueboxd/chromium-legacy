@@ -44,6 +44,7 @@ class TestWebAppUrlLoader : public WebAppUrlLoader {
 
   // Sets the result for the next about:blank load to be ok.
   void SetAboutBlankResultLoaded();
+  void AddAboutBlankResults(const std::vector<Result>& results);
 
  private:
   bool should_save_requests_ = false;

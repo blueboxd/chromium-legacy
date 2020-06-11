@@ -264,4 +264,10 @@ LayoutObject* ListMarker::SymbolMarkerLayoutText(
   return marker.SlowFirstChild();
 }
 
+bool ListMarker::IsMarkerImage(const LayoutObject& marker) const {
+  DCHECK_EQ(Get(&marker), this);
+  return marker.StyleRef().ContentBehavesAsNormal() &&
+         ListItem(marker)->StyleRef().GeneratesMarkerImage();
+}
+
 }  // namespace blink

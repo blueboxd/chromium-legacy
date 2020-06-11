@@ -9,7 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
-#include "components/autofill_assistant/browser/autofill_field_formatter.h"
+#include "components/autofill_assistant/browser/field_formatter.h"
 #include "components/autofill_assistant/browser/script_executor_delegate.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
 #include "components/autofill_assistant/browser/user_model.h"
@@ -167,9 +167,9 @@ bool ValueToString(UserModel* user_model,
                    << ": credit card not found";
           return false;
         }
-        auto formatted_string = autofill_field_formatter::FormatString(
+        auto formatted_string = field_formatter::FormatAutofillString(
             proto.autofill_format().pattern(),
-            autofill_field_formatter::CreateAutofillMappings(
+            field_formatter::CreateAutofillMappings(
                 *credit_card, proto.autofill_format().locale()));
         if (!formatted_string.has_value()) {
           DVLOG(2) << "Error evaluating " << __func__
@@ -191,9 +191,9 @@ bool ValueToString(UserModel* user_model,
           DVLOG(2) << "Error evaluating " << __func__ << ": profile not found";
           return false;
         }
-        auto formatted_string = autofill_field_formatter::FormatString(
+        auto formatted_string = field_formatter::FormatAutofillString(
             proto.autofill_format().pattern(),
-            autofill_field_formatter::CreateAutofillMappings(
+            field_formatter::CreateAutofillMappings(
                 *profile, proto.autofill_format().locale()));
         if (!formatted_string.has_value()) {
           DVLOG(2) << "Error evaluating " << __func__

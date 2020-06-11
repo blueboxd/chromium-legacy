@@ -15,8 +15,8 @@
 #include "components/autofill_assistant/browser/actions/action_delegate.h"
 #include "components/autofill_assistant/browser/actions/fallback_handler/required_field.h"
 #include "components/autofill_assistant/browser/actions/fallback_handler/required_fields_fallback_handler.h"
-#include "components/autofill_assistant/browser/autofill_field_formatter.h"
 #include "components/autofill_assistant/browser/client_status.h"
+#include "components/autofill_assistant/browser/field_formatter.h"
 #include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/value_util.h"
 
@@ -173,8 +173,8 @@ void UseAddressAction::ExecuteFallback(const ClientStatus& status) {
   DCHECK(fallback_handler_ == nullptr);
   fallback_handler_ = std::make_unique<RequiredFieldsFallbackHandler>(
       required_fields,
-      autofill_field_formatter::CreateAutofillMappings(*profile_,
-                                                       /* locale = */ "en-US"),
+      field_formatter::CreateAutofillMappings(*profile_,
+                                              /* locale = */ "en-US"),
       delegate_);
 
   fallback_handler_->CheckAndFallbackRequiredFields(

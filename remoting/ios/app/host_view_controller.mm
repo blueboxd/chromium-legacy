@@ -10,8 +10,7 @@
 
 #include <memory>
 
-#import <MaterialComponents/MaterialButtons.h>
-
+#import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "remoting/ios/app/help_and_feedback.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/settings/remoting_settings_view_controller.h"
@@ -24,6 +23,7 @@
 #import "remoting/ios/mdc/MDCActionImageView.h"
 #import "remoting/ios/persistence/remoting_preferences.h"
 #import "remoting/ios/session/remoting_client.h"
+
 #include "base/strings/sys_string_conversions.h"
 #include "remoting/base/string_resources.h"
 #include "remoting/client/chromoting_client_runtime.h"

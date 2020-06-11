@@ -177,6 +177,7 @@ static_library("web_test_renderer") {
     "//gpu/command_buffer/client:gles2_interface",
     "//media/capture",
     "//printing",
+    "//printing/mojom",
     "//services/device/public/mojom",
     "//skia",
     "//skia:test_fonts",

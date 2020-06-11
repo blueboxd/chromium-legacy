@@ -69,8 +69,9 @@ enum class StatusCode : StatusCodeType {
   kV4l2FailedFileCapabilitiesCheck = 0x00000505,
   kV4l2FailedResourceAllocation = 0x00000506,
   kV4l2BadFormat = 0x00000507,
-  kVaapiReinitializedDuringDecode = 0x00000508,
-  kVaapiFailedAcceleratorCreation = 0x00000509,
+  kV4L2FailedToStartStreamQueue = 0x00000508,
+  kVaapiReinitializedDuringDecode = 0x00000509,
+  kVaapiFailedAcceleratorCreation = 0x00000510,
 
   // Encoder Error: 0x06
   kEncoderInitializeNeverCompleted = 0x00000601,

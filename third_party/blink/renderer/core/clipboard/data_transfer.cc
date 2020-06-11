@@ -27,6 +27,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
@@ -155,8 +156,11 @@ class DraggedNodeImageBuilder {
   const uint64_t dom_tree_version_;
 #endif
 };
+
 }  // namespace
-static DragOperation ConvertEffectAllowedToDragOperation(const String& op) {
+
+static base::Optional<DragOperation> ConvertEffectAllowedToDragOperation(
+    const String& op) {
   // Values specified in
   // https://html.spec.whatwg.org/multipage/dnd.html#dom-datatransfer-effectallowed
   if (op == "uninitialized")
@@ -168,33 +172,30 @@ static DragOperation ConvertEffectAllowedToDragOperation(const String& op) {
   if (op == "link")
     return kDragOperationLink;
   if (op == "move")
-    return (DragOperation)(kDragOperationGeneric | kDragOperationMove);
+    return kDragOperationMove;
   if (op == "copyLink")
-    return (DragOperation)(kDragOperationCopy | kDragOperationLink);
+    return static_cast<DragOperation>(kDragOperationCopy | kDragOperationLink);
   if (op == "copyMove")
-    return (DragOperation)(kDragOperationCopy | kDragOperationGeneric |
-                           kDragOperationMove);
+    return static_cast<DragOperation>(kDragOperationCopy | kDragOperationMove);
   if (op == "linkMove")
-    return (DragOperation)(kDragOperationLink | kDragOperationGeneric |
-                           kDragOperationMove);
+    return static_cast<DragOperation>(kDragOperationLink | kDragOperationMove);
   if (op == "all")
     return kDragOperationEvery;
-  return kDragOperationPrivate;  // really a marker for "no conversion"
+  return base::nullopt;
 }
 
 static String ConvertDragOperationToEffectAllowed(DragOperation op) {
-  bool move_set = !!((kDragOperationGeneric | kDragOperationMove) & op);
-
-  if ((move_set && (op & kDragOperationCopy) && (op & kDragOperationLink)) ||
+  if (((op & kDragOperationMove) && (op & kDragOperationCopy) &&
+       (op & kDragOperationLink)) ||
       (op == kDragOperationEvery))
     return "all";
-  if (move_set && (op & kDragOperationCopy))
+  if ((op & kDragOperationMove) && (op & kDragOperationCopy))
     return "copyMove";
-  if (move_set && (op & kDragOperationLink))
+  if ((op & kDragOperationMove) && (op & kDragOperationLink))
     return "linkMove";
   if ((op & kDragOperationCopy) && (op & kDragOperationLink))
     return "copyLink";
-  if (move_set)
+  if (op & kDragOperationMove)
     return "move";
   if (op & kDragOperationCopy)
     return "copy";
@@ -261,7 +262,7 @@ void DataTransfer::setEffectAllowed(const String& effect) {
   if (!IsForDragAndDrop())
     return;
 
-  if (ConvertEffectAllowedToDragOperation(effect) == kDragOperationPrivate) {
+  if (!ConvertEffectAllowedToDragOperation(effect)) {
     // This means that there was no conversion, and the effectAllowed that
     // we are passed isn't a valid effectAllowed, so we should ignore it,
     // and not set |effect_allowed_|.
@@ -561,18 +562,19 @@ bool DataTransfer::CanSetDragImage() const {
 }
 
 DragOperation DataTransfer::SourceOperation() const {
-  DragOperation op = ConvertEffectAllowedToDragOperation(effect_allowed_);
-  DCHECK_NE(op, kDragOperationPrivate);
-  return op;
+  base::Optional<DragOperation> op =
+      ConvertEffectAllowedToDragOperation(effect_allowed_);
+  DCHECK(op);
+  return *op;
 }
 
 DragOperation DataTransfer::DestinationOperation() const {
-  DragOperation op = ConvertEffectAllowedToDragOperation(drop_effect_);
+  base::Optional<DragOperation> op =
+      ConvertEffectAllowedToDragOperation(drop_effect_);
   DCHECK(op == kDragOperationCopy || op == kDragOperationNone ||
-         op == kDragOperationLink ||
-         op == (DragOperation)(kDragOperationGeneric | kDragOperationMove) ||
+         op == kDragOperationLink || op == kDragOperationMove ||
          op == kDragOperationEvery);
-  return op;
+  return *op;
 }
 
 void DataTransfer::SetSourceOperation(DragOperation op) {
@@ -582,10 +584,7 @@ void DataTransfer::SetSourceOperation(DragOperation op) {
 
 void DataTransfer::SetDestinationOperation(DragOperation op) {
   DCHECK(op == kDragOperationCopy || op == kDragOperationNone ||
-         op == kDragOperationLink || op == kDragOperationGeneric ||
-         op == kDragOperationMove ||
-         op == static_cast<DragOperation>(kDragOperationGeneric |
-                                          kDragOperationMove));
+         op == kDragOperationLink || op == kDragOperationMove);
   drop_effect_ = ConvertDragOperationToEffectAllowed(op);
 }
 

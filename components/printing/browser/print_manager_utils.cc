@@ -7,6 +7,7 @@
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/site_isolation_policy.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_settings.h"
 
 namespace printing {
@@ -68,8 +69,8 @@ void RenderParamsFromPrintSettings(const PrintSettings& settings,
   params->title = settings.title();
   params->url = settings.url();
   params->printed_doc_type = IsOopifEnabled() && settings.is_modifiable()
-                                 ? SkiaDocumentType::MSKP
-                                 : SkiaDocumentType::PDF;
+                                 ? mojom::SkiaDocumentType::kMSKP
+                                 : mojom::SkiaDocumentType::kPDF;
   params->pages_per_sheet = settings.pages_per_sheet();
 }
 

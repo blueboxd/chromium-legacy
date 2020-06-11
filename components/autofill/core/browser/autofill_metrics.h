@@ -1015,7 +1015,8 @@ class AutofillMetrics {
                                FormSignature form_signature);
     void LogSuggestionsShown(const FormStructure& form,
                              const AutofillField& field,
-                             const base::TimeTicks& form_parsed_timestamp);
+                             const base::TimeTicks& form_parsed_timestamp,
+                             bool off_the_record);
     void LogDidFillSuggestion(int record_type,
                               bool is_for_credit_card,
                               const FormStructure& form,

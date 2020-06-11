@@ -156,6 +156,18 @@ class PasswordsPrivateGetPasswordExceptionListFunction
   void GotList(const PasswordsPrivateDelegate::ExceptionEntries& entries);
 };
 
+class PasswordsPrivateMovePasswordToAccountFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.movePasswordToAccount",
+                             PASSWORDSPRIVATE_MOVEPASSWORDTOACCOUNT)
+
+ protected:
+  ~PasswordsPrivateMovePasswordToAccountFunction() override = default;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+};
+
 class PasswordsPrivateImportPasswordsFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("passwordsPrivate.importPasswords",

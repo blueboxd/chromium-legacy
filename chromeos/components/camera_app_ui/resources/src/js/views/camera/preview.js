@@ -196,6 +196,27 @@ export class Preview {
   }
 
   /**
+   * Creates an image blob of the current frame.
+   * @return {!Promise<!Blob>} Promise for the result.
+   */
+  toImage() {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = this.video_.videoWidth;
+    canvas.height = this.video_.videoHeight;
+    ctx.drawImage(this.video_, 0, 0);
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error('Photo blob error.'));
+        }
+      }, 'image/jpeg');
+    });
+  }
+
+  /**
    * Displays preview metadata on preview screen.
    * @return {!Promise} Promise for the operation.
    * @private

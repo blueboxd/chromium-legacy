@@ -494,6 +494,16 @@ NGLineHeightMetrics NGInlineLayoutAlgorithm::ComputeAnnotationOverflow(
           std::max(annotation_block_end, block_end + overflow);
     }
   }
+
+  // Probably this is an empty line. We should secure font-size space.
+  const LayoutUnit font_size(line_style.ComputedFontSize());
+  if (content_block_end - content_block_start < font_size) {
+    LayoutUnit half_leading = (line_box_metrics.LineHeight() - font_size) / 2;
+    half_leading = half_leading.ClampNegativeToZero();
+    content_block_start = line_block_start + half_leading;
+    content_block_end = line_block_end - half_leading;
+  }
+
   const LayoutUnit content_or_annotation_block_start =
       std::min(content_block_start, annotation_block_start);
   const LayoutUnit content_or_annotation_block_end =

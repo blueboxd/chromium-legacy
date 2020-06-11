@@ -10,6 +10,10 @@
 
 namespace policy {
 
+class ScopedManagementServiceOverrideForTesting;
+
+enum class ManagementTarget { PLATFORM = 0, BROWSER = 1, kMaxValue = BROWSER };
+
 enum class ManagementAuthorityTrustworthiness {
   NONE = 0,           // No management authority found
   LOW = 1,            // Local device management authority
@@ -44,7 +48,7 @@ class POLICY_EXPORT ManagementStatusProvider {
 // Interface to gives information related to an entity's management state.
 class POLICY_EXPORT ManagementService {
  public:
-  ManagementService();
+  explicit ManagementService(ManagementTarget target);
   virtual ~ManagementService();
 
   // Returns all the active management authorities on the managed entity.
@@ -65,6 +69,13 @@ class POLICY_EXPORT ManagementService {
  private:
   std::vector<std::unique_ptr<ManagementStatusProvider>>
       management_status_providers_;
+  ManagementTarget target_;
+
+  static void SetManagementAuthoritiesForTesting(
+      ManagementTarget target,
+      base::flat_set<EnterpriseManagementAuthority> authorities);
+  static void RemoveManagementAuthoritiesForTesting(ManagementTarget target);
+  friend ScopedManagementServiceOverrideForTesting;
 };
 
 }  // namespace policy

@@ -18,14 +18,10 @@ let ModuleHandler;
 
 /** @type{ModuleHandler} */
 const createVideoChild = async (blobSrc) => {
-  const container = /** @type{!HTMLElement} */ (
-      document.createElement('backlight-video-container'));
   const video =
       /** @type{HTMLVideoElement} */ (document.createElement('video'));
   video.src = blobSrc;
-  container.attachShadow({mode: 'open'});
-  container.shadowRoot.appendChild(video);
-  return container;
+  return video;
 };
 
 /** @type{ModuleHandler} */
@@ -38,7 +34,7 @@ const createImgChild = async (blobSrc, altText) => {
   } catch (error) {
     // Mimic what the real app does on decode errors so we can test error
     // handling for file access.
-    img.src = '/assets/error.png';
+    img.alt = 'Unable to decode';
   }
   return img;
 };

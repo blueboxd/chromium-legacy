@@ -60,6 +60,8 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
                                 api::passwords_private::PlaintextReason reason,
                                 PlaintextPasswordCallback callback,
                                 content::WebContents* web_contents) override;
+  void MovePasswordToAccount(int id,
+                             content::WebContents* web_contents) override;
   void ImportPasswords(content::WebContents* web_contents) override;
   void ExportPasswords(base::OnceCallback<void(const std::string&)> accepted,
                        content::WebContents* web_contents) override;

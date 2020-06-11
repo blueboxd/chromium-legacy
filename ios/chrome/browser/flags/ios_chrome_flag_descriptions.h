@@ -198,6 +198,10 @@ extern const char kEnableIOSManagedSettingsUIDescription[];
 extern const char kEnableMyGoogleName[];
 extern const char kEnableMyGoogleDescription[];
 
+// Title and description for the flag to enable new context menus for native UI.
+extern const char kEnableNativeContextMenusName[];
+extern const char kEnableNativeContextMenusDescription[];
+
 // Title and description for the flag to enable persistent downloads.
 extern const char kEnablePersistentDownloadsName[];
 extern const char kEnablePersistentDownloadsDescription[];

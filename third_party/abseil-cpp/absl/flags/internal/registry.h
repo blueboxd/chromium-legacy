@@ -28,10 +28,14 @@
 
 namespace absl {
 ABSL_NAMESPACE_BEGIN
+
+// TODO(rogeeff): remove this declaration
+CommandLineFlag* FindCommandLineFlag(absl::string_view name);
+
 namespace flags_internal {
 
-CommandLineFlag* FindCommandLineFlag(absl::string_view name);
-CommandLineFlag* FindRetiredFlag(absl::string_view name);
+// TODO(rogeeff): remove this alias
+using absl::FindCommandLineFlag;
 
 // Executes specified visitor for each non-retired flag in the registry.
 // Requires the caller hold the registry lock.
@@ -84,36 +88,6 @@ template <typename T>
 inline bool RetiredFlag(const char* flag_name) {
   return flags_internal::Retire(flag_name, base_internal::FastTypeId<T>());
 }
-
-// If the flag is retired, returns true and indicates in |*type_is_bool|
-// whether the type of the retired flag is a bool.
-// Only to be called by code that needs to explicitly ignore retired flags.
-bool IsRetiredFlag(absl::string_view name, bool* type_is_bool);
-
-//-----------------------------------------------------------------------------
-// Saves the states (value, default value, whether the user has set
-// the flag, registered validators, etc) of all flags, and restores
-// them when the FlagSaver is destroyed.
-//
-// This class is thread-safe.  However, its destructor writes to
-// exactly the set of flags that have changed value during its
-// lifetime, so concurrent _direct_ access to those flags
-// (i.e. FLAGS_foo instead of {Get,Set}CommandLineOption()) is unsafe.
-
-class FlagSaver {
- public:
-  FlagSaver();
-  ~FlagSaver();
-
-  FlagSaver(const FlagSaver&) = delete;
-  void operator=(const FlagSaver&) = delete;
-
-  // Prevents saver from restoring the saved state of flags.
-  void Ignore();
-
- private:
-  class FlagSaverImpl* impl_;  // we use pimpl here to keep API steady
-};
 
 }  // namespace flags_internal
 ABSL_NAMESPACE_END

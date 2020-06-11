@@ -129,6 +129,7 @@
       <include name="IDR_CAMERA_SETTINGS_FEEDBACK_SVG" file="src/images/settings_feedback.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_BUTTON_SWITCH_VIDEO_SVG" file="src/images/camera_button_switch_video.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_SHUTTER_PHOTO_START_HOVER_SVG" file="src/images/camera_shutter_photo_start_hover.svg" type="BINDATA" />
+      <include name="IDR_CAMERA_CAMERA_SHUTTER_VIDEO_PAUSE_SVG" file="src/images/camera_shutter_video_pause.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_BUTTON_TIMER_ON_10S_SVG" file="src/images/camera_button_timer_on_10s.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_MODE_PHOTO_SVG" file="src/images/camera_mode_photo.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_FOCUS_AIM_SVG" file="src/images/camera_focus_aim.svg" type="BINDATA" />

@@ -463,6 +463,11 @@ var availableTests = [
       chrome.test.succeed();
     });
   },
+
+  function movePasswordToAccount() {
+    chrome.passwordsPrivate.movePasswordToAccount(42);
+    chrome.test.succeed();
+  }
 ];
 
 var testToRun = window.location.search.substring(1);

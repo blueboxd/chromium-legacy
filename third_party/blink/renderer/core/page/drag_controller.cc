@@ -753,9 +753,7 @@ static DragOperation DefaultOperationForDrag(DragOperation src_op_mask) {
   if (src_op_mask & kDragOperationLink)
     return kDragOperationLink;
 
-  // FIXME: Does IE really return "generic" even if no operations were allowed
-  // by the source?
-  return kDragOperationGeneric;
+  return kDragOperationNone;
 }
 
 bool DragController::TryDHTMLDrag(DragData* drag_data,

@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CELLS_CONTENT_SUGGESTIONS_MOST_VISITED_ACTION_CELL_H_
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CELLS_CONTENT_SUGGESTIONS_MOST_VISITED_ACTION_CELL_H_
 
-#import <MaterialComponents/MaterialCollectionCells.h>
+#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 // Associated cell to display a Most Visited Action tile based.
 @interface ContentSuggestionsMostVisitedActionCell : MDCCollectionViewCell

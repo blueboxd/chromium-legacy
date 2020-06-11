@@ -30,10 +30,7 @@ class CORE_EXPORT ListMarker {
   // Marker text with suffix, e.g. "1. ", for use in accessibility.
   String TextAlternative(const LayoutObject&) const;
 
-  bool IsMarkerImage(const LayoutObject& marker) const {
-    DCHECK_EQ(Get(&marker), this);
-    return ListItem(marker)->StyleRef().GeneratesMarkerImage();
-  }
+  bool IsMarkerImage(const LayoutObject&) const;
 
   void UpdateMarkerTextIfNeeded(LayoutObject& marker) {
     DCHECK_EQ(Get(&marker), this);

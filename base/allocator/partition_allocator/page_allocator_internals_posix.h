@@ -165,12 +165,12 @@ void* TrimMappingInternal(void* base,
   // the aligned range.
   if (pre_slack) {
     int res = munmap(base, pre_slack);
-    CHECK(!res);
+    PCHECK(!res);
     ret = reinterpret_cast<char*>(base) + pre_slack;
   }
   if (post_slack) {
     int res = munmap(reinterpret_cast<char*>(ret) + trim_length, post_slack);
-    CHECK(!res);
+    PCHECK(!res);
   }
   return ret;
 }
@@ -186,11 +186,11 @@ void SetSystemPagesAccessInternal(
     void* address,
     size_t length,
     PageAccessibilityConfiguration accessibility) {
-  CHECK_EQ(0, mprotect(address, length, GetAccessFlags(accessibility)));
+  PCHECK(!mprotect(address, length, GetAccessFlags(accessibility)));
 }
 
 void FreePagesInternal(void* address, size_t length) {
-  CHECK(!munmap(address, length));
+  PCHECK(!munmap(address, length));
 }
 
 void DecommitSystemPagesInternal(void* address, size_t length) {
@@ -227,7 +227,7 @@ void DiscardSystemPagesInternal(void* address, size_t length) {
     // MADV_FREE_REUSABLE sometimes fails, so fall back to MADV_DONTNEED.
     ret = madvise(address, length, MADV_DONTNEED);
   }
-  CHECK(0 == ret);
+  PCHECK(0 == ret);
 #else
   // We have experimented with other flags, but with suboptimal results.
   //
@@ -235,7 +235,7 @@ void DiscardSystemPagesInternal(void* address, size_t length) {
   // performance benefits unclear.
   //
   // Therefore, we just do the simple thing: MADV_DONTNEED.
-  CHECK(!madvise(address, length, MADV_DONTNEED));
+  PCHECK(!madvise(address, length, MADV_DONTNEED));
 #endif
 }
 

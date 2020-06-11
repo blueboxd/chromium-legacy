@@ -48,6 +48,9 @@ extern const base::Feature kNewSigninArchitecture;
 // Feature flag to enable QR code generation for a URL.
 extern const base::Feature kQRCodeGeneration;
 
+// Feature flag that enables the native UI Context Menus (not for Web content).
+extern const base::Feature kEnableNativeContextMenus;
+
 #if defined(__IPHONE_13_4)
 // Feature flag to enable Pointer support on tablets
 extern const base::Feature kPointerSupport;

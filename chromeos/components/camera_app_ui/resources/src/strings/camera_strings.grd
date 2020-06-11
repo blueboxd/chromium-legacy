@@ -361,6 +361,9 @@
       <message desc="Label for the button to play video." name="IDS_PLAY_RESULT_VIDEO_BUTTON">
         Play video
       </message>
+      <message desc="Indicator message for recording paused." name="IDS_RECORD_VIDEO_PAUSED_MSG">
+        PAUSED
+      </message>
     </messages>
   </release>
 </grit>

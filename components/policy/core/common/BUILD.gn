@@ -304,6 +304,8 @@ jumbo_static_library("test_support") {
     "configuration_policy_provider_test.h",
     "fake_async_policy_loader.cc",
     "fake_async_policy_loader.h",
+    "management/scoped_management_service_override_for_testing.cc",
+    "management/scoped_management_service_override_for_testing.h",
     "mock_configuration_policy_provider.cc",
     "mock_configuration_policy_provider.h",
     "mock_policy_service.cc",

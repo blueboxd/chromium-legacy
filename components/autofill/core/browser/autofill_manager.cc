@@ -1235,7 +1235,7 @@ void AutofillManager::DidShowSuggestions(bool has_autofill_suggestions,
   if (logger) {
     logger->OnDidShowSuggestions(*form_structure, *autofill_field,
                                  form_structure->form_parsed_timestamp(),
-                                 sync_state_);
+                                 sync_state_, driver()->IsIncognito());
   }
 
   if (autofill_field->Type().group() == CREDIT_CARD &&

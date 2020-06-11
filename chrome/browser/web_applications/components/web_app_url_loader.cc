@@ -81,6 +81,10 @@ class LoaderTask : public content::WebContentsObserver {
       return;
     }
 
+    // Flush all DidFinishLoad events until about:blank loaded.
+    if (url_.IsAboutBlank() && !validated_url.IsAboutBlank())
+      return;
+
     timer_.Stop();
 
     if (validated_url == content::kUnreachableWebDataURL) {
@@ -107,6 +111,10 @@ class LoaderTask : public content::WebContentsObserver {
     if (web_contents()->GetMainFrame() != render_frame_host) {
       return;
     }
+
+    // Flush all DidFailLoad events until about:blank loaded.
+    if (url_.IsAboutBlank())
+      return;
 
     timer_.Stop();
 

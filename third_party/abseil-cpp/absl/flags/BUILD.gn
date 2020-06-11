@@ -103,15 +103,12 @@ absl_source_set("private_handle_accessor") {
   visibility += [ ":*" ]
 }
 
-absl_source_set("registry") {
+absl_source_set("reflection") {
   testonly = true
-  sources = [
-    "internal/registry.cc",
-    "internal/type_erased.cc",
-  ]
+  sources = [ "reflection.cc" ]
   public = [
     "internal/registry.h",
-    "internal/type_erased.h",
+    "reflection.h",
   ]
   deps = [
     ":commandlineflag",
@@ -120,7 +117,6 @@ absl_source_set("registry") {
     ":private_handle_accessor",
     "//third_party/abseil-cpp/absl/base:config",
     "//third_party/abseil-cpp/absl/base:core_headers",
-    "//third_party/abseil-cpp/absl/base:raw_logging_internal",
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/synchronization",
   ]
@@ -137,7 +133,7 @@ absl_source_set("flag_internal") {
     ":commandlineflag_internal",
     ":config",
     ":marshalling",
-    ":registry",
+    ":reflection",
     "//third_party/abseil-cpp/absl/base",
     "//third_party/abseil-cpp/absl/base:config",
     "//third_party/abseil-cpp/absl/base:core_headers",
@@ -164,7 +160,7 @@ absl_source_set("flag") {
   deps = [
     ":config",
     ":flag_internal",
-    ":registry",
+    ":reflection",
     "//third_party/abseil-cpp/absl/base",
     "//third_party/abseil-cpp/absl/base:config",
     "//third_party/abseil-cpp/absl/base:core_headers",
@@ -184,7 +180,7 @@ absl_source_set("usage_internal") {
     ":path_util",
     ":private_handle_accessor",
     ":program_name",
-    ":registry",
+    ":reflection",
     "//third_party/abseil-cpp/absl/base:config",
     "//third_party/abseil-cpp/absl/base:core_headers",
     "//third_party/abseil-cpp/absl/strings",
@@ -221,7 +217,7 @@ absl_source_set("parse") {
     ":flag_internal",
     ":private_handle_accessor",
     ":program_name",
-    ":registry",
+    ":reflection",
     ":usage",
     ":usage_internal",
     "//third_party/abseil-cpp/absl/base:config",

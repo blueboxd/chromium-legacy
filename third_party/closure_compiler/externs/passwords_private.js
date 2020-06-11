@@ -200,6 +200,17 @@ chrome.passwordsPrivate.getSavedPasswordList = function(callback) {};
 chrome.passwordsPrivate.getPasswordExceptionList = function(callback) {};
 
 /**
+ * Moves a password currently stored on the device to being stored in the
+ * signed-in, non-syncing Google Account. The result is a no-op if any of
+ * these is true: |id| is invalid; |id| corresponds to a password already
+ * stored in the account; the user is not in Passwords Account Storage mode
+ * (kEnablePasswordsAccountStorage enabled, signed-in, not syncing and
+ * opted-in to the feature).
+ * @param {number} id The id for the password entry being moved.
+ */
+chrome.passwordsPrivate.movePasswordToAccount = function(id) {};
+
+/**
  * Triggers the Password Manager password import functionality.
  */
 chrome.passwordsPrivate.importPasswords = function() {};

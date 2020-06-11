@@ -230,6 +230,12 @@ const char kEnableMyGoogleName[] = "Enable MyGoogle UI";
 const char kEnableMyGoogleDescription[] =
     "Enable MyGoogle account management UI in iOS Settings";
 
+const char kEnableNativeContextMenusName[] =
+    "Enable Context Menus in Native UI";
+const char kEnableNativeContextMenusDescription[] =
+    "Enables the new iOS 13 context menus on various pieces of UI in native "
+    "Chrome (e.g. History, Bookmarks).";
+
 const char kEnablePersistentDownloadsName[] = "Enable persistent downloads";
 const char kEnablePersistentDownloadsDescription[] =
     "Enables the new, experimental implementation of persistent downloads";

@@ -28,7 +28,7 @@ class RequiredFieldsFallbackHandler {
  public:
   explicit RequiredFieldsFallbackHandler(
       const std::vector<RequiredField>& required_fields,
-      const std::map<int, std::string>& fallback_values,
+      const std::map<std::string, std::string>& fallback_values,
       ActionDelegate* delegate);
 
   ~RequiredFieldsFallbackHandler();
@@ -87,7 +87,7 @@ class RequiredFieldsFallbackHandler {
   ClientStatus client_status_;
 
   std::vector<RequiredField> required_fields_;
-  std::map<int, std::string> fallback_values_;
+  std::map<std::string, std::string> fallback_values_;
   base::OnceCallback<void(const ClientStatus&,
                           const base::Optional<ClientStatus>&)>
       status_update_callback_;

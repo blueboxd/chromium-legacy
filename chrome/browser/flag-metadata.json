@@ -1734,6 +1734,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-launcher-app-paging",
+    "owners": [ "//ash/app_list/OWNERS" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "enable-layout-ng",
     "owners": [ "layout-dev@chromium.org" ],
     "expiry_milestone": 80
@@ -1816,6 +1821,11 @@
     "name": "enable-nacl",
     "owners": [ "dschuff", "native-client-dev@googlegroups.com" ],
     "expiry_milestone": 87
+  },
+  {
+    "name": "enable-native-context-menus",
+    "owners": ["seblalancette"],
+    "expiry_milestone": 89
   },
   {
     "name": "enable-native-controls",

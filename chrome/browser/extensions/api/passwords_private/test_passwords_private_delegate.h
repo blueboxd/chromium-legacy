@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_TEST_PASSWORDS_PRIVATE_DELEGATE_H_
 #define CHROME_BROWSER_EXTENSIONS_API_PASSWORDS_PRIVATE_TEST_PASSWORDS_PRIVATE_DELEGATE_H_
 
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,6 +34,8 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
                                 api::passwords_private::PlaintextReason reason,
                                 PlaintextPasswordCallback callback,
                                 content::WebContents* web_contents) override;
+  void MovePasswordToAccount(int id,
+                             content::WebContents* web_contents) override;
   void ImportPasswords(content::WebContents* web_contents) override;
   void ExportPasswords(base::OnceCallback<void(const std::string&)> callback,
                        content::WebContents* web_contents) override;
@@ -84,6 +87,10 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
     start_password_check_state_ = state;
   }
 
+  base::Optional<int> last_moved_password() const {
+    return last_moved_password_;
+  }
+
  private:
   void SendSavedPasswordsList();
   void SendPasswordExceptionsList();
@@ -122,6 +129,9 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   bool stop_password_check_triggered_ = false;
   password_manager::BulkLeakCheckService::State start_password_check_state_ =
       password_manager::BulkLeakCheckService::State::kRunning;
+
+  // Records the id of the last password that was moved.
+  base::Optional<int> last_moved_password_ = base::nullopt;
 };
 }  // namespace extensions
 

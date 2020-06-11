@@ -101,7 +101,6 @@ enum UMAContextMenuAction {
                   action:^{
                     [weakDelegate
                         openURLInNewWindowForContextMenuWithParams:weakParams];
-                    // TODO(crbug.com/1084907): Add metrics.
                   }
                    style:UIAlertActionStyleDefault];
   }

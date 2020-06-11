@@ -41,3 +41,12 @@ enum PrintScalingOption {
   // Reduces or enlarges each page to fit the selected printer paper size.
   kFitToPaper,
 };
+
+// Document type that Skia graphics library generates.
+enum SkiaDocumentType {
+  // PDF document type.
+  kPDF,
+  // MultiPictureDocument type. kMSKP is an experimental, fragile, and
+  // diagnostic-only document type.
+  kMSKP,
+};

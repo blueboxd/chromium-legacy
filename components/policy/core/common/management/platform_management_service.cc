@@ -11,7 +11,8 @@
 
 namespace policy {
 
-PlatformManagementService::PlatformManagementService() {
+PlatformManagementService::PlatformManagementService()
+    : ManagementService(ManagementTarget::PLATFORM) {
   InitManagementStatusProviders();
 }
 

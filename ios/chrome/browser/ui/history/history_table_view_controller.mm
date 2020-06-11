@@ -18,6 +18,8 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #include "ios/chrome/browser/ui/history/history_entries_status_item.h"
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
@@ -33,10 +35,12 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
@@ -1021,6 +1025,18 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                                          action:openInNewTabAction
                                           style:UIAlertActionStyleDefault];
 
+  if (IsMultiwindowSupported()) {
+    // Add "Open In New Window" option.
+    NSString* openInNewWindowTitle =
+        l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW);
+    ProceduralBlock openInNewWindowAction = ^{
+      [weakSelf openURLInNewWindow:entry.URL];
+    };
+    [self.contextMenuCoordinator addItemWithTitle:openInNewWindowTitle
+                                           action:openInNewWindowAction
+                                            style:UIAlertActionStyleDefault];
+  }
+
   // Add "Open in New Incognito Tab" option.
   NSString* openInNewIncognitoTabTitle = l10n_util::GetNSStringWithFixup(
       IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB);
@@ -1052,6 +1068,16 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
+}
+
+// Opens URL in a new non-incognito tab in a new window and dismisses the
+// history view.
+- (void)openURLInNewWindow:(const GURL&)URL {
+  id<ApplicationCommands> windowOpener = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), ApplicationCommands);
+  [windowOpener
+      openNewWindowWithActivity:ActivityToLoadURL(WindowActivityHistoryOrigin,
+                                                  URL)];
 }
 
 // Opens URL in a new incognito tab and dismisses the history view.

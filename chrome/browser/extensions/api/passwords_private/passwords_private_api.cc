@@ -194,6 +194,16 @@ void PasswordsPrivateGetPasswordExceptionListFunction::GotList(
           entries)));
 }
 
+// PasswordsPrivateMovePasswordToAccountFunction
+ResponseAction PasswordsPrivateMovePasswordToAccountFunction::Run() {
+  auto parameters =
+      api::passwords_private::MovePasswordToAccount::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+  GetDelegate(browser_context())
+      ->MovePasswordToAccount(parameters->id, GetSenderWebContents());
+  return RespondNow(NoArguments());
+}
+
 // PasswordsPrivateImportPasswordsFunction
 ResponseAction PasswordsPrivateImportPasswordsFunction::Run() {
   GetDelegate(browser_context())->ImportPasswords(GetSenderWebContents());

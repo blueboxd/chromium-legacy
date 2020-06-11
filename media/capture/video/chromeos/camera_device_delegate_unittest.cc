@@ -374,9 +374,10 @@ class CameraDeviceDelegateTest : public ::testing::Test {
             Invoke(this, &CameraDeviceDelegateTest::ConfigureFakeStreams));
     EXPECT_CALL(
         mock_gpu_memory_buffer_manager_,
-        CreateGpuMemoryBuffer(_, gfx::BufferFormat::YUV_420_BIPLANAR,
-                              gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-                              gpu::kNullSurfaceHandle))
+        CreateGpuMemoryBuffer(
+            _, gfx::BufferFormat::YUV_420_BIPLANAR,
+            gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+            gpu::kNullSurfaceHandle))
         .Times(1)
         .WillOnce(Invoke(&unittest_internal::MockGpuMemoryBufferManager::
                              CreateFakeGpuMemoryBuffer));
@@ -390,10 +391,11 @@ class CameraDeviceDelegateTest : public ::testing::Test {
                              CreateFakeGpuMemoryBuffer));
     EXPECT_CALL(
         mock_gpu_memory_buffer_manager_,
-        CreateGpuMemoryBuffer(gfx::Size(kDefaultWidth, kDefaultHeight),
-                              gfx::BufferFormat::YUV_420_BIPLANAR,
-                              gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
-                              gpu::kNullSurfaceHandle))
+        CreateGpuMemoryBuffer(
+            gfx::Size(kDefaultWidth, kDefaultHeight),
+            gfx::BufferFormat::YUV_420_BIPLANAR,
+            gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+            gpu::kNullSurfaceHandle))
         .Times(1)
         .WillOnce(Invoke(&unittest_internal::MockGpuMemoryBufferManager::
                              CreateFakeGpuMemoryBuffer));

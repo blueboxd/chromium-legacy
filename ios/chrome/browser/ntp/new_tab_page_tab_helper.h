@@ -25,8 +25,10 @@ class NewTabPageTabHelper : public web::WebStateObserver,
  public:
   ~NewTabPageTabHelper() override;
 
-  static void CreateForWebState(web::WebState* web_state,
-                                id<NewTabPageTabHelperDelegate> delegate);
+  static void CreateForWebState(web::WebState* web_state);
+
+  // Sets the delegate. The delegate is not owned by the tab helper.
+  void SetDelegate(id<NewTabPageTabHelperDelegate> delegate);
 
   // Returns true when the current web_state is an NTP and the underlying
   // controllers have been created.
@@ -47,8 +49,7 @@ class NewTabPageTabHelper : public web::WebStateObserver,
  private:
   friend class web::WebStateUserData<NewTabPageTabHelper>;
 
-  NewTabPageTabHelper(web::WebState* web_state,
-                      id<NewTabPageTabHelperDelegate> delegate);
+  explicit NewTabPageTabHelper(web::WebState* web_state);
 
   // web::WebStateObserver overrides:
   void WebStateDestroyed(web::WebState* web_state) override;

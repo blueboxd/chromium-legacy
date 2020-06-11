@@ -38,6 +38,11 @@ class BrowserContext;
 namespace extensions {
 class Extension;
 struct WebRequestInfo;
+
+namespace declarative_net_request {
+struct RequestAction;
+}  // namespace declarative_net_request
+
 }  // namespace extensions
 
 namespace extension_web_request_api_helpers {
@@ -435,6 +440,8 @@ void MergeCookiesInOnBeforeSendHeadersResponses(
 // are tried to be resolved.
 // Stores in |request_headers_modified| whether the request headers were
 // modified.
+// Any actions within |request.dnr_actions| which result in headers being
+// modified are added to |matched_dnr_actions|.
 void MergeOnBeforeSendHeadersResponses(
     const extensions::WebRequestInfo& request,
     const EventResponseDeltas& deltas,
@@ -442,7 +449,9 @@ void MergeOnBeforeSendHeadersResponses(
     IgnoredActions* ignored_actions,
     std::set<std::string>* removed_headers,
     std::set<std::string>* set_headers,
-    bool* request_headers_modified);
+    bool* request_headers_modified,
+    std::vector<const extensions::declarative_net_request::RequestAction*>*
+        matched_dnr_actions);
 // Modifies the "Set-Cookie" headers in |override_response_headers| according to
 // |deltas.response_cookie_modifications|. If |override_response_headers| is
 // NULL, a copy of |original_response_headers| is created. Conflicts are
@@ -460,6 +469,8 @@ void MergeCookiesInOnHeadersReceivedResponses(
 // sure that the URL provided by the extension isn't modified by having its
 // fragment overwritten by that of the original URL). Stores in
 // |response_headers_modified| whether the response headers were modified.
+// Any actions within |request.dnr_actions| which result in headers being
+// modified are added to |matched_dnr_actions|.
 void MergeOnHeadersReceivedResponses(
     const extensions::WebRequestInfo& request,
     const EventResponseDeltas& deltas,
@@ -467,7 +478,9 @@ void MergeOnHeadersReceivedResponses(
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* preserve_fragment_on_redirect_url,
     IgnoredActions* ignored_actions,
-    bool* response_headers_modified);
+    bool* response_headers_modified,
+    std::vector<const extensions::declarative_net_request::RequestAction*>*
+        matched_dnr_actions);
 // Merge the responses of blocked onAuthRequired handlers. The first
 // registered listener that supplies authentication credentials in a response,
 // if any, will have its authentication credentials used. |request| must be

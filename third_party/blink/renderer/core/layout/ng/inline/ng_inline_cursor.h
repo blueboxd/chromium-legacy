@@ -178,10 +178,8 @@ class CORE_EXPORT NGInlineCursorPosition {
   // LogicalRect/PhysicalRect conversions
   // |logical_rect| and |physical_rect| are converted with |Size()| as
   // "outer size".
-  // TODO(yosin): We want to have better name for |ConvertTo*()| to specify
-  // "rect" parameters are relative to |this|.
-  LogicalRect ConvertToLogical(const PhysicalRect& physical_rect) const;
-  PhysicalRect ConvertToPhysical(const LogicalRect& logical_rect) const;
+  LogicalRect ConvertChildToLogical(const PhysicalRect& physical_rect) const;
+  PhysicalRect ConvertChildToPhysical(const LogicalRect& logical_rect) const;
 
  private:
   void Set(const ItemsSpan::iterator& iter) {

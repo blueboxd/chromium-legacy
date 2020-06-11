@@ -44,9 +44,6 @@ class BASE_EXPORT DummyHistogram : public HistogramBase {
   // HistogramBase:
   void SerializeInfoImpl(Pickle* pickle) const override {}
   void GetParameters(DictionaryValue* params) const override {}
-  void GetCountAndBucketData(Count* count,
-                             int64_t* sum,
-                             ListValue* buckets) const override {}
 
  private:
   friend class NoDestructor<DummyHistogram>;

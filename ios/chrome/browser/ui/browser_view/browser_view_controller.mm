@@ -2555,7 +2555,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                                 _downloadManagerCoordinator);
   }
 
-  NewTabPageTabHelper::CreateForWebState(webState, self);
+  NewTabPageTabHelper::FromWebState(webState)->SetDelegate(self);
 
   // The language detection helper accepts a callback from the translate
   // client, so must be created after it.
@@ -2599,6 +2599,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 
   SnapshotTabHelper::FromWebState(webState)->SetDelegate(nil);
+  NewTabPageTabHelper::FromWebState(webState)->SetDelegate(nil);
 }
 
 - (void)webStateSelected:(web::WebState*)webState
@@ -4136,6 +4137,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   webState->SetKeepRenderProcessAlive(false);
 
   [self uninstallDelegatesForWebState:webState];
+
+  auto iterator = _ntpCoordinatorsForWebStates.find(webState);
+  if (iterator != _ntpCoordinatorsForWebStates.end()) {
+    [iterator->second stop];
+    _ntpCoordinatorsForWebStates.erase(iterator);
+  }
 
   // Ignore changes while the tab grid is visible (or while suspended).
   // The display will be refreshed when this view becomes active again.

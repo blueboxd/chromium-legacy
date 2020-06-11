@@ -38,6 +38,9 @@ iron-checked-element-behavior/*
 # iron-form-element-behavior
 iron-form-element-behavior/*
 
+# iron-validatable-behavior
+iron-validatable-behavior/*
+
 # iron-test-helpers
 iron-test-helpers/iron-test-helpers.html
 iron-test-helpers/test-helpers.html

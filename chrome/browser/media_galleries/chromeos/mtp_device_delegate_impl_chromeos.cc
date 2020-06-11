@@ -382,8 +382,7 @@ void CloseFileDescriptor(const int file_descriptor) {
 void DeleteTemporaryFile(const base::FilePath& file_path) {
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(base::IgnoreResult(base::DeleteFile), file_path,
-                     false /* not recursive*/));
+      base::BindOnce(base::GetDeleteFileCallback(), file_path));
 }
 
 // A fake callback to be passed as CopyFileProgressCallback.

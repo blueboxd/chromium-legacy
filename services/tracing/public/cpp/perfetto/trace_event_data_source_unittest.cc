@@ -6,13 +6,13 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/debug/leak_annotations.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
@@ -31,14 +31,10 @@
 #include "base/trace_event/trace_log.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "services/tracing/public/cpp/perfetto/macros.h"
-#include "services/tracing/public/cpp/perfetto/producer_client.h"
+#include "services/tracing/public/cpp/perfetto/producer_test_utils.h"
 #include "services/tracing/public/cpp/perfetto/trace_time.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/perfetto/include/perfetto/ext/base/utils.h"
-#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
-#include "third_party/perfetto/include/perfetto/protozero/scattered_stream_null_delegate.h"
-#include "third_party/perfetto/include/perfetto/protozero/scattered_stream_writer.h"
 #include "third_party/perfetto/include/perfetto/tracing/track.h"
 #include "third_party/perfetto/protos/perfetto/trace/clock_snapshot.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
@@ -64,170 +60,6 @@ constexpr const char kCategoryGroup[] = "foo";
 constexpr uint32_t kClockIdAbsolute = 64;
 constexpr uint32_t kClockIdIncremental = 65;
 
-class MockProducerClient : public ProducerClient {
- public:
-  explicit MockProducerClient(
-      std::unique_ptr<PerfettoTaskRunner> main_thread_task_runner)
-      : ProducerClient(main_thread_task_runner.get()),
-        delegate_(perfetto::base::kPageSize),
-        stream_(&delegate_),
-        main_thread_task_runner_(std::move(main_thread_task_runner)) {
-    trace_packet_.Reset(&stream_);
-  }
-
-  std::unique_ptr<perfetto::TraceWriter> CreateTraceWriter(
-      perfetto::BufferID target_buffer,
-      perfetto::BufferExhaustedPolicy =
-          perfetto::BufferExhaustedPolicy::kDefault) override;
-
-  void FlushPacketIfPossible() {
-    // GetNewBuffer() in ScatteredStreamWriterNullDelegate doesn't
-    // actually return a new buffer, but rather lets us access the buffer
-    // buffer already used by protozero to write the TracePacket into.
-    protozero::ContiguousMemoryRange buffer = delegate_.GetNewBuffer();
-
-    uint32_t message_size = trace_packet_.Finalize();
-    if (message_size) {
-      EXPECT_GE(buffer.size(), message_size);
-
-      auto proto = std::make_unique<perfetto::protos::TracePacket>();
-      EXPECT_TRUE(proto->ParseFromArray(buffer.begin, message_size));
-      if (proto->has_chrome_events() &&
-                 proto->chrome_events().metadata().size() > 0) {
-        legacy_metadata_packets_.push_back(std::move(proto));
-      } else if (proto->has_chrome_metadata()) {
-        proto_metadata_packets_.push_back(std::move(proto));
-      } else {
-        finalized_packets_.push_back(std::move(proto));
-      }
-    }
-
-    stream_.Reset(buffer);
-    trace_packet_.Reset(&stream_);
-  }
-
-  perfetto::protos::pbzero::TracePacket* NewTracePacket() {
-    FlushPacketIfPossible();
-
-    return &trace_packet_;
-  }
-
-  size_t GetFinalizedPacketCount() {
-    FlushPacketIfPossible();
-    return finalized_packets_.size();
-  }
-
-  const perfetto::protos::TracePacket* GetFinalizedPacket(
-      size_t packet_index = 0) {
-    FlushPacketIfPossible();
-    EXPECT_GT(finalized_packets_.size(), packet_index);
-    return finalized_packets_[packet_index].get();
-  }
-
-  const google::protobuf::RepeatedPtrField<perfetto::protos::ChromeMetadata>
-  GetChromeMetadata(size_t packet_index = 0) {
-    FlushPacketIfPossible();
-    if (legacy_metadata_packets_.empty()) {
-      return google::protobuf::RepeatedPtrField<
-          perfetto::protos::ChromeMetadata>();
-    }
-    EXPECT_GT(legacy_metadata_packets_.size(), packet_index);
-
-    auto event_bundle = legacy_metadata_packets_[packet_index]->chrome_events();
-    return event_bundle.metadata();
-  }
-
-  const perfetto::protos::ChromeMetadataPacket* GetProtoChromeMetadata(
-      size_t packet_index = 0) {
-    FlushPacketIfPossible();
-    EXPECT_GT(proto_metadata_packets_.size(), packet_index);
-    return &proto_metadata_packets_[packet_index]->chrome_metadata();
-  }
-
-  const std::vector<std::unique_ptr<perfetto::protos::TracePacket>>&
-  finalized_packets() {
-    return finalized_packets_;
-  }
-
- private:
-  std::vector<std::unique_ptr<perfetto::protos::TracePacket>>
-      finalized_packets_;
-  std::vector<std::unique_ptr<perfetto::protos::TracePacket>>
-      legacy_metadata_packets_;
-  std::vector<std::unique_ptr<perfetto::protos::TracePacket>>
-      proto_metadata_packets_;
-  perfetto::protos::pbzero::TracePacket trace_packet_;
-  protozero::ScatteredStreamWriterNullDelegate delegate_;
-  protozero::ScatteredStreamWriter stream_;
-  std::unique_ptr<PerfettoTaskRunner> main_thread_task_runner_;
-};
-
-// For sequences/threads other than our own, we just want to ignore
-// any events coming in.
-class DummyTraceWriter : public perfetto::TraceWriter {
- public:
-  DummyTraceWriter()
-      : delegate_(perfetto::base::kPageSize), stream_(&delegate_) {}
-
-  perfetto::TraceWriter::TracePacketHandle NewTracePacket() override {
-    stream_.Reset(delegate_.GetNewBuffer());
-    trace_packet_.Reset(&stream_);
-
-    return perfetto::TraceWriter::TracePacketHandle(&trace_packet_);
-  }
-
-  void Flush(std::function<void()> callback = {}) override {}
-
-  perfetto::WriterID writer_id() const override {
-    return perfetto::WriterID(0);
-  }
-
-  uint64_t written() const override { return 0u; }
-
- private:
-  perfetto::protos::pbzero::TracePacket trace_packet_;
-  protozero::ScatteredStreamWriterNullDelegate delegate_;
-  protozero::ScatteredStreamWriter stream_;
-};
-
-class MockTraceWriter : public perfetto::TraceWriter {
- public:
-  explicit MockTraceWriter(MockProducerClient* producer_client)
-      : producer_client_(producer_client) {}
-
-  perfetto::TraceWriter::TracePacketHandle NewTracePacket() override {
-    return perfetto::TraceWriter::TracePacketHandle(
-        producer_client_->NewTracePacket());
-  }
-
-  void Flush(std::function<void()> callback = {}) override {}
-
-  perfetto::WriterID writer_id() const override {
-    return perfetto::WriterID(0);
-  }
-
-  uint64_t written() const override { return 0u; }
-
- private:
-  MockProducerClient* producer_client_;
-};
-
-std::unique_ptr<perfetto::TraceWriter> MockProducerClient::CreateTraceWriter(
-    perfetto::BufferID target_buffer,
-    perfetto::BufferExhaustedPolicy) {
-  // We attempt to destroy TraceWriters on thread shutdown in
-  // ThreadLocalStorage::Slot, by posting them to the ProducerClient taskrunner,
-  // but there's no guarantee that this will succeed if that taskrunner is also
-  // shut down.
-  ANNOTATE_SCOPED_MEMORY_LEAK;
-  if (main_thread_task_runner_->GetOrCreateTaskRunner()
-          ->RunsTasksInCurrentSequence()) {
-    return std::make_unique<MockTraceWriter>(this);
-  } else {
-    return std::make_unique<DummyTraceWriter>();
-  }
-}
-
 class TraceEventDataSourceTest : public testing::Test {
  public:
   void SetUp() override {
@@ -248,7 +80,7 @@ class TraceEventDataSourceTest : public testing::Test {
     auto perfetto_wrapper = std::make_unique<PerfettoTaskRunner>(
         task_environment_.GetMainThreadTaskRunner());
     producer_client_ =
-        std::make_unique<MockProducerClient>(std::move(perfetto_wrapper));
+        std::make_unique<TestProducerClient>(std::move(perfetto_wrapper));
     TraceEventMetadataSource::GetInstance()->ResetForTesting();
   }
 
@@ -265,7 +97,7 @@ class TraceEventDataSourceTest : public testing::Test {
       wait_for_tracelog_flush.Run();
     }
 
-    // As MockTraceWriter keeps a pointer to our MockProducerClient,
+    // As MockTraceWriter keeps a pointer to our TestProducerClient,
     // we need to make sure to clean it up from TLS. The other sequences
     // get DummyTraceWriters that we don't care about.
     TraceEventDataSource::GetInstance()->FlushCurrentThread();
@@ -296,7 +128,7 @@ class TraceEventDataSourceTest : public testing::Test {
     }
   }
 
-  MockProducerClient* producer_client() { return producer_client_.get(); }
+  TestProducerClient* producer_client() { return producer_client_.get(); }
 
   void ExpectClockSnapshotAndDefaults(
       const perfetto::protos::TracePacket* packet,
@@ -736,7 +568,7 @@ class TraceEventDataSourceTest : public testing::Test {
   // Should be the first member.
   base::test::TaskEnvironment task_environment_;
 
-  std::unique_ptr<MockProducerClient> producer_client_;
+  std::unique_ptr<TestProducerClient> producer_client_;
   uint64_t last_timestamp_ = 0;
   int64_t last_thread_time_ = 0;
   uint64_t default_track_uuid_ = 0u;
@@ -814,7 +646,7 @@ TEST_F(TraceEventDataSourceTest, MetadataGeneratorBeforeTracing) {
   metadata_source->StopTracing(wait_for_stop.QuitClosure());
   wait_for_stop.Run();
 
-  auto metadata = producer_client()->GetChromeMetadata();
+  auto& metadata = *producer_client()->GetChromeMetadata();
   EXPECT_EQ(4, metadata.size());
   MetadataHasNamedValue(metadata, "foo_int", 42);
   MetadataHasNamedValue(metadata, "foo_str", "bar");
@@ -837,7 +669,7 @@ TEST_F(TraceEventDataSourceTest, MetadataGeneratorWhileTracing) {
   metadata_source->StopTracing(wait_for_stop.QuitClosure());
   wait_for_stop.Run();
 
-  auto metadata = producer_client()->GetChromeMetadata();
+  auto& metadata = *producer_client()->GetChromeMetadata();
   EXPECT_EQ(4, metadata.size());
   MetadataHasNamedValue(metadata, "foo_int", 42);
   MetadataHasNamedValue(metadata, "foo_str", "bar");
@@ -865,7 +697,7 @@ TEST_F(TraceEventDataSourceTest, MultipleMetadataGenerators) {
   metadata_source->StopTracing(wait_for_stop.QuitClosure());
   wait_for_stop.Run();
 
-  auto metadata = producer_client()->GetChromeMetadata();
+  auto& metadata = *producer_client()->GetChromeMetadata();
   EXPECT_EQ(4, metadata.size());
   MetadataHasNamedValue(metadata, "foo_int", 42);
   MetadataHasNamedValue(metadata, "foo_str", "bar");
@@ -875,9 +707,9 @@ TEST_F(TraceEventDataSourceTest, MultipleMetadataGenerators) {
   child_dict->SetString("child_str", "child_val");
   MetadataHasNamedValue(metadata, "child_dict", *child_dict);
 
-  metadata = producer_client()->GetChromeMetadata(1);
-  EXPECT_EQ(1, metadata.size());
-  MetadataHasNamedValue(metadata, "before_int", 42);
+  auto& metadata1 = *producer_client()->GetChromeMetadata(1);
+  EXPECT_EQ(1, metadata1.size());
+  MetadataHasNamedValue(metadata1, "before_int", 42);
 }
 
 TEST_F(TraceEventDataSourceTest, BasicTraceEvent) {
@@ -1687,8 +1519,7 @@ TEST_F(TraceEventDataSourceTest, FilteringMetadataSource) {
   metadata_source->StopTracing(wait_for_stop.QuitClosure());
   wait_for_stop.Run();
 
-  auto metadata = producer_client()->GetChromeMetadata();
-  EXPECT_EQ(0, metadata.size());
+  EXPECT_FALSE(producer_client()->GetChromeMetadata());
 }
 
 TEST_F(TraceEventDataSourceTest, ProtoMetadataSource) {

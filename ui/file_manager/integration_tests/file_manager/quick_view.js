@@ -186,6 +186,9 @@
       case 'Type':
         filesMetadataBox += '[metadata~="mime"]';
         break;
+      case 'File location':
+        filesMetadataBox += '[metadata~="location"]';
+        break;
       default:
         filesMetadataBox += '[metadata~="meta"]';
         break;
@@ -309,6 +312,10 @@
     // for details on mimeType differences between Drive and local filesystem).
     const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
     chrome.test.assertEq('text/plain', mimeType);
+
+    // Check: the correct file location should be displayed in Drive.
+    const location = await getQuickViewMetadataBoxField(appId, 'File location');
+    chrome.test.assertEq('My Drive/hello.txt', location);
   };
 
   /**
@@ -813,6 +820,10 @@
     // Check: the correct mimeType should be displayed.
     const mimeType = await getQuickViewMetadataBoxField(appId, 'Type');
     chrome.test.assertEq('text/plain', mimeType);
+
+    // Check: the correct file location should be displayed in Downloads.
+    const location = await getQuickViewMetadataBoxField(appId, 'File location');
+    chrome.test.assertEq('My files/Downloads/page.mhtml', location);
   };
 
   /**

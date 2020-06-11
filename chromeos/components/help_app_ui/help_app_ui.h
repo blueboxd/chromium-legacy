@@ -9,7 +9,6 @@
 
 #include "chromeos/components/help_app_ui/help_app_ui.mojom.h"
 #include "chromeos/components/help_app_ui/help_app_ui_delegate.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 

@@ -1496,6 +1496,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // WebContents.
   RenderFrameHostImpl* ParentOrOuterDelegateFrame();
 
+  void SetIsOuterDelegateFrame(bool is_outer_frame) {
+    is_outer_delegate_frame_ = is_outer_frame;
+  }
+  bool IsOuterDelegateFrame() { return is_outer_delegate_frame_; }
+
   scoped_refptr<WebAuthRequestSecurityChecker>
   GetWebAuthRequestSecurityChecker();
 
@@ -3058,6 +3063,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // This problem should go away with RenderDocumentHost in any case.
   // TODO(crbug.com/936696): Remove this warning after the RDH ships.
   mojo::ReceiverSet<network::mojom::CookieAccessObserver> cookie_observers_;
+
+  // Indicates whether this frame is an outer delegate frame for some other
+  // RenderFrameHost.
+  bool is_outer_delegate_frame_ = false;
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_{this};

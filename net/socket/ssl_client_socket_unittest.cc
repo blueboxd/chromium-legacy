@@ -5600,6 +5600,7 @@ TEST_P(TLS13DowngradeMetricsTest, Metrics) {
 
   SSLContextConfig config;
   config.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
+  config.tls13_hardening_for_local_anchors_enabled = false;
   ssl_config_service_->UpdateSSLConfigAndNotify(config);
 
   std::unique_ptr<SSLClientSocket> ssl_socket =

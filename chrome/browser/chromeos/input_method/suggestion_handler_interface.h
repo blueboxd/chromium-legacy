@@ -33,6 +33,19 @@ class SuggestionHandlerInterface {
 
   virtual void OnSuggestionsChanged(
       const std::vector<std::string>& suggestions) = 0;
+
+  virtual bool ShowMultipleSuggestions(
+      int context_id,
+      const std::vector<base::string16>& candidates,
+      std::string* error) = 0;
+
+  virtual bool HighlightSuggestionCandidate(int context_id,
+                                            int index,
+                                            std::string* error) = 0;
+
+  virtual bool AcceptSuggestionCandidate(int context_id,
+                                         const base::string16& candidate,
+                                         std::string* error) = 0;
 };
 
 }  // namespace chromeos

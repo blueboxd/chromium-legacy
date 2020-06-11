@@ -156,4 +156,44 @@ TEST(FileInputTypeTest, DropTouchesNoPopupOpeningObserver) {
   // UnregisterPopupOpeningObserver() was not called.
 }
 
+TEST(FileInputTypeTest, BeforePseudoCrash) {
+  std::unique_ptr<DummyPageHolder> page_holder =
+      std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Document& doc = page_holder->GetDocument();
+  doc.documentElement()->setInnerHTML(R"HTML(
+<style>
+.c6 {
+  zoom: 0.01;
+}
+
+.c6::first-letter {
+  position: fixed;
+  border-style: groove;
+}
+
+.c6::before {
+  content: 'c6';
+}
+
+.c7 {
+  zoom: 0.1;
+}
+
+.c7::first-letter {
+  position: fixed;
+  border-style: groove;
+}
+
+.c7::before {
+  content: 'c7';
+}
+
+</style>
+<input type=file class=c6>
+<input type=file class=c7>
+)HTML");
+  doc.View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  // The test passes if no CHECK failures and no null pointer dereferences.
+}
+
 }  // namespace blink

@@ -33,9 +33,7 @@ void DeleteFileOnFileThread(const base::FilePath& file_path,
                             const base::Closure& callback) {
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile), file_path,
-                     false /* recursive */),
-      callback);
+      base::BindOnce(base::GetDeleteFileCallback(), file_path), callback);
 }
 
 // Compute a SHA256 digest using a background thread. The computed digest will

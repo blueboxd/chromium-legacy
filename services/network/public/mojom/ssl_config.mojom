@@ -22,7 +22,7 @@ struct SSLConfig {
 
   // If true, enables TLS 1.3 downgrade hardening for connections using local
   // trust anchors. (Hardening for known roots is always enabled.)
-  bool tls13_hardening_for_local_anchors_enabled = false;
+  bool tls13_hardening_for_local_anchors_enabled = true;
 
   // SSL 2.0 and 3.0 are not supported. Note these lines must be kept in sync
   // with net/ssl/ssl_config.cc.

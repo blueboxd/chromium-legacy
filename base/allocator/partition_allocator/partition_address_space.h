@@ -39,6 +39,11 @@ class BASE_EXPORT PartitionAddressSpace {
             kReservedAddressSpaceBaseMask) == reserved_base_address_;
   }
 
+  static ALWAYS_INLINE bool IsInNormalBucketPool(const void* address) {
+    return (reinterpret_cast<uintptr_t>(address) & kNormalBucketPoolBaseMask) ==
+           normal_bucket_pool_base_address_;
+  }
+
   // PartitionAddressSpace is static_only class.
   PartitionAddressSpace() = delete;
   PartitionAddressSpace(const PartitionAddressSpace&) = delete;
@@ -73,6 +78,11 @@ class BASE_EXPORT PartitionAddressSpace {
   static constexpr size_t kGigaBytes = 1024 * 1024 * 1024;
   static constexpr size_t kDirectMapPoolSize = 16 * kGigaBytes;
   static constexpr size_t kNormalBucketPoolSize = 16 * kGigaBytes;
+  static constexpr uintptr_t kNormalBucketPoolOffsetMask =
+      static_cast<uintptr_t>(kNormalBucketPoolSize) - 1;
+  static constexpr uintptr_t kNormalBucketPoolBaseMask =
+      ~kNormalBucketPoolOffsetMask;
+
   // Reserves 32GB aligned address space.
   // Alignment should be the smallest power of two greater than or equal to the
   // desired size, so that we can check containment with a single bitmask
@@ -92,6 +102,8 @@ class BASE_EXPORT PartitionAddressSpace {
   // See the comment describing the address layout above.
   static uintptr_t reserved_address_start_;
   static uintptr_t reserved_base_address_;
+
+  static uintptr_t normal_bucket_pool_base_address_;
 
   static internal::pool_handle direct_map_pool_;
   static internal::pool_handle normal_bucket_pool_;

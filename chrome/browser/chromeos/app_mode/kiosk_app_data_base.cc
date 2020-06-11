@@ -123,8 +123,7 @@ void KioskAppDataBase::ClearCache() {
   if (!icon_path_.empty()) {
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile), icon_path_,
-                       false));
+        base::BindOnce(base::GetDeleteFileCallback(), icon_path_));
   }
 }
 

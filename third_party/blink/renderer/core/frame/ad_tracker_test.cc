@@ -1257,8 +1257,12 @@ TEST_F(AdTrackerSimTest, StyleRecalcCausedByAdScript) {
   )HTML");
   stylesheet.Complete(kStylesheetWithVanillaResources);
 
+  Compositor().BeginFrame();
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(ad_tracker_->UrlHasBeenRequested(kVanillaFontURL));
+  // @font-face rules have fetches set up for src descriptors when the font face
+  // is initialized in FontFace::InitCSSFontFace(). The fetch is not actually
+  // performed, but the AdTracker is notified.
+  EXPECT_TRUE(ad_tracker_->UrlHasBeenRequested(kVanillaFontURL));
   EXPECT_FALSE(ad_tracker_->UrlHasBeenRequested(kVanillaImageURL));
 
   // We override these to ensure the ad script appears on top of the stack when

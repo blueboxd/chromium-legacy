@@ -15,7 +15,6 @@
 #include "ios/web/public/test/web_test.h"
 #include "ios/web/test/mojo_test.mojom.h"
 #include "ios/web/web_state/web_state_impl.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #import "testing/gtest_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

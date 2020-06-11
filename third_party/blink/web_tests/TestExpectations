@@ -4750,9 +4750,7 @@ crbug.com/930297 external/wpt/html/infrastructure/urls/resolving-urls/query-enco
 crbug.com/930297 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16le.html?include=workers [ Timeout ]
 
 # RubyNG TODOs
-crbug.com/1069817 external/wpt/css/css-ruby/line-break-around-ruby-001.html [ Failure ]
 crbug.com/1069817 fast/ruby/float-overhang-from-ruby-text.html [ Failure ]
-crbug.com/1069817 fast/ruby/line-break-ruby.html [ Failure ]
 crbug.com/1069817 fast/ruby/position-after.html [ Failure ]
 crbug.com/1069817 virtual/text-antialias/emphasis-avoid-ruby.html [ Failure ]
 
@@ -6720,6 +6718,9 @@ crbug.com/1092091 [ Mac ] virtual/dark-color-scheme/datetimelocal-picker/datetim
 # Sheriff 2020-06-06
 crbug.com/1091843 fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Pass Failure ]
 
+# Flaky test
+crbug.com/1093198 external/wpt/webrtc/RTCPeerConnection-addIceCandidate-timing [ Pass Failure ]
+
 # Sheriff 2020-06-09
 crbug.com/1090180 virtual/gpu/fast/canvas/canvas-gpu-consistency.html [ Failure ]
 crbug.com/1093003 [ Mac ] external/wpt/html/rendering/replaced-elements/embedded-content/cross-domain-iframe.sub.html [ Pass Failure ]
@@ -6727,3 +6728,5 @@ crbug.com/1093003 [ Mac ] external/wpt/html/rendering/replaced-elements/embedded
 # Sheriff 2020-06-10
 crbug.com/1093429 [ Mac ] external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Failure ]
 crbug.com/1093620 [ Debug ] http/tests/devtools/appcache/* [ Pass Failure ]
+crbug.com/1093709 [ Mac ] external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.resize.html [ Pass Failure ]
+crbug.com/1093709 [ Linux ] external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.resize.html [ Pass Failure ]

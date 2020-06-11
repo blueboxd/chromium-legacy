@@ -62,7 +62,8 @@ VideoCaptureDevice::Client::ReserveResult AllocateNV12GpuMemoryBuffer(
   *out_gpu_memory_buffer = gmb_support->CreateGpuMemoryBufferImplFromHandle(
       out_capture_buffer->handle_provider->GetGpuMemoryBufferHandle(),
       buffer_size, kOpaqueGfxFormat,
-      gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE, base::NullCallback());
+      gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+      base::NullCallback());
   return reserve_result;
 }
 

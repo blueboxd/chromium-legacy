@@ -38,16 +38,6 @@ void LogicalRect::Unite(const LogicalRect& other) {
   size = new_end_offset - offset;
 }
 
-PhysicalRect LogicalRect::ConvertToPhysical(
-    WritingMode writing_mode,
-    TextDirection direction,
-    const PhysicalSize& outer_size) const {
-  const PhysicalSize physical_size = ToPhysicalSize(size, writing_mode);
-  const PhysicalOffset physical_offset = offset.ConvertToPhysical(
-      writing_mode, direction, outer_size, physical_size);
-  return {physical_offset, physical_size};
-}
-
 String LogicalRect::ToString() const {
   return String::Format("%s,%s %sx%s",
                         offset.inline_offset.ToString().Ascii().c_str(),

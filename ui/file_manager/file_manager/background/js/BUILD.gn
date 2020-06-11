@@ -219,6 +219,7 @@ js_library("drive_sync_handler") {
 js_unittest("drive_sync_handler_unittest") {
   deps = [
     ":drive_sync_handler",
+    ":file_operation_util",
     ":mock_progress_center",
     "//ui/file_manager/base/js:mock_chrome",
     "//ui/file_manager/base/js:test_error_reporting",
@@ -374,6 +375,7 @@ js_library("media_import_handler") {
 
 js_unittest("media_import_handler_unittest") {
   deps = [
+    ":file_operation_util",
     ":media_import_handler",
     ":mock_drive_sync_handler",
     ":mock_media_scanner",

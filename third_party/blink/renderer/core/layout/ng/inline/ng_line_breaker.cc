@@ -496,7 +496,7 @@ bool NGLineBreaker::ShouldForceCanBreakAfter(
       // Except when sticky images quirk was applied.
       if (UNLIKELY(text[item->StartOffset()] == kNoBreakSpaceCharacter))
         return false;
-      return true;
+      return !item->IsRubyRun();
     }
     if (item->EndOffset() > item_result.EndOffset())
       break;
@@ -1419,6 +1419,9 @@ void NGLineBreaker::HandleAtomicInline(
   position_ += item_result->inline_size;
 
   if (item.IsRubyRun()) {
+    // Overrides can_break_after.
+    ComputeCanBreakAfter(item_result, auto_wrap_, break_iterator_);
+
     NGAnnotationOverhang overhang = GetOverhang(*item_result);
     if (overhang.end > LayoutUnit()) {
       item_result->pending_end_overhang = overhang.end;

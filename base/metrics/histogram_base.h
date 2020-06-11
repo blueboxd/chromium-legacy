@@ -263,9 +263,9 @@ class BASE_EXPORT HistogramBase {
   // Writes information about the current (non-empty) buckets and their sample
   // counts to |buckets|, the total sample count to |count| and the total sum
   // to |sum|.
-  virtual void GetCountAndBucketData(Count* count,
-                                     int64_t* sum,
-                                     ListValue* buckets) const = 0;
+  void GetCountAndBucketData(Count* count,
+                             int64_t* sum,
+                             ListValue* buckets) const;
 
   //// Produce actual graph (set of blank vs non blank char's) for a bucket.
   void WriteAsciiBucketGraph(double current_size,

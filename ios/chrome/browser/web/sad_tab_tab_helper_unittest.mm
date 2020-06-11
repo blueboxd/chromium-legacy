@@ -169,7 +169,8 @@ TEST_F(SadTabTabHelperTest, AppOnNTP) {
 
   web_state_.SetVisibleURL(GURL(kChromeUINewTabURL));
   id delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
-  NewTabPageTabHelper::CreateForWebState(&web_state_, delegate);
+  NewTabPageTabHelper::CreateForWebState(&web_state_);
+  NewTabPageTabHelper::FromWebState(&web_state_)->SetDelegate(delegate);
 
   // Delegate and TabHelper should not present a SadTab.
   EXPECT_FALSE(tab_helper()->is_showing_sad_tab());

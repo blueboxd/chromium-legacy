@@ -1841,6 +1841,9 @@ void WebContentsImpl::AttachInnerWebContents(
       static_cast<RenderFrameHostImpl*>(render_frame_host);
   DCHECK_EQ(&frame_tree_, render_frame_host_impl->frame_tree());
 
+  // Mark |render_frame_host_impl| as outer delegate frame.
+  render_frame_host_impl->SetIsOuterDelegateFrame(true);
+
   RenderFrameHostManager* inner_render_manager =
       inner_web_contents_impl->GetRenderManager();
   RenderFrameHostImpl* inner_main_frame =
@@ -1917,6 +1920,7 @@ void WebContentsImpl::AttachInnerWebContents(
 std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
   auto* outer_web_contents = GetOuterWebContents();
   DCHECK(outer_web_contents);
+  GetMainFrame()->ParentOrOuterDelegateFrame()->SetIsOuterDelegateFrame(false);
 
   RecursivelyUnregisterFrameSinkIds();
 

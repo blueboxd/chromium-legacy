@@ -67,6 +67,24 @@ class TestSuggestionHandler : public SuggestionHandlerInterface {
     previous_suggestions_ = suggestions;
   }
 
+  bool ShowMultipleSuggestions(int context_id,
+                               const std::vector<base::string16>& candidates,
+                               std::string* error) override {
+    return false;
+  }
+
+  bool HighlightSuggestionCandidate(int context_id,
+                                    int index,
+                                    std::string* error) override {
+    return false;
+  }
+
+  bool AcceptSuggestionCandidate(int context_id,
+                                 const base::string16& candidate,
+                                 std::string* error) override {
+    return false;
+  }
+
   void VerifyShowTab(const bool show_tab) { EXPECT_EQ(show_tab_, show_tab); }
 
   bool IsSuggestionAccepted() { return suggestion_accepted_; }

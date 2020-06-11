@@ -162,8 +162,7 @@ void DownloadFeedbackService::BeginFeedbackOrDeleteFile(
     service->BeginFeedback(ping_request, ping_response, path);
   } else {
     file_task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile), path, false));
+        FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), path));
   }
 }
 

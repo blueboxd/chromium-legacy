@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
+#include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
@@ -506,24 +507,16 @@ bool NGPhysicalFragment::ShouldPaintDragCaret() const {
   return false;
 }
 
-LogicalRect NGPhysicalFragment::ConvertToLogical(
-    const PhysicalRect& physical_rect,
-    PhysicalSize inner_size) const {
-  return ConvertToLogical(physical_rect, Style().Direction(), inner_size);
+LogicalRect NGPhysicalFragment::ConvertChildToLogical(
+    const PhysicalRect& physical_rect) const {
+  return WritingModeConverter(Style().GetWritingDirection(), Size())
+      .ToLogical(physical_rect);
 }
 
-LogicalRect NGPhysicalFragment::ConvertToLogical(
-    const PhysicalRect& physical_rect,
-    TextDirection direction,
-    PhysicalSize inner_size) const {
-  return physical_rect.ConvertToLogical(Style().GetWritingMode(), direction,
-                                        Size(), inner_size);
-}
-
-PhysicalRect NGPhysicalFragment::ConvertToPhysical(
+PhysicalRect NGPhysicalFragment::ConvertChildToPhysical(
     const LogicalRect& logical_rect) const {
-  return logical_rect.ConvertToPhysical(Style().GetWritingMode(),
-                                        Style().Direction(), Size());
+  return WritingModeConverter(Style().GetWritingDirection(), Size())
+      .ToPhysical(logical_rect);
 }
 
 String NGPhysicalFragment::ToString() const {

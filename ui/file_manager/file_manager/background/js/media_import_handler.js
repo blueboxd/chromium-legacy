@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Namespace
-var importer = importer || {};
+window.importer = window.importer || {};
 
 importer.MediaImportHandler = importer.MediaImportHandler || {};
 importer.MediaImportHandler.ImportTask =
@@ -46,6 +46,20 @@ importer.MediaImportHandlerImpl = class {
 
     /** @private {!importer.DispositionChecker.CheckerFunction} */
     this.getDisposition_ = dispositionChecker;
+
+    /**
+     * Number of progress item sequence used in calculating moving average
+     * speed of task.
+     * @private {number}
+     */
+    this.SPEED_BUFFER_WINDOW_ = 30;
+
+    /**
+     * Speedometer object used to calculate and track speed and remaining time.
+     * @protected {fileOperationUtil.Speedometer}
+     */
+    this.speedometer_ =
+        new fileOperationUtil.Speedometer(this.SPEED_BUFFER_WINDOW_);
 
     /** @private {!DriveSyncHandler} */
     this.driveSyncHandler_ = driveSyncHandler;
@@ -99,6 +113,7 @@ importer.MediaImportHandlerImpl = class {
       // TODO(kenobi): Might need a different progress item type here.
       item.type = ProgressItemType.COPY;
       item.progressMax = task.totalBytes;
+      this.speedometer_.setTotalBytes(item.progressMax);
       item.cancelCallback = () => {
         task.requestCancel();
       };
@@ -110,6 +125,10 @@ importer.MediaImportHandlerImpl = class {
             strf('CLOUD_IMPORT_ITEMS_REMAINING', task.remainingFilesCount);
         item.progressValue = task.processedBytes;
         item.state = ProgressItemState.PROGRESSING;
+        this.speedometer_.update(item.progressValue);
+        item.currentSpeed = this.speedometer_.getCurrentSpeed();
+        item.averageSpeed = this.speedometer_.getAverageSpeed();
+        item.remainingTime = this.speedometer_.getRemainingTime();
         break;
 
       case UpdateType.COMPLETE:

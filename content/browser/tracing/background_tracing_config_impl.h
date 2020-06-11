@@ -46,7 +46,7 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
     BENCHMARK_RENDERERS,
     BENCHMARK_SERVICEWORKER,
     BENCHMARK_POWER,
-    BLINK_STYLE
+    BLINK_STYLE,
   };
 
   CategoryPreset category_preset() const { return category_preset_; }
@@ -66,6 +66,9 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
   void AddSystemRule(const base::DictionaryValue* dict);
 
   base::trace_event::TraceConfig GetTraceConfig() const;
+  const std::string& enabled_data_sources() const {
+    return enabled_data_sources_;
+  }
 
   size_t GetTraceUploadLimitKb() const;
   int interning_reset_interval_ms() const {
@@ -120,6 +123,7 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
   std::vector<std::unique_ptr<BackgroundTracingRule>> rules_;
   std::string scenario_name_;
   std::string custom_categories_;
+  std::string enabled_data_sources_;
 
   bool requires_anonymized_data_ = false;
   bool trace_browser_process_only_ = false;

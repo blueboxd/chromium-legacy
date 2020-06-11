@@ -30,6 +30,13 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEAssistiveWindowHandlerInterface {
   virtual void ShowSuggestion(const base::string16& text,
                               const size_t confirmed_length,
                               const bool show_tab) {}
+
+  virtual void ShowMultipleSuggestions(
+      const std::vector<base::string16>& suggestions) {}
+
+  // Highlight a candidate when multiple suggestions is shown.
+  virtual void HighlightSuggestionCandidate(int index) {}
+
   virtual void HideSuggestion() {}
 
   // Called to get the current suggestion text.

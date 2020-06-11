@@ -75,10 +75,8 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
       base::PickleIterator* iter);
   static HistogramBase* DeserializeInfoImpl(base::PickleIterator* iter);
 
+  // Writes the type of the sparse histogram in the |params|.
   void GetParameters(DictionaryValue* params) const override;
-  void GetCountAndBucketData(Count* count,
-                             int64_t* sum,
-                             ListValue* buckets) const override;
 
   // Helpers for emitting Ascii graphic.  Each method appends data to output.
   void WriteAsciiBody(const HistogramSamples& snapshot,
@@ -90,7 +88,7 @@ class BASE_EXPORT SparseHistogram : public HistogramBase {
   void WriteAsciiHeader(const HistogramSamples& snapshot,
                         std::string* output) const;
 
-  // For constuctor calling.
+  // For constructor calling.
   friend class SparseHistogramTest;
 
   // Protects access to |samples_|.

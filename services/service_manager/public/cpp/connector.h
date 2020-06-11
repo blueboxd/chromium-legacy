@@ -192,19 +192,6 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Connector {
   }
 
   template <typename Interface>
-  void BindInterface(const ServiceFilter& filter,
-                     mojo::InterfacePtr<Interface>* ptr) {
-    BindInterface(filter, mojo::MakeRequest(ptr));
-  }
-
-  template <typename Interface>
-  void BindInterface(const std::string& service_name,
-                     mojo::InterfacePtr<Interface>* ptr) {
-    return BindInterface(ServiceFilter::ByName(service_name),
-                         mojo::MakeRequest(ptr));
-  }
-
-  template <typename Interface>
   void BindInterface(const std::string& service_name,
                      mojo::PendingReceiver<Interface> receiver) {
     return BindInterface(ServiceFilter::ByName(service_name),

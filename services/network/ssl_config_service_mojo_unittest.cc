@@ -441,10 +441,10 @@ TEST_F(NetworkServiceSSLConfigServiceTest,
 
 TEST_F(NetworkServiceSSLConfigServiceTest, InitialConfigTLS13Hardening) {
   net::SSLContextConfig expected_net_config;
-  expected_net_config.tls13_hardening_for_local_anchors_enabled = true;
+  expected_net_config.tls13_hardening_for_local_anchors_enabled = false;
 
   mojom::SSLConfigPtr mojo_config = mojom::SSLConfig::New();
-  mojo_config->tls13_hardening_for_local_anchors_enabled = true;
+  mojo_config->tls13_hardening_for_local_anchors_enabled = false;
 
   RunConversionTests(*mojo_config, expected_net_config);
 }

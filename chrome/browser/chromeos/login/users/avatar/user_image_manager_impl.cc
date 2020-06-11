@@ -955,8 +955,8 @@ void UserImageManagerImpl::DeleteUserImageAndLocalStateEntry(
   image_properties->GetString(kImagePathNodeName, &image_path);
   if (!image_path.empty()) {
     background_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                  base::FilePath(image_path), false));
+        FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(),
+                                  base::FilePath(image_path)));
   }
   update->RemoveWithoutPathExpansion(user_id(), nullptr);
 }

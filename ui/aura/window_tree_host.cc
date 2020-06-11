@@ -6,7 +6,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/common/features.h"
@@ -554,15 +553,11 @@ void WindowTreeHost::OnCompositingEnded(ui::Compositor* compositor) {
 
   dispatcher_->ReleasePointerMoves();
   holding_pointer_moves_ = false;
-  DCHECK(!synchronization_start_time_.is_null());
-  UMA_HISTOGRAM_TIMES("UI.WindowTreeHost.SurfaceSynchronizationDuration",
-                      base::TimeTicks::Now() - synchronization_start_time_);
 }
 
 void WindowTreeHost::OnCompositingChildResizing(ui::Compositor* compositor) {
   if (!Env::GetInstance()->throttle_input_on_resize() || holding_pointer_moves_)
     return;
-  synchronization_start_time_ = base::TimeTicks::Now();
   dispatcher_->HoldPointerMoves();
   holding_pointer_moves_ = true;
 }

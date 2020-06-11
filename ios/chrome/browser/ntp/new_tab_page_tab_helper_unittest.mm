@@ -73,7 +73,8 @@ class NewTabPageTabHelperTest : public PlatformTest {
   }
 
   void CreateTabHelper() {
-    NewTabPageTabHelper::CreateForWebState(&test_web_state_, delegate_);
+    NewTabPageTabHelper::CreateForWebState(&test_web_state_);
+    NewTabPageTabHelper::FromWebState(&test_web_state_)->SetDelegate(delegate_);
   }
 
   id delegate_;

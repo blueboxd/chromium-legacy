@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/input_method/ui/suggestion_view.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
@@ -16,6 +17,17 @@ namespace ui {
 namespace ime {
 
 namespace {
+
+// Creates the index label, and returns it (never returns nullptr).
+// The label text is not set in this function.
+std::unique_ptr<views::Label> CreateIndexLabel() {
+  auto index_label = std::make_unique<views::Label>();
+  index_label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
+  index_label->SetBorder(
+      views::CreateEmptyBorder(gfx::Insets(kPadding / 2, 0)));
+
+  return index_label;
+}
 
 // Creates the suggestion label, and returns it (never returns nullptr).
 // The label text is not set in this function.
@@ -56,8 +68,11 @@ std::unique_ptr<views::Label> CreateAnnotationLabel() {
 }  // namespace
 
 SuggestionView::SuggestionView() {
+  index_label_ = AddChildView(CreateIndexLabel());
+  index_label_->SetVisible(false);
   suggestion_label_ = AddChildView(CreateSuggestionLabel());
   annotation_label_ = AddChildView(CreateAnnotationLabel());
+  annotation_label_->SetVisible(false);
 }
 
 SuggestionView::~SuggestionView() = default;
@@ -68,6 +83,15 @@ void SuggestionView::SetView(const base::string16& text,
   SetSuggestionText(text, confirmed_length);
   suggestion_width_ = suggestion_label_->GetPreferredSize().width();
   annotation_label_->SetVisible(show_tab);
+}
+
+void SuggestionView::SetViewWithIndex(const base::string16& index,
+                                      const base::string16& text) {
+  index_label_->SetText(index);
+  index_label_->SetVisible(true);
+  index_width_ = index_label_->GetPreferredSize().width();
+  suggestion_label_->SetText(text);
+  suggestion_width_ = suggestion_label_->GetPreferredSize().width();
 }
 
 void SuggestionView::SetSuggestionText(const base::string16& text,
@@ -93,15 +117,41 @@ void SuggestionView::SetSuggestionText(const base::string16& text,
                                    suggestion_style);
 }
 
+void SuggestionView::SetHighlighted(bool highlighted) {
+  if (highlighted_ == highlighted)
+    return;
+
+  highlighted_ = highlighted;
+  if (highlighted) {
+    NotifyAccessibilityEvent(ax::mojom::Event::kSelection, false);
+    ui::NativeTheme* theme = GetNativeTheme();
+    SetBackground(views::CreateSolidBackground(theme->GetSystemColor(
+        ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused)));
+    SetBorder(views::CreateSolidBorder(
+        1,
+        theme->GetSystemColor(ui::NativeTheme::kColorId_FocusedBorderColor)));
+  } else {
+    SetBackground(nullptr);
+    SetBorder(views::CreateEmptyBorder(1, 1, 1, 1));
+  }
+  SchedulePaint();
+}
+
 const char* SuggestionView::GetClassName() const {
   return "SuggestionView";
 }
 
 void SuggestionView::Layout() {
-  suggestion_label_->SetBounds(kPadding, 0, suggestion_width_, height());
+  int left = kPadding;
+  if (index_label_->GetVisible()) {
+    index_label_->SetBounds(left, 0, index_width_, height());
+    left += index_width_ + kPadding;
+  }
+
+  suggestion_label_->SetBounds(left, 0, suggestion_width_, height());
 
   if (annotation_label_->GetVisible()) {
-    int annotation_left = kPadding + suggestion_width_ + kPadding;
+    int annotation_left = left + suggestion_width_ + kPadding;
     int right = bounds().right();
     annotation_label_->SetBounds(annotation_left, kAnnotationPaddingHeight,
                                  right - annotation_left - kPadding / 2,
@@ -111,7 +161,11 @@ void SuggestionView::Layout() {
 
 gfx::Size SuggestionView::CalculatePreferredSize() const {
   gfx::Size size;
-
+  if (index_label_->GetVisible()) {
+    size = index_label_->GetPreferredSize();
+    size.SetToMax(gfx::Size(index_width_, 0));
+    size.Enlarge(kPadding, 0);
+  }
   gfx::Size suggestion_size = suggestion_label_->GetPreferredSize();
   suggestion_size.SetToMax(gfx::Size(suggestion_width_, 0));
   size.Enlarge(suggestion_size.width() + 2 * kPadding, 0);

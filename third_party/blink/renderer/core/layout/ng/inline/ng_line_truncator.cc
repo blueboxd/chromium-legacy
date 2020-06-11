@@ -230,6 +230,10 @@ LayoutUnit NGLineTruncator::TruncateLineInTheMiddle(
         break;
       continue;
     }
+    // Skip pseudo elements like ::before.
+    if (!child.fragment->GetNode())
+      continue;
+
     if (initial_index_left == kNotFound)
       initial_index_left = i;
     initial_index_right = i;

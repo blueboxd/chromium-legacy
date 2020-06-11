@@ -731,6 +731,16 @@ TEST_F('MediaAppUIBrowserTest', 'RelatedFiles', async () => {
   testDone();
 });
 
+// Tests that the guest gets focus automatically on start up.
+TEST_F('MediaAppUIBrowserTest', 'GuestHasFocus', async () => {
+  const guest = document.querySelector('iframe');
+
+  // By the time this tests runs the iframe should already have been loaded.
+  assertEquals(document.activeElement, guest);
+
+  testDone();
+});
+
 // Test cases injected into the guest context.
 // See implementations in media_app_guest_ui_browsertest.js.
 

@@ -38,6 +38,11 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::View {
                const size_t confirmed_length,
                const bool show_tab);
 
+  void SetViewWithIndex(const base::string16& index,
+                        const base::string16& text);
+
+  void SetHighlighted(bool highlighted);
+
  private:
   friend class SuggestionWindowViewTest;
   FRIEND_TEST_ALL_PREFIXES(SuggestionWindowViewTest, ShortcutSettingTest);
@@ -53,12 +58,15 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::View {
   void SetSuggestionText(const base::string16& text,
                          const size_t confirmed_length);
 
+  views::Label* index_label_ = nullptr;
   // The suggestion label renders suggestions.
   views::StyledLabel* suggestion_label_ = nullptr;
   // The annotation label renders annotations.
   views::Label* annotation_label_ = nullptr;
 
   int suggestion_width_ = 0;
+  int index_width_ = 0;
+  bool highlighted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionView);
 };

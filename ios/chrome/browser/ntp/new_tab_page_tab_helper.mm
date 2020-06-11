@@ -37,35 +37,32 @@ static const size_t kMaximumIgnoreLoadRequestsTime = 10;
 }  // namespace
 
 // static
-void NewTabPageTabHelper::CreateForWebState(
-    web::WebState* web_state,
-    id<NewTabPageTabHelperDelegate> delegate) {
+void NewTabPageTabHelper::CreateForWebState(web::WebState* web_state) {
   DCHECK(web_state);
   if (!FromWebState(web_state)) {
     web_state->SetUserData(
-        UserDataKey(),
-        base::WrapUnique(new NewTabPageTabHelper(web_state, delegate)));
+        UserDataKey(), base::WrapUnique(new NewTabPageTabHelper(web_state)));
   }
 }
 
 NewTabPageTabHelper::~NewTabPageTabHelper() = default;
 
-NewTabPageTabHelper::NewTabPageTabHelper(
-    web::WebState* web_state,
-    id<NewTabPageTabHelperDelegate> delegate)
-    : delegate_(delegate), web_state_(web_state) {
-  DCHECK(delegate);
-
+NewTabPageTabHelper::NewTabPageTabHelper(web::WebState* web_state)
+    : web_state_(web_state) {
   web_state->AddObserver(this);
+}
 
-  active_ = IsNTPURL(web_state->GetVisibleURL());
+void NewTabPageTabHelper::SetDelegate(
+    id<NewTabPageTabHelperDelegate> delegate) {
+  delegate_ = delegate;
+  active_ = IsNTPURL(web_state_->GetVisibleURL());
   if (active_) {
     UpdateItem(web_state_->GetNavigationManager()->GetPendingItem());
     [delegate_ newTabPageHelperDidChangeVisibility:this forWebState:web_state_];
 
     // If about://newtab is currently loading but has not yet committed, block
     // loads until it does commit.
-    if (!IsNTPURL(web_state->GetLastCommittedURL())) {
+    if (!IsNTPURL(web_state_->GetLastCommittedURL())) {
       EnableIgnoreLoadRequests();
     }
   }

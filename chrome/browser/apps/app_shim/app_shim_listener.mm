@@ -63,8 +63,7 @@ AppShimListener::~AppShimListener() {
         FROM_HERE,
         {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile), version_path,
-                       false));
+        base::BindOnce(base::GetDeleteFileCallback(), version_path));
   }
 }
 

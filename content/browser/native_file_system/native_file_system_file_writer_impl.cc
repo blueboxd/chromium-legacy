@@ -326,8 +326,7 @@ void NativeFileSystemFileWriterImpl::DoAfterWriteCheck(
     // swap file and invoke the callback.
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock()},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile), swap_path,
-                       /*recursive=*/false));
+        base::BindOnce(base::GetDeleteFileCallback(), swap_path));
     std::move(callback).Run(native_file_system_error::FromStatus(
         NativeFileSystemStatus::kOperationAborted,
         "Failed to perform Safe Browsing check."));
@@ -367,8 +366,7 @@ void NativeFileSystemFileWriterImpl::DidAfterWriteCheck(
   // failed.
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock()},
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile), swap_path,
-                     /*recursive=*/false));
+      base::BindOnce(base::GetDeleteFileCallback(), swap_path));
   std::move(callback).Run(native_file_system_error::FromStatus(
       NativeFileSystemStatus::kOperationAborted,
       "Write operation blocked by Safe Browsing."));

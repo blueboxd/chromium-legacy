@@ -72,12 +72,6 @@ class AppShortcutLauncherItemController : public ash::ShelfItemDelegate,
   std::vector<content::WebContents*> GetAppWebContents();
   std::vector<Browser*> GetAppBrowsers();
 
-  // Activate the browser with the given |content| and show the associated tab,
-  // or minimize the browser if it is already active. Returns the action
-  // performed by activating the content.
-  ash::ShelfAction ActivateContentOrMinimize(content::WebContents* content,
-                                             bool allow_minimize);
-
   // If an owned item is already active, this function advances to the next item
   // (or bounce the browser if there is only one item) and returns a shelf
   // action. Otherwise, it returns nullopt.

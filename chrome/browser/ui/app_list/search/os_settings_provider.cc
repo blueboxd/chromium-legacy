@@ -134,6 +134,20 @@ OsSettingsResult::OsSettingsResult(
   } else if (result->type != SettingsResultType::kSection) {
     SetDetails(hierarchy.back());
   }
+
+  // Manually build the accessible name for the search result, in a way that
+  // parallels the regular accessible names set by
+  // SearchResultBaseView::ComputeAccessibleName.
+  base::string16 accessible_name = title();
+  if (!details().empty()) {
+    accessible_name += base::ASCIIToUTF16(", ");
+    accessible_name += details();
+  }
+  accessible_name += base::ASCIIToUTF16(", ");
+  // The first element in the settings hierarchy is always the top-level
+  // localized name of the Settings app.
+  accessible_name += hierarchy[0];
+  SetAccessibleName(accessible_name);
 }
 
 OsSettingsResult::~OsSettingsResult() = default;

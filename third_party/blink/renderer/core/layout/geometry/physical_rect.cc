@@ -13,15 +13,6 @@
 
 namespace blink {
 
-LogicalRect PhysicalRect::ConvertToLogical(WritingMode mode,
-                                           TextDirection direction,
-                                           PhysicalSize outer_size,
-                                           PhysicalSize inner_size) const {
-  return LogicalRect(
-      offset.ConvertToLogical(mode, direction, outer_size, inner_size),
-      size.ConvertToLogical(mode));
-}
-
 bool PhysicalRect::Contains(const PhysicalRect& other) const {
   return offset.left <= other.offset.left && offset.top <= other.offset.top &&
          Right() >= other.Right() && Bottom() >= other.Bottom();

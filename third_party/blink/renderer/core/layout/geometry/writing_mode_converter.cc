@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,10 +33,9 @@ LogicalOffset WritingModeConverter::SlowToLogical(
             outer_size_.height - offset.top - inner_size.height, offset.left);
       }
       return LogicalOffset(offset.top, offset.left);
-    default:
-      NOTREACHED();
-      return LogicalOffset();
   }
+  NOTREACHED();
+  return LogicalOffset();
 }
 
 PhysicalOffset WritingModeConverter::SlowToPhysical(
@@ -71,10 +70,21 @@ PhysicalOffset WritingModeConverter::SlowToPhysical(
             outer_size_.height - offset.inline_offset - inner_size.height);
       }
       return PhysicalOffset(offset.block_offset, offset.inline_offset);
-    default:
-      NOTREACHED();
-      return PhysicalOffset();
   }
+  NOTREACHED();
+  return PhysicalOffset();
+}
+
+LogicalRect WritingModeConverter::SlowToLogical(
+    const PhysicalRect& rect) const {
+  return LogicalRect(SlowToLogical(rect.offset, rect.size),
+                     ToLogical(rect.size));
+}
+
+PhysicalRect WritingModeConverter::SlowToPhysical(
+    const LogicalRect& rect) const {
+  const PhysicalSize size = ToPhysical(rect.size);
+  return PhysicalRect(SlowToPhysical(rect.offset, size), size);
 }
 
 }  // namespace blink

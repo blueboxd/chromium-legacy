@@ -238,6 +238,26 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     return resource()->TextureTarget();
   }
 
+  bool WritePixels(const SkImageInfo& orig_info,
+                   const void* pixels,
+                   size_t row_bytes,
+                   int x,
+                   int y) override {
+    if (!use_oop_rasterization_) {
+      return CanvasResourceProvider::WritePixels(orig_info, pixels, row_bytes,
+                                                 x, y);
+    }
+
+    TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::WritePixels");
+    if (IsGpuContextLost())
+      return false;
+
+    RasterInterface()->WritePixels(
+        GetBackingMailboxForOverwrite(kOrderingBarrier), x, y,
+        GetBackingTextureTarget(), row_bytes, orig_info, pixels);
+    return true;
+  }
+
   scoped_refptr<CanvasResource> CreateResource() final {
     TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::CreateResource");
     if (IsGpuContextLost())

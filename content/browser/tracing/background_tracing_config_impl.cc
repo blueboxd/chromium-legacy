@@ -33,6 +33,7 @@ const char kConfigModeSystem[] = "SYSTEM_TRACING_MODE";
 
 const char kConfigScenarioName[] = "scenario_name";
 const char kConfigTraceBrowserProcessOnly[] = "trace_browser_process_only";
+const char kEnabledDataSourcesKey[] = "enabled_data_sources";
 
 const char kConfigCategoryKey[] = "category";
 const char kConfigCustomCategoriesKey[] = "custom_categories";
@@ -202,6 +203,9 @@ void BackgroundTracingConfigImpl::IntoDict(base::DictionaryValue* dict) {
       dict->SetKey(kConfigTraceConfigKey, std::move(*trace_config));
     }
   }
+  if (!enabled_data_sources_.empty()) {
+    dict->SetString(kEnabledDataSourcesKey, enabled_data_sources_);
+  }
 
   switch (tracing_mode()) {
     case BackgroundTracingConfigImpl::PREEMPTIVE:
@@ -361,6 +365,10 @@ BackgroundTracingConfigImpl::PreemptiveFromDict(
       return nullptr;
     }
   }
+  if (const std::string* enabled_data_sources =
+          dict->FindStringKey(kEnabledDataSourcesKey)) {
+    config->enabled_data_sources_ = *enabled_data_sources;
+  }
 
   const base::ListValue* configs_list = nullptr;
   if (!dict->GetList(kConfigsKey, &configs_list))
@@ -406,6 +414,11 @@ BackgroundTracingConfigImpl::ReactiveFromDict(
       return nullptr;
     }
     has_global_categories = true;
+  }
+
+  if (const std::string* enabled_data_sources =
+          dict->FindStringKey(kEnabledDataSourcesKey)) {
+    config->enabled_data_sources_ = *enabled_data_sources;
   }
 
   const base::ListValue* configs_list = nullptr;

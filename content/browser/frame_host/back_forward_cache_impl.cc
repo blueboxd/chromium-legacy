@@ -397,6 +397,10 @@ void BackForwardCacheImpl::CanStoreRenderFrameHost(
         BackForwardCacheMetrics::NotRestoredReason::kSubframeIsNavigating);
   }
 
+  // Do not store documents if they have inner WebContents.
+  if (rfh->IsOuterDelegateFrame())
+    result->No(BackForwardCacheMetrics::NotRestoredReason::kHaveInnerContents);
+
   for (size_t i = 0; i < rfh->child_count(); i++)
     CanStoreRenderFrameHost(result, rfh->child_at(i)->current_frame_host());
 }

@@ -40,6 +40,7 @@
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
 #import "ios/chrome/browser/metrics/pageload_foreground_duration_tab_helper.h"
 #import "ios/chrome/browser/network_activity/network_activity_indicator_tab_helper.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/open_in/open_in_tab_helper.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
@@ -149,6 +150,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
 
   ImageFetchTabHelper::CreateForWebState(web_state);
 
+  NewTabPageTabHelper::CreateForWebState(web_state);
   OpenInTabHelper::CreateForWebState(web_state);
   ChromeBrowserState* original_browser_state =
       browser_state->GetOriginalChromeBrowserState();

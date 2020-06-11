@@ -202,7 +202,8 @@ class TabHelperFakeWebStateListDelegate : public FakeWebStateListDelegate {
     TabIdTabHelper::CreateForWebState(web_state);
     // Create NTPTabHelper to ensure VisibleURL is set to kChromeUINewTabURL.
     id delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
-    NewTabPageTabHelper::CreateForWebState(web_state, delegate);
+    NewTabPageTabHelper::CreateForWebState(web_state);
+    NewTabPageTabHelper::FromWebState(web_state)->SetDelegate(delegate);
     PagePlaceholderTabHelper::CreateForWebState(web_state);
   }
 };

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 
 #include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
+#include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/line/line_orientation_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -58,8 +59,8 @@ void NGInkOverflow::ComputeTextInkOverflow(
   }
 
   PhysicalRect local_ink_overflow =
-      LogicalRect(ink_overflow)
-          .ConvertToPhysical(writing_mode, TextDirection::kLtr, size);
+      WritingModeConverter({writing_mode, TextDirection::kLtr}, size)
+          .ToPhysical(LogicalRect(ink_overflow));
 
   // Uniting the frame rect ensures that non-ink spaces such side bearings, or
   // even space characters, are included in the visual rect for decorations.

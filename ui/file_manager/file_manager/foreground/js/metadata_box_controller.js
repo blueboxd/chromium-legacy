@@ -8,11 +8,13 @@
  */
 class MetadataBoxController {
   /**
-   * @param{!MetadataModel} metadataModel
-   * @param{!QuickViewModel} quickViewModel
-   * @param{!FileMetadataFormatter} fileMetadataFormatter
+   * @param {!MetadataModel} metadataModel
+   * @param {!QuickViewModel} quickViewModel
+   * @param {!FileMetadataFormatter} fileMetadataFormatter
+   * @param {!VolumeManager} volumeManager
    */
-  constructor(metadataModel, quickViewModel, fileMetadataFormatter) {
+  constructor(
+      metadataModel, quickViewModel, fileMetadataFormatter, volumeManager) {
     /**
      * @type {!MetadataModel}
      * @private
@@ -42,6 +44,12 @@ class MetadataBoxController {
      * @private
      */
     this.fileMetadataFormatter_ = fileMetadataFormatter;
+
+    /**
+     * @type {!VolumeManager}
+     * @private
+     */
+    this.volumeManager_ = volumeManager;
 
     /**
      * @type {Entry}
@@ -155,10 +163,15 @@ class MetadataBoxController {
       const sniffMimeType = (item.externalFileUrl || item.alternateUrl) ?
           'contentMimeType' :
           'mediaMimeType';
-      this.metadataModel_.get([entry], [sniffMimeType]).then(items => {
-        this.metadataBox_.mediaMimeType = items[0][sniffMimeType] || '';
-        this.metadataBox_.metadataRendered('mime');
-      });
+      this.metadataModel_.get([entry], [sniffMimeType])
+          .then(items => {
+            this.metadataBox_.mediaMimeType = items[0][sniffMimeType] || '';
+            this.metadataBox_.metadataRendered('mime');
+          })
+          .then(() => {
+            this.metadataBox_.fileLocation = this.getFileLocationLabel_(entry);
+            this.metadataBox_.metadataRendered('location');
+          });
     }
 
     if (['image', 'video', 'audio'].includes(type)) {
@@ -284,6 +297,18 @@ class MetadataBoxController {
       this.metadataBox_.isSizeLoading = false;
       this.metadataBox_.metadataRendered('size');
     });
+  }
+
+  /**
+   * Returns a label to display the file's location.
+   * @param {!Entry} entry
+   * @return {string}
+   * @private
+   */
+  getFileLocationLabel_(entry) {
+    const components =
+        PathComponent.computeComponentsFromEntry(entry, this.volumeManager_);
+    return components.map(c => c.name).join('/');
   }
 }
 

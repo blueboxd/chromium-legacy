@@ -22,7 +22,8 @@
 #include "chrome/chrome_cleaner/test/test_util.h"
 #include "components/chrome_cleaner/public/proto/chrome_prompt.pb.h"
 #include "components/chrome_cleaner/test/test_name_helper.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
@@ -87,8 +88,9 @@ struct TestConfig {
 // Class that lives in the parent process and handles that side of the IPC.
 class MockChromePrompt : public mojom::ChromePrompt {
  public:
-  MockChromePrompt(TestConfig test_config, mojom::ChromePromptRequest request)
-      : test_config_(test_config), binding_(this, std::move(request)) {}
+  MockChromePrompt(TestConfig test_config,
+                   mojo::PendingReceiver<mojom::ChromePrompt> receiver)
+      : test_config_(test_config), receiver_(this, std::move(receiver)) {}
 
   ~MockChromePrompt() override = default;
 
@@ -119,11 +121,11 @@ class MockChromePrompt : public mojom::ChromePrompt {
   // |parent_disconnected|.
   void CloseConnectionIf(ParentDisconnected parent_disconnected) {
     if (test_config_.expected_parent_disconnected == parent_disconnected)
-      binding_.Close();
+      receiver_.reset();
   }
 
   TestConfig test_config_;
-  mojo::Binding<chrome_cleaner::mojom::ChromePrompt> binding_;
+  mojo::Receiver<chrome_cleaner::mojom::ChromePrompt> receiver_{this};
 };
 
 class ChromePromptIPCParentProcess : public ParentProcess {
@@ -144,9 +146,9 @@ class ChromePromptIPCParentProcess : public ParentProcess {
 
  protected:
   void CreateImpl(mojo::ScopedMessagePipeHandle mojo_pipe) override {
-    mojom::ChromePromptRequest chrome_prompt_request(std::move(mojo_pipe));
     mock_chrome_prompt_ = std::make_unique<MockChromePrompt>(
-        test_config_, std::move(chrome_prompt_request));
+        test_config_,
+        mojo::PendingReceiver<mojom::ChromePrompt>(std::move(mojo_pipe)));
     // At this point, the child process should be connected.
     mock_chrome_prompt_->CloseConnectionIf(ParentDisconnected::kOnStartup);
   }

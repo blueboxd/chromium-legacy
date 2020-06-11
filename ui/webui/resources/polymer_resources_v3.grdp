@@ -68,11 +68,6 @@
   <structure name="IDR_POLYMER_3_0_IRON_ICON_IRON_ICON_JS"
              file="../../../third_party/polymer/v3_0/components-chromium/iron-icon/iron-icon.js"
              type="chrome_html" />
-  <if expr="chromeos">
-    <structure name="IDR_POLYMER_3_0_IRON_INPUT_IRON_INPUT_JS"
-               file="../../../third_party/polymer/v3_0/components-chromium/iron-input/iron-input.js"
-               type="chrome_html" />
-  </if>
   <structure name="IDR_POLYMER_3_0_IRON_LIST_IRON_LIST_JS"
              file="../../../third_party/polymer/v3_0/components-chromium/iron-list/iron-list.js"
              type="chrome_html" />
@@ -136,9 +131,6 @@
              file="../../../third_party/polymer/v3_0/components-chromium/iron-test-helpers/mock-interactions.js"
              type="chrome_html" />
   <if expr="chromeos">
-    <structure name="IDR_POLYMER_3_0_IRON_VALIDATABLE_BEHAVIOR_IRON_VALIDATABLE_BEHAVIOR_JS"
-               file="../../../third_party/polymer/v3_0/components-chromium/iron-validatable-behavior/iron-validatable-behavior.js"
-               type="chrome_html" />
     <structure name="IDR_POLYMER_3_0_NEON_ANIMATION_ANIMATIONS_FADE_IN_ANIMATION_JS"
                file="../../../third_party/polymer/v3_0/components-chromium/neon-animation/animations/fade-in-animation.js"
                type="chrome_html" />

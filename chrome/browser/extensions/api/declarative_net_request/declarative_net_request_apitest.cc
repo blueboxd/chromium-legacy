@@ -58,6 +58,10 @@ IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest,
   ASSERT_TRUE(RunExtensionTest("on_rules_matched_debug")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, ModifyHeaders) {
+  ASSERT_TRUE(RunExtensionTest("modify_headers")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, GetMatchedRules) {
   ASSERT_TRUE(RunExtensionTest("get_matched_rules")) << message_;
 }

@@ -75,6 +75,7 @@ source_set("chromeos") {
     "//chrome/browser/apps/platform_apps",
     "//chrome/browser/apps/platform_apps/api",
     "//chrome/browser/chromeos/child_accounts/time_limits/web_time_limit_error_page",
+    "//chrome/browser/chromeos/local_search_service:mojom",
     "//chrome/browser/chromeos/net/network_health/public/mojom",
     "//chrome/browser/chromeos/power/ml/smart_dim",
     "//chrome/browser/devtools",

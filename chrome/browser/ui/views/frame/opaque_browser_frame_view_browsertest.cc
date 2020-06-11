@@ -17,6 +17,7 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/views/test/test_views.h"
 
 // Tests web-app windows that use the OpaqueBrowserFrameView implementation
@@ -104,13 +105,35 @@ IN_PROC_BROWSER_TEST_F(WebAppOpaqueBrowserFrameViewTest, NoThemeColor) {
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// The app theme color should be ignored in system theme mode.
 IN_PROC_BROWSER_TEST_F(WebAppOpaqueBrowserFrameViewTest, SystemThemeColor) {
   SetThemeMode(ThemeMode::kSystem);
-  // The color here should be ignored in system mode.
-  ASSERT_TRUE(InstallAndLaunchWebApp(SK_ColorRED));
 
+  // Read unthemed native frame color.
+  SkColor native_frame_color =
+      BrowserView::GetBrowserViewForBrowser(browser())
+          ->frame()
+          ->GetFrameView()
+          ->GetFrameColor(BrowserFrameActiveState::kActive);
+  SkColor expected_caption_color =
+      color_utils::GetColorWithMaxContrast(native_frame_color);
+
+  // Install web app with theme color contrasting against native frame color.
+  SkColor theme_color =
+      color_utils::GetColorWithMaxContrast(native_frame_color);
+  EXPECT_NE(color_utils::IsDark(theme_color),
+            color_utils::IsDark(native_frame_color));
+  ASSERT_TRUE(InstallAndLaunchWebApp(theme_color));
+
+  // App theme color should be ignored in favor of native system theme.
+  EXPECT_EQ(opaque_browser_frame_view_->GetFrameColor(
+                BrowserFrameActiveState::kActive),
+            native_frame_color);
+  EXPECT_EQ(opaque_browser_frame_view_->GetCaptionColor(
+                BrowserFrameActiveState::kActive),
+            expected_caption_color);
   EXPECT_EQ(web_app_frame_toolbar_->active_color_for_testing(),
-            gfx::kGoogleGrey900);
+            expected_caption_color);
 }
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 

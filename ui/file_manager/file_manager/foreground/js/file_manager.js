@@ -592,7 +592,8 @@ class FileManager extends cr.EventTarget {
     this.quickViewUma_ =
         new QuickViewUma(assert(this.volumeManager_), assert(this.dialogType));
     const metadataBoxController = new MetadataBoxController(
-        this.metadataModel_, this.quickViewModel_, this.fileMetadataFormatter_);
+        this.metadataModel_, this.quickViewModel_, this.fileMetadataFormatter_,
+        assert(this.volumeManager_));
     this.quickViewController_ = new QuickViewController(
         this, assert(this.metadataModel_), assert(this.selectionHandler_),
         assert(this.ui_.listContainer), assert(this.ui_.selectionMenuButton),

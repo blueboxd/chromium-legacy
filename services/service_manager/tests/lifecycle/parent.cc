@@ -7,7 +7,8 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -22,8 +23,9 @@ namespace {
 class Parent : public service_manager::Service,
                public service_manager::test::mojom::Parent {
  public:
-  explicit Parent(service_manager::mojom::ServiceRequest request)
-      : service_binding_(this, std::move(request)) {
+  explicit Parent(
+      mojo::PendingReceiver<service_manager::mojom::Service> receiver)
+      : service_binding_(this, std::move(receiver)) {
     registry_.AddInterface<service_manager::test::mojom::Parent>(
         base::BindRepeating(&Parent::Create, base::Unretained(this)));
   }
@@ -38,8 +40,9 @@ class Parent : public service_manager::Service,
     registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
-  void Create(service_manager::test::mojom::ParentRequest request) {
-    parent_bindings_.AddBinding(this, std::move(request));
+  void Create(
+      mojo::PendingReceiver<service_manager::test::mojom::Parent> receiver) {
+    parent_receivers_.Add(this, std::move(receiver));
   }
 
   // service_manager::test::mojom::Parent:
@@ -59,7 +62,7 @@ class Parent : public service_manager::Service,
 
   service_manager::ServiceBinding service_binding_;
   service_manager::BinderRegistry registry_;
-  mojo::BindingSet<service_manager::test::mojom::Parent> parent_bindings_;
+  mojo::ReceiverSet<service_manager::test::mojom::Parent> parent_receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(Parent);
 };

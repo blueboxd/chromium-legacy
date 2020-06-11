@@ -962,7 +962,7 @@ void InstantService::RemoveLocalBackgroundImageCopy() {
       chrome::kChromeSearchLocalNtpBackgroundFilename);
   base::ThreadPool::PostTask(
       FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
-      base::BindOnce(IgnoreResult(&base::DeleteFile), path, false));
+      base::BindOnce(base::GetDeleteFileCallback(), path));
 }
 
 void InstantService::AddValidBackdropUrlForTesting(const GURL& url) const {

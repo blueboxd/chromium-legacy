@@ -200,8 +200,9 @@ class AbstractLineBox {
       if (only_editable_leaves && !IsEditable(cursor))
         continue;
 
-      const LogicalRect fragment_logical_rect = line.Current().ConvertToLogical(
-          cursor.Current().RectInContainerBlock());
+      const LogicalRect fragment_logical_rect =
+          line.Current().ConvertChildToLogical(
+              cursor.Current().RectInContainerBlock());
       const LayoutUnit inline_min = fragment_logical_rect.offset.inline_offset;
       const LayoutUnit inline_max = fragment_logical_rect.offset.inline_offset +
                                     fragment_logical_rect.size.inline_size;

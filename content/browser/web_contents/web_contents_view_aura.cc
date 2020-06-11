@@ -522,8 +522,7 @@ void WebContentsViewAura::AsyncDropTempFileDeleter::DeleteFileAsync(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile), std::move(path),
-                     false));
+      base::BindOnce(base::GetDeleteFileCallback(), std::move(path)));
 }
 #endif
 

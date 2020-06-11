@@ -422,12 +422,14 @@ bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
     if (!GetOrCreateResourceProvider())
       return false;
   }
-
-  last_record_tainted_by_write_pixels_ = true;
   have_recorded_draw_commands_ = false;
 
-  ResourceProvider()->WritePixels(orig_info, pixels, row_bytes, x, y);
-  return true;
+  bool wrote_pixels =
+      ResourceProvider()->WritePixels(orig_info, pixels, row_bytes, x, y);
+  if (wrote_pixels)
+    last_record_tainted_by_write_pixels_ = true;
+
+  return wrote_pixels;
 }
 
 void Canvas2DLayerBridge::SkipQueuedDrawCommands() {

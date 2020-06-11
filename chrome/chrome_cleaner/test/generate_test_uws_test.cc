@@ -33,10 +33,10 @@ TEST(GenerateTestUwsTest, WriteTestUwS) {
   ASSERT_TRUE(base::DeleteFile(uws_file_b, /*recursive=*/false));
 
   // Delete the output files on exit, including on early exit.
-  base::ScopedClosureRunner delete_uws_file_a(base::BindOnce(
-      base::IgnoreResult(&base::DeleteFile), uws_file_a, /*recursive=*/false));
-  base::ScopedClosureRunner delete_uws_file_b(base::BindOnce(
-      base::IgnoreResult(&base::DeleteFile), uws_file_b, /*recursive=*/false));
+  base::ScopedClosureRunner delete_uws_file_a(
+      base::BindOnce(base::GetDeleteFileCallback(), uws_file_a));
+  base::ScopedClosureRunner delete_uws_file_b(
+      base::BindOnce(base::GetDeleteFileCallback(), uws_file_b));
 
   // Expect generate_test_uws to finish quickly with exit code 0 (success).
   base::Process process(base::LaunchProcess(

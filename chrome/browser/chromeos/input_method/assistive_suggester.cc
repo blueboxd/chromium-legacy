@@ -8,10 +8,13 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 
@@ -19,6 +22,21 @@ namespace {
 
 const char kMaxTextBeforeCursorLength = 50;
 const char kKeydown[] = "keydown";
+
+const char* kWhitelistDomainsForPersonalInfoSuggester[] = {
+    "amazon.com", "facebook.com", "instagram.com", "netflix.com",
+    "twitch.tv",  "twitter.com",  "youtube.com",
+};
+
+const char* kWhitelistDomainsForEmojiSuggester[] = {
+    "amazon.com", "facebook.com", "instagram.com", "netflix.com",
+    "twitch.tv",  "twitter.com",  "youtube.com",
+};
+
+const char* kTestUrls[] = {
+    "e14s-test",
+    "simple_textarea.html",
+};
 
 void RecordAssistiveMatch(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Match", type);
@@ -34,6 +52,33 @@ void RecordAssistiveCoverage(AssistiveType type) {
 
 void RecordAssistiveSuccess(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Success", type);
+}
+
+bool IsTestUrl(GURL url) {
+  std::string filename = url.ExtractFileName();
+  for (const char* test_url : kTestUrls) {
+    if (base::CompareCaseInsensitiveASCII(filename, test_url) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool IsWhitelistedUrl(const char* whitelistDomains[], size_t length) {
+  Browser* browser = chrome::FindLastActive();
+  if (browser && browser->window()->IsActive()) {
+    GURL url = browser->tab_strip_model()
+                   ->GetActiveWebContents()
+                   ->GetLastCommittedURL();
+    if (IsTestUrl(url))
+      return true;
+    for (size_t i = 0; i < length; i++) {
+      if (url.DomainIs(whitelistDomains[i])) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -173,6 +218,9 @@ bool AssistiveSuggester::Suggest(const base::string16& text,
       return current_suggester_->Suggest(text_before_cursor);
     }
     if (IsAssistPersonalInfoEnabled() &&
+        IsWhitelistedUrl(
+            kWhitelistDomainsForPersonalInfoSuggester,
+            base::size(kWhitelistDomainsForPersonalInfoSuggester)) &&
         personal_info_suggester_.Suggest(text_before_cursor)) {
       current_suggester_ = &personal_info_suggester_;
       if (personal_info_suggester_.IsFirstShown()) {
@@ -180,6 +228,9 @@ bool AssistiveSuggester::Suggest(const base::string16& text,
       }
       return true;
     } else if (IsEmojiSuggestAdditionEnabled() &&
+               IsWhitelistedUrl(
+                   kWhitelistDomainsForEmojiSuggester,
+                   base::size(kWhitelistDomainsForEmojiSuggester)) &&
                emoji_suggester_.Suggest(text_before_cursor)) {
       current_suggester_ = &emoji_suggester_;
       RecordAssistiveCoverage(current_suggester_->GetProposeActionType());

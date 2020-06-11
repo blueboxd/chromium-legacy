@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/tracing/perfetto/consumer_host.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"

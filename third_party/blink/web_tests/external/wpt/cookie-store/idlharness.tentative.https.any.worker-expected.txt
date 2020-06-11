@@ -1,8 +1,6 @@
 This is a testharness.js-based test.
 PASS idl_test setup
-FAIL idl_test validation Validation error at line 10 in cookie-store, inside `argument options`:
-?> get(CookieStoreGetOptions options);
-                             ^ Dictionary argument must be optional if it has no required fields
+PASS idl_test validation
 PASS Partial interface ServiceWorkerRegistration: original interface defined
 PASS Partial interface ServiceWorkerRegistration: valid exposure set
 PASS Partial interface ServiceWorkerRegistration: member names are unique

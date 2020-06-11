@@ -63,7 +63,7 @@ void PendingLogsService::ScheduleLogsUploadTask(
 
   // To get rid of the temporary file if we are not going to use it.
   base::ScopedClosureRunner delete_file_closure(
-      base::BindOnce(IgnoreResult(&base::DeleteFile), temp_file_path, false));
+      base::BindOnce(base::GetDeleteFileCallback(), temp_file_path));
 
   if (base::WriteFile(temp_file_path, chrome_cleaner_report_string.c_str(),
                       chrome_cleaner_report_string.size()) <= 0) {

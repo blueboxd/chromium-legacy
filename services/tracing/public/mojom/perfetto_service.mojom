@@ -17,6 +17,8 @@ const string kSystemTraceDataSourceName = "org.chromium.trace_system";
 const string kArcTraceDataSourceName = "org.chromium.trace_arc";
 const string kSamplerProfilerSourceName = "org.chromium.sampler_profiler";
 const string kJavaHeapProfilerSourceName = "org.chromium.java_heap_profiler";
+const string kReachedCodeProfilerSourceName =
+    "org.chromium.reached_code_profiler";
 
 // Brief description of the flow: There's a per-process ProducerClient which
 // connects to the central PerfettoService and establishes a two-way connection

@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

@@ -238,13 +238,9 @@ HistogramBase* SparseHistogram::DeserializeInfoImpl(PickleIterator* iter) {
 }
 
 void SparseHistogram::GetParameters(DictionaryValue* params) const {
-  // TODO(kaiwang): Implement. (See HistogramBase::WriteJSON.)
-}
-
-void SparseHistogram::GetCountAndBucketData(Count* count,
-                                            int64_t* sum,
-                                            ListValue* buckets) const {
-  // TODO(kaiwang): Implement. (See HistogramBase::WriteJSON.)
+  // Unlike Histogram::GetParameters, only set the type here, and no other
+  // params. The other params do not make sense for sparse histograms.
+  params->SetString("type", HistogramTypeToString(GetHistogramType()));
 }
 
 void SparseHistogram::WriteAsciiBody(const HistogramSamples& snapshot,

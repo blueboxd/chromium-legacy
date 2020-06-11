@@ -314,12 +314,9 @@ class BASE_EXPORT Histogram : public HistogramBase {
                                const uint32_t i,
                                std::string* output) const;
 
-  // WriteJSON calls these.
+  // Writes the type, min, max, and bucket count information of the histogram in
+  // |params|.
   void GetParameters(DictionaryValue* params) const override;
-
-  void GetCountAndBucketData(Count* count,
-                             int64_t* sum,
-                             ListValue* buckets) const override;
 
   // Samples that have not yet been logged with SnapshotDelta().
   std::unique_ptr<SampleVectorBase> unlogged_samples_;

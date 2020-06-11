@@ -23,6 +23,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -47,6 +48,7 @@
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_server_iterator.h"
 #include "net/dns/dns_session.h"
+#include "net/dns/dns_udp_tracker.h"
 #include "net/dns/dns_util.h"
 #include "net/dns/public/dns_over_https_server_config.h"
 #include "net/dns/public/dns_protocol.h"
@@ -186,11 +188,13 @@ class DnsUDPAttempt : public DnsAttempt {
  public:
   DnsUDPAttempt(size_t server_index,
                 std::unique_ptr<DnsSession::SocketLease> socket_lease,
-                std::unique_ptr<DnsQuery> query)
+                std::unique_ptr<DnsQuery> query,
+                DnsUdpTracker* udp_tracker)
       : DnsAttempt(server_index),
         next_state_(STATE_NONE),
         socket_lease_(std::move(socket_lease)),
-        query_(std::move(query)) {}
+        query_(std::move(query)),
+        udp_tracker_(udp_tracker) {}
 
   // DnsAttempt methods.
 
@@ -199,6 +203,11 @@ class DnsUDPAttempt : public DnsAttempt {
     callback_ = std::move(callback);
     start_time_ = base::TimeTicks::Now();
     next_state_ = STATE_SEND_QUERY;
+
+    IPEndPoint local_address;
+    if (socket_lease_->socket()->GetLocalAddress(&local_address) == OK)
+      udp_tracker_->RecordQuery(local_address.port(), query_->id());
+
     return DoLoop(OK);
   }
 
@@ -294,7 +303,11 @@ class DnsUDPAttempt : public DnsAttempt {
       return rv;
 
     DCHECK(rv);
-    if (!response_->InitParse(rv, *query_))
+    bool parse_result = response_->InitParse(rv, *query_);
+    if (response_->id())
+      udp_tracker_->RecordResponseId(query_->id(), response_->id().value());
+
+    if (!parse_result)
       return ERR_DNS_MALFORMED_RESPONSE;
     if (response_->flags() & dns_protocol::kFlagTC)
       return ERR_DNS_SERVER_REQUIRES_TCP;
@@ -317,6 +330,10 @@ class DnsUDPAttempt : public DnsAttempt {
 
   std::unique_ptr<DnsSession::SocketLease> socket_lease_;
   std::unique_ptr<DnsQuery> query_;
+
+  // Should be owned by the DnsSession, to which the transaction should own a
+  // reference.
+  DnsUdpTracker* const udp_tracker_;
 
   std::unique_ptr<DnsResponse> response_;
 
@@ -1202,8 +1219,9 @@ class DnsTransactionImpl : public DnsTransaction,
 
     bool got_socket = !!lease.get();
 
-    DnsUDPAttempt* attempt = new DnsUDPAttempt(
-        non_doh_server_index, std::move(lease), std::move(query));
+    DnsUDPAttempt* attempt =
+        new DnsUDPAttempt(non_doh_server_index, std::move(lease),
+                          std::move(query), session_->udp_tracker());
 
     attempts_.push_back(base::WrapUnique(attempt));
     ++attempts_count_;

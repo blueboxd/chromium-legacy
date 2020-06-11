@@ -1001,12 +1001,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                                         mojo::GenericPendingReceiver receiver) {
   }
 
-  // Called when RenderFrameHostImpl connects to the Media service. Expose
-  // interfaces to the service using |registry|.
-  virtual void ExposeInterfacesToMediaService(
-      service_manager::BinderRegistry* registry,
-      RenderFrameHost* render_frame_host) {}
-
   // The Media Service can run in many different types of configurations
   // (typically in the GPU process or its own isolated process), but some
   // clients want an additional dedicated instance to use for specific

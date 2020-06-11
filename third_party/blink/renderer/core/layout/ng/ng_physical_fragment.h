@@ -25,9 +25,9 @@ class FragmentData;
 class Node;
 class NGFragmentBuilder;
 class NGInlineItem;
-class PaintLayer;
-
 class NGPhysicalFragment;
+class PaintLayer;
+struct LogicalRect;
 
 struct CORE_EXPORT NGPhysicalFragmentTraits {
   static void Destruct(const NGPhysicalFragment*);
@@ -338,14 +338,10 @@ class CORE_EXPORT NGPhysicalFragment
   // be confused with the CSS 'direction' property.
   TextDirection ResolvedDirection() const;
 
-  // Helper function to convert to |PhysicalRect| to |LogicalRect| with
-  // |Style().Direction()|
-  LogicalRect ConvertToLogical(const PhysicalRect& physical_rect,
-                               PhysicalSize inner_size) const;
-  LogicalRect ConvertToLogical(const PhysicalRect& physical_rect,
-                               TextDirection direction,
-                               PhysicalSize inner_size) const;
-  PhysicalRect ConvertToPhysical(const LogicalRect& logical_rect) const;
+  // Helper functions to convert between |PhysicalRect| and |LogicalRect| of a
+  // child.
+  LogicalRect ConvertChildToLogical(const PhysicalRect& physical_rect) const;
+  PhysicalRect ConvertChildToPhysical(const LogicalRect& logical_rect) const;
 
   // Utility functions for caret painting. Note that carets are painted as part
   // of the containing block's foreground.

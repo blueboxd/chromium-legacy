@@ -59,8 +59,7 @@ LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
     PhysicalRect line_rect =
         line_item->LineBoxFragment()->ScrollableOverflowForLine(
             container, container_style, *line_item, cursor);
-    return container.ConvertToLogical(line_rect, line_rect.size)
-        .BlockEndOffset();
+    return container.ConvertChildToLogical(line_rect).BlockEndOffset();
   }
 
   const NGPhysicalLineBoxFragment* last_line = nullptr;
@@ -77,7 +76,7 @@ LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
   PhysicalRect line_rect =
       last_line->ScrollableOverflow(container, container_style);
   line_rect.Move(last_line_offset);
-  return container.ConvertToLogical(line_rect, line_rect.size).BlockEndOffset();
+  return container.ConvertChildToLogical(line_rect).BlockEndOffset();
 }
 
 // Returns the logical top offset of the first line text, relative to
@@ -101,8 +100,7 @@ LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
     PhysicalRect line_rect =
         line_item->LineBoxFragment()->ScrollableOverflowForLine(
             container, container_style, *line_item, cursor);
-    return container.ConvertToLogical(line_rect, line_rect.size)
-        .offset.block_offset;
+    return container.ConvertChildToLogical(line_rect).offset.block_offset;
   }
 
   for (const auto& child_link : container.PostLayoutChildren()) {
@@ -110,8 +108,7 @@ LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
       PhysicalRect line_rect =
           line->ScrollableOverflow(container, container_style);
       line_rect.Move(child_link.offset);
-      return container.ConvertToLogical(line_rect, line_rect.size)
-          .offset.block_offset;
+      return container.ConvertChildToLogical(line_rect).offset.block_offset;
     }
   }
   return default_value;

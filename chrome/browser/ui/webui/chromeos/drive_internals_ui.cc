@@ -777,8 +777,7 @@ class LogsZipper : public download::AllDownloadItemNotifier::Observer {
   void CleanUp() {
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile), zip_path_,
-                       false));
+        base::BindOnce(base::GetDeleteFileCallback(), zip_path_));
     download_notifier_.reset();
     if (drive_internals_) {
       drive_internals_->OnZipDone();

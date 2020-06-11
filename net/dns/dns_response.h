@@ -169,6 +169,12 @@ class NET_EXPORT_PRIVATE DnsResponse {
   // if the response is constructed from a raw buffer.
   bool InitParseWithoutQuery(size_t nbytes);
 
+  // Does not require the response to be fully parsed and valid, but will return
+  // nullopt if the ID is unknown. The ID will only be known if the response is
+  // successfully constructed from data or if InitParse...() has been able to
+  // parse at least as far as the ID (not necessarily a fully successful parse).
+  base::Optional<uint16_t> id() const;
+
   // Returns true if response is valid, that is, after successful InitParse, or
   // after successful construction of a new response from data.
   bool IsValid() const;
@@ -220,6 +226,7 @@ class NET_EXPORT_PRIVATE DnsResponse {
   // Iterator constructed after InitParse positioned at the answer section.
   // It is never updated afterwards, so can be used in accessors.
   DnsRecordParser parser_;
+  bool id_available_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DnsResponse);
 };

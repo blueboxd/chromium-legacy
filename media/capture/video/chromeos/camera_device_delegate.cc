@@ -658,7 +658,8 @@ void CameraDeviceDelegate::ConfigureStreams(
       chrome_capture_params_.requested_format.frame_size.height();
   preview_stream->format =
       cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888;
-  preview_stream->usage = cros::mojom::GRALLOC_USAGE_HW_COMPOSER;
+  preview_stream->usage = cros::mojom::GRALLOC_USAGE_HW_COMPOSER |
+                          cros::mojom::GRALLOC_USAGE_HW_VIDEO_ENCODER;
   preview_stream->data_space = 0;
   preview_stream->rotation =
       cros::mojom::Camera3StreamRotation::CAMERA3_STREAM_ROTATION_0;

@@ -104,22 +104,6 @@
             ]
         }
     ],
-    "AndroidCopyImageAndClipboardImageSuggstions": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "AndroidCopyImageAndClipboardImageSuggstions",
-                    "enable_features": [
-                        "ContextMenuCopyImage",
-                        "OmniboxEnableClipboardProviderImageSuggestions"
-                    ]
-                }
-            ]
-        }
-    ],
     "AndroidDarkSearch": [
         {
             "platforms": [
@@ -1657,6 +1641,21 @@
                     "name": "ContentIndexingNTP",
                     "enable_features": [
                         "ContentIndexingNTP"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ContextMenuCopyImage": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ContextMenuCopyImage"
                     ]
                 }
             ]
@@ -4326,6 +4325,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "OmniboxContextMenuShowFullUrls"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OmniboxEnableClipboardProviderImageSuggestions": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OmniboxEnableClipboardProviderImageSuggestions"
                     ]
                 }
             ]

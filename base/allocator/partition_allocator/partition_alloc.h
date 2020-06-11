@@ -442,6 +442,15 @@ ALWAYS_INLINE bool IsManagedByPartitionAlloc(const void* address) {
 #endif
 }
 
+ALWAYS_INLINE bool IsManagedByPartitionAllocAndNotDirectMapped(
+    const void* address) {
+#if defined(ARCH_CPU_64_BITS)
+  return internal::PartitionAddressSpace::IsInNormalBucketPool(address);
+#else
+  return false;
+#endif
+}
+
 }  // namespace base
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_H_

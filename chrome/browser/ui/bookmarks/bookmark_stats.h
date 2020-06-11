@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_STATS_H_
 #define CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_STATS_H_
 
+#include "components/profile_metrics/browser_profile_type.h"
+
+class Profile;
+
 // This enum is used for the Bookmarks.EntryPoint histogram.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -44,7 +48,8 @@ enum BookmarkLaunchLocation {
 };
 
 // Records the launch of a bookmark for UMA purposes.
-void RecordBookmarkLaunch(BookmarkLaunchLocation location);
+void RecordBookmarkLaunch(BookmarkLaunchLocation location,
+                          profile_metrics::BrowserProfileType profile_type);
 
 // Records the user launching all bookmarks in a folder (via middle-click, etc.)
 // for UMA purposes.
@@ -55,5 +60,14 @@ void RecordBookmarkFolderOpen(BookmarkLaunchLocation location);
 
 // Records the user opening the apps page for UMA purposes.
 void RecordBookmarkAppsPageOpen(BookmarkLaunchLocation location);
+
+// Records the user adding a bookmark via star action, drag and drop, via
+// Bookmark this tab... and Bookmark all tabs... buttons. For the Bookmark
+// open tabs... the action is recorded only once and not as many times as
+// count of tabs that were bookmarked.
+void RecordBookmarksAdded(const Profile* profile);
+
+// Records the user bookmarking all tabs, along with the open tabs count.
+void RecordBookmarkAllTabsWithTabsCount(const Profile* profile, int count);
 
 #endif  // CHROME_BROWSER_UI_BOOKMARKS_BOOKMARK_STATS_H_

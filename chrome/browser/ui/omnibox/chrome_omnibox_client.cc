@@ -402,7 +402,8 @@ void ChromeOmniboxClient::OnURLOpenedFromOmnibox(OmniboxLog* log) {
 }
 
 void ChromeOmniboxClient::OnBookmarkLaunched() {
-  RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_OMNIBOX);
+  RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_OMNIBOX,
+                       ProfileMetrics::GetBrowserProfileType(profile_));
 }
 
 void ChromeOmniboxClient::DiscardNonCommittedNavigations() {

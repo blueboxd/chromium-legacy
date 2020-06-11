@@ -2486,11 +2486,11 @@ void LayoutBlockFlow::AddLayoutOverflowFromInlineChildren() {
           if (!cursor.Current().IsLineBox())
             continue;
           const NGFragmentItem& child = *cursor.CurrentItem();
-          LogicalRect logical_rect = fragment->ConvertToLogical(
-              child.RectInContainerBlock(), child.Size());
+          LogicalRect logical_rect =
+              fragment->ConvertChildToLogical(child.RectInContainerBlock());
           logical_rect.size.inline_size += 1;
           AddLayoutOverflow(
-              fragment->ConvertToPhysical(logical_rect).ToLayoutRect());
+              fragment->ConvertChildToPhysical(logical_rect).ToLayoutRect());
         }
         return;
       }
@@ -2498,11 +2498,11 @@ void LayoutBlockFlow::AddLayoutOverflowFromInlineChildren() {
       for (const NGLink& child : fragment->Children()) {
         if (!child->IsLineBox())
           continue;
-        LogicalRect logical_rect = fragment->ConvertToLogical(
-            PhysicalRect(child.Offset(), child->Size()), child->Size());
+        LogicalRect logical_rect = fragment->ConvertChildToLogical(
+            PhysicalRect(child.Offset(), child->Size()));
         logical_rect.size.inline_size += 1;
         AddLayoutOverflow(
-            fragment->ConvertToPhysical(logical_rect).ToLayoutRect());
+            fragment->ConvertChildToPhysical(logical_rect).ToLayoutRect());
       }
       return;
     }

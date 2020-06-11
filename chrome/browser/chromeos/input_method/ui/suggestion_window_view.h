@@ -32,20 +32,29 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
             const size_t confirmed_length,
             const bool show_tab);
 
+  void ShowMultipleCandidates(const std::vector<base::string16>& candidates);
+
+  void HighlightCandidate(int index);
+
   void SetBounds(const gfx::Rect& cursor_bounds);
 
  private:
   friend class SuggestionWindowViewTest;
 
-  void UpdateSuggestion(const base::string16& text,
-                        const size_t confirmed_length,
-                        const bool show_tab);
+  void MaybeInitializeSuggestionViews(size_t candidates_size);
+
+  void MakeVisible();
 
   // views::BubbleDialogDelegateView:
   const char* GetClassName() const override;
 
-  // The suggestion view is used for rendering suggestion.
-  SuggestionView* suggestion_view_;
+  // The view containing all the suggestions.
+  views::View* candidate_area_;
+
+  // The items in view_
+  std::vector<std::unique_ptr<SuggestionView>> candidate_views_;
+
+  int selected_index_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionWindowView);
 };

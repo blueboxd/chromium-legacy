@@ -27,19 +27,6 @@ class BinderRegistryWithArgs {
   BinderRegistryWithArgs() {}
   ~BinderRegistryWithArgs() = default;
 
-  // Adds an interface inferring the interface name via the templated
-  // parameter Interface::Name_
-  // Usage example: //services/service_manager/README.md#OnBindInterface
-  template <typename Interface>
-  void AddInterface(
-      const base::RepeatingCallback<void(mojo::InterfaceRequest<Interface>,
-                                         BinderArgs...)>& callback,
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner = nullptr) {
-    SetInterfaceBinder(
-        Interface::Name_,
-        std::make_unique<CallbackBinder<Interface, BinderArgs...>>(
-            callback, task_runner));
-  }
   template <typename Interface>
   void AddInterface(
       const base::RepeatingCallback<void(mojo::PendingReceiver<Interface>,

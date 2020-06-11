@@ -70,12 +70,6 @@ Tree: v2.1.1
 Revision: 0f36a7d380e0edfd81344e6cdbc89519355df8bd
 Tree link: https://github.com/PolymerElements/iron-iconset-svg/tree/v2.1.1
 
-Name: iron-input
-Repository: https://github.com/PolymerElements/iron-input.git
-Tree: v2.1.3
-Revision: 72a4a9e898a4b825602eacd78944e8e25ee41f5c
-Tree link: https://github.com/PolymerElements/iron-input/tree/v2.1.3
-
 Name: iron-list
 Repository: https://github.com/PolymerElements/iron-list.git
 Tree: v2.0.20
@@ -147,12 +141,6 @@ Repository: https://github.com/PolymerElements/iron-test-helpers.git
 Tree: v2.0.0
 Revision: b972ff1579d882f3196713f8a72a8bf77aeba07c
 Tree link: https://github.com/PolymerElements/iron-test-helpers/tree/v2.0.0
-
-Name: iron-validatable-behavior
-Repository: https://github.com/PolymerElements/iron-validatable-behavior.git
-Tree: v2.1.0
-Revision: 4b6c1c53e44a3bbb31fcfd14ede2234645518c96
-Tree link: https://github.com/PolymerElements/iron-validatable-behavior/tree/v2.1.0
 
 Name: neon-animation
 Repository: https://github.com/PolymerElements/neon-animation.git

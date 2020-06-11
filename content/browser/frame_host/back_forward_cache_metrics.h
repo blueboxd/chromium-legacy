@@ -73,7 +73,8 @@ class BackForwardCacheMetrics
     kNotMostRecentNavigationEntry = 29,
     kServiceWorkerClaim = 30,
     kIgnoreEventAndEvict = 31,
-    kMaxValue = kIgnoreEventAndEvict,
+    kHaveInnerContents = 32,
+    kMaxValue = kHaveInnerContents,
   };
 
   using NotRestoredReasons =

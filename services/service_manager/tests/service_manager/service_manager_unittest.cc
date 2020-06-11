@@ -23,8 +23,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/token.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
@@ -97,8 +97,8 @@ class TestService : public Service, public test::mojom::CreateInstanceTest {
     registry_.BindInterface(interface_name, std::move(interface_pipe));
   }
 
-  void Create(test::mojom::CreateInstanceTestRequest request) {
-    binding_.Bind(std::move(request));
+  void Create(mojo::PendingReceiver<test::mojom::CreateInstanceTest> receiver) {
+    receiver_.Bind(std::move(receiver));
   }
 
   // test::mojom::CreateInstanceTest:
@@ -115,7 +115,7 @@ class TestService : public Service, public test::mojom::CreateInstanceTest {
   std::unique_ptr<base::RunLoop> wait_for_target_identity_loop_;
 
   BinderRegistry registry_;
-  mojo::Binding<test::mojom::CreateInstanceTest> binding_{this};
+  mojo::Receiver<test::mojom::CreateInstanceTest> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TestService);
 };
@@ -537,11 +537,12 @@ TEST_F(ServiceManagerTest, ClientProcessCapabilityEnforced) {
   // Introduce a new service instance for service_manager_unittest_target,
   // which should be allowed because the test service has
   // |can_create_other_service_instances| set to |true| in its manifest.
-  mojom::ServicePtr test_service_proxy1;
-  SimpleService test_service1(mojo::MakeRequest(&test_service_proxy1));
+  mojo::PendingRemote<mojom::Service> test_service_remote1;
+  SimpleService test_service1(
+      test_service_remote1.InitWithNewPipeAndPassReceiver());
   mojo::Remote<mojom::ProcessMetadata> metadata1;
   connector()->RegisterServiceInstance(kInstance1Id,
-                                       test_service_proxy1.PassInterface(),
+                                       std::move(test_service_remote1),
                                        metadata1.BindNewPipeAndPassReceiver());
   metadata1->SetPID(42);
   WaitForInstanceToStart(kInstance1Id);
@@ -550,11 +551,12 @@ TEST_F(ServiceManagerTest, ClientProcessCapabilityEnforced) {
 
   // Now use the new instance (which does not have client_process capability)
   // to attempt introduction of yet another instance. This should fail.
-  mojom::ServicePtr test_service_proxy2;
-  SimpleService test_service2(mojo::MakeRequest(&test_service_proxy2));
+  mojo::PendingRemote<mojom::Service> test_service_remote2;
+  SimpleService test_service2(
+      test_service_remote2.InitWithNewPipeAndPassReceiver());
   mojo::Remote<mojom::ProcessMetadata> metadata2;
   test_service1.connector()->RegisterServiceInstance(
-      kInstance2Id, test_service_proxy2.PassInterface(),
+      kInstance2Id, std::move(test_service_remote2),
       metadata2.BindNewPipeAndPassReceiver());
   metadata2->SetPID(43);
 

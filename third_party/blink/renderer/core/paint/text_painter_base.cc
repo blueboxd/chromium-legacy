@@ -361,12 +361,9 @@ float ComputeDecorationThickness(const ComputedStyle* style,
 
   if (style_thickness.IsFromFont()) {
     base::Optional<float> underline_thickness_font_metric =
-        font_data->GetFontMetrics().UnderlineThickness().value();
-
-    if (!underline_thickness_font_metric)
-      return auto_underline_thickness;
-
-    return std::max(1.f, underline_thickness_font_metric.value());
+        font_data->GetFontMetrics().UnderlineThickness();
+    return std::max(1.f, underline_thickness_font_metric.value_or(
+                             auto_underline_thickness));
   }
 
   DCHECK(!style_thickness.IsFromFont());

@@ -302,8 +302,8 @@ void UnregisterFileHandlersWithOs(const AppId& app_id, Profile* profile) {
     base::ThreadPool::PostTask(
         FROM_HERE,
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::BindOnce(IgnoreResult(&base::DeleteFile),
-                       app_specific_launcher_path, /*recursively=*/false));
+        base::BindOnce(base::GetDeleteFileCallback(),
+                       app_specific_launcher_path));
   }
   base::FilePath only_profile_with_app_installed;
   if (IsWebAppLauncherRegisteredWithWindows(app_id, profile,

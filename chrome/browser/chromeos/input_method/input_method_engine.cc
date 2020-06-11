@@ -139,6 +139,65 @@ void InputMethodEngine::OnSuggestionsChanged(
   observer_->OnSuggestionsChanged(suggestions);
 }
 
+bool InputMethodEngine::ShowMultipleSuggestions(
+    int context_id,
+    const std::vector<base::string16>& suggestions,
+    std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+  IMEAssistiveWindowHandlerInterface* aw_handler =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (aw_handler)
+    aw_handler->ShowMultipleSuggestions(suggestions);
+  return true;
+}
+
+bool InputMethodEngine::HighlightSuggestionCandidate(int context_id,
+                                                     int index,
+                                                     std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+  IMEAssistiveWindowHandlerInterface* aw_handler =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (aw_handler)
+    aw_handler->HighlightSuggestionCandidate(index);
+  return true;
+}
+
+bool InputMethodEngine::AcceptSuggestionCandidate(
+    int context_id,
+    const base::string16& suggestion,
+    std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = kErrorWrongContext;
+    return false;
+  }
+
+  CommitText(context_id, base::UTF16ToUTF8(suggestion).c_str(), error);
+
+  IMEAssistiveWindowHandlerInterface* aw_handler =
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler();
+  if (aw_handler)
+    aw_handler->HideSuggestion();
+  return true;
+}
+
 const InputMethodEngine::CandidateWindowProperty&
 InputMethodEngine::GetCandidateWindowProperty(const std::string& engine_id) {
   if (candidate_window_property_.first != engine_id)

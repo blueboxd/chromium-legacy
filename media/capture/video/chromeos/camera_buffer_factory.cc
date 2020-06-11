@@ -61,7 +61,7 @@ gfx::BufferUsage CameraBufferFactory::GetBufferUsage(gfx::BufferFormat format) {
       return gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE;
     default:
       // Default usage for YUV camera buffer.
-      return gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE;
+      return gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE;
   }
 }
 

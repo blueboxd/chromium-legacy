@@ -275,7 +275,7 @@ void RecoveryComponent::FetchOnIOThread() {
   }
 
   base::ScopedClosureRunner delete_file(
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile), crx_file, false));
+      base::BindOnce(base::GetDeleteFileCallback(), crx_file));
 
   if (!SaveHttpResponseDataToFile(crx_file, http_response.get())) {
     LOG(WARNING) << "Failed to save downloaded recovery component";

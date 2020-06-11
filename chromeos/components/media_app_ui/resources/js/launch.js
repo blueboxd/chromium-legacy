@@ -536,3 +536,11 @@ function installLaunchHandler() {
 }
 
 installLaunchHandler();
+
+// Make sure the guest frame has focus.
+/** @type {!Element} */
+const guest = assertCast(
+    document.querySelector('iframe[src^="chrome-untrusted://media-app"]'));
+guest.addEventListener('load', () => {
+  guest.focus();
+});

@@ -104,7 +104,9 @@ NSMenuItem* GetItemWithSubmenu(NSMenu* submenu) {
       node->url(), Referrer(), disposition,
       ui::PAGE_TRANSITION_AUTO_BOOKMARK, false);
   browser->OpenURL(params);
-  RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_TOP_MENU);
+  RecordBookmarkLaunch(
+      BOOKMARK_LAUNCH_LOCATION_TOP_MENU,
+      ProfileMetrics::GetBrowserProfileType(_bridge->GetProfile()));
 }
 
 - (IBAction)openBookmarkMenuItem:(id)sender {

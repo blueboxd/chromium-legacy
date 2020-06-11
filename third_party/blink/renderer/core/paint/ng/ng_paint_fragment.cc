@@ -85,7 +85,7 @@ LogicalRect ExpandSelectionRectToLineHeight(const LogicalRect& rect,
           cursor.Current().OffsetInContainerBlock(),
       line.Current().Size());
   return ExpandSelectionRectToLineHeight(
-      rect, cursor.Current().ConvertToLogical(line_physical_rect));
+      rect, cursor.Current().ConvertChildToLogical(line_physical_rect));
 }
 
 base::Optional<PositionWithAffinity> PositionForPointInChild(
@@ -743,7 +743,8 @@ PhysicalRect ComputeLocalSelectionRectForText(
     const LayoutSelectionStatus& selection_status) {
   const PhysicalRect selection_rect =
       cursor.CurrentLocalRect(selection_status.start, selection_status.end);
-  LogicalRect logical_rect = cursor.Current().ConvertToLogical(selection_rect);
+  LogicalRect logical_rect =
+      cursor.Current().ConvertChildToLogical(selection_rect);
   // Let LocalRect for line break have a space width to paint line break
   // when it is only character in a line or only selected in a line.
   if (selection_status.start != selection_status.end &&
@@ -762,7 +763,7 @@ PhysicalRect ComputeLocalSelectionRectForText(
   const LogicalRect line_height_expanded_rect =
       ExpandSelectionRectToLineHeight(line_break_extended_rect, cursor);
   const PhysicalRect physical_rect =
-      cursor.Current().ConvertToPhysical(line_height_expanded_rect);
+      cursor.Current().ConvertChildToPhysical(line_height_expanded_rect);
   return physical_rect;
 }
 
@@ -772,11 +773,12 @@ PhysicalRect ComputeLocalSelectionRectForReplaced(
     const NGInlineCursor& cursor) {
   DCHECK(cursor.Current().GetLayoutObject()->IsLayoutReplaced());
   const PhysicalRect selection_rect = PhysicalRect({}, cursor.Current().Size());
-  LogicalRect logical_rect = cursor.Current().ConvertToLogical(selection_rect);
+  LogicalRect logical_rect =
+      cursor.Current().ConvertChildToLogical(selection_rect);
   const LogicalRect line_height_expanded_rect =
       ExpandSelectionRectToLineHeight(logical_rect, cursor);
   const PhysicalRect physical_rect =
-      cursor.Current().ConvertToPhysical(line_height_expanded_rect);
+      cursor.Current().ConvertChildToPhysical(line_height_expanded_rect);
   return physical_rect;
 }
 
@@ -825,8 +827,8 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineLevelBox(
     if (child->PhysicalFragment().IsFloating())
       continue;
 
-    const LogicalRect logical_child_rect = PhysicalFragment().ConvertToLogical(
-        PhysicalRect(child->Offset(), child->Size()), child->Size());
+    const LogicalRect logical_child_rect =
+        PhysicalFragment().ConvertChildToLogical(child->Rect());
     const LayoutUnit child_inline_min = logical_child_rect.offset.inline_offset;
     const LayoutUnit child_inline_max =
         child_inline_min + logical_child_rect.size.inline_size;
@@ -920,8 +922,8 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineFormattingContext(
       continue;
     }
 
-    const LogicalRect logical_child_rect = PhysicalFragment().ConvertToLogical(
-        PhysicalRect(child->Offset(), child->Size()), child->Size());
+    const LogicalRect logical_child_rect =
+        PhysicalFragment().ConvertChildToLogical(child->Rect());
     const LayoutUnit line_min = logical_child_rect.offset.block_offset;
     const LayoutUnit line_max = line_min + logical_child_rect.size.block_size;
 

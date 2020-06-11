@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
+#include "base/strings/string_tokenizer.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/tracing/background_tracing_config_impl.h"
@@ -78,7 +79,7 @@ class PerfettoTracingSession
  public:
   PerfettoTracingSession(BackgroundTracingActiveScenario* parent_scenario,
                          const TraceConfig& chrome_config,
-                         int interning_reset_interval_ms)
+                         const BackgroundTracingConfigImpl* config)
       : parent_scenario_(parent_scenario),
         raw_data_(std::make_unique<std::string>()) {
 #if !defined(OS_ANDROID)
@@ -95,10 +96,17 @@ class PerfettoTracingSession
     GetTracingService().BindConsumerHost(
         consumer_host_.BindNewPipeAndPassReceiver());
 
-    perfetto::TraceConfig perfetto_config = tracing::GetDefaultPerfettoConfig(
-        chrome_config, /*privacy_filtering_enabled=*/true);
+    perfetto::TraceConfig perfetto_config;
     perfetto_config.mutable_incremental_state_config()->set_clear_period_ms(
-        interning_reset_interval_ms);
+        config->interning_reset_interval_ms());
+    base::StringTokenizer data_sources(config->enabled_data_sources(), ",");
+    std::set<std::string> data_source_filter;
+    while (data_sources.GetNext()) {
+      data_source_filter.insert(data_sources.token());
+    }
+    perfetto_config = tracing::GetPerfettoConfigWithDataSources(
+        chrome_config, data_source_filter,
+        /*privacy_filtering_enabled=*/true);
 
     consumer_host_->EnableTracing(
         tracing_session_host_.BindNewPipeAndPassReceiver(),
@@ -374,7 +382,7 @@ bool BackgroundTracingActiveScenario::StartTracing() {
   DCHECK(!tracing_session_);
   if (base::FeatureList::IsEnabled(features::kBackgroundTracingProtoOutput)) {
     tracing_session_ = std::make_unique<PerfettoTracingSession>(
-        this, chrome_config, config_->interning_reset_interval_ms());
+        this, chrome_config, config_.get());
   } else {
     tracing_session_ =
         std::make_unique<LegacyTracingSession>(this, chrome_config);

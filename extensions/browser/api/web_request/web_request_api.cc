@@ -893,10 +893,9 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
   // for OnBeforeSendHeaders.
   net::HttpRequestHeaders* request_headers = nullptr;
 
-  // The response headers that were received from the server and subsequently
-  // filtered by the Declarative Net Request API. Only valid for
+  // The response headers that were received from the server. Only valid for
   // OnHeadersReceived.
-  scoped_refptr<const net::HttpResponseHeaders> filtered_response_headers;
+  scoped_refptr<const net::HttpResponseHeaders> original_response_headers;
 
   // Location where to override response headers. Only valid for
   // OnHeadersReceived.
@@ -1104,8 +1103,14 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
         *new_url = action.redirect_url.value();
         return net::OK;
       case DNRRequestAction::Type::MODIFY_HEADERS:
-        // TODO(crbug.com/947591): Evaluate modify headers DNR actions.
-        NOTREACHED();
+        // Unlike other actions, allow web request extensions to intercept the
+        // request here. The headers will be modified during subsequent request
+        // stages.
+        DCHECK(std::all_of(request->dnr_actions->begin(),
+                           request->dnr_actions->end(), [](const auto& action) {
+                             return action.type ==
+                                    DNRRequestAction::Type::MODIFY_HEADERS;
+                           }));
         break;
     }
   }
@@ -1136,14 +1141,19 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
   if (ShouldHideEvent(browser_context, *request))
     return net::OK;
 
-  // TODO(crbug.com/947591): Handle request header modification by the
-  // Declarative Net Request API.
-
   bool initialize_blocked_requests = false;
 
   initialize_blocked_requests |=
       ProcessDeclarativeRules(browser_context, keys::kOnBeforeSendHeadersEvent,
                               request, ON_BEFORE_SEND_HEADERS, nullptr);
+
+  DCHECK(request->dnr_actions);
+  initialize_blocked_requests |= std::any_of(
+      request->dnr_actions->begin(), request->dnr_actions->end(),
+      [](const DNRRequestAction& action) {
+        return action.type == DNRRequestAction::Type::MODIFY_HEADERS &&
+               !action.request_headers_to_modify.empty();
+      });
 
   int extra_info_spec = 0;
   RawListeners listeners =
@@ -1217,16 +1227,19 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   if (ShouldHideEvent(browser_context, *request))
     return net::OK;
 
-  // TODO(crbug.com/947591): Handle header modification by the Declarative Net
-  // Request API.
-  scoped_refptr<const net::HttpResponseHeaders> filtered_response_headers =
-      original_response_headers;
-
   bool initialize_blocked_requests = false;
+
+  DCHECK(request->dnr_actions);
+  initialize_blocked_requests |= std::any_of(
+      request->dnr_actions->begin(), request->dnr_actions->end(),
+      [](const DNRRequestAction& action) {
+        return action.type == DNRRequestAction::Type::MODIFY_HEADERS &&
+               !action.response_headers_to_modify.empty();
+      });
 
   initialize_blocked_requests |= ProcessDeclarativeRules(
       browser_context, keys::kOnHeadersReceivedEvent, request,
-      ON_HEADERS_RECEIVED, filtered_response_headers.get());
+      ON_HEADERS_RECEIVED, original_response_headers);
 
   int extra_info_spec = 0;
   RawListeners listeners =
@@ -1237,8 +1250,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
       !GetAndSetSignaled(request->id, kOnHeadersReceived)) {
     std::unique_ptr<WebRequestEventDetails> event_details(
         CreateEventDetails(*request, extra_info_spec));
-    event_details->SetResponseHeaders(*request,
-                                      filtered_response_headers.get());
+    event_details->SetResponseHeaders(*request, original_response_headers);
 
     initialize_blocked_requests |= DispatchEvent(
         browser_context, request, listeners, std::move(event_details));
@@ -1258,7 +1270,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
   blocked_request.request = request;
   blocked_request.callback = std::move(callback);
   blocked_request.override_response_headers = override_response_headers;
-  blocked_request.filtered_response_headers = filtered_response_headers;
+  blocked_request.original_response_headers = original_response_headers;
   blocked_request.new_url = preserve_fragment_on_redirect_url;
 
   if (blocked_request.num_handlers_blocking == 0) {
@@ -2014,7 +2026,7 @@ helpers::EventResponseDelta CalculateDelta(
     }
     case ExtensionWebRequestEventRouter::kOnHeadersReceived: {
       const net::HttpResponseHeaders* old_headers =
-          blocked_request->filtered_response_headers.get();
+          blocked_request->original_response_headers.get();
       helpers::ResponseHeaders* new_headers =
           response->response_headers.get();
       return helpers::CalculateOnHeadersReceivedDelta(
@@ -2229,6 +2241,7 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
   helpers::MergeCancelOfResponses(blocked_request.response_deltas, &canceled);
 
   extension_web_request_api_helpers::IgnoredActions ignored_actions;
+  std::vector<const DNRRequestAction*> matched_dnr_actions;
   if (blocked_request.event == kOnBeforeRequest) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnBeforeRequestResponses(
@@ -2240,15 +2253,14 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
         *request, blocked_request.response_deltas,
         blocked_request.request_headers, &ignored_actions,
         &request_headers_removed, &request_headers_set,
-        &request_headers_modified);
-
+        &request_headers_modified, &matched_dnr_actions);
   } else if (blocked_request.event == kOnHeadersReceived) {
     CHECK(!blocked_request.callback.is_null());
     helpers::MergeOnHeadersReceivedResponses(
         *request, blocked_request.response_deltas,
-        blocked_request.filtered_response_headers.get(),
+        blocked_request.original_response_headers.get(),
         blocked_request.override_response_headers, blocked_request.new_url,
-        &ignored_actions, &response_headers_modified);
+        &ignored_actions, &response_headers_modified, &matched_dnr_actions);
   } else if (blocked_request.event == kOnAuthRequired) {
     CHECK(blocked_request.callback.is_null());
     CHECK(!blocked_request.auth_callback.is_null());
@@ -2265,6 +2277,9 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
     NotifyIgnoredActionsOnUI(browser_context, request->id,
                              std::move(ignored_actions));
   }
+
+  for (const DNRRequestAction* action : matched_dnr_actions)
+    OnDNRActionMatched(browser_context, *request, *action);
 
   const bool redirected =
       blocked_request.new_url && !blocked_request.new_url->is_empty();
@@ -2330,7 +2345,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     const std::string& event_name,
     const WebRequestInfo* request,
     RequestStage request_stage,
-    const net::HttpResponseHeaders* filtered_response_headers) {
+    const net::HttpResponseHeaders* original_response_headers) {
   int rules_registry_id = request->is_web_view
                               ? request->web_view_rules_registry_id
                               : RulesRegistryService::kDefaultRulesRegistryID;
@@ -2384,7 +2399,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     blocked_request.request = request;
     blocked_request.is_incognito |= IsIncognitoBrowserContext(browser_context);
     blocked_request.blocking_time = base::Time::Now();
-    blocked_request.filtered_response_headers = filtered_response_headers;
+    blocked_request.original_response_headers = original_response_headers;
     return true;
   }
 
@@ -2393,7 +2408,7 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     WebRequestRulesRegistry* rules_registry = it.first;
     helpers::EventResponseDeltas result = rules_registry->CreateDeltas(
         PermissionHelper::Get(browser_context),
-        WebRequestData(request, request_stage, filtered_response_headers),
+        WebRequestData(request, request_stage, original_response_headers),
         it.second);
 
     if (!result.empty()) {
@@ -2422,7 +2437,7 @@ void ExtensionWebRequestEventRouter::OnRulesRegistryReady(
   BlockedRequest& blocked_request = it->second;
   ProcessDeclarativeRules(browser_context, event_name, blocked_request.request,
                           request_stage,
-                          blocked_request.filtered_response_headers.get());
+                          blocked_request.original_response_headers.get());
   DecrementBlockCount(browser_context, std::string(), event_name, request_id,
                       nullptr, 0 /* extra_info_spec */);
 }

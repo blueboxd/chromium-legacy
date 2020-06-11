@@ -1475,9 +1475,8 @@ fileOperationUtil.Speedometer = class {
    * @param {number} speed The last speed added to the ring.
    */
   updateCMA_(speed) {
-    this.cma_ =
-        Math.floor((this.cma_ * this.count_ + speed) / (this.count_ + 1));
     this.count_++;
+    this.cma_ = Math.floor((this.cma_ * this.count_ + speed) / (this.count_));
   }
 
   /**

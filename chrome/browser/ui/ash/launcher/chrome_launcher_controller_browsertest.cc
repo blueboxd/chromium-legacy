@@ -1648,6 +1648,46 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, AltNumberAppsTabbing) {
   EXPECT_TRUE(window1a->IsActive());
 }
 
+// Check that the keyboard activation of a launcher item tabs even if the app is
+// not currently activated.
+IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
+                       AltNumberAppsTabbingFromOtherApp) {
+  // Create one app with two windows.
+  const Extension* app1_extension1 =
+      LoadAndLaunchPlatformApp("launch", "Launched");
+  ui::BaseWindow* app1_window1 =
+      CreateAppWindow(browser()->profile(), app1_extension1)->GetBaseWindow();
+  ui::BaseWindow* app1_window2 =
+      CreateAppWindow(browser()->profile(), app1_extension1)->GetBaseWindow();
+  const ash::ShelfItem item1 = GetLastLauncherItem();
+  EXPECT_EQ(ash::TYPE_APP, item1.type);
+  EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
+
+  // Create another app with two windows.
+  const Extension* app2_extension1 =
+      LoadAndLaunchPlatformApp("launch_2", "Launched");
+  ui::BaseWindow* app2_window1 =
+      CreateAppWindow(browser()->profile(), app2_extension1)->GetBaseWindow();
+  ui::BaseWindow* app2_window2 =
+      CreateAppWindow(browser()->profile(), app2_extension1)->GetBaseWindow();
+  const ash::ShelfItem item2 = GetLastLauncherItem();
+  EXPECT_EQ(ash::TYPE_APP, item2.type);
+  EXPECT_EQ(ash::STATUS_RUNNING, item2.status);
+
+  // Last created window should be active. Hitting the app shortcut should go to
+  // the first window of the app.
+  ASSERT_TRUE(app2_window2->IsActive());
+  SelectItem(item2.id, ui::ET_KEY_RELEASED);
+  EXPECT_TRUE(app2_window1->IsActive());
+
+  // Hitting the other app's shortcut should jump and focus the other app's
+  // windows.
+  SelectItem(item1.id, ui::ET_KEY_RELEASED);
+  EXPECT_TRUE(app1_window2->IsActive());
+  SelectItem(item1.id, ui::ET_KEY_RELEASED);
+  EXPECT_TRUE(app1_window1->IsActive());
+}
+
 // Test that we get correct shelf presence with hidden app windows.
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, HiddenAppWindows) {
   int item_count = shelf_model()->item_count();

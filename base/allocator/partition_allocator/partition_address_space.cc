@@ -38,8 +38,11 @@ uintptr_t PartitionAddressSpace::reserved_address_start_ = 0;
 // reserved address space. So initially make reserved_base_address_ to
 // be kReservedAddressSpaceOffsetMask. So PartitionAddressSpace::Contains()
 // always returns false.
+// Do something similar for normal_bucket_pool_base_address_.
 uintptr_t PartitionAddressSpace::reserved_base_address_ =
     kReservedAddressSpaceOffsetMask;
+uintptr_t PartitionAddressSpace::normal_bucket_pool_base_address_ =
+    kNormalBucketPoolOffsetMask;
 
 pool_handle PartitionAddressSpace::direct_map_pool_ = 0;
 pool_handle PartitionAddressSpace::normal_bucket_pool_ = 0;
@@ -66,6 +69,7 @@ void PartitionAddressSpace::Init() {
   DCHECK(direct_map_pool_);
   current += kDirectMapPoolSize;
 
+  normal_bucket_pool_base_address_ = current;
   normal_bucket_pool_ = internal::AddressPoolManager::GetInstance()->Add(
       current, kNormalBucketPoolSize);
   DCHECK(normal_bucket_pool_);

@@ -47,13 +47,13 @@ class EmojiSuggester : public Suggester {
   bool suggestion_shown_ = false;
 
   // The current list of candidates.
-  std::vector<InputMethodEngine::Candidate> candidates_;
+  std::vector<base::string16> candidates_;
 
   // The current candidate_id chosen.
-  int candidate_id_;
+  int candidate_id_ = -1;
 
   // The map holding one-word-mapping to emojis.
-  std::map<std::string, std::vector<std::string>> emoji_map_;
+  std::map<std::string, std::vector<base::string16>> emoji_map_;
 
   // Pointer for callback, must be the last declared in the file.
   base::WeakPtrFactory<EmojiSuggester> weak_factory_{this};

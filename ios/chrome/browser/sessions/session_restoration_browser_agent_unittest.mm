@@ -191,7 +191,8 @@ TEST_F(SessionRestorationBrowserAgentTest, DISABLED_RestoreSessionOnNTPTest) {
 
   // Create NTPTabHelper to ensure VisibleURL is set to kChromeUINewTabURL.
   id delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
-  NewTabPageTabHelper::CreateForWebState(web_state, delegate);
+  NewTabPageTabHelper::CreateForWebState(web_state);
+  NewTabPageTabHelper::FromWebState(web_state)->SetDelegate(delegate);
 
   SessionWindowIOS* window(
       CreateSessionWindow(/*sessions_count=*/3, /*selected_index=*/2));

@@ -20,7 +20,6 @@ namespace {
 
 const int kMaxCandidateSize = 5;
 const char kSpaceChar = ' ';
-const char kDefaultEngine[] = "default_engine";
 const base::FilePath::CharType kEmojiMapFilePath[] =
     FILE_PATH_LITERAL("/emoji/emoji-map.csv");
 const int kMaxSuggestionIndex = 31;
@@ -60,17 +59,6 @@ std::string GetLastWord(const std::string& str) {
                           last_pos_to_search - space_before_last_word);
 }
 
-// Create emoji suggestion's candidate window property.
-InputMethodEngine::CandidateWindowProperty CreateProperty(int candidates_size) {
-  InputMethodEngine::CandidateWindowProperty properties_out;
-  properties_out.is_cursor_visible = true;
-  properties_out.page_size = std::min(candidates_size, kMaxCandidateSize);
-  properties_out.show_window_at_composition = false;
-  properties_out.is_vertical = true;
-  properties_out.is_auxiliary_text_visible = false;
-  return properties_out;
-}
-
 }  // namespace
 
 EmojiSuggester::EmojiSuggester(InputMethodEngine* engine) : engine_(engine) {
@@ -97,9 +85,11 @@ void EmojiSuggester::OnEmojiDataLoaded(const std::string& emoji_data) {
     const auto comma_pos = line.find_first_of(",");
     DCHECK(comma_pos != std::string::npos);
     std::string word = line.substr(0, comma_pos);
-    std::string emojis = line.substr(comma_pos + 1);
+    base::string16 emojis = base::UTF8ToUTF16(line.substr(comma_pos + 1));
     // Build emoji_map_ from splitting the string of emojis.
-    emoji_map_[word] = SplitString(emojis, ";");
+    emoji_map_[word] =
+        base::SplitString(emojis, base::UTF8ToUTF16(";"), base::TRIM_WHITESPACE,
+                          base::SPLIT_WANT_NONEMPTY);
     // TODO(crbug/1093179): Implement arrow to indicate more emojis available.
     // Only loads 5 emojis for now until arrow is implemented.
     if (emoji_map_[word].size() > kMaxCandidateSize)
@@ -130,22 +120,21 @@ SuggestionStatus EmojiSuggester::HandleKeyEvent(
   std::string error;
   if (event.key == "Tab" || event.key == "Right" || event.key == "Enter") {
     suggestion_shown_ = false;
-    engine_->CommitText(context_id_, candidates_[candidate_id_].value.c_str(),
-                        &error);
-    engine_->SetCandidateWindowVisible(false, &error);
+    engine_->AcceptSuggestionCandidate(context_id_, candidates_[candidate_id_],
+                                       &error);
     RecordAcceptanceIndex(candidate_id_);
     status = SuggestionStatus::kAccept;
   } else if (event.key == "Down") {
     candidate_id_ < static_cast<int>(candidates_.size()) - 1
         ? candidate_id_++
         : candidate_id_ = 0;
-    engine_->SetCursorPosition(context_id_, candidate_id_, &error);
+    engine_->HighlightSuggestionCandidate(context_id_, candidate_id_, &error);
     status = SuggestionStatus::kBrowsing;
   } else if (event.key == "Up") {
     candidate_id_ > 0
         ? candidate_id_--
         : candidate_id_ = static_cast<int>(candidates_.size()) - 1;
-    engine_->SetCursorPosition(context_id_, candidate_id_, &error);
+    engine_->HighlightSuggestionCandidate(context_id_, candidate_id_, &error);
     status = SuggestionStatus::kBrowsing;
   } else if (event.key == "Esc") {
     DismissSuggestion();
@@ -173,20 +162,9 @@ void EmojiSuggester::ShowSuggestion(const std::string& text) {
   std::string error;
   suggestion_shown_ = true;
   candidates_.clear();
-  const std::vector<std::string>& candidates = emoji_map_.at(text);
-  for (size_t i = 0; i < candidates.size(); i++) {
-    candidates_.emplace_back();
-    candidates_.back().value = candidates[i];
-    candidates_.back().id = i;
-    candidates_.back().label = base::UTF16ToUTF8(base::FormatNumber(i + 1));
-  }
-  engine_->SetCandidates(context_id_, candidates_, &error);
-
-  candidate_id_ = 0;
-  engine_->SetCandidateWindowProperty(
-      kDefaultEngine, CreateProperty(static_cast<int>(candidates_.size())));
-  engine_->SetCandidateWindowVisible(true, &error);
-  engine_->SetCursorPosition(context_id_, candidate_id_, &error);
+  candidate_id_ = -1;
+  candidates_ = emoji_map_.at(text);
+  engine_->ShowMultipleSuggestions(context_id_, candidates_, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Fail to show suggestion. " << error;
   }
@@ -195,7 +173,7 @@ void EmojiSuggester::ShowSuggestion(const std::string& text) {
 void EmojiSuggester::DismissSuggestion() {
   std::string error;
   suggestion_shown_ = false;
-  engine_->SetCandidateWindowVisible(false, &error);
+  engine_->DismissSuggestion(context_id_, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Failed to dismiss suggestion. " << error;
   }

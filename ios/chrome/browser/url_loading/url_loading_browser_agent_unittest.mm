@@ -170,7 +170,8 @@ TEST_F(URLLoadingBrowserAgentTest, TestSwitchToTabFromNTP) {
                                  WebStateList::INSERT_FORCE_INDEX,
                                  WebStateOpener());
   id mock_delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
-  NewTabPageTabHelper::CreateForWebState(web_state_ptr, mock_delegate);
+  NewTabPageTabHelper::CreateForWebState(web_state_ptr);
+  NewTabPageTabHelper::FromWebState(web_state_ptr)->SetDelegate(mock_delegate);
 
   std::unique_ptr<web::TestWebState> web_state_2 = CreateTestWebState();
   web::WebState* web_state_ptr_2 = web_state_2.get();
@@ -205,7 +206,8 @@ TEST_F(URLLoadingBrowserAgentTest, TestSwitchToClosedTab) {
                                  WebStateOpener());
   web_state_list->ActivateWebStateAt(0);
   id mock_delegate = OCMProtocolMock(@protocol(NewTabPageTabHelperDelegate));
-  NewTabPageTabHelper::CreateForWebState(web_state_ptr, mock_delegate);
+  NewTabPageTabHelper::CreateForWebState(web_state_ptr);
+  NewTabPageTabHelper::FromWebState(web_state_ptr)->SetDelegate(mock_delegate);
 
   GURL url("http://test/2");
 

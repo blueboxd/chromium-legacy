@@ -6,9 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_GEOMETRY_WRITING_MODE_CONVERTER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
-#include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
-#include "third_party/blink/renderer/core/layout/geometry/physical_size.h"
+#include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
+#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/text/writing_direction_mode.h"
 
 namespace blink {
@@ -57,11 +56,22 @@ class CORE_EXPORT WritingModeConverter {
   PhysicalOffset ToPhysical(const LogicalOffset& offset,
                             const PhysicalSize& inner_size) const;
 
+  // |LogicalSize| and |PhysicalSize| conversions.
+  LogicalSize ToLogical(const PhysicalSize& size) const;
+  PhysicalSize ToPhysical(const LogicalSize& size) const;
+
+  // |LogicalRect| and |PhysicalRect| conversions.
+  LogicalRect ToLogical(const PhysicalRect& rect) const;
+  PhysicalRect ToPhysical(const LogicalRect& rect) const;
+
  private:
   LogicalOffset SlowToLogical(const PhysicalOffset& offset,
                               const PhysicalSize& inner_size) const;
   PhysicalOffset SlowToPhysical(const LogicalOffset& offset,
                                 const PhysicalSize& inner_size) const;
+
+  LogicalRect SlowToLogical(const PhysicalRect& rect) const;
+  PhysicalRect SlowToPhysical(const LogicalRect& rect) const;
 
   WritingDirectionMode writing_direction_;
   PhysicalSize outer_size_;
@@ -81,6 +91,32 @@ inline PhysicalOffset WritingModeConverter::ToPhysical(
   if (writing_direction_.IsHorizontalLtr())
     return PhysicalOffset(offset.inline_offset, offset.block_offset);
   return SlowToPhysical(offset, inner_size);
+}
+
+inline LogicalSize WritingModeConverter::ToLogical(
+    const PhysicalSize& size) const {
+  return size.ConvertToLogical(GetWritingMode());
+}
+
+inline PhysicalSize WritingModeConverter::ToPhysical(
+    const LogicalSize& size) const {
+  return ToPhysicalSize(size, GetWritingMode());
+}
+
+inline LogicalRect WritingModeConverter::ToLogical(
+    const PhysicalRect& rect) const {
+  if (writing_direction_.IsHorizontalLtr())
+    return LogicalRect(rect.X(), rect.Y(), rect.Width(), rect.Height());
+  return SlowToLogical(rect);
+}
+
+inline PhysicalRect WritingModeConverter::ToPhysical(
+    const LogicalRect& rect) const {
+  if (writing_direction_.IsHorizontalLtr()) {
+    return PhysicalRect(rect.offset.inline_offset, rect.offset.block_offset,
+                        rect.size.inline_size, rect.size.block_size);
+  }
+  return SlowToPhysical(rect);
 }
 
 }  // namespace blink

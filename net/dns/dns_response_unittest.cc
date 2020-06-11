@@ -4,6 +4,7 @@
 
 #include "net/dns/dns_response.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "base/big_endian.h"
@@ -17,6 +18,7 @@
 #include "net/dns/dns_util.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/dns/record_rdata.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -297,26 +299,32 @@ TEST(DnsResponseTest, InitParse) {
   DnsResponse resp;
   memcpy(resp.io_buffer()->data(), response_data, sizeof(response_data));
 
+  EXPECT_FALSE(resp.id());
+
   // Reject too short.
   EXPECT_FALSE(resp.InitParse(query->io_buffer()->size() - 1, *query));
   EXPECT_FALSE(resp.IsValid());
+  EXPECT_FALSE(resp.id());
 
   // Reject wrong id.
   std::unique_ptr<DnsQuery> other_query = query->CloneWithNewId(0xbeef);
   EXPECT_FALSE(resp.InitParse(sizeof(response_data), *other_query));
   EXPECT_FALSE(resp.IsValid());
+  EXPECT_THAT(resp.id(), testing::Optional(0xcafe));
 
   // Reject wrong question.
   std::unique_ptr<DnsQuery> wrong_query(
       new DnsQuery(0xcafe, qname, dns_protocol::kTypeCNAME));
   EXPECT_FALSE(resp.InitParse(sizeof(response_data), *wrong_query));
   EXPECT_FALSE(resp.IsValid());
+  EXPECT_THAT(resp.id(), testing::Optional(0xcafe));
 
   // Accept matching question.
   EXPECT_TRUE(resp.InitParse(sizeof(response_data), *query));
   EXPECT_TRUE(resp.IsValid());
 
   // Check header access.
+  EXPECT_THAT(resp.id(), testing::Optional(0xcafe));
   EXPECT_EQ(0x8180, resp.flags());
   EXPECT_EQ(0x0, resp.rcode());
   EXPECT_EQ(2u, resp.answer_count());
@@ -384,6 +392,7 @@ TEST(DnsResponseTest, InitParseInvalidFlags) {
 
   EXPECT_FALSE(resp.InitParse(sizeof(response_data), *query));
   EXPECT_FALSE(resp.IsValid());
+  EXPECT_THAT(resp.id(), testing::Optional(0xcafe));
 }
 
 TEST(DnsResponseTest, InitParseWithoutQuery) {
@@ -441,6 +450,7 @@ TEST(DnsResponseTest, InitParseWithoutQueryNoQuestions) {
   EXPECT_TRUE(resp.InitParseWithoutQuery(sizeof(response_data)));
 
   // Check header access.
+  EXPECT_THAT(resp.id(), testing::Optional(0xcafe));
   EXPECT_EQ(0x8180, resp.flags());
   EXPECT_EQ(0x0, resp.rcode());
   EXPECT_EQ(0x1u, resp.answer_count());
@@ -483,6 +493,7 @@ TEST(DnsResponseTest, InitParseWithoutQueryInvalidFlags) {
   memcpy(resp.io_buffer()->data(), response_data, sizeof(response_data));
 
   EXPECT_FALSE(resp.InitParseWithoutQuery(sizeof(response_data)));
+  EXPECT_THAT(resp.id(), testing::Optional(0xcafe));
 }
 
 TEST(DnsResponseTest, InitParseWithoutQueryTwoQuestions) {
@@ -1181,6 +1192,7 @@ TEST(DnsResponseWriteTest, WrittenResponseCanBeParsed) {
                        base::nullopt);
   ASSERT_NE(nullptr, response.io_buffer());
   EXPECT_TRUE(response.IsValid());
+  EXPECT_THAT(response.id(), testing::Optional(0x1234));
   EXPECT_EQ(1u, response.answer_count());
   EXPECT_EQ(1u, response.additional_answer_count());
   auto parser = response.Parser();

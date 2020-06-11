@@ -775,8 +775,8 @@ void HTMLInputElement::ParseAttribute(
       SetNeedsStyleRecalc(
           kSubtreeStyleChange,
           StyleChangeReasonForTracing::FromAttribute(html_names::kValueAttr));
+      needs_to_update_view_value_ = true;
     }
-    needs_to_update_view_value_ = true;
     SetNeedsValidityCheck();
     input_type_->WarnIfValueIsInvalidAndElementIsVisible(value);
     input_type_->InRangeChanged();

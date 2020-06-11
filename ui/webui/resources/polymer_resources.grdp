@@ -106,14 +106,6 @@
   <structure name="IDR_POLYMER_1_0_IRON_ICONSET_SVG_IRON_ICONSET_SVG_HTML"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-iconset-svg/iron-iconset-svg.html"
              type="chrome_html" />
-  <if expr="chromeos">
-    <structure name="IDR_POLYMER_1_0_IRON_INPUT_IRON_INPUT_EXTRACTED_JS"
-               file="../../../third_party/polymer/v1_0/components-chromium/iron-input/iron-input-extracted.js"
-               type="chrome_html" />
-    <structure name="IDR_POLYMER_1_0_IRON_INPUT_IRON_INPUT_HTML"
-               file="../../../third_party/polymer/v1_0/components-chromium/iron-input/iron-input.html"
-               type="chrome_html" />
-  </if>
   <structure name="IDR_POLYMER_1_0_IRON_LIST_IRON_LIST_EXTRACTED_JS"
              file="../../../third_party/polymer/v1_0/components-chromium/iron-list/iron-list-extracted.js"
              type="chrome_html" />
@@ -231,12 +223,6 @@
              file="../../../third_party/polymer/v1_0/components-chromium/iron-selector/iron-selector.html"
              type="chrome_html" />
   <if expr="chromeos">
-    <structure name="IDR_POLYMER_1_0_IRON_VALIDATABLE_BEHAVIOR_IRON_VALIDATABLE_BEHAVIOR_EXTRACTED_JS"
-               file="../../../third_party/polymer/v1_0/components-chromium/iron-validatable-behavior/iron-validatable-behavior-extracted.js"
-               type="chrome_html" />
-    <structure name="IDR_POLYMER_1_0_IRON_VALIDATABLE_BEHAVIOR_IRON_VALIDATABLE_BEHAVIOR_HTML"
-               file="../../../third_party/polymer/v1_0/components-chromium/iron-validatable-behavior/iron-validatable-behavior.html"
-               type="chrome_html" />
     <structure name="IDR_POLYMER_1_0_NEON_ANIMATION_ANIMATIONS_FADE_IN_ANIMATION_EXTRACTED_JS"
                file="../../../third_party/polymer/v1_0/components-chromium/neon-animation/animations/fade-in-animation-extracted.js"
                type="chrome_html" />

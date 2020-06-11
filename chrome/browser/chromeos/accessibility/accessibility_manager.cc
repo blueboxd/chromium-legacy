@@ -242,8 +242,8 @@ class ChromeVoxDeferredLoader : public content::UtteranceEventDelegate,
 
   void SendWarmupUtterance() {
     Profile* profile = manager_->profile();
-    if (profile->HasOffTheRecordProfile())
-      profile = profile->GetOffTheRecordProfile();
+    if (profile->HasPrimaryOTRProfile())
+      profile = profile->GetPrimaryOTRProfile();
     std::unique_ptr<content::TtsUtterance> utterance =
         content::TtsUtterance::Create(profile);
     utterance->SetEventDelegate(this);
@@ -255,8 +255,8 @@ class ChromeVoxDeferredLoader : public content::UtteranceEventDelegate,
 
   bool IsGoogleTtsVoiceAvailable() const {
     Profile* profile = manager_->profile();
-    if (profile->HasOffTheRecordProfile())
-      profile = profile->GetOffTheRecordProfile();
+    if (profile->HasPrimaryOTRProfile())
+      profile = profile->GetPrimaryOTRProfile();
     std::vector<content::VoiceData> voices;
     content::TtsController::GetInstance()->GetVoices(profile, &voices);
     return std::any_of(voices.begin(), voices.end(), [](const auto& voice) {

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
@@ -662,17 +663,18 @@ PhysicalOffset NGInlineCursorPosition::LineEndPoint() const {
                                        pixel_size);
 }
 
-LogicalRect NGInlineCursorPosition::ConvertToLogical(
+LogicalRect NGInlineCursorPosition::ConvertChildToLogical(
     const PhysicalRect& physical_rect) const {
-  return physical_rect.ConvertToLogical(Style().GetWritingMode(),
-                                        ResolvedOrBaseDirection(), Size(),
-                                        physical_rect.size);
+  return WritingModeConverter(
+             {Style().GetWritingMode(), ResolvedOrBaseDirection()}, Size())
+      .ToLogical(physical_rect);
 }
 
-PhysicalRect NGInlineCursorPosition::ConvertToPhysical(
+PhysicalRect NGInlineCursorPosition::ConvertChildToPhysical(
     const LogicalRect& logical_rect) const {
-  return logical_rect.ConvertToPhysical(Style().GetWritingMode(),
-                                        ResolvedOrBaseDirection(), Size());
+  return WritingModeConverter(
+             {Style().GetWritingMode(), ResolvedOrBaseDirection()}, Size())
+      .ToPhysical(logical_rect);
 }
 
 PositionWithAffinity NGInlineCursor::PositionForPointInInlineFormattingContext(
@@ -923,7 +925,7 @@ PositionWithAffinity NGInlineCursor::PositionForPointInChild(
         // can utilize LayoutBlock::PositionForPoint() that resolves the
         // position in block layout.
         // TODO(xiaochengh): Don't fallback to legacy for NG block layout.
-        if (box_fragment->IsBlockFlow() || box_fragment->IsLegacyLayoutRoot()) {
+        if (!box_fragment->IsInlineBox()) {
           return child_item.GetLayoutObject()->PositionForPoint(
               point - child_item.OffsetInContainerBlock());
         }

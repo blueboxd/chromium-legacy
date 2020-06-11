@@ -1828,7 +1828,7 @@
       'filepath': 'chrome/browser/chromeos/input_method/'\
                   '|chrome/browser/chromeos/extensions/input_method'\
                   '|chrome/browser/chromeos/status/input_method'\
-                  '|chrome/browser/extensions/extension_input_'\
+                  '|chrome/browser/extensions/api/input_ime'\
                   '|chrome/browser/resources/keyboard'\
                   'chromeos/.*(language|keyboard)'\
                   '|chromeos/ime/*'
@@ -2778,11 +2778,13 @@
                   'nona+watch@chromium.org',
                   'shuchen+watch@chromium.org',
                   'suzhe@chromium.org',
+                  'tranbaoduy+watch@chromium.org',
                   'yhanada+watch@chromium.org',
                   'yusukes+watch@chromium.org'],
     'textinput_chromeos': ['keithlee+watch@chromium.org',
                            'nona+watch@chromium.org',
                            'shuchen+watch@chromium.org',
+                           'tranbaoduy+watch@chromium.org',
                            'yhanada+watch@chromium.org',
                            'yusukes+watch@chromium.org'],
     'third_party_conflicts': ['pmonette+watch@chromium.org'],
@@ -2811,8 +2813,9 @@
                       'rijubrata.bhaumik@intel.com'],
     'video_gpu': ['acourbot+watch@chromium.org'],
     'virtual_keyboard': ['dfaden+virtualkb@google.com',
-                         'yhanada+watchvk@chromium.org',
-                         'shend+watch@chromium.org'],
+                         'shend+watch@chromium.org',
+                         'tranbaoduy+watch@chromium.org',
+                         'yhanada+watchvk@chromium.org'],
     'virtual_reality': ['feature-vr-reviews@chromium.org'],
     'vulkan': ['cblume+vulkan@chromium.org',
                'penghuang+vulkan@chromium.org'],

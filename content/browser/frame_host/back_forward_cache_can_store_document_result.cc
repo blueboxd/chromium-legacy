@@ -121,6 +121,8 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
     case Reason::kIgnoreEventAndEvict:
       return "IsInactiveAndDisallowReactivation() was called for the frame in "
              "bfcache";
+    case Reason::kHaveInnerContents:
+      return "RenderFrameHost has inner WebContents attached";
   }
 }
 

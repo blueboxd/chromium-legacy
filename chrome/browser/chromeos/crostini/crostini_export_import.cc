@@ -296,9 +296,8 @@ void CrostiniExportImport::Start(
               kCrostiniDefaultVmName, path, false,
               base::BindOnce(&CrostiniExportImport::ExportAfterSharing,
                              weak_ptr_factory_.GetWeakPtr(),
-                             operation_data->container_id, std::move(callback))
-
-                  ));
+                             operation_data->container_id,
+                             std::move(callback))));
       break;
     case ExportImportType::IMPORT:
       guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(
@@ -356,8 +355,7 @@ void CrostiniExportImport::OnExportComplete(
         // file is functionally the same as a successful cancel.
         base::ThreadPool::PostTask(
             FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-            base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                           it->second->path(), false));
+            base::BindOnce(base::GetDeleteFileCallback(), it->second->path()));
         RemoveTracker(it)->SetStatusCancelled();
         break;
       }
@@ -389,8 +387,7 @@ void CrostiniExportImport::OnExportComplete(
         // file needs to be cleaned up.
         base::ThreadPool::PostTask(
             FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-            base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                           it->second->path(), false));
+            base::BindOnce(base::GetDeleteFileCallback(), it->second->path()));
         RemoveTracker(it)->SetStatusCancelled();
         break;
       }
@@ -401,8 +398,7 @@ void CrostiniExportImport::OnExportComplete(
     LOG(ERROR) << "Error exporting " << int(result);
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                       it->second->path(), false));
+        base::BindOnce(base::GetDeleteFileCallback(), it->second->path()));
     switch (result) {
       case CrostiniResult::CONTAINER_EXPORT_IMPORT_FAILED_VM_STOPPED:
         enum_hist_result = ExportContainerResult::kFailedVmStopped;

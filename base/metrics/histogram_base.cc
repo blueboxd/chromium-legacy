@@ -179,6 +179,30 @@ void HistogramBase::FindAndRunCallback(HistogramBase::Sample sample) const {
     cb.Run(sample);
 }
 
+void HistogramBase::GetCountAndBucketData(Count* count,
+                                          int64_t* sum,
+                                          ListValue* buckets) const {
+  std::unique_ptr<HistogramSamples> snapshot = SnapshotSamples();
+  *count = snapshot->TotalCount();
+  *sum = snapshot->sum();
+  std::unique_ptr<SampleCountIterator> it = snapshot->Iterator();
+  uint32_t index = 0;
+  while (!it->Done()) {
+    std::unique_ptr<DictionaryValue> bucket_value(new DictionaryValue());
+    Sample bucket_min;
+    int64_t bucket_max;
+    Count bucket_count;
+    it->Get(&bucket_min, &bucket_max, &bucket_count);
+
+    bucket_value->SetIntKey("low", bucket_min);
+    bucket_value->SetIntKey("high", bucket_max);
+    bucket_value->SetIntKey("count", bucket_count);
+    buckets->Set(index, std::move(bucket_value));
+    it->Next();
+    ++index;
+  }
+}
+
 void HistogramBase::WriteAsciiBucketGraph(double current_size,
                                           double max_size,
                                           std::string* output) const {

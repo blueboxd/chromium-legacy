@@ -519,8 +519,7 @@ void PrintDialogGtk::OnJobCompleted(GtkPrintJob* print_job,
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile), path_to_pdf_,
-                     false));
+      base::BindOnce(base::GetDeleteFileCallback(), path_to_pdf_));
   // Printing finished. Matches AddRef() in PrintDocument();
   Release();
 }

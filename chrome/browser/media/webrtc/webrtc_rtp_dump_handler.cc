@@ -64,15 +64,13 @@ WebRtcRtpDumpHandler::~WebRtcRtpDumpHandler() {
   if (incoming_state_ != STATE_NONE && !incoming_dump_path_.empty()) {
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                       incoming_dump_path_, false));
+        base::BindOnce(base::GetDeleteFileCallback(), incoming_dump_path_));
   }
 
   if (outgoing_state_ != STATE_NONE && !outgoing_dump_path_.empty()) {
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                       outgoing_dump_path_, false));
+        base::BindOnce(base::GetDeleteFileCallback(), outgoing_dump_path_));
   }
 }
 
@@ -295,8 +293,7 @@ void WebRtcRtpDumpHandler::OnDumpEnded(const base::Closure& callback,
     if (!incoming_success) {
       base::ThreadPool::PostTask(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                         incoming_dump_path_, false));
+          base::BindOnce(base::GetDeleteFileCallback(), incoming_dump_path_));
 
       DVLOG(2) << "Deleted invalid incoming dump "
                << incoming_dump_path_.value();
@@ -311,8 +308,7 @@ void WebRtcRtpDumpHandler::OnDumpEnded(const base::Closure& callback,
     if (!outgoing_success) {
       base::ThreadPool::PostTask(
           FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                         outgoing_dump_path_, false));
+          base::BindOnce(base::GetDeleteFileCallback(), outgoing_dump_path_));
 
       DVLOG(2) << "Deleted invalid outgoing dump "
                << outgoing_dump_path_.value();

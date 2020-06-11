@@ -621,7 +621,8 @@ void VideoCaptureImpl::OnBufferReady(
             gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
                 buffer_context->TakeGpuMemoryBufferHandle(),
                 gfx::Size(info->coded_size), gfx_format,
-                gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE, base::DoNothing());
+                gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+                base::DoNothing());
         buffer_context->SetGpuMemoryBuffer(std::move(gmb));
       }
       CHECK(buffer_context->GetGpuMemoryBuffer());
@@ -632,7 +633,8 @@ void VideoCaptureImpl::OnBufferReady(
               buffer_context->GetGpuMemoryBuffer()->CloneHandle(),
               buffer_context->GetGpuMemoryBuffer()->GetSize(),
               buffer_context->GetGpuMemoryBuffer()->GetFormat(),
-              gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE, base::DoNothing());
+              gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+              base::DoNothing());
 
       media_task_runner_->PostTask(
           FROM_HERE,

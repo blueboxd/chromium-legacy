@@ -120,7 +120,7 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   //                   already exists for the profile.  The new key will replace
   //                   the existing key on success.
   //   key_name - The name of the key. If left empty, a default name derived
-  //              from the |certiifcate_profile| and |account_id| will be used.
+  //              from the |certificate_profile| and |account_id| will be used.
   //   callback - A callback which will be called when the operation completes.
   //              On success |result| will be true and |data| will contain the
   //              PCA-issued certificate chain in PEM format.
@@ -207,7 +207,7 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   //   request_origin - An identifier for the origin of this request.
   //   generate_new_key - If set to true a new key is generated.
   //   key_name - The name of the key. If left empty, a default name derived
-  //              from the |certiifcate_profile| and |account_id| will be used.
+  //              from the |certificate_profile| and |account_id| will be used.
   //   callback - Called when the operation completes.
   //   enrolled - Success or failure of the enrollment phase.
   void StartCertificateRequest(
@@ -230,7 +230,7 @@ class COMPONENT_EXPORT(CHROMEOS_ATTESTATION) AttestationFlow {
   //   request_origin - An identifier for the origin of this request.
   //   generate_new_key - If set to true a new key is generated.
   //   key_name - The name of the key. If left empty, a default name derived
-  //              from the |certiifcate_profile| and |account_id| will be used.
+  //              from the |certificate_profile| and |account_id| will be used.
   //   callback - Called when the operation completes.
   //   result - Result of TpmAttestationDoesKeyExist().
   void OnKeyExistCheckComplete(

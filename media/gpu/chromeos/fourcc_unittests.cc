@@ -32,11 +32,11 @@ TEST(FourccTest, V4L2PixFmtToV4L2PixFmt) {
 
   CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_ABGR32);
 #ifdef V4L2_PIX_FMT_RGBA32
-  V4L2PixFmtIsEqual(V4L2_PIX_FMT_RGBA32);
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_RGBA32);
 #endif
   CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_XBGR32);
 #ifdef V4L2_PIX_FMT_RGBX32
-  V4L2PixFmtIsEqual(V4L2_PIX_FMT_RGBX32);
+  CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_RGBX32);
 #endif
   CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_RGB32);
   CheckFromV4L2PixFmtAndBack(V4L2_PIX_FMT_YUV420);

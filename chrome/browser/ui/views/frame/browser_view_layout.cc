@@ -233,12 +233,12 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
   // In some configurations, the caption button container may be part of the
   // browser top area instead of the frame, but we still have to treat it as
   // part of the frame for hit testing purposes.
-  auto* const container =
+  auto* const caption_buttons =
       browser_view_->frame()->GetFrameView()->GetCaptionButtonContainer();
-  if (container) {
+  if (caption_buttons && top_container_->Contains(caption_buttons)) {
     gfx::Point test_point = point;
-    if (ConvertedHitTest(parent, container, &test_point)) {
-      const int result = container->NonClientHitTest(test_point);
+    if (ConvertedHitTest(parent, caption_buttons, &test_point)) {
+      const int result = caption_buttons->NonClientHitTest(test_point);
       if (result != HTNOWHERE)
         return result;
     }

@@ -16,6 +16,7 @@
 #include "net/base/rand_callback.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_socket_pool.h"
+#include "net/dns/dns_udp_tracker.h"
 
 namespace net {
 
@@ -62,6 +63,7 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
              NetLog* net_log);
 
   const DnsConfig& config() const { return config_; }
+  DnsUdpTracker* udp_tracker() { return &udp_tracker_; }
   NetLog* net_log() const { return net_log_; }
 
   // Return the next random query ID.
@@ -98,6 +100,7 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
 
   const DnsConfig config_;
   std::unique_ptr<DnsSocketPool> socket_pool_;
+  DnsUdpTracker udp_tracker_;
   RandCallback rand_callback_;
   NetLog* net_log_;
 

@@ -46,10 +46,7 @@ struct NET_EXPORT SSLContextConfig {
 
   // If true, enables TLS 1.3 downgrade hardening for connections using
   // local trust anchors. (Hardening for known roots is always enabled.)
-  //
-  // TODO(https://crbug.com/1033598): Enable this it has successfully been
-  // enabled in Chrome.
-  bool tls13_hardening_for_local_anchors_enabled = false;
+  bool tls13_hardening_for_local_anchors_enabled = true;
 };
 
 // The interface for retrieving global SSL configuration.  This interface

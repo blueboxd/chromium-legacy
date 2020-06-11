@@ -4189,6 +4189,36 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTestWithDomainControlEnabled,
   ExpectNotRestoredDidNotChange(FROM_HERE);
 }
 
+// Check the BackForwardCache is disabled when there is a nested WebContents
+// inside a page.
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, NestedWebContents) {
+  // 1) Navigate to a page.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameHostImpl* child = rfh_a->child_at(0)->current_frame_host();
+  EXPECT_TRUE(child);
+
+  // Create and attach an inner WebContents.
+  CreateAndAttachInnerContents(child);
+  RenderFrameDeletedObserver deleted(rfh_a);
+
+  // 2) Navigate away.
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  // The page has an inner WebContents so it should be deleted.
+  deleted.WaitUntilDeleted();
+
+  // 3) Go back to the page with an inner WebContents.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kHaveInnerContents},
+      FROM_HERE);
+}
+
 // Check the BackForwardCache is disabled when the WebUSB feature is used.
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, WebUSB) {
   // WebUSB requires HTTPS.

@@ -106,6 +106,18 @@ void AssistiveWindowController::ShowSuggestion(const base::string16& text,
   suggestion_window_view_->Show(text, confirmed_length, show_tab);
 }
 
+void AssistiveWindowController::ShowMultipleSuggestions(
+    const std::vector<base::string16>& suggestions) {
+  if (!suggestion_window_view_)
+    InitSuggestionWindow();
+  suggestion_window_view_->ShowMultipleCandidates(suggestions);
+}
+
+void AssistiveWindowController::HighlightSuggestionCandidate(int index) {
+  if (suggestion_window_view_)
+    suggestion_window_view_->HighlightCandidate(index);
+}
+
 base::string16 AssistiveWindowController::GetSuggestionText() const {
   return suggestion_text_;
 }

@@ -8,6 +8,7 @@
 
 #include <string>
 
+#include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_view.h"
@@ -64,7 +65,9 @@ SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent) {
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
-  suggestion_view_ = AddChildView(std::make_unique<SuggestionView>());
+  candidate_area_ = AddChildView(std::make_unique<views::View>());
+  candidate_area_->SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 }
 
 SuggestionWindowView::~SuggestionWindowView() = default;
@@ -85,24 +88,50 @@ void SuggestionWindowView::Hide() {
   GetWidget()->Close();
 }
 
-void SuggestionWindowView::Show(const base::string16& text,
-                                const size_t confirmed_length,
-                                const bool show_tab) {
-  UpdateSuggestion(text, confirmed_length, show_tab);
-  suggestion_view_->SetVisible(true);
+void SuggestionWindowView::MakeVisible() {
+  candidate_area_->SetVisible(true);
   SizeToContents();
 }
 
-void SuggestionWindowView::UpdateSuggestion(const base::string16& text,
-                                            const size_t confirmed_length,
-                                            const bool show_tab) {
-  suggestion_view_->SetView(text, confirmed_length, show_tab);
+void SuggestionWindowView::Show(const base::string16& text,
+                                const size_t confirmed_length,
+                                const bool show_tab) {
+  MaybeInitializeSuggestionViews(1);
+  candidate_views_[0]->SetEnabled(true);
+  candidate_views_[0]->SetView(text, confirmed_length, show_tab);
+  MakeVisible();
+}
 
-  std::unique_ptr<SuggestionWindowBorder> border =
-      std::make_unique<SuggestionWindowBorder>();
+void SuggestionWindowView::ShowMultipleCandidates(
+    const std::vector<base::string16>& candidates) {
+  MaybeInitializeSuggestionViews(candidates.size());
+  for (size_t i = 0; i < candidates.size(); i++) {
+    SuggestionView* candidate_view = candidate_views_[i].get();
+    candidate_view->SetViewWithIndex(base::FormatNumber(i + 1), candidates[i]);
+    candidate_view->SetEnabled(true);
+  }
+  MakeVisible();
+}
 
-  GetBubbleFrameView()->SetBubbleBorder(std::move(border));
-  GetBubbleFrameView()->OnThemeChanged();
+void SuggestionWindowView::MaybeInitializeSuggestionViews(
+    size_t candidates_size) {
+  if (candidate_views_.size() > candidates_size)
+    candidate_views_.resize(candidates_size);
+
+  while (candidate_views_.size() < candidates_size) {
+    auto new_candidate = std::make_unique<SuggestionView>();
+    candidate_area_->AddChildView(new_candidate.get());
+    candidate_views_.push_back(std::move(new_candidate));
+  }
+}
+
+void SuggestionWindowView::HighlightCandidate(int index) {
+  if (selected_index_ != -1)
+    candidate_views_[selected_index_]->SetHighlighted(false);
+  if (index < static_cast<int>(candidate_views_.size())) {
+    candidate_views_[index]->SetHighlighted(true);
+    selected_index_ = index;
+  }
 }
 
 void SuggestionWindowView::SetBounds(const gfx::Rect& cursor_bounds) {

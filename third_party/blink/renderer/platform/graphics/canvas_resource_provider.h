@@ -178,11 +178,11 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   SkSurface* GetSkSurface() const;
   bool IsGpuContextLost() const;
-  bool WritePixels(const SkImageInfo& orig_info,
-                   const void* pixels,
-                   size_t row_bytes,
-                   int x,
-                   int y);
+  virtual bool WritePixels(const SkImageInfo& orig_info,
+                           const void* pixels,
+                           size_t row_bytes,
+                           int x,
+                           int y);
 
   virtual gpu::Mailbox GetBackingMailboxForOverwrite(
       MailboxSyncMode sync_mode) {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
+#include "chrome/browser/profiles/profile.h"
 
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -17,10 +18,18 @@ bool IsBookmarkBarLocation(BookmarkLaunchLocation location) {
          location == BOOKMARK_LAUNCH_LOCATION_BAR_SUBFOLDER;
 }
 
+auto GetMetricProfile(const Profile* profile) {
+  DCHECK(profile);
+  DCHECK(profile->IsRegularProfile() || profile->IsIncognitoProfile());
+  return profile->IsRegularProfile()
+             ? profile_metrics::BrowserProfileType::kRegular
+             : profile_metrics::BrowserProfileType::kIncognito;
+}
 
 }  // namespace
 
-void RecordBookmarkLaunch(BookmarkLaunchLocation location) {
+void RecordBookmarkLaunch(BookmarkLaunchLocation location,
+                          profile_metrics::BrowserProfileType profile_type) {
   if (IsBookmarkBarLocation(location)) {
     base::RecordAction(base::UserMetricsAction("ClickedBookmarkBarURLButton"));
   } else if (location == BOOKMARK_LAUNCH_LOCATION_APP_MENU) {
@@ -32,6 +41,8 @@ void RecordBookmarkLaunch(BookmarkLaunchLocation location) {
 
   UMA_HISTOGRAM_ENUMERATION("Bookmarks.LaunchLocation", location,
                             BOOKMARK_LAUNCH_LOCATION_LIMIT);
+
+  UMA_HISTOGRAM_ENUMERATION("Bookmarks.UsageCountPerProfileType", profile_type);
 }
 
 void RecordBookmarkFolderLaunch(BookmarkLaunchLocation location) {
@@ -50,5 +61,21 @@ void RecordBookmarkAppsPageOpen(BookmarkLaunchLocation location) {
   if (IsBookmarkBarLocation(location)) {
     base::RecordAction(
         base::UserMetricsAction("ClickedBookmarkBarAppsShortcutButton"));
+  }
+}
+
+void RecordBookmarksAdded(const Profile* profile) {
+  profile_metrics::BrowserProfileType profile_type = GetMetricProfile(profile);
+  UMA_HISTOGRAM_ENUMERATION("Bookmarks.AddedPerProfileType", profile_type);
+}
+
+void RecordBookmarkAllTabsWithTabsCount(const Profile* profile, int count) {
+  profile_metrics::BrowserProfileType profile_type = GetMetricProfile(profile);
+  if (profile_type == profile_metrics::BrowserProfileType::kRegular) {
+    UMA_HISTOGRAM_COUNTS_100("Bookmarks.BookmarkAllTabsWithTabsCount.Regular",
+                             count);
+  } else {
+    UMA_HISTOGRAM_COUNTS_100("Bookmarks.BookmarkAllTabsWithTabsCount.Incognito",
+                             count);
   }
 }

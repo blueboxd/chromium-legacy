@@ -35,11 +35,98 @@ perfetto::TraceConfig::DataSource* AddDataSourceConfig(
   return data_source;
 }
 
+void AddDataSourceConfigs(
+    perfetto::TraceConfig* perfetto_config,
+    const base::trace_event::TraceConfig::ProcessFilterConfig& process_filters,
+    const base::trace_event::TraceConfig& stripped_config,
+    const std::set<std::string>& source_names,
+    bool privacy_filtering_enabled) {
+  const std::string chrome_config_string = stripped_config.ToString();
+
+  // Capture actual trace events.
+  if (source_names.empty() ||
+      source_names.count(tracing::mojom::kTraceEventDataSourceName) == 1) {
+    auto* trace_event_data_source = AddDataSourceConfig(
+        perfetto_config, tracing::mojom::kTraceEventDataSourceName,
+        chrome_config_string, privacy_filtering_enabled);
+    for (auto& enabled_pid : process_filters.included_process_ids()) {
+      *trace_event_data_source->add_producer_name_filter() = base::StrCat(
+          {mojom::kPerfettoProducerNamePrefix,
+           base::NumberToString(static_cast<uint32_t>(enabled_pid))});
+    }
+  }
+
+  // Capture system trace events if supported and enabled. The datasources will
+  // only emit events if system tracing is enabled in |chrome_config|.
+  if (!privacy_filtering_enabled) {
+#if defined(OS_CHROMEOS) || (BUILDFLAG(IS_CHROMECAST) && defined(OS_LINUX))
+    if (source_names.empty() ||
+        source_names.count(tracing::mojom::kSystemTraceDataSourceName) == 1) {
+      AddDataSourceConfig(perfetto_config,
+                          tracing::mojom::kSystemTraceDataSourceName,
+                          chrome_config_string, privacy_filtering_enabled);
+    }
+#endif
+
+#if defined(OS_CHROMEOS)
+    if (source_names.empty() ||
+        source_names.count(tracing::mojom::kArcTraceDataSourceName) == 1) {
+      AddDataSourceConfig(perfetto_config,
+                          tracing::mojom::kArcTraceDataSourceName,
+                          chrome_config_string, privacy_filtering_enabled);
+    }
+#endif
+  }
+
+  // Also capture global metadata.
+  if (source_names.empty() ||
+      source_names.count(tracing::mojom::kMetaDataSourceName) == 1) {
+    AddDataSourceConfig(perfetto_config, tracing::mojom::kMetaDataSourceName,
+                        chrome_config_string, privacy_filtering_enabled);
+  }
+
+  if (stripped_config.IsCategoryGroupEnabled(
+          TRACE_DISABLED_BY_DEFAULT("cpu_profiler"))) {
+    DCHECK_EQ(
+        1u, source_names.empty() ||
+                source_names.count(tracing::mojom::kSamplerProfilerSourceName));
+    AddDataSourceConfig(perfetto_config,
+                        tracing::mojom::kSamplerProfilerSourceName,
+                        chrome_config_string, privacy_filtering_enabled);
+  }
+
+  if (stripped_config.IsCategoryGroupEnabled(
+          TRACE_DISABLED_BY_DEFAULT("java-heap-profiler"))) {
+    DCHECK_EQ(1u, source_names.empty() ||
+                      source_names.count(
+                          tracing::mojom::kJavaHeapProfilerSourceName));
+    AddDataSourceConfig(perfetto_config,
+                        tracing::mojom::kJavaHeapProfilerSourceName,
+                        chrome_config_string, privacy_filtering_enabled);
+  }
+
+  if (source_names.empty() ||
+      source_names.count(tracing::mojom::kReachedCodeProfilerSourceName) == 1) {
+    AddDataSourceConfig(perfetto_config,
+                        tracing::mojom::kReachedCodeProfilerSourceName,
+                        chrome_config_string, privacy_filtering_enabled);
+  }
+}
+
 }  // namespace
 
 perfetto::TraceConfig GetDefaultPerfettoConfig(
     const base::trace_event::TraceConfig& chrome_config,
     bool privacy_filtering_enabled) {
+  return GetPerfettoConfigWithDataSources(chrome_config, {},
+                                          privacy_filtering_enabled);
+}
+
+perfetto::TraceConfig COMPONENT_EXPORT(TRACING_CPP)
+    GetPerfettoConfigWithDataSources(
+        const base::trace_event::TraceConfig& chrome_config,
+        const std::set<std::string>& source_names,
+        bool privacy_filtering_enabled) {
   perfetto::TraceConfig perfetto_config;
 
   size_t size_limit = chrome_config.GetTraceBufferSizeInKb();
@@ -98,52 +185,10 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
       base::trace_event::TraceConfig::ProcessFilterConfig());
   stripped_config.SetTraceBufferSizeInKb(0);
   stripped_config.SetTraceBufferSizeInEvents(0);
-  std::string chrome_config_string = stripped_config.ToString();
 
-  // Capture actual trace events.
-  auto* trace_event_data_source = AddDataSourceConfig(
-      &perfetto_config, tracing::mojom::kTraceEventDataSourceName,
-      chrome_config_string, privacy_filtering_enabled);
-  for (auto& enabled_pid :
-       chrome_config.process_filter_config().included_process_ids()) {
-    *trace_event_data_source->add_producer_name_filter() = base::StrCat(
-        {mojom::kPerfettoProducerNamePrefix,
-         base::NumberToString(static_cast<uint32_t>(enabled_pid))});
-  }
-
-// Capture system trace events if supported and enabled. The datasources will
-// only emit events if system tracing is enabled in |chrome_config|.
-  if (!privacy_filtering_enabled) {
-#if defined(OS_CHROMEOS) || (BUILDFLAG(IS_CHROMECAST) && defined(OS_LINUX))
-    AddDataSourceConfig(&perfetto_config,
-                        tracing::mojom::kSystemTraceDataSourceName,
-                        chrome_config_string, privacy_filtering_enabled);
-#endif
-
-#if defined(OS_CHROMEOS)
-    AddDataSourceConfig(&perfetto_config,
-                        tracing::mojom::kArcTraceDataSourceName,
-                        chrome_config_string, privacy_filtering_enabled);
-#endif
-  }
-
-  // Also capture global metadata.
-  AddDataSourceConfig(&perfetto_config, tracing::mojom::kMetaDataSourceName,
-                      chrome_config_string, privacy_filtering_enabled);
-
-  if (chrome_config.IsCategoryGroupEnabled(
-          TRACE_DISABLED_BY_DEFAULT("cpu_profiler"))) {
-    AddDataSourceConfig(&perfetto_config,
-                        tracing::mojom::kSamplerProfilerSourceName,
-                        chrome_config_string, privacy_filtering_enabled);
-  }
-
-  if (chrome_config.IsCategoryGroupEnabled(
-          TRACE_DISABLED_BY_DEFAULT("java-heap-profiler"))) {
-    AddDataSourceConfig(&perfetto_config,
-                        tracing::mojom::kJavaHeapProfilerSourceName,
-                        chrome_config_string, privacy_filtering_enabled);
-  }
+  AddDataSourceConfigs(&perfetto_config, chrome_config.process_filter_config(),
+                       stripped_config, source_names,
+                       privacy_filtering_enabled);
 
   return perfetto_config;
 }

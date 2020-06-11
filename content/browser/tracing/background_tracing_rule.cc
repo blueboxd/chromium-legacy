@@ -169,6 +169,8 @@ class NamedTriggerRule : public BackgroundTracingRule {
       named_rule->set_event_type(MetadataProto::NamedRule::NAVIGATION);
     } else if (named_event_ == "session-restore-config") {
       named_rule->set_event_type(MetadataProto::NamedRule::SESSION_RESTORE);
+    } else if (named_event_ == "reached-code-config") {
+      named_rule->set_event_type(MetadataProto::NamedRule::REACHED_CODE);
     } else if (named_event_ == "preemptive_test") {
       named_rule->set_event_type(MetadataProto::NamedRule::TEST_RULE);
     }

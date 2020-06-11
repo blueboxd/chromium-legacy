@@ -73,6 +73,30 @@ class DriveSyncHandlerImpl extends cr.EventTarget {
      */
     this.queue_ = new AsyncUtil.Queue();
 
+    /**
+     * The length average window in calculating moving average speed of task.
+     * @private {number}
+     */
+    this.SPEED_BUFFER_WINDOW_ = 30;
+
+    /**
+     * Speedometer track speed and remaining time of sync.
+     * @const {fileOperationUtil.Speedometer}
+     * @private
+     */
+    this.speedometer_ =
+        new fileOperationUtil.Speedometer(this.SPEED_BUFFER_WINDOW_);
+
+    /**
+     * Rate limiter which is used to avoid sending update request for progress
+     * bar too frequently.
+     * @private {AsyncUtil.RateLimiter}
+     */
+    this.progressRateLimiter_ = new AsyncUtil.RateLimiter(() => {
+      this.progressCenter_.updateItem(this.item_);
+    }, 2000);
+
+
     // Register events.
     chrome.fileManagerPrivate.onFileTransfersUpdated.addListener(
         this.onFileTransfersUpdated_.bind(this));
@@ -175,7 +199,12 @@ class DriveSyncHandlerImpl extends cr.EventTarget {
             }
             this.item_.progressValue = status.processed || 0;
             this.item_.progressMax = status.total || 0;
-            this.progressCenter_.updateItem(this.item_);
+            this.speedometer_.setTotalBytes(this.item_.progressMax);
+            this.speedometer_.update(this.item_.progressValue);
+            this.item_.currentSpeed = this.speedometer_.getCurrentSpeed();
+            this.item_.averageSpeed = this.speedometer_.getAverageSpeed();
+            this.item_.remainingTime = this.speedometer_.getRemainingTime();
+            this.progressRateLimiter_.run();
             callback();
           },
           error => {

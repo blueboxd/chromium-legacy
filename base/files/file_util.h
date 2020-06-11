@@ -23,6 +23,7 @@
 #endif
 
 #include "base/base_export.h"
+#include "base/callback_forward.h"
 #include "base/containers/span.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -86,6 +87,10 @@ BASE_EXPORT bool DeleteFile(const FilePath& path, bool recursive);
 //
 // WARNING: USING THIS EQUIVALENT TO "rm -rf", SO USE WITH CAUTION.
 BASE_EXPORT bool DeleteFileRecursively(const FilePath& path);
+
+// Simplified way to get a callback to do DeleteFile(path, false) and ignore the
+// DeleteFile() result.
+BASE_EXPORT OnceCallback<void(const FilePath&)> GetDeleteFileCallback();
 
 #if defined(OS_WIN)
 // Schedules to delete the given path, whether it's a file or a directory, until

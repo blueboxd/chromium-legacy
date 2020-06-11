@@ -119,6 +119,8 @@ class MediaRouterViewsUI
   const std::vector<MediaRoute>& routes() const { return routes_; }
   content::WebContents* initiator() const { return initiator_; }
 
+  void SimulateDocumentAvailableForTest();
+
  private:
   friend class MediaRouterViewsUITest;
   friend class MediaRouterUiForTest;
@@ -195,12 +197,6 @@ class MediaRouterViewsUI
 
     DISALLOW_COPY_AND_ASSIGN(UIMediaRoutesObserver);
   };
-
-  static void RunRouteResponseCallbacks(
-      MediaRouteResponseCallback presentation_callback,
-      std::vector<MediaRouteResultCallback> callbacks,
-      mojom::RoutePresentationConnectionPtr connection,
-      const RouteRequestResult& result);
 
   std::vector<MediaSource> GetSourcesForCastMode(MediaCastMode cast_mode) const;
 
@@ -331,6 +327,8 @@ class MediaRouterViewsUI
       std::unique_ptr<StartPresentationContext> start_presentation_context) {
     start_presentation_context_ = std::move(start_presentation_context);
   }
+
+  content::WebContentsObserver* web_contents_observer_for_test_ = nullptr;
 
   // This value is set whenever there is an outstanding issue.
   base::Optional<Issue> issue_;

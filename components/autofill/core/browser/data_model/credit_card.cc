@@ -760,9 +760,16 @@ void CreditCard::SetExpirationDateFromString(const base::string16& text) {
 const std::pair<base::string16, base::string16> CreditCard::LabelPieces()
     const {
   base::string16 label;
-  // No CC number, return name only.
-  if (number().empty())
+  if (number().empty()) {
+    // No CC number, if valid nickname is present, return nickname only.
+    // Otherwise, return cardholder name only.
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillEnableCardNicknameManagement) &&
+        HasValidNickname()) {
+      return std::make_pair(nickname_, base::string16());
+    }
     return std::make_pair(name_on_card_, base::string16());
+  }
 
   base::string16 obfuscated_cc_number =
       CardIdentifierStringForAutofillDisplay();

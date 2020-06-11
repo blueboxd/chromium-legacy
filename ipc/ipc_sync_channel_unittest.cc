@@ -113,7 +113,7 @@ class Worker : public Listener, public Sender {
     is_shutdown_ = true;
   }
   void OverrideThread(base::Thread* overrided_thread) {
-    DCHECK(overrided_thread_ == NULL);
+    DCHECK(!overrided_thread_);
     overrided_thread_ = overrided_thread;
   }
   bool SendAnswerToLife(bool pump, bool succeed) {
@@ -1396,7 +1396,7 @@ class RestrictedDispatchDeadlockServer : public Worker {
 
   void OnNoArgs() {
     if (server_num_ == 1) {
-      DCHECK(peer_ != NULL);
+      DCHECK(peer_);
       peer_->SendMessageToClient();
     }
   }
@@ -1572,7 +1572,7 @@ TEST_F(IPCSyncChannelTest, RestrictedDispatchDeadlock) {
 
   mojo::MessagePipe pipe1, pipe2;
   server2 = new RestrictedDispatchDeadlockServer(
-      2, &server2_ready, events, NULL, std::move(pipe2.handle0));
+      2, &server2_ready, events, nullptr, std::move(pipe2.handle0));
   server2->OverrideThread(&worker_thread);
   workers.push_back(server2);
 
@@ -1700,13 +1700,13 @@ TEST_F(IPCSyncChannelTest, MAYBE_RestrictedDispatch4WayDeadlock) {
       &success));
   workers.push_back(new RestrictedDispatchPipeWorker(
       std::move(pipe1.handle0), &event1, std::move(pipe2.handle1), &event2, 2,
-      NULL));
+      nullptr));
   workers.push_back(new RestrictedDispatchPipeWorker(
       std::move(pipe2.handle0), &event2, std::move(pipe3.handle1), &event3, 3,
-      NULL));
+      nullptr));
   workers.push_back(new RestrictedDispatchPipeWorker(
       std::move(pipe3.handle0), &event3, std::move(pipe0.handle1), &event0, 4,
-      NULL));
+      nullptr));
   RunTest(workers);
   EXPECT_EQ(3, success);
 }
@@ -1791,7 +1791,7 @@ class ReentrantReplyServer2 : public Worker {
   void OnReentrant3() {
     DCHECK(reply_);
     Message* reply = reply_;
-    reply_ = NULL;
+    reply_ = nullptr;
     reply->set_unblock(true);
     Send(reply);
     Done();

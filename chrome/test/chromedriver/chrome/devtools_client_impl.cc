@@ -516,7 +516,7 @@ Status DevToolsClientImpl::ProcessEvent(const internal::InspectorEvent& event) {
   unnotified_event_listeners_ = listeners_;
   unnotified_event_ = &event;
   Status status = EnsureListenersNotifiedOfEvent();
-  unnotified_event_ = NULL;
+  unnotified_event_ = nullptr;
   if (status.IsError())
     return status;
   if (event.method == "Inspector.detached")
@@ -658,7 +658,7 @@ bool ParseInspectorMessage(const std::string& message,
     std::string method;
     if (!message_dict->GetString("method", &method))
       return false;
-    base::DictionaryValue* params = NULL;
+    base::DictionaryValue* params = nullptr;
     message_dict->GetDictionary("params", &params);
 
     *type = kEventMessageType;
@@ -669,8 +669,8 @@ bool ParseInspectorMessage(const std::string& message,
       event->params.reset(new base::DictionaryValue());
     return true;
   } else if (message_dict->GetInteger("id", &id)) {
-    base::DictionaryValue* unscoped_error = NULL;
-    base::DictionaryValue* unscoped_result = NULL;
+    base::DictionaryValue* unscoped_error = nullptr;
+    base::DictionaryValue* unscoped_result = nullptr;
     *type = kCommandResponseMessageType;
     command_response->id = id;
     // As per Chromium issue 392577, DevTools does not necessarily return a

@@ -26,6 +26,9 @@
     <message name="IDS_SETTINGS_ABOUT_OS" desc="Menu title for the About Chrome OS page.">
       About Chrome OS
     </message>
+    <message name="IDS_OS_SETTINGS_TAG_OS_VERSION" desc="Text for search result item which, when clicked, navigates the user to about Chrome OS settings, which gives information about the current Chrome OS version.">
+      Chrome OS version
+    </message>
     <message name="IDS_SETTINGS_ABOUT_SEE_OS_SETTINGS_FOR_UPDATE_MESSAGE" desc="Message shown to users on Chrome browser settings which alerts the user that OS updates are shown in Chrome OS settings.">
       To see if your device is up to date, go to <ph name="LINK_BEGIN">&lt;a href="chrome://os-settings/help"&gt;</ph>Chrome OS Settings<ph name="LINK_END">&lt;/a&gt;</ph>
     </message>

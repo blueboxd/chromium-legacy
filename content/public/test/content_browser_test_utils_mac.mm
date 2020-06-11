@@ -18,8 +18,10 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #include "content/browser/renderer_host/text_input_client_mac.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/common/mac/attributed_string_type_converters.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/mojom/attributed_string.mojom.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
@@ -133,15 +135,15 @@ void GetStringAtPointForRenderWidget(
   TextInputClientMac::GetInstance()->GetStringAtPoint(
       rwh, point,
       base::BindOnce(
-          base::RetainBlock(^(
-              base::OnceCallback<void(const std::string&, const gfx::Point&)>
-                  callback,
-              const mac::AttributedStringCoder::EncodedString& encoded_string,
-              gfx::Point baseline_point) {
-            std::string string = base::SysNSStringToUTF8(
-                [mac::AttributedStringCoder::Decode(&encoded_string) string]);
-            std::move(callback).Run(string, baseline_point);
-          }),
+          base::RetainBlock(
+              ^(base::OnceCallback<void(const std::string&, const gfx::Point&)>
+                    callback,
+                ui::mojom::AttributedStringPtr attributed_string,
+                const gfx::Point& baseline_point) {
+                std::string string = base::SysNSStringToUTF8(
+                    [attributed_string.To<NSAttributedString*>() string]);
+                std::move(callback).Run(string, baseline_point);
+              }),
           std::move(result_callback)));
 }
 
@@ -153,15 +155,15 @@ void GetStringFromRangeForRenderWidget(
   TextInputClientMac::GetInstance()->GetStringFromRange(
       rwh, range,
       base::BindOnce(
-          base::RetainBlock(^(
-              base::OnceCallback<void(const std::string&, const gfx::Point&)>
-                  callback,
-              const mac::AttributedStringCoder::EncodedString& encoded_string,
-              gfx::Point baseline_point) {
-            std::string string = base::SysNSStringToUTF8(
-                [mac::AttributedStringCoder::Decode(&encoded_string) string]);
-            std::move(callback).Run(string, baseline_point);
-          }),
+          base::RetainBlock(
+              ^(base::OnceCallback<void(const std::string&, const gfx::Point&)>
+                    callback,
+                ui::mojom::AttributedStringPtr attributed_string,
+                const gfx::Point& baseline_point) {
+                std::string string = base::SysNSStringToUTF8(
+                    [attributed_string.To<NSAttributedString*>() string]);
+                std::move(callback).Run(string, baseline_point);
+              }),
           std::move(result_callback)));
 }
 

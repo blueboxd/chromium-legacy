@@ -49,7 +49,7 @@ class V4L2StatelessVideoDecoderBackend : public V4L2VideoDecoderBackend,
                        const size_t num_output_frames) override;
   void OnChangeResolutionDone(bool success) override;
   void ClearPendingRequests(DecodeStatus status) override;
-  bool StopInputQueueOnResChange() const override { return true; }
+  bool StopInputQueueOnResChange() const override;
 
   // V4L2DecodeSurfaceHandler implementation.
   scoped_refptr<V4L2DecodeSurface> CreateSurface() override;

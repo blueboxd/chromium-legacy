@@ -13,26 +13,12 @@ static_library("base32") {
   deps = [ "//base" ]
 }
 
-static_library("base32_test_util") {
-  testonly = true
-  sources = [
-    "base32_test_util.cc",
-    "base32_test_util.h",
-  ]
-
-  deps = [
-    ":base32",
-    "//base",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
   sources = [ "base32_unittest.cc" ]
 
   deps = [
     ":base32",
-    ":base32_test_util",
     "//base",
     "//testing/gtest",
   ]
@@ -43,7 +29,6 @@ fuzzer_test("base32_fuzzer") {
 
   deps = [
     ":base32",
-    ":base32_test_util",
     "//base",
   ]
 }

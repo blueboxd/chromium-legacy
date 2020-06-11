@@ -210,7 +210,7 @@ void TestMediaSource::Shutdown() {
   chunk_demuxer_->ResetParserState(kSourceId, base::TimeDelta(),
                                    kInfiniteDuration, &last_timestamp_offset_);
   chunk_demuxer_->Shutdown();
-  chunk_demuxer_ = NULL;
+  chunk_demuxer_ = nullptr;
 }
 
 void TestMediaSource::DemuxerOpened() {

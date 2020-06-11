@@ -118,7 +118,7 @@ class ProcessSingletonPosixTest : public testing::Test {
   }
 
   void CreateProcessSingletonOnThread() {
-    ASSERT_EQ(NULL, worker_thread_.get());
+    ASSERT_FALSE(worker_thread_.get());
     worker_thread_.reset(new base::Thread("BlockingThread"));
     worker_thread_->Start();
 
@@ -197,7 +197,7 @@ class ProcessSingletonPosixTest : public testing::Test {
   }
 
   void CheckNotified() {
-    ASSERT_TRUE(process_singleton_on_thread_ != NULL);
+    ASSERT_TRUE(process_singleton_on_thread_);
     ASSERT_EQ(1u, process_singleton_on_thread_->callback_command_lines_.size());
     bool found = false;
     for (size_t i = 0;

@@ -6,7 +6,6 @@
 
 #include "base/stl_util.h"
 #include "components/base32/base32.h"
-#include "components/base32/base32_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base32 {

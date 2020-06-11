@@ -9,9 +9,11 @@
 #include "components/remote_cocoa/app_shim/ns_view_ids.h"
 #include "content/app_shim_remote_cocoa/render_widget_host_ns_view_host_helper.h"
 #include "content/common/cursors/webcursor.h"
+#include "content/common/mac/attributed_string_type_converters.h"
 #import "skia/ext/skia_utils_mac.h"
 #include "ui/accelerated_widget_mac/window_resize_helper_mac.h"
 #import "ui/base/cocoa/animation_utils.h"
+#include "ui/base/mojom/attributed_string.mojom.h"
 #include "ui/display/screen.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
@@ -238,10 +240,9 @@ void RenderWidgetHostNSViewBridge::ShowDictionaryOverlayForSelection() {
 }
 
 void RenderWidgetHostNSViewBridge::ShowDictionaryOverlay(
-    const mac::AttributedStringCoder::EncodedString& encoded_string,
+    ui::mojom::AttributedStringPtr attributed_string,
     const gfx::Point& baseline_point) {
-  NSAttributedString* string =
-      mac::AttributedStringCoder::Decode(&encoded_string);
+  NSAttributedString* string = attributed_string.To<NSAttributedString*>();
   if ([string length] == 0)
     return;
   NSPoint flipped_baseline_point = {

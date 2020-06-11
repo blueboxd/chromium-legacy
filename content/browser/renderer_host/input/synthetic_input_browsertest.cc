@@ -93,9 +93,10 @@ IN_PROC_BROWSER_TEST_F(SyntheticInputTest, DestroyWidgetWithOngoingGesture) {
   // By starting a gesture, there's a Mojo callback that the renderer is
   // waiting on the browser to resolve. If the browser is shutdown before
   // ACKing the callback or closing the channel, we'll DCHECK.
-  ASSERT_TRUE(ExecJs(shell()->web_contents(),
-                     "chrome.gpuBenchmarking.smoothScrollBy(10000, ()=>{}, "
-                     "100, 100, chrome.gpuBenchmarking.TOUCH_INPUT);"));
+  ASSERT_TRUE(
+      ExecJs(shell()->web_contents(),
+             "chrome.gpuBenchmarking.smoothScrollByXY(0, 10000, ()=>{}, "
+             "100, 100, chrome.gpuBenchmarking.TOUCH_INPUT);"));
 
   while (!gesture_observer.HasSeenGestureScrollBegin()) {
     base::RunLoop run_loop;

@@ -2419,7 +2419,7 @@
           '--dont-restore-color-profile-after-test',
           '--test-machine-name',
           '${buildername}',
-          '--extra-browser-args=--enable-features=UseSkiaRenderer,UiGpuRasterization,SkiaDawn --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-gpu-sandbox',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer,UiGpuRasterization,SkiaDawn --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization',
         ],
         'linux_args': [
           '--extra-browser-args=--use-vulkan=native',
@@ -2433,7 +2433,7 @@
       'screenshot_sync': {
         'args': [
           '--dont-restore-color-profile-after-test',
-          '--extra-browser-args=--enable-features=UseSkiaRenderer,UiGpuRasterization,SkiaDawn --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-gpu-sandbox',
+          '--extra-browser-args=--enable-features=UseSkiaRenderer,UiGpuRasterization,SkiaDawn --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization',
           # TODO(crbug.com/1021566): Enable the rest of these tests once Canvas
           # and Software Raster are supported on Skia Dawn.
           '--test-filter=ScreenshotSync_GPURasterWithDivs',
@@ -2609,6 +2609,10 @@
           '--test-machine-name',
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=validating',
+        ],
+        'android_args': [
+          # TODO(crbug.com/1093085): Remove this once we fix the tests.
+          '--extra-browser-args=--force-online-connection-state-for-indicator',
         ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',

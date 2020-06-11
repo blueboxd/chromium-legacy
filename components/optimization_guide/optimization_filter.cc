@@ -18,8 +18,11 @@ const int kMinHostSuffix = 6;  // eg., abc.tv
 
 OptimizationFilter::OptimizationFilter(
     std::unique_ptr<BloomFilter> bloom_filter,
-    std::unique_ptr<RegexpList> regexps)
-    : bloom_filter_(std::move(bloom_filter)), regexps_(std::move(regexps)) {
+    std::unique_ptr<RegexpList> regexps,
+    bool skip_host_suffix_checking)
+    : bloom_filter_(std::move(bloom_filter)),
+      regexps_(std::move(regexps)),
+      skip_host_suffix_checking_(skip_host_suffix_checking) {
   // May be created on one thread but used on another. The first call to
   // CalledOnValidSequence() will re-bind it.
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -42,6 +45,10 @@ bool OptimizationFilter::ContainsHostSuffix(const GURL& url) const {
   // First check full host name.
   if (bloom_filter_->Contains(url.host()))
     return true;
+
+  // Do not check host suffixes if we are told to skip host suffix checking.
+  if (skip_host_suffix_checking_)
+    return false;
 
   // Now check host suffixes from shortest to longest but skipping the
   // root domain (eg, skipping "com", "org", "in", "uk").

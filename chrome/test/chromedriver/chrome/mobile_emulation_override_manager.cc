@@ -42,7 +42,7 @@ bool MobileEmulationOverrideManager::IsEmulatingTouch() {
 }
 
 Status MobileEmulationOverrideManager::ApplyOverrideIfNeeded() {
-  if (overridden_device_metrics_ == NULL)
+  if (!overridden_device_metrics_)
     return Status(kOk);
 
   base::DictionaryValue params;

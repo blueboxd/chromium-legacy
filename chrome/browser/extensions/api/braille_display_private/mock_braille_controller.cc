@@ -22,13 +22,13 @@ std::unique_ptr<DisplayState> MockBrailleController::GetDisplayState() {
 }
 
 void MockBrailleController::AddObserver(BrailleObserver* observer) {
-  CHECK(observer_ == NULL);
+  CHECK(!observer_);
   observer_ = observer;
 }
 
 void MockBrailleController::RemoveObserver(BrailleObserver* observer) {
   CHECK(observer == observer_);
-  observer_ = NULL;
+  observer_ = nullptr;
 }
 
 void MockBrailleController::SetAvailable(bool available) {

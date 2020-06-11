@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "build/build_config.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 #include "headless/public/headless_browser.h"
@@ -31,7 +32,9 @@ class HeadlessBrowserMainParts : public content::BrowserMainParts {
 #if defined(OS_MACOSX)
   void PreMainMessageLoopStart() override;
 #endif
-
+#if defined(OS_LINUX)
+  void PostMainMessageLoopStart() override;
+#endif
   void QuitMainMessageLoop();
 
  private:

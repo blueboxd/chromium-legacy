@@ -8,10 +8,6 @@ module content.mojom;
 // ParamTraits for serialization. All of these should eventually be converted to
 // proper mojom definitions.
 
-// NOTE: This type is only mapped and usable on Mac.
-[Native]
-struct EncodedAttributedString;
-
 [Native]
 struct FrameOwnerProperties;
 

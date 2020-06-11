@@ -825,6 +825,8 @@ Navigator::GetNavigationEntryForRendererInitiatedNavigation(
               controller_->GetBrowserContext(),
               nullptr /* blob_url_loader_factory */));
 
+  entry->set_should_replace_entry(common_params.should_replace_current_entry);
+
   controller_->SetPendingEntry(std::move(entry));
   if (delegate_)
     delegate_->NotifyChangedNavigationState(content::INVALIDATE_TYPE_URL);

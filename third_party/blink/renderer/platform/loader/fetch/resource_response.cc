@@ -82,14 +82,10 @@ ResourceResponse::SignedCertificateTimestamp::IsolatedCopy() const {
       signature_data_.IsolatedCopy());
 }
 
-ResourceResponse::ResourceResponse()
-    : is_null_(true),
-      response_type_(network::mojom::FetchResponseType::kDefault) {}
+ResourceResponse::ResourceResponse() : is_null_(true) {}
 
 ResourceResponse::ResourceResponse(const KURL& current_request_url)
-    : current_request_url_(current_request_url),
-      is_null_(false),
-      response_type_(network::mojom::FetchResponseType::kDefault) {}
+    : current_request_url_(current_request_url), is_null_(false) {}
 
 ResourceResponse::ResourceResponse(const ResourceResponse&) = default;
 ResourceResponse& ResourceResponse::operator=(const ResourceResponse&) =

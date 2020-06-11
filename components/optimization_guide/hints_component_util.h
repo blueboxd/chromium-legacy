@@ -50,18 +50,17 @@ std::unique_ptr<proto::Configuration> ProcessHintsComponent(
     const HintsComponentInfo& info,
     ProcessHintsComponentResult* out_result);
 
-// Enumerates status event of processing optimization filters (such as the
-// lite page redirect blacklist). Used in UMA histograms, so the order of
-// enumerators should not be changed.
+// Enumerates status event of processing optimization filters. Used in UMA
+// histograms, so the order of enumerators should not be changed.
 //
 // Keep in sync with OptimizationGuideOptimizationFilterStatus in
 // tools/metrics/histograms/enums.xml.
 enum class OptimizationFilterStatus {
-  kFoundServerBlacklistConfig,
-  kCreatedServerBlacklist,
-  kFailedServerBlacklistBadConfig,
-  kFailedServerBlacklistTooBig,
-  kFailedServerBlacklistDuplicateConfig,
+  kFoundServerFilterConfig,
+  kCreatedServerFilter,
+  kFailedServerFilterBadConfig,
+  kFailedServerFilterTooBig,
+  kFailedServerFilterDuplicateConfig,
   kInvalidRegexp,
 
   // Insert new values before this line.

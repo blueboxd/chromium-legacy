@@ -1021,17 +1021,8 @@
   </message>
 
   <!-- About Chrome OS section. -->
-  <message name="IDS_OS_SETTINGS_TAG_ABOUT_CHROME_OS" desc="Text for search result item which, when clicked, navigates the user to about Chrome OS settings, which gives information about the current Chrome OS version.">
-    About Chrome OS
-  </message>
-  <message name="IDS_OS_SETTINGS_TAG_ABOUT_CHROME_OS_VERSION" desc="Text for search result item which, when clicked, navigates the user to about Chrome OS settings, which gives information about the current Chrome OS version.">
-    Chrome OS version
-  </message>
-  <message name="IDS_OS_SETTINGS_TAG_ABOUT_CHROME_OS_DETAILED_BUILD" desc="Text for search result item which, when clicked, navigates the user to detailed build information settings. Alternate phrase for: 'Device version'">
+  <message name="IDS_OS_SETTINGS_TAG_ABOUT_CHROME_OS_DETAILED_BUILD" desc="Text for search result item which, when clicked, navigates the user to detailed build information settings.">
     Detailed build information
-  </message>
-  <message name="IDS_OS_SETTINGS_TAG_ABOUT_CHROME_OS_DETAILED_BUILD_ALT1" desc="Text for search result item which, when clicked, navigates the user to detailed build information settings. Alternate phrase for: 'Detailed build information'">
-    Device version
   </message>
   <message name="IDS_OS_SETTINGS_TAG_ABOUT_CHROME_OS_CHANNEL" desc="Text for search result item which, when clicked, navigates the user to detailed build information settings, with a button to change to another channel (stable vs. beta vs. dev).">
     Change channel

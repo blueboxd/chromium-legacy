@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/webui/mojo_web_ui_controller.h"
-
 #ifndef CHROMEOS_COMPONENTS_SAMPLE_SYSTEM_WEB_APP_UI_SAMPLE_SYSTEM_WEB_APP_UI_H_
 #define CHROMEOS_COMPONENTS_SAMPLE_SYSTEM_WEB_APP_UI_SAMPLE_SYSTEM_WEB_APP_UI_H_
 
 #if defined(OFFICIAL_BUILD)
 #error Sample System Web App should only be included in unofficial builds.
 #endif
+
+#include "ui/webui/mojo_web_ui_controller.h"
 
 namespace chromeos {
 

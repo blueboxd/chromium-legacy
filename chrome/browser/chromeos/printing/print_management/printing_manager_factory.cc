@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/printing/print_management/printing_manager_factory.h"
 
+#include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/history/print_job_history_service_factory.h"
 #include "chrome/browser/chromeos/printing/print_management/printing_manager.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -32,6 +33,7 @@ PrintingManagerFactory::PrintingManagerFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(PrintJobHistoryServiceFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
+  DependsOn(CupsPrintJobManagerFactory::GetInstance());
 }
 
 PrintingManagerFactory::~PrintingManagerFactory() = default;
@@ -41,7 +43,8 @@ KeyedService* PrintingManagerFactory::BuildServiceInstanceFor(
   return new PrintingManager(
       PrintJobHistoryServiceFactory::GetForBrowserContext(context),
       HistoryServiceFactory::GetForProfile(Profile::FromBrowserContext(context),
-                                           ServiceAccessType::EXPLICIT_ACCESS));
+                                           ServiceAccessType::EXPLICIT_ACCESS),
+      CupsPrintJobManagerFactory::GetForBrowserContext(context));
 }
 
 }  // namespace print_management

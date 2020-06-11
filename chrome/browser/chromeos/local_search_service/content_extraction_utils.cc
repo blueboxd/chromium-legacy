@@ -5,14 +5,65 @@
 #include "chrome/browser/chromeos/local_search_service/content_extraction_utils.h"
 #include <memory>
 
+#include "base/containers/flat_set.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/unicodestring.h"
 #include "base/memory/ptr_util.h"
+#include "base/no_destructor.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/icu/source/i18n/unicode/translit.h"
 
 namespace local_search_service {
+
+bool IsStopword(const base::string16& word, const std::string& locale) {
+  // TODO(thanhdng): Currently we support stopword list for English only. In the
+  // future, when we need to support other languages, creates resource files to
+  // store the stopwords.
+  if (locale.substr(0, 2) != "en")
+    return false;
+
+  // A set of stopwords in English. This set is taken from NLTK library.
+  static const base::NoDestructor<base::flat_set<std::string>>
+      english_stopwords(
+          {"i",         "me",         "my",        "myself",  "we",
+           "our",       "ours",       "ourselves", "you",     "you're",
+           "you've",    "you'll",     "you'd",     "your",    "yours",
+           "yourself",  "yourselves", "he",        "him",     "his",
+           "himself",   "she",        "she's",     "her",     "hers",
+           "herself",   "it",         "it's",      "its",     "itself",
+           "they",      "them",       "their",     "theirs",  "themselves",
+           "what",      "which",      "who",       "whom",    "this",
+           "that",      "that'll",    "these",     "those",   "am",
+           "is",        "are",        "was",       "were",    "be",
+           "been",      "being",      "have",      "has",     "had",
+           "having",    "do",         "does",      "did",     "doing",
+           "a",         "an",         "the",       "and",     "but",
+           "if",        "or",         "because",   "as",      "until",
+           "while",     "of",         "at",        "by",      "for",
+           "with",      "about",      "against",   "between", "into",
+           "through",   "during",     "before",    "after",   "above",
+           "below",     "to",         "from",      "up",      "down",
+           "in",        "out",        "on",        "off",     "over",
+           "under",     "again",      "further",   "then",    "once",
+           "here",      "there",      "when",      "where",   "why",
+           "how",       "all",        "any",       "both",    "each",
+           "few",       "more",       "most",      "other",   "some",
+           "such",      "no",         "nor",       "not",     "only",
+           "own",       "same",       "so",        "than",    "too",
+           "very",      "s",          "t",         "can",     "will",
+           "just",      "don",        "don't",     "should",  "should've",
+           "now",       "d",          "ll",        "m",       "o",
+           "re",        "ve",         "y",         "ain",     "aren",
+           "aren't",    "couldn",     "couldn't",  "didn",    "didn't",
+           "doesn",     "doesn't",    "hadn",      "hadn't",  "hasn",
+           "hasn't",    "haven",      "haven't",   "isn",     "isn't",
+           "ma",        "mightn",     "mightn't",  "mustn",   "mustn't",
+           "needn",     "needn't",    "shan",      "shan't",  "shouldn",
+           "shouldn't", "wasn",       "wasn't",    "weren",   "weren't",
+           "won",       "won't",      "wouldn",    "wouldn't"});
+  return base::Contains(*english_stopwords, base::UTF16ToUTF8(word));
+}
 
 base::string16 Normalizer(const base::string16& word, bool remove_hyphen) {
   // Case folding.

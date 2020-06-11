@@ -93,8 +93,8 @@ class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
     FetchMediaGalleriesList();
   }
   void TearDownOnMainThread() override {
-    extension_ = NULL;
-    background_host_ = NULL;
+    extension_ = nullptr;
+    background_host_ = nullptr;
     ensure_media_directories_exists_.reset();
     extensions::ExtensionApiTest::TearDownOnMainThread();
   }

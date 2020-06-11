@@ -2030,6 +2030,7 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/quic-leaf-cert.key.pkcs8.pem",
     "data/ssl/certificates/quic-leaf-cert.key.sct",
     "data/ssl/certificates/quic-root.pem",
+    "data/ssl/certificates/quic-short-lived.pem",
     "data/ssl/certificates/redundant-server-chain.pem",
     "data/ssl/certificates/redundant-validated-chain-root.pem",
     "data/ssl/certificates/redundant-validated-chain.pem",

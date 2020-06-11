@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_PRINTING_PRINT_MANAGEMENT_PRINTING_MANAGER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
 #include "chromeos/components/print_management/mojom/printing_manager.mojom.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -24,10 +25,12 @@ namespace print_management {
 class PrintingManager
     : public printing_manager::mojom::PrintingMetadataProvider,
       public KeyedService,
-      public history::HistoryServiceObserver {
+      public history::HistoryServiceObserver,
+      public CupsPrintJobManager::Observer {
  public:
   PrintingManager(PrintJobHistoryService* print_job_history_service,
-                  history::HistoryService* history_service);
+                  history::HistoryService* history_service,
+                  CupsPrintJobManager* cups_print_job_manager);
 
   ~PrintingManager() override;
 
@@ -53,6 +56,17 @@ class PrintingManager
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;
 
+  // CupsPrintJobManager::Observer impls
+  void OnPrintJobCreated(base::WeakPtr<CupsPrintJob> job) override;
+  void OnPrintJobStarted(base::WeakPtr<CupsPrintJob> job) override;
+  void OnPrintJobUpdated(base::WeakPtr<CupsPrintJob> job) override;
+  void OnPrintJobSuspended(base::WeakPtr<CupsPrintJob> job) override;
+  void OnPrintJobResumed(base::WeakPtr<CupsPrintJob> job) override;
+  void OnPrintJobDone(base::WeakPtr<CupsPrintJob> job) override;
+  void OnPrintJobError(base::WeakPtr<CupsPrintJob> job) override;
+  void OnPrintJobCancelled(base::WeakPtr<CupsPrintJob> job) override;
+
+  // PrintJobHistoryObserver
   void OnPrintJobsRetrieved(GetPrintJobsCallback callback,
                             bool success,
                             std::vector<chromeos::printing::proto::PrintJobInfo>
@@ -65,6 +79,20 @@ class PrintingManager
   // Returns true if the policy pref is enabled to prevent history deletions.
   // TODO(crbug/1053704): Add the policy pref and implement this function.
   bool IsHistoryDeletionPreventedByPolicy();
+
+  // Stores |job| to local cache and notifies observers of an update to |job|.
+  void UpdatePrintJob(base::WeakPtr<CupsPrintJob> job);
+
+  // Removes |job| from the local cache and notifies observers of an update to
+  // |job|.
+  void RemoveAndUpdatePrintJob(base::WeakPtr<CupsPrintJob> job);
+
+  // Notifies all observers in |print_job_observers_| of an update to a print
+  // job.
+  void NotifyPrintJobObservers(base::WeakPtr<CupsPrintJob> job);
+
+  // Local cache that stores all ongoing print jobs.
+  std::map<std::string, base::WeakPtr<CupsPrintJob>> active_print_jobs_;
 
   // Set of PrintJobsObserver mojom::remotes, each remote is bound to a
   // renderer process receiver. Automatically handles removing disconnected
@@ -82,6 +110,10 @@ class PrintingManager
   // Not owned, this provides the necessary observers to observe when browser
   // history has been cleared.
   history::HistoryService* history_service_;
+
+  // Not owned, this provides the necessary observers to observe when an
+  // ongoing print job has been updated.
+  CupsPrintJobManager* cups_print_job_manager_;
 
   base::WeakPtrFactory<PrintingManager> weak_ptr_factory_{this};
 };

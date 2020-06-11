@@ -177,7 +177,7 @@ char AlsaPcmOutputStreamTest::kSurround70[] = "surround70:CARD=foo,DEV=0";
 char AlsaPcmOutputStreamTest::kSurround71[] = "surround71:CARD=foo,DEV=0";
 void* AlsaPcmOutputStreamTest::kFakeHints[] = {
     kSurround40, kSurround41, kSurround50, kSurround51,
-    kSurround70, kSurround71, NULL };
+    kSurround70, kSurround71, nullptr};
 char AlsaPcmOutputStreamTest::kGenericSurround50[] = "surround50";
 
 // Custom action to clear a memory buffer.
@@ -315,7 +315,7 @@ TEST_F(AlsaPcmOutputStreamTest, PcmOpenFailed) {
 
   // Ensure internal state is set for a no-op stream if PcmOpen() failes.
   EXPECT_TRUE(test_stream->stop_stream_);
-  EXPECT_TRUE(test_stream->playback_handle_ == NULL);
+  EXPECT_FALSE(test_stream->playback_handle_);
   EXPECT_FALSE(test_stream->buffer_.get());
 
   // Close the stream since we opened it to make destruction happy.
@@ -342,7 +342,7 @@ TEST_F(AlsaPcmOutputStreamTest, PcmSetParamsFailed) {
 
   // Ensure internal state is set for a no-op stream if PcmSetParams() failes.
   EXPECT_TRUE(test_stream->stop_stream_);
-  EXPECT_TRUE(test_stream->playback_handle_ == NULL);
+  EXPECT_FALSE(test_stream->playback_handle_);
   EXPECT_FALSE(test_stream->buffer_.get());
 
   // Close the stream since we opened it to make destruction happy.
@@ -636,13 +636,16 @@ TEST_F(AlsaPcmOutputStreamTest, AutoSelectDevice_DeviceSelect) {
   //
   // Note that the loop starts at "1", so the first parameter is ignored in
   // these arrays.
-  const char* kExpectedDeviceName[] = { NULL,
-                                        AlsaPcmOutputStream::kDefaultDevice,
-                                        AlsaPcmOutputStream::kDefaultDevice,
-                                        AlsaPcmOutputStream::kDefaultDevice,
-                                        kSurround40, kSurround50, kSurround51,
-                                        kSurround70, kSurround71,
-                                        AlsaPcmOutputStream::kDefaultDevice };
+  const char* kExpectedDeviceName[] = {nullptr,
+                                       AlsaPcmOutputStream::kDefaultDevice,
+                                       AlsaPcmOutputStream::kDefaultDevice,
+                                       AlsaPcmOutputStream::kDefaultDevice,
+                                       kSurround40,
+                                       kSurround50,
+                                       kSurround51,
+                                       kSurround70,
+                                       kSurround71,
+                                       AlsaPcmOutputStream::kDefaultDevice};
   bool kExpectedDownmix[] = { false, false, false, false, false, true,
                               false, false, false, false };
   ChannelLayout kExpectedLayouts[] = { CHANNEL_LAYOUT_NONE,

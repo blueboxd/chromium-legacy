@@ -28,6 +28,7 @@
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/base/cocoa/accessibility_focus_overrider.h"
 #include "ui/base/cocoa/remote_layer_api.h"
+#include "ui/base/mojom/attributed_string.mojom-forward.h"
 #include "ui/display/mac/display_link_mac.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 
@@ -496,8 +497,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void OnGotStringForDictionaryOverlay(
       int32_t targetWidgetProcessId,
       int32_t targetWidgetRoutingId,
-      const mac::AttributedStringCoder::EncodedString& encodedString,
-      gfx::Point baselinePoint);
+      ui::mojom::AttributedStringPtr attributed_string,
+      const gfx::Point& baselinePoint);
 
   // RenderWidgetHostViewBase:
   void UpdateBackgroundColor() override;

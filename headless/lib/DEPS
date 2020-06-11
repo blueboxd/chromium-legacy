@@ -2,6 +2,9 @@ specific_include_rules = {
   "headless_browser_browsertest.cc": [
     "+third_party/crashpad/crashpad/client",
   ],
+  "headless_browser_main_parts_linux.cc": [
+    "+device/bluetooth",
+  ],
   "headless_content_client.cc": [
       "+components/embedder_support/origin_trials",
   ],

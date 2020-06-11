@@ -23,6 +23,9 @@ class UnsentLogStoreMetricsImpl : public UnsentLogStoreMetrics {
     size_t compressed_size, size_t original_size) override;
   void RecordDroppedLogSize(size_t size) override;
   void RecordDroppedLogsNum(int dropped_logs_num) override;
+  void RecordLastUnsentLogMetadataMetrics(int unsent_samples_count,
+                                          int sent_samples_count,
+                                          int persisted_size_in_kb) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UnsentLogStoreMetricsImpl);

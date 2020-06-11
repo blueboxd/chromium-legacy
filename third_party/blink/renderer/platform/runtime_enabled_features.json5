@@ -413,17 +413,15 @@
     },
     {
       // The main content-visibility feature.
-      // https://wicg.github.io/display-locking/
+      // https://drafts.csswg.org/css-contain/#content-visibility 
       name: "CSSContentVisibility",
-      status: "experimental",
-      implied_by: ["CSSContentVisibilityHiddenMatchable"]
+      status: "stable",
     },
     {
       // The content-visibility activation event which will be replaced by
       // the beforematch event. When beforematch is available, this feaure
       // will be removed.
-      name: "CSSContentVisibilityActivationEvent",
-      implied_by: ["CSSContentVisibility"]
+      name: "CSSContentVisibilityActivationEvent"
     },
     {
       // The content-visibility: hidden-matchable feature. This is a planned
@@ -454,13 +452,6 @@
     {
       name: "CSSIndependentTransformProperties",
       status: "experimental",
-    },
-    {
-      // Support for CSS contain-intrinsic-size property.
-      // https://wicg.github.io/display-locking/contain-intrinsic-size.html
-      name: "CSSIntrinsicSize",
-      implied_by: ["CSSContentVisibility"],
-      status: "stable",
     },
     {
       name: "CSSLayoutAPI",
@@ -622,6 +613,12 @@
     {
       name: "DecodeLossyWebPImagesToYUV",
       status: "test",
+    },
+    {
+      name: "DelayAsyncScriptExecutionUntilFinishedParsing",
+    },
+    {
+      name: "DelayAsyncScriptExecutionUntilFirstPaintOrFinishedParsing",
     },
     {
       name: "DelegatedInkTrails",
@@ -976,7 +973,7 @@
     {
       name: "LayoutNGRuby",
       depends_on: ["LayoutNG"],
-      status: "test",
+      status: "experimental",
     },
     {
       name: "LayoutNGTable",
@@ -1653,11 +1650,7 @@
       origin_trial_allows_insecure: true,
       status: "test",
     },
-    {
-      name: "ShadowPiercingDescendantCombinator",
-      status: "experimental",
-    },
-    {
+      {
       name: "SharedArrayBuffer",
       status: "stable",
     },

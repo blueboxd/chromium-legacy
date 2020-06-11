@@ -53,9 +53,11 @@ struct URLResponseHead {
   // True if the request accessed the network in the process of retrieving data.
   bool network_accessed = false;
 
-  // The appcache this response was loaded from, or kAppCacheNoCacheId.
+  // The appcache this response was loaded from, or
+  // kAppCacheNoCacheId (hard-coded as 0 because services/network
+  // can't take a dependency on Blink).
   // TODO(rdsmith): Remove conceptual dependence on appcache.
-  int64 appcache_id;
+  int64 appcache_id = 0;
 
   // The manifest url of the appcache this response was loaded from.
   // Note: this value is only populated for main resource requests.
@@ -74,7 +76,7 @@ struct URLResponseHead {
   bool was_fetched_via_spdy = false;
 
   // True if the response was delivered after NPN is negotiated.
-  bool was_alpn_negotiated;
+  bool was_alpn_negotiated = false;
 
   // True if response could use alternate protocol. However, browser will
   // ignore the alternate protocol when spdy is not enabled on browser side.
@@ -110,13 +112,14 @@ struct URLResponseHead {
   // 2. The service worker responded with an error (response status code is 0).
   // 3. The service worker responded with a generated response, i.e.,
   // `respondWith(new Response(...))`.
-  FetchResponseSource service_worker_response_source;
+  FetchResponseSource service_worker_response_source =
+      FetchResponseSource.kUnspecified;
 
   // True when a request whose mode is |CORS| or |CORS-with-forced-preflight|
   // is sent to a ServiceWorker but FetchEvent.respondWith is not called. So the
   // renderer has to resend the request with skip service worker flag
   // considering the CORS preflight logic.
-  bool was_fallback_required_by_service_worker;
+  bool was_fallback_required_by_service_worker = false;
 
   // The URL list of the Response object the service worker passed to
   // respondWith() to create this response. For example, if the service worker
@@ -129,7 +132,13 @@ struct URLResponseHead {
   array<url.mojom.Url> url_list_via_service_worker;
 
   // https://fetch.spec.whatwg.org/#concept-response-type
-  FetchResponseType response_type;
+  //
+  // TODO(falken): Initialize to kDefault per spec, if that doesn't
+  // break things. Previously this field was not being initialized
+  // explicitly, so it was zero-initializing which happens to be the
+  // kBasic type. So changing it to kDefault could potentially change
+  // behavior.
+  FetchResponseType response_type = FetchResponseType.kBasic;
 
   // The cache name of the CacheStorage from where the response is served via
   // the ServiceWorker. Empty if the response isn't from the CacheStorage.

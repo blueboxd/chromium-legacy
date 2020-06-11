@@ -607,10 +607,27 @@ namespace {
 // current entry.
 bool RendererLocationReplace(Shell* shell, const GURL& url) {
   WebContents* web_contents = shell->web_contents();
+  NavigationControllerImpl& controller =
+      static_cast<NavigationControllerImpl&>(web_contents->GetController());
   WaitForLoadStop(web_contents);
-  TestNavigationObserver same_tab_observer(web_contents, 1);
+  TestNavigationManager navigation_manager(web_contents, url);
+  const GURL& current_url = web_contents->GetMainFrame()->GetLastCommittedURL();
   EXPECT_TRUE(ExecJs(shell, JsReplace("window.location.replace($1)", url)));
-  same_tab_observer.Wait();
+  // Observe pending entry if it's not a same-document navigation. We can't
+  // observe same-document navigations because it might finish in the renderer,
+  // only telling the browser side at the end.
+  if (!current_url.EqualsIgnoringRef(url)) {
+    EXPECT_TRUE(navigation_manager.WaitForRequestStart());
+    // Both should_replace_entry (in the pending NavigationEntry) and
+    // should_replace_current_entry (in NavigationRequest params) should be
+    // true.
+    EXPECT_TRUE(controller.GetPendingEntry()->should_replace_entry());
+    EXPECT_TRUE(
+        NavigationRequest::From(navigation_manager.GetNavigationHandle())
+            ->common_params()
+            .should_replace_current_entry);
+  }
+  navigation_manager.WaitForNavigationFinished();
   if (!IsLastCommittedEntryOfPageType(web_contents, PAGE_TYPE_NORMAL))
     return false;
   return web_contents->GetLastCommittedURL() == url;

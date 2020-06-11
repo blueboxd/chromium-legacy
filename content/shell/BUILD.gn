@@ -293,8 +293,6 @@ static_library("content_shell_lib") {
     "browser/web_test/fake_bluetooth_chooser_factory.h",
     "browser/web_test/fake_bluetooth_delegate.cc",
     "browser/web_test/fake_bluetooth_delegate.h",
-    "browser/web_test/fake_bluetooth_scanning_prompt.cc",
-    "browser/web_test/fake_bluetooth_scanning_prompt.h",
     "browser/web_test/leak_detector.cc",
     "browser/web_test/leak_detector.h",
     "browser/web_test/mock_client_hints_controller_delegate.cc",

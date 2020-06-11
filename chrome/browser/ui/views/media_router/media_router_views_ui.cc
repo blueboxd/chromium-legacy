@@ -90,6 +90,55 @@ void MaybeReportCastingSource(MediaCastMode cast_mode,
     MediaRouterMetrics::RecordMediaRouterCastingSource(cast_mode);
 }
 
+void RunRouteResponseCallbacks(
+    MediaRouteResponseCallback presentation_callback,
+    std::vector<MediaRouteResultCallback> route_result_callbacks,
+    mojom::RoutePresentationConnectionPtr connection,
+    const RouteRequestResult& result) {
+  if (presentation_callback)
+    std::move(presentation_callback).Run(std::move(connection), result);
+  DCHECK(!connection);
+  for (auto& callback : route_result_callbacks)
+    std::move(callback).Run(result);
+}
+
+// Observes a WebContents following a call to MediaRouterViewsUI::CreateRoute()
+// and calls MediaRoute::CreateRoute() only after naviation is complete.
+// Deletes itself when no longer needed.
+//
+// NOTE(jrw): This observer is needed to support casting a local file into an
+// existing tab (i.e. a tab showing the "new tab" page) because of how the tab
+// capture code identifed the WebContents to capture.
+//
+// The tab capture code finds the WebContents using its associated
+// RenderFrameHost (via RenderFrameHost::FromID), and navigation causes the
+// WebContents to become associated with a different RenderFrameHost from the
+// one has when the naviation starts.  As a result, trying to capture a tab
+// before navigation is complete cases the WebContents not to be found.  This
+// could, in principle, by fixed by using FrameTreeNode::GloballyFindByID
+// instead, because a WebContents is permanently associated with its root
+// FrameFreeNode, but the implications of doing so are not clear.
+class WebContentsCreateRouteObserver final
+    : public content::WebContentsObserver {
+ public:
+  WebContentsCreateRouteObserver(content::WebContents* tab_contents,
+                                 base::OnceClosure on_document_available)
+      : content::WebContentsObserver(tab_contents),
+        on_document_available_(std::move(on_document_available)) {}
+
+  void DidFinishNavigation(content::NavigationHandle* handle) override {
+    std::move(on_document_available_).Run();
+    delete this;
+  }
+
+  void DidStopLoading() override { delete this; }
+
+  void WebContentsDestroyed() override { delete this; }
+
+ private:
+  base::OnceClosure on_document_available_;
+};
+
 }  // namespace
 
 // Observes a WebContents and requests fullscreening of its first
@@ -320,12 +369,22 @@ bool MediaRouterViewsUI::CreateRoute(const MediaSink::Id& sink_id,
   }
 
   GetIssueManager()->ClearNonBlockingIssues();
-  GetMediaRouter()->CreateRoute(
+
+  auto on_document_available = base::BindOnce(
+      &MediaRouter::CreateRoute, base::Unretained(GetMediaRouter()),
       params->source_id, sink_id, params->origin, tab_contents,
-      base::BindOnce(&MediaRouterViewsUI::RunRouteResponseCallbacks,
+      base::BindOnce(&RunRouteResponseCallbacks,
                      std::move(params->presentation_callback),
                      std::move(params->route_result_callbacks)),
       params->timeout, params->incognito);
+
+  if (cast_mode == MediaCastMode::LOCAL_FILE) {
+    // The assignment is just for testing; the creation of the observer is not!
+    web_contents_observer_for_test_ = new WebContentsCreateRouteObserver(
+        tab_contents, std::move(on_document_available));
+  } else {
+    std::move(on_document_available).Run();
+  }
 
   // TODO(crbug.com/1015203): This call to UpdateSinks() was originally in
   // StartCasting(), but it causes Chrome to crash when the desktop picker
@@ -449,19 +508,6 @@ void MediaRouterViewsUI::UIMediaRoutesObserver::OnRoutesUpdated(
     const std::vector<MediaRoute>& routes,
     const std::vector<MediaRoute::Id>& joinable_route_ids) {
   callback_.Run(routes, joinable_route_ids);
-}
-
-// static
-void MediaRouterViewsUI::RunRouteResponseCallbacks(
-    MediaRouteResponseCallback presentation_callback,
-    std::vector<MediaRouteResultCallback> callbacks,
-    mojom::RoutePresentationConnectionPtr connection,
-    const RouteRequestResult& result) {
-  if (presentation_callback)
-    std::move(presentation_callback).Run(std::move(connection), result);
-  DCHECK(!connection);
-  for (auto& callback : callbacks)
-    std::move(callback).Run(result);
 }
 
 std::vector<MediaSource> MediaRouterViewsUI::GetSourcesForCastMode(
@@ -949,6 +995,11 @@ MediaRouter* MediaRouterViewsUI::GetMediaRouter() const {
 
 Browser* MediaRouterViewsUI::GetBrowser() {
   return chrome::FindBrowserWithWebContents(initiator_);
+}
+
+void MediaRouterViewsUI::SimulateDocumentAvailableForTest() {
+  DCHECK(web_contents_observer_for_test_);
+  web_contents_observer_for_test_->DidFinishNavigation(nullptr);
 }
 
 }  // namespace media_router

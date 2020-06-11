@@ -276,7 +276,7 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 
   BrowserContextDependencyManager::GetInstance()->DestroyBrowserContextServices(
       browser_context_.get());
-  extension_system_ = NULL;
+  extension_system_ = nullptr;
 
   desktop_controller_.reset();
 

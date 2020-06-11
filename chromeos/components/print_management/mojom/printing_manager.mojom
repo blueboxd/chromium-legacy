@@ -44,6 +44,26 @@ struct CompletedPrintJobInfo {
   PrinterErrorCode printer_error_code;
 };
 
+// Enumeration of ongoing print job status.
+enum ActivePrintJobState {
+  // Print job is currently being printed.
+  kStarted,
+
+  // The print job's document is considered finished to the printer.
+  // This includes successful, failed, and cancelled print jobs.
+  kDocumentDone,
+};
+
+// Contains all relevant information in regards to an active print job i.e. one
+// that is current being printed.
+struct ActivePrintJobInfo {
+  // Number of current printed pages.
+  uint32 printed_pages;
+
+  // Current state of the print job.
+  ActivePrintJobState active_state;
+};
+
 // Contains all the information in regards to a print job. Information is
 // provided by the printer. Printer details, i.e. name and uri, can be edited
 // via print settings.
@@ -66,8 +86,13 @@ struct PrintJobInfo {
   // The URI of the printer the print job was requested to.
   url.mojom.Url printer_uri;
 
-  // Information of a completed print job.
-  CompletedPrintJobInfo completed_info;
+  // Information of a completed print job. Null struct if the print job is
+  // currently being printed.
+  CompletedPrintJobInfo? completed_info;
+
+  // Contains information relevant to an active print job. Null struct if
+  // the print job is from the local database.
+  ActivePrintJobInfo? active_print_job_info;
 };
 
 // Observer interface that sends remote updates to the print management app UI
@@ -75,6 +100,9 @@ struct PrintJobInfo {
 interface PrintJobsObserver {
   // Notifies that the local print job database has been cleared.
   OnAllPrintJobsDeleted();
+
+  // Notifies that an ongoing print job has been updated.
+  OnPrintJobUpdate(PrintJobInfo print_job);
 };
 
 // Provides APIs to retrieve print metadata information. This API is exposed

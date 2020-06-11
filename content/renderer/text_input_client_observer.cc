@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "content/common/mac/attributed_string_type_converters.h"
 #include "content/common/text_input_client_messages.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -67,10 +68,10 @@ void TextInputClientObserver::OnStringAtPoint(gfx::Point point) {
                                                             baseline_point);
   }
 
-  std::unique_ptr<const mac::AttributedStringCoder::EncodedString> encoded(
-      mac::AttributedStringCoder::Encode(string));
+  ui::mojom::AttributedStringPtr attributed_string =
+      ui::mojom::AttributedString::From(string);
   Send(new TextInputClientReplyMsg_GotStringAtPoint(
-      MSG_ROUTING_NONE, *encoded.get(), baseline_point));
+      MSG_ROUTING_NONE, *attributed_string, baseline_point));
 }
 
 void TextInputClientObserver::OnStringForRange(gfx::Range range) {
@@ -83,10 +84,10 @@ void TextInputClientObserver::OnStringForRange(gfx::Range range) {
     string = blink::WebSubstringUtil::AttributedSubstringInRange(
         frame, range.start(), range.length(), &baseline_point);
   }
-  std::unique_ptr<const mac::AttributedStringCoder::EncodedString> encoded(
-      mac::AttributedStringCoder::Encode(string));
+  ui::mojom::AttributedStringPtr attributed_string =
+      ui::mojom::AttributedString::From(string);
   Send(new TextInputClientReplyMsg_GotStringForRange(
-      MSG_ROUTING_NONE, *encoded.get(), baseline_point));
+      MSG_ROUTING_NONE, *attributed_string, baseline_point));
 }
 
 }  // namespace content

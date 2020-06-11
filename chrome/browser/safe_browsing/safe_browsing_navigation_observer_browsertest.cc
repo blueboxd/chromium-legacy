@@ -132,7 +132,7 @@ class DownloadItemCreatedObserver : public DownloadManager::Observer {
 
   void ManagerGoingDown(DownloadManager* manager) override {
     manager_->RemoveObserver(this);
-    manager_ = NULL;
+    manager_ = nullptr;
     if (!quit_waiting_callback_.is_null())
       quit_waiting_callback_.Run();
   }

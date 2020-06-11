@@ -53,7 +53,7 @@ void TestBluetoothAdapterObserver::Reset() {
   device_connected_state_changed_values_.clear();
 #endif
   device_removed_count_ = 0;
-  last_device_ = NULL;
+  last_device_ = nullptr;
   last_device_address_.clear();
   gatt_service_added_count_ = 0;
   gatt_service_removed_count_ = 0;

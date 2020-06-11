@@ -4741,14 +4741,6 @@ const CrossOriginOpenerPolicyStatus& NavigationRequest::coop_status() const {
   return coop_status_;
 }
 
-#if 0 && DCHECK_IS_ON()
-// The DCHECK needs to be able to output values when it triggers.
-std::ostream& operator<<(std::ostream& o,
-                         const NavigationRequest::NavigationState& s) {
-  return o << static_cast<int>(s);
-}
-#endif  // DCHECK_IS_ON()
-
 void NavigationRequest::CheckStateTransition(NavigationState state) const {
 #if DCHECK_IS_ON()
   static const base::NoDestructor<StateTransitions<NavigationState>>

@@ -74,8 +74,6 @@ crbug.com/1082455 [ mac no-passthrough ] conformance2/renderbuffers/multisampled
 crbug.com/1082525 conformance/more/functions/readPixelsBadArgs.html [ Failure ]
 crbug.com/1082525 conformance/more/functions/texImage2DHTML.html [ RetryOnFailure ]
 crbug.com/1082525 conformance/more/functions/texSubImage2DHTML.html [ RetryOnFailure ]
-crbug.com/1082525 conformance/textures/misc/origin-clean-conformance-offscreencanvas.html [ RetryOnFailure ]
-crbug.com/1082525 conformance2/textures/misc/origin-clean-conformance-offscreencanvas.html [ RetryOnFailure ]
 crbug.com/1083100 conformance/textures/misc/origin-clean-conformance.html [ Skip ]
 crbug.com/1082533 [ mac intel ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
 crbug.com/1082533 [ win vulkan passthrough ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
@@ -132,6 +130,9 @@ crbug.com/angleproject/4417 [ win ] conformance2/rendering/framebuffer-render-to
 
 # Intel flaky issues
 crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-bounds-index-buffers-after-copying.html [ RetryOnFailure ]
+# Flakily times out on driver 26.20.100.8141.
+crbug.com/1093482 [ win10 intel-0x3e92 ] deqp/functional/gles3/shadermatrix/div_dynamic.html [ RetryOnFailure ]
+crbug.com/1093482 [ win10 intel-0x5912 ] deqp/functional/gles3/shadermatrix/div_dynamic.html [ RetryOnFailure ]
 
 # Intel failed issues
 crbug.com/795030 [ opengl win passthrough intel ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]

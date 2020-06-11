@@ -37,11 +37,9 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
 #include "content/shell/browser/shell_javascript_dialog_manager.h"
-#include "content/shell/browser/web_test/fake_bluetooth_scanning_prompt.h"
 #include "content/shell/browser/web_test/secondary_test_window_observer.h"
 #include "content/shell/browser/web_test/web_test_bluetooth_chooser_factory.h"
 #include "content/shell/browser/web_test/web_test_control_host.h"
-#include "content/shell/browser/web_test/web_test_devtools_bindings.h"
 #include "content/shell/browser/web_test/web_test_javascript_dialog_manager.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/shell/common/web_test/web_test_switches.h"
@@ -221,31 +219,6 @@ Shell* Shell::CreateNewWindow(BrowserContext* browser_context,
   }
   std::unique_ptr<WebContents> web_contents =
       WebContents::Create(create_params);
-  Shell* shell =
-      CreateShell(std::move(web_contents), AdjustWindowSize(initial_size),
-                  true /* should_set_delegate */);
-  if (!url.is_empty())
-    shell->LoadURL(url);
-  return shell;
-}
-
-Shell* Shell::CreateNewWindowWithSessionStorageNamespace(
-    BrowserContext* browser_context,
-    const GURL& url,
-    const scoped_refptr<SiteInstance>& site_instance,
-    const gfx::Size& initial_size,
-    scoped_refptr<SessionStorageNamespace> session_storage_namespace) {
-  WebContents::CreateParams create_params(browser_context, site_instance);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kForcePresentationReceiverForTesting)) {
-    create_params.starting_sandbox_flags =
-        content::kPresentationReceiverSandboxFlags;
-  }
-  std::map<std::string, scoped_refptr<SessionStorageNamespace>>
-      session_storages;
-  session_storages[""] = session_storage_namespace;
-  std::unique_ptr<WebContents> web_contents =
-      WebContents::CreateWithSessionStorage(create_params, session_storages);
   Shell* shell =
       CreateShell(std::move(web_contents), AdjustWindowSize(initial_size),
                   true /* should_set_delegate */);
@@ -580,10 +553,17 @@ std::unique_ptr<BluetoothChooser> Shell::RunBluetoothChooser(
   return nullptr;
 }
 
+class AlwaysAllowBluetoothScanning : public BluetoothScanningPrompt {
+ public:
+  explicit AlwaysAllowBluetoothScanning(const EventHandler& event_handler) {
+    event_handler.Run(content::BluetoothScanningPrompt::Event::kAllow);
+  }
+};
+
 std::unique_ptr<BluetoothScanningPrompt> Shell::ShowBluetoothScanningPrompt(
     RenderFrameHost* frame,
     const BluetoothScanningPrompt::EventHandler& event_handler) {
-  return std::make_unique<FakeBluetoothScanningPrompt>(event_handler);
+  return std::make_unique<AlwaysAllowBluetoothScanning>(event_handler);
 }
 
 #if defined(OS_MACOSX)

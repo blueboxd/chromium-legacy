@@ -347,7 +347,6 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
                            base::UTF8ToUTF16(*card->expiration_year));
   }
 
-  // TODO(crbug.com/1063426): Log nickname management via settings page.
   if (card->nickname) {
     credit_card.SetNickname(base::UTF8ToUTF16(*card->nickname));
   }
@@ -369,6 +368,10 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
   } else {
     personal_data->AddCreditCard(credit_card);
     base::RecordAction(base::UserMetricsAction("AutofillCreditCardsAdded"));
+    if (credit_card.HasValidNickname()) {
+      base::RecordAction(
+          base::UserMetricsAction("AutofillCreditCardsAddedWithNickname"));
+    }
   }
 
   return RespondNow(NoArguments());

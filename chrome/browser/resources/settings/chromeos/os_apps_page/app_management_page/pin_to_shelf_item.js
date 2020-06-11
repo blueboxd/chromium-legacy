@@ -7,27 +7,24 @@ Polymer({
   properties: {
     /**
      * @type {App}
-     * @private
      */
-    app_: Object,
+    app: Object,
 
     /**
      * @type {boolean}
-     * @private
      */
     hidden: {
       type: Boolean,
-      computed: 'isAvailable_(app_)',
+      computed: 'isAvailable_(app)',
       reflectToAttribute: true,
     },
 
     /**
      * @type {boolean}
-     * @private
      */
     disabled: {
       type: Boolean,
-      computed: 'isManaged_(app_)',
+      computed: 'isManaged_(app)',
       reflectToAttribute: true,
     },
   },
@@ -77,12 +74,12 @@ Polymer({
 
   toggleSetting_() {
     const newState =
-        assert(app_management.util.toggleOptionalBool(this.app_.isPinned));
+        assert(app_management.util.toggleOptionalBool(this.app.isPinned));
     const newStateBool =
         app_management.util.convertOptionalBoolToBool(newState);
     assert(newStateBool === this.$['toggle-row'].isChecked());
     app_management.BrowserProxy.getInstance().handler.setPinned(
-        this.app_.id,
+        this.app.id,
         newState,
     );
     settings.recordSettingChange();
@@ -90,7 +87,7 @@ Polymer({
         AppManagementUserAction.PinToShelfTurnedOn :
         AppManagementUserAction.PinToShelfTurnedOff;
     app_management.util.recordAppManagementUserAction(
-        this.app_.type, userAction);
+        this.app.type, userAction);
   },
 
   /**

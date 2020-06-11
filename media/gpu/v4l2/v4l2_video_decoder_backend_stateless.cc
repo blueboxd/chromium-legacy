@@ -603,6 +603,10 @@ void V4L2StatelessVideoDecoderBackend::ClearPendingRequests(
   }
 }
 
+bool V4L2StatelessVideoDecoderBackend::StopInputQueueOnResChange() const {
+  return true;
+}
+
 bool V4L2StatelessVideoDecoderBackend::IsSupportedProfile(
     VideoCodecProfile profile) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

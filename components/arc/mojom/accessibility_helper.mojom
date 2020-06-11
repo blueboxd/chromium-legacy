@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 22
+// Next MinVersion: 23
 
 module arc.mojom;
 
@@ -45,6 +45,22 @@ enum AccessibilityEventType {
   WINDOWS_CHANGED,
   VIEW_CONTEXT_CLICKED,
   ASSIST_READING_CONTEXT,
+};
+
+// ContentChangeType lists the possible sub types of WINDOW_STATE_CHANGED and
+// WINDOW_CONTENT_CHANGED events on Android ordered as same as developer guide
+// of return value of getContentChangeTypes.
+// https://developer.android.com/reference/android/view/accessibility/AccessibilityEvent?hl=en#getContentChangeTypes()
+[Extensible]
+enum ContentChangeType {
+  CONTENT_DESCRIPTION,
+  STATE_DESCRIPTION,
+  SUBTREE,
+  TEXT,
+  PANE_TITLE,
+  UNDEFINED,
+  PANE_APPEARED,
+  PANE_DISAPPEARED,
 };
 
 // Possible actions that can be performed on an AccessibilityNodeInfo.
@@ -345,6 +361,7 @@ enum AccessibilityEventIntProperty {
   MAX_SCROLL_Y,
   SCROLL_DELTA_X,
   SCROLL_DELTA_Y,
+  CONTENT_CHANGE_TYPES,
 };
 
 // These fields are taken from string attributes of

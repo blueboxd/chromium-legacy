@@ -10,6 +10,7 @@
 #include "content/common/text_input_client_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "ipc/ipc_message_macros.h"
+#include "ui/base/mojom/attributed_string.mojom.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/range/range.h"
 
@@ -45,17 +46,17 @@ void TextInputClientMessageFilter::OverrideThreadForMessage(
 TextInputClientMessageFilter::~TextInputClientMessageFilter() {}
 
 void TextInputClientMessageFilter::OnGotStringAtPoint(
-    const mac::AttributedStringCoder::EncodedString& encoded_string,
+    const ui::mojom::AttributedString& attributed_string,
     const gfx::Point& point) {
   TextInputClientMac* service = TextInputClientMac::GetInstance();
-  service->GetStringAtPointReply(encoded_string, point);
+  service->GetStringAtPointReply(attributed_string.Clone(), point);
 }
 
 void TextInputClientMessageFilter::OnGotStringFromRange(
-    const mac::AttributedStringCoder::EncodedString& encoded_string,
+    const ui::mojom::AttributedString& attributed_string,
     const gfx::Point& point) {
   TextInputClientMac* service = TextInputClientMac::GetInstance();
-  service->GetStringFromRangeReply(encoded_string, point);
+  service->GetStringFromRangeReply(attributed_string.Clone(), point);
 }
 
 }  // namespace content

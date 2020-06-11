@@ -7,6 +7,7 @@ module remote_cocoa.mojom;
 import "content/common/native_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "third_party/blink/public/mojom/input/input_handler.mojom";
+import "ui/base/mojom/attributed_string.mojom";
 import "ui/base/ime/mojom/ime_types.mojom";
 import "ui/display/mojom/display.mojom";
 import "ui/events/mojom/event.mojom";
@@ -79,7 +80,7 @@ interface RenderWidgetHostNSView {
 
   // Open the dictionary overlay for the specified string at the specified
   // point.
-  ShowDictionaryOverlay(content.mojom.EncodedAttributedString attributed_string,
+  ShowDictionaryOverlay(ui.mojom.AttributedString attributed_string,
                         gfx.mojom.Point baseline_point);
 
   // Start intercepting keyboard events for the specified codes.

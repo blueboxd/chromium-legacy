@@ -40,7 +40,7 @@ constexpr float kScoreEps = 1e-5f;
 // Finch.
 constexpr size_t kMinQueryLength = 1u;
 constexpr size_t kMinQueryLengthForAlternates = 4u;
-constexpr float kMinScoreForAlternates = 0.3f;
+constexpr float kMinScoreForAlternates = 0.35f;
 
 constexpr size_t kNumRequestedResults = 5u;
 constexpr size_t kMaxShownResults = 2u;
@@ -132,11 +132,7 @@ OsSettingsResult::OsSettingsResult(
   if (hierarchy.empty()) {
     LogError(Error::kHierarchyEmpty);
   } else if (result->type != SettingsResultType::kSection) {
-    const base::string16 details = hierarchy.back();
-    // TODO(crbug.com/1068851): Confirm whether or not we want to show sub-text
-    // when it's the same as the result text.
-    if (details != result->canonical_result_text)
-      SetDetails(details);
+    SetDetails(hierarchy.back());
   }
 }
 

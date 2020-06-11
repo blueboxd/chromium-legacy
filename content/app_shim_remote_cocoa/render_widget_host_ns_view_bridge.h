@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
+#include "ui/base/mojom/attributed_string.mojom-forward.h"
 #include "ui/display/display_observer.h"
 
 namespace remote_cocoa {
@@ -61,9 +62,8 @@ class RenderWidgetHostNSViewBridge : public mojom::RenderWidgetHostNSView,
   void DisplayCursor(const content::WebCursor& cursor) override;
   void SetCursorLocked(bool locked) override;
   void ShowDictionaryOverlayForSelection() override;
-  void ShowDictionaryOverlay(
-      const mac::AttributedStringCoder::EncodedString& encoded_string,
-      const gfx::Point& baseline_point) override;
+  void ShowDictionaryOverlay(ui::mojom::AttributedStringPtr attributed_string,
+                             const gfx::Point& baseline_point) override;
   void LockKeyboard(
       const base::Optional<std::vector<uint32_t>>& uint_dom_codes) override;
   void UnlockKeyboard() override;

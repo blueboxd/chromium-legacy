@@ -599,7 +599,7 @@ class PrctlPolicy : public Policy {
 
     if (sysno == __NR_prctl) {
       // Handle prctl() inside an UnsafeTrap()
-      return UnsafeTrap(PrctlHandler, NULL);
+      return UnsafeTrap(PrctlHandler, nullptr);
     }
 
     // Allow all other system calls.
@@ -661,7 +661,7 @@ ResultExpr RedirectAllSyscallsPolicy::EvaluateSyscall(int sysno) const {
   // use of UnsafeTrap()
   if (SandboxBPF::IsRequiredForUnsafeTrap(sysno))
     return Allow();
-  return UnsafeTrap(AllowRedirectedSyscall, NULL);
+  return UnsafeTrap(AllowRedirectedSyscall, nullptr);
 }
 
 #if !defined(ADDRESS_SANITIZER)
@@ -688,7 +688,7 @@ BPF_TEST_C(SandboxBPF, SigBus, RedirectAllSyscallsPolicy) {
   struct sigaction sa = {};
   sa.sa_sigaction = SigBusHandler;
   sa.sa_flags = SA_SIGINFO;
-  BPF_ASSERT(sigaction(SIGBUS, &sa, NULL) == 0);
+  BPF_ASSERT(sigaction(SIGBUS, &sa, nullptr) == 0);
   kill(getpid(), SIGBUS);
   char c = '\000';
   BPF_ASSERT(read(fds[0], &c, 1) == 1);
@@ -720,8 +720,8 @@ BPF_TEST_C(SandboxBPF, SigMask, RedirectAllSyscallsPolicy) {
   // Try again, and this time we verify that we can block it. This
   // requires a second call to sigprocmask().
   sigaddset(&mask0, SIGUSR2);
-  BPF_ASSERT(!sigprocmask(SIG_BLOCK, &mask0, NULL));
-  BPF_ASSERT(!sigprocmask(SIG_BLOCK, NULL, &mask2));
+  BPF_ASSERT(!sigprocmask(SIG_BLOCK, &mask0, nullptr));
+  BPF_ASSERT(!sigprocmask(SIG_BLOCK, nullptr, &mask2));
   BPF_ASSERT(sigismember(&mask2, SIGUSR2));
 }
 
@@ -837,7 +837,7 @@ class EqualityStressTest {
         // work isn't impacted by the fact that we are overriding
         // a lot of different system calls.
         ++end;
-        arg_values_.push_back(NULL);
+        arg_values_.push_back(nullptr);
       } else {
         arg_values_.push_back(
             RandomArgValue(rand() % kMaxArgs, 0, rand() % kMaxArgs));
@@ -955,7 +955,7 @@ class EqualityStressTest {
       arg_value->tests[n].k_value = k_value;
       if (!remaining_args || (rand() & 1)) {
         arg_value->tests[n].err = (rand() % 1000) + 1;
-        arg_value->tests[n].arg_value = NULL;
+        arg_value->tests[n].arg_value = nullptr;
       } else {
         arg_value->tests[n].err = 0;
         arg_value->tests[n].arg_value =
@@ -967,7 +967,7 @@ class EqualityStressTest {
     // node, or we can randomly add another couple of tests.
     if (!remaining_args || (rand() & 1)) {
       arg_value->err = (rand() % 1000) + 1;
-      arg_value->arg_value = NULL;
+      arg_value->arg_value = nullptr;
     } else {
       arg_value->err = 0;
       arg_value->arg_value =
@@ -1820,15 +1820,15 @@ ResultExpr PthreadPolicyBitMask::EvaluateSyscall(int sysno) const {
 static void* ThreadFnc(void* arg) {
   ++*reinterpret_cast<int*>(arg);
   Syscall::Call(__NR_futex, arg, FUTEX_WAKE, 1, 0, 0, 0);
-  return NULL;
+  return nullptr;
 }
 
 static void PthreadTest() {
   // Attempt to start a joinable thread. This should succeed.
   pthread_t thread;
   int thread_ran = 0;
-  BPF_ASSERT(!pthread_create(&thread, NULL, ThreadFnc, &thread_ran));
-  BPF_ASSERT(!pthread_join(thread, NULL));
+  BPF_ASSERT(!pthread_create(&thread, nullptr, ThreadFnc, &thread_ran));
+  BPF_ASSERT(!pthread_join(thread, nullptr));
   BPF_ASSERT(thread_ran);
 
   // Attempt to start a detached thread. This should succeed.
@@ -2084,7 +2084,7 @@ class TrapPread64Policy : public Policy {
     }
 
     if (system_call_number == __NR_pread64) {
-      return UnsafeTrap(ForwardPreadHandler, NULL);
+      return UnsafeTrap(ForwardPreadHandler, nullptr);
     }
     return Allow();
   }
@@ -2134,7 +2134,7 @@ void* TsyncApplyToTwoThreadsFunc(void* cond_ptr) {
 
   BlacklistNanosleepPolicy::AssertNanosleepFails();
 
-  return NULL;
+  return nullptr;
 }
 
 SANDBOX_TEST(SandboxBPF, Tsync) {
@@ -2158,7 +2158,7 @@ SANDBOX_TEST(SandboxBPF, Tsync) {
   // Create a thread on which to invoke the blocked syscall.
   pthread_t thread;
   BPF_ASSERT_EQ(
-      0, pthread_create(&thread, NULL, &TsyncApplyToTwoThreadsFunc, &event));
+      0, pthread_create(&thread, nullptr, &TsyncApplyToTwoThreadsFunc, &event));
 
   // Test that nanoseelp success.
   const struct timespec ts = {0, 0};
@@ -2175,7 +2175,7 @@ SANDBOX_TEST(SandboxBPF, Tsync) {
   event.Signal();
 
   // Wait for the thread to finish.
-  BPF_ASSERT_EQ(0, pthread_join(thread, NULL));
+  BPF_ASSERT_EQ(0, pthread_join(thread, nullptr));
 }
 
 class AllowAllPolicy : public Policy {
@@ -2237,7 +2237,7 @@ class UnsafeTrapWithCondPolicy : public Policy {
       case __NR_close:
         return Allow();
       case __NR_getppid:
-        return UnsafeTrap(NoOpHandler, NULL);
+        return UnsafeTrap(NoOpHandler, nullptr);
       default:
         return Error(EPERM);
     }

@@ -54,6 +54,7 @@
 #include "ui/base/cocoa/remote_accessibility_api.h"
 #import "ui/base/cocoa/secure_password_input.h"
 #include "ui/base/cocoa/text_services_context_menu.h"
+#include "ui/base/mojom/attributed_string.mojom.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -2022,9 +2023,9 @@ void RenderWidgetHostViewMac::SmartMagnify(
 void RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay(
     int32_t target_widget_process_id,
     int32_t target_widget_routing_id,
-    const mac::AttributedStringCoder::EncodedString& encoded_string,
-    gfx::Point baseline_point) {
-  if (encoded_string.string().empty()) {
+    ui::mojom::AttributedStringPtr attributed_string,
+    const gfx::Point& baseline_point) {
+  if (attributed_string->string.empty()) {
     // The PDF plugin does not support getting the attributed string at point.
     // Until it does, use NSPerformService(), which opens Dictionary.app.
     // TODO(shuchen): Support GetStringAtPoint() & GetStringFromRange() for PDF.
@@ -2050,11 +2051,15 @@ void RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay(
     // https://crbug.com/737032
     auto* widget_host = content::RenderWidgetHost::FromID(
         target_widget_process_id, target_widget_routing_id);
+    gfx::Point updated_baseline_point = baseline_point;
     if (widget_host) {
-      if (auto* rwhv = widget_host->GetView())
-        baseline_point = rwhv->TransformPointToRootCoordSpace(baseline_point);
+      if (auto* rwhv = widget_host->GetView()) {
+        updated_baseline_point =
+            rwhv->TransformPointToRootCoordSpace(baseline_point);
+      }
     }
-    ns_view_->ShowDictionaryOverlay(encoded_string, baseline_point);
+    ns_view_->ShowDictionaryOverlay(std::move(attributed_string),
+                                    updated_baseline_point);
   }
 }
 

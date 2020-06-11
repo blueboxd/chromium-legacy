@@ -18,6 +18,10 @@
 namespace net {
 
 namespace {
+// From
+// https://wicg.github.io/web-transport/#dom-quictransportconfiguration-server_certificate_fingerprints
+constexpr int kCustomCertificateMaxValidityDays = 14;
+
 std::set<std::string> HostsFromOrigins(std::set<HostPortPair> origins) {
   std::set<std::string> hosts;
   for (const auto& origin : origins) {
@@ -25,17 +29,48 @@ std::set<std::string> HostsFromOrigins(std::set<HostPortPair> origins) {
   }
   return hosts;
 }
+
+std::unique_ptr<quic::ProofVerifier> CreateProofVerifier(
+    const NetworkIsolationKey& isolation_key,
+    URLRequestContext* context,
+    const QuicTransportClient::Parameters& parameters) {
+  if (parameters.server_certificate_fingerprints.empty()) {
+    return std::make_unique<ProofVerifierChromium>(
+        context->cert_verifier(), context->ct_policy_enforcer(),
+        context->transport_security_state(),
+        context->cert_transparency_verifier(),
+        HostsFromOrigins(
+            context->quic_context()->params()->origins_to_force_quic_on),
+        isolation_key);
+  }
+
+  auto verifier = std::make_unique<quic::WebTransportFingerprintProofVerifier>(
+      context->quic_context()->clock(), kCustomCertificateMaxValidityDays);
+  for (const quic::CertificateFingerprint& fingerprint :
+       parameters.server_certificate_fingerprints) {
+    bool success = verifier->AddFingerprint(fingerprint);
+    if (!success) {
+      DLOG(WARNING) << "Failed to add a certificate fingerprint: "
+                    << fingerprint.fingerprint;
+    }
+  }
+  return verifier;
+}
 }  // namespace
 
 constexpr quic::ParsedQuicVersion
     QuicTransportClient::kQuicVersionForOriginTrial;
+
+QuicTransportClient::Parameters::Parameters() = default;
+QuicTransportClient::Parameters::~Parameters() = default;
 
 QuicTransportClient::QuicTransportClient(
     const GURL& url,
     const url::Origin& origin,
     Visitor* visitor,
     const NetworkIsolationKey& isolation_key,
-    URLRequestContext* context)
+    URLRequestContext* context,
+    const Parameters& parameters)
     : url_(url),
       origin_(origin),
       isolation_key_(isolation_key),
@@ -54,16 +89,8 @@ QuicTransportClient::QuicTransportClient(
       // (currently, all certificate verification errors result in "TLS
       // handshake error" even when more detailed message is available).  This
       // requires implementing ProofHandler::OnProofVerifyDetailsAvailable.
-      crypto_config_(
-          std::make_unique<ProofVerifierChromium>(
-              context->cert_verifier(),
-              context->ct_policy_enforcer(),
-              context->transport_security_state(),
-              context->cert_transparency_verifier(),
-              std::set<std::string>(HostsFromOrigins(
-                  quic_context_->params()->origins_to_force_quic_on)),
-              isolation_key_),
-          /* session_cache */ nullptr) {}
+      crypto_config_(CreateProofVerifier(isolation_key_, context, parameters),
+                     /* session_cache */ nullptr) {}
 
 QuicTransportClient::~QuicTransportClient() = default;
 

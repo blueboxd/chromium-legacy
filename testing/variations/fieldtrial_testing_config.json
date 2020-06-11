@@ -1953,6 +1953,44 @@
             ]
         }
     ],
+    "DefaultPassthroughCommandDecoder": [
+        {
+            "platforms": [
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20191004",
+                    "enable_features": [
+                        "DefaultPassthroughCommandDecoder"
+                    ]
+                }
+            ]
+        }
+    ],
+    "DelayAsyncScriptExecution": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "delay_type": "first_paint_or_finished_parsing"
+                    },
+                    "enable_features": [
+                        "DelayAsyncScriptExecution"
+                    ]
+                }
+            ]
+        }
+    ],
     "DeprecateFtp": [
         {
             "platforms": [
@@ -2752,7 +2790,7 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "overscroll_history_navigation_bottom_sheet": "true"
+                        "overscroll_history_navigation_bottom_sheet": "false"
                     },
                     "enable_features": [
                         "OverscrollHistoryNavigation"
@@ -4126,6 +4164,21 @@
                     },
                     "enable_features": [
                         "OfflineIndicator"
+                    ]
+                }
+            ]
+        }
+    ],
+    "OfflineIndicatorV2": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OfflineIndicatorV2"
                     ]
                 }
             ]

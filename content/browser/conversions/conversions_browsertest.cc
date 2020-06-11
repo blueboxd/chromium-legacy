@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
-#include "build/build_config.h"
+#include "content/browser/conversions/conversion_manager_impl.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -75,6 +75,7 @@ class ConversionsBrowserTest : public ContentBrowserTest {
  public:
   ConversionsBrowserTest() {
     feature_list_.InitAndEnableFeature(features::kConversionMeasurement);
+    ConversionManagerImpl::RunInMemoryForTesting();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -106,15 +107,8 @@ class ConversionsBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(ConversionsBrowserTest,
                        FeatureEnabled_StorageInitWithoutHang) {}
 
-// https://crbug.com/1087406: Flaky on Windows
-#if defined(OS_WIN)
-#define MAYBE_ImpressionConversion_ReportSent \
-  DISABLED_ImpressionConversion_ReportSent
-#else
-#define MAYBE_ImpressionConversion_ReportSent ImpressionConversion_ReportSent
-#endif
 IN_PROC_BROWSER_TEST_F(ConversionsBrowserTest,
-                       MAYBE_ImpressionConversion_ReportSent) {
+                       ImpressionConversion_ReportSent) {
   // Expected reports must be registered before the server starts.
   ExpectedReportWaiter expected_report(
       GURL(
@@ -152,16 +146,8 @@ IN_PROC_BROWSER_TEST_F(ConversionsBrowserTest,
   EXPECT_EQ(expected_report.expected_url, expected_report.WaitForRequestUrl());
 }
 
-// https://crbug.com/1087406: Flaky on Windows
-#if defined(OS_WIN)
-#define MAYBE_ImpressionFromCrossOriginSubframe_ReportSent \
-  DISABLED_ImpressionFromCrossOriginSubframe_ReportSent
-#else
-#define MAYBE_ImpressionFromCrossOriginSubframe_ReportSent \
-  ImpressionFromCrossOriginSubframe_ReportSent
-#endif
 IN_PROC_BROWSER_TEST_F(ConversionsBrowserTest,
-                       MAYBE_ImpressionFromCrossOriginSubframe_ReportSent) {
+                       ImpressionFromCrossOriginSubframe_ReportSent) {
   ExpectedReportWaiter expected_report(
       GURL(
           "https://a.test/.well-known/"
@@ -207,17 +193,9 @@ IN_PROC_BROWSER_TEST_F(ConversionsBrowserTest,
   EXPECT_EQ(expected_report.expected_url, expected_report.WaitForRequestUrl());
 }
 
-// https://crbug.com/1087406: Flaky on Windows
-#if defined(OS_WIN)
-#define MAYBE_MultipleImpressionsPerConversion_ReportsSentWithAttribution \
-  DISABLED_MultipleImpressionsPerConversion_ReportsSentWithAttribution
-#else
-#define MAYBE_MultipleImpressionsPerConversion_ReportsSentWithAttribution \
-  MultipleImpressionsPerConversion_ReportsSentWithAttribution
-#endif
 IN_PROC_BROWSER_TEST_F(
     ConversionsBrowserTest,
-    MAYBE_MultipleImpressionsPerConversion_ReportsSentWithAttribution) {
+    MultipleImpressionsPerConversion_ReportsSentWithAttribution) {
   std::vector<ExpectedReportWaiter> expected_reports;
   expected_reports.emplace_back(
       GURL("https://d.test/.well-known/"

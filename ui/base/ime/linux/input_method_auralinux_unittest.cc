@@ -282,8 +282,8 @@ class InputMethodAuraLinuxTest : public testing::Test {
   }
   ~InputMethodAuraLinuxTest() override {
     delete factory_;
-    factory_ = NULL;
-    test_result_ = NULL;
+    factory_ = nullptr;
+    test_result_ = nullptr;
   }
 
   void SetUp() override {
@@ -303,13 +303,13 @@ class InputMethodAuraLinuxTest : public testing::Test {
     context_simple_->SetSyncMode(false);
     context_simple_->SetEatKey(false);
 
-    context_ = NULL;
-    context_simple_ = NULL;
+    context_ = nullptr;
+    context_simple_ = nullptr;
 
     delete input_method_auralinux_;
-    input_method_auralinux_ = NULL;
+    input_method_auralinux_ = nullptr;
     delete delegate_;
-    delegate_ = NULL;
+    delegate_ = nullptr;
   }
 
   LinuxInputMethodContextFactoryForTesting* factory_;

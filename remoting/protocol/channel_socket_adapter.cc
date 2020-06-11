@@ -107,7 +107,7 @@ void TransportChannelSocketAdapter::Close(int error_code) {
   closed_error_code_ = error_code;
   channel_->SignalReadPacket.disconnect(this);
   channel_->SignalDestroyed.disconnect(this);
-  channel_ = NULL;
+  channel_ = nullptr;
 
   if (!read_callback_.is_null()) {
     net::CompletionRepeatingCallback callback = read_callback_;

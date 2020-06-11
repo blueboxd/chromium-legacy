@@ -167,7 +167,7 @@ public class TracingSettingsTest {
             Assert.assertEquals(TracingSettings.MSG_START, startTracingButton.getTitle());
 
             // Tap the button to start recording a trace.
-            startTracingButton.performClick();
+            startTracingButton.getOnPreferenceClickListener().onPreferenceClick(startTracingButton);
 
             Assert.assertEquals(
                     TracingController.State.STARTING, TracingController.getInstance().getState());

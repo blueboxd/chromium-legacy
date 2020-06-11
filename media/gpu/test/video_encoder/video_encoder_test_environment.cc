@@ -50,6 +50,7 @@ const std::vector<base::Feature> kDisabledFeaturesForVideoEncoderTest = {
 VideoEncoderTestEnvironment* VideoEncoderTestEnvironment::Create(
     const base::FilePath& video_path,
     const base::FilePath& video_metadata_path,
+    bool enable_bitstream_validator,
     const base::FilePath& output_folder,
     const std::string& codec) {
   if (video_path.empty()) {
@@ -89,17 +90,19 @@ VideoEncoderTestEnvironment* VideoEncoderTestEnvironment::Create(
     return nullptr;
   }
   VideoCodecProfile profile = it->profile;
-  return new VideoEncoderTestEnvironment(std::move(video), output_folder,
-                                         profile);
+  return new VideoEncoderTestEnvironment(
+      std::move(video), enable_bitstream_validator, output_folder, profile);
 }
 
 VideoEncoderTestEnvironment::VideoEncoderTestEnvironment(
     std::unique_ptr<media::test::Video> video,
+    bool enable_bitstream_validator,
     const base::FilePath& output_folder,
     VideoCodecProfile profile)
     : VideoTestEnvironment(kEnabledFeaturesForVideoEncoderTest,
                            kDisabledFeaturesForVideoEncoderTest),
       video_(std::move(video)),
+      enable_bitstream_validator_(enable_bitstream_validator),
       output_folder_(output_folder),
       profile_(profile),
       gpu_memory_buffer_factory_(
@@ -109,6 +112,10 @@ VideoEncoderTestEnvironment::~VideoEncoderTestEnvironment() = default;
 
 media::test::Video* VideoEncoderTestEnvironment::Video() const {
   return video_.get();
+}
+
+bool VideoEncoderTestEnvironment::IsBitstreamValidatorEnabled() const {
+  return enable_bitstream_validator_;
 }
 
 const base::FilePath& VideoEncoderTestEnvironment::OutputFolder() const {

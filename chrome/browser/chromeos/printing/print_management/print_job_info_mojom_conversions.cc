@@ -6,6 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/history/print_job_info.pb.h"
 #include "url/gurl.h"
 
@@ -31,6 +32,26 @@ mojom::PrintJobCompletionStatus PrintJobStatusProtoToMojom(
       return mojom::PrintJobCompletionStatus::kFailed;
   }
   return mojom::PrintJobCompletionStatus::kFailed;
+}
+
+mojom::ActivePrintJobState CupsPrintJobActiveStateToMojom(
+    CupsPrintJob::State status) {
+  switch (status) {
+    case CupsPrintJob::State::STATE_NONE:
+    case CupsPrintJob::State::STATE_WAITING:
+    case CupsPrintJob::State::STATE_STARTED:
+    case CupsPrintJob::State::STATE_PAGE_DONE:
+    case CupsPrintJob::State::STATE_SUSPENDED:
+    case CupsPrintJob::State::STATE_RESUMED:
+      return mojom::ActivePrintJobState::kStarted;
+    case CupsPrintJob::State::STATE_CANCELLED:
+    case CupsPrintJob::State::STATE_DOCUMENT_DONE:
+    case CupsPrintJob::State::STATE_FAILED:
+    case CupsPrintJob::State::STATE_ERROR:
+      return mojom::ActivePrintJobState::kDocumentDone;
+  }
+  NOTREACHED();
+  return mojom::ActivePrintJobState::kDocumentDone;
 }
 
 mojom::PrinterErrorCode PrinterErrorCodeProtoToMojom(
@@ -90,6 +111,26 @@ mojom::PrintJobInfoPtr PrintJobProtoToMojom(
       base::UTF8ToUTF16(print_job_info_proto.printer().name());
   print_job_mojom->printer_uri = GURL(print_job_info_proto.printer().uri());
   print_job_mojom->completed_info = std::move(completed_info_mojom);
+  return print_job_mojom;
+}
+
+mojom::PrintJobInfoPtr CupsPrintJobToMojom(const CupsPrintJob& job) {
+  mojom::ActivePrintJobInfoPtr active_job_info_mojom =
+      mojom::ActivePrintJobInfo::New();
+  active_job_info_mojom->active_state =
+      CupsPrintJobActiveStateToMojom(job.state());
+  active_job_info_mojom->printed_pages = job.printed_page_number();
+
+  mojom::PrintJobInfoPtr print_job_mojom = mojom::PrintJobInfo::New();
+  print_job_mojom->active_print_job_info = std::move(active_job_info_mojom);
+  print_job_mojom->id = job.GetUniqueId();
+  // TODO(crbug/1091953): Use 16-bit strings.
+  print_job_mojom->title = base::UTF8ToUTF16(job.document_title());
+  print_job_mojom->creation_time = job.creation_time();
+  print_job_mojom->number_of_pages = job.total_page_number();
+  print_job_mojom->printer_name =
+      base::UTF8ToUTF16(job.printer().display_name());
+  print_job_mojom->printer_uri = GURL(job.printer().uri());
   return print_job_mojom;
 }
 

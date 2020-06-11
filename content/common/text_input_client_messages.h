@@ -13,12 +13,26 @@
 #include "ui/gfx/range/range.h"
 
 #if defined(OS_MACOSX)
-#include "content/common/mac/attributed_string_coder.h"
+#include "content/common/mac/attributed_string_type_converters.h"
+#include "ui/base/mojom/attributed_string.mojom.h"
 #endif
 
 #define IPC_MESSAGE_START TextInputClientMsgStart
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
+
+#if defined(OS_MACOSX)
+IPC_STRUCT_TRAITS_BEGIN(ui::mojom::FontAttribute)
+  IPC_STRUCT_TRAITS_MEMBER(font_name)
+  IPC_STRUCT_TRAITS_MEMBER(font_point_size)
+  IPC_STRUCT_TRAITS_MEMBER(effective_range)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ui::mojom::AttributedString)
+  IPC_STRUCT_TRAITS_MEMBER(string)
+  IPC_STRUCT_TRAITS_MEMBER(attributes)
+IPC_STRUCT_TRAITS_END()
+#endif
 
 // Browser -> Renderer Messages ////////////////////////////////////////////////
 // These messages are sent from the browser to the renderer. Each one has a
@@ -42,12 +56,12 @@ IPC_MESSAGE_ROUTED1(TextInputClientMsg_StringAtPoint, gfx::Point)
 #if defined(OS_MACOSX)
 // Reply message for TextInputClientMsg_StringForRange.
 IPC_MESSAGE_ROUTED2(TextInputClientReplyMsg_GotStringForRange,
-                    mac::AttributedStringCoder::EncodedString,
+                    ui::mojom::AttributedString,
                     gfx::Point)
 
 // Reply message for TextInputClientMsg_StringAtPoint
 IPC_MESSAGE_ROUTED2(TextInputClientReplyMsg_GotStringAtPoint,
-                    mac::AttributedStringCoder::EncodedString,
+                    ui::mojom::AttributedString,
                     gfx::Point)
 #endif  // defined(OS_MACOSX)
 

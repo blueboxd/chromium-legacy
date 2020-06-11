@@ -19,6 +19,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_config.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/quic_transport/quic_transport_client_session.h"
+#include "net/third_party/quiche/src/quic/quic_transport/web_transport_fingerprint_proof_verifier.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -81,6 +82,17 @@ class NET_EXPORT QuicTransportClient
     virtual void OnCanCreateNewOutgoingUnidirectionalStream() = 0;
   };
 
+  struct NET_EXPORT Parameters {
+    Parameters();
+    ~Parameters();
+
+    // A vector of fingerprints for expected server certificates, as described
+    // in
+    // https://wicg.github.io/web-transport/#dom-quictransportconfiguration-server_certificate_fingerprints
+    // When empty, Web PKI is used.
+    std::vector<quic::CertificateFingerprint> server_certificate_fingerprints;
+  };
+
   // QUIC protocol version that is used in the origin trial.
   static constexpr quic::ParsedQuicVersion kQuicVersionForOriginTrial =
       quic::ParsedQuicVersion::Draft27();
@@ -90,7 +102,8 @@ class NET_EXPORT QuicTransportClient
                       const url::Origin& origin,
                       Visitor* visitor,
                       const NetworkIsolationKey& isolation_key,
-                      URLRequestContext* context);
+                      URLRequestContext* context,
+                      const Parameters& parameters);
   ~QuicTransportClient() override;
 
   State state() const { return state_; }

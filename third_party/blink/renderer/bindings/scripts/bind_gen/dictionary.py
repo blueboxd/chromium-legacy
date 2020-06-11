@@ -9,6 +9,7 @@ from .blink_v8_bridge import blink_class_name
 from .blink_v8_bridge import blink_type_info
 from .blink_v8_bridge import make_default_value_expr
 from .blink_v8_bridge import make_v8_to_blink_value
+from .blink_v8_bridge import native_value_tag
 from .code_node import Likeliness
 from .code_node import ListNode
 from .code_node import SequenceNode
@@ -753,6 +754,7 @@ def make_fill_dict_members_internal_func(cg_context):
     body.register_code_symbols([
         SymbolNode("try_block", "v8::TryCatch ${try_block}(${isolate});"),
         SymbolNode("v8_value", "v8::Local<v8::Value> ${v8_value};"),
+        SymbolNode("unused_presence_var", "bool ${unused_presence_var};"),
     ])
 
     if dictionary.inherited:
@@ -774,44 +776,32 @@ def make_fill_own_dict_member(key_index, member):
     assert isinstance(key_index, int)
     assert isinstance(member, web_idl.DictionaryMember)
 
-    T = TextNode
-
-    pattern = """
-if (!<% try_block %>v8_dictionary->Get(${current_context}, ${member_names}[{_1}].Get(${isolate}))
-         .ToLocal(&${v8_value})) {{
-  ${exception_state}.RethrowV8Exception(${try_block}.Exception());
+    pattern = """\
+if (!bindings::ConvertDictionaryMember<{nvt_tag}, {is_required}>(
+        ${isolate},
+        ${current_context},
+        v8_dictionary,
+        ${member_names}[{key_index}].Get(${isolate}),
+        "${{dictionary.identifier}}",
+        "{member_name}",
+        {value_var},
+        {presence_var},
+        ${try_block},
+        ${exception_state})) {{
   return;
 }}"""
-    get_v8_value_node = T(_format(pattern, _1=key_index))
-
-    api_call_node = SymbolScopeNode()
-    api_call_node.register_code_symbol(
-        make_v8_to_blink_value("blink_value", "${v8_value}", member.idl_type))
-    _1 = _blink_member_name(member).set_api
-    api_call_node.append(T(_format("{_1}(${blink_value});", _1=_1)))
-
-    if member.is_required:
-        exception_pattern = """\
-${exception_state}.ThrowTypeError(
-    ExceptionMessages::FailedToGet(
-        "{}", "${{dictionary.identifier}}",
-        "Required member is undefined."));
-"""
-
-        check_and_fill_node = CxxIfElseNode(
-            cond="!${v8_value}->IsUndefined()",
-            then=api_call_node,
-            then_likeliness=Likeliness.LIKELY,
-            else_=T(_format(exception_pattern, member.identifier)),
-            else_likeliness=Likeliness.UNLIKELY)
+    if _does_use_presence_flag(member):
+        presence_var = _blink_member_name(member).presence_var
     else:
-        check_and_fill_node = CxxLikelyIfNode(
-            cond="!${v8_value}->IsUndefined()", body=api_call_node)
-
-    node = SequenceNode([
-        get_v8_value_node,
-        check_and_fill_node,
-    ])
+        presence_var = "${unused_presence_var}"
+    node = TextNode(
+        _format(pattern,
+                nvt_tag=native_value_tag(member.idl_type),
+                is_required="true" if member.is_required else "false",
+                key_index=key_index,
+                member_name=member.identifier,
+                value_var=_blink_member_name(member).value_var,
+                presence_var=presence_var))
 
     conditional = expr_from_exposure(member.exposure)
     if not conditional.is_always_true:

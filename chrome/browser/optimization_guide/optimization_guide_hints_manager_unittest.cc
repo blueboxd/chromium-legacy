@@ -50,32 +50,34 @@ namespace {
 constexpr int kTestFetchRetryDelaySecs = 60 * 16;
 constexpr int kUpdateFetchHintsTimeSecs = 24 * 60 * 60;  // 24 hours.
 
-const int kBlackBlacklistBloomFilterNumHashFunctions = 7;
-const int kBlackBlacklistBloomFilterNumBits = 511;
+const int kDefaultHostBloomFilterNumHashFunctions = 7;
+const int kDefaultHostBloomFilterNumBits = 511;
 
-void PopulateBlackBlacklistBloomFilter(
+void PopulateBloomFilterWithDefaultHost(
     optimization_guide::BloomFilter* bloom_filter) {
-  bloom_filter->Add("black.com");
+  bloom_filter->Add("host.com");
 }
 
-void AddBlacklistBloomFilterToConfig(
+void AddBloomFilterToConfig(
     optimization_guide::proto::OptimizationType optimization_type,
-    const optimization_guide::BloomFilter& blacklist_bloom_filter,
+    const optimization_guide::BloomFilter& bloom_filter,
     int num_hash_functions,
     int num_bits,
+    bool is_allowlist,
     optimization_guide::proto::Configuration* config) {
-  std::string blacklist_data(
-      reinterpret_cast<const char*>(&blacklist_bloom_filter.bytes()[0]),
-      blacklist_bloom_filter.bytes().size());
-  optimization_guide::proto::OptimizationFilter* blacklist_proto =
-      config->add_optimization_blacklists();
-  blacklist_proto->set_optimization_type(optimization_type);
+  std::string bloom_filter_data(
+      reinterpret_cast<const char*>(&bloom_filter.bytes()[0]),
+      bloom_filter.bytes().size());
+  optimization_guide::proto::OptimizationFilter* of_proto =
+      is_allowlist ? config->add_optimization_allowlists()
+                   : config->add_optimization_blacklists();
+  of_proto->set_optimization_type(optimization_type);
   std::unique_ptr<optimization_guide::proto::BloomFilter> bloom_filter_proto =
       std::make_unique<optimization_guide::proto::BloomFilter>();
   bloom_filter_proto->set_num_hash_functions(num_hash_functions);
   bloom_filter_proto->set_num_bits(num_bits);
-  bloom_filter_proto->set_data(blacklist_data);
-  blacklist_proto->set_allocated_bloom_filter(bloom_filter_proto.release());
+  bloom_filter_proto->set_data(bloom_filter_data);
+  of_proto->set_allocated_bloom_filter(bloom_filter_proto.release());
 }
 
 std::unique_ptr<optimization_guide::proto::GetHintsResponse> BuildHintsResponse(
@@ -460,18 +462,17 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
   EXPECT_FALSE(hints_manager()->registered_optimization_types().empty());
   optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions,
-      kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::DEFER_ALL_SCRIPT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::NOSCRIPT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
+  optimization_guide::BloomFilter blocklist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::DEFER_ALL_SCRIPT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::NOSCRIPT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
 
   base::HistogramTester histogram_tester;
 
@@ -479,11 +480,11 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.OptimizationFilterStatus.DeferAllScript",
-      optimization_guide::OptimizationFilterStatus::kFoundServerBlacklistConfig,
+      optimization_guide::OptimizationFilterStatus::kFoundServerFilterConfig,
       1);
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.OptimizationFilterStatus.DeferAllScript",
-      optimization_guide::OptimizationFilterStatus::kCreatedServerBlacklist, 1);
+      optimization_guide::OptimizationFilterStatus::kCreatedServerFilter, 1);
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.OptimizationFilterStatus.NoScript", 0);
 }
@@ -823,18 +824,21 @@ TEST_F(OptimizationGuideHintsManagerTest, OnNavigationStartOrRedirectNoHost) {
 TEST_F(OptimizationGuideHintsManagerTest,
        OptimizationFiltersAreOnlyLoadedIfTypeIsRegistered) {
   optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions,
-      kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::NOSCRIPT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
+  optimization_guide::BloomFilter bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&bloom_filter);
+  AddBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                         bloom_filter, kDefaultHostBloomFilterNumHashFunctions,
+                         kDefaultHostBloomFilterNumBits,
+                         /*is_allowlist=*/false, &config);
+  AddBloomFilterToConfig(optimization_guide::proto::NOSCRIPT, bloom_filter,
+                         kDefaultHostBloomFilterNumHashFunctions,
+                         kDefaultHostBloomFilterNumBits,
+                         /*is_allowlist=*/false, &config);
+  AddBloomFilterToConfig(optimization_guide::proto::DEFER_ALL_SCRIPT,
+                         bloom_filter, kDefaultHostBloomFilterNumHashFunctions,
+                         kDefaultHostBloomFilterNumBits,
+                         /*is_allowlist=*/true, &config);
 
   {
     base::HistogramTester histogram_tester;
@@ -845,6 +849,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
         "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect", 0);
     histogram_tester.ExpectTotalCount(
         "OptimizationGuide.OptimizationFilterStatus.NoScript", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.OptimizationFilterStatus.DeferAllScript", 0);
   }
 
   // Now register the optimization type and see that it is loaded.
@@ -859,19 +865,21 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
     histogram_tester.ExpectBucketCount(
         "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
-        optimization_guide::OptimizationFilterStatus::
-            kFoundServerBlacklistConfig,
+        optimization_guide::OptimizationFilterStatus::kFoundServerFilterConfig,
         1);
     histogram_tester.ExpectBucketCount(
         "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
-        optimization_guide::OptimizationFilterStatus::kCreatedServerBlacklist,
-        1);
+        optimization_guide::OptimizationFilterStatus::kCreatedServerFilter, 1);
     histogram_tester.ExpectTotalCount(
         "OptimizationGuide.OptimizationFilterStatus.NoScript", 0);
-    EXPECT_TRUE(hints_manager()->HasLoadedOptimizationFilter(
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.OptimizationFilterStatus.DeferAllScript", 0);
+    EXPECT_TRUE(hints_manager()->HasLoadedOptimizationBlocklist(
         optimization_guide::proto::LITE_PAGE_REDIRECT));
-    EXPECT_FALSE(hints_manager()->HasLoadedOptimizationFilter(
+    EXPECT_FALSE(hints_manager()->HasLoadedOptimizationBlocklist(
         optimization_guide::proto::NOSCRIPT));
+    EXPECT_FALSE(hints_manager()->HasLoadedOptimizationAllowlist(
+        optimization_guide::proto::DEFER_ALL_SCRIPT));
   }
 
   // Re-registering the same optimization type does not re-load the filter.
@@ -888,6 +896,8 @@ TEST_F(OptimizationGuideHintsManagerTest,
         "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect", 0);
     histogram_tester.ExpectTotalCount(
         "OptimizationGuide.OptimizationFilterStatus.NoScript", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.OptimizationFilterStatus.DeferAllScript", 0);
   }
 
   // Registering a new optimization type without a filter does not trigger a
@@ -898,16 +908,18 @@ TEST_F(OptimizationGuideHintsManagerTest,
     base::RunLoop run_loop;
     hints_manager()->ListenForNextUpdateForTesting(run_loop.QuitClosure());
     hints_manager()->RegisterOptimizationTypes(
-        {optimization_guide::proto::DEFER_ALL_SCRIPT});
+        {optimization_guide::proto::PERFORMANCE_HINTS});
     run_loop.Run();
 
     histogram_tester.ExpectTotalCount(
         "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect", 0);
     histogram_tester.ExpectTotalCount(
         "OptimizationGuide.OptimizationFilterStatus.NoScript", 0);
+    histogram_tester.ExpectTotalCount(
+        "OptimizationGuide.OptimizationFilterStatus.DeferAllScript", 0);
   }
 
-  // Registering a new optimization type with a filter does trigger a
+  // Registering a new optimization types with filters does trigger a
   // reload of the filters.
   {
     base::HistogramTester histogram_tester;
@@ -915,31 +927,37 @@ TEST_F(OptimizationGuideHintsManagerTest,
     base::RunLoop run_loop;
     hints_manager()->ListenForNextUpdateForTesting(run_loop.QuitClosure());
     hints_manager()->RegisterOptimizationTypes(
-        {optimization_guide::proto::NOSCRIPT});
+        {optimization_guide::proto::NOSCRIPT,
+         optimization_guide::proto::DEFER_ALL_SCRIPT});
     run_loop.Run();
 
     histogram_tester.ExpectBucketCount(
         "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
-        optimization_guide::OptimizationFilterStatus::
-            kFoundServerBlacklistConfig,
+        optimization_guide::OptimizationFilterStatus::kFoundServerFilterConfig,
         1);
     histogram_tester.ExpectBucketCount(
         "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
-        optimization_guide::OptimizationFilterStatus::kCreatedServerBlacklist,
+        optimization_guide::OptimizationFilterStatus::kCreatedServerFilter, 1);
+    histogram_tester.ExpectBucketCount(
+        "OptimizationGuide.OptimizationFilterStatus.NoScript",
+        optimization_guide::OptimizationFilterStatus::kFoundServerFilterConfig,
         1);
     histogram_tester.ExpectBucketCount(
         "OptimizationGuide.OptimizationFilterStatus.NoScript",
-        optimization_guide::OptimizationFilterStatus::
-            kFoundServerBlacklistConfig,
+        optimization_guide::OptimizationFilterStatus::kCreatedServerFilter, 1);
+    histogram_tester.ExpectBucketCount(
+        "OptimizationGuide.OptimizationFilterStatus.DeferAllScript",
+        optimization_guide::OptimizationFilterStatus::kFoundServerFilterConfig,
         1);
     histogram_tester.ExpectBucketCount(
-        "OptimizationGuide.OptimizationFilterStatus.NoScript",
-        optimization_guide::OptimizationFilterStatus::kCreatedServerBlacklist,
-        1);
-    EXPECT_TRUE(hints_manager()->HasLoadedOptimizationFilter(
+        "OptimizationGuide.OptimizationFilterStatus.DeferAllScript",
+        optimization_guide::OptimizationFilterStatus::kCreatedServerFilter, 1);
+    EXPECT_TRUE(hints_manager()->HasLoadedOptimizationBlocklist(
         optimization_guide::proto::LITE_PAGE_REDIRECT));
-    EXPECT_TRUE(hints_manager()->HasLoadedOptimizationFilter(
+    EXPECT_TRUE(hints_manager()->HasLoadedOptimizationBlocklist(
         optimization_guide::proto::NOSCRIPT));
+    EXPECT_TRUE(hints_manager()->HasLoadedOptimizationAllowlist(
+        optimization_guide::proto::DEFER_ALL_SCRIPT));
   }
 }
 
@@ -951,33 +969,37 @@ TEST_F(OptimizationGuideHintsManagerTest,
   base::HistogramTester histogram_tester;
 
   optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions,
-      kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
+  optimization_guide::BloomFilter blocklist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
+  // Make sure it will only load one of an allowlist or a blocklist.
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/true, &config);
   ProcessHints(config, "1.0.0.0");
 
-  // We found 2 LPR blacklists: parsed one and duped the other.
+  // We found 2 LPR blocklists: parsed one and duped the other.
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
-      optimization_guide::OptimizationFilterStatus::kFoundServerBlacklistConfig,
-      2);
+      optimization_guide::OptimizationFilterStatus::kFoundServerFilterConfig,
+      3);
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
-      optimization_guide::OptimizationFilterStatus::kCreatedServerBlacklist, 1);
+      optimization_guide::OptimizationFilterStatus::kCreatedServerFilter, 1);
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
       optimization_guide::OptimizationFilterStatus::
-          kFailedServerBlacklistDuplicateConfig,
-      1);
+          kFailedServerFilterDuplicateConfig,
+      2);
 }
 
 TEST_F(OptimizationGuideHintsManagerTest, InvalidOptimizationFilterNotLoaded) {
@@ -990,24 +1012,24 @@ TEST_F(OptimizationGuideHintsManagerTest, InvalidOptimizationFilterNotLoaded) {
       optimization_guide::features::MaxServerBloomFilterByteSize() * 8 + 1;
 
   optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions, too_many_bits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(
-      optimization_guide::proto::LITE_PAGE_REDIRECT, blacklist_bloom_filter,
-      kBlackBlacklistBloomFilterNumHashFunctions, too_many_bits, &config);
+  optimization_guide::BloomFilter blocklist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, too_many_bits);
+  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
+  AddBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                         blocklist_bloom_filter,
+                         kDefaultHostBloomFilterNumHashFunctions, too_many_bits,
+                         /*is_allowlist=*/false, &config);
   ProcessHints(config, "1.0.0.0");
 
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
-      optimization_guide::OptimizationFilterStatus::kFoundServerBlacklistConfig,
+      optimization_guide::OptimizationFilterStatus::kFoundServerFilterConfig,
       1);
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.OptimizationFilterStatus.LitePageRedirect",
-      optimization_guide::OptimizationFilterStatus::
-          kFailedServerBlacklistTooBig,
+      optimization_guide::OptimizationFilterStatus::kFailedServerFilterTooBig,
       1);
-  EXPECT_FALSE(hints_manager()->HasLoadedOptimizationFilter(
+  EXPECT_FALSE(hints_manager()->HasLoadedOptimizationBlocklist(
       optimization_guide::proto::LITE_PAGE_REDIRECT));
 }
 
@@ -1016,14 +1038,13 @@ TEST_F(OptimizationGuideHintsManagerTest, CanApplyOptimizationUrlWithNoHost) {
       {optimization_guide::proto::LITE_PAGE_REDIRECT});
 
   optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions,
-      kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
+  optimization_guide::BloomFilter blocklist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
   ProcessHints(config, "1.0.0.0");
 
   optimization_guide::OptimizationTypeDecision optimization_type_decision =
@@ -1042,14 +1063,13 @@ TEST_F(OptimizationGuideHintsManagerTest,
       {optimization_guide::proto::LITE_PAGE_REDIRECT});
 
   optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions,
-      kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
+  optimization_guide::BloomFilter blocklist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
   ProcessHints(config, "1.0.0.0");
 
   // Set ECT estimate to be "painful".
@@ -1075,14 +1095,13 @@ TEST_F(OptimizationGuideHintsManagerTest,
       {optimization_guide::proto::LITE_PAGE_REDIRECT});
 
   optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions,
-      kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
+  optimization_guide::BloomFilter blocklist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
   ProcessHints(config, "1.0.0.0");
 
   // Set ECT estimate to be "fast".
@@ -1106,14 +1125,13 @@ TEST_F(OptimizationGuideHintsManagerTest,
 TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationHasFilterForTypeButNotLoadedYet) {
   optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions,
-      kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
+  optimization_guide::BloomFilter blocklist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
   ProcessHints(config, "1.0.0.0");
   // Append the switch for processing hints to force the filter to not get
   // loaded.
@@ -1138,24 +1156,49 @@ TEST_F(OptimizationGuideHintsManagerTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
-       CanApplyOptimizationHasLoadedFilterForTypeUrlInBlacklistFilter) {
+       CanApplyOptimizationHasLoadedFilterForTypeUrlInAllowlist) {
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::LITE_PAGE_REDIRECT});
 
   optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions,
-      kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
+  optimization_guide::BloomFilter allowlist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&allowlist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, allowlist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/true, &config);
   ProcessHints(config, "1.0.0.0");
 
   optimization_guide::OptimizationTypeDecision optimization_type_decision =
       hints_manager()->CanApplyOptimization(
-          GURL("https://m.black.com/123"),
+          GURL("https://m.host.com/123"),
+          optimization_guide::proto::LITE_PAGE_REDIRECT,
+          /*optimization_metadata=*/nullptr);
+
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::
+                kAllowedByOptimizationFilter,
+            optimization_type_decision);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationHasLoadedFilterForTypeUrlInBlocklist) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter blocklist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          GURL("https://m.host.com/123"),
           optimization_guide::proto::LITE_PAGE_REDIRECT,
           /*optimization_metadata=*/nullptr);
 
@@ -1165,19 +1208,44 @@ TEST_F(OptimizationGuideHintsManagerTest,
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,
-       CanApplyOptimizationHasLoadedFilterForTypeUrlNotInBlacklistFilter) {
+       CanApplyOptimizationHasLoadedFilterForTypeUrlNotInAllowlistFilter) {
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::LITE_PAGE_REDIRECT});
 
   optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions,
-      kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
+  optimization_guide::BloomFilter allowlist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&allowlist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, allowlist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/true, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  optimization_guide::OptimizationTypeDecision optimization_type_decision =
+      hints_manager()->CanApplyOptimization(
+          GURL("https://whatever.com/123"),
+          optimization_guide::proto::LITE_PAGE_REDIRECT,
+          /*optimization_metadata=*/nullptr);
+
+  EXPECT_EQ(optimization_guide::OptimizationTypeDecision::
+                kNotAllowedByOptimizationFilter,
+            optimization_type_decision);
+}
+
+TEST_F(OptimizationGuideHintsManagerTest,
+       CanApplyOptimizationHasLoadedFilterForTypeUrlNotInBlocklistFilter) {
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter blocklist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
   ProcessHints(config, "1.0.0.0");
 
   optimization_guide::OptimizationTypeDecision optimization_type_decision =
@@ -1196,14 +1264,13 @@ TEST_F(OptimizationGuideHintsManagerTest, ShouldTargetNavigationNoECTEstimate) {
       {optimization_guide::proto::LITE_PAGE_REDIRECT});
 
   optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions,
-      kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
+  optimization_guide::BloomFilter blocklist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
   ProcessHints(config, "1.0.0.0");
 
   // Explicitly set ECT estimate to be unknown.
@@ -1230,14 +1297,13 @@ TEST_F(OptimizationGuideHintsManagerTest,
       {optimization_guide::proto::LITE_PAGE_REDIRECT});
 
   optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions,
-      kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
+  optimization_guide::BloomFilter blocklist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
   ProcessHints(config, "1.0.0.0");
 
   // Explicitly set ECT estimate to be unknown.
@@ -1576,30 +1642,29 @@ TEST_F(OptimizationGuideHintsManagerTest,
        CanApplyOptimizationFilterTakesPrecedence) {
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          GURL("https://m.black.com/urlinfilterandhints"));
+          GURL("https://m.host.com/urlinfilterandhints"));
 
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::LITE_PAGE_REDIRECT});
 
   optimization_guide::proto::Configuration config;
   optimization_guide::proto::Hint* hint1 = config.add_hints();
-  hint1->set_key("black.com");
+  hint1->set_key("host.com");
   hint1->set_key_representation(optimization_guide::proto::HOST_SUFFIX);
   hint1->set_version("someversion");
   optimization_guide::proto::PageHint* page_hint1 = hint1->add_page_hints();
-  page_hint1->set_page_pattern("https://m.black.com");
+  page_hint1->set_page_pattern("https://m.host.com");
   optimization_guide::proto::Optimization* optimization1 =
       page_hint1->add_whitelisted_optimizations();
   optimization1->set_optimization_type(
       optimization_guide::proto::LITE_PAGE_REDIRECT);
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions,
-      kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
+  optimization_guide::BloomFilter blocklist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
   ProcessHints(config, "1.0.0.0");
 
   base::RunLoop run_loop;
@@ -1641,14 +1706,13 @@ TEST_F(OptimizationGuideHintsManagerTest,
       page_hint1->add_whitelisted_optimizations();
   optimization1->set_optimization_type(
       optimization_guide::proto::LITE_PAGE_REDIRECT);
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions,
-      kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
+  optimization_guide::BloomFilter blocklist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
   ProcessHints(config, "1.0.0.0");
 
   base::RunLoop run_loop;
@@ -3287,28 +3351,64 @@ TEST_F(OptimizationGuideHintsManagerFetchingTest,
       optimization_guide::OptimizationTypeDecision::kNotAllowedByHint, 1);
 }
 
-TEST_F(
-    OptimizationGuideHintsManagerFetchingTest,
-    CanApplyOptimizationAsyncWithDecisionFromOptimizationFilterReturnsRightAway) {
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       CanApplyOptimizationAsyncWithDecisionFromAllowlistReturnsRightAway) {
   base::HistogramTester histogram_tester;
 
   hints_manager()->RegisterOptimizationTypes(
       {optimization_guide::proto::LITE_PAGE_REDIRECT});
 
   optimization_guide::proto::Configuration config;
-  optimization_guide::BloomFilter blacklist_bloom_filter(
-      kBlackBlacklistBloomFilterNumHashFunctions,
-      kBlackBlacklistBloomFilterNumBits);
-  PopulateBlackBlacklistBloomFilter(&blacklist_bloom_filter);
-  AddBlacklistBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
-                                  blacklist_bloom_filter,
-                                  kBlackBlacklistBloomFilterNumHashFunctions,
-                                  kBlackBlacklistBloomFilterNumBits, &config);
+  optimization_guide::BloomFilter allowlist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&allowlist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, allowlist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/true, &config);
   ProcessHints(config, "1.0.0.0");
 
   std::unique_ptr<content::MockNavigationHandle> navigation_handle =
       CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
-          GURL("https://m.black.com/123"));
+          GURL("https://notallowed.com/123"));
+  hints_manager()->CanApplyOptimizationAsync(
+      navigation_handle->GetURL(),
+      optimization_guide::proto::LITE_PAGE_REDIRECT,
+      base::BindOnce(
+          [](optimization_guide::OptimizationGuideDecision decision,
+             const optimization_guide::OptimizationMetadata& metadata) {
+            EXPECT_EQ(optimization_guide::OptimizationGuideDecision::kFalse,
+                      decision);
+          }));
+  RunUntilIdle();
+
+  histogram_tester.ExpectUniqueSample(
+      "OptimizationGuide.ApplyDecisionAsync.LitePageRedirect",
+      optimization_guide::OptimizationTypeDecision::
+          kNotAllowedByOptimizationFilter,
+      1);
+}
+
+TEST_F(OptimizationGuideHintsManagerFetchingTest,
+       CanApplyOptimizationAsyncWithDecisionFromBlocklistReturnsRightAway) {
+  base::HistogramTester histogram_tester;
+
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::LITE_PAGE_REDIRECT});
+
+  optimization_guide::proto::Configuration config;
+  optimization_guide::BloomFilter blocklist_bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&blocklist_bloom_filter);
+  AddBloomFilterToConfig(
+      optimization_guide::proto::LITE_PAGE_REDIRECT, blocklist_bloom_filter,
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits,
+      /*is_allowlist=*/false, &config);
+  ProcessHints(config, "1.0.0.0");
+
+  std::unique_ptr<content::MockNavigationHandle> navigation_handle =
+      CreateMockNavigationHandleWithOptimizationGuideWebContentsObserver(
+          GURL("https://m.host.com/123"));
   hints_manager()->CanApplyOptimizationAsync(
       navigation_handle->GetURL(),
       optimization_guide::proto::LITE_PAGE_REDIRECT,

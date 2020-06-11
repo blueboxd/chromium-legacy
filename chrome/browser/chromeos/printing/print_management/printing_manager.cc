@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/printing/print_management/printing_manager.h"
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/history/print_job_history_service.h"
 #include "chrome/browser/chromeos/printing/history/print_job_history_service_factory.h"
 #include "chrome/browser/chromeos/printing/print_management/print_job_info_mojom_conversions.h"
@@ -27,18 +28,22 @@ using printing_manager::mojom::PrintJobsObserver;
 
 PrintingManager::PrintingManager(
     PrintJobHistoryService* print_job_history_service,
-    HistoryService* history_service)
+    HistoryService* history_service,
+    CupsPrintJobManager* cups_print_job_manager)
     : print_job_history_service_(print_job_history_service),
-      history_service_(history_service) {
-  if (history_service_) {
-    history_service_->AddObserver(this);
-  }
+      history_service_(history_service),
+      cups_print_job_manager_(cups_print_job_manager) {
+  DCHECK(history_service_);
+  DCHECK(cups_print_job_manager_);
+  history_service_->AddObserver(this);
+  cups_print_job_manager_->AddObserver(this);
 }
 
 PrintingManager::~PrintingManager() {
-  if (history_service_) {
-    history_service_->RemoveObserver(this);
-  }
+  DCHECK(history_service_);
+  DCHECK(cups_print_job_manager_);
+  history_service_->RemoveObserver(this);
+  cups_print_job_manager_->RemoveObserver(this);
 }
 
 void PrintingManager::GetPrintJobs(GetPrintJobsCallback callback) {
@@ -75,6 +80,38 @@ void PrintingManager::OnURLsDeleted(HistoryService* history_service,
                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
+void PrintingManager::OnPrintJobCreated(base::WeakPtr<CupsPrintJob> job) {
+  UpdatePrintJob(job);
+}
+
+void PrintingManager::OnPrintJobStarted(base::WeakPtr<CupsPrintJob> job) {
+  UpdatePrintJob(job);
+}
+
+void PrintingManager::OnPrintJobUpdated(base::WeakPtr<CupsPrintJob> job) {
+  UpdatePrintJob(job);
+}
+
+void PrintingManager::OnPrintJobSuspended(base::WeakPtr<CupsPrintJob> job) {
+  UpdatePrintJob(job);
+}
+
+void PrintingManager::OnPrintJobResumed(base::WeakPtr<CupsPrintJob> job) {
+  UpdatePrintJob(job);
+}
+
+void PrintingManager::OnPrintJobDone(base::WeakPtr<CupsPrintJob> job) {
+  RemoveAndUpdatePrintJob(job);
+}
+
+void PrintingManager::OnPrintJobError(base::WeakPtr<CupsPrintJob> job) {
+  RemoveAndUpdatePrintJob(job);
+}
+
+void PrintingManager::OnPrintJobCancelled(base::WeakPtr<CupsPrintJob> job) {
+  RemoveAndUpdatePrintJob(job);
+}
+
 void PrintingManager::OnPrintJobsDeleted(bool success) {
   DCHECK(success) << "Clearing print jobs failed unexpectedly.";
   for (auto& observer : print_job_observers_) {
@@ -95,6 +132,33 @@ void PrintingManager::OnPrintJobsRetrieved(
   }
 
   std::move(callback).Run(std::move(print_job_infos));
+}
+
+void PrintingManager::UpdatePrintJob(base::WeakPtr<CupsPrintJob> job) {
+  if (!job) {
+    LOG(WARNING) << "Failed to update an invalid print job.";
+    return;
+  }
+
+  active_print_jobs_[job->GetUniqueId()] = job;
+  NotifyPrintJobObservers(job);
+}
+
+void PrintingManager::RemoveAndUpdatePrintJob(base::WeakPtr<CupsPrintJob> job) {
+  if (!job) {
+    LOG(WARNING) << "Failed to update and remove an invalid print job.";
+    return;
+  }
+
+  active_print_jobs_.erase(job->GetUniqueId());
+  NotifyPrintJobObservers(job);
+}
+
+void PrintingManager::NotifyPrintJobObservers(base::WeakPtr<CupsPrintJob> job) {
+  DCHECK(job);
+  for (auto& observer : print_job_observers_) {
+    observer->OnPrintJobUpdate(CupsPrintJobToMojom(*job));
+  }
 }
 
 void PrintingManager::BindInterface(

@@ -8,9 +8,9 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "content/common/mac/attributed_string_coder.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/mojom/attributed_string.mojom-forward.h"
 
 namespace gfx {
 class Point;
@@ -36,11 +36,10 @@ class CONTENT_EXPORT TextInputClientMessageFilter
 
  private:
   // IPC Message handlers:
-  void OnGotStringAtPoint(
-      const mac::AttributedStringCoder::EncodedString& encoded_string,
-      const gfx::Point& point);
+  void OnGotStringAtPoint(const ui::mojom::AttributedString& attributed_string,
+                          const gfx::Point& point);
   void OnGotStringFromRange(
-      const mac::AttributedStringCoder::EncodedString& string,
+      const ui::mojom::AttributedString& attributed_string,
       const gfx::Point& point);
 
   DISALLOW_COPY_AND_ASSIGN(TextInputClientMessageFilter);

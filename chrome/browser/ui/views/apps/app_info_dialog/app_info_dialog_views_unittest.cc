@@ -158,7 +158,7 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
   // Overridden from views::WidgetObserver:
   void OnWidgetDestroyed(views::Widget* widget) override {
     widget_->RemoveObserver(this);
-    widget_ = NULL;
+    widget_ = nullptr;
   }
 
   void UninstallApp(const std::string& app_id) {
@@ -166,7 +166,7 @@ class AppInfoDialogViewsTest : public BrowserWithTestWindowTest,
         ->extension_service()
         ->UninstallExtension(
             app_id, extensions::UninstallReason::UNINSTALL_REASON_FOR_TESTING,
-            NULL);
+            nullptr);
   }
 
  protected:

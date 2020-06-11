@@ -247,9 +247,7 @@ message BloomFilter {
   optional bytes data = 3;
 }
 
-// A scalable filter for an optimization type. Initially, this is used to
-// provide a large scale blacklist but might be used for whitelists in
-// the future.
+// A scalable filter for an optimization type.
 message OptimizationFilter {
   // The type of optimization this filter applies to.
   optional OptimizationType optimization_type = 1;
@@ -258,6 +256,9 @@ message OptimizationFilter {
   // Additional filters represented as regexps matched against the main page
   // URL.
   repeated string regexps = 3;
+  // Whether additional host suffixes (other than the host) should be checked
+  // against the filter.
+  optional bool skip_host_suffix_checking = 4;
 }
 
 message Configuration {
@@ -277,8 +278,16 @@ message Configuration {
   // details for that key that it wants to provide as the client will only
   // look at that one record to decide which optimization to apply.
   repeated Hint hints = 1;
-  // A list of per-optimization blacklists.
+  // A set of per-optimization blacklists.
+  //
+  // It is guaranteed that an optimization type will not have filters in both
+  // |optimization_blacklists| and |optimization_allowlists|.
   repeated OptimizationFilter optimization_blacklists = 2;
+  // A set of per-optimization allowlists.
+  //
+  // It is guaranteed that an optimization type will not have filters in both
+  // |optimization_blacklists| and |optimization_allowlists|.
+  repeated OptimizationFilter optimization_allowlists = 3;
 }
 
 message Timestamp {

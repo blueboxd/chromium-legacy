@@ -50,7 +50,7 @@ class TestTarget : public EventTarget,
     return nullptr;
   }
 
-  EventTargeter* GetEventTargeter() override { return NULL; }
+  EventTargeter* GetEventTargeter() override { return nullptr; }
 
   TestTarget* parent_;
   std::vector<int> handler_list_;
@@ -173,11 +173,11 @@ class EventHandlerDestroyer : public TestEventHandler {
   void ReceivedEvent(Event* event) override {
     TestEventHandler::ReceivedEvent(event);
     delete to_destroy_;
-    to_destroy_ = NULL;
+    to_destroy_ = nullptr;
 
     if (dispatcher_delegate_) {
       delete dispatcher_delegate_;
-      dispatcher_delegate_ = NULL;
+      dispatcher_delegate_ = nullptr;
     }
   }
 

@@ -123,7 +123,7 @@ Open devtools, and in the console, use `chrome.gpuBenchmarking.startProfiling` a
 
 `chrome.gpuBenchmarking` has a number of useful methods for simulating user-gesture-initiated actions; for example, to profile scrolling:
 
-    > chrome.gpuBenchmarking.startProfiling('perf.data'); chrome.gpuBenchmarking.smoothScrollBy(1000, () => { chrome.gpuBenchmarking.stopProfiling() });
+    > chrome.gpuBenchmarking.startProfiling('perf.data'); chrome.gpuBenchmarking.smoothScrollByXY(0, 1000, () => { chrome.gpuBenchmarking.stopProfiling() });
 
 ### Profiling content_shell with callgrind
 

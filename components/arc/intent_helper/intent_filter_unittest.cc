@@ -40,8 +40,11 @@ class IntentFilterBuilder {
   }
 
   operator IntentFilter() {
-    return IntentFilter(kPackageName, std::move(authorities_),
-                        std::move(paths_), std::vector<std::string>());
+    return IntentFilter(kPackageName,
+                        /*actions=*/std::vector<std::string>(),
+                        std::move(authorities_), std::move(paths_),
+                        /*schemes=*/std::vector<std::string>(),
+                        /*mime_types=*/std::vector<std::string>());
   }
 
  private:

@@ -152,8 +152,22 @@ class CORE_EXPORT ScriptLoader final : public GarbageCollected<ScriptLoader>,
   // script elements must have this flag unset ...</spec>
   bool already_started_ = false;
 
-  // <spec href="https://html.spec.whatwg.org/C/#parser-inserted">... Initially,
-  // script elements must have this flag unset. ...</spec>
+  // <spec href="https://html.spec.whatwg.org/C/#parser-document">... Initially,
+  // its value must be null. It is set by the HTML parser and the XML parser on
+  // script elements they insert ...</spec>
+  // We use a WeakMember here because we're keeping the parser-inserted
+  // information separately from the parser document, so ScriptLoader doesn't
+  // need to keep the parser document alive.
+  WeakMember<Document> parser_document_;
+
+  // <spec href="https://html.spec.whatwg.org/C/#parser-inserted">script
+  // elements with non-null parser documents are known as
+  // "parser-inserted".</spec>
+  // Note that we don't actually implement "parser inserted" in terms of a
+  // non-null |parser_document_| like the spec, because it is possible for
+  // |CreateElementFlags::created_by_parser_| to be true even when
+  // |CreateElementFlags::parser_document_| is null. Therefore, we have to
+  // store this information separately.
   bool parser_inserted_ = false;
 
   // <spec href="https://html.spec.whatwg.org/C/#non-blocking">... Initially,

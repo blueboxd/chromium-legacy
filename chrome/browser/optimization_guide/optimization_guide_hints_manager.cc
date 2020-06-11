@@ -356,7 +356,8 @@ OptimizationGuideHintsManager::ProcessHintsComponent(
     return nullptr;
   }
 
-  ProcessOptimizationFilters(config->optimization_blacklists(),
+  ProcessOptimizationFilters(config->optimization_allowlists(),
+                             config->optimization_blacklists(),
                              registered_optimization_types);
 
   if (update_data) {
@@ -379,15 +380,35 @@ OptimizationGuideHintsManager::ProcessHintsComponent(
 void OptimizationGuideHintsManager::ProcessOptimizationFilters(
     const google::protobuf::RepeatedPtrField<
         optimization_guide::proto::OptimizationFilter>&
-        blacklist_optimization_filters,
+        allowlist_optimization_filters,
+    const google::protobuf::RepeatedPtrField<
+        optimization_guide::proto::OptimizationFilter>&
+        blocklist_optimization_filters,
     const base::flat_set<optimization_guide::proto::OptimizationType>&
         registered_optimization_types) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   base::AutoLock lock(optimization_filters_lock_);
 
   optimization_types_with_filter_.clear();
-  blacklist_optimization_filters_.clear();
-  for (const auto& filter : blacklist_optimization_filters) {
+  allowlist_optimization_filters_.clear();
+  blocklist_optimization_filters_.clear();
+  ProcessOptimizationFilterSet(allowlist_optimization_filters,
+                               /*is_allowlist=*/true,
+                               registered_optimization_types);
+  ProcessOptimizationFilterSet(blocklist_optimization_filters,
+                               /*is_allowlist=*/false,
+                               registered_optimization_types);
+}
+
+void OptimizationGuideHintsManager::ProcessOptimizationFilterSet(
+    const google::protobuf::RepeatedPtrField<
+        optimization_guide::proto::OptimizationFilter>& filters,
+    bool is_allowlist,
+    const base::flat_set<optimization_guide::proto::OptimizationType>&
+        registered_optimization_types) {
+  DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
+
+  for (const auto& filter : filters) {
     if (filter.optimization_type() !=
         optimization_guide::proto::TYPE_UNSPECIFIED) {
       optimization_types_with_filter_.insert(filter.optimization_type());
@@ -401,16 +422,17 @@ void OptimizationGuideHintsManager::ProcessOptimizationFilters(
 
     optimization_guide::RecordOptimizationFilterStatus(
         filter.optimization_type(),
-        optimization_guide::OptimizationFilterStatus::
-            kFoundServerBlacklistConfig);
+        optimization_guide::OptimizationFilterStatus::kFoundServerFilterConfig);
 
     // Do not parse duplicate optimization filters.
-    if (blacklist_optimization_filters_.find(filter.optimization_type()) !=
-        blacklist_optimization_filters_.end()) {
+    if (allowlist_optimization_filters_.find(filter.optimization_type()) !=
+            allowlist_optimization_filters_.end() ||
+        blocklist_optimization_filters_.find(filter.optimization_type()) !=
+            blocklist_optimization_filters_.end()) {
       optimization_guide::RecordOptimizationFilterStatus(
           filter.optimization_type(),
           optimization_guide::OptimizationFilterStatus::
-              kFailedServerBlacklistDuplicateConfig);
+              kFailedServerFilterDuplicateConfig);
       continue;
     }
 
@@ -420,8 +442,13 @@ void OptimizationGuideHintsManager::ProcessOptimizationFilters(
         optimization_filter =
             optimization_guide::ProcessOptimizationFilter(filter, &status);
     if (optimization_filter) {
-      blacklist_optimization_filters_.insert(
-          {filter.optimization_type(), std::move(optimization_filter)});
+      if (is_allowlist) {
+        allowlist_optimization_filters_.insert(
+            {filter.optimization_type(), std::move(optimization_filter)});
+      } else {
+        blocklist_optimization_filters_.insert(
+            {filter.optimization_type(), std::move(optimization_filter)});
+      }
     }
     optimization_guide::RecordOptimizationFilterStatus(
         filter.optimization_type(), status);
@@ -875,12 +902,20 @@ void OptimizationGuideHintsManager::RegisterOptimizationTypes(
   }
 }
 
-bool OptimizationGuideHintsManager::HasLoadedOptimizationFilter(
+bool OptimizationGuideHintsManager::HasLoadedOptimizationAllowlist(
     optimization_guide::proto::OptimizationType optimization_type) {
   base::AutoLock lock(optimization_filters_lock_);
 
-  return blacklist_optimization_filters_.find(optimization_type) !=
-         blacklist_optimization_filters_.end();
+  return allowlist_optimization_filters_.find(optimization_type) !=
+         allowlist_optimization_filters_.end();
+}
+
+bool OptimizationGuideHintsManager::HasLoadedOptimizationBlocklist(
+    optimization_guide::proto::OptimizationType optimization_type) {
+  base::AutoLock lock(optimization_filters_lock_);
+
+  return blocklist_optimization_filters_.find(optimization_type) !=
+         blocklist_optimization_filters_.end();
 }
 
 optimization_guide::OptimizationTargetDecision
@@ -981,11 +1016,23 @@ OptimizationGuideHintsManager::CanApplyOptimization(
   {
     base::AutoLock lock(optimization_filters_lock_);
 
-    // Check if we have a filter loaded into memory for it, and if we do, see
+    // Check if we have an allowlist loaded into memory for it, and if we do,
+    // see if the URL matches anything in the filter.
+    if (allowlist_optimization_filters_.find(optimization_type) !=
+        allowlist_optimization_filters_.end()) {
+      return allowlist_optimization_filters_[optimization_type]->Matches(
+                 navigation_url)
+                 ? optimization_guide::OptimizationTypeDecision::
+                       kAllowedByOptimizationFilter
+                 : optimization_guide::OptimizationTypeDecision::
+                       kNotAllowedByOptimizationFilter;
+    }
+
+    // Check if we have a blocklist loaded into memory for it, and if we do, see
     // if the URL matches anything in the filter.
-    if (blacklist_optimization_filters_.find(optimization_type) !=
-        blacklist_optimization_filters_.end()) {
-      return blacklist_optimization_filters_[optimization_type]->Matches(
+    if (blocklist_optimization_filters_.find(optimization_type) !=
+        blocklist_optimization_filters_.end()) {
+      return blocklist_optimization_filters_[optimization_type]->Matches(
                  navigation_url)
                  ? optimization_guide::OptimizationTypeDecision::
                        kNotAllowedByOptimizationFilter
@@ -1230,7 +1277,8 @@ void OptimizationGuideHintsManager::OnNavigationFinish(
 bool OptimizationGuideHintsManager::HasAllInformationForDecisionAvailable(
     const GURL& navigation_url,
     optimization_guide::proto::OptimizationType optimization_type) {
-  if (HasLoadedOptimizationFilter(optimization_type)) {
+  if (HasLoadedOptimizationAllowlist(optimization_type) ||
+      HasLoadedOptimizationBlocklist(optimization_type)) {
     // If we have an optimization filter for the optimization type, it is
     // consulted instead of any hints that may be available.
     return true;

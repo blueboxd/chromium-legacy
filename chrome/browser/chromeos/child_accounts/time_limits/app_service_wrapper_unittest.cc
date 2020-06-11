@@ -4,15 +4,20 @@
 
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_service_wrapper.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_test.h"
@@ -20,8 +25,15 @@
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "chrome/browser/web_applications/components/app_registry_controller.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
+#include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
@@ -37,7 +49,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using web_app::GenerateAppIdFromURL;
+using web_app::InstallResultCode;
 using web_app::ProviderType;
+using web_app::WebAppProviderBase;
 
 namespace chromeos {
 namespace app_time {
@@ -77,10 +92,10 @@ class AppServiceWrapperTest : public ::testing::TestWithParam<ProviderType> {
 
  protected:
   AppServiceWrapperTest() {
-    if (GetParam() == web_app::ProviderType::kWebApps) {
+    if (GetParam() == ProviderType::kWebApps) {
       scoped_feature_list_.InitAndEnableFeature(
           features::kDesktopPWAsWithoutExtensions);
-    } else if (GetParam() == web_app::ProviderType::kBookmarkApps) {
+    } else if (GetParam() == ProviderType::kBookmarkApps) {
       scoped_feature_list_.InitAndDisableFeature(
           features::kDesktopPWAsWithoutExtensions);
     }
@@ -107,8 +122,12 @@ class AppServiceWrapperTest : public ::testing::TestWithParam<ProviderType> {
         base::CommandLine::ForCurrentProcess(), base::FilePath(), false);
     extension_service_->Init();
 
+    if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions))
+      ConfigureWebAppProvider();
+
     app_service_test_.SetUp(&profile_);
     arc_test_.SetUp(&profile_);
+    app_service_test_.FlushMojoCalls();
     task_environment_.RunUntilIdle();
 
     tested_wrapper_.AddObserver(&test_listener_);
@@ -151,6 +170,39 @@ class AppServiceWrapperTest : public ::testing::TestWithParam<ProviderType> {
       return;
     }
 
+    if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions) &&
+        app_id.app_type() == apps::mojom::AppType::kWeb) {
+      WebApplicationInfo web_app_info;
+
+      web_app_info.app_url = GURL(*url);
+      web_app_info.scope = web_app_info.app_url;
+      web_app_info.title = base::UTF8ToUTF16(app_name);
+      web_app_info.description = base::UTF8ToUTF16(app_name);
+      web_app_info.open_as_window = true;
+
+      web_app::InstallFinalizer::FinalizeOptions options;
+      options.install_source = WebappInstallSource::EXTERNAL_DEFAULT;
+
+      // In unit tests, we do not have Browser or WebContents instances.
+      // Hence we use FinalizeInstall instead of InstallWebAppFromManifest
+      // to install the web app.
+      base::RunLoop run_loop;
+      WebAppProviderBase::GetProviderBase(&profile_)
+          ->install_finalizer()
+          .FinalizeInstall(
+              web_app_info, options,
+              base::BindLambdaForTesting(
+                  [&](const web_app::AppId& installed_app_id,
+                      InstallResultCode code) {
+                    EXPECT_EQ(installed_app_id, app_id.app_id());
+                    EXPECT_EQ(code, InstallResultCode::kSuccessNewInstall);
+                    run_loop.Quit();
+                  }));
+      run_loop.Run();
+      task_environment_.RunUntilIdle();
+      return;
+    }
+
     if (app_id.app_type() == apps::mojom::AppType::kWeb) {
       scoped_refptr<extensions::Extension> web_app = CreateExtension(
           app_id.app_id(), app_name, url.value(), true /*is_bookmark_app*/);
@@ -164,6 +216,22 @@ class AppServiceWrapperTest : public ::testing::TestWithParam<ProviderType> {
     if (app_id.app_type() == apps::mojom::AppType::kArc) {
       const std::string& package_name = app_id.app_id();
       arc_test_.app_instance()->UninstallPackage(package_name);
+      task_environment_.RunUntilIdle();
+      return;
+    }
+
+    if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions) &&
+        app_id.app_type() == apps::mojom::AppType::kWeb) {
+      base::RunLoop run_loop;
+      WebAppProviderBase::GetProviderBase(&profile_)
+          ->install_finalizer()
+          .UninstallExternalWebApp(
+              app_id.app_id(), web_app::ExternalInstallSource::kExternalDefault,
+              base::BindLambdaForTesting([&](bool uninstalled) {
+                EXPECT_TRUE(uninstalled);
+                run_loop.Quit();
+              }));
+      run_loop.Run();
       task_environment_.RunUntilIdle();
       return;
     }
@@ -190,6 +258,15 @@ class AppServiceWrapperTest : public ::testing::TestWithParam<ProviderType> {
       return;
     }
 
+    if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions) &&
+        app_id.app_type() == apps::mojom::AppType::kWeb) {
+      WebAppProviderBase::GetProviderBase(&profile_)
+          ->registry_controller()
+          .SetAppIsDisabled(app_id.app_id(), disabled);
+      task_environment_.RunUntilIdle();
+      return;
+    }
+
     if (app_id.app_type() == apps::mojom::AppType::kExtension ||
         app_id.app_type() == apps::mojom::AppType::kWeb) {
       if (disabled) {
@@ -205,6 +282,16 @@ class AppServiceWrapperTest : public ::testing::TestWithParam<ProviderType> {
   }
 
  private:
+  void ConfigureWebAppProvider() {
+    auto system_web_app_manager =
+        std::make_unique<web_app::TestSystemWebAppManager>(&profile_);
+
+    auto* provider = web_app::TestWebAppProvider::Get(&profile_);
+    provider->SetSystemWebAppManager(std::move(system_web_app_manager));
+    provider->SetRunSubsystemStartupTasks(true);
+    provider->Start();
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
@@ -236,14 +323,14 @@ TEST_P(AppServiceWrapperTest, GetInstalledApps) {
   // Add extension app. It will be ignored, because PATL does not support
   // extensions (with exception of Chrome) now.
   const AppId app2(apps::mojom::AppType::kExtension,
-                   web_app::GenerateAppIdFromURL(GURL(kExtensionAppUrl)));
+                   GenerateAppIdFromURL(GURL(kExtensionAppUrl)));
 
   EXPECT_CALL(test_listener(), OnAppInstalled(app2)).Times(1);
   SimulateAppInstalled(app2, kExtensionNameA, kExtensionAppUrl);
 
   // Add web app.
   const AppId app3(apps::mojom::AppType::kWeb,
-                   web_app::GenerateAppIdFromURL(GURL(kWebAppUrl1)));
+                   GenerateAppIdFromURL(GURL(kWebAppUrl1)));
   EXPECT_CALL(test_listener(), OnAppInstalled(app3)).Times(1);
   SimulateAppInstalled(app3, kWebAppName1, kWebAppUrl1);
 
@@ -266,13 +353,13 @@ TEST_P(AppServiceWrapperTest, GetAppName) {
   SimulateAppInstalled(app1, kArcApp1);
 
   const AppId app2(apps::mojom::AppType::kExtension,
-                   web_app::GenerateAppIdFromURL(GURL(kExtensionAppUrl)));
+                   GenerateAppIdFromURL(GURL(kExtensionAppUrl)));
 
   EXPECT_CALL(test_listener(), OnAppInstalled(app2)).Times(1);
   SimulateAppInstalled(app2, kExtensionNameA, kExtensionAppUrl);
 
   const AppId app3(apps::mojom::AppType::kWeb,
-                   web_app::GenerateAppIdFromURL(GURL(kWebAppUrl1)));
+                   GenerateAppIdFromURL(GURL(kWebAppUrl1)));
   EXPECT_CALL(test_listener(), OnAppInstalled(app3)).Times(1);
   SimulateAppInstalled(app3, kWebAppName1, kWebAppUrl1);
 
@@ -320,7 +407,7 @@ TEST_P(AppServiceWrapperTest, WebAppInstallation) {
 
   // Install first web app.
   const AppId app1(apps::mojom::AppType::kWeb,
-                   web_app::GenerateAppIdFromURL(GURL(kWebAppUrl1)));
+                   GenerateAppIdFromURL(GURL(kWebAppUrl1)));
   EXPECT_CALL(test_listener(), OnAppInstalled(app1)).Times(1);
   SimulateAppInstalled(app1, kWebAppName1, kWebAppUrl1);
 
@@ -330,7 +417,7 @@ TEST_P(AppServiceWrapperTest, WebAppInstallation) {
 
   // Install second web app.
   const AppId app2(apps::mojom::AppType::kWeb,
-                   web_app::GenerateAppIdFromURL(GURL(kWebAppUrl2)));
+                   GenerateAppIdFromURL(GURL(kWebAppUrl2)));
   EXPECT_CALL(test_listener(), OnAppInstalled(app2)).Times(1);
   SimulateAppInstalled(app2, kWebAppName2, kWebAppUrl2);
 
@@ -365,7 +452,7 @@ TEST_P(AppServiceWrapperTest, ArcAppDisabled) {
 TEST_P(AppServiceWrapperTest, WebAppDisabled) {
   // Install web app.
   const AppId app(apps::mojom::AppType::kWeb,
-                  web_app::GenerateAppIdFromURL(GURL(kWebAppUrl1)));
+                  GenerateAppIdFromURL(GURL(kWebAppUrl1)));
   EXPECT_CALL(test_listener(), OnAppInstalled(app)).Times(1);
   SimulateAppInstalled(app, kWebAppName1, kWebAppUrl1);
 
@@ -386,7 +473,7 @@ TEST_P(AppServiceWrapperTest, IgnoreOtherExtensions) {
   EXPECT_TRUE(base::Contains(installed_apps, chrome));
 
   const AppId app1(apps::mojom::AppType::kExtension,
-                   web_app::GenerateAppIdFromURL(GURL(kExtensionAppUrl)));
+                   GenerateAppIdFromURL(GURL(kExtensionAppUrl)));
   EXPECT_CALL(test_listener(), OnAppInstalled(app1)).Times(1);
   SimulateAppInstalled(app1, kExtensionNameA, kExtensionAppUrl);
 
@@ -402,10 +489,10 @@ TEST_P(AppServiceWrapperTest, IgnoreOtherExtensions) {
 // TODO(agawronska): Add tests for ARC apps activity once crrev.com/c/1906614 is
 // landed.
 
-// TODO(crbug.com/1082878): Test with BMO enabled.
 INSTANTIATE_TEST_SUITE_P(All,
                          AppServiceWrapperTest,
-                         ::testing::Values(ProviderType::kBookmarkApps),
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
                          web_app::ProviderTypeParamToString);
 
 }  // namespace app_time

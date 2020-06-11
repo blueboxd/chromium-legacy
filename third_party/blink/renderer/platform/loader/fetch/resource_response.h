@@ -34,6 +34,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom-shared.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
@@ -536,7 +537,8 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // The source of the resource, if it was fetched via ServiceWorker. This is
   // kUnspecified if |was_fetched_via_service_worker| is false.
-  network::mojom::FetchResponseSource service_worker_response_source_;
+  network::mojom::FetchResponseSource service_worker_response_source_ =
+      network::mojom::FetchResponseSource::kUnspecified;
 
   // Was the fallback request with skip service worker flag required.
   bool was_fallback_required_by_service_worker_ = false;
@@ -569,7 +571,8 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool was_alpn_negotiated_ = false;
 
   // https://fetch.spec.whatwg.org/#concept-response-type
-  network::mojom::FetchResponseType response_type_;
+  network::mojom::FetchResponseType response_type_ =
+      network::mojom::FetchResponseType::kDefault;
 
   // HTTP version used in the response, if known.
   HTTPVersion http_version_ = kHTTPVersionUnknown;

@@ -30,7 +30,7 @@ namespace {
 // TODO(dstaessens): Add video_encoder_test_usage.md
 constexpr const char* usage_msg =
     "usage: video_encode_accelerator_tests\n"
-    "           [--codec=<codec>]\n"
+    "           [--codec=<codec>] [--disable_validator]\n"
     "           [-v=<level>] [--vmodule=<config>] [--gtest_help] [--help]\n"
     "           [<video path>] [<video metadata path>]\n";
 
@@ -45,6 +45,7 @@ constexpr const char* help_msg =
     "\nThe following arguments are supported:\n"
     "  --codec              codec profile to encode, \"h264 (baseline)\",\n"
     "                       \"h264main, \"h264high\", \"vp8\" and \"vp9\"\n"
+    "  --disable_validator  disable validation of encoded bitstream.\n\n"
     "   -v                  enable verbose mode, e.g. -v=2.\n"
     "  --vmodule            enable verbose mode for the specified module,\n"
     "                       e.g. --vmodule=*media/gpu*=2.\n\n"
@@ -65,7 +66,23 @@ class VideoEncoderTest : public ::testing::Test {
       VideoEncoderClientConfig config = VideoEncoderClientConfig()) {
     LOG_ASSERT(video);
 
+    auto video_encoder =
+        VideoEncoder::Create(config, CreateBitstreamProcessors(video, config));
+    LOG_ASSERT(video_encoder);
+    LOG_ASSERT(video_encoder->Initialize(video));
+
+    return video_encoder;
+  }
+
+ private:
+  std::vector<std::unique_ptr<BitstreamProcessor>> CreateBitstreamProcessors(
+      Video* video,
+      VideoEncoderClientConfig config) {
     std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors;
+    if (!g_env->IsBitstreamValidatorEnabled()) {
+      return bitstream_processors;
+    }
+
     const gfx::Rect visible_rect(video->Resolution());
     VideoCodec codec = VideoCodecProfileToVideoCodec(config.output_profile);
     switch (codec) {
@@ -87,14 +104,21 @@ class VideoEncoderTest : public ::testing::Test {
     }
 
     // Attach a bitstream validator to validate all encoded video frames. The
-    // bitstream validator uses a software video decoder to validate the encoded
-    // buffers by decoding them. Metrics such as the image's SSIM can be
-    // calculated for additional quality checks.
+    // bitstream validator uses a software video decoder to validate the
+    // encoded buffers by decoding them. Metrics such as the image's SSIM can
+    // be calculated for additional quality checks.
     VideoDecoderConfig decoder_config(
         codec, config.output_profile, VideoDecoderConfig::AlphaMode::kIsOpaque,
         VideoColorSpace(), kNoTransformation, visible_rect.size(), visible_rect,
         visible_rect.size(), EmptyExtraData(), EncryptionScheme::kUnencrypted);
     std::vector<std::unique_ptr<VideoFrameProcessor>> video_frame_processors;
+
+    raw_data_helper_ = RawDataHelper::Create(video);
+    if (!raw_data_helper_) {
+      LOG(ERROR) << "Failed to create raw data helper";
+      return bitstream_processors;
+    }
+
     // TODO(hiroh): Add corrupt frame processors.
     VideoFrameValidator::GetModelFrameCB get_model_frame_cb =
         base::BindRepeating(&VideoEncoderTest::GetModelFrame,
@@ -109,20 +133,9 @@ class VideoEncoderTest : public ::testing::Test {
     LOG_ASSERT(bitstream_validator);
     bitstream_processors.emplace_back(std::move(bitstream_validator));
 
-    auto video_encoder =
-        VideoEncoder::Create(config, std::move(bitstream_processors));
-    LOG_ASSERT(video_encoder);
-    LOG_ASSERT(video_encoder->Initialize(video));
-
-    raw_data_helper_ = RawDataHelper::Create(video);
-    if (!raw_data_helper_) {
-      LOG(ERROR) << "Failed to create ";
-      return nullptr;
-    }
-    return video_encoder;
+    return bitstream_processors;
   }
 
- private:
   scoped_refptr<const VideoFrame> GetModelFrame(size_t frame_index) {
     LOG_ASSERT(raw_data_helper_);
     return raw_data_helper_->GetFrame(frame_index);
@@ -182,6 +195,7 @@ int main(int argc, char** argv) {
   std::string codec = "h264";
 
   // Parse command line arguments.
+  bool enable_bitstream_validator = true;
   base::CommandLine::SwitchMap switches = cmd_line->GetSwitches();
   for (base::CommandLine::SwitchMap::const_iterator it = switches.begin();
        it != switches.end(); ++it) {
@@ -192,6 +206,8 @@ int main(int argc, char** argv) {
 
     if (it->first == "codec") {
       codec = it->second;
+    } else if (it->first == "disable_validator") {
+      enable_bitstream_validator = false;
     } else {
       std::cout << "unknown option: --" << it->first << "\n"
                 << media::test::usage_msg;
@@ -204,7 +220,8 @@ int main(int argc, char** argv) {
   // Set up our test environment.
   media::test::VideoEncoderTestEnvironment* test_environment =
       media::test::VideoEncoderTestEnvironment::Create(
-          video_path, video_metadata_path, base::FilePath(), codec);
+          video_path, video_metadata_path, enable_bitstream_validator,
+          base::FilePath(), codec);
   if (!test_environment)
     return EXIT_FAILURE;
 

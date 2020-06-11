@@ -124,6 +124,16 @@ Polymer({
   },
 
   /**
+   * Overrides chromeos.printing.printingManager.mojom.
+   *           PrintJobsObserverInterface
+   * @param {!chromeos.printing.printingManager.mojom.PrintJobInfo} job
+   */
+  onPrintJobUpdate(job) {
+    // TODO(crbug/1053704): Implement this function to update ongoing print
+    // jobs.
+  },
+
+  /**
    * @param {!PrintJobsList} jobs
    * @private
    */

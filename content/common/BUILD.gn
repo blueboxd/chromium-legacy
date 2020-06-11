@@ -147,8 +147,8 @@ source_set("common") {
     "input_messages.h",
     "inter_process_time_ticks_converter.cc",
     "inter_process_time_ticks_converter.h",
-    "mac/attributed_string_coder.h",
-    "mac/attributed_string_coder.mm",
+    "mac/attributed_string_type_converters.h",
+    "mac/attributed_string_type_converters.mm",
     "mac/font_loader.h",
     "mac/font_loader.mm",
     "media/cdm_info.cc",
@@ -746,18 +746,12 @@ mojom("mojo_bindings") {
       {
         types = [
           {
-            mojom = "content.mojom.EncodedAttributedString"
-            cpp = "::mac::AttributedStringCoder::EncodedString"
-          },
-          {
             mojom = "content.mojom.ScrollerStyle"
             cpp = "::blink::ScrollerStyle"
           },
         ]
-        traits_headers = [
-          "//content/common/mac/attributed_string_coder.h",
-          "//third_party/blink/public/platform/mac/web_scrollbar_theme.h",
-        ]
+        traits_headers =
+            [ "//third_party/blink/public/platform/mac/web_scrollbar_theme.h" ]
         traits_private_headers = [ "//content/common/view_messages.h" ]
         traits_public_deps = [ "//third_party/blink/public:blink_headers" ]
       },

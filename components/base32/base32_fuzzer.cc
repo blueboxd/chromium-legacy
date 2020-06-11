@@ -10,7 +10,6 @@
 #include "base/check_op.h"
 #include "base/stl_util.h"
 #include "components/base32/base32.h"
-#include "components/base32/base32_test_util.h"
 
 base32::Base32EncodePolicy GetBase32EncodePolicyFromUint8(uint8_t value) {
   // Dummy switch to detect changes to the enum definition.

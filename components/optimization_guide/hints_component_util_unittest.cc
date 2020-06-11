@@ -135,18 +135,18 @@ TEST_F(HintsComponentUtilTest, RecordOptimizationFilterStatus) {
   base::HistogramTester histogram_tester;
   RecordOptimizationFilterStatus(
       proto::OptimizationType::NOSCRIPT,
-      OptimizationFilterStatus::kFoundServerBlacklistConfig);
+      OptimizationFilterStatus::kFoundServerFilterConfig);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.OptimizationFilterStatus.NoScript",
-      OptimizationFilterStatus::kFoundServerBlacklistConfig, 1);
+      OptimizationFilterStatus::kFoundServerFilterConfig, 1);
 
   // Record again with a different suffix to make sure it doesn't choke.
   RecordOptimizationFilterStatus(
       proto::OptimizationType::DEFER_ALL_SCRIPT,
-      OptimizationFilterStatus::kFoundServerBlacklistConfig);
+      OptimizationFilterStatus::kFoundServerFilterConfig);
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.OptimizationFilterStatus.DeferAllScript",
-      OptimizationFilterStatus::kFoundServerBlacklistConfig, 1);
+      OptimizationFilterStatus::kFoundServerFilterConfig, 1);
 }
 
 TEST_F(HintsComponentUtilTest, ProcessOptimizationFilter) {
@@ -155,43 +155,43 @@ TEST_F(HintsComponentUtilTest, ProcessOptimizationFilter) {
 
   proto::OptimizationFilter optimization_filter_proto;
   BloomFilter bloom_filter(num_hash_functions, num_bits);
-  bloom_filter.Add("black.com");
+  bloom_filter.Add("host.com");
   proto::BloomFilter* bloom_filter_proto =
       optimization_filter_proto.mutable_bloom_filter();
   bloom_filter_proto->set_num_hash_functions(num_hash_functions);
   bloom_filter_proto->set_num_bits(num_bits);
-  std::string blacklist_data(
+  std::string blocklist_data(
       reinterpret_cast<const char*>(&bloom_filter.bytes()[0]),
       bloom_filter.bytes().size());
-  bloom_filter_proto->set_data(blacklist_data);
+  bloom_filter_proto->set_data(blocklist_data);
 
   OptimizationFilterStatus status;
   std::unique_ptr<OptimizationFilter> optimization_filter =
       ProcessOptimizationFilter(optimization_filter_proto, &status);
 
-  EXPECT_EQ(status, OptimizationFilterStatus::kCreatedServerBlacklist);
+  EXPECT_EQ(status, OptimizationFilterStatus::kCreatedServerFilter);
   ASSERT_TRUE(optimization_filter);
-  EXPECT_TRUE(optimization_filter->Matches(GURL("https://m.black.com")));
+  EXPECT_TRUE(optimization_filter->Matches(GURL("https://m.host.com")));
 }
 
 TEST_F(HintsComponentUtilTest, ProcessOptimizationFilterWithBadNumBits) {
   proto::OptimizationFilter optimization_filter_proto;
   BloomFilter bloom_filter(7, 1234);
-  bloom_filter.Add("black.com");
+  bloom_filter.Add("host.com");
   proto::BloomFilter* bloom_filter_proto =
       optimization_filter_proto.mutable_bloom_filter();
   bloom_filter_proto->set_num_hash_functions(7);
   bloom_filter_proto->set_num_bits(bloom_filter.bytes().size() * 8 + 1);
-  std::string blacklist_data(
+  std::string blocklist_data(
       reinterpret_cast<const char*>(&bloom_filter.bytes()[0]),
       bloom_filter.bytes().size());
-  bloom_filter_proto->set_data(blacklist_data);
+  bloom_filter_proto->set_data(blocklist_data);
 
   OptimizationFilterStatus status;
   std::unique_ptr<OptimizationFilter> optimization_filter =
       ProcessOptimizationFilter(optimization_filter_proto, &status);
 
-  EXPECT_EQ(status, OptimizationFilterStatus::kFailedServerBlacklistBadConfig);
+  EXPECT_EQ(status, OptimizationFilterStatus::kFailedServerFilterBadConfig);
   EXPECT_EQ(nullptr, optimization_filter);
 }
 
@@ -203,7 +203,7 @@ TEST_F(HintsComponentUtilTest, ProcessOptimizationFilterWithRegexps) {
   std::unique_ptr<OptimizationFilter> optimization_filter =
       ProcessOptimizationFilter(optimization_filter_proto, &status);
 
-  EXPECT_EQ(status, OptimizationFilterStatus::kCreatedServerBlacklist);
+  EXPECT_EQ(status, OptimizationFilterStatus::kCreatedServerFilter);
   ASSERT_TRUE(optimization_filter);
   EXPECT_TRUE(optimization_filter->Matches(GURL("https://test.com")));
 }
@@ -228,15 +228,15 @@ TEST_F(HintsComponentUtilTest,
   proto::OptimizationFilter optimization_filter_proto;
   optimization_filter_proto.add_regexps("test[");
   BloomFilter bloom_filter(num_hash_functions, num_bits);
-  bloom_filter.Add("black.com");
+  bloom_filter.Add("host.com");
   proto::BloomFilter* bloom_filter_proto =
       optimization_filter_proto.mutable_bloom_filter();
   bloom_filter_proto->set_num_hash_functions(num_hash_functions);
   bloom_filter_proto->set_num_bits(num_bits);
-  std::string blacklist_data(
+  std::string blocklist_data(
       reinterpret_cast<const char*>(&bloom_filter.bytes()[0]),
       bloom_filter.bytes().size());
-  bloom_filter_proto->set_data(blacklist_data);
+  bloom_filter_proto->set_data(blocklist_data);
 
   OptimizationFilterStatus status;
   std::unique_ptr<OptimizationFilter> optimization_filter =
@@ -246,26 +246,26 @@ TEST_F(HintsComponentUtilTest,
   EXPECT_EQ(nullptr, optimization_filter);
 }
 
-TEST_F(HintsComponentUtilTest, ProcessOptimizationFilterWithTooLargeBlacklist) {
+TEST_F(HintsComponentUtilTest, ProcessOptimizationFilterWithTooLargeFilter) {
   int too_many_bits = features::MaxServerBloomFilterByteSize() * 8 + 1;
 
   proto::OptimizationFilter optimization_filter_proto;
   BloomFilter bloom_filter(7, too_many_bits);
-  bloom_filter.Add("black.com");
+  bloom_filter.Add("host.com");
   proto::BloomFilter* bloom_filter_proto =
       optimization_filter_proto.mutable_bloom_filter();
   bloom_filter_proto->set_num_hash_functions(7);
   bloom_filter_proto->set_num_bits(too_many_bits);
-  std::string blacklist_data(
+  std::string blocklist_data(
       reinterpret_cast<const char*>(&bloom_filter.bytes()[0]),
       bloom_filter.bytes().size());
-  bloom_filter_proto->set_data(blacklist_data);
+  bloom_filter_proto->set_data(blocklist_data);
 
   OptimizationFilterStatus status;
   std::unique_ptr<OptimizationFilter> optimization_filter =
       ProcessOptimizationFilter(optimization_filter_proto, &status);
 
-  EXPECT_EQ(status, OptimizationFilterStatus::kFailedServerBlacklistTooBig);
+  EXPECT_EQ(status, OptimizationFilterStatus::kFailedServerFilterTooBig);
   EXPECT_EQ(nullptr, optimization_filter);
 }
 
@@ -276,7 +276,33 @@ TEST_F(HintsComponentUtilTest,
 
   proto::OptimizationFilter optimization_filter_proto;
   BloomFilter bloom_filter(num_hash_functions, num_bits);
-  bloom_filter.Add("black.com");
+  bloom_filter.Add("host.com");
+  proto::BloomFilter* bloom_filter_proto =
+      optimization_filter_proto.mutable_bloom_filter();
+  bloom_filter_proto->set_num_hash_functions(num_hash_functions);
+  bloom_filter_proto->set_num_bits(num_bits);
+  std::string blocklist_data(
+      reinterpret_cast<const char*>(&bloom_filter.bytes()[0]),
+      bloom_filter.bytes().size());
+  bloom_filter_proto->set_data(blocklist_data);
+
+  std::unique_ptr<OptimizationFilter> optimization_filter =
+      ProcessOptimizationFilter(optimization_filter_proto,
+                                /*out_status=*/nullptr);
+
+  ASSERT_TRUE(optimization_filter);
+  EXPECT_TRUE(optimization_filter->Matches(GURL("https://m.host.com")));
+}
+
+TEST_F(HintsComponentUtilTest,
+       ProcessOptimizationFilterSkipHostSuffixCheckingIsPropagated) {
+  int num_hash_functions = 7;
+  int num_bits = 1234;
+
+  proto::OptimizationFilter optimization_filter_proto;
+  optimization_filter_proto.set_skip_host_suffix_checking(true);
+  BloomFilter bloom_filter(num_hash_functions, num_bits);
+  bloom_filter.Add("host.com");
   proto::BloomFilter* bloom_filter_proto =
       optimization_filter_proto.mutable_bloom_filter();
   bloom_filter_proto->set_num_hash_functions(num_hash_functions);
@@ -291,7 +317,7 @@ TEST_F(HintsComponentUtilTest,
                                 /*out_status=*/nullptr);
 
   ASSERT_TRUE(optimization_filter);
-  EXPECT_TRUE(optimization_filter->Matches(GURL("https://m.black.com")));
+  EXPECT_FALSE(optimization_filter->Matches(GURL("https://m.host.com")));
 }
 
 }  // namespace optimization_guide

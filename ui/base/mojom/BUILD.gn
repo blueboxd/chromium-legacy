@@ -10,6 +10,15 @@ mojom("mojom") {
     "ui_base_types.mojom",
     "window_open_disposition.mojom",
   ]
+
+  if (is_mac) {
+    sources += [ "attributed_string.mojom" ]
+    public_deps = [
+      "//mojo/public/mojom/base",
+      "//ui/gfx/range/mojom",
+    ]
+  }
+
   cpp_typemaps = [
     {
       types = [

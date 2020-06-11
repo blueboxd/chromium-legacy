@@ -537,6 +537,7 @@ TEST_F(MediaRouterViewsUITest, RouteCreationLocalFileModeInTab) {
   EXPECT_CALL(*mock_router_, CreateRouteInternal(_, _, _, _, _, _, _))
       .WillOnce(SaveArgWithMove<3>(&location_file_opened));
   ui_->CreateRoute(kSinkId, MediaCastMode::LOCAL_FILE);
+  ui_->SimulateDocumentAvailableForTest();
 
   ASSERT_EQ(location_file_opened, web_contents());
   ASSERT_EQ(location_file_opened->GetVisibleURL(), file_url);

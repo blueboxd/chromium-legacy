@@ -9,6 +9,16 @@
 
 namespace local_search_service {
 
+TEST(ContentExtractionUtilsTest, StopwordTest) {
+  // Non English.
+  EXPECT_FALSE(IsStopword(base::UTF8ToUTF16("was"), "vn"));
+
+  // English.
+  EXPECT_TRUE(IsStopword(base::UTF8ToUTF16("i"), "en-US"));
+  EXPECT_TRUE(IsStopword(base::UTF8ToUTF16("my"), "en"));
+  EXPECT_FALSE(IsStopword(base::UTF8ToUTF16("stopword"), "en"));
+}
+
 TEST(ContentExtractionUtilsTest, NormalizerTest) {
   // Test diacritic removed.
   EXPECT_EQ(

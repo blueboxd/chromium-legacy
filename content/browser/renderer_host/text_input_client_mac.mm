@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/text_input_client_messages.h"
+#include "ui/base/mojom/attributed_string.mojom.h"
 
 namespace content {
 
@@ -92,10 +93,10 @@ void TextInputClientMac::GetStringAtPoint(RenderWidgetHost* rwh,
 }
 
 void TextInputClientMac::GetStringAtPointReply(
-    const mac::AttributedStringCoder::EncodedString& string,
+    ui::mojom::AttributedStringPtr string,
     const gfx::Point& point) {
   if (replyForPointHandler_) {
-    std::move(replyForPointHandler_).Run(string, point);
+    std::move(replyForPointHandler_).Run(std::move(string), point);
   }
 }
 
@@ -110,10 +111,10 @@ void TextInputClientMac::GetStringFromRange(RenderWidgetHost* rwh,
 }
 
 void TextInputClientMac::GetStringFromRangeReply(
-    const mac::AttributedStringCoder::EncodedString& string,
+    ui::mojom::AttributedStringPtr string,
     const gfx::Point& point) {
   if (replyForRangeHandler_) {
-    std::move(replyForRangeHandler_).Run(string, point);
+    std::move(replyForRangeHandler_).Run(std::move(string), point);
   }
 }
 

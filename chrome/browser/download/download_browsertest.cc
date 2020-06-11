@@ -300,7 +300,7 @@ class PercentWaiter : public download::DownloadItem::Observer {
   void OnDownloadDestroyed(download::DownloadItem* item) override {
     DCHECK_EQ(item_, item);
     item_->RemoveObserver(this);
-    item_ = NULL;
+    item_ = nullptr;
   }
 
   download::DownloadItem* item_;
@@ -811,7 +811,7 @@ class DownloadTest : public InProcessBrowserTest {
     EXPECT_EQ(0, manager->NonMaliciousInProgressCount());
     EXPECT_EQ(0, manager->InProgressCount());
     if (manager->InProgressCount() != 0)
-      return NULL;
+      return nullptr;
 
     ui_test_utils::NavigateToURL(browser(), slow_download_url);
 
@@ -821,11 +821,11 @@ class DownloadTest : public InProcessBrowserTest {
     DownloadManager::DownloadVector items;
     manager->GetAllDownloads(&items);
 
-    DownloadItem* new_item = NULL;
+    DownloadItem* new_item = nullptr;
     for (auto iter = items.begin(); iter != items.end(); ++iter) {
       if ((*iter)->GetState() == DownloadItem::IN_PROGRESS) {
         // There should be only one IN_PROGRESS item.
-        EXPECT_EQ(NULL, new_item);
+        EXPECT_FALSE(new_item);
         new_item = *iter;
       }
     }
@@ -1198,7 +1198,7 @@ class DownloadTest : public InProcessBrowserTest {
     EXPECT_EQ(1u, downloads.size());
 
     if (downloads.size() != 1)
-      return NULL;
+      return nullptr;
 
     error_injector->ClearError();
     DownloadItem* download = downloads[0];
@@ -2011,7 +2011,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CloseNewTab4) {
   manager->GetAllDownloads(&items);
   ASSERT_NE(0u, items.size());
   DownloadItem* item = items[0];
-  EXPECT_TRUE(item != nullptr);
+  EXPECT_TRUE(item);
 
   // When the download is canceled, the second tab should close.
   EXPECT_EQ(item->GetState(), DownloadItem::CANCELLED);
@@ -2808,13 +2808,13 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SavePageNonHTMLViaPost) {
   ASSERT_TRUE(jpeg_url.is_valid());
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents != NULL);
+  ASSERT_TRUE(web_contents);
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_NAV_ENTRY_COMMITTED,
       content::Source<content::NavigationController>(
           &web_contents->GetController()));
   content::RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
-  ASSERT_TRUE(render_frame_host != NULL);
+  ASSERT_TRUE(render_frame_host);
   render_frame_host->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("SubmitForm()"), base::NullCallback());
   observer.Wait();
@@ -4150,9 +4150,9 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrossOriginDownloadNavigatesIframe) {
 
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents != NULL);
+  ASSERT_TRUE(web_contents);
   content::RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
-  ASSERT_TRUE(render_frame_host != NULL);
+  ASSERT_TRUE(render_frame_host);
 
   // Clicking the <a download> in the iframe should navigate the iframe,
   // not the main frame.
@@ -4729,9 +4729,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 
   // Open a second tab and wait.
-  EXPECT_NE(static_cast<WebContents*>(NULL),
-            chrome::AddSelectedTabWithURL(browser(), GURL(url::kAboutBlankURL),
-                                          ui::PAGE_TRANSITION_TYPED));
+  EXPECT_TRUE(chrome::AddSelectedTabWithURL(
+      browser(), GURL(url::kAboutBlankURL), ui::PAGE_TRANSITION_TYPED));
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 
@@ -4825,7 +4824,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, NewWindow) {
   original_browsers.insert(browser());
   Browser* download_browser =
       ui_test_utils::GetBrowserNotInSet(original_browsers);
-  ASSERT_TRUE(download_browser != NULL);
+  ASSERT_TRUE(download_browser);
   EXPECT_NE(download_browser, browser());
   EXPECT_EQ(1, download_browser->tab_strip_model()->count());
   EXPECT_TRUE(download_browser->window()->IsDownloadShelfVisible());

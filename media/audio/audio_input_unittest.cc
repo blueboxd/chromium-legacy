@@ -108,7 +108,7 @@ class AudioInputTest : public testing::Test {
   void CloseAudioInputStreamOnAudioThread() {
     RunOnAudioThread(base::BindOnce(&AudioInputStream::Close,
                                     base::Unretained(audio_input_stream_)));
-    audio_input_stream_ = NULL;
+    audio_input_stream_ = nullptr;
   }
 
   void OpenAndCloseAudioInputStreamOnAudioThread() {
@@ -148,7 +148,7 @@ class AudioInputTest : public testing::Test {
     DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
     EXPECT_TRUE(audio_input_stream_->Open());
     audio_input_stream_->Close();
-    audio_input_stream_ = NULL;
+    audio_input_stream_ = nullptr;
   }
 
   void OpenAndStart(AudioInputStream::AudioInputCallback* sink) {
@@ -162,14 +162,14 @@ class AudioInputTest : public testing::Test {
     EXPECT_TRUE(audio_input_stream_->Open());
     audio_input_stream_->Stop();
     audio_input_stream_->Close();
-    audio_input_stream_ = NULL;
+    audio_input_stream_ = nullptr;
   }
 
   void StopAndClose() {
     DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
     audio_input_stream_->Stop();
     audio_input_stream_->Close();
-    audio_input_stream_ = NULL;
+    audio_input_stream_ = nullptr;
   }
 
   // Synchronously runs the provided callback/closure on the audio thread.

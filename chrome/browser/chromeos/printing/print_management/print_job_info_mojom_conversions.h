@@ -8,6 +8,7 @@
 #include "chromeos/components/print_management/mojom/printing_manager.mojom.h"
 
 namespace chromeos {
+class CupsPrintJob;
 namespace printing {
 
 namespace mojom = printing_manager::mojom;
@@ -21,6 +22,9 @@ namespace print_management {
 // Converts proto::PrintJobInfo into mojom::PrintJobInfoPtr.
 mojom::PrintJobInfoPtr PrintJobProtoToMojom(
     const proto::PrintJobInfo& print_job_info_proto);
+
+// Convert CupsPrintJob into mojom::PrintJobInfoPtr.
+mojom::PrintJobInfoPtr CupsPrintJobToMojom(const CupsPrintJob& job);
 
 }  // namespace print_management
 }  // namespace printing

@@ -91,10 +91,17 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
     already_started_ = true;
 
   if (flags.IsCreatedByParser()) {
-    // <spec href="https://html.spec.whatwg.org/C/#parser-inserted">... It is
+    // <spec href="https://html.spec.whatwg.org/C/#parser-inserted">script
+    // elements with non-null parser documents are known as
+    // "parser-inserted".</spec>
+    // For more information on why this is not implemented in terms of a
+    // non-null parser document, see the documentation in the header file.
+    parser_inserted_ = true;
+
+    // <spec href="https://html.spec.whatwg.org/C/#parser-document">... It is
     // set by the HTML parser and the XML parser on script elements they insert
     // ...</spec>
-    parser_inserted_ = true;
+    parser_document_ = flags.ParserDocument();
 
     // <spec href="https://html.spec.whatwg.org/C/#non-blocking">... It is unset
     // by the HTML parser and the XML parser on script elements they insert.
@@ -107,6 +114,7 @@ ScriptLoader::~ScriptLoader() {}
 
 void ScriptLoader::Trace(Visitor* visitor) const {
   visitor->Trace(element_);
+  visitor->Trace(parser_document_);
   visitor->Trace(pending_script_);
   visitor->Trace(prepared_pending_script_);
   visitor->Trace(resource_keep_alive_);
@@ -338,9 +346,9 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // <spec step="10">If the element is flagged as "parser-inserted", but the
   // element's node document is not the Document of the parser that created the
   // element, then return.</spec>
-  //
-  // FIXME: If script is parser inserted, verify it's still in the original
-  // document.
+  if (parser_inserted_ && parser_document_ != &element_->GetDocument()) {
+    return false;
+  }
 
   // <spec step="11">If scripting is disabled for the script element, then
   // return. The script is not executed.</spec>

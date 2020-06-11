@@ -55,11 +55,17 @@ Multiple command line arguments can be given to the command:
 
     --codec              codec profile to encode, "h264 (baseline)",
                          "h264main, "h264high", "vp8" and "vp9"
+
      -v                  enable verbose mode, e.g. -v=2.
     --vmodule            enable verbose mode for the specified module,
                          e.g. --vmodule=*media/gpu*=2.
+
     --gtest_help         display the gtest help and exit.
     --help               display this help and exit.
+
+Non-performance tests only:
+
+    --disable_validator  disable validation of encoded bitstream.
 
 ## Source code
 See the video encoder tests [source code](https://cs.chromium.org/chromium/src/media/gpu/video_encode_accelerator_tests.cc).

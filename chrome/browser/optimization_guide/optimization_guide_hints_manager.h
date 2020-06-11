@@ -103,9 +103,13 @@ class OptimizationGuideHintsManager
     return registered_optimization_types_;
   }
 
-  // Returns whether there is an optimization filter loaded for
+  // Returns whether there is an optimization allowlist loaded for
   // |optimization_type|.
-  bool HasLoadedOptimizationFilter(
+  bool HasLoadedOptimizationAllowlist(
+      optimization_guide::proto::OptimizationType optimization_type);
+  // Returns whether there is an optimization blocklist loaded for
+  // |optimization_type|.
+  bool HasLoadedOptimizationBlocklist(
       optimization_guide::proto::OptimizationType optimization_type);
 
   // Returns the OptimizationTargetDecision based on the given parameters.
@@ -217,12 +221,28 @@ class OptimizationGuideHintsManager
   void ProcessOptimizationFilters(
       const google::protobuf::RepeatedPtrField<
           optimization_guide::proto::OptimizationFilter>&
-          blacklist_optimization_filters,
+          allowlist_optimization_filters,
+      const google::protobuf::RepeatedPtrField<
+          optimization_guide::proto::OptimizationFilter>&
+          blocklist_optimization_filters,
       const base::flat_set<optimization_guide::proto::OptimizationType>&
           registered_optimization_types);
 
-  // Callback run after the hint cache is fully initialized. At this point, the
-  // OptimizationGuideHintsManager is ready to process hints.
+  // Process a set of optimization filters.
+  //
+  // |is_allowlist| will be used to ensure that the filters are either uses as
+  // allowlists or blocklists. |optimization_filters_lock_| should be held
+  // before calling this function.
+  void ProcessOptimizationFilterSet(
+      const google::protobuf::RepeatedPtrField<
+          optimization_guide::proto::OptimizationFilter>& filters,
+      bool is_allowlist,
+      const base::flat_set<optimization_guide::proto::OptimizationType>&
+          registered_optimization_types)
+      EXCLUSIVE_LOCKS_REQUIRED(optimization_filters_lock_);
+
+  // Callback run after the hint cache is fully initialized. At this point,
+  // the OptimizationGuideHintsManager is ready to process hints.
   void OnHintCacheInitialized();
 
   // Updates the cache with the latest hints sent by the Component Updater.
@@ -376,11 +396,17 @@ class OptimizationGuideHintsManager
   base::flat_set<optimization_guide::proto::OptimizationType>
       optimization_types_with_filter_ GUARDED_BY(optimization_filters_lock_);
 
-  // A map from optimization type to the host filter that holds the blacklist
+  // A map from optimization type to the host filter that holds the allowlist
   // for that type.
   base::flat_map<optimization_guide::proto::OptimizationType,
                  std::unique_ptr<optimization_guide::OptimizationFilter>>
-      blacklist_optimization_filters_ GUARDED_BY(optimization_filters_lock_);
+      allowlist_optimization_filters_ GUARDED_BY(optimization_filters_lock_);
+
+  // A map from optimization type to the host filter that holds the blocklist
+  // for that type.
+  base::flat_map<optimization_guide::proto::OptimizationType,
+                 std::unique_ptr<optimization_guide::OptimizationFilter>>
+      blocklist_optimization_filters_ GUARDED_BY(optimization_filters_lock_);
 
   // A map from URL to a map of callbacks keyed by their optimization type.
   base::flat_map<

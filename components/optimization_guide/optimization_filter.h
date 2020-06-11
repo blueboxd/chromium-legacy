@@ -28,7 +28,8 @@ typedef std::vector<std::unique_ptr<re2::RE2>> RegexpList;
 class OptimizationFilter {
  public:
   explicit OptimizationFilter(std::unique_ptr<BloomFilter> bloom_filter,
-                              std::unique_ptr<RegexpList> regexps);
+                              std::unique_ptr<RegexpList> regexps,
+                              bool skip_host_suffix_checking);
 
   ~OptimizationFilter();
 
@@ -55,6 +56,8 @@ class OptimizationFilter {
   std::unique_ptr<BloomFilter> bloom_filter_;
 
   std::unique_ptr<RegexpList> regexps_;
+
+  bool skip_host_suffix_checking_ = false;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

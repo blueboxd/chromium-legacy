@@ -72,13 +72,6 @@ class Shell : public WebContentsDelegate,
       const scoped_refptr<SiteInstance>& site_instance,
       const gfx::Size& initial_size);
 
-  static Shell* CreateNewWindowWithSessionStorageNamespace(
-      BrowserContext* browser_context,
-      const GURL& url,
-      const scoped_refptr<SiteInstance>& site_instance,
-      const gfx::Size& initial_size,
-      scoped_refptr<SessionStorageNamespace> session_storage_namespace);
-
   // Returns the Shell object corresponding to the given WebContents.
   static Shell* FromWebContents(WebContents* web_contents);
 

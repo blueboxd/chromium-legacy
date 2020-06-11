@@ -64,7 +64,7 @@ class CloseListener : public WebSocketListener {
     EXPECT_TRUE(run_loop_);
     if (run_loop_)
       run_loop_->Quit();
-    run_loop_ = NULL;
+    run_loop_ = nullptr;
   }
 
  private:
@@ -127,33 +127,33 @@ class WebSocketTest : public testing::Test {
 }  // namespace
 
 TEST_F(WebSocketTest, CreateDestroy) {
-  CloseListener listener(NULL);
+  CloseListener listener(nullptr);
   WebSocket sock(GURL("ws://127.0.0.1:2222"), &listener);
 }
 
 TEST_F(WebSocketTest, Connect) {
-  CloseListener listener(NULL);
+  CloseListener listener(nullptr);
   ASSERT_TRUE(CreateWebSocket(server_.web_socket_url(), &listener));
   task_environment_.RunUntilIdle();
   ASSERT_TRUE(server_.WaitForConnectionsToClose());
 }
 
 TEST_F(WebSocketTest, ConnectNoServer) {
-  CloseListener listener(NULL);
-  ASSERT_FALSE(CreateWebSocket(GURL("ws://127.0.0.1:33333"), NULL));
+  CloseListener listener(nullptr);
+  ASSERT_FALSE(CreateWebSocket(GURL("ws://127.0.0.1:33333"), nullptr));
 }
 
 TEST_F(WebSocketTest, Connect404) {
   server_.SetRequestAction(TestHttpServer::kNotFound);
-  CloseListener listener(NULL);
-  ASSERT_FALSE(CreateWebSocket(server_.web_socket_url(), NULL));
+  CloseListener listener(nullptr);
+  ASSERT_FALSE(CreateWebSocket(server_.web_socket_url(), nullptr));
   task_environment_.RunUntilIdle();
   ASSERT_TRUE(server_.WaitForConnectionsToClose());
 }
 
 TEST_F(WebSocketTest, ConnectServerClosesConn) {
   server_.SetRequestAction(TestHttpServer::kClose);
-  CloseListener listener(NULL);
+  CloseListener listener(nullptr);
   ASSERT_FALSE(CreateWebSocket(server_.web_socket_url(), &listener));
 }
 

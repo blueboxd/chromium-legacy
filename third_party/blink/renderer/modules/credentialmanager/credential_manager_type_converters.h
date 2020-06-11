@@ -88,9 +88,13 @@ struct TypeConverter<blink::mojom::blink::AttestationConveyancePreference,
       const String&);
 };
 
+// TODO(crbug.com/1092328): Second template parameter should be
+// base::Optional<blink::V8AuthenticatorAttachment>.
 template <>
-struct TypeConverter<blink::mojom::blink::AuthenticatorAttachment, String> {
-  static blink::mojom::blink::AuthenticatorAttachment Convert(const String&);
+struct TypeConverter<blink::mojom::blink::AuthenticatorAttachment,
+                     base::Optional<String>> {
+  static blink::mojom::blink::AuthenticatorAttachment Convert(
+      const base::Optional<String>&);
 };
 
 template <>

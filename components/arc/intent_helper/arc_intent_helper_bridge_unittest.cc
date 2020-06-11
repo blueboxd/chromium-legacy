@@ -24,9 +24,11 @@ IntentFilter GetIntentFilter(const std::string& host,
                              const std::string& pkg_name) {
   std::vector<IntentFilter::AuthorityEntry> authorities;
   authorities.emplace_back(host, /*port=*/-1);
-  return IntentFilter(pkg_name, std::move(authorities),
+  return IntentFilter(pkg_name, /*actions=*/std::vector<std::string>(),
+                      std::move(authorities),
                       std::vector<IntentFilter::PatternMatcher>(),
-                      std::vector<std::string>());
+                      /*schemes=*/std::vector<std::string>(),
+                      /*mime_types=*/std::vector<std::string>());
 }
 
 }  // namespace

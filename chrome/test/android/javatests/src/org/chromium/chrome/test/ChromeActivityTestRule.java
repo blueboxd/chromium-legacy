@@ -25,6 +25,7 @@ import org.junit.runners.model.Statement;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
+import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.R;
@@ -58,6 +59,7 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.EmbeddedTestServerRule;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -119,6 +121,13 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
                 // Disable offline indicator UI to prevent it from popping up to obstruct other UI
                 // views that may make tests flaky.
                 Features.getInstance().disable(ChromeFeatureList.OFFLINE_INDICATOR);
+                // Tests are run on bots that are offline by default. This might cause offline UI
+                // to show and cause flakiness or failures in tests. Using this switch will prevent
+                // that.
+                // TODO(crbug.com/1093085): Remove this once we disable the offline indicator for
+                // specific tests.
+                CommandLine.getInstance().appendSwitch(
+                        ContentSwitches.FORCE_ONLINE_CONNECTION_STATE_FOR_INDICATOR);
 
                 try {
                     base.evaluate();

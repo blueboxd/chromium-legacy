@@ -449,6 +449,7 @@ source_set("unit_tests") {
     "stability_metrics_helper_unittest.cc",
     "stability_metrics_provider_unittest.cc",
     "ui/screen_info_metrics_provider_unittest.cc",
+    "unsent_log_store_metrics_impl_unittest.cc",
     "unsent_log_store_unittest.cc",
   ]
 

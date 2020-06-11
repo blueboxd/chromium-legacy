@@ -1003,6 +1003,10 @@ const char kEnableAdaptiveSelectionHandleOrientation[] =
 // Enable drag manipulation of longpress-triggered text selections.
 const char kEnableLongpressDragSelection[]  = "enable-longpress-drag-selection";
 
+// Prevent the offline indicator from showing.
+const char kForceOnlineConnectionStateForIndicator[] =
+    "force-online-connection-state-for-indicator";
+
 // The telephony region (ISO country code) to use in phone number detection.
 const char kNetworkCountryIso[] = "network-country-iso";
 

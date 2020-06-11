@@ -35,7 +35,7 @@ class TypedBuffer {
   ~TypedBuffer() {
     if (buffer_) {
       delete[] reinterpret_cast<uint8_t*>(buffer_);
-      buffer_ = NULL;
+      buffer_ = nullptr;
     }
   }
 
@@ -47,11 +47,11 @@ class TypedBuffer {
   // Accessors to get the owned buffer.
   // operator* and operator-> will assert() if there is no current buffer.
   T& operator*() const {
-    assert(buffer_ != NULL);
+    assert(buffer_);
     return *buffer_;
   }
   T* operator->() const  {
-    assert(buffer_ != NULL);
+    assert(buffer_);
     return buffer_;
   }
   T* get() const { return buffer_; }

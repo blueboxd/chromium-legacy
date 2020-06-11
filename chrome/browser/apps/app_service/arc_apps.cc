@@ -225,9 +225,12 @@ apps::mojom::IntentFilterPtr ConvertArcIntentFilter(
 arc::IntentFilter CreateArcIntentFilter(
     const std::string& package_name,
     const apps::mojom::IntentFilterPtr& intent_filter) {
+  std::vector<std::string> actions;
   std::vector<std::string> schemes;
   std::vector<arc::IntentFilter::AuthorityEntry> authorities;
   std::vector<arc::IntentFilter::PatternMatcher> paths;
+  std::vector<std::string> mime_types;
+  // TODO(crbug.com/853604): Add conversion for actions and mime types.
   for (auto& condition : intent_filter->conditions) {
     switch (condition->condition_type) {
       case apps::mojom::ConditionType::kScheme:
@@ -265,8 +268,9 @@ arc::IntentFilter CreateArcIntentFilter(
     }
   }
   // TODO(crbug.com/853604): Add support for other action and category types.
-  return arc::IntentFilter(package_name, std::move(authorities),
-                           std::move(paths), std::move(schemes));
+  return arc::IntentFilter(package_name, std::move(actions),
+                           std::move(authorities), std::move(paths),
+                           std::move(schemes), std::move(mime_types));
 }
 
 // Check if this intent filter only contains HTTP and HTTPS schemes.

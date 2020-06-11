@@ -9,6 +9,11 @@
 
 namespace local_search_service {
 
+// Checks if a word is a stopword given a locale. Locale will be in the
+// following format: language-country@variant (country and variant are
+// optional).
+bool IsStopword(const base::string16& word, const std::string& locale);
+
 // Returns a normalized version of a string16: removes diacritics, convert to
 // lower-case and possibly remove hyphen from the text (set to true by default).
 base::string16 Normalizer(const base::string16& word,

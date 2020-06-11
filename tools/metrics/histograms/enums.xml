@@ -16076,6 +16076,14 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="7" label="Returned stale result synchronously."/>
 </enum>
 
+<enum name="DNS.UdpIdMismatchStatus">
+  <int value="0" label="Successfully parsed response with matching ID"/>
+  <int value="1"
+      label="ID mismatch with the response ID recognized as a
+             recently-queried ID"/>
+  <int value="2" label="ID mismatch with an unrecognized response ID"/>
+</enum>
+
 <enum name="DNSEmptyAddressListAndNoError">
   <int value="0" label="Error reported or Address List is not empty"/>
   <int value="1" label="Success reported but Address List is empty"/>
@@ -20483,6 +20491,7 @@ Called by update_document_policy_enum.py.-->
   <int value="712" label="PluginVmDataCollectionAllowed"/>
   <int value="713" label="IntensiveWakeUpThrottlingEnabled"/>
   <int value="714" label="MinimumChromeVersionEolMessage"/>
+  <int value="715" label="DefaultSearchProviderContextMenuAccessAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -38956,6 +38965,7 @@ from previous Chrome versions.
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:enabled"/>
   <int value="-1779753607" label="VizDisplayCompositor:disabled"/>
   <int value="-1778993296" label="ContextualSearchMlTapSuppression:disabled"/>
+  <int value="-1778202807" label="DelayAsyncScriptExecution:enabled"/>
   <int value="-1776351704" label="DesktopPWAsOmniboxInstall:disabled"/>
   <int value="-1774818943" label="VrWebInputEditing:enabled"/>
   <int value="-1772942854" label="LongPressBackForHistory:enabled"/>
@@ -42189,6 +42199,7 @@ from previous Chrome versions.
   <int value="1843088575" label="OutOfBlinkCors:enabled"/>
   <int value="1844110073" label="enable-app-view"/>
   <int value="1847024354" label="enable-hotword-hardware"/>
+  <int value="1848974467" label="DelayAsyncScriptExecution:disabled"/>
   <int value="1849379463" label="OfflinePagesCTV2:enabled"/>
   <int value="1849580433" label="disable-oop-rasterization"/>
   <int value="1851358497" label="enable-ash-sidebar"/>
@@ -50575,21 +50586,20 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OptimizationGuideOptimizationFilterStatus">
-  <int value="0" label="Found a server blacklist configuration">
-    Found configuration data for a server blacklist.
+  <int value="0" label="Found a server filter configuration">
+    Found configuration data for a server filter.
   </int>
-  <int value="1" label="Created a server blacklist">
-    Successfully created a server blacklist.
+  <int value="1" label="Created a server filter">
+    Successfully created a server filter.
   </int>
   <int value="2" label="Bad configuration details">
-    Failed to create a server blacklist per bad configuration.
+    Failed to create a server filter per bad configuration.
   </int>
   <int value="3" label="Data size too large">
-    Failed to create a server blacklist because it would use too much RAM.
+    Failed to create a server filter because it would use too much RAM.
   </int>
   <int value="4" label="Found duplicate config">
-    Failed to create a server blacklist because it has more than one
-    configuration.
+    Failed to create a server filter because it has more than one configuration.
   </int>
   <int value="5" label="Invalid regular expression">
     There was an invalid RE2 in the regexps field.

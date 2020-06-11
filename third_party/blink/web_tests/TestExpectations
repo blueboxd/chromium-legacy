@@ -245,6 +245,14 @@ crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-002.tentative.
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-003.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-005.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-006.tentative.html [ Failure ]
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-007.tentative.html [ Failure ]
+
+# We currently don't implement min/max-content contributions correctly :(
+crbug.com/1093094 external/wpt/css/css-sizing/aspect-ratio/intrinsic-size-001.tentative.html [ Failure ]
+crbug.com/1093094 external/wpt/css/css-sizing/aspect-ratio/intrinsic-size-002.tentative.html [ Failure ]
+
+# No final CSSWG resolution yet. https://github.com/w3c/csswg-drafts/issues/5032
+crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/intrinsic-size-004.tentative.html [ Failure ]
 
 # It is not clear if this test is correct. https://github.com/w3c/csswg-drafts/issues/5151
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-004.tentative.html [ Failure ]
@@ -2647,6 +2655,9 @@ crbug.com/1024156 external/wpt/css/css-pseudo/cascade-highlight-004.html [ Failu
 crbug.com/1086855 external/wpt/css/css-pseudo/file-chooser-button-001.tentative.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/textpath-selection-011.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] virtual/cors/external/wpt/preload/download-resources.html [ Timeout ]
@@ -4743,9 +4754,6 @@ crbug.com/1069817 external/wpt/css/css-ruby/line-break-around-ruby-001.html [ Fa
 crbug.com/1069817 fast/ruby/float-overhang-from-ruby-text.html [ Failure ]
 crbug.com/1069817 fast/ruby/line-break-ruby.html [ Failure ]
 crbug.com/1069817 fast/ruby/position-after.html [ Failure ]
-crbug.com/1069817 [ Linux ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
-crbug.com/1069817 [ Mac ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
-crbug.com/1069817 [ Win10 ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Failure ]
 crbug.com/1069817 virtual/text-antialias/emphasis-avoid-ruby.html [ Failure ]
 
 crbug.com/676229 plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
@@ -6717,5 +6725,5 @@ crbug.com/1090180 virtual/gpu/fast/canvas/canvas-gpu-consistency.html [ Failure 
 crbug.com/1093003 [ Mac ] external/wpt/html/rendering/replaced-elements/embedded-content/cross-domain-iframe.sub.html [ Pass Failure ]
 
 # Sheriff 2020-06-10
-crbug.com/1093203 [ Retina ] virtual/text-antialias/color-emoji.html [ Pass Failure ]
 crbug.com/1093429 [ Mac ] external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Failure ]
+crbug.com/1093620 [ Debug ] http/tests/devtools/appcache/* [ Pass Failure ]

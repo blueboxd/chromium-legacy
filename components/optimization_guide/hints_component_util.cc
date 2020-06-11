@@ -58,7 +58,7 @@ std::unique_ptr<BloomFilter> ProcessBloomFilter(
       bloom_filter_proto.num_bits() > bloom_filter_proto.data().size() * 8) {
     DLOG(ERROR) << "Bloom filter config issue";
     PopulateOptimizationFilterStatusIfSet(
-        OptimizationFilterStatus::kFailedServerBlacklistBadConfig, out_status);
+        OptimizationFilterStatus::kFailedServerFilterBadConfig, out_status);
     return nullptr;
   }
 
@@ -68,7 +68,7 @@ std::unique_ptr<BloomFilter> ProcessBloomFilter(
                 << optimization_guide::features::MaxServerBloomFilterByteSize()
                 << " bytes";
     PopulateOptimizationFilterStatusIfSet(
-        OptimizationFilterStatus::kFailedServerBlacklistTooBig, out_status);
+        OptimizationFilterStatus::kFailedServerFilterTooBig, out_status);
     return nullptr;
   }
 
@@ -76,7 +76,7 @@ std::unique_ptr<BloomFilter> ProcessBloomFilter(
       bloom_filter_proto.num_hash_functions(), bloom_filter_proto.num_bits(),
       bloom_filter_proto.data());
   PopulateOptimizationFilterStatusIfSet(
-      OptimizationFilterStatus::kCreatedServerBlacklist, out_status);
+      OptimizationFilterStatus::kCreatedServerFilter, out_status);
   return bloom_filter;
 }
 
@@ -99,7 +99,7 @@ std::unique_ptr<RegexpList> ProcessRegexps(
   }
 
   PopulateOptimizationFilterStatusIfSet(
-      OptimizationFilterStatus::kCreatedServerBlacklist, out_status);
+      OptimizationFilterStatus::kCreatedServerFilter, out_status);
   return regexps;
 }
 
@@ -169,8 +169,9 @@ std::unique_ptr<OptimizationFilter> ProcessOptimizationFilter(
       return nullptr;
   }
 
-  return std::make_unique<OptimizationFilter>(std::move(bloom_filter),
-                                              std::move(regexps));
+  return std::make_unique<OptimizationFilter>(
+      std::move(bloom_filter), std::move(regexps),
+      optimization_filter.skip_host_suffix_checking());
 }
 
 }  // namespace optimization_guide

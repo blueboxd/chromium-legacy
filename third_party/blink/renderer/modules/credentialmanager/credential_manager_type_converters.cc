@@ -278,13 +278,14 @@ TypeConverter<AttestationConveyancePreference, String>::Convert(
 }
 
 // static
-AuthenticatorAttachment TypeConverter<AuthenticatorAttachment, String>::Convert(
-    const String& attachment) {
-  if (attachment.IsNull())
+AuthenticatorAttachment
+TypeConverter<AuthenticatorAttachment, base::Optional<String>>::Convert(
+    const base::Optional<String>& attachment) {
+  if (!attachment.has_value())
     return AuthenticatorAttachment::NO_PREFERENCE;
-  if (attachment == "platform")
+  if (attachment.value() == "platform")
     return AuthenticatorAttachment::PLATFORM;
-  if (attachment == "cross-platform")
+  if (attachment.value() == "cross-platform")
     return AuthenticatorAttachment::CROSS_PLATFORM;
   NOTREACHED();
   return AuthenticatorAttachment::NO_PREFERENCE;
@@ -297,8 +298,11 @@ TypeConverter<AuthenticatorSelectionCriteriaPtr,
     Convert(const blink::AuthenticatorSelectionCriteria* criteria) {
   auto mojo_criteria =
       blink::mojom::blink::AuthenticatorSelectionCriteria::New();
+  base::Optional<String> attachment;
+  if (criteria->hasAuthenticatorAttachment())
+    attachment = criteria->authenticatorAttachment();
   mojo_criteria->authenticator_attachment =
-      ConvertTo<AuthenticatorAttachment>(criteria->authenticatorAttachment());
+      ConvertTo<AuthenticatorAttachment>(attachment);
   mojo_criteria->require_resident_key = criteria->requireResidentKey();
   mojo_criteria->user_verification = UserVerificationRequirement::PREFERRED;
   if (criteria->hasUserVerification()) {

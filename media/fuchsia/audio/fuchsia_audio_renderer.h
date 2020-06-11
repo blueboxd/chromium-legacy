@@ -132,6 +132,8 @@ class FuchsiaAudioRenderer : public AudioRenderer, public TimeSource {
   fuchsia::media::audio::VolumeControlPtr volume_control_;
 
   DemuxerStream* demuxer_stream_ = nullptr;
+  bool is_demuxer_read_pending_ = false;
+
   RendererClient* client_ = nullptr;
 
   // Initialize() completion callback.

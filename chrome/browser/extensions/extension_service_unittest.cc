@@ -404,7 +404,8 @@ class MockProviderVisitor : public ExternalProviderInterface::VisitorInterface {
       std::unique_ptr<base::Version> v1;
       base::FilePath crx_path;
 
-      EXPECT_TRUE(provider_->GetExtensionDetails(info.extension_id, NULL, &v1));
+      EXPECT_TRUE(
+          provider_->GetExtensionDetails(info.extension_id, nullptr, &v1));
       EXPECT_EQ(info.version.GetString(), v1->GetString());
 
       std::unique_ptr<base::Version> v2;
@@ -415,7 +416,7 @@ class MockProviderVisitor : public ExternalProviderInterface::VisitorInterface {
       EXPECT_EQ(crx_location_, location);
 
       // Remove it so we won't count it ever again.
-      prefs_->Remove(info.extension_id, NULL);
+      prefs_->Remove(info.extension_id, nullptr);
     }
     return true;
   }
@@ -449,7 +450,7 @@ class MockProviderVisitor : public ExternalProviderInterface::VisitorInterface {
       EXPECT_EQ(parsed_install_parameter, info.install_parameter);
 
       // Remove it so we won't count it again.
-      prefs_->Remove(info.extension_id, NULL);
+      prefs_->Remove(info.extension_id, nullptr);
     }
     return true;
   }
@@ -480,7 +481,7 @@ class MockProviderVisitor : public ExternalProviderInterface::VisitorInterface {
     // from the provider.
     JSONStringValueDeserializer deserializer(json_data);
     std::unique_ptr<base::Value> json_value =
-        deserializer.Deserialize(NULL, NULL);
+        deserializer.Deserialize(nullptr, nullptr);
 
     if (!json_value || !json_value->is_dict()) {
       ADD_FAILURE() << "Unable to deserialize json data";
@@ -670,12 +671,13 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
                    const std::string& pref_path) {
     const base::DictionaryValue* dict =
         profile()->GetPrefs()->GetDictionary(pref_names::kExtensions);
-    if (dict == NULL) return false;
-    const base::DictionaryValue* pref = NULL;
+    if (!dict)
+      return false;
+    const base::DictionaryValue* pref = nullptr;
     if (!dict->GetDictionary(extension_id, &pref)) {
       return false;
     }
-    if (pref == NULL) {
+    if (!pref) {
       return false;
     }
     bool val;
@@ -691,10 +693,10 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
                const std::string& msg) {
     DictionaryPrefUpdate update(profile()->GetPrefs(), pref_names::kExtensions);
     base::DictionaryValue* dict = update.Get();
-    ASSERT_TRUE(dict != NULL) << msg;
-    base::DictionaryValue* pref = NULL;
+    ASSERT_TRUE(dict) << msg;
+    base::DictionaryValue* pref = nullptr;
     ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
-    EXPECT_TRUE(pref != NULL) << msg;
+    EXPECT_TRUE(pref) << msg;
     pref->Set(pref_path, std::move(value));
   }
 
@@ -729,11 +731,11 @@ class ExtensionServiceTest : public ExtensionServiceTestWithInstall {
 
     DictionaryPrefUpdate update(profile()->GetPrefs(), pref_names::kExtensions);
     base::DictionaryValue* dict = update.Get();
-    ASSERT_TRUE(dict != NULL) << msg;
-    base::DictionaryValue* pref = NULL;
+    ASSERT_TRUE(dict) << msg;
+    base::DictionaryValue* pref = nullptr;
     ASSERT_TRUE(dict->GetDictionary(extension_id, &pref)) << msg;
-    EXPECT_TRUE(pref != NULL) << msg;
-    pref->Remove(pref_path, NULL);
+    EXPECT_TRUE(pref) << msg;
+    pref->Remove(pref_path, nullptr);
   }
 
   void SetPrefStringSet(const std::string& extension_id,
@@ -1407,7 +1409,7 @@ TEST_F(ExtensionServiceTest, UninstallingNotLoadedExtension) {
   // If we don't check whether the extension is loaded before we uninstall it
   // in CheckExternalUninstall, a crash will happen here because we will get or
   // dereference a NULL pointer (extension) inside UninstallExtension.
-  MockExternalProvider provider(NULL, Manifest::EXTERNAL_REGISTRY);
+  MockExternalProvider provider(nullptr, Manifest::EXTERNAL_REGISTRY);
   service()->OnExternalProviderReady(&provider);
 }
 
@@ -1495,7 +1497,7 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
   EXPECT_TRUE(registry()->enabled_extensions().GetByID(loaded_[0]->id()))
       << path.value();
 
-  installed_ = NULL;
+  installed_ = nullptr;
   was_update_ = false;
   loaded_.clear();
   LoadErrorReporter::GetInstance()->ClearErrors();
@@ -1994,7 +1996,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
   // updating the browser to a version which recognizes additional host
   // permissions).
   host_permissions.clear();
-  current_perms = NULL;
+  current_perms = nullptr;
 
   host_permissions.insert("http://*.google.com/*");
   host_permissions.insert("https://*.google.com/*");
@@ -4033,7 +4035,7 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsLoadFromPrefs) {
   const Extension* extension =
       (registry()->enabled_extensions().begin())->get();
   EXPECT_TRUE(service()->UninstallExtension(
-      extension->id(), UNINSTALL_REASON_FOR_TESTING, NULL));
+      extension->id(), UNINSTALL_REASON_FOR_TESTING, nullptr));
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
 
   // Ensure we cannot load it if management policy prohibits installation.
@@ -4095,7 +4097,7 @@ TEST_F(ExtensionServiceTest, ManagementPolicyProhibitsUninstall) {
 
   // Attempt to uninstall it.
   EXPECT_FALSE(service()->UninstallExtension(
-      good_crx, UNINSTALL_REASON_FOR_TESTING, NULL));
+      good_crx, UNINSTALL_REASON_FOR_TESTING, nullptr));
 
   EXPECT_EQ(1u, registry()->enabled_extensions().size());
   EXPECT_TRUE(registry()->enabled_extensions().GetByID(good_crx));
@@ -5051,7 +5053,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   base::FilePath lso_file_path = lso_dir_path.AppendASCII(origin_id)
       .AddExtension(FILE_PATH_LITERAL(".localstorage"));
   EXPECT_TRUE(base::CreateDirectory(lso_dir_path));
-  EXPECT_EQ(0, base::WriteFile(lso_file_path, NULL, 0));
+  EXPECT_EQ(0, base::WriteFile(lso_file_path, nullptr, 0));
   EXPECT_TRUE(base::PathExists(lso_file_path));
 
   // Create indexed db. Similarly, it is enough to only simulate this by
@@ -5079,7 +5081,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
 
   // Uninstall the extension.
   ASSERT_TRUE(service()->UninstallExtension(
-      good_crx, UNINSTALL_REASON_FOR_TESTING, NULL));
+      good_crx, UNINSTALL_REASON_FOR_TESTING, nullptr));
   // The data deletion happens on the IO thread; since we use a
   // BrowserTaskEnvironment (without REAL_IO_THREAD), the IO and UI threads are
   // the same, and RunAllTasksUntilIdle() should run IO thread tasks.
@@ -5211,7 +5213,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
   base::FilePath lso_file_path = lso_dir_path.AppendASCII(origin_id)
       .AddExtension(FILE_PATH_LITERAL(".localstorage"));
   EXPECT_TRUE(base::CreateDirectory(lso_dir_path));
-  EXPECT_EQ(0, base::WriteFile(lso_file_path, NULL, 0));
+  EXPECT_EQ(0, base::WriteFile(lso_file_path, nullptr, 0));
   EXPECT_TRUE(base::PathExists(lso_file_path));
 
   // Create indexed db. Similarly, it is enough to only simulate this by
@@ -5461,8 +5463,8 @@ void ExtensionServiceTest::TestExternalProvider(MockExternalProvider* provider,
   std::string id = loaded_[0]->id();
   EXPECT_EQ(id, good_crx);
   bool no_uninstall =
-      GetManagementPolicy()->MustRemainEnabled(loaded_[0].get(), NULL);
-  service()->UninstallExtension(id, UNINSTALL_REASON_FOR_TESTING, NULL);
+      GetManagementPolicy()->MustRemainEnabled(loaded_[0].get(), nullptr);
+  service()->UninstallExtension(id, UNINSTALL_REASON_FOR_TESTING, nullptr);
   content::RunAllTasksUntilIdle();
 
   base::FilePath install_path = extensions_install_dir().AppendASCII(id);
@@ -5493,7 +5495,7 @@ void ExtensionServiceTest::TestExternalProvider(MockExternalProvider* provider,
   ValidateIntegerPref(good_crx, "state", Extension::ENABLED);
   ValidateIntegerPref(good_crx, "location", location);
 
-  if (GetManagementPolicy()->MustRemainEnabled(loaded_[0].get(), NULL)) {
+  if (GetManagementPolicy()->MustRemainEnabled(loaded_[0].get(), nullptr)) {
     EXPECT_EQ(2, provider->visit_count());
   } else {
     // Now test an externally triggered uninstall (deleting the registry key or
@@ -5520,7 +5522,7 @@ void ExtensionServiceTest::TestExternalProvider(MockExternalProvider* provider,
 
     // User uninstalls.
     loaded_.clear();
-    service()->UninstallExtension(id, UNINSTALL_REASON_FOR_TESTING, NULL);
+    service()->UninstallExtension(id, UNINSTALL_REASON_FOR_TESTING, nullptr);
     content::RunAllTasksUntilIdle();
     ASSERT_EQ(0u, loaded_.size());
 

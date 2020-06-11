@@ -29,12 +29,15 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
   static VideoEncoderTestEnvironment* Create(
       const base::FilePath& video_path,
       const base::FilePath& video_metadata_path,
+      bool enable_bitstream_validator,
       const base::FilePath& output_folder,
       const std::string& codec);
   ~VideoEncoderTestEnvironment() override;
 
   // Get the video the tests will be ran on.
   media::test::Video* Video() const;
+  // Whether bitstream validation is enabled.
+  bool IsBitstreamValidatorEnabled() const;
   // Get the output folder.
   const base::FilePath& OutputFolder() const;
   // Get the output codec profile.
@@ -48,11 +51,14 @@ class VideoEncoderTestEnvironment : public VideoTestEnvironment {
 
  private:
   VideoEncoderTestEnvironment(std::unique_ptr<media::test::Video> video,
+                              bool enable_bitstream_validator,
                               const base::FilePath& output_folder,
                               VideoCodecProfile profile);
 
   // Video file to be used for testing.
   const std::unique_ptr<media::test::Video> video_;
+  // Whether bitstream validation should be enabled while testing.
+  const bool enable_bitstream_validator_;
   // Output folder to be used to store test artifacts (e.g. perf metrics).
   const base::FilePath output_folder_;
   // VideoCodecProfile to be produced by VideoEncoder.

@@ -131,12 +131,10 @@ class MediaGalleriesPermissionControllerTest : public ::testing::Test {
   void OnDialogDestroyed(int update_count) {
     EXPECT_TRUE(dialog_);
     dialog_update_count_at_destruction_ = update_count;
-    dialog_ = NULL;
+    dialog_ = nullptr;
   }
 
-  void OnControllerDone() {
-    controller_ = NULL;
-  }
+  void OnControllerDone() { controller_ = nullptr; }
 
   // Needed for extension service & friends to work.
   content::BrowserTaskEnvironment task_environment_;
@@ -208,8 +206,8 @@ void MediaGalleriesPermissionControllerTest::TestForgottenType(
 
   // Add back and test whether the same pref id is preserved.
   StartDialog();
-  controller()->FileSelected(
-      MakeMediaGalleriesTestingPath("forgotten1"), 0, NULL);
+  controller()->FileSelected(MakeMediaGalleriesTestingPath("forgotten1"), 0,
+                             nullptr);
   controller()->DialogFinished(true);
   EXPECT_EQ(2U, gallery_prefs()->GalleriesForExtension(*extension()).size());
   MediaGalleryPrefInfo retrieved_info;

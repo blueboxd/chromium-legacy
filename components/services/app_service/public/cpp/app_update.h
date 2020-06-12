@@ -114,6 +114,9 @@ class AppUpdate {
   apps::mojom::OptionalBool ShowInLauncher() const;
   bool ShowInLauncherChanged() const;
 
+  apps::mojom::OptionalBool ShowInShelf() const;
+  bool ShowInShelfChanged() const;
+
   apps::mojom::OptionalBool ShowInSearch() const;
   bool ShowInSearchChanged() const;
 

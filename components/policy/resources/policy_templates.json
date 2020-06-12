@@ -1073,6 +1073,7 @@
         'CrostiniAnsiblePlaybook',
         'CrostiniArcAdbSideloadingAllowed',
         'DeviceCrostiniArcAdbSideloadingAllowed',
+        'CrostiniPortForwardingAllowed',
       ]
     },
     {
@@ -16202,6 +16203,26 @@
       The availability of this functionality is additionally dependant on the corresponding user policy.''',
     },
     {
+      'name': 'CrostiniPortForwardingAllowed',
+      'owners': ['danielng@google.com'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:85-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 716,
+      'caption': '''Allow users to [enable/configure] Crostini port forwarding''',
+      'tags': ['system-security'],
+      'desc': '''Specifies whether port forwarding into Crostini containers is allowed.
+
+      If this policy is set to True or not set, users will be able to configure port forwarding into their Crostini containers.
+
+      If this policy is set to False, port forwarding into Crostini containers will be disabled.''',
+    },
+    {
       'name': 'SafeBrowsingWhitelistDomains',
       'owners': ['bdea@chromium.org', 'nparker@chromium.org'],
       'type': 'list',
@@ -22225,6 +22246,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 715,
+  'highest_id_currently_used': 716,
   'highest_atomic_group_id_currently_used': 38
 }

@@ -673,6 +673,7 @@ blink_core_tests("unit_tests") {
     "lazy_load_image_observer_test.cc",
     "link_element_loading_test.cc",
     "link_rel_attribute_test.cc",
+    "link_web_bundle_test.cc",
     "media/autoplay_uma_helper_test.cc",
     "media/html_media_element_event_listeners_test.cc",
     "media/html_media_element_test.cc",

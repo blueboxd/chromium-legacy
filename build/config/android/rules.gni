@@ -2430,7 +2430,9 @@ if (enable_java_templates) {
 
     _final_deps = []
 
-    _enable_main_dex_list = _enable_multidex && _min_sdk_version < 21
+    _enable_main_dex_list =
+        _enable_multidex &&
+        (!defined(invoker.min_sdk_version) || invoker.min_sdk_version < 21)
     if (_enable_main_dex_list) {
       _generated_proguard_main_dex_config =
           "$_base_path.resources.main-dex-proguard.txt"
@@ -2925,17 +2927,12 @@ if (enable_java_templates) {
           deps += _deps + [ ":$_compile_resources_target" ]
           proguard_mapping_path = _proguard_mapping_path
           proguard_sourcefile_suffix = "$android_channel-$_version_code"
-          has_apk_under_test = defined(invoker.apk_under_test)
-        } else if (_min_sdk_version >= default_min_sdk_version) {
-          # Enable dex merging only when min_sdk_version is >= what the library
-          # .dex files were created with.
+        } else {
           input_dex_filearg =
               "@FileArg(${_rebased_build_config}:final_dex:all_dex_files)"
           if (_enable_main_dex_list) {
-            main_dex_list_input_classes_filearg = "@FileArg(${_rebased_build_config}:deps_info:java_runtime_classpath_extended)"
+            main_dex_list_input_classes_filearg = "@FileArg(${_rebased_build_config}:deps_info:java_runtime_classpath)"
           }
-        } else {
-          input_classes_filearg = "@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)"
         }
 
         if (_is_static_library_provider) {

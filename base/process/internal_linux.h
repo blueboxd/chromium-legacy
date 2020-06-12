@@ -30,6 +30,11 @@ extern const char kStatFile[];
 // Returns a FilePath to "/proc/pid".
 base::FilePath GetProcPidDir(pid_t pid);
 
+// Reads a file from /proc into a string. This is allowed on any thread as
+// reading from /proc does not hit the disk. Returns true if the file can be
+// read and is non-empty.
+bool ReadProcFile(const FilePath& file, std::string* buffer);
+
 // Take a /proc directory entry named |d_name|, and if it is the directory for
 // a process, convert it to a pid_t.
 // Returns 0 on failure.

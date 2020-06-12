@@ -194,13 +194,20 @@ void LogContextOfShowAllSavedPasswordsAccepted(
       "PasswordManager.ShowAllSavedPasswordsAcceptedContext", context);
 }
 
-void LogPasswordDropdownShown(PasswordDropdownState state) {
+void LogPasswordDropdownShown(PasswordDropdownState state,
+                              bool off_the_record) {
   base::UmaHistogramEnumeration("PasswordManager.PasswordDropdownShown", state);
+
+  base::UmaHistogramBoolean("PasswordManager.DropdownShown.OffTheRecord",
+                            off_the_record);
 }
 
-void LogPasswordDropdownItemSelected(PasswordDropdownSelectedOption type) {
+void LogPasswordDropdownItemSelected(PasswordDropdownSelectedOption type,
+                                     bool off_the_record) {
   base::UmaHistogramEnumeration("PasswordManager.PasswordDropdownItemSelected",
                                 type);
+  base::UmaHistogramBoolean("PasswordManager.ItemSelected.OffTheRecord",
+                            off_the_record);
 }
 
 void LogPasswordSuccessfulSubmissionIndicatorEvent(

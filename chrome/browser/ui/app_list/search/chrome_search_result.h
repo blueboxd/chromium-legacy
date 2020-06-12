@@ -43,6 +43,9 @@ class ChromeSearchResult {
   const Tags& title_tags() const { return metadata_->title_tags; }
   const base::string16& details() const { return metadata_->details; }
   const Tags& details_tags() const { return metadata_->details_tags; }
+  const base::string16& accessible_name() const {
+    return metadata_->accessible_name;
+  }
   float rating() const { return metadata_->rating; }
   const base::string16& formatted_price() const {
     return metadata_->formatted_price;

@@ -57,6 +57,15 @@
         width: 0;
       }
 
+      :host([is-path]) #value {
+        line-height: 20px;
+        margin: 10px 0;
+      }
+
+      #value span {
+        display: inline-block;
+      }
+
       @keyframes ellipsis {
         to {
           width: 0.93em;
@@ -80,7 +89,7 @@
     <div id="box" hidden="[[!value]]">
       <div id="key">[[key]]</div>
       <div id="value" loading$="{{loading}}">
-        <div hidden="[[loading]]">[[value]]</div>
+        <div id="valueContainer" hidden="[[loading]]"></div>
       </div>
     </div>
   </template>

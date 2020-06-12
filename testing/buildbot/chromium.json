@@ -11,21 +11,6 @@
       "all"
     ]
   },
-  "android-official": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "chromeos-official": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
-  "fuchsia-official": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
   "linux-archive-dbg": {
     "additional_compile_targets": [
       "all"
@@ -37,11 +22,6 @@
     ],
     "scripts": []
   },
-  "linux-official": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
   "mac-archive-dbg": {
     "additional_compile_targets": [
       "all"
@@ -52,11 +32,6 @@
       "all"
     ],
     "scripts": []
-  },
-  "mac-official": {
-    "additional_compile_targets": [
-      "all"
-    ]
   },
   "win-archive-dbg": {
     "additional_compile_targets": [
@@ -75,11 +50,6 @@
       }
     ]
   },
-  "win-official": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
   "win32-archive-dbg": {
     "additional_compile_targets": [
       "all"
@@ -95,11 +65,6 @@
         "script": "checkbins.py",
         "swarming": {}
       }
-    ]
-  },
-  "win32-official": {
-    "additional_compile_targets": [
-      "all"
     ]
   }
 }

@@ -7,7 +7,7 @@
     Exposed=(Window,Worker),
     SecureContext,
     ImplementedAs=NativeFileSystemWritableFileStream,
-    RuntimeEnabled=WritableFileStream
+    RuntimeEnabled=NativeFileSystem
  ] interface FileSystemWritableFileStream : WritableStream {
    [CallWith=ScriptState, RaisesException] Promise<void> write((BufferSource or Blob or USVString or WriteParams) data);
    [CallWith=ScriptState, RaisesException] Promise<void> truncate(unsigned long long size);

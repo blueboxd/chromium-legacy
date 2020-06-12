@@ -9,7 +9,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "storage/common/file_system/file_system_types.h"
 
 namespace content {
 
@@ -27,24 +26,15 @@ NativeFileSystemHandleBase::NativeFileSystemHandleBase(
   DCHECK_EQ(url_.mount_type() == storage::kFileSystemTypeIsolated,
             handle_state_.file_system.is_valid())
       << url_.mount_type();
-
-  // We support sandboxed file system and native file systems on all platforms.
+  // For now only support sandboxed file system and native file system.
   DCHECK(url_.type() == storage::kFileSystemTypeNativeLocal ||
+         url_.type() == storage::kFileSystemTypePersistent ||
          url_.type() == storage::kFileSystemTypeTemporary ||
-#if defined(OS_CHROMEOS)
-         // On Chrome OS, we additionally support File System Provider API, and
-         // file systems available to platform Apps.
-         url_.type() == storage::kFileSystemTypeNativeForPlatformApp ||
-         url_.type() == storage::kFileSystemTypeProvided ||
-#endif
          url_.type() == storage::kFileSystemTypeTest)
       << url_.type();
 
   if (ShouldTrackUsage()) {
-    DCHECK(url_.type() == storage::kFileSystemTypeNativeLocal ||
-           url_.type() == storage::kFileSystemTypeNativeForPlatformApp ||
-           url_.type() == storage::kFileSystemTypeProvided)
-        << url.type();
+    DCHECK_EQ(url_.type(), storage::kFileSystemTypeNativeLocal);
     DCHECK_EQ(url_.mount_type(), storage::kFileSystemTypeIsolated);
 
     Observe(WebContentsImpl::FromRenderFrameHostID(context_.frame_id));

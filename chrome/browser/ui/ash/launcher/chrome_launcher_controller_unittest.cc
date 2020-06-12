@@ -4815,6 +4815,30 @@ TEST_P(ChromeLauncherControllerTest, UnpinnableComponentApps) {
   }
 }
 
+TEST_P(ChromeLauncherControllerTest, DoNotShowInShelf) {
+  syncer::SyncChangeList sync_list;
+  InsertAddPinChange(&sync_list, 0, extension1_->id());
+  InsertAddPinChange(&sync_list, 0, extension2_->id());
+  SendPinChanges(sync_list, true);
+
+  AddExtension(extension1_.get());
+  AddExtension(extension2_.get());
+
+  // Set App1.show_in_shelf to false.
+  std::vector<apps::mojom::AppPtr> apps;
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kExtension;
+  app->app_id = extension1_->id();
+  app->show_in_shelf = apps::mojom::OptionalBool::kFalse;
+  apps.push_back(std::move(app));
+  apps::AppServiceProxyFactory::GetForProfile(profile())
+      ->AppRegistryCache()
+      .OnApps(std::move(apps));
+
+  InitLauncherController();
+  EXPECT_EQ("Chrome, App2", GetPinnedAppStatus());
+}
+
 TEST_P(ChromeLauncherControllerWithArcTest, ReplacePinnedItem) {
   InitLauncherController();
   SendListOfArcApps();

@@ -263,4 +263,54 @@ suite('PasswordsDeviceSection', function() {
                    .hidden);
   });
 
+  // Test verifies that the overflow menu offers an option to move a password
+  // to the account and that it has the right text.
+  test('hasMoveToAccountOption', function() {
+    const passwordsDeviceSection =
+        createPasswordsDeviceSection(passwordManager, [], []);
+    const moveToAccountButton =
+        passwordsDeviceSection.$.passwordsListHandler.$$(
+            '#menuMovePasswordToAccount');
+    assertTrue(!!moveToAccountButton);
+    assertEquals(
+        passwordsDeviceSection.i18n('movePasswordToAccount'),
+        moveToAccountButton.innerText);
+  });
+
+
+  // Test verifies that clicking the 'move to account' button displays the
+  // dialog and that clicking the "Move" button then moves the device copy.
+  test('verifyMovesCorrectIdToAccount', async function() {
+    // Create duplicated password that will be merged in the UI.
+    const accountCopy = createPasswordEntry(
+        {user: 'both', id: 2, frontendId: 42, fromAccountStore: true});
+    const deviceCopy = createPasswordEntry(
+        {user: 'both', id: 1, frontendId: 42, fromAccountStore: false});
+    const passwordsDeviceSection = createPasswordsDeviceSection(
+        passwordManager, [deviceCopy, accountCopy], []);
+
+    // At first the dialog is not shown.
+    assertFalse(!!passwordsDeviceSection.$.passwordsListHandler.$$(
+        '#passwordMoveToAccountDialog'));
+
+    // Click the option in the overflow menu to move the password. Verify the
+    // dialog is now open.
+    const [password] =
+        passwordsDeviceSection.root.querySelectorAll('password-list-item');
+    password.$.passwordMenu.click();
+    passwordsDeviceSection.$.passwordsListHandler
+        .$$('#menuMovePasswordToAccount')
+        .click();
+    flush();
+    const moveToAccountDialog =
+        passwordsDeviceSection.$.passwordsListHandler.$$(
+            '#passwordMoveToAccountDialog');
+    assertTrue(!!moveToAccountDialog);
+
+    // Click the Move button in the dialog. The API should be called with the id
+    // for the device copy. Verify the dialog disappears.
+    moveToAccountDialog.$.moveButton.click();
+    const movedId = await passwordManager.whenCalled('movePasswordToAccount');
+    assertEquals(deviceCopy.id, movedId);
+  });
 });

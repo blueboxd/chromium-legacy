@@ -3218,6 +3218,10 @@ const char kAppServiceIntentHandlingName[] = "App Service Intent Handling";
 const char kAppServiceIntentHandlingDescription[] =
     "Use the App Service to provide data for intent handling.";
 
+const char kAppServiceAdaptiveIconName[] = "App Service Adaptive Icons";
+const char kAppServiceAdaptiveIconDescription[] =
+    "Provide adaptive icons through the App Service";
+
 const char kArcApplicationZoomName[] = "Allow zooming of Android apps";
 const char kArcApplicationZoomDescription[] =
     "Allow Android apps to be zoomed in/out using ctrl+/-.";
@@ -3745,6 +3749,10 @@ const char kImeMozcProtoDescription[] =
 const char kImeServiceSandboxName[] = "Use CrOS 'ime' sandbox";
 const char kImeServiceSandboxDescription[] =
     "Controls whether the IME service on CrOS uses the 'ime' sandbox.";
+
+const char kIntentHandlingSharingName[] = "Intent handling for sharing";
+const char kIntentHandlingSharingDescription[] =
+    "Support sharing in Chrome OS intent handling.";
 
 const char kIntentPickerPWAPersistenceName[] = "Intent picker PWA Persistence";
 const char kIntentPickerPWAPersistenceDescription[] =

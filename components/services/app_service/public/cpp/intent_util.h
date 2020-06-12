@@ -15,6 +15,10 @@
 
 namespace apps_util {
 
+extern const char kIntentActionView[];
+extern const char kIntentActionSend[];
+extern const char kIntentActionSendMultiple[];
+
 // Create an intent struct from URL.
 apps::mojom::IntentPtr CreateIntentFromUrl(const GURL& url);
 

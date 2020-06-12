@@ -157,15 +157,23 @@ TEST_F(MediaRouterDesktopTest, ProvideSinks) {
   extra_data.cast_channel_id = 3;
   MediaSinkInternal expected_sink(sink, extra_data);
   sinks.push_back(expected_sink);
-  std::string provider_name = "cast";
+  const std::string kCastProviderName = "cast";
 
   // |router()| is already registered with |media_sink_service_| during
   // |SetUp()|.
-  EXPECT_CALL(mock_extension_provider_, ProvideSinks(provider_name, sinks));
-  media_sink_service()->OnSinksDiscovered(provider_name, sinks);
+  EXPECT_CALL(mock_extension_provider_, ProvideSinks(kCastProviderName, sinks));
+  media_sink_service()->OnSinksDiscovered(kCastProviderName, sinks);
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(mock_extension_provider_, ProvideSinks(provider_name, sinks));
+  EXPECT_CALL(mock_extension_provider_, ProvideSinks(kCastProviderName, sinks));
+  static_cast<MediaRouterDesktop*>(router())->ProvideSinksToExtension();
+  base::RunLoop().RunUntilIdle();
+
+  const std::string kDialProviderName = "dial";
+  EXPECT_CALL(mock_extension_provider_, ProvideSinks(kCastProviderName, sinks));
+  EXPECT_CALL(mock_extension_provider_, ProvideSinks(kDialProviderName, sinks))
+      .Times(0);
+  media_sink_service()->OnSinksDiscovered(kDialProviderName, sinks);
   static_cast<MediaRouterDesktop*>(router())->ProvideSinksToExtension();
   base::RunLoop().RunUntilIdle();
 }

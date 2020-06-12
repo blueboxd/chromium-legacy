@@ -8,25 +8,43 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/payments/goods/digital_goods_service.h"
 
+namespace {
+
+// TODO (crbug.com/1061503): Point URL to Play payment request API once known.
+const char known_payment_method_[] = "https://some.url/for/payment/request/api";
+
+}  // namespace
+
 namespace blink {
 
 const char DOMWindowDigitalGoods::kSupplementName[] = "DOMWindowDigitalGoods";
 
 ScriptPromise DOMWindowDigitalGoods::getDigitalGoodsService(
     ScriptState* script_state,
-    LocalDOMWindow& window) {
-  return FromState(&window)->GetDigitalGoodsService(script_state);
+    LocalDOMWindow& window,
+    const String& payment_method) {
+  return FromState(&window)->GetDigitalGoodsService(script_state,
+                                                    payment_method);
 }
 
 ScriptPromise DOMWindowDigitalGoods::GetDigitalGoodsService(
-    ScriptState* script_state) {
+    ScriptState* script_state,
+    const String& payment_method) {
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto promise = resolver->Promise();
+
+  // TODO (crbug.com/1061503): Enable JS to connect to various payment method
+  // backends. For now, just connect to one known backend and check the URL is
+  // correct for that payment method.
+  if (payment_method != known_payment_method_) {
+    resolver->Resolve();
+    return promise;
+  }
+
   if (!digital_goods_service_) {
     digital_goods_service_ = MakeGarbageCollected<DigitalGoodsService>(
         ExecutionContext::From(script_state));
   }
-
-  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  auto promise = resolver->Promise();
 
   resolver->Resolve(digital_goods_service_);
   return promise;

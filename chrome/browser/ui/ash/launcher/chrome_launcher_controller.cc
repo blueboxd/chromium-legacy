@@ -1103,6 +1103,10 @@ void ChromeLauncherController::UpdateAppLaunchersFromSync() {
   // cyclically trigger sync changes (eg. ShelfItemAdded calls SyncPinPosition).
   ScopedPinSyncDisabler scoped_pin_sync_disabler = GetScopedPinSyncDisabler();
 
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile());
+  DCHECK(proxy);
+
   const std::vector<ash::ShelfID> pinned_apps =
       GetPinnedAppsFromSync(launcher_controller_helper_.get());
 
@@ -1112,6 +1116,15 @@ void ChromeLauncherController::UpdateAppLaunchersFromSync() {
   // pin, move existing pin to current position specified by |index| or create
   // the new pin at that position.
   for (const auto& pref_shelf_id : pinned_apps) {
+    // Do not show apps in the shelf if they are explicitly forbidden.
+    bool hide = false;
+    proxy->AppRegistryCache().ForOneApp(
+        pref_shelf_id.app_id, [&hide](const apps::AppUpdate& update) {
+          hide = update.ShowInShelf() == apps::mojom::OptionalBool::kFalse;
+        });
+    if (hide)
+      continue;
+
     // Update apps icon if applicable.
     OnAppUpdated(profile(), pref_shelf_id.app_id);
 

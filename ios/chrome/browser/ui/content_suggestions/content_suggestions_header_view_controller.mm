@@ -105,6 +105,14 @@ using base::UserMetricsAction;
   return self.headerView.toolBarView;
 }
 
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if (self.traitCollection.horizontalSizeClass !=
+      previousTraitCollection.horizontalSizeClass) {
+    [self updateFakeboxDisplay];
+  }
+}
+
 - (void)willTransitionToTraitCollection:(UITraitCollection*)newCollection
               withTransitionCoordinator:
                   (id<UIViewControllerTransitionCoordinator>)coordinator {
@@ -429,16 +437,22 @@ using base::UserMetricsAction;
     [self.headerView setFakeboxHighlighted:[object isHighlighted]];
 }
 
-// If Google is not the default search engine, hide the logo, doodle and
-// fakebox. Make them appear if Google is set as default.
+// If display is compact size, shows fakebox. If display is regular size,
+// shows fakebox if the logo is visible and hides otherwise
+- (void)updateFakeboxDisplay {
+  [self.doodleHeightConstraint
+      setConstant:content_suggestions::doodleHeight(self.logoIsShowing)];
+  self.fakeOmnibox.hidden =
+      IsRegularXRegularSizeClass(self) && !self.logoIsShowing;
+  [self.collectionSynchronizer invalidateLayout];
+}
+
+// If Google is not the default search engine, hides the logo, doodle and
+// fakebox. Makes them appear if Google is set as default.
 - (void)updateLogoAndFakeboxDisplay {
   if (self.logoVendor.showingLogo != self.logoIsShowing) {
     self.logoVendor.showingLogo = self.logoIsShowing;
-    [self.doodleHeightConstraint
-        setConstant:content_suggestions::doodleHeight(self.logoIsShowing)];
-    if (IsRegularXRegularSizeClass(self))
-      [self.fakeOmnibox setHidden:!self.logoIsShowing];
-    [self.collectionSynchronizer invalidateLayout];
+    [self updateFakeboxDisplay];
   }
 }
 

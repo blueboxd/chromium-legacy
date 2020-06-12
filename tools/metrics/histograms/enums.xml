@@ -12177,6 +12177,40 @@ Called by update_net_error_codes.py.-->
   <int value="3" label="Cache hit, but the entry was stale"/>
 </enum>
 
+<enum name="CpuTimeMetricsThreadType">
+  <summary>Thread types used for CPU time metric breakdowns.</summary>
+  <int value="0" label="UnattributedThread"/>
+  <int value="1" label="OtherThread"/>
+  <int value="2" label="MainThread"/>
+  <int value="3" label="IOThread"/>
+  <int value="4" label="ThreadPoolBackgroundWorkerThread"/>
+  <int value="5" label="ThreadPoolForegroundWorkerThread"/>
+  <int value="6" label="ThreadPoolServiceThread"/>
+  <int value="7" label="CompositorThread"/>
+  <int value="8" label="CompositorTileWorkerThread"/>
+  <int value="9" label="VizCompositorThread"/>
+  <int value="10" label="RendererUnspecifiedWorkerThread"/>
+  <int value="11" label="RendererDedicatedWorkerThread"/>
+  <int value="12" label="RendererSharedWorkerThread"/>
+  <int value="13" label="RendererAnimationAndPaintWorkletThread"/>
+  <int value="14" label="RendererServiceWorkerThread"/>
+  <int value="15" label="RendererAudioWorkletThread"/>
+  <int value="16" label="RendererFileThread"/>
+  <int value="17" label="RendererDatabaseThread"/>
+  <int value="18" label="RendererOfflineAudioRenderThread"/>
+  <int value="19" label="RendererReverbConvolutionBackgroundThread"/>
+  <int value="20" label="RendererHRTFDatabaseLoaderThread"/>
+  <int value="21" label="RendererAudioEncoderThread"/>
+  <int value="22" label="RendererVideoEncoderThread"/>
+  <int value="23" label="MemoryInfraThread"/>
+  <int value="24" label="SamplingProfilerThread"/>
+  <int value="25" label="NetworkServiceThread"/>
+  <int value="26" label="AudioThread"/>
+  <int value="27" label="InProcessUtilityThread"/>
+  <int value="28" label="InProcessRendererThread"/>
+  <int value="29" label="InProcessGpuThread"/>
+</enum>
+
 <enum name="Cr50BoardIdFlags">
   <int value="-1" label="Unprogrammed (0xffffffff)"/>
   <int value="127" label="Legacy pre-pvt (0x7f)"/>
@@ -20493,6 +20527,7 @@ Called by update_document_policy_enum.py.-->
   <int value="713" label="IntensiveWakeUpThrottlingEnabled"/>
   <int value="714" label="MinimumChromeVersionEolMessage"/>
   <int value="715" label="DefaultSearchProviderContextMenuAccessAllowed"/>
+  <int value="716" label="CrostiniPortForwardingAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -40697,6 +40732,7 @@ from previous Chrome versions.
   <int value="79595680" label="OmniboxTabSwitchSuggestions:enabled"/>
   <int value="79729295" label="WebBundles:enabled"/>
   <int value="82303171" label="AccountIdMigration:disabled"/>
+  <int value="82816692" label="IntentHandlingSharing:disabled"/>
   <int value="83422372"
       label="ChromeHomePersonalizedOmniboxSuggestions:enabled"/>
   <int value="84911198" label="ScanCardsInWebPayments:disabled"/>
@@ -41411,6 +41447,7 @@ from previous Chrome versions.
   <int value="918608729" label="finch-seed-min-download-period"/>
   <int value="921536672" label="OfflinePagesDescriptiveFailStatus:enabled"/>
   <int value="921561616" label="WebAssemblyTiering:disabled"/>
+  <int value="924769517" label="AppServiceAdaptiveIcon:disabled"/>
   <int value="925712999" label="V8Orinoco:enabled"/>
   <int value="926852901" label="DataReductionProxyMainMenu:disabled"/>
   <int value="928900043" label="OmniboxLooseMaxLimitOnDedicatedRows:disabled"/>
@@ -41833,6 +41870,7 @@ from previous Chrome versions.
   <int value="1373777956" label="disable-threaded-gpu-rasterization"/>
   <int value="1375165388" label="LazyFrameLoading:enabled"/>
   <int value="1376437124" label="show-cert-link"/>
+  <int value="1376446149" label="IntentHandlingSharing:enabled"/>
   <int value="1377056573" label="browser-side-navigation:enabled"/>
   <int value="1378310092" label="disable-suggestions-service"/>
   <int value="1379571437" label="ExoPointerLock:disabled"/>
@@ -42400,6 +42438,7 @@ from previous Chrome versions.
   <int value="1996125159" label="AutoplayMutedVideos:enabled"/>
   <int value="1997047666" label="NTPSnippetsIncreasedVisibility:disabled"/>
   <int value="1997931863" label="OmniboxContextMenuShowFullUrls:enabled"/>
+  <int value="1998917160" label="AppServiceAdaptiveIcon:enabled"/>
   <int value="2000091128" label="enable-touch-hover"/>
   <int value="2001505416" label="CorbAllowlistAlsoAppliesToOorCors:enabled"/>
   <int value="2001562962"
@@ -57556,6 +57595,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="1" label="Missing primary volume">Hardcoded in rar2fs</int>
   <int value="13" label="Bad archive">ERAR_BAD_ARCHIVE from libunrar</int>
   <int value="14" label="Unknown format">ERAR_UNKNOWN_FORMAT from libunrar</int>
+  <int value="15" label="Cannot open">ERAR_EOPEN from libunrar</int>
   <int value="18" label="Cannot read">ERAR_EREAD from libunrar</int>
   <int value="22" label="Missing password">
     ERAR_MISSING_PASSWORD from libunrar

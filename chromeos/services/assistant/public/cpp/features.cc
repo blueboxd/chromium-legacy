@@ -14,7 +14,7 @@ const base::Feature kAssistantAudioEraser{"AssistantAudioEraser",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAssistantAppSupport{"AssistantAppSupport",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAssistantBetterOnboarding{
     "AssistantBetterOnboarding", base::FEATURE_DISABLED_BY_DEFAULT};

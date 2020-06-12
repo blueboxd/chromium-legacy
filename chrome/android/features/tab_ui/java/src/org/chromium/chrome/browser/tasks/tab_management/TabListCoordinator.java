@@ -12,6 +12,7 @@ import android.graphics.Rect;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
 import androidx.annotation.IntDef;
@@ -81,6 +82,7 @@ public class TabListCoordinator implements Destroyable {
     private final TabListModel mModel;
 
     private boolean mIsInitialized;
+    private ViewTreeObserver.OnGlobalLayoutListener mGlobalLayoutListener;
 
     /**
      * Construct a coordinator for UI that shows a list of tabs.
@@ -268,8 +270,8 @@ public class TabListCoordinator implements Destroyable {
 
         if (mMode == TabListMode.GRID && selectionDelegateProvider == null) {
             // TODO(crbug.com/964406): unregister the listener when we don't need it.
-            mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(
-                    this::updateThumbnailLocation);
+            mGlobalLayoutListener = this::updateThumbnailLocation;
+            mRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(mGlobalLayoutListener);
         }
     }
 
@@ -382,6 +384,9 @@ public class TabListCoordinator implements Destroyable {
     @Override
     public void destroy() {
         mMediator.destroy();
+        if (mGlobalLayoutListener != null) {
+            mRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(mGlobalLayoutListener);
+        }
         mRecyclerView.setRecyclerListener(null);
     }
 

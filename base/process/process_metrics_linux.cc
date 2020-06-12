@@ -60,13 +60,9 @@ bool ReadProcFileToTrimmedStringPairs(pid_t pid,
                                       StringPiece filename,
                                       StringPairs* key_value_pairs) {
   std::string status_data;
-  {
-    // Synchronously reading files in /proc does not hit the disk.
-    ThreadRestrictions::ScopedAllowIO allow_io;
-    FilePath status_file = internal::GetProcPidDir(pid).Append(filename);
-    if (!ReadFileToString(status_file, &status_data))
-      return false;
-  }
+  FilePath status_file = internal::GetProcPidDir(pid).Append(filename);
+  if (!internal::ReadProcFile(status_file, &status_data))
+    return false;
   SplitStringIntoKeyValuePairs(status_data, ':', '\n', key_value_pairs);
   TrimKeyValuePairs(key_value_pairs);
   return true;
@@ -130,6 +126,13 @@ bool ReadProcStatusAndGetFieldAsUint64(pid_t pid,
 }
 #endif  // defined(OS_LINUX) || defined(OS_AIX)
 
+// Get the total CPU from a proc stat buffer.  Return value is number of jiffies
+// on success or 0 if parsing failed.
+int64_t ParseTotalCPUTimeFromStats(const std::vector<std::string>& proc_stats) {
+  return internal::GetProcStatsFieldAsInt64(proc_stats, internal::VM_UTIME) +
+         internal::GetProcStatsFieldAsInt64(proc_stats, internal::VM_STIME);
+}
+
 // Get the total CPU of a single process.  Return value is number of jiffies
 // on success or -1 on error.
 int64_t GetProcessCPU(pid_t pid) {
@@ -140,11 +143,7 @@ int64_t GetProcessCPU(pid_t pid) {
     return -1;
   }
 
-  int64_t total_cpu =
-      internal::GetProcStatsFieldAsInt64(proc_stats, internal::VM_UTIME) +
-      internal::GetProcStatsFieldAsInt64(proc_stats, internal::VM_STIME);
-
-  return total_cpu;
+  return ParseTotalCPUTimeFromStats(proc_stats);
 }
 
 #if defined(OS_CHROMEOS)
@@ -200,6 +199,43 @@ size_t ProcessMetrics::GetResidentSetSize() const {
 
 TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
   return internal::ClockTicksToTimeDelta(GetProcessCPU(process_));
+}
+
+bool ProcessMetrics::GetCumulativeCPUUsagePerThread(
+    CPUUsagePerThread& cpu_per_thread) {
+  cpu_per_thread.clear();
+
+  // Iterate through the different threads tracked in /proc/<pid>/task.
+  FilePath fd_path = internal::GetProcPidDir(process_).Append("task");
+
+  DirReaderPosix dir_reader(fd_path.value().c_str());
+  if (!dir_reader.IsValid())
+    return false;
+
+  for (; dir_reader.Next();) {
+    const char* tid_str = dir_reader.name();
+    if (strcmp(tid_str, ".") == 0 || strcmp(tid_str, "..") == 0)
+      continue;
+
+    PlatformThreadId tid;
+    if (!StringToInt(tid_str, &tid))
+      continue;
+
+    FilePath thread_stat_path = fd_path.Append(tid_str).Append("stat");
+
+    std::string buffer;
+    std::vector<std::string> proc_stats;
+    if (!internal::ReadProcFile(thread_stat_path, &buffer) ||
+        !internal::ParseProcStats(buffer, &proc_stats)) {
+      continue;
+    }
+
+    TimeDelta thread_time =
+        internal::ClockTicksToTimeDelta(ParseTotalCPUTimeFromStats(proc_stats));
+    cpu_per_thread.emplace_back(tid, thread_time);
+  }
+
+  return !cpu_per_thread.empty();
 }
 
 // For the /proc/self/io file to exist, the Linux kernel must have

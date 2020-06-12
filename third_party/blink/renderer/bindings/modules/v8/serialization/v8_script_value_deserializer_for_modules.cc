@@ -310,7 +310,7 @@ CryptoKey* V8ScriptValueDeserializerForModules::ReadCryptoKey() {
 NativeFileSystemHandle*
 V8ScriptValueDeserializerForModules::ReadNativeFileSystemHandle(
     SerializationTag tag) {
-  if (!RuntimeEnabledFeatures::CloneableNativeFileSystemHandlesEnabled(
+  if (!RuntimeEnabledFeatures::NativeFileSystemEnabled(
           ExecutionContext::From(GetScriptState()))) {
     return nullptr;
   }

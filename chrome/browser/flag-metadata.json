@@ -134,6 +134,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "app-service-adaptive-icon",
+    "owners": [ "//components/services/app_service/OWNERS" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "app-service-instance-registry",
     "owners": [ "//components/services/app_service/OWNERS" ],
     "expiry_milestone": 85
@@ -2847,6 +2852,11 @@
     // don't receive server config seeds, we depend on this flag to flip the feature to enabled on
     // test machines for debug purposes.
     "expiry_milestone": -1
+  },
+  {
+    "name": "intent-handling-sharing",
+    "owners": [ "chromeos-apps-foundation-team@google.com" ],
+    "expiry_milestone": 90
   },
   {
     "name": "intent-picker-pwa-persistence",

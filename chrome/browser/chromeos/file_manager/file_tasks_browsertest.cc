@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/path_service.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
@@ -10,16 +11,22 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/entry_info.h"
+#include "extensions/browser/notification_types.h"
 #include "net/base/mime_util.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -28,6 +35,8 @@ using chromeos::default_web_apps::kMediaAppId;
 namespace file_manager {
 namespace file_tasks {
 namespace {
+
+constexpr char kImageProviderFilesystemId[] = "test-image-provider-fs";
 
 // A list of file extensions (`/` delimited) representing a selection of files
 // and the app expected to be the default to open these files.
@@ -92,11 +101,62 @@ void VerifyAsyncTask(int* remaining,
   quit_closure.Run();
 }
 
+// Installs a chrome app used for testing.
+scoped_refptr<const extensions::Extension> InstallTestingChromeApp(
+    Profile* profile,
+    const char* test_path_ascii) {
+  base::ScopedAllowBlockingForTesting allow_io;
+  content::WindowedNotificationObserver handler_ready(
+      extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+      content::NotificationService::AllSources());
+  extensions::ChromeTestExtensionLoader loader(profile);
+
+  base::FilePath path;
+  EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &path));
+  path = path.AppendASCII(test_path_ascii);
+
+  auto extension = loader.LoadExtension(path);
+  EXPECT_TRUE(extension);
+  handler_ready.Wait();
+  return extension;
+}
+
 // Installs a chrome app that handles .tiff.
 scoped_refptr<const extensions::Extension> InstallTiffHandlerChromeApp(
     Profile* profile) {
-  return test::InstallTestingChromeApp(
+  return InstallTestingChromeApp(
       profile, "extensions/api_test/file_browser/app_file_handler");
+}
+
+// Helper to exit a RunLoop the next time OnVolumeMounted() is invoked.
+class VolumeWaiter : public VolumeManagerObserver {
+ public:
+  VolumeWaiter(Profile* profile, const base::Closure& on_mount)
+      : profile_(profile), on_mount_(on_mount) {
+    VolumeManager::Get(profile_)->AddObserver(this);
+  }
+  ~VolumeWaiter() override {
+    VolumeManager::Get(profile_)->RemoveObserver(this);
+  }
+  void OnVolumeMounted(chromeos::MountError error_code,
+                       const Volume& volume) override {
+    on_mount_.Run();
+  }
+
+ private:
+  Profile* profile_;
+  base::Closure on_mount_;
+};
+
+// Installs a chrome app that provides a file system containing an image file.
+scoped_refptr<const extensions::Extension> InstallFileProviderChromeApp(
+    Profile* profile) {
+  base::RunLoop run_loop;
+  VolumeWaiter waiter(profile, run_loop.QuitClosure());
+  auto extension = InstallTestingChromeApp(
+      profile, "extensions/api_test/file_browser/image_provider");
+  run_loop.Run();
+  return extension;
 }
 
 class FileTasksBrowserTestBase : public InProcessBrowserTest {
@@ -372,16 +432,25 @@ IN_PROC_BROWSER_TEST_F(FileTasksBrowserTestWithMediaApp,
 IN_PROC_BROWSER_TEST_F(FileTasksBrowserTestWithMediaApp,
                        ProvidedFileSystemFileSource) {
   // The current test expectation: a GIF file in the provided file system called
-  // "readwrite.gif" should open with Gallery.
+  // "pixel.gif" should open with Gallery.
   // TODO(crbug/1079065): Open with MediaApp when the NativeFileSystem API has
   // good support for ChromeOS special filesystems.
-  const char kTestFile[] = "readwrite.gif";
+  const char kTestFile[] = "pixel.gif";
   Expectation test = {"gif", kGalleryAppId};
   int remaining_expectations = 1;
 
   Profile* profile = browser()->profile();
-  base::WeakPtr<Volume> volume =
-      test::InstallFileSystemProviderChromeApp(profile);
+  auto extension = InstallFileProviderChromeApp(profile);
+
+  VolumeManager* volume_manager = VolumeManager::Get(profile);
+  ASSERT_TRUE(volume_manager);
+  base::WeakPtr<Volume> volume;
+  for (auto& v : volume_manager->GetVolumeList()) {
+    if (v->file_system_id() == kImageProviderFilesystemId) {
+      volume = v;
+    }
+  }
+  ASSERT_TRUE(volume);
 
   GURL url;
   ASSERT_TRUE(util::ConvertAbsoluteFilePathToFileSystemUrl(

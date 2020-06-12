@@ -47,8 +47,15 @@ apps::mojom::ConditionPtr MakeCondition(
 
 // Create intent filter for URL scope, with prefix matching only for the path.
 // e.g. filter created for https://www.google.com/ will match any URL that
-// started with https://www.google.com/*.
-apps::mojom::IntentFilterPtr CreateIntentFilterForUrlScope(const GURL& url);
+// started with https://www.google.com/*. If |with_action_view| is true, the
+// intent filter created will contain the VIEW action, otherwise no action will
+// be added.
+
+// TODO(crbug.com/1092784): Update/add all related unit tests to test with
+// action view.
+apps::mojom::IntentFilterPtr CreateIntentFilterForUrlScope(
+    const GURL& url,
+    bool with_action_view = false);
 
 // Get the |intent_filter| match level. The higher the return value, the better
 // the match is. For example, an filter with scheme, host and path is better

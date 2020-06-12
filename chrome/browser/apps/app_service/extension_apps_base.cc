@@ -241,6 +241,7 @@ void ExtensionAppsBase::SetShowInFields(
   if (extension->id() == extension_misc::kWallpaperManagerId) {
     // Explicitly show the Wallpaper Picker app in search only.
     app->show_in_launcher = apps::mojom::OptionalBool::kFalse;
+    app->show_in_shelf = apps::mojom::OptionalBool::kTrue;
     app->show_in_search = apps::mojom::OptionalBool::kTrue;
     app->show_in_management = apps::mojom::OptionalBool::kFalse;
     return;
@@ -251,6 +252,7 @@ void ExtensionAppsBase::SetShowInFields(
                     ? apps::mojom::OptionalBool::kTrue
                     : apps::mojom::OptionalBool::kFalse;
     app->show_in_launcher = show;
+    app->show_in_shelf = show;
     app->show_in_search = show;
     app->show_in_management = show;
 
@@ -275,13 +277,14 @@ void ExtensionAppsBase::SetShowInFields(
           system_web_app_manager.ShouldShowInLauncher(system_app_type.value())
               ? apps::mojom::OptionalBool::kTrue
               : apps::mojom::OptionalBool::kFalse;
-      app->show_in_search =
+      app->show_in_shelf = app->show_in_search =
           system_web_app_manager.ShouldShowInSearch(system_app_type.value())
               ? apps::mojom::OptionalBool::kTrue
               : apps::mojom::OptionalBool::kFalse;
     }
   } else {
     app->show_in_launcher = apps::mojom::OptionalBool::kFalse;
+    app->show_in_shelf = apps::mojom::OptionalBool::kFalse;
     app->show_in_search = apps::mojom::OptionalBool::kFalse;
     app->show_in_management = apps::mojom::OptionalBool::kFalse;
   }
@@ -875,8 +878,9 @@ void ExtensionAppsBase::PopulateIntentFilters(
     const base::Optional<GURL>& app_scope,
     std::vector<mojom::IntentFilterPtr>* target) {
   if (app_scope != base::nullopt) {
-    target->push_back(
-        apps_util::CreateIntentFilterForUrlScope(app_scope.value()));
+    target->push_back(apps_util::CreateIntentFilterForUrlScope(
+        app_scope.value(),
+        base::FeatureList::IsEnabled(features::kIntentHandlingSharing)));
   }
 }
 

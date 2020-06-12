@@ -72,6 +72,9 @@ class V4L2VideoDecoderBackend {
                                  int32_t bitstream_id) = 0;
   // Called by the decoder when it has dequeued a buffer from the CAPTURE queue.
   virtual void OnOutputBufferDequeued(V4L2ReadableBufferRef buf) = 0;
+  // Backend can overload this method if it needs to do specific work when
+  // the device task is called.
+  virtual void OnServiceDeviceTask(bool event) {}
   // Called whenever the V4L2 stream is stopped (|Streamoff| called on both
   // |V4L2Queue|s).
   virtual void OnStreamStopped() = 0;

@@ -14,10 +14,15 @@
 #include <vector>
 
 #include "base/allocator/partition_allocator/address_space_randomization.h"
+#include "base/allocator/partition_allocator/page_allocator_constants.h"
+#include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/partition_alloc_constants.h"
+#include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -144,6 +149,7 @@ class PartitionAllocTest : public testing::Test {
   ~PartitionAllocTest() override = default;
 
   void SetUp() override {
+    scoped_feature_list.InitWithFeatures({kPartitionAllocGigaCage}, {});
     PartitionAllocGlobalInit(HandleOOM);
     allocator.init();
     test_bucket_index_ = SizeToIndex(kRealAllocSize);
@@ -285,6 +291,7 @@ class PartitionAllocTest : public testing::Test {
     LOG(FATAL) << "DoReturnNullTest";
   }
 
+  base::test::ScopedFeatureList scoped_feature_list;
   PartitionAllocator<base::internal::ThreadSafe> allocator;
   size_t test_bucket_index_;
 };
@@ -808,7 +815,7 @@ TEST_F(PartitionAllocTest, GenericAllocSizes) {
 }
 
 // Test that we can fetch the real allocated size after an allocation.
-TEST_F(PartitionAllocTest, GenericAllocGetSize) {
+TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
   void* ptr;
   size_t requested_size, actual_size, predicted_size;
 
@@ -822,6 +829,13 @@ TEST_F(PartitionAllocTest, GenericAllocGetSize) {
   actual_size = PartitionAllocGetSize<ThreadSafe>(ptr);
   EXPECT_EQ(predicted_size, actual_size);
   EXPECT_LT(requested_size, actual_size);
+#if defined(ARCH_CPU_64_BITS)
+  for (size_t offset = 0; offset < requested_size; ++offset) {
+    size_t actual_offset = PartitionAllocGetSlotOffset<ThreadSafe>(
+        static_cast<char*>(ptr) + offset);
+    EXPECT_EQ(actual_offset, offset);
+  }
+#endif
   allocator.root()->Free(ptr);
 
   // Allocate a size that should be a perfect match for a bucket, because it
@@ -833,6 +847,13 @@ TEST_F(PartitionAllocTest, GenericAllocGetSize) {
   actual_size = PartitionAllocGetSize<ThreadSafe>(ptr);
   EXPECT_EQ(predicted_size, actual_size);
   EXPECT_EQ(requested_size, actual_size);
+#if defined(ARCH_CPU_64_BITS)
+  for (size_t offset = 0; offset < requested_size; offset += 877) {
+    size_t actual_offset = PartitionAllocGetSlotOffset<ThreadSafe>(
+        static_cast<char*>(ptr) + offset);
+    EXPECT_EQ(actual_offset, offset);
+  }
+#endif
   allocator.root()->Free(ptr);
 
   // Allocate a size that is a system page smaller than a bucket. GetSize()
@@ -848,6 +869,13 @@ TEST_F(PartitionAllocTest, GenericAllocGetSize) {
   actual_size = PartitionAllocGetSize<ThreadSafe>(ptr);
   EXPECT_EQ(predicted_size, actual_size);
   EXPECT_EQ(requested_size + kSystemPageSize, actual_size);
+#if defined(ARCH_CPU_64_BITS)
+  for (size_t offset = 0; offset < requested_size; offset += 4999) {
+    size_t actual_offset = PartitionAllocGetSlotOffset<ThreadSafe>(
+        static_cast<char*>(ptr) + offset);
+    EXPECT_EQ(actual_offset, offset);
+  }
+#endif
   // Check that we can write at the end of the reported size too.
   char* char_ptr = reinterpret_cast<char*>(ptr);
   *(char_ptr + (actual_size - 1)) = 'A';
@@ -862,6 +890,9 @@ TEST_F(PartitionAllocTest, GenericAllocGetSize) {
     actual_size = PartitionAllocGetSize<ThreadSafe>(ptr);
     EXPECT_EQ(predicted_size, actual_size);
     EXPECT_LT(requested_size, actual_size);
+    // Unlike above, don't test for PartitionAllocGetSlotOffset. Such large
+    // allocations are direct-mapped, for which one can't easily obtain the
+    // offset.
     allocator.root()->Free(ptr);
   }
 
@@ -870,6 +901,34 @@ TEST_F(PartitionAllocTest, GenericAllocGetSize) {
   predicted_size = allocator.root()->ActualSize(requested_size);
   EXPECT_EQ(requested_size, predicted_size);
 }
+
+#if defined(ARCH_CPU_64_BITS)
+TEST_F(PartitionAllocTest, GetOffsetMultiplePages) {
+  size_t size = 48;
+  size_t real_size = size + kExtraAllocSize;
+  PartitionBucket<ThreadSafe>* bucket =
+      PartitionGenericSizeToBucket(allocator.root(), real_size);
+  // Make sure the test is testing multiple partition pages case.
+  EXPECT_GT(bucket->num_system_pages_per_slot_span,
+            kPartitionPageSize / kSystemPageSize);
+  size_t num_slots =
+      (bucket->num_system_pages_per_slot_span * kSystemPageSize) / real_size;
+  std::vector<void*> ptrs;
+  for (size_t i = 0; i < num_slots; ++i) {
+    ptrs.push_back(allocator.root()->Alloc(size, type_name));
+  }
+  for (size_t i = 0; i < num_slots; ++i) {
+    char* ptr = static_cast<char*>(ptrs[i]);
+    for (size_t offset = 0; offset < size; offset += 13) {
+      EXPECT_EQ(PartitionAllocGetSize<ThreadSafe>(ptr), size);
+      size_t actual_offset =
+          PartitionAllocGetSlotOffset<ThreadSafe>(ptr + offset);
+      EXPECT_EQ(actual_offset, offset);
+    }
+    allocator.root()->Free(ptr);
+  }
+}
+#endif  // #if defined(ARCH_CPU_64_BITS)
 
 // Test the realloc() contract.
 TEST_F(PartitionAllocTest, Realloc) {
@@ -1501,20 +1560,6 @@ TEST_F(PartitionAllocDeathTest, GuardPages) {
 
   EXPECT_DEATH(*(char_ptr - 1) = 'A', "");
   EXPECT_DEATH(*(char_ptr + size + kExtraAllocSize) = 'A', "");
-
-  allocator.root()->Free(ptr);
-}
-
-// Check that a bad free() is caught where the free() refers to an unused
-// partition page of a large allocation.
-TEST_F(PartitionAllocDeathTest, FreeWrongPartitionPage) {
-  // This large size will result in a direct mapped allocation with guard
-  // pages at either end.
-  void* ptr = allocator.root()->Alloc(kPartitionPageSize * 2, type_name);
-  EXPECT_TRUE(ptr);
-  char* badPtr = reinterpret_cast<char*>(ptr) + kPartitionPageSize;
-
-  EXPECT_DEATH(allocator.root()->Free(badPtr), "");
 
   allocator.root()->Free(ptr);
 }

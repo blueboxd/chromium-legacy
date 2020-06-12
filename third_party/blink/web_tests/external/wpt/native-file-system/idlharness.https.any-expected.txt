@@ -1,11 +1,11 @@
 This is a testharness.js-based test.
-Found 53 tests; 43 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 57 tests; 56 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Window: original interface defined
 PASS Partial interface Window: member names are unique
-PASS Partial interface FileSystemDirectoryHandle: original interface defined
-PASS Partial interface FileSystemDirectoryHandle: member names are unique
+PASS Partial interface mixin WindowOrWorkerGlobalScope: original interface mixin defined
+PASS Partial interface mixin WindowOrWorkerGlobalScope: member names are unique
 PASS Partial interface Window[2]: member names are unique
 PASS Window includes GlobalEventHandlers: member names are unique
 PASS Window includes WindowEventHandlers: member names are unique
@@ -13,6 +13,7 @@ PASS Window includes WindowOrWorkerGlobalScope: member names are unique
 PASS Window includes AnimationFrameProvider: member names are unique
 PASS Window includes WindowSessionStorage: member names are unique
 PASS Window includes WindowLocalStorage: member names are unique
+PASS WorkerGlobalScope includes WindowOrWorkerGlobalScope: member names are unique
 PASS FileSystemHandle interface: existence and properties of interface object
 PASS FileSystemHandle interface object length
 PASS FileSystemHandle interface object name
@@ -22,6 +23,7 @@ PASS FileSystemHandle interface: existence and properties of interface prototype
 PASS FileSystemHandle interface: attribute isFile
 PASS FileSystemHandle interface: attribute isDirectory
 PASS FileSystemHandle interface: attribute name
+PASS FileSystemHandle interface: operation isSameEntry(FileSystemHandle)
 PASS FileSystemHandle interface: operation queryPermission(optional FileSystemHandlePermissionDescriptor)
 PASS FileSystemHandle interface: operation requestPermission(optional FileSystemHandlePermissionDescriptor)
 PASS FileSystemFileHandle interface: existence and properties of interface object
@@ -31,27 +33,29 @@ PASS FileSystemFileHandle interface: existence and properties of interface proto
 PASS FileSystemFileHandle interface: existence and properties of interface prototype object's "constructor" property
 PASS FileSystemFileHandle interface: existence and properties of interface prototype object's @@unscopables property
 PASS FileSystemFileHandle interface: operation getFile()
-FAIL FileSystemFileHandle interface: operation createWriter(optional FileSystemCreateWriterOptions) assert_own_property: interface prototype object missing non-static operation expected property "createWriter" missing
+PASS FileSystemFileHandle interface: operation createWritable(optional FileSystemCreateWritableOptions)
 PASS FileSystemDirectoryHandle interface: existence and properties of interface object
 PASS FileSystemDirectoryHandle interface object length
 PASS FileSystemDirectoryHandle interface object name
 PASS FileSystemDirectoryHandle interface: existence and properties of interface prototype object
 PASS FileSystemDirectoryHandle interface: existence and properties of interface prototype object's "constructor" property
 PASS FileSystemDirectoryHandle interface: existence and properties of interface prototype object's @@unscopables property
+FAIL FileSystemDirectoryHandle interface: iterable<USVString, FileSystemHandle> Cannot read property 'writable' of undefined
 PASS FileSystemDirectoryHandle interface: operation getFile(USVString, optional FileSystemGetFileOptions)
 PASS FileSystemDirectoryHandle interface: operation getDirectory(USVString, optional FileSystemGetDirectoryOptions)
-PASS FileSystemDirectoryHandle interface: operation getEntries()
 PASS FileSystemDirectoryHandle interface: operation removeEntry(USVString, optional FileSystemRemoveOptions)
-PASS FileSystemDirectoryHandle interface: operation getSystemDirectory(GetSystemDirectoryOptions)
-FAIL FileSystemWriter interface: existence and properties of interface object assert_own_property: self does not have own property "FileSystemWriter" expected property "FileSystemWriter" missing
-FAIL FileSystemWriter interface object length assert_own_property: self does not have own property "FileSystemWriter" expected property "FileSystemWriter" missing
-FAIL FileSystemWriter interface object name assert_own_property: self does not have own property "FileSystemWriter" expected property "FileSystemWriter" missing
-FAIL FileSystemWriter interface: existence and properties of interface prototype object assert_own_property: self does not have own property "FileSystemWriter" expected property "FileSystemWriter" missing
-FAIL FileSystemWriter interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "FileSystemWriter" expected property "FileSystemWriter" missing
-FAIL FileSystemWriter interface: existence and properties of interface prototype object's @@unscopables property assert_own_property: self does not have own property "FileSystemWriter" expected property "FileSystemWriter" missing
-FAIL FileSystemWriter interface: operation write(unsigned long long, (BufferSource or Blob or USVString)) assert_own_property: self does not have own property "FileSystemWriter" expected property "FileSystemWriter" missing
-FAIL FileSystemWriter interface: operation truncate(unsigned long long) assert_own_property: self does not have own property "FileSystemWriter" expected property "FileSystemWriter" missing
-FAIL FileSystemWriter interface: operation close() assert_own_property: self does not have own property "FileSystemWriter" expected property "FileSystemWriter" missing
+PASS FileSystemDirectoryHandle interface: operation resolve(FileSystemHandle)
+PASS FileSystemWritableFileStream interface: existence and properties of interface object
+PASS FileSystemWritableFileStream interface object length
+PASS FileSystemWritableFileStream interface object name
+PASS FileSystemWritableFileStream interface: existence and properties of interface prototype object
+PASS FileSystemWritableFileStream interface: existence and properties of interface prototype object's "constructor" property
+PASS FileSystemWritableFileStream interface: existence and properties of interface prototype object's @@unscopables property
+PASS FileSystemWritableFileStream interface: operation write(FileSystemWriteChunkType)
+PASS FileSystemWritableFileStream interface: operation seek(unsigned long long)
+PASS FileSystemWritableFileStream interface: operation truncate(unsigned long long)
 PASS Window interface: operation chooseFileSystemEntries(optional ChooseFileSystemEntriesOptions)
+PASS Window interface: operation getOriginPrivateDirectory()
+PASS WorkerGlobalScope interface: existence and properties of interface object
 Harness: the test ran to completion.
 

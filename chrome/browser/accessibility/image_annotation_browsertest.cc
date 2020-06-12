@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
+
 #include "base/bind_helpers.h"
 #include "base/check.h"
 #include "base/feature_list.h"
@@ -34,13 +36,14 @@
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_tree.h"
 #include "url/gurl.h"
 
 constexpr base::FilePath::CharType kDocRoot[] =
-    FILE_PATH_LITERAL("chrome/test/data/accessibility");
+    FILE_PATH_LITERAL("chrome/test/data");
 
 namespace {
 
@@ -49,8 +52,13 @@ void DescribeNodesWithAnnotations(const ui::AXNode& node,
   std::string annotation =
       node.GetStringAttribute(ax::mojom::StringAttribute::kImageAnnotation);
   if (!annotation.empty()) {
-    descriptions->push_back(ui::ToString(node.data().role) + std::string(" ") +
-                            annotation);
+    std::string role_str = ui::ToString(node.data().role);
+    std::string name =
+        node.GetStringAttribute(ax::mojom::StringAttribute::kName);
+    if (!name.empty() && node.data().role != ax::mojom::Role::kRootWebArea)
+      descriptions->push_back(role_str + " " + name + " " + annotation);
+    else
+      descriptions->push_back(role_str + " " + annotation);
   }
   for (const auto* child : node.children())
     DescribeNodesWithAnnotations(*child, descriptions);
@@ -88,6 +96,11 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
     return_label_results_ = label;
   }
 
+  static void AddCustomLabelResultMapping(const std::string& filename,
+                                          const std::string& label) {
+    custom_label_result_mapping_[filename] = label;
+  }
+
   static void SetReturnErrorCode(
       image_annotation::mojom::AnnotateImageError error_code) {
     return_error_code_ = error_code;
@@ -115,19 +128,25 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
       return;
     }
 
-    // Use the filename to create an annotation string.
-    // Adds some trailing whitespace and punctuation to check that clean-up
-    // happens correctly when combining annotation strings.
+    // Use the filename to create annotation strings. Check a map from filename
+    // to desired label, otherwise just construct a string based on the
+    // filename. Adds some trailing whitespace and punctuation to check that
+    // clean-up happens correctly when combining annotation strings.
     std::string image_filename = GURL(image_id).ExtractFileName();
+    std::string label_text;
+    if (base::Contains(custom_label_result_mapping_, image_filename)) {
+      label_text = custom_label_result_mapping_[image_filename];
+    } else {
+      label_text = image_filename + " '" + description_language_tag + "' Label";
+    }
+    std::string ocr_text = image_filename + " Annotation . ";
+
     image_annotation::mojom::AnnotationPtr ocr_annotation =
         image_annotation::mojom::Annotation::New(
-            image_annotation::mojom::AnnotationType::kOcr, 1.0,
-            image_filename + " Annotation . ");
-
+            image_annotation::mojom::AnnotationType::kOcr, 1.0, ocr_text);
     image_annotation::mojom::AnnotationPtr label_annotation =
         image_annotation::mojom::Annotation::New(
-            image_annotation::mojom::AnnotationType::kLabel, 1.0,
-            image_filename + " '" + description_language_tag + "' Label");
+            image_annotation::mojom::AnnotationType::kLabel, 1.0, label_text);
 
     // Return enabled results as an annotation.
     std::vector<image_annotation::mojom::AnnotationPtr> annotations;
@@ -146,6 +165,7 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
   mojo::ReceiverSet<image_annotation::mojom::Annotator> receivers_;
   static bool return_ocr_results_;
   static bool return_label_results_;
+  static std::map<std::string, std::string> custom_label_result_mapping_;
   static base::Optional<image_annotation::mojom::AnnotateImageError>
       return_error_code_;
 
@@ -156,6 +176,8 @@ class FakeAnnotator : public image_annotation::mojom::Annotator {
 bool FakeAnnotator::return_ocr_results_ = false;
 // static
 bool FakeAnnotator::return_label_results_ = false;
+// static
+std::map<std::string, std::string> FakeAnnotator::custom_label_result_mapping_;
 // static
 base::Optional<image_annotation::mojom::AnnotateImageError>
     FakeAnnotator::return_error_code_;
@@ -198,8 +220,10 @@ class ImageAnnotationBrowserTest : public InProcessBrowserTest {
 
  protected:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kExperimentalAccessibilityLabels);
+    scoped_feature_list_.InitWithFeatures(
+        std::vector<base::Feature>({features::kExperimentalAccessibilityLabels,
+                                    features::kAugmentExistingImageLabels}),
+        std::vector<base::Feature>({}));
     InProcessBrowserTest::SetUp();
   }
 
@@ -253,8 +277,8 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,
                        AnnotateImageInAccessibilityTree) {
   FakeAnnotator::SetReturnOcrResults(true);
   FakeAnnotator::SetReturnLabelResults(true);
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/image_annotation.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/accessibility/image_annotation.html"));
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -267,7 +291,8 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,
 IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImagesInLinks) {
   FakeAnnotator::SetReturnOcrResults(true);
   ui_test_utils::NavigateToURL(
-      browser(), https_server_.GetURL("/image_annotation_link.html"));
+      browser(),
+      https_server_.GetURL("/accessibility/image_annotation_link.html"));
 
   // Block until the accessibility tree has at least 8 annotations. If
   // that never happens, the test will time out.
@@ -297,10 +322,44 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImagesInLinks) {
                            "image Appears to say: green.png Annotation"));
 }
 
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AugmentImageNames) {
+  FakeAnnotator::SetReturnLabelResults(true);
+  FakeAnnotator::AddCustomLabelResultMapping("frog.jpg", "Tadpole");
+  FakeAnnotator::AddCustomLabelResultMapping("train.png", "Locomotive");
+  FakeAnnotator::AddCustomLabelResultMapping("cloud.png", "Cumulonimbus");
+  FakeAnnotator::AddCustomLabelResultMapping("goat.jpg", "Billy goat");
+  FakeAnnotator::AddCustomLabelResultMapping("dog.jpg", "Puppy");
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      https_server_.GetURL("/accessibility/image_annotation_augment.html"));
+
+  // Block until the accessibility tree has at least 5 annotations. If
+  // that never happens, the test will time out.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  while (5 > DescribeNodesWithAnnotations(
+                 content::GetAccessibilityTreeSnapshot(web_contents))
+                 .size()) {
+    content::WaitForAccessibilityTreeToChange(web_contents);
+  }
+
+  ui::AXTreeUpdate ax_tree_update =
+      content::GetAccessibilityTreeSnapshot(web_contents);
+  EXPECT_THAT(DescribeNodesWithAnnotations(ax_tree_update),
+              testing::ElementsAre(
+                  "image the Appears to be: Tadpole",
+                  "image photo background Appears to be: Locomotive",
+                  "image 12345678.jpg Appears to be: Cumulonimbus",
+                  "image Sunday, Feb 6, 1966 Appears to be: Billy goat",
+                  "image fotografia bianca e nero Appears to be: Puppy"));
+}
+
 IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImageDoc) {
   FakeAnnotator::SetReturnOcrResults(true);
   ui_test_utils::NavigateToURL(
-      browser(), https_server_.GetURL("/image_annotation_doc.html"));
+      browser(),
+      https_server_.GetURL("/accessibility/image_annotation_doc.html"));
 
   // Block until the accessibility tree has at least 2 annotations. If
   // that never happens, the test will time out.
@@ -324,7 +383,8 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImageDoc) {
 
 IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImageUrl) {
   FakeAnnotator::SetReturnOcrResults(true);
-  ui_test_utils::NavigateToURL(browser(), https_server_.GetURL("/red.png"));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server_.GetURL("/accessibility/red.png"));
 
   // Block until the accessibility tree has at least 2 annotations. If
   // that never happens, the test will time out.
@@ -352,7 +412,8 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, NoAnnotationsAvailable) {
   FakeAnnotator::SetReturnLabelResults(false);
 
   ui_test_utils::NavigateToURL(
-      browser(), https_server_.GetURL("/image_annotation_doc.html"));
+      browser(),
+      https_server_.GetURL("/accessibility/image_annotation_doc.html"));
 
   // Block until the annotation status for the root is empty. If that
   // never occurs then the test will time out.
@@ -374,7 +435,8 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AnnotationError) {
       image_annotation::mojom::AnnotateImageError::kFailure);
 
   ui_test_utils::NavigateToURL(
-      browser(), https_server_.GetURL("/image_annotation_doc.html"));
+      browser(),
+      https_server_.GetURL("/accessibility/image_annotation_doc.html"));
 
   // Block until the annotation status for the root contains an error code. If
   // that never occurs then the test will time out.
@@ -393,8 +455,8 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AnnotationError) {
 IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImageWithSrcSet) {
   FakeAnnotator::SetReturnOcrResults(true);
   FakeAnnotator::SetReturnLabelResults(true);
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/image_srcset.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/accessibility/image_srcset.html"));
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -409,8 +471,8 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,
   FakeAnnotator::SetReturnOcrResults(true);
   FakeAnnotator::SetReturnLabelResults(true);
 
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/image_annotation.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/accessibility/image_annotation.html"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::WaitForAccessibilityTreeToContainNodeWithName(
@@ -418,8 +480,8 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,
       "Appears to say: red.png Annotation. Appears to be: red.png 'en' Label");
 
   SetAcceptLanguages("fr,en");
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/image_annotation.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/accessibility/image_annotation.html"));
   web_contents = browser()->tab_strip_model()->GetActiveWebContents();
   content::WaitForAccessibilityTreeToContainNodeWithName(
       web_contents,
@@ -469,8 +531,8 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,
   FakeAnnotator::SetReturnLabelResults(false);
 
   // The following test page should have at least two images on it.
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_.GetURL("/image_annotation.html"));
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL("/accessibility/image_annotation.html"));
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -507,7 +569,8 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest,
 
   // The following test page should have at least two images on it.
   ui_test_utils::NavigateToURL(
-      browser(), https_server_.GetURL("/image_annotation_link.html"));
+      browser(),
+      https_server_.GetURL("/accessibility/image_annotation_link.html"));
 
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

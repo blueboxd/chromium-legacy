@@ -28,9 +28,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/app_permissions/arc_app_permissions_bridge.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/intent_helper/intent_constants.h"
 #include "components/arc/mojom/app_permissions.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
 #include "content/public/browser/system_connector.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -151,7 +153,7 @@ base::Optional<arc::UserInteractionType> GetUserInterationType(
   return user_interaction_type;
 }
 
-arc::mojom::IntentInfoPtr CreateArcViewIntent(apps::mojom::IntentPtr intent) {
+arc::mojom::IntentInfoPtr CreateArcIntent(apps::mojom::IntentPtr intent) {
   arc::mojom::IntentInfoPtr arc_intent;
   if (!intent->scheme.has_value() || !intent->host.has_value() ||
       !intent->path.has_value()) {
@@ -160,11 +162,22 @@ arc::mojom::IntentInfoPtr CreateArcViewIntent(apps::mojom::IntentPtr intent) {
 
   arc_intent = arc::mojom::IntentInfo::New();
   auto uri_components = arc::mojom::UriComponents::New();
-  constexpr char kAndroidIntentActionView[] = "android.intent.action.VIEW";
   uri_components->scheme = intent->scheme.value();
   uri_components->authority = intent->host.value();
   uri_components->path = intent->path.value();
-  arc_intent->action = kAndroidIntentActionView;
+  if (intent->action.has_value()) {
+    if (intent->action.value() == apps_util::kIntentActionView) {
+      arc_intent->action = arc::kIntentActionView;
+    } else if (intent->action.value() == apps_util::kIntentActionSend) {
+      arc_intent->action = arc::kIntentActionSend;
+    } else if (intent->action.value() == apps_util::kIntentActionSendMultiple) {
+      arc_intent->action = arc::kIntentActionSendMultiple;
+    } else {
+      arc_intent->action = arc::kIntentActionView;
+    }
+  } else {
+    arc_intent->action = arc::kIntentActionView;
+  }
   arc_intent->uri_components = std::move(uri_components);
   return arc_intent;
 }
@@ -172,6 +185,30 @@ arc::mojom::IntentInfoPtr CreateArcViewIntent(apps::mojom::IntentPtr intent) {
 apps::mojom::IntentFilterPtr ConvertArcIntentFilter(
     const arc::IntentFilter& arc_intent_filter) {
   auto intent_filter = apps::mojom::IntentFilter::New();
+
+  if (base::FeatureList::IsEnabled(features::kIntentHandlingSharing)) {
+    std::vector<apps::mojom::ConditionValuePtr> action_condition_values;
+    for (auto& arc_action : arc_intent_filter.actions()) {
+      std::string action;
+      if (arc_action == arc::kIntentActionView) {
+        action = apps_util::kIntentActionView;
+      } else if (arc_action == arc::kIntentActionSend) {
+        action = apps_util::kIntentActionSend;
+      } else if (arc_action == arc::kIntentActionSendMultiple) {
+        action = apps_util::kIntentActionSendMultiple;
+      } else {
+        continue;
+      }
+      action_condition_values.push_back(apps_util::MakeConditionValue(
+          action, apps::mojom::PatternMatchType::kNone));
+    }
+    if (!action_condition_values.empty()) {
+      auto action_condition =
+          apps_util::MakeCondition(apps::mojom::ConditionType::kAction,
+                                   std::move(action_condition_values));
+      intent_filter->conditions.push_back(std::move(action_condition));
+    }
+  }
 
   std::vector<apps::mojom::ConditionValuePtr> scheme_condition_values;
   for (auto& scheme : arc_intent_filter.schemes()) {
@@ -217,6 +254,20 @@ apps::mojom::IntentFilterPtr ConvertArcIntentFilter(
     auto path_condition = apps_util::MakeCondition(
         apps::mojom::ConditionType::kPattern, std::move(path_condition_values));
     intent_filter->conditions.push_back(std::move(path_condition));
+  }
+
+  if (base::FeatureList::IsEnabled(features::kIntentHandlingSharing)) {
+    std::vector<apps::mojom::ConditionValuePtr> mime_type_condition_values;
+    for (auto& mime_type : arc_intent_filter.mime_types()) {
+      mime_type_condition_values.push_back(apps_util::MakeConditionValue(
+          mime_type, apps::mojom::PatternMatchType::kNone));
+    }
+    if (!mime_type_condition_values.empty()) {
+      auto mime_type_condition =
+          apps_util::MakeCondition(apps::mojom::ConditionType::kMimeType,
+                                   std::move(mime_type_condition_values));
+      intent_filter->conditions.push_back(std::move(mime_type_condition));
+    }
   }
 
   return intent_filter;
@@ -265,6 +316,10 @@ arc::IntentFilter CreateArcIntentFilter(
               condition_value->value, match_type));
         }
         break;
+      // TODO(crbug.com/1092784): Handle action and mime type.
+      case apps::mojom::ConditionType::kAction:
+      case apps::mojom::ConditionType::kMimeType:
+        NOTIMPLEMENTED();
     }
   }
   // TODO(crbug.com/853604): Add support for other action and category types.
@@ -316,7 +371,7 @@ void AddPreferredApp(const std::string& app_id,
 
   instance->AddPreferredApp(package_name,
                             CreateArcIntentFilter(package_name, intent_filter),
-                            CreateArcViewIntent(std::move(intent)));
+                            CreateArcIntent(std::move(intent)));
 }
 
 void ResetVerifiedLinks(
@@ -577,7 +632,7 @@ void ArcApps::LaunchAppWithIntent(const std::string& app_id,
   activity->package_name = app_info->package_name;
   activity->activity_name = app_info->activity;
 
-  auto arc_intent = CreateArcViewIntent(std::move(intent));
+  auto arc_intent = CreateArcIntent(std::move(intent));
 
   if (!arc_intent) {
     LOG(ERROR) << "Launch App failed, launch intent is not valid";
@@ -1119,6 +1174,7 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
   auto show = ShouldShow(app_info) ? apps::mojom::OptionalBool::kTrue
                                    : apps::mojom::OptionalBool::kFalse;
   app->show_in_launcher = show;
+  app->show_in_shelf = show;
   app->show_in_search = show;
   app->show_in_management = show;
 

@@ -62,6 +62,9 @@ HTMLLinkElement::HTMLLinkElement(Document& document,
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       sizes_(MakeGarbageCollected<DOMTokenList>(*this, html_names::kSizesAttr)),
       rel_list_(MakeGarbageCollected<RelList>(this)),
+      resources_(
+          MakeGarbageCollected<DOMTokenList>(*this,
+                                             html_names::kResourcesAttr)),
       created_by_parser_(flags.IsCreatedByParser()) {}
 
 HTMLLinkElement::~HTMLLinkElement() = default;
@@ -145,7 +148,18 @@ void HTMLLinkElement::ParseAttribute(
   } else if (name == html_names::kResourcesAttr &&
              RuntimeEnabledFeatures::SubresourceWebBundlesEnabled(
                  &GetDocument())) {
-    resources_ = value;
+    resources_->DidUpdateAttributeValue(params.old_value, value);
+
+    // Parse the attribute value as a space-separated list of urls
+    SpaceSplitString urls(value);
+    valid_resource_urls_.clear();
+    valid_resource_urls_.ReserveCapacity(SafeCast<wtf_size_t>(urls.size()));
+    for (wtf_size_t i = 0; i < urls.size(); ++i) {
+      KURL url = LinkWebBundle::ParseResourceUrl(urls[i]);
+      if (url.IsValid()) {
+        valid_resource_urls_.push_back(std::move(url));
+      }
+    }
     Process();
   } else if (name == html_names::kDisabledAttr) {
     UseCounter::Count(GetDocument(), WebFeature::kHTMLLinkElementDisabled);
@@ -461,11 +475,16 @@ DOMTokenList* HTMLLinkElement::sizes() const {
   return sizes_.Get();
 }
 
+DOMTokenList* HTMLLinkElement::resources() const {
+  return resources_.Get();
+}
+
 void HTMLLinkElement::Trace(Visitor* visitor) const {
   visitor->Trace(link_);
   visitor->Trace(sizes_);
   visitor->Trace(link_loader_);
   visitor->Trace(rel_list_);
+  visitor->Trace(resources_);
   HTMLElement::Trace(visitor);
   LinkLoaderClient::Trace(visitor);
 }

@@ -2112,10 +2112,28 @@ void VaapiWrapper::DestroyVABuffers() {
   va_buffers_.clear();
 }
 
+bool VaapiWrapper::IsRotationSupported() {
+  base::AutoLock auto_lock(*va_lock_);
+  VAProcPipelineCaps pipeline_caps;
+  memset(&pipeline_caps, 0, sizeof(pipeline_caps));
+  VAStatus va_res = vaQueryVideoProcPipelineCaps(va_display_, va_context_id_,
+                                                 nullptr, 0, &pipeline_caps);
+  if (va_res != VA_STATUS_SUCCESS) {
+    LOG_VA_ERROR_AND_REPORT(va_res, "vaQueryVideoProcPipelineCaps failed");
+    return false;
+  }
+  if (!pipeline_caps.rotation_flags) {
+    DVLOG(2) << "VA-API driver doesn't support any rotation";
+    return false;
+  }
+  return true;
+}
+
 bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
                                const VASurface& va_surface_dest,
                                base::Optional<gfx::Rect> src_rect,
-                               base::Optional<gfx::Rect> dest_rect) {
+                               base::Optional<gfx::Rect> dest_rect,
+                               VideoRotation rotation) {
   base::AutoLock auto_lock(*va_lock_);
 
   if (va_buffers_.empty()) {
@@ -2163,6 +2181,21 @@ bool VaapiWrapper::BlitSurface(const VASurface& va_surface_src,
     pipeline_param->output_background_color = 0xff000000;
     pipeline_param->output_color_standard = VAProcColorStandardNone;
     pipeline_param->filter_flags = VA_FILTER_SCALING_DEFAULT;
+
+    switch (rotation) {
+      case VIDEO_ROTATION_0:
+        pipeline_param->rotation_state = VA_ROTATION_NONE;
+        break;
+      case VIDEO_ROTATION_90:
+        pipeline_param->rotation_state = VA_ROTATION_90;
+        break;
+      case VIDEO_ROTATION_180:
+        pipeline_param->rotation_state = VA_ROTATION_180;
+        break;
+      case VIDEO_ROTATION_270:
+        pipeline_param->rotation_state = VA_ROTATION_270;
+        break;
+    }
 
     VA_SUCCESS_OR_RETURN(mapping.Unmap(), "Vpp Buffer unmapping", false);
   }

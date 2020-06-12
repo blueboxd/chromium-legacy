@@ -72,4 +72,11 @@ bool IsAccessibilityCursorColorEnabled() {
 }
 #endif  // defined(OS_CHROMEOS)
 
+const base::Feature kAugmentExistingImageLabels{
+    "AugmentExistingImageLabels", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsAugmentExistingImageLabelsEnabled() {
+  return base::FeatureList::IsEnabled(::features::kAugmentExistingImageLabels);
+}
+
 }  // namespace features

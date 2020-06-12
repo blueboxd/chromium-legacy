@@ -63,6 +63,9 @@ class AppUpdateTest : public testing::Test {
   apps::mojom::OptionalBool expect_show_in_launcher_;
   bool expect_show_in_launcher_changed_;
 
+  apps::mojom::OptionalBool expect_show_in_shelf_;
+  bool expect_show_in_shelf_changed_;
+
   apps::mojom::OptionalBool expect_show_in_search_;
   bool expect_show_in_search_changed_;
 
@@ -109,6 +112,7 @@ class AppUpdateTest : public testing::Test {
     expect_recommendable_changed_ = false;
     expect_searchable_changed_ = false;
     expect_show_in_launcher_changed_ = false;
+    expect_show_in_shelf_changed_ = false;
     expect_show_in_search_changed_ = false;
     expect_show_in_management_changed_ = false;
     expect_has_badge_changed_ = false;
@@ -166,6 +170,9 @@ class AppUpdateTest : public testing::Test {
     EXPECT_EQ(expect_show_in_launcher_, u.ShowInLauncher());
     EXPECT_EQ(expect_show_in_launcher_changed_, u.ShowInLauncherChanged());
 
+    EXPECT_EQ(expect_show_in_shelf_, u.ShowInShelf());
+    EXPECT_EQ(expect_show_in_shelf_changed_, u.ShowInShelfChanged());
+
     EXPECT_EQ(expect_show_in_search_, u.ShowInSearch());
     EXPECT_EQ(expect_show_in_search_changed_, u.ShowInSearchChanged());
 
@@ -207,6 +214,7 @@ class AppUpdateTest : public testing::Test {
     expect_recommendable_ = apps::mojom::OptionalBool::kUnknown;
     expect_searchable_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_launcher_ = apps::mojom::OptionalBool::kUnknown;
+    expect_show_in_shelf_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_search_ = apps::mojom::OptionalBool::kUnknown;
     expect_show_in_management_ = apps::mojom::OptionalBool::kUnknown;
     expect_has_badge_ = apps::mojom::OptionalBool::kUnknown;
@@ -540,6 +548,28 @@ class AppUpdateTest : public testing::Test {
       delta->show_in_launcher = apps::mojom::OptionalBool::kTrue;
       expect_show_in_launcher_ = apps::mojom::OptionalBool::kTrue;
       expect_show_in_launcher_changed_ = true;
+      CheckExpects(u);
+    }
+
+    if (state) {
+      apps::AppUpdate::Merge(state, delta);
+      ExpectNoChange();
+      CheckExpects(u);
+    }
+
+    // ShowInShelf tests.
+
+    if (state) {
+      state->show_in_shelf = apps::mojom::OptionalBool::kFalse;
+      expect_show_in_shelf_ = apps::mojom::OptionalBool::kFalse;
+      expect_show_in_shelf_changed_ = false;
+      CheckExpects(u);
+    }
+
+    if (delta) {
+      delta->show_in_shelf = apps::mojom::OptionalBool::kTrue;
+      expect_show_in_shelf_ = apps::mojom::OptionalBool::kTrue;
+      expect_show_in_shelf_changed_ = true;
       CheckExpects(u);
     }
 

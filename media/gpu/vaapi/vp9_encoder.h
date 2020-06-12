@@ -19,6 +19,7 @@
 #include "media/gpu/vp9_reference_frame_vector.h"
 
 namespace media {
+class VP9RateControl;
 
 class VP9Encoder : public AcceleratedVideoEncoder {
  public:
@@ -72,6 +73,7 @@ class VP9Encoder : public AcceleratedVideoEncoder {
         const std::array<bool, kVp9NumRefsPerFrame>& ref_frames_used) = 0;
 
     void set_bitrate_control(BitrateControl bc) { bitrate_control_ = bc; }
+    BitrateControl bitrate_control() { return bitrate_control_; }
 
    protected:
     BitrateControl bitrate_control_ = BitrateControl::kConstantBitrate;
@@ -91,8 +93,13 @@ class VP9Encoder : public AcceleratedVideoEncoder {
   size_t GetMaxNumOfRefFrames() const override;
   ScalingSettings GetScalingSettings() const override;
   bool PrepareEncodeJob(EncodeJob* encode_job) override;
+  void BitrateControlUpdate(uint64_t encoded_chunk_size_bytes) override;
 
  private:
+  friend class VP9EncoderTest;
+
+  void set_rate_ctrl_for_testing(std::unique_ptr<VP9RateControl> rate_ctrl);
+
   void InitializeFrameHeader();
   void UpdateFrameHeader(bool keyframe);
   void UpdateReferenceFrames(scoped_refptr<VP9Picture> picture);
@@ -110,6 +117,7 @@ class VP9Encoder : public AcceleratedVideoEncoder {
   Vp9FrameHeader current_frame_hdr_;
   Vp9ReferenceFrameVector reference_frames_;
 
+  std::unique_ptr<VP9RateControl> rate_ctrl_;
   const std::unique_ptr<Accelerator> accelerator_;
 
   SEQUENCE_CHECKER(sequence_checker_);

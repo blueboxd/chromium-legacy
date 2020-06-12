@@ -97,6 +97,11 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
 
   DOMTokenList* sizes() const;
 
+  // IDL method.
+  DOMTokenList* resources() const;
+
+  const Vector<KURL>& ValidResourceUrls() const { return valid_resource_urls_; }
+
   void ScheduleEvent();
 
   // From LinkLoaderClient
@@ -169,13 +174,15 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   String media_;
   String integrity_;
   String importance_;
-  String resources_;
   network::mojom::ReferrerPolicy referrer_policy_;
   Member<DOMTokenList> sizes_;
   Vector<gfx::Size> icon_sizes_;
   Member<RelList> rel_list_;
   LinkRelAttribute rel_attribute_;
   String scope_;
+  Member<DOMTokenList> resources_;
+  // TODO(hayato): It might be better to use HashMap. Re-think later.
+  Vector<KURL> valid_resource_urls_;
 
   bool created_by_parser_;
 };

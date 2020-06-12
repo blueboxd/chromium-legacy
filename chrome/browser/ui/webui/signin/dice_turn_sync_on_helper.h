@@ -21,6 +21,7 @@
 #include "components/signin/public/identity_manager/account_info.h"
 
 class Browser;
+class DiceSignedInProfileCreator;
 
 namespace signin {
 class IdentityManager;
@@ -171,12 +172,8 @@ class DiceTurnSyncOnHelper
   // in-progress auth credentials currently stored in this object.
   void CreateNewSignedInProfile();
 
-  // Callback invoked once a profile is created, so we can transfer the
-  // credentials.
-  void OnNewProfileCreated(Profile* new_profile, Profile::CreateStatus status);
-
-  // Callback invoked once the token service is ready for the new profile.
-  void OnNewProfileTokensLoaded(Profile* new_profile);
+  // Called when the new profile is created.
+  void OnNewSignedInProfileCreated(Profile* new_profile);
 
   // Returns the SyncService, or nullptr if sync is not allowed.
   syncer::SyncService* GetSyncService();
@@ -230,6 +227,7 @@ class DiceTurnSyncOnHelper
   base::ScopedClosureRunner scoped_callback_runner_;
 
   std::unique_ptr<SyncStartupTracker> sync_startup_tracker_;
+  std::unique_ptr<DiceSignedInProfileCreator> dice_signed_in_profile_creator_;
   std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
       shutdown_subscription_;
 

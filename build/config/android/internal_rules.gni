@@ -1304,9 +1304,6 @@ if (enable_java_templates) {
       }
     }
 
-    # It's not safe to dex merge with libraries dex'ed at higher api versions.
-    assert(!_is_dex_merging || _min_sdk_version >= default_min_sdk_version)
-
     # For D8's backported method desugaring to work properly, the dex merge step
     # must not be set to a higher minSdkVersion than it was for the libraries.
     if (_enable_desugar && _is_dex_merging) {
@@ -1366,13 +1363,9 @@ if (enable_java_templates) {
 
         args = [
           "--proguard-configs=@FileArg($_rebased_build_config:deps_info:proguard_all_configs)",
+          "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)",
           "--min-api=$_min_sdk_version",
         ]
-        if (defined(invoker.has_apk_under_test) && invoker.has_apk_under_test) {
-          args += [ "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath_extended)" ]
-        } else {
-          args += [ "--input-paths=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)" ]
-        }
         if (enable_bazel_desugar) {
           deps += [ "//third_party/bazel/desugar:desugar_runtime_java" ]
           inputs += [ "$root_build_dir/lib.java/third_party/bazel/desugar/Desugar_runtime.jar" ]
@@ -1420,14 +1413,13 @@ if (enable_java_templates) {
         }
       }
     } else {  # !_proguard_enabled
-      _is_library = defined(invoker.is_library) && invoker.is_library
       _input_class_jars = []
       if (defined(invoker.input_class_jars)) {
         _input_class_jars = invoker.input_class_jars
       }
       _deps = invoker.deps
 
-      if (!_is_library && enable_bazel_desugar) {
+      if (_is_dex_merging && enable_bazel_desugar) {
         # It would be more efficient to use the pre-dex'ed copy of the runtime,
         # but it's easier to add it in this way.
         _deps += [ "//third_party/bazel/desugar:desugar_runtime_java" ]
@@ -1545,10 +1537,11 @@ if (enable_java_templates) {
             deps += [ ":${_main_dex_list_target_name}" ]
             inputs += [ _main_dex_list_path ]
           }
+        } else if (defined(invoker.enable_library_multidex) &&
+                   invoker.enable_library_multidex) {
+          args += [ "--multi-dex" ]
         }
-        if (_is_library) {
-          args += [ "--library" ]
-        }
+
         if (defined(invoker.input_dex_filearg)) {
           inputs += [ invoker.build_config ]
           args += [ "--dex-inputs-filearg=${invoker.input_dex_filearg}" ]
@@ -1586,7 +1579,7 @@ if (enable_java_templates) {
         # 1) not require recompiles when toggling is_java_debug,
         # 2) allow incremental_install=1 to still have local variable
         #    information even when is_java_debug=false.
-        if (!is_java_debug && !_is_library) {
+        if (!is_java_debug && _is_dex_merging) {
           args += [ "--release" ]
         }
 
@@ -3259,6 +3252,8 @@ if (enable_java_templates) {
   #    from the final .jar file.
   #  jar_included_patterns: Optional list of .class file patterns to include
   #    in the final .jar file. jar_excluded_patterns take precedence over this.
+  #  min_sdk_version: Optional. The minimum Android SDK version this target
+  #    supports.
   #
   # For 'android_apk' and 'android_app_bundle_module' targets only:
   #
@@ -3794,8 +3789,10 @@ if (enable_java_templates) {
               deps += _classpath_deps + [ ":$_header_target_name" ]
             }
 
+            # For library targets, we do not need a proper main dex list, but do
+            # need to allow multiple dex files.
             enable_multidex = false
-            is_library = true
+            enable_library_multidex = true
           }
           _public_deps += [ ":${target_name}__dex" ]
         }

@@ -6,8 +6,23 @@
 #define CHROME_BROWSER_CHROMEOS_LOCAL_SEARCH_SERVICE_CONTENT_EXTRACTION_UTILS_H_
 
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/local_search_service/inverted_index.h"
 
 namespace local_search_service {
+
+// Given a text document, returns a list of Tokens.
+// Locale should be obtained using this function:
+// base::i18n::GetConfiguredLocale(). The format of locale will be
+// language-country@variant. Country and variant are optional.
+std::vector<Token> ExtractContent(const std::string& content_id,
+                                  const base::string16& text,
+                                  const std::string& locale);
+
+// Checks if the locale is non Latin locales.
+// Locale should be obtained using this function:
+// base::i18n::GetConfiguredLocale(). The format of locale will be
+// language-country@variant. Country and variant are optional.
+bool IsNonLatinLocale(const std::string& locale);
 
 // Checks if a word is a stopword given a locale. Locale will be in the
 // following format: language-country@variant (country and variant are

@@ -219,6 +219,13 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanged(
 
   if (crostini_tracker_)
     crostini_tracker_->OnWindowVisibilityChanged(window, shelf_id.app_id);
+
+  if (plugin_vm::IsPluginVmWindow(window)) {
+    // Plugin VM can only be used on the primary profile.
+    MultiUserWindowManagerHelper::GetWindowManager()->SetWindowOwner(
+        window,
+        user_manager::UserManager::Get()->GetPrimaryUser()->GetAccountId());
+  }
 }
 
 void AppServiceAppWindowLauncherController::OnWindowDestroying(

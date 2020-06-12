@@ -177,3 +177,23 @@ TEST_F(IntentUtilTest, FilterMatchLevel) {
   EXPECT_TRUE(apps_util::GetFilterMatchLevel(filter_scheme_only) >
               apps_util::GetFilterMatchLevel(filter_empty));
 }
+
+TEST_F(IntentUtilTest, ActionMatch) {
+  GURL test_url = GURL("https://www.google.com/");
+  auto intent = apps_util::CreateIntentFromUrl(test_url);
+  auto intent_filter =
+      apps_util::CreateIntentFilterForUrlScope(GURL(kFilterUrl),
+                                               /*with_action_view=*/true);
+  EXPECT_TRUE(apps_util::IntentMatchesFilter(intent, intent_filter));
+
+  auto send_intent = apps_util::CreateIntentFromUrl(test_url);
+  send_intent->action = apps_util::kIntentActionSend;
+  EXPECT_FALSE(apps_util::IntentMatchesFilter(send_intent, intent_filter));
+
+  auto send_intent_filter =
+      apps_util::CreateIntentFilterForUrlScope(GURL(kFilterUrl),
+                                               /*with_action_view=*/true);
+  send_intent_filter->conditions[0]->condition_values[0]->value =
+      apps_util::kIntentActionSend;
+  EXPECT_FALSE(apps_util::IntentMatchesFilter(intent, send_intent_filter));
+}

@@ -264,6 +264,7 @@ void CrostiniApps::OnCrostiniEnabledChanged() {
   app->app_type = apps::mojom::AppType::kCrostini;
   app->app_id = crostini::GetTerminalId();
   app->show_in_launcher = show;
+  app->show_in_shelf = show;
   app->show_in_search = show;
   Publish(std::move(app), subscribers_);
 }
@@ -335,7 +336,7 @@ apps::mojom::AppPtr CrostiniApps::Convert(
     show_in_search = apps::mojom::OptionalBool::kTrue;
   }
   app->show_in_launcher = show;
-  app->show_in_search = show_in_search;
+  app->show_in_shelf = app->show_in_search = show_in_search;
   // TODO(crbug.com/955937): Enable once Crostini apps are managed inside App
   // Management.
   app->show_in_management = apps::mojom::OptionalBool::kFalse;

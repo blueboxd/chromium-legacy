@@ -49,7 +49,7 @@ const base::Feature kAssistAutoCorrect{"AssistAutoCorrect",
 
 // Controls whether to enable assist personal information.
 const base::Feature kAssistPersonalInfo{"AssistPersonalInfo",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Displays the avatar toolbar button and the profile menu.
 // https://crbug.com/1041472

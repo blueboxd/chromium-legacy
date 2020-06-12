@@ -35,7 +35,8 @@
 namespace base {
 namespace debug {
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
+    defined(OS_ANDROID)
 namespace {
 
 void BusyWork(std::vector<std::string>* vec) {
@@ -47,7 +48,8 @@ void BusyWork(std::vector<std::string>* vec) {
 }
 
 }  // namespace
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) ||
+        // defined(OS_ANDROID)
 
 // Tests for SystemMetrics.
 // Exists as a class so it can be a friend of SystemMetrics.
@@ -376,7 +378,7 @@ TEST_F(SystemMetricsTest, TestNoNegativeCpuUsage) {
   EXPECT_GE(metrics->GetPlatformIndependentCPUUsage(), 0.0);
 }
 
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
 
 #if defined(OS_CHROMEOS)
 TEST_F(SystemMetricsTest, ParseZramMmStat) {
@@ -646,6 +648,7 @@ TEST(ProcessMetricsTest, GetOpenFdCount) {
 #endif  // defined(OS_LINUX) || (defined(OS_MACOSX) && !defined(OS_IOS))
 
 #if defined(OS_ANDROID) || defined(OS_LINUX)
+
 TEST(ProcessMetricsTestLinux, GetPageFaultCounts) {
   std::unique_ptr<base::ProcessMetrics> process_metrics(
       base::ProcessMetrics::CreateProcessMetrics(
@@ -676,6 +679,66 @@ TEST(ProcessMetricsTestLinux, GetPageFaultCounts) {
   ASSERT_GT(counts_after.minor, counts.minor);
   ASSERT_GE(counts_after.major, counts.major);
 }
+
+TEST(ProcessMetricsTestLinux, GetCumulativeCPUUsagePerThread) {
+  ProcessHandle handle = GetCurrentProcessHandle();
+  std::unique_ptr<ProcessMetrics> metrics(
+      ProcessMetrics::CreateProcessMetrics(handle));
+
+  Thread thread1("thread1");
+  thread1.StartAndWaitForTesting();
+  ASSERT_TRUE(thread1.IsRunning());
+
+  std::vector<std::string> vec1;
+  thread1.task_runner()->PostTask(FROM_HERE, BindOnce(&BusyWork, &vec1));
+
+  ProcessMetrics::CPUUsagePerThread prev_thread_times;
+  EXPECT_TRUE(metrics->GetCumulativeCPUUsagePerThread(prev_thread_times));
+
+  // Should have at least the test runner thread and the thread spawned above.
+  EXPECT_GE(prev_thread_times.size(), 2u);
+  EXPECT_TRUE(std::any_of(
+      prev_thread_times.begin(), prev_thread_times.end(),
+      [&thread1](const std::pair<PlatformThreadId, base::TimeDelta>& entry) {
+        return entry.first == thread1.GetThreadId();
+      }));
+  EXPECT_TRUE(std::any_of(
+      prev_thread_times.begin(), prev_thread_times.end(),
+      [](const std::pair<PlatformThreadId, base::TimeDelta>& entry) {
+        return entry.first == base::PlatformThread::CurrentId();
+      }));
+
+  for (const auto& entry : prev_thread_times) {
+    EXPECT_GE(entry.second, base::TimeDelta());
+  }
+
+  thread1.Stop();
+
+  ProcessMetrics::CPUUsagePerThread current_thread_times;
+  EXPECT_TRUE(metrics->GetCumulativeCPUUsagePerThread(current_thread_times));
+
+  // The stopped thread may still be reported until the kernel cleans it up.
+  EXPECT_GE(prev_thread_times.size(), 1u);
+  EXPECT_TRUE(std::any_of(
+      current_thread_times.begin(), current_thread_times.end(),
+      [](const std::pair<PlatformThreadId, base::TimeDelta>& entry) {
+        return entry.first == base::PlatformThread::CurrentId();
+      }));
+
+  // Reported times should not decrease.
+  for (const auto& entry : current_thread_times) {
+    auto prev_it = std::find_if(
+        prev_thread_times.begin(), prev_thread_times.end(),
+        [&entry](
+            const std::pair<PlatformThreadId, base::TimeDelta>& prev_entry) {
+          return entry.first == prev_entry.first;
+        });
+
+    if (prev_it != prev_thread_times.end())
+      EXPECT_GE(entry.second, prev_it->second);
+  }
+}
+
 #endif  // defined(OS_ANDROID) || defined(OS_LINUX)
 
 #if defined(OS_WIN)

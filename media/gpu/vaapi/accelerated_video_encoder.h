@@ -164,6 +164,12 @@ class AcceleratedVideoEncoder {
   // Prepares a new |encode_job| to be executed in Accelerator and returns true
   // on success. The caller may then call Execute() on the job to run it.
   virtual bool PrepareEncodeJob(EncodeJob* encode_job) = 0;
+
+  // Notifies the encoded chunk size in bytes to update a bitrate controller in
+  // AcceleratedVideoEncoder. This should be called only if
+  // AcceleratedVideoEncoder is configured with
+  // BitrateControl::kConstantQuantizationParameter.
+  virtual void BitrateControlUpdate(uint64_t encoded_chunk_size_bytes);
 };
 
 }  // namespace media

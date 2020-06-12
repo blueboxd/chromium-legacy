@@ -9,10 +9,13 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/i18n/char_iterator.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_client.h"
+#include "content/renderer/accessibility/ax_image_stopwords.h"
 #include "content/renderer/render_frame_impl.h"
 #include "crypto/sha2.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
@@ -21,6 +24,7 @@
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_node.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -112,6 +116,34 @@ void AXImageAnnotator::OnImageRemoved(blink::WebAXObject& image) {
     return;
   }
   image_annotations_.erase(lookup);
+}
+
+// static
+bool AXImageAnnotator::ImageNameHasMostlyStopwords(
+    const std::string& image_name) {
+  // Split the image name into words by splitting on all whitespace and
+  // punctuation. Reject any words that are classified as stopwords.
+  // If there are 3 or fewer unicode codepoints remaining, classify
+  // the string as "mostly stopwords".
+  //
+  // More details and analysis in this (Google-internal) design doc:
+  // http://goto.google.com/augment-existing-image-descriptions
+  const char* separators = "0123456789`~!@#$%^&*()[]{}\\|;:'\",.<>?/-_=+ ";
+  std::vector<std::string> words = base::SplitString(
+      image_name, separators, base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  int remaining_codepoints = 0;
+  for (const std::string& word : words) {
+    if (AXImageStopwords::GetInstance().IsImageStopword(word.c_str()))
+      continue;
+
+    base::i18n::UTF8CharIterator iter(&word);
+    while (!iter.end()) {
+      remaining_codepoints++;
+      iter.Advance();
+    }
+  }
+
+  return (remaining_codepoints <= 3);
 }
 
 #if defined(CONTENT_IMPLEMENTATION)

@@ -18,6 +18,6 @@
 
     [CallWith=ScriptState, Measure] Promise<sequence<USVString>?> resolve(FileSystemHandle possibleChild);
 
-    [CallWith=ScriptState, Measure, RaisesException]
+    [CallWith=ScriptState, Measure, RaisesException, RuntimeEnabled=LegacyNativeFileSystem]
     static Promise<FileSystemDirectoryHandle> getSystemDirectory(GetSystemDirectoryOptions options);
 };

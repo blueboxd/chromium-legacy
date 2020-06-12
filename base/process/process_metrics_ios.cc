@@ -32,6 +32,11 @@ TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
   return TimeDelta();
 }
 
+bool ProcessMetrics::GetCumulativeCPUUsagePerThread(CPUUsagePerThread&) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 size_t GetMaxFds() {
   static const rlim_t kSystemDefaultMaxFds = 256;
   rlim_t max_fds;

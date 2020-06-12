@@ -62,9 +62,6 @@ def _ParseArgs(args):
       '--multi-dex',
       action='store_true',
       help='Allow multiple dex files within output.')
-  parser.add_argument('--library',
-                      action='store_true',
-                      help='Allow numerous dex files within output.')
   parser.add_argument('--r8-jar-path', required=True, help='Path to R8 jar.')
   parser.add_argument('--desugar', action='store_true')
   parser.add_argument(
@@ -337,15 +334,13 @@ def _PerformDexlayout(tmp_dir, tmp_dex_output, options):
 
 def _CreateFinalDex(d8_inputs, output, tmp_dir, dex_cmd, options=None):
   tmp_dex_output = os.path.join(tmp_dir, 'tmp_dex_output.zip')
-  needs_dexing = not all(f.endswith('.dex') for f in d8_inputs)
-  needs_dexmerge = output.endswith('.dex') or not (options and options.library)
-  if needs_dexing or needs_dexmerge:
+  if (output.endswith('.dex')
+      or not all(f.endswith('.dex') for f in d8_inputs)):
     if options:
       if options.main_dex_list_path:
         dex_cmd = dex_cmd + ['--main-dex-list', options.main_dex_list_path]
-      elif options.library and int(options.min_api or 1) < 21:
-        # When dexing D8 requires a main dex list pre-21. For library targets,
-        # it doesn't matter what's in the main dex, so just use a dummy one.
+      elif options.multi_dex and int(options.min_api or 1) < 21:
+        # When dexing library targets, it doesn't matter what's in the main dex.
         tmp_main_dex_list_path = os.path.join(tmp_dir, 'main_list.txt')
         with open(tmp_main_dex_list_path, 'w') as f:
           f.write('Foo.class\n')

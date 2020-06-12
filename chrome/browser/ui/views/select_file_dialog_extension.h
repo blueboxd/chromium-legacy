@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_SELECT_FILE_DIALOG_EXTENSION_H_
 #define CHROME_BROWSER_UI_VIEWS_SELECT_FILE_DIALOG_EXTENSION_H_
 
+#include <memory>
+#include <string>
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
@@ -16,6 +17,10 @@
 
 class ExtensionDialog;
 class Profile;
+
+namespace aura {
+class Window;
+}
 
 namespace content {
 class RenderViewHost;
@@ -76,7 +81,7 @@ class SelectFileDialogExtension
       const FileTypeInfo* file_types,
       int file_type_index,
       const base::FilePath::StringType& default_extension,
-      gfx::NativeWindow owning_window,
+      aura::Window* owning_window,
       void* params,
       int owner_android_task_id,
       bool show_android_picker_apps);
@@ -91,6 +96,7 @@ class SelectFileDialogExtension
                       const base::FilePath::StringType& default_extension,
                       gfx::NativeWindow owning_window,
                       void* params) override;
+  bool HasMultipleFileTypeChoicesImpl() override;
 
  private:
   friend class BaseSelectFileDialogExtensionBrowserTest;
@@ -112,14 +118,11 @@ class SelectFileDialogExtension
   // Check if the list of pending dialogs contains dialog for |routing_id|.
   static bool PendingExists(RoutingID routing_id);
 
-  // Returns true if the dialog has multiple file type choices.
-  bool HasMultipleFileTypeChoicesImpl() override;
-
   // Returns true if |extension_dialog_| is resizable; the dialog must be
   // non-null at the time of this call.
   bool IsResizeable() const;
 
-  bool has_multiple_file_type_choices_;
+  bool has_multiple_file_type_choices_ = false;
 
   // Host for the extension that implements this dialog.
   scoped_refptr<ExtensionDialog> extension_dialog_;
@@ -128,10 +131,10 @@ class SelectFileDialogExtension
   RoutingID routing_id_;
 
   // Pointer to the profile the dialog is running in.
-  Profile* profile_;
+  Profile* profile_ = nullptr;
 
   // The window that created the dialog.
-  gfx::NativeWindow owner_window_;
+  aura::Window* owner_window_ = nullptr;
 
   // We defer the callback into SelectFileDialog::Listener until the window
   // closes, to match the semantics of file selection on Windows and Mac.
@@ -141,10 +144,10 @@ class SelectFileDialogExtension
     SINGLE_FILE,
     MULTIPLE_FILES
   };
-  SelectionType selection_type_;
+  SelectionType selection_type_ = CANCEL;
   std::vector<ui::SelectedFileInfo> selection_files_;
-  int selection_index_;
-  void* params_;
+  int selection_index_ = 0;
+  void* params_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogExtension);
 };

@@ -215,14 +215,6 @@ void NativeAppWindowViews::DeleteDelegate() {
   app_window_->OnNativeClose();
 }
 
-views::Widget* NativeAppWindowViews::GetWidget() {
-  return widget_;
-}
-
-const views::Widget* NativeAppWindowViews::GetWidget() const {
-  return widget_;
-}
-
 bool NativeAppWindowViews::ShouldDescendIntoChildForEventHandling(
     gfx::NativeView child,
     const gfx::Point& location) {

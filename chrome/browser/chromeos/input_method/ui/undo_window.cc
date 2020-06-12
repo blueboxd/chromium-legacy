@@ -14,7 +14,7 @@ namespace ime {
 
 namespace {
 constexpr int kUndoWindowCornerRadius = 5;
-const char kUndoButtonText[] = "Undo";
+const char kUndoButtonText[] = "⮌ Undo";
 
 class UndoWindowBorder : public views::BubbleBorder {
  public:

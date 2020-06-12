@@ -49,6 +49,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessorBackend
       const PortConfig& input_config,
       const PortConfig& output_config,
       const std::vector<OutputMode>& preferred_output_modes,
+      VideoRotation relative_rotation,
       ErrorCB error_cb,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
 
@@ -104,6 +105,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessorBackend
       const PortConfig& input_config,
       const PortConfig& output_config,
       const OutputMode& preferred_output_modes,
+      VideoRotation relative_rotation,
       ErrorCB error_cb,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
 
@@ -115,6 +117,7 @@ class MEDIA_GPU_EXPORT V4L2ImageProcessorBackend
       v4l2_memory input_memory_type,
       v4l2_memory output_memory_type,
       OutputMode output_mode,
+      VideoRotation relative_rotation,
       size_t num_buffers,
       ErrorCB error_cb);
   ~V4L2ImageProcessorBackend() override;

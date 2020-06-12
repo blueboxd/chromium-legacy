@@ -1928,8 +1928,8 @@ void AppCacheStorageImpl::OnDiskCacheCleanupComplete() {
     delete_and_start_over_pending_ = false;
     db_task_runner_->PostTaskAndReply(
         FROM_HERE,
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile), cache_directory_,
-                       true),
+        base::BindOnce(base::GetDeletePathRecursivelyCallback(),
+                       cache_directory_),
         base::BindOnce(&AppCacheStorageImpl::CallScheduleReinitialize,
                        weak_factory_.GetWeakPtr()));
   }

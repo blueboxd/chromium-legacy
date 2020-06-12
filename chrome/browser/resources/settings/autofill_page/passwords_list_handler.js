@@ -4,10 +4,12 @@
 
 /**
  * @fileoverview PasswordsListHandler is a container for a passwords list
- * responsible for handling events such as copy, editing and removal.
+ * responsible for handling events associated with the overflow menu (copy,
+ * editing, removal, moving to account).
  */
 
 import './password_edit_dialog.js';
+import './password_move_to_account_dialog.js';
 import './password_list_item.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import './password_edit_dialog.js';
@@ -16,13 +18,11 @@ import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {loadTimeData} from '../i18n_setup.js';
 // <if expr="chromeos">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
-import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 import {RemovalResult} from './remove_password_behavior.js';
 
@@ -52,6 +52,15 @@ Polymer({
       value: false,
     },
 
+    /**
+     * Whether an option for moving a password to the account should be offered
+     * in the overflow menu.
+     */
+    shouldShowMoveToAccountOption: {
+      type: Boolean,
+      value: false,
+    },
+
     // <if expr="chromeos">
     /** @type {BlockingRequestManager} */
     tokenRequestManager: Object,
@@ -68,12 +77,15 @@ Polymer({
     /** @private */
     showPasswordEditDialog_: {type: Boolean, value: false},
 
+    /** @private */
+    showPasswordMoveToAccountDialog_: {type: Boolean, value: false},
+
     /**
      * The element to return focus to, when the currently active dialog is
      * closed.
      * @private {?HTMLElement}
      */
-    activeDialogAnchorElement_: {type: Object, value: null},
+    activeDialogAnchor_: {type: Object, value: null},
 
   },
 
@@ -126,6 +138,14 @@ Polymer({
 
   /** @private */
   onPasswordEditDialogClosed_() {
+    this.showPasswordEditDialog_ = false;
+    focusWithoutInk(assert(this.activeDialogAnchor_));
+    this.activeDialogAnchor_ = null;
+    this.activePassword = null;
+  },
+
+  /** @private */
+  onMovePasswordToAccountDialogClosed_() {
     this.showPasswordEditDialog_ = false;
     focusWithoutInk(assert(this.activeDialogAnchor_));
     this.activeDialogAnchor_ = null;
@@ -189,9 +209,33 @@ Polymer({
     this.activePassword = null;
   },
 
+  /**
+   * @private
+   */
   onUndoButtonClick_() {
     PasswordManagerImpl.getInstance().undoRemoveSavedPasswordOrException();
     this.onSavedPasswordOrExceptionRemoved();
+  },
+
+  /**
+   * Should only be called when |activePassword| has a device copy.
+   * @param {!Event} event
+   * @private
+   */
+  onMenuMovePasswordToAccountTap_(event) {
+    event.preventDefault();
+    this.$.menu.close();
+    this.showPasswordMoveToAccountDialog_ = true;
+  },
+
+  /**
+   * @private
+   */
+  onPasswordMoveToAccountDialogClosed_() {
+    this.showPasswordMoveToAccountDialog_ = false;
+    focusWithoutInk(assert(this.activeDialogAnchor_));
+    this.activeDialogAnchor_ = null;
+    this.activePassword = null;
   },
 
 });

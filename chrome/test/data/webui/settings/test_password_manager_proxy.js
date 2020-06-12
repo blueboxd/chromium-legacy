@@ -55,6 +55,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
       'recordPasswordCheckReferrer',
       'removeSavedPassword',
       'removeSavedPasswords',
+      'movePasswordToAccount',
       'removeException',
       'removeExceptions',
     ]);
@@ -111,6 +112,11 @@ export class TestPasswordManagerProxy extends TestBrowserProxy {
   removeSavedPassword(id) {
     this.actual_.removed.passwords++;
     this.methodCalled('removeSavedPassword', id);
+  }
+
+  /** @override */
+  movePasswordToAccount(id) {
+    this.methodCalled('movePasswordToAccount', id);
   }
 
   /** @override */

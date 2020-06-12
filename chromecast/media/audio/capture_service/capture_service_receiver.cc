@@ -4,7 +4,6 @@
 
 #include "chromecast/media/audio/capture_service/capture_service_receiver.h"
 
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -14,11 +13,9 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chromecast/media/audio/capture_service/constants.h"
 #include "chromecast/media/audio/capture_service/message_parsing_utils.h"
 #include "chromecast/media/audio/mixer_service/audio_socket_service.h"
 #include "chromecast/net/small_message_socket.h"
-#include "media/base/limits.h"
 #include "net/base/io_buffer.h"
 #include "net/socket/stream_socket.h"
 
@@ -38,11 +35,10 @@ namespace media {
 class CaptureServiceReceiver::Socket : public SmallMessageSocket::Delegate {
  public:
   Socket(std::unique_ptr<net::StreamSocket> socket,
-         capture_service::StreamType stream_type,
-         int sample_rate,
-         int channels,
-         int frames_per_buffer,
-         ::media::AudioInputStream::AudioInputCallback* input_callback);
+         capture_service::StreamInfo request_stream_info,
+         CaptureServiceReceiver::Delegate* delegate);
+  Socket(const Socket&) = delete;
+  Socket& operator=(const Socket&) = delete;
   ~Socket() override;
 
  private:
@@ -58,31 +54,19 @@ class CaptureServiceReceiver::Socket : public SmallMessageSocket::Delegate {
   void ReportErrorAndStop();
 
   SmallMessageSocket socket_;
-
-  const capture_service::StreamType stream_type_;
-  const int sample_rate_;
-  const std::unique_ptr<::media::AudioBus> audio_bus_;
-
-  ::media::AudioInputStream::AudioInputCallback* input_callback_;
-
-  scoped_refptr<net::IOBufferWithSize> buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(Socket);
+  const capture_service::StreamInfo request_stream_info_;
+  CaptureServiceReceiver::Delegate* const delegate_;
+  bool error_reported_ = false;
 };
 
 CaptureServiceReceiver::Socket::Socket(
     std::unique_ptr<net::StreamSocket> socket,
-    capture_service::StreamType stream_type,
-    int sample_rate,
-    int channels,
-    int frames_per_buffer,
-    ::media::AudioInputStream::AudioInputCallback* input_callback)
+    capture_service::StreamInfo request_stream_info,
+    CaptureServiceReceiver::Delegate* delegate)
     : socket_(this, std::move(socket)),
-      stream_type_(stream_type),
-      sample_rate_(sample_rate),
-      audio_bus_(::media::AudioBus::Create(channels, frames_per_buffer)),
-      input_callback_(input_callback) {
-  DCHECK(input_callback_);
+      request_stream_info_(std::move(request_stream_info)),
+      delegate_(delegate) {
+  DCHECK(delegate_);
   if (!SendRequest()) {
     ReportErrorAndStop();
     return;
@@ -93,37 +77,31 @@ CaptureServiceReceiver::Socket::Socket(
 CaptureServiceReceiver::Socket::~Socket() = default;
 
 bool CaptureServiceReceiver::Socket::SendRequest() {
-  capture_service::PacketInfo info;
-  info.message_type = capture_service::MessageType::kAck;
-  info.stream_info.stream_type = stream_type_;
-  info.stream_info.sample_rate = sample_rate_;
-  info.stream_info.num_channels = audio_bus_->channels();
-  info.stream_info.frames_per_buffer = audio_bus_->frames();
-  // Format and timestamp doesn't matter in the request.
-  info.stream_info.sample_format = capture_service::SampleFormat::LAST_FORMAT;
-  info.timestamp_us = 0;
-  buffer_ =
-      capture_service::MakeMessage(info, nullptr /* data */, 0 /* data_size */);
-  if (!buffer_) {
+  auto request_buffer = capture_service::MakeMessage(
+      capture_service::PacketInfo{capture_service::MessageType::kRequest,
+                                  request_stream_info_, 0 /* timestamp_us */},
+      nullptr /* data */, 0 /* data_size */);
+  if (!request_buffer) {
     return false;
   }
-  if (socket_.SendBuffer(buffer_.get(), buffer_->size())) {
-    buffer_ = nullptr;
+  if (!socket_.SendBuffer(request_buffer.get(), request_buffer->size())) {
+    LOG(WARNING) << "Socket should not block sending since the request is the "
+                    "first buffer sent.";
+    return false;
   }
   return true;
 }
 
 void CaptureServiceReceiver::Socket::OnSendUnblocked() {
-  if (buffer_ && socket_.SendBuffer(buffer_.get(), buffer_->size())) {
-    buffer_ = nullptr;
-  }
+  // The request is the first buffer sent, so it should be always accepted by
+  // the socket.
+  NOTREACHED();
 }
 
 void CaptureServiceReceiver::Socket::ReportErrorAndStop() {
-  if (input_callback_) {
-    input_callback_->OnError();
-  }
-  input_callback_ = nullptr;
+  DCHECK(!error_reported_) << "Error should not be reported more than once.";
+  delegate_->OnCaptureError();
+  error_reported_ = true;
 }
 
 void CaptureServiceReceiver::Socket::OnError(int error) {
@@ -137,34 +115,10 @@ void CaptureServiceReceiver::Socket::OnEndOfStream() {
 }
 
 bool CaptureServiceReceiver::Socket::OnMessage(char* data, size_t size) {
-  capture_service::PacketInfo info;
-  if (!capture_service::ReadHeader(data, size, &info)) {
+  if (!delegate_->OnCaptureData(data, size)) {
     ReportErrorAndStop();
     return false;
   }
-  if (info.message_type != capture_service::MessageType::kAudio) {
-    LOG(WARNING) << "Received non-audio message, ignored.";
-    return true;
-  }
-  DCHECK_EQ(info.stream_info.stream_type, stream_type_);
-  if (!capture_service::ReadDataToAudioBus(info.stream_info, data, size,
-                                           audio_bus_.get())) {
-    ReportErrorAndStop();
-    return false;
-  }
-  return HandleAudio(info.timestamp_us);
-}
-
-bool CaptureServiceReceiver::Socket::HandleAudio(int64_t timestamp) {
-  if (!input_callback_) {
-    LOG(INFO) << "Received audio before stream metadata; ignoring";
-    return false;
-  }
-
-  input_callback_->OnData(
-      audio_bus_.get(),
-      base::TimeTicks() + base::TimeDelta::FromMicroseconds(timestamp),
-      /* volume =*/1.0);
   return true;
 }
 
@@ -172,15 +126,12 @@ bool CaptureServiceReceiver::Socket::HandleAudio(int64_t timestamp) {
 constexpr base::TimeDelta CaptureServiceReceiver::kConnectTimeout;
 
 CaptureServiceReceiver::CaptureServiceReceiver(
-    capture_service::StreamType stream_type,
-    int sample_rate,
-    int channels,
-    int frames_per_buffer)
-    : stream_type_(stream_type),
-      sample_rate_(sample_rate),
-      channels_(channels),
-      frames_per_buffer_(frames_per_buffer),
+    capture_service::StreamInfo request_stream_info,
+    Delegate* delegate)
+    : request_stream_info_(std::move(request_stream_info)),
+      delegate_(delegate),
       io_thread_(__func__) {
+  DCHECK(delegate_);
   base::Thread::Options options;
   options.message_pump_type = base::MessagePumpType::IO;
   // TODO(b/137106361): Tweak the thread priority once the thread priority for
@@ -196,46 +147,40 @@ CaptureServiceReceiver::~CaptureServiceReceiver() {
   io_thread_.Stop();
 }
 
-void CaptureServiceReceiver::Start(
-    ::media::AudioInputStream::AudioInputCallback* input_callback) {
-  ENSURE_ON_IO_THREAD(Start, input_callback);
+void CaptureServiceReceiver::Start() {
+  ENSURE_ON_IO_THREAD(Start);
 
   std::string path = capture_service::kDefaultUnixDomainSocketPath;
   int port = capture_service::kDefaultTcpPort;
 
-  StartWithSocket(input_callback, AudioSocketService::Connect(path, port));
+  StartWithSocket(AudioSocketService::Connect(path, port));
 }
 
 void CaptureServiceReceiver::StartWithSocket(
-    ::media::AudioInputStream::AudioInputCallback* input_callback,
     std::unique_ptr<net::StreamSocket> connecting_socket) {
-  ENSURE_ON_IO_THREAD(StartWithSocket, input_callback,
-                      std::move(connecting_socket));
+  ENSURE_ON_IO_THREAD(StartWithSocket, std::move(connecting_socket));
   DCHECK(!connecting_socket_);
   DCHECK(!socket_);
 
   connecting_socket_ = std::move(connecting_socket);
-  int result = connecting_socket_->Connect(
-      base::BindOnce(&CaptureServiceReceiver::OnConnected,
-                     base::Unretained(this), input_callback));
+  DCHECK(connecting_socket_);
+  int result = connecting_socket_->Connect(base::BindOnce(
+      &CaptureServiceReceiver::OnConnected, base::Unretained(this)));
   if (result != net::ERR_IO_PENDING) {
-    task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&CaptureServiceReceiver::OnConnected,
-                       base::Unretained(this), input_callback, result));
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(&CaptureServiceReceiver::OnConnected,
+                                          base::Unretained(this), result));
     return;
   }
 
   task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&CaptureServiceReceiver::OnConnectTimeout,
-                     base::Unretained(this), input_callback),
+                     base::Unretained(this)),
       kConnectTimeout);
 }
 
-void CaptureServiceReceiver::OnConnected(
-    ::media::AudioInputStream::AudioInputCallback* input_callback,
-    int result) {
+void CaptureServiceReceiver::OnConnected(int result) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK_NE(result, net::ERR_IO_PENDING);
   if (!connecting_socket_) {
@@ -244,23 +189,21 @@ void CaptureServiceReceiver::OnConnected(
 
   if (result == net::OK) {
     socket_ = std::make_unique<Socket>(std::move(connecting_socket_),
-                                       stream_type_, sample_rate_, channels_,
-                                       frames_per_buffer_, input_callback);
+                                       request_stream_info_, delegate_);
   } else {
     LOG(INFO) << "Connecting failed: " << net::ErrorToString(result);
-    input_callback->OnError();
+    delegate_->OnCaptureError();
     connecting_socket_.reset();
   }
 }
 
-void CaptureServiceReceiver::OnConnectTimeout(
-    ::media::AudioInputStream::AudioInputCallback* input_callback) {
+void CaptureServiceReceiver::OnConnectTimeout() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!connecting_socket_) {
     return;
   }
   LOG(ERROR) << __func__;
-  input_callback->OnError();
+  delegate_->OnCaptureError();
   connecting_socket_.reset();
 }
 

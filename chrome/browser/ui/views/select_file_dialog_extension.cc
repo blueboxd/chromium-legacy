@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -25,7 +26,10 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/select_file_dialog_util.h"
 #include "chrome/browser/chromeos/file_manager/url_util.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_web_dialog.h"
+#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_view_host.h"
@@ -34,29 +38,19 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog.h"
-#include "chrome/common/pref_names.h"
-#include "content/public/browser/browser_thread.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/base_window.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/shell_dialogs/select_file_policy.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_CHROMEOS)
-#include "base/feature_list.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/webui_login_view.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "ui/gfx/color_palette.h"
-#endif
-
 using extensions::AppWindow;
-using content::BrowserThread;
 
 namespace {
 
@@ -83,8 +77,8 @@ class PendingDialog {
 
  private:
   friend struct base::DefaultSingletonTraits<PendingDialog>;
-  typedef std::map<SelectFileDialogExtension::RoutingID,
-                   scoped_refptr<SelectFileDialogExtension> > Map;
+  using Map = std::map<SelectFileDialogExtension::RoutingID,
+                       scoped_refptr<SelectFileDialogExtension>>;
   Map map_;
 };
 
@@ -114,13 +108,11 @@ scoped_refptr<SelectFileDialogExtension> PendingDialog::Find(
   return it->second;
 }
 
-#if defined(OS_CHROMEOS)
 // Return the Chrome OS WebUI login WebContents, if applicable.
 content::WebContents* GetLoginWebContents() {
   chromeos::LoginDisplayHost* host = chromeos::LoginDisplayHost::default_host();
   return host ? host->GetOobeWebContents() : nullptr;
 }
-#endif
 
 // Given |owner_window| finds corresponding |base_window|, it's associated
 // |web_contents| and |profile|.
@@ -166,11 +158,9 @@ void FindRuntimeContext(gfx::NativeWindow owner_window,
   if (chrome::IsRunningInForcedAppMode() && !(*web_contents))
     *web_contents = chromeos::LoginWebDialog::GetCurrentWebContents();
 
-#if defined(OS_CHROMEOS)
   // Check for a WebContents used for the Chrome OS WebUI login flow.
   if (!*web_contents)
     *web_contents = GetLoginWebContents();
-#endif
 }
 
 SelectFileDialogExtension::RoutingID GetRoutingID(
@@ -190,7 +180,6 @@ SelectFileDialogExtension::RoutingID GetRoutingID(
 
 /////////////////////////////////////////////////////////////////////////////
 
-// TODO(jamescook): Move this into a new file shell_dialogs_chromeos.cc
 // static
 SelectFileDialogExtension* SelectFileDialogExtension::Create(
     Listener* listener,
@@ -201,14 +190,7 @@ SelectFileDialogExtension* SelectFileDialogExtension::Create(
 SelectFileDialogExtension::SelectFileDialogExtension(
     Listener* listener,
     std::unique_ptr<ui::SelectFilePolicy> policy)
-    : SelectFileDialog(listener, std::move(policy)),
-      has_multiple_file_type_choices_(false),
-      routing_id_(),
-      profile_(nullptr),
-      owner_window_(nullptr),
-      selection_type_(CANCEL),
-      selection_index_(0),
-      params_(nullptr) {}
+    : SelectFileDialog(listener, std::move(policy)) {}
 
 SelectFileDialogExtension::~SelectFileDialogExtension() {
   if (extension_dialog_.get())
@@ -339,12 +321,10 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
   if (web_contents)
     profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
-#if defined(OS_CHROMEOS)
   // Handle the cases where |web_contents| is not available or |web_contents| is
   // associated with Default profile.
   if (!web_contents || chromeos::ProfileHelper::IsSigninProfile(profile_))
     profile_ = ProfileManager::GetActiveUserProfile();
-#endif
 
   DCHECK(profile_);
 
@@ -416,12 +396,10 @@ void SelectFileDialogExtension::SelectFileWithFileManagerParams(
   dialog_params.min_size = {kFileManagerMinimumWidth,
                             kFileManagerMinimumHeight};
   dialog_params.title = file_manager::util::GetSelectFileDialogTitle(type);
-#if defined(OS_CHROMEOS)
   if (base::FeatureList::IsEnabled(chromeos::features::kFilesNG)) {
     dialog_params.title_color = kFilePickerActiveTitleColor;
     dialog_params.title_inactive_color = kFilePickerInactiveTitleColor;
   }
-#endif
 
   ExtensionDialog* dialog = ExtensionDialog::Show(
       file_manager_url,
@@ -459,6 +437,10 @@ void SelectFileDialogExtension::SelectFileImpl(
                                   false /* show_android_picker_apps */);
 }
 
+bool SelectFileDialogExtension::HasMultipleFileTypeChoicesImpl() {
+  return has_multiple_file_type_choices_;
+}
+
 bool SelectFileDialogExtension::IsResizeable() const {
   DCHECK(extension_dialog_.get());
   return extension_dialog_->CanResize();
@@ -491,8 +473,4 @@ void SelectFileDialogExtension::AddPending(RoutingID routing_id) {
 // static
 bool SelectFileDialogExtension::PendingExists(RoutingID routing_id) {
   return PendingDialog::GetInstance()->Find(routing_id).get() != nullptr;
-}
-
-bool SelectFileDialogExtension::HasMultipleFileTypeChoicesImpl() {
-  return has_multiple_file_type_choices_;
 }

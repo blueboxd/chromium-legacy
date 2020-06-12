@@ -377,14 +377,18 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   virtual bool GetVAEncMaxNumOfRefFrames(VideoCodecProfile profile,
                                          size_t* max_ref_frames);
 
+  // Checks if the driver supports frame rotation.
+  bool IsRotationSupported();
+
   // Blits a VASurface |va_surface_src| into another VASurface
-  // |va_surface_dest| applying pixel format conversion, cropping and scaling
-  // if needed. |src_rect| and |dest_rect| are optional. They can be used to
-  // specify the area used in the blit.
+  // |va_surface_dest| applying pixel format conversion, rotation, cropping
+  // and scaling if needed. |src_rect| and |dest_rect| are optional. They can
+  // be used to specify the area used in the blit.
   bool BlitSurface(const VASurface& va_surface_src,
                    const VASurface& va_surface_dest,
                    base::Optional<gfx::Rect> src_rect = base::nullopt,
-                   base::Optional<gfx::Rect> dest_rect = base::nullopt);
+                   base::Optional<gfx::Rect> dest_rect = base::nullopt,
+                   VideoRotation rotation = VIDEO_ROTATION_0);
 
   // Initialize static data before sandbox is enabled.
   static void PreSandboxInitialization();

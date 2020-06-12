@@ -22,4 +22,28 @@ bool LinkWebBundle::HasLoaded() const {
 
 void LinkWebBundle::OwnerRemoved() {}
 
+// static
+KURL LinkWebBundle::ParseResourceUrl(const AtomicString& str) {
+  // The implementation is almost copy and paste from ParseExchangeURL() defined
+  // in services/data_decoder/web_bundle_parser.cc, replacing GURL with KURL.
+
+  // TODO(hayato): Consider to support a relative URL.
+  KURL url(str);
+  if (!url.IsValid())
+    return KURL();
+
+  // Exchange URL must not have a fragment or credentials.
+  if (url.HasFragmentIdentifier() || !url.User().IsEmpty() ||
+      !url.Pass().IsEmpty())
+    return KURL();
+
+  // For now, we allow only http: and https: schemes in Web Bundle URLs.
+  // TODO(crbug.com/966753): Revisit this once
+  // https://github.com/WICG/webpackage/issues/468 is resolved.
+  if (!url.ProtocolIsInHTTPFamily())
+    return KURL();
+
+  return url;
+}
+
 }  // namespace blink

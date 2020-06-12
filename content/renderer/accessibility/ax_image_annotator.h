@@ -55,6 +55,8 @@ class CONTENT_EXPORT AXImageAnnotator : public base::CheckedObserver {
   void OnImageUpdated(blink::WebAXObject& image);
   void OnImageRemoved(blink::WebAXObject& image);
 
+  static bool ImageNameHasMostlyStopwords(const std::string& image_name);
+
  private:
   // Keeps track of the image data and the automatic annotation for each image.
   class ImageInfo final {

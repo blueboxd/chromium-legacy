@@ -182,7 +182,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'f26e596822b3d30004d610f50fd47557df0f1e8c',
+  'skia_revision': 'b4120795b8071b8518278f211f08b1cd282718bb',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -245,7 +245,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'd3a5699b3ce304c7092a56c016465363c7e32588',
+  'catapult_revision': 'c58fb4ab7e9f83cc8250f5d5cd732c0cd319926f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '3fa95bc487fe27faff7f9465261f466faa038b60',
+  'devtools_frontend_revision': '9b5e3fd729698e44884c81427743e60a4074552b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -305,7 +305,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': 'c7778a27cbdf7b39bf5be0ce851192d918f255a3',
+  'dawn_revision': '5fafb49c7b4d6e36dec3725ff9a420448c308f5a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1532,7 +1532,7 @@ deps = {
     'packages': [
       {
         'package': 'chromeos_internal/apps/help_app/app',
-        'version': 'zqEjsRuI2qX11reJI5f9bE5X3iD6CtglpDcv2Cugj3cC',
+        'version': '1OrfJIVeHFSTv6k6Wfbr2uoI7CAMQQzUph6AlmK-MMgC',
       },
     ],
     'condition': 'checkout_chromeos and checkout_src_internal',

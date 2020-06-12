@@ -17,6 +17,7 @@
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/v4l2/v4l2_video_decoder_backend_stateful.h"
 #include "media/gpu/v4l2/v4l2_video_decoder_backend_stateless.h"
 
 namespace media {
@@ -33,9 +34,8 @@ constexpr size_t kNumInputBuffers = 16;
 
 // Input format V4L2 fourccs this class supports.
 constexpr uint32_t kSupportedInputFourccs[] = {
-    V4L2_PIX_FMT_H264_SLICE,
-    V4L2_PIX_FMT_VP8_FRAME,
-    V4L2_PIX_FMT_VP9_FRAME,
+    V4L2_PIX_FMT_H264_SLICE, V4L2_PIX_FMT_VP8_FRAME, V4L2_PIX_FMT_VP9_FRAME,
+    V4L2_PIX_FMT_H264,       V4L2_PIX_FMT_VP8,       V4L2_PIX_FMT_VP9,
 };
 
 }  // namespace
@@ -141,12 +141,33 @@ void V4L2SliceVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // Open V4L2 device.
   VideoCodecProfile profile = config.profile();
-  uint32_t input_format_fourcc =
+  uint32_t input_format_fourcc_stateless =
       V4L2Device::VideoCodecProfileToV4L2PixFmt(profile, true);
-  if (!input_format_fourcc ||
-      !device_->Open(V4L2Device::Type::kDecoder, input_format_fourcc)) {
+  if (!input_format_fourcc_stateless ||
+      !device_->Open(V4L2Device::Type::kDecoder,
+                     input_format_fourcc_stateless)) {
     VLOGF(1) << "Failed to open device for profile: " << profile
-             << " fourcc: " << FourccToString(input_format_fourcc);
+             << " fourcc: " << FourccToString(input_format_fourcc_stateless);
+    input_format_fourcc_stateless = 0;
+  } else {
+    VLOGF(1) << "Found V4L2 device capable of stateless decoding for "
+             << FourccToString(input_format_fourcc_stateless);
+  }
+
+  uint32_t input_format_fourcc_stateful =
+      V4L2Device::VideoCodecProfileToV4L2PixFmt(profile, false);
+  if (!input_format_fourcc_stateful ||
+      !device_->Open(V4L2Device::Type::kDecoder,
+                     input_format_fourcc_stateful)) {
+    VLOGF(1) << "Failed to open device for profile: " << profile
+             << " fourcc: " << FourccToString(input_format_fourcc_stateful);
+    input_format_fourcc_stateful = 0;
+  } else {
+    VLOGF(1) << "Found V4L2 device capable of stateful decoding for "
+             << FourccToString(input_format_fourcc_stateful);
+  }
+
+  if (!input_format_fourcc_stateless && !input_format_fourcc_stateful) {
     std::move(init_cb).Run(StatusCode::kV4l2NoDecoder);
     return;
   }
@@ -172,10 +193,23 @@ void V4L2SliceVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  // Create the backend (only stateless API supported as of now).
-  backend_ = std::make_unique<V4L2StatelessVideoDecoderBackend>(
-      this, device_, profile, decoder_task_runner_);
+  uint32_t input_format_fourcc;
+  if (input_format_fourcc_stateful) {
+    backend_ = std::make_unique<V4L2StatefulVideoDecoderBackend>(
+        this, device_, profile, decoder_task_runner_);
+    input_format_fourcc = input_format_fourcc_stateful;
+  } else if (input_format_fourcc_stateless) {
+    backend_ = std::make_unique<V4L2StatelessVideoDecoderBackend>(
+        this, device_, profile, decoder_task_runner_);
+    input_format_fourcc = input_format_fourcc_stateless;
+  } else {
+    VLOGF(1) << "No backend capable of taking this profile.";
+    std::move(init_cb).Run(StatusCode::kV4l2FailedResourceAllocation);
+    return;
+  }
+
   if (!backend_->Initialize()) {
+    VLOGF(1) << "Failed to initialize backend.";
     std::move(init_cb).Run(StatusCode::kV4l2FailedResourceAllocation);
     return;
   }
@@ -511,7 +545,7 @@ void V4L2SliceVideoDecoder::ContinueChangeResolution(
                      base::Unretained(backend_.get()), true));
 }
 
-void V4L2SliceVideoDecoder::ServiceDeviceTask(bool /* event */) {
+void V4L2SliceVideoDecoder::ServiceDeviceTask(bool event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3) << "Number of queued input buffers: "
             << input_queue_->QueuedBuffersCount()
@@ -546,6 +580,8 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask(bool /* event */) {
     if (!dequeued_buffer)
       break;
   }
+
+  backend_->OnServiceDeviceTask(event);
 }
 
 void V4L2SliceVideoDecoder::OutputFrame(scoped_refptr<VideoFrame> frame,

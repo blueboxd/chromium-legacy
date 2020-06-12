@@ -50,26 +50,19 @@
 
     # Take care when changing any of these builders to ensure that you do not
     # include a configuration with 'chrome_with_codecs' since these builders
-    # are public and not allowed to have proprietary codecs enabled.
+    # generated publicly advertised non-Official builds which are not allowed
+    # to have proprietary codecs enabled.
     'chromium': {
       'android-archive-rel': 'android_without_codecs_release_bot_minimal_symbols',
       'android-archive-dbg': 'android_without_codecs_debug_bot',
-      'android-official': 'android_official_optimize_goma',
-      'chromeos-official': 'chromeos_official_optimize_goma',
-      'fuchsia-official': 'fuchsia_official_optimize_goma',
-      'ios-official': 'ios_official_optimize_goma',
       'linux-archive-rel': 'release_bot',
       'linux-archive-dbg': 'debug_bot',
-      'linux-official': 'official_optimize_goma',
       'mac-archive-rel': 'release_bot_mac_strip_minimal_symbols',
       'mac-archive-dbg': 'debug_bot',
-      'mac-official': 'official_optimize_goma',
       'win32-archive-rel': 'release_bot_x86_minimal_symbols_enable_archive_compression',
       'win32-archive-dbg': 'debug_bot_x86',
-      'win32-official': 'x86_official_optimize_goma',
       'win-archive-rel': 'release_bot_minimal_symbols_enable_archive_compression',
       'win-archive-dbg': 'debug_bot',
-      'win-official': 'official_optimize_goma',
     },
 
     'chromium.android': {
@@ -676,15 +669,15 @@
       # waterfall bots, and run_web_tests.py can't handle that (by design).
       'linux-blink-rel': 'release_bot_minimal_symbols',
       'linux-blink-optional-highdpi-rel': 'release_bot_minimal_symbols',
-      'mac10.10-blink-rel': 'release_bot_minimal_symbols',
-      'mac10.11-blink-rel': 'release_bot_minimal_symbols',
-      'mac10.12-blink-rel': 'release_bot_minimal_symbols',
-      'mac10.13-blink-rel': 'release_bot_minimal_symbols',
-      'mac10.13_retina-blink-rel': 'release_bot_minimal_symbols',
-      'mac10.14-blink-rel': 'release_bot_minimal_symbols',
-      'mac10.15-blink-rel': 'release_bot_minimal_symbols_no_nacl',
-      'win7-blink-rel': 'release_bot_x86_minimal_symbols',
-      'win10-blink-rel': 'release_bot_x86_minimal_symbols',
+      'mac10.10-blink-rel': 'gpu_tests_release_bot_minimal_symbols',
+      'mac10.11-blink-rel': 'gpu_tests_release_bot_minimal_symbols',
+      'mac10.12-blink-rel': 'gpu_tests_release_bot_minimal_symbols',
+      'mac10.13-blink-rel': 'gpu_tests_release_bot_minimal_symbols',
+      'mac10.13_retina-blink-rel': 'gpu_tests_release_bot_minimal_symbols',
+      'mac10.14-blink-rel': 'gpu_tests_release_bot_minimal_symbols',
+      'mac10.15-blink-rel': 'gpu_tests_release_bot_minimal_symbols_no_nacl',
+      'win7-blink-rel': 'gpu_tests_release_bot_x86_minimal_symbols',
+      'win10-blink-rel': 'gpu_tests_release_bot_x86_minimal_symbols',
     },
 
     'tryserver.chromium.android': {
@@ -1194,10 +1187,6 @@
       'android', 'incremental', 'debug_bot',
     ],
 
-    'android_official_optimize_goma': [
-      'official_optimize', 'goma', 'android_without_codecs',
-    ],
-
     'android_release_bot_minimal_symbols': [
       'android', 'release_bot', 'minimal_symbols', 'strip_debug_info',
     ],
@@ -1511,10 +1500,6 @@
       'chromeos', 'msan', 'release_bot',
     ],
 
-    'chromeos_official_optimize_goma': [
-      'official_optimize', 'goma', 'chromeos',
-    ],
-
     'chromeos_with_codecs_debug_bot': [
       'chromeos_with_codecs', 'debug_bot',
     ],
@@ -1700,10 +1685,6 @@
 
     'debug_bot_x86_no_com_init_hooks_with_codecs': [
       'debug_bot', 'x86', 'no_com_init_hooks', 'chrome_with_codecs'
-    ],
-
-    'fuchsia_official_optimize_goma': [
-      'official_optimize', 'goma', 'fuchsia',
     ],
 
     'gpu_fyi_tests_android_vulkan_ndk_release_trybot': [
@@ -1935,10 +1916,6 @@
         'ios_device', 'ios_disable_code_signing', 'ios_use_goma_rbe', 'release_bot',
     ],
 
-    'ios_official_optimize_goma': [
-      'official_optimize', 'goma', 'ios_simulator',
-    ],
-
     'ios_simulator_debug_static_bot': [
         'debug_static_bot', 'ios_simulator',
     ],
@@ -2118,10 +2095,6 @@
       'perfetto', 'release_trybot',
     ],
 
-    'official_optimize_goma': [
-      'official_optimize_goma',
-    ],
-
     'presubmit': [
       # The chromium_presubmit bot does not use mb.
       'error',
@@ -2185,10 +2158,6 @@
 
     'release_bot_x86_minimal_symbols_no_com_init_hooks_with_codecs': [
       'release_bot', 'x86', 'minimal_symbols', 'no_com_init_hooks', 'chrome_with_codecs'
-    ],
-
-    'release_bot_minimal_symbols_no_nacl': [
-      'release_bot', 'minimal_symbols', 'disable_nacl',
     ],
 
     'release_trybot': [
@@ -2278,10 +2247,6 @@
 
     'win32_arm64_release_bot': [
       'arm64', 'disable_nacl', 'minimal_symbols', 'release_bot',
-    ],
-
-    'x86_official_optimize_goma': [
-      'official_optimize', 'goma', 'x86',
     ],
   },
 
@@ -2729,10 +2694,6 @@
 
     'official_optimize': {
       'gn_args': 'is_official_build=true is_debug=false',
-    },
-
-    'official_optimize_goma': {
-      'mixins': ['official_optimize', 'goma'],
     },
 
     'optimize_for_fuzzing': {

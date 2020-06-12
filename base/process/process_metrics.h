@@ -13,11 +13,14 @@
 
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
+#include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -117,6 +120,17 @@ class BASE_EXPORT ProcessMetrics {
   // at a rate higher than wall-clock time, e.g. two cores at full utilization
   // will result in a time delta of 2 seconds/per 1 wall-clock second.
   TimeDelta GetCumulativeCPUUsage();
+
+  // Emits the cumulative CPU usage for all currently active threads since they
+  // were started into the output parameter (replacing its current contents).
+  // Threads that have already terminated will not be reported. Thus, the sum of
+  // these times may not equal the value returned by GetCumulativeCPUUsage().
+  // Returns false on failure. We return the usage via an output parameter to
+  // allow reuse of CPUUsagePerThread's std::vector by the caller, e.g. to avoid
+  // allocations between repeated calls to method.
+  // NOTE: Currently only supported on Linux/Android.
+  using CPUUsagePerThread = std::vector<std::pair<PlatformThreadId, TimeDelta>>;
+  bool GetCumulativeCPUUsagePerThread(CPUUsagePerThread&);
 
   // Returns the number of average idle cpu wakeups per second since the last
   // call.

@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
+#include "media/base/video_transformation.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -45,6 +46,8 @@ class Image {
   const gfx::Size& Size() const;
   // Get the visible rectangle of the image.
   const gfx::Rect& VisibleRect() const;
+  // Get the image rotation info.
+  VideoRotation Rotation() const;
   // Get the image checksum.
   const char* Checksum() const;
 
@@ -62,6 +65,8 @@ class Image {
   gfx::Size size_;
   // The visible rectangle of the image.
   gfx::Rect visible_rect_;
+  // The rotation info of image.
+  VideoRotation rotation_;
   // The image md5 checksum.
   std::string checksum_;
 

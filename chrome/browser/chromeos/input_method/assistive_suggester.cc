@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/input_method/assistive_suggester.h"
 
+#include "ash/public/cpp/window_properties.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
+#include "components/exo/wm_helper.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "url/gurl.h"
@@ -36,6 +38,18 @@ const char* kWhitelistDomainsForEmojiSuggester[] = {
 const char* kTestUrls[] = {
     "e14s-test",
     "simple_textarea.html",
+};
+
+const char* kWhitelistAppsForPersonalInfoSuggester[] = {
+    "pondihnpfglkihppmldjekdcjgbkpnen",  // Facebook messenger
+    "cnbgggchhmkkdmeppjobngjoejnihlei",  // Google Play Store
+    "mmfbcljfglbokpmkimbfghdkjmjhdgbg",  // System text
+};
+
+const char* kWhitelistAppsForEmojiSuggester[] = {
+    "pondihnpfglkihppmldjekdcjgbkpnen",  // Facebook messenger
+    "cnbgggchhmkkdmeppjobngjoejnihlei",  // Google Play Store
+    "mmfbcljfglbokpmkimbfghdkjmjhdgbg",  // System text
 };
 
 void RecordAssistiveMatch(AssistiveType type) {
@@ -64,7 +78,8 @@ bool IsTestUrl(GURL url) {
   return false;
 }
 
-bool IsWhitelistedUrl(const char* whitelistDomains[], size_t length) {
+template <size_t N>
+bool IsWhitelistedUrl(const char* (&whitelistDomains)[N]) {
   Browser* browser = chrome::FindLastActive();
   if (browser && browser->window()->IsActive()) {
     GURL url = browser->tab_strip_model()
@@ -72,8 +87,28 @@ bool IsWhitelistedUrl(const char* whitelistDomains[], size_t length) {
                    ->GetLastCommittedURL();
     if (IsTestUrl(url))
       return true;
-    for (size_t i = 0; i < length; i++) {
+    for (size_t i = 0; i < N; i++) {
       if (url.DomainIs(whitelistDomains[i])) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+template <size_t N>
+bool IsWhitelistedApp(const char* (&whitelistApps)[N]) {
+  // WMHelper is not available in Chrome on Linux.
+  auto* wm_helper = exo::WMHelper::GetInstance();
+  auto* window = wm_helper ? wm_helper->GetActiveWindow() : nullptr;
+  if (!window)
+    return false;
+
+  // TODO(crbug/1094113): improve to cover more scenarios such as chat heads.
+  const std::string* app_id = window->GetProperty(ash::kAppIDKey);
+  if (app_id) {
+    for (size_t i = 0; i < N; i++) {
+      if (strcmp(app_id->c_str(), whitelistApps[i]) == 0) {
         return true;
       }
     }
@@ -218,9 +253,8 @@ bool AssistiveSuggester::Suggest(const base::string16& text,
       return current_suggester_->Suggest(text_before_cursor);
     }
     if (IsAssistPersonalInfoEnabled() &&
-        IsWhitelistedUrl(
-            kWhitelistDomainsForPersonalInfoSuggester,
-            base::size(kWhitelistDomainsForPersonalInfoSuggester)) &&
+        (IsWhitelistedUrl(kWhitelistDomainsForPersonalInfoSuggester) ||
+         IsWhitelistedApp(kWhitelistAppsForPersonalInfoSuggester)) &&
         personal_info_suggester_.Suggest(text_before_cursor)) {
       current_suggester_ = &personal_info_suggester_;
       if (personal_info_suggester_.IsFirstShown()) {
@@ -228,9 +262,8 @@ bool AssistiveSuggester::Suggest(const base::string16& text,
       }
       return true;
     } else if (IsEmojiSuggestAdditionEnabled() &&
-               IsWhitelistedUrl(
-                   kWhitelistDomainsForEmojiSuggester,
-                   base::size(kWhitelistDomainsForEmojiSuggester)) &&
+               (IsWhitelistedUrl(kWhitelistDomainsForEmojiSuggester) ||
+                IsWhitelistedApp(kWhitelistAppsForEmojiSuggester)) &&
                emoji_suggester_.Suggest(text_before_cursor)) {
       current_suggester_ = &emoji_suggester_;
       RecordAssistiveCoverage(current_suggester_->GetProposeActionType());

@@ -60,6 +60,7 @@ void SetAppAllowed(apps::mojom::App* app, bool allowed) {
   app->recommendable = opt_allowed;
   app->searchable = opt_allowed;
   app->show_in_launcher = opt_allowed;
+  app->show_in_shelf = opt_allowed;
   app->show_in_search = opt_allowed;
 }
 

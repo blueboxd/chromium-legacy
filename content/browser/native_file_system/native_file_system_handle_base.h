@@ -190,8 +190,7 @@ class CONTENT_EXPORT NativeFileSystemHandleBase : public WebContentsObserver {
       NativeFileSystemPermissionGrant::PermissionRequestOutcome outcome);
 
   bool ShouldTrackUsage() const {
-    return url_.type() != storage::kFileSystemTypeTemporary &&
-           url_.type() != storage::kFileSystemTypeTest;
+    return url_.type() == storage::kFileSystemTypeNativeLocal;
   }
 
   // The NativeFileSystemManagerImpl that owns this instance.

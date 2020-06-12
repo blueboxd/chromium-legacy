@@ -27,7 +27,7 @@ class WebAppLinkCapturingBrowserTest : public WebAppNavigationBrowserTest {
     // capturing feature to work with AppServiceIntentHandling.
     features_.InitWithFeatures({features::kDesktopPWAsTabStrip,
                                 features::kDesktopPWAsTabStripLinkCapturing},
-                               {features::kAppServiceIntentHandling});
+                               {});
     WebAppNavigationBrowserTest::SetUp();
   }
 

@@ -10,6 +10,6 @@
     RuntimeEnabled=NativeFileSystem,
     ImplementedAs=NativeFileSystemFileHandle
 ] interface FileSystemFileHandle : FileSystemHandle {
-    [CallWith=ScriptState, RuntimeEnabled=WritableFileStream, RaisesException] Promise<FileSystemWritableFileStream> createWritable(optional FileSystemCreateWriterOptions options = {});
+    [CallWith=ScriptState, RaisesException] Promise<FileSystemWritableFileStream> createWritable(optional FileSystemCreateWriterOptions options = {});
     [CallWith=ScriptState, RaisesException] Promise<File> getFile();
 };

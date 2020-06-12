@@ -1865,6 +1865,9 @@ extern const char kAllowDisableMouseAccelerationDescription[];
 extern const char kAllowScrollSettingsName[];
 extern const char kAllowScrollSettingsDescription[];
 
+extern const char kAppServiceAdaptiveIconName[];
+extern const char kAppServiceAdaptiveIconDescription[];
+
 extern const char kAppServiceInstanceRegistryName[];
 extern const char kAppServiceInstanceRegistryDescription[];
 
@@ -2198,6 +2201,9 @@ extern const char kImeMozcProtoDescription[];
 
 extern const char kImeServiceSandboxName[];
 extern const char kImeServiceSandboxDescription[];
+
+extern const char kIntentHandlingSharingName[];
+extern const char kIntentHandlingSharingDescription[];
 
 extern const char kIntentPickerPWAPersistenceName[];
 extern const char kIntentPickerPWAPersistenceDescription[];

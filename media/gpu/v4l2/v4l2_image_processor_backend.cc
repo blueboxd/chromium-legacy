@@ -126,11 +126,13 @@ V4L2ImageProcessorBackend::V4L2ImageProcessorBackend(
     v4l2_memory input_memory_type,
     v4l2_memory output_memory_type,
     OutputMode output_mode,
+    VideoRotation relative_rotation,
     size_t num_buffers,
     ErrorCB error_cb)
     : ImageProcessorBackend(input_config,
                             output_config,
                             output_mode,
+                            relative_rotation,
                             std::move(error_cb),
                             std::move(backend_task_runner)),
       input_memory_type_(input_memory_type),
@@ -228,12 +230,13 @@ std::unique_ptr<ImageProcessorBackend> V4L2ImageProcessorBackend::Create(
     const PortConfig& input_config,
     const PortConfig& output_config,
     const std::vector<OutputMode>& preferred_output_modes,
+    VideoRotation relative_rotation,
     ErrorCB error_cb,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner) {
   for (const auto& output_mode : preferred_output_modes) {
     auto image_processor = V4L2ImageProcessorBackend::CreateWithOutputMode(
-        device, num_buffers, input_config, output_config, output_mode, error_cb,
-        backend_task_runner);
+        device, num_buffers, input_config, output_config, output_mode,
+        relative_rotation, error_cb, backend_task_runner);
     if (image_processor)
       return image_processor;
   }
@@ -249,6 +252,7 @@ V4L2ImageProcessorBackend::CreateWithOutputMode(
     const PortConfig& input_config,
     const PortConfig& output_config,
     const OutputMode& output_mode,
+    VideoRotation relative_rotation,
     ErrorCB error_cb,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner) {
   VLOGF(2);
@@ -305,6 +309,12 @@ V4L2ImageProcessorBackend::CreateWithOutputMode(
 
   if (!device->IsImageProcessingSupported()) {
     VLOGF(1) << "V4L2ImageProcessorBackend not supported in this platform";
+    return nullptr;
+  }
+
+  // V4L2IP now doesn't support rotation case, so return nullptr.
+  if (relative_rotation != VIDEO_ROTATION_0) {
+    VLOGF(1) << "Currently V4L2IP doesn't support rotation";
     return nullptr;
   }
 
@@ -390,8 +400,8 @@ V4L2ImageProcessorBackend::CreateWithOutputMode(
           PortConfig(output_config.fourcc, negotiated_output_size,
                      output_planes, output_config.visible_rect,
                      {output_storage_type}),
-          input_memory_type, output_memory_type, output_mode, num_buffers,
-          std::move(error_cb)));
+          input_memory_type, output_memory_type, output_mode, relative_rotation,
+          num_buffers, std::move(error_cb)));
 
   // Initialize at |backend_task_runner_|.
   bool success = false;

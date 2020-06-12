@@ -56,6 +56,10 @@ const char kCrostiniAnsiblePlaybookFilePath[] =
 // successfully configured by kCrostiniAnsiblePlaybook user policy.
 const char kCrostiniDefaultContainerConfigured[] =
     "crostini.default_container_configured";
+// A boolean preference representing a user level enterprise policy to allow
+// port forwarding into Crostini.
+const char kCrostiniPortForwardingAllowedByPolicy[] =
+    "crostini.port_forwarding_allowed_by_policy";
 
 // A boolean preference controlling Crostini usage reporting.
 const char kReportCrostiniUsageEnabled[] = "crostini.usage_reporting_enabled";
@@ -114,6 +118,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                 true);
   registry->RegisterBooleanPref(kVmManagementCliAllowedByPolicy, true);
   registry->RegisterBooleanPref(kUserCrostiniRootAccessAllowedByPolicy, true);
+  registry->RegisterBooleanPref(kCrostiniPortForwardingAllowedByPolicy, true);
   registry->RegisterFilePathPref(kCrostiniAnsiblePlaybookFilePath,
                                  base::FilePath());
   registry->RegisterBooleanPref(kCrostiniDefaultContainerConfigured, false);

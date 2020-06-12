@@ -34,6 +34,7 @@ apps::mojom::AppPtr LacrosApps::GetLacrosApp(bool is_ready) {
   app->icon_key = NewIconKey(is_ready ? State::kReady : State::kLoading);
   app->searchable = apps::mojom::OptionalBool::kTrue;
   app->show_in_launcher = apps::mojom::OptionalBool::kTrue;
+  app->show_in_shelf = apps::mojom::OptionalBool::kTrue;
   app->show_in_search = apps::mojom::OptionalBool::kTrue;
   app->show_in_management = apps::mojom::OptionalBool::kFalse;
   return app;

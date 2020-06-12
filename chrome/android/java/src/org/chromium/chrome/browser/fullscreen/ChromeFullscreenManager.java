@@ -26,11 +26,11 @@ import org.chromium.base.ApplicationStatus.WindowFocusChangedListener;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAttributeKeys;
@@ -82,6 +82,13 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
     private final boolean mExitFullscreenOnStop;
     private final TokenHolder mHidingTokenHolder = new TokenHolder(this::scheduleVisibilityUpdate);
 
+    /**
+     * An observable for browser controls being at its minimum height or not.
+     * This is as good as the controls being hidden when both min heights are 0.
+     */
+    private final ObservableSupplierImpl<Boolean> mControlsAtMinHeight =
+            new ObservableSupplierImpl<>();
+
     private TabModelSelectorTabObserver mTabFullscreenObserver;
     @Nullable private ControlContainer mControlContainer;
     private int mTopControlContainerHeight;
@@ -98,8 +105,6 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
     private int mRendererBottomControlsMinHeightOffset;
     private int mPreviousContentOffset;
     private float mControlOffsetRatio;
-    private boolean mIsEnteringPersistentModeState;
-    private FullscreenOptions mPendingFullscreenOptions;
     private boolean mOffsetsChanged;
     private ActivityTabTabObserver mActiveTabObserver;
 
@@ -192,7 +197,9 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         mActivity = activity;
         mControlsPosition = controlsPosition;
         mExitFullscreenOnStop = exitFullscreenOnStop;
-        mHtmlApiHandler = new FullscreenHtmlApiHandler(activity.getWindow(), createApiDelegate());
+        mControlsAtMinHeight.set(false);
+        mHtmlApiHandler = new FullscreenHtmlApiHandler(activity.getWindow(), this::getTab,
+                mControlsAtMinHeight, () -> !(isInVr() || bootsToVr()));
         mBrowserVisibilityDelegate = new BrowserStateBrowserControlsVisibilityDelegate(
                 mHtmlApiHandler.getPersistentFullscreenModeSupplier());
         mBrowserVisibilityDelegate.addObserver((constraints) -> {
@@ -224,7 +231,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
             @Override
             public void onContentViewScrollingStateChanged(boolean scrolling) {
                 mContentViewScrolling = scrolling;
-                if (!scrolling) updateVisuals();
+                if (!scrolling) updateContentOffsetAndNotify();
             }
         };
 
@@ -477,50 +484,6 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         if (!LibraryLoader.getInstance().isInitialized()) return;
     }
 
-    /**
-     * @return The delegate that will handle the embedder specific requirements of the
-     *         fullscreen API handler.
-     */
-    private FullscreenHtmlApiDelegate createApiDelegate() {
-        return new FullscreenHtmlApiDelegate() {
-            @Override
-            public void onEnterFullscreen(FullscreenOptions options) {
-                Tab tab = getTab();
-                if (areBrowserControlsAtMinHeight()) {
-                    // The browser controls are currently hidden.
-                    mHtmlApiHandler.enterFullscreen(tab, options);
-                } else {
-                    // We should hide browser controls first.
-                    mPendingFullscreenOptions = options;
-                    mIsEnteringPersistentModeState = true;
-                }
-            }
-
-            @Override
-            public boolean cancelPendingEnterFullscreen() {
-                boolean wasPending = mIsEnteringPersistentModeState;
-                mIsEnteringPersistentModeState = false;
-                mPendingFullscreenOptions = null;
-                return wasPending;
-            }
-
-            @Override
-            public void onFullscreenExited(Tab tab) {
-                // At this point, browser controls are hidden. Show browser controls only if it's
-                // permitted.
-                TabBrowserControlsConstraintsHelper.update(tab, BrowserControlsState.SHOWN, true);
-            }
-
-            @Override
-            public boolean shouldShowNotificationToast() {
-                // The toast tells user how to leave fullscreen by touching the screen. Since,
-                // there is no touchscreen when browsing in VR, the toast doesn't have any useful
-                // information.
-                return !isInVr() && !bootsToVr();
-            }
-        };
-    }
-
     @Override
     public float getBrowserControlHiddenRatio() {
         return mControlOffsetRatio;
@@ -539,8 +502,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
      */
     @VisibleForTesting
     boolean areBrowserControlsAtMinHeight() {
-        return getContentOffset() == getTopControlsMinHeight()
-                && getBottomContentOffset() == getBottomControlsMinHeight();
+        return mControlsAtMinHeight.get();
     }
 
     /**
@@ -782,33 +744,8 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         mControlContainer.getView().postOnAnimation(mUpdateVisibilityRunnable);
     }
 
-    private void updateVisuals() {
-        TraceEvent.begin("FullscreenManager:updateVisuals");
-
-        if (mOffsetsChanged) {
-            mOffsetsChanged = false;
-
-            scheduleVisibilityUpdate();
-            if (shouldShowAndroidControls()) {
-                mControlContainer.getView().setTranslationY(getTopControlOffset());
-            }
-
-            // Whether we need the compositor to draw again to update our animation.
-            // Should be |false| when the browser controls are only moved through the page
-            // scrolling.
-            boolean needsAnimate = shouldShowAndroidControls();
-            for (BrowserControlsStateProvider.Observer obs : mControlsObservers) {
-                obs.onControlsOffsetChanged(getTopControlOffset(), getTopControlsMinHeightOffset(),
-                        getBottomControlOffset(), getBottomControlsMinHeightOffset(), needsAnimate);
-            }
-        }
-
-        final Tab tab = getTab();
-        if (tab != null && areBrowserControlsAtMinHeight() && mIsEnteringPersistentModeState) {
-            mHtmlApiHandler.enterFullscreen(tab, mPendingFullscreenOptions);
-            mIsEnteringPersistentModeState = false;
-            mPendingFullscreenOptions = null;
-        }
+    private void updateContentOffsetAndNotify() {
+        TraceEvent.begin("FullscreenManager:updateContentOffsetAndNotify");
 
         updateContentViewChildrenState();
 
@@ -820,7 +757,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
             mPreviousContentOffset = contentOffset;
         }
 
-        TraceEvent.end("FullscreenManager:updateVisuals");
+        TraceEvent.end("FullscreenManager:updateContentOffsetAndNotify");
     }
 
     /**
@@ -973,10 +910,28 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         mRendererTopControlsMinHeightOffset = topControlsMinHeightOffset;
         mRendererBottomControlsMinHeightOffset = bottomControlsMinHeightOffset;
         mRendererTopContentOffset = rendererTopContentOffset;
-        mOffsetsChanged = true;
-        updateControlOffset();
 
-        updateVisuals();
+        mControlsAtMinHeight.set(getContentOffset() == getTopControlsMinHeight()
+                && getBottomContentOffset() == getBottomControlsMinHeight());
+        updateControlOffset();
+        notifyControlOffsetChanged();
+        updateContentOffsetAndNotify();
+    }
+
+    private void notifyControlOffsetChanged() {
+        scheduleVisibilityUpdate();
+        if (shouldShowAndroidControls()) {
+            mControlContainer.getView().setTranslationY(getTopControlOffset());
+        }
+
+        // Whether we need the compositor to draw again to update our animation.
+        // Should be |false| when the browser controls are only moved through the page
+        // scrolling.
+        boolean needsAnimate = shouldShowAndroidControls();
+        for (BrowserControlsStateProvider.Observer obs : mControlsObservers) {
+            obs.onControlsOffsetChanged(getTopControlOffset(), getTopControlsMinHeightOffset(),
+                    getBottomControlOffset(), getBottomControlsMinHeightOffset(), needsAnimate);
+        }
     }
 
     /**
@@ -994,7 +949,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         } else if (eventAction == MotionEvent.ACTION_CANCEL
                 || eventAction == MotionEvent.ACTION_UP) {
             mInGesture = false;
-            updateVisuals();
+            updateContentOffsetAndNotify();
         }
     }
 

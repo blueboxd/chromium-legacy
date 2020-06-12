@@ -6714,11 +6714,27 @@ be describing additional metrics about the same event.
     <summary>
       Measure of memory consumed by V8.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.ProcessType"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="V8.AllocatedObjects">
     <summary>
       Measure of memory consumed by live objects in V8.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="metrics.ProcessType"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
   <metric name="V8.Main">
     <summary>

@@ -105,6 +105,9 @@ void AppUpdate::Merge(apps::mojom::App* state, const apps::mojom::App* delta) {
   if (delta->show_in_launcher != apps::mojom::OptionalBool::kUnknown) {
     state->show_in_launcher = delta->show_in_launcher;
   }
+  if (delta->show_in_shelf != apps::mojom::OptionalBool::kUnknown) {
+    state->show_in_shelf = delta->show_in_shelf;
+  }
   if (delta->show_in_search != apps::mojom::OptionalBool::kUnknown) {
     state->show_in_search = delta->show_in_search;
   }
@@ -416,6 +419,23 @@ bool AppUpdate::ShowInLauncherChanged() const {
   return delta_ &&
          (delta_->show_in_launcher != apps::mojom::OptionalBool::kUnknown) &&
          (!state_ || (delta_->show_in_launcher != state_->show_in_launcher));
+}
+
+apps::mojom::OptionalBool AppUpdate::ShowInShelf() const {
+  if (delta_ &&
+      (delta_->show_in_shelf != apps::mojom::OptionalBool::kUnknown)) {
+    return delta_->show_in_shelf;
+  }
+  if (state_) {
+    return state_->show_in_shelf;
+  }
+  return apps::mojom::OptionalBool::kUnknown;
+}
+
+bool AppUpdate::ShowInShelfChanged() const {
+  return delta_ &&
+         (delta_->show_in_shelf != apps::mojom::OptionalBool::kUnknown) &&
+         (!state_ || (delta_->show_in_shelf != state_->show_in_shelf));
 }
 
 apps::mojom::OptionalBool AppUpdate::ShowInSearch() const {

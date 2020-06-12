@@ -55,6 +55,15 @@ ALWAYS_INLINE size_t PartitionCookieSizeAdjustSubtract(size_t size) {
   return size;
 }
 
+ALWAYS_INLINE size_t PartitionCookieOffsetSubtract(size_t offset) {
+#if DCHECK_IS_ON()
+  // Convert offset from the beginning of the allocated slot to offset from
+  // the value given to the application, which is just after the cookie.
+  offset -= kCookieSize;
+#endif
+  return offset;
+}
+
 ALWAYS_INLINE void PartitionCookieWriteValue(void* ptr) {
   unsigned char* cookie_ptr = reinterpret_cast<unsigned char*>(ptr);
   for (size_t i = 0; i < kCookieSize; ++i, ++cookie_ptr)

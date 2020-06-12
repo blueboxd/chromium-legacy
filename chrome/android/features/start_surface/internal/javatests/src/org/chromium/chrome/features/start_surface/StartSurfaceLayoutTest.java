@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.features.start_surface;
 
-import static android.os.Build.VERSION_CODES.N_MR1;
 import static android.os.Build.VERSION_CODES.O_MR1;
 
 import static androidx.test.espresso.Espresso.onView;
@@ -1716,7 +1715,6 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
-    @DisableIf.Build(sdk_is_greater_than = N_MR1, message = "crbug.com/1077191, crbug.com/1081909")
     public void testActivityCanBeGarbageCollectedAfterFinished() throws Exception {
         prepareTabs(1, 0, "about:blank");
 
@@ -1731,7 +1729,9 @@ public class StartSurfaceLayoutTest {
         mTabListDelegate = null;
         mActivityTestRule.setActivity(activity);
 
-        assertTrue(GarbageCollectionTestUtils.canBeGarbageCollected(activityRef));
+        // A longer timeout is needed. Achieve that by using the CriteriaHelper.pollUiThread.
+        CriteriaHelper.pollUiThread(
+                () -> GarbageCollectionTestUtils.canBeGarbageCollected(activityRef));
     }
 
     /**

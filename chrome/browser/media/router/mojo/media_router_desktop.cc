@@ -200,6 +200,11 @@ void MediaRouterDesktop::ProvideSinks(
     const std::string& provider_name,
     const std::vector<MediaSinkInternal>& sinks) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // We no longer provide DIAL sources to the extension.
+  constexpr char kDialSourceName[] = "dial";
+  if (provider_name == kDialSourceName) {
+    return;
+  }
   media_route_providers_[MediaRouteProviderId::EXTENSION]->ProvideSinks(
       provider_name, sinks);
 

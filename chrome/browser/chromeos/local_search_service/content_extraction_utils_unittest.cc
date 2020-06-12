@@ -9,6 +9,31 @@
 
 namespace local_search_service {
 
+TEST(ContentExtractionUtilsTest, ExtractContentTest) {
+  {
+    const base::string16 text(base::UTF8ToUTF16(
+        "Normal... English!!! paragraph: email@gmail.com. Here is a link: "
+        "https://google.com, ip=8.8.8.8"));
+    const auto tokens = ExtractContent("first test", text, "en");
+    EXPECT_EQ(tokens.size(), 7u);
+
+    EXPECT_EQ(tokens[1].content, base::UTF8ToUTF16("english"));
+    EXPECT_EQ(tokens[1].positions[0].content_id, "first test");
+    EXPECT_EQ(tokens[1].positions[0].start, 10u);
+    EXPECT_EQ(tokens[1].positions[0].length, 7u);
+  }
+  {
+    const base::string16 text(base::UTF8ToUTF16("@#$%@^你好!!!"));
+    const auto tokens = ExtractContent("2nd test", text, "zh");
+    EXPECT_EQ(tokens.size(), 1u);
+
+    EXPECT_EQ(tokens[0].content, base::UTF8ToUTF16("你好"));
+    EXPECT_EQ(tokens[0].positions[0].content_id, "2nd test");
+    EXPECT_EQ(tokens[0].positions[0].start, 6u);
+    EXPECT_EQ(tokens[0].positions[0].length, 2u);
+  }
+}
+
 TEST(ContentExtractionUtilsTest, StopwordTest) {
   // Non English.
   EXPECT_FALSE(IsStopword(base::UTF8ToUTF16("was"), "vn"));

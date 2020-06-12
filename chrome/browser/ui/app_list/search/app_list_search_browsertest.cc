@@ -183,7 +183,11 @@ IN_PROC_BROWSER_TEST_F(AppListSearchBrowserTest, SearchDoesntCrash) {
 IN_PROC_BROWSER_TEST_F(OsSettingsSearchBrowserTest, AppListSearchForSettings) {
   DoLogin();
   SearchAndWaitForProviders("network", {ResultType::kOsSettings});
-  ASSERT_TRUE(FindResult("os-settings://networks?type=WiFi"));
+
+  auto* result = FindResult("os-settings://networks?type=WiFi");
+  ASSERT_TRUE(result);
+  EXPECT_EQ(base::UTF16ToASCII(result->accessible_name()),
+            "Wi-Fi networks, Network, Settings");
 }
 
 }  // namespace app_list

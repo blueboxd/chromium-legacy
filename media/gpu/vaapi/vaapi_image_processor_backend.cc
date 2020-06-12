@@ -75,6 +75,7 @@ std::unique_ptr<ImageProcessorBackend> VaapiImageProcessorBackend::Create(
     const PortConfig& input_config,
     const PortConfig& output_config,
     const std::vector<OutputMode>& preferred_output_modes,
+    VideoRotation relative_rotation,
     ErrorCB error_cb,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner) {
 // VaapiImageProcessorBackend supports ChromeOS only.
@@ -136,6 +137,13 @@ std::unique_ptr<ImageProcessorBackend> VaapiImageProcessorBackend::Create(
     return nullptr;
   }
 
+  // Checks if VA-API driver supports rotation.
+  if (relative_rotation != VIDEO_ROTATION_0 &&
+      !vaapi_wrapper->IsRotationSupported()) {
+    VLOGF(1) << "VaapiIP doesn't support rotation";
+    return nullptr;
+  }
+
   // We should restrict the acceptable PortConfig for input and output both to
   // the one returned by GetPlatformVideoFrameLayout(). However,
   // ImageProcessorFactory interface doesn't provide information about what
@@ -146,7 +154,7 @@ std::unique_ptr<ImageProcessorBackend> VaapiImageProcessorBackend::Create(
   // scenario.
   return base::WrapUnique<ImageProcessorBackend>(new VaapiImageProcessorBackend(
       std::move(vaapi_wrapper), input_config, output_config, OutputMode::IMPORT,
-      std::move(error_cb), std::move(backend_task_runner)));
+      relative_rotation, std::move(error_cb), std::move(backend_task_runner)));
 #endif
 }
 
@@ -155,11 +163,13 @@ VaapiImageProcessorBackend::VaapiImageProcessorBackend(
     const PortConfig& input_config,
     const PortConfig& output_config,
     OutputMode output_mode,
+    VideoRotation relative_rotation,
     ErrorCB error_cb,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner)
     : ImageProcessorBackend(input_config,
                             output_config,
                             output_mode,
+                            relative_rotation,
                             std::move(error_cb),
                             std::move(backend_task_runner)),
       vaapi_wrapper_(std::move(vaapi_wrapper)) {}
@@ -206,9 +216,9 @@ void VaapiImageProcessorBackend::Process(scoped_refptr<VideoFrame> input_frame,
     return;
 
   // VA-API performs pixel format conversion and scaling without any filters.
-  if (!vaapi_wrapper_->BlitSurface(*src_va_surface, *dst_va_surface,
-                                   input_frame->visible_rect(),
-                                   output_frame->visible_rect())) {
+  if (!vaapi_wrapper_->BlitSurface(
+          *src_va_surface, *dst_va_surface, input_frame->visible_rect(),
+          output_frame->visible_rect(), relative_rotation_)) {
     // Failed to execute BlitSurface(). Since VaapiWrapper has invoked
     // ReportToUMA(), calling error_cb_ here is not needed.
     return;

@@ -227,7 +227,7 @@ DarkModeImageClassifier::GetFeatures(const PaintImage& paint_image,
 
   float transparency_ratio;
   float background_ratio;
-  Vector<SkColor> sampled_pixels;
+  std::vector<SkColor> sampled_pixels;
   GetSamples(bitmap, &sampled_pixels, &transparency_ratio, &background_ratio);
   // TODO(https://crbug.com/945434): Investigate why an incorrect resource is
   // loaded and how we can fetch the correct resource. This condition will
@@ -242,7 +242,7 @@ DarkModeImageClassifier::GetFeatures(const PaintImage& paint_image,
 // distributed blocks through its width and height, each block is sampled, and
 // checked to see if it seems to be background or foreground.
 void DarkModeImageClassifier::GetSamples(const SkBitmap& bitmap,
-                                         Vector<SkColor>* sampled_pixels,
+                                         std::vector<SkColor>* sampled_pixels,
                                          float* transparency_ratio,
                                          float* background_ratio) {
   int pixels_per_block =
@@ -252,8 +252,8 @@ void DarkModeImageClassifier::GetSamples(const SkBitmap& bitmap,
   int opaque_pixels = 0;
   int blocks_count = 0;
 
-  Vector<int> horizontal_grid(blocks_count_horizontal_ + 1);
-  Vector<int> vertical_grid(blocks_count_vertical_ + 1);
+  std::vector<int> horizontal_grid(blocks_count_horizontal_ + 1);
+  std::vector<int> vertical_grid(blocks_count_vertical_ + 1);
 
   for (int block = 0; block <= blocks_count_horizontal_; block++) {
     horizontal_grid[block] = static_cast<int>(round(
@@ -265,21 +265,22 @@ void DarkModeImageClassifier::GetSamples(const SkBitmap& bitmap,
   }
 
   sampled_pixels->clear();
-  Vector<IntRect> foreground_blocks;
+  std::vector<gfx::Rect> foreground_blocks;
 
   for (int y = 0; y < blocks_count_vertical_; y++) {
     for (int x = 0; x < blocks_count_horizontal_; x++) {
-      IntRect block(horizontal_grid[x], vertical_grid[y],
-                    horizontal_grid[x + 1] - horizontal_grid[x],
-                    vertical_grid[y + 1] - vertical_grid[y]);
+      gfx::Rect block(horizontal_grid[x], vertical_grid[y],
+                      horizontal_grid[x + 1] - horizontal_grid[x],
+                      vertical_grid[y + 1] - vertical_grid[y]);
 
-      Vector<SkColor> block_samples;
+      std::vector<SkColor> block_samples;
       int block_transparent_pixels;
       GetBlockSamples(bitmap, block, pixels_per_block, &block_samples,
                       &block_transparent_pixels);
       opaque_pixels += static_cast<int>(block_samples.size());
       transparent_pixels += block_transparent_pixels;
-      sampled_pixels->AppendRange(block_samples.begin(), block_samples.end());
+      sampled_pixels->insert(sampled_pixels->end(), block_samples.begin(),
+                             block_samples.end());
       if (opaque_pixels >
           kMinOpaquePixelPercentageForForeground * pixels_per_block) {
         foreground_blocks.push_back(block);
@@ -297,17 +298,18 @@ void DarkModeImageClassifier::GetSamples(const SkBitmap& bitmap,
 // Selects samples at regular intervals from a block of the image.
 // Returns the opaque sampled pixels, and the number of transparent
 // sampled pixels.
-void DarkModeImageClassifier::GetBlockSamples(const SkBitmap& bitmap,
-                                              const IntRect& block,
-                                              const int required_samples_count,
-                                              Vector<SkColor>* sampled_pixels,
-                                              int* transparent_pixels_count) {
+void DarkModeImageClassifier::GetBlockSamples(
+    const SkBitmap& bitmap,
+    const gfx::Rect& block,
+    const int required_samples_count,
+    std::vector<SkColor>* sampled_pixels,
+    int* transparent_pixels_count) {
   *transparent_pixels_count = 0;
 
-  int x1 = block.X();
-  int y1 = block.Y();
-  int x2 = block.MaxX();
-  int y2 = block.MaxY();
+  int x1 = block.x();
+  int y1 = block.y();
+  int x2 = block.right();
+  int y2 = block.bottom();
   DCHECK(x1 < bitmap.width());
   DCHECK(y1 < bitmap.height());
   DCHECK(x2 <= bitmap.width());
@@ -332,7 +334,7 @@ void DarkModeImageClassifier::GetBlockSamples(const SkBitmap& bitmap,
 }
 
 DarkModeImageClassifier::Features DarkModeImageClassifier::ComputeFeatures(
-    const Vector<SkColor>& sampled_pixels,
+    const std::vector<SkColor>& sampled_pixels,
     const float transparency_ratio,
     const float background_ratio) {
   int samples_count = static_cast<int>(sampled_pixels.size());
@@ -358,7 +360,7 @@ DarkModeImageClassifier::Features DarkModeImageClassifier::ComputeFeatures(
 }
 
 float DarkModeImageClassifier::ComputeColorBucketsRatio(
-    const Vector<SkColor>& sampled_pixels,
+    const std::vector<SkColor>& sampled_pixels,
     const ColorMode color_mode) {
   HashSet<unsigned, WTF::AlreadyHashed,
           WTF::UnsignedWithZeroKeyHashTraits<unsigned>>

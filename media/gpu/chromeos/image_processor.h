@@ -42,6 +42,7 @@ class MEDIA_GPU_EXPORT ImageProcessor {
           const PortConfig& input_config,
           const PortConfig& output_config,
           const std::vector<OutputMode>& preferred_output_modes,
+          VideoRotation relative_rotation,
           ErrorCB error_cb,
           scoped_refptr<base::SequencedTaskRunner> backend_task_runner)>;
 
@@ -50,6 +51,7 @@ class MEDIA_GPU_EXPORT ImageProcessor {
       const PortConfig& input_config,
       const PortConfig& output_config,
       const std::vector<OutputMode>& preferred_output_modes,
+      VideoRotation relative_rotation,
       ErrorCB error_cb,
       scoped_refptr<base::SequencedTaskRunner> client_task_runner);
 

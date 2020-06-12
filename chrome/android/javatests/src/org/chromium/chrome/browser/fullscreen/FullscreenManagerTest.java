@@ -454,6 +454,25 @@ public class FullscreenManagerTest {
         PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, delegate::rendererResponsive);
     }
 
+    @Test
+    @LargeTest
+    @Feature({"Fullscreen"})
+    public void testEnterPendingPersistentFullscreen() {
+        FullscreenManagerTestUtils.disableBrowserOverrides();
+        mActivityTestRule.startMainActivityWithURL(LONG_FULLSCREEN_API_HTML_TEST_PAGE);
+
+        // Tests entering fullscreen when browser controls are visible. The request goes through
+        // after the controls are hidden.
+        ChromeFullscreenManager fullscreenManager =
+                mActivityTestRule.getActivity().getFullscreenManager();
+        Assert.assertEquals(0f, fullscreenManager.getTopControlOffset(), 0);
+
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        TouchCommon.singleClickView(tab.getView());
+        final TabWebContentsDelegateAndroid delegate = TabTestUtils.getTabWebContentsDelegate(tab);
+        FullscreenTestUtils.waitForPersistentFullscreen(delegate, true);
+    }
+
     /* @LargeTest
      * @Feature({"Fullscreen"})
      */

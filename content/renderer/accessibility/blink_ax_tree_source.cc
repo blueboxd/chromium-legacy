@@ -39,6 +39,7 @@
 #include "third_party/blink/public/web/web_plugin.h"
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -1331,31 +1332,36 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject& src,
     return;
   }
 
-  // Reject images that are explicitly empty, or that have a name already.
-  //
-  // In the future, we may annotate some images that have a name
-  // if we think we can add additional useful information.
+  // Reject images that are explicitly empty, or that have a
+  // meaningful name already.
   ax::mojom::NameFrom name_from;
   blink::WebVector<WebAXObject> name_objects;
   blink::WebString web_name = src.GetName(name_from, name_objects);
 
-  // Normally we don't assign an annotation to an image if it already
-  // has a name. There are a few exceptions where we ignore the name.
-  bool treat_name_as_empty = false;
+  // If an image has a nonempty name, compute whether we should add an
+  // image annotation or not.
+  bool should_annotate_image_with_nonempty_name = false;
 
   // When visual debugging is enabled, the "title" attribute is set to a
   // string beginning with a "%". If the name comes from that string we
   // can ignore it, and treat the name as empty.
   if (image_annotation_debugging_ &&
       base::StartsWith(web_name.Utf8(), "%", base::CompareCase::SENSITIVE))
-    treat_name_as_empty = true;
+    should_annotate_image_with_nonempty_name = true;
+
+  if (features::IsAugmentExistingImageLabelsEnabled()) {
+    // If the name consists of mostly stopwords, we can add an image
+    // annotations. See ax_image_stopwords.h for details.
+    if (image_annotator_->ImageNameHasMostlyStopwords(web_name.Utf8()))
+      should_annotate_image_with_nonempty_name = true;
+  }
 
   // If the image's name is explicitly empty, or if it has a name (and
   // we're not treating the name as empty), then it's ineligible for
   // an annotation.
   if ((name_from == ax::mojom::NameFrom::kAttributeExplicitlyEmpty ||
        !web_name.IsEmpty()) &&
-      !treat_name_as_empty) {
+      !should_annotate_image_with_nonempty_name) {
     dst->SetImageAnnotationStatus(
         ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
     return;
@@ -1369,13 +1375,13 @@ void BlinkAXTreeSource::AddImageAnnotations(blink::WebAXObject& src,
   if (dst->role == ax::mojom::Role::kRootWebArea) {
     std::string filename = GURL(document().Url()).ExtractFileName();
     if (base::StartsWith(dst_name, filename, base::CompareCase::SENSITIVE))
-      treat_name_as_empty = true;
+      should_annotate_image_with_nonempty_name = true;
   }
 
   // |dst| may be a document or link containing an image. Skip annotating
   // it if it already has text other than whitespace.
   if (!base::ContainsOnlyChars(dst_name, base::kWhitespaceASCII) &&
-      !treat_name_as_empty) {
+      !should_annotate_image_with_nonempty_name) {
     dst->SetImageAnnotationStatus(
         ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation);
     return;

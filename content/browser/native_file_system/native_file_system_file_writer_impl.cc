@@ -444,16 +444,7 @@ void NativeFileSystemFileWriterImpl::DidAnnotateFile(
 void NativeFileSystemFileWriterImpl::ComputeHashForSwapFile(
     HashCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-#if defined(OS_CHROMEOS)
-  DCHECK(swap_url().type() == storage::kFileSystemTypeNativeLocal ||
-         swap_url().type() == storage::kFileSystemTypeProvided ||
-         swap_url().type() == storage::kFileSystemTypeNativeForPlatformApp)
-      << swap_url().type();
-#else
   DCHECK_EQ(swap_url().type(), storage::kFileSystemTypeNativeLocal);
-#endif
-
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&ReadAndComputeSHA256ChecksumAndSize, swap_url().path()),

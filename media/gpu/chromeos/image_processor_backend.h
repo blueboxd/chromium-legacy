@@ -113,6 +113,7 @@ class MEDIA_GPU_EXPORT ImageProcessorBackend {
       const PortConfig& input_config,
       const PortConfig& output_config,
       OutputMode output_mode,
+      VideoRotation relative_rotation,
       ErrorCB error_cb,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
   virtual ~ImageProcessorBackend();
@@ -124,6 +125,10 @@ class MEDIA_GPU_EXPORT ImageProcessorBackend {
   // TODO(crbug.com/907767): Remove |output_mode_| once ImageProcessor always
   // works as IMPORT mode for output.
   const OutputMode output_mode_;
+
+  // ImageProcessor performs a rotation if the |relative_rotation_| is not equal
+  // to VIDEO_ROTATION_0.
+  const VideoRotation relative_rotation_;
 
   // Call this callback when any error occurs.
   const ErrorCB error_cb_;

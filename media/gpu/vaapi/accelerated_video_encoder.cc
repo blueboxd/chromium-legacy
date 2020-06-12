@@ -59,4 +59,10 @@ size_t AcceleratedVideoEncoder::GetBitstreamBufferSize() const {
   return GetEncodeBitstreamBufferSize(GetCodedSize());
 }
 
+void AcceleratedVideoEncoder::BitrateControlUpdate(
+    uint64_t encoded_chunk_size_bytes) {
+  NOTREACHED() << __func__ << "() is called to on an"
+               << "AcceleratedVideoEncoder that doesn't support BitrateControl"
+               << "::kConstantQuantizationParameter";
+}
 }  // namespace media

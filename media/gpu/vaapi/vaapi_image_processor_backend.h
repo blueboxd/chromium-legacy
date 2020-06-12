@@ -28,6 +28,7 @@ class VaapiImageProcessorBackend : public ImageProcessorBackend {
       const PortConfig& input_config,
       const PortConfig& output_config,
       const std::vector<OutputMode>& preferred_output_modes,
+      VideoRotation relative_rotation,
       ErrorCB error_cb,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
 
@@ -42,6 +43,7 @@ class VaapiImageProcessorBackend : public ImageProcessorBackend {
       const PortConfig& input_config,
       const PortConfig& output_config,
       OutputMode output_mode,
+      VideoRotation relative_rotation,
       ErrorCB error_cb,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner);
   ~VaapiImageProcessorBackend() override;

@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_ANDROID_CPU_TIME_METRICS_H_
 #define CONTENT_COMMON_ANDROID_CPU_TIME_METRICS_H_
 
+#include "content/common/content_export.h"
+
 namespace content {
 
 // Sets up periodic collection/reporting of the process's CPU time. Should be
@@ -14,7 +16,10 @@ namespace content {
 // into UMA histograms. The histogram data can later be used to approximate the
 // power consumption / efficiency of the app. Currently only supports Android,
 // where the sandbox allows isolated processes to read from /proc/self/stats.
-void SetupCpuTimeMetrics();
+CONTENT_EXPORT void SetupCpuTimeMetrics();
+
+// Sample and report the CPU time UMA metrics immediately.
+CONTENT_EXPORT void SampleCpuTimeMetricsForTesting();
 
 }  // namespace content
 

@@ -86,11 +86,17 @@ BASE_EXPORT bool DeleteFile(const FilePath& path, bool recursive);
 // the symlink. (even if the symlink points to a non-existent file)
 //
 // WARNING: USING THIS EQUIVALENT TO "rm -rf", SO USE WITH CAUTION.
+// TODO(thestig): Rename to DeletePathRecursively().
 BASE_EXPORT bool DeleteFileRecursively(const FilePath& path);
 
 // Simplified way to get a callback to do DeleteFile(path, false) and ignore the
 // DeleteFile() result.
 BASE_EXPORT OnceCallback<void(const FilePath&)> GetDeleteFileCallback();
+
+// Simplified way to get a callback to do DeleteFileRecursively(path) and ignore
+// the DeleteFileRecursively() result.
+BASE_EXPORT OnceCallback<void(const FilePath&)>
+GetDeletePathRecursivelyCallback();
 
 #if defined(OS_WIN)
 // Schedules to delete the given path, whether it's a file or a directory, until

@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.os.IBinder;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 
 /**
  * A Service that provides access to {@link ChromeBrowserSyncAdapter}.
@@ -27,7 +26,6 @@ public class ChromeBrowserSyncAdapterService extends Service {
     private ChromeBrowserSyncAdapter getOrCreateSyncAdapter(Context applicationContext) {
         synchronized (LOCK) {
             if (sSyncAdapter == null) {
-                ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
                 sSyncAdapter = new ChromeBrowserSyncAdapter(applicationContext);
             }
         }

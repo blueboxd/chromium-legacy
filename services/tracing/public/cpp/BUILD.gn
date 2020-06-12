@@ -40,9 +40,8 @@ if (!is_nacl && !is_ios) {
 
 target(tracing_lib_type, "cpp") {
   sources = [
-    "perfetto/flow_event_utils.cc",
-    "perfetto/flow_event_utils.h",
     "perfetto/macros.h",
+    "perfetto/macros_internal.h",
   ]
 
   defines = [ "IS_TRACING_CPP_IMPL" ]
@@ -50,11 +49,14 @@ target(tracing_lib_type, "cpp") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  public_deps = [ "//base" ]
+  public_deps = [
+    "//base",
+    "//third_party/perfetto:libperfetto",
+  ]
 
   deps = [ "//third_party/perfetto/include/perfetto/protozero" ]
 
-  all_dependent_configs = []
+  all_dependent_configs = [ "//third_party/perfetto/gn:public_config" ]
 
   if (!is_nacl && !is_ios) {
     sources += [
@@ -62,6 +64,8 @@ target(tracing_lib_type, "cpp") {
       "base_agent.h",
       "perfetto/dummy_producer.cc",
       "perfetto/dummy_producer.h",
+      "perfetto/flow_event_utils.cc",
+      "perfetto/flow_event_utils.h",
       "perfetto/interning_index.h",
       "perfetto/java_heap_profiler/hprof_buffer_android.cc",
       "perfetto/java_heap_profiler/hprof_buffer_android.h",
@@ -72,6 +76,7 @@ target(tracing_lib_type, "cpp") {
       "perfetto/java_heap_profiler/hprof_parser_android.h",
       "perfetto/java_heap_profiler/java_heap_profiler_android.cc",
       "perfetto/java_heap_profiler/java_heap_profiler_android.h",
+      "perfetto/macros_internal.cc",
       "perfetto/perfetto_config.cc",
       "perfetto/perfetto_config.h",
       "perfetto/perfetto_producer.cc",

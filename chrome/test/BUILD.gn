@@ -299,8 +299,6 @@ static_library("test_support") {
       "../browser/chromeos/accessibility/speech_monitor.h",
       "../browser/chromeos/arc/tracing/arc_app_performance_tracing_test_helper.cc",
       "../browser/chromeos/arc/tracing/arc_app_performance_tracing_test_helper.h",
-      "../browser/chromeos/file_manager/file_manager_test_util.cc",
-      "../browser/chromeos/file_manager/file_manager_test_util.h",
       "../browser/chromeos/ownership/fake_owner_settings_service.cc",
       "../browser/chromeos/ownership/fake_owner_settings_service.h",
       "../browser/chromeos/settings/scoped_cros_settings_test_helper.cc",
@@ -2158,6 +2156,8 @@ if (!is_android) {
         "../browser/chromeos/file_manager/file_manager_jstest.cc",
         "../browser/chromeos/file_manager/file_manager_jstest_base.cc",
         "../browser/chromeos/file_manager/file_manager_jstest_base.h",
+        "../browser/chromeos/file_manager/file_manager_test_util.cc",
+        "../browser/chromeos/file_manager/file_manager_test_util.h",
         "../browser/chromeos/file_manager/file_manager_uitest.cc",
         "../browser/chromeos/file_manager/file_tasks_browsertest.cc",
         "../browser/chromeos/file_manager/gallery_browsertest.cc",
@@ -3819,6 +3819,7 @@ test("unit_tests") {
   if (enable_dice_support) {
     sources += [
       "../browser/signin/dice_response_handler_unittest.cc",
+      "../browser/signin/dice_signed_in_profile_creator_unittest.cc",
       "../browser/signin/dice_tab_helper_unittest.cc",
       "../browser/signin/dice_web_signin_interceptor_unittest.cc",
       "../browser/signin/process_dice_header_delegate_impl_unittest.cc",

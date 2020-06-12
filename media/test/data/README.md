@@ -790,6 +790,27 @@ Alpha channel is always 0xFF.
 To get the uncompressed yuv, execute the following command.
 `ffmpeg -s 320x192 -pix_fmt yuv420p -i bear_320x192.i420.yuv -vcodec rawvideo -f image2 -pix_fmt rgba bear_320x192.bgra`
 
+#### bear\_192x320\_90.nv12.yuv
+Rotate bear\_320x192.nv12.yuv by 90 degrees clockwise.
+`ffmpeg -s:v 320x192 -pix_fmt nv12 -i bear_320x192.nv12.yuv -vf transpose=1 -c:v rawvideo -pix_fmt nv12 bear_192x320_90.nv12.yuv`
+
+#### bear\_192x320\_90.nv12.yuv.json
+Metadata describing bear\_192x320\_90.nv12.yuv
+
+#### bear\_320x192\_180.nv12.yuv
+Rotate bear\_320x192.nv12.yuv by 180 degrees clockwise.
+`ffmpeg -s:v 320x192 -pix_fmt nv12 -i bear_320x192.nv12.yuv -vf "transpose=2,transpose=2" -c:v rawvideo -pix_fmt nv12 bear_320x192_180.nv12.yuv`
+
+#### bear\_320x192\_180.nv12.yuv.json
+Metadata describing bear\_320x192\_180.nv12.yuv
+
+#### bear\_192x320\_270.nv12.yuv
+Rotate bear\_320x192.nv12.yuv by 270 degrees clockwise.
+`ffmpeg -s:v 320x192 -pix_fmt nv12 -i bear_320x192.nv12.yuv -vf transpose=2 -c:v rawvideo -pix_fmt nv12 bear_192x320_270.nv12.yuv`
+
+#### bear\_192x320\_270.nv12.yuv.json
+Metadata describing bear\_192x320\_270.nv12.yuv
+
 #### puppets-1280x720.nv12.yuv
 RAW NV12 format data. The width and height are 1280 and 720, respectively.
 This data is created from peach\_pi-1280x720.jpg by the following command.

@@ -197,6 +197,23 @@ class BASE_EXPORT PartitionStatsDumper {
 BASE_EXPORT void PartitionAllocGlobalInit(OomFunction on_out_of_memory);
 BASE_EXPORT void PartitionAllocGlobalUninitForTesting();
 
+ALWAYS_INLINE bool IsManagedByPartitionAlloc(const void* address) {
+#if defined(ARCH_CPU_64_BITS)
+  return internal::PartitionAddressSpace::Contains(address);
+#else
+  return false;
+#endif
+}
+
+ALWAYS_INLINE bool IsManagedByPartitionAllocAndNotDirectMapped(
+    const void* address) {
+#if defined(ARCH_CPU_64_BITS)
+  return internal::PartitionAddressSpace::IsInNormalBucketPool(address);
+#else
+  return false;
+#endif
+}
+
 ALWAYS_INLINE bool PartitionAllocSupportsGetSize() {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   return false;
@@ -205,17 +222,57 @@ ALWAYS_INLINE bool PartitionAllocSupportsGetSize() {
 #endif
 }
 
+namespace internal {
+// Gets the PartitionPage object for the first partition page of the slot span
+// that contains |ptr|. It's used with intention to do obtain the slot size.
+// CAUTION! It works well for normal buckets, but for direct-mapped allocations
+// it'll only work if |ptr| is in the first partition page of the allocation.
 template <bool thread_safe>
-ALWAYS_INLINE size_t PartitionAllocGetSize(void* ptr) {
+ALWAYS_INLINE internal::PartitionPage<thread_safe>*
+PartitionAllocGetPageForSize(void* ptr) {
   // No need to lock here. Only |ptr| being freed by another thread could
   // cause trouble, and the caller is responsible for that not happening.
   DCHECK(PartitionAllocSupportsGetSize());
-  ptr = internal::PartitionCookieFreePointerAdjust(ptr);
-  auto* page = internal::PartitionPage<thread_safe>::FromPointer(ptr);
+  auto* page =
+      internal::PartitionPage<thread_safe>::FromPointerNoAlignmentCheck(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
   DCHECK(internal::PartitionRootBase<thread_safe>::IsValidPage(page));
-  size_t size = page->bucket->slot_size;
-  return internal::PartitionCookieSizeAdjustSubtract(size);
+  return page;
+}
+}  // namespace internal
+
+// Gets the size of the allocated slot that contains |ptr|, adjusted for cookie
+// (if any).
+// CAUTION! For direct-mapped allocation, |ptr| has to be within the first
+// partition page.
+template <bool thread_safe>
+ALWAYS_INLINE size_t PartitionAllocGetSize(void* ptr) {
+  ptr = internal::PartitionCookieFreePointerAdjust(ptr);
+  auto* page = internal::PartitionAllocGetPageForSize<thread_safe>(ptr);
+  return internal::PartitionCookieSizeAdjustSubtract(page->bucket->slot_size);
+}
+
+// Gets the offset from the beginning of the allocated slot, adjusted for cookie
+// (if any).
+// CAUTION! Use only for normal buckets. Using on direct-mapped allocations may
+// lead to undefined behavior.
+template <bool thread_safe>
+ALWAYS_INLINE size_t PartitionAllocGetSlotOffset(void* ptr) {
+  DCHECK(IsManagedByPartitionAllocAndNotDirectMapped(ptr));
+  ptr = internal::PartitionCookieFreePointerAdjust(ptr);
+  auto* page = internal::PartitionAllocGetPageForSize<thread_safe>(ptr);
+  size_t slot_size = page->bucket->slot_size;
+
+  // Get the offset from the beginning of the slot span.
+  uintptr_t ptr_addr = reinterpret_cast<uintptr_t>(ptr);
+  uintptr_t slot_span_start = reinterpret_cast<uintptr_t>(
+      internal::PartitionPage<internal::ThreadSafe>::ToPointer(page));
+  size_t offset_in_slot_span = ptr_addr - slot_span_start;
+  // Knowing that slots are tightly packed in a slot span, calculate an offset
+  // within a slot using simple % operation.
+  // TODO(bartekn): Try to replace % with multiplication&shift magic.
+  size_t offset_in_slot = offset_in_slot_span % slot_size;
+  return offset_in_slot;
 }
 
 template <bool thread_safe>
@@ -330,14 +387,6 @@ struct BASE_EXPORT PartitionAllocator {
  private:
   PartitionRoot<thread_safe> partition_root_;
 };
-
-ALWAYS_INLINE bool IsManagedByPartitionAlloc(const void* address) {
-#if defined(ARCH_CPU_64_BITS)
-  return internal::PartitionAddressSpace::Contains(address);
-#else
-  return false;
-#endif
-}
 }  // namespace internal
 
 using PartitionAllocator = internal::PartitionAllocator<internal::ThreadSafe>;
@@ -346,15 +395,6 @@ using ThreadUnsafePartitionAllocator =
 
 using ThreadSafePartitionRoot = PartitionRoot<internal::ThreadSafe>;
 using ThreadUnsafePartitionRoot = PartitionRoot<internal::NotThreadSafe>;
-
-ALWAYS_INLINE bool IsManagedByPartitionAllocAndNotDirectMapped(
-    const void* address) {
-#if defined(ARCH_CPU_64_BITS)
-  return internal::PartitionAddressSpace::IsInNormalBucketPool(address);
-#else
-  return false;
-#endif
-}
 
 }  // namespace base
 

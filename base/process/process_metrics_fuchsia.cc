@@ -35,6 +35,12 @@ TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
   return TimeDelta();
 }
 
+bool ProcessMetrics::GetCumulativeCPUUsagePerThread(CPUUsagePerThread&) {
+  // TODO(https://crbug.com/926581).
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   // TODO(https://crbug.com/926581).
   return false;

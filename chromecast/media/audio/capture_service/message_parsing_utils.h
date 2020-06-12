@@ -18,13 +18,13 @@ namespace capture_service {
 
 // Read message header to |packet_info|, and return whether success.
 // The header of the message consists of <uint8_t message_type>
-// <uint8_t stream_type> <uint8_t channels><uint8_t sample_format>
-// <uint16_t sample_rate><uint64_t timestamp_us|frames_per_buffer>.
-// If |message_type| is kAudio, it is an audio data message that has
-// |timestamp_us|, otherwise if |message_type| is kAck, it's a request
-// message that has |frames_per_buffer|.
-// Note it cannot be used to read kMetadata messages, which don't have header
-// besides |message_type| bits.
+// <uint8_t stream_type> <uint8_t audio_codec|sample_format> <uint8_t channels>
+// <uint16_t sample_rate> <uint64_t frames_per_buffer|timestamp_us>.
+// If |message_type| is kRequest, it is a request message that has |audio_codec|
+// and |frames_per_buffer|, otherwise if |message_type| is kPcmAudio, it's a PCM
+// audio data message that has |sample_format| and |timestamp_us|.
+// Note it cannot be used to read kOpusAudio or kMetadata messages, which don't
+// have header besides |message_type| bits.
 // Note |packet_info| will be untouched if fails to read header.
 // Note unsigned |timestamp_us| will be converted to signed |timestamp| if
 // valid.
@@ -43,13 +43,16 @@ scoped_refptr<net::IOBufferWithSize> MakeMessage(const PacketInfo& packet_info,
                                                  const char* data,
                                                  size_t data_size);
 
-// Make a IO buffer for metadata message. It will populate message size and type
-// fields, and copy |data| into the message. The returned buffer will have a
-// length of |data_size| + sizeof(uint8_t message_type) + sizeof(uint16_t size).
-// Note metadata cannot be empty, and the method will fail and return null if
-// |data| is null or |data_size| is zero.
-scoped_refptr<net::IOBufferWithSize> MakeMetadataMessage(const char* data,
-                                                         size_t data_size);
+// Make a IO buffer for serialized message. It will populate message size and
+// type fields, and copy |data| into the message. The returned buffer will have
+// a length of |data_size| + sizeof(uint8_t message_type) + sizeof(uint16_t
+// size).
+// Note serialized data cannot be empty, and the method will fail and return
+// null if |data| is null or |data_size| is zero.
+scoped_refptr<net::IOBufferWithSize> MakeSerializedMessage(
+    MessageType message_type,
+    const char* data,
+    size_t data_size);
 
 // Read the audio data in the message and copy to |audio_bus| based on
 // |stream_info|. Return false if fails.
@@ -57,6 +60,14 @@ bool ReadDataToAudioBus(const StreamInfo& stream_info,
                         const char* data,
                         size_t size,
                         ::media::AudioBus* audio_bus);
+
+// Read the header part of the PCM audio message to packet info and the audio
+// data part to audio bus, and return whether success. This will run
+// ReadHeader() and ReadDataToAudioBus() in the underlying implementation.
+bool ReadPcmAudioMessage(const char* data,
+                         size_t size,
+                         PacketInfo* packet_info,
+                         ::media::AudioBus* audio_bus);
 
 // Populate header of the message, including the SmallMessageSocket size bits.
 // Note this is used by unittest, user should use MakeMessage directly.

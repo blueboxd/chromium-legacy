@@ -24,6 +24,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -407,9 +408,9 @@ void WebAppsBase::SetShowInFields(apps::mojom::AppPtr& app,
     app->show_in_launcher = chromeos_data.show_in_launcher
                                 ? apps::mojom::OptionalBool::kTrue
                                 : apps::mojom::OptionalBool::kFalse;
-    app->show_in_search = chromeos_data.show_in_search
-                              ? apps::mojom::OptionalBool::kTrue
-                              : apps::mojom::OptionalBool::kFalse;
+    app->show_in_shelf = app->show_in_search =
+        chromeos_data.show_in_search ? apps::mojom::OptionalBool::kTrue
+                                     : apps::mojom::OptionalBool::kFalse;
     app->show_in_management = chromeos_data.show_in_management
                                   ? apps::mojom::OptionalBool::kTrue
                                   : apps::mojom::OptionalBool::kFalse;
@@ -419,6 +420,7 @@ void WebAppsBase::SetShowInFields(apps::mojom::AppPtr& app,
   // Show the app everywhere by default.
   auto show = apps::mojom::OptionalBool::kTrue;
   app->show_in_launcher = show;
+  app->show_in_shelf = show;
   app->show_in_search = show;
   app->show_in_management = show;
 }
@@ -471,8 +473,9 @@ void WebAppsBase::PopulateIntentFilters(
     const base::Optional<GURL>& app_scope,
     std::vector<mojom::IntentFilterPtr>* target) {
   if (app_scope != base::nullopt) {
-    target->push_back(
-        apps_util::CreateIntentFilterForUrlScope(app_scope.value()));
+    target->push_back(apps_util::CreateIntentFilterForUrlScope(
+        app_scope.value(),
+        base::FeatureList::IsEnabled(features::kIntentHandlingSharing)));
   }
 }
 

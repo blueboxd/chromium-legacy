@@ -22,16 +22,12 @@ class DigitalGoodsService final : public ScriptWrappable {
   ~DigitalGoodsService() override;
 
   // IDL Interface:
-  const String& paymentMethod() const { return payment_method_; }
   ScriptPromise getDetails(ScriptState*, const Vector<String>& item_ids);
-  ScriptPromise consume(ScriptState*,
-                        const String& purchase_token,
-                        bool make_available_again);
+  ScriptPromise acknowledge(ScriptState*,
+                            const String& purchase_token,
+                            const String& purchase_type);
 
   void Trace(Visitor* visitor) const override;
-
- private:
-  const String payment_method_ = "https://some.url/for/payment/request/api";
 };
 
 }  // namespace blink

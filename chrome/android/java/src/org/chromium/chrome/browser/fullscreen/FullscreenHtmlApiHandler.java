@@ -22,11 +22,14 @@ import androidx.core.util.ObjectsCompat;
 
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.widget.Toast;
 
 import java.lang.ref.WeakReference;
@@ -48,8 +51,10 @@ public class FullscreenHtmlApiHandler {
 
     private final Window mWindow;
     private final Handler mHandler;
-    private final FullscreenHtmlApiDelegate mDelegate;
     private final ObservableSupplierImpl<Boolean> mPersistentModeSupplier;
+    private final Supplier<Tab> mCurrentTab;
+    private final ObservableSupplier<Boolean> mAreControlsHidden;
+    private final Supplier<Boolean> mShowToast;
 
     // We need to cache WebContents/ContentView since we are setting fullscreen UI state on
     // the WebContents's container view, and a Tab can change to have null web contents/
@@ -67,39 +72,7 @@ public class FullscreenHtmlApiHandler {
 
     private OnLayoutChangeListener mFullscreenOnLayoutChangeListener;
 
-    /**
-     * Delegate that allows embedders to react to fullscreen API requests.
-     */
-    public interface FullscreenHtmlApiDelegate {
-        /**
-         * Notifies the delegate that entering fullscreen has been requested and allows them
-         * to hide their controls.
-         * <p>
-         * Once the delegate has hidden the their controls, it must call
-         * {@link FullscreenHtmlApiHandler#enterFullscreen(Tab)}.
-         */
-        void onEnterFullscreen(FullscreenOptions options);
-
-        /**
-         * Cancels a pending enter fullscreen request if present.
-         * @return Whether the request was cancelled.
-         */
-        boolean cancelPendingEnterFullscreen();
-
-        /**
-         * Notifies the delegate that the window UI has fully exited fullscreen and gives
-         * the embedder a chance to update their controls.
-         *
-         * @param tab The tab whose fullscreen is being exited.
-         */
-        void onFullscreenExited(Tab tab);
-
-        /**
-         * @return Whether the notification toast should be shown. For fullscreen video in
-         *         overlay mode, the notification toast should be disabled.
-         */
-        boolean shouldShowNotificationToast();
-    }
+    private FullscreenOptions mPendingFullscreenOptions;
 
     // This static inner class holds a WeakReference to the outer object, to avoid triggering the
     // lint HandlerLeak warning.
@@ -183,11 +156,17 @@ public class FullscreenHtmlApiHandler {
      * Constructs the handler that will manage the UI transitions from the HTML fullscreen API.
      *
      * @param window The window containing the view going to fullscreen.
-     * @param delegate The delegate that allows embedders to handle fullscreen transitions.
+     * @param currentTab Supplier of the current activity tab.
+     * @param areControlsHidden Supplier of a flag indicating if browser controls are hidden.
+     * @param showToast Supplier of a flag indicating if toast message should be shown.
      */
-    public FullscreenHtmlApiHandler(Window window, FullscreenHtmlApiDelegate delegate) {
+    public FullscreenHtmlApiHandler(Window window, Supplier<Tab> currentTab,
+            ObservableSupplier<Boolean> areControlsHidden, Supplier<Boolean> showToast) {
         mWindow = window;
-        mDelegate = delegate;
+        mCurrentTab = currentTab;
+        mAreControlsHidden = areControlsHidden;
+        mAreControlsHidden.addObserver(this::maybeEnterFullscreenFromPendingState);
+        mShowToast = showToast;
         mHandler = new FullscreenHandler(this);
 
         mPersistentModeSupplier = new ObservableSupplierImpl<>();
@@ -206,7 +185,26 @@ public class FullscreenHtmlApiHandler {
         }
 
         mPersistentModeSupplier.set(true);
-        mDelegate.onEnterFullscreen(options);
+        if (mAreControlsHidden.get()) {
+            // The browser controls are currently hidden.
+            enterFullscreen(mCurrentTab.get(), options);
+        } else {
+            // We should hide browser controls first.
+            mPendingFullscreenOptions = options;
+        }
+    }
+
+    /**
+     * Enter fullscreen if there was a pending request due to browser controls yet to be hidden.
+     * @param controlsHidden {@code true} if the controls are now hidden.
+     */
+    private void maybeEnterFullscreenFromPendingState(boolean controlsHidden) {
+        if (!controlsHidden) return;
+        Tab tab = mCurrentTab.get();
+        if (tab != null && mPendingFullscreenOptions != null) {
+            enterFullscreen(tab, mPendingFullscreenOptions);
+            mPendingFullscreenOptions = null;
+        }
     }
 
     /**
@@ -221,9 +219,8 @@ public class FullscreenHtmlApiHandler {
         if (mWebContentsInFullscreen != null && mTabInFullscreen != null) {
             exitFullscreen(mWebContentsInFullscreen, mContentViewInFullscreen, mTabInFullscreen);
         } else {
-            if (!mDelegate.cancelPendingEnterFullscreen()) {
-                assert false : "No content view previously set to fullscreen.";
-            }
+            assert mPendingFullscreenOptions != null : "No content previously set to fullscreen.";
+            mPendingFullscreenOptions = null;
         }
         mWebContentsInFullscreen = null;
         mContentViewInFullscreen = null;
@@ -265,7 +262,10 @@ public class FullscreenHtmlApiHandler {
             public void onLayoutChange(View v, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 if ((bottom - top) < (oldBottom - oldTop)) {
-                    mDelegate.onFullscreenExited(tab);
+                    // At this point, browser controls are hidden. Show browser controls only if
+                    // it's permitted.
+                    TabBrowserControlsConstraintsHelper.update(
+                            mCurrentTab.get(), BrowserControlsState.SHOWN, true);
                     contentView.removeOnLayoutChangeListener(this);
                 }
             }
@@ -325,9 +325,11 @@ public class FullscreenHtmlApiHandler {
                 mHandler.sendEmptyMessage(MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS);
 
                 if ((bottom - top) <= (oldBottom - oldTop)) return;
-                if (mDelegate.shouldShowNotificationToast()) {
-                    showNotificationToast();
-                }
+
+                // The toast tells user how to leave fullscreen by touching the screen. Currently
+                // we do not show the toast when we're browsing in VR, since VR doesn't have
+                // touchscreen and the toast doesn't have any useful information.
+                if (mShowToast.get()) showNotificationToast();
                 contentView.removeOnLayoutChangeListener(this);
             }
         };

@@ -1695,8 +1695,7 @@ def main(argv):
 
     # Add all tested classes to the test's classpath to ensure that the test's
     # java code is a superset of the tested apk's java code
-    java_full_classpath_extended = list(java_full_classpath)
-    java_full_classpath_extended.extend(
+    java_full_classpath.extend(
         p for p in tested_apk_config['java_runtime_classpath']
         if p not in java_full_classpath)
     # Include in the classpath classes that are added directly to the apk under
@@ -1717,13 +1716,13 @@ def main(argv):
         p for p in tested_apk_config['javac_full_classpath']
         if p not in javac_full_classpath)
 
-    # Exclude .jar files from the test apk that exist within the apk under test.
+    # Exclude dex files from the test apk that exist within the apk under test.
+    # TODO(agrieve): When proguard is enabled, this filtering logic happens
+    #     within proguard.py. Move the logic for the proguard case to here.
     tested_apk_library_deps = tested_apk_deps.All('java_library')
-    tested_apk_dex_files = {c['dex_path'] for c in tested_apk_library_deps}
-    all_dex_files = [p for p in all_dex_files if p not in tested_apk_dex_files]
-    tested_apk_jar_files = set(tested_apk_config['java_runtime_classpath'])
-    java_full_classpath = [
-        p for p in java_full_classpath if p not in tested_apk_jar_files
+    tested_apk_deps_dex_files = [c['dex_path'] for c in tested_apk_library_deps]
+    all_dex_files = [
+        p for p in all_dex_files if not p in tested_apk_deps_dex_files
     ]
 
   if options.type in ('android_apk', 'dist_aar', 'dist_jar',
@@ -1764,9 +1763,6 @@ def main(argv):
   if options.type in ('android_apk', 'dist_jar', 'java_binary', 'junit_binary',
       'android_app_bundle_module', 'android_app_bundle'):
     deps_info['java_runtime_classpath'] = java_full_classpath
-    if options.tested_apk_config:
-      deps_info['java_runtime_classpath_extended'] = (
-          java_full_classpath_extended)
 
   if options.type in ('android_apk', 'dist_jar'):
     all_interface_jars = []

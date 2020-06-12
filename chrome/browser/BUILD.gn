@@ -4737,6 +4737,8 @@ static_library("browser") {
     sources += [
       "signin/dice_response_handler.cc",
       "signin/dice_response_handler.h",
+      "signin/dice_signed_in_profile_creator.cc",
+      "signin/dice_signed_in_profile_creator.h",
       "signin/dice_tab_helper.cc",
       "signin/dice_tab_helper.h",
       "signin/dice_web_signin_interceptor.cc",

@@ -57,9 +57,9 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
   app->show_in_launcher = internal_app.show_in_launcher
                               ? apps::mojom::OptionalBool::kTrue
                               : apps::mojom::OptionalBool::kFalse;
-  app->show_in_search = internal_app.searchable
-                            ? apps::mojom::OptionalBool::kTrue
-                            : apps::mojom::OptionalBool::kFalse;
+  app->show_in_shelf = app->show_in_search =
+      internal_app.searchable ? apps::mojom::OptionalBool::kTrue
+                              : apps::mojom::OptionalBool::kFalse;
   app->show_in_management = apps::mojom::OptionalBool::kFalse;
 
   return app;
@@ -99,7 +99,8 @@ void BuiltInChromeOsApps::Connect(
       if (!app.is_null()) {
         if (hide_settings_app_for_testing_ &&
             (internal_app.internal_app_name == BuiltInAppName::kSettings)) {
-          app->show_in_search = apps::mojom::OptionalBool::kFalse;
+          app->show_in_shelf = app->show_in_search =
+              apps::mojom::OptionalBool::kFalse;
         }
         apps.push_back(std::move(app));
       }

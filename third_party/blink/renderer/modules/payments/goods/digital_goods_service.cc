@@ -14,26 +14,28 @@ DigitalGoodsService::~DigitalGoodsService() = default;
 ScriptPromise DigitalGoodsService::getDetails(ScriptState* script_state,
                                               const Vector<String>& item_ids) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   // TODO(crbug.com/1061503): This should call out to a mojo service. However,
   // we can't land the mojo service until a browser side implementation is
   // available (for security review). Until then, use this stub which never
   // resolves.
 
-  return resolver->Promise();
+  return promise;
 }
 
-ScriptPromise DigitalGoodsService::consume(ScriptState* script_state,
-                                           const String& purchase_token,
-                                           bool make_available_again) {
+ScriptPromise DigitalGoodsService::acknowledge(ScriptState* script_state,
+                                               const String& purchase_token,
+                                               const String& purchase_type) {
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
 
   // TODO(crbug.com/1061503): This should call out to a mojo service. However,
   // we can't land the mojo service until a browser side implementation is
   // available (for security review). Until then, use this stub which never
   // resolves.
 
-  return resolver->Promise();
+  return promise;
 }
 
 void DigitalGoodsService::Trace(Visitor* visitor) const {

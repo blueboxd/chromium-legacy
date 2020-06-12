@@ -62,6 +62,13 @@ AX_EXPORT extern const base::Feature kAccessibilityCursorColor;
 AX_EXPORT bool IsAccessibilityCursorColorEnabled();
 #endif  // defined(OS_CHROMEOS)
 
+// Enables Get Image Descriptions to augment existing images labels,
+// rather than only provide descriptions for completely unlabeled images.
+AX_EXPORT extern const base::Feature kAugmentExistingImageLabels;
+
+// Returns true if augmenting existing image labels is enabled.
+AX_EXPORT bool IsAugmentExistingImageLabelsEnabled();
+
 }  // namespace features
 
 #endif  // UI_ACCESSIBILITY_ACCESSIBILITY_FEATURES_H_

@@ -20,7 +20,6 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
-#include "base/trace_event/typed_macros.h"
 #else  // BUILDFLAG(ENABLE_BASE_TRACING)
 #include "base/trace_event/trace_event_stub.h"
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)

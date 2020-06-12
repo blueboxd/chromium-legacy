@@ -7,11 +7,14 @@
   SecureContext,
   RuntimeEnabled=DigitalGoods
 ] interface DigitalGoodsService {
-  readonly attribute DOMString paymentMethod;
-
   [CallWith=ScriptState]
   Promise<sequence<ItemDetails>> getDetails(sequence<DOMString> itemIds);
 
   [CallWith=ScriptState]
-  Promise<void> consume(DOMString purchaseToken, boolean makeAvailableAgain);
+  Promise<void> acknowledge(DOMString purchaseToken, PurchaseType purchaseType);
+};
+
+enum PurchaseType {
+  "repeatable",
+  "onetime",
 };

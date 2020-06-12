@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/local_search_service/content_extraction_utils.h"
 #include <memory>
+#include <vector>
 
+#include "base/check.h"
 #include "base/containers/flat_set.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/unicodestring.h"
@@ -12,9 +14,52 @@
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/local_search_service/inverted_index.h"
+#include "chrome/common/string_matching/tokenized_string.h"
 #include "third_party/icu/source/i18n/unicode/translit.h"
 
 namespace local_search_service {
+
+std::vector<Token> ExtractContent(const std::string& content_id,
+                                  const base::string16& text,
+                                  const std::string& locale) {
+  // Use two different string tokenizing algorithms for Latin and non Latin
+  // locale.
+  TokenizedString::Mode mode;
+  if (IsNonLatinLocale(locale)) {
+    mode = TokenizedString::Mode::kCamelCase;
+  } else {
+    mode = TokenizedString::Mode::kWords;
+  }
+
+  const TokenizedString tokenized_string(text, mode);
+  DCHECK(tokenized_string.tokens().size() ==
+         tokenized_string.mappings().size());
+
+  const size_t num_tokens = tokenized_string.tokens().size();
+  std::vector<Token> tokens;
+
+  for (size_t i = 0; i < num_tokens; i++) {
+    const base::string16 word = Normalizer(tokenized_string.tokens()[i]);
+    if (IsStopword(word, locale))
+      continue;
+    tokens.push_back(Token(
+        word, {TokenPosition(content_id, tokenized_string.mappings()[i].start(),
+                             tokenized_string.mappings()[i].end() -
+                                 tokenized_string.mappings()[i].start())}));
+  }
+
+  return tokens;
+}
+
+bool IsNonLatinLocale(const std::string& locale) {
+  static const base::NoDestructor<base::flat_set<std::string>>
+      non_latin_locales({"am", "ar", "be", "bg", "bn", "el", "fa", "gu",
+                         "hi", "hy", "iw", "ja", "ka", "kk", "km", "kn",
+                         "ko", "ky", "lo", "mk", "ml", "mn", "mr", "my",
+                         "pa", "ru", "sr", "ta", "te", "th", "uk", "zh"});
+  return base::Contains(*non_latin_locales, locale.substr(0, 2));
+}
 
 bool IsStopword(const base::string16& word, const std::string& locale) {
   // TODO(thanhdng): Currently we support stopword list for English only. In the

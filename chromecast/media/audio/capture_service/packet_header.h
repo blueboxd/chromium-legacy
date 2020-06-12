@@ -20,8 +20,8 @@ struct PacketHeader {
   uint16_t size;
   uint8_t message_type;
   uint8_t stream_type;
+  uint8_t codec_or_sample_format;
   uint8_t num_channels;
-  uint8_t sample_format;
   uint16_t sample_rate;
   int64_t timestamp_or_frames;
 };

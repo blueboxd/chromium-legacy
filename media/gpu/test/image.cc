@@ -185,6 +185,32 @@ bool Image::LoadMetadata() {
         gfx::Rect(origin_x, origin_y, visible_width, visible_height);
   }
 
+  // Get the image rotation info from the json data.
+  const base::Value* rotation =
+      metadata->FindKeyOfType("rotation", base::Value::Type::INTEGER);
+  if (!rotation) {
+    // Default rotation value is VIDEO_ROTATION_0
+    rotation_ = VIDEO_ROTATION_0;
+  } else {
+    switch (rotation->GetInt()) {
+      case 0:
+        rotation_ = VIDEO_ROTATION_0;
+        break;
+      case 90:
+        rotation_ = VIDEO_ROTATION_90;
+        break;
+      case 180:
+        rotation_ = VIDEO_ROTATION_180;
+        break;
+      case 270:
+        rotation_ = VIDEO_ROTATION_270;
+        break;
+      default:
+        VLOGF(1) << "Invalid rotation value: " << rotation->GetInt();
+        return false;
+    };
+  }
+
   // Get the image checksum from the json data.
   const base::Value* checksum =
       metadata->FindKeyOfType("checksum", base::Value::Type::STRING);
@@ -219,6 +245,10 @@ const gfx::Size& Image::Size() const {
 
 const gfx::Rect& Image::VisibleRect() const {
   return visible_rect_;
+}
+
+VideoRotation Image::Rotation() const {
+  return rotation_;
 }
 
 const char* Image::Checksum() const {

@@ -362,12 +362,6 @@ ALWAYS_INLINE void PartitionBucket<thread_safe>::InitializeSlotSpan(
 
   page->Reset();
 
-  // If this page has just a single slot, do not set up page offsets for any
-  // page metadata other than the first one. This ensures that attempts to
-  // touch invalid page metadata fail.
-  if (page->num_unprovisioned_slots == 1)
-    return;
-
   uint16_t num_partition_pages = get_pages_per_slot_span();
   char* page_char_ptr = reinterpret_cast<char*>(page);
   for (uint16_t i = 1; i < num_partition_pages; ++i) {

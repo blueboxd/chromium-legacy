@@ -151,7 +151,8 @@ SuggestionStatus EmojiSuggester::HandleKeyEvent(
 bool EmojiSuggester::Suggest(const base::string16& text) {
   if (emoji_map_.empty() || text[text.length() - 1] != kSpaceChar)
     return false;
-  std::string last_word = GetLastWord(base::UTF16ToUTF8(text));
+  std::string last_word =
+      base::ToLowerASCII(GetLastWord(base::UTF16ToUTF8(text)));
   if (!last_word.empty() && emoji_map_.count(last_word)) {
     ShowSuggestion(last_word);
     return true;

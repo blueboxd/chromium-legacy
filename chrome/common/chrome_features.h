@@ -57,6 +57,8 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppServiceInstanceRegistry;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kAppServiceIntentHandling;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kAppServiceAdaptiveIcon;
 #endif  // !defined(OS_ANDROID)
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kAsyncDns;
@@ -265,6 +267,8 @@ extern const base::Feature kInstallableAmbientBadgeInfoBar;
 #endif  // defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kIntentHandlingSharing;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kIntentPickerPWAPersistence;
 #endif  // !defined(OS_ANDROID)

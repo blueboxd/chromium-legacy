@@ -315,15 +315,6 @@
       status: "experimental",
     },
     {
-      name: "CloneableNativeFileSystemHandles",
-      status: {"Android": "test", "default": "experimental"},
-      // NativeFileSystem is in Origin Trial, which doesn't support having
-      // non-origin-trial-enabled features depend on it. https://crbug.com/1000486
-      // depends_on: ["NativeFileSystem"]
-      origin_trial_feature_name: "NativeFileSystem2",
-      origin_trial_os: ["win", "macosx", "linux", "chromeos"],
-    },
-    {
       name: "CompositeAfterPaint",
     },
     {
@@ -1001,6 +992,16 @@
     {
       name: "LazyInitializeMediaControls",
       // This is enabled by features::kLazyInitializeMediaControls.
+    },
+    {
+      // Also enabled when blink::features::kNativeFileSystemAPI is overridden
+      // on the command line (or via chrome://flags).
+      // Used for API surface that will be removed when the Native File System
+      // API is no longer guarded by an origin trial.
+      name: "LegacyNativeFileSystem",
+      status: {"Android": "test", "default": "experimental"},
+      origin_trial_feature_name: "NativeFileSystem2",
+      origin_trial_os: ["win", "macosx", "linux", "chromeos"],
     },
     {
       name: "LegacyWindowsDWriteFontFallback",
@@ -2049,15 +2050,6 @@
     {
       name: "WindowPlacement",
       status: "experimental",
-    },
-    {
-      name: "WritableFileStream",
-      status: "experimental",
-      // NativeFileSystem is in Origin Trial, which doesn't support having
-      // non-origin-trial-enabled features depend on it. https://crbug.com/1000486
-      // depends_on: ["NativeFileSystem"]
-      origin_trial_feature_name: "NativeFileSystem2",
-      origin_trial_os: ["win", "macosx", "linux", "chromeos"],
     },
     {
       name: "XSLT",

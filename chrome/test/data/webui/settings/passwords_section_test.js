@@ -1072,6 +1072,15 @@ suite('PasswordsSection', function() {
           exportDialog, passwordManager);
     });
 
+    // Test verifies that the overflow menu does not offer an option to move a
+    // password to the account.
+    test('noMoveToAccountOption', function() {
+      const passwordsSection =
+          elementFactory.createPasswordsSection(passwordManager, [], []);
+      assertFalse(!!passwordsSection.$.passwordsListHandler.$$(
+          '#menuMovePasswordToAccount'));
+    });
+
     // Tests that the opt-in/opt-out buttons appear for signed-in (non-sync)
     // users and that the description changes accordingly.
     test('changeOptInButtonsBasedOnSignInAndAccountStorageOptIn', function() {

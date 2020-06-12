@@ -25,7 +25,7 @@
 #define local static
 
 /* XXX: hacking C assert and plugging into GTest. */
-#include "testing/gtest/include/gtest/gtest.h"
+#include "gtest.h"
 #if defined(assert)
 #undef assert
 #define assert EXPECT_TRUE

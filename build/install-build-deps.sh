@@ -97,6 +97,7 @@ fi
 # Check for lsb_release command in $PATH
 if ! which lsb_release > /dev/null; then
   echo "ERROR: lsb_release not found in \$PATH" >&2
+  echo "try: sudo apt-get install lsb-release" >&2
   exit 1;
 fi
 

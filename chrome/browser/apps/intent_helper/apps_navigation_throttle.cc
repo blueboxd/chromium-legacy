@@ -499,6 +499,9 @@ AppsNavigationThrottle::HandleRequest() {
   if (!ShouldOverrideUrlLoading(starting_url_, url))
     return content::NavigationThrottle::PROCEED;
 
+  if (CaptureExperimentalTabStripWebAppScopeNavigations(web_contents, handle))
+    return content::NavigationThrottle::CANCEL_AND_IGNORE;
+
   if (ShouldDeferNavigation(handle)) {
     // Handling is now deferred to ArcIntentPickerAppFetcher, which
     // asynchronously queries ARC for apps, and runs
@@ -509,9 +512,6 @@ AppsNavigationThrottle::HandleRequest() {
     ui_displayed_ = true;
     return content::NavigationThrottle::DEFER;
   }
-
-  if (CaptureExperimentalTabStripWebAppScopeNavigations(web_contents, handle))
-    return content::NavigationThrottle::CANCEL_AND_IGNORE;
 
   // We didn't query ARC, so proceed with the navigation and query if we have an
   // installed desktop PWA to handle the URL.

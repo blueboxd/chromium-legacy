@@ -2260,63 +2260,6 @@ bool RenderFrameHostManager::InitRenderView(
   auto opener_frame_token =
       GetOpenerFrameToken(render_view_host->GetSiteInstance());
 
-  // TODO(https://crbug.com/1020957): it should be impossible for the
-  // RenderViewHost's main frame routing ID and |proxy|'s routing ID to both be
-  // be valid and passed to the CreateView IPC.  This assumption is failing in
-  // practice, leading to a crash in CreateRenderView(), so set some crash keys
-  // to catch this situation earlier and understand what's going on.
-  if (proxy && render_view_host->is_active()) {
-    base::debug::SetCrashKeyString(
-        base::debug::AllocateCrashKeyString("is_main_frame",
-                                            base::debug::CrashKeySize::Size32),
-        frame_tree_node_->IsMainFrame() ? "true" : "false");
-    auto* outer_delegate_node = GetOuterDelegateNode();
-    base::debug::SetCrashKeyString(
-        base::debug::AllocateCrashKeyString("is_inner_contents",
-                                            base::debug::CrashKeySize::Size32),
-        outer_delegate_node ? "true" : "false");
-    if (outer_delegate_node) {
-      base::debug::AllocateCrashKeyString("outer_frame_origin",
-                                          base::debug::CrashKeySize::Size64),
-          outer_delegate_node->current_frame_host()
-              ->GetLastCommittedOrigin()
-              .GetDebugString();
-    }
-    base::debug::SetCrashKeyString(
-        base::debug::AllocateCrashKeyString("view_site_instance",
-                                            base::debug::CrashKeySize::Size64),
-        render_view_host->GetSiteInstance()
-            ->GetSiteURL()
-            .possibly_invalid_spec());
-    base::debug::SetCrashKeyString(
-        base::debug::AllocateCrashKeyString("current_site_instance",
-                                            base::debug::CrashKeySize::Size64),
-        render_frame_host_->GetSiteInstance()
-            ->GetSiteURL()
-            .possibly_invalid_spec());
-    base::debug::SetCrashKeyString(
-        base::debug::AllocateCrashKeyString("proxy_site_instance",
-                                            base::debug::CrashKeySize::Size64),
-        proxy->GetSiteInstance()->GetSiteURL().possibly_invalid_spec());
-    base::debug::SetCrashKeyString(
-        base::debug::AllocateCrashKeyString("current_rfh_must_be_replaced",
-                                            base::debug::CrashKeySize::Size32),
-        render_frame_host_->must_be_replaced() ? "true" : "false");
-    base::debug::SetCrashKeyString(
-        base::debug::AllocateCrashKeyString("has_committed_real_load",
-                                            base::debug::CrashKeySize::Size32),
-        frame_tree_node_->has_committed_real_load() ? "true" : "false");
-    if (frame_tree_node_->navigation_request()) {
-      base::debug::SetCrashKeyString(
-          base::debug::AllocateCrashKeyString(
-              "target_url", base::debug::CrashKeySize::Size256),
-          frame_tree_node_->navigation_request()
-              ->GetURL()
-              .possibly_invalid_spec());
-    }
-    base::debug::DumpWithoutCrashing();
-  }
-
   bool created = delegate_->CreateRenderViewForRenderManager(
       render_view_host, opener_frame_token,
       proxy ? proxy->GetRoutingID() : MSG_ROUTING_NONE);

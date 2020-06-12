@@ -5747,6 +5747,16 @@
     ]
   },
 
+  "CrostiniPortForwardingAllowed": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "CrostiniPortForwardingAllowed": false },
+        "prefs": { "crostini.port_forwarding_allowed_by_policy": {} }
+      }
+    ]
+  },
+
   "DeviceCrostiniArcAdbSideloadingAllowed": {
     "os": ["chromeos"],
     "test_policy": { "DeviceCrostiniArcAdbSideloadingAllowed": 2 },

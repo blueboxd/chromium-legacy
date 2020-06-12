@@ -9,5 +9,5 @@
   RuntimeEnabled=DigitalGoods
 ] partial interface Window {
   [CallWith=ScriptState]
-  Promise<DigitalGoodsService?> getDigitalGoodsService();
+  Promise<DigitalGoodsService?> getDigitalGoodsService(DOMString paymentMethod);
 };

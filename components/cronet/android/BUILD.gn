@@ -1110,7 +1110,6 @@ if (!is_component_build) {
       "cronet_smoketests_missing_native_library_instrumentation_apk") {
     apk_name = "MissingNativeLibrarySmokeTestInstrumentation"
     android_manifest = "test/javatests/AndroidManifest.xml"
-    min_sdk_version = _cronet_min_sdk_version
 
     sources = cronet_smoketests_native_common_srcs + [ "test/smoketests/src/org/chromium/net/smoke/MissingNativeLibraryTest.java" ]
     deps = [
@@ -1180,7 +1179,6 @@ if (!is_component_build) {
   }
 
   test("cronet_unittests_android") {
-    min_sdk_version = _cronet_min_sdk_version
     deps = [
       ":cronet_impl_native_base_java",
       ":cronet_static",
@@ -1206,7 +1204,6 @@ if (!is_component_build) {
   }
 
   test("cronet_tests_android") {
-    min_sdk_version = _cronet_min_sdk_version
     deps = [
       ":cronet_impl_native_base_java",
       ":cronet_static",

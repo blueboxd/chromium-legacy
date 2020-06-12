@@ -10,6 +10,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
 #include "ash/assistant/ui/main_stage/assistant_onboarding_view.h"
+#include "ash/assistant/util/assistant_util.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
@@ -96,12 +97,11 @@ void AssistantZeroStateView::InitLayout() {
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
 }
 
-// TODO(dmblack): Update conditions under which onboarding view is shown.
 void AssistantZeroStateView::UpdateLayout() {
   if (!IsBetterOnboardingEnabled())
     return;
 
-  constexpr bool show_onboarding = true;
+  const bool show_onboarding = assistant::util::ShouldShowOnboarding();
   onboarding_view_->SetVisible(show_onboarding);
   greeting_label_->SetVisible(!show_onboarding);
 }

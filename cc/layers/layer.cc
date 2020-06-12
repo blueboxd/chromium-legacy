@@ -811,6 +811,11 @@ void Layer::SetContentsOpaque(bool opaque) {
   SetPropertyTreesNeedRebuild();
 }
 
+void Layer::ClearContentsOpaqueDuringUpdate() {
+  inputs_.contents_opaque = false;
+  inputs_.contents_opaque_for_text = false;
+}
+
 void Layer::SetContentsOpaqueForText(bool opaque) {
   DCHECK(IsPropertyChangeAllowed());
   if (inputs_.contents_opaque_for_text == opaque)

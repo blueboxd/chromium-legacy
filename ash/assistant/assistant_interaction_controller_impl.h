@@ -30,7 +30,6 @@ namespace ash {
 
 class AssistantControllerImpl;
 enum class AssistantButtonId;
-enum class AssistantQuerySource;
 
 class AssistantInteractionControllerImpl
     : public AssistantInteractionController,

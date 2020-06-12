@@ -102,6 +102,7 @@
 <translation id="4472417192667361414">系統與顯示設定</translation>
 <translation id="449214506787633354">先按 <ph name="CTRL" /> 鍵，再按<ph name="LEFT" />、<ph name="RIGHT" />、<ph name="UP" />或<ph name="DOWN" /></translation>
 <translation id="4556221320735744018">查看鍵盤快速鍵說明</translation>
+<translation id="4609344656788228519"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="BACK1" />或 <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="SHIFT" /><ph name="SEPARATOR3" /><ph name="BACK2" /></translation>
 <translation id="4628718545549558538">開啟狀態區 (顯示帳戶圖片的位置)</translation>
 <translation id="4642092649622328492">擷取部分螢幕畫面</translation>
 <translation id="4698850295812410683">顯示觸控筆工具</translation>

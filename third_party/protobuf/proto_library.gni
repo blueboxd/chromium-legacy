@@ -25,6 +25,9 @@
 #   generate_cc (optional, default true)
 #       Generate C++ protobuf stubs.
 #
+#   generate_javascript (optional, default false)
+#       Generate Javascript protobuf stubs.
+#
 #   cc_generator_options (optional)
 #       List of extra flags passed to the protocol compiler.  If you need to
 #       add an EXPORT macro to a protobuf's C++ header, set the
@@ -117,6 +120,7 @@
 
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/toolchain/kythe.gni")
+import("//third_party/closure_compiler/compile_js.gni")
 
 if (host_os == "win") {
   _host_executable_suffix = ".exe"
@@ -148,6 +152,12 @@ template("proto_library") {
     generate_python = invoker.generate_python
   } else {
     generate_python = true
+  }
+
+  if (defined(invoker.generate_javascript)) {
+    generate_javascript = invoker.generate_javascript
+  } else {
+    generate_javascript = false
   }
 
   if (defined(invoker.generator_plugin_label)) {
@@ -221,10 +231,15 @@ template("proto_library") {
     py_out_dir = "$root_out_dir/pyproto/" + proto_out_dir
     rel_py_out_dir = rebase_path(py_out_dir, root_build_dir)
   }
+  if (generate_javascript) {
+    js_out_dir = "$root_out_dir/jsproto/" + proto_out_dir
+    rel_js_out_dir = rebase_path(js_out_dir, root_build_dir)
+  }
 
   protos = rebase_path(invoker.sources, proto_in_dir)
   protogens = []
   protogens_cc = []
+  protogens_js = []
 
   # List output files.
   foreach(proto, protos) {
@@ -246,17 +261,24 @@ template("proto_library") {
         protogens_cc += [ "$cc_out_dir/${proto_path}${suffix}" ]
       }
     }
+    if (generate_javascript) {
+      protogens_js += [ "$js_out_dir/${proto_path}.js" ]
+    }
   }
 
   action_name = "${target_name}_gen"
   source_set_name = target_name
+  javascript_name = "${target_name}_js"
 
   # Generate protobuf stubs.
   action(action_name) {
-    visibility = [ ":$source_set_name" ]
+    visibility = [
+      ":$source_set_name",
+      ":$javascript_name",
+    ]
     script = "//tools/protoc_wrapper/protoc_wrapper.py"
     sources = proto_sources
-    outputs = get_path_info(protogens + protogens_cc, "abspath")
+    outputs = get_path_info(protogens + protogens_cc + protogens_js, "abspath")
     args = protos
 
     if (defined(invoker.testonly)) {
@@ -299,6 +321,13 @@ template("proto_library") {
       args += [
         "--py-out-dir",
         rel_py_out_dir,
+      ]
+    }
+
+    if (generate_javascript) {
+      args += [
+        "--js-out-dir",
+        rel_js_out_dir,
       ]
     }
 
@@ -370,6 +399,23 @@ template("proto_library") {
       foreach(path, invoker.import_dirs) {
         include_dirs += [ "$root_gen_dir/" + rebase_path(path, "//") ]
       }
+    }
+  }
+
+  # Build generated javascript stubs.
+  if (generate_javascript) {
+    js_library(javascript_name) {
+      forward_variables_from(invoker,
+                             [
+                               "testonly",
+                               "visibility",
+                             ])
+
+      sources = protogens_js
+
+      deps = [ "//third_party/protobuf:js_proto" ]
+
+      extra_deps = [ ":$action_name" ]
     }
   }
 

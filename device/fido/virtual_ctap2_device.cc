@@ -603,9 +603,9 @@ void VirtualCtap2Device::Init(std::vector<ProtocolVersion> versions) {
   device_info_ =
       AuthenticatorGetInfoResponse(std::move(versions), kDeviceAaguid);
   device_info_->algorithms = {
-      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
-      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEdDSA),
-      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseRs256),
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kEs256),
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kEdDSA),
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kRs256),
   };
 }
 
@@ -804,13 +804,13 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
     switch (param.algorithm) {
       default:
         continue;
-      case static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256):
+      case static_cast<int32_t>(CoseAlgorithmIdentifier::kEs256):
         private_key = PrivateKey::FreshP256Key();
         break;
-      case static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseRs256):
+      case static_cast<int32_t>(CoseAlgorithmIdentifier::kRs256):
         private_key = PrivateKey::FreshRSAKey();
         break;
-      case static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEdDSA):
+      case static_cast<int32_t>(CoseAlgorithmIdentifier::kEdDSA):
         private_key = PrivateKey::FreshEd25519Key();
         break;
       case static_cast<int32_t>(CoseAlgorithmIdentifier::kInvalidForTesting):

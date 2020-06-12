@@ -23,7 +23,7 @@ struct JsJavaConfigurator::JsObjectInfo {
   mojo::AssociatedRemote<mojom::JsToJavaMessaging> js_to_java_messaging;
 };
 
-struct JsJavaConfigurator::DocumentStartJavascript {
+struct JsJavaConfigurator::DocumentStartJavaScript {
   AwOriginMatcher origin_matcher;
   blink::WebString script;
   int32_t script_id;
@@ -55,11 +55,11 @@ void JsJavaConfigurator::SetJsObjects(
 }
 
 void JsJavaConfigurator::AddDocumentStartScript(
-    mojom::DocumentStartJavascriptPtr script_ptr) {
-  DocumentStartJavascript* script = new DocumentStartJavascript{
+    mojom::DocumentStartJavaScriptPtr script_ptr) {
+  DocumentStartJavaScript* script = new DocumentStartJavaScript{
       script_ptr->origin_matcher,
       blink::WebString::FromUTF16(script_ptr->script), script_ptr->script_id};
-  scripts_.push_back(std::unique_ptr<DocumentStartJavascript>(script));
+  scripts_.push_back(std::unique_ptr<DocumentStartJavaScript>(script));
 }
 
 void JsJavaConfigurator::RemoveDocumentStartScript(int32_t script_id) {

@@ -46,6 +46,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/strings/grit/app_locale_settings.h"
+#include "url/gurl.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -501,6 +502,12 @@ base::string16 ResourceBundle::MaybeMangleLocalizedString(
   // impossible to parse.
   int ignored;
   if (base::StringToInt(str, &ignored))
+    return str;
+
+  // IDS_WEBSTORE_URL and some other resources are localization "strings" that
+  // are actually URLs, where the "localized" part is actually just the language
+  // code embedded in the URL. Don't mangle any URL.
+  if (GURL(str).is_valid())
     return str;
 
   // For a string S, produce [[ --- S --- ]], where the number of dashes is 1/4

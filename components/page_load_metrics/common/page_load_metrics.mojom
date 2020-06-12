@@ -108,6 +108,9 @@ struct InteractiveTiming {
 
   // The timestamp of the event whose delay is reported as longest_input_delay.
   mojo_base.mojom.TimeDelta? longest_input_timestamp;
+
+  // The duration of event handlers processing the first input event.
+  mojo_base.mojom.TimeDelta? first_input_processing_time;
 };
 
 // PageLoadTiming contains timing metrics associated with a page load. Many of

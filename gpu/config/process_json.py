@@ -299,8 +299,47 @@ def write_string_value(string, name_tag, data_file):
 def write_boolean_value(value, name_tag, data_file):
   data_file.write('%s,  // %s\n' % (str(value).lower(), name_tag))
 
+
 def write_integer_value(value, name_tag, data_file):
   data_file.write('%s,  // %s\n' % (str(value), name_tag))
+
+
+def write_device_list(entry_id, device_id, device_revision, is_exception,
+                      exception_id, unique_symbol_id, data_file,
+                      data_helper_file):
+  if device_id:
+    # It's one of the three ways to specify devices:
+    #  1) only specify device IDs
+    #  2) specify one device ID, associated with multiple revisions
+    #  3) specify k device IDs associated with k device revisions.
+    device_size = len(device_id)
+    if device_size == 1 and device_revision and len(device_revision) > 1:
+      device_size = len(device_revision)
+      for ii in range(device_size - 1):
+        device_id.append(device_id[0])
+    if device_revision is None:
+      device_revision = []
+      for ii in range(device_size):
+        device_revision.append('0x0')
+    assert len(device_id) == len(device_revision)
+    var_name = 'kDevicesFor%sEntry%d' % (unique_symbol_id, entry_id)
+    if is_exception:
+      var_name += 'Exception' + str(exception_id)
+    # define the list
+    data_helper_file.write('const GpuControlList::Device %s[%d] = {\n' %
+                           (var_name, len(device_id)))
+    for ii in range(device_size):
+      data_helper_file.write('{%s, %s},\n' %
+                             (device_id[ii], device_revision[ii]))
+    data_helper_file.write('};\n\n')
+    # reference the list
+    data_file.write('base::size(%s),  // Devices size\n' % var_name)
+    data_file.write('%s,  // Devices\n' % var_name)
+  else:
+    assert not device_revision
+    data_file.write('0,  // Devices size\n')
+    data_file.write('nullptr,  // Devices\n')
+
 
 def write_machine_model_info(entry_id, is_exception, exception_id,
                              machine_model_name, machine_model_version,
@@ -406,6 +445,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   os_version = None
   vendor_id = 0
   device_id = None
+  device_revision = None
   multi_gpu_category = ''
   multi_gpu_style = ''
   intel_gpu_series_list = None
@@ -467,6 +507,8 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
       vendor_id = int(entry[key], 0)
     elif key == 'device_id':
       device_id = entry[key]
+    elif key == 'device_revision':
+      device_revision = entry[key]
     elif key == 'multi_gpu_category':
       multi_gpu_category = entry[key]
     elif key == 'multi_gpu_style':
@@ -523,7 +565,7 @@ def write_conditions(entry_id, is_exception, exception_id, entry,
   write_version(os_version, 'os_version', data_file)
   data_file.write(format(vendor_id, '#04x'))
   data_file.write(',  // vendor_id\n')
-  write_number_list(entry_id, 'uint32_t', 'DeviceIDs', device_id, is_exception,
+  write_device_list(entry_id, device_id, device_revision, is_exception,
                     exception_id, unique_symbol_id, data_file,
                     data_helper_file)
   write_multi_gpu_category(multi_gpu_category, data_file)

@@ -187,6 +187,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void ResetWindowControls() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void HandleActivationChanged(bool active) override;
+  void HandleNonClientActivationChanged(bool active) override;
   bool HandleAppCommand(int command) override;
   void HandleCancelMode() override;
   void HandleCaptureLost() override;

@@ -37,7 +37,6 @@ std::string SecurityTypeStringFromMojo(
       return shill::kSecurityWep;
     default:
       // Only PSK and WEP secured networks are supported by sync.
-      NOTREACHED();
       return "";
   }
 }
@@ -276,6 +275,18 @@ network_config::mojom::ConfigPropertiesPtr MojoNetworkConfigFromProto(
               sync_pb::WifiConfigurationSpecifics::IS_PREFERRED_ENABLED
           ? 1
           : 0);
+
+  if (specifics.has_metered() &&
+      specifics.metered() !=
+          sync_pb::
+              WifiConfigurationSpecifics_MeteredOption_METERED_OPTION_UNSPECIFIED &&
+      specifics.metered() !=
+          sync_pb::
+              WifiConfigurationSpecifics_MeteredOption_METERED_OPTION_AUTO) {
+    config->metered = network_config::mojom::MeteredConfig::New(
+        specifics.metered() ==
+        sync_pb::WifiConfigurationSpecifics_MeteredOption_METERED_OPTION_YES);
+  }
 
   // For backwards compatibility, any available custom nameservers are still
   // applied when the dns_option is not set.

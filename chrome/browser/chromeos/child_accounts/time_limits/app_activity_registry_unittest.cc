@@ -91,7 +91,7 @@ class AppActivityRegistryTest : public ChromeViewsTestBase {
   void ReInitializeRegistry();
 
   AppActivityRegistry& registry() {
-    EXPECT_TRUE(!!registry_.get());
+    EXPECT_TRUE(registry_.get());
     return *registry_;
   }
   AppActivityRegistry::TestApi& registry_test() {

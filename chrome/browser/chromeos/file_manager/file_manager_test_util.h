@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
 
 class Profile;
 
@@ -37,6 +38,19 @@ class FolderInMyFiles {
 // Load the default set of component extensions used on ChromeOS. This should be
 // done in an override of InProcessBrowserTest::SetUpOnMainThread().
 void AddDefaultComponentExtensionsOnMainThread(Profile* profile);
+
+// Installs the chrome app at the provided |test_path_ascii| under DIR_TEST_DATA
+// and waits for NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY.
+scoped_refptr<const extensions::Extension> InstallTestingChromeApp(
+    Profile* profile,
+    const char* test_path_ascii);
+
+// Installs a test File System Provider chrome app that provides a file system
+// containing readwrite.gif and readonly.png files, and wait for the file system
+// to be mounted. Returns a base::WeakPtr<file_manager::Volume> to the mounted
+// file system.
+base::WeakPtr<file_manager::Volume> InstallFileSystemProviderChromeApp(
+    Profile* profile);
 
 }  // namespace test
 }  // namespace file_manager

@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
@@ -14,11 +15,15 @@
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -29,6 +34,10 @@
 namespace ash {
 
 namespace {
+
+using chromeos::assistant::mojom::AssistantSuggestion;
+using chromeos::assistant::mojom::AssistantSuggestionPtr;
+using chromeos::assistant::mojom::AssistantSuggestionType;
 
 constexpr int kHorizontalMarginDip = 56;
 
@@ -110,15 +119,23 @@ SkColor GetSuggestionTextColor(int index) {
 
 // SuggestionView --------------------------------------------------------------
 
-class SuggestionView : public views::View {
+class SuggestionView : public views::Button, public views::ButtonListener {
  public:
-  explicit SuggestionView(int index) { InitLayout(index); }
+  SuggestionView(AssistantViewDelegate* delegate,
+                 AssistantSuggestionPtr suggestion,
+                 int index)
+      : views::Button(this),
+        delegate_(delegate),
+        suggestion_(std::move(suggestion)),
+        index_(index) {
+    InitLayout();
+  }
 
   SuggestionView(const SuggestionView&) = delete;
   SuggestionView& operator=(const SuggestionView&) = delete;
   ~SuggestionView() override = default;
 
-  // views::View:
+  // views::Button:
   const char* GetClassName() const override { return "SuggestionView"; }
 
   int GetHeightForWidth(int width) const override {
@@ -129,11 +146,16 @@ class SuggestionView : public views::View {
     PreferredSizeChanged();
   }
 
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
+    delegate_->OnSuggestionChipPressed(suggestion_.get());
+  }
+
  private:
-  void InitLayout(int index) {
+  void InitLayout() {
     // Background.
     SetBackground(views::CreateRoundedRectBackground(
-        GetSuggestionBackgroundColor(index), kSuggestionsCornerRadiusDip));
+        GetSuggestionBackgroundColor(index_), kSuggestionsCornerRadiusDip));
 
     // Layout.
     SetLayoutManager(std::make_unique<views::FlexLayout>())
@@ -146,15 +168,19 @@ class SuggestionView : public views::View {
 
     // Icon.
     icon_ = AddChildView(std::make_unique<views::ImageView>());
-    icon_->SetBackground(views::CreateRoundedRectBackground(
-        SkColorSetA(SK_ColorBLACK, 0.04 * 0xFF), kSuggestionsIconSizeDip / 2));
     icon_->SetImageSize({kSuggestionsIconSizeDip, kSuggestionsIconSizeDip});
     icon_->SetPreferredSize({kSuggestionsIconSizeDip, kSuggestionsIconSizeDip});
+
+    if (suggestion_->icon_url.is_valid()) {
+      delegate_->DownloadImage(suggestion_->icon_url,
+                               base::BindOnce(&SuggestionView::OnIconDownloaded,
+                                              weak_factory_.GetWeakPtr()));
+    }
 
     // Label.
     label_ = AddChildView(std::make_unique<views::Label>());
     label_->SetAutoColorReadabilityEnabled(false);
-    label_->SetEnabledColor(GetSuggestionTextColor(index));
+    label_->SetEnabledColor(GetSuggestionTextColor(index_));
     label_->SetFontList(assistant::ui::GetDefaultFontList().DeriveWithSizeDelta(
         kSuggestionsLabelSizeDelta));
     label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
@@ -167,11 +193,22 @@ class SuggestionView : public views::View {
         views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                  views::MaximumFlexSizeRule::kUnbounded,
                                  /*adjust_height_for_width=*/true));
+    label_->SetText(base::UTF8ToUTF16(suggestion_->text));
   }
 
- private:
+  void OnIconDownloaded(const gfx::ImageSkia& icon) {
+    if (!icon.isNull())
+      icon_->SetImage(icon);
+  }
+
+  AssistantViewDelegate* const delegate_;
+  const AssistantSuggestionPtr suggestion_;
+  const int index_;
+
   views::ImageView* icon_;  // Owned by view hierarchy.
   views::Label* label_;     // Owned by view hierarchy.
+
+  base::WeakPtrFactory<SuggestionView> weak_factory_{this};
 };
 
 }  // namespace
@@ -257,7 +294,6 @@ void AssistantOnboardingView::InitLayout() {
   InitSuggestions();
 }
 
-// TODO(dmblack): Populate suggestions from model.
 void AssistantOnboardingView::InitSuggestions() {
   auto* grid = AddChildView(std::make_unique<views::View>());
   grid->SetBorder(views::CreateEmptyBorder(kSuggestionsMarginTopDip, 0, 0, 0));
@@ -279,8 +315,19 @@ void AssistantOnboardingView::InitSuggestions() {
         /*fixed_width=*/0, /*min_width=*/0);
   }
 
+  // TODO(dmblack): Populate suggestions from model.
+  std::vector<AssistantSuggestionPtr> suggestions;
+  suggestions.push_back(AssistantSuggestion::New(
+      /*id=*/base::UnguessableToken::Create(),
+      /*type=*/AssistantSuggestionType::kBetterOnboarding,
+      /*text=*/"Square root of 144",
+      /*icon_url=*/
+      GURL("https://www.gstatic.com/images/branding/product/2x/"
+           "googleg_48dp.png"),
+      /*action_url=*/GURL()));
+
   // Initialize suggestions.
-  for (int i = 0; i < kSuggestionsMaxCount; ++i) {
+  for (size_t i = 0; i < suggestions.size() && i < kSuggestionsMaxCount; ++i) {
     if (i % kSuggestionsColumnCount == 0) {
       if (i > 0) {
         layout->StartRowWithPadding(
@@ -293,7 +340,8 @@ void AssistantOnboardingView::InitSuggestions() {
                          /*column_set_id=*/kSuggestionsColumnSetId);
       }
     }
-    layout->AddView(std::make_unique<SuggestionView>(/*index=*/i));
+    layout->AddView(std::make_unique<SuggestionView>(
+        delegate_, std::move(suggestions[i]), i));
   }
 }
 

@@ -78,6 +78,8 @@ def main(argv):
                       help="Output directory for standard C++ generator.")
   parser.add_argument("--py-out-dir",
                       help="Output directory for standard Python generator.")
+  parser.add_argument("--js-out-dir",
+                      help="Output directory for standard JS generator.")
   parser.add_argument("--plugin-out-dir",
                       help="Output directory for custom generator plugin.")
 
@@ -109,6 +111,12 @@ def main(argv):
 
   if options.py_out_dir:
     protoc_cmd += ["--python_out", options.py_out_dir]
+
+  if options.js_out_dir:
+    protoc_cmd += [
+        "--js_out",
+        "one_output_file_per_input_file,binary:" + options.js_out_dir
+    ]
 
   if options.cc_out_dir:
     cc_out_dir = options.cc_out_dir

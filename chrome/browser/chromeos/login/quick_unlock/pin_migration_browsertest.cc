@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(PinMigrationTest, PRE_Migrate) {
   // Register PIN.
   QuickUnlockStorage* storage =
       QuickUnlockFactory::GetForAccountId(test_account);
-  ASSERT_TRUE(!!storage);
+  ASSERT_TRUE(storage);
   storage->pin_storage_prefs()->SetPin("111111");
 
   // Validate PIN is set.

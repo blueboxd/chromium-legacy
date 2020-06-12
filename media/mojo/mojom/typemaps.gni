@@ -13,15 +13,10 @@ typemaps = [
   "//media/mojo/mojom/demuxer_stream.typemap",
   "//media/mojo/mojom/encryption_pattern.typemap",
   "//media/mojo/mojom/hdr_metadata.typemap",
-  "//media/mojo/mojom/media_types.typemap",
-  "//media/mojo/mojom/pipeline_status.typemap",
-  "//media/mojo/mojom/video_color_space.typemap",
   "//media/mojo/mojom/video_decoder.typemap",
   "//media/mojo/mojom/video_decoder_config.typemap",
   "//media/mojo/mojom/video_encode_accelerator.typemap",
   "//media/mojo/mojom/video_encoder_info.typemap",
-  "//media/mojo/mojom/video_frame.typemap",
-  "//media/mojo/mojom/status.typemap",
 ]
 
 if (enable_media_drm_storage) {

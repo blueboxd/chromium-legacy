@@ -100,6 +100,9 @@ class CORE_EXPORT InteractiveDetector
   // GetLongestInputDelay().
   base::Optional<base::TimeTicks> GetLongestInputTimestamp() const;
 
+  // The duration of event handlers processing the first input event.
+  base::Optional<base::TimeDelta> GetFirstInputProcessingTime() const;
+
   // Process an input event, updating first_input_delay and
   // first_input_timestamp if needed.
   void HandleForInputDelay(const Event&,
@@ -147,6 +150,7 @@ class CORE_EXPORT InteractiveDetector
     base::Optional<base::TimeDelta> longest_input_delay;
     base::Optional<base::TimeTicks> first_input_timestamp;
     base::Optional<base::TimeTicks> longest_input_timestamp;
+    base::Optional<base::TimeDelta> first_input_processing_time;
   } page_event_times_;
 
   struct VisibilityChangeEvent {

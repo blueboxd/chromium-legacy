@@ -147,10 +147,6 @@ OmniboxState::OmniboxState(
 
 OmniboxState::~OmniboxState() = default;
 
-enum OmniboxMenuCommands {
-  kShowUrl = views::Textfield::MenuCommands::kLastCommandId + 1,
-};
-
 bool IsClipboardDataMarkedAsConfidential() {
   return ui::Clipboard::GetForCurrentThread()
       ->IsMarkedByOriginatorAsConfidential();
@@ -561,9 +557,6 @@ void OmniboxViewViews::ExecuteCommand(int command_id, int event_flags) {
     case IDC_PASTE_AND_GO:
       model()->PasteAndGo(GetClipboardText());
       return;
-    case kShowUrl:
-      model()->Unelide(true /* exit_query_in_omnibox */);
-      return;
     case IDC_SHOW_FULL_URLS:
     case IDC_EDIT_SEARCH_ENGINES:
       location_bar_view_->command_updater()->ExecuteCommand(command_id);
@@ -969,7 +962,7 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(UnelisionGesture gesture) {
   // Try to unelide. Early exit if there's no unelisions to perform.
   base::string16 original_text = GetText();
   base::string16 original_selected_text = GetSelectedText();
-  if (!model()->Unelide(false /* exit_query_in_omnibox */))
+  if (!model()->Unelide())
     return false;
 
   // Find the length of the prefix that was chopped off to form the elided URL.
@@ -1590,8 +1583,6 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   }
 
   // Menu item is only shown when it is valid.
-  if (command_id == kShowUrl)
-    return true;
   if (command_id == IDC_SHOW_FULL_URLS)
     return true;
 
@@ -2040,19 +2031,6 @@ void OmniboxViewViews::UpdateContextMenu(ui::SimpleMenuModel* menu_contents) {
   DCHECK_GE(paste_position, 0);
   menu_contents->InsertItemWithStringIdAt(paste_position + 1, IDC_PASTE_AND_GO,
                                           IDS_PASTE_AND_GO);
-
-  // Only add this menu entry if Query in Omnibox feature is enabled and the
-  // feature providing an "Always Show Full URLs" option is disabled.
-  if (base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox) &&
-      !base::FeatureList::IsEnabled(omnibox::kOmniboxContextMenuShowFullUrls)) {
-    // If the user has not started editing the text, and we are not showing the
-    // full URL, then provide a way to unelide via the context menu.
-    if (!GetReadOnly() && !model()->user_input_in_progress() &&
-        GetText() !=
-            controller()->GetLocationBarModel()->GetFormattedFullURL()) {
-      menu_contents->AddItemWithStringId(kShowUrl, IDS_SHOW_URL);
-    }
-  }
 
   menu_contents->AddSeparator(ui::NORMAL_SEPARATOR);
 

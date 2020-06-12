@@ -24,7 +24,7 @@ constexpr BinaryUploadService::Result kAllBinaryUploadServiceResults[]{
     BinaryUploadService::Result::FAILED_TO_GET_TOKEN,
     BinaryUploadService::Result::UNAUTHORIZED,
     BinaryUploadService::Result::FILE_ENCRYPTED,
-    BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE,
+    BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE,
 };
 
 constexpr int64_t kTotalBytes = 1000;

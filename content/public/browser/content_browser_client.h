@@ -1039,6 +1039,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // process. Called on the IO thread.
   virtual void BindGpuHostReceiver(mojo::GenericPendingReceiver receiver) {}
 
+  // Handles an unhandled incoming interface binding request from a Utility
+  // process. Called on the IO thread.
+  virtual void BindUtilityHostReceiver(mojo::GenericPendingReceiver receiver) {}
+
   // Called on the main thread to handle an unhandled interface receiver binding
   // request from a render process. See |RenderThread::BindHostReceiver()|.
   virtual void BindHostReceiverForRenderer(

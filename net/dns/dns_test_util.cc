@@ -599,15 +599,17 @@ class MockDnsTransactionFactory::MockTransaction
       case MockDnsClientRule::NODOMAIN:
       case MockDnsClientRule::FAIL:
         std::move(callback_).Run(this, ERR_NAME_NOT_RESOLVED,
-                                 result_.response.get());
+                                 result_.response.get(), base::nullopt);
         break;
       case MockDnsClientRule::EMPTY:
       case MockDnsClientRule::OK:
       case MockDnsClientRule::MALFORMED:
-        std::move(callback_).Run(this, OK, result_.response.get());
+        std::move(callback_).Run(this, OK, result_.response.get(),
+                                 base::nullopt);
         break;
       case MockDnsClientRule::TIMEOUT:
-        std::move(callback_).Run(this, ERR_DNS_TIMED_OUT, nullptr);
+        std::move(callback_).Run(this, ERR_DNS_TIMED_OUT, nullptr,
+                                 base::nullopt);
         break;
     }
   }

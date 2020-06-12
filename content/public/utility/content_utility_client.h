@@ -44,6 +44,10 @@ class CONTENT_EXPORT ContentUtilityClient {
   // corresponding UtilityProcessHost.
   virtual void ExposeInterfacesToBrowser(mojo::BinderMap* binders) {}
 
+  // Called on the main thread immediately after the IO thread is created.
+  virtual void PostIOThreadCreated(
+      base::SingleThreadTaskRunner* io_thread_task_runner) {}
+
   // Allows the embedder to handle an incoming service request. If this is
   // called, this utility process was started for the sole purpose of running
   // the service identified by |service_name|.

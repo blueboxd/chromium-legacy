@@ -500,9 +500,9 @@ class _DiffArchiveManager(object):
     logging.info('Creating .sizediff')
     _RunCmd(supersize_cmd)
 
-    logging.info('View using a local server via: %s start_server %s',
-      os.path.relpath(supersize_path),
-      os.path.relpath(report_path))
+    logging.info('Report created: %s', os.path.relpath(report_path))
+    logging.info('View it here: '
+                 'https://chrome-supersize.firebaseapp.com/viewer.html')
 
   def Summarize(self):
     path = os.path.join(self.archive_dir, 'last_diff_summary.txt')

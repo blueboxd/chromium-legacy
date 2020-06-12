@@ -25,6 +25,7 @@ class WaylandDisplayOutput;
 struct WaylandSeat;
 struct WaylandTextInputManager;
 struct WaylandXdgShell;
+struct WaylandZxdgShell;
 
 // This class is a thin wrapper around a Wayland display server. All Wayland
 // requests are dispatched into the given Exosphere display.
@@ -67,6 +68,7 @@ class Server : public display::DisplayObserver {
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<WaylandTextInputManager> zwp_text_manager_data_;
+  std::unique_ptr<WaylandZxdgShell> zxdg_shell_data_;
   std::unique_ptr<WaylandXdgShell> xdg_shell_data_;
 #endif
 

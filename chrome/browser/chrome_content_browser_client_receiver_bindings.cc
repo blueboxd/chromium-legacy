@@ -278,6 +278,12 @@ void ChromeContentBrowserClient::BindGpuHostReceiver(
     metrics::CallStackProfileCollector::Create(std::move(r));
 }
 
+void ChromeContentBrowserClient::BindUtilityHostReceiver(
+    mojo::GenericPendingReceiver receiver) {
+  if (auto r = receiver.As<metrics::mojom::CallStackProfileCollector>())
+    metrics::CallStackProfileCollector::Create(std::move(r));
+}
+
 void ChromeContentBrowserClient::BindHostReceiverForRenderer(
     content::RenderProcessHost* render_process_host,
     mojo::GenericPendingReceiver receiver) {

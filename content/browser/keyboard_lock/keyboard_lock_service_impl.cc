@@ -106,6 +106,9 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
   if (render_frame_host_->GetRenderWidgetHost()->RequestKeyboardLock(
           std::move(dom_code_set))) {
     std::move(callback).Run(KeyboardLockRequestResult::kSuccess);
+    static_cast<RenderFrameHostImpl*>(render_frame_host_)
+        ->OnSchedulerTrackedFeatureUsed(
+            blink::scheduler::WebSchedulerTrackedFeature::kKeyboardLock);
   } else {
     std::move(callback).Run(KeyboardLockRequestResult::kRequestFailedError);
   }

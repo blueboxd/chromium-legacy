@@ -19,10 +19,10 @@ struct JsObject {
   js_injection.mojom.AwOriginMatcher origin_matcher;
 };
 
-// DocumentStartJavascript struct contains the JavaScript snippet |script| and
+// DocumentStartJavaScript struct contains the JavaScript snippet |script| and
 // the corresponding |origin_matcher|. We will run the script if the frame's
 // origin matches any rules in the |origin_matcher|.
-struct DocumentStartJavascript {
+struct DocumentStartJavaScript {
   int32 script_id;
   mojo_base.mojom.String16 script;
   js_injection.mojom.AwOriginMatcher origin_matcher;
@@ -58,7 +58,7 @@ interface JsJavaConfigurator {
   // Called from browser, to add a script for a frame to run at document start
   // stage. The script will run only if the frame's origin matches any of the
   // allowed_origin_rules.
-  AddDocumentStartScript(js_injection.mojom.DocumentStartJavascript script);
+  AddDocumentStartScript(js_injection.mojom.DocumentStartJavaScript script);
 
   // Called from browser, to remove the script by the given script_id.
   RemoveDocumentStartScript(int32 script_id);

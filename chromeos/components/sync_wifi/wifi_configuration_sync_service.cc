@@ -51,9 +51,6 @@ WifiConfigurationSyncService::WifiConfigurationSyncService(
           syncer::WIFI_CONFIGURATIONS,
           base::BindRepeating(&syncer::ReportUnrecoverableError, channel)),
       std::move(create_store_callback));
-  metrics_logger_ = std::make_unique<SyncedNetworkMetricsLogger>(
-      network_handler->network_state_handler(),
-      network_handler->network_connection_handler());
   NetworkMetadataStore* metadata_store =
       network_handler->network_metadata_store();
   if (metadata_store)

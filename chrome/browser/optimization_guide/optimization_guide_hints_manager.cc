@@ -472,6 +472,19 @@ void OptimizationGuideHintsManager::OnHintCacheInitialized() {
     // Allow |UpdateComponentHints| to block startup so that the first
     // navigation gets the hints when a command line hint proto is provided.
     UpdateComponentHints(base::DoNothing(), std::move(update_data));
+
+    // Process any optimization filters passed via command line on the
+    // background thread.
+    if (manual_config->optimization_allowlists_size() > 0 ||
+        manual_config->optimization_blacklists_size() > 0) {
+      background_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &OptimizationGuideHintsManager::ProcessOptimizationFilters,
+              base::Unretained(this), manual_config->optimization_allowlists(),
+              manual_config->optimization_blacklists(),
+              registered_optimization_types_));
+    }
   }
 
   // Register as an observer regardless of hint proto override usage. This is
@@ -895,8 +908,26 @@ void OptimizationGuideHintsManager::RegisterOptimizationTypes(
     ClearFetchedHints();
 
   if (should_load_new_optimization_filter) {
-    DCHECK(hints_component_info_);
-    OnHintsComponentAvailable(*hints_component_info_);
+    if (optimization_guide::switches::IsHintComponentProcessingDisabled()) {
+      std::unique_ptr<optimization_guide::proto::Configuration> manual_config =
+          optimization_guide::switches::ParseComponentConfigFromCommandLine();
+      if (manual_config->optimization_allowlists_size() > 0 ||
+          manual_config->optimization_blacklists_size() > 0) {
+        // Process any optimization filters passed via command line on the
+        // background thread.
+        background_task_runner_->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &OptimizationGuideHintsManager::ProcessOptimizationFilters,
+                base::Unretained(this),
+                manual_config->optimization_allowlists(),
+                manual_config->optimization_blacklists(),
+                registered_optimization_types_));
+      }
+    } else {
+      DCHECK(hints_component_info_);
+      OnHintsComponentAvailable(*hints_component_info_);
+    }
   } else {
     MaybeRunUpdateClosure(std::move(next_update_closure_));
   }

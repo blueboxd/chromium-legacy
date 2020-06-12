@@ -161,6 +161,11 @@ void SuggestionContainerView::InitLayout() {
 
 void SuggestionContainerView::OnConversationStartersChanged(
     const std::vector<const AssistantSuggestion*>& conversation_starters) {
+  // We don't show conversation starters when showing onboarding since the
+  // onboarding experience already provides the user w/ suggestions.
+  if (assistant::util::ShouldShowOnboarding())
+    return;
+
   // If we've committed a query we should ignore changes to the cache of
   // conversation starters as we are past the state in which they should be
   // presented. To present them now could incorrectly associate the conversation

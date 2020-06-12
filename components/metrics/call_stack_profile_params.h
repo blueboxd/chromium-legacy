@@ -21,7 +21,8 @@ struct CallStackProfileParams {
     ZYGOTE_PROCESS,
     SANDBOX_HELPER_PROCESS,
     PPAPI_PLUGIN_PROCESS,
-    PPAPI_BROKER_PROCESS
+    PPAPI_BROKER_PROCESS,
+    NETWORK_SERVICE_PROCESS,
   };
 
   // The thread from which the collection occurred.

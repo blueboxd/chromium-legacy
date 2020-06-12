@@ -161,7 +161,6 @@
 <translation id="161042844686301425">Голубой</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
-<translation id="1623253368136559158">Движение камеры</translation>
 <translation id="16338877384480380">Architecture-B</translation>
 <translation id="1638780421120290329">Не удалось сохранить карту</translation>
 <translation id="1639239467298939599">Загрузка</translation>
@@ -459,7 +458,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Не удалось подтвердить, что это сервер <ph name="DOMAIN" />. Его сертификат безопасности относится к <ph name="DOMAIN2" />. Возможно, сервер настроен неправильно или кто-то пытается перехватить ваши данные.</translation>
 <translation id="2943895734390379394">Время загрузки:</translation>
-<translation id="2944299917411283989">Сгенерировать надежный пароль для аккаунта Google</translation>
+<translation id="2944299917411283989">Сгенерировать надежный пароль в аккаунте Google</translation>
 <translation id="2948083400971632585">Прокси-серверы, используемые для соединения, можно отключить на странице настроек.</translation>
 <translation id="2951588413176968965">Мой почтовый ящик</translation>
 <translation id="295526156371527179">Внимание! Это правило не объединено, так как оно не является словарем.</translation>
@@ -1628,7 +1627,6 @@
 <translation id="7887885240995164102">Включить режим "Картинка в картинке"</translation>
 <translation id="7888575728750733395">Способ цветового пересчета для печати</translation>
 <translation id="7904208859782148177">C3 (конверт)</translation>
-<translation id="7923775243649974918">Перемещение камеры</translation>
 <translation id="7932579305932748336">Покрытие</translation>
 <translation id="79338296614623784">Укажите действительный номер телефона.</translation>
 <translation id="7934052535022478634">Платеж обработан</translation>

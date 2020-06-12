@@ -137,10 +137,12 @@
             </cr-radio-button>
           </cr-radio-group>
         </template>
-        <div id='low-free-space-warning' hidden="[[!isLowSpaceAvailable_]]">
-          <iron-icon icon="cr:warning" class="warning"></iron-icon>
-          $i18n{lowSpaceAvailableWarning}
-        </div>
+        <template is="dom-if" if="[[isLowSpaceAvailable_]]">
+          <div id='low-free-space-warning'>
+            <iron-icon icon="cr:warning" class="warning"></iron-icon>
+            $i18n{lowSpaceAvailableWarning}
+          </div>
+        </template>
         <template is="dom-if" if="[[showDiskSlider_]]">
           <div class="outer">
             <cr-slider id="diskSlider" pin="true"

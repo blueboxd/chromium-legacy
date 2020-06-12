@@ -130,6 +130,7 @@ void ChromeAppListModelUpdater::UpdateSearchBox(const base::string16& text,
 
 void ChromeAppListModelUpdater::PublishSearchResults(
     const std::vector<ChromeSearchResult*>& results) {
+  published_results_ = results;
   for (auto* const result : results)
     result->set_model_updater(this);
   if (!app_list_controller_)
@@ -138,6 +139,11 @@ void ChromeAppListModelUpdater::PublishSearchResults(
   for (auto* result : results)
     result_data.push_back(result->CloneMetadata());
   app_list_controller_->PublishSearchResults(std::move(result_data));
+}
+
+std::vector<ChromeSearchResult*>
+ChromeAppListModelUpdater::GetPublishedSearchResultsForTest() {
+  return published_results_;
 }
 
 void ChromeAppListModelUpdater::ActivateChromeItem(const std::string& id,

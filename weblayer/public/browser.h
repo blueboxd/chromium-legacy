@@ -46,11 +46,15 @@ class Browser {
 
   virtual ~Browser() {}
 
-  virtual Tab* AddTab(std::unique_ptr<Tab> tab) = 0;
-  virtual std::unique_ptr<Tab> RemoveTab(Tab* tab) = 0;
+  virtual void AddTab(Tab* tab) = 0;
+  virtual void DestroyTab(Tab* tab) = 0;
   virtual void SetActiveTab(Tab* tab) = 0;
   virtual Tab* GetActiveTab() = 0;
   virtual std::vector<Tab*> GetTabs() = 0;
+
+  // Creates a tab attached to this browser. The returned tab is owned by the
+  // browser.
+  virtual Tab* CreateTab() = 0;
 
   // Called early on in shutdown, before any tabs have been removed.
   virtual void PrepareForShutdown() = 0;

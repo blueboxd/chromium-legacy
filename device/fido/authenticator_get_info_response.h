@@ -42,7 +42,7 @@ struct COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
   base::Optional<std::vector<uint8_t>> pin_protocols;
   base::Optional<std::vector<std::string>> extensions;
   std::vector<int32_t> algorithms = {
-      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kEs256),
   };
   AuthenticatorSupportedOptions options;
 

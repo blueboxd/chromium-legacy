@@ -48,11 +48,13 @@ class OmniboxRowView::HeaderView : public views::View,
     header_text_->SetFontList(font);
     header_text_->SetEnabledColor(gfx::kGoogleGrey700);
 
-    hide_button_ = AddChildView(views::CreateVectorToggleImageButton(this));
-    views::InstallCircleHighlightPathGenerator(hide_button_);
+    header_toggle_button_ =
+        AddChildView(views::CreateVectorToggleImageButton(this));
+    views::InstallCircleHighlightPathGenerator(header_toggle_button_);
 
-    hide_button_focus_ring_ = views::FocusRing::Install(hide_button_);
-    hide_button_focus_ring_->SetHasFocusPredicate([&](View* view) {
+    header_toggle_button_focus_ring_ =
+        views::FocusRing::Install(header_toggle_button_);
+    header_toggle_button_focus_ring_->SetHasFocusPredicate([&](View* view) {
       return view->GetVisible() &&
              row_view_->popup_model_->selection() ==
                  OmniboxPopupModel::Selection(
@@ -111,7 +113,7 @@ class OmniboxRowView::HeaderView : public views::View,
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    DCHECK_EQ(sender, hide_button_);
+    DCHECK_EQ(sender, header_toggle_button_);
     row_view_->popup_model_->TriggerSelectionAction(
         OmniboxPopupModel::Selection(row_view_->line_,
                                      OmniboxPopupModel::HEADER_BUTTON_FOCUSED));
@@ -131,7 +133,7 @@ class OmniboxRowView::HeaderView : public views::View,
 
     SkColor icon_color = GetOmniboxColor(GetThemeProvider(),
                                          OmniboxPart::RESULTS_ICON, part_state);
-    hide_button_->set_ink_drop_base_color(icon_color);
+    header_toggle_button_->set_ink_drop_base_color(icon_color);
 
     int dip_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
     const gfx::ImageSkia arrow_down =
@@ -142,16 +144,17 @@ class OmniboxRowView::HeaderView : public views::View,
 
     // The "untoggled" button state corresponds with the group being shown.
     // The button's action is therefore to Hide the group, when clicked.
-    hide_button_->SetImage(views::Button::STATE_NORMAL, arrow_up);
-    hide_button_->SetTooltipText(
+    header_toggle_button_->SetImage(views::Button::STATE_NORMAL, arrow_up);
+    header_toggle_button_->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_TOOLTIP_HEADER_HIDE_SUGGESTIONS_BUTTON));
 
     // The "toggled" button state corresponds with the group being hidden.
     // The button's action is therefore to Show the group, when clicked.
-    hide_button_->SetToggledImage(views::Button::STATE_NORMAL, &arrow_down);
-    hide_button_->SetToggledTooltipText(
+    header_toggle_button_->SetToggledImage(views::Button::STATE_NORMAL,
+                                           &arrow_down);
+    header_toggle_button_->SetToggledTooltipText(
         l10n_util::GetStringUTF16(IDS_TOOLTIP_HEADER_SHOW_SUGGESTIONS_BUTTON));
-    hide_button_focus_ring_->SchedulePaint();
+    header_toggle_button_focus_ring_->SchedulePaint();
 
     // It's a little hokey that we're stealing the logic for the background
     // color from OmniboxResultView. If we start doing this is more than just
@@ -159,11 +162,13 @@ class OmniboxRowView::HeaderView : public views::View,
     SetBackground(OmniboxResultView::GetPopupCellBackground(this, part_state));
   }
 
+  views::Button* header_toggle_button() const { return header_toggle_button_; }
+
  private:
   // Updates the hide button's toggle state.
   void UpdateHideButtonToggleState() {
     DCHECK(row_view_->pref_service_);
-    hide_button_->SetToggled(omnibox::IsSuggestionGroupIdHidden(
+    header_toggle_button_->SetToggled(omnibox::IsSuggestionGroupIdHidden(
         row_view_->pref_service_, suggestion_group_id_));
   }
 
@@ -175,8 +180,8 @@ class OmniboxRowView::HeaderView : public views::View,
   views::Label* header_text_;
 
   // The button used to toggle hiding suggestions with this header.
-  views::ToggleImageButton* hide_button_;
-  views::FocusRing* hide_button_focus_ring_ = nullptr;
+  views::ToggleImageButton* header_toggle_button_;
+  views::FocusRing* header_toggle_button_focus_ring_ = nullptr;
 
   // The group ID associated with this header.
   int suggestion_group_id_ = 0;
@@ -218,6 +223,18 @@ void OmniboxRowView::OnSelectionStateChanged() {
   result_view_->OnSelectionStateChanged();
   if (header_view_ && header_view_->GetVisible())
     header_view_->UpdateUI();
+}
+
+views::View* OmniboxRowView::GetActiveAuxiliaryButtonForAccessibility() const {
+  DCHECK(popup_model_->selection().IsButtonFocused());
+  if (popup_model_->selected_line_state() ==
+      OmniboxPopupModel::HEADER_BUTTON_FOCUSED) {
+    return header_view_->header_toggle_button();
+  }
+
+  // TODO(tommycli): This needs to be updated to properly support the
+  // suggestion button row. The name would need to be updated too.
+  return result_view_->GetSecondaryButton();
 }
 
 gfx::Insets OmniboxRowView::GetInsets() const {

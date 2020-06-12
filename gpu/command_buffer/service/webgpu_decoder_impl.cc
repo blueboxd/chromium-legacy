@@ -435,10 +435,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                           const volatile void* buffer,
                           int num_entries,
                           int* entries_processed) override;
-  base::StringPiece GetLogPrefix() override {
-    NOTIMPLEMENTED();
-    return "";
-  }
+  base::StringPiece GetLogPrefix() override { return "WebGPUDecoderImpl"; }
   void BindImage(uint32_t client_texture_id,
                  uint32_t texture_target,
                  gl::GLImage* image,

@@ -17,7 +17,7 @@ namespace internal {
 
 #if defined(ARCH_CPU_64_BITS)
 
-static_assert(sizeof(size_t) >= 8, "Need 64-bit address space");
+static_assert(sizeof(size_t) >= 8, "Need at least 64-bit address space");
 
 constexpr size_t AddressPoolManager::Pool::kMaxBits;
 
@@ -52,16 +52,12 @@ void AddressPoolManager::Remove(pool_handle handle) {
 }
 
 char* AddressPoolManager::Alloc(pool_handle handle, size_t length) {
-  DCHECK(0 < handle && handle <= kNumPools);
-  Pool* pool = pools_[handle - 1].get();
-  DCHECK(pool);
+  Pool* pool = GetPool(handle);
   return reinterpret_cast<char*>(pool->FindChunk(length));
 }
 
 void AddressPoolManager::Free(pool_handle handle, void* ptr, size_t length) {
-  DCHECK(0 < handle && handle <= kNumPools);
-  Pool* pool = pools_[handle - 1].get();
-  DCHECK(pool);
+  Pool* pool = GetPool(handle);
   pool->FreeChunk(reinterpret_cast<uintptr_t>(ptr), length);
 }
 
@@ -87,8 +83,8 @@ uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
   const size_t required_size = bits::Align(requested_size, kSuperPageSize);
   const size_t need_bits = required_size >> kSuperPageShift;
 
-  // Use first fit policy to find an available chunk from free chunks.
-  // Start from |bit_hint_|, because we know there is no free chunks before.
+  // Use first-fit policy to find an available chunk from free chunks. Start
+  // from |bit_hint_|, because we know there are no free chunks before.
   size_t beg_bit = bit_hint_;
   size_t curr_bit = bit_hint_;
   while (true) {
@@ -102,7 +98,7 @@ uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
     for (; curr_bit < end_bit; ++curr_bit) {
       if (alloc_bitset_.test(curr_bit)) {
         // The bit was set, so this chunk isn't entirely free. Set |found=false|
-        // to ensure the outer loop continues. However, continue the innter loop
+        // to ensure the outer loop continues. However, continue the inner loop
         // to set |beg_bit| just past the last set bit in the investigated
         // chunk. |curr_bit| is advanced all the way to |end_bit| to prevent the
         // next outer loop pass from checking the same bits.
@@ -113,8 +109,8 @@ uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
       }
     }
 
-    // An entire [beg_bit;end_bit) region of 0s was found. Fill them with 1s
-    // (to mark as allocated) and return the allocated address.
+    // An entire [beg_bit;end_bit) region of 0s was found. Fill them with 1s (to
+    // mark as allocated) and return the allocated address.
     if (found) {
       for (size_t i = beg_bit; i < end_bit; ++i) {
         DCHECK(!alloc_bitset_.test(i));
@@ -159,6 +155,14 @@ AddressPoolManager::Pool::~Pool() = default;
 
 AddressPoolManager::AddressPoolManager() = default;
 AddressPoolManager::~AddressPoolManager() = default;
+
+ALWAYS_INLINE AddressPoolManager::Pool* AddressPoolManager::GetPool(
+    pool_handle handle) {
+  DCHECK(0 < handle && handle <= kNumPools);
+  Pool* pool = pools_[handle - 1].get();
+  DCHECK(pool);
+  return pool;
+}
 
 #endif  // defined(ARCH_CPU_64_BITS)
 

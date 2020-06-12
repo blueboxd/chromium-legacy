@@ -56,6 +56,34 @@ TEST_F(NetworkIdentifierTest, DifferentHexFormats) {
   EXPECT_EQ("2F", id.hex_ssid());
 }
 
+TEST_F(NetworkIdentifierTest, Equality) {
+  NetworkIdentifier first_id("0x2f", shill::kSecurityPsk);
+  NetworkIdentifier second_id("0x2f", shill::kSecurityPsk);
+  EXPECT_EQ(first_id, second_id);
+
+  first_id = NetworkIdentifier("0x2f", shill::kSecurityPsk);
+  second_id = NetworkIdentifier("0xff", shill::kSecurityPsk);
+  EXPECT_NE(first_id, second_id);
+
+  first_id = NetworkIdentifier("0x2f", shill::kSecurityPsk);
+  second_id = NetworkIdentifier("0x2f", shill::kSecurityWep);
+  EXPECT_NE(first_id, second_id);
+}
+
+TEST_F(NetworkIdentifierTest, Equality_InvalidNetworks) {
+  NetworkIdentifier invalid_id("0x2f", "");
+  NetworkIdentifier similar_invalid_id("0x2f", "");
+  EXPECT_NE(invalid_id, similar_invalid_id);
+
+  invalid_id = NetworkIdentifier("", shill::kSecurityPsk);
+  similar_invalid_id = NetworkIdentifier("", shill::kSecurityPsk);
+  EXPECT_NE(invalid_id, similar_invalid_id);
+
+  invalid_id = NetworkIdentifier("", "");
+  similar_invalid_id = NetworkIdentifier("", "");
+  EXPECT_NE(invalid_id, similar_invalid_id);
+}
+
 }  // namespace sync_wifi
 
 }  // namespace chromeos

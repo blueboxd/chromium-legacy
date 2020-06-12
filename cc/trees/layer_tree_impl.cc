@@ -499,6 +499,16 @@ OwnedLayerImplList LayerTreeImpl::DetachLayersKeepingRootLayerForTesting() {
 }
 
 void LayerTreeImpl::SetPropertyTrees(PropertyTrees* property_trees) {
+  // Updating the scroll tree shouldn't clobber the currently scrolling node so
+  // stash it and restore it at the end of this method.  To maintain the
+  // current scrolling node we need to use element ids which are stable across
+  // the property tree update in SetPropertyTrees.
+  ElementId scrolling_element_id;
+  if (IsActiveTree()) {
+    if (ScrollNode* scrolling_node = CurrentlyScrollingNode())
+      scrolling_element_id = scrolling_node->element_id;
+  }
+
   std::vector<std::unique_ptr<RenderSurfaceImpl>> old_render_surfaces;
   property_trees_.effect_tree.TakeRenderSurfaces(&old_render_surfaces);
   property_trees_ = *property_trees;
@@ -515,6 +525,13 @@ void LayerTreeImpl::SetPropertyTrees(PropertyTrees* property_trees) {
   // effect tree.
   if (IsActiveTree())
     property_trees_.effect_tree.set_needs_update(true);
+
+  const ScrollNode* scrolling_node = nullptr;
+  if (scrolling_element_id) {
+    auto& scroll_tree = property_trees_.scroll_tree;
+    scrolling_node = scroll_tree.FindNodeFromElementId(scrolling_element_id);
+  }
+  SetCurrentlyScrollingNode(scrolling_node);
 }
 
 void LayerTreeImpl::PushPropertyTreesTo(LayerTreeImpl* target_tree) {
@@ -530,20 +547,7 @@ void LayerTreeImpl::PushPropertyTreesTo(LayerTreeImpl* target_tree) {
       target_tree->MoveChangeTrackingToLayers();
   }
 
-  // To maintain the current scrolling node we need to use element ids which
-  // are stable across the property tree update in SetPropertyTrees.
-  ElementId scrolling_element_id;
-  if (ScrollNode* scrolling_node = target_tree->CurrentlyScrollingNode())
-    scrolling_element_id = scrolling_node->element_id;
-
   target_tree->SetPropertyTrees(&property_trees_);
-
-  const ScrollNode* scrolling_node = nullptr;
-  if (scrolling_element_id) {
-    auto& scroll_tree = target_tree->property_trees()->scroll_tree;
-    scrolling_node = scroll_tree.FindNodeFromElementId(scrolling_element_id);
-  }
-  target_tree->SetCurrentlyScrollingNode(scrolling_node);
 
   std::vector<EventMetrics> events_metrics;
   events_metrics.swap(events_metrics_from_main_thread_);

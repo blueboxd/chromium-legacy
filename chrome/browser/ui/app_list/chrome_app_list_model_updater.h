@@ -41,6 +41,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
                        bool initiated_by_user) override;
   void PublishSearchResults(
       const std::vector<ChromeSearchResult*>& results) override;
+  std::vector<ChromeSearchResult*> GetPublishedSearchResultsForTest() override;
 
   // Methods only used by ChromeAppListItem that talk to ash directly.
   void SetItemIcon(const std::string& id, const gfx::ImageSkia& icon) override;
@@ -108,6 +109,8 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   // A map from a ChromeAppListItem's id to its unique pointer. This item set
   // matches the one in AppListModel.
   std::map<std::string, std::unique_ptr<ChromeAppListItem>> items_;
+  // The most recently list of search results.
+  std::vector<ChromeSearchResult*> published_results_;
   Profile* const profile_ = nullptr;
   base::ObserverList<AppListModelUpdaterObserver> observers_;
   ash::AppListController* app_list_controller_ = nullptr;

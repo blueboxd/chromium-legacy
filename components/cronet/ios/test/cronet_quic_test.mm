@@ -86,8 +86,7 @@ TEST_F(QuicTest, ValidQuicHost) {
 
 // Tests a request with enabled "enable_socket_recv_optimization" QUIC
 // experimental option.
-// TODO(crbug.com/971378): This test is consistently failing.
-TEST_F(QuicTest, DISABLED_RequestWithSocketOptimizationEnabled) {
+TEST_F(QuicTest, RequestWithSocketOptimizationEnabled) {
   // Apply test specific Cronet configuration and start it.
   [Cronet setExperimentalOptions:
               @"{\"QUIC\" : {\"enable_socket_recv_optimization\" : true} }"];
@@ -104,7 +103,8 @@ TEST_F(QuicTest, DISABLED_RequestWithSocketOptimizationEnabled) {
   if (@available(iOS 10.2, *)) {
     NSURLSessionTaskTransactionMetrics* metrics =
         delegate_.taskMetrics.transactionMetrics[0];
-    EXPECT_TRUE([metrics.networkProtocolName containsString:@"quic"])
+    EXPECT_TRUE([metrics.networkProtocolName containsString:@"quic"] ||
+                [metrics.networkProtocolName containsString:@"h3"])
         << base::SysNSStringToUTF8(metrics.networkProtocolName);
   }
 }

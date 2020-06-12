@@ -22,6 +22,7 @@
 #include "clang/ASTMatchers/ASTMatchers.h"
 #include "clang/ASTMatchers/ASTMatchersMacros.h"
 #include "clang/Basic/CharInfo.h"
+#include "clang/Basic/SourceLocation.h"
 #include "clang/Basic/SourceManager.h"
 #include "clang/Frontend/CompilerInstance.h"
 #include "clang/Frontend/FrontendActions.h"
@@ -215,11 +216,6 @@ class OutputHelper : public clang::tooling::SourceFileCallbacks {
   FilterEmitterHelper field_decl_filter_helper_;
   clang::Language current_language_ = clang::Language::Unknown;
 };
-
-AST_MATCHER(clang::TagDecl, isNotFreeStandingTagDecl) {
-  const clang::TagDecl* tag_decl = Node.getCanonicalDecl();
-  return !tag_decl->isFreeStanding();
-}
 
 llvm::StringRef GetFilePath(const clang::SourceManager& source_manager,
                             const clang::FieldDecl& field_decl) {
@@ -438,34 +434,86 @@ AST_MATCHER_P(clang::FieldDecl,
   return InnerMatcher.matches(*explicit_field_decl, Finder, Builder);
 }
 
-// Matcher for FieldDecl that has a TypeLoc with a unique start location
-// (i.e. has a TypeLoc that is not shared with any other FieldDecl).
+// Returns |true| if and only if:
+// 1. |a| and |b| are in the same file (e.g. |false| is returned if any location
+//    is within macro scratch space or a similar location;  similarly |false| is
+//    returned if |a| and |b| are in different files).
+// 2. |a| and |b| overlap.
+bool IsOverlapping(const clang::SourceManager& source_manager,
+                   const clang::SourceRange& a,
+                   const clang::SourceRange& b) {
+  clang::FullSourceLoc a1(a.getBegin(), source_manager);
+  clang::FullSourceLoc a2(a.getEnd(), source_manager);
+  clang::FullSourceLoc b1(b.getBegin(), source_manager);
+  clang::FullSourceLoc b2(b.getEnd(), source_manager);
+
+  // Are all locations in a file?
+  if (!a1.isFileID() || !a2.isFileID() || !b1.isFileID() || !b2.isFileID())
+    return false;
+
+  // Are all locations in the same file?
+  if (a1.getFileID() != a2.getFileID() || a2.getFileID() != b1.getFileID() ||
+      b1.getFileID() != b2.getFileID()) {
+    return false;
+  }
+
+  // Check the 2 cases below:
+  // 1. A: |============|
+  //    B:      |===============|
+  //       a1   b1      a2      b2
+  // or
+  // 2. A: |====================|
+  //    B:      |=======|
+  //       a1   b1      b2      a2
+  bool b1_is_inside_a_range = a1.getFileOffset() <= b1.getFileOffset() &&
+                              b1.getFileOffset() <= a2.getFileOffset();
+
+  // Check the 2 cases below:
+  // 1. B: |============|
+  //    A:      |===============|
+  //       b1   a1      b2      a2
+  // or
+  // 2. B: |====================|
+  //    A:      |=======|
+  //       b1   a1      a2      b2
+  bool a1_is_inside_b_range = b1.getFileOffset() <= a1.getFileOffset() &&
+                              a1.getFileOffset() <= b2.getFileOffset();
+
+  return b1_is_inside_a_range || a1_is_inside_b_range;
+}
+
+// Matcher for FieldDecl that has a SourceRange that overlaps other declarations
+// within the parent RecordDecl.
 //
 // Given
-//   struct MyStrict {
+//   struct MyStruct {
 //     int f;
 //     int f2, f3;
+//     struct S { int x } f4;
 //   };
-// matches |int f|, but does not match declarations of |f2| and |f3|.
-AST_MATCHER(clang::FieldDecl, hasUniqueTypeLoc) {
+// - doesn't match |f|
+// - matches |f2| and |f3| (which overlap each other's location)
+// - matches |f4| (which overlaps the location of |S|)
+AST_MATCHER(clang::FieldDecl, overlapsOtherDeclsWithinRecordDecl) {
   const clang::FieldDecl& self = Node;
+  const clang::SourceManager& source_manager =
+      Finder->getASTContext().getSourceManager();
+
   const clang::RecordDecl* record_decl = self.getParent();
-  clang::SourceLocation self_type_loc =
-      self.getTypeSourceInfo()->getTypeLoc().getBeginLoc();
+  clang::SourceRange self_range(self.getBeginLoc(), self.getEndLoc());
 
-  bool has_sibling_with_same_type_loc =
-      std::any_of(record_decl->field_begin(), record_decl->field_end(),
-                  [&](const clang::FieldDecl* f) {
-                    // Is |f| a real sibling?
-                    if (f == &self)
-                      return false;  // Not a sibling.
+  auto is_overlapping_sibling = [&](const clang::Decl* other_decl) {
+    if (other_decl == &self)
+      return false;
 
-                    clang::SourceLocation sibling_type_loc =
-                        f->getTypeSourceInfo()->getTypeLoc().getBeginLoc();
-                    return self_type_loc == sibling_type_loc;
-                  });
-
-  return !has_sibling_with_same_type_loc;
+    clang::SourceRange other_range(other_decl->getBeginLoc(),
+                                   other_decl->getEndLoc());
+    return IsOverlapping(source_manager, self_range, other_range);
+  };
+  bool has_sibling_with_overlapping_location =
+      std::any_of(record_decl->decls_begin(), record_decl->decls_end(),
+                  is_overlapping_sibling);
+  return has_sibling_with_overlapping_location;
 }
 
 // Rewrites |SomeClass* field| (matched as "affectedFieldDecl") into
@@ -631,13 +679,10 @@ int main(int argc, const char* argv[]) {
   auto record_with_deleted_allocation_operator_type_matcher =
       recordType(hasDeclaration(cxxRecordDecl(
           hasMethod(allOf(hasOverloadedOperatorName("new"), isDeleted())))));
-  auto non_free_standing_tag_type =
-      tagType(hasDeclaration(tagDecl(isNotFreeStandingTagDecl())));
   auto supported_pointer_types_matcher =
-      pointerType(unless(pointee(hasUnqualifiedDesugaredType(
-          anyOf(record_with_deleted_allocation_operator_type_matcher,
-                non_free_standing_tag_type, functionType(), memberPointerType(),
-                anyCharType(), arrayType())))));
+      pointerType(unless(pointee(hasUnqualifiedDesugaredType(anyOf(
+          record_with_deleted_allocation_operator_type_matcher, functionType(),
+          memberPointerType(), anyCharType(), arrayType())))));
 
   // Implicit field declarations =========
   // Matches field declarations that do not explicitly appear in the source
@@ -669,8 +714,9 @@ int main(int argc, const char* argv[]) {
   FieldDeclFilterFile fields_to_exclude(exclude_fields_param);
   auto field_decl_matcher =
       fieldDecl(
-          allOf(hasType(supported_pointer_types_matcher), hasUniqueTypeLoc(),
-                unless(anyOf(isInThirdPartyLocation(), isInGeneratedLocation(),
+          allOf(hasType(supported_pointer_types_matcher),
+                unless(anyOf(overlapsOtherDeclsWithinRecordDecl(),
+                             isInThirdPartyLocation(), isInGeneratedLocation(),
                              isExpansionInSystemHeader(), isInMacroLocation(),
                              isInExternCContext(),
                              isListedInFilterFile(fields_to_exclude),
@@ -754,11 +800,11 @@ int main(int argc, const char* argv[]) {
   //     auto* p = s.y;
   //   }
   // binds the |s.y| expr if it matches the |affected_expr_matcher| above.
-  auto auto_var_decl_matcher = declStmt(forEach(varDecl(
-      allOf(hasType(pointerType(pointee(autoType()))),
-            hasInitializer(anyOf(
-                affected_implicit_expr_matcher,
-                initListExpr(hasInit(0, affected_implicit_expr_matcher))))))));
+  auto auto_var_decl_matcher = declStmt(forEach(
+      varDecl(allOf(hasType(pointerType(pointee(autoType()))),
+                    hasInitializer(anyOf(
+                        affected_expr_matcher,
+                        initListExpr(hasInit(0, affected_expr_matcher))))))));
   match_finder.addMatcher(auto_var_decl_matcher, &affected_expr_rewriter);
 
   // address-of(affected-expr) =========

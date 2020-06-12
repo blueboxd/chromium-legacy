@@ -19,8 +19,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
-#include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/murmurhash3_util.h"
 #include "crypto/sha2.h"
@@ -84,15 +84,14 @@ PhishingTermFeatureExtractor::PhishingTermFeatureExtractor(
     size_t max_words_per_term,
     uint32_t murmurhash3_seed,
     size_t max_shingles_per_page,
-    size_t shingle_size,
-    FeatureExtractorClock* clock)
+    size_t shingle_size)
     : page_term_hashes_(page_term_hashes),
       page_word_hashes_(page_word_hashes),
       max_words_per_term_(max_words_per_term),
       murmurhash3_seed_(murmurhash3_seed),
       max_shingles_per_page_(max_shingles_per_page),
       shingle_size_(shingle_size),
-      clock_(clock) {
+      clock_(base::DefaultTickClock::GetInstance()) {
   Clear();
 }
 
@@ -120,7 +119,7 @@ void PhishingTermFeatureExtractor::ExtractFeatures(
   features_ = features;
   shingle_hashes_ = shingle_hashes, done_callback_ = std::move(done_callback);
 
-  state_.reset(new ExtractionState(*page_text_, clock_->Now()));
+  state_ = std::make_unique<ExtractionState>(*page_text_, clock_->NowTicks());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout,
@@ -136,7 +135,7 @@ void PhishingTermFeatureExtractor::CancelPendingExtraction() {
 void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
   DCHECK(state_.get());
   ++state_->num_iterations;
-  base::TimeTicks current_chunk_start_time = clock_->Now();
+  base::TimeTicks current_chunk_start_time = clock_->NowTicks();
 
   if (!state_->iterator.get()) {
     // We failed to initialize the break iterator, so stop now.
@@ -156,7 +155,7 @@ void PhishingTermFeatureExtractor::ExtractFeaturesWithTimeout() {
 
     if (num_words >= kClockCheckGranularity) {
       num_words = 0;
-      base::TimeTicks now = clock_->Now();
+      base::TimeTicks now = clock_->NowTicks();
       if (now - state_->start_time >=
           base::TimeDelta::FromMilliseconds(kMaxTotalTimeMs)) {
         // We expect this to happen infrequently, so record when it does.
@@ -265,7 +264,7 @@ void PhishingTermFeatureExtractor::RunCallback(bool success) {
   UMA_HISTOGRAM_COUNTS_1M("SBClientPhishing.TermFeatureIterations",
                           state_->num_iterations);
   UMA_HISTOGRAM_TIMES("SBClientPhishing.TermFeatureTotalTime",
-                      clock_->Now() - state_->start_time);
+                      clock_->NowTicks() - state_->start_time);
 
   DCHECK(!done_callback_.is_null());
   std::move(done_callback_).Run(success);

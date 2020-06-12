@@ -396,7 +396,12 @@ public class ContextualSearchManager
         }
 
         if (mWereSearchResultsSeen) {
-            mSelectionController.clearSelection();
+            // Clear the selection, since the user just acted upon it by looking at the panel.
+            // However if the selection is invalid we don't need to clear it.
+            // The invalid selection might also be due to a "select-all" action by the user.
+            if (reason != StateChangeReason.INVALID_SELECTION) {
+                mSelectionController.clearSelection();
+            }
         } else if (mLoadedSearchUrlTimeMs != 0L) {
             removeLastSearchVisit();
         }
@@ -1507,7 +1512,7 @@ public class ContextualSearchManager
             if (selectionValid) {
                 mSearchPanel.setSearchTerm(selection);
             } else {
-                hideContextualSearch(StateChangeReason.BASE_PAGE_TAP);
+                hideContextualSearch(StateChangeReason.INVALID_SELECTION);
             }
         }
     }

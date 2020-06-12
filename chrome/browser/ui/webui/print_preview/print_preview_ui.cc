@@ -364,7 +364,8 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
 
   // Register strings for the PDF viewer, so that $i18n{} replacements work.
   base::Value pdf_strings(base::Value::Type::DICTIONARY);
-  pdf_extension_util::AddStrings(&pdf_strings);
+  pdf_extension_util::AddStrings(
+      pdf_extension_util::PdfViewerContext::kPrintPreview, &pdf_strings);
   pdf_extension_util::AddAdditionalData(&pdf_strings);
   source->AddLocalizedStrings(base::Value::AsDictionaryValue(pdf_strings));
 }

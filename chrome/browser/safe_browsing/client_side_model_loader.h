@@ -149,6 +149,7 @@ class ModelLoader {
 
   friend class ClientSideDetectionServiceTest;
   friend class ModelLoaderTest;
+  FRIEND_TEST_ALL_PREFIXES(ModelLoaderTest, FetchModelFromLocalFileTest);
   FRIEND_TEST_ALL_PREFIXES(ModelLoaderTest, FetchModelTest);
   FRIEND_TEST_ALL_PREFIXES(ModelLoaderTest, ModelHasValidHashIds);
   FRIEND_TEST_ALL_PREFIXES(ModelLoaderTest, ModelNamesTest);

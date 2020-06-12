@@ -52,6 +52,13 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
   }
 
   async resolvePromises(name, ...args) {
+    await this.whenCalled(name);
+    console.log(
+        name + ' has been called ' + this.getCallCount(name) +
+        ' times during this test');
+    console.log(
+        'Resolving :\'' + name + '\', ' + this.methodCalls_[name].length +
+        ' times.');
     for (const o of this.methodCalls_[name]) {
       await o.resolve(...args);
     }

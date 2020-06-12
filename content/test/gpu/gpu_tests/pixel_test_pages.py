@@ -5,8 +5,6 @@
 # This is more akin to a .pyl/JSON file, so it's expected to be long.
 # pylint: disable=too-many-lines
 
-import datetime
-
 from gpu_tests import skia_gold_matching_algorithms as algo
 
 CRASH_TYPE_GPU = 'gpu'
@@ -807,16 +805,11 @@ class PixelTestPages(object):
                       browser_args=browser_args,
                       other_args={'zero_copy': True},
                       matching_algorithm=strict_dc_sobel_algorithm),
-        PixelTestPage(
-            'pixel_video_nonroot.html',
-            base_name + '_DirectComposition_Nonroot',
-            test_rect=[0, 0, 240, 136],
-            browser_args=browser_args_Nonroot,
-            # Part of the expected color migration, crbug.com/1078914.
-            # Migrating to a less permissive set of parameters is currently
-            # blocked on crbug.com/1086758.
-            grace_period_end=datetime.date(2020, 8, 26),
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
+        # Surprisingly stable, does not need inexact matching at this time.
+        PixelTestPage('pixel_video_nonroot.html',
+                      base_name + '_DirectComposition_Nonroot',
+                      test_rect=[0, 0, 240, 136],
+                      browser_args=browser_args_Nonroot),
         PixelTestPage('pixel_video_complex_overlays.html',
                       base_name + '_DirectComposition_ComplexOverlays',
                       test_rect=[0, 0, 240, 136],

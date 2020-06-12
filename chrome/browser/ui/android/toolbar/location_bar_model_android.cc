@@ -47,16 +47,6 @@ ScopedJavaLocalRef<jstring> LocationBarModelAndroid::GetURLForDisplay(
       env, location_bar_model_->GetURLForDisplay());
 }
 
-ScopedJavaLocalRef<jstring> LocationBarModelAndroid::GetDisplaySearchTerms(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  base::string16 result;
-  if (!location_bar_model_->GetDisplaySearchTerms(&result))
-    return nullptr;
-
-  return base::android::ConvertUTF16ToJavaString(env, result);
-}
-
 jint LocationBarModelAndroid::GetPageClassification(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,

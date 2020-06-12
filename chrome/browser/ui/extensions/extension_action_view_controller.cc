@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_view.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
@@ -34,6 +35,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/permissions/api_permission.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -322,7 +324,7 @@ ExtensionActionViewController::GetPageInteractionStatus(
   // access checks.
   if (page_access == extensions::PermissionsData::PageAccess::kWithheld ||
       script_access == extensions::PermissionsData::PageAccess::kWithheld ||
-      HasBeenBlocked(web_contents)) {
+      HasBeenBlocked(web_contents) || HasActiveTabAndCanAccess(url)) {
     return PageInteractionStatus::kPending;
   }
 
@@ -498,6 +500,16 @@ bool ExtensionActionViewController::PageActionWantsToRun(
              extensions::ActionInfo::TYPE_PAGE &&
          extension_action_->GetIsVisible(
              sessions::SessionTabHelper::IdForTab(web_contents).id());
+}
+
+bool ExtensionActionViewController::HasActiveTabAndCanAccess(
+    const GURL& url) const {
+  return extension_->permissions_data()->HasAPIPermission(
+             extensions::APIPermission::kActiveTab) &&
+         !extension_->permissions_data()->IsRestrictedUrl(url,
+                                                          /*error=*/nullptr) &&
+         (!url.SchemeIsFile() || extensions::util::AllowFileAccess(
+                                     extension_->id(), browser_->profile()));
 }
 
 bool ExtensionActionViewController::HasBeenBlocked(

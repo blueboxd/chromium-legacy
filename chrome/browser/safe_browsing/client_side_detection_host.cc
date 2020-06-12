@@ -431,11 +431,6 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
   unsafe_resource_->callback.Reset();  // Don't do anything stupid.
 }
 
-scoped_refptr<SafeBrowsingDatabaseManager>
-ClientSideDetectionHost::database_manager() {
-  return database_manager_;
-}
-
 void ClientSideDetectionHost::WebContentsDestroyed() {
   // Tell any pending classification request that it is being canceled.
   if (classification_request_.get()) {

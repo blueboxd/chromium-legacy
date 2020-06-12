@@ -182,6 +182,16 @@ paddedGrid{
         358,
         "Z"
       ],
+      "positiveRowLineNumberOffsets": [
+        0,
+        32.5,
+        65
+      ],
+      "positiveColumnLineNumberOffsets": [
+        0,
+        62.5,
+        275
+      ],
       "gridBorder": [
         "M",
         173,
@@ -201,6 +211,7 @@ paddedGrid{
         "gridBorderDash": false,
         "cellBorderDash": true,
         "showGridExtensionLines": true,
+        "showPositiveLineNumbers": true,
         "gridBorderColor": "rgba(255, 0, 0, 0)",
         "cellBorderColor": "rgba(128, 0, 0, 0)",
         "rowGapColor": "rgba(0, 255, 0, 0)",
@@ -394,6 +405,16 @@ nestedGrid{
         1058,
         "Z"
       ],
+      "positiveRowLineNumberOffsets": [
+        0,
+        25,
+        50
+      ],
+      "positiveColumnLineNumberOffsets": [
+        0,
+        50,
+        250
+      ],
       "gridBorder": [
         "M",
         228,
@@ -413,6 +434,7 @@ nestedGrid{
         "gridBorderDash": false,
         "cellBorderDash": true,
         "showGridExtensionLines": true,
+        "showPositiveLineNumbers": true,
         "gridBorderColor": "rgba(255, 0, 0, 0)",
         "cellBorderColor": "rgba(128, 0, 0, 0)",
         "rowGapColor": "rgba(0, 255, 0, 0)",

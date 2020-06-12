@@ -3288,20 +3288,12 @@
         "name": "system_health.common_desktop/browse:media:youtubetv:2019"
     },
     {
-        "duration": "74.0",
-        "name": "system_health.common_desktop/browse:news:cnn:2018"
-    },
-    {
         "duration": "90.0",
         "name": "system_health.common_desktop/browse:news:flipboard:2018"
     },
     {
         "duration": "12.0",
         "name": "system_health.common_desktop/browse:news:hackernews:2018"
-    },
-    {
-        "duration": "110.0",
-        "name": "system_health.common_desktop/browse:news:nytimes:2018"
     },
     {
         "duration": "90.0",
@@ -3362,10 +3354,6 @@
     {
         "duration": "30.0",
         "name": "system_health.common_desktop/load:games:alphabetty:2018"
-    },
-    {
-        "duration": "30.0",
-        "name": "system_health.common_desktop/load:games:bubbles:2019"
     },
     {
         "duration": "30.0",
@@ -3568,20 +3556,12 @@
         "name": "system_health.memory_desktop/browse:media:youtubetv:2019"
     },
     {
-        "duration": "64.0",
-        "name": "system_health.memory_desktop/browse:news:cnn:2018"
-    },
-    {
         "duration": "80.0",
         "name": "system_health.memory_desktop/browse:news:flipboard:2018"
     },
     {
         "duration": "90.0",
         "name": "system_health.memory_desktop/browse:news:hackernews:2018"
-    },
-    {
-        "duration": "100.0",
-        "name": "system_health.memory_desktop/browse:news:nytimes:2018"
     },
     {
         "duration": "80.0",
@@ -3642,10 +3622,6 @@
     {
         "duration": "26.0",
         "name": "system_health.memory_desktop/load:games:alphabetty:2018"
-    },
-    {
-        "duration": "26.0",
-        "name": "system_health.memory_desktop/load:games:bubbles:2019"
     },
     {
         "duration": "28.0",
@@ -3888,20 +3864,12 @@
         "name": "v8.browsing_desktop-future/browse:media:youtubetv:2019"
     },
     {
-        "duration": "90.0",
-        "name": "v8.browsing_desktop-future/browse:news:cnn:2018"
-    },
-    {
         "duration": "102.0",
         "name": "v8.browsing_desktop-future/browse:news:flipboard:2018"
     },
     {
         "duration": "18.0",
         "name": "v8.browsing_desktop-future/browse:news:hackernews:2018"
-    },
-    {
-        "duration": "122.0",
-        "name": "v8.browsing_desktop-future/browse:news:nytimes:2018"
     },
     {
         "duration": "102.0",
@@ -3972,20 +3940,12 @@
         "name": "v8.browsing_desktop/browse:media:youtubetv:2019"
     },
     {
-        "duration": "112.0",
-        "name": "v8.browsing_desktop/browse:news:cnn:2018"
-    },
-    {
         "duration": "100.0",
         "name": "v8.browsing_desktop/browse:news:flipboard:2018"
     },
     {
         "duration": "20.0",
         "name": "v8.browsing_desktop/browse:news:hackernews:2018"
-    },
-    {
-        "duration": "124.0",
-        "name": "v8.browsing_desktop/browse:news:nytimes:2018"
     },
     {
         "duration": "102.0",

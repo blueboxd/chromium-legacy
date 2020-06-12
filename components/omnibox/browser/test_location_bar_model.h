@@ -28,7 +28,6 @@ class TestLocationBarModel : public LocationBarModel {
   base::string16 GetURLForDisplay() const override;
   GURL GetURL() const override;
   security_state::SecurityLevel GetSecurityLevel() const override;
-  bool GetDisplaySearchTerms(base::string16* search_terms) override;
   metrics::OmniboxEventProto::PageClassification GetPageClassification(
       OmniboxFocusSource focus_source) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
@@ -47,9 +46,6 @@ class TestLocationBarModel : public LocationBarModel {
   void set_security_level(security_state::SecurityLevel security_level) {
     security_level_ = security_level;
   }
-  void set_display_search_terms(const base::string16& terms) {
-    display_search_terms_ = terms;
-  }
   void set_icon(const gfx::VectorIcon& icon) { icon_ = &icon; }
   void set_should_display_url(bool should_display_url) {
     should_display_url_ = should_display_url;
@@ -67,7 +63,6 @@ class TestLocationBarModel : public LocationBarModel {
 
   GURL url_;
   security_state::SecurityLevel security_level_ = security_state::NONE;
-  base::string16 display_search_terms_;
   const gfx::VectorIcon* icon_ = nullptr;
   bool should_display_url_ = false;
   bool offline_page_ = false;

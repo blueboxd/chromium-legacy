@@ -59,7 +59,6 @@ using CompositingReasons = uint64_t;
   V(ReflectionWithCompositedDescendants)                                      \
   V(FilterWithCompositedDescendants)                                          \
   V(BlendingWithCompositedDescendants)                                        \
-  V(ClipsCompositingDescendants)                                              \
   V(PerspectiveWith3DDescendants)                                             \
   V(Preserve3DWith3DDescendants)                                              \
   V(IsolateCompositedDescendants)                                             \
@@ -142,7 +141,7 @@ class PLATFORM_EXPORT CompositingReason {
         kIsolateCompositedDescendants | kOpacityWithCompositedDescendants |
         kMaskWithCompositedDescendants | kFilterWithCompositedDescendants |
         kBlendingWithCompositedDescendants |
-        kReflectionWithCompositedDescendants | kClipsCompositingDescendants,
+        kReflectionWithCompositedDescendants,
 
     kCombo3DDescendants =
         kPreserve3DWith3DDescendants | kPerspectiveWith3DDescendants,

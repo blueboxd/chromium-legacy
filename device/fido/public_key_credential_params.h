@@ -26,7 +26,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialParams {
   struct COMPONENT_EXPORT(DEVICE_FIDO) CredentialInfo {
     bool operator==(const CredentialInfo& other) const;
     CredentialType type = CredentialType::kPublicKey;
-    int algorithm = base::strict_cast<int>(CoseAlgorithmIdentifier::kCoseEs256);
+    int algorithm = base::strict_cast<int>(CoseAlgorithmIdentifier::kEs256);
   };
 
   static base::Optional<PublicKeyCredentialParams> CreateFromCBORValue(

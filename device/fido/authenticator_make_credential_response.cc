@@ -25,7 +25,7 @@ AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
     base::span<const uint8_t, kRpIdHashLength> relying_party_id_hash,
     base::span<const uint8_t> u2f_data) {
   auto public_key = P256PublicKey::ExtractFromU2fRegistrationResponse(
-      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256), u2f_data);
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kEs256), u2f_data);
   if (!public_key)
     return base::nullopt;
 

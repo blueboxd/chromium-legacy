@@ -33,7 +33,8 @@ PASS childWindow.navigator.userActivation.isActive is false
 PASS childWindow.navigator.userAgent is ''
 PASS childWindow.navigator.vendor is window.navigator.vendor
 PASS childWindow.navigator.vendorSub is ''
-PASS childWindow.navigator.virtualKeyboard.onoverlaygeometrychange is null
+PASS childWindow.navigator.virtualKeyboard.boundingRect is null
+PASS childWindow.navigator.virtualKeyboard.ongeometrychange is null
 PASS childWindow.navigator.virtualKeyboard.overlaysContent is false
 PASS childWindow.onabort is null
 PASS childWindow.onafterprint is null

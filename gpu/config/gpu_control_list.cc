@@ -418,9 +418,9 @@ bool GpuControlList::Conditions::Contains(OsType target_os_type,
         }
       }
     } else if (intel_gpu_generation.IsSpecified()) {
-      for (size_t ii = 0; ii < candidates.size(); ++ii) {
-        std::string candidate_generation = GetIntelGpuGeneration(
-            candidates[ii].vendor_id, candidates[ii].device_id);
+      for (auto& candidate : candidates) {
+        std::string candidate_generation =
+            GetIntelGpuGeneration(candidate.vendor_id, candidate.device_id);
         if (candidate_generation.empty())
           continue;
         if (intel_gpu_generation.Contains(candidate_generation)) {
@@ -429,24 +429,29 @@ bool GpuControlList::Conditions::Contains(OsType target_os_type,
         }
       }
     } else {
-      GPUInfo::GPUDevice gpu;
-      gpu.vendor_id = vendor_id;
-      if (device_id_size == 0) {
-        for (size_t ii = 0; ii < candidates.size(); ++ii) {
-          if (gpu.vendor_id == candidates[ii].vendor_id) {
+      if (device_size == 0) {
+        for (auto& candidate : candidates) {
+          if (vendor_id == candidate.vendor_id) {
             found = true;
             break;
           }
         }
       } else {
-        for (size_t ii = 0; ii < device_id_size; ++ii) {
-          gpu.device_id = device_ids[ii];
-          for (size_t jj = 0; jj < candidates.size(); ++jj) {
-            if (gpu.vendor_id == candidates[jj].vendor_id &&
-                gpu.device_id == candidates[jj].device_id) {
-              found = true;
-              break;
-            }
+        for (size_t ii = 0; !found && ii < device_size; ++ii) {
+          uint32_t device_id = devices[ii].device_id;
+#if defined(OS_WIN)
+          uint32_t revision = devices[ii].revision;
+#endif  // OS_WIN
+          for (auto& candidate : candidates) {
+            if (vendor_id != candidate.vendor_id ||
+                device_id != candidate.device_id)
+              continue;
+#if defined(OS_WIN)
+            if (revision != candidate.revision)
+              continue;
+#endif  // OS_WIN
+            found = true;
+            break;
           }
         }
       }

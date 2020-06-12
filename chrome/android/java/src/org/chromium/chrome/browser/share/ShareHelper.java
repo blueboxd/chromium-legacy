@@ -243,6 +243,16 @@ public class ShareHelper extends org.chromium.components.browser_ui.share.ShareH
     }
 
     /**
+     * Returns an Intent to retrieve all the apps that support sharing {@code fileContentType}.
+     */
+    public static Intent createShareFileAppCompatibilityIntent(String fileContentType) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.addFlags(ApiCompatibilityUtils.getActivityNewDocumentFlag());
+        intent.setType(fileContentType);
+        return intent;
+    }
+
+    /**
      * Creates an Intent to share an image.
      * @param imageUri The Uri of the image.
      * @return The Intent used to share the image.

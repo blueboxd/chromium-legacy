@@ -67,7 +67,7 @@ class SubresourceFilterRulesetDealerTest : public ::testing::Test {
 
 TEST_F(SubresourceFilterRulesetDealerTest, NoRuleset) {
   EXPECT_FALSE(ruleset_dealer()->IsRulesetFileAvailable());
-  EXPECT_FALSE(!!ruleset_dealer()->GetRuleset());
+  EXPECT_FALSE(ruleset_dealer()->GetRuleset());
 }
 
 TEST_F(SubresourceFilterRulesetDealerTest, MostRecentlySetRulesetIsReturned) {
@@ -78,7 +78,7 @@ TEST_F(SubresourceFilterRulesetDealerTest, MostRecentlySetRulesetIsReturned) {
       ruleset_dealer()->GetRuleset();
 
   EXPECT_TRUE(ruleset_dealer()->IsRulesetFileAvailable());
-  ASSERT_TRUE(!!ref_to_ruleset_1);
+  ASSERT_TRUE(ref_to_ruleset_1);
   EXPECT_EQ(test_indexed_ruleset_1().contents,
             ReadRulesetContents(ref_to_ruleset_1.get()));
 
@@ -89,7 +89,7 @@ TEST_F(SubresourceFilterRulesetDealerTest, MostRecentlySetRulesetIsReturned) {
       ruleset_dealer()->GetRuleset();
 
   EXPECT_TRUE(ruleset_dealer()->IsRulesetFileAvailable());
-  ASSERT_TRUE(!!ref_to_ruleset_2);
+  ASSERT_TRUE(ref_to_ruleset_2);
   EXPECT_EQ(test_indexed_ruleset_1().contents,
             ReadRulesetContents(ref_to_ruleset_1.get()));
   EXPECT_EQ(test_indexed_ruleset_2().contents,
@@ -107,8 +107,8 @@ TEST_F(SubresourceFilterRulesetDealerTest,
       ruleset_dealer()->GetRuleset();
 
   EXPECT_TRUE(ruleset_dealer()->IsRulesetFileAvailable());
-  EXPECT_TRUE(!!ref_to_ruleset);
-  EXPECT_TRUE(!!another_ref_to_ruleset);
+  EXPECT_TRUE(ref_to_ruleset);
+  EXPECT_TRUE(another_ref_to_ruleset);
   EXPECT_EQ(ref_to_ruleset.get(), another_ref_to_ruleset.get());
 }
 
@@ -123,7 +123,7 @@ TEST_F(SubresourceFilterRulesetDealerTest, RulesetIsMemoryMappedLazily) {
       ruleset_dealer()->GetRuleset();
 
   EXPECT_TRUE(ruleset_dealer()->IsRulesetFileAvailable());
-  EXPECT_TRUE(!!ref_to_ruleset);
+  EXPECT_TRUE(ref_to_ruleset);
   EXPECT_TRUE(has_cached_ruleset());
 }
 
@@ -136,8 +136,8 @@ TEST_F(SubresourceFilterRulesetDealerTest, RulesetIsUnmappedEagerly) {
   scoped_refptr<const MemoryMappedRuleset> another_ref_to_ruleset =
       ruleset_dealer()->GetRuleset();
 
-  EXPECT_TRUE(!!ref_to_ruleset);
-  EXPECT_TRUE(!!another_ref_to_ruleset);
+  EXPECT_TRUE(ref_to_ruleset);
+  EXPECT_TRUE(another_ref_to_ruleset);
   EXPECT_TRUE(has_cached_ruleset());
   EXPECT_EQ(ref_to_ruleset.get(), another_ref_to_ruleset.get());
 
@@ -161,7 +161,7 @@ TEST_F(SubresourceFilterRulesetDealerTest, RulesetIsUnmappedAndRemapped) {
   scoped_refptr<const MemoryMappedRuleset> ref_to_ruleset =
       ruleset_dealer()->GetRuleset();
 
-  ASSERT_TRUE(!!ref_to_ruleset);
+  ASSERT_TRUE(ref_to_ruleset);
   ASSERT_TRUE(has_cached_ruleset());
 
   ref_to_ruleset = nullptr;
@@ -172,7 +172,7 @@ TEST_F(SubresourceFilterRulesetDealerTest, RulesetIsUnmappedAndRemapped) {
 
   EXPECT_TRUE(ruleset_dealer()->IsRulesetFileAvailable());
   EXPECT_TRUE(has_cached_ruleset());
-  ASSERT_TRUE(!!ref_to_ruleset);
+  ASSERT_TRUE(ref_to_ruleset);
   EXPECT_EQ(test_indexed_ruleset_1().contents,
             ReadRulesetContents(ref_to_ruleset.get()));
 
@@ -190,7 +190,7 @@ TEST_F(SubresourceFilterRulesetDealerTest, NewRulesetIsMappedLazilyOnUpdate) {
       ruleset_dealer()->GetRuleset();
 
   ASSERT_TRUE(ruleset_dealer()->IsRulesetFileAvailable());
-  ASSERT_TRUE(!!ref_to_ruleset);
+  ASSERT_TRUE(ref_to_ruleset);
   ASSERT_TRUE(has_cached_ruleset());
 
   ruleset_dealer()->SetRulesetFile(
@@ -217,7 +217,7 @@ TEST_F(SubresourceFilterRulesetDealerTest,
   scoped_refptr<const MemoryMappedRuleset> ref_to_ruleset_1 =
       ruleset_dealer()->GetRuleset();
 
-  ASSERT_TRUE(!!ref_to_ruleset_1);
+  ASSERT_TRUE(ref_to_ruleset_1);
   ASSERT_TRUE(has_cached_ruleset());
 
   ruleset_dealer()->SetRulesetFile(
@@ -236,8 +236,8 @@ TEST_F(SubresourceFilterRulesetDealerTest,
 
   EXPECT_TRUE(ruleset_dealer()->IsRulesetFileAvailable());
   EXPECT_TRUE(has_cached_ruleset());
-  ASSERT_TRUE(!!ref_to_ruleset_2);
-  EXPECT_TRUE(!!another_ref_to_ruleset_2);
+  ASSERT_TRUE(ref_to_ruleset_2);
+  EXPECT_TRUE(another_ref_to_ruleset_2);
   EXPECT_EQ(ref_to_ruleset_2.get(), another_ref_to_ruleset_2.get());
   EXPECT_EQ(test_indexed_ruleset_2().contents,
             ReadRulesetContents(ref_to_ruleset_2.get()));
@@ -251,7 +251,7 @@ TEST_F(SubresourceFilterRulesetDealerTest,
   scoped_refptr<const MemoryMappedRuleset> ref_to_ruleset =
       ruleset_dealer()->GetRuleset();
 
-  ASSERT_TRUE(!!ref_to_ruleset);
+  ASSERT_TRUE(ref_to_ruleset);
   ASSERT_TRUE(has_cached_ruleset());
 
   ResetRulesetDealer();
@@ -268,7 +268,7 @@ TEST_F(SubresourceFilterRulesetDealerTest, MmapFailure) {
   {
     scoped_refptr<const MemoryMappedRuleset> ref_to_ruleset =
         ruleset_dealer()->GetRuleset();
-    EXPECT_TRUE(!!ref_to_ruleset);
+    EXPECT_TRUE(ref_to_ruleset);
 
     // Simulate subsequent mmap failures
     MemoryMappedRuleset::SetMemoryMapFailuresForTesting(true);
@@ -276,12 +276,12 @@ TEST_F(SubresourceFilterRulesetDealerTest, MmapFailure) {
     // Calls to GetRuleset should succeed as long as the strong ref
     // is still around.
     EXPECT_TRUE(ruleset_dealer()->has_cached_ruleset());
-    EXPECT_TRUE(!!ruleset_dealer()->GetRuleset());
+    EXPECT_TRUE(ruleset_dealer()->GetRuleset());
   }
   EXPECT_FALSE(ruleset_dealer()->has_cached_ruleset());
-  EXPECT_FALSE(!!ruleset_dealer()->GetRuleset());
+  EXPECT_FALSE(ruleset_dealer()->GetRuleset());
   MemoryMappedRuleset::SetMemoryMapFailuresForTesting(false);
-  EXPECT_TRUE(!!ruleset_dealer()->GetRuleset());
+  EXPECT_TRUE(ruleset_dealer()->GetRuleset());
 }
 
 }  // namespace subresource_filter

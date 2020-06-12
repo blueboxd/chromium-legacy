@@ -439,6 +439,74 @@ ci.android_builder(
     ),
 )
 
+ci.chromium_builder(
+    name = 'android-official',
+    console_view_entry = ci.console_view_entry(
+        category = 'android',
+    ),
+    cores = 8,
+)
+
+ci.chromium_builder(
+    name = 'chromeos-official',
+    console_view_entry = ci.console_view_entry(
+        category = 'chromeos',
+    ),
+    cores = 8,
+)
+
+ci.chromium_builder(
+    name = 'fuchsia-official',
+    console_view_entry = ci.console_view_entry(
+        category = 'fuchsia',
+    ),
+    cores = 8,
+)
+
+ci.chromium_builder(
+    name = 'ios-official',
+    console_view_entry = ci.console_view_entry(
+        category = 'ios',
+    ),
+)
+
+ci.chromium_builder(
+    name = 'linux-official',
+    console_view_entry = ci.console_view_entry(
+        category = 'linux',
+    ),
+    cores = 8,
+)
+
+ci.chromium_builder(
+    name = 'mac-official',
+    console_view_entry = ci.console_view_entry(
+        category = 'mac',
+    ),
+    cores = 4,
+    os = os.MAC_DEFAULT,
+)
+
+ci.chromium_builder(
+    name = 'win-official',
+    console_view_entry = ci.console_view_entry(
+        category = 'win',
+        short_name = '64',
+    ),
+    cores = 32,
+    os = os.WINDOWS_DEFAULT,
+)
+
+ci.chromium_builder(
+    name = 'win32-official',
+    console_view_entry = ci.console_view_entry(
+        category = 'win',
+        short_name = '32',
+    ),
+    cores = 32,
+    os = os.WINDOWS_DEFAULT,
+)
+
 
 ci.chromiumos_builder(
     name = 'chromeos-amd64-generic-dbg',

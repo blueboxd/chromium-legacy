@@ -434,5 +434,55 @@ TEST(PictureLayerTest, RecordingScaleIsCorrectlySet) {
   EXPECT_FALSE(recording_source->is_solid_color());
 }
 
+TEST(PictureLayerTest, TransformedRasterizationAndContentsOpaque) {
+  gfx::Size layer_bounds(400, 400);
+  FakeContentLayerClient client;
+  client.set_bounds(layer_bounds);
+  auto layer = FakePictureLayer::CreateWithRecordingSource(
+      &client, FakeRecordingSource::CreateFilledRecordingSource(layer_bounds));
+  layer->SetBounds(layer_bounds);
+  layer->SetIsDrawable(true);
+
+  FakeLayerTreeHostClient host_client;
+  TestTaskGraphRunner task_graph_runner;
+  auto animation_host = AnimationHost::CreateForTesting(ThreadInstance::MAIN);
+  std::unique_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create(
+      &host_client, &task_graph_runner, animation_host.get());
+  host->SetRootLayer(layer);
+  host->BuildPropertyTreesForTesting();
+
+  layer->SetContentsOpaque(true);
+  layer->SetBackgroundColor(SK_ColorWHITE);
+  layer->SetOffsetToTransformParent(gfx::Vector2dF(0.2, 0.3));
+  layer->Update();
+  EXPECT_TRUE(layer->contents_opaque());
+  EXPECT_TRUE(layer->contents_opaque_for_text());
+  EXPECT_FALSE(layer->ShouldUseTransformedRasterizationForTesting());
+  EXPECT_FALSE(layer->GetRecordingSourceForTesting()->requires_clear());
+
+  layer->SetTransformedRasterizationAllowed(true);
+  layer->Update();
+  EXPECT_FALSE(layer->contents_opaque());
+  EXPECT_FALSE(layer->contents_opaque_for_text());
+  EXPECT_TRUE(layer->ShouldUseTransformedRasterizationForTesting());
+  EXPECT_TRUE(layer->GetRecordingSourceForTesting()->requires_clear());
+
+  // Simulate a later push properties with the same values.
+  layer->SetContentsOpaque(true);
+  layer->Update();
+  EXPECT_FALSE(layer->contents_opaque());
+  EXPECT_FALSE(layer->contents_opaque_for_text());
+  EXPECT_TRUE(layer->ShouldUseTransformedRasterizationForTesting());
+  EXPECT_TRUE(layer->GetRecordingSourceForTesting()->requires_clear());
+
+  layer->SetContentsOpaque(false);
+  layer->SetContentsOpaqueForText(true);
+  layer->Update();
+  EXPECT_FALSE(layer->contents_opaque());
+  EXPECT_FALSE(layer->contents_opaque_for_text());
+  EXPECT_TRUE(layer->ShouldUseTransformedRasterizationForTesting());
+  EXPECT_TRUE(layer->GetRecordingSourceForTesting()->requires_clear());
+}
+
 }  // namespace
 }  // namespace cc

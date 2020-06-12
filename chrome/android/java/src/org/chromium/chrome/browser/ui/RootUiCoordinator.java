@@ -622,25 +622,21 @@ public class RootUiCoordinator
      * until content is requested in the sheet.
      */
     private void initializeBottomSheetController() {
-        Supplier<View> sheetViewSupplier = () -> {
-            ViewGroup coordinator = mActivity.findViewById(R.id.coordinator);
-            mActivity.getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
-
-            View sheet = coordinator.findViewById(R.id.bottom_sheet);
-
+        // TODO(1093999): Componentize SnackbarManager so BottomSheetController can own this.
+        Callback<View> sheetInitializedCallback = (view) -> {
             mBottomSheetSnackbarManager = new SnackbarManager(mActivity,
-                    sheet.findViewById(R.id.bottom_sheet_snackbar_container),
+                    view.findViewById(R.id.bottom_sheet_snackbar_container),
                     mActivity.getWindowAndroid());
-
-            return sheet;
         };
 
         Supplier<OverlayPanelManager> panelManagerSupplier = ()
                 -> mActivity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager();
 
+        // TODO(1094000): Initialize after inflation so we don't need to pass in view suppliers.
         mBottomSheetController = BottomSheetControllerFactory.createBottomSheetController(
-                () -> mScrimCoordinator, sheetViewSupplier, mActivity.getWindow(),
-                mActivity.getWindowAndroid().getKeyboardDelegate());
+                () -> mScrimCoordinator, sheetInitializedCallback, mActivity.getWindow(),
+                mActivity.getWindowAndroid().getKeyboardDelegate(),
+                () -> mActivity.findViewById(R.id.coordinator));
 
         mBottomSheetManager = new BottomSheetManager(mBottomSheetController, mActivityTabProvider,
                 mActivity.getFullscreenManager(), mActivity::getModalDialogManager,

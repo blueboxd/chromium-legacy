@@ -1871,6 +1871,115 @@ TEST_F(WidgetTest, LockPaintAsActive_BecomesActive) {
   EXPECT_TRUE(widget->ShouldPaintAsActive());
 }
 
+TEST_F(WidgetTest, NonClientActivateDoesNotChangeActiveState) {
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  widget->ShowInactive();
+
+  // Initial state is window inactive.
+  EXPECT_FALSE(widget->ShouldPaintAsActive());
+  EXPECT_FALSE(widget->IsActive());
+
+  // Do a non-client-only activation (as if the window were seeking attention).
+  widget->OnNativeWidgetNonClientActivationChanged(true);
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+  EXPECT_FALSE(widget->IsActive());
+
+  // Now, deactivate the non-client area.
+  widget->OnNativeWidgetNonClientActivationChanged(false);
+  EXPECT_FALSE(widget->ShouldPaintAsActive());
+  EXPECT_FALSE(widget->IsActive());
+
+  // Repeat the process, but in reverse, with an active window.
+  widget->Activate();
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+  EXPECT_TRUE(widget->IsActive());
+
+  // Deactivate the frame.
+  widget->OnNativeWidgetNonClientActivationChanged(false);
+  EXPECT_FALSE(widget->ShouldPaintAsActive());
+  EXPECT_TRUE(widget->IsActive());
+
+  // Re-activate the frame.
+  widget->OnNativeWidgetNonClientActivationChanged(true);
+  EXPECT_TRUE(widget->ShouldPaintAsActive());
+  EXPECT_TRUE(widget->IsActive());
+}
+
+namespace {
+
+// Observes a widget and catalogues when it sends activation changed events to
+// its observers.
+class TestWidgetActivationObserver : public WidgetObserver {
+ public:
+  explicit TestWidgetActivationObserver(Widget* widget) {
+    scoped_observer_.Add(widget);
+  }
+
+  void OnWidgetActivationChanged(Widget* widget, bool active) override {
+    ++event_count_;
+    is_active_ = active;
+  }
+
+  int event_count() const { return event_count_; }
+  bool is_active() const { return is_active_; }
+
+ private:
+  int event_count_ = 0;
+  bool is_active_ = false;
+  ScopedObserver<Widget, WidgetObserver> scoped_observer_{this};
+};
+
+}  // anonymous namespace
+
+TEST_F(WidgetTest, NonClientActivateDoesNotTriggerObserverEvents) {
+  WidgetAutoclosePtr widget(CreateTopLevelPlatformWidget());
+  TestWidgetActivationObserver observer(widget.get());
+  widget->ShowInactive();
+
+  // Initial state is window inactive.
+  EXPECT_FALSE(observer.is_active());
+  EXPECT_EQ(0, observer.event_count());
+
+  // Do a non-client-only activation (as if the window were seeking attention).
+  widget->OnNativeWidgetNonClientActivationChanged(true);
+  EXPECT_FALSE(observer.is_active());
+  EXPECT_EQ(0, observer.event_count());
+
+  // Now, deactivate the non-client area.
+  widget->OnNativeWidgetNonClientActivationChanged(false);
+  EXPECT_FALSE(observer.is_active());
+  EXPECT_EQ(0, observer.event_count());
+
+  // Repeat the process, but in reverse, with an active window.
+  widget->Activate();
+  EXPECT_TRUE(observer.is_active());
+  EXPECT_EQ(1, observer.event_count());
+
+  // Deactivate the frame.
+  widget->OnNativeWidgetNonClientActivationChanged(false);
+  EXPECT_TRUE(observer.is_active());
+  EXPECT_EQ(1, observer.event_count());
+
+  // Re-activate the frame.
+  widget->OnNativeWidgetNonClientActivationChanged(true);
+  EXPECT_TRUE(observer.is_active());
+  EXPECT_EQ(1, observer.event_count());
+
+  // De-activate the window.
+#if defined(OS_MACOSX)
+  // On Mac, deactivation requires the creation of a second window because a
+  // widget cannot give up its own activation if there's nothing to give it to.
+  WidgetAutoclosePtr widget2(CreateTopLevelPlatformWidget());
+  widget2->Show();
+#else
+  widget->Deactivate();
+#endif
+  EXPECT_FALSE(observer.is_active());
+  EXPECT_EQ(2, observer.event_count());
+}
+
+namespace {
+
 // Widget used to destroy itself when OnNativeWidgetDestroyed is called.
 class TestNativeWidgetDestroyedWidget : public Widget {
  public:
@@ -1882,6 +1991,8 @@ void TestNativeWidgetDestroyedWidget::OnNativeWidgetDestroyed() {
   Widget::OnNativeWidgetDestroyed();
   delete this;
 }
+
+}  // anonymous namespace
 
 // Verifies that widget destroyed itself in OnNativeWidgetDestroyed does not
 // crash in ASan.

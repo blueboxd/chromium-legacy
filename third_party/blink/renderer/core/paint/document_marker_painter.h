@@ -32,7 +32,8 @@ class DocumentMarkerPainter {
                                             const StyleableMarker& marker,
                                             const ComputedStyle& style,
                                             const FloatRect& marker_rect,
-                                            LayoutUnit logical_height);
+                                            LayoutUnit logical_height,
+                                            bool in_dark_mode);
   static void PaintDocumentMarker(GraphicsContext& context,
                                   const PhysicalOffset& box_origin,
                                   const ComputedStyle& style,

@@ -236,6 +236,27 @@ public class Browser {
     }
 
     /**
+     * Creates a new tab attached to this browser. This will call {@link TabListCallback#onTabAdded}
+     * with the new tab.
+     *
+     * @since 85
+     */
+    public @NonNull Tab createTab() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 85) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            ITab iTab = mImpl.createTab();
+            Tab tab = Tab.getTabById(iTab.getId());
+            assert tab != null;
+            return tab;
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
      * Control support for embedding use cases such as animations. This should be enabled when the
      * container view of the fragment is animated in any way, needs to be rotated or blended, or
      * need to control z-order with other views or other BrowserFragmentImpls. Note embedder should

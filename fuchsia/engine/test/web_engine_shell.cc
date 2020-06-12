@@ -35,6 +35,8 @@ namespace {
 
 constexpr char kRemoteDebuggingPortSwitch[] = "remote-debugging-port";
 constexpr char kHeadlessSwitch[] = "headless";
+constexpr char kEnableProtectedMediaIdentifier[] =
+    "enable-protected-media-identifier";
 
 void PrintUsage() {
   std::cerr << "Usage: "
@@ -132,7 +134,10 @@ int main(int argc, char** argv) {
       return 1;
     }
   }
-  bool is_headless = command_line->HasSwitch(kHeadlessSwitch);
+
+  const bool is_headless = command_line->HasSwitch(kHeadlessSwitch);
+  const bool enable_protected_media_identifier_access =
+      command_line->HasSwitch(kEnableProtectedMediaIdentifier);
 
   base::CommandLine::StringVector additional_args = command_line->GetArgs();
   GURL url(GetUrlFromArgs(additional_args));
@@ -237,9 +242,18 @@ int main(int argc, char** argv) {
         }
       });
 
-  if (is_headless)
+  if (enable_protected_media_identifier_access) {
+    fuchsia::web::PermissionDescriptor protected_media_permission;
+    protected_media_permission.set_type(
+        fuchsia::web::PermissionType::PROTECTED_MEDIA_IDENTIFIER);
+    frame->SetPermissionState(std::move(protected_media_permission),
+                              url.GetOrigin().spec(),
+                              fuchsia::web::PermissionState::GRANTED);
+  }
+
+  if (is_headless) {
     frame->EnableHeadlessRendering();
-  else {
+  } else {
     // Present a fullscreen view of |frame|.
     auto view_tokens = scenic::ViewTokenPair::New();
     frame->CreateView(std::move(view_tokens.view_token));

@@ -261,9 +261,9 @@ enum class CoseCurves : int {
 };
 
 enum class CoseAlgorithmIdentifier : int {
-  kCoseEs256 = -7,
-  kCoseEdDSA = -8,
-  kCoseRs256 = -257,
+  kEs256 = -7,
+  kEdDSA = -8,
+  kRs256 = -257,
   // kInvalidForTesting is a random 32-bit number used to test unknown
   // algorithms.
   kInvalidForTesting = 146919568,

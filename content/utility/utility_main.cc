@@ -15,9 +15,11 @@
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/common/content_switches_internal.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
+#include "content/public/utility/content_utility_client.h"
 #include "content/utility/utility_thread_impl.h"
 #include "services/service_manager/sandbox/sandbox.h"
 #include "services/tracing/public/cpp/trace_startup.h"
@@ -118,6 +120,8 @@ int UtilityMain(const MainFunctionParams& parameters) {
 #endif
 
   ChildProcess utility_process;
+  GetContentClient()->utility()->PostIOThreadCreated(
+      utility_process.io_task_runner());
   base::RunLoop run_loop;
   utility_process.set_main_thread(
       new UtilityThreadImpl(run_loop.QuitClosure()));

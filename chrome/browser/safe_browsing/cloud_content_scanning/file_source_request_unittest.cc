@@ -340,7 +340,8 @@ TEST(FileSourceRequestTest, UnsupportedFileTypeBlock) {
 
   ASSERT_TRUE(called);
 
-  EXPECT_EQ(result, BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE);
+  EXPECT_EQ(result,
+            BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE);
   EXPECT_EQ(data.contents, normal_contents);
   EXPECT_EQ(data.size, normal_contents.size());
   // printf "Normal file contents" | sha256sum |  tr '[:lower:]' '[:upper:]'

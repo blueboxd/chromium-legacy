@@ -423,9 +423,7 @@ TEST_F(DragWindowResizerTest, DragWindowController) {
     const ui::Layer* drag_layer = drag_window->layer();
     ASSERT_TRUE(drag_layer);
     // Check if |resizer->layer_| is properly set to the drag widget.
-    const std::vector<ui::Layer*>& layers = drag_layer->children();
-    EXPECT_FALSE(layers.empty());
-    EXPECT_EQ(controller->GetDragLayerOwnerForTest(0)->root(), layers.back());
+    EXPECT_FALSE(drag_layer->children().empty());
 
     // The paint request on a drag window should reach the original delegate.
     controller->RequestLayerPaintForTest();

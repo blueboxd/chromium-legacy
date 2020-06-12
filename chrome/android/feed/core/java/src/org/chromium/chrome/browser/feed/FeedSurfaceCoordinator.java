@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -26,20 +25,12 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.feed.library.api.client.scope.ProcessScope;
-import org.chromium.chrome.browser.feed.library.api.client.scope.StreamScope;
 import org.chromium.chrome.browser.feed.library.api.host.action.ActionApi;
-import org.chromium.chrome.browser.feed.library.api.host.stream.CardConfiguration;
-import org.chromium.chrome.browser.feed.library.api.host.stream.SnackbarApi;
-import org.chromium.chrome.browser.feed.library.api.host.stream.SnackbarCallbackApi;
-import org.chromium.chrome.browser.feed.library.api.host.stream.StreamConfiguration;
-import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipApi;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceProvider;
 import org.chromium.chrome.browser.feed.shared.stream.Header;
 import org.chromium.chrome.browser.feed.shared.stream.NonDismissibleHeader;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
-import org.chromium.chrome.browser.feed.tooltip.BasicTooltipApi;
 import org.chromium.chrome.browser.feed.v2.FeedStream;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
@@ -52,7 +43,6 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
@@ -109,105 +99,6 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
     // Used for the feed header menu.
     private UserEducationHelper mUserEducationHelper;
 
-    private static class BasicSnackbarApi implements SnackbarApi {
-        private final SnackbarManager mManager;
-
-        public BasicSnackbarApi(SnackbarManager manager) {
-            mManager = manager;
-        }
-
-        @Override
-        public void show(String message) {
-            mManager.showSnackbar(Snackbar.make(message, new SnackbarManager.SnackbarController() {
-            }, Snackbar.TYPE_ACTION, Snackbar.UMA_FEED_NTP_STREAM));
-        }
-
-        @Override
-        public void show(String message, String action, SnackbarCallbackApi callback) {
-            mManager.showSnackbar(
-                    Snackbar.make(message,
-                                    new SnackbarManager.SnackbarController() {
-                                        @Override
-                                        public void onAction(Object actionData) {
-                                            callback.onDismissedWithAction();
-                                        }
-
-                                        @Override
-                                        public void onDismissNoAction(Object actionData) {
-                                            callback.onDismissNoAction();
-                                        }
-                                    },
-                                    Snackbar.TYPE_ACTION, Snackbar.UMA_FEED_NTP_STREAM)
-                            .setAction(action, null));
-        }
-    }
-
-    private static class BasicStreamConfiguration implements StreamConfiguration {
-        public BasicStreamConfiguration() {}
-
-        @Override
-        public int getPaddingStart() {
-            return 0;
-        }
-        @Override
-        public int getPaddingEnd() {
-            return 0;
-        }
-        @Override
-        public int getPaddingTop() {
-            return 0;
-        }
-        @Override
-        public int getPaddingBottom() {
-            return 0;
-        }
-    }
-
-    private static class BasicCardConfiguration implements CardConfiguration {
-        private final Resources mResources;
-        private final UiConfig mUiConfig;
-        private final int mCornerRadius;
-        private final int mCardMargin;
-        private final int mCardWideMargin;
-
-        public BasicCardConfiguration(Resources resources, UiConfig uiConfig) {
-            mResources = resources;
-            mUiConfig = uiConfig;
-            mCornerRadius = mResources.getDimensionPixelSize(R.dimen.default_rounded_corner_radius);
-            mCardMargin = mResources.getDimensionPixelSize(
-                    R.dimen.content_suggestions_card_modern_margin);
-            mCardWideMargin =
-                    mResources.getDimensionPixelSize(R.dimen.ntp_wide_card_lateral_margins);
-        }
-
-        @Override
-        public int getDefaultCornerRadius() {
-            return mCornerRadius;
-        }
-
-        @Override
-        public Drawable getCardBackground() {
-            return ApiCompatibilityUtils.getDrawable(mResources,
-                    FeedConfiguration.getFeedUiEnabled()
-                            ? R.drawable.hairline_border_card_background_with_inset
-                            : R.drawable.hairline_border_card_background);
-        }
-
-        @Override
-        public int getCardBottomMargin() {
-            return mCardMargin;
-        }
-
-        @Override
-        public int getCardStartMargin() {
-            return 0;
-        }
-
-        @Override
-        public int getCardEndMargin() {
-            return 0;
-        }
-    }
 
     private class SignInPromoHeader implements Header {
         @Override
@@ -419,28 +310,14 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
             mStream = new FeedStream(mActivity, mShowDarkBackground, mSnackbarManager,
                     mPageNavigationDelegate, mBottomSheetController);
         } else {
-            ProcessScope feedProcessScope = FeedProcessScopeFactory.getFeedProcessScope();
-            assert feedProcessScope != null;
-
             FeedAppLifecycle appLifecycle = FeedProcessScopeFactory.getFeedAppLifecycle();
             appLifecycle.onNTPOpened();
 
             mImageLoader = new FeedImageLoader(
                     mActivity, GlobalDiscardableReferencePool.getReferencePool());
-            TooltipApi tooltipApi = new BasicTooltipApi();
 
-            StreamScope streamScope =
-                    feedProcessScope
-                            .createStreamScopeBuilder(mActivity, mImageLoader, mActionApi,
-                                    new BasicStreamConfiguration(),
-                                    new BasicCardConfiguration(mActivity.getResources(), mUiConfig),
-                                    new BasicSnackbarApi(mSnackbarManager),
-                                    FeedProcessScopeFactory.getFeedOfflineIndicator(), tooltipApi)
-                            .setIsBackgroundDark(mShowDarkBackground)
-                            .setIsPlaceholderShown(mIsPlaceholderShown)
-                            .build();
-
-            mStream = streamScope.getStream();
+            mStream = FeedV1StreamCreator.createStream(mActivity, mImageLoader, mActionApi,
+                    mUiConfig, mSnackbarManager, mShowDarkBackground, mIsPlaceholderShown);
         }
 
         mStreamLifecycleManager = mDelegate.createStreamLifecycleManager(mStream, mActivity);

@@ -23,7 +23,7 @@ namespace {
 
 std::unique_ptr<PublicKey> TestKey() {
   return P256PublicKey::ParseX962Uncompressed(
-      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kEs256),
       test_data::kX962UncompressedPublicKey);
 }
 

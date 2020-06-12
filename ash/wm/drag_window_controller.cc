@@ -4,23 +4,17 @@
 
 #include "ash/wm/drag_window_controller.h"
 
-#include <algorithm>
-#include <memory>
-
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/window_factory.h"
-#include "ash/wm/window_util.h"
+#include "ash/wm/window_mirror_view.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
-#include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
@@ -74,15 +68,13 @@ float GetDragWindowOpacity(aura::Window* root_window,
 
 // This keeps track of the drag window's state. It creates/destroys/updates
 // bounds and opacity based on the current bounds.
-class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
+class DragWindowController::DragWindowDetails {
  public:
   explicit DragWindowDetails(const display::Display& display)
       : root_window_(Shell::GetRootWindowForDisplayId(display.id())) {}
-
-  ~DragWindowDetails() override {
-    delete drag_window_;
-    DCHECK(!drag_window_);
-  }
+  DragWindowDetails(const DragWindowDetails&) = delete;
+  DragWindowDetails& operator=(const DragWindowDetails&) = delete;
+  ~DragWindowDetails() = default;
 
   void Update(aura::Window* original_window,
               bool is_touch_dragging,
@@ -90,23 +82,21 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
     const float opacity =
         GetDragWindowOpacity(root_window_, original_window, is_touch_dragging);
     if (opacity == 0.f) {
-      delete drag_window_;
-      // Make sure drag_window_ is reset so that new drag window will be created
-      // when it becomes necessary again.
-      DCHECK(!drag_window_);
-      layer_owner_.reset();
       shadow_.reset();
+      widget_.reset();
       return;
     }
-    if (!drag_window_)
+
+    if (!widget_)
       CreateDragWindow(original_window, shadow_bounds);
 
     gfx::Rect bounds = original_window->bounds();
+    aura::Window* window = widget_->GetNativeWindow();
     aura::Window::ConvertRectToTarget(original_window->parent(),
-                                      drag_window_->parent(), &bounds);
-    drag_window_->SetBounds(bounds);
-    drag_window_->SetTransform(original_window->transform());
-    SetOpacity(opacity);
+                                      window->parent(), &bounds);
+    window->SetBounds(bounds);
+    window->SetTransform(original_window->transform());
+    widget_->SetOpacity(opacity);
   }
 
  private:
@@ -114,95 +104,59 @@ class DragWindowController::DragWindowDetails : public aura::WindowDelegate {
 
   void CreateDragWindow(aura::Window* original_window,
                         const base::Optional<gfx::Rect>& shadow_bounds) {
-    DCHECK(!drag_window_);
-    drag_window_ = window_factory::NewWindow(this).release();
-    int parent_id = original_window->parent()->id();
-    aura::Window* container = root_window_->GetChildById(parent_id);
+    DCHECK(!widget_);
+    views::Widget::InitParams params;
+    params.type = views::Widget::InitParams::TYPE_POPUP;
+    params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
+    params.layer_type = ui::LAYER_NOT_DRAWN;
+    params.name = "DragWindow";
+    params.activatable = views::Widget::InitParams::Activatable::ACTIVATABLE_NO;
+    params.accept_events = false;
+    const int parent_id = original_window->parent()->id();
+    params.parent = root_window_->GetChildById(parent_id);
+
+    widget_ = std::make_unique<views::Widget>();
+    widget_->set_focus_on_creation(false);
+    widget_->Init(std::move(params));
+
+    // TODO(crbug.com/1026746): Change this to WindowPreviewView.
+    // WindowPreviewView can show transient children, but currently does not
+    // show popups due to performance reasons. WindowPreviewView also needs to
+    // be modified so that it can optionally be clipped to the main window's
+    // bounds.
+    widget_->SetContentsView(new WindowMirrorView(
+        original_window, /*trilinear_filtering_on_init=*/false,
+        /*show_non_client_view=*/true));
+
+    aura::Window* window = widget_->GetNativeWindow();
+    window->set_id(kShellWindowId_PhantomWindow);
+    window->SetProperty(aura::client::kAnimationsDisabledKey, true);
     gfx::Rect bounds = original_window->bounds();
     ::wm::ConvertRectToScreen(original_window->parent(), &bounds);
-
-    drag_window_->SetType(aura::client::WINDOW_TYPE_POPUP);
-    drag_window_->SetTransparent(true);
-    drag_window_->Init(ui::LAYER_TEXTURED);
-    drag_window_->SetName("DragWindow");
-    drag_window_->set_id(kShellWindowId_PhantomWindow);
-    drag_window_->SetProperty(aura::client::kAnimationsDisabledKey, true);
-    container->AddChild(drag_window_);
-    drag_window_->SetBounds(bounds);
+    window->SetBounds(bounds);
 
     if (shadow_bounds) {
       shadow_ = std::make_unique<ui::Shadow>();
       shadow_->Init(::wm::kShadowElevationActiveWindow);
       shadow_->SetContentBounds(*shadow_bounds);
-      drag_window_->layer()->Add(shadow_->layer());
+      widget_->GetLayer()->Add(shadow_->layer());
     } else {
-      ::wm::SetShadowElevation(drag_window_,
-                               ::wm::kShadowElevationActiveWindow);
+      ::wm::SetShadowElevation(window, ::wm::kShadowElevationActiveWindow);
     }
 
-    RecreateWindowLayers(original_window);
-    drag_window_->layer()->Add(layer_owner_->root());
-    drag_window_->layer()->StackAtTop(layer_owner_->root());
-
-    // Show the widget after all the setups.
-    drag_window_->Show();
+    // Show the widget the setup is done.
+    widget_->Show();
   }
 
-  void RecreateWindowLayers(aura::Window* original_window) {
-    DCHECK(!layer_owner_.get());
-    layer_owner_ = ::wm::MirrorLayers(original_window, true /* sync_bounds */);
-    // Place the layer at (0, 0) of the DragWindowController's window.
-    gfx::Rect layer_bounds = layer_owner_->root()->bounds();
-    layer_bounds.set_origin(gfx::Point(0, 0));
-    layer_owner_->root()->SetBounds(layer_bounds);
-    layer_owner_->root()->SetTransform(gfx::Transform());
-  }
-
-  void SetOpacity(float opacity) {
-    drag_window_->layer()->SetOpacity(opacity);
-    layer_owner_->root()->SetOpacity(1.0f);
-  }
-
-  // aura::WindowDelegate:
-  gfx::Size GetMinimumSize() const override { return gfx::Size(); }
-  gfx::Size GetMaximumSize() const override { return gfx::Size(); }
-  void OnBoundsChanged(const gfx::Rect& old_bounds,
-                       const gfx::Rect& new_bounds) override {}
-  gfx::NativeCursor GetCursor(const gfx::Point& point) override {
-    return gfx::kNullCursor;
-  }
-  int GetNonClientComponent(const gfx::Point& point) const override {
-    return HTNOWHERE;
-  }
-  bool ShouldDescendIntoChildForEventHandling(
-      aura::Window* child,
-      const gfx::Point& location) override {
-    return false;
-  }
-  bool CanFocus() override { return false; }
-  void OnCaptureLost() override {}
-  void OnPaint(const ui::PaintContext& context) override {}
-  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
-                                  float new_device_scale_factor) override {}
-  void OnWindowDestroyed(aura::Window* window) override {}
-  void OnWindowTargetVisibilityChanged(bool visible) override {}
-  bool HasHitTestMask() const override { return false; }
-  void GetHitTestMask(SkPath* mask) const override {}
-  void OnWindowDestroying(aura::Window* window) override {
-    DCHECK_EQ(drag_window_, window);
-    drag_window_ = nullptr;
-  }
-
+  // The root window of |widget_|.
   aura::Window* root_window_;
 
-  aura::Window* drag_window_ = nullptr;  // Owned by the container.
+  // Contains a WindowMirrorView which is a copy of the original window.
+  std::unique_ptr<views::Widget> widget_;
 
-  // The copy of window_->layer() and its descendants.
-  std::unique_ptr<ui::LayerTreeOwner> layer_owner_;
-
+  // Optional custom shadow if one is given.
   std::unique_ptr<ui::Shadow> shadow_;
-
-  DISALLOW_COPY_AND_ASSIGN(DragWindowDetails);
 };
 
 DragWindowController::DragWindowController(
@@ -213,12 +167,11 @@ DragWindowController::DragWindowController(
       is_touch_dragging_(is_touch_dragging),
       shadow_bounds_(shadow_bounds),
       old_opacity_(window->layer()->opacity()) {
+  window->layer()->SetOpacity(1.f);
+
   DCHECK(drag_windows_.empty());
   display::Screen* screen = display::Screen::GetScreen();
   display::Display current = screen->GetDisplayNearestWindow(window_);
-
-  window->layer()->SetOpacity(1.f);
-
   for (const display::Display& display : screen->GetAllDisplays()) {
     if (current.id() == display.id())
       continue;
@@ -245,7 +198,7 @@ void DragWindowController::Update() {
 int DragWindowController::GetDragWindowsCountForTest() const {
   int count = 0;
   for (const std::unique_ptr<DragWindowDetails>& details : drag_windows_) {
-    if (details->drag_window_)
+    if (details->widget_)
       count++;
   }
   return count;
@@ -254,21 +207,9 @@ int DragWindowController::GetDragWindowsCountForTest() const {
 const aura::Window* DragWindowController::GetDragWindowForTest(
     size_t index) const {
   for (const std::unique_ptr<DragWindowDetails>& details : drag_windows_) {
-    if (details->drag_window_) {
+    if (details->widget_) {
       if (index == 0)
-        return details->drag_window_;
-      index--;
-    }
-  }
-  return nullptr;
-}
-
-const ui::LayerTreeOwner* DragWindowController::GetDragLayerOwnerForTest(
-    size_t index) const {
-  for (const std::unique_ptr<DragWindowDetails>& details : drag_windows_) {
-    if (details->layer_owner_) {
-      if (index == 0)
-        return details->layer_owner_.get();
+        return details->widget_->GetNativeWindow();
       index--;
     }
   }
@@ -278,7 +219,7 @@ const ui::LayerTreeOwner* DragWindowController::GetDragLayerOwnerForTest(
 const ui::Shadow* DragWindowController::GetDragWindowShadowForTest(
     size_t index) const {
   for (const std::unique_ptr<DragWindowDetails>& details : drag_windows_) {
-    if (details->drag_window_) {
+    if (details->widget_) {
       if (index == 0)
         return details->shadow_.get();
       index--;
@@ -288,11 +229,12 @@ const ui::Shadow* DragWindowController::GetDragWindowShadowForTest(
 }
 
 void DragWindowController::RequestLayerPaintForTest() {
-  ui::PaintContext context(nullptr, 1.0f, gfx::Rect(),
+  auto list = base::MakeRefCounted<cc::DisplayItemList>();
+  ui::PaintContext context(list.get(), 1.0f, gfx::Rect(),
                            window_->GetHost()->compositor()->is_pixel_canvas());
   for (auto& details : drag_windows_) {
     std::vector<ui::Layer*> layers;
-    layers.push_back(details->drag_window_->layer());
+    layers.push_back(details->widget_->GetLayer());
     while (layers.size()) {
       ui::Layer* layer = layers.back();
       layers.pop_back();

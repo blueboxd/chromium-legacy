@@ -254,8 +254,6 @@ static_library("renderer") {
     ]
     if (safe_browsing_mode == 1) {
       sources += [
-        "safe_browsing/feature_extractor_clock.cc",
-        "safe_browsing/feature_extractor_clock.h",
         "safe_browsing/features.cc",
         "safe_browsing/features.h",
         "safe_browsing/murmurhash3_util.cc",
@@ -426,8 +424,6 @@ static_library("test_support") {
   sources = [
     "chrome_mock_render_thread.cc",
     "chrome_mock_render_thread.h",
-    "safe_browsing/mock_feature_extractor_clock.cc",
-    "safe_browsing/mock_feature_extractor_clock.h",
     "safe_browsing/test_utils.cc",
     "safe_browsing/test_utils.h",
   ]
@@ -440,11 +436,4 @@ static_library("test_support") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-
-  if (is_android) {
-    sources -= [
-      "safe_browsing/mock_feature_extractor_clock.cc",
-      "safe_browsing/mock_feature_extractor_clock.h",
-    ]
-  }
 }

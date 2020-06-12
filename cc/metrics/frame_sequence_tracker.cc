@@ -424,7 +424,7 @@ void FrameSequenceTracker::ReportFramePresented(
   uint32_t main_frames_produced = 0;
   metrics()->AdvanceTrace(feedback.timestamp);
 
-  const bool was_presented = !feedback.timestamp.is_null();
+  const bool was_presented = !feedback.failed();
   if (was_presented && submitted_frame_since_last_presentation) {
     DCHECK_LT(impl_throughput().frames_produced,
               impl_throughput().frames_expected)

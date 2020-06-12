@@ -1054,7 +1054,8 @@ TEST_F(UkmPageLoadMetricsObserverTest,
   }
 }
 
-TEST_F(UkmPageLoadMetricsObserverTest, FirstInputDelayAndTimestamp) {
+TEST_F(UkmPageLoadMetricsObserverTest,
+       FirstInputDelayAndTimestampAndProcessingTime) {
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
@@ -1062,6 +1063,8 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstInputDelayAndTimestamp) {
       base::TimeDelta::FromMilliseconds(50);
   timing.interactive_timing->first_input_timestamp =
       base::TimeDelta::FromMilliseconds(712);
+  timing.interactive_timing->first_input_processing_time =
+      base::TimeDelta::FromMilliseconds(25);
   PopulateRequiredTimingFields(&timing);
 
   NavigateAndCommit(GURL(kTestUrl1));
@@ -1083,6 +1086,9 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstInputDelayAndTimestamp) {
     tester()->test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(), PageLoad::kInteractiveTiming_FirstInputTimestamp4Name,
         712);
+    tester()->test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(),
+        PageLoad::kInteractiveTiming_FirstInputProcessingTimesName, 25);
   }
 }
 

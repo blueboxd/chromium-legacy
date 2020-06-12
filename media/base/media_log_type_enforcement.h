@@ -46,6 +46,16 @@ struct MediaLogEventTypeSupport {};
     static std::string TypeName() { return #EVENT; }               \
   }
 
+#define MEDIA_LOG_EVENT_NAMED_DATA_OP(EVENT, TYPE, DISPLAY, OP)    \
+  template <>                                                      \
+  struct MediaLogEventTypeSupport<MediaLogEvent::EVENT, TYPE> {    \
+    static void AddExtraData(base::Value* params, const TYPE& t) { \
+      DCHECK(params);                                              \
+      params->SetKey(DISPLAY, MediaSerialize<TYPE>(OP(t)));        \
+    }                                                              \
+    static std::string TypeName() { return #EVENT; }               \
+  }
+
 // Specifically do not create the Convert or DisplayName methods
 #define MEDIA_LOG_EVENT_TYPELESS(EVENT)                   \
   template <>                                             \

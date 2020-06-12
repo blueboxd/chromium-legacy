@@ -4,7 +4,7 @@
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
-import {$} from 'chrome://resources/js/util.m.js';
+import {$, hasKeyModifiers} from 'chrome://resources/js/util.m.js';
 
 import {FittingType} from './constants.js';
 import {GestureDetector, PinchEvent} from './gesture_detector.js';
@@ -305,8 +305,8 @@ export class Viewport {
       y: point.y * pointsToPixels,
     });
     return {
-      x: result.x + Viewport.PAGE_SHADOW.left,
-      y: result.y + Viewport.PAGE_SHADOW.top,
+      x: result.x + PAGE_SHADOW.left,
+      y: result.y + PAGE_SHADOW.top,
     };
   }
 
@@ -365,9 +365,9 @@ export class Viewport {
    * @param {number} zoom Zoom to compute scrollbars for
    * @return {{horizontal: boolean, vertical: boolean}} Whether horizontal or
    *     vertical scrollbars are needed.
-   * @private
+   * Public so tests can call it directly.
    */
-  documentNeedsScrollbars_(zoom) {
+  documentNeedsScrollbars(zoom) {
     const zoomedDimensions = this.getZoomedDocumentDimensions_(zoom);
     if (!zoomedDimensions) {
       return {horizontal: false, vertical: false};
@@ -393,7 +393,7 @@ export class Viewport {
    *     vertical scrollbars are needed.
    */
   documentHasScrollbars() {
-    return this.documentNeedsScrollbars_(this.getZoom());
+    return this.documentNeedsScrollbars(this.getZoom());
   }
 
   /**
@@ -464,7 +464,7 @@ export class Viewport {
 
   /** @return {!Size} the size of the viewport excluding scrollbars. */
   get size() {
-    const needsScrollbars = this.documentNeedsScrollbars_(this.getZoom());
+    const needsScrollbars = this.documentNeedsScrollbars(this.getZoom());
     const scrollbarWidth = needsScrollbars.vertical ? this.scrollbarWidth_ : 0;
     const scrollbarHeight =
         needsScrollbars.horizontal ? this.scrollbarWidth_ : 0;
@@ -790,7 +790,7 @@ export class Viewport {
         pageDimensions.width, pageDimensions.height);
 
     // Check if there needs to be any scrollbars.
-    const needsScrollbars = this.documentNeedsScrollbars_(zoom);
+    const needsScrollbars = this.documentNeedsScrollbars(zoom);
 
     // If the document fits, just return the zoom.
     if (!needsScrollbars.horizontal && !needsScrollbars.vertical) {
@@ -1007,8 +1007,152 @@ export class Viewport {
   }
 
   /**
+   * @param {!KeyboardEvent} e
+   * @private
+   */
+  pageUpHandler_(e) {
+    // Go to the previous page if we are fit-to-page or fit-to-height.
+    if (this.isPagedMode_()) {
+      this.goToPreviousPage();
+      // Since we do the movement of the page.
+      e.preventDefault();
+    } else if (
+        /** @type {!{fromScriptingAPI: (boolean|undefined)}} */ (e)
+            .fromScriptingAPI) {
+      this.position.y -= this.size.height;
+    }
+  }
+
+  /**
+   * @param {!KeyboardEvent} e
+   * @private
+   */
+  pageDownHandler_(e) {
+    // Go to the next page if we are fit-to-page or fit-to-height.
+    if (this.isPagedMode_()) {
+      this.goToNextPage();
+      // Since we do the movement of the page.
+      e.preventDefault();
+    } else if (
+        /** @type {!{fromScriptingAPI: (boolean|undefined)}} */ (e)
+            .fromScriptingAPI) {
+      this.position.y += this.size.height;
+    }
+  }
+
+  /**
+   * @param {!KeyboardEvent} e
+   * @param {boolean} formFieldFocused
+   * @private
+   */
+  arrowLeftHandler_(e, formFieldFocused) {
+    if (hasKeyModifiers(e)) {
+      return;
+    }
+
+    // Go to the previous page if there are no horizontal scrollbars and
+    // no form field is focused.
+    if (!(this.documentHasScrollbars().horizontal || formFieldFocused)) {
+      this.goToPreviousPage();
+      // Since we do the movement of the page.
+      e.preventDefault();
+    } else if (
+        /** @type {!{fromScriptingAPI: (boolean|undefined)}} */ (e)
+            .fromScriptingAPI) {
+      this.position.x -= SCROLL_INCREMENT;
+    }
+  }
+
+  /**
+   * @param {!KeyboardEvent} e
+   * @param {boolean} formFieldFocused
+   * @private
+   */
+  arrowRightHandler_(e, formFieldFocused) {
+    if (hasKeyModifiers(e)) {
+      return;
+    }
+
+    // Go to the next page if there are no horizontal scrollbars and no
+    // form field is focused.
+    if (!(this.documentHasScrollbars().horizontal || formFieldFocused)) {
+      this.goToNextPage();
+      // Since we do the movement of the page.
+      e.preventDefault();
+    } else if (
+        /** @type {!{fromScriptingAPI: (boolean|undefined)}} */ (e)
+            .fromScriptingAPI) {
+      this.position.x += SCROLL_INCREMENT;
+    }
+  }
+
+  /**
+   * @param {boolean} fromScriptingAPI
+   * @private
+   */
+  arrowDownHandler_(fromScriptingAPI) {
+    if (fromScriptingAPI) {
+      this.position.y += SCROLL_INCREMENT;
+    }
+  }
+
+  /**
+   * @param {boolean} fromScriptingAPI
+   * @private
+   */
+  arrowUpHandler_(fromScriptingAPI) {
+    if (fromScriptingAPI) {
+      this.position.y -= SCROLL_INCREMENT;
+    }
+  }
+
+  /**
+   * Handle certain directional key events.
+   * @param {!KeyboardEvent} e the event to handle.
+   * @param {boolean} formFieldFocused Whether a form field is currently
+   *     focused.
+   * @return {boolean} Whether the event was handled.
+   */
+  handleDirectionalKeyEvent(e, formFieldFocused) {
+    // Certain scroll events may be sent from outside of the extension.
+    const fromScriptingAPI =
+        /** @type {!{fromScriptingAPI: (boolean|undefined)}} */ (e)
+            .fromScriptingAPI;
+
+    switch (e.key) {
+      case '':
+        if (e.shiftKey) {
+          this.pageUpHandler_(e);
+        } else {
+          this.pageDownHandler_(e);
+        }
+        return true;
+      case 'PageUp':
+        this.pageUpHandler_(e);
+        return true;
+      case 'PageDown':
+        this.pageDownHandler_(e);
+        return true;
+      case 'ArrowLeft':
+        this.arrowLeftHandler_(e, formFieldFocused);
+        return true;
+      case 'ArrowUp':
+        this.arrowUpHandler_(!!fromScriptingAPI);
+        return true;
+      case 'ArrowRight':
+        this.arrowRightHandler_(e, formFieldFocused);
+        return true;
+      case 'ArrowDown':
+        this.arrowDownHandler_(!!fromScriptingAPI);
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /**
    * Go to the next page. If the document is in two-up view, go to the left page
-   * of the next row.
+   * of the next row. Public for tests.
    */
   goToNextPage() {
     const currentPage = this.getMostVisiblePage();
@@ -1019,7 +1163,7 @@ export class Viewport {
 
   /**
    * Go to the previous page. If the document is in two-up view, go to the left
-   * page of the previous row.
+   * page of the previous row. Public for tests.
    */
   goToPreviousPage() {
     const currentPage = this.getMostVisiblePage();
@@ -1062,7 +1206,7 @@ export class Viewport {
       // Unless we're in fit to page or fit to height mode, scroll above the
       // page by |this.topToolbarHeight_| so that the toolbar isn't covering it
       // initially.
-      if (!this.isPagedMode()) {
+      if (!this.isPagedMode_()) {
         toolbarOffset = this.topToolbarHeight_;
       }
       this.position = {
@@ -1099,7 +1243,7 @@ export class Viewport {
    */
   getPageInsetDimensions(page) {
     const pageDimensions = this.pageDimensions_[page];
-    const shadow = Viewport.PAGE_SHADOW;
+    const shadow = PAGE_SHADOW;
     return {
       x: pageDimensions.x + shadow.left,
       y: pageDimensions.y + shadow.top,
@@ -1131,7 +1275,7 @@ export class Viewport {
     // TODO(raymes): This should really be set when the PDF plugin passes the
     // page coordinates, but it isn't yet.
     const x = (this.documentDimensions_.width - pageDimensions.width) / 2 +
-        Viewport.PAGE_SHADOW.left;
+        PAGE_SHADOW.left;
     // Compute the space on the left of the document if the document fits
     // completely in the screen.
     const zoom = this.getZoom();
@@ -1152,8 +1296,9 @@ export class Viewport {
    * In a paged mode, page up and page down scroll to the top of the
    * previous/next page and part of the page is under the toolbar.
    * @return {boolean} Whether the current fitting type is a paged mode.
+   * @private
    */
-  isPagedMode() {
+  isPagedMode_() {
     return (
         this.fittingType_ === FittingType.FIT_TO_PAGE ||
         this.fittingType_ === FittingType.FIT_TO_HEIGHT);
@@ -1220,7 +1365,7 @@ export class Viewport {
         }
 
         const needsScrollbars =
-            this.documentNeedsScrollbars_(this.zoomManager_.applyBrowserZoom(
+            this.documentNeedsScrollbars(this.zoomManager_.applyBrowserZoom(
                 this.clampZoom_(this.internalZoom_ * scaleDelta)));
 
         this.pinchCenter_ = e.center;
@@ -1290,7 +1435,7 @@ export class Viewport {
       this.oldCenterInContent_ =
           this.frameToContent_(frameToPluginCoordinate(e.center));
 
-      const needsScrollbars = this.documentNeedsScrollbars_(this.getZoom());
+      const needsScrollbars = this.documentNeedsScrollbars(this.getZoom());
       this.keepContentCentered_ = !needsScrollbars.horizontal;
       // We keep track of beginning of the pinch.
       // By doing so we will be able to compute the pan distance.
@@ -1312,14 +1457,20 @@ Viewport.PinchPhase = {
   PINCH_END: 4
 };
 
-// The increment to scroll a page by in pixels when up/down/left/right arrow
-// keys are pressed. Usually we just let the browser handle scrolling on the
-// window when these keys are pressed but in certain cases we need to simulate
-// these events.
-Viewport.SCROLL_INCREMENT = 40;
+/**
+ * The increment to scroll a page by in pixels when up/down/left/right arrow
+ * keys are pressed. Usually we just let the browser handle scrolling on the
+ * window when these keys are pressed but in certain cases we need to simulate
+ * these events.
+ * @type {number}
+ */
+const SCROLL_INCREMENT = 40;
 
-// The width of the page shadow around pages in pixels.
-Viewport.PAGE_SHADOW = {
+/**
+ * The width of the page shadow around pages in pixels.
+ * @type {!{top: number, bottom: number, left: number, right: number}}
+ */
+export const PAGE_SHADOW = {
   top: 3,
   bottom: 7,
   left: 5,

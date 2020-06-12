@@ -15,6 +15,7 @@
 #include "ash/app_list/views/folder_header_view_delegate.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
@@ -195,8 +196,7 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   std::unique_ptr<Animation> contents_container_animation_;
 
   // Records smoothness of the folder show/hide animation.
-  std::unique_ptr<AppListAnimationMetricsRecorder> show_hide_metrics_recorder_;
-  std::unique_ptr<ui::AnimationMetricsReporter> show_hide_metrics_reporter_;
+  base::Optional<ui::ThroughputTracker> show_hide_metrics_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListFolderView);
 };

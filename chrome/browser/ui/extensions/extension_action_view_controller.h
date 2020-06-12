@@ -152,6 +152,15 @@ class ExtensionActionViewController
   // to run on the given |web_contents|.
   bool PageActionWantsToRun(content::WebContents* web_contents) const;
 
+  // Returns true if this extension uses the activeTab permission and would
+  // probably be able to to access the given |url|. The actual checks when an
+  // activeTab extension tries to run are a little more complicated and can be
+  // seen in ExtensionActionRunner and ActiveTabPermissionGranter.
+  // Note: The rare cases where this gets it wrong should only be for false
+  // positives, where it reports that the extension wants access but it can't
+  // actually be given access when it tries to run.
+  bool HasActiveTabAndCanAccess(const GURL& url) const;
+
   // Returns true if this extension has been blocked on the given
   // |web_contents|.
   bool HasBeenBlocked(content::WebContents* web_contents) const;

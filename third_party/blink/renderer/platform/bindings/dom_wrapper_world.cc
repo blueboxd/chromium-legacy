@@ -175,6 +175,26 @@ void DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(
     IsolatedWorldSecurityOrigins().erase(world_id);
 }
 
+typedef HashMap<int, String> IsolatedWorldStableIdMap;
+static IsolatedWorldStableIdMap& IsolatedWorldStableIds() {
+  DCHECK(IsMainThread());
+  DEFINE_STATIC_LOCAL(IsolatedWorldStableIdMap, map, ());
+  return map;
+}
+
+String DOMWrapperWorld::NonMainWorldStableId() const {
+  DCHECK(!this->IsMainWorld());
+  return IsolatedWorldStableIds().at(GetWorldId());
+}
+
+void DOMWrapperWorld::SetNonMainWorldStableId(int32_t world_id,
+                                              const String& stable_id) {
+#if DCHECK_IS_ON()
+  DCHECK(!IsMainWorldId(world_id));
+#endif
+  IsolatedWorldStableIds().Set(world_id, stable_id);
+}
+
 typedef HashMap<int, String> IsolatedWorldHumanReadableNameMap;
 static IsolatedWorldHumanReadableNameMap& IsolatedWorldHumanReadableNames() {
   DCHECK(IsMainThread());
@@ -182,7 +202,7 @@ static IsolatedWorldHumanReadableNameMap& IsolatedWorldHumanReadableNames() {
   return map;
 }
 
-String DOMWrapperWorld::NonMainWorldHumanReadableName() {
+String DOMWrapperWorld::NonMainWorldHumanReadableName() const {
   DCHECK(!this->IsMainWorld());
   return IsolatedWorldHumanReadableNames().at(GetWorldId());
 }

@@ -27,6 +27,7 @@ component("util") {
     "//base",
     "//base:i18n",
     "//chromeos/constants",
+    "//chromeos/services/assistant/public/cpp",
     "//chromeos/services/assistant/public/mojom",
     "//net",
     "//ui/base",

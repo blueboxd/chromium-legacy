@@ -268,6 +268,9 @@ Als je dit beleid inschakelt of niet configureert, wordt op de webpagina naar sp
 Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragmenten scrollen via de URL uitgeschakeld.</translation>
 <translation id="1474273443907024088">TLS False Start uitschakelen</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1480412981546860793">Als je het beleid instelt, wordt de landinstelling gespecificeerd die <ph name="PRODUCT_NAME" /> gebruikt.
+
+      Als je het beleid uitschakelt of niet instelt, specificeren gebruikers de landinstelling (indien geconfigureerd), de landinstelling voor het systeem of de reservelandinstelling (en-US).</translation>
 <translation id="1486021504508098388">Informatie over schermverlichting melden</translation>
 <translation id="1488406778491620405">Met de toegankelijkheidsfunctie <ph name="PRODUCT_NAME" /> kunnen slechtziende gebruikers van een schermlezer beschrijvingen van niet-gelabelde afbeeldingen op internet krijgen. Gebruikers die de functie inschakelen, kunnen een anonieme Google-service gebruiken voor automatische beschrijvingen van niet-gelabelde afbeeldingen die ze tegenkomen op internet.
 
@@ -1153,6 +1156,15 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
 <translation id="2678503605767349615">Vereiste clientcertificaten voor het hele apparaat</translation>
 <translation id="268577405881275241">De proxyfunctie voor het comprimeren van gegevens inschakelen</translation>
+<translation id="2691668238491124549">Als je het beleid instelt (alleen zoals aanbevolen), worden aanbevolen landinstellingen voor een beheerde sessie bovenaan de lijst geplaatst, in de volgorde waarin ze in het beleid worden weergegeven. De eerste aanbevolen landinstelling is vooraf geselecteerd.
+
+      Als je het beleid niet instelt, wordt de landinstelling van de huidige UI vooraf geselecteerd.
+
+      Bij meer dan één aanbevolen landinstelling wordt aangenomen dat gebruikers willen kiezen tussen deze landinstellingen. De selectie van landinstelling en toetsenbordindeling wordt prominent weergegeven als een beheerde sessie wordt gestart. In andere gevallen wordt aangenomen dat de meeste gebruikers de vooraf geselecteerde landinstelling willen gebruiken. De selectie van landinstelling en toetsenbordindeling wordt minder prominent weergegeven als een beheerde sessie wordt gestart.
+
+      Als je het beleid instelt en automatisch inloggen inschakelt (bekijk het beleid <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" /> en <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_DELAY_POLICY_NAME" />), gebruikt de beheerde sessie de eerste aanbevolen landinstelling en de populairste overeenkomende toetsenbordindeling.
+
+      De vooraf geselecteerde toetsenbordindeling is altijd de populairste indeling die overeenkomt met de vooraf geselecteerde landinstelling. Gebruikers kunnen voor hun sessie altijd elke landinstelling kiezen die <ph name="PRODUCT_OS_NAME" /> ondersteunt.</translation>
 <translation id="2693108589792503178">Configureer de URL voor het wijzigen van het wachtwoord.</translation>
 <translation id="2694143893026486692">Vastgezet vergrootglas ingeschakeld</translation>
 <translation id="2694188263972877487">Hiermee configureer je het type downloads dat volledig door <ph name="PRODUCT_NAME" /> wordt geblokkeerd, zonder dat gebruikers het beveiligingsbesluit kunnen overschrijven.
@@ -1327,6 +1339,17 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
       Als dit beleid is ingesteld op 'True' of niet is ingesteld, hanteren beheerde gastsessie het gedrag van een beheerde sessie, waardoor veel van de beperkingen voor reguliere openbare sessies komen te vervallen.
 
       Als dit beleid is ingesteld, kan de gebruiker het niet wijzigen of overschrijven.</translation>
+<translation id="3001285126226650303">Hiermee kan <ph name="PRODUCT_NAME" /> experimentele beleidsregels laden.
+
+        WAARSCHUWING: Experimentele beleidsregels worden niet ondersteund en kunnen zonder kennisgeving worden gewijzigd of verwijderd uit toekomstige versies van de browser.
+
+        Een experimentele beleidsregel is mogelijk niet compleet of kan bekende of onbekende fouten bevatten. De beleidsregel kan zonder kennisgeving worden gewijzigd of zelfs worden verwijderd. Door experimentele beleidsregels in te schakelen, kun je browsergegevens kwijtraken of je veiligheid of privacy in gevaar brengen.
+
+        Als een beleidsregel niet in de lijst wordt vermeld en niet officieel is uitgebracht, wordt de waarde hiervan genegeerd in het bètakanaal en het stabiele kanaal.
+
+        Als een beleidsregel in de lijst wordt vermeld en niet officieel is uitgebracht, wordt de waarde hiervan toegepast.
+
+        Dit beleid heeft geen invloed op al uitgebrachte beleidsregels.</translation>
 <translation id="3016255526521614822">Notitie-apps die zijn toegestaan op het <ph name="PRODUCT_OS_NAME" />-vergrendelscherm toevoegen aan de witte lijst</translation>
 <translation id="3020064401262077616">Hiermee bepaal je de beleidsregels voor ouderlijk toezicht, die alleen op kinderaccounts worden toegepast.</translation>
 <translation id="3020953534071988875">Als je dit beleid configureert, wordt Ambient-verificatie voor incognito- en gastprofielen toegestaan/niet toegestaan in <ph name="PRODUCT_NAME" />.
@@ -1368,6 +1391,9 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 
           Als dit beleid niet wordt ingesteld, wordt 'AllowJavaScript' gebruikt en kan de gebruiker dit aanpassen.</translation>
 <translation id="3038323923255997294">Doorgaan met uitvoeren van achtergrondapps als <ph name="PRODUCT_NAME" /> is gesloten</translation>
+<translation id="3041887182529293512">Als je het beleid instelt op 'True' of niet instelt, worden automatisch gegenereerde contentsuggesties weergegeven op de pagina 'Nieuw tabblad', op basis van de browsegeschiedenis, interesses of locatie van de gebruiker.
+
+      Als je het beleid instelt op 'False', worden er geen automatisch gegenereerde contentsuggesties weergegeven op de pagina 'Nieuw tabblad'.</translation>
 <translation id="3046192273793919231">Netwerkpakketten verzenden naar de beheerserver om de online status bij te houden</translation>
 <translation id="3047732214002457234">Bepalen hoe Chrome Cleanup gegevens doorgeeft aan Google</translation>
 <translation id="3048744057455266684">Als dit beleid is ingesteld en een zoek-URL die is voorgesteld vanuit de omnibox, deze parameter in de zoekreeks of in de fragment-ID bevat, geeft de suggestie de zoektermen en zoekprovider weer en niet de onbewerkte zoek-URL.
@@ -1417,6 +1443,13 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
       Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="3119125876909100625">Uploads van bestanden met wachtwoordbeveiliging toestaan</translation>
 <translation id="3122082892722698079">Gebruik van niet-beveiligde contentuitzonderingen beheren</translation>
+<translation id="3148152738273574834">Als je het beleid instelt, wordt een lijst met websites gespecificeerd die op de achtergrond worden geïnstalleerd zonder interactie van de gebruiker en die niet kunnen worden verwijderd of uitgeschakeld door gebruikers.
+
+      Elk lijstitem van het beleid is een object met een verplicht lid: <ph name="URL_LABEL" /> (de URL van de web-app die moet worden geïnstalleerd) en twee optionele leden: <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (voor hoe de web-app wordt geopend, een nieuw tabblad is de standaardinstelling) en <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> ('True' als <ph name="LINUX_OS_NAME" />- en Windows®-snelkoppelingen worden gemaakt).
+
+      Gebruikers kunnen wijzigen in welke container de app wordt geopend en snelkoppelingen overslaan.
+
+      Bekijk <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> voor het vastzetten van apps op de <ph name="PRODUCT_OS_NAME" />-plank.</translation>
 <translation id="3152425128389603870">Maak Samengestelde desktop beschikbaar en schakel deze standaard in</translation>
 <translation id="3159375329008977062">Gebruiker kan Crostini-containers exporteren/importeren via de gebruikersinterface</translation>
 <translation id="3165808775394012744">Deze beleidsregels zijn hier opgenomen zodat je ze makkelijk kunt verwijderen.</translation>
@@ -1495,6 +1528,9 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 
           Als dit beleid niet is ingesteld, kunnen gebruikers uitzonderingen toevoegen om blokkeerbare gecombineerde content toe te staan en automatische upgrades voor optioneel blokkeerbare gecombineerde content uitschakelen.</translation>
 <translation id="3307971460556020865">Grote bestandsuploads en -downloads blokkeren</translation>
+<translation id="3308724602356134956">Als je het beleid instelt, downloadt en gebruikt <ph name="PRODUCT_OS_NAME" /> de door jou ingestelde achtergrondafbeelding voor de achtergrond van het bureaublad van de gebruiker en het inlogscherm. Gebruikers kunnen de afbeelding niet wijzigen. Specificeer de URL (die toegankelijk moet zijn zonder verificatie) waar <ph name="PRODUCT_OS_NAME" /> de achtergrondafbeelding kan downloaden, evenals een cryptografische hash (in jpeg-indeling met een bestandsgrootte van maximaal 16 MB) om de integriteit daarvan te verifiëren.
+
+      Als je het beleid niet instelt, kiezen gebruikers de afbeelding voor de achtergrond van het bureaublad en het inlogscherm.</translation>
 <translation id="3312206664202507568">Hiermee wordt een pagina op chrome://password-change actief waar SAML-gebruikers hun SAML-wachtwoorden kunnen wijzigen tijdens een sessie. Dit zorgt ervoor dat het SAML-wachtwoord en het wachtwoord voor schermvergrendeling van het apparaat gesynchroniseerd blijven.
 
       Met dit beleid worden er ook meldingen gegenereerd voor SAML-gebruikers van wie het SAML-wachtwoord bijna verloopt. Ze kunnen dit dan meteen verhelpen door tijdens de sessie het wachtwoord te wijzigen.
@@ -2770,6 +2806,9 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Bekijk voor meer informatie het volgende artikel: https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5249453807420671499">Gebruikers kunnen Kerberos-accounts toevoegen</translation>
+<translation id="5252995168844634755">Als je het beleid instelt op 'True', wordt 'Samengestelde desktop' ingeschakeld, waarmee apps kunnen worden weergegeven over meerdere schermen. Gebruikers kunnen 'Samengestelde desktop' uitschakelen voor afzonderlijke schermen.
+
+      Als je het beleid instelt op 'False' of niet instelt, wordt 'Samengestelde desktop' uitgeschakeld. Gebruikers kunnen deze functie niet inschakelen.</translation>
 <translation id="5255162913209987122">Kan worden aanbevolen</translation>
 <translation id="527237119693897329">Hiermee kun je opgeven welke hosts voor systeemeigen berichten niet moeten worden geladen.
 
@@ -3643,6 +3682,15 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
       Als je wilt beheren welke websites Flash mogen uitvoeren, bekijk je de beleidsregels 'DefaultPluginsSetting', 'PluginsAllowedForUrls' en 'PluginsBlockedForUrls'.
 
       Als deze instelling is uitgeschakeld of niet is ingesteld, kan Flash-content van andere bronnen of minder belangrijke content worden geblokkeerd.</translation>
+<translation id="6532026122543921610">Tenzij het beleid <ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> de automatische tijdzonedetectie uitschakelt, wordt de methode voor automatische tijdzonedetectie uiteengezet als het beleid wordt ingesteld. Gebruikers kunnen deze methode niet wijzigen.
+
+      Je kunt het beleid instellen op:
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONDISABLED" />: Automatische tijdzonedetectie blijft uitgeschakeld.
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TTIMEZONEAUTOMATICDETECTIONIPONLY" />: Automatische tijdzonedetectie blijft ingeschakeld, via de methode die gebaseerd is op IP-adressen.
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDWIFIACCESSPOINTS" />: Automatische tijdzonedetectie blijft ingeschakeld. De lijst met zichtbare wifi-toegangspunten wordt voortdurend naar de Geolocation API-server gestuurd voor gedetailleerdere tijdzonedetectie.
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDALLLOCATIONINFO" />: Automatische tijdzonedetectie blijft ingeschakeld. Locatiegegevens (zoals wifi-toegangspunten, bereikbare zendmasten, gps) worden voortdurend naar een server gestuurd voor de meeste gedetailleerde tijdzonedetectie.
+
+      Als je het beleid niet instelt, 'Gebruikers laten bepalen' instelt of het beleid instelt op 'None', bepalen gebruikers de automatische tijdzonedetectie via de normale opties in chrome://settings.</translation>
 <translation id="6532769014584932288">Wake locks toestaan</translation>
 <translation id="653645667373317432">Met dit beleid wordt bepaald welke opdracht wordt gebruikt om URL's te openen in <ph name="PRODUCT_NAME" /> bij overschakeling vanuit Internet Explorer.
 
@@ -4680,6 +4728,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8118665053362250806">Grootte voor mediaschijfcache instellen</translation>
 <translation id="8124468781472887384">Toegangsbeleid voor configuratie van apparaatprinters.</translation>
 <translation id="8128192446158421884">URL's waarbij AutoOpenFileTypes van toepassing kan zijn</translation>
+<translation id="8133152694354699657">Als je het beleid instelt op 'True' of niet instelt, wordt 'Tikken om te zoeken' beschikbaar voor gebruikers. Ze kunnen de functie in- of uitschakelen.
+
+      Als je het beleid instelt op 'False', wordt 'Tikken om te zoeken' volledig uitgeschakeld.</translation>
 <translation id="8140204717286305802">De lijst met netwerkinterfaces met hun typen en hardwareadressen rapporteren aan de server.
 
       Als het beleid is ingesteld op 'false', wordt de interfacelijst niet gerapporteerd.</translation>
@@ -5171,6 +5222,11 @@ Dit beleid wordt verwijderd in M75.</translation>
           Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
 
           Als dit beleid niet is ingesteld, is automatisch klikken in eerste instantie uitgeschakeld op het inlogscherm. De gebruiker kan deze functie op elk gewenst moment inschakelen.</translation>
+<translation id="8873089107816226072">Als je het beleid instelt, wordt de tijdzone van een apparaat gespecificeerd en wordt locatiegebaseerde automatische aanpassing van tijdzones uitgeschakeld. Het beleid <ph name="SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_POLICY_NAME" /> wordt overschreven. Gebruikers kunnen de tijdzone niet wijzigen.
+
+      Bij nieuwe apparaten is de tijdzone standaard ingesteld op 'US/Pacific'. De notatie van de waarde volgt de naamgeving in de IANA Time Zone Database (https://en.wikipedia.org/wiki/Tz_database). Als je een ongeldige waarde opgeeft, wordt het beleid geactiveerd met de instelling 'GMT'.
+
+      Als je het beleid niet instelt of een lege tekenreeks opgeeft, gebruikt het apparaat de momenteel actieve tijdzone. Gebruikers kunnen de tijdzone wijzigen.</translation>
 <translation id="8876188741456358123">Hiermee overschrijf je de standaardmodus voor dubbelzijdig afdrukken. Als de modus niet beschikbaar is, wordt dit beleid genegeerd.</translation>
 <translation id="8878850056189891727">Patronen in deze lijst worden vergeleken met de beveiligingsoorsprong van de aanvragende URL.  Als er een overeenkomst wordt gevonden, wordt toegang tot apparaten voor het vastleggen van audio zonder prompt toegestaan.
 
@@ -5254,6 +5310,9 @@ Dit beleid wordt verwijderd in M75.</translation>
 
       Dit beleid moet niet worden ingeschakeld wanneer het beleid <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> is ingeschakeld, omdat die functie dezelfde functionaliteit aan clientzijde gebruikt. De door Google gehoste synchronisatie wordt in dit geval volledig uitgeschakeld.</translation>
 <translation id="8955719471735800169">Bovenkant pagina</translation>
+<translation id="8956310900055843601">Als je het beleid instelt op 'True' of niet instelt, krijgt het inlogscherm van een apparaat de 24-uurs kloknotatie. Gebruikerssessies maken ook standaard gebruik van deze notatie, maar gebruikers kunnen de kloknotatie van een account wijzigen.
+
+      Als je het beleid instelt op 'False', krijgt een apparaat de 12-uurs kloknotatie.</translation>
 <translation id="8959992920425111821">Standaard configuratie</translation>
 <translation id="8970205333161758602">De prompt <ph name="PRODUCT_FRAME_NAME" /> negeren</translation>
 <translation id="8976248126101463034">Gnubby-verificatie toestaan voor hosts voor externe toegang</translation>
@@ -5365,6 +5424,11 @@ Dit beleid wordt verwijderd in M75.</translation>
 <translation id="9152473318295429890">Contextuele suggesties van gerelateerde webpagina's inschakelen</translation>
 <translation id="9153446010242995516">Herstel en blijf op de doelversie als de OS-versie nieuwer is dan de doelversie. Probeer indien mogelijk de instellingen op apparaatniveau (inclusief de inloggegevens voor het netwerk) over te dragen via het rollbackproces, maar voer de rollback uit met een volledige powerwash, zelfs wanneer de gegevens niet kunnen worden hersteld (omdat de doelversie geen ondersteuning biedt om gegevens te herstellen of omdat de wijziging niet werkt met eerdere versies).
           Wordt ondersteund door <ph name="PRODUCT_OS_NAME" /> versie 75 en hoger. Voor oudere clients betekent deze waarde dat rollback is uitgeschakeld.</translation>
+<translation id="9155375380628728544">Als je het beleid instelt, kunnen gebruikers slechts één van de talen die in dit beleid worden vermeld, toevoegen aan de lijst met voorkeurstalen.
+
+      Als je het beleid niet instelt of instelt op een lege lijst, kunnen gebruikers naar wens talen opgeven.
+
+      Als je het beleid instelt op een lijst met ongeldige waarden, worden die waarden genegeerd. Als gebruikers talen die volgens dit beleid niet zijn toegestaan, hebben toegevoegd aan de lijst met voorkeurstalen, worden die talen verwijderd. Als ze <ph name="PRODUCT_OS_NAME" /> hebben weergegeven in een taal die volgens dit beleid niet is toegestaan, wordt de taal overgeschakeld naar een toegestane UI-taal als ze weer inloggen. Als dit beleid alleen ongeldige items bevat, schakelt <ph name="PRODUCT_OS_NAME" /> over naar de eerste geldige waarde die wordt aangegeven door dit beleid of naar een reservelandinstelling zoals en-US.</translation>
 <translation id="9156175786579877198">Een lijst met URL-patronen waarvoor gedownloade content moet worden gecontroleerd op schendingen van de beveiligingsregels voor gevoelige gegevens voordat het lokaal kan worden opgeslagen.  Dit beleid wordt alleen gebruikt als <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> is ingeschakeld.
 
       Als dit beleid niet is ingesteld of is ingesteld op een lege lijst met URL-patronen, wordt gedownloade content niet gecontroleerd op schendingen van de beveiligingsregels voor gevoelige gegevens.

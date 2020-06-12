@@ -45,6 +45,10 @@ COMPONENT_EXPORT(ASSISTANT_UTIL)
 bool ShouldAttemptWarmerWelcome(
     chromeos::assistant::mojom::AssistantEntryPoint entry_point);
 
+// Returns true if we should show Assistant onboarding.
+COMPONENT_EXPORT(ASSISTANT_UTIL)
+bool ShouldShowOnboarding();
+
 COMPONENT_EXPORT(ASSISTANT_UTIL)
 bool IsGoogleDevice();
 

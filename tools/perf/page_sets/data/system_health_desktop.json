@@ -40,8 +40,8 @@
         "browse:news:cnn": {
             "DEFAULT": "system_health_desktop_013.wprgo"
         },
-        "browse:news:cnn:2018": {
-            "DEFAULT": "system_health_desktop_060.wprgo"
+        "browse:news:cnn:2020": {
+            "DEFAULT": "system_health_desktop_4211dae280.wprgo"
         },
         "browse:news:flipboard": {
             "DEFAULT": "system_health_desktop_021.wprgo"
@@ -58,8 +58,8 @@
         "browse:news:nytimes": {
             "DEFAULT": "system_health_desktop_015.wprgo"
         },
-        "browse:news:nytimes:2018": {
-            "DEFAULT": "system_health_desktop_e2dd18933f.wprgo"
+        "browse:news:nytimes:2020": {
+            "DEFAULT": "system_health_desktop_5a63eee637.wprgo"
         },
         "browse:news:reddit": {
             "DEFAULT": "system_health_desktop_016.wprgo"
@@ -151,8 +151,8 @@
         "load:games:bubbles": {
             "DEFAULT": "system_health_desktop_005.wprgo"
         },
-        "load:games:bubbles:2019": {
-            "DEFAULT": "system_health_desktop_615d4e02e4.wprgo"
+        "load:games:bubbles:2020": {
+            "DEFAULT": "system_health_desktop_215b0b9a77.wprgo"
         },
         "load:games:lazors": {
             "DEFAULT": "system_health_desktop_005.wprgo"

@@ -322,6 +322,13 @@ class WebLocalFrame : public WebFrame {
   virtual void SetIsolatedWorldInfo(int32_t world_id,
                                     const WebIsolatedWorldInfo& info) = 0;
 
+  // Returns the stable ID that was set with SetIsolatedWorldInfo.
+  virtual WebString GetIsolatedWorldStableId(v8::Local<v8::Context>) const = 0;
+
+  // Returns the human readable name that was set with SetIsolatedWorldInfo.
+  virtual WebString GetIsolatedWorldHumanReadableName(
+      v8::Local<v8::Context>) const = 0;
+
   // Executes script in the context of the current page and returns the value
   // that the script evaluated to.
   // DEPRECATED: Use WebLocalFrame::requestExecuteScriptAndReturnValue.

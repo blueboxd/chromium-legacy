@@ -17,6 +17,7 @@ class Rect;
 
 namespace blink {
 
+class DOMRect;
 class ExecutionContext;
 
 // The VirtualKeyboard API provides control of the on-screen keyboard
@@ -38,10 +39,11 @@ class VirtualKeyboard final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(overlaygeometrychange, kOverlaygeometrychange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(geometrychange, kGeometrychange)
 
   bool overlaysContent() const;
   void setOverlaysContent(bool overlays_content);
+  DOMRect* boundingRect() const;
 
   void VirtualKeyboardOverlayChanged(const gfx::Rect&) final;
 
@@ -53,6 +55,7 @@ class VirtualKeyboard final : public EventTargetWithInlineData,
 
  private:
   bool overlays_content_ = false;
+  Member<DOMRect> bounding_rect_;
 };
 
 }  // namespace blink

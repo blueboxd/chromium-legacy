@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {FittingType} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/constants.js';
+import {FittingType, SaveRequestType} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/constants.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {createBookmarksForTest} from './test_util.js';
@@ -304,7 +305,80 @@ const tests = [
     chrome.test.assertTrue(button.ironIcon.endsWith(fitPageIcon));
 
     chrome.test.succeed();
-  }
+  },
+
+  /**
+   * Test that the toolbar shows an option to download the edited PDF if
+   * available.
+   */
+  function testEditedPdfOption() {
+    const pdfToolbar = document.createElement('viewer-pdf-toolbar');
+    document.body.appendChild(pdfToolbar);
+    const downloadButton = pdfToolbar.$.download;
+    const actionMenu = pdfToolbar.$.downloadMenu;
+    chrome.test.assertFalse(actionMenu.open);
+    loadTimeData.overrideValues({pdfFormSaveEnabled: false});
+    pdfToolbar.strings = Object.assign({}, pdfToolbar.strings);
+
+    let lastRequestType;
+    let numRequests = 0;
+    pdfToolbar.addEventListener('save', e => {
+      lastRequestType = e.detail;
+      numRequests++;
+    });
+
+    // No edits, and feature is off.
+    downloadButton.click();
+    chrome.test.assertFalse(actionMenu.open);
+    chrome.test.assertEq(SaveRequestType.ORIGINAL, lastRequestType);
+    chrome.test.assertEq(1, numRequests);
+
+    // Reset.
+    lastRequestType = SaveRequestType.EDITED;
+
+    // Still does not show the menu if there are no edits.
+    loadTimeData.overrideValues({pdfFormSaveEnabled: true});
+    pdfToolbar.strings = Object.assign({}, pdfToolbar.strings);
+    downloadButton.click();
+    chrome.test.assertFalse(actionMenu.open);
+    chrome.test.assertEq(SaveRequestType.ORIGINAL, lastRequestType);
+    chrome.test.assertEq(2, numRequests);
+
+    // Set editing mode. Now, clicking download opens the menu.
+    pdfToolbar.setIsEditing();
+    downloadButton.click();
+    chrome.test.assertTrue(actionMenu.open);
+    chrome.test.assertEq(2, numRequests);
+
+    // Click on "Edited".
+    const buttons = pdfToolbar.shadowRoot.querySelectorAll('button');
+    buttons[0].click();
+    chrome.test.assertEq(SaveRequestType.EDITED, lastRequestType);
+    chrome.test.assertFalse(actionMenu.open);
+    chrome.test.assertEq(3, numRequests);
+
+    // Click again.
+    downloadButton.click();
+    chrome.test.assertTrue(actionMenu.open);
+    chrome.test.assertEq(3, numRequests);
+
+    // Click on "Original".
+    buttons[1].click();
+    chrome.test.assertEq(SaveRequestType.ORIGINAL, lastRequestType);
+    chrome.test.assertFalse(actionMenu.open);
+    chrome.test.assertEq(4, numRequests);
+
+    // Even if the document has been edited, always download the original if the
+    // feature flag is off.
+    loadTimeData.overrideValues({pdfFormSaveEnabled: false});
+    pdfToolbar.strings = Object.assign({}, pdfToolbar.strings);
+    downloadButton.click();
+    chrome.test.assertFalse(actionMenu.open);
+    chrome.test.assertEq(SaveRequestType.ORIGINAL, lastRequestType);
+    chrome.test.assertEq(5, numRequests);
+
+    chrome.test.succeed();
+  },
 ];
 
 chrome.test.runTests(tests);

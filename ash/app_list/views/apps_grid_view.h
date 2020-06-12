@@ -23,10 +23,12 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "ui/base/models/list_model_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/throughput_tracker.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -875,9 +877,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   bool cardified_state_ = false;
 
   // Records smoothness of pagination animation.
-  std::unique_ptr<AppListAnimationMetricsRecorder> pagination_metrics_recorder_;
-  std::unique_ptr<PaginationTransitionAnimationReporter>
-      pagination_metrics_reporter_;
+  base::Optional<ui::ThroughputTracker> pagination_metrics_tracker_;
 
   // Records the presentation time for apps grid dragging.
   std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;

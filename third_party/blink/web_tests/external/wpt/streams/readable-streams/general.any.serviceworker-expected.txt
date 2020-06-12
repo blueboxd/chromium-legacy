@@ -1,14 +1,13 @@
 This is a testharness.js-based test.
 PASS ReadableStream can be constructed with no errors
 PASS ReadableStream can't be constructed with garbage
-PASS ReadableStream can't be constructed with an invalid type
-FAIL ReadableStream instances should have the correct list of properties assert_array_equals: should have all the correct properties lengths differ, expected array ["cancel", "constructor", "getIterator", "getReader", "locked", "pipeThrough", "pipeTo", "tee"] length 8, got ["cancel", "constructor", "getReader", "locked", "pipeThrough", "pipeTo", "tee"] length 7
+FAIL ReadableStream can't be constructed with an invalid type assert_throws_js: constructor should throw when the type is null function "() => new ReadableStream({ type: null })" threw object "RangeError: Failed to construct 'ReadableStream': Invalid type is specified" ("RangeError") expected instance of function "function TypeError() { [native code] }" ("TypeError")
 PASS ReadableStream constructor should throw for non-function start arguments
 PASS ReadableStream constructor will not tolerate initial garbage as cancel argument
 PASS ReadableStream constructor will not tolerate initial garbage as pull argument
-FAIL ReadableStream start should be called with the proper parameters assert_equals: enqueue should have 1 parameter expected 1 but got 0
+PASS ReadableStream start should be called with the proper thisArg
 PASS ReadableStream start controller parameter should be extensible
-PASS default ReadableStream getReader() should only accept mode:undefined
+FAIL default ReadableStream getReader() should only accept mode:undefined assert_throws_js: function "() => (new ReadableStream()).getReader({ mode: 'potato' })" threw object "RangeError: Failed to execute 'getReader' on 'ReadableStream': invalid mode" ("RangeError") expected instance of function "function TypeError() { [native code] }" ("TypeError")
 PASS ReadableStream should be able to call start method within prototype chain of its source
 PASS ReadableStream start should be able to return a promise
 PASS ReadableStream start should be able to return a promise and reject it

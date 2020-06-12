@@ -440,6 +440,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   gfx::NativeViewAccessible AccessibilityGetNativeViewAccessibleForWindow()
       override;
   WebContents* AccessibilityWebContents() override;
+  void AccessibilityHitTest(
+      const gfx::Point& point_in_frame_pixels,
+      ax::mojom::Event opt_event_to_fire,
+      int opt_request_id,
+      base::OnceCallback<void(BrowserAccessibilityManager* hit_manager,
+                              int hit_node_id)> opt_callback) override;
   bool AccessibilityIsMainFrame() override;
 
   // RenderProcessHostObserver implementation.
@@ -2056,11 +2062,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // AXTreeData structure.
   void AXContentTreeDataToAXTreeData(ui::AXTreeData* dst);
 
-  // Callback that will be called as a response to the request to perform a hit
-  // test over the accessibility object at given point.
-  void RequestAXHitTestCallback(
+  // Callback in response to an accessibility hit test triggered by
+  // AccessibilityHitTest.
+  void AccessibilityHitTestCallback(
       int action_request_id,
-      mojom::ChildFrameHitTestInfoPtr child_frame_hit_test_result);
+      ax::mojom::Event event_to_fire,
+      base::OnceCallback<void(BrowserAccessibilityManager* hit_manager,
+                              int hit_node_id)> opt_callback,
+      mojom::HitTestResponsePtr hit_test_response);
 
   // Callback that will be called as a response to the call to the method
   // content::mojom::RenderAccessibility::SnapshotAccessibilityTree(). The

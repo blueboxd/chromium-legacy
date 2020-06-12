@@ -5,6 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <string>
+#include <vector>
+
 #include "base/memory/checked_ptr.h"
 
 namespace my_namespace {
@@ -13,6 +16,11 @@ class SomeClass {
  public:
   void Method(char) {}
   int data_member;
+};
+
+template <typename T>
+struct SomeTemplate {
+  T t;
 };
 
 // The class below deletes the |operator new| - this simulate's Blink's
@@ -39,6 +47,14 @@ struct MyStruct {
   CheckedPtr<bool> bool_ptr;
   // Expected rewrite: CheckedPtr<const bool> bool_ptr;
   CheckedPtr<const bool> const_bool_ptr;
+
+  // Pointers to templates.
+  // Expected rewrite: CheckedPtr<std::string> string_ptr;
+  CheckedPtr<std::string> string_ptr;
+  // Expected rewrite: CheckedPtr<std::vector<char>> vector_ptr;
+  CheckedPtr<std::vector<char>> vector_ptr;
+  // Expected rewrite: CheckedPtr<SomeTemplate<char>> template_ptr;
+  CheckedPtr<SomeTemplate<char>> template_ptr;
 
   // Some types may be spelled in various, alternative ways.  If possible, the
   // rewriter should preserve the original spelling.

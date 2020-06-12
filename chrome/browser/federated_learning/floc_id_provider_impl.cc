@@ -146,6 +146,7 @@ void FlocIdProviderImpl::GetRecentlyVisitedURLs(
     GetRecentlyVisitedURLsCallback callback) {
   history::QueryOptions options;
   options.SetRecentDayRange(kQueryHistoryWindowInDays);
+  options.duplicate_policy = history::QueryOptions::KEEP_ALL_DUPLICATES;
 
   history_service_->QueryHistory(base::string16(), options, std::move(callback),
                                  &history_task_tracker_);
@@ -160,9 +161,9 @@ void FlocIdProviderImpl::OnGetRecentlyVisitedURLsCompleted(
 
   std::unordered_set<std::string> domains;
   for (const history::URLResult& url_result : results) {
-    // TODO(yaoxia): Filter out those visits with private ip. It's fine to not
-    // do any filtering for now, as all external messages that depend on this
-    // logic are still gated behind a disabled flag.
+    if (!url_result.publicly_routable())
+      continue;
+
     domains.insert(net::registry_controlled_domains::GetDomainAndRegistry(
         url_result.url(),
         net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));

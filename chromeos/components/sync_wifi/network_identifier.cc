@@ -71,11 +71,25 @@ std::string NetworkIdentifier::SerializeToString() const {
                             security_type_.c_str());
 }
 
+bool NetworkIdentifier::IsValid() const {
+  return !hex_ssid_.empty() && !security_type_.empty();
+}
+
 bool NetworkIdentifier::operator==(const NetworkIdentifier& o) const {
+  // Invalid networks are not equal to each other.
+  if (!IsValid() || !o.IsValid()) {
+    return false;
+  }
+
   return hex_ssid_ == o.hex_ssid_ && security_type_ == o.security_type_;
 }
 
 bool NetworkIdentifier::operator!=(const NetworkIdentifier& o) const {
+  // Invalid networks are not equal to each other.
+  if (!IsValid() || !o.IsValid()) {
+    return true;
+  }
+
   return hex_ssid_ != o.hex_ssid_ || security_type_ != o.security_type_;
 }
 

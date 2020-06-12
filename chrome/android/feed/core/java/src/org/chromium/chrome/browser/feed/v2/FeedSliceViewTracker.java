@@ -60,7 +60,7 @@ class FeedSliceViewTracker implements ViewTreeObserver.OnPreDrawListener {
     @Override
     public boolean onPreDraw() {
         // Not sure why, but this method can be called just after destroy().
-        if (mRootView == null) return false;
+        if (mRootView == null) return true;
         if (!(mRootView.getLayoutManager() instanceof LinearLayoutManager)) return true;
 
         LinearLayoutManager layoutManager = (LinearLayoutManager) mRootView.getLayoutManager();

@@ -13,6 +13,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.ui.default_browser_promo.DefaultBrowserPromoUtils;
 
 /**
  * Records the behavior metrics after an ACTION_MAIN intent is received.
@@ -104,6 +105,8 @@ public class MainIntentBehaviorMetrics {
         prefs.writeInt(ChromePreferenceKeys.METRICS_MAIN_INTENT_LAUNCH_COUNT, count);
         RecordHistogram.recordEnumeratedHistogram("MobileStartup.LaunchType",
                 isLaunchFromIcon ? LAUNCH_FROM_ICON : LAUNCH_NOT_FROM_ICON, LAUNCH_BOUNDARY);
+
+        DefaultBrowserPromoUtils.incrementSessionCount();
 
         ThreadUtils.getUiThreadHandler().removeCallbacks(mLogLaunchRunnable);
     }

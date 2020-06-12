@@ -24,8 +24,15 @@ namespace pdf_extension_util {
 // flags are enabled.
 std::string GetManifest();
 
-// Adds all strings used by the PDF Viewer UI in |dict|.
-void AddStrings(base::Value* dict);
+// Represents the context within which the PDF Viewer runs.
+enum class PdfViewerContext {
+  kPdfViewer,
+  kPrintPreview,
+  kAll,
+};
+
+// Adds all strings used by the PDF Viewer depending on the provided |context|.
+void AddStrings(PdfViewerContext context, base::Value* dict);
 
 // Adds additional data used by the PDF Viewer UI in |dict|, for example
 // whether certain features are enabled/disabled.

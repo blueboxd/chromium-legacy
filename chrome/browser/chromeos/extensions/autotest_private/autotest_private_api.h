@@ -1268,6 +1268,18 @@ class AutotestPrivateWaitForAmbientPhotoAnimationFunction
   base::OneShotTimer timeout_timer_;
 };
 
+class AutotestPrivateDisableSwitchAccessDialogFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateDisableSwitchAccessDialogFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.disableSwitchAccessDialog",
+                             AUTOTESTPRIVATE_DISABLESWITCHACCESSDIALOG)
+
+ private:
+  ~AutotestPrivateDisableSwitchAccessDialogFunction() override;
+  ResponseAction Run() override;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

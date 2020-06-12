@@ -14,6 +14,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
+#include "services/service_manager/sandbox/sandbox.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/android/modules/stack_unwinder/public/module.h"
@@ -170,6 +171,11 @@ void StackSamplingConfiguration::AppendCommandLineSwitchForChildProcess(
   if (!enable)
     return;
   if (process_type == switches::kGpuProcess ||
+      (process_type == switches::kUtilityProcess &&
+       // The network service is the only utility process that is profiled for
+       // now.
+       service_manager::SandboxTypeFromCommandLine(*command_line) ==
+           service_manager::SandboxType::kNetwork) ||
       (process_type == switches::kRendererProcess &&
        // Do not start the profiler for extension processes since profiling the
        // compositor thread in them is not useful.

@@ -24,7 +24,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/renderer/safe_browsing/features.h"
-#include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/murmurhash3_util.h"
 #include "chrome/renderer/safe_browsing/test_utils.h"
 #include "crypto/sha2.h"
@@ -33,10 +32,19 @@
 
 using base::ASCIIToUTF16;
 using ::testing::Return;
+using ::testing::StrictMock;
 
 static const uint32_t kMurmurHash3Seed = 2777808611U;
 
 namespace safe_browsing {
+
+class MockTickClock : public base::TickClock {
+ public:
+  MockTickClock() = default;
+  ~MockTickClock() override = default;
+
+  MOCK_CONST_METHOD0(NowTicks, base::TimeTicks());
+};
 
 class PhishingTermFeatureExtractorTest : public ::testing::Test {
  protected:
@@ -80,14 +88,9 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
   }
 
   void ResetExtractor(size_t max_shingles_per_page) {
-    extractor_.reset(new PhishingTermFeatureExtractor(
-        &term_hashes_,
-        &word_hashes_,
-        3 /* max_words_per_term */,
-        kMurmurHash3Seed,
-        max_shingles_per_page,
-        4 /* shingle_size */,
-        &clock_));
+    extractor_ = std::make_unique<PhishingTermFeatureExtractor>(
+        &term_hashes_, &word_hashes_, 3 /* max_words_per_term */,
+        kMurmurHash3Seed, max_shingles_per_page, 4 /* shingle_size */);
   }
 
   // Runs the TermFeatureExtractor on |page_text|, waiting for the
@@ -133,7 +136,6 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
 
   base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> active_run_loop_;
-  MockFeatureExtractorClock clock_;
   std::unique_ptr<PhishingTermFeatureExtractor> extractor_;
   std::unordered_set<std::string> term_hashes_;
   std::unordered_set<uint32_t> word_hashes_;
@@ -141,9 +143,6 @@ class PhishingTermFeatureExtractorTest : public ::testing::Test {
 };
 
 TEST_F(PhishingTermFeatureExtractorTest, ExtractFeatures) {
-  // This test doesn't exercise the extraction timing.
-  EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
-
   base::string16 page_text = ASCIIToUTF16("blah");
   FeatureMap expected_features;  // initially empty
   std::set<uint32_t> expected_shingle_hashes;
@@ -306,7 +305,8 @@ TEST_F(PhishingTermFeatureExtractorTest, Continuation) {
   // Note that this assumes kClockCheckGranularity = 5 and
   // kMaxTimePerChunkMs = 10.
   base::TimeTicks now = base::TimeTicks::Now();
-  EXPECT_CALL(clock_, Now())
+  StrictMock<MockTickClock> tick_clock;
+  EXPECT_CALL(tick_clock, NowTicks())
       // Time check at the start of extraction.
       .WillOnce(Return(now))
       // Time check at the start of the first chunk of work.
@@ -328,6 +328,7 @@ TEST_F(PhishingTermFeatureExtractorTest, Continuation) {
       .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(28)))
       // A final check for the histograms.
       .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(30)));
+  extractor_->SetTickClockForTesting(&tick_clock);
 
   FeatureMap expected_features;
   expected_features.AddBooleanFeature(features::kPageTerm +
@@ -396,13 +397,13 @@ TEST_F(PhishingTermFeatureExtractorTest, Continuation) {
   ExpectFeatureMapsAreEqual(features, expected_features);
   EXPECT_THAT(expected_shingle_hashes, testing::ContainerEq(shingle_hashes));
   // Make sure none of the mock expectations carry over to the next test.
-  ::testing::Mock::VerifyAndClearExpectations(&clock_);
+  ::testing::Mock::VerifyAndClearExpectations(&tick_clock);
 
   // Now repeat the test with the same text, but advance the clock faster so
   // that the extraction time exceeds the maximum total time for the feature
   // extractor.  Extraction should fail.  Note that this assumes
   // kMaxTotalTimeMs = 500.
-  EXPECT_CALL(clock_, Now())
+  EXPECT_CALL(tick_clock, NowTicks())
       // Time check at the start of extraction.
       .WillOnce(Return(now))
       // Time check at the start of the first chunk of work.
@@ -429,7 +430,8 @@ TEST_F(PhishingTermFeatureExtractorTest, PartialExtractionTest) {
   }
 
   base::TimeTicks now = base::TimeTicks::Now();
-  EXPECT_CALL(clock_, Now())
+  StrictMock<MockTickClock> tick_clock;
+  EXPECT_CALL(tick_clock, NowTicks())
       // Time check at the start of extraction.
       .WillOnce(Return(now))
       // Time check at the start of the first chunk of work.
@@ -439,6 +441,7 @@ TEST_F(PhishingTermFeatureExtractorTest, PartialExtractionTest) {
       // Time check after the next 5 words. This should be greater than
       // kMaxTimePerChunkMs so that we stop and schedule extraction for later.
       .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(14)));
+  extractor_->SetTickClockForTesting(&tick_clock);
 
   FeatureMap features;
   std::set<uint32_t> shingle_hashes;
@@ -454,7 +457,8 @@ TEST_F(PhishingTermFeatureExtractorTest, PartialExtractionTest) {
   shingle_hashes.clear();
 
   // This part doesn't exercise the extraction timing.
-  EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
+  EXPECT_CALL(tick_clock, NowTicks())
+      .WillRepeatedly(Return(base::TimeTicks::Now()));
 
   // Now extract normally and make sure nothing breaks.
   EXPECT_TRUE(ExtractFeatures(page_text.get(), &features, &shingle_hashes));

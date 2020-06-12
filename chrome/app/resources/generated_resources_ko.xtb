@@ -1242,6 +1242,7 @@
 <translation id="2541002089857695151">전체화면 전송을 최적화하시겠습니까?</translation>
 <translation id="2541706104884128042">새 취침 시간이 설정됨</translation>
 <translation id="2544853746127077729">인증서가 네트워크에 의해 거부됨</translation>
+<translation id="2546229857744484369">이 기기에는 1개의 비밀번호가 저장되어 있습니다.</translation>
 <translation id="2546283357679194313">쿠키 및 사이트 데이터</translation>
 <translation id="2548347166720081527"><ph name="PERMISSION" /> 권한이 허용됨</translation>
 <translation id="2549985041256363841">녹화 시작</translation>
@@ -3512,6 +3513,7 @@
 <translation id="5495466433285976480">다음에 다시 시작할 때 모든 로컬 사용자, 파일, 데이터 및 기타 설정이 삭제됩니다. 모든 사용자는 다시 로그인해야 합니다.</translation>
 <translation id="5495597166260341369">디스플레이를 켜진 상태로 유지</translation>
 <translation id="5496587651328244253">정리</translation>
+<translation id="5497251278400702716">이 파일</translation>
 <translation id="5499313591153584299">이 파일은 컴퓨터에 해로울 수 있습니다.</translation>
 <translation id="5500709606820808700">안전 확인이 오늘 실행됨</translation>
 <translation id="5502500733115278303">Firefox에서 가져온 북마크</translation>
@@ -4134,6 +4136,7 @@
 <translation id="6279183038361895380">|<ph name="ACCELERATOR" />|을(를) 눌러 커서 표시</translation>
 <translation id="6280215091796946657">다른 계정으로 로그인</translation>
 <translation id="6280912520669706465">ARC</translation>
+<translation id="6282180787514676874">{COUNT,plural, =1{용지 1장 제한 초과}other{용지 {COUNT}장 제한 초과}}</translation>
 <translation id="628352644014831790">4초</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" />은(는) 위험할 수 있으므로 다운로드하지 않습니다.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{네트워크에 새로운 프린터 있음}other{네트워크에 새로운 프린터 있음}}</translation>
@@ -4431,6 +4434,7 @@
 <translation id="6691331417640343772">Google 대시보드에서 동기화된 데이터 관리</translation>
 <translation id="6691541770654083180">지구</translation>
 <translation id="6691936601825168937">앞으로(F)</translation>
+<translation id="6693745645188488741">{COUNT,plural, =1{페이지 1쪽}other{페이지 {COUNT}쪽}}</translation>
 <translation id="6697492270171225480">페이지를 찾을 수 없을 때 비슷한 페이지 제안 표시</translation>
 <translation id="6697690052557311665">공유하려면 Files 앱에서 마우스 오른쪽 버튼으로 폴더를 클릭한 다음 'Linux와 공유'를 선택하세요.</translation>
 <translation id="6698810901424468597"><ph name="WEBSITE_1" /> 및 <ph name="WEBSITE_2" />의 데이터를 읽고 변경</translation>
@@ -5462,6 +5466,7 @@
 <translation id="7987814697832569482">항상 이 VPN을 통해 연결</translation>
 <translation id="7988355189918024273">접근성 기능 사용</translation>
 <translation id="7991296728590311172">스위치 제어 설정</translation>
+<translation id="7993750787380199093">모든 기기에서 사용할 수 있도록 Google 계정에 모든 비밀번호를 저장합니다.</translation>
 <translation id="7994702968232966508">EAP 방식</translation>
 <translation id="7997826902155442747">프로세스 우선순위</translation>
 <translation id="7999229196265990314">생성된 파일:
@@ -5520,6 +5525,7 @@
 <translation id="8059417245945632445">기기 검사(&amp;I)</translation>
 <translation id="8059456211585183827">저장할 수 있는 프린터가 없습니다.</translation>
 <translation id="8061091456562007989">이전 설정으로 되돌리기</translation>
+<translation id="8062844841289846053">{COUNT,plural, =1{용지 1장}other{용지 {COUNT}장}}</translation>
 <translation id="8063235345342641131">기본 녹색 아바타</translation>
 <translation id="8063535366119089408">파일 보기</translation>
 <translation id="8068253693380742035">로그인하려면 터치하세요.</translation>
@@ -5830,6 +5836,7 @@
 <translation id="8465252176946159372">잘못된 값입니다.</translation>
 <translation id="8465444703385715657"><ph name="PLUGIN_NAME" />에 실행 권한이 필요합니다.</translation>
 <translation id="8466417995783206254">이 탭에서는 PIP 모드로 동영상이 재생되고 있습니다.</translation>
+<translation id="8467103604871441980">이 기기에는 <ph name="NUMBER_OF_DEVICE_PASSWORDS" />개의 비밀번호가 저장되어 있습니다.</translation>
 <translation id="8467326454809944210">다른 언어 선택</translation>
 <translation id="8470214316007448308">다른 사용자</translation>
 <translation id="8470513973197838199"><ph name="ORIGIN" />의 저장된 비밀번호</translation>

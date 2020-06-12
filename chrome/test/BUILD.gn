@@ -299,6 +299,8 @@ static_library("test_support") {
       "../browser/chromeos/accessibility/speech_monitor.h",
       "../browser/chromeos/arc/tracing/arc_app_performance_tracing_test_helper.cc",
       "../browser/chromeos/arc/tracing/arc_app_performance_tracing_test_helper.h",
+      "../browser/chromeos/file_manager/file_manager_test_util.cc",
+      "../browser/chromeos/file_manager/file_manager_test_util.h",
       "../browser/chromeos/ownership/fake_owner_settings_service.cc",
       "../browser/chromeos/ownership/fake_owner_settings_service.h",
       "../browser/chromeos/settings/scoped_cros_settings_test_helper.cc",
@@ -2156,8 +2158,6 @@ if (!is_android) {
         "../browser/chromeos/file_manager/file_manager_jstest.cc",
         "../browser/chromeos/file_manager/file_manager_jstest_base.cc",
         "../browser/chromeos/file_manager/file_manager_jstest_base.h",
-        "../browser/chromeos/file_manager/file_manager_test_util.cc",
-        "../browser/chromeos/file_manager/file_manager_test_util.h",
         "../browser/chromeos/file_manager/file_manager_uitest.cc",
         "../browser/chromeos/file_manager/file_tasks_browsertest.cc",
         "../browser/chromeos/file_manager/gallery_browsertest.cc",
@@ -2402,6 +2402,7 @@ if (!is_android) {
         "../browser/ui/app_list/app_list_client_impl_browsertest.cc",
         "../browser/ui/app_list/arc/arc_usb_host_permission_browsertest.cc",
         "../browser/ui/app_list/chrome_app_list_model_updater_browsertest.cc",
+        "../browser/ui/app_list/search/app_list_search_browsertest.cc",
         "../browser/ui/ash/accelerator_commands_browsertest.cc",
         "../browser/ui/ash/assistant/assistant_context_browsertest.cc",
         "../browser/ui/ash/back_gesture_browsertest.cc",
@@ -4288,6 +4289,7 @@ test("unit_tests") {
     }
 
     deps += [
+      "//chrome/browser/nearby_sharing/logging:unit_tests",
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//chrome/browser/resource_coordinator/tab_ranker:tab_features_test_helper",
       "//chrome/services/sharing:unit_tests",
@@ -5052,6 +5054,7 @@ test("unit_tests") {
       "../browser/safe_browsing/advanced_protection_status_manager_unittest.cc",
       "../browser/safe_browsing/browser_feature_extractor_unittest.cc",
       "../browser/safe_browsing/client_side_detection_host_unittest.cc",
+      "../browser/safe_browsing/client_side_detection_service_factory_unittest.cc",
       "../browser/safe_browsing/client_side_detection_service_unittest.cc",
       "../browser/safe_browsing/client_side_model_loader_unittest.cc",
       "../browser/safe_browsing/cloud_content_scanning/binary_fcm_service_unittest.cc",

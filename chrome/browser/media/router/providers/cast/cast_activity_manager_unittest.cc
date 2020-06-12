@@ -238,8 +238,7 @@ class CastActivityManagerTest : public testing::Test,
 
     // A launch session request is sent to the sink.
     std::vector<std::string> supported_app_types = {"WEB"};
-    const base::Optional<base::Value> json =
-        base::JSONReader().Read(app_params);
+    const base::Optional<base::Value> json = base::JSONReader::Read(app_params);
     EXPECT_CALL(message_handler_,
                 LaunchSession(kChannelId, app_id, kDefaultLaunchTimeout,
                               supported_app_types,

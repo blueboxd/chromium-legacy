@@ -520,7 +520,7 @@ class OverviewButtonTrayWithShelfControlsHiddenTest
             enabled);
         Shell::Get()
             ->accessibility_controller()
-            ->no_switch_access_disable_confirmation_dialog_for_testing(true);
+            ->DisableSwitchAccessDisableConfirmationDialogTesting();
         break;
     }
   }

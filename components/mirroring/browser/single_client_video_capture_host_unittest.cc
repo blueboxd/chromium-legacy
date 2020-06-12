@@ -187,8 +187,8 @@ class SingleClientVideoCaptureHostTest : public ::testing::Test {
     run_loop.Run();
 
     // The video capture device is launched.
-    EXPECT_TRUE(!!launched_device_);
-    EXPECT_TRUE(!!frame_receiver_);
+    EXPECT_TRUE(launched_device_);
+    EXPECT_TRUE(frame_receiver_);
   }
 
   ~SingleClientVideoCaptureHostTest() override {

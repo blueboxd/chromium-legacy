@@ -179,6 +179,7 @@ enum AssistantQuerySource {
   kWhatsOnMyScreen = 10,
   kQuickAnswers = 11,
   kLauncherChip = 12,
+  kBetterOnboarding = 13,
 };
 
 // Subscribes to Assistant's interaction event. These events are server driven
@@ -251,6 +252,7 @@ enum AssistantInteractionResolution {
 enum AssistantSuggestionType {
   kUnspecified,
   kConversationStarter,
+  kBetterOnboarding,
 };
 
 // Models an Assistant suggestion.

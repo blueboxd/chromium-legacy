@@ -17,6 +17,7 @@
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -25,6 +26,15 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+
+namespace {
+
+// It can take a scanner 2+ minutes to return one page at high resolution, so
+// extend the D-Bus timeout to 3 minutes.
+constexpr base::TimeDelta kScanImageDBusTimeout =
+    base::TimeDelta::FromMinutes(3);
+
+}  // namespace
 
 // The LorgnetteManagerClient implementation used in production.
 class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
@@ -74,7 +84,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
     writer.CloseContainer(&option_writer);
 
     lorgnette_daemon_proxy_->CallMethod(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, kScanImageDBusTimeout.InMilliseconds(),
         base::BindOnce(&LorgnetteManagerClientImpl::OnScanImageComplete,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                        std::move(scan_data_reader)));

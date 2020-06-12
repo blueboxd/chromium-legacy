@@ -43,6 +43,7 @@ class NetworkIdentifier {
                     const std::string& security_type);
   virtual ~NetworkIdentifier();
 
+  // Note that invalid identifiers are never considered equal to each other.
   bool operator==(const NetworkIdentifier& o) const;
   bool operator!=(const NetworkIdentifier& o) const;
   bool operator<(const NetworkIdentifier& o) const;
@@ -54,6 +55,9 @@ class NetworkIdentifier {
   // 0x prefix.
   const std::string& hex_ssid() const { return hex_ssid_; }
   const std::string& security_type() const { return security_type_; }
+
+  // True if there is a valid ssid and security type.
+  bool IsValid() const;
 
  private:
   std::string hex_ssid_;

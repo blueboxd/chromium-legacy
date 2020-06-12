@@ -10,7 +10,6 @@ import android.support.test.filters.MediumTest;
 import android.view.ViewGroup;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,7 +21,6 @@ import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -466,7 +464,6 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     @DisableFeatures({ChromeFeatureList.TAB_GROUPS_ANDROID})
-    @DisabledTest(message = "crbug.com/1075816")
     public void testTabSelectionEditorLayoutCanBeGarbageCollected() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTabSelectionEditorCoordinator.destroy();
@@ -476,7 +473,9 @@ public class TabSelectionEditorTest {
         });
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        Assert.assertTrue(GarbageCollectionTestUtils.canBeGarbageCollected(mRef));
+
+        // A longer timeout is needed. Achieve that by using the CriteriaHelper.pollUiThread.
+        CriteriaHelper.pollUiThread(() -> GarbageCollectionTestUtils.canBeGarbageCollected(mRef));
     }
 
     private List<Tab> getTabsInCurrentTabModel() {

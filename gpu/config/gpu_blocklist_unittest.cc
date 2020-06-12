@@ -20,7 +20,7 @@ class GpuBlocklistTest : public testing::Test {
 
   void RunFeatureTest(GpuFeatureType feature_type) {
     const int kFeatureListForEntry1[1] = {feature_type};
-    const uint32_t kDeviceIDsForEntry1[1] = {0x0640};
+    const GpuControlList::Device kDevicesForEntry1[1] = {{0x0640, 0x0}};
     const GpuControlList::Entry kTestEntries[1] = {{
         1,                      // id
         "Test entry",           // description
@@ -38,8 +38,8 @@ class GpuBlocklistTest : public testing::Test {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                             // os_version
             0x10de,                                // vendor_id
-            1,                                     // DeviceIDs size
-            kDeviceIDsForEntry1,                   // DeviceIDs
+            1,                                     // Devices size
+            kDevicesForEntry1,                     // Devices
             GpuControlList::kMultiGpuCategoryAny,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,    // multi_gpu_style
             nullptr,                               // driver info

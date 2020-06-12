@@ -324,12 +324,15 @@ class ConciergeClientImpl : public ConciergeClient {
 
   void NameOwnerChangedReceived(const std::string& old_owner,
                                 const std::string& new_owner) {
-    const bool restarted = !new_owner.empty();
-    for (auto& observer : observer_list_) {
-      if (restarted)
-        observer.ConciergeServiceRestarted();
-      else
+    if (!old_owner.empty()) {
+      for (auto& observer : observer_list_) {
         observer.ConciergeServiceStopped();
+      }
+    }
+    if (!new_owner.empty()) {
+      for (auto& observer : observer_list_) {
+        observer.ConciergeServiceStarted();
+      }
     }
   }
 

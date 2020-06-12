@@ -79,6 +79,8 @@ js_library("viewer-pdf-toolbar") {
     ":viewer-page-selector",
     ":viewer-toolbar-dropdown",
     "..:annotation_tool",
+    "..:constants",
+    "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]

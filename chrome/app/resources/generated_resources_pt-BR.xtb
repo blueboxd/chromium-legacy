@@ -117,6 +117,7 @@
 <translation id="114721135501989771">A tecnologia Google no Chrome</translation>
 <translation id="1147991416141538220">Para solicitar acesso, entre em contato com o administrador deste dispositivo.</translation>
 <translation id="1149401351239820326">Mês de expiração</translation>
+<translation id="1149725087019908252">Verificando <ph name="FILE_NAME" /></translation>
 <translation id="1150565364351027703">Óculos de sol</translation>
 <translation id="1151917987301063366">Sempre permitir que <ph name="HOST" /> acesse os sensores</translation>
 <translation id="1153356358378277386">Dispositivos pareados</translation>
@@ -278,6 +279,7 @@
 <translation id="1347975661240122359">A atualização é iniciada quando a bateria chega a <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1353980523955420967">Não é possível encontrar o PPD. Verifique se seu Chromebook está on-line e tente novamente.</translation>
+<translation id="1354045473509304750">Continuar permitindo que <ph name="HOST" /> use e mova sua câmera</translation>
 <translation id="1355466263109342573">O <ph name="PLUGIN_NAME" /> está bloqueado</translation>
 <translation id="1358741672408003399">Ortografia e gramática</translation>
 <translation id="1359923111303110318">Seu dispositivo pode ser desbloqueado com o Smart Lock. Pressione "Enter" para desbloquear.</translation>
@@ -1174,6 +1176,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="247051149076336810">URL de compartilhamento de arquivos</translation>
 <translation id="2470702053775288986">Extensões incompatíveis desativadas</translation>
 <translation id="2473195200299095979">Traduzir esta página</translation>
+<translation id="2474848500897222119">A <ph name="PRINTER_NAME" /> está sem tinta</translation>
 <translation id="2475982808118771221">Ocorreu um erro</translation>
 <translation id="2476578072172137802">Configurações do site</translation>
 <translation id="2478176599153288112">Permissões de arquivos de mídia para "<ph name="EXTENSION" />"</translation>
@@ -1242,6 +1245,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2541002089857695151">Otimizar transmissão em tela cheia?</translation>
 <translation id="2541706104884128042">Nova hora de dormir definida</translation>
 <translation id="2544853746127077729">Certificado de autenticação rejeitado pela rede</translation>
+<translation id="2546229857744484369">Você tem 1 senha salva neste dispositivo</translation>
 <translation id="2546283357679194313">Cookies e dados do site</translation>
 <translation id="2548347166720081527"><ph name="PERMISSION" /> permitida</translation>
 <translation id="2549985041256363841">Iniciar gravação</translation>
@@ -1473,6 +1477,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2824942875887026017">O <ph name="IDS_SHORT_PRODUCT_NAME" /> está usando as configurações de proxy do seu administrador</translation>
 <translation id="2825758591930162672">Chave pública do requerente</translation>
 <translation id="2828650939514476812">Conectar à rede Wi-Fi</translation>
+<translation id="28291580771888953">A fila da <ph name="PRINTER_NAME" /> está cheia</translation>
 <translation id="2835547721736623118">Serviço de reconhecimento de fala</translation>
 <translation id="2836269494620652131">Falha</translation>
 <translation id="2836635946302913370">O login com este nome foi desativado pelo administrador.</translation>
@@ -2744,6 +2749,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4453946976636652378">Pesquisar no <ph name="SEARCH_ENGINE_NAME" /> ou digitar URL</translation>
 <translation id="4459169140545916303">Ativado há <ph name="DEVICE_LAST_ACTIVATED_TIME" /> dias</translation>
 <translation id="4460014764210899310">Desagrupar</translation>
+<translation id="4460343359907016103">Erro ao conectar a <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">Servidores de nome personalizados</translation>
 <translation id="4465236939126352372">Tempo limite de <ph name="TIME" /> definido para <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, gerenciada pelo seu administrador, conectar</translation>
@@ -3033,6 +3039,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4864369630010738180">Fazendo login...</translation>
 <translation id="4864805589453749318">Selecione o pai/mãe que está concedendo a permissão para adicionar a conta escolar.</translation>
 <translation id="486635084936119914">Abrir alguns tipos de arquivo automaticamente depois do download</translation>
+<translation id="4869213010169296107">A <ph name="PRINTER_NAME" /> está sem bandeja</translation>
 <translation id="4869289251183233431">O espaço de armazenamento do dispositivo está se esgotando. É necessário ter pelo menos <ph name="MINIMUM_SPACE" /> de espaço livre para usar o app <ph name="APP_NAME" />, e é recomendado ter mais de <ph name="RECOMMENDED_SPACE" />. Para liberar espaço, exclua arquivos do dispositivo.</translation>
 <translation id="48704129375571883">Adicionar mais recursos</translation>
 <translation id="4870758487381879312">Digite a senha fornecida pelo administrador para receber informações de configuração</translation>
@@ -3088,6 +3095,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4918221908152712722">Instale o <ph name="APP_NAME" /> (nenhum download é necessário)</translation>
 <translation id="4920887663447894854">Os seguintes sites foram impedidos de rastrear o seu local nesta página:</translation>
 <translation id="4921290200821452703">Informações da conta escolar para o pai/mãe</translation>
+<translation id="4921348630401250116">Conversão texto em voz</translation>
 <translation id="49226369361073053">{0,plural, =0{Atualize o dispositivo agora}=1{Atualize o dispositivo em 1 segundo}one{Atualize o dispositivo em # segundo}other{Atualize o dispositivo em # segundos}}</translation>
 <translation id="492299503953721473">Remover apps Android</translation>
 <translation id="492363500327720082">Desinstalando <ph name="APP_NAME" />…</translation>
@@ -3173,6 +3181,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="504561833207953641">Abrindo em uma sessão de navegador existente.</translation>
 <translation id="5047421709274785093">Impedir que sites usem sensores de luz e movimento</translation>
 <translation id="5050042263972837708">Nome do grupo</translation>
+<translation id="5050330054928994520">TTS</translation>
 <translation id="5051836348807686060">A verificação ortográfica não é compatível com os idiomas selecionados</translation>
 <translation id="5052499409147950210">Editar site</translation>
 <translation id="5053604404986157245">A senha do TPM gerada aleatoriamente não está disponível. Isso é normal após um Powerwash.</translation>
@@ -3432,6 +3441,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5390100381392048184">Permitir o áudio dos sites</translation>
 <translation id="5390677308841849479">Vermelho-escuro e laranja</translation>
 <translation id="5390743329570580756">Enviar para</translation>
+<translation id="5395869306561378615">A <ph name="PRINTER_NAME" /> está pausada</translation>
 <translation id="5397794290049113714">Você</translation>
 <translation id="5398572795982417028">Referência de página fora do limite, que é <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">Anúncios bloqueados</translation>
@@ -3445,6 +3455,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5417312524372586921">Temas do navegador</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Determina a nitidez de textos e imagens</translation>
+<translation id="5421498071721257877">A <ph name="PRINTER_NAME" /> tem um erro de dispositivo</translation>
 <translation id="5422221874247253874">Ponto de acesso</translation>
 <translation id="5422781158178868512">Seu dispositivo de armazenamento externo não foi reconhecido.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3514,9 +3525,11 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5495466433285976480">Isto removerá todos os usuários locais, arquivos, dados e outras configurações após sua próxima reinicialização. Todos os usuários terão que fazer login novamente.</translation>
 <translation id="5495597166260341369">Manter a tela ligada</translation>
 <translation id="5496587651328244253">Organizar</translation>
+<translation id="5497251278400702716">Este arquivo</translation>
 <translation id="5499313591153584299">Este arquivo pode ser prejudicial para seu computador.</translation>
 <translation id="5500709606820808700">A "confirmação de segurança" foi executada hoje</translation>
 <translation id="5502500733115278303">Importado do Firefox</translation>
+<translation id="5503982651688210506">Continuar permitindo que <ph name="HOST" /> use e mova sua câmera e use seu microfone</translation>
 <translation id="5505264765875738116">Os sites não podem pedir para enviar notificações</translation>
 <translation id="5505307013568720083">Sem tinta</translation>
 <translation id="5507756662695126555">Não repúdio</translation>
@@ -3794,6 +3807,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5852137567692933493">Reiniciar e executar PowerWash</translation>
 <translation id="5854912040170951372">Pepperoni</translation>
 <translation id="5855267860608268405">Redes Wi-Fi conhecidas</translation>
+<translation id="5855310969323666289">A porta da <ph name="PRINTER_NAME" /> está aberta</translation>
 <translation id="5855643921295613558">0,6 segundo</translation>
 <translation id="5856721540245522153">Ativar recursos de depuração</translation>
 <translation id="5857090052475505287">Nova pasta</translation>
@@ -3823,6 +3837,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
 <translation id="5877584842898320529">A impressora selecionada não está disponível ou não foi instalada corretamente. <ph name="BR" /> Verifique a impressora ou selecione outra.</translation>
 <translation id="5882919346125742463">Redes conhecidas</translation>
+<translation id="5883716097305842571">A área de saída da <ph name="PRINTER_NAME" /> está quase cheia</translation>
 <translation id="5884474295213649357">Esta guia está conectada a um dispositivo USB.</translation>
 <translation id="5886009770935151472">Dedo 1</translation>
 <translation id="5889282057229379085">Número máximo de autoridades de certificação intermediárias: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -3867,6 +3882,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5935656526031444304">Gerenciar "Navegação segura"</translation>
 <translation id="5938002010494270685">Atualização de segurança disponível</translation>
 <translation id="5939518447894949180">Redefinir</translation>
+<translation id="594108735267876762">Atualize o dispositivo em <ph name="COUNT" /> dias</translation>
 <translation id="5941153596444580863">Adicionar pessoa...</translation>
 <translation id="5941343993301164315">Faça login em <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Minimizar</translation>
@@ -4102,6 +4118,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6239558157302047471">Atualizar &amp;frame</translation>
 <translation id="6241530762627360640">Acessar informações sobre dispositivos Bluetooth pareados com seu sistema e descobrir dispositivos Bluetooth nas proximidades.</translation>
 <translation id="6241844896329831164">Nenhum acesso necessário</translation>
+<translation id="6242574558232861452">Verificando com as políticas de segurança da sua organização.</translation>
 <translation id="6242589501614145408">Redefinir chave de segurança</translation>
 <translation id="6242852299490624841">Focar esta guia</translation>
 <translation id="6243280677745499710">Definido no momento</translation>
@@ -4138,6 +4155,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6279183038361895380">Pressione |<ph name="ACCELERATOR" />| para exibir seu cursor</translation>
 <translation id="6280215091796946657">Fazer login com outra conta</translation>
 <translation id="6280912520669706465">ARC</translation>
+<translation id="6282180787514676874">{COUNT,plural, =1{Excede o limite de 1 folha de papel}one{Excede o limite de {COUNT} folha de papel}other{Excede o limite de {COUNT} folhas de papel}}</translation>
 <translation id="628352644014831790">4 segundos</translation>
 <translation id="6285120108426285413">O arquivo <ph name="FILE_NAME" /> não costuma ser transferido por download e pode ser perigoso.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Nova impressora na sua rede}one{Novas impressoras na sua rede}other{Novas impressoras na sua rede}}</translation>
@@ -4215,6 +4233,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6390799748543157332">As páginas que você visualiza nesta janela não aparecem no histórico do navegador e não deixam outros rastros, como cookies, no computador depois que todas as janelas abertas no modo de visitante são fechadas. No entanto, todos os arquivos baixados serão preservados.</translation>
 <translation id="6393156038355142111">Sugerir senha forte</translation>
 <translation id="6395423953133416962">Enviar <ph name="BEGIN_LINK1" />informações<ph name="END_LINK1" /> e <ph name="BEGIN_LINK2" />métricas do sistema<ph name="END_LINK2" /></translation>
+<translation id="6396179879191282798">Último dia para atualizar o dispositivo</translation>
 <translation id="6396988158856674517">Impedir que sites usem sensores de movimento</translation>
 <translation id="6398715114293939307">Remover Google Play Store</translation>
 <translation id="6398765197997659313">Sair do modo tela cheia</translation>
@@ -4380,6 +4399,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6611972847767394631">Veja suas guias aqui</translation>
 <translation id="6612358246767739896">Conteúdo protegido</translation>
 <translation id="6615455863669487791">Exibir</translation>
+<translation id="6617034477946102682">A <ph name="PRINTER_NAME" /> está inacessível</translation>
 <translation id="6618097958368085618">Manter assim mesmo</translation>
 <translation id="6618744767048954150">Em execução</translation>
 <translation id="6619058681307408113">Daemon de impressora de linha (LPD)</translation>
@@ -4435,6 +4455,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6691331417640343772">Gerenciar dados sincronizados no Painel de controle do Google</translation>
 <translation id="6691541770654083180">Terra</translation>
 <translation id="6691936601825168937">&amp;Avançar</translation>
+<translation id="6693745645188488741">{COUNT,plural, =1{1 página}one{{COUNT} página}other{{COUNT} páginas}}</translation>
 <translation id="6697492270171225480">Mostrar sugestões de páginas semelhantes quando uma página não for encontrada</translation>
 <translation id="6697690052557311665">Para compartilhar, clique com o botão direito do mouse no app Arquivos e selecione "Compartilhar com o Linux".</translation>
 <translation id="6698810901424468597">Ler e alterar seus dados em <ph name="WEBSITE_1" /> e <ph name="WEBSITE_2" /></translation>
@@ -4464,6 +4485,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="672609503628871915">Veja o que há de novo</translation>
 <translation id="67269783048918309">Envie dados de uso e diagnóstico. No momento, este dispositivo está enviando automaticamente ao Google dados de diagnóstico, de uso de apps e do dispositivo. Eles não serão usados para identificar seu filho e ajudarão a melhorar o sistema, a estabilidade de apps e muito mais. Alguns dados agregados também ajudarão os apps do Google e os nossos parceiros, como os desenvolvedores Android. Essa <ph name="BEGIN_LINK1" />configuração<ph name="END_LINK1" /> é aplicada pelo proprietário. Se a configuração "Atividade na Web e de apps adicional" estiver ativada para seu filho, esses dados poderão ser salvos na Conta do Google dele. <ph name="BEGIN_LINK2" />Saiba mais<ph name="END_LINK2" /></translation>
 <translation id="6727969043791803658">Conectado, <ph name="BATTERY_PERCENTAGE" />% de bateria</translation>
+<translation id="6728682313168670518">Para acessar o armazenamento de senhas, você precisa de uma autenticação única por dispositivo. Esse recurso pode ser desativado mais tarde na seção "Senhas" das configurações.</translation>
 <translation id="6732801395666424405">Certificados não carregados</translation>
 <translation id="6732900235521116609">Não é possível remover o atalho</translation>
 <translation id="6734468588183300211">Na navegação anônima, os sites não podem usar seus cookies para ver suas atividades de navegação em sites diferentes, por exemplo, para personalizar anúncios. Os recursos de alguns sites podem falhar.</translation>
@@ -4622,6 +4644,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6930321203306643451">Atualização concluída</translation>
 <translation id="6935286146439255109">A bandeja de papel não foi encontrada</translation>
 <translation id="693807610556624488">A operação de escrita excede o comprimento máximo do atributo para "<ph name="DEVICE_NAME" />".</translation>
+<translation id="6938381444925658529"><ph name="DOMAIN" /> precisa que você faça o download de uma atualização antes do fim do prazo. Você receberá a atualização automaticamente quando se conectar à Internet.</translation>
 <translation id="6938386202199793006">Você tem 1 impressora salva.</translation>
 <translation id="6938789263968032501">Pessoas</translation>
 <translation id="6941937518557314510">Faça login no <ph name="TOKEN_NAME" /> para autenticar seu certificado no <ph name="HOST_NAME" />.</translation>
@@ -4785,6 +4808,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7128151990937044829">Mostrar um indicador na barra de endereço quando notificações forem bloqueadas</translation>
 <translation id="7131040479572660648">Leia seus dados em <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Adicionar pá&amp;gina...</translation>
+<translation id="7131379856697962078">A área de saída da <ph name="PRINTER_NAME" /> está cheia</translation>
 <translation id="7133578150266914903">O administrador está revertendo este dispositivo (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Diminuir o texto</translation>
 <translation id="7135729336746831607">Ativar o Bluetooth?</translation>
@@ -4803,6 +4827,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7152478047064750137">Esta extensão não requer permissões especiais</translation>
 <translation id="7154130902455071009">Alterar sua página inicial para: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Foto existente na câmera ou em arquivo</translation>
+<translation id="715657691234357425">A <ph name="PRINTER_NAME" /> está com pouco papel</translation>
 <translation id="7165320105431587207">Falha ao configurar rede</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" pode ler imagens, vídeos e arquivos de som nos locais marcados.</translation>
 <translation id="7167486101654761064">&amp;Sempre abrir arquivos deste tipo</translation>
@@ -5131,6 +5156,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7598466960084663009">Reiniciar o computador</translation>
 <translation id="7599527631045201165">O nome do dispositivo é muito longo. Digite um nome mais curto para tentar novamente.</translation>
 <translation id="7600965453749440009">Nunca traduzir do <ph name="LANGUAGE" /></translation>
+<translation id="7601297144931396972">O papel da <ph name="PRINTER_NAME" /> está preso</translation>
 <translation id="760197030861754408">Acesse <ph name="LANDING_PAGE" /> para se conectar.</translation>
 <translation id="7602079150116086782">Nenhuma guia de outros dispositivos</translation>
 <translation id="7602173054665172958">Gerenciamento de impressão</translation>
@@ -5466,6 +5492,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7987814697832569482">Sempre se conectar usando esta VPN</translation>
 <translation id="7988355189918024273">Ativa os recursos de acessibilidade</translation>
 <translation id="7991296728590311172">Configurações do acesso com interruptor</translation>
+<translation id="7993750787380199093">Salve todas as senhas na sua Conta do Google para que possa usá-las em todos os seus dispositivos</translation>
 <translation id="7994702968232966508">Método EAP</translation>
 <translation id="7997826902155442747">Prioridade de processo</translation>
 <translation id="7999229196265990314">Os seguintes arquivos foram criados:
@@ -5524,6 +5551,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8059417245945632445">&amp;Inspecionar dispositivos</translation>
 <translation id="8059456211585183827">Não há impressoras disponíveis para salvar.</translation>
 <translation id="8061091456562007989">Mudar para configuração anterior</translation>
+<translation id="8062844841289846053">{COUNT,plural, =1{1 folha de papel}one{{COUNT} folha de papel}other{{COUNT} folhas de papel}}</translation>
 <translation id="8063235345342641131">Avatar verde padrão</translation>
 <translation id="8063535366119089408">Ver arquivo</translation>
 <translation id="8068253693380742035">Toque para fazer login</translation>
@@ -5576,6 +5604,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
           <ph name="TIME" />. Isso não inclui formas de pagamento e endereços do Google Pay.</translation>
 <translation id="81238879832906896">Flor amarela e branca</translation>
 <translation id="8124313775439841391">ONC gerenciado</translation>
+<translation id="8127535217699822294">A <ph name="PRINTER_NAME" /> está sem papel</translation>
 <translation id="813082847718468539">Visualizar informações do site</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8133676275609324831">&amp;Mostrar na pasta</translation>
@@ -5674,6 +5703,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8254954272268479918">Desligar o Linux (Beta)</translation>
 <translation id="8255451560461371599">Sem plano de fundo</translation>
 <translation id="8256319818471787266">Totó</translation>
+<translation id="8256417822772703842">A <ph name="PRINTER_NAME" /> está com pouca tinta</translation>
 <translation id="8257950718085972371">Continuar bloqueando o acesso à câmera</translation>
 <translation id="8259239505248583312">Vamos lá</translation>
 <translation id="8260126382462817229">Tente fazer login novamente</translation>
@@ -5834,6 +5864,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8465252176946159372">Entrada inválida</translation>
 <translation id="8465444703385715657">O pulg-in <ph name="PLUGIN_NAME" /> precisa da sua permissão para ser executado</translation>
 <translation id="8466417995783206254">Esta guia está reproduzindo um vídeo em picture-in-picture.</translation>
+<translation id="8467103604871441980">Você tem <ph name="NUMBER_OF_DEVICE_PASSWORDS" /> senhas salvas neste dispositivo</translation>
 <translation id="8467326454809944210">Escolher outro idioma</translation>
 <translation id="8470214316007448308">Outras pessoas</translation>
 <translation id="8470513973197838199">Senhas salvas para <ph name="ORIGIN" /></translation>
@@ -5849,6 +5880,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8487678622945914333">Aproximar</translation>
 <translation id="8490896350101740396">Os aplicativos de quiosque "<ph name="UPDATED_APPS" />" a seguir foram atualizados. Reinicie o dispositivo para concluir o processo de atualização.</translation>
 <translation id="8493236660459102203">Microfone:</translation>
+<translation id="8495940850609851342">A <ph name="PRINTER_NAME" /> foi interrompida</translation>
 <translation id="8496717697661868878">Executar este plug-in</translation>
 <translation id="8497219075884839166">Utilitários do Windows</translation>
 <translation id="8498214519255567734">Facilita olhar para a tela ou ler com pouca luz</translation>

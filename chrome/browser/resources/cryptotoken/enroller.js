@@ -869,14 +869,10 @@ Enroller.prototype.doRegisterWebAuthn_ = function(appId, challenge, request) {
     return;
   }
 
-  const attestationPreference =
-      conveyancePreference(challenge) == ConveyancePreference.DIRECT ?
-      WebAuthnAttestationConveyancePreference.DIRECT :
-      WebAuthnAttestationConveyancePreference.NONE;
-
   if (!chrome.cryptotokenPrivate) {
     this.doRegisterWebAuthnContinue_(
-        appId, encodedChallenge, request, attestationPreference);
+        appId, encodedChallenge, request,
+        WebAuthnAttestationConveyancePreference.DIRECT);
     return;
   }
 
@@ -887,7 +883,7 @@ Enroller.prototype.doRegisterWebAuthn_ = function(appId, challenge, request) {
             appId, encodedChallenge, request,
             enterprise_context ?
                 WebAuthnAttestationConveyancePreference.ENTERPRISE :
-                attestationPreference);
+                WebAuthnAttestationConveyancePreference.DIRECT);
       });
 };
 

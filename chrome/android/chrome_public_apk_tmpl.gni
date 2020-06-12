@@ -92,7 +92,8 @@ template("chrome_public_common_apk_or_module_tmpl") {
   } else {
     _needs_32bit_lib =
         target_cpu == "arm" ||
-        (_is_monochrome && target_cpu == "arm64" && !_is_64_bit_browser)
+        (_is_monochrome && target_cpu == "arm64" && !_is_64_bit_browser) ||
+        (_is_trichrome && target_cpu == "arm64" && !_is_64_bit_browser)
     _add_unwind_tables =
         _needs_32bit_lib && _add_unwind_tables_in_chrome_32bit_apk &&
         ((android_64bit_target_cpu &&

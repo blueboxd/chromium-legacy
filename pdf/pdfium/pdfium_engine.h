@@ -567,7 +567,7 @@ class PDFiumEngine : public PDFEngine,
                            const pp::Point& global_point);
 
   // Set if the document has any local edits.
-  void SetEditMode(bool edit_mode);
+  void EnteredEditMode();
 
   // Navigates to a link destination depending on the type of destination.
   // Returns false if |area| is not a link.

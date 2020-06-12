@@ -293,44 +293,55 @@ void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
 }
 
 void RenderAccessibilityImpl::HitTest(
-    const ui::AXActionData& action_data,
+    const gfx::Point& point,
+    ax::mojom::Event event_to_fire,
+    int request_id,
     mojom::RenderAccessibility::HitTestCallback callback) {
-  // This method should be called exclusively for kHitTest actions.
-  DCHECK_EQ(action_data.action, ax::mojom::Action::kHitTest);
-  DCHECK_NE(action_data.hit_test_event_to_fire, ax::mojom::Event::kNone);
-
   WebAXObject ax_object;
   const WebDocument& document = GetMainDocument();
   if (!document.IsNull()) {
     auto root_obj = WebAXObject::FromWebDocument(document);
     if (root_obj.UpdateLayoutAndCheckValidity())
-      ax_object = root_obj.HitTest(action_data.target_point);
+      ax_object = root_obj.HitTest(point);
   }
 
   // Return if no attached accessibility object was found for the main document.
   if (ax_object.IsDetached()) {
-    std::move(callback).Run(/*child_frame_hit_test_info=*/nullptr);
+    std::move(callback).Run(/*hit_test_response=*/nullptr);
     return;
   }
 
-  // If the object that was hit has a child frame, we have to send a message
-  // back to the browser to do the hit test in the child frame, recursively.
+  // If the result was in the same frame, return the result.
   AXContentNodeData data;
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source_);
   tree_source_.SerializeNode(ax_object, &data);
   if (data.child_routing_id == MSG_ROUTING_NONE) {
-    // Otherwise, send an event on the node that was hit.
-    const std::vector<ui::AXEventIntent> intents;
-    HandleAXEvent(ui::AXEvent(
-        ax_object.AxID(), action_data.hit_test_event_to_fire,
-        ax::mojom::EventFrom::kAction, intents, action_data.request_id));
+    // Optionally fire an event, if requested to. This is a good fit for
+    // features like touch exploration on Android, Chrome OS, and
+    // possibly other platforms - if the user explore a particular point,
+    // we fire a hover event on the nearest object under the point.
+    //
+    // Avoid using this mechanism to fire a particular sentinel event
+    // and then listen for that event to associate it with the hit test
+    // request. Instead, the mojo reply should be used directly.
+    if (event_to_fire != ax::mojom::Event::kNone) {
+      const std::vector<ui::AXEventIntent> intents;
+      HandleAXEvent(ui::AXEvent(ax_object.AxID(), event_to_fire,
+                                ax::mojom::EventFrom::kAction, intents,
+                                request_id));
+    }
 
-    // The mojo message still needs a reply.
-    std::move(callback).Run(/*child_frame_hit_test_info=*/nullptr);
+    // Reply with the result.
+    std::move(callback).Run(mojom::HitTestResponse::New(
+        render_frame_->GetRoutingID(), point, ax_object.AxID()));
     return;
   }
 
-  gfx::Point transformed_point = action_data.target_point;
+  // The result was in a child frame. Reply so that the
+  // client can do a hit test on the child frame recursively.
+  // If it's a remote frame, transform the point into the child frame's
+  // coordinate system.
+  gfx::Point transformed_point = point;
   bool is_remote_frame = RenderFrameProxy::FromRoutingID(data.child_routing_id);
   if (is_remote_frame) {
     // Remote frames don't have access to the information from the visual
@@ -346,12 +357,8 @@ void RenderAccessibilityImpl::HitTest(
         gfx::Vector2d(viewport_offset.x(), viewport_offset.y()) -
         gfx::Rect(rect).OffsetFromOrigin();
   }
-
-  // Signal to the caller that we haven't handled this hit test yet, and that
-  // a new one will need to be performed over the child frame found.
-  std::move(callback).Run(mojom::ChildFrameHitTestInfo::New(
-      data.child_routing_id, transformed_point,
-      action_data.hit_test_event_to_fire));
+  std::move(callback).Run(mojom::HitTestResponse::New(
+      data.child_routing_id, transformed_point, ax_object.AxID()));
   return;
 }
 

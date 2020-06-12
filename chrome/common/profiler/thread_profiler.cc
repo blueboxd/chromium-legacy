@@ -26,6 +26,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/embedder/switches.h"
+#include "services/service_manager/sandbox/sandbox.h"
 
 #if defined(OS_ANDROID) && BUILDFLAG(ENABLE_ARM_CFI_TABLE)
 #include "base/android/apk_assets.h"
@@ -66,8 +67,13 @@ CallStackProfileParams::Process GetProcess() {
     return CallStackProfileParams::RENDERER_PROCESS;
   if (process_type == switches::kGpuProcess)
     return CallStackProfileParams::GPU_PROCESS;
-  if (process_type == switches::kUtilityProcess)
+  if (process_type == switches::kUtilityProcess) {
+    auto sandbox_type =
+        service_manager::SandboxTypeFromCommandLine(*command_line);
+    if (sandbox_type == service_manager::SandboxType::kNetwork)
+      return CallStackProfileParams::NETWORK_SERVICE_PROCESS;
     return CallStackProfileParams::UTILITY_PROCESS;
+  }
   if (process_type == service_manager::switches::kZygoteProcess)
     return CallStackProfileParams::ZYGOTE_PROCESS;
   if (process_type == switches::kPpapiPluginProcess)

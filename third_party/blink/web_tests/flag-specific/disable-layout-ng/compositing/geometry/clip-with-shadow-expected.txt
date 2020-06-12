@@ -14,17 +14,10 @@
       "transform": 2
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='box'",
-      "position": [-2, -2],
-      "bounds": [106, 106],
-      "backgroundColor": "#808080",
-      "transform": 3
-    },
-    {
       "name": "LayoutBlockFlow (relative positioned) DIV class='composited inner'",
       "bounds": [120, 120],
       "backgroundColor": "#00000033",
-      "transform": 5
+      "transform": 4
     }
   ],
   "transforms": [
@@ -53,22 +46,12 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [220, 20, 0, 1]
+        [210, 10, 0, 1]
       ]
     },
     {
       "id": 4,
       "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [-10, -10, 0, 1]
-      ]
-    },
-    {
-      "id": 5,
-      "parent": 4,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

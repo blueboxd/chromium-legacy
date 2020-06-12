@@ -31,7 +31,9 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/pagination/pagination_controller.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/guid.h"
 #include "base/macros.h"
@@ -450,12 +452,6 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
           : base::BindRepeating(&AppListRecordPageSwitcherSourceByEventType),
       IsTabletMode());
   bounds_animator_->AddObserver(this);
-
-  pagination_metrics_reporter_ =
-      std::make_unique<PaginationTransitionAnimationReporter>();
-  pagination_metrics_recorder_ =
-      std::make_unique<AppListAnimationMetricsRecorder>(
-          pagination_metrics_reporter_.get());
 }
 
 AppsGridView::~AppsGridView() {
@@ -3066,9 +3062,10 @@ void AppsGridView::TransitionStarted() {
     Layout();
   }
 
-  pagination_metrics_recorder_->OnAnimationStart(
-      pagination_model_.GetTransitionAnimationSlideDuration(),
-      GetWidget()->GetCompositor());
+  pagination_metrics_tracker_ =
+      GetWidget()->GetCompositor()->RequestNewThroughputTracker();
+  pagination_metrics_tracker_->Start(metrics_util::ForSmoothness(
+      base::BindRepeating(&ReportPaginationSmoothness, IsTabletMode())));
 }
 
 void AppsGridView::TransitionChanged() {
@@ -3107,8 +3104,7 @@ void AppsGridView::TransitionChanged() {
 }
 
 void AppsGridView::TransitionEnded() {
-  pagination_metrics_reporter_->set_is_tablet_mode(IsTabletMode());
-  pagination_metrics_recorder_->OnAnimationEnd(GetWidget()->GetCompositor());
+  pagination_metrics_tracker_->Stop();
 
   // Gradient mask is no longer necessary once transition is finished.
   if (layer()->layer_mask_layer())

@@ -107,15 +107,16 @@ const TEST_IMAGE_HEIGHT = 456;
  * @param {number=} width
  * @param {number=} height
  * @param {string=} name
+ * @param {number=} lastModified
  * @return {Promise<File>} A {width}x{height} transparent encoded image/png.
  */
 async function createTestImageFile(
     width = TEST_IMAGE_WIDTH, height = TEST_IMAGE_HEIGHT,
-    name = 'test_file.png') {
+    name = 'test_file.png', lastModified = 0) {
   const canvas = new OffscreenCanvas(width, height);
   canvas.getContext('2d');  // convertToBlob fails without a rendering context.
   const blob = await canvas.convertToBlob();
-  return new File([blob], name, {type: 'image/png'});
+  return new File([blob], name, {type: 'image/png', lastModified});
 }
 
 // Tests that chrome://media-app is allowed to frame
@@ -691,40 +692,41 @@ TEST_F('MediaAppUIBrowserTest', 'RelatedFiles', async () => {
   const [mkv, jpg, txt, gif, webm, other, ext, html] = directory.getFilesSync();
   const imageAndVideoFiles = [mkv, jpg, gif, webm];
 
-  // Checks that the `currentFiles` array maintained by launch.js has everything
-  // in `expectedFiles`, and nothing extra.
-  function assertFilesToBe(testCase, expectedFiles) {
-    // If lengths match, we can just check that all `expectedFiles` are present.
-    assertEquals(
-        expectedFiles.length, currentFiles.length,
-        `Unexpected currentFiles length for ${testCase}`);
-    for (const f of expectedFiles) {
-      assertTrue(
-          !!currentFiles.find(descriptor => descriptor.file.name === f.name),
-          `${f.name} missing for ${testCase}`);
-    }
-  }
-
   await setCurrentDirectory(directory, mkv);
-  assertFilesToBe('mkv', imageAndVideoFiles);
+  assertFilesToBe(imageAndVideoFiles, 'mkv');
 
   await setCurrentDirectory(directory, jpg);
-  assertFilesToBe('jpg', imageAndVideoFiles);
+  assertFilesToBe(imageAndVideoFiles, 'jpg');
 
   await setCurrentDirectory(directory, gif);
-  assertFilesToBe('gif', imageAndVideoFiles);
+  assertFilesToBe(imageAndVideoFiles, 'gif');
 
   await setCurrentDirectory(directory, webm);
-  assertFilesToBe('webm', imageAndVideoFiles);
+  assertFilesToBe(imageAndVideoFiles, 'webm');
 
   await setCurrentDirectory(directory, txt);
-  assertFilesToBe('txt', [txt, other]);
+  assertFilesToBe([txt, other], 'txt');
 
   await setCurrentDirectory(directory, html);
-  assertFilesToBe('html', [html]);
+  assertFilesToBe([html], 'html');
 
   await setCurrentDirectory(directory, ext);
-  assertFilesToBe('ext', [ext]);
+  assertFilesToBe([ext], 'ext');
+
+  testDone();
+});
+
+TEST_F('MediaAppUIBrowserTest', 'SortedFiles', async () => {
+  // We want the more recent (i.e. higher timestamp) files first.
+  const filesInModifiedOrder = await Promise.all(
+      [6, 5, 4, 3, 2, 1, 0].map(n => createTestImageFile(1, 1, `${n}.png`, n)));
+  const files = [...filesInModifiedOrder];
+  // Mix up files so that we can check they get sorted correctly.
+  [files[4], files[2], files[3]] = [files[2], files[3], files[4]];
+
+  await launchWithFiles(files);
+
+  assertFilesToBe(filesInModifiedOrder);
 
   testDone();
 });

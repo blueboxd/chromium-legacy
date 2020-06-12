@@ -38,6 +38,15 @@ struct WebIsolatedWorldInfo {
   // Associates an isolated world with human-readable name which is useful for
   // extension debugging.
   WebString human_readable_name;
+
+  // Associates an isolated world with an optional tag that does not vary
+  // between browser sessions or between renderers, unlike the world ID which
+  // can be randomly assigned. The exact meaning will depend on the embedder
+  // and the type of isolated world. For example Chrome extensions use the
+  // host ID, as per extensions::ScriptInjection::GetHostIdForIsolatedWorld.
+  // Some types of isolated world will not have a suitable tag so will leave
+  // this empty.
+  WebString stable_id;
 };
 
 }  // namespace blink

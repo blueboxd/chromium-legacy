@@ -10,7 +10,6 @@
 
 #include "ash/ash_export.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -19,7 +18,6 @@ class Window;
 }
 
 namespace ui {
-class LayerTreeOwner;
 class Shadow;
 }
 
@@ -33,6 +31,8 @@ class ASH_EXPORT DragWindowController {
       aura::Window* window,
       bool is_touch_dragging,
       const base::Optional<gfx::Rect>& shadow_bounds = base::nullopt);
+  DragWindowController(const DragWindowController&) = delete;
+  DragWindowController& operator=(const DragWindowController&) = delete;
   virtual ~DragWindowController();
 
   // Updates bounds and opacity for the drag windows, and creates/destroys each
@@ -54,7 +54,6 @@ class ASH_EXPORT DragWindowController {
   // Returns the drag window/layer owner for given index of the
   // currently active drag windows list.
   const aura::Window* GetDragWindowForTest(size_t index) const;
-  const ui::LayerTreeOwner* GetDragLayerOwnerForTest(size_t index) const;
   const ui::Shadow* GetDragWindowShadowForTest(size_t index) const;
 
   // Call Layer::OnPaintLayer on all layers under the drag_windows_.
@@ -74,8 +73,6 @@ class ASH_EXPORT DragWindowController {
 
   // Phantom windows to visually represent |window_| on other displays.
   std::vector<std::unique_ptr<DragWindowDetails>> drag_windows_;
-
-  DISALLOW_COPY_AND_ASSIGN(DragWindowController);
 };
 
 }  // namespace ash

@@ -62,7 +62,7 @@ TEST_F(GcpReauthCredentialTest, SetOSUserInfoAndReauthEmail) {
   Microsoft::WRL::ComPtr<IReauthCredential> reauth;
   ASSERT_EQ(S_OK, CComCreator<CComObject<CReauthCredential>>::CreateInstance(
                       nullptr, IID_IReauthCredential, (void**)&reauth));
-  ASSERT_TRUE(!!reauth);
+  ASSERT_TRUE(reauth);
 
   const CComBSTR kSid(W2COLE(L"sid"));
   ASSERT_EQ(S_OK, reauth->SetOSUserInfo(
@@ -109,7 +109,7 @@ TEST_P(GcpReauthCredentialGetStringValueTest, FidDescription) {
   Microsoft::WRL::ComPtr<IReauthCredential> reauth;
   ASSERT_EQ(S_OK, CComCreator<CComObject<CReauthCredential>>::CreateInstance(
                       nullptr, IID_IReauthCredential, (void**)&reauth));
-  ASSERT_TRUE(!!reauth);
+  ASSERT_TRUE(reauth);
 
   CComBSTR username = L"foo_bar";
   CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
@@ -206,7 +206,7 @@ TEST_P(GcpReauthCredentialEnforceAuthReasonGetStringValueTest,
   Microsoft::WRL::ComPtr<IReauthCredential> reauth;
   ASSERT_EQ(S_OK, CComCreator<CComObject<CReauthCredential>>::CreateInstance(
                       nullptr, IID_IReauthCredential, (void**)&reauth));
-  ASSERT_TRUE(!!reauth);
+  ASSERT_TRUE(reauth);
 
   CComBSTR username = L"foo_bar";
   CComBSTR full_name = A2COLE(test_data_storage.GetSuccessFullName().c_str());
@@ -341,7 +341,7 @@ TEST_P(GcpReauthCredentialGlsTest, GetUserGlsCommandLine) {
   SetDefaultTokenHandleResponse(kDefaultInvalidTokenHandleResponse);
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(1, &cred));
 
-  ASSERT_TRUE(!!cred);
+  ASSERT_TRUE(cred);
 
   Microsoft::WRL::ComPtr<IReauthCredential> ireauth;
   ASSERT_EQ(S_OK, cred.As(&ireauth));

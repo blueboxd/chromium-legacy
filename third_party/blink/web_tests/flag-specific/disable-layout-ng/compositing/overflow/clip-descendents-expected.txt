@@ -7,22 +7,17 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='container'",
-      "position": [20, 10],
-      "bounds": [60, 70],
-      "transform": 1
+      "name": "LayoutBlockFlow DIV class='box'",
+      "bounds": [100, 150],
+      "contentsOpaque": true,
+      "backgroundColor": "#808080",
+      "transform": 2
     },
     {
       "name": "LayoutBlockFlow DIV class='box'",
       "bounds": [100, 150],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
-      "transform": 3
-    },
-    {
-      "name": "LayoutBlockFlow (positioned) DIV class='container'",
-      "position": [20, 10],
-      "bounds": [60, 70],
       "transform": 4
     },
     {
@@ -33,30 +28,11 @@
       "transform": 6
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='container'",
-      "position": [20, 10],
-      "bounds": [60, 70],
-      "transform": 7
-    },
-    {
       "name": "LayoutBlockFlow DIV class='box'",
       "bounds": [100, 150],
       "contentsOpaque": true,
       "backgroundColor": "#808080",
-      "transform": 9
-    },
-    {
-      "name": "LayoutBlockFlow (positioned) DIV class='container'",
-      "position": [20, 10],
-      "bounds": [60, 70],
-      "transform": 10
-    },
-    {
-      "name": "LayoutBlockFlow DIV class='box'",
-      "bounds": [100, 150],
-      "contentsOpaque": true,
-      "backgroundColor": "#808080",
-      "transform": 12
+      "transform": 8
     }
   ],
   "transforms": [
@@ -66,7 +42,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [28, 28, 0, 1]
+        [50, 50, 0, 1]
       ]
     },
     {
@@ -76,12 +52,21 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [22, 22, 0, 1]
+        [0, 0, 1, 1]
       ]
     },
     {
       "id": 3,
-      "parent": 2,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [242, 50, 0, 1]
+      ]
+    },
+    {
+      "id": 4,
+      "parent": 3,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
@@ -90,22 +75,12 @@
       ]
     },
     {
-      "id": 4,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [220, 28, 0, 1]
-      ]
-    },
-    {
       "id": 5,
-      "parent": 4,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [22, 22, 0, 1]
+        [50, 242, 0, 1]
       ]
     },
     {
@@ -124,51 +99,12 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [28, 220, 0, 1]
+        [242, 242, 0, 1]
       ]
     },
     {
       "id": 8,
       "parent": 7,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [22, 22, 0, 1]
-      ]
-    },
-    {
-      "id": 9,
-      "parent": 8,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 1, 1]
-      ]
-    },
-    {
-      "id": 10,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [220, 220, 0, 1]
-      ]
-    },
-    {
-      "id": 11,
-      "parent": 10,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [22, 22, 0, 1]
-      ]
-    },
-    {
-      "id": 12,
-      "parent": 11,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

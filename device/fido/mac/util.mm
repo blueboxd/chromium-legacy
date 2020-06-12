@@ -55,7 +55,7 @@ std::unique_ptr<PublicKey> SecKeyRefToECPublicKey(SecKeyRef public_key_ref)
   base::span<const uint8_t> key_data =
       base::make_span(CFDataGetBytePtr(data_ref), CFDataGetLength(data_ref));
   auto key = P256PublicKey::ParseX962Uncompressed(
-      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256), key_data);
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kEs256), key_data);
   if (!key) {
     LOG(ERROR) << "Unexpected public key format: "
                << base::HexEncode(key_data.data(), key_data.size());

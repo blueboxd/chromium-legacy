@@ -1,7 +1,5 @@
 This is a testharness.js-based test.
-PASS Can get the ReadableStreamDefaultReader constructor indirectly
 PASS ReadableStreamDefaultReader constructor should get a ReadableStream object as argument
-FAIL ReadableStreamDefaultReader instances should have the correct list of properties assert_equals: cancel has 1 parameter expected 1 but got 0
 PASS ReadableStreamDefaultReader closed should always return the same promise object
 PASS Constructing a ReadableStreamDefaultReader directly should fail if the stream is already locked (via direct construction)
 PASS Getting a ReadableStreamDefaultReader via getReader should fail if the stream is already locked (via direct construction)
@@ -25,7 +23,7 @@ PASS Reading twice on a stream that gets closed
 PASS Reading twice on a closed stream
 PASS Reading twice on an errored stream
 PASS Reading twice on a stream that gets errored
-PASS getReader() should call ToString() on mode
+FAIL getReader() should call ToString() on mode assert_throws_js: getReader() should throw function "() => rs.getReader({ mode })" threw object "RangeError: Failed to execute 'getReader' on 'ReadableStream': invalid mode" ("RangeError") expected instance of function "function TypeError() { [native code] }" ("TypeError")
 PASS controller.close() should clear the list of pending read requests
 Harness: the test ran to completion.
 

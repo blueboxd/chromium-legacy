@@ -22,22 +22,36 @@ mojom("common_mojom") {
           mojom = "js_injection.mojom.AwOriginMatcher"
           cpp = "::js_injection::AwOriginMatcher"
         },
+        {
+          mojom = "js_injection.mojom.OriginMatcherRule"
+          cpp = "::std::unique_ptr<::js_injection::OriginMatcherRule>"
+          move_only = true
+        },
       ]
       traits_headers = [ "aw_origin_matcher_mojom_traits.h" ]
+      traits_sources = [ "aw_origin_matcher_mojom_traits.cc" ]
+      traits_public_deps = [ ":common" ]
     },
   ]
+  overridden_deps = [ "//third_party/blink/public/mojom:mojom_core" ]
+  component_deps = [ "//third_party/blink/public/common" ]
 }
 
 source_set("common") {
+  public = [ "aw_origin_matcher.h" ]
   sources = [
     "aw_origin_matcher.cc",
-    "aw_origin_matcher.h",
+    "origin_matcher_internal.cc",
+    "origin_matcher_internal.h",
   ]
   deps = [
     "//base",
     "//net",
     "//url",
   ]
+
+  # origin_matcher_internal is needed by mojom traits and tests.
+  friend = [ ":*" ]
 }
 
 source_set("unit_tests") {
@@ -45,8 +59,10 @@ source_set("unit_tests") {
   sources = [ "aw_origin_matcher_unittest.cc" ]
   deps = [
     ":common",
+    ":common_mojom",
     "//base",
     "//base/test:test_support",
+    "//mojo/public/cpp/test_support:test_utils",
     "//url",
   ]
 }

@@ -152,6 +152,10 @@ class CORE_EXPORT WebLocalFrameImpl final
   void ClearIsolatedWorldCSPForTesting(int32_t world_id) override;
   void SetIsolatedWorldInfo(int32_t world_id,
                             const WebIsolatedWorldInfo&) override;
+  WebString GetIsolatedWorldStableId(
+      v8::Local<v8::Context> context) const override;
+  WebString GetIsolatedWorldHumanReadableName(
+      v8::Local<v8::Context> context) const override;
   v8::Local<v8::Value> ExecuteScriptAndReturnValue(
       const WebScriptSource&) override;
   v8::MaybeLocal<v8::Value> CallFunctionEvenIfScriptDisabled(

@@ -175,7 +175,7 @@ TEST_P(GcpOtherUserCredentialGlsTest, GetUserGlsCommandLine) {
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
-  ASSERT_TRUE(!!cred);
+  ASSERT_TRUE(cred);
 
   // Get user gls command line and extract the kGaiaUrl &
   // kGcpwEndpointPathSwitch switch from it.

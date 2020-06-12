@@ -197,8 +197,6 @@
 #if defined(OS_CHROMEOS)
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/net/profile_network_context_service.h"
-#include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_builder.h"
 #include "chromeos/constants/chromeos_switches.h"
@@ -5621,7 +5619,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, ExistingPageHTTPSToHTTPSSLState) {
   // of http URLs GetSecurityLevelForRequest will return SecurityLevel::NONE for
   // http URLs.
   content::NavigationEntry* entry = tab->GetController().GetVisibleEntry();
-  ASSERT_FALSE(!!entry->GetSSL().certificate);
+  ASSERT_FALSE(entry->GetSSL().certificate);
 }
 
 // Checks that a restore followed immediately by a history navigation doesn't

@@ -153,6 +153,8 @@ source_set("wayland") {
       "wayland_positioner.h",
       "wl_shell.cc",
       "wl_shell.h",
+      "xdg_shell.cc",
+      "xdg_shell.h",
       "zcr_color_space.cc",
       "zcr_color_space.h",
       "zcr_cursor_shapes.cc",

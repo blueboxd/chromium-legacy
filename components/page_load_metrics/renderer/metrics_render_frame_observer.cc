@@ -425,6 +425,10 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
     timing->interactive_timing->longest_input_timestamp =
         ClampDelta((*perf.LongestInputTimestamp()).InSecondsF(), start);
   }
+  if (perf.FirstInputProcessingTime().has_value()) {
+    timing->interactive_timing->first_input_processing_time =
+        *perf.FirstInputProcessingTime();
+  }
   if (perf.ResponseStart() > 0.0)
     timing->response_start = ClampDelta(perf.ResponseStart(), start);
   if (perf.DomContentLoadedEventStart() > 0.0) {

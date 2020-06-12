@@ -33,7 +33,9 @@ enum class NewTabType {
 // in web terms, a new popup/window (and random other things).
 class NewTabDelegate {
  public:
-  virtual void OnNewTab(std::unique_ptr<Tab> new_tab, NewTabType type) = 0;
+  // Called when a new tab is created by the browser. |new_tab| is owned by the
+  // browser.
+  virtual void OnNewTab(Tab* new_tab, NewTabType type) = 0;
 
   // The page has requested a tab that was created by way of OnNewTab() to be
   // closed. This is sent to the NewTabDelegate set on the page created by way

@@ -174,6 +174,8 @@ const char SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent[] =
     "sensitiveDataEvent";
 const char SafeBrowsingPrivateEventRouter::kKeyUnscannedFileEvent[] =
     "unscannedFileEvent";
+const char SafeBrowsingPrivateEventRouter::kKeyUnscannedReason[] =
+    "unscannedReason";
 
 const char SafeBrowsingPrivateEventRouter::kTriggerFileDownload[] =
     "FILE_DOWNLOAD";
@@ -562,7 +564,7 @@ void SafeBrowsingPrivateEventRouter::OnUnscannedFileEvent(
                                download_digest_sha256);
             event.SetStringKey(kKeyProfileUserName, profile_user_name);
             event.SetStringKey(kKeyContentType, mime_type);
-            event.SetStringKey(kKeyReason, reason);
+            event.SetStringKey(kKeyUnscannedReason, reason);
             // |content_size| can be set to -1 to indicate an unknown size, in
             // which case the field is not set.
             if (content_size >= 0)

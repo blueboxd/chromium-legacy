@@ -1562,9 +1562,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        MAYBE_DoesNotCacheIfRecordingAudio) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
+  BackForwardCacheDisabledTester tester;
+
   // Navigate to an empty page.
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
+  int process_id = current_frame_host()->GetProcess()->GetID();
+  int routing_id = current_frame_host()->GetRoutingID();
 
   // Request for audio recording.
   EXPECT_EQ("success", EvalJs(current_frame_host(), R"(
@@ -1584,22 +1588,33 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // have been cached.
   deleted.WaitUntilDeleted();
 
-  // 3) Go back.
+  // 3) Go back. Note that the reason for kWasGrantedMediaAccess occurs after
+  // MediaDevicesDispatcherHost is called, hence, both are reasons for the page
+  // not being restored.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kWasGrantedMediaAccess},
+      {BackForwardCacheMetrics::NotRestoredReason::kWasGrantedMediaAccess,
+       BackForwardCacheMetrics::NotRestoredReason::
+           kDisableForRenderFrameHostCalled},
       FROM_HERE);
+  EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
+      process_id, routing_id, "MediaDevicesDispatcherHost"));
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        DoesNotCacheIfSubframeRecordingAudio) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
+  BackForwardCacheDisabledTester tester;
+
   // Navigate to a page with an iframe.
   GURL url(embedded_test_server()->GetURL("/page_with_iframe.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
   RenderFrameHostImpl* rfh = current_frame_host();
+  int process_id =
+      rfh->child_at(0)->current_frame_host()->GetProcess()->GetID();
+  int routing_id = rfh->child_at(0)->current_frame_host()->GetRoutingID();
 
   // Request for audio recording from the subframe.
   EXPECT_EQ("success", EvalJs(rfh->child_at(0)->current_frame_host(), R"(
@@ -1619,12 +1634,58 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // have been cached.
   deleted.WaitUntilDeleted();
 
-  // 3) Go back.
+  // 3) Go back. Note that the reason for kWasGrantedMediaAccess occurs after
+  // MediaDevicesDispatcherHost is called, hence, both are reasons for the page
+  // not being restored.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   ExpectNotRestored(
-      {BackForwardCacheMetrics::NotRestoredReason::kWasGrantedMediaAccess},
+      {BackForwardCacheMetrics::NotRestoredReason::kWasGrantedMediaAccess,
+       BackForwardCacheMetrics::NotRestoredReason::
+           kDisableForRenderFrameHostCalled},
       FROM_HERE);
+  EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
+      process_id, routing_id, "MediaDevicesDispatcherHost"));
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DoesNotCacheIfMediaDeviceSubscribed) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  BackForwardCacheDisabledTester tester;
+
+  // Navigate to a page with an iframe.
+  GURL url(embedded_test_server()->GetURL("/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  RenderFrameHostImpl* rfh = current_frame_host();
+  int process_id =
+      rfh->child_at(0)->current_frame_host()->GetProcess()->GetID();
+  int routing_id = rfh->child_at(0)->current_frame_host()->GetRoutingID();
+
+  EXPECT_EQ("success", EvalJs(rfh->child_at(0)->current_frame_host(), R"(
+    new Promise(resolve => {
+      navigator.mediaDevices.addEventListener('devicechange', function(event){});
+      resolve("success");
+    });
+  )"));
+
+  RenderFrameDeletedObserver deleted(current_frame_host());
+
+  // 2) Navigate away.
+  shell()->LoadURL(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // The page was subscribed to media devices when we navigated away, so it
+  // shouldn't have been cached.
+  deleted.WaitUntilDeleted();
+
+  // 3) Go back.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::
+                         kDisableForRenderFrameHostCalled},
+                    FROM_HERE);
+  EXPECT_TRUE(tester.IsDisabledForFrameWithReason(
+      process_id, routing_id, "MediaDevicesDispatcherHost"));
 }
 
 // TODO(https://crbug.com/1075936) disabled due to flakiness
@@ -2092,6 +2153,40 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       all_sites_blocklist_values.begin(), all_sites_blocklist_values.end(),
       [sample](const base::Bucket& bucket) { return bucket.min == sample; });
   EXPECT_TRUE(all_sites_it != all_sites_blocklist_values.end());
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       DoesNotCacheOnKeyboardLock) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Navigate to a page and start using the IdleManager class.
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver rfh_a_deleted(rfh_a);
+
+  EXPECT_TRUE(ExecJs(rfh_a, R"(
+    new Promise(resolve => {
+      navigator.keyboard.lock();
+      resolve();
+    });
+  )"));
+
+  // 2) Navigate away.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
+
+  // The page uses IdleManager so it should be deleted.
+  rfh_a_deleted.WaitUntilDeleted();
+
+  // 3) Go back and make sure the IdleManager page wasn't in the cache.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kBlocklistedFeatures},
+      FROM_HERE);
+  ExpectBlocklistedFeature(
+      blink::scheduler::WebSchedulerTrackedFeature::kKeyboardLock, FROM_HERE);
 }
 
 class MockAppBannerService : public blink::mojom::AppBannerService {

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {FittingType} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/constants.js';
-import {Viewport} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/viewport.js';
+import {PAGE_SHADOW, Viewport} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/viewport.js';
 
 import {getZoomableViewport, MockDocumentDimensions, MockSizer, MockViewportChangedCallback, MockWindow} from './test_util.js';
 
@@ -14,52 +14,52 @@ const tests = [
     let scrollbars;
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(90, 90));
-    scrollbars = viewport.documentNeedsScrollbars_(1);
+    scrollbars = viewport.documentNeedsScrollbars(1);
     chrome.test.assertFalse(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(100.49, 100.49));
-    scrollbars = viewport.documentNeedsScrollbars_(1);
+    scrollbars = viewport.documentNeedsScrollbars(1);
     chrome.test.assertFalse(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(100.5, 100.5));
-    scrollbars = viewport.documentNeedsScrollbars_(1);
+    scrollbars = viewport.documentNeedsScrollbars(1);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertTrue(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(110, 110));
-    scrollbars = viewport.documentNeedsScrollbars_(1);
+    scrollbars = viewport.documentNeedsScrollbars(1);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertTrue(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(90, 101));
-    scrollbars = viewport.documentNeedsScrollbars_(1);
+    scrollbars = viewport.documentNeedsScrollbars(1);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(101, 90));
-    scrollbars = viewport.documentNeedsScrollbars_(1);
+    scrollbars = viewport.documentNeedsScrollbars(1);
     chrome.test.assertFalse(scrollbars.vertical);
     chrome.test.assertTrue(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(91, 101));
-    scrollbars = viewport.documentNeedsScrollbars_(1);
+    scrollbars = viewport.documentNeedsScrollbars(1);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertTrue(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(101, 91));
-    scrollbars = viewport.documentNeedsScrollbars_(1);
+    scrollbars = viewport.documentNeedsScrollbars(1);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertTrue(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(40, 51));
-    scrollbars = viewport.documentNeedsScrollbars_(2);
+    scrollbars = viewport.documentNeedsScrollbars(2);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(101, 202));
-    scrollbars = viewport.documentNeedsScrollbars_(0.5);
+    scrollbars = viewport.documentNeedsScrollbars(0.5);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
     chrome.test.succeed();
@@ -70,32 +70,32 @@ const tests = [
         new MockWindow(100, 100), new MockSizer(), 10, 1, toolbarHeight);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(90, 90));
-    scrollbars = viewport.documentNeedsScrollbars_(1);
+    scrollbars = viewport.documentNeedsScrollbars(1);
     chrome.test.assertFalse(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(91, 91));
-    scrollbars = viewport.documentNeedsScrollbars_(1);
+    scrollbars = viewport.documentNeedsScrollbars(1);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(100, 100));
-    scrollbars = viewport.documentNeedsScrollbars_(1);
+    scrollbars = viewport.documentNeedsScrollbars(1);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(101, 101));
-    scrollbars = viewport.documentNeedsScrollbars_(1);
+    scrollbars = viewport.documentNeedsScrollbars(1);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertTrue(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(45, 45));
-    scrollbars = viewport.documentNeedsScrollbars_(2);
+    scrollbars = viewport.documentNeedsScrollbars(2);
     chrome.test.assertFalse(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
 
     viewport.setDocumentDimensions(new MockDocumentDimensions(46, 46));
-    scrollbars = viewport.documentNeedsScrollbars_(2);
+    scrollbars = viewport.documentNeedsScrollbars(2);
     chrome.test.assertTrue(scrollbars.vertical);
     chrome.test.assertFalse(scrollbars.horizontal);
   },
@@ -975,14 +975,12 @@ const tests = [
     // Test that the rect of the first page is positioned/sized correctly.
     mockWindow.scrollTo(0, 0);
     let rect1 = viewport.getPageScreenRect(0);
-    chrome.test.assertEq(Viewport.PAGE_SHADOW.left + 100 / 2, rect1.x);
-    chrome.test.assertEq(Viewport.PAGE_SHADOW.top, rect1.y);
+    chrome.test.assertEq(PAGE_SHADOW.left + 100 / 2, rect1.x);
+    chrome.test.assertEq(PAGE_SHADOW.top, rect1.y);
     chrome.test.assertEq(
-        100 - Viewport.PAGE_SHADOW.right - Viewport.PAGE_SHADOW.left,
-        rect1.width);
+        100 - PAGE_SHADOW.right - PAGE_SHADOW.left, rect1.width);
     chrome.test.assertEq(
-        100 - Viewport.PAGE_SHADOW.bottom - Viewport.PAGE_SHADOW.top,
-        rect1.height);
+        100 - PAGE_SHADOW.bottom - PAGE_SHADOW.top, rect1.height);
 
     // Check that when we scroll, the rect of the first page is updated
     // correctly.
@@ -996,14 +994,12 @@ const tests = [
     // Check the rect of the second page is positioned/sized correctly.
     mockWindow.scrollTo(0, 100);
     rect1 = viewport.getPageScreenRect(1);
-    chrome.test.assertEq(Viewport.PAGE_SHADOW.left, rect1.x);
-    chrome.test.assertEq(Viewport.PAGE_SHADOW.top, rect1.y);
+    chrome.test.assertEq(PAGE_SHADOW.left, rect1.x);
+    chrome.test.assertEq(PAGE_SHADOW.top, rect1.y);
     chrome.test.assertEq(
-        200 - Viewport.PAGE_SHADOW.right - Viewport.PAGE_SHADOW.left,
-        rect1.width);
+        200 - PAGE_SHADOW.right - PAGE_SHADOW.left, rect1.width);
     chrome.test.assertEq(
-        200 - Viewport.PAGE_SHADOW.bottom - Viewport.PAGE_SHADOW.top,
-        rect1.height);
+        200 - PAGE_SHADOW.bottom - PAGE_SHADOW.top, rect1.height);
     chrome.test.succeed();
   },
 

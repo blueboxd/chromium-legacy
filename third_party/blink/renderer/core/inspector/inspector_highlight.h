@@ -34,6 +34,7 @@ struct CORE_EXPORT InspectorGridHighlightConfig {
   bool show_grid_extension_lines;
   bool grid_border_dash;
   bool cell_border_dash;
+  bool show_positive_line_numbers;
 };
 
 struct CORE_EXPORT InspectorHighlightConfig {

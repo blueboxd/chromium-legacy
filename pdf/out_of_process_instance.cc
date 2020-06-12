@@ -109,7 +109,7 @@ constexpr char kJSPrintType[] = "print";
 // Save (Page -> Plugin)
 constexpr char kJSSaveType[] = "save";
 constexpr char kJSToken[] = "token";
-constexpr char kJSForce[] = "force";
+constexpr char kJSSaveRequestType[] = "saveRequestType";
 // Save Data (Plugin -> Page)
 constexpr char kJSSaveDataType[] = "saveData";
 constexpr char kJSFileName[] = "fileName";
@@ -181,6 +181,9 @@ constexpr char kJSNamedDestinationPageNumber[] = "pageNumber";
 // Selecting text in document (Plugin -> Page)
 constexpr char kJSSetIsSelectingType[] = "setIsSelecting";
 constexpr char kJSIsSelecting[] = "isSelecting";
+
+// Editing forms in document (Plugin -> Page)
+constexpr char kJSSetIsEditingType[] = "setIsEditing";
 
 // Notify when a form field is focused (Plugin -> Page)
 constexpr char kJSFieldFocusType[] = "formFocusChange";
@@ -487,6 +490,7 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   text_input_ = std::make_unique<pp::TextInput_Dev>(this);
 
   bool enable_javascript = true;
+  bool has_edits = false;
   const char* stream_url = nullptr;
   const char* original_url = nullptr;
   const char* top_level_url = nullptr;
@@ -509,6 +513,8 @@ bool OutOfProcessInstance::Init(uint32_t argc,
     } else if (strcmp(argn[i], "javascript") == 0) {
       if (base::FeatureList::IsEnabled(features::kPdfHonorJsContentSettings))
         enable_javascript = (strcmp(argv[i], "allow") == 0);
+    } else if (strcmp(argn[i], "has-edits") == 0) {
+      has_edits = true;
     }
     if (!success)
       return false;
@@ -531,6 +537,7 @@ bool OutOfProcessInstance::Init(uint32_t argc,
 
   LoadUrl(stream_url, /*is_print_preview=*/false);
   url_ = original_url;
+  edit_mode_ = has_edits;
   pp::PDF::SetCrashData(GetPluginInstance(), original_url, top_level_url);
   return engine_->New(original_url, headers);
 }
@@ -680,19 +687,27 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     Print();
   } else if (type == kJSSaveType) {
     if (!(dict.Get(pp::Var(kJSToken)).is_string() &&
-          dict.Get(pp::Var(kJSForce)).is_bool())) {
+          dict.Get(pp::Var(kJSSaveRequestType)).is_int())) {
       NOTREACHED();
       return;
     }
-    const bool force = dict.Get(pp::Var(kJSForce)).AsBool();
-    if (force) {
-      // |force| being true means the user has entered annotation mode. In which
-      // case, assume the user will make edits and prefer saving using the
-      // plugin data.
-      pp::PDF::SetPluginCanSave(this, true);
-      SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
-    } else {
-      SaveToFile(dict.Get(pp::Var(kJSToken)).AsString());
+    const SaveRequestType request_type = static_cast<SaveRequestType>(
+        dict.Get(pp::Var(kJSSaveRequestType)).AsInt());
+    switch (request_type) {
+      case SaveRequestType::kAnnotation:
+        // In annotation mode, assume the user will make edits and prefer saving
+        // using the plugin data.
+        pp::PDF::SetPluginCanSave(this, true);
+        SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
+        break;
+      case SaveRequestType::kOriginal:
+        pp::PDF::SetPluginCanSave(this, false);
+        SaveToFile(dict.Get(pp::Var(kJSToken)).AsString());
+        pp::PDF::SetPluginCanSave(this, CanSaveEdits());
+        break;
+      case SaveRequestType::kEdited:
+        SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
+        break;
     }
   } else if (type == kJSRotateClockwiseType) {
     RotateClockwise();
@@ -1470,7 +1485,7 @@ void OutOfProcessInstance::GetDocumentPassword(
   PostMessage(message);
 }
 
-bool OutOfProcessInstance::ShouldSaveEdits() const {
+bool OutOfProcessInstance::CanSaveEdits() const {
   return edit_mode_ &&
          base::FeatureList::IsEnabled(features::kSaveEditedPDFForm);
 }
@@ -1488,7 +1503,7 @@ void OutOfProcessInstance::SaveToBuffer(const std::string& token) {
       edit_mode_ && !base::FeatureList::IsEnabled(features::kSaveEditedPDFForm);
   message.Set(kJSHasUnsavedChanges, pp::Var(has_unsaved_changes));
 
-  if (ShouldSaveEdits()) {
+  if (CanSaveEdits()) {
     std::vector<uint8_t> data = engine_->GetSaveData();
     if (IsSaveDataSizeValid(data.size())) {
       pp::VarArrayBuffer buffer(data.size());
@@ -1514,14 +1529,9 @@ void OutOfProcessInstance::SaveToBuffer(const std::string& token) {
 }
 
 void OutOfProcessInstance::SaveToFile(const std::string& token) {
-  if (!ShouldSaveEdits()) {
-    engine_->KillFormFocus();
-    ConsumeSaveToken(token);
-    pp::PDF::SaveAs(this);
-    return;
-  }
-
-  SaveToBuffer(token);
+  engine_->KillFormFocus();
+  ConsumeSaveToken(token);
+  pp::PDF::SaveAs(this);
 }
 
 void OutOfProcessInstance::ConsumeSaveToken(const std::string& token) {
@@ -1932,9 +1942,14 @@ void OutOfProcessInstance::IsSelectingChanged(bool is_selecting) {
   PostMessage(message);
 }
 
-void OutOfProcessInstance::IsEditModeChanged(bool is_edit_mode) {
-  edit_mode_ = is_edit_mode;
-  pp::PDF::SetPluginCanSave(this, ShouldSaveEdits());
+void OutOfProcessInstance::EnteredEditMode() {
+  edit_mode_ = true;
+  pp::PDF::SetPluginCanSave(this, CanSaveEdits());
+  if (CanSaveEdits()) {
+    pp::VarDictionary message;
+    message.Set(kType, kJSSetIsEditingType);
+    PostMessage(message);
+  }
 }
 
 float OutOfProcessInstance::GetToolbarHeightInScreenCoords() {

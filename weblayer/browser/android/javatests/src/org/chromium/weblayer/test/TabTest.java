@@ -15,7 +15,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.Tab;
+import org.chromium.weblayer.TabListCallback;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
 import java.util.HashMap;
@@ -211,5 +213,31 @@ public class TabTest {
             }
             Assert.fail("Expected IllegalArgumentException.");
         });
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(85)
+    public void testCreateTab() throws Exception {
+        mActivity = mActivityTestRule.launchShellWithUrl("about:blank");
+        CallbackHelper helper = new CallbackHelper();
+        Tab tab = TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Browser browser = mActivity.getBrowser();
+            browser.registerTabListCallback(new TabListCallback() {
+                @Override
+                public void onTabAdded(Tab tab) {
+                    helper.notifyCalled();
+                }
+            });
+            Tab newTab = mActivity.getBrowser().createTab();
+            Assert.assertEquals(mActivity.getBrowser().getTabs().size(), 2);
+            Assert.assertNotEquals(newTab, mActivity.getTab());
+            return newTab;
+        });
+        helper.waitForFirst();
+
+        // Make sure the new tab can navigate correctly.
+        mActivityTestRule.navigateAndWait(
+                tab, mActivityTestRule.getTestDataURL("simple_page.html"), false);
     }
 }

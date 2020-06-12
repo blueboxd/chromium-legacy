@@ -1081,6 +1081,12 @@ bool Widget::OnNativeWidgetActivationChanged(bool active) {
   if (g_disable_activation_change_handling_)
     return false;
 
+  // Non-client activation is not always a separate event from widget activation
+  // so we treat all widget activation as affecting non-client as well. However,
+  // on some platforms, non-client activation can happen separately from widget
+  // activation, so we still have a separate handler for non-client.
+  OnNativeWidgetNonClientActivationChanged(active);
+
   // On windows we may end up here before we've completed initialization (from
   // an WM_NCACTIVATE). If that happens the WidgetDelegate likely doesn't know
   // the Widget and will crash attempting to access it.
@@ -1090,13 +1096,18 @@ bool Widget::OnNativeWidgetActivationChanged(bool active) {
   for (WidgetObserver& observer : observers_)
     observer.OnWidgetActivationChanged(this, active);
 
+  return true;
+}
+
+void Widget::OnNativeWidgetNonClientActivationChanged(bool active) {
+  if (g_disable_activation_change_handling_)
+    return;
+
   const bool was_paint_as_active = ShouldPaintAsActive();
   native_widget_active_ = active;
   const bool paint_as_active = ShouldPaintAsActive();
   if (paint_as_active != was_paint_as_active)
     UpdatePaintAsActiveState(paint_as_active);
-
-  return true;
 }
 
 void Widget::OnNativeFocus() {

@@ -29,9 +29,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "base/time/tick_clock.h"
 
 namespace safe_browsing {
-class FeatureExtractorClock;
 class FeatureMap;
 
 class PhishingTermFeatureExtractor {
@@ -63,8 +63,7 @@ class PhishingTermFeatureExtractor {
       size_t max_words_per_term,
       uint32_t murmurhash3_seed,
       size_t max_shingles_per_page,
-      size_t shingle_size,
-      FeatureExtractorClock* clock);
+      size_t shingle_size);
   ~PhishingTermFeatureExtractor();
 
   // Begins extracting features from |page_text| into the given FeatureMap.
@@ -89,6 +88,8 @@ class PhishingTermFeatureExtractor {
   // Must be called if there is a feature extraction in progress when the page
   // is unloaded or the PhishingTermFeatureExtractor is destroyed.
   void CancelPendingExtraction();
+
+  void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
 
  private:
   struct ExtractionState;
@@ -144,7 +145,7 @@ class PhishingTermFeatureExtractor {
   const size_t shingle_size_;
 
   // Non-owned pointer to our clock.
-  FeatureExtractorClock* clock_;
+  const base::TickClock* clock_;
 
   // The output parameters from the most recent call to ExtractFeatures().
   const base::string16* page_text_;  // The caller keeps ownership of this.

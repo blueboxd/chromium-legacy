@@ -113,13 +113,14 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
   const char kVirtualKeyboardDataURL[] =
       "data:text/html,<!DOCTYPE html>"
       "<script>"
-      "  let x, y, width, height, numEvents = 0;"
+      "  let VKRect, x, y, width, height, numEvents = 0;"
       "  navigator.virtualKeyboard.overlaysContent = true;"
-      "  navigator.virtualKeyboard.addEventListener('overlaygeometrychange',"
+      "  navigator.virtualKeyboard.addEventListener('geometrychange',"
       "   evt => {"
       "     numEvents++;"
       "     let r = evt.boundingRect;"
       "     x = r.x; y = r.y; width = r.width; height = r.height;"
+      "     VKRect = navigator.virtualKeyboard.boundingRect"
       "   }, false);"
       "</script>";
   EXPECT_TRUE(NavigateToURL(shell(), GURL(kVirtualKeyboardDataURL)));
@@ -172,6 +173,10 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
   EXPECT_EQ(expected_y, EvalJs(shell(), "y"));
   EXPECT_EQ(expected_width, EvalJs(shell(), "width"));
   EXPECT_EQ(kKeyboardHeight, EvalJs(shell(), "height"));
+  EXPECT_EQ(0, EvalJs(shell(), "VKRect.x"));
+  EXPECT_EQ(expected_y, EvalJs(shell(), "VKRect.y"));
+  EXPECT_EQ(expected_width, EvalJs(shell(), "VKRect.width"));
+  EXPECT_EQ(kKeyboardHeight, EvalJs(shell(), "VKRect.height"));
 
   input_method_->GetMockKeyboardController()->NotifyObserversOnKeyboardHidden();
   EXPECT_EQ(2, EvalJs(shell(), "numEvents"));
@@ -179,6 +184,10 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
   EXPECT_EQ(0, EvalJs(shell(), "height"));
   EXPECT_EQ(0, EvalJs(shell(), "x"));
   EXPECT_EQ(0, EvalJs(shell(), "y"));
+  EXPECT_EQ(0, EvalJs(shell(), "VKRect.x"));
+  EXPECT_EQ(0, EvalJs(shell(), "VKRect.y"));
+  EXPECT_EQ(0, EvalJs(shell(), "VKRect.width"));
+  EXPECT_EQ(0, EvalJs(shell(), "VKRect.height"));
 
   // Flip the policy back to non-overlay, verify the event doesn't fire
   ignore_result(

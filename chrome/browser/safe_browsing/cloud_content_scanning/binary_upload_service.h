@@ -74,9 +74,9 @@ class BinaryUploadService : public KeyedService {
     FILE_ENCRYPTED = 7,
 
     // The file's type is not supported and the file was not uploaded.
-    UNSUPPORTED_FILE_TYPE = 8,
+    DLP_SCAN_UNSUPPORTED_FILE_TYPE = 8,
 
-    kMaxValue = UNSUPPORTED_FILE_TYPE,
+    kMaxValue = DLP_SCAN_UNSUPPORTED_FILE_TYPE,
   };
 
   // Callbacks used to pass along the results of scanning. The response protos

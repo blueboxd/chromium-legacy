@@ -328,9 +328,9 @@ class SystemNetworkContextManagerReferrersFeatureBrowsertest
 // value of the kEnableReferrers pref.
 IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerReferrersFeatureBrowsertest,
                        TestDefaultReferrerReflectsFeatureValue) {
-  ASSERT_TRUE(!!g_browser_process);
+  ASSERT_TRUE(g_browser_process);
   PrefService* local_state = g_browser_process->local_state();
-  ASSERT_TRUE(!!local_state);
+  ASSERT_TRUE(local_state);
   EXPECT_NE(local_state->GetBoolean(prefs::kEnableReferrers), GetParam());
 }
 

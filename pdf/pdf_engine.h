@@ -261,8 +261,8 @@ class PDFEngine {
     virtual void SelectionChanged(const pp::Rect& left, const pp::Rect& right) {
     }
 
-    // Sets edit mode state.
-    virtual void IsEditModeChanged(bool is_edit_mode) {}
+    // Notifies the client that the PDF has been edited.
+    virtual void EnteredEditMode() {}
 
     // Gets the height of the top toolbar in screen coordinates. This is
     // independent of whether it is hidden or not at the moment.

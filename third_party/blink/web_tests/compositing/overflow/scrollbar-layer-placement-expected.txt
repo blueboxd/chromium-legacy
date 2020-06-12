@@ -91,16 +91,10 @@
       "transform": 7
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV class='clipper'",
-      "position": [-7, -7],
-      "bounds": [292, 200],
-      "transform": 8
-    },
-    {
       "name": "LayoutNGBlockFlow DIV class='scroller'",
       "position": [-30, -30],
       "bounds": [290, 230],
-      "transform": 9
+      "transform": 8
     },
     {
       "name": "Scrolling Contents Layer",
@@ -108,13 +102,13 @@
       "bounds": [220, 236],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "transform": 9
+      "transform": 8
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
       "position": [218, 5],
       "bounds": [7, 160],
-      "transform": 9
+      "transform": 8
     }
   ],
   "transforms": [
@@ -191,17 +185,7 @@
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [16, 16, 0, 1]
-      ]
-    },
-    {
-      "id": 9,
-      "parent": 8,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [24, 24, 0, 1]
+        [40, 40, 0, 1]
       ]
     }
   ]

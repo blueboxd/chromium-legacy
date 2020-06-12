@@ -193,39 +193,6 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
   }
 }
 
-// Tests that AdjustTextForCopy behaves properly with Query in Omnibox enabled.
-// For more general tests of copy adjustment, see the AdjustTextForCopy test.
-TEST_F(OmniboxEditModelTest, AdjustTextForCopyQueryInOmnibox) {
-  location_bar_model()->set_url(GURL("https://www.example.com/"));
-  location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
-  location_bar_model()->set_display_search_terms(base::ASCIIToUTF16("foobar"));
-  model()->ResetDisplayTexts();
-
-  // Verify that we copy the query verbatim when nothing has been modified.
-  {
-    base::string16 result = base::ASCIIToUTF16("foobar");
-    GURL url;
-    bool write_url = false;
-    model()->AdjustTextForCopy(0, &result, &url, &write_url);
-
-    EXPECT_EQ(base::ASCIIToUTF16("foobar"), result);
-    EXPECT_EQ(GURL("https://www.example.com/"), url);
-    EXPECT_TRUE(write_url);
-  }
-
-  // Verify we copy the query verbatim even if the user has refined the query.
-  {
-    base::string16 result = base::ASCIIToUTF16("something else");
-    GURL url;
-    bool write_url = false;
-    model()->AdjustTextForCopy(0, &result, &url, &write_url);
-
-    EXPECT_EQ(base::ASCIIToUTF16("something else"), result);
-    EXPECT_EQ(GURL(), url);
-    EXPECT_FALSE(write_url);
-  }
-}
-
 // Tests that AdjustTextForCopy behaves properly for Reader Mode URLs.
 TEST_F(OmniboxEditModelTest, AdjustTextForCopyReaderMode) {
   const GURL article_url("https://www.example.com/article.html");
@@ -296,7 +263,7 @@ TEST_F(OmniboxEditModelTest, RespectUnelisionInZeroSuggest) {
 
   // Set up view with unelided text.
   EXPECT_EQ(base::ASCIIToUTF16("example.com"), view()->GetText());
-  EXPECT_TRUE(model()->Unelide(false /* exit_query_in_omnibox */));
+  EXPECT_TRUE(model()->Unelide());
   EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
   EXPECT_FALSE(model()->user_input_in_progress());
   EXPECT_TRUE(view()->IsSelectAll());
@@ -405,19 +372,6 @@ TEST_F(OmniboxEditModelTest, CurrentMatch) {
     // Additionally verify we aren't accidentally dropping the HTTPS scheme.
     EXPECT_EQ("https://www.google.com/", match.destination_url.spec());
   }
-
-  // Tests that when there is a Query in Omnibox, generate matches from the
-  // query, instead of the full formatted URL.
-  {
-    location_bar_model()->set_display_search_terms(
-        base::ASCIIToUTF16("foobar"));
-    model()->ResetDisplayTexts();
-    model()->Revert();
-
-    AutocompleteMatch match = model()->CurrentMatch(nullptr);
-    EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, match.type);
-    EXPECT_FALSE(model()->CurrentTextIsURL());
-  }
 }
 
 TEST_F(OmniboxEditModelTest, DisplayText) {
@@ -435,7 +389,7 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
   EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"),
             model()->GetPermanentDisplayText());
   EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
-  EXPECT_FALSE(model()->Unelide(false /* exit_query_in_omnibox */));
+  EXPECT_FALSE(model()->Unelide());
   EXPECT_FALSE(model()->user_input_in_progress());
   EXPECT_FALSE(view()->IsSelectAll());
 #else
@@ -443,38 +397,12 @@ TEST_F(OmniboxEditModelTest, DisplayText) {
   EXPECT_EQ(base::ASCIIToUTF16("example.com"),
             model()->GetPermanentDisplayText());
   EXPECT_EQ(base::ASCIIToUTF16("example.com"), view()->GetText());
-  EXPECT_TRUE(model()->Unelide(false /* exit_query_in_omnibox */));
+  EXPECT_TRUE(model()->Unelide());
   EXPECT_FALSE(model()->user_input_in_progress());
   EXPECT_TRUE(view()->IsSelectAll());
 #endif
 
   EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
-  EXPECT_TRUE(model()->CurrentTextIsURL());
-
-  // We should still show the current page's icon until the URL is modified.
-  EXPECT_TRUE(model()->ShouldShowCurrentPageIcon());
-  view()->SetUserText(base::ASCIIToUTF16("something else"));
-  EXPECT_FALSE(model()->ShouldShowCurrentPageIcon());
-}
-
-TEST_F(OmniboxEditModelTest, DisplayAndExitQueryInOmnibox) {
-  location_bar_model()->set_url(GURL("https://www.example.com/"));
-  location_bar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
-  location_bar_model()->set_display_search_terms(base::ASCIIToUTF16("foobar"));
-
-  EXPECT_TRUE(model()->ResetDisplayTexts());
-  model()->Revert();
-
-  EXPECT_EQ(base::ASCIIToUTF16("foobar"), model()->GetPermanentDisplayText());
-  EXPECT_EQ(base::ASCIIToUTF16("foobar"), view()->GetText());
-  EXPECT_FALSE(model()->CurrentTextIsURL());
-  EXPECT_TRUE(model()->ShouldShowCurrentPageIcon());
-
-  // Verify we can exit Query in Omnibox mode properly.
-  EXPECT_TRUE(model()->Unelide(true /* exit_query_in_omnibox */));
-  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
-  EXPECT_FALSE(model()->user_input_in_progress());
-  EXPECT_TRUE(view()->IsSelectAll());
   EXPECT_TRUE(model()->CurrentTextIsURL());
 
   // We should still show the current page's icon until the URL is modified.
@@ -496,7 +424,7 @@ TEST_F(OmniboxEditModelTest, UnelideDoesNothingWhenFullURLAlreadyShown) {
   EXPECT_TRUE(model()->CurrentTextIsURL());
 
   // Verify Unelide does nothing.
-  EXPECT_FALSE(model()->Unelide(false /* exit_query_in_omnibox */));
+  EXPECT_FALSE(model()->Unelide());
   EXPECT_EQ(base::ASCIIToUTF16("https://www.example.com/"), view()->GetText());
   EXPECT_FALSE(model()->user_input_in_progress());
   EXPECT_FALSE(view()->IsSelectAll());

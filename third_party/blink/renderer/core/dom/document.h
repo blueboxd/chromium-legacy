@@ -1620,6 +1620,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void UpdateForcedColors();
   bool InForcedColorsMode() const;
+  bool InDarkMode();
 
   // Capture the toggle event during parsing either by HTML parser or XML
   // parser.

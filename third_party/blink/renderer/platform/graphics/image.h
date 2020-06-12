@@ -260,14 +260,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
     return nullptr;
   }
 
-  // This function returns true if it can create the bitmap of the
-  // image using |src_rect| for the location and dimensions of the image.
-  // For Bitmap and SVG (and any other type) images the implementation
-  // of this function differs when it comes to the implementation of
-  // PaintImageForCurrentFrame(). Once the PaintImage is available,
-  // the method used to extract the bitmap is the same for any image.
-  bool GetBitmap(const FloatRect& src_rect, SkBitmap* bitmap);
-
   PaintImage::Id paint_image_id() const { return stable_image_id_; }
 
   // Returns an SkBitmap that is a copy of the image's current frame.

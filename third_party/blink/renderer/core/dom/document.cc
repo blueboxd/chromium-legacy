@@ -52,6 +52,7 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
@@ -8566,6 +8567,12 @@ void Document::UpdateForcedColors() {
 
 bool Document::InForcedColorsMode() const {
   return in_forced_colors_mode_ && !Printing();
+}
+
+bool Document::InDarkMode() {
+  return !InForcedColorsMode() && !Printing() &&
+         GetStyleEngine().GetPreferredColorScheme() ==
+             PreferredColorScheme::kDark;
 }
 
 void Document::CountUse(mojom::WebFeature feature) const {

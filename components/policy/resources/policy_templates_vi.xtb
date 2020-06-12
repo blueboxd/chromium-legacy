@@ -270,6 +270,9 @@ Nếu bạn bật hoặc không định cấu hình chính sách này, thì vi�
 Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các phần văn bản cụ thể qua URL sẽ bị tắt.</translation>
 <translation id="1474273443907024088">Tắt Khởi động giả TLS</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1480412981546860793">Việc đặt chính sách này sẽ chỉ định ngôn ngữ mà <ph name="PRODUCT_NAME" /> sử dụng.
+
+      Nếu bạn tắt hoặc không đặt chính sách này, thì người dùng có thể chỉ định ngôn ngữ (nếu đã định cấu hình), ngôn ngữ hệ thống hoặc ngôn ngữ dự phòng (en-US).</translation>
 <translation id="1486021504508098388">Báo cáo thông tin về đèn nền</translation>
 <translation id="1488406778491620405">Tính năng hỗ trợ tiếp cận <ph name="PRODUCT_NAME" />
           cho phép người khiếm thị sử dụng trình đọc màn hình
@@ -1166,6 +1169,15 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
           Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
 <translation id="2678503605767349615">Chứng chỉ ứng dụng bắt buộc cho toàn thiết bị</translation>
 <translation id="268577405881275241">Bật tính năng proxy nén dữ liệu</translation>
+<translation id="2691668238491124549">Nếu bạn đặt chính sách này (chỉ khi được khuyên dùng), thì các ngôn ngữ đề xuất cho phiên được quản lý sẽ chuyển lên đầu danh sách, theo thứ tự xuất hiện trong chính sách. Ngôn ngữ đề xuất đầu tiên sẽ được chọn trước.
+
+      Nếu bạn không đặt chính sách này, thì hệ thống sẽ chọn trước ngôn ngữ hiện áp dụng cho giao diện người dùng.
+
+      Nếu có nhiều ngôn ngữ đề xuất, thì hệ thống sẽ giả định rằng người dùng muốn chọn trong số những ngôn ngữ này. Mục lựa chọn bố cục bàn phím và ngôn ngữ sẽ hiển thị nổi bật khi bắt đầu một phiên được quản lý. Nếu không, hệ thống sẽ giả định rằng hầu hết người dùng đều muốn sử dụng ngôn ngữ đã chọn trước. Khi đó, mục lựa chọn bố cục bàn phím và ngôn ngữ sẽ hiển thị ít nổi bật hơn khi bắt đầu một phiên được quản lý.
+
+      Nếu bạn đặt chính sách này và bật tính năng tự động đăng nhập (xem chính sách <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" /> và <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_DELAY_POLICY_NAME" />), thì phiên được quản lý sẽ sử dụng ngôn ngữ đề xuất đầu tiên và bố cục bàn phím phổ biến nhất phù hợp với ngôn ngữ đó.
+
+      Bố cục bàn phím chọn trước luôn là bố cục bàn phím phổ biến nhất phù hợp với ngôn ngữ chọn trước. Người dùng luôn có thể chọn ngôn ngữ được <ph name="PRODUCT_OS_NAME" /> hỗ trợ cho phiên của mình.</translation>
 <translation id="2693108589792503178">Định cấu hình URL thay đổi mật khẩu.</translation>
 <translation id="2694143893026486692">Đã bật tùy chọn phóng to ở vị trí cố định</translation>
 <translation id="2694188263972877487">Định cấu hình loại tệp đã tải xuống mà <ph name="PRODUCT_NAME" /> sẽ chặn hoàn toàn, mà không cho phép người dùng ghi đè quyết định bảo mật.
@@ -1341,6 +1353,17 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn đặt chính sách này thành true hoặc không đặt, thì phiên khách được quản lý sẽ hoạt động như "Phiên được quản lý", trong đó nhiều nội dung hạn chế áp dụng cho "Phiên công khai" thông thường sẽ được gỡ bỏ.
 
       Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hoặc ghi đè chính sách này.</translation>
+<translation id="3001285126226650303">Cho phép <ph name="PRODUCT_NAME" /> tải các chính sách thử nghiệm.
+
+        CẢNH BÁO: Phiên bản sau này của trình duyệt không hỗ trợ các chính sách thử nghiệm. Các chính sách này có thể bị thay đổi hoặc xóa bỏ mà không thông báo trước!
+
+        Một chính sách thử nghiệm có thể chưa hoàn tất hoặc vẫn còn lỗi đã xác định hoặc không xác định. Chính sách này có thể bị thay đổi hoặc thậm chí bị xóa bỏ mà không thông báo trước. Khi bạn bật chính sách thử nghiệm, dữ liệu trên trình duyệt có thể bị mất hoặc tính bảo mật/quyền riêng tư của bạn có thể bị xâm phạm.
+
+        Nếu một chính sách không có trong danh sách và chưa phát hành chính thức, thì Kênh thử nghiệm và Kênh chính thức sẽ bỏ qua giá trị của chính sách đó.
+
+        Nếu một chính sách có trong danh sách và chưa phát hành chính thức, thì giá trị của chính sách đó sẽ được áp dụng.
+
+        Chính sách này không ảnh hưởng đến các chính sách đã phát hành.</translation>
 <translation id="3016255526521614822">Đưa các ứng dụng ghi chú được phép trên màn hình khóa của <ph name="PRODUCT_OS_NAME" /> vào danh sách cho phép</translation>
 <translation id="3020064401262077616">Kiểm soát các chính sách về sự giám sát của cha mẹ (chỉ áp dụng cho tài khoản người dùng là trẻ em).</translation>
 <translation id="3020953534071988875">Việc định cấu hình chính sách này sẽ cho phép/không cho phép xác thực môi trường xung quanh đối với các cấu hình chế độ Khách và cấu hình chế độ Ẩn danh trong <ph name="PRODUCT_NAME" />.
@@ -1382,6 +1405,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không thiết lập chính sách này, 'AllowJavaScript' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="3038323923255997294">Tiếp tục chạy các ứng dụng dưới nền khi <ph name="PRODUCT_NAME" /> bị đóng</translation>
+<translation id="3041887182529293512">Nếu bạn không đặt hoặc đặt chính sách này thành True, thì các đề xuất nội dung được tạo tự động sẽ hiển thị trên trang Thẻ mới, dựa trên lịch sử duyệt web, mối quan tâm hoặc vị trí của người dùng.
+
+      Nếu bạn đặt chính sách này thành False, thì các đề xuất nội dung được tạo tự động sẽ không xuất hiện trên trang Thẻ mới.</translation>
 <translation id="3046192273793919231">Gửi gói mạng tới máy chủ quản lý để theo dõi trạng thái trực tuyến</translation>
 <translation id="3047732214002457234">Kiểm soát cách tính năng Làm sạch Chrome báo cáo dữ liệu cho Google</translation>
 <translation id="3048744057455266684">Nếu chính sách này được đặt và URL tìm kiếm được đề xuất từ thanh địa chỉ có chứa tham số này trong chuỗi truy vấn hoặc trong số nhận dạng phân đoạn, thì đề xuất sẽ hiển thị cụm từ tìm kiếm và nhà cung cấp dịch vụ tìm kiếm thay vì URL tìm kiếm thô.
@@ -1430,6 +1456,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Chính sách này chỉ có trên các phiên bản Windows liên kết với miền <ph name="MS_AD_NAME" /> hoặc phiên bản Windows 10 Pro hay Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="3119125876909100625">Cho phép tải các tệp được bảo vệ bằng mật khẩu lên</translation>
 <translation id="3122082892722698079">Kiểm soát việc sử dụng trường hợp ngoại lệ cho nội dung không an toàn</translation>
+<translation id="3148152738273574834">Việc đặt chính sách này sẽ chỉ định danh sách các trang web được cài đặt tự động mà không cần sự can thiệp của người dùng và các trang web mà người dùng không thể gỡ cài đặt hay tắt đi.
+
+      Mỗi mục trong danh sách của chính sách này là một đối tượng chứa một thành phần bắt buộc: <ph name="URL_LABEL" /> (URL của ứng dụng web sẽ cài đặt) và 2 thành phần không bắt buộc: <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (khi mở ứng dụng web, thẻ mới sẽ mở ra theo mặc định) và <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> (là True nếu tạo lối tắt trên màn hình <ph name="LINUX_OS_NAME" /> và Windows®).
+
+      Người dùng có thể thay đổi việc ứng dụng mở trong vùng chứa nào và bỏ qua lối tắt trên màn hình.
+
+      Xem <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> về việc ghim ứng dụng vào kệ <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3152425128389603870">Cho phép Màn hình hợp nhất và chính sách này bật theo mặc định.</translation>
 <translation id="3159375329008977062">Người dùng được phép xuất/nhập các vùng chứa Crostini qua giao diện người dùng</translation>
 <translation id="3165808775394012744">Những chính sách này được đưa vào đây để dễ xóa.</translation>
@@ -1508,6 +1541,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu bạn không đặt chính sách này, thì người dùng có thể thêm trường hợp ngoại lệ để cho phép nội dung hỗn hợp có thể chặn và tắt tùy chọn tự động nâng cấp của nội dung hỗn hợp có thể tùy ý chặn.</translation>
 <translation id="3307971460556020865">Chặn tải lên và tải xuống tệp có kích thước lớn</translation>
+<translation id="3308724602356134956">Nếu bạn đặt chính sách này, <ph name="PRODUCT_OS_NAME" />
+
+      sẽ tải xuống và sử dụng hình nền mà bạn đặt cho màn hình đăng nhập và máy tính của người dùng. Người dùng không thể thay đổi hình nền này. Chỉ định URL (có thể truy cập mà không cần xác thực) mà <ph name="PRODUCT_OS_NAME" />
+
+      có thể tải hình nền xuống, cũng như hàm băm mật mã (ở định dạng JPEG, có kích thước tệp tối đa là 16 MB) để xác minh tính toàn vẹn.
+
+      Nếu bạn không đặt chính sách này, thì người dùng sẽ được chọn hình nền cho màn hình đăng nhập và máy tính.</translation>
 <translation id="3312206664202507568">Cho phép một trang tại chrome://password-change cho phép người dùng SAML đổi mật khẩu SAML ngay trong phiên đăng nhập. Điều này đảm bảo rằng mật khẩu SAML và mật khẩu màn hình khóa của thiết bị luôn đồng bộ.
 
       Chính sách này cũng cho phép các thông báo cảnh báo người dùng SAML khi mật khẩu SAML của họ sắp hết hạn để họ có thể giải quyết vấn đề này ngay lập tức bằng cách đổi mật khẩu ngay trong phiên đăng nhập.
@@ -2555,7 +2595,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="4983201894483989687">Cho phép chạy các plugin đã lỗi thời</translation>
 <translation id="4986560318567565414">Đường dẫn tới Chrome để chuyển từ trình duyệt thay thế.</translation>
 <translation id="4988291787868618635">Hành động cần thực hiện khi đạt tới độ trễ khi không sử dụng</translation>
-<translation id="4996086761250834365">Cho phép phân tích sản phẩm <ph name="PLUGIN_VM_NAME" /></translation>
+<translation id="4996086761250834365">Cho phép Dữ liệu phân tích sản phẩm <ph name="PLUGIN_VM_NAME" /></translation>
 <translation id="500149597848135831">Cho phép tất cả các biến</translation>
 <translation id="5017369989680827157">Nếu bạn đặt chính sách này thành True hoặc không đặt chính sách này, thì người dùng sẽ có quyền kiểm soát tính năng Tự động điền cho địa chỉ trong giao diện người dùng.
 
@@ -2799,6 +2839,9 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Ngoài ra, hãy truy cập vào https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5249453807420671499">Người dùng có thể thêm các tài khoản Kerberos</translation>
+<translation id="5252995168844634755">Nếu bạn đặt chính sách này thành True, thì Màn hình hợp nhất sẽ bật và cho phép các ứng dụng mở rộng trên nhiều màn hình. Người dùng có thể tắt Màn hình hợp nhất cho các màn hình riêng lẻ.
+
+      Nếu bạn không đặt hoặc đặt chính sách này thành False, thì Màn hình hợp nhất sẽ tắt và người dùng không thể bật tính năng đó.</translation>
 <translation id="5255162913209987122">Có thể được đề xuất</translation>
 <translation id="527237119693897329">Cho phép bạn chỉ định máy chủ nhắn tin gốc nào không được tải.
 
@@ -3688,6 +3731,15 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Để kiểm soát những trang web nào được phép chạy Flash, hãy xem chính sách "DefaultPluginsSetting", "PluginsAllowedForUrls" và "PluginsBlockedForUrls".
 
       Nếu bạn tắt hoặc không đặt cài đặt này, nội dung Flash từ các nguồn khác hoặc nội dung nhỏ có thể bị chặn.</translation>
+<translation id="6532026122543921610">Nếu chính sách <ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> tắt tính năng tự động phát hiện múi giờ, thì việc đặt chính sách sẽ chỉ định phương thức tự động phát hiện múi giờ và người dùng không thể thay đổi phương thức này.
+
+      Nếu bạn đặt chính sách này thành:
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONDISABLED" />, thì tính năng tự động phát hiện múi giờ sẽ luôn tắt.
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TTIMEZONEAUTOMATICDETECTIONIPONLY" />, thì tính năng tự động phát hiện múi giờ sẽ luôn bật và sử dụng phương pháp chỉ IP.
+       * Nếu bạn đặt chính sách này thành <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDWIFIACCESSPOINTS" />, thì tính năng tự động phát hiện múi giờ sẽ luôn bật. Danh sách các điểm truy cập Wi-Fi hiển thị sẽ liên tục được gửi tới máy chủ API vị trí địa lý để phát hiện múi giờ chi tiết hơn.
+       * Nếu bạn đặt chính sách này thành <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDALLLOCATIONINFO" />, thì tính năng tự động phát hiện múi giờ sẽ luôn bật. Thông tin vị trí (như điểm truy cập Wi-Fi, trạm phát sóng có thể truy cập, GPS) sẽ liên tục được gửi tới máy chủ để phát hiện múi giờ chi tiết nhất.
+
+      Nếu bạn không đặt chính sách, đặt thành Để người dùng quyết định hoặc thành Không, thì người dùng có thể kiểm soát tính năng tự động phát hiện múi giờ bằng các tùy chọn kiểm soát thông thường trong chrome://settings.</translation>
 <translation id="6532769014584932288">Cho phép khóa chế độ thức</translation>
 <translation id="653645667373317432">Chính sách này kiểm soát lệnh cần dùng để mở URL trong <ph name="PRODUCT_NAME" /> khi chuyển từ Internet Explorer.
 
@@ -4726,6 +4778,9 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="8118665053362250806">Đặt kích thước bộ nhớ đệm của đĩa phương tiện</translation>
 <translation id="8124468781472887384">Chính sách truy cập vào cấu hình máy in kết nối với thiết bị.</translation>
 <translation id="8128192446158421884">Các URL có thể áp dụng chính sách AutoOpenFileTypes</translation>
+<translation id="8133152694354699657">Nếu bạn không đặt hoặc đặt chính sách này thành True, thì người dùng có thể sử dụng tính năng Chạm để tìm kiếm, cũng như có thể bật hoặc tắt tính năng này.
+
+      Nếu bạn đặt chính sách này thành False, thì tính năng Chạm để tìm kiếm sẽ tắt hoàn toàn.</translation>
 <translation id="8140204717286305802">Danh sách báo cáo giao diện mạng chứa thông tin về loại và địa chỉ phần cứng đến máy chủ.
 
       Nếu chính sách được đặt giá trị thành sai, danh sách giao diện sẽ không được báo cáo.</translation>
@@ -5233,6 +5288,11 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách này.
 
           Nếu bạn không đặt chính sách này, thì ban đầu, chế độ tự động nhấp sẽ tắt trên màn hình đăng nhập nhưng người dùng có thể bật bất cứ lúc nào.</translation>
+<translation id="8873089107816226072">Việc đặt chính sách này sẽ chỉ định múi giờ của thiết bị và tắt tính năng tự động điều chỉnh múi giờ theo vị trí, đồng thời ghi đè chính sách <ph name="SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_POLICY_NAME" />. Người dùng không thể thay đổi múi giờ.
+
+      Các thiết bị mới có múi giờ mặc định là Hoa Kỳ/Thái Bình Dương. Định dạng của giá trị sẽ dựa trên tên của múi giờ trong Cơ sở dữ liệu múi giờ IANA (https://en.wikipedia.org/wiki/Tz_database). Việc nhập giá trị không hợp lệ sẽ kích hoạt chính sách sử dụng giờ GMT.
+
+      Nếu bạn không đặt chính sách này hoặc nếu bạn nhập một chuỗi trống, thì thiết bị sẽ sử dụng múi giờ hiện đang hoạt động. Tuy nhiên, người dùng có thể thay đổi múi giờ này.</translation>
 <translation id="8876188741456358123">Ghi đè chế độ in hai mặt mặc định. Nếu không có chế độ này thì chính sách sẽ bị bỏ qua.</translation>
 <translation id="8878850056189891727">Các mẫu trong danh sách này sẽ được so khớp với nguồn
       bảo mật của URL yêu cầu.  Nếu tìm thấy mẫu phù hợp, thì quyền truy cập vào thiết bị ghi âm
@@ -5319,6 +5379,9 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
       Không nên bật chính sách này khi chính sách <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> được đặt thành bật vì tính năng đó chia sẻ chức năng tương tự của phía máy khách. Đồng bộ hóa được lưu trữ trên Google bị tắt hoàn toàn trong trường hợp này.</translation>
 <translation id="8955719471735800169">Quay lại đầu trang</translation>
+<translation id="8956310900055843601">Nếu bạn không đặt hoặc đặt chính sách này thành True, thì màn hình đăng nhập của thiết bị sẽ dùng định dạng đồng hồ 24 giờ. Phiên của người dùng cũng sẽ mặc định sử dụng định dạng này, nhưng người dùng có thể thay đổi định dạng đồng hồ của một tài khoản.
+
+      Nếu bạn đặt chính sách này thành False, thì thiết bị sẽ dùng định dạng đồng hồ 12 giờ.</translation>
 <translation id="8959992920425111821">Cấu hình mặc định</translation>
 <translation id="8970205333161758602">Loại bỏ lời nhắc từ chối <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Cho phép xác thực gnubby cho máy chủ truy cập từ xa</translation>
@@ -5430,6 +5493,11 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="9152473318295429890">Bật nội dung đề xuất theo ngữ cảnh của các trang web liên quan</translation>
 <translation id="9153446010242995516">Hạ cấp và tiếp tục sử dụng phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Hãy tìm cách chuyển sang cấu hình cấp thiết bị (bao gồm cả thông tin truy cập mạng) thông qua quá trình hạ cấp nếu có thể, nhưng hãy thực hiện quá trình hạ cấp bằng chức năng powerwash đầy đủ ngay cả khi không thể khôi phục dữ liệu (vì phiên bản đích không hỗ trợ khôi phục dữ liệu hoặc do một sự thay đổi không tương thích ngược).
           Hỗ trợ trên <ph name="PRODUCT_OS_NAME" /> phiên bản 75 trở lên. Với các ứng dụng cũ, giá trị này nghĩa là khả năng hạ cấp đã bị tắt.</translation>
+<translation id="9155375380628728544">Nếu bạn đặt chính sách này, thì người dùng chỉ có thể thêm một trong các ngôn ngữ có trong chính sách này vào danh sách ngôn ngữ mà họ muốn dùng.
+
+      Nếu bạn không đặt hoặc đặt chính sách này thành một danh sách trống, thì người dùng có thể chỉ định các ngôn ngữ mà họ muốn dùng.
+
+      Nếu bạn đặt chính sách này thành một danh sách chứa các giá trị không hợp lệ, thì các giá trị đó sẽ bị bỏ qua. Nếu người dùng thêm những ngôn ngữ mà chính sách này không cho phép vào danh sách ngôn ngữ mà họ muốn dùng, thì các ngôn ngữ đó sẽ bị xóa. Nếu <ph name="PRODUCT_OS_NAME" /> hiển thị bằng ngôn ngữ mà chính sách này không cho phép, thì vào lần tiếp theo họ đăng nhập, ngôn ngữ hiển thị sẽ chuyển sang ngôn ngữ mà giao diện người dùng được phép sử dụng. Nếu không, trong trường hợp chính sách này chỉ chứa các mục nhập không hợp lệ, <ph name="PRODUCT_OS_NAME" /> sẽ chuyển sang giá trị hợp lệ đầu tiên mà chính sách này chỉ định hoặc một ngôn ngữ dự phòng như en-US.</translation>
 <translation id="9156175786579877198">Danh sách mẫu URL cần phải kiểm tra nội dung đã tải xuống để xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không trước khi lưu trên bộ nhớ cục bộ.  Chỉ dùng chính sách này nếu bạn đặt <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> thành bật.
 
       Nếu bạn không đặt hoặc đặt chính sách này thành danh sách mẫu URL trống, thì nội dung đã tải xuống sẽ không được kiểm tra để xem có vi phạm quy tắc bảo vệ dữ liệu nhạy cảm hay không.

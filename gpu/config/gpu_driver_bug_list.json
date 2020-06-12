@@ -3649,6 +3649,34 @@
       "features": [
         "use_single_video_decoder_texture"
       ]
+    },
+    {
+      "id": 341,
+      "description": "Driver crash deleting FBOs on Mac Intel Broadwell",
+      "cr_bugs": [1090584],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x8086",
+      "intel_gpu_series": [
+        "broadwell"
+      ],
+      "features": [
+        "unbind_attachments_on_bound_render_fbo_delete"
+      ]
+    },
+    {
+      "id": 342,
+      "description": "Driver crash deleting FBOs on Mac nVidia 600/700 series",
+      "cr_bugs": [1090584],
+      "os": {
+        "type": "macosx"
+      },
+      "vendor_id": "0x10de",
+      "device_id": ["0x0fe9", "0x0fd5", "0x0fd8", "0x119e", "0x0fea", "0x11a2"],
+      "features": [
+        "unbind_attachments_on_bound_render_fbo_delete"
+      ]
     }
   ]
 }

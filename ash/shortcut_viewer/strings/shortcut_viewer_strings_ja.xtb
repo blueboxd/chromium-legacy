@@ -102,6 +102,7 @@
 <translation id="4472417192667361414">システムと表示の設定</translation>
 <translation id="449214506787633354"><ph name="CTRL" /> キーを押してから、<ph name="LEFT" />、<ph name="RIGHT" />、<ph name="UP" />、<ph name="DOWN" />のいずれかのキーを押します</translation>
 <translation id="4556221320735744018">キーボード ショートカットのヘルプを表示する</translation>
+<translation id="4609344656788228519"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="BACK1" /> キーまたは <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="SHIFT" /><ph name="SEPARATOR3" /><ph name="BACK2" /> キー</translation>
 <translation id="4628718545549558538">ステータス領域（アカウント画像が表示されている部分）を開く</translation>
 <translation id="4642092649622328492">画面の一部のスクリーンショットを撮影する</translation>
 <translation id="4698850295812410683">タッチペン ツールを表示する</translation>

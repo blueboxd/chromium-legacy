@@ -27,7 +27,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) ConciergeClient : public DBusClient {
     // Called when Concierge service exits.
     virtual void ConciergeServiceStopped() = 0;
     // Called when Concierge service is either started or restarted.
-    virtual void ConciergeServiceRestarted() = 0;
+    virtual void ConciergeServiceStarted() = 0;
   };
 
   // Used for observing VMs starting and stopping.

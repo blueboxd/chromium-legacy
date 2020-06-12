@@ -25,7 +25,7 @@ bool IsConvertibleToU2fRegisterCommand(
       public_key_credential_info.begin(), public_key_credential_info.end(),
       [](const auto& credential_info) {
         return credential_info.algorithm ==
-               base::strict_cast<int>(CoseAlgorithmIdentifier::kCoseEs256);
+               base::strict_cast<int>(CoseAlgorithmIdentifier::kEs256);
       });
 }
 

@@ -235,19 +235,19 @@ IN_PROC_BROWSER_TEST_F(MirrorBrowserTest, MirrorRequestHeader) {
     // Check if header exists and X-Chrome-Connected is correctly provided.
     ASSERT_EQ(1u, header_map.count(test_case.original_url.path()));
     if (test_case.original_url_expects_header) {
-      ASSERT_TRUE(!!header_map[test_case.original_url.path()].count(
+      ASSERT_TRUE(header_map[test_case.original_url.path()].count(
           signin::kChromeConnectedHeader));
     } else {
-      ASSERT_FALSE(!!header_map[test_case.original_url.path()].count(
+      ASSERT_FALSE(header_map[test_case.original_url.path()].count(
           signin::kChromeConnectedHeader));
     }
 
     ASSERT_EQ(1u, header_map.count(test_case.redirected_to_path));
     if (test_case.redirected_to_url_expects_header) {
-      ASSERT_TRUE(!!header_map[test_case.redirected_to_path].count(
+      ASSERT_TRUE(header_map[test_case.redirected_to_path].count(
           signin::kChromeConnectedHeader));
     } else {
-      ASSERT_FALSE(!!header_map[test_case.redirected_to_path].count(
+      ASSERT_FALSE(header_map[test_case.redirected_to_path].count(
           signin::kChromeConnectedHeader));
     }
 

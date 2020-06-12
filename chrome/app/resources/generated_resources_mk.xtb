@@ -233,7 +233,7 @@
 <translation id="1293556467332435079">Датотеки</translation>
 <translation id="1296911687402551044">Прикачи ја избраната картичка</translation>
 <translation id="1297175357211070620">Дестинација</translation>
-<translation id="1297646507722131691">Се препорачува правење бекап како дел од оваа надградба за да се спречи губење на податоците во случај надградбата да не може да се комплетира. Стартувањето на надградбата ќе предизвика исклучување на Linux (Beta). Пред да продолжите зачувајте ги отворените датотеки.</translation>
+<translation id="1297646507722131691">Како дел од оваа надградба, се препорачува да направите бекап на датотеките за да избегнете губење на податоците ако надградбата не може да се доврши. Стартувањето на надградбата ќе предизвика исклучување на Linux (Beta). Пред да продолжите зачувајте ги отворените датотеки.</translation>
 <translation id="1300415640239881824"><ph name="DOMAIN" /> сака Google да го потврди идентитетот на вашиот уред за да одреди дали е погоден за подобрена репродукција на заштитени содржини.</translation>
 <translation id="1300806585489372370">За да ја измените поставкава, прво <ph name="BEGIN_LINK" />вклучете ги идентификаторите<ph name="END_LINK" /></translation>
 <translation id="1301135395320604080"><ph name="ORIGIN" /> може да ги изменува следниве датотеки</translation>
@@ -436,7 +436,7 @@
 <translation id="1546452108651444655"><ph name="CHILD_NAME" /> сака да инсталира <ph name="EXTENSION_TYPE" /> што може:</translation>
 <translation id="1549275686094429035">ARC е овозможена</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> сака да пристапи на <ph name="VOLUME_NAME" />. Тоа може да ги измени или да ги избрише вашите датотеки.</translation>
-<translation id="1552301827267621511">Екстензијата "<ph name="EXTENSION_NAME" />" го смени пребарувањето и ќе го користи <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
+<translation id="1552301827267621511">Екстензијата „<ph name="EXTENSION_NAME" />“ го смени пребарувачот и ќе го користи <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
 <translation id="1553538517812678578">неограничено</translation>
 <translation id="1554390798506296774">Секогаш дозволувај неизолирани приклучоци на <ph name="HOST" /></translation>
 <translation id="1555130319947370107">Сина</translation>
@@ -795,7 +795,7 @@
 <translation id="1989112275319619282">Прелистувај</translation>
 <translation id="1990512225220753005">Не прикажувај кратенки на страницава</translation>
 <translation id="1992397118740194946">Не е поставено</translation>
-<translation id="1992924914582925289">Отстранете од уредот</translation>
+<translation id="1992924914582925289">Отстрани од уредот</translation>
 <translation id="1994173015038366702">URL на локацијата</translation>
 <translation id="1995916364271252349">Контролира кои информации може да ги користат и прикажуваат сајтовите (локација, камера, скокачки програми и друго)</translation>
 <translation id="1997616988432401742">Ваши сертификати</translation>
@@ -1242,6 +1242,7 @@
 <translation id="2541002089857695151">Да се оптимизира емитувањето на цел екран?</translation>
 <translation id="2541706104884128042">Поставено е ново време за спиење</translation>
 <translation id="2544853746127077729">Мрежата го отфрли сертификатот за автентикација</translation>
+<translation id="2546229857744484369">Имате 1 лозинка зачувана на овој уред</translation>
 <translation id="2546283357679194313">Колачиња и податоци од сајтот</translation>
 <translation id="2548347166720081527">Дозволена е <ph name="PERMISSION" /></translation>
 <translation id="2549985041256363841">Започни со снимање</translation>
@@ -1679,7 +1680,7 @@
 <translation id="3101126716313987672">Затемни светло</translation>
 <translation id="3101709781009526431">Датум и време</translation>
 <translation id="3103941660000130485">Грешка при надградувањето на Linux</translation>
-<translation id="3105796011181310544">Враќање назад на Google?</translation>
+<translation id="3105796011181310544">Да се врати на Google?</translation>
 <translation id="310671807099593501">Сајтот користи Bluetooth</translation>
 <translation id="3115147772012638511">Се чека кешот...</translation>
 <translation id="3115580024857770654">Собери ги сите</translation>
@@ -2673,7 +2674,7 @@
 <translation id="4364327530094270451">Диња</translation>
 <translation id="4364567974334641491"><ph name="APP_NAME" /> споделува прозорец.</translation>
 <translation id="4364830672918311045">Прикажи ги известувањата</translation>
-<translation id="437004882363131692">Добивајте совети, понуди и ажурирања за <ph name="DEVICE_TYPE" /> и споделувајте повратни информации. Отпишете се во секое време.</translation>
+<translation id="437004882363131692">Добивајте совети, понуди и новости за <ph name="DEVICE_TYPE" /> и споделувајте повратни информации. Отпишете се во секое време.</translation>
 <translation id="4370975561335139969">Е-поштата и лозинката што ги внесовте не се совпаѓаат</translation>
 <translation id="4374831787438678295">Инсталатор на Linux</translation>
 <translation id="4375035964737468845">Отвори преземени датотеки</translation>
@@ -3007,7 +3008,7 @@
 <translation id="4833236810053292670">Погледнете што има ново на Chromebook</translation>
 <translation id="4833683849865011483">Најден е 1 печатач од серверот за печатење</translation>
 <translation id="4836504898754963407">Управувајте со отпечатоците</translation>
-<translation id="4837128290434901661">Враќање назад на „Пребарување на Google“?</translation>
+<translation id="4837128290434901661">Да се врати на „Пребарување на Google“?</translation>
 <translation id="4837926214103741331">Немате дозвола да го користите овој уред. Контактирајте го сопственикот на уредот за дозвола за пријавување.</translation>
 <translation id="4837952862063191349">За да ги отклучите и обновите локалните податоци, внесете ја старата лозинка од <ph name="DEVICE_TYPE" />.</translation>
 <translation id="4838836835474292213">Дозволен е пристапот за читање на привремената меморија</translation>
@@ -3142,7 +3143,7 @@
 <translation id="4997086284911172121">Нема интернет-врска.</translation>
 <translation id="4998430619171209993">Вклучено</translation>
 <translation id="5000922062037820727">Блокирано (препорачано)</translation>
-<translation id="5003821244905342830">Ако продолжите, Google ќе ги синхронизира податоците од <ph name="EMAIL" /> со овој уред.</translation>
+<translation id="5003821244905342830">Ако продолжите, Google ќе ги синхронизира податоците од <ph name="EMAIL" /> со уредов.</translation>
 <translation id="5005498671520578047">Копирање лозинка</translation>
 <translation id="5006218871145547804">ADB за апликации на Android за Crostini</translation>
 <translation id="5007392906805964215">Прегледајте</translation>
@@ -3514,6 +3515,7 @@
 <translation id="5495466433285976480">Ова ќе ги отстрани сите локални корисници, датотеки, податоци и други поставки по вашето следно рестартирање. Сите корисници ќе треба да се пријават повторно.</translation>
 <translation id="5495597166260341369">Држи го екранот вклучен</translation>
 <translation id="5496587651328244253">Организирај</translation>
+<translation id="5497251278400702716">Оваа датотека</translation>
 <translation id="5499313591153584299">Оваа датотека може да биде штетна за вашиот компјутер.</translation>
 <translation id="5500709606820808700">Безбедносната проверка беше извршена денеска</translation>
 <translation id="5502500733115278303">Увезени од Firefox</translation>
@@ -4104,7 +4106,7 @@
 <translation id="6242852299490624841">Фокусирајте ја картичкава</translation>
 <translation id="6243280677745499710">Поставен во моментов</translation>
 <translation id="6243774244933267674">Серверот не е достапен</translation>
-<translation id="6246355468475884088">Исто така, овде може да ги покажувате лозинките од вашата сметка на Google</translation>
+<translation id="6246355468475884088">Овде може да се прикажуваат и лозинките од вашата сметка на Google</translation>
 <translation id="6246790815526961700">Прикачете од уред</translation>
 <translation id="6247620186971210352">Не се најдени апликации</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -4136,6 +4138,7 @@
 <translation id="6279183038361895380">Притиснете |<ph name="ACCELERATOR" />| за да се покаже покажувачот</translation>
 <translation id="6280215091796946657">Најави се со друга сметка</translation>
 <translation id="6280912520669706465">ARC</translation>
+<translation id="6282180787514676874">{COUNT,plural, =1{Ја надминува границата од 1 лист хартија}one{Ја надминува границата од {COUNT} лист хартија}other{Ја надминува границата од {COUNT} листови хартија}}</translation>
 <translation id="628352644014831790">4 секунди</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> обично не се презема и може да биде опасно.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Нов печатач на мрежата}one{Нов печатач на мрежата}other{Нови печатачи на мрежата}}</translation>
@@ -4351,7 +4354,7 @@
 <translation id="6569934958368283244">Други луѓе</translation>
 <translation id="657402800789773160">&amp;Пак вчитај страница</translation>
 <translation id="6577284282025554716">Преземањето е откажано: <ph name="FILE_NAME" /></translation>
-<translation id="657866106756413002">Снимка на состојбата на мрежата</translation>
+<translation id="657866106756413002">Слика на состојбата на мрежата</translation>
 <translation id="6578664922716508575">Шифрирајте ги синхронизираните лозинки со вашето корисничко име и акредитивите на Google</translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> - содржините од работната површина се споделени</translation>
 <translation id="6580203076670148210">Брзина на скенирање</translation>
@@ -4433,6 +4436,7 @@
 <translation id="6691331417640343772">Управувајте со синхронизираните податоци во „Контролна табла на Google“</translation>
 <translation id="6691541770654083180">Земја</translation>
 <translation id="6691936601825168937">&amp;Напред</translation>
+<translation id="6693745645188488741">{COUNT,plural, =1{1 страница}one{{COUNT} страница}other{{COUNT} страници}}</translation>
 <translation id="6697492270171225480">Прикажувај предлози за слични страници кога страницата не може да се најде</translation>
 <translation id="6697690052557311665">За да споделите, кликнете со десен клик на папка во апликацијата „Папки“, потоа изберете „Сподели со Linux“.</translation>
 <translation id="6698810901424468597">Прочитајте ги и променете ги вашите податоци на <ph name="WEBSITE_1" /> и <ph name="WEBSITE_2" /></translation>
@@ -4981,7 +4985,7 @@
 <translation id="7396845648024431313"><ph name="APP_NAME" /> ќе стартува при подигнувањето на системот и ќе продолжи да се извршува во заднина дури и откако сте ги затвориле останатите прозорци на <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7399045143794278225">Приспособете ја синхронизацијата</translation>
 <translation id="7400418766976504921">URL</translation>
-<translation id="7400447915166857470">Враќање назад на <ph name="OLD_SEARCH_PROVIDER" />?</translation>
+<translation id="7400447915166857470">Да се врати на <ph name="OLD_SEARCH_PROVIDER" />?</translation>
 <translation id="7400839060291901923">Поставете врска на вашиот <ph name="PHONE_NAME" /></translation>
 <translation id="7401778920660465883">Отфрлете ја поракава</translation>
 <translation id="7403642243184989645">Се преземаат ресурси</translation>
@@ -5237,7 +5241,7 @@
 <translation id="7728570244950051353">Заклучен екран од режим во мирување</translation>
 <translation id="7728668285692163452">Промената на канал ќе се примени подоцна</translation>
 <translation id="7730449930968088409">Снимете содржина од својот екран</translation>
-<translation id="7730683939467795481">Оваа страница е променета со екстензијата „<ph name="EXTENSION_NAME" />“</translation>
+<translation id="7730683939467795481">Екстензијата „<ph name="EXTENSION_NAME" />“ ја промени страницава</translation>
 <translation id="7732111077498238432">Мрежата се контролира со правило</translation>
 <translation id="7737115349420013392">Се спарува со „<ph name="DEVICE_NAME" />“…</translation>
 <translation id="7737238973539693982">Избриши Linux (Бета)</translation>
@@ -5464,6 +5468,7 @@
 <translation id="7987814697832569482">Секогаш поврзувај преку оваа VPN</translation>
 <translation id="7988355189918024273">Овозможете ги функциите за пристапност</translation>
 <translation id="7991296728590311172">Поставки за „Пристап со прекинувачи“</translation>
+<translation id="7993750787380199093">Зачувајте ги сите лозинки во вашата сметка на Google, за да можете да ги користите на сите уреди</translation>
 <translation id="7994702968232966508">EAP-метод</translation>
 <translation id="7997826902155442747">Приоритет на процес</translation>
 <translation id="7999229196265990314">Се создадоа следниве датотеки:
@@ -5521,6 +5526,7 @@
 <translation id="8059417245945632445">&amp;Провери уреди</translation>
 <translation id="8059456211585183827">Нема достапни печатачи за зачувување.</translation>
 <translation id="8061091456562007989">Врати како што беше</translation>
+<translation id="8062844841289846053">{COUNT,plural, =1{1 лист хартија}one{{COUNT} лист хартија}other{{COUNT} листови хартија}}</translation>
 <translation id="8063235345342641131">Стандарден зелен аватар</translation>
 <translation id="8063535366119089408">Прикажи датотека</translation>
 <translation id="8068253693380742035">Допрете за да се најавите</translation>
@@ -5834,6 +5840,7 @@
 <translation id="8465252176946159372">Неважечко</translation>
 <translation id="8465444703385715657"><ph name="PLUGIN_NAME" /> бара ваша дозвола за да се изврши</translation>
 <translation id="8466417995783206254">Картичкава пушта видео во режимот „слика во слика“.</translation>
+<translation id="8467103604871441980">Имате <ph name="NUMBER_OF_DEVICE_PASSWORDS" /> лозинки зачувани на овој уред</translation>
 <translation id="8467326454809944210">Изберете друг јазик</translation>
 <translation id="8470214316007448308">Други луѓе</translation>
 <translation id="8470513973197838199">Зачувани лозинки за <ph name="ORIGIN" /></translation>
@@ -5964,7 +5971,7 @@
 <translation id="8646209145740351125">Оневозможи синхронизација</translation>
 <translation id="8647834505253004544">Неважечка веб-адреса</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> или <ph name="RE_SCAN_LINK" /></translation>
-<translation id="8648408795949963811">Температура на бојата на „Ноќното светло„</translation>
+<translation id="8648408795949963811">Температура на бојата на „Ноќното светло“</translation>
 <translation id="8648544143274677280"><ph name="SITE_NAME" /> сака да: <ph name="FIRST_PERMISSION" />, <ph name="SECOND_PERMISSION" /> и друго</translation>
 <translation id="8650543407998814195">Иако веќе не може да пристапувате до стариот профил, сѐ уште може да го отстраните.</translation>
 <translation id="8651585100578802546">Принуди повторно вчитување на страницата</translation>

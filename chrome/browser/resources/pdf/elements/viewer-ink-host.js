@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {PDFMetrics} from '../metrics.js';
-import {Viewport} from '../viewport.js';
+import {PAGE_SHADOW, Viewport} from '../viewport.js';
 
 /** @enum {string} */
 const State = {
@@ -231,7 +232,7 @@ Polymer({
     // color.
     await new Promise(resolve => setTimeout(resolve));
     this.ink_.setOutOfBoundsColor(BACKGROUND_COLOR);
-    const spacing = Viewport.PAGE_SHADOW.top + Viewport.PAGE_SHADOW.bottom;
+    const spacing = PAGE_SHADOW.top + PAGE_SHADOW.bottom;
     this.ink_.setPageSpacing(spacing);
     this.style.visibility = 'visible';
   },
@@ -246,8 +247,8 @@ Polymer({
     const zoom = viewport.getZoom();
     const documentWidth = viewport.getDocumentDimensions().width * zoom;
     // Adjust for page shadows.
-    const y = pos.y - Viewport.PAGE_SHADOW.top * zoom;
-    let x = pos.x - Viewport.PAGE_SHADOW.left * zoom;
+    const y = pos.y - PAGE_SHADOW.top * zoom;
+    let x = pos.x - PAGE_SHADOW.left * zoom;
     // Center the document if the width is smaller than the viewport.
     if (documentWidth < size.width) {
       x += (documentWidth - size.width) / 2;

@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "ash/public/cpp/accelerators.h"
+#include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_types.h"
@@ -4540,6 +4541,24 @@ void AutotestPrivateWaitForAmbientPhotoAnimationFunction::Timeout() {
     return;
 
   Respond(Error("No enough animations completed before time out."));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateDisableSwitchAccessDialogFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateDisableSwitchAccessDialogFunction::
+    AutotestPrivateDisableSwitchAccessDialogFunction() = default;
+
+AutotestPrivateDisableSwitchAccessDialogFunction::
+    ~AutotestPrivateDisableSwitchAccessDialogFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateDisableSwitchAccessDialogFunction::Run() {
+  auto* accessibility_controller = ash::AccessibilityController::Get();
+  accessibility_controller
+      ->DisableSwitchAccessDisableConfirmationDialogTesting();
+  return RespondNow(NoArguments());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

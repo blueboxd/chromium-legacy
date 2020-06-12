@@ -81,8 +81,8 @@ public final class PromoDialogLayout extends BoundedLinearLayout {
     /** Initializes the dialog contents using the given params.  Should only be called once. */
     void initialize(DialogParams params) {
         assert mParams == null && params != null;
-        assert params.headerStringResource != 0;
-        assert params.primaryButtonStringResource != 0;
+        assert params.headerStringResource != 0 || params.headerCharSequence != null;
+        assert params.primaryButtonStringResource != 0 || params.primaryButtonCharSequence != null;
         mParams = params;
 
         if (mParams.drawableInstance != null) {
@@ -99,7 +99,11 @@ public final class PromoDialogLayout extends BoundedLinearLayout {
         }
 
         // Create the header.
-        mHeaderView.setText(mParams.headerStringResource);
+        if (mParams.headerCharSequence != null) {
+            mHeaderView.setText(mParams.headerCharSequence);
+        } else {
+            mHeaderView.setText(mParams.headerStringResource);
+        }
 
         // Set up the subheader text.
         if (mParams.subheaderCharSequence != null) {
@@ -124,7 +128,9 @@ public final class PromoDialogLayout extends BoundedLinearLayout {
 
         // Create the buttons.
         DualControlLayout buttonBar = (DualControlLayout) findViewById(R.id.button_bar);
-        String primaryString = getResources().getString(mParams.primaryButtonStringResource);
+        String primaryString = mParams.primaryButtonCharSequence != null
+                ? mParams.primaryButtonCharSequence.toString()
+                : getResources().getString(mParams.primaryButtonStringResource);
         buttonBar.addView(
                 DualControlLayout.createButtonForLayout(getContext(), true, primaryString, null));
 

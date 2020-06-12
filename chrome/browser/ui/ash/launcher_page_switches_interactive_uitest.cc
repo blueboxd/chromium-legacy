@@ -33,7 +33,11 @@ class PageSwitchWaiter : public ash::PaginationModelObserver {
 
  private:
   // ash::PaginationModelObserver:
-  void TransitionEnded() override { run_loop_.Quit(); }
+  void TransitionEnded() override {
+    // Needs one frame presented after transition animation ends to get
+    // the metrics recorded.
+    ash::ShellTestApi().WaitForNextFrame(run_loop_.QuitClosure());
+  }
 
   ash::PaginationModel* model_;
   base::RunLoop run_loop_;

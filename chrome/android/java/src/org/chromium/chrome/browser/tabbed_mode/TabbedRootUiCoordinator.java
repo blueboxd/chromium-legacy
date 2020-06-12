@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
+import org.chromium.chrome.browser.ui.default_browser_promo.DefaultBrowserPromoUtils;
 import org.chromium.chrome.browser.ui.tablet.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -346,6 +347,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
         if (SigninPromoUtil.launchSigninPromoIfNeeded(mActivity)) return true;
         if (DataReductionPromoScreen.launchDataReductionPromo(
                     mActivity, mActivity.getTabModelSelector().getCurrentModel().isIncognito())) {
+            return true;
+        }
+        if (DefaultBrowserPromoUtils.prepareLaunchPromoIfNeeded(mActivity)) {
             return true;
         }
 

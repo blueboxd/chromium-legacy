@@ -176,7 +176,7 @@ class OmniboxEditModel {
   //
   // If the omnibox is not currently displaying elided text, this method will
   // no-op and return false.
-  bool Unelide(bool exit_query_in_omnibox);
+  bool Unelide();
 
   // Invoked any time the text may have changed in the edit. Notifies the
   // controller.

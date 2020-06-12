@@ -32,7 +32,6 @@ class LocationBarModelImpl : public LocationBarModel {
   base::string16 GetURLForDisplay() const override;
   GURL GetURL() const override;
   security_state::SecurityLevel GetSecurityLevel() const override;
-  bool GetDisplaySearchTerms(base::string16* search_terms) override;
   metrics::OmniboxEventProto::PageClassification GetPageClassification(
       OmniboxFocusSource focus_source) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
@@ -45,19 +44,8 @@ class LocationBarModelImpl : public LocationBarModel {
   base::string16 GetFormattedURL(
       url_formatter::FormatUrlTypes format_types) const;
 
-  // Extracts search terms from |url|. Returns an empty string if |url| is not
-  // from the default search provider, if there are no search terms in |url|,
-  // or if the extracted search terms look too much like a URL.
-  base::string16 ExtractSearchTermsInternal(const GURL& url);
-
   LocationBarModelDelegate* delegate_;
   const size_t max_url_display_chars_;
-
-  // Because extracting search terms from a URL string is relatively expensive,
-  // and we want to support cheap calls to GetDisplaySearchTerms, cache the
-  // result of the last-parsed URL string.
-  base::string16 cached_search_terms_;
-  GURL cached_url_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocationBarModelImpl);
 };

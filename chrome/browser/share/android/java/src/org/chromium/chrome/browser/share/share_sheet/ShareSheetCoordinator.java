@@ -71,12 +71,12 @@ public class ShareSheetCoordinator {
         ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
 
         mShareStartTime = shareStartTime;
+        Set<Integer> contentTypes = ShareSheetPropertyModelBuilder.getContentTypes(
+                params, chromeShareExtras.isUrlOfVisiblePage());
         List<PropertyModel> chromeFeatures =
-                createTopRowPropertyModels(bottomSheet, activity, params,
-                        ShareSheetPropertyModelBuilder.getContentTypes(
-                                params, chromeShareExtras.isUrlOfVisiblePage()));
+                createTopRowPropertyModels(bottomSheet, activity, params, contentTypes);
         List<PropertyModel> thirdPartyApps = createBottomRowPropertyModels(
-                bottomSheet, activity, params, chromeShareExtras.saveLastUsed());
+                bottomSheet, activity, params, contentTypes, chromeShareExtras.saveLastUsed());
 
         bottomSheet.createRecyclerViews(chromeFeatures, thirdPartyApps);
 
@@ -110,9 +110,10 @@ public class ShareSheetCoordinator {
 
     @VisibleForTesting
     List<PropertyModel> createBottomRowPropertyModels(ShareSheetBottomSheetContent bottomSheet,
-            Activity activity, ShareParams params, boolean saveLastUsed) {
+            Activity activity, ShareParams params, Set<Integer> contentTypes,
+            boolean saveLastUsed) {
         List<PropertyModel> models = mPropertyModelBuilder.selectThirdPartyApps(
-                bottomSheet, params, saveLastUsed, mShareStartTime);
+                bottomSheet, contentTypes, params, saveLastUsed, mShareStartTime);
         // More...
         PropertyModel morePropertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(activity, R.drawable.sharing_more),

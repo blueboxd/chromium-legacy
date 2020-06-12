@@ -43,6 +43,54 @@ bool CheckIfPreviouslyInstalled(
   base::DeleteFileRecursively(base::FilePath(kUserDataDir));
   return true;
 }
+
+base::FilePath LacrosLogPath() {
+  return base::FilePath(kUserDataDir).Append("lacros.log");
+}
+
+// TODO(https://crbug.com/1091863): This logic is not robust against the
+// situation where Lacros has been killed, but another process was spawned
+// with the same pid. This logic also relies on I/O, which we'd like to avoid
+// if possible.
+bool IsLacrosChromeInProc(base::ProcessId pid,
+                          const base::FilePath& lacros_path) {
+  // We avoid using WaitForExitWithTimeout() since that can block for up to
+  // 256ms. Instead, we check existence of /proc/<pid>/cmdline and check for a
+  // match against lacros_path_. This logic assumes that lacros_path_ is a fully
+  // qualified path.
+  base::FilePath cmdline_filepath("/proc");
+  cmdline_filepath = cmdline_filepath.Append(base::NumberToString(pid));
+  cmdline_filepath = cmdline_filepath.Append("cmdline");
+  base::File cmdline_file = base::File(
+      cmdline_filepath, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  if (!cmdline_file.IsValid())
+    return false;
+  std::string expected_cmdline = lacros_path.value();
+  size_t expected_length = expected_cmdline.size();
+  char data[1000];
+  int size_read = cmdline_file.Read(0, data, 1000);
+  if (static_cast<size_t>(size_read) < expected_length)
+    return false;
+  return expected_cmdline.compare(0, expected_length, data, expected_length) ==
+         0;
+}
+
+bool StartBackground(base::ProcessId pid, const base::FilePath& lacros_path) {
+  bool already_running =
+      pid != base::kNullProcessId && IsLacrosChromeInProc(pid, lacros_path);
+
+  if (!already_running) {
+    // Only delete the old log file if lacros is not running. If it's already
+    // running, then the subsequent call to base::LaunchProcess opens a new
+    // window, and we do not want to delete the existing log file.
+    // TODO(erikchen): Currently, launching a second instance of chrome deletes
+    // the existing log file, even though the new instance quickly exits.
+    base::DeleteFile(LacrosLogPath(), /*recursive=*/false);
+  }
+
+  return already_running;
+}
+
 }  // namespace
 
 // static
@@ -84,13 +132,24 @@ void LacrosLoader::Start() {
   if (!lacros_util::IsLacrosAllowed())
     return;
 
+  if (lacros_path_.empty()) {
+    LOG(WARNING) << "lacros component image not yet available";
+    return;
+  }
+
+  // Because we haven't yet handled process termination of lacros-chrome,
+  // lacros_process_ may point to a stale process. Check it by looking at
+  // procfs in a background task runner in addition.
+  // TODO(hidehiko): Handle the process termination correctly after mojo
+  // connection available.
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::BindOnce(&LacrosLoader::StartBackground, base::Unretained(this)),
-      base::BindOnce(&LacrosLoader::StartForeground, base::Unretained(this)));
+      base::BindOnce(&StartBackground, lacros_process_.Pid(), lacros_path_),
+      base::BindOnce(&LacrosLoader::StartForeground,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void LacrosLoader::OnUserSessionStarted(bool is_primary_user) {
@@ -132,31 +191,7 @@ void LacrosLoader::OnUserSessionStarted(bool is_primary_user) {
   }
 }
 
-bool LacrosLoader::StartBackground() {
-  // TODO(erikchen): If Lacros is already running, then we should send a mojo
-  // signal to open a new tab rather than going through the start flow again.
-  bool already_running = IsLacrosRunning();
-
-  if (!already_running) {
-    // Only delete the old log file if lacros is not running. If it's already
-    // running, then the subsequent call to base::LaunchProcess opens a new
-    // window, and we do not want to delete the existing log file.
-    // TODO(erikchen): Currently, launching a second instance of chrome deletes
-    // the existing log file, even though the new instance quickly exits.
-    base::DeleteFile(base::FilePath(LogPath()), /*recursive=*/false);
-  }
-
-  return already_running;
-}
-
 void LacrosLoader::StartForeground(bool already_running) {
-  // TODO(jamescook): Provide a switch to override the lacros-chrome path for
-  // developers.
-  if (lacros_path_.empty()) {
-    LOG(WARNING) << "lacros component image not yet available";
-    return;
-  }
-
   std::string chrome_path = lacros_path_.MaybeAsASCII() + "/chrome";
   LOG(WARNING) << "Launching lacros-chrome at " << chrome_path;
 
@@ -192,24 +227,25 @@ void LacrosLoader::StartForeground(bool already_running) {
       chromeos::switches::kLacrosChromePath);
   if (custom_chrome_path) {
     argv.push_back("--enable-logging");
-    argv.push_back(std::string("--log-file=") + LogPath());
+    argv.push_back("--log-file=" + LacrosLogPath().value());
   }
 
-  // If Lacros is already running, then the new call to launch process spawns a
-  // new window but does not create a lasting process.
+  // TODO(hidehiko): Support Mojo connection.
+
   if (already_running) {
+    // If Lacros is already running, then the new call to launch process spawns
+    // a new window but does not create a lasting process.
+    // TODO(erikchen): we should send a mojo signal to open a new tab rather
+    // than going through the start flow again.
     base::LaunchProcess(argv, options);
   } else {
     base::RecordAction(base::UserMetricsAction("Lacros.Launch"));
+    // If lacros_process_ already exists, because it does not call waitpid(2),
+    // the process will never be collected.
+    // TODO(hidehiko): Fix the case by collecting the processes.
     lacros_process_ = base::LaunchProcess(argv, options);
   }
   LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();
-}
-
-// static
-std::string LacrosLoader::LogPath() {
-  std::string log_file(kUserDataDir);
-  return log_file + "/lacros.log";
 }
 
 void LacrosLoader::OnLoadComplete(
@@ -230,33 +266,4 @@ void LacrosLoader::OnLoadComplete(
 void LacrosLoader::CleanUp(bool previously_installed) {
   if (previously_installed)
     cros_component_manager_->Unload(kLacrosComponentName);
-}
-
-bool LacrosLoader::IsLacrosRunning() {
-  // TODO(https://crbug.com/1091863): This logic is not robust against the
-  // situation where Lacros has been killed, but another process was spawned
-  // with the same pid. This logic also relies on I/O, which we'd like to avoid
-  // if possible.
-  if (!lacros_process_.IsValid())
-    return false;
-  // We avoid using WaitForExitWithTimeout() since that can block for up to
-  // 256ms. Instead, we check existence of /proc/<pid>/cmdline and check for a
-  // match against lacros_path_. This logic assumes that lacros_path_ is a fully
-  // qualified path.
-  base::FilePath cmdline_filepath("/proc");
-  cmdline_filepath =
-      cmdline_filepath.Append(base::NumberToString(lacros_process_.Pid()));
-  cmdline_filepath = cmdline_filepath.Append("cmdline");
-  base::File cmdline_file = base::File(
-      cmdline_filepath, base::File::FLAG_OPEN | base::File::FLAG_READ);
-  if (!cmdline_file.IsValid())
-    return false;
-  std::string expected_cmdline = lacros_path_.value();
-  size_t expected_length = expected_cmdline.size();
-  char data[1000];
-  int size_read = cmdline_file.Read(0, data, 1000);
-  if (static_cast<size_t>(size_read) < expected_length)
-    return false;
-  return expected_cmdline.compare(0, expected_length, data, expected_length) ==
-         0;
 }

@@ -245,13 +245,31 @@ public class FeedStreamSurfaceTest {
 
     @Test
     @SmallTest
-    public void testSetHeaderViews() {
+    public void testAddHeaderViews() {
         FeedListContentManager contentManager =
                 mFeedStreamSurface.getFeedListContentManagerForTesting();
 
         View v0 = new View(mActivity);
         View v1 = new View(mActivity);
-        View v2 = new View(mActivity);
+
+        mFeedStreamSurface.setHeaderViews(Arrays.asList(v0, v1));
+        assertEquals(2, contentManager.getItemCount());
+        assertEquals(v0,
+                ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
+                        .getNativeView());
+        assertEquals(v1,
+                ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
+                        .getNativeView());
+    }
+
+    @Test
+    @SmallTest
+    public void testUpdateHeaderViews() {
+        FeedListContentManager contentManager =
+                mFeedStreamSurface.getFeedListContentManagerForTesting();
+
+        View v0 = new View(mActivity);
+        View v1 = new View(mActivity);
 
         mFeedStreamSurface.setHeaderViews(Arrays.asList(v0, v1));
         assertEquals(2, contentManager.getItemCount());
@@ -262,13 +280,19 @@ public class FeedStreamSurfaceTest {
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
                         .getNativeView());
 
-        mFeedStreamSurface.setHeaderViews(Arrays.asList(v2, v0));
-        assertEquals(2, contentManager.getItemCount());
+        View v2 = new View(mActivity);
+        View v3 = new View(mActivity);
+
+        mFeedStreamSurface.setHeaderViews(Arrays.asList(v2, v0, v3));
+        assertEquals(3, contentManager.getItemCount());
         assertEquals(v2,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(0))
                         .getNativeView());
         assertEquals(v0,
                 ((FeedListContentManager.NativeViewContent) contentManager.getContent(1))
+                        .getNativeView());
+        assertEquals(v3,
+                ((FeedListContentManager.NativeViewContent) contentManager.getContent(2))
                         .getNativeView());
     }
 

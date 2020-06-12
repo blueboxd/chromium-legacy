@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/safe_browsing/features.h"
-#include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/murmurhash3_util.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "chrome/test/base/chrome_render_view_test.h"
@@ -99,18 +98,13 @@ class PhishingClassifierTest : public ChromeRenderViewTest {
     model.set_max_shingles_per_page(100);
     model.set_shingle_size(3);
 
-    clock_ = new MockFeatureExtractorClock;
     scorer_.reset(Scorer::Create(model.SerializeAsString()));
     ASSERT_TRUE(scorer_.get());
-
-    // These tests don't exercise the extraction timing.
-    EXPECT_CALL(*clock_, Now())
-        .WillRepeatedly(::testing::Return(base::TimeTicks::Now()));
   }
 
   void SetUpClassifier() {
-    classifier_.reset(
-        new PhishingClassifier(view_->GetMainRenderFrame(), clock_));
+    classifier_ =
+        std::make_unique<PhishingClassifier>(view_->GetMainRenderFrame());
     // No scorer yet, so the classifier is not ready.
     ASSERT_FALSE(classifier_->is_ready());
 
@@ -153,7 +147,6 @@ class PhishingClassifierTest : public ChromeRenderViewTest {
   std::string response_content_;
   std::unique_ptr<Scorer> scorer_;
   std::unique_ptr<PhishingClassifier> classifier_;
-  MockFeatureExtractorClock* clock_;  // Owned by classifier_.
 
   // Features that are in the model.
   const std::string url_tld_token_net_;

@@ -519,7 +519,7 @@ IN_PROC_BROWSER_TEST_P(
       /*sha*/
       "701FCEA8B2112FFAB257A8A8DFD3382ABCF047689AB028D42903E3B3AA488D9A",
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
-      /*reason*/ "filePasswordProtected",
+      /*reason*/ "FILE_PASSWORD_PROTECTED",
       /*mimetypes*/ ZipMimeTypes(),
       // du chrome/test/data/safe_browsing/download_protection/encrypted.zip -b
       /*size*/ 20015);
@@ -612,7 +612,7 @@ IN_PROC_BROWSER_TEST_P(
       /*sha*/
       "E0AC3601005DFA1864F5392AABAF7D898B1B5BAB854F1ACB4491BCD806B76B0C",
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
-      /*reason*/ "unsupportedFileType",
+      /*reason*/ "DLP_SCAN_UNSUPPORTED_FILE_TYPE",
       /*mimetype*/ ShellScriptMimeTypes(),
       /*size*/ std::string("file content").size());
 
@@ -713,7 +713,7 @@ IN_PROC_BROWSER_TEST_P(
       /*sha*/
       "9EB56DB30C49E131459FE735BA6B9D38327376224EC8D5A1233F43A5B4A25942",
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
-      /*reason*/ "fileTooLarge",
+      /*reason*/ "FILE_TOO_LARGE",
       /*mimetypes*/ DocMimeTypes(),
       /*size*/ BinaryUploadService::kMaxUploadSizeBytes + 1);
 

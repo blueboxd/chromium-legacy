@@ -8,6 +8,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {PromiseResolver} from 'chrome://resources/js/promise_resolver.m.js';
 import {$} from 'chrome://resources/js/util.m.js';
 
+import {SaveRequestType} from './constants.js';
 import {PartialPoint, Point, Viewport} from './viewport.js';
 
 /** @typedef {{ type: string }} */
@@ -105,12 +106,13 @@ export class ContentController {
 
   /**
    * Requests that the current document be saved.
-   * @param {boolean} requireResult whether a response is required, otherwise
-   *     the controller may save the document to disk internally.
+   * @param {!SaveRequestType} requestType The type of save request. If
+   *     ANNOTATION, a response is required, otherwise the controller may save
+   *     the document to disk internally.
    * @return {Promise<{fileName: string, dataToSave: ArrayBuffer}>}
    * @abstract
    */
-  save(requireResult) {}
+  save(requestType) {}
 
   /**
    * Loads PDF document from `data` activates UI.
@@ -186,7 +188,7 @@ export class InkController extends ContentController {
   }
 
   /** @override */
-  save(requireResult) {
+  save(requestType) {
     return this.inkHost_.saveDocument();
   }
 
@@ -403,11 +405,15 @@ export class PluginController extends ContentController {
   }
 
   /** @override */
-  save(requireResult) {
+  save(requestType) {
     const resolver = new PromiseResolver();
     const newToken = createToken();
     this.pendingTokens_.set(newToken, resolver);
-    this.postMessage_({type: 'save', token: newToken, force: requireResult});
+    this.postMessage_({
+      type: 'save',
+      token: newToken,
+      saveRequestType: requestType,
+    });
     return resolver.promise;
   }
 
@@ -416,6 +422,7 @@ export class PluginController extends ContentController {
     const url = URL.createObjectURL(new Blob([data]));
     this.plugin_.removeAttribute('headers');
     this.plugin_.setAttribute('stream-url', url);
+    this.plugin_.setAttribute('has-edits', '');
     this.plugin_.style.display = 'block';
     try {
       await this.getLoadedCallback_();

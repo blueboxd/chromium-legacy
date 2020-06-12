@@ -12,6 +12,7 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -55,6 +56,9 @@ class BASE_EXPORT PickleIterator {
   // message's buffer so it will be scoped to the lifetime of the message (or
   // until the message data is mutated). Do not keep the pointer around!
   bool ReadData(const char** data, int* length) WARN_UNUSED_RESULT;
+
+  // Similar, but using base::span for convenience.
+  bool ReadData(base::span<const uint8_t>* data) WARN_UNUSED_RESULT;
 
   // A pointer to the data will be placed in |*data|. The caller specifies the
   // number of bytes to read, and ReadBytes will validate this length. The

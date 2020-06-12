@@ -59,25 +59,19 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
       break;
 
     case BinaryUploadService::Result::FILE_TOO_LARGE:
-      unscanned_reason = "fileTooLarge";
+      unscanned_reason = "FILE_TOO_LARGE";
       break;
     case BinaryUploadService::Result::TIMEOUT:
-      unscanned_reason = "scanTimedOut";
+    case BinaryUploadService::Result::UNKNOWN:
+    case BinaryUploadService::Result::UPLOAD_FAILURE:
+    case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
+      unscanned_reason = "SERVICE_UNAVAILABLE";
       break;
     case BinaryUploadService::Result::FILE_ENCRYPTED:
-      unscanned_reason = "filePasswordProtected";
+      unscanned_reason = "FILE_PASSWORD_PROTECTED";
       break;
-    case BinaryUploadService::Result::UNKNOWN:
-      unscanned_reason = "unknownError";
-      break;
-    case BinaryUploadService::Result::UPLOAD_FAILURE:
-      unscanned_reason = "uploadFailure";
-      break;
-    case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
-      unscanned_reason = "failedToGetToken";
-      break;
-    case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
-      unscanned_reason = "unsupportedFileType";
+    case BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE:
+      unscanned_reason = "DLP_SCAN_UNSUPPORTED_FILE_TYPE";
   }
 
   if (!unscanned_reason.empty()) {
@@ -95,7 +89,7 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
           MalwareDeepScanningVerdict::SCAN_FAILURE) {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
         ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
-                               mime_type, trigger, "malwareScanFailed",
+                               mime_type, trigger, "MALWARE_SCAN_FAILED",
                                content_size);
   }
 
@@ -103,7 +97,7 @@ void MaybeReportDeepScanningVerdict(Profile* profile,
       response.dlp_scan_verdict().status() != DlpDeepScanningVerdict::SUCCESS) {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
         ->OnUnscannedFileEvent(url, file_name, download_digest_sha256,
-                               mime_type, trigger, "dlpScanFailed",
+                               mime_type, trigger, "DLP_SCAN_FAILED",
                                content_size);
   }
 
@@ -321,8 +315,8 @@ std::string BinaryUploadServiceResultToString(
       return "";
     case BinaryUploadService::Result::FILE_ENCRYPTED:
       return "FileEncrypted";
-    case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
-      return "UnsupportedFileType";
+    case BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE:
+      return "DlpScanUnsupportedFileType";
   }
 }
 

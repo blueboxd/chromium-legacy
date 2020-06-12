@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_iterator.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/svg_element_type_helpers.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/text/text_boundaries.h"
@@ -452,6 +453,20 @@ bool HasRenderedNonAnonymousDescendantsWithHeight(
     const LayoutObject* layout_object) {
   if (DisplayLockUtilities::NearestLockedInclusiveAncestor(*layout_object))
     return false;
+  if (auto* block_flow = DynamicTo<LayoutBlockFlow>(layout_object)) {
+    // Returns false for empty content editable, e.g.
+    //  - <div contenteditable></div>
+    //  - <div contenteditable><span></span></div>
+    // Note: tests[1][2] require this.
+    // [1] editing/style/underline.html
+    // [2] editing/inserting/return-with-object-element.html
+    if (block_flow->HasNGInlineNodeData() &&
+        block_flow->GetNGInlineNodeData()
+            ->ItemsData(false)
+            .text_content.IsEmpty() &&
+        block_flow->HasLineIfEmpty())
+      return false;
+  }
   const LayoutObject* stop = layout_object->NextInPreOrderAfterChildren();
   // TODO(editing-dev): Avoid single-character parameter names.
   for (LayoutObject* o = layout_object->SlowFirstChild(); o && o != stop;

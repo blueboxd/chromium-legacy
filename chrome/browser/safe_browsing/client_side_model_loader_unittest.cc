@@ -11,6 +11,9 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
@@ -120,7 +123,67 @@ ACTION_P(InvokeClosure, closure) {
   closure.Run();
 }
 
-// Test the reponse to many variations of model responses.
+TEST_F(ModelLoaderTest, FetchModelFromLocalFileTest) {
+  StrictMock<MockModelLoader> loader(
+      base::Closure(), test_shared_loader_factory(), "top_model.pb");
+  SetModelUrl(loader);
+
+  // The model fetch tries to read from local file but is empty.
+  {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        "csd-model-override-path", "");
+    loader.StartFetch();
+    Mock::VerifyAndClearExpectations(&loader);
+  }
+
+  // The model fetch tries to read from invalid local file.
+  {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        "csd-model-override-path", "invalid-file");
+    loader.StartFetch();
+    Mock::VerifyAndClearExpectations(&loader);
+  }
+
+  // The model fetch tries to read from local file with invalid model data.
+  {
+    base::ScopedTempDir test_path;
+    ASSERT_TRUE(test_path.CreateUniqueTempDir());
+    ClientSideModel model;
+    model.set_max_words_per_term(4);
+    ASSERT_TRUE(base::WriteFile(test_path.GetPath().AppendASCII("model.txt"),
+                                model.SerializeAsString()));
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        "csd-model-override-path",
+        test_path.GetPath().AppendASCII("model.txt").MaybeAsASCII());
+    loader.StartFetch();
+    Mock::VerifyAndClearExpectations(&loader);
+  }
+
+  // The model fetch tries to read from local file with valid model data.
+  {
+    base::ScopedTempDir test_path;
+    ASSERT_TRUE(test_path.CreateUniqueTempDir());
+    base::RunLoop loop;
+    ClientSideModel model;
+    model.set_version(10);
+    model.set_max_words_per_term(4);
+    EXPECT_EQ(static_cast<int>(model.SerializeAsString().size()),
+              base::WriteFile(test_path.GetPath().AppendASCII("model.txt"),
+                              model.SerializeAsString().c_str(),
+                              model.SerializeAsString().size()));
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        "csd-model-override-path",
+        test_path.GetPath().AppendASCII("model.txt").MaybeAsASCII());
+    EXPECT_CALL(loader, EndFetch(ModelLoader::MODEL_SUCCESS, _))
+        .WillOnce(InvokeClosure(loop.QuitClosure()));
+    loader.StartFetch();
+    loop.Run();
+    Mock::VerifyAndClearExpectations(&loader);
+  }
+}
+
+// Test the response to many variations of model responses.
 TEST_F(ModelLoaderTest, FetchModelTest) {
   StrictMock<MockModelLoader> loader(
       base::Closure(), test_shared_loader_factory(), "top_model.pb");

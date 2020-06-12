@@ -1248,7 +1248,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, SaveSelectAllOnBlurAndRefocus) {
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideFromModel) {
   EXPECT_TRUE(IsElidedUrlDisplayed());
 
-  omnibox_view()->model()->Unelide(false /* exit_query_in_omnibox */);
+  omnibox_view()->model()->Unelide();
   EXPECT_TRUE(omnibox_view()->IsSelectAll());
   size_t start, end;
   omnibox_view()->GetSelectionBounds(&start, &end);
@@ -1380,98 +1380,6 @@ TEST_F(OmniboxViewViewsTest, HideOnInteractionAndRevealOnHover) {
   EXPECT_EQ(GetOmniboxColor(omnibox_view()->GetThemeProvider(),
                             OmniboxPart::LOCATION_BAR_TEXT_DIMMED),
             fade_in->GetCurrentColor());
-}
-
-class OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest
-    : public OmniboxViewViewsSteadyStateElisionsTest {
- public:
-  OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest()
-      : OmniboxViewViewsSteadyStateElisionsTest({
-            omnibox::kHideSteadyStateUrlScheme,
-            omnibox::kHideSteadyStateUrlTrivialSubdomains,
-            omnibox::kQueryInOmnibox,
-        }) {}
-
- protected:
-  const GURL kValidSearchResultsPage =
-      GURL("https://www.google.com/search?q=foo+query");
-
-  void SetUp() override {
-    OmniboxViewViewsSteadyStateElisionsTest::SetUp();
-
-    location_bar_model()->set_url(kValidSearchResultsPage);
-    location_bar_model()->set_security_level(
-        security_state::SecurityLevel::SECURE);
-    location_bar_model()->set_display_search_terms(
-        base::ASCIIToUTF16("foo query"));
-
-    omnibox_view()->model()->ResetDisplayTexts();
-    omnibox_view()->RevertAll();
-
-    // Sanity check that Query in Omnibox is working with Steady State Elisions.
-    EXPECT_EQ(base::ASCIIToUTF16("foo query"), omnibox_view()->GetText());
-
-    // Focus the Omnibox.
-    SendMouseClick(0);
-  }
-};
-
-TEST_F(OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest,
-       DontUnelideQueryInOmniboxSearchTerms) {
-  // Right key should NOT unelide, and should correctly place the cursor at the
-  // end of the search query.
-  omnibox_textfield_view()->OnKeyPressed(
-      ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RIGHT, 0));
-  EXPECT_EQ(base::ASCIIToUTF16("foo query"), omnibox_view()->GetText());
-  EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
-
-  size_t start, end;
-  omnibox_view()->GetSelectionBounds(&start, &end);
-  EXPECT_EQ(9U, start);
-  EXPECT_EQ(9U, end);
-}
-
-TEST_F(OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest,
-       UnelideFromModel) {
-  // Uneliding without exiting Query in Omnibox should do nothing.
-  omnibox_view()->model()->Unelide(false /* exit_query_in_omnibox */);
-  EXPECT_EQ(base::ASCIIToUTF16("foo query"), omnibox_view()->GetText());
-  {
-    size_t start, end;
-    omnibox_view()->GetSelectionBounds(&start, &end);
-    EXPECT_EQ(9U, start);
-    EXPECT_EQ(0U, end);
-  }
-
-  // Uneliding and exiting Query in Omnibox should reveal the full URL.
-  omnibox_view()->model()->Unelide(true /* exit_query_in_omnibox */);
-  EXPECT_EQ(base::ASCIIToUTF16(kValidSearchResultsPage.spec()),
-            omnibox_view()->GetText());
-  {
-    size_t start, end;
-    omnibox_view()->GetSelectionBounds(&start, &end);
-    EXPECT_EQ(41U, start);
-    EXPECT_EQ(0U, end);
-  }
-}
-
-TEST_F(OmniboxViewViewsSteadyStateElisionsAndQueryInOmniboxTest,
-       NoEmphasisForUrlLikeQueries) {
-  // Prevents regressions for crbug.com/942945. Set the displayed search terms
-  // to something somewhat URL-like.
-  location_bar_model()->set_display_search_terms(base::ASCIIToUTF16("foo:bar"));
-  omnibox_view()->model()->ResetDisplayTexts();
-  omnibox_view()->RevertAll();
-  EXPECT_EQ(base::ASCIIToUTF16("foo:bar"), omnibox_view()->GetText());
-  EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
-
-  omnibox_view()->ResetEmphasisTestState();
-  omnibox_view()->EmphasizeURLComponents();
-
-  // Expect that no part is de-emphasized, there is no "scheme" range.
-  EXPECT_TRUE(omnibox_view()->base_text_emphasis());
-  EXPECT_FALSE(omnibox_view()->emphasis_range().IsValid());
-  EXPECT_FALSE(omnibox_view()->scheme_range().IsValid());
 }
 
 // TODO (manukh) move up to where the other OmniboxViewViewsTest tests are.

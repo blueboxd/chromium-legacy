@@ -11,6 +11,7 @@
 #include <vector>
 
 #include <va/va.h>
+#include <va/va_str.h>
 
 #include "base/files/file.h"
 #include "base/files/scoped_file.h"
@@ -161,7 +162,8 @@ TEST_F(VaapiTest, VaapiProfiles) {
           va_info[VAProfileH264ConstrainedBaseline], VAEntrypointVLD);
     }
 
-    EXPECT_TRUE(is_profile_supported) << " profile: " << profile.profile;
+    EXPECT_TRUE(is_profile_supported)
+        << " profile: " << GetProfileName(profile.profile);
   }
 
   for (const auto& profile : VaapiWrapper::GetSupportedEncodeProfiles()) {
@@ -180,7 +182,8 @@ TEST_F(VaapiTest, VaapiProfiles) {
                          VAEntrypointEncSliceLP);
     }
 
-    EXPECT_TRUE(is_profile_supported) << " profile: " << profile.profile;
+    EXPECT_TRUE(is_profile_supported)
+        << " profile: " << GetProfileName(profile.profile);
   }
 
   EXPECT_EQ(VaapiWrapper::IsDecodeSupported(VAProfileJPEGBaseline),
@@ -202,9 +205,9 @@ TEST_F(VaapiTest, DefaultEntrypointIsSupported) {
                                                profile_and_entrypoints.first);
       const auto& supported_entrypoints = profile_and_entrypoints.second;
       EXPECT_TRUE(base::Contains(supported_entrypoints, default_entrypoint))
-          << "Default VAEntrypoint " << default_entrypoint
-          << " (mode = " << mode << ") is not supported for VAProfile = "
-          << profile_and_entrypoints.first;
+          << "Default VAEntrypoint " << vaEntrypointStr(default_entrypoint)
+          << " (VaapiWrapper mode = " << mode << ") is not supported for "
+          << vaProfileStr(profile_and_entrypoints.first);
     }
   }
 }

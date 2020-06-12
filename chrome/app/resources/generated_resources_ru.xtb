@@ -1240,6 +1240,7 @@
 <translation id="2541002089857695151">Оптимизировать трансляцию в полноэкранном режиме?</translation>
 <translation id="2541706104884128042">Время сна изменено.</translation>
 <translation id="2544853746127077729">Сертификат аутентификации отклонен сетью</translation>
+<translation id="2546229857744484369">На этом устройстве у вас сохранен 1 пароль</translation>
 <translation id="2546283357679194313">Файлы сookie и данные сайтов</translation>
 <translation id="2548347166720081527">Предоставлено разрешение "<ph name="PERMISSION" />"</translation>
 <translation id="2549985041256363841">Начать запись</translation>
@@ -3140,7 +3141,7 @@
 <translation id="4997086284911172121">Нет подключения к Интернету.</translation>
 <translation id="4998430619171209993">Включено</translation>
 <translation id="5000922062037820727">Заблокировано (рекомендуется)</translation>
-<translation id="5003821244905342830">Если вы продолжите, Google синхронизирует данные аккаунта <ph name="EMAIL" /> с данными на этом устройстве.</translation>
+<translation id="5003821244905342830">Если вы продолжите, Google будет синхронизировать данные из аккаунта <ph name="EMAIL" /> на этом устройстве.</translation>
 <translation id="5005498671520578047">Для копирования пароля</translation>
 <translation id="5006218871145547804">Инструмент adb для Android-приложений в Crostini</translation>
 <translation id="5007392906805964215">Посмотреть</translation>
@@ -3512,6 +3513,7 @@
 <translation id="5495466433285976480">После перезагрузки все локальные аккаунты, файлы, данные и другие настройки будут удалены. Все пользователи должны снова войти в аккаунт.</translation>
 <translation id="5495597166260341369">Не выключать экран</translation>
 <translation id="5496587651328244253">Управление</translation>
+<translation id="5497251278400702716">Этот файл</translation>
 <translation id="5499313591153584299">Этот файл может быть опасен для вашего компьютера.</translation>
 <translation id="5500709606820808700">Проверка безопасности выполнена сегодня.</translation>
 <translation id="5502500733115278303">Импортированные из Firefox</translation>
@@ -4102,7 +4104,7 @@
 <translation id="6242852299490624841">Переключиться на эту вкладку</translation>
 <translation id="6243280677745499710">Установлено как обои</translation>
 <translation id="6243774244933267674">Сервер недоступен</translation>
-<translation id="6246355468475884088">Здесь можно посмотреть пароли из вашего аккаунта Google</translation>
+<translation id="6246355468475884088">Здесь также можно показывать пароли из вашего аккаунта Google</translation>
 <translation id="6246790815526961700">Загрузить с устройства</translation>
 <translation id="6247620186971210352">Приложения не найдены.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -4134,6 +4136,7 @@
 <translation id="6279183038361895380">Чтобы показать курсор, нажмите |<ph name="ACCELERATOR" />|</translation>
 <translation id="6280215091796946657">Войти в другой аккаунт</translation>
 <translation id="6280912520669706465">ARC</translation>
+<translation id="6282180787514676874">{COUNT,plural, =1{Превышено ограничение. Можно напечатать не более 1 листа бумаги.}one{Превышено ограничение. Можно напечатать не более {COUNT} листа бумаги.}few{Превышено ограничение. Можно напечатать не более {COUNT} листов бумаги.}many{Превышено ограничение. Можно напечатать не более {COUNT} листов бумаги.}other{Превышено ограничение. Можно напечатать не более {COUNT} листа бумаги.}}</translation>
 <translation id="628352644014831790">4 секунды</translation>
 <translation id="6285120108426285413">Файл <ph name="FILE_NAME" /> скачивают редко. Возможно, он вредоносный.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Новый принтер в сети}one{Новые принтеры в сети}few{Новые принтеры в сети}many{Новые принтеры в сети}other{Новые принтеры в сети}}</translation>
@@ -4431,6 +4434,7 @@
 <translation id="6691331417640343772">Управление синхронизированными данными в Личном кабинете Google</translation>
 <translation id="6691541770654083180">Планета Земля</translation>
 <translation id="6691936601825168937">&amp;Вперед</translation>
+<translation id="6693745645188488741">{COUNT,plural, =1{1 страница}one{{COUNT} страница}few{{COUNT} страницы}many{{COUNT} страниц}other{{COUNT} страницы}}</translation>
 <translation id="6697492270171225480">Предлагать варианты, если страница, которую вы пытаетесь открыть, не найдена</translation>
 <translation id="6697690052557311665">Чтобы открыть доступ к папке, нажмите на нее правой кнопкой мыши в приложении "Файлы" и выберите "Предоставить доступ Linux".</translation>
 <translation id="6698810901424468597">Просмотр и изменение данные на сайтах <ph name="WEBSITE_1" /> и <ph name="WEBSITE_2" /></translation>
@@ -5462,6 +5466,7 @@
 <translation id="7987814697832569482">Всегда использовать эту VPN-сеть</translation>
 <translation id="7988355189918024273">Включить функции для людей с ограниченными возможностями</translation>
 <translation id="7991296728590311172">Настройки функции Switch Access</translation>
+<translation id="7993750787380199093">Пароли, сохраненные в аккаунте Google, будут доступны на всех ваших устройствах</translation>
 <translation id="7994702968232966508">Метод EAP</translation>
 <translation id="7997826902155442747">Приоритет процессов</translation>
 <translation id="7999229196265990314">Созданы следующие файлы:
@@ -5520,6 +5525,7 @@
 <translation id="8059417245945632445">&amp;Проверка устройств</translation>
 <translation id="8059456211585183827">Нет принтеров, доступных для сохранения.</translation>
 <translation id="8061091456562007989">Вернуть прежние настройки</translation>
+<translation id="8062844841289846053">{COUNT,plural, =1{1 лист бумаги}one{{COUNT} лист бумаги}few{{COUNT} листа бумаги}many{{COUNT} листов бумаги}other{{COUNT} листа бумаги}}</translation>
 <translation id="8063235345342641131">Аватар по умолчанию (зеленый)</translation>
 <translation id="8063535366119089408">Разрешить</translation>
 <translation id="8068253693380742035">Нажмите, чтобы войти</translation>
@@ -5829,6 +5835,7 @@
 <translation id="8465252176946159372">Недопустимо</translation>
 <translation id="8465444703385715657">Для работы плагина <ph name="PLUGIN_NAME" /> необходимо разрешение</translation>
 <translation id="8466417995783206254">На этой вкладке воспроизводится видео в режиме "Картинка в картинке".</translation>
+<translation id="8467103604871441980">На этом устройстве у вас сохранено несколько паролей (<ph name="NUMBER_OF_DEVICE_PASSWORDS" />)</translation>
 <translation id="8467326454809944210">Выбрать другой язык</translation>
 <translation id="8470214316007448308">Другие пользователи</translation>
 <translation id="8470513973197838199">Сохраненные пароли для <ph name="ORIGIN" /></translation>

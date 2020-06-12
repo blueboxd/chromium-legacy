@@ -524,6 +524,20 @@ void AssistantInteractionControllerImpl::OnSuggestionChipPressed(
     return;
   }
 
+  // Determine query source from suggestion type.
+  AssistantQuerySource query_source;
+  switch (suggestion->type) {
+    case AssistantSuggestionType::kBetterOnboarding:
+      query_source = AssistantQuerySource::kBetterOnboarding;
+      break;
+    case AssistantSuggestionType::kConversationStarter:
+      query_source = AssistantQuerySource::kConversationStarter;
+      break;
+    case AssistantSuggestionType::kUnspecified:
+      query_source = AssistantQuerySource::kSuggestionChip;
+      break;
+  }
+
   // Otherwise, we will submit a simple text query using the suggestion text.
   // Note that a text query originating from a suggestion chip will carry
   // forward the allowance/forbiddance of TTS from the previous response. This
@@ -533,10 +547,7 @@ void AssistantInteractionControllerImpl::OnSuggestionChipPressed(
   StartTextInteraction(
       suggestion->text,
       /*allow_tts=*/model_.response() && model_.response()->has_tts(),
-      /*query_source=*/suggestion->type ==
-              AssistantSuggestionType::kConversationStarter
-          ? AssistantQuerySource::kConversationStarter
-          : AssistantQuerySource::kSuggestionChip);
+      query_source);
 }
 
 void AssistantInteractionControllerImpl::OnTabletModeStarted() {

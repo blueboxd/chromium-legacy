@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.share.share_sheet;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Matchers.any;
 
 import android.app.Activity;
@@ -25,6 +26,7 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -40,6 +42,9 @@ import java.util.List;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public final class ShareSheetCoordinatorTest {
+    @Rule
+    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
+
     @Rule
     public ActivityTestRule<DummyUiActivity> mActivityTestRule =
             new ActivityTestRule<>(DummyUiActivity.class);
@@ -71,7 +76,7 @@ public final class ShareSheetCoordinatorTest {
         ArrayList<PropertyModel> thirdPartyPropertyModels =
                 new ArrayList<>(Arrays.asList(testModel1, testModel2));
         Mockito.when(mPropertyModelBuilder.selectThirdPartyApps(
-                             any(), any(), anyBoolean(), anyLong()))
+                             any(), anySet(), any(), anyBoolean(), anyLong()))
                 .thenReturn(thirdPartyPropertyModels);
 
         mShareSheetCoordinator =
@@ -99,7 +104,8 @@ public final class ShareSheetCoordinatorTest {
         ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
 
         List<PropertyModel> propertyModels = mShareSheetCoordinator.createBottomRowPropertyModels(
-                bottomSheet, activity, /*shareParams=*/null, /*saveLastUsed=*/false);
+                bottomSheet, activity, /*shareParams=*/null,
+                ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES, /*saveLastUsed=*/false);
         assertEquals("Incorrect number of property models.", 3, propertyModels.size());
         assertEquals("First property model isn't testModel1.", "testModel1",
                 propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));

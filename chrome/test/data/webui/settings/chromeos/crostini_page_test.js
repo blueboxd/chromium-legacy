@@ -674,6 +674,9 @@ suite('CrostiniPageTests', function() {
       };
 
       async function clickShowDiskResize(userChosen) {
+        console.log('Running clickShowDiskResize');
+        console.log('Awaiting flushAsync');
+        await flushAsync();
         console.log('Awaiting getDiskInfo');
         await crostiniBrowserProxy.resolvePromises('getCrostiniDiskInfo', {
           succeeded: true,
@@ -696,8 +699,11 @@ suite('CrostiniPageTests', function() {
       }
 
       setup(async function() {
+        console.log('Running setup');
         assertTrue(!!subpage.$$('#showDiskResizeButton'));
         const subtext = subpage.$$('#diskSizeDescription');
+        console.log('Awaiting flushAsync');
+        await flushAsync();
       });
 
       test('ResizeUnsupported', async function() {

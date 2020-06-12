@@ -4,11 +4,14 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet;
 
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
@@ -75,29 +78,38 @@ class BottomSheetControllerImpl implements BottomSheetControllerInternal {
     /**
      * Build a new controller of the bottom sheet.
      * @param scrim A supplier of the scrim that shows when the bottom sheet is opened.
-     * @param bottomSheetViewSupplier A mechanism for creating a {@link BottomSheet}.
+     * @param initializedCallback A callback for the sheet being created (as the sheet is not
+     *                            initialized until first use.
+     * @param window A means of accessing the screen size.
+     * @param keyboardDelegate A means of hiding the keyboard.
+     * @param root The view that should contain the sheet.
      */
     public BottomSheetControllerImpl(final Supplier<ScrimCoordinator> scrim,
-            Supplier<View> bottomSheetViewSupplier, Window window,
-            KeyboardVisibilityDelegate keyboardDelegate) {
+            Callback<View> initializedCallback, Window window,
+            KeyboardVisibilityDelegate keyboardDelegate, Supplier<ViewGroup> root) {
         mScrimCoordinatorSupplier = scrim;
         mPendingSheetObservers = new ArrayList<>();
         mSuppressionTokens = new TokenHolder(() -> onSuppressionTokensChanged());
 
         mSheetInitializer = () -> {
-            initializeSheet(bottomSheetViewSupplier, window, keyboardDelegate);
+            initializeSheet(initializedCallback, window, keyboardDelegate, root);
         };
     }
 
     /**
      * Do the actual initialization of the bottom sheet.
-     * @param bottomSheetViewSupplier A means of creating the bottom sheet.
+     * @param initializedCallback A callback for the creation of the sheet.
      * @param window A means of accessing the screen size.
      * @param keyboardDelegate A means of hiding the keyboard.
+     * @param root The view that should contain the sheet.
      */
-    private void initializeSheet(Supplier<View> bottomSheetViewSupplier, Window window,
-            KeyboardVisibilityDelegate keyboardDelegate) {
-        mBottomSheet = (BottomSheet) bottomSheetViewSupplier.get();
+    private void initializeSheet(Callback<View> initializedCallback, Window window,
+            KeyboardVisibilityDelegate keyboardDelegate, Supplier<ViewGroup> root) {
+        LayoutInflater.from(root.get().getContext()).inflate(
+                org.chromium.chrome.R.layout.bottom_sheet, root.get());
+        mBottomSheet = (BottomSheet) root.get().findViewById(org.chromium.chrome.R.id.bottom_sheet);
+        initializedCallback.onResult(mBottomSheet);
+
         mBottomSheet.init(window, keyboardDelegate);
         mToolbarShadowHeight = mBottomSheet.getResources().getDimensionPixelOffset(
                 BottomSheet.getTopShadowResourceId());

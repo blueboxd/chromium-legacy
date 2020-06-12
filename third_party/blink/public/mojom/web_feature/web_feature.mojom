@@ -2648,6 +2648,8 @@ enum WebFeature {
   kStorageAccessAPI_requestStorageAccess_Method = 3311,
   kWebBluetoothWatchAdvertisements = 3312,
   kRubyTextWithNonDefaultTextAlign = 3313,
+  kHTMLMetaElementReferrerPolicyOutsideHead = 3314,
+  kHTMLMetaElementReferrerPolicyMultipleTokens = 3315,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -35,8 +35,10 @@ import org.chromium.chrome.browser.xsurface.SurfaceDependencyProvider;
 import org.chromium.chrome.browser.xsurface.SurfaceScope;
 import org.chromium.components.feed.proto.FeedUiProto.SharedState;
 import org.chromium.components.feed.proto.FeedUiProto.Slice;
+import org.chromium.components.feed.proto.FeedUiProto.Slice.SliceDataCase;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate;
+import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate.UpdateCase;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
@@ -184,20 +186,25 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
      * Puts a list of header views at the beginning.
      */
     public void setHeaderViews(List<View> headerViews) {
-        if (mHeaderCount > 0) {
-            mContentManager.removeContents(0, mHeaderCount);
-            mHeaderCount = 0;
+        ArrayList<FeedListContentManager.FeedContent> newContentList =
+                new ArrayList<FeedListContentManager.FeedContent>();
+
+        // First add new header contents. Some of them may appear in the existing list.
+        for (int i = 0; i < headerViews.size(); ++i) {
+            View view = headerViews.get(i);
+            String key = "Header" + view.hashCode();
+            FeedListContentManager.NativeViewContent headerContent =
+                    new FeedListContentManager.NativeViewContent(key, view);
+            newContentList.add(headerContent);
         }
 
-        ArrayList<FeedListContentManager.FeedContent> headerContents =
-                new ArrayList<FeedListContentManager.FeedContent>();
-        for (int i = 0; i < headerViews.size(); ++i) {
-            String key = "Header " + String.valueOf(i);
-            FeedListContentManager.NativeViewContent headerContent =
-                    new FeedListContentManager.NativeViewContent(key, headerViews.get(i));
-            headerContents.add(headerContent);
+        // Then add all existing feed stream contents.
+        for (int i = mHeaderCount; i < mContentManager.getItemCount(); ++i) {
+            newContentList.add(mContentManager.getContent(i));
         }
-        mContentManager.addContents(0, headerContents);
+
+        updateContentsInPlace(newContentList);
+
         mHeaderCount = headerViews.size();
     }
 
@@ -226,45 +233,56 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
             return;
         }
 
-        // 0) Update using shared states.
+        // Update using shared states.
         for (SharedState state : streamUpdate.getNewSharedStatesList()) {
             mHybridListRenderer.update(state.getXsurfaceSharedState().toByteArray());
         }
 
-        // 1) Builds the hash map of existing content list for fast look up by slice id.
-        HashMap<String, FeedListContentManager.FeedContent> existingContentMap =
-                new HashMap<String, FeedListContentManager.FeedContent>();
-        for (int i = mHeaderCount; i < mContentManager.getItemCount(); ++i) {
-            FeedListContentManager.FeedContent content = mContentManager.getContent(i);
-            existingContentMap.put(content.getKey(), content);
-        }
-
-        // 2) Builds the new list containing both new and existing contents.
+        // Builds the new list containing:
+        // * existing headers
+        // * both new and existing contents
         ArrayList<FeedListContentManager.FeedContent> newContentList =
                 new ArrayList<FeedListContentManager.FeedContent>();
-        HashSet<String> existingIdsInNewContentList = new HashSet<String>();
+        for (int i = 0; i < mHeaderCount; ++i) {
+            newContentList.add(mContentManager.getContent(i));
+        }
         for (SliceUpdate sliceUpdate : streamUpdate.getUpdatedSlicesList()) {
-            if (sliceUpdate.hasSlice()) {
+            if (sliceUpdate.getUpdateCase() == UpdateCase.SLICE) {
                 newContentList.add(createContentFromSlice(sliceUpdate.getSlice()));
             } else {
                 String existingSliceId = sliceUpdate.getSliceId();
-                FeedListContentManager.FeedContent content =
-                        existingContentMap.get(existingSliceId);
-                if (content != null) {
-                    newContentList.add(content);
-                    existingIdsInNewContentList.add(existingSliceId);
+                int position = mContentManager.findContentPositionByKey(existingSliceId);
+                if (position != -1) {
+                    newContentList.add(mContentManager.getContent(position));
                 }
             }
         }
 
-        // 3) Removes those contents that do not appear in the new list as the existing contents.
-        //    Sometimes we may add new content with same id as the one in current list. In this
-        //    case, we will remove it from current list and add it again later as new content.
-        for (int i = mContentManager.getItemCount() - 1; i >= mHeaderCount; --i) {
-            String id = mContentManager.getContent(i).getKey();
-            if (!existingIdsInNewContentList.contains(id)) {
+        updateContentsInPlace(newContentList);
+    }
+
+    private void updateContentsInPlace(
+            ArrayList<FeedListContentManager.FeedContent> newContentList) {
+        // 1) Builds the hash set based on keys of new contents.
+        HashSet<String> newContentKeySet = new HashSet<String>();
+        for (int i = 0; i < newContentList.size(); ++i) {
+            newContentKeySet.add(newContentList.get(i).getKey());
+        }
+
+        // 2) Builds the hash map of existing content list for fast look up by key.
+        HashMap<String, FeedListContentManager.FeedContent> existingContentMap =
+                new HashMap<String, FeedListContentManager.FeedContent>();
+        for (int i = 0; i < mContentManager.getItemCount(); ++i) {
+            FeedListContentManager.FeedContent content = mContentManager.getContent(i);
+            existingContentMap.put(content.getKey(), content);
+        }
+
+        // 3) Removes those existing contents that do not appear in the new list.
+        for (int i = mContentManager.getItemCount() - 1; i >= 0; --i) {
+            String key = mContentManager.getContent(i).getKey();
+            if (!newContentKeySet.contains(key)) {
                 mContentManager.removeContents(i, 1);
-                existingContentMap.remove(id);
+                existingContentMap.remove(key);
             }
         }
 
@@ -277,8 +295,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
             // If this is an existing content, moves it to new position.
             if (existingContentMap.containsKey(content.getKey())) {
                 mContentManager.moveContent(
-                        mContentManager.findContentPositionByKey(content.getKey()),
-                        mHeaderCount + i);
+                        mContentManager.findContentPositionByKey(content.getKey()), i);
                 ++i;
                 continue;
             }
@@ -289,14 +306,13 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
                     && !existingContentMap.containsKey(newContentList.get(i).getKey())) {
                 ++i;
             }
-            mContentManager.addContents(
-                    mHeaderCount + startIndex, newContentList.subList(startIndex, i));
+            mContentManager.addContents(startIndex, newContentList.subList(startIndex, i));
         }
     }
 
     private FeedListContentManager.FeedContent createContentFromSlice(Slice slice) {
         String sliceId = slice.getSliceId();
-        if (slice.hasXsurfaceSlice()) {
+        if (slice.getSliceDataCase() == SliceDataCase.XSURFACE_SLICE) {
             return new FeedListContentManager.ExternalViewContent(
                     sliceId, slice.getXsurfaceSlice().getXsurfaceFrame().toByteArray());
         } else {

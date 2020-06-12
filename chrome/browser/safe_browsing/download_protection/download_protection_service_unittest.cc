@@ -3198,7 +3198,7 @@ TEST_P(DeepScanningDownloadTest, UnsupportedFiletypeBlockedByPreference) {
       static_cast<TestBinaryUploadService*>(
           BinaryUploadServiceFactory::GetForProfile(profile()));
   test_upload_service->SetResponse(
-      BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE,
+      BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE,
       DeepScanningClientResponse());
 
   EXPECT_CALL(*sb_service_->mock_database_manager(),

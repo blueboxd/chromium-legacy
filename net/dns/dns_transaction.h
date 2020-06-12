@@ -80,9 +80,14 @@ class NET_EXPORT_PRIVATE DnsTransactionFactory {
   // Called with the response or NULL if no matching response was received.
   // Note that the |GetDottedName()| of the response may be different than the
   // original |hostname| as a result of suffix search.
+  //
+  // The |doh_provider_id| contains the provider ID for histograms of the last
+  // DoH server attempted. If the name is unavailable, or this is not a DoH
+  // transaction, |doh_provider_id| is nullopt.
   typedef base::OnceCallback<void(DnsTransaction* transaction,
                                   int neterror,
-                                  const DnsResponse* response)>
+                                  const DnsResponse* response,
+                                  base::Optional<std::string> doh_provider_id)>
       CallbackType;
 
   DnsTransactionFactory();

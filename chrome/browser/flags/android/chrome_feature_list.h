@@ -16,6 +16,7 @@ extern const base::Feature kAdjustWebApkInstallationSpace;
 extern const base::Feature kAllowNewIncognitoTabIntents;
 extern const base::Feature kAllowRemoteContextForNotifications;
 extern const base::Feature kAndroidBlockIntentNonSafelistedHeaders;
+extern const base::Feature kAndroidDefaultBrowserPromo;
 extern const base::Feature kAndroidMultipleDisplay;
 extern const base::Feature kAndroidNightModeTabReparenting;
 extern const base::Feature kAndroidPartnerCustomizationPhenotype;

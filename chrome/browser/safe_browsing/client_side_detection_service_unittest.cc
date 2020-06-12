@@ -81,14 +81,16 @@ class ClientSideDetectionServiceTest : public testing::Test {
   }
 
   bool SendClientReportPhishingRequest(const GURL& phishing_url,
-                                       float score) {
+                                       float score,
+                                       bool is_extended_reporting,
+                                       bool is_enhanced_reporting) {
     ClientPhishingRequest* request = new ClientPhishingRequest();
     request->set_url(phishing_url.spec());
     request->set_client_score(score);
     request->set_is_phishing(true);  // client thinks the URL is phishing.
     base::RunLoop run_loop;
     csd_service_->SendClientReportPhishingRequest(
-        request, false, false,
+        request, is_extended_reporting, is_enhanced_reporting,
         base::Bind(&ClientSideDetectionServiceTest::SendRequestDone,
                    base::Unretained(this), run_loop.QuitWhenIdleClosure()));
     phishing_url_ = phishing_url;
@@ -131,12 +133,18 @@ class ClientSideDetectionServiceTest : public testing::Test {
     return csd_service_->GetNumReports(report_times);
   }
 
+  bool OverPhishingReportLimit() {
+    return csd_service_->OverPhishingReportLimit();
+  }
+
   base::queue<base::Time>& GetPhishingReportTimes() {
     return csd_service_->phishing_report_times_;
   }
 
   void TestCache() {
     auto& cache = csd_service_->cache_;
+    EXPECT_TRUE(cache.find(GURL("http://first.url.com/")) == cache.end());
+
     base::Time now = base::Time::Now();
     base::Time time =
         now - base::TimeDelta::FromDays(
@@ -232,35 +240,43 @@ TEST_F(ClientSideDetectionServiceTest, SendClientReportPhishingRequest) {
   SetModelFetchResponses();
   csd_service_ =
       std::make_unique<ClientSideDetectionService>(test_shared_loader_factory_);
-  csd_service_->SetEnabledAndRefreshState(true);
 
   GURL url("http://a.com/");
   float score = 0.4f;  // Some random client score.
 
+  // Safe browsing is not enabled.
+  csd_service_->SetEnabledAndRefreshState(false);
+  EXPECT_FALSE(SendClientReportPhishingRequest(url, score, false, true));
+
+  csd_service_->SetEnabledAndRefreshState(true);
   base::Time before = base::Time::Now();
 
   // Invalid response body from the server.
   SetClientReportPhishingResponse("invalid proto response", net::OK);
-  EXPECT_FALSE(SendClientReportPhishingRequest(url, score));
+  EXPECT_FALSE(SendClientReportPhishingRequest(url, score, false, false));
 
   // Normal behavior.
   ClientPhishingResponse response;
   response.set_phishy(true);
   SetClientReportPhishingResponse(response.SerializeAsString(), net::OK);
-  EXPECT_TRUE(SendClientReportPhishingRequest(url, score));
+  EXPECT_TRUE(SendClientReportPhishingRequest(url, score, false, true));
+  EXPECT_TRUE(SendClientReportPhishingRequest(url, score, true, false));
+  EXPECT_TRUE(SendClientReportPhishingRequest(url, score, false, false));
 
   // This request will fail
   GURL second_url("http://b.com/");
   response.set_phishy(false);
   SetClientReportPhishingResponse(response.SerializeAsString(),
                                   net::ERR_FAILED);
-  EXPECT_FALSE(SendClientReportPhishingRequest(second_url, score));
+  EXPECT_FALSE(
+      SendClientReportPhishingRequest(second_url, score, false, false));
 
   base::Time after = base::Time::Now();
 
   // Check that we have recorded all 3 requests within the correct time range.
   base::queue<base::Time>& report_times = GetPhishingReportTimes();
-  EXPECT_EQ(3U, report_times.size());
+  EXPECT_EQ(5U, report_times.size());
+  EXPECT_TRUE(OverPhishingReportLimit());
   while (!report_times.empty()) {
     base::Time time = report_times.back();
     report_times.pop();
@@ -290,6 +306,7 @@ TEST_F(ClientSideDetectionServiceTest, GetNumReportTest) {
   report_times.push(now);
 
   EXPECT_EQ(2, GetNumReports(&report_times));
+  EXPECT_FALSE(OverPhishingReportLimit());
 }
 
 TEST_F(ClientSideDetectionServiceTest, CacheTest) {

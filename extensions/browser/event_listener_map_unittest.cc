@@ -86,6 +86,15 @@ class EventListenerMapTest : public ExtensionsTest {
         GURL(), EventRouter::USER_GESTURE_UNKNOWN, info);
   }
 
+  std::unique_ptr<EventListener> CreateLazyListener(
+      const std::string& event_name,
+      const ExtensionId& extension_id,
+      const std::string& host_suffix,
+      bool is_for_service_worker) {
+    return EventListener::ForExtension(event_name, extension_id, nullptr,
+                                       CreateHostSuffixFilter(host_suffix));
+  }
+
  protected:
   void TestUnfilteredEventsGoToAllListeners(
       const EventListenerConstructor& constructor);
@@ -158,6 +167,9 @@ TEST_F(EventListenerMapTest, FilteredEventsOnlyGoToMatchingListeners) {
   event->filter_info.url = GURL("http://www.google.com");
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(1u, targets.size());
+  std::unique_ptr<EventListener> listener(EventListener::ForExtension(
+      kEvent1Name, kExt1Id, nullptr, CreateHostSuffixFilter("google.com")));
+  ASSERT_TRUE((*targets.begin())->Equals(listener.get()));
 }
 
 TEST_F(EventListenerMapTest, LazyAndUnlazyListenersGetReturned) {
@@ -359,21 +371,47 @@ TEST_F(EventListenerMapTest, HasListenerForExtension) {
 }
 
 TEST_F(EventListenerMapTest, AddLazyListenersFromPreferences) {
+  const bool is_for_service_worker = false;
+  struct TestCase {
+    const std::string filter_host_suffix;
+    const std::string url_of_event;
+  } kTestCases[] = {
+      {"google.com", "http://www.google.com"},
+      {"yahoo.com", "http://www.yahoo.com"},
+  };
   auto filter_list = std::make_unique<ListValue>();
-  filter_list->Append(CreateHostSuffixFilter("google.com"));
-  filter_list->Append(CreateHostSuffixFilter("yahoo.com"));
+  for (const TestCase& test_case : kTestCases)
+    filter_list->Append(CreateHostSuffixFilter(test_case.filter_host_suffix));
 
   DictionaryValue filtered_listeners;
   filtered_listeners.Set(kEvent1Name, std::move(filter_list));
-  listeners_->LoadFilteredLazyListeners(kExt1Id, false, filtered_listeners);
+  listeners_->LoadFilteredLazyListeners(kExt1Id, is_for_service_worker,
+                                        filtered_listeners);
 
-  std::unique_ptr<Event> event(
-      CreateEvent(kEvent1Name, GURL("http://www.google.com")));
-  std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
-  ASSERT_EQ(1u, targets.size());
-  std::unique_ptr<EventListener> listener(EventListener::ForExtension(
-      kEvent1Name, kExt1Id, nullptr, CreateHostSuffixFilter("google.com")));
-  ASSERT_TRUE((*targets.begin())->Equals(listener.get()));
+  // Matching filters.
+  for (const TestCase& test_case : kTestCases) {
+    SCOPED_TRACE(base::StringPrintf("host_suffix = %s, url = %s",
+                                    test_case.filter_host_suffix.c_str(),
+                                    test_case.url_of_event.c_str()));
+    std::unique_ptr<Event> event(
+        CreateEvent(kEvent1Name, GURL(test_case.url_of_event)));
+    std::set<const EventListener*> targets(
+        listeners_->GetEventListeners(*event));
+    ASSERT_EQ(1u, targets.size());
+    EXPECT_TRUE(CreateLazyListener(kEvent1Name, kExt1Id,
+                                   test_case.filter_host_suffix,
+                                   is_for_service_worker)
+                    ->Equals(*targets.begin()));
+  }
+
+  // Non-matching filter.
+  {
+    std::unique_ptr<Event> event(
+        CreateEvent(kEvent1Name, GURL("http://does_not_match.com")));
+    std::set<const EventListener*> targets(
+        listeners_->GetEventListeners(*event));
+    EXPECT_EQ(0u, targets.size());
+  }
 }
 
 TEST_F(EventListenerMapTest, CorruptedExtensionPrefsShouldntCrash) {

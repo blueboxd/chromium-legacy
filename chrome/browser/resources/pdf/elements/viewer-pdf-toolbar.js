@@ -10,15 +10,17 @@ import './icons.js';
 import './viewer-bookmark.js';
 import './viewer-page-selector.js';
 import './viewer-toolbar-dropdown.js';
-
 // <if expr="chromeos">
 import './viewer-pen-options.js';
 // </if>
 
+import {AnchorAlignment} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {Bookmark} from '../bookmark_type.js';
+import {SaveRequestType} from '../constants.js';
 
 Polymer({
   is: 'viewer-pdf-toolbar',
@@ -118,6 +120,18 @@ Polymer({
   /** @type {?Object} */
   animation_: null,
 
+  /** @private {boolean} */
+  hasEdits_: false,
+
+  /** @private {boolean} */
+  hasAnnotations_: false,
+
+  /**
+   * Whether the PDF Form save feature is enabled.
+   * @private {boolean}
+   */
+  pdfFormSaveEnabled_: false,
+
   /**
    * @param {number} newProgress
    * @param {number} oldProgress
@@ -174,6 +188,10 @@ Polymer({
     }
   },
 
+  setIsEditing() {
+    this.hasEdits_ = true;
+  },
+
   selectPageNumber() {
     this.$.pageselector.select();
   },
@@ -181,7 +199,8 @@ Polymer({
   /** @return {boolean} Whether the toolbar should be kept open. */
   shouldKeepOpen() {
     return this.$.bookmarks.dropdownOpen || this.loadProgress < 100 ||
-        this.$.pageselector.isActive() || this.annotationMode;
+        this.$.pageselector.isActive() || this.annotationMode ||
+        this.$.downloadMenu.open;
   },
 
   /** @return {boolean} Whether a dropdown was open and was hidden. */
@@ -213,8 +232,33 @@ Polymer({
     this.fire('rotate-right');
   },
 
-  download() {
-    this.fire('save');
+  /** @private */
+  onDownloadClick_() {
+    if (!this.hasAnnotations_ &&
+        (!this.hasEdits_ || !this.pdfFormSaveEnabled_)) {
+      this.fire('save', SaveRequestType.ORIGINAL);
+      return;
+    }
+    this.$.downloadMenu.showAt(this.$.download, {
+      anchorAlignmentX: AnchorAlignment.CENTER,
+      anchorAlignmentY: AnchorAlignment.AFTER_END,
+      noOffset: true,
+    });
+  },
+
+  /** @private */
+  onDownloadOriginalClick_() {
+    this.fire('save', SaveRequestType.ORIGINAL);
+    this.$.downloadMenu.close();
+  },
+
+  /** @private */
+  onDownloadEditedClick_() {
+    this.fire(
+        'save',
+        this.hasAnnotations_ ? SaveRequestType.ANNOTATION :
+                               SaveRequestType.EDITED);
+    this.$.downloadMenu.close();
   },
 
   print() {
@@ -232,6 +276,7 @@ Polymer({
   toggleAnnotation() {
     this.annotationMode = !this.annotationMode;
     if (this.annotationMode) {
+      this.hasAnnotations_ = true;
       // Select pen tool when entering annotation mode.
       this.updateAnnotationTool_(/** @type {!HTMLElement} */ (this.$.pen));
     }
@@ -300,6 +345,7 @@ Polymer({
 
     this.pdfAnnotationsEnabled_ =
         loadTimeData.getBoolean('pdfAnnotationsEnabled');
+    this.pdfFormSaveEnabled_ = loadTimeData.getBoolean('pdfFormSaveEnabled');
     this.printingEnabled_ = loadTimeData.getBoolean('printingEnabled');
   },
 });

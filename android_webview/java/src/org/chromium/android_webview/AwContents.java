@@ -2515,7 +2515,7 @@ public class AwContents implements SmartClipProvider {
      *                                  jsObjectName and allowedOriginRules is {@code null}.
      * @return A {@link ScriptReference} for removing the script.
      */
-    public ScriptReference addDocumentStartJavascript(
+    public ScriptReference addDocumentStartJavaScript(
             @NonNull String script, @NonNull String[] allowedOriginRules) {
         if (script == null) {
             throw new IllegalArgumentException("script shouldn't be null.");
@@ -2529,12 +2529,12 @@ public class AwContents implements SmartClipProvider {
         }
 
         return new ScriptReference(AwContents.this,
-                AwContentsJni.get().addDocumentStartJavascript(
+                AwContentsJni.get().addDocumentStartJavaScript(
                         mNativeAwContents, AwContents.this, script, allowedOriginRules));
     }
 
-    /* package */ void removeDocumentStartJavascript(int scriptId) {
-        AwContentsJni.get().removeDocumentStartJavascript(
+    /* package */ void removeDocumentStartJavaScript(int scriptId) {
+        AwContentsJni.get().removeDocumentStartJavaScript(
                 mNativeAwContents, AwContents.this, scriptId);
     }
 
@@ -4088,9 +4088,9 @@ public class AwContents implements SmartClipProvider {
         void grantFileSchemeAccesstoChildProcess(long nativeAwContents, AwContents caller);
         void resumeLoadingCreatedPopupWebContents(long nativeAwContents, AwContents caller);
         AwRenderProcess getRenderProcess(long nativeAwContents, AwContents caller);
-        int addDocumentStartJavascript(long nativeAwContents, AwContents caller, String script,
+        int addDocumentStartJavaScript(long nativeAwContents, AwContents caller, String script,
                 String[] allowedOriginRules);
-        void removeDocumentStartJavascript(long nativeAwContents, AwContents caller, int scriptId);
+        void removeDocumentStartJavaScript(long nativeAwContents, AwContents caller, int scriptId);
         String addWebMessageListener(long nativeAwContents, AwContents caller,
                 WebMessageListenerHolder listener, String jsObjectName, String[] allowedOrigins);
         void removeWebMessageListener(

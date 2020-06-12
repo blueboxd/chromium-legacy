@@ -295,9 +295,6 @@ TEST(NotificationDataTest, DirectionValues) {
   mappings.insert("rtl", mojom::blink::NotificationDirection::RIGHT_TO_LEFT);
   mappings.insert("auto", mojom::blink::NotificationDirection::AUTO);
 
-  // Invalid values should default to "auto".
-  mappings.insert("peter", mojom::blink::NotificationDirection::AUTO);
-
   for (const String& direction : mappings.Keys()) {
     NotificationOptions* options =
         NotificationOptions::Create(scope.GetIsolate());

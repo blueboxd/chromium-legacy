@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/chrome_extensions_browser_interface_binders.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/media/router/media_router_feature.h"       // nogncheck
 #include "chrome/browser/media/router/mojo/media_router_desktop.h"  // nogncheck
@@ -38,6 +39,8 @@
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "chromeos/services/machine_learning/public/cpp/service_connection.h"
+#include "chromeos/services/machine_learning/public/mojom/handwriting_recognizer.mojom.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #endif
@@ -55,6 +58,14 @@ void BindInputEngineManager(
     mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
   chromeos::input_method::InputMethodManager::Get()->ConnectInputEngineManager(
       std::move(receiver));
+}
+
+void BindHandwritingRecognizer(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<
+        chromeos::machine_learning::mojom::HandwritingRecognizer> receiver) {
+  chromeos::machine_learning::ServiceConnection::GetInstance()
+      ->LoadHandwritingModel(std::move(receiver), base::DoNothing());
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
@@ -163,6 +174,8 @@ void PopulateChromeFrameBindersForExtension(
   if (extension->id() == chromeos::extension_ime_util::kXkbExtensionId) {
     binder_map->Add<chromeos::ime::mojom::InputEngineManager>(
         base::BindRepeating(&BindInputEngineManager));
+    binder_map->Add<chromeos::machine_learning::mojom::HandwritingRecognizer>(
+        base::BindRepeating(&BindHandwritingRecognizer));
   }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 

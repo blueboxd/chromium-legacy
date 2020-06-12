@@ -79,7 +79,7 @@ void LogBytes(const std::vector<CharType>& data, std::string* out) {
 
 bool ReadValue(const base::Pickle* m,
                base::PickleIterator* iter,
-               std::unique_ptr<base::Value>* value,
+               base::Value* value,
                int recursion);
 
 void WriteValue(base::Pickle* m, const base::Value* value, int recursion) {
@@ -166,15 +166,16 @@ bool ReadDictionaryValue(const base::Pickle* m,
   if (!ReadParam(m, iter, &size))
     return false;
 
-  for (int i = 0; i < size; ++i) {
-    std::string key;
-    std::unique_ptr<base::Value> subval;
-    if (!ReadParam(m, iter, &key) ||
-        !ReadValue(m, iter, &subval, recursion + 1))
+  std::vector<std::pair<std::string, std::unique_ptr<base::Value>>> entries;
+  entries.resize(size);
+  for (auto& entry : entries) {
+    entry.second = std::make_unique<base::Value>();
+    if (!ReadParam(m, iter, &entry.first) ||
+        !ReadValue(m, iter, entry.second.get(), recursion + 1))
       return false;
-    value->SetWithoutPathExpansion(key, std::move(subval));
   }
 
+  *value = base::DictionaryValue(base::Value::DictStorage(std::move(entries)));
   return true;
 }
 
@@ -188,19 +189,19 @@ bool ReadListValue(const base::Pickle* m,
   if (!ReadParam(m, iter, &size))
     return false;
 
-  for (int i = 0; i < size; ++i) {
-    std::unique_ptr<base::Value> subval;
+  base::Value::ListStorage list_storage;
+  list_storage.resize(size);
+  for (base::Value& subval : list_storage) {
     if (!ReadValue(m, iter, &subval, recursion + 1))
       return false;
-    value->Set(i, std::move(subval));
   }
-
+  *value = base::ListValue(std::move(list_storage));
   return true;
 }
 
 bool ReadValue(const base::Pickle* m,
                base::PickleIterator* iter,
-               std::unique_ptr<base::Value>* value,
+               base::Value* value,
                int recursion) {
   if (recursion > kMaxRecursionDepth) {
     LOG(ERROR) << "Max recursion depth hit in ReadValue.";
@@ -213,56 +214,55 @@ bool ReadValue(const base::Pickle* m,
 
   switch (static_cast<base::Value::Type>(type)) {
     case base::Value::Type::NONE:
-      *value = std::make_unique<base::Value>();
+      *value = base::Value();
       break;
     case base::Value::Type::BOOLEAN: {
       bool val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = std::make_unique<base::Value>(val);
+      *value = base::Value(val);
       break;
     }
     case base::Value::Type::INTEGER: {
       int val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = std::make_unique<base::Value>(val);
+      *value = base::Value(val);
       break;
     }
     case base::Value::Type::DOUBLE: {
       double val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = std::make_unique<base::Value>(val);
+      *value = base::Value(val);
       break;
     }
     case base::Value::Type::STRING: {
       std::string val;
       if (!ReadParam(m, iter, &val))
         return false;
-      *value = std::make_unique<base::Value>(std::move(val));
+      *value = base::Value(std::move(val));
       break;
     }
     case base::Value::Type::BINARY: {
-      const char* data;
-      int length;
-      if (!iter->ReadData(&data, &length))
+      base::span<const uint8_t> data;
+      if (!iter->ReadData(&data))
         return false;
-      *value = base::Value::CreateWithCopiedBuffer(data, length);
+      *value = base::Value(data);
       break;
     }
     case base::Value::Type::DICTIONARY: {
       base::DictionaryValue val;
       if (!ReadDictionaryValue(m, iter, &val, recursion))
         return false;
-      *value = std::make_unique<base::Value>(std::move(val));
+      *value = std::move(val);
       break;
     }
     case base::Value::Type::LIST: {
       base::ListValue val;
       if (!ReadListValue(m, iter, &val, recursion))
         return false;
-      *value = std::make_unique<base::Value>(std::move(val));
+      *value = std::move(val);
       break;
     }
     default:

@@ -683,15 +683,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_SelectionChanged,
                     uint32_t /* the offset of the text in the document */,
                     gfx::Range /* selection range in the document */)
 
-// Displays a dialog to confirm that the user wants to navigate away from the
-// page. Replies true if yes, and false otherwise. The reply string is ignored,
-// but is included so that we can use
-// RenderFrameHostImpl::SendJavaScriptDialogReply.
-IPC_SYNC_MESSAGE_ROUTED1_2(FrameHostMsg_RunBeforeUnloadConfirm,
-                           bool /* in - is a reload */,
-                           bool /* out - success */,
-                           base::string16 /* out - This is ignored.*/)
-
 // Sent as a response to FrameMsg_VisualStateRequest.
 // The message is delivered using RenderWidget::QueueMessage.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64_t /* id */)

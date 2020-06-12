@@ -105,10 +105,6 @@ void OmniboxTabSwitchButton::ProvideWidthHint(int parent_width) {
   SetPreferredSize({preferred_width, GetPreferredSize().height()});
 }
 
-void OmniboxTabSwitchButton::ProvideFocusHint() {
-  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
-}
-
 bool OmniboxTabSwitchButton::IsSelected() const {
   // Is this result selected and is button selected?
   return result_view_->IsMatchSelected() &&

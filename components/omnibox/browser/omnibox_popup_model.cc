@@ -181,6 +181,8 @@ void OmniboxPopupModel::SetSelection(Selection new_selection,
   if (selection_.IsButtonFocused()) {
     old_focused_url_ = match.destination_url;
     edit_model_->SetAccessibilityLabel(match);
+    // TODO(tommycli): Fold the focus hint into view_->OnSelectionChanged().
+    // Caveat: We must update the accessibility label before notifying the View.
     view_->ProvideButtonFocusHint(selected_line());
   }
 

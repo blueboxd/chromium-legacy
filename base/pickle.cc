@@ -199,6 +199,17 @@ bool PickleIterator::ReadData(const char** data, int* length) {
   return ReadBytes(data, *length);
 }
 
+bool PickleIterator::ReadData(base::span<const uint8_t>* data) {
+  const char* ptr;
+  int length;
+
+  if (!ReadData(&ptr, &length))
+    return false;
+
+  *data = base::as_bytes(base::make_span(ptr, length));
+  return true;
+}
+
 bool PickleIterator::ReadBytes(const char** data, int length) {
   const char* read_from = GetReadPointerAndAdvance(length);
   if (!read_from)

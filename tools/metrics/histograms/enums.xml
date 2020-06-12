@@ -3471,6 +3471,7 @@ Unknown properties are collapsed to zero. -->
   <int value="10" label="kWhatsOnMyScreen"/>
   <int value="11" label="kQuickAnswers"/>
   <int value="12" label="kLauncherChip"/>
+  <int value="13" label="kBetterOnboarding"/>
 </enum>
 
 <enum name="AsyncDNSConfigParsePosix">
@@ -23238,6 +23239,7 @@ Called by update_extension_histograms.py.-->
   <int value="1478" label="AUTOTESTPRIVATE_WAITFORAMBIENTPHOTOANIMATION"/>
   <int value="1479" label="INPUT_IME_SETASSISTIVEWINDOWPROPERTIES"/>
   <int value="1480" label="PASSWORDSPRIVATE_MOVEPASSWORDTOACCOUNT"/>
+  <int value="1481" label="AUTOTESTPRIVATE_DISABLESWITCHACCESSDIALOG"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -27662,6 +27664,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3311" label="StorageAccessAPI_requestStorageAccess_Method"/>
   <int value="3312" label="WebBluetoothWatchAdvertisements"/>
   <int value="3313" label="RubyTextWithNonDefaultTextAlign"/>
+  <int value="3314" label="HTMLMetaElementReferrerPolicyOutsideHead"/>
+  <int value="3315" label="HTMLMetaElementReferrerPolicyMultipleTokens"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -33919,6 +33923,35 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="REUSED_IDLE">previously used (keep-alive?) socket</int>
 </enum>
 
+<enum name="HttpssvcDnsRcode">
+  <summary>
+    Tracks the result of querying for an INTEGRITY or HTTPSSVC record. This enum
+    can represent each of Chrome's supported RCODE values as well as any
+    unrecognized RCODE values. It also has the TimedOut value to represent
+    queries that timed out.
+
+    IANA registry:
+    https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml
+  </summary>
+  <int value="0" label="TimedOut"/>
+  <int value="1" label="UnrecognizedRcode"/>
+  <int value="2" label="MissingDnsResponse (network error)"/>
+  <int value="3" label="NOERROR"/>
+  <int value="4" label="FORMERR"/>
+  <int value="5" label="SERVFAIL"/>
+  <int value="6" label="NXDOMAIN"/>
+  <int value="7" label="NOTIMP"/>
+  <int value="8" label="REFUSED"/>
+</enum>
+
+<enum name="HttpssvcIntegrityJudgment">
+  <summary>
+    Represents the result of checking the INTEGRITY record's integrity.
+  </summary>
+  <int value="0" label="Mangled"/>
+  <int value="1" label="Intact"/>
+</enum>
+
 <enum name="HttpStatusCodeClass">
   <int value="0" label="Invalid"/>
   <int value="1" label="1XX"/>
@@ -38909,6 +38942,7 @@ from previous Chrome versions.
   <int value="-1859095876" label="Previews:disabled"/>
   <int value="-1858284725" label="TabGroupsFeedback:enabled"/>
   <int value="-1856902397" label="LoadingWithMojo:enabled"/>
+  <int value="-1856718338" label="AndroidDefaultBrowserPromo:disabled"/>
   <int value="-1855347512" label="FormControlsRefresh:disabled"/>
   <int value="-1854432127" label="ChromeHomePullToRefreshIphAtTop:disabled"/>
   <int value="-1854372227" label="VrBrowsingExperimentalFeatures:enabled"/>
@@ -39242,6 +39276,7 @@ from previous Chrome versions.
   <int value="-1468126425" label="ResourceLoadScheduler:disabled"/>
   <int value="-1467642274" label="KeyboardShortcutViewer:disabled"/>
   <int value="-1467332609" label="tab-management-experiment-type-anise"/>
+  <int value="-1467062925" label="AndroidDefaultBrowserPromo:enabled"/>
   <int value="-1466990325" label="CrosCompUpdates:enabled"/>
   <int value="-1466862366" label="TouchToFillAndroid:enabled"/>
   <int value="-1466759286" label="TabModalJsDialog:disabled"/>
@@ -71752,6 +71787,7 @@ Called by update_scheduler_enums.py.-->
   <int value="48" label="IdleManager"/>
   <int value="49" label="PaymentManager"/>
   <int value="50" label="SpeechSynthesis"/>
+  <int value="51" label="KeyboardLock"/>
 </enum>
 
 <enum name="WebShareMethod">

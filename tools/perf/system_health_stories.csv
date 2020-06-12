@@ -18,13 +18,13 @@ browse:media:pinterest:2018,,desktop,2018
 browse:media:tumblr:2018,,desktop,2018
 browse:media:youtube:2019,Load a typical YouTube video then navigate to a next few videos. Stop and,"desktop,mobile","2019,emerging_market,javascript_heavy"
 browse:media:youtubetv:2019,Load a typical YouTube TV video then navigate to a next few videos. Stop,desktop,2019
-browse:news:cnn:2018,The second top website in http://www.alexa.com/topsites/category/News,"desktop,mobile","2018,health_check,javascript_heavy"
+browse:news:cnn:2020,The second top website in http://www.alexa.com/topsites/category/News,"desktop,mobile","2020,health_check,javascript_heavy"
 browse:news:cricbuzz:2019,,mobile,"2019,emerging_market"
 browse:news:flipboard:2018,,desktop,2018
 browse:news:globo:2019,,mobile,"2019,emerging_market"
 browse:news:hackernews:2018,,desktop,2018
-browse:news:nytimes:2018,The third top website in http://www.alexa.com/topsites/category/News,desktop,2018
 browse:news:nytimes:2019,The third top website in http://www.alexa.com/topsites/category/News,mobile,2019
+browse:news:nytimes:2020,The third top website in http://www.alexa.com/topsites/category/News,desktop,2020
 browse:news:qq:2019,,mobile,"2019,international"
 browse:news:reddit:2018,The top website in http://www.alexa.com/topsites/category/News,desktop,2018
 browse:news:reddit:2019,,mobile,"2019,health_check"
@@ -55,7 +55,7 @@ browse_accessibility:media:youtube,Tests interacting with the YouTube home page.
 browse_accessibility:tech:codesearch:2018,Tests scrolling an element within a page.,desktop,"2018,accessibility,scroll"
 load:chrome:blank,Story that loads the about:blank page.,"desktop,mobile",2016
 load:games:alphabetty:2018,,desktop,2018
-load:games:bubbles:2019,"Load ""smarty bubbles"" game on famobi.com","desktop,mobile",2019
+load:games:bubbles:2020,"Load ""smarty bubbles"" game on famobi.com","desktop,mobile",2020
 load:games:lazors,,"desktop,mobile",2016
 load:games:miniclip:2018,,desktop,2018
 load:games:spychase:2018,,"desktop,mobile",2018

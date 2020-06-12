@@ -89,6 +89,12 @@ class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
   device::mojom::blink::VRPosePtr immersive_frame_pose_;
   bool is_immersive_frame_position_emulated_ = false;
 
+  // Time the first immersive frame has arrived - used to align the monotonic
+  // clock the devices use with the base::TimeTicks.
+  base::Optional<base::TimeTicks> first_immersive_frame_time_;
+  // The time_delta value of the first immersive frame that has arrived.
+  base::Optional<base::TimeDelta> first_immersive_frame_time_delta_;
+
   // Non-immersive session state
   HeapHashMap<Member<XRSession>,
               Member<DisallowNewWrapper<HeapMojoRemote<

@@ -34,7 +34,7 @@ class JsJavaConfigurator
   // mojom::JsJavaConfigurator implementation
   void SetJsObjects(std::vector<mojom::JsObjectPtr> js_object_ptrs) override;
   void AddDocumentStartScript(
-      mojom::DocumentStartJavascriptPtr script_ptr) override;
+      mojom::DocumentStartJavaScriptPtr script_ptr) override;
   void RemoveDocumentStartScript(int32_t script_id) override;
 
   // RenderFrameObserver implementation
@@ -50,7 +50,7 @@ class JsJavaConfigurator
 
  private:
   struct JsObjectInfo;
-  struct DocumentStartJavascript;
+  struct DocumentStartJavaScript;
 
   void BindPendingReceiver(
       mojo::PendingAssociatedReceiver<mojom::JsJavaConfigurator>
@@ -63,7 +63,7 @@ class JsJavaConfigurator
   // to prevent doing multiple injection in that case.
   bool inside_did_clear_window_object_ = false;
 
-  std::vector<std::unique_ptr<DocumentStartJavascript>> scripts_;
+  std::vector<std::unique_ptr<DocumentStartJavaScript>> scripts_;
   std::vector<std::unique_ptr<JsBinding>> js_bindings_;
 
   // Associated with legacy IPC channel.

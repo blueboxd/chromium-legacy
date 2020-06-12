@@ -74,6 +74,7 @@ int GetIsolatedWorldIdForInstance(const InjectionHost* injection_host,
   info.security_origin =
       blink::WebSecurityOrigin::Create(injection_host->url());
   info.human_readable_name = blink::WebString::FromUTF8(injection_host->name());
+  info.stable_id = blink::WebString::FromUTF8(key);
 
   const std::string* csp = injection_host->GetContentSecurityPolicy();
   if (csp)

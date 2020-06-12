@@ -18,8 +18,8 @@ const GpuControlList::Conditions kExceptionsForEntry5[1] = {
         {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
          GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // os_version
         0x00,                                                      // vendor_id
-        0,                                                // DeviceIDs size
-        nullptr,                                          // DeviceIDs
+        0,                                                // Devices size
+        nullptr,                                          // Devices
         GpuControlList::kMultiGpuCategoryNone,            // multi_gpu_category
         GpuControlList::kMultiGpuStyleNone,               // multi_gpu_style
         nullptr,                                          // driver info

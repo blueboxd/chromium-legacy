@@ -21,15 +21,16 @@ namespace internal {
 
 using pool_handle = unsigned;
 
-// The address space reservation is supported only on 64-bit architecture.
+// The address space reservation is supported only on 64-bit architectures.
 #if defined(ARCH_CPU_64_BITS)
 
-// AddressPoolManager takes a reserved virtual address space and manages the
-// address space allocation.
-// AddressPoolManager supports up to 2 pools. One pool manages one contiguous
-// reserved address space. Alloc() takes the pool handle and returns
-// address regions from the specified pool. Free() also takes the pool handle
-// and returns the address region back to the manager.
+// AddressPoolManager takes a reserved virtual address space and manages address
+// space allocation.
+//
+// AddressPoolManager (currently) supports up to 2 pools. Each pool manages a
+// contiguous reserved address space. Alloc() takes a pool_handle and returns
+// address regions from the specified pool. Free() also takes a pool_handle and
+// returns the address region back to the manager.
 class BASE_EXPORT AddressPoolManager {
  public:
   static AddressPoolManager* GetInstance();
@@ -44,8 +45,6 @@ class BASE_EXPORT AddressPoolManager {
   AddressPoolManager();
   ~AddressPoolManager();
 
-  pool_handle AllocHandle();
-
   class Pool {
    public:
     Pool(uintptr_t ptr, size_t length);
@@ -55,10 +54,10 @@ class BASE_EXPORT AddressPoolManager {
     void FreeChunk(uintptr_t address, size_t size);
 
    private:
-    // The bitset stores an allocation state of the address pool. 1 bit per
+    // The bitset stores the allocation state of the address pool. 1 bit per
     // super-page: 1 = allocated, 0 = free.
-    static constexpr size_t kGigaBytes = 1024 * 1024 * 1024;
-    static constexpr size_t kMaxSupportedSize = 16 * kGigaBytes;
+    static constexpr size_t kGiB = 1024 * 1024 * 1024;
+    static constexpr size_t kMaxSupportedSize = 16 * kGiB;
     static constexpr size_t kMaxBits = kMaxSupportedSize / kSuperPageSize;
     base::Lock lock_;
     std::bitset<kMaxBits> alloc_bitset_ GUARDED_BY(lock_);
@@ -69,14 +68,16 @@ class BASE_EXPORT AddressPoolManager {
     const uintptr_t address_end_;
 #endif
 
-    // A number of a bit before which we know for sure there all 1s. This is
-    // a best effort hint in the sense that there still may be lots of 1s after
-    // this bit, but at least we know there is no point in starting the search
-    // before it.
+    // An index of a bit in the bitset before which we know for sure there all
+    // 1s. This is a best-effort hint in the sense that there still may be lots
+    // of 1s after this index, but at least we know there is no point in
+    // starting the search before it.
     size_t bit_hint_;
 
     DISALLOW_COPY_AND_ASSIGN(Pool);
   };
+
+  ALWAYS_INLINE Pool* GetPool(pool_handle handle);
 
   static constexpr size_t kNumPools = 2;
   std::unique_ptr<Pool> pools_[kNumPools];

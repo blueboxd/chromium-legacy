@@ -79,7 +79,7 @@ CtapMakeCredentialRequest MakeCredentialTask::GetTouchRequest(
       std::move(user),
       PublicKeyCredentialParams(
           {{CredentialType::kPublicKey,
-            base::strict_cast<int>(CoseAlgorithmIdentifier::kCoseEs256)}}));
+            base::strict_cast<int>(CoseAlgorithmIdentifier::kEs256)}}));
 
   // If a device supports CTAP2 and has PIN support then setting an empty
   // pinAuth should trigger just a touch[1]. Our U2F code also understands

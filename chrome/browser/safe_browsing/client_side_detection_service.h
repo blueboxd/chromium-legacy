@@ -134,6 +134,7 @@ class ClientSideDetectionService : public content::NotificationObserver,
                            ServiceObjectDeletedBeforeCallbackDone);
   FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest,
                            SendClientReportPhishingRequest);
+  FRIEND_TEST_ALL_PREFIXES(ClientSideDetectionServiceTest, GetNumReportTest);
 
   // CacheState holds all information necessary to respond to a caller without
   // actually making a HTTP request.

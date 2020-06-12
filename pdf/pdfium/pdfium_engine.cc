@@ -3591,12 +3591,12 @@ void PDFiumEngine::SetSelecting(bool selecting) {
     client_->IsSelectingChanged(selecting);
 }
 
-void PDFiumEngine::SetEditMode(bool edit_mode) {
-  if (edit_mode_ == edit_mode)
+void PDFiumEngine::EnteredEditMode() {
+  if (edit_mode_)
     return;
 
-  edit_mode_ = edit_mode;
-  client_->IsEditModeChanged(edit_mode_);
+  edit_mode_ = true;
+  client_->EnteredEditMode();
 }
 
 void PDFiumEngine::SetInFormTextArea(bool in_form_text_area) {

@@ -191,6 +191,8 @@ class FlocIdProviderWithCustomizedServicesBrowserTest
 
 IN_PROC_BROWSER_TEST_F(FlocIdProviderWithCustomizedServicesBrowserTest,
                        FlocIdValue_OneNavigation) {
+  net::IPAddress::ConsiderLoopbackIPToBePubliclyRoutableForTesting();
+
   ui_test_utils::NavigateToURL(
       browser(), https_server_.GetURL(test_host(), "/title1.html"));
 

@@ -5,9 +5,11 @@
 package org.chromium.chrome.browser.share.share_sheet;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
@@ -20,7 +22,6 @@ import android.support.test.rule.ActivityTestRule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -41,7 +42,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.DummyUiActivity;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Tests {@link ShareSheetPropertyModelBuilder}.
@@ -65,48 +67,45 @@ public final class ShareSheetPropertyModelBuilderTest {
     @Mock
     private ShareParams mParams;
     @Mock
-    private ResolveInfo mResolveInfo1;
+    private ResolveInfo mTextResolveInfo1;
     @Mock
-    private ResolveInfo mResolveInfo2;
+    private ResolveInfo mTextResolveInfo2;
     @Mock
-    private ResolveInfo mResolveInfo3;
+    private ResolveInfo mImageResolveInfo1;
+    @Mock
+    private ResolveInfo mImageResolveInfo2;
+
+    private static final String sTextModelLabel1 = "textModelLabel1";
+    private static final String sTextModelLabel2 = "textModelLabel2";
+    private static final String sImageModelLabel1 = "imageModelLabel1";
+    private static final String sImageModelLabel2 = "imageModelLabel2";
 
     private static final String IMAGE_TYPE = "image/jpeg";
     private static final String URL = "http://www.google.com/";
 
-    private ArrayList<ResolveInfo> mResolveInfoList;
     private Activity mActivity;
+    private ShareSheetPropertyModelBuilder mPropertyModelBuilder;
 
     @Before
     public void setUp() throws PackageManager.NameNotFoundException {
         MockitoAnnotations.initMocks(this);
         mActivity = mActivityTestRule.getActivity();
+        mPropertyModelBuilder = new ShareSheetPropertyModelBuilder(null, mPackageManager);
 
-        mResolveInfo1.activityInfo =
-                mActivity.getPackageManager().getActivityInfo(mActivity.getComponentName(), 0);
-        mResolveInfo1.activityInfo.packageName = "testPackage1";
-        when(mResolveInfo1.loadLabel(any())).thenReturn("testModel1");
-        when(mResolveInfo1.loadIcon(any())).thenReturn(null);
-        mResolveInfo1.icon = 0;
+        setUpResolveInfo(mTextResolveInfo1, "textPackage1", sTextModelLabel1);
+        setUpResolveInfo(mTextResolveInfo2, "textPackage2", sTextModelLabel2);
+        setUpResolveInfo(mImageResolveInfo1, "imagePackage1", sImageModelLabel1);
+        setUpResolveInfo(mImageResolveInfo2, "imagePackage1", sImageModelLabel2);
+        mImageResolveInfo2.activityInfo.name = "com.google.android.gm.ComposeActivityGmailExternal";
 
-        mResolveInfo2.activityInfo =
-                mActivity.getPackageManager().getActivityInfo(mActivity.getComponentName(), 0);
-        mResolveInfo2.activityInfo.packageName = "testPackage2";
-        when(mResolveInfo2.loadLabel(any())).thenReturn("testModel2");
-        when(mResolveInfo2.loadIcon(any())).thenReturn(null);
-        mResolveInfo2.icon = 0;
-
-        mResolveInfo3.activityInfo =
-                mActivity.getPackageManager().getActivityInfo(mActivity.getComponentName(), 0);
-        mResolveInfo3.activityInfo.packageName = "testPackage3";
-        mResolveInfo3.activityInfo.name = "com.google.android.gm.ComposeActivityGmailExternal";
-        when(mResolveInfo3.loadLabel(any())).thenReturn("testModel3");
-        when(mResolveInfo3.loadIcon(any())).thenReturn(null);
-        mResolveInfo3.icon = 0;
-
-        mResolveInfoList =
-                new ArrayList<>(Arrays.asList(mResolveInfo1, mResolveInfo2, mResolveInfo3));
-        when(mPackageManager.queryIntentActivities(any(), anyInt())).thenReturn(mResolveInfoList);
+        doReturn(ImmutableList.of(mTextResolveInfo1, mTextResolveInfo2))
+                .when(mPackageManager)
+                .queryIntentActivities(
+                        argThat(intent -> intent.getType().equals("text/plain")), anyInt());
+        doReturn(ImmutableList.of(mImageResolveInfo1, mImageResolveInfo2))
+                .when(mPackageManager)
+                .queryIntentActivities(
+                        argThat(intent -> intent.getType().equals("image/jpeg")), anyInt());
         when(mPackageManager.getResourcesForApplication(anyString()))
                 .thenReturn(mActivity.getResources());
     }
@@ -246,18 +245,84 @@ public final class ShareSheetPropertyModelBuilderTest {
 
     @Test
     @MediumTest
-    public void testSelectThirdPartyApps() {
-        ShareSheetPropertyModelBuilder builder =
-                new ShareSheetPropertyModelBuilder(null, mPackageManager);
+    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARING_HUB_V15})
+    public void selectThirdPartyApps_sharingHub15Disabled_returnsTextSharingModels() {
+        ShareParams shareParams = new ShareParams.Builder(null, "", "").build();
 
-        ArrayList<PropertyModel> propertyModels = builder.selectThirdPartyApps(
-                null, mParams, /*saveLastUsed=*/false, /*shareStartTime=*/0);
-        Assert.assertEquals("Incorrect number of property models.", 3, propertyModels.size());
-        Assert.assertEquals("First property model isn't testModel3", "testModel3",
-                propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));
-        Assert.assertEquals("Second property model isn't testModel1", "testModel1",
-                propertyModels.get(1).get(ShareSheetItemViewProperties.LABEL));
-        Assert.assertEquals("Third property model isn't testModel2", "testModel2",
-                propertyModels.get(2).get(ShareSheetItemViewProperties.LABEL));
+        List<PropertyModel> propertyModels = mPropertyModelBuilder.selectThirdPartyApps(
+                null, new HashSet<>(), shareParams, /*saveLastUsed=*/false, /*shareStartTime=*/0);
+
+        assertEquals("Incorrect number of property models.", 2, propertyModels.size());
+        assertModelsAreInTheRightOrder(
+                propertyModels, ImmutableList.of(sTextModelLabel1, sTextModelLabel2));
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARING_HUB_V15})
+    public void selectThirdPartyApps_sharingHub15EnabledAndLinkShare_returnsTextSharingModels() {
+        ShareParams shareParams = new ShareParams.Builder(null, "", URL).build();
+
+        List<PropertyModel> propertyModels = mPropertyModelBuilder.selectThirdPartyApps(null,
+                ImmutableSet.of(ContentType.LINK_PAGE_VISIBLE), shareParams, /*saveLastUsed=*/false,
+                /*shareStartTime=*/0);
+
+        assertEquals("Incorrect number of property models.", 2, propertyModels.size());
+        assertModelsAreInTheRightOrder(
+                propertyModels, ImmutableList.of(sTextModelLabel1, sTextModelLabel2));
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARING_HUB_V15})
+    public void selectThirdPartyApps_sharingHub15EnabledAndImageShare_returnsImageSharingModels() {
+        ShareParams shareParams =
+                new ShareParams.Builder(null, "", "").setFileContentType("image/jpeg").build();
+
+        List<PropertyModel> propertyModels =
+                mPropertyModelBuilder.selectThirdPartyApps(null, ImmutableSet.of(ContentType.IMAGE),
+                        shareParams, /*saveLastUsed=*/false, /*shareStartTime=*/0);
+
+        assertEquals("Incorrect number of property models.", 2, propertyModels.size());
+        assertModelsAreInTheRightOrder(
+                propertyModels, ImmutableList.of(sImageModelLabel2, sImageModelLabel1));
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARING_HUB_V15})
+    public void
+    selectThirdPartyApps_sharingHub15EnabledAndLinkImageShare_returnsTextAndImageSharingModels() {
+        ShareParams shareParams =
+                new ShareParams.Builder(null, "", URL).setFileContentType("image/jpeg").build();
+
+        List<PropertyModel> propertyModels = mPropertyModelBuilder.selectThirdPartyApps(null,
+                ImmutableSet.of(ContentType.LINK_PAGE_VISIBLE, ContentType.IMAGE), shareParams,
+                /*saveLastUsed=*/false, /*shareStartTime=*/0);
+
+        assertEquals("Incorrect number of property models.", 4, propertyModels.size());
+        assertModelsAreInTheRightOrder(propertyModels,
+                ImmutableList.of(
+                        sImageModelLabel2, sTextModelLabel1, sTextModelLabel2, sImageModelLabel1));
+    }
+
+    private void setUpResolveInfo(ResolveInfo resolveInfo, String packageName, String label)
+            throws PackageManager.NameNotFoundException {
+        resolveInfo.activityInfo =
+                mActivity.getPackageManager().getActivityInfo(mActivity.getComponentName(), 0);
+        resolveInfo.activityInfo.packageName = packageName;
+        when(resolveInfo.loadLabel(any())).thenReturn(label);
+        when(resolveInfo.loadIcon(any())).thenReturn(null);
+        resolveInfo.icon = 0;
+    }
+
+    private void assertModelsAreInTheRightOrder(
+            List<PropertyModel> propertyModels, List<String> expectedOrder) {
+        ImmutableList.Builder<String> actualLabelOrder = ImmutableList.builder();
+        for (PropertyModel propertyModel : propertyModels) {
+            actualLabelOrder.add(propertyModel.get(ShareSheetItemViewProperties.LABEL));
+        }
+        assertEquals(
+                "Property models in the wrong order.", expectedOrder, actualLabelOrder.build());
     }
 }

@@ -22,6 +22,7 @@ try_.set_defaults(
     name = name,
 ) for name in (
     'tryserver.blink',
+    'tryserver.chromium',
     'tryserver.chromium.android',
     'tryserver.chromium.angle',
     'tryserver.chromium.chromiumos',
@@ -48,6 +49,35 @@ try_.blink_builder(
             '.+/[+]/third_party/blink/renderer/platform/graphics/.+',
         ],
     ),
+)
+
+
+try_.chromium_builder(
+    name = 'android-official',
+)
+
+try_.chromium_builder(
+    name = 'chromeos-official',
+)
+
+try_.chromium_builder(
+    name = 'fuchsia-official',
+)
+
+try_.chromium_builder(
+    name = 'ios-official',
+)
+
+try_.chromium_builder(
+    name = 'mac-official',
+)
+
+try_.chromium_builder(
+    name = 'win-official',
+)
+
+try_.chromium_builder(
+    name = 'win32-official',
 )
 
 
@@ -368,7 +398,7 @@ try_.chromium_linux_builder(
 try_.chromium_linux_builder(
     name = 'fuchsia_arm64',
     tryjob = try_.job(
-      experiment_percentage=3,
+      experiment_percentage=10,
     ),
 )
 

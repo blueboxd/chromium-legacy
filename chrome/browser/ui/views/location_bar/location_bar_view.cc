@@ -373,10 +373,7 @@ void LocationBarView::FocusLocation(bool is_user_initiated) {
     return;
 
   omnibox_view_->SelectAll(true);
-
-  // Only exit Query in Omnibox mode on focus command if the location bar was
-  // already focused to begin with, i.e. user presses Ctrl+L twice.
-  omnibox_view()->model()->Unelide(omnibox_already_focused);
+  omnibox_view()->model()->Unelide();
 }
 
 void LocationBarView::Revert() {

@@ -151,36 +151,6 @@ struct SupportedFormats {
   std::vector<webrtc::SdpVideoFormat> sdp_formats;
 };
 
-// Due to https://crbug.com/345569, HW encoders do not distinguish between
-// Constrained Baseline(CBP) and Baseline(BP) profiles. Since CBP is a subset of
-// BP, we can report support for both. It is safe to do so when SW fallback is
-// available.
-// TODO(chunbo): Remove this when the bug referred above is fixed.
-void AddConstrainedBaselineProfile(SupportedFormats* supported_formats) {
-  if (supported_formats->unknown)
-    return;
-
-  for (size_t i = 0; i < supported_formats->profiles.size(); ++i) {
-    if (media::H264PROFILE_BASELINE != supported_formats->profiles[i])
-      continue;
-
-    webrtc::SdpVideoFormat cbp_format = supported_formats->sdp_formats[i];
-    const absl::optional<webrtc::H264::ProfileLevelId> profile_level_id =
-        webrtc::H264::ParseSdpProfileLevelId(
-            supported_formats->sdp_formats[i].parameters);
-    if (!profile_level_id)
-      continue;
-
-    webrtc::H264::ProfileLevelId cbp_profile = *profile_level_id;
-    cbp_profile.profile = webrtc::H264::kProfileConstrainedBaseline;
-    cbp_format.parameters[cricket::kH264FmtpProfileLevelId] =
-        *webrtc::H264::ProfileLevelIdToString(cbp_profile);
-    supported_formats->sdp_formats.push_back(cbp_format);
-    supported_formats->profiles.push_back(media::H264PROFILE_BASELINE);
-    return;
-  }
-}
-
 SupportedFormats GetSupportedFormatsInternal(
     media::GpuVideoAcceleratorFactories* gpu_factories) {
   SupportedFormats supported_formats;
@@ -198,8 +168,6 @@ SupportedFormats GetSupportedFormatsInternal(
       supported_formats.sdp_formats.push_back(std::move(*format));
     }
   }
-
-  AddConstrainedBaselineProfile(&supported_formats);
   return supported_formats;
 }
 

@@ -26,41 +26,41 @@ namespace {
 // Tags in the manifest to be replaced.
 const char kNameTag[] = "<NAME>";
 
-}  // namespace
+// Adds strings that are used both by the stand-alone PDF Viewer and the Print
+// Preview PDF Viewer.
+void AddCommonStrings(base::Value* dict) {
+  static constexpr webui::LocalizedString kPdfResources[] = {
+      {"errorDialogTitle", IDS_PDF_ERROR_DIALOG_TITLE},
+      {"pageLoadFailed", IDS_PDF_PAGE_LOAD_FAILED},
+      {"pageLoading", IDS_PDF_PAGE_LOADING},
+      {"pageReload", IDS_PDF_PAGE_RELOAD_BUTTON},
+      {"tooltipFitToPage", IDS_PDF_TOOLTIP_FIT_PAGE},
+      {"tooltipFitToWidth", IDS_PDF_TOOLTIP_FIT_WIDTH},
+      {"tooltipTwoUpViewDisable", IDS_PDF_TOOLTIP_TWO_UP_VIEW_DISABLE},
+      {"tooltipTwoUpViewEnable", IDS_PDF_TOOLTIP_TWO_UP_VIEW_ENABLE},
+      {"tooltipZoomIn", IDS_PDF_TOOLTIP_ZOOM_IN},
+      {"tooltipZoomOut", IDS_PDF_TOOLTIP_ZOOM_OUT},
+  };
+  for (const auto& resource : kPdfResources)
+    dict->SetStringKey(resource.name, l10n_util::GetStringUTF16(resource.id));
 
-std::string GetManifest() {
-  std::string manifest_contents = ui::ResourceBundle::GetSharedInstance()
-                                      .GetRawDataResource(IDR_PDF_MANIFEST)
-                                      .as_string();
-  DCHECK(manifest_contents.find(kNameTag) != std::string::npos);
-  base::ReplaceFirstSubstringAfterOffset(
-      &manifest_contents, 0, kNameTag,
-      ChromeContentClient::kPDFExtensionPluginName);
-
-  return manifest_contents;
+  dict->SetStringKey("presetZoomFactors", zoom::GetPresetZoomFactorsAsJSON());
 }
 
-void AddStrings(base::Value* dict) {
+// Adds strings that are used only by the stand-alone PDF Viewer.
+void AddPdfViewerStrings(base::Value* dict) {
   static constexpr webui::LocalizedString kPdfResources[] = {
+    {"bookmarks", IDS_PDF_BOOKMARKS},
+    {"downloadEdited", IDS_PDF_DOWNLOAD_EDITED},
+    {"downloadOriginal", IDS_PDF_DOWNLOAD_ORIGINAL},
+    {"labelPageNumber", IDS_PDF_LABEL_PAGE_NUMBER},
     {"passwordDialogTitle", IDS_PDF_PASSWORD_DIALOG_TITLE},
+    {"passwordInvalid", IDS_PDF_PASSWORD_INVALID},
     {"passwordPrompt", IDS_PDF_NEED_PASSWORD},
     {"passwordSubmit", IDS_PDF_PASSWORD_SUBMIT},
-    {"passwordInvalid", IDS_PDF_PASSWORD_INVALID},
-    {"pageLoading", IDS_PDF_PAGE_LOADING},
-    {"pageLoadFailed", IDS_PDF_PAGE_LOAD_FAILED},
-    {"errorDialogTitle", IDS_PDF_ERROR_DIALOG_TITLE},
-    {"pageReload", IDS_PDF_PAGE_RELOAD_BUTTON},
-    {"bookmarks", IDS_PDF_BOOKMARKS},
-    {"labelPageNumber", IDS_PDF_LABEL_PAGE_NUMBER},
-    {"tooltipRotateCW", IDS_PDF_TOOLTIP_ROTATE_CW},
     {"tooltipDownload", IDS_PDF_TOOLTIP_DOWNLOAD},
     {"tooltipPrint", IDS_PDF_TOOLTIP_PRINT},
-    {"tooltipFitToPage", IDS_PDF_TOOLTIP_FIT_PAGE},
-    {"tooltipFitToWidth", IDS_PDF_TOOLTIP_FIT_WIDTH},
-    {"tooltipTwoUpViewEnable", IDS_PDF_TOOLTIP_TWO_UP_VIEW_ENABLE},
-    {"tooltipTwoUpViewDisable", IDS_PDF_TOOLTIP_TWO_UP_VIEW_DISABLE},
-    {"tooltipZoomIn", IDS_PDF_TOOLTIP_ZOOM_IN},
-    {"tooltipZoomOut", IDS_PDF_TOOLTIP_ZOOM_OUT},
+    {"tooltipRotateCW", IDS_PDF_TOOLTIP_ROTATE_CW},
 #if defined(OS_CHROMEOS)
     {"tooltipAnnotate", IDS_PDF_ANNOTATION_ANNOTATE},
     {"annotationDocumentTooLarge", IDS_PDF_ANNOTATION_DOCUMENT_TOO_LARGE},
@@ -116,8 +116,32 @@ void AddStrings(base::Value* dict) {
   };
   for (const auto& resource : kPdfResources)
     dict->SetStringKey(resource.name, l10n_util::GetStringUTF16(resource.id));
+}
 
-  dict->SetStringKey("presetZoomFactors", zoom::GetPresetZoomFactorsAsJSON());
+}  // namespace
+
+std::string GetManifest() {
+  std::string manifest_contents = ui::ResourceBundle::GetSharedInstance()
+                                      .GetRawDataResource(IDR_PDF_MANIFEST)
+                                      .as_string();
+  DCHECK(manifest_contents.find(kNameTag) != std::string::npos);
+  base::ReplaceFirstSubstringAfterOffset(
+      &manifest_contents, 0, kNameTag,
+      ChromeContentClient::kPDFExtensionPluginName);
+
+  return manifest_contents;
+}
+
+void AddStrings(PdfViewerContext context, base::Value* dict) {
+  AddCommonStrings(dict);
+  if (context == PdfViewerContext::kPdfViewer ||
+      context == PdfViewerContext::kAll) {
+    AddPdfViewerStrings(dict);
+  }
+  if (context == PdfViewerContext::kPrintPreview ||
+      context == PdfViewerContext::kAll) {
+    // Nothing to do yet, since there are no PrintPreview-only strings.
+  }
 }
 
 void AddAdditionalData(base::Value* dict) {

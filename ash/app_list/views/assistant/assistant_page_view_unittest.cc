@@ -723,6 +723,27 @@ TEST_F(AssistantPageViewTest, ShouldNotClearQueryWhenSwitchingToTabletMode) {
   EXPECT_EQ(query_text, input_text_field()->GetText());
 }
 
+TEST_F(AssistantPageViewTest, ShouldHaveConversationStarters) {
+  ASSERT_FALSE(chromeos::assistant::features::IsBetterOnboardingEnabled());
+
+  ShowAssistantUi();
+
+  EXPECT_EQ(nullptr, onboarding_view());
+  EXPECT_FALSE(GetSuggestionChips().empty());
+}
+
+TEST_F(AssistantPageViewTest,
+       ShouldNotHaveConversationStartersWhenShowingOnboarding) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantBetterOnboarding);
+
+  ShowAssistantUi();
+
+  EXPECT_TRUE(onboarding_view()->IsDrawn());
+  EXPECT_TRUE(GetSuggestionChips().empty());
+}
+
 // Tests the |AssistantPageView| with tablet mode enabled.
 class AssistantPageViewTabletModeTest : public AssistantPageViewTest {
  public:

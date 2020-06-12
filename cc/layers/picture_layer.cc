@@ -115,6 +115,11 @@ bool PictureLayer::Update() {
 
   gfx::Size layer_size = bounds();
 
+  // With transformed rasterization, the pixels along the edge of the layer may
+  // become translucent, so clear contents_opaque.
+  if (ShouldUseTransformedRasterization())
+    ClearContentsOpaqueDuringUpdate();
+
   recording_source_->SetBackgroundColor(SafeOpaqueBackgroundColor());
   recording_source_->SetRequiresClear(
       !contents_opaque() &&

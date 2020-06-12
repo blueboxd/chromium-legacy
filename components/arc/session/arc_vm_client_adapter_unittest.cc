@@ -1019,11 +1019,11 @@ TEST_F(ArcVmClientAdapterTest, VmStartedSignal) {
   run_loop()->RunUntilIdle();
 }
 
-// Tests that ConciergeServiceRestarted() doesn't crash.
-TEST_F(ArcVmClientAdapterTest, TestConciergeServiceRestarted) {
+// Tests that ConciergeServiceStarted() doesn't crash.
+TEST_F(ArcVmClientAdapterTest, TestConciergeServiceStarted) {
   StartMiniArc();
   for (auto& observer : GetTestConciergeClient()->observer_list())
-    observer.ConciergeServiceRestarted();
+    observer.ConciergeServiceStarted();
 }
 
 // Tests that the kernel parameter does not include "rw" by default.

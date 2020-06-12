@@ -145,31 +145,6 @@ security_state::SecurityLevel LocationBarModelImpl::GetSecurityLevel() const {
   return delegate_->GetSecurityLevel();
 }
 
-bool LocationBarModelImpl::GetDisplaySearchTerms(base::string16* search_terms) {
-  if (!base::FeatureList::IsEnabled(omnibox::kQueryInOmnibox) ||
-      delegate_->ShouldPreventElision())
-    return false;
-
-  // Only show the search terms if the site is secure. However, make an
-  // exception before the security state is initialized to prevent a UI flicker.
-  std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
-      delegate_->GetVisibleSecurityState();
-  security_state::SecurityLevel security_level = delegate_->GetSecurityLevel();
-  if (visible_security_state->connection_info_initialized &&
-      security_level != security_state::SecurityLevel::SECURE) {
-    return false;
-  }
-
-  base::string16 extracted_search_terms = ExtractSearchTermsInternal(GetURL());
-  if (extracted_search_terms.empty())
-    return false;
-
-  if (search_terms)
-    *search_terms = extracted_search_terms;
-
-  return true;
-}
-
 OmniboxEventProto::PageClassification
 LocationBarModelImpl::GetPageClassification(OmniboxFocusSource focus_source) {
   // We may be unable to fetch the current URL during startup or shutdown when
@@ -200,11 +175,7 @@ LocationBarModelImpl::GetPageClassification(OmniboxFocusSource focus_source) {
   if (template_url_service &&
       template_url_service->IsSearchResultsPageFromDefaultSearchProvider(
           gurl)) {
-    return GetDisplaySearchTerms(nullptr)
-               ? OmniboxEventProto::
-                     SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT
-               : OmniboxEventProto::
-                     SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
+    return OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;
   }
 
   return OmniboxEventProto::OTHER;
@@ -304,46 +275,4 @@ bool LocationBarModelImpl::ShouldDisplayURL() const {
 
 bool LocationBarModelImpl::IsOfflinePage() const {
   return delegate_->IsOfflinePage();
-}
-
-base::string16 LocationBarModelImpl::ExtractSearchTermsInternal(
-    const GURL& url) {
-  AutocompleteClassifier* autocomplete_classifier =
-      delegate_->GetAutocompleteClassifier();
-  TemplateURLService* template_url_service = delegate_->GetTemplateURLService();
-  if (!autocomplete_classifier || !template_url_service)
-    return base::string16();
-
-  if (url.is_empty())
-    return base::string16();
-
-  // Because we cache keyed by URL, if the user changes the default search
-  // provider, we will continue to extract the search terms from the cached URL
-  // (even if it's no longer from the default search provider) until the user
-  // changes tabs or navigates the tab. That is intentional, as it would be
-  // weird otherwise if the omnibox text changed without any user gesture.
-  if (url != cached_url_) {
-    cached_url_ = url;
-    cached_search_terms_.clear();
-
-    const TemplateURL* default_provider =
-        template_url_service->GetDefaultSearchProvider();
-    if (default_provider) {
-      // If |url| doesn't match the default search provider,
-      // |cached_search_terms_| will remain empty.
-      default_provider->ExtractSearchTermsFromURL(
-          url, template_url_service->search_terms_data(),
-          &cached_search_terms_);
-
-      // Clear out the search terms if it looks like a URL.
-      AutocompleteMatch match;
-      autocomplete_classifier->Classify(
-          cached_search_terms_, false, false,
-          metrics::OmniboxEventProto::INVALID_SPEC, &match, nullptr);
-      if (!AutocompleteMatch::IsSearchType(match.type))
-        cached_search_terms_.clear();
-    }
-  }
-
-  return cached_search_terms_;
 }

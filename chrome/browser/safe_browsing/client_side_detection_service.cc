@@ -261,12 +261,7 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
           g_browser_process->browser_policy_connector()));
 
   std::string request_data;
-  if (!request->SerializeToString(&request_data)) {
-    UMA_HISTOGRAM_COUNTS_1M("SBClientPhishing.RequestNotSerialized", 1);
-    if (!callback.is_null())
-      callback.Run(GURL(request->url()), false);
-    return;
-  }
+  request->SerializeToString(&request_data);
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation(

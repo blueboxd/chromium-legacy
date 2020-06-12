@@ -33,9 +33,6 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   // so the button can adjust its size or even presence.
   void ProvideWidthHint(int width);
 
-  // Called to indicate button has been focused.
-  void ProvideFocusHint();
-
  private:
   // Consults the parent views to see if the button is selected.
   bool IsSelected() const;

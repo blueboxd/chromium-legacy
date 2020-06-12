@@ -165,13 +165,18 @@ std::unique_ptr<EventMatcher> EventListenerMap::ParseEventMatcher(
 }
 
 bool EventListenerMap::RemoveListener(const EventListener* listener) {
-  ListenerList& listeners = listeners_[listener->event_name()];
+  auto listener_itr = listeners_.find(listener->event_name());
+  if (listener_itr == listeners_.end())
+    return false;
+  ListenerList& listeners = listener_itr->second;
   for (auto& it : listeners) {
     if (it->Equals(listener)) {
       CleanupListener(it.get());
       // Popping from the back should be cheaper than erase(it).
       std::swap(it, listeners.back());
       listeners.pop_back();
+      if (listeners.empty())
+        listeners_.erase(listener_itr);
       delegate_->OnListenerRemoved(listener);
       return true;
     }
@@ -229,18 +234,24 @@ bool EventListenerMap::HasProcessListener(
 
 void EventListenerMap::RemoveListenersForExtension(
     const std::string& extension_id) {
-  for (auto& it : listeners_) {
-    auto& listener_map = it.second;
-    for (auto it2 = listener_map.begin(); it2 != listener_map.end();) {
+  for (auto it = listeners_.begin(); it != listeners_.end();) {
+    auto& listener_list = it->second;
+    for (auto it2 = listener_list.begin(); it2 != listener_list.end();) {
       if ((*it2)->extension_id() == extension_id) {
         std::unique_ptr<EventListener> listener_removed = std::move(*it2);
         CleanupListener(listener_removed.get());
-        it2 = listener_map.erase(it2);
+        it2 = listener_list.erase(it2);
         delegate_->OnListenerRemoved(listener_removed.get());
       } else {
         ++it2;
       }
     }
+    // Check if we removed all the listeners from the list. If so,
+    // remove the list entry entirely.
+    if (listener_list.empty())
+      it = listeners_.erase(it);
+    else
+      ++it;
   }
 }
 
@@ -322,18 +333,24 @@ std::set<const EventListener*> EventListenerMap::GetEventListeners(
 void EventListenerMap::RemoveListenersForProcess(
     const content::RenderProcessHost* process) {
   CHECK(process);
-  for (auto& it : listeners_) {
-    auto& listener_map = it.second;
-    for (auto it2 = listener_map.begin(); it2 != listener_map.end();) {
+  for (auto it = listeners_.begin(); it != listeners_.end();) {
+    auto& listener_list = it->second;
+    for (auto it2 = listener_list.begin(); it2 != listener_list.end();) {
       if ((*it2)->process() == process) {
         std::unique_ptr<EventListener> listener_removed = std::move(*it2);
         CleanupListener(listener_removed.get());
-        it2 = listener_map.erase(it2);
+        it2 = listener_list.erase(it2);
         delegate_->OnListenerRemoved(listener_removed.get());
       } else {
         ++it2;
       }
     }
+    // Check if we removed all the listeners from the list. If so,
+    // remove the list entry entirely.
+    if (listener_list.empty())
+      it = listeners_.erase(it);
+    else
+      ++it;
   }
 }
 
@@ -341,6 +358,11 @@ void EventListenerMap::CleanupListener(EventListener* listener) {
   // If the listener doesn't have a filter then we have nothing to clean up.
   if (listener->matcher_id() == -1)
     return;
+  // If we're removing the final listener for an event, we can remove the
+  // entry from |filtered_events_|, as well.
+  auto iter = listeners_.find(listener->event_name());
+  if (iter->second.size() == 1)
+    filtered_events_.erase(iter->first);
   event_filter_.RemoveEventMatcher(listener->matcher_id());
   CHECK_EQ(1u, listeners_by_matcher_id_.erase(listener->matcher_id()));
 }

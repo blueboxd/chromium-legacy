@@ -256,7 +256,7 @@ ScriptPromise CookieStore::getAll(ScriptState* script_state,
                                   ExceptionState& exception_state) {
   UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
                     WebFeature::kCookieStoreAPI);
-  RecordMatchType(options->matchType());
+  RecordMatchType(*options);
 
   return DoRead(script_state, options, &CookieStore::GetAllForUrlToGetAllResult,
                 exception_state);
@@ -275,7 +275,7 @@ ScriptPromise CookieStore::get(ScriptState* script_state,
                                ExceptionState& exception_state) {
   UseCounter::Count(CurrentExecutionContext(script_state->GetIsolate()),
                     WebFeature::kCookieStoreAPI);
-  RecordMatchType(options->matchType());
+  RecordMatchType(*options);
 
   return DoRead(script_state, options, &CookieStore::GetAllForUrlToGetResult,
                 exception_state);

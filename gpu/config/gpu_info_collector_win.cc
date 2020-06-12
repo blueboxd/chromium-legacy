@@ -152,8 +152,8 @@ void CollectHardwareOverlayInfo(OverlayInfo* overlay_info) {
 bool CollectDriverInfoD3D(GPUInfo* gpu_info) {
   TRACE_EVENT0("gpu", "CollectDriverInfoD3D");
 
-  Microsoft::WRL::ComPtr<IDXGIFactory> dxgi_factory;
-  HRESULT hr = ::CreateDXGIFactory(IID_PPV_ARGS(&dxgi_factory));
+  Microsoft::WRL::ComPtr<IDXGIFactory1> dxgi_factory;
+  HRESULT hr = ::CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory));
   if (FAILED(hr))
     return false;
 
@@ -505,8 +505,8 @@ void RecordGpuSupportedRuntimeVersionHistograms(Dx12VulkanVersionInfo* info) {
 
 bool CollectD3D11FeatureInfo(D3D_FEATURE_LEVEL* d3d11_feature_level,
                              bool* has_discrete_gpu) {
-  Microsoft::WRL::ComPtr<IDXGIFactory> dxgi_factory;
-  if (FAILED(::CreateDXGIFactory(IID_PPV_ARGS(&dxgi_factory))))
+  Microsoft::WRL::ComPtr<IDXGIFactory1> dxgi_factory;
+  if (FAILED(::CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory))))
     return false;
 
   base::ScopedNativeLibrary d3d11_library(

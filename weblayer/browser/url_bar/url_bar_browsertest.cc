@@ -23,9 +23,8 @@ class UrlBarBrowserTest : public WebLayerBrowserTest {
     WebLayerBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
     browser_ = Browser::Create(GetProfile(), nullptr);
-    tab_ = static_cast<TabImpl*>(browser_->AddTab(Tab::Create(GetProfile())));
-    another_tab_ =
-        static_cast<TabImpl*>(browser_->AddTab(Tab::Create(GetProfile())));
+    tab_ = static_cast<TabImpl*>(browser_->CreateTab());
+    another_tab_ = static_cast<TabImpl*>(browser_->CreateTab());
     browser_->SetActiveTab(tab_);
   }
   void PostRunTestOnMainThread() override {

@@ -39,6 +39,10 @@ class OmniboxRowView : public views::View {
   // Invoked when the model's selection state has changed.
   void OnSelectionStateChanged();
 
+  // Fetches the active descendant button for accessibility purposes.
+  // Returns nullptr if no descendant auxiliary button is active.
+  views::View* GetActiveAuxiliaryButtonForAccessibility() const;
+
   // views::View:
   gfx::Insets GetInsets() const override;
 

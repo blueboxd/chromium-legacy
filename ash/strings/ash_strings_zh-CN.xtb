@@ -5,8 +5,8 @@
 <translation id="1013598600051641573">“<ph name="DISPLAY_NAME" />”的分辨率已改为 <ph name="RESOLUTION" />（<ph name="REFRESH_RATE" /> 赫兹）。点击“确认”即可保留更改。将在 <ph name="TIMEOUT_SECONDS" />后恢复以前的设置。</translation>
 <translation id="1013923882670373915">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。请在该设备上输入以下PIN码：<ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">触控笔电池电量较低</translation>
-<translation id="1036672894875463507">我是你的 Google 助理，可全天候帮助你处理各种事务！
-在开始向我发出指令之前，你不妨先试用一下这些功能。</translation>
+<translation id="1036672894875463507">我是你的 Google 助理，可以帮你处理日常生活大小事！
+要开始体验，你不妨试一下这些功能。</translation>
 <translation id="1037492556044956303">已添加<ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">找不到任何网络</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />：<ph name="RESOLUTION" /></translation>

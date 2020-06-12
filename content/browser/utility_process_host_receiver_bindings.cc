@@ -7,6 +7,8 @@
 #include "content/browser/utility_process_host.h"
 
 #include "build/build_config.h"
+#include "content/public/browser/content_browser_client.h"
+#include "content/public/common/content_client.h"
 
 #if defined(OS_LINUX)
 #include "components/services/font/public/mojom/font_service.mojom.h"  // nogncheck
@@ -23,6 +25,7 @@ void UtilityProcessHost::BindHostReceiver(
     return;
   }
 #endif
+  GetContentClient()->browser()->BindUtilityHostReceiver(std::move(receiver));
 }
 
 }  // namespace content

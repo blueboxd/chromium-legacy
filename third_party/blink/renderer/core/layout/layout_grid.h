@@ -87,6 +87,10 @@ class LayoutGrid final : public LayoutBlock {
     return grid_->AutoRepeatTracks(direction);
   }
 
+  int SmallestTrackStartForDirection(GridTrackSizingDirection direction) const {
+    return grid_->SmallestTrackStart(direction);
+  }
+
   LayoutUnit TranslateOutOfFlowRTLCoordinate(const LayoutBox&,
                                              LayoutUnit) const;
 

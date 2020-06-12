@@ -177,11 +177,6 @@
   public boolean requiresSignIn();
 }
 
-# Protobuf java lite runtime uses reflection
--keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {
-  <fields>;
-}
-
 ################################################################################
 # ../../base/android/proguard/chromium_code.flags
 ################################################################################

@@ -37,9 +37,9 @@ namespace base {
 //
 // Example:
 //
-//   base::FileEnumerator enum(my_dir, false, base::FileEnumerator::FILES,
-//                             FILE_PATH_LITERAL("*.txt"));
-//   for (base::FilePath name = enum.Next(); !name.empty(); name = enum.Next())
+//   base::FileEnumerator e(my_dir, false, base::FileEnumerator::FILES,
+//                          FILE_PATH_LITERAL("*.txt"));
+//   for (base::FilePath name = e.Next(); !name.empty(); name = e.Next())
 //     ...
 class BASE_EXPORT FileEnumerator {
  public:

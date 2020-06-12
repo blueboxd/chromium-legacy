@@ -2232,10 +2232,16 @@ TabDragController::GetTabGroupForTargetIndex(const std::vector<int>& selected) {
   int left_most_selected_x_position =
       left_most_selected_tab->x() + tab_left_inset;
 
-  if (left_most_selected_x_position <= left_edge - buffer)
+  if ((left_most_selected_x_position <= left_edge - buffer) &&
+      left_group.has_value() &&
+      !attached_model->IsGroupCollapsed(left_group.value())) {
     return left_group;
-  if (left_most_selected_x_position >= left_edge + buffer)
+  }
+  if ((left_most_selected_x_position >= left_edge + buffer) &&
+      right_group.has_value() &&
+      !attached_model->IsGroupCollapsed(right_group.value())) {
     return right_group;
+  }
   return base::nullopt;
 }
 

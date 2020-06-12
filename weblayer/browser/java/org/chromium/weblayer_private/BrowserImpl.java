@@ -195,6 +195,13 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     @Override
+    public TabImpl createTab() {
+        TabImpl tab = new TabImpl(mProfile, mWindowAndroid);
+        addTab(tab);
+        return tab;
+    }
+
+    @Override
     public void setSupportsEmbedding(boolean enable, IObjectWrapper valueCallback) {
         StrictModeWorkaround.apply();
         getViewController().setSupportsEmbedding(enable,
@@ -237,7 +244,7 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     @CalledByNative
-    private void createTabForSessionRestore(long nativeTab) {
+    private void createJavaTabForNativeTab(long nativeTab) {
         new TabImpl(mProfile, mWindowAndroid, nativeTab);
     }
 
@@ -395,10 +402,8 @@ public class BrowserImpl extends IBrowser.Stub {
             updateAllTabsAndSetActive();
         } else if (persistenceInfo.mPersistenceId == null
                 || persistenceInfo.mPersistenceId.isEmpty()) {
-            TabImpl tab = new TabImpl(mProfile, mWindowAndroid);
-            addTab(tab);
-            boolean set_active_result = setActiveTab(tab);
-            assert set_active_result;
+            boolean setActiveResult = setActiveTab(createTab());
+            assert setActiveResult;
         } // else case is session restore, which will asynchronously create tabs.
     }
 
@@ -411,7 +416,6 @@ public class BrowserImpl extends IBrowser.Stub {
     }
 
     private void destroyTabImpl(TabImpl tab) {
-        BrowserImplJni.get().removeTab(mNativeBrowser, tab.getNativeTab());
         tab.destroy();
     }
 

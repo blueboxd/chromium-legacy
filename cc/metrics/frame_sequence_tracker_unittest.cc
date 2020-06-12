@@ -1873,7 +1873,8 @@ TEST_F(FrameSequenceTrackerTest, MainThreadPresentWithNullTimeStamp) {
   const char sequence[] = "b(1)B(0,1)E(1)s(1)S(1)e(1,1)";
   GenerateSequence(sequence);
   collection_.NotifyFramePresented(
-      1, {base::TimeTicks(), viz::BeginFrameArgs::DefaultInterval(), 0});
+      1, {base::TimeTicks(), viz::BeginFrameArgs::DefaultInterval(),
+          gfx::PresentationFeedback::kFailure});
   EXPECT_EQ(MainThroughput().frames_expected, 1u);
   // No presentation, no main frame produced.
   EXPECT_EQ(MainThroughput().frames_produced, 0u);

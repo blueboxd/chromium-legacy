@@ -11,8 +11,12 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
+#include "chrome/common/profiler/stack_sampling_configuration.h"
+#include "chrome/common/profiler/thread_profiler.h"
 #include "chrome/utility/browser_exposed_utility_interfaces.h"
 #include "chrome/utility/services.h"
+#include "content/public/child/child_thread.h"
+#include "content/public/common/content_switches.h"
 #include "services/service_manager/sandbox/switches.h"
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
@@ -71,11 +75,37 @@ void ChromeContentUtilityClient::RegisterNetworkBinders(
     std::move(g_network_binder_creation_callback.Get()).Run(registry);
 }
 
+void ChromeContentUtilityClient::UtilityThreadStarted() {
+  // Only builds message pipes for utility processes which enable sampling
+  // profilers.
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  const std::string process_type =
+      command_line->GetSwitchValueASCII(switches::kProcessType);
+  if (process_type ==
+          switches::kUtilityProcess &&  // An in-process utility thread may run
+                                        // in other processes, only set up
+                                        // collector in a utility process.
+      StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess()) {
+    mojo::PendingRemote<metrics::mojom::CallStackProfileCollector> collector;
+    content::ChildThread::Get()->BindHostReceiver(
+        collector.InitWithNewPipeAndPassReceiver());
+    ThreadProfiler::SetCollectorForChildProcess(std::move(collector));
+  }
+}
+
 mojo::ServiceFactory*
 ChromeContentUtilityClient::GetMainThreadServiceFactory() {
   if (utility_process_running_elevated_)
     return ::GetElevatedMainThreadServiceFactory();
   return ::GetMainThreadServiceFactory();
+}
+
+void ChromeContentUtilityClient::PostIOThreadCreated(
+    base::SingleThreadTaskRunner* io_thread_task_runner) {
+  io_thread_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&ThreadProfiler::StartOnChildThread,
+                                metrics::CallStackProfileParams::IO_THREAD));
 }
 
 mojo::ServiceFactory* ChromeContentUtilityClient::GetIOThreadServiceFactory() {

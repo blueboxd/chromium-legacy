@@ -122,6 +122,10 @@ class ASH_PUBLIC_EXPORT AccessibilityController {
   // Disables restoring of recommended policy values.
   virtual void DisablePolicyRecommendationRestorerForTesting() {}
 
+  // Set to true to disable the dialog.
+  // Used in tests.
+  virtual void DisableSwitchAccessDisableConfirmationDialogTesting() = 0;
+
   // Shows floating accessibility menu if it was enabled by policy.
   virtual void ShowFloatingMenuIfEnabled() {}
 

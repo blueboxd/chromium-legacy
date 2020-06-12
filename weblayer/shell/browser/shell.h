@@ -35,6 +35,7 @@ class WMState;
 class GURL;
 
 namespace weblayer {
+class Browser;
 class Profile;
 class Tab;
 
@@ -84,11 +85,11 @@ class Shell : public TabObserver,
  private:
   enum UIControl { BACK_BUTTON, FORWARD_BUTTON, STOP_BUTTON };
 
-  static Shell* CreateNewWindowWithTab(std::unique_ptr<Tab> tab,
-                                       const GURL& url,
-                                       const gfx::Size& initial_size);
+  static Shell* CreateNewWindowWithBrowser(std::unique_ptr<Browser> browser,
+                                           const GURL& url,
+                                           const gfx::Size& initial_size);
 
-  explicit Shell(std::unique_ptr<Tab> tab);
+  explicit Shell(std::unique_ptr<Browser> browser);
 
   // TabObserver implementation:
   void DisplayedUrlChanged(const GURL& url) override;
@@ -110,7 +111,7 @@ class Shell : public TabObserver,
                      AllowDownloadCallback callback) override;
 
   // Helper to create a new Shell.
-  static Shell* CreateShell(std::unique_ptr<Tab> tab,
+  static Shell* CreateShell(std::unique_ptr<Browser> browser,
                             const gfx::Size& initial_size);
 
   // Helper for one time initialization of application
@@ -149,7 +150,7 @@ class Shell : public TabObserver,
   // Set the title of shell window
   void PlatformSetTitle(const base::string16& title);
 
-  std::unique_ptr<Tab> tab_;
+  std::unique_ptr<Browser> browser_;
 
   gfx::NativeWindow window_;
 

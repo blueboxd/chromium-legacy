@@ -247,6 +247,7 @@ bool OmniboxResultView::IsMatchSelected() const {
          popup_contents_view_->model()->selected_line_state() !=
              OmniboxPopupModel::HEADER_BUTTON_FOCUSED;
 }
+
 views::Button* OmniboxResultView::GetSecondaryButton() {
   if (suggestion_tab_switch_button_->GetVisible())
     return suggestion_tab_switch_button_;
@@ -481,17 +482,6 @@ void OmniboxResultView::OnThemeChanged() {
                                 GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
                                 GetColor(OmniboxPart::RESULTS_ICON));
   ApplyThemeAndRefreshIcons(true);
-}
-
-void OmniboxResultView::ProvideButtonFocusHint() {
-  if (suggestion_tab_switch_button_->GetVisible()) {
-    suggestion_tab_switch_button_->ProvideFocusHint();
-    // TODO(tommycli) Why isn't this using the same AX code as for the
-    // remove suggestion button below?
-  } else if (remove_suggestion_button_->GetVisible()) {
-    popup_contents_view_->FireAXEventsForNewActiveDescendant(
-        remove_suggestion_button_);
-  }
 }
 
 void OmniboxResultView::RemoveSuggestion() const {

@@ -63,8 +63,6 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   void OnSafeBrowsingHit(
       const security_interstitials::UnsafeResource& resource) override;
 
-  virtual scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
-
   BrowseInfo* GetBrowseInfo() const { return browse_info_.get(); }
 
  protected:

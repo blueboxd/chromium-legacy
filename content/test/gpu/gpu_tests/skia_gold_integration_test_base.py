@@ -59,6 +59,7 @@ class _ImageParameters(object):
     self.msaa = False
     self.model_name = None
     self.driver_version = None
+    self.driver_vendor = None
 
 
 class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
@@ -233,6 +234,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
                         gpu.driver_bug_workarounds))
     params.model_name = system_info.model_name
     params.driver_version = device.driver_version
+    params.driver_vendor = device.driver_vendor
 
   @classmethod
   def _UploadBitmapToCloudStorage(cls, bucket, name, bitmap, public=False):
@@ -361,6 +363,10 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   def GetGoldJsonKeys(self, page):
     """Get all the JSON metadata that will be passed to golctl."""
     img_params = self.GetImageParameters(page)
+    # The frequently changing last part of the ANGLE driver version (revision of
+    # some sort?) messes a bit with inexact matching since each revision will
+    # be treated as a separate trace, so strip it off.
+    _StripAngleRevisionFromDriver(img_params)
     # All values need to be strings, otherwise goldctl fails.
     gpu_keys = {
         'vendor_id':
@@ -383,6 +389,8 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
         _ToNonEmptyStrOrNone(self.browser.platform.GetOSVersionDetailString()),
         'driver_version':
         _ToNonEmptyStrOrNone(img_params.driver_version),
+        'driver_vendor':
+        _ToNonEmptyStrOrNone(img_params.driver_vendor),
     }
     # If we have a grace period active, then the test is potentially flaky.
     # Include a pair that will cause Gold to ignore any untriaged images, which
@@ -669,6 +677,29 @@ def _GracePeriodActive(page):
     Otherwise, False.
   """
   return page.grace_period_end and date.today() <= page.grace_period_end
+
+
+def _StripAngleRevisionFromDriver(img_params):
+  """Strips the revision off the end of an ANGLE driver version.
+
+  E.g. 2.1.0.b50541b2d6c4 -> 2.1.0
+
+  Modifies the string in place. No-ops if the driver vendor is not ANGLE.
+
+  Args:
+    img_params: An _ImageParameters instance to modify.
+  """
+  if 'ANGLE' not in img_params.driver_vendor or not img_params.driver_version:
+    return
+  # Assume that we're never going to have portions of the driver we care about
+  # that are longer than 8 characters.
+  driver_parts = img_params.driver_version.split('.')
+  kept_parts = []
+  for part in driver_parts:
+    if len(part) > 8:
+      break
+    kept_parts.append(part)
+  img_params.driver_version = '.'.join(kept_parts)
 
 
 def load_tests(loader, tests, pattern):

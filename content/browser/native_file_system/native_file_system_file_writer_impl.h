@@ -99,15 +99,23 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   void DidAnnotateFile(CloseCallback callback,
                        quarantine::mojom::QuarantineFileResult result);
 
-  // After write checks only apply to native local paths.
+  // After write checks apply to native local paths, file system provider paths,
+  // and platform app native paths.
   bool RequireAfterWriteCheck() const {
-    return url().type() == storage::kFileSystemTypeNativeLocal;
+    return url().type() == storage::kFileSystemTypeNativeLocal ||
+           url().type() == storage::kFileSystemTypeProvided ||
+           url().type() == storage::kFileSystemTypeNativeForPlatformApp;
   }
 
-  // Quarantine checks only apply to native local paths.
+  // Quarantine checks apply to native local paths, file system provider paths,
+  // and platform app native paths.
   bool CanSkipQuarantineCheck() const {
-    return skip_quarantine_check_for_testing_ ||
-           url().type() != storage::kFileSystemTypeNativeLocal;
+    bool need_quarantine_check =
+        url().type() == storage::kFileSystemTypeNativeLocal ||
+        url().type() == storage::kFileSystemTypeProvided ||
+        url().type() == storage::kFileSystemTypeNativeForPlatformApp;
+
+    return skip_quarantine_check_for_testing_ || !need_quarantine_check;
   }
 
   void ComputeHashForSwapFile(HashCallback callback);

@@ -69,7 +69,9 @@ class VideoEncoderTest : public ::testing::Test {
     auto video_encoder =
         VideoEncoder::Create(config, CreateBitstreamProcessors(video, config));
     LOG_ASSERT(video_encoder);
-    LOG_ASSERT(video_encoder->Initialize(video));
+
+    if (!video_encoder->Initialize(video))
+      ADD_FAILURE();
 
     return video_encoder;
   }
@@ -166,6 +168,28 @@ TEST_F(VideoEncoderTest, FlushAtEndOfStream) {
   EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
   EXPECT_EQ(encoder->GetFrameReleasedCount(), g_env->Video()->NumFrames());
   EXPECT_TRUE(encoder->WaitForBitstreamProcessors());
+}
+
+// Test initializing the video encoder. The test will be successful if the video
+// encoder is capable of setting up the encoder for the specified codec and
+// resolution. The test only verifies initialization and doesn't do any
+// encoding.
+TEST_F(VideoEncoderTest, Initialize) {
+  VideoEncoderClientConfig config = VideoEncoderClientConfig();
+  auto encoder = CreateVideoEncoder(g_env->Video(), config);
+
+  EXPECT_EQ(encoder->GetEventCount(VideoEncoder::kInitialized), 1u);
+}
+
+// Create a video encoder and immediately destroy it without initializing. The
+// video encoder will be automatically destroyed when the video encoder goes out
+// of scope at the end of the test. The test will pass if no asserts or crashes
+// are triggered upon destroying.
+TEST_F(VideoEncoderTest, DestroyBeforeInitialize) {
+  VideoEncoderClientConfig config = VideoEncoderClientConfig();
+  auto video_encoder = VideoEncoder::Create(config);
+
+  EXPECT_NE(video_encoder, nullptr);
 }
 
 }  // namespace test

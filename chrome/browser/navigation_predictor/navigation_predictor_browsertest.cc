@@ -135,7 +135,7 @@ class TestObserver : public NavigationPredictorKeyedService::Observer {
   void WaitUntilNotificationsCountReached(size_t expected_notifications_count) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     // Ensure that |wait_loop_| is null implying there is no ongoing wait.
-    ASSERT_FALSE(!!wait_loop_);
+    ASSERT_FALSE(wait_loop_);
 
     if (count_predictions_ >= expected_notifications_count)
       return;
@@ -331,7 +331,6 @@ IN_PROC_BROWSER_TEST_F(
   histogram_tester.ExpectUniqueSample(
       "NavigationPredictor.OnNonDSE.ActionTaken",
       NavigationPredictor::Action::kPrefetch, 1);
-
 }
 
 IN_PROC_BROWSER_TEST_F(

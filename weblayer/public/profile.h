@@ -5,8 +5,11 @@
 #ifndef WEBLAYER_PUBLIC_PROFILE_H_
 #define WEBLAYER_PUBLIC_PROFILE_H_
 
-#include <algorithm>
+#include <memory>
 #include <string>
+
+#include "base/callback_forward.h"
+#include "base/containers/flat_set.h"
 
 namespace base {
 class FilePath;
@@ -60,6 +63,20 @@ class Profile {
 
   // Gets the cookie manager for this profile.
   virtual CookieManager* GetCookieManager() = 0;
+
+  // Asynchronously fetches the set of known Browser persistence-ids. See
+  // Browser::PersistenceInfo for more details on persistence-ids.
+  virtual void GetBrowserPersistenceIds(
+      base::OnceCallback<void(base::flat_set<std::string>)> callback) = 0;
+
+  // Asynchronously removes the storage associated with the set of
+  // Browser persistence-ids. This ignores ids actively in use. |done_callback|
+  // is run with the result of the operation (on the main thread). A value of
+  // true means all files were removed. A value of false indicates at least one
+  // of the files could not be removed.
+  virtual void RemoveBrowserPersistenceStorage(
+      base::OnceCallback<void(bool)> done_callback,
+      base::flat_set<std::string> ids) = 0;
 
   // Set the boolean value of the given setting type.
   virtual void SetBooleanSetting(SettingType type, bool value) = 0;

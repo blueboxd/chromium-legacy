@@ -8790,14 +8790,15 @@ interface VideoTrackWriter
     method constructor
 interface VirtualKeyboard : EventTarget
     attribute @@toStringTag
-    getter onoverlaygeometrychange
+    getter boundingRect
+    getter ongeometrychange
     getter overlaysContent
     method constructor
     method hide
     method show
-    setter onoverlaygeometrychange
+    setter ongeometrychange
     setter overlaysContent
-interface VirtualKeyboardOverlayGeometryChangeEvent : Event
+interface VirtualKeyboardGeometryChangeEvent : Event
     attribute @@toStringTag
     getter boundingRect
     method constructor

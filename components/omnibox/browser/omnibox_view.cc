@@ -182,15 +182,7 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
   }
 
   if (model_->ShouldShowCurrentPageIcon()) {
-    // Query in Omnibox.
     LocationBarModel* location_bar_model = controller_->GetLocationBarModel();
-    if (location_bar_model->GetDisplaySearchTerms(nullptr /* search_terms */)) {
-      gfx::Image icon = model_->client()->GetFaviconForDefaultSearchProvider(
-          std::move(on_icon_fetched));
-      if (!icon.IsEmpty())
-        return model_->client()->GetSizedIcon(icon).AsImageSkia();
-    }
-
     return gfx::CreateVectorIcon(location_bar_model->GetVectorIcon(), dip_size,
                                  color);
   }

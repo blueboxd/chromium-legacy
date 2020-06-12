@@ -747,7 +747,7 @@
 <translation id="1925124445985510535">Қауіпсіздік шарасы сағат <ph name="TIME" /> қолданылды.</translation>
 <translation id="1926339101652878330">Бұл параметрлер кәсіпорын саясаты бойынша бақыланады. Қосымша ақпарат алу үшін әкімшіңізге хабарласыңыз.</translation>
 <translation id="1927632033341042996"><ph name="NEW_FINGER_NUMBER" />-саусақ</translation>
-<translation id="192817607445937251">Экран құлпының PIN құлпы</translation>
+<translation id="192817607445937251">Экранды құлыптайтын PIN коды</translation>
 <translation id="1928202201223835302">Ескі PIN кодын енгізіңіз</translation>
 <translation id="1928696683969751773">Жаңартулар</translation>
 <translation id="1929186283613845153">Бұл файл тексерілуде.</translation>
@@ -5945,7 +5945,7 @@
 <translation id="862750493060684461">CSS кэші</translation>
 <translation id="8627706565932943526">Синхрондау қатесі</translation>
 <translation id="8627795981664801467">Тек қауіпсіз байланыстар</translation>
-<translation id="8630338733867813168">Зарядтау кезінде ұйықтау</translation>
+<translation id="8630338733867813168">Зарядтау кезінде ұйқы режиміне қою</translation>
 <translation id="8630903300770275248">Бақыланатын пайдаланушыны импорттау</translation>
 <translation id="8631032106121706562">Гүл</translation>
 <translation id="863109444997383731">Сайттардың сізге хабарландырулар көрсету туралы сұрауына тыйым салынады. Сайт хабарландырулар жіберуге рұқсат сұраса, мекенжай жолағында тыйым салынғаны туралы индикатор пайда болады.</translation>

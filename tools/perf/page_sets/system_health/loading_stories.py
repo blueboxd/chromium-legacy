@@ -457,12 +457,12 @@ class LoadDriveStory2019(_LoadingStory):
 ################################################################################
 
 
-class LoadBubblesStory2019(_LoadingStory):
+class LoadBubblesStory2020(_LoadingStory):
   """Load "smarty bubbles" game on famobi.com"""
-  NAME = 'load:games:bubbles:2019'
+  NAME = 'load:games:bubbles:2020'
   URL = (
       'https://games.cdn.famobi.com/html5games/s/smarty-bubbles/v010/?fg_domain=play.famobi.com&fg_uid=d8f24956-dc91-4902-9096-a46cb1353b6f&fg_pid=4638e320-4444-4514-81c4-d80a8c662371&fg_beat=620')
-  TAGS = [story_tags.YEAR_2019]
+  TAGS = [story_tags.YEAR_2020]
 
 
 class LoadLazorsStory(_LoadingStory):

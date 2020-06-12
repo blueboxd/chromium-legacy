@@ -466,6 +466,20 @@ async function setCurrentDirectory(directory, focusFile) {
       });
     }
   }
+  // Iteration order is not guaranteed using `directory.getEntries()`, so we
+  // sort it afterwards by modification time to ensure a consistent and logical
+  // order. More recent (i.e. higher timestamp) files should appear first.
+  currentFiles.sort((a, b) => {
+    // Sort null files last if they racily appear.
+    if (!a.file && !b.file) {
+      return 0;
+    } else if (!b.file) {
+      return -1;
+    } else if (!a.file) {
+      return 1;
+    }
+    return b.file.lastModified - a.file.lastModified;
+  });
   const name = focusFile.name;
   entryIndex = currentFiles.findIndex(i => !!i.file && i.file.name === name);
   currentDirectoryHandle = directory;

@@ -48,7 +48,7 @@ void MakeCredentialOperation::Run() {
   auto is_es256 =
       [](const PublicKeyCredentialParams::CredentialInfo& cred_info) {
         return cred_info.algorithm ==
-               static_cast<int>(CoseAlgorithmIdentifier::kCoseEs256);
+               static_cast<int>(CoseAlgorithmIdentifier::kEs256);
       };
   const auto& key_params =
       request_.public_key_credential_params.public_key_credential_params();
@@ -147,7 +147,7 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success) {
       AttestationObject(
           std::move(authenticator_data),
           std::make_unique<PackedAttestationStatement>(
-              CoseAlgorithmIdentifier::kCoseEs256, std::move(*signature),
+              CoseAlgorithmIdentifier::kEs256, std::move(*signature),
               /*x509_certificates=*/std::vector<std::vector<uint8_t>>())));
   std::move(callback_).Run(CtapDeviceResponseCode::kSuccess,
                            std::move(response));

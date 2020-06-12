@@ -876,8 +876,9 @@ void GraphicsContext::DrawImage(
 
   // Do not classify the image if the element has any CSS filters.
   if (!has_filter_property) {
-    dark_mode_filter_.ApplyToImageFlagsIfNeeded(src, dest, image, &image_flags,
-                                                GetElementRoleForImage(image));
+    dark_mode_filter_.ApplyToImageFlagsIfNeeded(
+        src, dest, image->PaintImageForCurrentFrame(), &image_flags,
+        GetElementRoleForImage(image));
   }
 
   image->Draw(canvas_, image_flags, dest, src, should_respect_image_orientation,
@@ -915,9 +916,9 @@ void GraphicsContext::DrawImageRRect(
   image_flags.setFilterQuality(
       ComputeFilterQuality(image, dest.Rect(), src_rect));
 
-  dark_mode_filter_.ApplyToImageFlagsIfNeeded(src_rect, dest.Rect(), image,
-                                              &image_flags,
-                                              GetElementRoleForImage(image));
+  dark_mode_filter_.ApplyToImageFlagsIfNeeded(
+      src_rect, dest.Rect(), image->PaintImageForCurrentFrame(), &image_flags,
+      GetElementRoleForImage(image));
 
   bool use_shader = (visible_src == src_rect) &&
                     (respect_orientation == kDoNotRespectImageOrientation ||

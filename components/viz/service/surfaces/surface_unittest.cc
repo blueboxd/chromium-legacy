@@ -94,7 +94,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
   CompositorFrame frame = MakeDefaultCompositorFrame();
   support->SubmitCompositorFrame(local_surface_id, std::move(frame));
   Surface* surface = surface_manager->GetSurfaceForId(surface_id);
-  ASSERT_TRUE(!!surface);
+  ASSERT_TRUE(surface);
 
   bool copy_called = false;
   support->RequestCopyOfOutput(

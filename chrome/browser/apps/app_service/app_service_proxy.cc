@@ -38,6 +38,13 @@
 
 namespace apps {
 
+namespace {
+
+bool g_omit_built_in_apps_for_testing_ = false;
+bool g_omit_plugin_vm_apps_for_testing_ = false;
+
+}  // anonymous namespace
+
 AppServiceProxy::InnerIconLoader::InnerIconLoader(AppServiceProxy* host)
     : host_(host), overriding_icon_loader_for_testing_(nullptr) {}
 
@@ -156,13 +163,17 @@ void AppServiceProxy::Initialize() {
     // The AppServiceProxy is also a publisher, of a variety of app types. That
     // responsibility isn't intrinsically part of the AppServiceProxy, but doing
     // that here, for each such app type, is as good a place as any.
-    built_in_chrome_os_apps_ =
-        std::make_unique<BuiltInChromeOsApps>(app_service_, profile_);
+    if (!g_omit_built_in_apps_for_testing_) {
+      built_in_chrome_os_apps_ =
+          std::make_unique<BuiltInChromeOsApps>(app_service_, profile_);
+    }
     crostini_apps_ = std::make_unique<CrostiniApps>(app_service_, profile_);
     extension_apps_ = std::make_unique<ExtensionAppsChromeOs>(
         app_service_, profile_, apps::mojom::AppType::kExtension,
         &instance_registry_);
-    plugin_vm_apps_ = std::make_unique<PluginVmApps>(app_service_, profile_);
+    if (!g_omit_plugin_vm_apps_for_testing_) {
+      plugin_vm_apps_ = std::make_unique<PluginVmApps>(app_service_, profile_);
+    }
     if (chromeos::features::IsLacrosSupportEnabled()) {
       // LacrosApps uses LacrosLoader, which is a singleton. Don't create an
       // instance of LacrosApps for the lock screen app profile, as we want to
@@ -432,10 +443,12 @@ void AppServiceProxy::OpenNativeSettings(const std::string& app_id) {
 void AppServiceProxy::FlushMojoCallsForTesting() {
   app_service_impl_->FlushMojoCallsForTesting();
 #if defined(OS_CHROMEOS)
-  built_in_chrome_os_apps_->FlushMojoCallsForTesting();
+  if (built_in_chrome_os_apps_)
+    built_in_chrome_os_apps_->FlushMojoCallsForTesting();
   crostini_apps_->FlushMojoCallsForTesting();
   extension_apps_->FlushMojoCallsForTesting();
-  plugin_vm_apps_->FlushMojoCallsForTesting();
+  if (plugin_vm_apps_)
+    plugin_vm_apps_->FlushMojoCallsForTesting();
   if (lacros_apps_) {
     lacros_apps_->FlushMojoCallsForTesting();
   }
@@ -792,6 +805,27 @@ apps::mojom::IntentFilterPtr AppServiceProxy::FindBestMatchingFilter(
     }
   });
   return best_matching_intent_filter;
+}
+
+ScopedOmitBuiltInAppsForTesting::ScopedOmitBuiltInAppsForTesting()
+    : previous_omit_built_in_apps_for_testing_(
+          g_omit_built_in_apps_for_testing_) {
+  g_omit_built_in_apps_for_testing_ = true;
+}
+
+ScopedOmitBuiltInAppsForTesting::~ScopedOmitBuiltInAppsForTesting() {
+  g_omit_built_in_apps_for_testing_ = previous_omit_built_in_apps_for_testing_;
+}
+
+ScopedOmitPluginVmAppsForTesting::ScopedOmitPluginVmAppsForTesting()
+    : previous_omit_plugin_vm_apps_for_testing_(
+          g_omit_plugin_vm_apps_for_testing_) {
+  g_omit_plugin_vm_apps_for_testing_ = true;
+}
+
+ScopedOmitPluginVmAppsForTesting::~ScopedOmitPluginVmAppsForTesting() {
+  g_omit_plugin_vm_apps_for_testing_ =
+      previous_omit_plugin_vm_apps_for_testing_;
 }
 
 }  // namespace apps

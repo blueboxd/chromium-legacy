@@ -469,7 +469,7 @@ class ArcVmClientAdapter : public ArcClientAdapter,
     OnArcInstanceStopped();
   }
 
-  void ConciergeServiceRestarted() override {}
+  void ConciergeServiceStarted() override {}
 
  private:
   void OnArcBugReportBackedUp(bool result) {

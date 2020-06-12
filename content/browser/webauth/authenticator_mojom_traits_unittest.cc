@@ -70,7 +70,7 @@ void AssertSerializeAndDeserializeSucceeds(std::vector<UserType> test_cases) {
 TEST(AuthenticatorMojomTraitsTest, SerializeCredentialParams) {
   std::vector<PublicKeyCredentialParams::CredentialInfo> success_cases = {
       {CredentialType::kPublicKey,
-       base::strict_cast<int>(CoseAlgorithmIdentifier::kCoseEs256)}};
+       base::strict_cast<int>(CoseAlgorithmIdentifier::kEs256)}};
 
   AssertSerializeAndDeserializeSucceeds<
       blink::mojom::PublicKeyCredentialParameters,

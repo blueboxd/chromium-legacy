@@ -14,6 +14,7 @@
  *   minY: (number|undefined),
  *   maxX: (number|undefined),
  *   maxY: (number|undefined),
+ *   noOffset: (boolean|undefined),
  * }}
  */
 let ShowAtConfig;
@@ -344,7 +345,7 @@ Polymer({
     const rect = this.anchorElement_.getBoundingClientRect();
 
     let height = rect.height;
-    if (opt_config &&
+    if (opt_config && !opt_config.noOffset &&
         opt_config.anchorAlignmentY === AnchorAlignment.AFTER_END) {
       // When an action menu is positioned after the end of an element, the
       // action menu can appear too far away from the anchor element, typically

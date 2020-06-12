@@ -143,7 +143,8 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
     const StyleableMarker& marker,
     const ComputedStyle& style,
     const FloatRect& marker_rect,
-    LayoutUnit logical_height) {
+    LayoutUnit logical_height,
+    bool in_dark_mode) {
   // start of line to draw, relative to box_origin.X()
   LayoutUnit start = LayoutUnit(marker_rect.X());
   LayoutUnit width = LayoutUnit(marker_rect.Width());
@@ -171,7 +172,7 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
   }
 
   Color marker_color =
-      marker.UseTextColor()
+      (marker.UseTextColor() || in_dark_mode)
           ? style.VisitedDependentColor(GetCSSPropertyWebkitTextFillColor())
           : marker.UnderlineColor();
   if (marker.UnderlineStyle() !=

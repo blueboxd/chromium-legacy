@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_INSTALLABLE_INSTALLABLE_UTILS_H_
 #define CHROME_BROWSER_INSTALLABLE_INSTALLABLE_UTILS_H_
 
+#include <set>
+
 namespace content {
 class BrowserContext;
 }
@@ -28,5 +30,12 @@ bool IsWebAppInstalledForUrl(content::BrowserContext* browser_context,
 bool DoesOriginContainAnyInstalledWebApp(
     content::BrowserContext* browser_context,
     const GURL& origin);
+
+// Returns the set of HTTPS origins that contain an installed web app within
+// |browser_context|. For example, if a web app at https://example.com/a/b is
+// installed, the returned set will contain the origin https://example.com.
+// The return types are GURLs for convenience.
+std::set<GURL> GetOriginsWithInstalledWebApps(
+    content::BrowserContext* browser_context);
 
 #endif  // CHROME_BROWSER_INSTALLABLE_INSTALLABLE_UTILS_H_

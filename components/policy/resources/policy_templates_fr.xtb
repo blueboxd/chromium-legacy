@@ -269,6 +269,9 @@ Si vous activez cette règle ou ne la configurez pas, le défilement des pages W
 Si vous la désactivez, le défilement des pages Web vers des fragments de texte spécifiques via URL sera désactivé.</translation>
 <translation id="1474273443907024088">Désactiver TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1480412981546860793">Permet de spécifier la langue utilisée dans <ph name="PRODUCT_NAME" />.
+
+      Si cette règle est désactivée ou qu'elle n'est pas configurée, les utilisateurs peuvent spécifier la langue de leur choix (si elle est configurée), ainsi que la langue du système ou la langue de remplacement (en-US).</translation>
 <translation id="1486021504508098388">Transmettre les informations concernant le rétroéclairage</translation>
 <translation id="1488406778491620405">La fonctionnalité d'accessibilité <ph name="PRODUCT_NAME" />
           permet aux personnes malvoyantes qui utilisent un lecteur d'écran
@@ -1176,6 +1179,15 @@ Cette règle est facultative. Si elle n'est pas configurée, la valeur par défa
 Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="2678503605767349615">Certificats clients requis au niveau de l'appareil</translation>
 <translation id="268577405881275241">Activer la fonctionnalité de proxy pour la compression de données</translation>
+<translation id="2691668238491124549">Cette règle (recommandée uniquement) permet de placer les langues recommandées pour une session gérée en haut de la liste, conformément à leur ordre d'affichage dans la règle. La première langue recommandée est présélectionnée.
+
+      Si cette règle n'est pas configurée, la langue actuelle de l'interface utilisateur est présélectionnée.
+
+      Si plusieurs langues sont recommandées, nous partons du principe que les utilisateurs choisiront l'une d'elles. (Les options de sélection de langue et de disposition du clavier sont mises en avant au démarrage d'une session gérée.) Dans le cas contraire, nous partons du principe que la plupart des utilisateurs choisiront la langue présélectionnée. (Les options de sélection de langue et de disposition du clavier sont moins mises en avant au démarrage d'une session gérée.)
+
+      Si vous configurez cette règle et activez la connexion automatique (voir les règles <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" /> et <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_DELAY_POLICY_NAME" />), la première langue recommandée et la disposition de clavier correspondante la plus populaire sont utilisées pour la session gérée.
+
+      La disposition de clavier présélectionnée est toujours la plus populaire pour la langue présélectionnée. Enfin, les utilisateurs pourront toujours choisir une langue parmi celles compatibles avec <ph name="PRODUCT_OS_NAME" /> pour leur session.</translation>
 <translation id="2693108589792503178">Configurez l'URL de modification de mot de passe.</translation>
 <translation id="2694143893026486692">Loupe ancrée activée</translation>
 <translation id="2694188263972877487">Permet de configurer les types de téléchargements que <ph name="PRODUCT_NAME" /> bloquera complètement, et pour lesquels les utilisateurs ne sont pas autorisés à ignorer l'avertissement de sécurité.
@@ -1351,6 +1363,17 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       Si cette règle est définie sur "True" ou qu'elle n'est pas configurée, les sessions Invitée gérées se déroulent comme des "sessions gérées", ce qui lève bon nombre des restrictions en vigueur pour les "sessions publiques" standards.
 
       Si cette règle est définie, l'utilisateur ne peut pas la modifier ni l'ignorer.</translation>
+<translation id="3001285126226650303">Permet à <ph name="PRODUCT_NAME" /> de charger des règles expérimentales.
+
+        AVERTISSEMENT : Les règles expérimentales ne sont pas prises en charge et peuvent être modifiées ou supprimées sans préavis dans la future version du navigateur.
+
+        Une règle expérimentale peut ne pas être terminée ou encore présenter des défauts connus ou inconnus. Elle peut être modifiée ou même supprimée sans aucune notification. En activant des règles expérimentales, vous pouvez perdre des données de navigateur, ou compromettre votre sécurité ou la confidentialité de vos données.
+
+        Si une règle ne figure pas dans la liste et qu'elle n'est pas officiellement publiée, sa valeur est alors ignorée dans les versions bêta et stable de Chrome.
+
+        Si une règle figure dans la liste et qu'elle n'est pas officiellement publiée, sa valeur est alors appliquée.
+
+        Cette règle n'a aucune incidence sur les règles déjà publiées.</translation>
 <translation id="3016255526521614822">Les applications de prise de note ajoutées à la liste blanche sont autorisées sur l'écran de verrouillage de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3020064401262077616">Contrôle les règles de supervision parentale s'appliquant uniquement aux comptes d'utilisateurs mineurs.</translation>
 <translation id="3020953534071988875">La configuration de cette règle autorise/interdit l'authentification ambiante pour les profils Invité et de navigation privée dans <ph name="PRODUCT_NAME" />.
@@ -1392,6 +1415,9 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
 
 Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utilisé et l'utilisateur est en mesure de le modifier.</translation>
 <translation id="3038323923255997294">Poursuivre l'exécution des applications en arrière-plan après la fermeture de <ph name="PRODUCT_NAME" /></translation>
+<translation id="3041887182529293512">Si cette règle est définie sur "True" ou qu'elle n'est pas configurée, des recommandations de contenus générées automatiquement sont proposées sur la page "Nouvel onglet", en fonction de l'historique de navigation, des centres d'intérêt ou de la position de l'utilisateur.
+
+      Si cette règle est définie sur "False", aucune recommandation de ce type n'est affichée sur la page "Nouvel onglet".</translation>
 <translation id="3046192273793919231">Envoyer des paquets réseau au serveur de gestion pour contrôler l'état en ligne</translation>
 <translation id="3047732214002457234">Contrôler comment Chrome Cleanup transmet des données à Google</translation>
 <translation id="3048744057455266684">Si cette règle est définie et que la chaîne de requête ou l'identifiant du fragment d'une URL de recherche suggérée à partir de l'Omnibox contient ce paramètre, la suggestion affiche les termes et le moteur de recherche, et non l'URL de recherche brute.
@@ -1441,6 +1467,13 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
       Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="3119125876909100625">Autoriser l'importation de fichiers protégés par un mot de passe</translation>
 <translation id="3122082892722698079">Contrôler l'utilisation des exceptions liées au contenu non sécurisé</translation>
+<translation id="3148152738273574834">Permet d'établir une liste des applications Web qui s'installent de manière autonome (sans intervention de l'utilisateur) et de spécifier les utilisateurs qui ne peuvent pas les désinstaller ou les désactiver.
+
+      Chaque élément de la liste de cette règle est un objet constitué d'un membre obligatoire tel que <ph name="URL_LABEL" /> (qui correspond à l'URL de l'application Web à installer) et de deux membres facultatifs tels que <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (qui indique où s'ouvre l'application Web ; par défaut, elle s'ouvre dans un nouvel onglet) et <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> ("True", si création de raccourcis sur le bureau <ph name="LINUX_OS_NAME" /> ou Windows®).
+
+      Les utilisateurs peuvent modifier le conteneur dans lequel l'application s'ouvre et ignorer les raccourcis sur le bureau.
+
+      Consultez la règle <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> pour épingler des applications à l'étagère <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3152425128389603870">Rendre le mode bureau unifié disponible et l'activer par défaut</translation>
 <translation id="3159375329008977062">L'utilisateur est autorisé à exporter/importer des conteneurs Crostini via l'UI</translation>
 <translation id="3165808775394012744">Ces règles sont incluses ici pour faciliter leur suppression.</translation>
@@ -1519,6 +1552,9 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 
           Si cette règle n'est pas configurée, les utilisateurs peuvent ajouter des exceptions qui autorisent l'affichage de contenu mixte blocable, et désactiver les mises à niveau automatiques pour le contenu mixte blocable en option.</translation>
 <translation id="3307971460556020865">Bloquer l'importation et le téléchargement de fichiers volumineux</translation>
+<translation id="3308724602356134956">Si vous configurez cette règle, <ph name="PRODUCT_OS_NAME" /> télécharge et utilise l'image de fond d'écran que vous avez définie pour l'arrière-plan de l'écran de connexion et le bureau des utilisateurs (lesquels ne peuvent pas modifier la configuration). Spécifiez l'URL (accessible sans authentification) à laquelle <ph name="PRODUCT_OS_NAME" /> peut télécharger l'image de fond d'écran (16 Mo maximum et au format JPEG), ainsi qu'un hachage cryptographique pour vérifier l'intégrité de l'image.
+
+      Si cette règle n'est pas configurée, les utilisateurs peuvent alors choisir l'image pour l'arrière-plan de l'écran de connexion et leur bureau.</translation>
 <translation id="3312206664202507568">Affiche la page chrome://password-change, qui permet aux utilisateurs SAML de changer leur mot de passe en cours de session. De cette façon, le mot de passe SAML et celui de l'écran de verrouillage de l'appareil restent synchronisés.
 
       Cette règle permet également d'activer les notifications destinées à signaler aux utilisateurs SAML que leur mot de passe SAML va bientôt arriver à expiration. Ils peuvent ainsi le modifier immédiatement, durant la session.
@@ -2802,6 +2838,9 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
 
       Consultez également la page https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5249453807420671499">Les utilisateurs peuvent ajouter des comptes Kerberos</translation>
+<translation id="5252995168844634755">Si cette règle est définie sur "True", le mode bureau unifié est activé, ce qui permet aux applications de couvrir plusieurs écrans. En cas d'écrans individuels, les utilisateurs peuvent désactiver ce mode.
+
+      Si cette règle est définie sur "False" ou qu'elle n'est pas configurée, le mode bureau unifié est désactivé, et les utilisateurs ne peuvent pas l'activer.</translation>
 <translation id="5255162913209987122">Peut être recommandée</translation>
 <translation id="527237119693897329">Cette règle vous permet de spécifier les hôtes de messagerie native qui ne doivent pas être chargés.
 
@@ -3685,6 +3724,15 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
       Pour contrôler quels sites Web sont autorisés à exécuter Flash, reportez-vous aux règles "DefaultPluginsSetting", "PluginsAllowedForUrls" et "PluginsBlockedForUrls".
 
       Si ce paramètre est désactivé ou s'il n'est pas défini, le contenu Flash provenant d'autres sources ou de petite taille risque d'être bloqué.</translation>
+<translation id="6532026122543921610">Permet de définir le mode de détection automatique du fuseau horaire, sauf si la règle <ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> désactive cette détection automatique. Notez que les utilisateurs ne peuvent pas modifier ce mode.
+
+      Cette règle peut être définie sur les valeurs suivantes :
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONDISABLED" /> : la détection automatique du fuseau horaire est toujours désactivée.
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TTIMEZONEAUTOMATICDETECTIONIPONLY" /> : la détection automatique du fuseau horaire est toujours activée et repose exclusivement sur l'adresse IP.
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDWIFIACCESSPOINTS" /> : la détection automatique du fuseau horaire est toujours activée. La liste des points d'accès Wi-Fi visibles est continuellement transmise au serveur de l'API Geolocation pour une détection plus précise du fuseau horaire.
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDALLLOCATIONINFO" /> : la détection automatique du fuseau horaire est toujours activée. Les informations de localisation (telles que les points d'accès Wi-Fi, les antennes-relais accessibles et les données GPS) sont transmises à un serveur pour détecter le plus précisément possible le fuseau horaire.
+
+      Si cette règle n'est pas configurée, ou qu'elle est définie sur "Choix laissé aux utilisateurs" ou "Aucun", les utilisateurs peuvent gérer la détection automatique du fuseau horaire à l'aide des commandes classiques disponibles dans chrome://settings.</translation>
 <translation id="6532769014584932288">Autoriser les wakelocks</translation>
 <translation id="653645667373317432">Cette règle contrôle la commande qui permet d'ouvrir les URL dans <ph name="PRODUCT_NAME" /> lors du basculement depuis Internet Explorer.
 
@@ -4721,6 +4769,9 @@ Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtr�
 <translation id="8118665053362250806">Définir la taille du cache disque de support</translation>
 <translation id="8124468781472887384">Règle d'accès à la configuration des imprimantes d'appareils.</translation>
 <translation id="8128192446158421884">URL pour lesquelles la règle AutoOpenFileTypes peut s'appliquer</translation>
+<translation id="8133152694354699657">Si cette règle est définie sur "True" ou qu'elle n'est pas configurée, la fonctionnalité "Appuyer pour rechercher" est proposée aux utilisateurs, qui peuvent ensuite choisir de l'activer ou non.
+
+      Si cette règle est définie sur "False", cette fonctionnalité est entièrement désactivée.</translation>
 <translation id="8140204717286305802">Générer une liste des interfaces réseau, ainsi que leurs types et leurs adresses matérielles sur le serveur.
 
       Si la règle est définie sur "False", aucune liste d'interfaces n'est générée.</translation>
@@ -5217,6 +5268,11 @@ Si vous activez ce paramètre, <ph name="PRODUCT_NAME" /> et les applications AR
           Si vous configurez cette règle, les utilisateurs ne peuvent ni la modifier, ni l'ignorer.
 
           Si cette règle n'est pas configurée, le clic automatique est initialement désactivé sur l'écran de connexion, mais les utilisateurs peuvent l'activer à tout moment.</translation>
+<translation id="8873089107816226072">Permet de spécifier le fuseau horaire d'un appareil et de désactiver l'ajustement automatique du fuseau horaire en fonction du lieu, tout en ignorant la règle <ph name="SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_POLICY_NAME" />. Le fuseau horaire ne peut pas être modifié par les utilisateurs.
+
+      Il est défini sur "États-Unis/Pacifique" pour tous les nouveaux appareils. Le format utilisé est celui de la base de données "IANA Time Zone Database" (pour en savoir plus, consultez la page https://fr.wikipedia.org/wiki/Tz_database). Si la valeur saisie n'est pas valide, le fuseau horaire GMT est utilisé par défaut.
+
+      Si cette règle n'est pas configurée ou qu'aucune valeur n'est spécifiée, l'appareil utilise le fuseau horaire actuellement défini (les utilisateurs peuvent le modifier).</translation>
 <translation id="8876188741456358123">Remplace le mode recto verso d'impression par défaut. Si le mode est indisponible, cette règle est ignorée.</translation>
 <translation id="8878850056189891727">Une correspondance est recherchée entre les formats de cette liste et la source de sécurité de l'URL à l'origine de la demande.  En cas de correspondance, l'accès aux appareils d'enregistrement audio est autorisé sans accord préalable.
 
@@ -5299,6 +5355,9 @@ indique uniquement les imprimantes qui peuvent être choisies.
 
       Cette règle ne doit pas être activée si la règle <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> l'est également, car elles partagent la même fonctionnalité côté client. Dans ce cas, le service de synchronisation hébergé par Google est totalement désactivé.</translation>
 <translation id="8955719471735800169">Haut de page</translation>
+<translation id="8956310900055843601">Si cette règle est définie sur "True" ou qu'elle n'est pas configurée, le format 24 heures est utilisé sur l'écran de connexion de l'appareil. Les utilisateurs peuvent modifier ce format dans leur compte, même si celui-ci est défini par défaut.
+
+      Si cette règle est définie sur "False", le format 12 heures est utilisé sur l'appareil.</translation>
 <translation id="8959992920425111821">Configuration par défaut</translation>
 <translation id="8970205333161758602">Supprimer l'invite de fermeture de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Autoriser l'authentification gnubby pour les hôtes d'accès à distance</translation>
@@ -5410,6 +5469,11 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
 <translation id="9152473318295429890">Activer les suggestions contextuelles des pages Web associées</translation>
 <translation id="9153446010242995516">Effectuez un rollback et conservez la version cible si elle est antérieure à la version de l'OS. Essayez de conserver la configuration de l'appareil (y compris les identifiants réseau) lors du processus si possible, mais effectuez un Powerwash complet même s'il est impossible de restaurer les données (car la version cible n'est pas compatible avec la restauration de données ou en raison d'une modification incompatible avec la restauration).
           Compatible avec la version 75 et les versions ultérieures de <ph name="PRODUCT_OS_NAME" />. Pour les clients plus anciens, cette valeur signifie que la fonction de rollback est désactivée.</translation>
+<translation id="9155375380628728544">Permet aux utilisateurs d'ajouter une seule des langues répertoriées dans cette règle à la liste des langues préférées.
+
+      Si cette règle n'est pas configurée ou qu'aucune langue n'est indiquée dans la liste, les utilisateurs peuvent spécifier les langues de leur choix.
+
+      Si cette règle est définie sur une liste contenant des valeurs non valides, celles-ci sont ignorées. Si des langues que les utilisateurs ont ajoutées à la liste des langues préférées ne sont pas autorisées par cette règle, elles sont supprimées. Si la langue d'affichage utilisée dans <ph name="PRODUCT_OS_NAME" /> n'est pas autorisée par cette règle, elle est remplacée par une langue autorisée de l'interface utilisateur lors de la prochaine connexion. Si cette règle ne contient que des valeurs non valides, <ph name="PRODUCT_OS_NAME" /> utilise la première valeur valide spécifiée par cette règle ou une langue de remplacement (en-US, par exemple).</translation>
 <translation id="9156175786579877198">Liste des formats d'URL pour lesquels le contenu téléchargé doit être vérifié afin de déterminer si les règles de protection des données sensibles sont respectées avant que ce contenu ne soit enregistré dans un espace de stockage local.  Cette règle ne s'applique que si la règle <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> est activée.
 
       Si cette règle n'est pas définie ou si aucun format d'URL n'est indiqué dans la liste, aucun contenu téléchargé n'est examiné en vue de détecter d'éventuelles violations des règles de protection des données sensibles.

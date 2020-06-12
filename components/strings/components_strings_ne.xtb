@@ -161,7 +161,6 @@
 <translation id="161042844686301425">सायन</translation>
 <translation id="1620510694547887537">क्यामेरा</translation>
 <translation id="1623104350909869708">यो पृष्ठलाई अतिरिक्त संवादहरू सिर्जना गर्नबाट रोक्नुहोस्</translation>
-<translation id="1623253368136559158">क्यामेराको फोकस परिवर्तन गर्न</translation>
 <translation id="16338877384480380">Architecture-B</translation>
 <translation id="1638780421120290329">कार्ड सुरक्षित गर्न सकिएन</translation>
 <translation id="1639239467298939599">लोड गर्दै</translation>
@@ -465,7 +464,7 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">यो सर्भरले यो <ph name="DOMAIN" /> हो भनेर प्रमाणित गर्न सकेन; यसको सुरक्षा प्रमाणपत्र <ph name="DOMAIN2" /> बाट हो। यो एक गलत कन्फिगुरेसन वा तपाईंको जडान अवरोध गर्न खोज्ने आक्रमणकारीको हुनसक्छ।</translation>
 <translation id="2943895734390379394">अपलोड गरिएको समय:</translation>
-<translation id="2944299917411283989">आफ्नो Google खातामा भरपर्दो पासवर्ड सिर्जना गर्नुहोस्</translation>
+<translation id="2944299917411283989">आफ्नो Google खातामा भरपर्दो पासवर्ड राख्नुहोस्</translation>
 <translation id="2948083400971632585">तपाइँले सेटिङ पृष्ठहरूबाट जडानको लागि विन्यास गरिएको कुनै पनि प्रोक्सीहरू असक्षम गर्न सक्नुहुन्छ।</translation>
 <translation id="2951588413176968965">मेरो मेलबक्स</translation>
 <translation id="295526156371527179">चेतावनी: यो नीति कुनै शब्दकोश नभएका कारण यसलाई नीतिले तोकेअनुसार शब्दकोशका रूपमा गाभिएन।</translation>
@@ -1636,7 +1635,6 @@
 <translation id="7887885240995164102">picture-in-picture मोडमा प्रविष्टि गर्नुहोस्‌</translation>
 <translation id="7888575728750733395">प्रिन्टिङ रेन्डर गर्ने प्रक्रियाको उद्देश्य</translation>
 <translation id="7904208859782148177">C3 (Envelope)</translation>
-<translation id="7923775243649974918">तपाईंको क्यामेरा सार्न</translation>
 <translation id="7932579305932748336">कोट</translation>
 <translation id="79338296614623784">मान्य फोन नम्बर प्रविष्टि गर्नुहोस्</translation>
 <translation id="7934052535022478634">भुक्तानी गर्ने कार्य पूरा भयो</translation>

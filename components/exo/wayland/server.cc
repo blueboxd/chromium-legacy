@@ -28,6 +28,7 @@
 #include <vsync-feedback-unstable-v1-server-protocol.h>
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
+#include <xdg-shell-server-protocol.h>
 #include <xdg-shell-unstable-v6-server-protocol.h>
 
 #include <memory>
@@ -60,6 +61,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "components/exo/wayland/wl_shell.h"
+#include "components/exo/wayland/xdg_shell.h"
 #include "components/exo/wayland/zcr_color_space.h"
 #include "components/exo/wayland/zcr_cursor_shapes.h"
 #include "components/exo/wayland/zcr_gaming_input.h"
@@ -210,10 +212,15 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(), &zwp_text_input_manager_v1_interface, 1,
                    zwp_text_manager_data_.get(), bind_text_input_manager);
 
+  zxdg_shell_data_ =
+      std::make_unique<WaylandZxdgShell>(display_, serial_tracker_.get());
+  wl_global_create(wl_display_.get(), &zxdg_shell_v6_interface, 1,
+                   zxdg_shell_data_.get(), bind_zxdg_shell_v6);
+
   xdg_shell_data_ =
       std::make_unique<WaylandXdgShell>(display_, serial_tracker_.get());
-  wl_global_create(wl_display_.get(), &zxdg_shell_v6_interface, 1,
-                   xdg_shell_data_.get(), bind_xdg_shell_v6);
+  wl_global_create(wl_display_.get(), &xdg_wm_base_interface, 1,
+                   xdg_shell_data_.get(), bind_xdg_shell);
 #endif
 
 #if defined(USE_FULLSCREEN_SHELL)

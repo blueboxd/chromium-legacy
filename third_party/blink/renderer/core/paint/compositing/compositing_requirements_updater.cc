@@ -590,17 +590,11 @@ void CompositingRequirementsUpdater::UpdateRecursive(
       current_recursion_data.subtree_is_compositing_ = true;
 
     // Turn overlap testing off for later layers if it's already off, or if we
-    // have an animating transform.  Note that if the layer clips its
-    // descendants, there's no reason to propagate the child animation to the
-    // parent layers. That's because we know for sure the animation is contained
-    // inside the clipping rectangle, which is already added to the overlap map.
-    bool is_composited_clipping_layer =
-        can_be_composited && (reasons_to_composite &
-                              CompositingReason::kClipsCompositingDescendants);
-    if ((!child_recursion_data.testing_overlap_ &&
-         !is_composited_clipping_layer) ||
-        layer->GetLayoutObject().StyleRef().HasCurrentTransformAnimation())
+    // have an animating transform.
+    if (!child_recursion_data.testing_overlap_ ||
+        layer->GetLayoutObject().StyleRef().HasCurrentTransformAnimation()) {
       current_recursion_data.testing_overlap_ = false;
+    }
 
     if (child_recursion_data.compositing_ancestor_ == layer ||
         contains_composited_layer) {

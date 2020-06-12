@@ -223,13 +223,13 @@ class AwContents : public FindHelper::Listener,
 
   js_injection::JsJavaConfiguratorHost* GetJsJavaConfiguratorHost();
 
-  jint AddDocumentStartJavascript(
+  jint AddDocumentStartJavaScript(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& script,
       const base::android::JavaParamRef<jobjectArray>& allowed_origin_rules);
 
-  void RemoveDocumentStartJavascript(
+  void RemoveDocumentStartJavaScript(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint script_id);

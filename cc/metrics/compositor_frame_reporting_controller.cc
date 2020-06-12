@@ -287,8 +287,10 @@ void CompositorFrameReportingController::DidPresentCompositorFrame(
       break;
 
     auto termination_status = FrameTerminationStatus::kPresentedFrame;
-    if (submitted_frame->frame_token != frame_token)
+    if (submitted_frame->frame_token != frame_token ||
+        details.presentation_feedback.failed()) {
       termination_status = FrameTerminationStatus::kDidNotPresentFrame;
+    }
 
     submitted_frame->reporter->SetVizBreakdown(details);
     submitted_frame->reporter->TerminateFrame(

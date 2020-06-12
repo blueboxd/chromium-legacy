@@ -138,8 +138,9 @@ void FileSourceRequest::OnGotFileData(
     // malware request only.
     if (block_unsupported_types_ ||
         !deep_scanning_request().has_malware_scan_request()) {
-      CacheResultAndData(BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE,
-                         std::move(result_and_data.second));
+      CacheResultAndData(
+          BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE,
+          std::move(result_and_data.second));
       std::move(callback).Run(cached_result_, cached_data_);
       return;
     } else {

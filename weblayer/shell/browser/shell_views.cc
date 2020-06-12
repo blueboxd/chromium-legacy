@@ -372,7 +372,7 @@ void Shell::PlatformSetContents() {
   views::WidgetDelegate* widget_delegate = window_widget_->widget_delegate();
   ShellWindowDelegateView* delegate_view =
       static_cast<ShellWindowDelegateView*>(widget_delegate);
-  delegate_view->AttachTab(tab_.get(), content_size_);
+  delegate_view->AttachTab(tab(), content_size_);
   window_->GetHost()->Show();
   window_widget_->Show();
 }

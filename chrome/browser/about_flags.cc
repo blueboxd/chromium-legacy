@@ -3915,10 +3915,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSplitPartiallyOccludedQuadsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kSplitPartiallyOccludedQuads)},
 
-    {"enable-query-in-omnibox", flag_descriptions::kQueryInOmniboxName,
-     flag_descriptions::kQueryInOmniboxDescription, kOsAll,
-     FEATURE_VALUE_TYPE(omnibox::kQueryInOmnibox)},
-
 #if BUILDFLAG(ENABLE_PDF)
     {"pdf-form-save", flag_descriptions::kPdfFormSaveName,
      flag_descriptions::kPdfFormSaveDescription, kOsDesktop,
@@ -5596,6 +5592,11 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
+    {"android-default-browser-promo",
+     flag_descriptions::kAndroidDefaultBrowserPromoName,
+     flag_descriptions::kAndroidDefaultBrowserPromoDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAndroidDefaultBrowserPromo)},
+
     {"android-multiple-display", flag_descriptions::kAndroidMultipleDisplayName,
      flag_descriptions::kAndroidMultipleDisplayDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidMultipleDisplay)},

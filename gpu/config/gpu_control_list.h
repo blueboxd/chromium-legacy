@@ -181,12 +181,17 @@ class GPU_EXPORT GpuControlList {
     static GLType GetDefaultGLType();
   };
 
+  struct GPU_EXPORT Device {
+    uint32_t device_id;
+    uint32_t revision = 0u;
+  };
+
   struct GPU_EXPORT Conditions {
     OsType os_type;
     Version os_version;
     uint32_t vendor_id;
-    size_t device_id_size;
-    const uint32_t* device_ids;
+    size_t device_size;
+    const Device* devices;
     MultiGpuCategory multi_gpu_category;
     MultiGpuStyle multi_gpu_style;
     const DriverInfo* driver_info;

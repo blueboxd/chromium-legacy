@@ -41,4 +41,13 @@ std::string MediaLogEventToString(MediaLogEvent level) {
   return "";
 }
 
+std::string TruncateUrlString(std::string url) {
+  constexpr size_t kMaxUrlLength = 1000;
+  if (url.length() > kMaxUrlLength) {
+    url.resize(kMaxUrlLength);
+    url.replace(url.end() - 3, url.end(), "...");
+  }
+  return url;
+}
+
 }  // namespace media

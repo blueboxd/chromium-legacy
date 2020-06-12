@@ -1184,7 +1184,14 @@ class DnsTransactionImpl : public DnsTransaction,
     net_log_.EndEventWithNetErrorCode(NetLogEventType::DNS_TRANSACTION,
                                       result.rv);
 
-    std::move(callback_).Run(this, result.rv, response);
+    base::Optional<std::string> doh_provider_id;
+    if (secure_ && result.attempt) {
+      size_t server_index = result.attempt->server_index();
+      doh_provider_id = GetDohProviderIdForHistogramFromDohConfig(
+          session_->config().dns_over_https_servers[server_index]);
+    }
+
+    std::move(callback_).Run(this, result.rv, response, doh_provider_id);
   }
 
   AttemptResult MakeAttempt() {

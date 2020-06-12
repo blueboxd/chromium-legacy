@@ -378,43 +378,48 @@ void ParseDynamicRangeConfigurations(
   // discrepancies between mime type and colorGamut/transferFunction; for now,
   // give precedence to the latter.
 
-  const String& hdr_metadata_type = video_config->hdrMetadataType();
-  if (hdr_metadata_type == kSmpteSt2086HdrMetadataType) {
-    *hdr_metadata = media::HdrMetadataType::kSmpteSt2086;
-  } else if (hdr_metadata_type == kSmpteSt209410HdrMetadataType) {
-    *hdr_metadata = media::HdrMetadataType::kSmpteSt2094_10;
-  } else if (hdr_metadata_type == kSmpteSt209440HdrMetadataType) {
-    *hdr_metadata = media::HdrMetadataType::kSmpteSt2094_40;
-  } else if (hdr_metadata_type.IsNull()) {
+  if (video_config->hasHdrMetadataType()) {
+    const auto& hdr_metadata_type = video_config->hdrMetadataType();
+    // TODO(crbug.com/1092328): Switch by V8HdrMetadataType::Enum.
+    if (hdr_metadata_type == kSmpteSt2086HdrMetadataType) {
+      *hdr_metadata = media::HdrMetadataType::kSmpteSt2086;
+    } else if (hdr_metadata_type == kSmpteSt209410HdrMetadataType) {
+      *hdr_metadata = media::HdrMetadataType::kSmpteSt2094_10;
+    } else if (hdr_metadata_type == kSmpteSt209440HdrMetadataType) {
+      *hdr_metadata = media::HdrMetadataType::kSmpteSt2094_40;
+    } else {
+      NOTREACHED();
+    }
+  } else {
     *hdr_metadata = media::HdrMetadataType::kNone;
-  } else {
-    NOTREACHED();
   }
 
-  const String& color_gamut = video_config->colorGamut();
-  if (color_gamut == kSrgbColorGamut) {
-    color_space->primaries = media::VideoColorSpace::PrimaryID::BT709;
-  } else if (color_gamut == kP3ColorGamut) {
-    color_space->primaries = media::VideoColorSpace::PrimaryID::SMPTEST431_2;
-  } else if (color_gamut == kRec2020ColorGamut) {
-    color_space->primaries = media::VideoColorSpace::PrimaryID::BT2020;
-  } else if (color_gamut.IsNull()) {
-    // Leave |color_space->primaries| as-is.
-  } else {
-    NOTREACHED();
+  if (video_config->hasColorGamut()) {
+    const auto& color_gamut = video_config->colorGamut();
+    // TODO(crbug.com/1092328): Switch by V8ColorGamut::Enum.
+    if (color_gamut == kSrgbColorGamut) {
+      color_space->primaries = media::VideoColorSpace::PrimaryID::BT709;
+    } else if (color_gamut == kP3ColorGamut) {
+      color_space->primaries = media::VideoColorSpace::PrimaryID::SMPTEST431_2;
+    } else if (color_gamut == kRec2020ColorGamut) {
+      color_space->primaries = media::VideoColorSpace::PrimaryID::BT2020;
+    } else {
+      NOTREACHED();
+    }
   }
 
-  const String& transfer_function = video_config->transferFunction();
-  if (transfer_function == kSrgbTransferFunction) {
-    color_space->transfer = media::VideoColorSpace::TransferID::BT709;
-  } else if (transfer_function == kPqTransferFunction) {
-    color_space->transfer = media::VideoColorSpace::TransferID::SMPTEST2084;
-  } else if (transfer_function == kHlgTransferFunction) {
-    color_space->transfer = media::VideoColorSpace::TransferID::ARIB_STD_B67;
-  } else if (transfer_function.IsNull()) {
-    // Leave |color_space->transfer| as-is.
-  } else {
-    NOTREACHED();
+  if (video_config->hasTransferFunction()) {
+    const auto& transfer_function = video_config->transferFunction();
+    // TODO(crbug.com/1092328): Switch by V8TransferFunction::Enum.
+    if (transfer_function == kSrgbTransferFunction) {
+      color_space->transfer = media::VideoColorSpace::TransferID::BT709;
+    } else if (transfer_function == kPqTransferFunction) {
+      color_space->transfer = media::VideoColorSpace::TransferID::SMPTEST2084;
+    } else if (transfer_function == kHlgTransferFunction) {
+      color_space->transfer = media::VideoColorSpace::TransferID::ARIB_STD_B67;
+    } else {
+      NOTREACHED();
+    }
   }
 }
 

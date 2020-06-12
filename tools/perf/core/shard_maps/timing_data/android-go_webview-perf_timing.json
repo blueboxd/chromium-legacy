@@ -56,10 +56,6 @@
         "name": "system_health.common_mobile/browse:media:youtube:2019"
     },
     {
-        "duration": "159.0",
-        "name": "system_health.common_mobile/browse:news:cnn:2018"
-    },
-    {
         "duration": "70.0",
         "name": "system_health.common_mobile/browse:news:cricbuzz:2019"
     },
@@ -146,10 +142,6 @@
     {
         "duration": "25.0",
         "name": "system_health.common_mobile/load:chrome:blank"
-    },
-    {
-        "duration": "25.0",
-        "name": "system_health.common_mobile/load:games:bubbles:2019"
     },
     {
         "duration": "25.0",
@@ -340,10 +332,6 @@
         "name": "system_health.memory_mobile/browse:media:youtube:2019"
     },
     {
-        "duration": "2.0",
-        "name": "system_health.memory_mobile/browse:news:cnn:2018"
-    },
-    {
         "duration": "70.0",
         "name": "system_health.memory_mobile/browse:news:cricbuzz:2019"
     },
@@ -430,10 +418,6 @@
     {
         "duration": "30.0",
         "name": "system_health.memory_mobile/load:chrome:blank"
-    },
-    {
-        "duration": "32.0",
-        "name": "system_health.memory_mobile/load:games:bubbles:2019"
     },
     {
         "duration": "30.0",
@@ -602,10 +586,6 @@
     {
         "duration": "0.0",
         "name": "v8.browsing_mobile/browse:media:youtube:2019"
-    },
-    {
-        "duration": "0.0",
-        "name": "v8.browsing_mobile/browse:news:cnn:2018"
     },
     {
         "duration": "0.0",

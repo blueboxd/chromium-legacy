@@ -216,6 +216,14 @@ void TabGroupHeader::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kTabList;
   node_data->AddState(ax::mojom::State::kEditable);
 
+  if (tab_strip_->controller()->IsGroupCollapsed(group().value())) {
+    node_data->AddState(ax::mojom::State::kCollapsed);
+    node_data->RemoveState(ax::mojom::State::kExpanded);
+  } else {
+    node_data->AddState(ax::mojom::State::kExpanded);
+    node_data->RemoveState(ax::mojom::State::kCollapsed);
+  }
+
   base::string16 title =
       tab_strip_->controller()->GetGroupTitle(group().value());
   base::string16 contents =

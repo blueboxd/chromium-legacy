@@ -1714,11 +1714,6 @@ const char kPullToRefreshDescription[] =
     "Pull-to-refresh gesture in response to vertical overscroll.";
 const char kPullToRefreshEnabledTouchscreen[] = "Enabled for touchscreen only";
 
-const char kQueryInOmniboxName[] = "Query in Omnibox";
-const char kQueryInOmniboxDescription[] =
-    "Only display query terms in the omnibox when viewing a search results "
-    "page.";
-
 const char kQuicName[] = "Experimental QUIC protocol";
 const char kQuicDescription[] = "Enable experimental QUIC protocol support.";
 
@@ -2332,6 +2327,10 @@ const char kEnableVulkanDescription[] = "Use vulkan as the graphics backend.";
 const char kAndroidAutofillAccessibilityName[] = "Autofill Accessibility";
 const char kAndroidAutofillAccessibilityDescription[] =
     "Enable accessibility for autofill popup.";
+
+const char kAndroidDefaultBrowserPromoName[] = "Default Browser Promo";
+const char kAndroidDefaultBrowserPromoDescription[] =
+    "Shows a promo dialog to set Chrome as the default browser";
 
 const char kAndroidMultipleDisplayName[] = "Multiple Display";
 const char kAndroidMultipleDisplayDescription[] =

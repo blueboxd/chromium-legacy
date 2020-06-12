@@ -65,6 +65,11 @@ class ProfileImpl : public Profile {
   void SetDownloadDirectory(const base::FilePath& directory) override;
   void SetDownloadDelegate(DownloadDelegate* delegate) override;
   CookieManager* GetCookieManager() override;
+  void GetBrowserPersistenceIds(
+      base::OnceCallback<void(base::flat_set<std::string>)> callback) override;
+  void RemoveBrowserPersistenceStorage(
+      base::OnceCallback<void(bool)> done_callback,
+      base::flat_set<std::string> ids) override;
   void SetBooleanSetting(SettingType type, bool value) override;
   bool GetBooleanSetting(SettingType type) override;
 
@@ -93,8 +98,6 @@ class ProfileImpl : public Profile {
   jboolean GetBooleanSetting(JNIEnv* env, jint j_type);
 #endif
 
-  void IncrementBrowserImplCount();
-  void DecrementBrowserImplCount();
   const base::FilePath& download_directory() { return download_directory_; }
 
   // Get the directory where BrowserPersister stores tab state data. This will
@@ -115,6 +118,9 @@ class ProfileImpl : public Profile {
   // Callback when the system locale has been updated.
   void OnLocaleChanged();
 
+  // Returns the number of Browsers with this profile.
+  int GetNumberOfBrowsers();
+
   ProfileInfo info_;
 
   std::unique_ptr<BrowserContextImpl> browser_context_;
@@ -126,8 +132,6 @@ class ProfileImpl : public Profile {
   std::unique_ptr<i18n::LocaleChangeSubscription> locale_change_subscription_;
 
   std::unique_ptr<CookieManagerImpl> cookie_manager_;
-
-  size_t num_browser_impl_ = 0u;
 
   bool basic_safe_browsing_enabled_ = true;
 

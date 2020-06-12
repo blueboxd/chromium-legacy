@@ -54,33 +54,6 @@ TEST_F(CompositingRequirementsUpdaterTest,
   EXPECT_EQ(CompositingReason::kOverlap, target->GetCompositingReasons());
 }
 
-TEST_F(CompositingRequirementsUpdaterTest,
-       NoDescendantReasonForNonSelfPaintingLayer) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      #target {
-        overflow: auto;
-        width: 100px;
-        height: 100px;
-      }
-    </style>
-    <div id=target>
-      <div style="backface-visibility: hidden"></div>
-    </div>
-  )HTML");
-
-  PaintLayer* target =
-      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
-  EXPECT_FALSE(target->GetCompositingReasons());
-
-  // Now make |target| self-painting.
-  GetDocument().getElementById("target")->setAttribute(html_names::kStyleAttr,
-                                                       "position: relative");
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_EQ(CompositingReason::kClipsCompositingDescendants,
-            target->GetCompositingReasons());
-}
-
 // This test sets up a situation where a squashed PaintLayer loses its
 // backing, but does not change visual rect. Therefore the compositing system
 // must invalidate it because of change of backing.

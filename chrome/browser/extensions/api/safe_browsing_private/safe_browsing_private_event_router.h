@@ -89,6 +89,7 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   static const char kKeyInterstitialEvent[];
   static const char kKeySensitiveDataEvent[];
   static const char kKeyUnscannedFileEvent[];
+  static const char kKeyUnscannedReason[];
 
   // String constants for the "trigger" event field.
   static const char kTriggerFileDownload[];

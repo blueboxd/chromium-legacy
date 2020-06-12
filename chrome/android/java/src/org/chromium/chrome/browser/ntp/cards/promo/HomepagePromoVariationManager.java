@@ -78,7 +78,7 @@ public class HomepagePromoVariationManager {
             @Override
             public boolean isClientInIPHTrackingOnlyGroup() {
                 return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                        FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE, "tracking-only", false);
+                        FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE, "tracking_only", false);
             }
 
             @Override

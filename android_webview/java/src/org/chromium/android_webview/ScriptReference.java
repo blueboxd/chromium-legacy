@@ -27,6 +27,6 @@ public class ScriptReference {
 
         AwContents awContents = mAwContentsRef.get();
         if (awContents == null) return;
-        awContents.removeDocumentStartJavascript(mScriptId);
+        awContents.removeDocumentStartJavaScript(mScriptId);
     }
 }

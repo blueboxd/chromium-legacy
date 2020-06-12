@@ -5,16 +5,17 @@
 #ifndef COMPONENTS_JS_INJECTION_COMMON_AW_ORIGIN_MATCHER_H_
 #define COMPONENTS_JS_INJECTION_COMMON_AW_ORIGIN_MATCHER_H_
 
+#include <memory>
 #include <string>
-
-#include "net/base/scheme_host_port_matcher.h"
-#include "url/origin.h"
+#include <vector>
 
 namespace url {
 class Origin;
 }  // namespace url
 
 namespace js_injection {
+
+class OriginMatcherRule;
 
 // An url origin matcher allows wildcard subdomain matching. It supports two
 // types of rules.
@@ -39,6 +40,8 @@ namespace js_injection {
 // correspondingly).
 class AwOriginMatcher {
  public:
+  using RuleList = std::vector<std::unique_ptr<OriginMatcherRule>>;
+
   AwOriginMatcher() = default;
   // Allow copy and assign.
   AwOriginMatcher(const AwOriginMatcher& rhs);
@@ -48,6 +51,8 @@ class AwOriginMatcher {
 
   ~AwOriginMatcher() = default;
 
+  void SetRules(RuleList rules);
+
   // Adds a rule given by the string |raw|. Returns true if the rule was
   // successfully added.
   bool AddRuleFromString(const std::string& raw);
@@ -56,13 +61,13 @@ class AwOriginMatcher {
   bool Matches(const url::Origin& origin) const;
 
   // Returns the current list of rules.
-  const net::SchemeHostPortMatcher::RuleList& rules() const { return rules_; }
+  const RuleList& rules() const { return rules_; }
 
   // Returns string representation of this origin matcher.
   std::vector<std::string> Serialize() const;
 
  private:
-  net::SchemeHostPortMatcher::RuleList rules_;
+  RuleList rules_;
 };
 
 }  // namespace js_injection

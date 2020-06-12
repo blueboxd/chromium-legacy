@@ -261,7 +261,7 @@ bool DeepScanningDialogDelegate::ResultShouldAllowDataUse(
     case BinaryUploadService::Result::FILE_ENCRYPTED:
       return !settings.block_password_protected_files;
 
-    case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
+    case BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE:
       return !settings.block_unsupported_file_types;
   }
 }

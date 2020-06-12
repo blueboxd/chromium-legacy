@@ -21,6 +21,7 @@
 namespace blink {
 
 using InputEvent = ukm::builders::InputEvent;
+using PageLoad = ukm::builders::PageLoad;
 
 class NetworkActivityCheckerForTest
     : public InteractiveDetector::NetworkActivityChecker {
@@ -588,6 +589,9 @@ TEST_F(InteractiveDetectorTest, RecordInputDelayUKM) {
       delay.InMilliseconds());
   test_ukm_recorder.ExpectEntryMetric(
       entry, InputEvent::kInteractiveTiming_ProcessingTimeName,
+      processing_time.InMilliseconds());
+  EXPECT_EQ(
+      GetDetector()->GetFirstInputProcessingTime().value().InMilliseconds(),
       processing_time.InMilliseconds());
 }
 

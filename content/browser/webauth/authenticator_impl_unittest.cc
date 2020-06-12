@@ -126,10 +126,6 @@ constexpr char kCryptotokenOrigin[] =
 constexpr char kTestExtensionOrigin[] =
     "chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef";
 
-// Test data. CBOR test data can be built using the given
-// diagnostic strings and the utility at "http://CBOR.me/".
-constexpr int32_t kCoseEs256 = -7;
-
 constexpr uint8_t kTestChallengeBytes[] = {
     0x68, 0x71, 0x34, 0x96, 0x82, 0x22, 0xEC, 0x17, 0x20, 0x2E, 0x42,
     0x50, 0x5F, 0x8E, 0xD2, 0xB1, 0x6A, 0xE2, 0x2F, 0x16, 0xBB, 0x05,
@@ -346,8 +342,8 @@ GetTestPublicKeyCredentialCreationOptions() {
   auto options = PublicKeyCredentialCreationOptions::New();
   options->relying_party = GetTestPublicKeyCredentialRPEntity();
   options->user = GetTestPublicKeyCredentialUserEntity();
-  options->public_key_parameters =
-      GetTestPublicKeyCredentialParameters(kCoseEs256);
+  options->public_key_parameters = GetTestPublicKeyCredentialParameters(
+      static_cast<int32_t>(device::CoseAlgorithmIdentifier::kEs256));
   options->challenge.assign(32, 0x0A);
   options->timeout = base::TimeDelta::FromMinutes(1);
   options->authenticator_selection = GetTestAuthenticatorSelectionCriteria();
@@ -3443,9 +3439,9 @@ TEST_F(AuthenticatorImplTest, GetPublicKey) {
     device::CoseAlgorithmIdentifier algo;
     base::Optional<int> evp_id;
   } kTests[] = {
-      {device::CoseAlgorithmIdentifier::kCoseEs256, EVP_PKEY_EC},
-      {device::CoseAlgorithmIdentifier::kCoseRs256, EVP_PKEY_RSA},
-      {device::CoseAlgorithmIdentifier::kCoseEdDSA, EVP_PKEY_ED25519},
+      {device::CoseAlgorithmIdentifier::kEs256, EVP_PKEY_EC},
+      {device::CoseAlgorithmIdentifier::kRs256, EVP_PKEY_RSA},
+      {device::CoseAlgorithmIdentifier::kEdDSA, EVP_PKEY_ED25519},
       {device::CoseAlgorithmIdentifier::kInvalidForTesting, base::nullopt},
   };
 

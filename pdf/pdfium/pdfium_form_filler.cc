@@ -194,7 +194,7 @@ FPDF_SYSTEMTIME PDFiumFormFiller::Form_GetLocalTime(FPDF_FORMFILLINFO* param) {
 // static
 void PDFiumFormFiller::Form_OnChange(FPDF_FORMFILLINFO* param) {
   PDFiumEngine* engine = GetEngine(param);
-  engine->SetEditMode(true);
+  engine->EnteredEditMode();
 }
 
 // static

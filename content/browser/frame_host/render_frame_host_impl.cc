@@ -1775,13 +1775,10 @@ void RenderFrameHostImpl::AccessibilityPerformAction(
   if (IsInactiveAndDisallowReactivation() || !render_accessibility_)
     return;
 
-  // Use the dedicated HitTest method so that we can handle its response via
-  // mojo callback once it's been handled in the renderer process.
   if (action_data.action == ax::mojom::Action::kHitTest) {
-    render_accessibility_->HitTest(
-        action_data,
-        base::BindOnce(&RenderFrameHostImpl::RequestAXHitTestCallback,
-                       weak_ptr_factory_.GetWeakPtr(), action_data.request_id));
+    AccessibilityHitTest(action_data.target_point,
+                         action_data.hit_test_event_to_fire,
+                         action_data.request_id, {});
     return;
   }
 
@@ -1907,6 +1904,19 @@ WebContents* RenderFrameHostImpl::AccessibilityWebContents() {
   if (IsInactiveAndDisallowReactivation())
     return nullptr;
   return delegate()->GetAsWebContents();
+}
+
+void RenderFrameHostImpl::AccessibilityHitTest(
+    const gfx::Point& point_in_frame_pixels,
+    ax::mojom::Event opt_event_to_fire,
+    int opt_request_id,
+    base::OnceCallback<void(BrowserAccessibilityManager* hit_manager,
+                            int hit_node_id)> opt_callback) {
+  render_accessibility_->HitTest(
+      point_in_frame_pixels, opt_event_to_fire, opt_request_id,
+      base::BindOnce(&RenderFrameHostImpl::AccessibilityHitTestCallback,
+                     weak_ptr_factory_.GetWeakPtr(), opt_request_id,
+                     opt_event_to_fire, std::move(opt_callback)));
 }
 
 bool RenderFrameHostImpl::AccessibilityIsMainFrame() {
@@ -7054,34 +7064,46 @@ void RenderFrameHostImpl::AXContentTreeDataToAXTreeData(ui::AXTreeData* dst) {
   dst->focused_tree_id = focused_frame->GetAXTreeID();
 }
 
-void RenderFrameHostImpl::RequestAXHitTestCallback(
-    int action_request_id,
-    mojom::ChildFrameHitTestInfoPtr child_frame_hit_test_info) {
-  // Not receiving a child_frame_hit_test_info means that the renderer has
-  // already handled this by emitting the requested event over the object found
-  // as the result of the hit testing process, so nothing to do.
-  if (!child_frame_hit_test_info)
+void RenderFrameHostImpl::AccessibilityHitTestCallback(
+    int request_id,
+    ax::mojom::Event event_to_fire,
+    base::OnceCallback<void(BrowserAccessibilityManager* hit_manager,
+                            int hit_node_id)> opt_callback,
+    mojom::HitTestResponsePtr hit_test_response) {
+  if (!hit_test_response) {
+    if (opt_callback)
+      std::move(opt_callback).Run(nullptr, 0);
     return;
+  }
 
-  // A child frame was found while hit testing on this frame, and so we need to
-  // request a new hit test over such child frame now.
   auto frame_or_proxy = LookupRenderFrameHostOrProxy(
-      GetProcess()->GetID(), child_frame_hit_test_info->child_frame_routing_id);
-  RenderFrameHostImpl* child_frame =
+      GetProcess()->GetID(), hit_test_response->hit_frame_routing_id);
+  RenderFrameHostImpl* hit_frame =
       frame_or_proxy.proxy
           ? frame_or_proxy.proxy->frame_tree_node()->current_frame_host()
           : frame_or_proxy.frame;
 
-  if (!child_frame || child_frame->IsInactiveAndDisallowReactivation())
+  if (!hit_frame || hit_frame->IsInactiveAndDisallowReactivation()) {
+    if (opt_callback)
+      std::move(opt_callback).Run(nullptr, 0);
     return;
+  }
 
-  ui::AXActionData action_data;
-  action_data.request_id = action_request_id;
-  action_data.target_point = child_frame_hit_test_info->transformed_point;
-  action_data.action = ax::mojom::Action::kHitTest;
-  action_data.hit_test_event_to_fire = child_frame_hit_test_info->event_to_fire;
+  // If the hit node's routing ID is the same frame, we're done. If a
+  // callback was provided, call it with the information about the hit node.
+  if (hit_frame->GetRoutingID() == routing_id_) {
+    if (opt_callback) {
+      std::move(opt_callback)
+          .Run(hit_frame->browser_accessibility_manager(),
+               hit_test_response->hit_node_id);
+    }
+    return;
+  }
 
-  child_frame->AccessibilityPerformAction(action_data);
+  // The hit node has a child frame. Do a hit test in that frame's renderer.
+  hit_frame->AccessibilityHitTest(
+      hit_test_response->hit_frame_transformed_point, event_to_fire, request_id,
+      std::move(opt_callback));
 }
 
 void RenderFrameHostImpl::RequestAXTreeSnapshotCallback(

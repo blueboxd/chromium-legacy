@@ -140,17 +140,4 @@ public interface ToolbarDataProvider extends ToolbarCommonPropertiesModel {
      */
     @ColorRes
     int getSecurityIconColorStateList();
-
-    /**
-     * If the current tab state is eligible for displaying the search query terms instead of the
-     * URL, this extracts the query terms from the current URL.
-     *
-     * @return The search terms. Returns null if the tab is ineligible to display the search terms
-     *         instead of the URL.
-     */
-    @Nullable
-    @Override
-    public default String getDisplaySearchTerms() {
-        return null;
-    }
 }

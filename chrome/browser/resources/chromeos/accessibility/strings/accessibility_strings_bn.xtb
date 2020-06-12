@@ -22,7 +22,7 @@
 <translation id="1120938014254001895">দুই আঙ্গুল দিয়ে উপরের দিকে সোয়াইপ করুন</translation>
 <translation id="1126928665165112660">ইটালিক নয়</translation>
 <translation id="113582498867142724"><ph name="NUM" />টি আইটেমের সঙ্গে <ph name="TAG" /> সংগ্রহ</translation>
-<translation id="1161762950103988776">জাম্প</translation>
+<translation id="1161762950103988776">Jump</translation>
 <translation id="1175914831232945926">ডিজিট</translation>
 <translation id="1188858454923323853">পরিপূরক</translation>
 <translation id="1195238899008218998">পরিশিষ্ট</translation>
@@ -708,6 +708,7 @@
 <translation id="6628427060004938651">অংশ</translation>
 <translation id="6637586476836377253">লগ</translation>
 <translation id="6657128831881431364">প্রগতি দণ্ড</translation>
+<translation id="6660819301598582123">খয়েরি রঙয়ের শিয়ালটি অলস কুকুরের উপর দ্রুত লাফিয়ে উঠল।</translation>
 <translation id="667999046851023355">দস্তাবেজ</translation>
 <translation id="6688209025607531203">একটি অ-মোডাল সতর্কতা</translation>
 <translation id="6689672606256159458">গাঢ় স্যালমন</translation>

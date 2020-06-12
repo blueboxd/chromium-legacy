@@ -167,6 +167,15 @@ void LocalNetworkCollectorImpl::OnGetManagedPropertiesResult(
       properties->type_properties->get_wifi()->auto_connect));
   proto.set_is_preferred(IsPreferredProtoFromMojo(properties->priority));
 
+  if (properties->metered) {
+    proto.set_metered(
+        properties->metered->active_value
+            ? sync_pb::
+                  WifiConfigurationSpecifics_MeteredOption_METERED_OPTION_YES
+            : sync_pb::
+                  WifiConfigurationSpecifics_MeteredOption_METERED_OPTION_NO);
+  }
+
   bool is_proxy_modified =
       network_metadata_store_->GetIsFieldExternallyModified(
           properties->guid, shill::kProxyConfigProperty);

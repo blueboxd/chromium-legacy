@@ -34,7 +34,6 @@ class RenderFrame;
 
 namespace safe_browsing {
 class ClientPhishingRequest;
-class FeatureExtractorClock;
 class FeatureMap;
 class PhishingDOMFeatureExtractor;
 class PhishingTermFeatureExtractor;
@@ -55,11 +54,9 @@ class PhishingClassifier {
   static const float kInvalidScore;
 
   // Creates a new PhishingClassifier object that will operate on
-  // |render_view|.  |clock| is used to time feature extractor operations, and
-  // the PhishingClassifier takes ownership of this object.  Note that the
-  // classifier will not be 'ready' until set_phishing_scorer() is called.
-  PhishingClassifier(content::RenderFrame* render_frame,
-                     FeatureExtractorClock* clock);
+  // |render_view|. Note that the classifier will not be 'ready' until
+  // set_phishing_scorer() is called.
+  explicit PhishingClassifier(content::RenderFrame* render_frame);
   virtual ~PhishingClassifier();
 
   // Sets a scorer for the classifier to use in computing the phishiness score.
@@ -127,7 +124,6 @@ class PhishingClassifier {
 
   content::RenderFrame* render_frame_;  // owns us
   const Scorer* scorer_;  // owned by the caller
-  std::unique_ptr<FeatureExtractorClock> clock_;
   std::unique_ptr<PhishingUrlFeatureExtractor> url_extractor_;
   std::unique_ptr<PhishingDOMFeatureExtractor> dom_extractor_;
   std::unique_ptr<PhishingTermFeatureExtractor> term_extractor_;

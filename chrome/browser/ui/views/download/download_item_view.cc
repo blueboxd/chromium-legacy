@@ -590,11 +590,14 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
       width += kEndPadding;
     }
   } else {
-    gfx::Size label_size = file_name_label_->GetPreferredSize();
-    label_size.SetToMax(status_label_->GetPreferredSize());
-    label_size.SetToMax(gfx::Size(kTextWidth, 0));
+    int status_width = kTextWidth;
+    if (model_->GetDangerType() ==
+        download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE) {
+      status_width =
+          std::max(status_width, status_label_->GetPreferredSize().width());
+    }
     width = kStartPadding + DownloadShelf::kProgressIndicatorSize +
-            kProgressTextPadding + label_size.width() + kEndPadding;
+            kProgressTextPadding + status_width + kEndPadding;
   }
 
   if (mode_ != DANGEROUS_MODE)
@@ -1157,12 +1160,6 @@ void DownloadItemView::ShowWarningDialog() {
   time_download_warning_shown_ = base::Time::Now();
   download::DownloadDangerType danger_type = model_->GetDangerType();
   RecordDangerousDownloadWarningShown(danger_type);
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-  if (model_->ShouldAllowDownloadFeedback()) {
-    safe_browsing::DownloadFeedbackService::RecordEligibleDownloadShown(
-        danger_type);
-  }
-#endif
   SetMode(model_->MightBeMalicious() ? MALICIOUS_MODE : DANGEROUS_MODE);
 
   dropdown_state_ = NORMAL;

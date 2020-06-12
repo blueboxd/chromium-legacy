@@ -369,7 +369,7 @@
 <translation id="544691375626129091">該当するすべてのユーザーをこのセッションに追加済みです。</translation>
 <translation id="54609108002486618">管理対象</translation>
 <translation id="5465662442746197494">不明点がある場合</translation>
-<translation id="5485091064403948243"><ph name="GIVEN_NAME" /> さん、おはようございます</translation>
+<translation id="5485091064403948243">おはようございます、<ph name="GIVEN_NAME" /> さん</translation>
 <translation id="5496819745535887422">管理者がお使いのデバイスをロールバックしています。デバイスの再起動時にデータはすべて削除されます。</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="553675580533261935">セッションの終了</translation>

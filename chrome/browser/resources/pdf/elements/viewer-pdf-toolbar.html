@@ -190,8 +190,16 @@
               title="$i18n{tooltipRotateCW}"></cr-icon-button>
 
           <cr-icon-button id="download" iron-icon="cr:file-download"
-              on-click="download" aria-label$="$i18n{tooltipDownload}"
+              on-click="onDownloadClick_" aria-label$="$i18n{tooltipDownload}"
               title="$i18n{tooltipDownload}"></cr-icon-button>
+          <cr-action-menu id="downloadMenu">
+            <button class="dropdown-item" on-click="onDownloadEditedClick_">
+              $i18n{downloadEdited}
+            </button>
+            <button class="dropdown-item" on-click="onDownloadOriginalClick_">
+              $i18n{downloadOriginal}
+            </button>
+          </cr-action-menu>
 
           <cr-icon-button id="print" iron-icon="cr:print" on-click="print"
               hidden="[[!printingEnabled_]]" title="$i18n{tooltipPrint}"

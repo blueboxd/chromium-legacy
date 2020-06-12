@@ -199,6 +199,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // children have been fully laid out, or have break tokens. No more children
   // left to discover.
   void SetHasSeenAllChildren() { has_seen_all_children_ = true; }
+  bool HasSeenAllChildren() { return has_seen_all_children_; }
 
   void SetColumnSpanner(NGBlockNode spanner) { column_spanner_ = spanner; }
   bool FoundColumnSpanner() const { return !!column_spanner_; }

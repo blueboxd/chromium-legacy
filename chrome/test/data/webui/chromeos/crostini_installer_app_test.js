@@ -215,7 +215,7 @@ suite('<crostini-installer-app>', () => {
     await clickNext();
     await flushTasks();
     expectFalse(app.$$('#configure-message').hidden);
-    expectFalse(app.$$('#low-free-space-warning').hidden);
+    expectFalse(isHidden(app.$$('#low-free-space-warning')));
   });
 
   diskTicks.forEach(async (_, defaultIndex) => {
@@ -229,7 +229,7 @@ suite('<crostini-installer-app>', () => {
       await flushTasks();
 
       expectFalse(app.$$('#configure-message').hidden);
-      expectTrue(app.$$('#low-free-space-warning').hidden);
+      expectTrue(isHidden(app.$$('#low-free-space-warning')));
       expectTrue(isHidden(app.$$('#diskSlider')));
 
       await clickInstall();
@@ -252,7 +252,7 @@ suite('<crostini-installer-app>', () => {
     await flushTasks();
 
     expectFalse(app.$$('#configure-message').hidden);
-    expectTrue(app.$$('#low-free-space-warning').hidden);
+    expectTrue(isHidden(app.$$('#low-free-space-warning')));
     expectFalse(isHidden(app.$$('#diskSlider')));
 
     app.$$('#diskSlider').value = 1;

@@ -76,3 +76,6 @@ bool FakeAccessibilityController::IsAccessibilityFeatureVisibleInTrayMenu(
 
 void FakeAccessibilityController::
     SetSwitchAccessIgnoreVirtualKeyEventForTesting(bool should_ignore) {}
+
+void FakeAccessibilityController::
+    DisableSwitchAccessDisableConfirmationDialogTesting() {}

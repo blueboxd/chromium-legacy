@@ -1323,7 +1323,7 @@ JsJavaConfiguratorHost* AwContents::GetJsJavaConfiguratorHost() {
   return js_java_configurator_host_.get();
 }
 
-jint AwContents::AddDocumentStartJavascript(
+jint AwContents::AddDocumentStartJavaScript(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jstring>& script,
@@ -1331,7 +1331,7 @@ jint AwContents::AddDocumentStartJavascript(
   std::vector<std::string> native_allowed_origin_rule_strings;
   AppendJavaStringArrayToStringVector(env, allowed_origin_rules,
                                       &native_allowed_origin_rule_strings);
-  auto result = GetJsJavaConfiguratorHost()->AddDocumentStartJavascript(
+  auto result = GetJsJavaConfiguratorHost()->AddDocumentStartJavaScript(
       base::android::ConvertJavaStringToUTF16(env, script),
       native_allowed_origin_rule_strings);
   if (result.error_message) {
@@ -1343,11 +1343,11 @@ jint AwContents::AddDocumentStartJavascript(
   return result.script_id.value();
 }
 
-void AwContents::RemoveDocumentStartJavascript(
+void AwContents::RemoveDocumentStartJavaScript(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     jint script_id) {
-  GetJsJavaConfiguratorHost()->RemoveDocumentStartJavascript(script_id);
+  GetJsJavaConfiguratorHost()->RemoveDocumentStartJavaScript(script_id);
 }
 
 base::android::ScopedJavaLocalRef<jstring> AwContents::AddWebMessageListener(

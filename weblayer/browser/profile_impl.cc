@@ -25,8 +25,10 @@
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "weblayer/browser/browser_context_impl.h"
+#include "weblayer/browser/browser_impl.h"
 #include "weblayer/browser/browsing_data_remover_delegate.h"
 #include "weblayer/browser/cookie_manager_impl.h"
+#include "weblayer/browser/persistence/browser_persister_file_utils.h"
 #include "weblayer/browser/tab_impl.h"
 
 #if defined(OS_ANDROID)
@@ -130,7 +132,6 @@ ProfileImpl::ProfileImpl(const std::string& name)
 }
 
 ProfileImpl::~ProfileImpl() {
-  DCHECK_EQ(num_browser_impl_, 0u);
   if (browser_context_)
     browser_context_->ShutdownStoragePartitions();
 }
@@ -205,6 +206,26 @@ CookieManager* ProfileImpl::GetCookieManager() {
   return cookie_manager_.get();
 }
 
+void ProfileImpl::GetBrowserPersistenceIds(
+    base::OnceCallback<void(base::flat_set<std::string>)> callback) {
+  DCHECK(!browser_context_->IsOffTheRecord());
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&GetBrowserPersistenceIdsOnBackgroundThread,
+                     GetBrowserPersisterDataBaseDir()),
+      std::move(callback));
+}
+
+void ProfileImpl::RemoveBrowserPersistenceStorage(
+    base::OnceCallback<void(bool)> done_callback,
+    base::flat_set<std::string> ids) {
+  DCHECK(!browser_context_->IsOffTheRecord());
+  RemoveBrowserPersistenceStorageImpl(this, std::move(done_callback),
+                                      std::move(ids));
+}
+
 // static
 void ProfileImpl::NukeDataAfterRemovingData(
     std::unique_ptr<ProfileImpl> profile,
@@ -269,7 +290,7 @@ std::unique_ptr<Profile> Profile::DestroyAndDeleteDataFromDisk(
 std::unique_ptr<ProfileImpl> ProfileImpl::DestroyAndDeleteDataFromDisk(
     std::unique_ptr<ProfileImpl> profile,
     base::OnceClosure done_callback) {
-  if (profile->num_browser_impl_ > 0)
+  if (profile->GetNumberOfBrowsers() > 0)
     return profile;
 
   GetBackgroundDiskOperationTaskRunner()->PostTaskAndReply(
@@ -330,7 +351,7 @@ static void JNI_ProfileImpl_EnumerateAllProfileNames(
 }
 
 jint ProfileImpl::GetNumBrowserImpl(JNIEnv* env) {
-  return num_browser_impl_;
+  return GetNumberOfBrowsers();
 }
 
 jlong ProfileImpl::GetBrowserContext(JNIEnv* env) {
@@ -400,15 +421,6 @@ jboolean ProfileImpl::GetBooleanSetting(JNIEnv* env, jint j_type) {
 
 #endif  // OS_ANDROID
 
-void ProfileImpl::IncrementBrowserImplCount() {
-  num_browser_impl_++;
-}
-
-void ProfileImpl::DecrementBrowserImplCount() {
-  DCHECK_GT(num_browser_impl_, 0u);
-  num_browser_impl_--;
-}
-
 base::FilePath ProfileImpl::GetBrowserPersisterDataBaseDir() const {
   return ComputeBrowserPersisterDataBaseDir(info_);
 }
@@ -431,6 +443,15 @@ bool ProfileImpl::GetBooleanSetting(SettingType type) {
       return basic_safe_browsing_enabled_;
   }
   NOTREACHED();
+}
+
+int ProfileImpl::GetNumberOfBrowsers() {
+  int count = 0;
+  for (BrowserImpl* browser : BrowserImpl::GetAllBrowsers()) {
+    if (browser->profile() == this)
+      ++count;
+  }
+  return count;
 }
 
 }  // namespace weblayer

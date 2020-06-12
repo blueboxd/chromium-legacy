@@ -152,13 +152,13 @@ SkColor DarkModeFilter::InvertColorIfNeeded(SkColor color, ElementRole role) {
   return color;
 }
 
-void DarkModeFilter::ApplyToImageFlagsIfNeeded(const FloatRect& src_rect,
-                                               const FloatRect& dest_rect,
-                                               Image* image,
+void DarkModeFilter::ApplyToImageFlagsIfNeeded(const SkRect& src,
+                                               const SkRect& dst,
+                                               const PaintImage& paint_image,
                                                cc::PaintFlags* flags,
                                                ElementRole element_role) {
-  if (!image_filter_ || !ShouldApplyToImage(settings(), src_rect, dest_rect,
-                                            image, element_role)) {
+  if (!image_filter_ ||
+      !ShouldApplyToImage(settings(), src, dst, paint_image, element_role)) {
     return;
   }
 
@@ -231,9 +231,9 @@ size_t DarkModeFilter::GetInvertedColorCacheSizeForTesting() {
 }
 
 bool DarkModeFilter::ShouldApplyToImage(const DarkModeSettings& settings,
-                                        const FloatRect& src_rect,
-                                        const FloatRect& dest_rect,
-                                        Image* image,
+                                        const SkRect& src,
+                                        const SkRect& dst,
+                                        const PaintImage& paint_image,
                                         ElementRole role) {
   switch (settings.image_policy) {
     case DarkModeImagePolicy::kFilterSmart: {
@@ -254,7 +254,7 @@ bool DarkModeFilter::ShouldApplyToImage(const DarkModeSettings& settings,
       }
 
       DarkModeClassification result =
-          classifier->Classify(image, src_rect, dest_rect);
+          classifier->Classify(paint_image, src, dst);
       return result == DarkModeClassification::kApplyFilter;
     }
     case DarkModeImagePolicy::kFilterNone:

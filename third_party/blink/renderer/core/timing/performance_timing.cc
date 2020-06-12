@@ -509,6 +509,15 @@ base::Optional<base::TimeDelta> PerformanceTiming::LongestInputTimestamp()
       interactive_detector->GetLongestInputTimestamp());
 }
 
+base::Optional<base::TimeDelta> PerformanceTiming::FirstInputProcessingTime()
+    const {
+  const InteractiveDetector* interactive_detector = GetInteractiveDetector();
+  if (!interactive_detector)
+    return base::nullopt;
+
+  return interactive_detector->GetFirstInputProcessingTime();
+}
+
 uint64_t PerformanceTiming::ParseStart() const {
   const DocumentParserTiming* timing = GetDocumentParserTiming();
   if (!timing)

@@ -185,10 +185,9 @@ TEST_F(LocationBarModelImplTest, FormatsReaderModeUrls) {
 #endif
 TEST_F(LocationBarModelImplTest, MAYBE_PreventElisionWorks) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {omnibox::kHideSteadyStateUrlScheme,
-       omnibox::kHideSteadyStateUrlTrivialSubdomains, omnibox::kQueryInOmnibox},
-      {});
+  feature_list.InitWithFeatures({omnibox::kHideSteadyStateUrlScheme,
+                                 omnibox::kHideSteadyStateUrlTrivialSubdomains},
+                                {});
 
   delegate()->SetShouldPreventElision(true);
   delegate()->SetURL(GURL("https://www.google.com/search?q=foo+query+unelide"));
@@ -197,97 +196,11 @@ TEST_F(LocationBarModelImplTest, MAYBE_PreventElisionWorks) {
                 "https://www.google.com/search?q=foo+query+unelide/TestSuffix"),
             model()->GetURLForDisplay());
 
-  // Verify that query in omnibox is turned off.
-  delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
-  EXPECT_FALSE(model()->GetDisplaySearchTerms(nullptr));
-
-  // Also test that HTTP elisions are prevented.
+  // Test that HTTP elisions are prevented.
   delegate()->SetURL(GURL("http://www.google.com/search?q=foo+query+unelide"));
   EXPECT_EQ(base::ASCIIToUTF16(
                 "http://www.google.com/search?q=foo+query+unelide/TestSuffix"),
             model()->GetURLForDisplay());
-}
-
-TEST_F(LocationBarModelImplTest, QueryInOmniboxFeatureFlagWorks) {
-  delegate()->SetURL(kValidSearchResultsPage);
-  delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
-
-  EXPECT_FALSE(model()->GetDisplaySearchTerms(nullptr));
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(omnibox::kQueryInOmnibox);
-
-  EXPECT_TRUE(model()->GetDisplaySearchTerms(nullptr));
-}
-
-TEST_F(LocationBarModelImplTest, QueryInOmniboxSecurityLevel) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(omnibox::kQueryInOmnibox);
-
-  delegate()->SetURL(kValidSearchResultsPage);
-
-  delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
-  EXPECT_TRUE(model()->GetDisplaySearchTerms(nullptr));
-
-  // Insecure levels should not be allowed to display search terms.
-  delegate()->SetSecurityLevel(security_state::SecurityLevel::NONE);
-  EXPECT_FALSE(model()->GetDisplaySearchTerms(nullptr));
-
-  delegate()->SetSecurityLevel(security_state::SecurityLevel::DANGEROUS);
-  EXPECT_FALSE(model()->GetDisplaySearchTerms(nullptr));
-
-  // But ignore the level if the connection info has not been initialized.
-  delegate()->SetVisibleSecurityStateConnectionInfoUninitialized();
-  delegate()->SetSecurityLevel(security_state::SecurityLevel::NONE);
-  EXPECT_TRUE(model()->GetDisplaySearchTerms(nullptr));
-}
-
-TEST_F(LocationBarModelImplTest,
-       QueryInOmniboxDefaultSearchProviderWithAndWithoutQuery) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(omnibox::kQueryInOmnibox);
-  delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
-
-  delegate()->SetURL(kValidSearchResultsPage);
-  base::string16 result;
-  EXPECT_TRUE(model()->GetDisplaySearchTerms(&result));
-  EXPECT_EQ(base::ASCIIToUTF16("foo query"), result);
-
-  const GURL kDefaultSearchProviderURLWithNoQuery(
-      "https://www.google.com/maps");
-  result.clear();
-  delegate()->SetURL(kDefaultSearchProviderURLWithNoQuery);
-  EXPECT_FALSE(model()->GetDisplaySearchTerms(&result));
-  EXPECT_EQ(base::string16(), result);
-}
-
-TEST_F(LocationBarModelImplTest, QueryInOmniboxNonDefaultSearchProvider) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(omnibox::kQueryInOmnibox);
-
-  const GURL kNonDefaultSearchProvider(
-      "https://search.yahoo.com/search?ei=UTF-8&fr=crmas&p=foo+query");
-  delegate()->SetURL(kNonDefaultSearchProvider);
-  delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
-
-  base::string16 result;
-  EXPECT_FALSE(model()->GetDisplaySearchTerms(&result));
-  EXPECT_EQ(base::string16(), result);
-}
-
-TEST_F(LocationBarModelImplTest, QueryInOmniboxLookalikeURL) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(omnibox::kQueryInOmnibox);
-
-  delegate()->SetSecurityLevel(security_state::SecurityLevel::SECURE);
-
-  const GURL kLookalikeURLQuery(
-      "https://www.google.com/search?q=lookalike.com");
-  delegate()->SetURL(kLookalikeURLQuery);
-
-  base::string16 result;
-  EXPECT_FALSE(model()->GetDisplaySearchTerms(&result));
-  EXPECT_EQ(base::string16(), result);
 }
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)

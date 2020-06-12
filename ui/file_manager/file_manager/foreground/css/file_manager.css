@@ -3547,7 +3547,8 @@ files-toggle-ripple {
 /*
  * Preventing FOUC
  */
-cr-input:not(:defined) {
+cr-input:not(:defined),
+files-tooltip:not(:defined) {
   display: none;
 }
 

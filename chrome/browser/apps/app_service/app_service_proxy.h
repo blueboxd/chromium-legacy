@@ -427,6 +427,34 @@ class AppServiceProxy : public KeyedService,
   DISALLOW_COPY_AND_ASSIGN(AppServiceProxy);
 };
 
+class ScopedOmitBuiltInAppsForTesting {
+ public:
+  ScopedOmitBuiltInAppsForTesting();
+  ~ScopedOmitBuiltInAppsForTesting();
+
+ private:
+  ScopedOmitBuiltInAppsForTesting(const ScopedOmitBuiltInAppsForTesting&) =
+      delete;
+  ScopedOmitBuiltInAppsForTesting& operator=(
+      const ScopedOmitBuiltInAppsForTesting&) = delete;
+
+  const bool previous_omit_built_in_apps_for_testing_;
+};
+
+class ScopedOmitPluginVmAppsForTesting {
+ public:
+  ScopedOmitPluginVmAppsForTesting();
+  ~ScopedOmitPluginVmAppsForTesting();
+
+ private:
+  ScopedOmitPluginVmAppsForTesting(const ScopedOmitPluginVmAppsForTesting&) =
+      delete;
+  ScopedOmitPluginVmAppsForTesting& operator=(
+      const ScopedOmitPluginVmAppsForTesting&) = delete;
+
+  const bool previous_omit_plugin_vm_apps_for_testing_;
+};
+
 }  // namespace apps
 
 #endif  // CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_PROXY_H_

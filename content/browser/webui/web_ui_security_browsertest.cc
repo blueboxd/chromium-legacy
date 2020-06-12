@@ -576,6 +576,43 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTestWithWebUIReportOnlyTrustedTypesEnabled,
 }
 
 namespace {
+class UntrustedSourceWithCorsSupport : public URLDataSource {
+ public:
+  static std::unique_ptr<UntrustedSourceWithCorsSupport> CreateForHost(
+      std::string host) {
+    std::string source_name = base::StrCat(
+        {kChromeUIUntrustedScheme, url::kStandardSchemeSeparator, host, "/"});
+    return std::make_unique<UntrustedSourceWithCorsSupport>(source_name);
+  }
+  explicit UntrustedSourceWithCorsSupport(std::string name) : name_(name) {}
+  UntrustedSourceWithCorsSupport& operator=(
+      const UntrustedSourceWithCorsSupport&) = delete;
+  UntrustedSourceWithCorsSupport(const UntrustedSourceWithCorsSupport&) =
+      delete;
+  ~UntrustedSourceWithCorsSupport() override = default;
+
+  // URLDataSource:
+  std::string GetSource() override { return name_; }
+  std::string GetAccessControlAllowOriginForOrigin(
+      const std::string& origin) override {
+    return origin;
+  }
+  std::string GetMimeType(const std::string& path) override {
+    return "text/html";
+  }
+  void StartDataRequest(const GURL& url,
+                        const WebContents::Getter& wc_getter,
+                        GotDataCallback callback) override {
+    std::string dummy_html = "<html><body>dummy</body></html>";
+    scoped_refptr<base::RefCountedString> response =
+        base::RefCountedString::TakeString(&dummy_html);
+    std::move(callback).Run(response.get());
+  }
+
+ private:
+  std::string name_;
+};
+
 enum FetchMode { SAME_ORIGIN, CORS, NO_CORS };
 
 EvalJsResult PerformFetch(Shell* shell,
@@ -621,44 +658,35 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTest,
   EXPECT_TRUE(NavigateToURL(shell(), web_url));
 
   {
-    WebContentsConsoleObserver console_observer(shell()->web_contents());
+    DevToolsInspectorLogWatcher log_watcher(shell()->web_contents());
     EXPECT_EQ("Failed to fetch",
               PerformFetch(shell(), untrusted_url, FetchMode::CORS));
-    console_observer.Wait();
-    EXPECT_EQ(console_observer.GetMessageAt(0),
-              base::StringPrintf("Fetch API cannot load %s. URL scheme must be "
-                                 "\"http\" or \"https\" for CORS request.",
-                                 untrusted_url.spec().c_str()));
+    log_watcher.FlushAndStopWatching();
+
+    EXPECT_EQ(log_watcher.last_message(),
+              "Failed to load resource: net::ERR_UNKNOWN_URL_SCHEME");
   }
 
   {
-    WebContentsConsoleObserver console_observer(shell()->web_contents());
+    DevToolsInspectorLogWatcher log_watcher(shell()->web_contents());
     EXPECT_EQ("Failed to fetch",
               PerformFetch(shell(), untrusted_url, FetchMode::NO_CORS));
-    console_observer.Wait();
-    EXPECT_EQ(console_observer.GetMessageAt(0),
-              base::StringPrintf("Fetch API cannot load %s. URL scheme "
-                                 "\"chrome-untrusted\" is not supported.",
-                                 untrusted_url.spec().c_str()));
+    log_watcher.FlushAndStopWatching();
+
+    EXPECT_EQ(log_watcher.last_message(),
+              "Failed to load resource: net::ERR_UNKNOWN_URL_SCHEME");
   }
 }
 
-// Verify a chrome-untrusted:// document can't fetch itself.
+// Verify a chrome-untrusted:// document can fetch itself.
 IN_PROC_BROWSER_TEST_F(WebUISecurityTest, ChromeUntrustedFetchRequestToSelf) {
   const GURL untrusted_url = GURL("chrome-untrusted://test/title1.html");
   AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
                          untrusted_url.host());
 
   EXPECT_TRUE(NavigateToURL(shell(), untrusted_url));
-
-  WebContentsConsoleObserver console_observer(shell()->web_contents());
-  EXPECT_EQ("Failed to fetch",
+  EXPECT_EQ("success",
             PerformFetch(shell(), untrusted_url, FetchMode::SAME_ORIGIN));
-  console_observer.Wait();
-  EXPECT_EQ(console_observer.GetMessageAt(0),
-            base::StringPrintf("Fetch API cannot load %s. URL scheme "
-                               "\"chrome-untrusted\" is not supported.",
-                               untrusted_url.spec().c_str()));
 }
 
 // Verify cross-origin fetch request from a chrome-untrusted:// page to another
@@ -671,8 +699,9 @@ IN_PROC_BROWSER_TEST_F(
   AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
                          untrusted_url1.host());
   const GURL untrusted_url2 = GURL("chrome-untrusted://test2/title2.html");
-  AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
-                         untrusted_url2.host());
+  URLDataSource::Add(
+      shell()->web_contents()->GetBrowserContext(),
+      UntrustedSourceWithCorsSupport::CreateForHost(untrusted_url2.host()));
 
   EXPECT_TRUE(NavigateToURL(shell(), untrusted_url1));
 
@@ -706,41 +735,24 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Verify cross-origin fetch request from a chrome-untrusted:// page to another
-// chrome-untrusted:// page fails because chrome-untrusted:// scheme does not
-// support Fetch API, even if CSP allows it.
+// chrome-untrusted:// page succeeds if Content Security Policy allows it.
 IN_PROC_BROWSER_TEST_F(WebUISecurityTest,
-                       CrossOriginFetchRequestToChromeUntrustedFails) {
+                       CrossOriginFetchRequestToChromeUntrusted) {
   TestUntrustedDataSourceCSP csp;
   csp.default_src = "default-src chrome-untrusted://test2;";
   const GURL untrusted_url1 = GURL("chrome-untrusted://test1/title1.html");
   AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
                          untrusted_url1.host(), csp);
+
   const GURL untrusted_url2 = GURL("chrome-untrusted://test2/title2.html");
-  AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
-                         untrusted_url2.host());
+  URLDataSource::Add(
+      shell()->web_contents()->GetBrowserContext(),
+      UntrustedSourceWithCorsSupport::CreateForHost(untrusted_url2.host()));
 
   EXPECT_TRUE(NavigateToURL(shell(), untrusted_url1));
-  {
-    WebContentsConsoleObserver console_observer(shell()->web_contents());
-    EXPECT_EQ("Failed to fetch",
-              PerformFetch(shell(), untrusted_url2, FetchMode::CORS));
-    console_observer.Wait();
-    EXPECT_EQ(console_observer.GetMessageAt(0),
-              base::StringPrintf("Fetch API cannot load %s. URL scheme must be "
-                                 "\"http\" or \"https\" for CORS request.",
-                                 untrusted_url2.spec().c_str()));
-  }
-
-  {
-    WebContentsConsoleObserver console_observer(shell()->web_contents());
-    EXPECT_EQ("Failed to fetch",
-              PerformFetch(shell(), untrusted_url2, FetchMode::NO_CORS));
-    console_observer.Wait();
-    EXPECT_EQ(console_observer.GetMessageAt(0),
-              base::StringPrintf("Fetch API cannot load %s. URL scheme "
-                                 "\"chrome-untrusted\" is not supported.",
-                                 untrusted_url2.spec().c_str()));
-  }
+  EXPECT_EQ("success", PerformFetch(shell(), untrusted_url2, FetchMode::CORS));
+  EXPECT_EQ("success",
+            PerformFetch(shell(), untrusted_url2, FetchMode::NO_CORS));
 }
 
 // Verify fetch request from a chrome-untrusted:// page to a chrome:// page
@@ -783,43 +795,6 @@ IN_PROC_BROWSER_TEST_F(WebUISecurityTest,
 }
 
 namespace {
-class UntrustedSourceWithCorsSupport : public URLDataSource {
- public:
-  static std::unique_ptr<UntrustedSourceWithCorsSupport> CreateForHost(
-      std::string host) {
-    std::string source_name = base::StrCat(
-        {kChromeUIUntrustedScheme, url::kStandardSchemeSeparator, host, "/"});
-    return std::make_unique<UntrustedSourceWithCorsSupport>(source_name);
-  }
-  explicit UntrustedSourceWithCorsSupport(std::string name) : name_(name) {}
-  UntrustedSourceWithCorsSupport& operator=(
-      const UntrustedSourceWithCorsSupport&) = delete;
-  UntrustedSourceWithCorsSupport(const UntrustedSourceWithCorsSupport&) =
-      delete;
-  ~UntrustedSourceWithCorsSupport() override = default;
-
-  // URLDataSource:
-  std::string GetSource() override { return name_; }
-  std::string GetAccessControlAllowOriginForOrigin(
-      const std::string& origin) override {
-    return origin;
-  }
-  std::string GetMimeType(const std::string& path) override {
-    return "text/html";
-  }
-  void StartDataRequest(const GURL& url,
-                        const WebContents::Getter& wc_getter,
-                        GotDataCallback callback) override {
-    std::string dummy_html = "<html><body>dummy</body></html>";
-    scoped_refptr<base::RefCountedString> response =
-        base::RefCountedString::TakeString(&dummy_html);
-    std::move(callback).Run(response.get());
-  }
-
- private:
-  std::string name_;
-};
-
 EvalJsResult PerformXHRRequest(Shell* shell, const GURL& xhr_url) {
   const char kXHRRequestScript[] =
       "new Promise((resolve) => {"

@@ -368,9 +368,11 @@ void WifiConfigurationBridge::OnNetworkUpdate(
                       "by sync.";
     return;
   }
+
   if (!set_properties->HasKey(shill::kAutoConnectProperty) &&
       !set_properties->HasKey(shill::kPriorityProperty) &&
       !set_properties->HasKey(shill::kProxyConfigProperty) &&
+      !set_properties->HasKey(shill::kMeteredProperty) &&
       !set_properties->FindPath(
           base::StringPrintf("%s.%s", shill::kStaticIPConfigProperty,
                              shill::kNameServersProperty))) {

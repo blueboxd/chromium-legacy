@@ -57,7 +57,8 @@ ExtensionFunction::ResponseAction ResourcesPrivateGetStringsFunction::Run() {
       break;
 #if BUILDFLAG(ENABLE_PDF)
     case api::resources_private::COMPONENT_PDF: {
-      pdf_extension_util::AddStrings(dict.get());
+      pdf_extension_util::AddStrings(pdf_extension_util::PdfViewerContext::kAll,
+                                     dict.get());
       pdf_extension_util::AddAdditionalData(dict.get());
     } break;
 #endif  // BUILDFLAG(ENABLE_PDF)

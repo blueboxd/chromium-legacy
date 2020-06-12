@@ -20,7 +20,7 @@ class RenderFrameHost;
 namespace js_injection {
 
 class AwOriginMatcher;
-struct DocumentStartJavascript;
+struct DocumentStartJavaScript;
 struct JsObject;
 class JsToJavaMessaging;
 class WebMessageHostFactory;
@@ -48,13 +48,13 @@ class JsJavaConfiguratorHost : public content::WebContentsObserver {
     base::Optional<int> script_id;
   };
 
-  // Native side AddDocumentStartJavascript, returns an error message if the
+  // Native side AddDocumentStartJavaScript, returns an error message if the
   // parameters didn't pass necessary checks.
-  AddScriptResult AddDocumentStartJavascript(
+  AddScriptResult AddDocumentStartJavaScript(
       const base::string16& script,
       const std::vector<std::string>& allowed_origin_rules);
 
-  bool RemoveDocumentStartJavascript(int script_id);
+  bool RemoveDocumentStartJavaScript(int script_id);
 
   // Adds a new WebMessageHostFactory. For any urls that match
   // |allowed_origin_rules|, |js_object_name| is registered as a JS object that
@@ -85,18 +85,18 @@ class JsJavaConfiguratorHost : public content::WebContentsObserver {
  private:
   void NotifyFrameForWebMessageListener(
       content::RenderFrameHost* render_frame_host);
-  void NotifyFrameForAllDocumentStartJavascripts(
+  void NotifyFrameForAllDocumentStartJavaScripts(
       content::RenderFrameHost* render_frame_host);
-  void NotifyFrameForAddDocumentStartJavascript(
-      const DocumentStartJavascript* script,
+  void NotifyFrameForAddDocumentStartJavaScript(
+      const DocumentStartJavaScript* script,
       content::RenderFrameHost* render_frame_host);
 
-  void NotifyFrameForRemoveDocumentStartJavascript(
+  void NotifyFrameForRemoveDocumentStartJavaScript(
       int32_t script_id,
       content::RenderFrameHost* render_frame_host);
 
   int32_t next_script_id_ = 0;
-  std::vector<DocumentStartJavascript> scripts_;
+  std::vector<DocumentStartJavaScript> scripts_;
   std::vector<std::unique_ptr<JsObject>> js_objects_;
   std::map<content::RenderFrameHost*,
            std::vector<std::unique_ptr<JsToJavaMessaging>>>

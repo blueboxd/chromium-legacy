@@ -1,5 +1,3 @@
-benwells@chromium.org
-nverne@chromium.org
-timloh@chromium.org
-okalitova@chromium.org
-aoldemeier@chromium.org
+file://chrome/browser/chromeos/plugin_vm/OWNERS
+
+# COMPONENT: UI>Shell>Containers>PluginVM

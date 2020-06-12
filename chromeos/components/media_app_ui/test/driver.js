@@ -123,9 +123,11 @@ class FakeFileSystemFileHandle extends FakeFileSystemHandle {
   /**
    * @param {!string=} name
    * @param {!string=} type
+   * @param {number=} lastModified
    * @param {!Blob} blob
    */
-  constructor(name = 'fake_file.png', type = '', blob = new Blob()) {
+  constructor(
+      name = 'fake_file.png', type = '', lastModified = 0, blob = new Blob()) {
     super(name);
     this.lastWritable = new FakeWritableFileStream();
 
@@ -133,6 +135,9 @@ class FakeFileSystemFileHandle extends FakeFileSystemHandle {
 
     /** @type {!string} */
     this.type = type;
+
+    /** @type {!number} */
+    this.lastModified = lastModified;
 
     /** @type {?DOMException} */
     this.nextCreateWritableError;
@@ -156,7 +161,9 @@ class FakeFileSystemFileHandle extends FakeFileSystemHandle {
 
   /** @return {!File} */
   getFileSync() {
-    return new File([this.lastWritable.data], this.name, {type: this.type});
+    return new File(
+        [this.lastWritable.data], this.name,
+        {type: this.type, lastModified: this.lastModified});
   }
 }
 
@@ -235,6 +242,7 @@ class FakeFileSystemDirectoryHandle extends FakeFileSystemHandle {
  * @typedef{{
  *   name: (string|undefined),
  *   type: (string|undefined),
+ *   lastModified: (number|undefined),
  *   arrayBuffer: (function(): (Promise<ArrayBuffer>)|undefined)
  * }}
  */
@@ -251,8 +259,8 @@ async function createMockTestDirectory(files = [{}]) {
     const fileBlob = file.arrayBuffer !== undefined ?
         new Blob([await file.arrayBuffer()]) :
         new Blob();
-    directory.addFileHandleForTest(
-        new FakeFileSystemFileHandle(file.name, file.type, fileBlob));
+    directory.addFileHandleForTest(new FakeFileSystemFileHandle(
+        file.name, file.type, file.lastModified, fileBlob));
   }
   return directory;
 }
@@ -305,7 +313,8 @@ async function launchWithHandles(handles) {
  * @return {!FakeFileSystemFileHandle}
  */
 function fileToFileHandle(file) {
-  return new FakeFileSystemFileHandle(file.name, file.type, file);
+  return new FakeFileSystemFileHandle(
+      file.name, file.type, file.lastModified, file);
 }
 
 /**
@@ -327,6 +336,22 @@ function createNamedError(name, msg) {
   const error = new Error(msg);
   error.name = name;
   return error;
+}
+
+/**
+ * Checks that the `currentFiles` array maintained by launch.js has the same
+ * sequence of files as `expectedFiles`.
+ * @param {!Array<!File>} expectedFiles
+ * @param {?string} testCase
+ */
+function assertFilesToBe(expectedFiles, testCase) {
+  // Use filenames as an approximation of file uniqueness.
+  const currentFilenames = currentFiles.map(d => d.handle.name).join();
+  const expectedFilenames = expectedFiles.map(f => f.name).join();
+  chai.assert.equal(
+      currentFilenames, expectedFilenames,
+      `Expected '${expectedFilenames}' but got '${currentFilenames}'` +
+          (testCase ? ` for ${testCase}` : ''));
 }
 
 /**

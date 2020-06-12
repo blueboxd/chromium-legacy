@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV class='container clips'",
-      "bounds": [100, 100],
-      "transform": 1
-    },
-    {
       "name": "LayoutBlockFlow (positioned) DIV class='under composited'",
       "bounds": [100, 100],
       "contentsOpaque": true,

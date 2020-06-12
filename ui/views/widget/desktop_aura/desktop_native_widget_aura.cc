@@ -433,6 +433,10 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
   }
 }
 
+void DesktopNativeWidgetAura::HandleNonClientActivationChanged(bool active) {
+  native_widget_delegate_->OnNativeWidgetActivationChanged(active);
+}
+
 gfx::NativeWindow DesktopNativeWidgetAura::GetNativeWindow() const {
   return content_window_;
 }

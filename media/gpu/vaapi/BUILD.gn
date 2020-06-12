@@ -116,12 +116,12 @@ source_set("vaapi") {
     ]
   }
 
-  if (ozone_platform_gbm || use_egl) {
+  if (use_ozone || use_egl) {
     sources += [
       "vaapi_picture_native_pixmap.cc",
       "vaapi_picture_native_pixmap.h",
     ]
-    if (ozone_platform_gbm) {
+    if (use_ozone) {
       sources += [
         "vaapi_picture_native_pixmap_ozone.cc",
         "vaapi_picture_native_pixmap_ozone.h",

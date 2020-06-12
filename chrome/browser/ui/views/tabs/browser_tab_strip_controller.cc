@@ -362,6 +362,11 @@ void BrowserTabStripController::ToggleTabGroupCollapsedState(
     model_->ActivateTabAt(next_active.value(),
                           {TabStripModel::GestureType::kOther});
   }
+
+  std::vector<int> tabs_in_group = ListTabsInGroup(group);
+  for (int i : tabs_in_group)
+    tabstrip_->tab_at(i)->SetVisible(is_currently_collapsed);
+
   tab_groups::TabGroupVisualData new_data(
       GetGroupTitle(group), GetGroupColorId(group), !is_currently_collapsed);
   model_->group_model()->GetTabGroup(group)->SetVisualData(new_data, true);

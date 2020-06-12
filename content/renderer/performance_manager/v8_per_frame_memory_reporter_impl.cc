@@ -73,10 +73,12 @@ class FrameAssociatedMeasurementDelegate : public v8::MeasureMemoryDelegate {
         isolated_world_usage->bytes_used = size;
         int32_t world_id = frame->GetScriptContextWorldId(context);
 
-        // TODO(crbug.com/1080672): Populate isolated_world_usage->host_id.
-        // This will need a delegate to plumb through the value from
-        // extensions::ScriptInjection::GetHostIdForIsolatedWorld for embedders
-        // that support extensions.
+        if (world_id != content::ISOLATED_WORLD_ID_GLOBAL) {
+          isolated_world_usage->stable_id =
+              frame->GetIsolatedWorldStableId(context).Utf8();
+          isolated_world_usage->human_readable_name =
+              frame->GetIsolatedWorldHumanReadableName(context).Utf8();
+        }
 
         DCHECK(
             !base::Contains(per_frame_resources->associated_bytes, world_id));

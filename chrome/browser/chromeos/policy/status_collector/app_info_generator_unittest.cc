@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
+#include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
@@ -90,10 +91,10 @@ namespace policy {
 class AppInfoGeneratorTest : public ::testing::TestWithParam<ProviderType> {
  public:
   AppInfoGeneratorTest() {
-    if (GetParam() == web_app::ProviderType::kWebApps) {
+    if (GetParam() == ProviderType::kWebApps) {
       scoped_feature_list_.InitAndEnableFeature(
           features::kDesktopPWAsWithoutExtensions);
-    } else if (GetParam() == web_app::ProviderType::kBookmarkApps) {
+    } else if (GetParam() == ProviderType::kBookmarkApps) {
       scoped_feature_list_.InitAndDisableFeature(
           features::kDesktopPWAsWithoutExtensions);
     }
@@ -157,9 +158,12 @@ class AppInfoGeneratorTest : public ::testing::TestWithParam<ProviderType> {
           auto provider =
               std::make_unique<web_app::TestWebAppProvider>(profile);
           auto app_registrar = std::make_unique<web_app::TestAppRegistrar>();
+          auto system_web_app_manager =
+              std::make_unique<web_app::TestSystemWebAppManager>(profile);
 
           app_registrar_ = app_registrar.get();
           provider->SetRegistrar(std::move(app_registrar));
+          provider->SetSystemWebAppManager(std::move(system_web_app_manager));
           provider->Start();
           return provider;
         }));
@@ -218,6 +222,9 @@ class AppInfoGeneratorTest : public ::testing::TestWithParam<ProviderType> {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  apps::ScopedOmitBuiltInAppsForTesting scoped_omit_built_in_apps_for_testing_;
+  apps::ScopedOmitPluginVmAppsForTesting
+      scoped_omit_plugin_vm_apps_for_testing_;
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   web_app::TestAppRegistrar* app_registrar_;
@@ -524,10 +531,10 @@ TEST_P(AppInfoGeneratorTest, OnLoginRemoveOldUsage) {
                                       MakeUTCTime("29-MAR-2020 2:00am"))})));
 }
 
-// TODO(crbug.com/1083855): Test with BMO enabled.
 INSTANTIATE_TEST_SUITE_P(All,
                          AppInfoGeneratorTest,
-                         ::testing::Values(ProviderType::kBookmarkApps),
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
                          web_app::ProviderTypeParamToString);
 
 }  // namespace policy

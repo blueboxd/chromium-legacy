@@ -12,6 +12,7 @@
 ] interface VirtualKeyboard : EventTarget {
     void show();
     void hide();
-    attribute EventHandler onoverlaygeometrychange;
+    readonly attribute DOMRect boundingRect;
     attribute boolean overlaysContent;
+    attribute EventHandler ongeometrychange;
 };

@@ -64,10 +64,6 @@ class DownloadFeedbackService {
       std::string* ping,
       std::string* response);
 
-  // Records histogram for download feedback option shown to user.
-  static void RecordEligibleDownloadShown(
-      download::DownloadDangerType danger_type);
-
   // Begin download feedback for |download|. Then delete download file if
   // |download_command| is DISCARD, or run the KEEP command otherwise.This must
   // only be called if IsEnabledForDownload is true for |download|.

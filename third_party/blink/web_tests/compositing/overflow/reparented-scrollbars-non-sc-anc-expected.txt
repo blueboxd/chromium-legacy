@@ -7,11 +7,6 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV id='positioned'",
-      "bounds": [1200, 800],
-      "transform": 1
-    },
-    {
       "name": "LayoutNGBlockFlow DIV id='scroller'",
       "bounds": [1200, 1000],
       "transform": 1

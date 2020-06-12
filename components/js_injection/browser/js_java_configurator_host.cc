@@ -46,18 +46,18 @@ struct JsObject {
   std::unique_ptr<WebMessageHostFactory> factory;
 };
 
-struct DocumentStartJavascript {
-  DocumentStartJavascript(base::string16 script,
+struct DocumentStartJavaScript {
+  DocumentStartJavaScript(base::string16 script,
                           AwOriginMatcher allowed_origin_rules,
                           int32_t script_id)
       : script_(std::move(script)),
         allowed_origin_rules_(allowed_origin_rules),
         script_id_(script_id) {}
 
-  DocumentStartJavascript(DocumentStartJavascript&) = delete;
-  DocumentStartJavascript& operator=(DocumentStartJavascript&) = delete;
-  DocumentStartJavascript(DocumentStartJavascript&&) = default;
-  DocumentStartJavascript& operator=(DocumentStartJavascript&&) = default;
+  DocumentStartJavaScript(DocumentStartJavaScript&) = delete;
+  DocumentStartJavaScript& operator=(DocumentStartJavaScript&) = delete;
+  DocumentStartJavaScript(DocumentStartJavaScript&&) = default;
+  DocumentStartJavaScript& operator=(DocumentStartJavaScript&&) = default;
 
   base::string16 script_;
   AwOriginMatcher allowed_origin_rules_;
@@ -79,7 +79,7 @@ JsJavaConfiguratorHost::JsJavaConfiguratorHost(
 JsJavaConfiguratorHost::~JsJavaConfiguratorHost() = default;
 
 JsJavaConfiguratorHost::AddScriptResult
-JsJavaConfiguratorHost::AddDocumentStartJavascript(
+JsJavaConfiguratorHost::AddDocumentStartJavaScript(
     const base::string16& script,
     const std::vector<std::string>& allowed_origin_rules) {
   AwOriginMatcher origin_matcher;
@@ -94,18 +94,18 @@ JsJavaConfiguratorHost::AddDocumentStartJavascript(
   scripts_.emplace_back(script, origin_matcher, next_script_id_++);
 
   web_contents()->ForEachFrame(base::BindRepeating(
-      &JsJavaConfiguratorHost::NotifyFrameForAddDocumentStartJavascript,
+      &JsJavaConfiguratorHost::NotifyFrameForAddDocumentStartJavaScript,
       base::Unretained(this), &*scripts_.rbegin()));
   result.script_id = scripts_.rbegin()->script_id_;
   return result;
 }
 
-bool JsJavaConfiguratorHost::RemoveDocumentStartJavascript(int script_id) {
+bool JsJavaConfiguratorHost::RemoveDocumentStartJavaScript(int script_id) {
   for (auto it = scripts_.begin(); it != scripts_.end(); ++it) {
     if (it->script_id_ == script_id) {
       scripts_.erase(it);
       web_contents()->ForEachFrame(base::BindRepeating(
-          &JsJavaConfiguratorHost::NotifyFrameForRemoveDocumentStartJavascript,
+          &JsJavaConfiguratorHost::NotifyFrameForRemoveDocumentStartJavaScript,
           base::Unretained(this), script_id));
       return true;
     }
@@ -168,7 +168,7 @@ JsJavaConfiguratorHost::GetWebMessageHostFactories() {
 void JsJavaConfiguratorHost::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   NotifyFrameForWebMessageListener(render_frame_host);
-  NotifyFrameForAllDocumentStartJavascripts(render_frame_host);
+  NotifyFrameForAllDocumentStartJavaScripts(render_frame_host);
 }
 
 void JsJavaConfiguratorHost::RenderFrameDeleted(
@@ -176,10 +176,10 @@ void JsJavaConfiguratorHost::RenderFrameDeleted(
   js_to_java_messagings_.erase(render_frame_host);
 }
 
-void JsJavaConfiguratorHost::NotifyFrameForAllDocumentStartJavascripts(
+void JsJavaConfiguratorHost::NotifyFrameForAllDocumentStartJavaScripts(
     content::RenderFrameHost* render_frame_host) {
   for (const auto& script : scripts_) {
-    NotifyFrameForAddDocumentStartJavascript(&script, render_frame_host);
+    NotifyFrameForAddDocumentStartJavaScript(&script, render_frame_host);
   }
 }
 
@@ -204,19 +204,19 @@ void JsJavaConfiguratorHost::NotifyFrameForWebMessageListener(
   configurator_remote->SetJsObjects(std::move(js_objects));
 }
 
-void JsJavaConfiguratorHost::NotifyFrameForAddDocumentStartJavascript(
-    const DocumentStartJavascript* script,
+void JsJavaConfiguratorHost::NotifyFrameForAddDocumentStartJavaScript(
+    const DocumentStartJavaScript* script,
     content::RenderFrameHost* render_frame_host) {
   DCHECK(script);
   mojo::AssociatedRemote<mojom::JsJavaConfigurator> configurator_remote;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &configurator_remote);
   configurator_remote->AddDocumentStartScript(
-      mojom::DocumentStartJavascript::New(script->script_id_, script->script_,
+      mojom::DocumentStartJavaScript::New(script->script_id_, script->script_,
                                           script->allowed_origin_rules_));
 }
 
-void JsJavaConfiguratorHost::NotifyFrameForRemoveDocumentStartJavascript(
+void JsJavaConfiguratorHost::NotifyFrameForRemoveDocumentStartJavaScript(
     int32_t script_id,
     content::RenderFrameHost* render_frame_host) {
   mojo::AssociatedRemote<mojom::JsJavaConfigurator> configurator_remote;

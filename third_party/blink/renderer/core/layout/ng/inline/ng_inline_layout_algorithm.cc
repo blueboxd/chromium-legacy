@@ -362,7 +362,9 @@ void NGInlineLayoutAlgorithm::CreateLine(
   container_builder_.SetBfcLineOffset(bfc_line_offset);
 
   const NGLineHeightMetrics& line_box_metrics =
-      box_states_->LineBoxState().metrics;
+      UNLIKELY(Node().HasLineEvenIfEmpty())
+          ? NGLineHeightMetrics(line_info->LineStyle())
+          : box_states_->LineBoxState().metrics;
 
   // Place out-of-flow positioned objects.
   // This adjusts the NGLogicalLineItem::offset member to contain
@@ -946,7 +948,7 @@ LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
 scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   NGExclusionSpace initial_exclusion_space(ConstraintSpace().ExclusionSpace());
 
-  bool is_empty_inline = Node().IsEmptyInline();
+  const bool is_empty_inline = Node().IsEmptyInline();
 
   if (is_empty_inline) {
     // Margins should collapse across "certain zero-height line boxes".

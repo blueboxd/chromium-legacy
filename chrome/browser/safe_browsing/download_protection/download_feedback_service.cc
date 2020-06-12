@@ -123,13 +123,6 @@ bool DownloadFeedbackService::GetPingsForDownloadForTesting(
   return true;
 }
 
-// static
-void DownloadFeedbackService::RecordEligibleDownloadShown(
-    download::DownloadDangerType danger_type) {
-  UMA_HISTOGRAM_ENUMERATION("SBDownloadFeedback.Eligible", danger_type,
-                            download::DOWNLOAD_DANGER_TYPE_MAX);
-}
-
 void DownloadFeedbackService::BeginFeedbackForDownload(
     download::DownloadItem* download,
     DownloadCommands::Command download_command) {

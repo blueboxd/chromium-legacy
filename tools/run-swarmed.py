@@ -37,25 +37,6 @@ INTERNAL_ERROR_EXIT_CODE = -1000
 DEFAULT_ANDROID_DEVICE_TYPE = "walleye"
 
 
-def _ReadVpythonPin():
-  """Reads the vpython CIPD package name and version from
-  //third_party/depot_tools.
-
-  Returns them as a (pkgname, version) tuple.
-  """
-  chromium_src_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-  manifest_path = os.path.join(chromium_src_dir, 'third_party', 'depot_tools',
-                               'cipd_manifest.txt')
-  with open(manifest_path, 'r') as manifest:
-    for line in manifest.readlines():
-      # lines look like:
-      # name/of/package version
-      if 'vpython' in line and 'git_revision' in line:
-        vpython_pkg, vpython_version = line.split()
-        return vpython_pkg, vpython_version
-  raise ValueError('unable to read vpython pin from %s' % (manifest_path, ))
-
-
 def _Spawn(args):
   """Triggers a swarming job. The arguments passed are:
   - The index of the job;
@@ -108,28 +89,6 @@ def _Spawn(args):
   if args.device_os:
     trigger_args += ['-d', 'device_os=' + args.device_os]
 
-  # The canonical version numbers are stored in the infra repository here:
-  # build/scripts/slave/recipe_modules/swarming/api.py
-  #
-  # HACK(iannucci): These packages SHOULD NOT BE HERE.
-  # Remove method once Swarming Pool Task Templates are implemented.
-  # crbug.com/812428
-  cpython_version = 'version:2.7.15.chromium14'
-  cpython_pkg = (
-      '.swarming_module:infra/python/cpython/${platform}=' + cpython_version)
-
-  vpython_pkg = '.swarming_module:%s=%s' % _ReadVpythonPin()
-  vpython_native_pkg = vpython_pkg.replace('vpython', 'vpython-native')
-
-  trigger_args += [
-      '--cipd-package',
-      cpython_pkg,
-      '--cipd-package',
-      vpython_native_pkg,
-      '--cipd-package',
-      vpython_pkg,
-      '--',
-  ]
   if not args.no_test_flags:
     # These flags are recognized by our test runners, but do not work
     # when running custom scripts.
@@ -203,12 +162,9 @@ def main():
       '--device-type',
       help='device_type specifier for Swarming'
       ' from https://chromium-swarm.appspot.com/botlist .')
-  # TODO(crbug.com/812428): Switch this back to chromium.tests once
-  # that pool runs with task templates.
-  parser.add_argument(
-      '--pool',
-      default='chromium.tests.template',
-      help='Use the given swarming pool.')
+  parser.add_argument('--pool',
+                      default='chromium.tests',
+                      help='Use the given swarming pool.')
   parser.add_argument('--results', '-r', default='results',
                       help='Directory in which to store results.')
   parser.add_argument('--gtest_filter',

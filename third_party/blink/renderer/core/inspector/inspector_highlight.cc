@@ -340,6 +340,8 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridHighlightConfigInfo(
   grid_config_info->setBoolean("cellBorderDash", grid_config.cell_border_dash);
   grid_config_info->setBoolean("showGridExtensionLines",
                                grid_config.show_grid_extension_lines);
+  grid_config_info->setBoolean("showPositiveLineNumbers",
+                               grid_config.show_positive_line_numbers);
 
   if (grid_config.grid_color != Color::kTransparent) {
     grid_config_info->setString("gridBorderColor",
@@ -366,6 +368,38 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridHighlightConfigInfo(
                                 grid_config.column_hatch_color.Serialized());
   }
   return grid_config_info;
+}
+
+std::unique_ptr<protocol::ListValue> BuildGridPositiveLineNumberOffsets(
+    LayoutGrid* layout_grid,
+    const Vector<LayoutUnit>& trackPositions,
+    const LayoutUnit& grid_gap,
+    GridTrackSizingDirection direction,
+    float scale) {
+  std::unique_ptr<protocol::ListValue> number_offsets =
+      protocol::ListValue::create();
+  // Find index of the first explicit Grid Line.
+  // SmallestTrackStartForDirection returns integer <= 0 that indicates
+  // if there are any implicit lines at the start of the grid:
+  // I.e. -2 indicates that there are 2 implicit
+  // lines added before the first explicit line.
+  size_t firstExplicitIndex =
+      0 - layout_grid->SmallestTrackStartForDirection(direction);
+  LayoutUnit firstOffset = trackPositions.front();
+  if (firstExplicitIndex == 0) {
+    // First track line is beginning of grid
+    number_offsets->pushValue(protocol::FundamentalValue::create(0));
+    firstExplicitIndex++;
+  }
+  // Place offset in center of gaps
+  for (size_t i = firstExplicitIndex; i < trackPositions.size() - 1; ++i) {
+    number_offsets->pushValue(protocol::FundamentalValue::create(
+        (trackPositions.at(i) - (grid_gap / 2) - firstOffset) * scale));
+  }
+  // Add last offset
+  number_offsets->pushValue(protocol::FundamentalValue::create(
+      (trackPositions.back() - firstOffset) * scale));
+  return number_offsets;
 }
 
 std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
@@ -437,6 +471,18 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   }
   grid_info->setValue("columns", column_builder.Release());
   grid_info->setValue("columnGaps", column_gap_builder.Release());
+
+  // Positive Row and column Line offsets
+  if (highlight_config.grid_highlight_config &&
+      highlight_config.grid_highlight_config->show_positive_line_numbers) {
+    grid_info->setValue("positiveRowLineNumberOffsets",
+                        BuildGridPositiveLineNumberOffsets(
+                            layout_grid, rows, row_gap, kForRows, scale));
+    grid_info->setValue(
+        "positiveColumnLineNumberOffsets",
+        BuildGridPositiveLineNumberOffsets(layout_grid, columns, column_gap,
+                                           kForColumns, scale));
+  }
 
   // Grid border
   PathBuilder grid_border_builder;
@@ -544,7 +590,8 @@ InspectorHighlight::InspectorHighlight(float scale)
 InspectorGridHighlightConfig::InspectorGridHighlightConfig()
     : show_grid_extension_lines(false),
       grid_border_dash(false),
-      cell_border_dash(false) {}
+      cell_border_dash(false),
+      show_positive_line_numbers(false) {}
 
 InspectorHighlight::InspectorHighlight(
     Node* node,
@@ -1059,6 +1106,7 @@ InspectorGridHighlightConfig InspectorHighlight::DefaultGridConfig() {
   config.row_hatch_color = Color(255, 255, 255, 0);
   config.column_hatch_color = Color(128, 128, 128, 0);
   config.show_grid_extension_lines = true;
+  config.show_positive_line_numbers = true;
   config.grid_border_dash = false;
   config.cell_border_dash = true;
   return config;

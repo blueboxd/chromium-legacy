@@ -145,7 +145,7 @@ void EventReportValidator::ExpectUnscannedFileEvent(
   sha256_ = expected_sha256;
   mimetypes_ = expected_mimetypes;
   trigger_ = expected_trigger;
-  reason_ = expected_reason;
+  unscanned_reason_ = expected_reason;
   content_size_ = expected_content_size;
   EXPECT_CALL(*client_, UploadRealtimeReport_(_, _))
       .WillOnce([this](base::Value& report,
@@ -272,6 +272,8 @@ void EventReportValidator::ValidateReport(base::Value* report) {
   ValidateField(event, SafeBrowsingPrivateEventRouter::kKeyThreatType,
                 threat_type_);
   ValidateField(event, SafeBrowsingPrivateEventRouter::kKeyReason, reason_);
+  ValidateField(event, SafeBrowsingPrivateEventRouter::kKeyUnscannedReason,
+                unscanned_reason_);
   ValidateMimeType(event);
   ValidateDlpVerdict(event);
 }

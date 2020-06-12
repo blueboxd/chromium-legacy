@@ -101,6 +101,7 @@
 <translation id="4472417192667361414">Configuración del sistema y de la pantalla</translation>
 <translation id="449214506787633354"><ph name="CTRL" /> y, a continuación, <ph name="LEFT" />, <ph name="RIGHT" />, <ph name="UP" /> o <ph name="DOWN" /></translation>
 <translation id="4556221320735744018">Ver la ayuda de combinaciones de teclas</translation>
+<translation id="4609344656788228519"><ph name="CTRL1" /><ph name="SEPARATOR1" /><ph name="BACK1" /> o <ph name="CTRL2" /><ph name="SEPARATOR2" /><ph name="SHIFT" /><ph name="SEPARATOR3" /><ph name="BACK2" /></translation>
 <translation id="4628718545549558538">Abrir el área de estado (donde aparece la imagen de la cuenta)</translation>
 <translation id="4642092649622328492">Hacer una captura de pantalla parcial</translation>
 <translation id="4698850295812410683">Mostrar herramientas del lápiz óptico</translation>

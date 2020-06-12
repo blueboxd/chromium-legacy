@@ -10,7 +10,7 @@
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
-#include "third_party/blink/renderer/modules/virtualkeyboard/virtual_keyboard_overlay_geometry_change_event.h"
+#include "third_party/blink/renderer/modules/virtualkeyboard/virtual_keyboard_geometry_change_event.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -35,6 +35,10 @@ bool VirtualKeyboard::overlaysContent() const {
   return overlays_content_;
 }
 
+DOMRect* VirtualKeyboard::boundingRect() const {
+  return bounding_rect_;
+}
+
 void VirtualKeyboard::setOverlaysContent(bool overlays_content) {
   LocalFrame* frame = GetFrame();
   if (frame && frame->IsMainFrame()) {
@@ -55,10 +59,9 @@ void VirtualKeyboard::setOverlaysContent(bool overlays_content) {
 
 void VirtualKeyboard::VirtualKeyboardOverlayChanged(
     const gfx::Rect& keyboard_rect) {
-  DispatchEvent(
-      *(MakeGarbageCollected<VirtualKeyboardOverlayGeometryChangeEvent>(
-          event_type_names::kOverlaygeometrychange,
-          DOMRect::FromFloatRect(FloatRect(gfx::RectF(keyboard_rect))))));
+  bounding_rect_ = DOMRect::FromFloatRect(FloatRect(gfx::RectF(keyboard_rect)));
+  DispatchEvent(*(MakeGarbageCollected<VirtualKeyboardGeometryChangeEvent>(
+      event_type_names::kGeometrychange, bounding_rect_)));
 }
 
 void VirtualKeyboard::show() {
@@ -85,6 +88,7 @@ void VirtualKeyboard::hide() {
 }
 
 void VirtualKeyboard::Trace(Visitor* visitor) const {
+  visitor->Trace(bounding_rect_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
 }

@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "url/gurl.h"
+#include "weblayer/browser/browser_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/navigation_controller.h"
@@ -30,26 +31,26 @@ const int kDefaultTestWindowHeightDip = 700;
 
 std::vector<Shell*> Shell::windows_;
 
-Shell::Shell(std::unique_ptr<Tab> tab)
-    : tab_(std::move(tab)), window_(nullptr) {
+Shell::Shell(std::unique_ptr<Browser> browser)
+    : browser_(std::move(browser)), window_(nullptr) {
   windows_.push_back(this);
-  if (tab_) {
-    tab_->AddObserver(this);
-    tab_->GetNavigationController()->AddObserver(this);
+  if (tab()) {
+    tab()->AddObserver(this);
+    tab()->GetNavigationController()->AddObserver(this);
 #if !defined(OS_ANDROID)  // Android does this in Java.
 
     // TODO: how will tests work with this on android? can we get to the
     // concrete type?
 
-    static_cast<TabImpl*>(tab_.get())->profile()->SetDownloadDelegate(this);
+    static_cast<TabImpl*>(tab())->profile()->SetDownloadDelegate(this);
 #endif
   }
 }
 
 Shell::~Shell() {
-  if (tab_) {
-    tab_->GetNavigationController()->RemoveObserver(this);
-    tab_->RemoveObserver(this);
+  if (tab()) {
+    tab()->GetNavigationController()->RemoveObserver(this);
+    tab()->RemoveObserver(this);
   }
   PlatformCleanUp();
 
@@ -63,7 +64,7 @@ Shell::~Shell() {
   // Always destroy WebContents before calling PlatformExit(). WebContents
   // destruction sequence may depend on the resources destroyed in
   // PlatformExit() (e.g. the display::Screen singleton).
-  tab_.reset();
+  browser_.reset();
 
   if (windows_.empty()) {
     PlatformExit();
@@ -73,9 +74,9 @@ Shell::~Shell() {
   }
 }
 
-Shell* Shell::CreateShell(std::unique_ptr<Tab> tab,
+Shell* Shell::CreateShell(std::unique_ptr<Browser> browser,
                           const gfx::Size& initial_size) {
-  Shell* shell = new Shell(std::move(tab));
+  Shell* shell = new Shell(std::move(browser));
   shell->PlatformCreateWindow(initial_size.width(), initial_size.height());
 
   shell->PlatformSetContents();
@@ -103,7 +104,8 @@ Tab* Shell::tab() {
   // TODO(jam): this won't work if we need more than one Shell in a test.
   return Tab::GetLastTabForTesting();
 #else
-  return tab_.get();
+  CHECK(!browser_->GetTabs().empty());
+  return browser_->GetTabs()[0];
 #endif
 }
 
@@ -116,7 +118,8 @@ void Shell::DisplayedUrlChanged(const GURL& url) {
 }
 
 void Shell::LoadStateChanged(bool is_loading, bool to_different_document) {
-  NavigationController* navigation_controller = tab_->GetNavigationController();
+  NavigationController* navigation_controller =
+      tab()->GetNavigationController();
 
   PlatformEnableUIControl(STOP_BUTTON, is_loading && to_different_document);
 
@@ -155,20 +158,24 @@ gfx::Size Shell::AdjustWindowSize(const gfx::Size& initial_size) {
 
 #if defined(OS_ANDROID)
 Shell* Shell::CreateNewWindow(const GURL& url, const gfx::Size& initial_size) {
-  return CreateNewWindowWithTab(nullptr, url, initial_size);
+  // On Android, the browser is owned by the Java side.
+  return CreateNewWindowWithBrowser(nullptr, url, initial_size);
 }
 #else
 Shell* Shell::CreateNewWindow(Profile* web_profile,
                               const GURL& url,
                               const gfx::Size& initial_size) {
-  return CreateNewWindowWithTab(Tab::Create(web_profile), url, initial_size);
+  auto browser = Browser::Create(web_profile, nullptr);
+  browser->CreateTab();
+  return CreateNewWindowWithBrowser(std::move(browser), url, initial_size);
 }
 #endif
 
-Shell* Shell::CreateNewWindowWithTab(std::unique_ptr<Tab> tab,
-                                     const GURL& url,
-                                     const gfx::Size& initial_size) {
-  Shell* shell = CreateShell(std::move(tab), AdjustWindowSize(initial_size));
+Shell* Shell::CreateNewWindowWithBrowser(std::unique_ptr<Browser> browser,
+                                         const GURL& url,
+                                         const gfx::Size& initial_size) {
+  Shell* shell =
+      CreateShell(std::move(browser), AdjustWindowSize(initial_size));
   if (!url.is_empty())
     shell->LoadURL(url);
   return shell;

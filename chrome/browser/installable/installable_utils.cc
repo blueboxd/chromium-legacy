@@ -42,3 +42,13 @@ bool DoesOriginContainAnyInstalledWebApp(
   return provider->registrar().DoesScopeContainAnyApp(origin);
 #endif
 }
+
+std::set<GURL> GetOriginsWithInstalledWebApps(
+    content::BrowserContext* browser_context) {
+#if defined(OS_ANDROID)
+  return ShortcutHelper::GetOriginsWithInstalledWebApksOrTwas();
+#else
+  NOTIMPLEMENTED();
+  return std::set<GURL>();
+#endif
+}

@@ -801,7 +801,8 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnUnscannedFileEvent) {
   EXPECT_EQ("FILE_DOWNLOAD",
             *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyTrigger));
   EXPECT_EQ("filePasswordProtected",
-            *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyReason));
+            *event->FindStringKey(
+                SafeBrowsingPrivateEventRouter::kKeyUnscannedReason));
 }
 
 TEST_F(SafeBrowsingPrivateEventRouterTest, TestProfileUsername) {

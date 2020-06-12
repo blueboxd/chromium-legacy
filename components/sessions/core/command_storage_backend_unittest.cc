@@ -287,4 +287,20 @@ TEST_F(CommandStorageBackendTest, MaxSizeType) {
                      expected_size) == 0);
 }
 
+TEST_F(CommandStorageBackendTest, IsValidFileWithInvalidFiles) {
+  base::WriteFile(path_, "z");
+  EXPECT_FALSE(CommandStorageBackend::IsValidFile(path_));
+
+  base::WriteFile(path_, "a longer string that does not match header");
+  EXPECT_FALSE(CommandStorageBackend::IsValidFile(path_));
+}
+
+TEST_F(CommandStorageBackendTest, IsValidFileWithValidFile) {
+  scoped_refptr<CommandStorageBackend> backend = CreateBackend();
+  backend->AppendCommands({}, true);
+  backend = nullptr;
+
+  EXPECT_TRUE(CommandStorageBackend::IsValidFile(path_));
+}
+
 }  // namespace sessions

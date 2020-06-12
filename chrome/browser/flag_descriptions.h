@@ -1010,9 +1010,6 @@ extern const char kPullToRefreshName[];
 extern const char kPullToRefreshDescription[];
 extern const char kPullToRefreshEnabledTouchscreen[];
 
-extern const char kQueryInOmniboxName[];
-extern const char kQueryInOmniboxDescription[];
-
 extern const char kQuicName[];
 extern const char kQuicDescription[];
 
@@ -1357,6 +1354,9 @@ extern const char kEnableVulkanDescription[];
 
 extern const char kAndroidAutofillAccessibilityName[];
 extern const char kAndroidAutofillAccessibilityDescription[];
+
+extern const char kAndroidDefaultBrowserPromoName[];
+extern const char kAndroidDefaultBrowserPromoDescription[];
 
 extern const char kAndroidMultipleDisplayName[];
 extern const char kAndroidMultipleDisplayDescription[];

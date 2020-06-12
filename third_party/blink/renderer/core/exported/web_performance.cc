@@ -227,6 +227,11 @@ base::Optional<base::TimeDelta> WebPerformance::LongestInputTimestamp() const {
   return private_->timing()->LongestInputTimestamp();
 }
 
+base::Optional<base::TimeDelta> WebPerformance::FirstInputProcessingTime()
+    const {
+  return private_->timing()->FirstInputProcessingTime();
+}
+
 double WebPerformance::ParseStart() const {
   return MillisecondsToSeconds(private_->timing()->ParseStart());
 }

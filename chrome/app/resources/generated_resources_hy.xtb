@@ -436,7 +436,7 @@
 <translation id="1546452108651444655"><ph name="CHILD_NAME" />-ն ուզում է տեղադրել <ph name="EXTENSION_TYPE" /> ընդլայնումը, որը կկարողանա՝</translation>
 <translation id="1549275686094429035">ARC-ն միացված է</translation>
 <translation id="1549788673239553762"><ph name="APP_NAME" /> հավելվածը ցանկանում է օգտվել <ph name="VOLUME_NAME" />-ից: Այն կարող է փոփոխել կամ ջնջել ձեր ֆայլերը:</translation>
-<translation id="1552301827267621511">«<ph name="EXTENSION_NAME" />» ընդլայնումը փոխել է օգտագործվող որոնիչը: Այժմ օգտագործվում է <ph name="SEARCH_PROVIDER_DOMAIN" />-ը։</translation>
+<translation id="1552301827267621511">«<ph name="EXTENSION_NAME" />» ընդլայնումը փոխել է օգտագործվող որոնիչը։ Այժմ օգտագործվում է <ph name="SEARCH_PROVIDER_DOMAIN" />-ը։</translation>
 <translation id="1553538517812678578">անսահմանափակ</translation>
 <translation id="1554390798506296774">Միշտ թույլ տալ պաշտպանված միջավայրից դուրս փլագինները <ph name="HOST" />-ում</translation>
 <translation id="1555130319947370107">Կապույտ</translation>
@@ -1290,7 +1290,7 @@
 <translation id="2617342710774726426">SIM քարտը կողպված է</translation>
 <translation id="2619761439309613843">Ամենօրյա թարմացում</translation>
 <translation id="2620436844016719705">Համակարգ</translation>
-<translation id="262154978979441594">Սովորեցրեք Google Օգնականին ձեր ձայնի մոդելը</translation>
+<translation id="262154978979441594">Ձայնագրել ձայնի մոդել Google Օգնականի համար</translation>
 <translation id="2621713457727696555">Պաշտպանված է</translation>
 <translation id="26224892172169984">Թույլ չտալ որևէ կայքի մշակել հաղորդակարգերը</translation>
 <translation id="2624142942574147739">Այս էջն օգտագործում է ձեր տեսախցիկն ու խոսափողը:</translation>
@@ -1680,7 +1680,7 @@
 <translation id="3101126716313987672">Թույլ լուսավորություն</translation>
 <translation id="3101709781009526431">Ամսաթիվ և ժամ</translation>
 <translation id="3103941660000130485">Չհաջողվեց նորացնել Լինուքսը</translation>
-<translation id="3105796011181310544">Վերադառնա՞լ Google որոնման համակարգին</translation>
+<translation id="3105796011181310544">Վերադառնա՞լ Google-ին</translation>
 <translation id="310671807099593501">Կայքն օգտագործում է Bluetooth-ը</translation>
 <translation id="3115147772012638511">Սպասում է քեշին…</translation>
 <translation id="3115580024857770654">Ծալել բոլորը</translation>
@@ -2766,7 +2766,7 @@
 <translation id="4480590691557335796">Chrome-ը կարող է գտնել վնասաբեր ծրագիրը ձեր համակարգչում և ջնջել այն</translation>
 <translation id="4481530544597605423">Ապազուգակցված սարքեր</translation>
 <translation id="4488502501195719518">Ջնջե՞լ բոլոր տվյալները</translation>
-<translation id="4493468155686877504">Առաջարկվող (<ph name="INSTALL_SIZE" />)</translation>
+<translation id="4493468155686877504">Առաջարկվող չափը (<ph name="INSTALL_SIZE" />)</translation>
 <translation id="4495419450179050807">Ցույց չտալ այս էջում</translation>
 <translation id="4496054781541092778"><ph name="PERMISSION" />՝ ավտոմատ արգելափակվել է</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> փլագինը խափանվել է</translation>

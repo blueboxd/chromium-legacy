@@ -268,7 +268,7 @@ TEST_F(DelayloadsTest, DISABLED_ChromeElfDllLoadSanityTestImpl) {
   // Note: Do not unload the chrome_elf DLL in any test where the elf hook has
   // been applied (browser process type only).  This results in the shim code
   // disappearing, but ntdll hook remaining, followed in tests by fireworks.
-  EXPECT_TRUE(!!::FreeLibrary(chrome_elf_module_handle));
+  EXPECT_TRUE(::FreeLibrary(chrome_elf_module_handle));
 }
 
 TEST_F(DelayloadsTest, ChromeExeDelayloadsCheck) {

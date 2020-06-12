@@ -16,6 +16,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/tick_clock.h"
 #include "third_party/blink/public/web/web_document.h"
 
 class GURL;
@@ -25,7 +26,6 @@ class WebElement;
 }
 
 namespace safe_browsing {
-class FeatureExtractorClock;
 class FeatureMap;
 
 class PhishingDOMFeatureExtractor {
@@ -35,9 +35,7 @@ class PhishingDOMFeatureExtractor {
   typedef base::OnceCallback<void(bool)> DoneCallback;
 
   // Creates a PhishingDOMFeatureExtractor instance.
-  // |clock| is used for timing feature extractor operations, and may be
-  // mocked for testing.  The caller maintains ownership of the clock.
-  explicit PhishingDOMFeatureExtractor(FeatureExtractorClock* clock);
+  PhishingDOMFeatureExtractor();
   virtual ~PhishingDOMFeatureExtractor();
 
   // Begins extracting features into the given FeatureMap for the page.
@@ -54,6 +52,8 @@ class PhishingDOMFeatureExtractor {
   // Must be called if there is a feature extraction in progress when the page
   // is unloaded or the PhishingDOMFeatureExtractor is destroyed.
   void CancelPendingExtraction();
+
+  void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
 
  private:
   struct FrameData;
@@ -122,9 +122,7 @@ class PhishingDOMFeatureExtractor {
   // description of which features are computed.
   void InsertFeatures();
 
-
-  // Non-owned pointer to our clock.
-  FeatureExtractorClock* clock_;
+  const base::TickClock* clock_;
 
   // The output parameters from the most recent call to ExtractFeatures().
   FeatureMap* features_;  // The caller keeps ownership of this.

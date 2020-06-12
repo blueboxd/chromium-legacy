@@ -141,12 +141,21 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     private final CompositorAnimationHandler mAnimationHandler;
 
     /**
+     * Current tab to provide Toolbar overlay with. Unlike TabModelSelector#getCurrentTab
+     * which returns null right after a tab is closed, this keeps the reference until
+     * TabModelObserver#didCloseTab is triggered for Toolbar overlay to have a chance
+     * to retrieve the right textbox color from it.
+     */
+    private Tab mCurrentTab;
+
+    /**
      * Protected class to handle {@link TabModelObserver} related tasks. Extending classes will
      * need to override any related calls to add new functionality */
     protected class LayoutManagerTabModelObserver implements TabModelObserver {
         @Override
         public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
             if (tab.getId() != lastId) tabSelected(tab.getId(), lastId, tab.isIncognito());
+            mCurrentTab = tab;
         }
 
         @Override
@@ -374,7 +383,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             DynamicResourceLoader dynamicResourceLoader) {
         LayoutRenderHost renderHost = mHost.getLayoutRenderHost();
         mToolbarOverlay = new ToolbarSceneLayer(
-                mContext, this, renderHost, controlContainer, selector::getCurrentTab);
+                mContext, this, renderHost, controlContainer, () -> mCurrentTab);
 
         // Initialize Layouts
         mStaticLayout.onFinishNativeInitialization();
@@ -474,6 +483,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             getTabModelSelector().getTabModelFilterProvider().removeTabModelFilterObserver(
                     mTabModelFilterObserver);
         }
+        mCurrentTab = null;
     }
 
     /**
@@ -602,9 +612,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     }
 
     private void tabClosed(int tabId, boolean incognito, boolean tabRemoved) {
-        Tab currentTab =
-                getTabModelSelector() != null ? getTabModelSelector().getCurrentTab() : null;
-        int nextTabId = currentTab != null ? currentTab.getId() : Tab.INVALID_TAB_ID;
+        mCurrentTab = getTabModelSelector() != null ? getTabModelSelector().getCurrentTab() : null;
+        int nextTabId = mCurrentTab != null ? mCurrentTab.getId() : Tab.INVALID_TAB_ID;
         tabClosed(tabId, nextTabId, incognito, tabRemoved);
     }
 

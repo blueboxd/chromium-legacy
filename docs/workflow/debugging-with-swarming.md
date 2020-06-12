@@ -70,11 +70,13 @@ $ tools/run-swarmed.py $outdir $target
 ```
 
 See the `--help` option of `run-swarmed.py` for more details about that script.
+Note you might need `--swarming-os Ubuntu-14.04` if you get an error like,
+`UnboundLocalError: local variable 'dbus_pid' referenced before assignment`.
 
 ### mb.py run
 
-Similar to `tools/run_swarmed.py`, `mb.py run` bundles much of the logic into a
-single command line. Unlike `tools/run_swarmed.py`, `mb.py run` allows the user
+Similar to `tools/run-swarmed.py`, `mb.py run` bundles much of the logic into a
+single command line. Unlike `tools/run-swarmed.py`, `mb.py run` allows the user
 to specify extra arguments to pass to the test, but has a messier command line.
 
 To use it, run:

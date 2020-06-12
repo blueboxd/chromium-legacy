@@ -467,8 +467,8 @@ bool DirectCompositionSurfaceWin::IsHDRSupported() {
     return false;
 
   HRESULT hr = S_OK;
-  Microsoft::WRL::ComPtr<IDXGIFactory> factory;
-  hr = CreateDXGIFactory(IID_PPV_ARGS(&factory));
+  Microsoft::WRL::ComPtr<IDXGIFactory1> factory;
+  hr = CreateDXGIFactory1(IID_PPV_ARGS(&factory));
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to create DXGI factory.";
     return false;

@@ -149,6 +149,8 @@ void XRFrameProvider::OnSessionEnded(XRSession* session) {
     immersive_data_provider_.reset();
     immersive_frame_pose_ = nullptr;
     is_immersive_frame_position_emulated_ = false;
+    first_immersive_frame_time_ = base::nullopt;
+    first_immersive_frame_time_delta_ = base::nullopt;
 
     frame_transport_ = MakeGarbageCollected<XRFrameTransport>(
         session->GetExecutionContext(),
@@ -263,11 +265,22 @@ void XRFrameProvider::OnImmersiveFrameData(
   if (!doc)
     return;
 
-  base::TimeTicks monotonic_time_now = base::TimeTicks() + data->time_delta;
+  if (!first_immersive_frame_time_) {
+    DCHECK(!first_immersive_frame_time_delta_);
+
+    first_immersive_frame_time_ = base::TimeTicks::Now();
+    first_immersive_frame_time_delta_ = data->time_delta;
+  }
+
+  base::TimeDelta current_frame_time_from_first_frame =
+      data->time_delta - *first_immersive_frame_time_delta_;
+  base::TimeTicks current_frame_time =
+      *first_immersive_frame_time_ + current_frame_time_from_first_frame;
+
   double high_res_now_ms =
       doc->Loader()
           ->GetTiming()
-          .MonotonicTimeToZeroBasedDocumentTime(monotonic_time_now)
+          .MonotonicTimeToZeroBasedDocumentTime(current_frame_time)
           .InMillisecondsF();
 
   immersive_frame_pose_ = std::move(data->pose);

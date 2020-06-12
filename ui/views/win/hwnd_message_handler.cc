@@ -2073,17 +2073,18 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
   // It is found out that the high word of w_param might be set when the window
   // is minimized or restored. To handle this, w_param's high word should be
   // cleared before it is converted to BOOL.
-  BOOL active = static_cast<BOOL>(LOWORD(w_param));
-
-  const bool paint_as_active = delegate_->ShouldPaintAsActive();
+  const BOOL active = static_cast<BOOL>(LOWORD(w_param));
 
   if (!delegate_->HasNonClientView()) {
     SetMsgHandled(FALSE);
-    return 0;
+    return FALSE;
   }
 
   if (!delegate_->CanActivate())
     return TRUE;
+
+  delegate_->HandleNonClientActivationChanged(active);
+  const bool paint_as_active = delegate_->ShouldPaintAsActive();
 
   if (delegate_->GetFrameMode() == FrameMode::CUSTOM_DRAWN) {
     // TODO(beng, et al): Hack to redraw this window and child windows

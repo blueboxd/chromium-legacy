@@ -10,30 +10,34 @@
 
 #include "components/js_injection/common/aw_origin_matcher.h"
 #include "components/js_injection/common/aw_origin_matcher.mojom.h"
+#include "components/js_injection/common/origin_matcher_internal.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace mojo {
+
+using OriginMatcherRuleUniquePtr =
+    std::unique_ptr<js_injection::OriginMatcherRule>;
+
+template <>
+struct StructTraits<js_injection::mojom::OriginMatcherRuleDataView,
+                    OriginMatcherRuleUniquePtr> {
+  static js_injection::mojom::SubdomainMatchingRulePtr subdomain_matching_rule(
+      const OriginMatcherRuleUniquePtr& rule);
+  static bool Read(js_injection::mojom::OriginMatcherRuleDataView r,
+                   OriginMatcherRuleUniquePtr* out);
+};
 
 template <>
 struct StructTraits<js_injection::mojom::AwOriginMatcherDataView,
                     js_injection::AwOriginMatcher> {
  public:
-  static std::vector<std::string> rules(
+  static const std::vector<OriginMatcherRuleUniquePtr>& rules(
       const js_injection::AwOriginMatcher& r) {
-    return r.Serialize();
+    return r.rules();
   }
 
   static bool Read(js_injection::mojom::AwOriginMatcherDataView data,
-                   js_injection::AwOriginMatcher* out) {
-    std::vector<std::string> rules;
-    if (!data.ReadRules(&rules))
-      return false;
-    for (const auto& rule : rules) {
-      if (!out->AddRuleFromString(rule))
-        return false;
-    }
-    return true;
-  }
+                   js_injection::AwOriginMatcher* out);
 };
 
 }  // namespace mojo

@@ -22,13 +22,16 @@
 namespace blink {
 namespace {
 
+// TODO(crbug.com/1092328): Use V8NotificationDirection.
 mojom::blink::NotificationDirection ToDirectionEnumValue(
     const String& direction) {
   if (direction == "ltr")
     return mojom::blink::NotificationDirection::LEFT_TO_RIGHT;
   if (direction == "rtl")
     return mojom::blink::NotificationDirection::RIGHT_TO_LEFT;
-
+  if (direction == "auto")
+    return mojom::blink::NotificationDirection::AUTO;
+  NOTREACHED() << "Unknown direction: " << direction;
   return mojom::blink::NotificationDirection::AUTO;
 }
 

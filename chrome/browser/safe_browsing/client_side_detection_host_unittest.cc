@@ -113,7 +113,7 @@ ACTION(QuitUIMessageLoop) {
 
 class MockModelLoader : public ModelLoader {
  public:
-  explicit MockModelLoader() : ModelLoader(base::Closure(), nullptr, false) {}
+  MockModelLoader() : ModelLoader(base::Closure(), nullptr, false) {}
   ~MockModelLoader() override = default;
 
   MOCK_METHOD1(ScheduleFetch, void(int64_t));
@@ -324,12 +324,6 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
     csd_host_->PhishingDetectionDone(error, "");
   }
 
-  void DidStopLoading() { csd_host_->DidStopLoading(); }
-
-  BrowseInfo* GetBrowseInfo() {
-    return csd_host_->browse_info_.get();
-  }
-
   void ExpectPreClassificationChecks(const GURL& url,
                                      const bool* is_private,
                                      const bool* match_csd_whitelist,
@@ -375,10 +369,6 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
     csd_host_->browse_info_->url_redirects = redirect_chain;
   }
 
-  void SetReferrer(const GURL& referrer) {
-    csd_host_->browse_info_->referrer = referrer;
-  }
-
   void TestUnsafeResourceCopied(const UnsafeResource& resource) {
     ASSERT_TRUE(csd_host_->unsafe_resource_.get());
     // Test that the resource from OnSafeBrowsingHit notification was copied
@@ -417,11 +407,6 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
         url, content::Referrer(), ui::PAGE_TRANSITION_LINK, std::string());
 
     ASSERT_TRUE(pending_main_rfh());
-    if (web_contents()->GetMainFrame()->GetProcess()->GetID() ==
-        pending_main_rfh()->GetProcess()->GetID()) {
-      EXPECT_NE(web_contents()->GetMainFrame()->GetRoutingID(),
-                pending_main_rfh()->GetRoutingID());
-    }
 
     // Simulate a safebrowsing hit before navigation completes.
     UnsafeResource resource;
@@ -451,11 +436,6 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
         std::string());
 
     ASSERT_TRUE(pending_main_rfh());
-    if (web_contents()->GetMainFrame()->GetProcess()->GetID() ==
-        pending_main_rfh()->GetProcess()->GetID()) {
-      EXPECT_NE(web_contents()->GetMainFrame()->GetRoutingID(),
-                pending_main_rfh()->GetRoutingID());
-    }
 
     content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
     ASSERT_FALSE(csd_host_->DidShowSBInterstitial());
@@ -896,6 +876,14 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckPass) {
   WaitAndCheckPreClassificationChecks();
 
   fake_phishing_detector_.CheckMessage(&url);
+}
+
+TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckMatchWhitelist) {
+  GURL url("http://host.com/");
+  ExpectPreClassificationChecks(url, &kFalse, &kTrue, nullptr, nullptr,
+                                nullptr);
+  NavigateAndKeepLoading(web_contents(), url);
+  WaitAndCheckPreClassificationChecks();
 }
 
 TEST_F(ClientSideDetectionHostTest,

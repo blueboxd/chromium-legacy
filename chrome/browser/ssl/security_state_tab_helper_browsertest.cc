@@ -312,7 +312,7 @@ void CheckBrokenSecurityStyle(const SecurityStyleTestObserver& observer,
                                    ->GetSSL()
                                    .certificate.get();
   EXPECT_TRUE(cert->EqualsExcludingChain(expected_cert));
-  EXPECT_TRUE(!!expired_explanation.insecure_explanations[0].certificate);
+  EXPECT_TRUE(expired_explanation.insecure_explanations[0].certificate);
 }
 
 // Checks that the given |explanation| contains an appropriate
@@ -336,7 +336,7 @@ void CheckSecureCertificateExplanation(
                                    ->GetSSL()
                                    .certificate.get();
   EXPECT_TRUE(cert->EqualsExcludingChain(expected_cert));
-  EXPECT_TRUE(!!explanation.certificate);
+  EXPECT_TRUE(explanation.certificate);
 }
 
 // Checks that the given |explanation| contains an appropriate
@@ -417,7 +417,7 @@ void CheckSecurityInfoForSecure(
   EXPECT_EQ(expect_cert_error,
             net::IsCertStatusError(visible_security_state->cert_status));
   EXPECT_TRUE(visible_security_state->connection_info_initialized);
-  EXPECT_TRUE(!!visible_security_state->certificate);
+  EXPECT_TRUE(visible_security_state->certificate);
 }
 
 // Check that the current security state reflects a non-committed navigation.
@@ -437,7 +437,7 @@ void CheckSecurityInfoForNonCommitted(content::WebContents* contents) {
       security_state::IsSchemeCryptographic(visible_security_state->url));
   EXPECT_FALSE(net::IsCertStatusError(visible_security_state->cert_status));
   EXPECT_FALSE(visible_security_state->connection_info_initialized);
-  EXPECT_FALSE(!!visible_security_state->certificate);
+  EXPECT_FALSE(visible_security_state->certificate);
 }
 
 void ProceedThroughInterstitial(content::WebContents* tab) {
@@ -635,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest, HttpPage) {
   // We expect that the security info fields for this committed navigation will
   // be initialized to reflect the unencrypted connection.
   EXPECT_TRUE(visible_security_state->connection_info_initialized);
-  EXPECT_FALSE(!!visible_security_state->certificate);
+  EXPECT_FALSE(visible_security_state->certificate);
   EXPECT_EQ(0, visible_security_state->connection_status);
 }
 

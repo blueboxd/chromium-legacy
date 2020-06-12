@@ -325,7 +325,8 @@ class TransactionHelper {
 
   void OnTransactionComplete(DnsTransaction* t,
                              int rv,
-                             const DnsResponse* response) {
+                             const DnsResponse* response,
+                             base::Optional<std::string> doh_provider_id) {
     EXPECT_FALSE(completed_);
     EXPECT_EQ(transaction_.get(), t);
 

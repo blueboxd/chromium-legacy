@@ -405,10 +405,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   SwitchAccessMenuBubbleController* GetSwitchAccessBubbleControllerForTest() {
     return switch_access_bubble_controller_.get();
   }
-  void no_switch_access_disable_confirmation_dialog_for_testing(
-      bool skip_dialog) {
-    no_switch_access_disable_confirmation_dialog_for_testing_ = skip_dialog;
-  }
+  void DisableSwitchAccessDisableConfirmationDialogTesting() override;
 
  private:
   // Populate |features_| with the feature of the correct type.

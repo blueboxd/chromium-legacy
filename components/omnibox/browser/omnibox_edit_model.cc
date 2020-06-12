@@ -254,19 +254,14 @@ bool OmniboxEditModel::ResetDisplayTexts() {
   LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
   url_for_editing_ = location_bar_model->GetFormattedFullURL();
 
-  if (location_bar_model->GetDisplaySearchTerms(&display_text_)) {
-    // The search query has been inserted into |display_text_|.
-    DCHECK(!display_text_.empty());
-  } else {
 #if defined(OS_IOS)
-    // iOS is unusual in that it uses a separate LocationView to show the
-    // LocationBarModel's display-only URL. The actual OmniboxViewIOS widget is
-    // hidden in the defocused state, and always contains the URL for editing.
-    display_text_ = url_for_editing_;
+  // iOS is unusual in that it uses a separate LocationView to show the
+  // LocationBarModel's display-only URL. The actual OmniboxViewIOS widget is
+  // hidden in the defocused state, and always contains the URL for editing.
+  display_text_ = url_for_editing_;
 #else
-    display_text_ = location_bar_model->GetURLForDisplay();
+  display_text_ = location_bar_model->GetURLForDisplay();
 #endif
-  }
 
   // When there's new permanent text, and the user isn't interacting with the
   // omnibox, we want to revert the edit to show the new text.  We could simply
@@ -297,7 +292,7 @@ void OmniboxEditModel::SetUserText(const base::string16& text) {
   has_temporary_text_ = false;
 }
 
-bool OmniboxEditModel::Unelide(bool exit_query_in_omnibox) {
+bool OmniboxEditModel::Unelide() {
   // Unelision should not occur if the user has already inputted text.
   if (user_input_in_progress())
     return false;
@@ -305,12 +300,6 @@ bool OmniboxEditModel::Unelide(bool exit_query_in_omnibox) {
   // No need to unelide if we are already displaying the full URL.
   LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
   if (view_->GetText() == location_bar_model->GetFormattedFullURL())
-    return false;
-
-  // Early exit if we don't want to exit Query in Omnibox mode, and the omnibox
-  // is displaying a query.
-  if (!exit_query_in_omnibox &&
-      location_bar_model->GetDisplaySearchTerms(nullptr))
     return false;
 
   // Set the user text to the unelided URL, but don't change
@@ -350,19 +339,8 @@ void OmniboxEditModel::GetDataForURLExport(GURL* url,
 bool OmniboxEditModel::CurrentTextIsURL() const {
   // If !user_input_in_progress_, we can determine if the text is a URL without
   // starting the autocomplete system. This speeds browser startup.
-  if (!user_input_in_progress_) {
-    // If we are displaying Query in Omnibox, and the user has not clicked
-    // "Show URL", then the text must be search terms, and not a URL.
-    if (controller()->GetLocationBarModel()->GetDisplaySearchTerms(nullptr) &&
-        view_->GetText() == display_text_) {
-      return false;
-    }
-
-    // In all other cases, the text must be a URL.
-    return true;
-  }
-
-  return !AutocompleteMatch::IsSearchType(CurrentMatch(nullptr).type);
+  return !user_input_in_progress_ ||
+         !AutocompleteMatch::IsSearchType(CurrentMatch(nullptr).type);
 }
 
 void OmniboxEditModel::AdjustTextForCopy(int sel_min,
@@ -387,19 +365,14 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
     *url_from_text = controller()->GetLocationBarModel()->GetURL();
     *write_url = true;
 
-    // If the omnibox is displaying a URL, set the hyperlink text to the URL's
-    // spec. This undoes any URL elisions.
-    if (!controller()->GetLocationBarModel()->GetDisplaySearchTerms(nullptr)) {
-      // Don't let users copy Reader Mode page URLs.
-      // We display the original article's URL in the omnibox, so users will
-      // expect that to be what is copied to the clipboard.
-      if (dom_distiller::url_utils::IsDistilledPage(*url_from_text)) {
-        *url_from_text =
-            dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
-                *url_from_text);
-      }
-      *text = base::UTF8ToUTF16(url_from_text->spec());
+    // Don't let users copy Reader Mode page URLs.
+    // We display the original article's URL in the omnibox, so users will
+    // expect that to be what is copied to the clipboard.
+    if (dom_distiller::url_utils::IsDistilledPage(*url_from_text)) {
+      *url_from_text = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
+          *url_from_text);
     }
+    *text = base::UTF8ToUTF16(url_from_text->spec());
 
     return;
   }
@@ -668,21 +641,6 @@ void OmniboxEditModel::AcceptInput(WindowOpenDisposition disposition,
     // (e.g. manually retyping the same search query), and it seems wrong to
     // treat this as a reload.
     match.transition = ui::PAGE_TRANSITION_RELOAD;
-  } else if (ui::PageTransitionCoreTypeIs(match.transition,
-                                          ui::PAGE_TRANSITION_GENERATED)) {
-    // When the omnibox is displaying the default search provider search terms,
-    // the user focuses the omnibox, and hits Enter without refining the search
-    // terms, we should classify this transition as a RELOAD.
-    base::string16 search_terms;
-    if (controller()->GetLocationBarModel()->GetDisplaySearchTerms(
-            &search_terms) &&
-        match.fill_into_edit == search_terms &&
-        match
-            .GetSubstitutingExplicitlyInvokedKeyword(
-                client_->GetTemplateURLService())
-            .empty()) {
-      match.transition = ui::PAGE_TRANSITION_RELOAD;
-    }
   } else if (paste_state_ != NONE &&
              match.type == AutocompleteMatchType::URL_WHAT_YOU_TYPED) {
     // When the user pasted in a URL and hit enter, score it like a link click
@@ -1574,13 +1532,9 @@ void OmniboxEditModel::GetInfoForCurrentText(AutocompleteMatch* match,
 
   if (!found_match_for_text) {
     // For match generation, we use the unelided |url_for_editing_|, unless the
-    // user input is in progress or Query in Omnibox is active.
-    LocationBarModel* location_bar_model = controller()->GetLocationBarModel();
-    base::string16 text_for_match_generation = url_for_editing_;
-    if (user_input_in_progress() ||
-        location_bar_model->GetDisplaySearchTerms(nullptr)) {
-      text_for_match_generation = view_->GetText();
-    }
+    // user input is in progress.
+    base::string16 text_for_match_generation =
+        user_input_in_progress() ? view_->GetText() : url_for_editing_;
 
     client_->GetAutocompleteClassifier()->Classify(
         MaybePrependKeyword(text_for_match_generation), is_keyword_selected(),

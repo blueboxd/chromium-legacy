@@ -89,12 +89,22 @@ class SupportLibWebViewChromium implements WebViewProviderBoundaryInterface {
     }
 
     @Override
+    public /* ScriptReference */ InvocationHandler addDocumentStartJavaScript(
+            final String script, final String[] allowedOriginRules) {
+        recordApiCall(ApiCall.ADD_DOCUMENT_START_SCRIPT);
+        return BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
+                new SupportLibScriptReferenceAdapter(
+                        mSharedWebViewChromium.addDocumentStartJavaScript(
+                                script, allowedOriginRules)));
+    }
+
+    @Override
     public /* ScriptReference */ InvocationHandler addDocumentStartJavascript(
             final String script, final String[] allowedOriginRules) {
         recordApiCall(ApiCall.ADD_DOCUMENT_START_SCRIPT);
         return BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
                 new SupportLibScriptReferenceAdapter(
-                        mSharedWebViewChromium.addDocumentStartJavascript(
+                        mSharedWebViewChromium.addDocumentStartJavaScript(
                                 script, allowedOriginRules)));
     }
 

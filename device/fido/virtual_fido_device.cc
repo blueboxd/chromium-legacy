@@ -130,7 +130,7 @@ class P256PrivateKey : public EVPBackedPrivateKey {
 
   std::unique_ptr<PublicKey> GetPublicKey() const override {
     return P256PublicKey::ParseX962Uncompressed(
-        static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
+        static_cast<int32_t>(CoseAlgorithmIdentifier::kEs256),
         GetX962PublicKey());
   }
 
@@ -160,7 +160,7 @@ class RSAPrivateKey : public EVPBackedPrivateKey {
 
     cbor::Value::MapValue map;
     map.emplace(static_cast<int64_t>(CoseKeyKey::kAlg),
-                static_cast<int64_t>(CoseAlgorithmIdentifier::kCoseRs256));
+                static_cast<int64_t>(CoseAlgorithmIdentifier::kRs256));
     map.emplace(static_cast<int64_t>(CoseKeyKey::kKty),
                 static_cast<int64_t>(CoseKeyTypes::kRSA));
     map.emplace(static_cast<int64_t>(CoseKeyKey::kRSAModulus),
@@ -176,7 +176,7 @@ class RSAPrivateKey : public EVPBackedPrivateKey {
                             EVP_marshal_public_key>(pkey_.get()));
 
     return std::make_unique<PublicKey>(
-        static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseRs256), *cbor_bytes,
+        static_cast<int32_t>(CoseAlgorithmIdentifier::kRs256), *cbor_bytes,
         std::move(der_bytes));
   }
 
@@ -203,7 +203,7 @@ class Ed25519PrivateKey : public EVPBackedPrivateKey {
 
     cbor::Value::MapValue map;
     map.emplace(static_cast<int64_t>(CoseKeyKey::kAlg),
-                static_cast<int64_t>(CoseAlgorithmIdentifier::kCoseEdDSA));
+                static_cast<int64_t>(CoseAlgorithmIdentifier::kEdDSA));
     map.emplace(static_cast<int64_t>(CoseKeyKey::kKty),
                 static_cast<int64_t>(CoseKeyTypes::kOKP));
     map.emplace(static_cast<int64_t>(CoseKeyKey::kEllipticCurve),
@@ -219,7 +219,7 @@ class Ed25519PrivateKey : public EVPBackedPrivateKey {
                             EVP_marshal_public_key>(pkey_.get()));
 
     return std::make_unique<PublicKey>(
-        static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseRs256), *cbor_bytes,
+        static_cast<int32_t>(CoseAlgorithmIdentifier::kRs256), *cbor_bytes,
         std::move(der_bytes));
   }
 

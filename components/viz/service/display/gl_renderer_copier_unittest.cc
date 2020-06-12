@@ -113,7 +113,7 @@ TEST_F(GLRendererCopierTest, ReusesThingsFromSameSource) {
   const base::UnguessableToken no_source;
   EXPECT_EQ(0u, GetCopierCacheSize());
   auto things = TakeReusableThingsOrCreate(no_source);
-  EXPECT_TRUE(!!things);
+  EXPECT_TRUE(things);
   StashReusableThingsOrDelete(no_source, std::move(things));
   EXPECT_EQ(nullptr, PeekReusableThings(no_source));
   EXPECT_EQ(0u, GetCopierCacheSize());
@@ -122,7 +122,7 @@ TEST_F(GLRendererCopierTest, ReusesThingsFromSameSource) {
   const auto source = base::UnguessableToken::Create();
   things = TakeReusableThingsOrCreate(source);
   ReusableThings* things_raw_ptr = things.get();
-  EXPECT_TRUE(!!things_raw_ptr);
+  EXPECT_TRUE(things_raw_ptr);
   StashReusableThingsOrDelete(source, std::move(things));
   EXPECT_EQ(things_raw_ptr, PeekReusableThings(source));
   EXPECT_EQ(1u, GetCopierCacheSize());
@@ -131,7 +131,7 @@ TEST_F(GLRendererCopierTest, ReusesThingsFromSameSource) {
   const auto source2 = base::UnguessableToken::Create();
   things = TakeReusableThingsOrCreate(source2);
   things_raw_ptr = things.get();
-  EXPECT_TRUE(!!things_raw_ptr);
+  EXPECT_TRUE(things_raw_ptr);
   EXPECT_EQ(1u, GetCopierCacheSize());
   StashReusableThingsOrDelete(source2, std::move(things));
   EXPECT_EQ(things_raw_ptr, PeekReusableThings(source2));
@@ -144,14 +144,14 @@ TEST_F(GLRendererCopierTest, FreesUnusedResources) {
   const base::UnguessableToken source = base::UnguessableToken::Create();
   EXPECT_EQ(0u, GetCopierCacheSize());
   StashReusableThingsOrDelete(source, TakeReusableThingsOrCreate(source));
-  EXPECT_TRUE(!!PeekReusableThings(source));
+  EXPECT_TRUE(PeekReusableThings(source));
   EXPECT_EQ(1u, GetCopierCacheSize());
 
   // Call FreesUnusedCachedResources() the maximum number of times before the
   // cache entry would be considered for freeing.
   for (int i = 0; i < kKeepalivePeriod - 1; ++i) {
     FreeUnusedCachedResources();
-    EXPECT_TRUE(!!PeekReusableThings(source));
+    EXPECT_TRUE(PeekReusableThings(source));
     EXPECT_EQ(1u, GetCopierCacheSize());
     if (HasFailure())
       break;
@@ -160,7 +160,7 @@ TEST_F(GLRendererCopierTest, FreesUnusedResources) {
   // Calling FreeUnusedCachedResources() just one more time should cause the
   // cache entry to be freed.
   FreeUnusedCachedResources();
-  EXPECT_FALSE(!!PeekReusableThings(source));
+  EXPECT_FALSE(PeekReusableThings(source));
   EXPECT_EQ(0u, GetCopierCacheSize());
 }
 

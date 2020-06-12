@@ -24,6 +24,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -473,13 +474,6 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
           contents_view_->app_list_view()->is_tablet_mode()));
   view_model_->Add(page_switcher_, kIndexPageSwitcher);
 
-  show_hide_metrics_reporter_ =
-      std::make_unique<ui::HistogramPercentageMetricsReporter<
-          kFolderShowHideAnimationSmoothness>>();
-  show_hide_metrics_recorder_ =
-      std::make_unique<AppListAnimationMetricsRecorder>(
-          show_hide_metrics_reporter_.get());
-
   model_->AddObserver(this);
 }
 
@@ -506,9 +500,13 @@ void AppListFolderView::SetAppListFolderItem(AppListFolderItem* folder) {
 void AppListFolderView::ScheduleShowHideAnimation(bool show,
                                                   bool hide_for_reparent) {
   CreateOpenOrCloseFolderAccessibilityEvent(show);
-  show_hide_metrics_recorder_->OnAnimationStart(
-      GetAppListConfig().folder_transition_in_duration(),
-      GetWidget()->GetCompositor());
+  show_hide_metrics_tracker_ =
+      GetWidget()->GetCompositor()->RequestNewThroughputTracker();
+  show_hide_metrics_tracker_->Start(
+      metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+        UMA_HISTOGRAM_PERCENTAGE(kFolderShowHideAnimationSmoothness,
+                                 smoothness);
+      })));
 
   hide_for_reparent_ = hide_for_reparent;
 
@@ -673,7 +671,12 @@ AppListItemView* AppListFolderView::GetActivatedFolderItemView() {
 }
 
 void AppListFolderView::RecordAnimationSmoothness() {
-  show_hide_metrics_recorder_->OnAnimationEnd(GetWidget()->GetCompositor());
+  // RecordAnimationSmoothness is called when ContentsContainerAnimation
+  // ends as well. Do not record show/hide metrics for that.
+  if (show_hide_metrics_tracker_) {
+    show_hide_metrics_tracker_->Stop();
+    show_hide_metrics_tracker_.reset();
+  }
 }
 
 void AppListFolderView::OnTabletModeChanged(bool started) {

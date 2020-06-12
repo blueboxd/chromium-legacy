@@ -306,53 +306,17 @@ bool IsCommandIdAnAppLaunch(int command_id_number) {
   return false;
 }
 
-PaginationTransitionAnimationReporter::PaginationTransitionAnimationReporter() =
-    default;
+void ReportPaginationSmoothness(bool is_tablet_mode, int smoothness) {
+  UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothness,
+                           smoothness);
 
-PaginationTransitionAnimationReporter::
-    ~PaginationTransitionAnimationReporter() = default;
-
-void PaginationTransitionAnimationReporter::Report(int value) {
-  UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothness, value);
-
-  if (is_tablet_mode_) {
+  if (is_tablet_mode) {
     UMA_HISTOGRAM_PERCENTAGE(kPaginationTransitionAnimationSmoothnessInTablet,
-                             value);
+                             smoothness);
   } else {
     UMA_HISTOGRAM_PERCENTAGE(
-        kPaginationTransitionAnimationSmoothnessInClamshell, value);
+        kPaginationTransitionAnimationSmoothnessInClamshell, smoothness);
   }
-}
-
-AppListAnimationMetricsRecorder::AppListAnimationMetricsRecorder(
-    ui::AnimationMetricsReporter* reporter)
-    : ui::AnimationMetricsRecorder(reporter) {}
-
-AppListAnimationMetricsRecorder::~AppListAnimationMetricsRecorder() = default;
-
-void AppListAnimationMetricsRecorder::OnAnimationStart(
-    base::TimeDelta expected_duration,
-    ui::Compositor* compositor) {
-  if (!compositor)
-    return;
-
-  animation_started_ = true;
-  ui::AnimationMetricsRecorder::OnAnimationStart(
-      compositor->activated_frame_count(), base::TimeTicks::Now(),
-      expected_duration);
-}
-
-void AppListAnimationMetricsRecorder::OnAnimationEnd(
-    ui::Compositor* compositor) {
-  if (!animation_started_)
-    return;
-
-  animation_started_ = false;
-
-  if (!compositor)
-    return;
-  ui::AnimationMetricsRecorder::OnAnimationEnd(
-      compositor->activated_frame_count(), compositor->refresh_rate());
 }
 
 }  // namespace ash

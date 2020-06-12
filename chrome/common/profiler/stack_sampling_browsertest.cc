@@ -161,3 +161,10 @@ IN_PROC_BROWSER_TEST_F(StackSamplingBrowserTest,
                              metrics::RENDERER_PROCESS,
                              metrics::COMPOSITOR_THREAD));
 }
+
+IN_PROC_BROWSER_TEST_F(StackSamplingBrowserTest,
+                       NetworkServiceProcessIOThread) {
+  EXPECT_TRUE(WaitForProfile(metrics::SampledProfile::PROCESS_STARTUP,
+                             metrics::NETWORK_SERVICE_PROCESS,
+                             metrics::IO_THREAD));
+}

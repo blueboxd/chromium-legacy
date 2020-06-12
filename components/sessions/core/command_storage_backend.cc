@@ -58,6 +58,13 @@ class SessionFileReader {
     file_ = std::make_unique<base::File>(
         path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   }
+
+  // Returns true if the file has a valid header. A return value of false
+  // most likely means the file was not written by this code. This function
+  // is implicitly called by Read(), but may be called separately for checking
+  // if the file is valid.
+  bool HasValidHeader();
+
   // Reads the contents of the file specified in the constructor, returning
   // true on success, and filling up |commands| with commands.
   bool Read(std::vector<std::unique_ptr<sessions::SessionCommand>>* commands);
@@ -107,24 +114,32 @@ class SessionFileReader {
   // Count of the number of commands encountered.
   int command_counter_ = 0;
 
+  bool did_check_header_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(SessionFileReader);
 };
 
-bool SessionFileReader::Read(
-    std::vector<std::unique_ptr<sessions::SessionCommand>>* commands) {
+bool SessionFileReader::HasValidHeader() {
+  // This function advances |file| and should only be called once.
+  DCHECK(!did_check_header_);
+  did_check_header_ = true;
+
   if (!file_->IsValid())
     return false;
   FileHeader header;
-  int read_count;
-  read_count =
+  const int read_count =
       file_->ReadAtCurrentPos(reinterpret_cast<char*>(&header), sizeof(header));
-  if (read_count != sizeof(header) || header.signature != kFileSignature) {
-    const bool encrypt = aead_.get() != nullptr;
-    if ((encrypt && header.version != kEncryptedFileCurrentVersion) ||
-        (!encrypt && header.version != kFileCurrentVersion)) {
-      return false;
-    }
-  }
+  if (read_count != sizeof(header) || header.signature != kFileSignature)
+    return false;
+  const bool encrypt = aead_.get() != nullptr;
+  return (encrypt && header.version == kEncryptedFileCurrentVersion) ||
+         (!encrypt && header.version == kFileCurrentVersion);
+}
+
+bool SessionFileReader::Read(
+    std::vector<std::unique_ptr<sessions::SessionCommand>>* commands) {
+  if (!HasValidHeader())
+    return false;
 
   std::vector<std::unique_ptr<sessions::SessionCommand>> read_commands;
   for (std::unique_ptr<sessions::SessionCommand> command = ReadCommand();
@@ -262,6 +277,12 @@ CommandStorageBackend::CommandStorageBackend(
     scoped_refptr<base::SequencedTaskRunner> owning_task_runner,
     const base::FilePath& path)
     : RefCountedDeleteOnSequence(owning_task_runner), path_(path) {}
+
+// static
+bool CommandStorageBackend::IsValidFile(const base::FilePath& path) {
+  SessionFileReader file_reader(path, {});
+  return file_reader.HasValidHeader();
+}
 
 void CommandStorageBackend::AppendCommands(
     std::vector<std::unique_ptr<sessions::SessionCommand>> commands,

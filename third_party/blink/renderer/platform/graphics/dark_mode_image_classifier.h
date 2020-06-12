@@ -7,7 +7,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -15,8 +15,6 @@
 #include "third_party/skia/include/core/SkRect.h"
 
 namespace blink {
-
-class Image;
 
 FORWARD_DECLARE_TEST(DarkModeImageClassifierTest, FeaturesAndClassification);
 FORWARD_DECLARE_TEST(DarkModeImageClassifierTest, Caching);
@@ -46,9 +44,11 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
     float background_ratio;
   };
 
-  DarkModeClassification Classify(Image* image,
-                                  const FloatRect& src_rect,
-                                  const FloatRect& dest_rect);
+  // Performance warning: |paint_image| will be synchronously decoded if this
+  // function is called in blink main thread.
+  DarkModeClassification Classify(const PaintImage& paint_image,
+                                  const SkRect& src,
+                                  const SkRect& dst);
 
   // Removes cache identified by given |image_id|.
   static void RemoveCache(PaintImage::Id image_id);
@@ -56,13 +56,16 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
  protected:
   DarkModeImageClassifier();
 
-  virtual DarkModeClassification DoInitialClassification(
-      const FloatRect& dest_rect) = 0;
+  virtual DarkModeClassification DoInitialClassification(const SkRect& dst) = 0;
 
  private:
   DarkModeClassification ClassifyWithFeatures(const Features& features);
   DarkModeClassification ClassifyUsingDecisionTree(const Features& features);
-  base::Optional<Features> GetFeatures(Image* image, const FloatRect& src_rect);
+  bool GetBitmap(const PaintImage& paint_image,
+                 const SkRect& src,
+                 SkBitmap* bitmap);
+  base::Optional<Features> GetFeatures(const PaintImage& paint_image,
+                                       const SkRect& src);
   void Reset();
 
   enum class ColorMode { kColor = 0, kGrayscale = 1 };

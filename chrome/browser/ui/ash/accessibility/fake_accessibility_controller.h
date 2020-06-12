@@ -46,6 +46,7 @@ class FakeAccessibilityController : ash::AccessibilityController {
       const std::string& path) override;
   void SetSwitchAccessIgnoreVirtualKeyEventForTesting(
       bool should_ignore) override;
+  void DisableSwitchAccessDisableConfirmationDialogTesting() override;
 
  private:
   bool was_client_set_ = false;

@@ -115,8 +115,11 @@ class PLATFORM_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
 
   static DOMWrapperWorld& MainWorld();
 
+  static void SetNonMainWorldStableId(int32_t world_id, const String&);
+  String NonMainWorldStableId() const;
+
   static void SetNonMainWorldHumanReadableName(int32_t world_id, const String&);
-  String NonMainWorldHumanReadableName();
+  String NonMainWorldHumanReadableName() const;
 
   // Associates an isolated world (see above for description) with a security
   // origin. XMLHttpRequest instances used in that world will be considered

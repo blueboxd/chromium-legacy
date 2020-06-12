@@ -121,7 +121,7 @@ ScriptPromise CookieStoreManager::subscribe(
   Vector<mojom::blink::CookieChangeSubscriptionPtr> backend_subscriptions;
   backend_subscriptions.ReserveInitialCapacity(subscriptions.size());
   for (const CookieStoreGetOptions* subscription : subscriptions) {
-    RecordMatchType(subscription->matchType());
+    RecordMatchType(*subscription);
     mojom::blink::CookieChangeSubscriptionPtr backend_subscription =
         ToBackendSubscription(default_cookie_url_, subscription,
                               exception_state);
@@ -147,7 +147,7 @@ ScriptPromise CookieStoreManager::unsubscribe(
   Vector<mojom::blink::CookieChangeSubscriptionPtr> backend_subscriptions;
   backend_subscriptions.ReserveInitialCapacity(subscriptions.size());
   for (const CookieStoreGetOptions* subscription : subscriptions) {
-    RecordMatchType(subscription->matchType());
+    RecordMatchType(*subscription);
     mojom::blink::CookieChangeSubscriptionPtr backend_subscription =
         ToBackendSubscription(default_cookie_url_, subscription,
                               exception_state);

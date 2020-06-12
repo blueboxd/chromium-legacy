@@ -632,14 +632,15 @@ void xdg_shell_v6_create_positioner(wl_client* client,
       wl_resource_create(client, &zxdg_positioner_v6_interface, 1, id);
 
   SetImplementation(positioner_resource, &xdg_positioner_v6_implementation,
-                    std::make_unique<WaylandPositioner>());
+                    std::make_unique<WaylandPositioner>(
+                        WaylandPositioner::Version::UNSTABLE));
 }
 
 void xdg_shell_v6_get_xdg_surface(wl_client* client,
                                   wl_resource* resource,
                                   uint32_t id,
                                   wl_resource* surface) {
-  auto* data = GetUserDataAs<WaylandXdgShell>(resource);
+  auto* data = GetUserDataAs<WaylandZxdgShell>(resource);
   std::unique_ptr<XdgShellSurface> shell_surface =
       data->display->CreateXdgShellSurface(GetUserDataAs<Surface>(surface));
   if (!shell_surface) {
@@ -675,10 +676,10 @@ const struct zxdg_shell_v6_interface xdg_shell_v6_implementation = {
 
 }  // namespace
 
-void bind_xdg_shell_v6(wl_client* client,
-                       void* data,
-                       uint32_t version,
-                       uint32_t id) {
+void bind_zxdg_shell_v6(wl_client* client,
+                        void* data,
+                        uint32_t version,
+                        uint32_t id) {
   wl_resource* resource =
       wl_resource_create(client, &zxdg_shell_v6_interface, 1, id);
 

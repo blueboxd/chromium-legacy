@@ -22,7 +22,7 @@
 <translation id="1120938014254001895">രണ്ട് വിരലുകൾ ഉപയോഗിച്ച് മുകളിലോട്ട് സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="1126928665165112660">ഇറ്റാലിക്ക് അല്ല</translation>
 <translation id="113582498867142724"><ph name="NUM" /> ഇനങ്ങളുള്ള <ph name="TAG" /> ശേഖരം</translation>
-<translation id="1161762950103988776">ജമ്പ്</translation>
+<translation id="1161762950103988776">Jump</translation>
 <translation id="1175914831232945926">അക്കങ്ങൾ</translation>
 <translation id="1188858454923323853">കോംപ്ലിമെന്ററി</translation>
 <translation id="1195238899008218998">പിൻ കുറിപ്പ്</translation>
@@ -456,7 +456,7 @@
 <translation id="4505167975768625962">ചേർക്കൽ</translation>
 <translation id="4511186779140817916">ബ്ലാഞ്ച്ഡ് ആൽമൻഡ്</translation>
 <translation id="451510441928265982">മുൻ നില 2 ശീർഷകം ഒന്നുമില്ല</translation>
-<translation id="4515799157838123044">ഉള്ളടക്കത്തിന്റെ പശ്ചാത്തലം ഷെയ്‌ഡ് ചെയ്യൽ</translation>
+<translation id="4515799157838123044">പശ്ചാത്തല ഉള്ളടക്കത്തിന്റെ ഷെയ്‌ഡ്</translation>
 <translation id="4517854969512651305">മൂല്യം കൂട്ടുക</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{സ്ലാഷ്}other{# സ്ലാഷുകൾ}}</translation>
 <translation id="4537277403911487429">സമാനമായ അടുത്ത ഇനം</translation>

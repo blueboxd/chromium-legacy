@@ -1025,6 +1025,9 @@ namespace autotestPrivate {
     static void stopSmoothnessTracking(optional DOMString displayId,
                                        StopSmoothnessTrackingCallback callback);
 
+    // When neccesary, disables showing the dialog when Switch Access is disabled.
+    static void disableSwitchAccessDialog();
+
     // Waits for the completion of photo transition animation in ambient mode.
     // |photoRefreshInterval|: photo refresh interval in seconds.
     // |numCompletions|: number of completions of the animation.

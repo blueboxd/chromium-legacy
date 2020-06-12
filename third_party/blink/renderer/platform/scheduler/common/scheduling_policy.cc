@@ -59,6 +59,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kPictureInPicture:
     case Feature::kIdleManager:
     case Feature::kPaymentManager:
+    case Feature::kKeyboardLock:
       return true;
   }
 }

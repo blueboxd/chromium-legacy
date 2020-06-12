@@ -5,12 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_COOKIE_STORE_COOKIE_STORE_METRICS_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_COOKIE_STORE_COOKIE_STORE_METRICS_H_
 
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-
 namespace blink {
 
+class CookieStoreGetOptions;
+
 // Record explicitly set MatchType option with UMA.
-void RecordMatchType(const String& matchType);
+void RecordMatchType(const CookieStoreGetOptions& options);
 
 }  // namespace blink
 

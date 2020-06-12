@@ -392,10 +392,16 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
 }
 
 void OmniboxPopupContentsView::ProvideButtonFocusHint(size_t line) {
+  DCHECK(model()->selection().IsButtonFocused());
   if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup))
     return;  // TODO(tommycli): Not implemented yet for WebUI.
 
-  result_view_at(line)->ProvideButtonFocusHint();
+  views::View* active_button = static_cast<OmniboxRowView*>(children()[line])
+                                   ->GetActiveAuxiliaryButtonForAccessibility();
+  // TODO(tommycli): |active_button| can sometimes be nullptr, because the
+  // suggestion button row is not completely implemented.
+  if (active_button)
+    FireAXEventsForNewActiveDescendant(active_button);
 }
 
 void OmniboxPopupContentsView::OnMatchIconUpdated(size_t match_index) {

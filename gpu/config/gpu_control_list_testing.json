@@ -948,6 +948,35 @@
       "features": [
         "test_feature_0"
       ]
+    },
+    {
+      "id": 78,
+      "description": "GpuControlListEntryTest.DeviceRevisionEntry",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "exceptions": [
+        {
+          "device_id": ["0x15D8", "0x15DD"],
+          "device_revision": ["0x93", "0x86"],
+          "driver_version": {
+            "op": ">=",
+            "value": "26.20.15023.6032"
+          }
+        },
+        {
+          "device_id": ["0x15D8"],
+          "device_revision": ["0xE1", "0xE2"],
+          "driver_version": {
+            "op": ">=",
+            "value": "26.20.12055.1000"
+          }
+        }
+      ],
+      "features": [
+        "test_feature_0"
+      ]
     }
   ]
 }

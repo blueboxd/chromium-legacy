@@ -14,8 +14,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
-#include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -102,9 +102,8 @@ struct PhishingDOMFeatureExtractor::FrameData {
   std::string domain;
 };
 
-PhishingDOMFeatureExtractor::PhishingDOMFeatureExtractor(
-    FeatureExtractorClock* clock)
-    : clock_(clock) {
+PhishingDOMFeatureExtractor::PhishingDOMFeatureExtractor()
+    : clock_(base::DefaultTickClock::GetInstance()) {
   Clear();
 }
 
@@ -127,7 +126,7 @@ void PhishingDOMFeatureExtractor::ExtractFeatures(blink::WebDocument document,
   features_ = features;
   done_callback_ = std::move(done_callback);
 
-  page_feature_state_.reset(new PageFeatureState(clock_->Now()));
+  page_feature_state_ = std::make_unique<PageFeatureState>(clock_->NowTicks());
   cur_document_ = document;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -145,7 +144,7 @@ void PhishingDOMFeatureExtractor::CancelPendingExtraction() {
 void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
   DCHECK(page_feature_state_.get());
   ++page_feature_state_->num_iterations;
-  base::TimeTicks current_chunk_start_time = clock_->Now();
+  base::TimeTicks current_chunk_start_time = clock_->NowTicks();
 
   if (cur_document_.IsNull()) {
     // This will only happen if we weren't able to get the document for the
@@ -166,7 +165,7 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
       // modified between our chunks of work.  Log how long this takes, so we
       // can tell if it's too slow.
       UMA_HISTOGRAM_TIMES("SBClientPhishing.DOMFeatureResumeTime",
-                          clock_->Now() - current_chunk_start_time);
+                          clock_->NowTicks() - current_chunk_start_time);
     } else {
       // We just moved to a new frame, so update our frame state
       // and advance to the first element.
@@ -190,7 +189,7 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
 
       if (++num_elements >= kClockCheckGranularity) {
         num_elements = 0;
-        base::TimeTicks now = clock_->Now();
+        base::TimeTicks now = clock_->NowTicks();
         if (now - page_feature_state_->start_time >=
             base::TimeDelta::FromMilliseconds(kMaxTotalTimeMs)) {
           DLOG(ERROR) << "Feature extraction took too long, giving up";
@@ -358,7 +357,7 @@ void PhishingDOMFeatureExtractor::RunCallback(bool success) {
   UMA_HISTOGRAM_COUNTS_1M("SBClientPhishing.DOMFeatureIterations",
                           page_feature_state_->num_iterations);
   UMA_HISTOGRAM_TIMES("SBClientPhishing.DOMFeatureTotalTime",
-                      clock_->Now() - page_feature_state_->start_time);
+                      clock_->NowTicks() - page_feature_state_->start_time);
 
   DCHECK(!done_callback_.is_null());
   std::move(done_callback_).Run(success);

@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chromeos/services/ime/constants.h"
 
 namespace chromeos {
@@ -159,6 +160,8 @@ bool EmojiSuggester::Suggest(const base::string16& text) {
 }
 
 void EmojiSuggester::ShowSuggestion(const std::string& text) {
+  if (ChromeKeyboardControllerClient::Get()->is_keyboard_enabled())
+    return;
   std::string error;
   suggestion_shown_ = true;
   candidates_.clear();
@@ -181,6 +184,10 @@ void EmojiSuggester::DismissSuggestion() {
 
 AssistiveType EmojiSuggester::GetProposeActionType() {
   return AssistiveType::kEmoji;
+}
+
+bool EmojiSuggester::GetSuggestionShownForTesting() const {
+  return suggestion_shown_;
 }
 
 }  // namespace chromeos

@@ -14,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
-#include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-forward.h"
@@ -62,8 +61,7 @@ PhishingClassifierDelegate::PhishingClassifierDelegate(
       is_classifying_(false) {
   PhishingClassifierDelegates().insert(this);
   if (!classifier) {
-    classifier =
-        new PhishingClassifier(render_frame, new FeatureExtractorClock());
+    classifier = new PhishingClassifier(render_frame);
   }
 
   classifier_.reset(classifier);

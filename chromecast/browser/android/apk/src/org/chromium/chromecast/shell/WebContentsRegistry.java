@@ -39,7 +39,8 @@ public class WebContentsRegistry {
     }
 
     public static WebContents getWebContents(String sessionId) {
-        return sSesionIdToWebContents.get(sessionId).webContents;
+        WebContentsHolder result = sSesionIdToWebContents.get(sessionId);
+        return result == null ? null : result.webContents;
     }
 
     public static void initializeWebContents(

@@ -128,9 +128,12 @@ class FlocIdProviderUnitTest : public testing::Test {
 TEST_F(FlocIdProviderUnitTest, QualifiedInitialHistory) {
   // Add a history entry with a timestamp exactly 7 days back from now.
   std::string domain = "foo.com";
-  history_service_->AddPage(GURL(base::StrCat({"https://www.", domain})),
-                            base::Time::Now() - base::TimeDelta::FromDays(7),
-                            history::VisitSource::SOURCE_BROWSED);
+
+  history::HistoryAddPageArgs add_page_args;
+  add_page_args.url = GURL(base::StrCat({"https://www.", domain}));
+  add_page_args.time = base::Time::Now() - base::TimeDelta::FromDays(7);
+  add_page_args.publicly_routable = true;
+  history_service_->AddPage(add_page_args);
 
   task_environment_.RunUntilIdle();
 
@@ -164,11 +167,14 @@ TEST_F(FlocIdProviderUnitTest, QualifiedInitialHistory) {
 }
 
 TEST_F(FlocIdProviderUnitTest, UnqualifiedInitialHistory) {
-  // Add a history entry with a timestamp 8 days back from now.
   std::string domain = "foo.com";
-  history_service_->AddPage(GURL(base::StrCat({"https://www.", domain})),
-                            base::Time::Now() - base::TimeDelta::FromDays(8),
-                            history::VisitSource::SOURCE_BROWSED);
+
+  // Add a history entry with a timestamp 8 days back from now.
+  history::HistoryAddPageArgs add_page_args;
+  add_page_args.url = GURL(base::StrCat({"https://www.", domain}));
+  add_page_args.time = base::Time::Now() - base::TimeDelta::FromDays(8);
+  add_page_args.publicly_routable = true;
+  history_service_->AddPage(add_page_args);
 
   task_environment_.RunUntilIdle();
 
@@ -191,9 +197,8 @@ TEST_F(FlocIdProviderUnitTest, UnqualifiedInitialHistory) {
   ASSERT_EQ(1u, floc_session_count());
 
   // Add a history entry with a timestamp 6 days back from now.
-  history_service_->AddPage(GURL(base::StrCat({"https://www.", domain})),
-                            base::Time::Now() - base::TimeDelta::FromDays(6),
-                            history::VisitSource::SOURCE_BROWSED);
+  add_page_args.time = base::Time::Now() - base::TimeDelta::FromDays(6);
+  history_service_->AddPage(add_page_args);
 
   // Advance the clock by 23 hours. Expect no floc id update notification,
   // as the id refresh interval is 24 hours.
@@ -300,12 +305,31 @@ TEST_F(FlocIdProviderUnitTest, EventLogging) {
   EXPECT_EQ(999ULL, event2.floc_id());
 }
 
+TEST_F(FlocIdProviderUnitTest, HistoryEntriesWithPrivateIP) {
+  history::QueryResults query_results;
+  query_results.SetURLResults(
+      {history::URLResult(GURL("https://a.test"),
+                          base::Time::Now() - base::TimeDelta::FromDays(1))});
+
+  set_floc_session_count(1u);
+  OnGetRecentlyVisitedURLsCompleted(1u, std::move(query_results));
+
+  ASSERT_FALSE(floc_id().IsValid());
+}
+
 TEST_F(FlocIdProviderUnitTest, MultipleHistoryEntries) {
   base::Time time = base::Time::Now() - base::TimeDelta::FromDays(1);
 
-  std::vector<history::URLResult> url_results{
-      history::URLResult(GURL("https://a.test"), time),
-      history::URLResult(GURL("https://b.test"), time)};
+  history::URLResult url_result_a(GURL("https://a.test"), time);
+  url_result_a.set_publicly_routable(true);
+
+  history::URLResult url_result_b(GURL("https://b.test"), time);
+  url_result_b.set_publicly_routable(true);
+
+  history::URLResult url_result_c(GURL("https://c.test"), time);
+
+  std::vector<history::URLResult> url_results{url_result_a, url_result_b,
+                                              url_result_c};
 
   history::QueryResults query_results;
   query_results.SetURLResults(std::move(url_results));
@@ -320,9 +344,12 @@ TEST_F(FlocIdProviderUnitTest, MultipleHistoryEntries) {
 
 TEST_F(FlocIdProviderUnitTest, TurnSyncOffAndOn) {
   std::string domain = "foo.com";
-  history_service_->AddPage(GURL(base::StrCat({"https://www.", domain})),
-                            base::Time::Now() - base::TimeDelta::FromDays(1),
-                            history::VisitSource::SOURCE_BROWSED);
+
+  history::HistoryAddPageArgs add_page_args;
+  add_page_args.url = GURL(base::StrCat({"https://www.", domain}));
+  add_page_args.time = base::Time::Now() - base::TimeDelta::FromDays(1);
+  add_page_args.publicly_routable = true;
+  history_service_->AddPage(add_page_args);
 
   task_environment_.RunUntilIdle();
 

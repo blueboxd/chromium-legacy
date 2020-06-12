@@ -56,6 +56,7 @@ class CC_EXPORT RecordingSource {
   virtual scoped_refptr<RasterSource> CreateRasterSource() const;
 
   bool is_solid_color() const { return is_solid_color_; }
+  bool requires_clear() const { return requires_clear_; }
 
  protected:
   gfx::Rect recorded_viewport_;

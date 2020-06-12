@@ -220,11 +220,17 @@ bool MatchKeyboardRemapping(
     const EventRewriterChromeOS::MutableKeyState& suspect,
     const KeyboardRemapping::Condition& test,
     bool strict = false) {
-  bool flag_matched = strict ? suspect.flags == test.flags
-                             : ((suspect.flags & test.flags) == test.flags);
-  return ((test.key_code == VKEY_UNKNOWN) ||
-          (test.key_code == suspect.key_code)) &&
-         flag_matched;
+  // Reset non modifier key event related flags for strict mode.
+  constexpr int kKeyEventModifiersMask = EF_SHIFT_DOWN | EF_CONTROL_DOWN |
+                                         EF_ALT_DOWN | EF_COMMAND_DOWN |
+                                         EF_ALTGR_DOWN | EF_MOD3_DOWN;
+
+  const int suspect_flags_for_strict = suspect.flags & kKeyEventModifiersMask;
+  const bool flag_matched = strict
+                                ? suspect_flags_for_strict == test.flags
+                                : ((suspect.flags & test.flags) == test.flags);
+  return flag_matched && ((test.key_code == VKEY_UNKNOWN) ||
+                          (test.key_code == suspect.key_code));
 }
 
 void ApplyRemapping(const EventRewriterChromeOS::MutableKeyState& changes,
@@ -1204,14 +1210,12 @@ void EventRewriterChromeOS::RewriteExtendedKeys(const KeyEvent& key_event,
     if (strict) {
       // These two keys are used to select to Home/End.
       static const KeyboardRemapping kNewSearchRemappings[] = {
-          {// Search+Shift+Left -> as is
+          {// Search+Shift+Left -> select to home.
            {EF_COMMAND_DOWN | EF_SHIFT_DOWN, VKEY_LEFT},
-           {EF_COMMAND_DOWN | EF_SHIFT_DOWN, DomCode::ARROW_LEFT,
-            DomKey::ARROW_LEFT, VKEY_LEFT}},
-          {// Search+Shift+Right -> as is
+           {EF_SHIFT_DOWN, DomCode::HOME, DomKey::HOME, VKEY_HOME}},
+          {// Search+Shift+Right -> select to end.
            {EF_COMMAND_DOWN | EF_SHIFT_DOWN, VKEY_RIGHT},
-           {EF_COMMAND_DOWN | EF_SHIFT_DOWN, DomCode::ARROW_RIGHT,
-            DomKey::ARROW_RIGHT, VKEY_RIGHT}},
+           {EF_SHIFT_DOWN, DomCode::END, DomKey::END, VKEY_END}},
       };
       if (!skip_search_key_remapping &&
           RewriteWithKeyboardRemappings(kNewSearchRemappings,

@@ -1390,6 +1390,11 @@ AccessibilityControllerImpl::GetSwitchAccessEventHandlerForTest() {
   return nullptr;
 }
 
+void AccessibilityControllerImpl::
+    DisableSwitchAccessDisableConfirmationDialogTesting() {
+  no_switch_access_disable_confirmation_dialog_for_testing_ = true;
+}
+
 void AccessibilityControllerImpl::OnTabletModeStarted() {
   if (spoken_feedback_enabled())
     ShowAccessibilityNotification(A11yNotificationType::kSpokenFeedbackEnabled);

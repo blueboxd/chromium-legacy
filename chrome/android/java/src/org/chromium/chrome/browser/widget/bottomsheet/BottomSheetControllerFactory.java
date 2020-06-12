@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.widget.bottomsheet;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 
+import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -15,15 +17,17 @@ import org.chromium.ui.KeyboardVisibilityDelegate;
 public class BottomSheetControllerFactory {
     /**
      * @param scrim A supplier of scrim to be shown behind the sheet.
-     * @param bottomSheetViewSupplier A means of creating the sheet's view.
+     * @param initializedCallback A callback for the sheet having been created.
      * @param window The activity's window.
      * @param keyboardDelegate A means of hiding the keyboard.
+     * @param root The view that should contain the sheet.
+     * @param inflater A mechanism for building views from XML.
      * @return A new instance of the {@link BottomSheetController}.
      */
     public static BottomSheetControllerInternal createBottomSheetController(
-            final Supplier<ScrimCoordinator> scrim, Supplier<View> bottomSheetViewSupplier,
-            Window window, KeyboardVisibilityDelegate keyboardDelegate) {
+            final Supplier<ScrimCoordinator> scrim, Callback<View> initializedCallback,
+            Window window, KeyboardVisibilityDelegate keyboardDelegate, Supplier<ViewGroup> root) {
         return new BottomSheetControllerImpl(
-                scrim, bottomSheetViewSupplier, window, keyboardDelegate);
+                scrim, initializedCallback, window, keyboardDelegate, root);
     }
 }

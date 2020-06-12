@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.share.share_sheet;
 
 import android.content.ComponentName;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -32,11 +31,13 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Handles displaying the share sheet. The version used depends on several
- * conditions.
- * Android K and below: custom share dialog
- * Android L+: system share sheet
- * #chrome-sharing-hub enabled: custom share sheet
+ * Handles displaying the share sheet. The version used depends on several conditions:
+ *
+ * <ul>
+ *   <li>Android K and below: custom share dialog
+ *   <li>Android L+: system share sheet
+ *   <li>#chrome-sharing-hub enabled: custom share sheet
+ * </ul>
  */
 // TODO(crbug/1022172): Should be package-protected once modularization is complete.
 public class ShareSheetPropertyModelBuilder {
@@ -60,7 +61,7 @@ public class ShareSheetPropertyModelBuilder {
             Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE,
                     ContentType.TEXT, ContentType.IMAGE, ContentType.OTHER_FILE_TYPE));
     private static final ArrayList<String> FALLBACK_ACTIVITIES =
-            new ArrayList(Arrays.asList("com.whatsapp.ContactPicker",
+            new ArrayList<>(Arrays.asList("com.whatsapp.ContactPicker",
                     "com.facebook.composer.shareintent.ImplicitShareIntentHandlerDefaultAlias",
                     "com.google.android.gm.ComposeActivityGmailExternal",
                     "com.instagram.share.handleractivity.StoryShareHandlerActivity",
@@ -87,7 +88,7 @@ public class ShareSheetPropertyModelBuilder {
     }
 
     /**
-     * Returns a set of {@link ShareSheetCoordinator.ContentType}s for the current share.
+     * Returns a set of {@link ContentType}s for the current share.
      *
      * <p>If {@link ChromeFeatureList.CHROME_SHARING_HUB_V15} is not enabled, this returns a set
      * of all of the {@link ContentType}s. Otherwise, it adds {@link ContentType}s according to
@@ -128,12 +129,13 @@ public class ShareSheetPropertyModelBuilder {
         return contentTypes;
     }
 
-    ArrayList<PropertyModel> selectThirdPartyApps(ShareSheetBottomSheetContent bottomSheet,
-            ShareParams params, boolean saveLastUsed, long shareStartTime) {
+    List<PropertyModel> selectThirdPartyApps(ShareSheetBottomSheetContent bottomSheet,
+            Set<Integer> contentTypes, ShareParams params, boolean saveLastUsed,
+            long shareStartTime) {
         List<String> thirdPartyActivityNames = getThirdPartyActivityNames();
-        Intent intent = ShareHelper.getShareLinkAppCompatibilityIntent();
         final ShareParams.TargetChosenCallback callback = params.getCallback();
-        List<ResolveInfo> resolveInfoList = mPackageManager.queryIntentActivities(intent, 0);
+        List<ResolveInfo> resolveInfoList =
+                getCompatibleApps(contentTypes, params.getFileContentType());
         List<ResolveInfo> thirdPartyActivities = new ArrayList<>();
 
         // Construct a list of 3P apps. The list should be sorted by the country-specific
@@ -190,6 +192,39 @@ public class ShareSheetPropertyModelBuilder {
         return models;
     }
 
+    /**
+     * Returns a list of compatible {@link ResolveInfo}s for the set of {@link ContentType}s.
+     *
+     * <p>If {@link ChromeFeatureList.CHROME_SHARING_HUB_V15} is not enabled, this returns a list
+     * of all of text-sharing apps. Otherwise, it adds {@link ResolveInfo}s according to the
+     * following following logic:
+     *
+     * <ul>
+     *     <li>If the {@link ContentType}s contain URL or Text, add text-sharing apps.
+     *     <li>If the {@link ContentType}s contain a file, add file-sharing apps compatible
+     *     {@code fileContentType}.
+     * </ul>
+     */
+    private List<ResolveInfo> getCompatibleApps(Set<Integer> contentTypes, String fileContentType) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15)) {
+            return mPackageManager.queryIntentActivities(
+                    ShareHelper.getShareLinkAppCompatibilityIntent(), 0);
+        }
+        List<ResolveInfo> resolveInfoList = new ArrayList<>();
+        if (contentTypes.contains(ContentType.LINK_PAGE_NOT_VISIBLE)
+                || contentTypes.contains(ContentType.LINK_PAGE_VISIBLE)
+                || contentTypes.contains(ContentType.TEXT)) {
+            resolveInfoList.addAll(mPackageManager.queryIntentActivities(
+                    ShareHelper.getShareLinkAppCompatibilityIntent(), 0));
+        }
+        if (contentTypes.contains(ContentType.IMAGE)
+                || contentTypes.contains(ContentType.OTHER_FILE_TYPE)) {
+            resolveInfoList.addAll(mPackageManager.queryIntentActivities(
+                    ShareHelper.createShareFileAppCompatibilityIntent(fileContentType), 0));
+        }
+        return resolveInfoList;
+    }
+
     static PropertyModel createPropertyModel(
             Drawable icon, String label, OnClickListener listener, boolean isFirstParty) {
         return new PropertyModel.Builder(ShareSheetItemViewProperties.ALL_KEYS)
@@ -206,6 +241,6 @@ public class ShareSheetPropertyModelBuilder {
         if (param.isEmpty()) {
             return FALLBACK_ACTIVITIES;
         }
-        return new ArrayList<String>(Arrays.asList(param.split(",")));
+        return new ArrayList<>(Arrays.asList(param.split(",")));
     }
 }

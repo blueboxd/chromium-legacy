@@ -37,7 +37,7 @@ namespace {
 class MockPhishingClassifier : public PhishingClassifier {
  public:
   explicit MockPhishingClassifier(content::RenderFrame* render_frame)
-      : PhishingClassifier(render_frame, NULL /* clock */) {}
+      : PhishingClassifier(render_frame) {}
 
   ~MockPhishingClassifier() override {}
 

@@ -99,6 +99,7 @@ class EventReportValidator {
   base::Optional<DlpDeepScanningVerdict> dlp_verdict_ = base::nullopt;
   base::Optional<std::string> threat_type_ = base::nullopt;
   base::Optional<std::string> reason_ = base::nullopt;
+  base::Optional<std::string> unscanned_reason_ = base::nullopt;
   base::Optional<bool> clicked_through_ = base::nullopt;
   base::Optional<int> content_size_ = base::nullopt;
   const std::set<std::string>* mimetypes_ = nullptr;

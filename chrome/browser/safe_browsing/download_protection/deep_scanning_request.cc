@@ -277,19 +277,16 @@ void DeepScanningRequest::OnScanComplete(BinaryUploadService::Result result,
                  base::BindOnce(&DeepScanningRequest::OpenDownload,
                                 weak_ptr_factory_.GetWeakPtr()))) {
     return;
-  } else if (result == BinaryUploadService::Result::FILE_TOO_LARGE ||
-             result == BinaryUploadService::Result::FILE_ENCRYPTED ||
-             result == BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE) {
-    if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
-      if (analysis_settings_.block_large_files)
-        download_result = DownloadCheckResult::BLOCKED_TOO_LARGE;
-    } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
-      if (analysis_settings_.block_password_protected_files)
-        download_result = DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED;
-    } else if (result == BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE) {
-      if (analysis_settings_.block_unsupported_file_types)
-        download_result = DownloadCheckResult::BLOCKED_UNSUPPORTED_FILE_TYPE;
-    }
+  } else if (result == BinaryUploadService::Result::FILE_TOO_LARGE) {
+    if (analysis_settings_.block_large_files)
+      download_result = DownloadCheckResult::BLOCKED_TOO_LARGE;
+  } else if (result == BinaryUploadService::Result::FILE_ENCRYPTED) {
+    if (analysis_settings_.block_password_protected_files)
+      download_result = DownloadCheckResult::BLOCKED_PASSWORD_PROTECTED;
+  } else if (result ==
+             BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE) {
+    if (analysis_settings_.block_unsupported_file_types)
+      download_result = DownloadCheckResult::BLOCKED_UNSUPPORTED_FILE_TYPE;
   }
 
   FinishRequest(download_result);

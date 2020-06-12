@@ -154,6 +154,11 @@ base::Optional<base::TimeTicks> InteractiveDetector::GetLongestInputTimestamp()
   return page_event_times_.longest_input_timestamp;
 }
 
+base::Optional<base::TimeDelta>
+InteractiveDetector::GetFirstInputProcessingTime() const {
+  return page_event_times_.first_input_processing_time;
+}
+
 bool InteractiveDetector::PageWasBackgroundedSinceEvent(
     base::TimeTicks event_time) {
   DCHECK(GetSupplementable());
@@ -646,6 +651,13 @@ void InteractiveDetector::RecordInputEventTimingUKM(
       .SetInteractiveTiming_InputDelay(input_delay.InMilliseconds())
       .SetInteractiveTiming_ProcessingTime(processing_time.InMilliseconds())
       .Record(GetUkmRecorder());
+
+  if (!page_event_times_.first_input_processing_time) {
+    page_event_times_.first_input_processing_time = processing_time;
+    if (GetSupplementable()->Loader()) {
+      GetSupplementable()->Loader()->DidChangePerformanceTiming();
+    }
+  }
 }
 
 }  // namespace blink

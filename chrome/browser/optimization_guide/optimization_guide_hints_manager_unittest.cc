@@ -502,6 +502,17 @@ TEST_F(OptimizationGuideHintsManagerTest,
   optimization_guide::proto::Optimization* optimization =
       page_hint->add_whitelisted_optimizations();
   optimization->set_optimization_type(optimization_guide::proto::NOSCRIPT);
+  optimization_guide::BloomFilter bloom_filter(
+      kDefaultHostBloomFilterNumHashFunctions, kDefaultHostBloomFilterNumBits);
+  PopulateBloomFilterWithDefaultHost(&bloom_filter);
+  AddBloomFilterToConfig(optimization_guide::proto::LITE_PAGE_REDIRECT,
+                         bloom_filter, kDefaultHostBloomFilterNumHashFunctions,
+                         kDefaultHostBloomFilterNumBits,
+                         /*is_allowlist=*/false, &config);
+  AddBloomFilterToConfig(optimization_guide::proto::PERFORMANCE_HINTS,
+                         bloom_filter, kDefaultHostBloomFilterNumHashFunctions,
+                         kDefaultHostBloomFilterNumBits,
+                         /*is_allowlist=*/true, &config);
 
   std::string encoded_config;
   config.SerializeToString(&encoded_config);
@@ -509,7 +520,7 @@ TEST_F(OptimizationGuideHintsManagerTest,
 
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       optimization_guide::switches::kHintsProtoOverride, encoded_config);
-  CreateServiceAndHintsManager(/*optimization_types_at_initialization=*/{},
+  CreateServiceAndHintsManager({optimization_guide::proto::LITE_PAGE_REDIRECT},
                                /*top_host_provider=*/nullptr);
 
   // The below histogram should not be recorded since hints weren't coming
@@ -519,6 +530,24 @@ TEST_F(OptimizationGuideHintsManagerTest,
   // be recorded.
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.UpdateComponentHints.Result", true, 1);
+
+  // Bloom filters passed via command line are processed on the background
+  // thread so make sure everything has finished before checking if it has been
+  // loaded.
+  RunUntilIdle();
+
+  EXPECT_TRUE(hints_manager()->HasLoadedOptimizationBlocklist(
+      optimization_guide::proto::LITE_PAGE_REDIRECT));
+  EXPECT_FALSE(hints_manager()->HasLoadedOptimizationAllowlist(
+      optimization_guide::proto::PERFORMANCE_HINTS));
+
+  // Now register a new type with an allowlist that has not yet been loaded.
+  hints_manager()->RegisterOptimizationTypes(
+      {optimization_guide::proto::PERFORMANCE_HINTS});
+  RunUntilIdle();
+
+  EXPECT_TRUE(hints_manager()->HasLoadedOptimizationAllowlist(
+      optimization_guide::proto::PERFORMANCE_HINTS));
 }
 
 TEST_F(OptimizationGuideHintsManagerTest,

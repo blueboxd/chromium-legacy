@@ -165,8 +165,8 @@ class UpdateInstallGateTest : public testing::Test {
   void MakeExtensionInUse(const std::string& extension_id) {
     const Extension* const extension =
         registry_->GetInstalledExtension(extension_id);
-    ASSERT_TRUE(!!extension);
-    ASSERT_TRUE(!!CreateHost(profile_, extension));
+    ASSERT_TRUE(extension);
+    ASSERT_TRUE(CreateHost(profile_, extension));
   }
 
   void MakeExtensionListenForOnUpdateAvailable(

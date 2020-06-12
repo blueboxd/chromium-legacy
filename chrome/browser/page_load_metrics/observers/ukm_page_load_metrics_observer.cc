@@ -440,6 +440,12 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetInteractiveTiming_LongestInputTimestamp4(
         longest_input_timestamp.InMilliseconds());
   }
+  if (timing.interactive_timing->first_input_processing_time) {
+    base::TimeDelta first_input_processing_time =
+        timing.interactive_timing->first_input_processing_time.value();
+    builder.SetInteractiveTiming_FirstInputProcessingTimes(
+        first_input_processing_time.InMilliseconds());
+  }
   builder.SetCpuTime(total_foreground_cpu_time_.InMilliseconds());
 
   // Use a bucket spacing factor of 1.3 for bytes.

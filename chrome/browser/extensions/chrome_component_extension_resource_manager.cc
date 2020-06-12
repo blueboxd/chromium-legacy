@@ -91,7 +91,8 @@ ChromeComponentExtensionResourceManager() {
   // ResourceBundle is not always initialized in unit tests.
   if (ui::ResourceBundle::HasSharedInstance()) {
     base::Value dict(base::Value::Type::DICTIONARY);
-    pdf_extension_util::AddStrings(&dict);
+    pdf_extension_util::AddStrings(
+        pdf_extension_util::PdfViewerContext::kPdfViewer, &dict);
     pdf_extension_util::AddAdditionalData(&dict);
 
     ui::TemplateReplacements pdf_viewer_replacements;

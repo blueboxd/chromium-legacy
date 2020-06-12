@@ -31,6 +31,7 @@ class EmojiSuggester : public Suggester {
   AssistiveType GetProposeActionType() override;
 
   void LoadEmojiMapForTesting(const std::string& emoji_data);
+  bool GetSuggestionShownForTesting() const;
 
  private:
   void ShowSuggestion(const std::string& text);

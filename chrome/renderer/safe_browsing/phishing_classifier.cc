@@ -16,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/renderer/safe_browsing/feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/phishing_dom_feature_extractor.h"
 #include "chrome/renderer/safe_browsing/phishing_term_feature_extractor.h"
@@ -38,9 +37,8 @@ namespace safe_browsing {
 const float PhishingClassifier::kInvalidScore = -1.0;
 const float PhishingClassifier::kPhishyThreshold = 0.5;
 
-PhishingClassifier::PhishingClassifier(content::RenderFrame* render_frame,
-                                       FeatureExtractorClock* clock)
-    : render_frame_(render_frame), scorer_(nullptr), clock_(clock) {
+PhishingClassifier::PhishingClassifier(content::RenderFrame* render_frame)
+    : render_frame_(render_frame), scorer_(nullptr) {
   Clear();
 }
 
@@ -56,16 +54,12 @@ void PhishingClassifier::set_phishing_scorer(const Scorer* scorer) {
   DCHECK(!page_text_);
   scorer_ = scorer;
   if (scorer_) {
-    url_extractor_.reset(new PhishingUrlFeatureExtractor);
-    dom_extractor_.reset(new PhishingDOMFeatureExtractor(clock_.get()));
-    term_extractor_.reset(new PhishingTermFeatureExtractor(
-        &scorer_->page_terms(),
-        &scorer_->page_words(),
-        scorer_->max_words_per_term(),
-        scorer_->murmurhash3_seed(),
-        scorer_->max_shingles_per_page(),
-        scorer_->shingle_size(),
-        clock_.get()));
+    url_extractor_ = std::make_unique<PhishingUrlFeatureExtractor>();
+    dom_extractor_ = std::make_unique<PhishingDOMFeatureExtractor>();
+    term_extractor_ = std::make_unique<PhishingTermFeatureExtractor>(
+        &scorer_->page_terms(), &scorer_->page_words(),
+        scorer_->max_words_per_term(), scorer_->murmurhash3_seed(),
+        scorer_->max_shingles_per_page(), scorer_->shingle_size());
   } else {
     // We're disabling client-side phishing detection, so tear down all
     // of the relevant objects.

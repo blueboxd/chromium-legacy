@@ -352,7 +352,8 @@ void NGLineBreaker::NextLine(
   // line boxes. These cases need to be reviewed.
   bool should_create_line_box = ShouldCreateLineBox(item_results) ||
                                 (has_list_marker_ && line_info->IsLastLine()) ||
-                                mode_ != NGLineBreakerMode::kContent;
+                                mode_ != NGLineBreakerMode::kContent ||
+                                node_.HasLineEvenIfEmpty();
 
   if (!should_create_line_box)
     line_info->SetIsEmptyLine();

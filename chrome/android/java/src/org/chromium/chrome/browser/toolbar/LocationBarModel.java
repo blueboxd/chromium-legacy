@@ -16,7 +16,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -29,7 +28,6 @@ import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.previews.Previews;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
@@ -183,12 +181,6 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
             return buildUrlBarData(url, formattedUrl);
         }
 
-        String searchTerms = getDisplaySearchTerms();
-        if (searchTerms != null) {
-            // Show the search terms in the omnibox instead of the URL if this is a DSE search URL.
-            return buildUrlBarData(url, searchTerms);
-        }
-
         String urlForDisplay = getUrlForDisplay();
         if (!urlForDisplay.equals(formattedUrl)) {
             return buildUrlBarData(url, urlForDisplay, formattedUrl);
@@ -237,7 +229,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
         // If the toolbar shows the publisher URL, it applies its own formatting for emphasis.
         if (mTab == null) return true;
 
-        return getDisplaySearchTerms() == null && TrustedCdn.getPublisherUrl(mTab) == null;
+        return TrustedCdn.getPublisherUrl(mTab) == null;
     }
 
     /**
@@ -362,12 +354,6 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
 
     @Override
     public int getSecurityIconResource(boolean isTablet) {
-        // If we're showing a query in the omnibox, and the security level is high enough to show
-        // the search icon, return that instead of the security icon.
-        if (getDisplaySearchTerms() != null) {
-            return R.drawable.ic_suggestion_magnifier;
-        }
-
         return getSecurityIconResource(getSecurityLevel(), !isTablet, isOfflinePage(), isPreview());
     }
 
@@ -452,28 +438,16 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
         }
 
         // TODO(https://crbug.com/940134): Change the color here and also #needLightIcon logic.
+        // For the default toolbar color, use a green or red icon.
         if (securityLevel == ConnectionSecurityLevel.DANGEROUS) {
-            // For the default toolbar color, use a green or red icon.
-            assert getDisplaySearchTerms() == null;
             return R.color.google_red_600;
         }
 
-        if (getDisplaySearchTerms() == null && securityLevel == ConnectionSecurityLevel.SECURE) {
+        if (securityLevel == ConnectionSecurityLevel.SECURE) {
             return R.color.google_green_600;
         }
 
         return ToolbarColors.getThemedToolbarIconTintRes(false);
-    }
-
-    @Override
-    public String getDisplaySearchTerms() {
-        if (mNativeLocationBarModelAndroid == 0) return null;
-        if (mTab != null && !(TabUtils.getActivity(mTab) instanceof ChromeTabbedActivity)) {
-            return null;
-        }
-        if (isPreview()) return null;
-        return LocationBarModelJni.get().getDisplaySearchTerms(
-                mNativeLocationBarModelAndroid, LocationBarModel.this);
     }
 
     /** @return The formatted URL suitable for editing. */
@@ -496,7 +470,6 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
         void destroy(long nativeLocationBarModelAndroid, LocationBarModel caller);
         String getFormattedFullURL(long nativeLocationBarModelAndroid, LocationBarModel caller);
         String getURLForDisplay(long nativeLocationBarModelAndroid, LocationBarModel caller);
-        String getDisplaySearchTerms(long nativeLocationBarModelAndroid, LocationBarModel caller);
         int getPageClassification(long nativeLocationBarModelAndroid, LocationBarModel caller,
                 boolean isFocusedFromFakebox);
     }

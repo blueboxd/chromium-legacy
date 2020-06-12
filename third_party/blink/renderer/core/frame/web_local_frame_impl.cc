@@ -824,10 +824,25 @@ void WebLocalFrameImpl::SetIsolatedWorldInfo(int32_t world_id,
   CHECK(info.content_security_policy.IsNull() || security_origin);
 
   DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world_id, security_origin);
+  DOMWrapperWorld::SetNonMainWorldStableId(world_id, info.stable_id);
   DOMWrapperWorld::SetNonMainWorldHumanReadableName(world_id,
                                                     info.human_readable_name);
   IsolatedWorldCSP::Get().SetContentSecurityPolicy(
       world_id, info.content_security_policy, security_origin);
+}
+
+WebString WebLocalFrameImpl::GetIsolatedWorldStableId(
+    v8::Local<v8::Context> context) const {
+  const DOMWrapperWorld& world = DOMWrapperWorld::World(context);
+  DCHECK(!world.IsMainWorld());
+  return world.NonMainWorldStableId();
+}
+
+WebString WebLocalFrameImpl::GetIsolatedWorldHumanReadableName(
+    v8::Local<v8::Context> context) const {
+  const DOMWrapperWorld& world = DOMWrapperWorld::World(context);
+  DCHECK(!world.IsMainWorld());
+  return world.NonMainWorldHumanReadableName();
 }
 
 void WebLocalFrameImpl::Alert(const WebString& message) {

@@ -72,7 +72,7 @@
         "browse:news:cnn": {
             "DEFAULT": "system_health_mobile_014.wprgo"
         },
-        "browse:news:cnn:2018": {
+        "browse:news:cnn:2020": {
             "DEFAULT": "system_health_mobile_066.wprgo"
         },
         "browse:news:cricbuzz": {
@@ -204,8 +204,8 @@
         "load:games:bubbles": {
             "DEFAULT": "system_health_mobile_005.wprgo"
         },
-        "load:games:bubbles:2019": {
-            "DEFAULT": "system_health_mobile_43f2372bc8.wprgo"
+        "load:games:bubbles:2020": {
+            "DEFAULT": "system_health_mobile_568190fad9.wprgo"
         },
         "load:games:lazors": {
             "DEFAULT": "system_health_mobile_005.wprgo"

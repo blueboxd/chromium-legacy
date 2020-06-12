@@ -31,10 +31,10 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             GpuControlList::kOsMacosx,  // os_type
             {GpuControlList::kEQ, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, "10.6.4",
-             nullptr},                                         // os_version
-            0x10de,                                            // vendor_id
-            base::size(kDeviceIDsForGpuControlTestingEntry1),  // DeviceIDs size
-            kDeviceIDsForGpuControlTestingEntry1,              // DeviceIDs
+             nullptr},                                       // os_version
+            0x10de,                                          // vendor_id
+            base::size(kDevicesForGpuControlTestingEntry1),  // Devices size
+            kDevicesForGpuControlTestingEntry1,              // Devices
             GpuControlList::kMultiGpuCategoryNone,   // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,      // multi_gpu_style
             &kDriverInfoForGpuControlTestingEntry1,  // driver info
@@ -67,8 +67,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x10de,                                 // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -101,8 +101,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x10de,                                 // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -135,8 +135,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -169,8 +169,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -201,10 +201,10 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             GpuControlList::kOsAny,  // os_type
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
-             nullptr},                                         // os_version
-            0x10de,                                            // vendor_id
-            base::size(kDeviceIDsForGpuControlTestingEntry6),  // DeviceIDs size
-            kDeviceIDsForGpuControlTestingEntry6,              // DeviceIDs
+             nullptr},                                       // os_version
+            0x10de,                                          // vendor_id
+            base::size(kDevicesForGpuControlTestingEntry6),  // Devices size
+            kDevicesForGpuControlTestingEntry6,              // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -237,8 +237,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -271,8 +271,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -305,8 +305,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -339,8 +339,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -373,8 +373,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                               // os_version
             0x00,                                    // vendor_id
-            0,                                       // DeviceIDs size
-            nullptr,                                 // DeviceIDs
+            0,                                       // Devices size
+            nullptr,                                 // Devices
             GpuControlList::kMultiGpuCategoryNone,   // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,      // multi_gpu_style
             nullptr,                                 // driver info
@@ -407,8 +407,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                               // os_version
             0x00,                                    // vendor_id
-            0,                                       // DeviceIDs size
-            nullptr,                                 // DeviceIDs
+            0,                                       // Devices size
+            nullptr,                                 // Devices
             GpuControlList::kMultiGpuCategoryNone,   // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,      // multi_gpu_style
             nullptr,                                 // driver info
@@ -441,8 +441,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                               // os_version
             0x00,                                    // vendor_id
-            0,                                       // DeviceIDs size
-            nullptr,                                 // DeviceIDs
+            0,                                       // Devices size
+            nullptr,                                 // Devices
             GpuControlList::kMultiGpuCategoryNone,   // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,      // multi_gpu_style
             nullptr,                                 // driver info
@@ -475,8 +475,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                               // os_version
             0x00,                                    // vendor_id
-            0,                                       // DeviceIDs size
-            nullptr,                                 // DeviceIDs
+            0,                                       // Devices size
+            nullptr,                                 // Devices
             GpuControlList::kMultiGpuCategoryNone,   // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,      // multi_gpu_style
             nullptr,                                 // driver info
@@ -509,8 +509,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                               // os_version
             0x00,                                    // vendor_id
-            0,                                       // DeviceIDs size
-            nullptr,                                 // DeviceIDs
+            0,                                       // Devices size
+            nullptr,                                 // Devices
             GpuControlList::kMultiGpuCategoryNone,   // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,      // multi_gpu_style
             nullptr,                                 // driver info
@@ -543,8 +543,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleOptimus,  // multi_gpu_style
             nullptr,                                // driver info
@@ -577,8 +577,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                    // os_version
             0x00,                                         // vendor_id
-            0,                                            // DeviceIDs size
-            nullptr,                                      // DeviceIDs
+            0,                                            // Devices size
+            nullptr,                                      // Devices
             GpuControlList::kMultiGpuCategoryNone,        // multi_gpu_category
             GpuControlList::kMultiGpuStyleAMDSwitchable,  // multi_gpu_style
             nullptr,                                      // driver info
@@ -611,8 +611,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x00,                                     // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryNone,    // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             &kDriverInfoForGpuControlTestingEntry18,  // driver info
@@ -645,8 +645,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x1002,                                   // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryNone,    // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             &kDriverInfoForGpuControlTestingEntry19,  // driver info
@@ -679,8 +679,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x8086,                                   // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryNone,    // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             &kDriverInfoForGpuControlTestingEntry20,  // driver info
@@ -713,8 +713,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x8086,                                 // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -747,8 +747,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -781,8 +781,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -815,8 +815,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -847,18 +847,17 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             GpuControlList::kOsMacosx,  // os_type
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
-             nullptr},  // os_version
-            0x10de,     // vendor_id
-            base::size(
-                kDeviceIDsForGpuControlTestingEntry25),  // DeviceIDs size
-            kDeviceIDsForGpuControlTestingEntry25,       // DeviceIDs
-            GpuControlList::kMultiGpuCategoryActive,     // multi_gpu_category
-            GpuControlList::kMultiGpuStyleNone,          // multi_gpu_style
-            nullptr,                                     // driver info
-            nullptr,                                     // GL strings
-            nullptr,                                     // machine model info
-            0,        // intel_gpu_series size
-            nullptr,  // intel_gpu_series
+             nullptr},                                        // os_version
+            0x10de,                                           // vendor_id
+            base::size(kDevicesForGpuControlTestingEntry25),  // Devices size
+            kDevicesForGpuControlTestingEntry25,              // Devices
+            GpuControlList::kMultiGpuCategoryActive,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
+            nullptr,                                  // driver info
+            nullptr,                                  // GL strings
+            nullptr,                                  // machine model info
+            0,                                        // intel_gpu_series size
+            nullptr,                                  // intel_gpu_series
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                    // intel_gpu_generation
@@ -884,8 +883,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -918,8 +917,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -952,8 +951,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -986,8 +985,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1018,18 +1017,17 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             GpuControlList::kOsMacosx,  // os_type
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
-             nullptr},  // os_version
-            0x8086,     // vendor_id
-            base::size(
-                kDeviceIDsForGpuControlTestingEntry30),  // DeviceIDs size
-            kDeviceIDsForGpuControlTestingEntry30,       // DeviceIDs
-            GpuControlList::kMultiGpuCategoryAny,        // multi_gpu_category
-            GpuControlList::kMultiGpuStyleNone,          // multi_gpu_style
-            nullptr,                                     // driver info
-            nullptr,                                     // GL strings
-            nullptr,                                     // machine model info
-            0,        // intel_gpu_series size
-            nullptr,  // intel_gpu_series
+             nullptr},                                        // os_version
+            0x8086,                                           // vendor_id
+            base::size(kDevicesForGpuControlTestingEntry30),  // Devices size
+            kDevicesForGpuControlTestingEntry30,              // Devices
+            GpuControlList::kMultiGpuCategoryAny,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,    // multi_gpu_style
+            nullptr,                               // driver info
+            nullptr,                               // GL strings
+            nullptr,                               // machine model info
+            0,                                     // intel_gpu_series size
+            nullptr,                               // intel_gpu_series
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                    // intel_gpu_generation
@@ -1053,18 +1051,17 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             GpuControlList::kOsMacosx,  // os_type
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
-             nullptr},  // os_version
-            0x10de,     // vendor_id
-            base::size(
-                kDeviceIDsForGpuControlTestingEntry31),  // DeviceIDs size
-            kDeviceIDsForGpuControlTestingEntry31,       // DeviceIDs
-            GpuControlList::kMultiGpuCategoryAny,        // multi_gpu_category
-            GpuControlList::kMultiGpuStyleNone,          // multi_gpu_style
-            nullptr,                                     // driver info
-            nullptr,                                     // GL strings
-            nullptr,                                     // machine model info
-            0,        // intel_gpu_series size
-            nullptr,  // intel_gpu_series
+             nullptr},                                        // os_version
+            0x10de,                                           // vendor_id
+            base::size(kDevicesForGpuControlTestingEntry31),  // Devices size
+            kDevicesForGpuControlTestingEntry31,              // Devices
+            GpuControlList::kMultiGpuCategoryAny,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,    // multi_gpu_style
+            nullptr,                               // driver info
+            nullptr,                               // GL strings
+            nullptr,                               // machine model info
+            0,                                     // intel_gpu_series size
+            nullptr,                               // intel_gpu_series
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                    // intel_gpu_generation
@@ -1088,11 +1085,10 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             GpuControlList::kOsMacosx,  // os_type
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
-             nullptr},  // os_version
-            0x8086,     // vendor_id
-            base::size(
-                kDeviceIDsForGpuControlTestingEntry32),  // DeviceIDs size
-            kDeviceIDsForGpuControlTestingEntry32,       // DeviceIDs
+             nullptr},                                        // os_version
+            0x8086,                                           // vendor_id
+            base::size(kDevicesForGpuControlTestingEntry32),  // Devices size
+            kDevicesForGpuControlTestingEntry32,              // Devices
             GpuControlList::kMultiGpuCategorySecondary,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,          // multi_gpu_style
             nullptr,                                     // driver info
@@ -1123,18 +1119,17 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             GpuControlList::kOsMacosx,  // os_type
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
-             nullptr},  // os_version
-            0x8086,     // vendor_id
-            base::size(
-                kDeviceIDsForGpuControlTestingEntry33),  // DeviceIDs size
-            kDeviceIDsForGpuControlTestingEntry33,       // DeviceIDs
-            GpuControlList::kMultiGpuCategoryPrimary,    // multi_gpu_category
-            GpuControlList::kMultiGpuStyleNone,          // multi_gpu_style
-            nullptr,                                     // driver info
-            nullptr,                                     // GL strings
-            nullptr,                                     // machine model info
-            0,        // intel_gpu_series size
-            nullptr,  // intel_gpu_series
+             nullptr},                                        // os_version
+            0x8086,                                           // vendor_id
+            base::size(kDevicesForGpuControlTestingEntry33),  // Devices size
+            kDevicesForGpuControlTestingEntry33,              // Devices
+            GpuControlList::kMultiGpuCategoryPrimary,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,        // multi_gpu_style
+            nullptr,                                   // driver info
+            nullptr,                                   // GL strings
+            nullptr,                                   // machine model info
+            0,                                         // intel_gpu_series size
+            nullptr,                                   // intel_gpu_series
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                    // intel_gpu_generation
@@ -1158,18 +1153,17 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             GpuControlList::kOsMacosx,  // os_type
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
-             nullptr},  // os_version
-            0x8086,     // vendor_id
-            base::size(
-                kDeviceIDsForGpuControlTestingEntry34),  // DeviceIDs size
-            kDeviceIDsForGpuControlTestingEntry34,       // DeviceIDs
-            GpuControlList::kMultiGpuCategoryNone,       // multi_gpu_category
-            GpuControlList::kMultiGpuStyleNone,          // multi_gpu_style
-            nullptr,                                     // driver info
-            nullptr,                                     // GL strings
-            nullptr,                                     // machine model info
-            0,        // intel_gpu_series size
-            nullptr,  // intel_gpu_series
+             nullptr},                                        // os_version
+            0x8086,                                           // vendor_id
+            base::size(kDevicesForGpuControlTestingEntry34),  // Devices size
+            kDevicesForGpuControlTestingEntry34,              // Devices
+            GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
+            nullptr,                                // driver info
+            nullptr,                                // GL strings
+            nullptr,                                // machine model info
+            0,                                      // intel_gpu_series size
+            nullptr,                                // intel_gpu_series
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                    // intel_gpu_generation
@@ -1193,18 +1187,17 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             GpuControlList::kOsMacosx,  // os_type
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
-             nullptr},  // os_version
-            0x8086,     // vendor_id
-            base::size(
-                kDeviceIDsForGpuControlTestingEntry35),  // DeviceIDs size
-            kDeviceIDsForGpuControlTestingEntry35,       // DeviceIDs
-            GpuControlList::kMultiGpuCategoryActive,     // multi_gpu_category
-            GpuControlList::kMultiGpuStyleNone,          // multi_gpu_style
-            nullptr,                                     // driver info
-            nullptr,                                     // GL strings
-            nullptr,                                     // machine model info
-            0,        // intel_gpu_series size
-            nullptr,  // intel_gpu_series
+             nullptr},                                        // os_version
+            0x8086,                                           // vendor_id
+            base::size(kDevicesForGpuControlTestingEntry35),  // Devices size
+            kDevicesForGpuControlTestingEntry35,              // Devices
+            GpuControlList::kMultiGpuCategoryActive,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
+            nullptr,                                  // driver info
+            nullptr,                                  // GL strings
+            nullptr,                                  // machine model info
+            0,                                        // intel_gpu_series size
+            nullptr,                                  // intel_gpu_series
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                    // intel_gpu_generation
@@ -1230,8 +1223,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x8086,                                   // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryActive,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             nullptr,                                  // driver info
@@ -1262,18 +1255,17 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             GpuControlList::kOsMacosx,  // os_type
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
-             nullptr},  // os_version
-            0x10de,     // vendor_id
-            base::size(
-                kDeviceIDsForGpuControlTestingEntry37),  // DeviceIDs size
-            kDeviceIDsForGpuControlTestingEntry37,       // DeviceIDs
-            GpuControlList::kMultiGpuCategoryActive,     // multi_gpu_category
-            GpuControlList::kMultiGpuStyleNone,          // multi_gpu_style
-            nullptr,                                     // driver info
-            nullptr,                                     // GL strings
-            nullptr,                                     // machine model info
-            0,        // intel_gpu_series size
-            nullptr,  // intel_gpu_series
+             nullptr},                                        // os_version
+            0x10de,                                           // vendor_id
+            base::size(kDevicesForGpuControlTestingEntry37),  // Devices size
+            kDevicesForGpuControlTestingEntry37,              // Devices
+            GpuControlList::kMultiGpuCategoryActive,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
+            nullptr,                                  // driver info
+            nullptr,                                  // GL strings
+            nullptr,                                  // machine model info
+            0,                                        // intel_gpu_series size
+            nullptr,                                  // intel_gpu_series
             {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                    // intel_gpu_generation
@@ -1299,8 +1291,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x10de,                                   // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryActive,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             nullptr,                                  // driver info
@@ -1333,8 +1325,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1367,8 +1359,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, "4.2",
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1401,8 +1393,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1435,8 +1427,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1468,8 +1460,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
             {GpuControlList::kGE, GpuControlList::kVersionStyleNumerical,
              GpuControlList::kVersionSchemaCommon, "6", nullptr},  // os_version
             0x00,                                                  // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1502,8 +1494,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x8086,                                 // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1536,8 +1528,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::
                 kMultiGpuStyleAMDSwitchableDiscrete,  // multi_gpu_style
@@ -1571,8 +1563,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::
                 kMultiGpuStyleAMDSwitchableIntegrated,  // multi_gpu_style
@@ -1606,8 +1598,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1640,8 +1632,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x8086,                                 // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1674,8 +1666,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x10de,                                   // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryNone,    // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             &kDriverInfoForGpuControlTestingEntry49,  // driver info
@@ -1708,8 +1700,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x10de,                                   // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryNone,    // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             &kDriverInfoForGpuControlTestingEntry50,  // driver info
@@ -1742,8 +1734,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x8086,                                 // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1776,8 +1768,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x8086,                                 // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1810,8 +1802,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x8086,                                   // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryNone,    // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             &kDriverInfoForGpuControlTestingEntry53,  // driver info
@@ -1844,8 +1836,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1878,8 +1870,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1912,8 +1904,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1946,8 +1938,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, "3.19.1",
              nullptr},                              // os_version
             0x8086,                                 // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -1980,8 +1972,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -2014,8 +2006,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -2048,8 +2040,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -2082,8 +2074,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x00,                                     // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryActive,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             nullptr,                                  // driver info
@@ -2116,8 +2108,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryAny,   // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -2150,8 +2142,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                 // os_version
             0x00,                                      // vendor_id
-            0,                                         // DeviceIDs size
-            nullptr,                                   // DeviceIDs
+            0,                                         // Devices size
+            nullptr,                                   // Devices
             GpuControlList::kMultiGpuCategoryPrimary,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,        // multi_gpu_style
             nullptr,                                   // driver info
@@ -2184,8 +2176,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                   // os_version
             0x00,                                        // vendor_id
-            0,                                           // DeviceIDs size
-            nullptr,                                     // DeviceIDs
+            0,                                           // Devices size
+            nullptr,                                     // Devices
             GpuControlList::kMultiGpuCategorySecondary,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,          // multi_gpu_style
             nullptr,                                     // driver info
@@ -2218,8 +2210,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -2252,8 +2244,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x8086,                                   // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryNone,    // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             &kDriverInfoForGpuControlTestingEntry66,  // driver info
@@ -2286,8 +2278,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x8086,                                 // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -2320,8 +2312,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -2354,8 +2346,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x00,                                     // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryActive,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             nullptr,                                  // driver info
@@ -2388,8 +2380,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                             // os_version
             0x00,                                  // vendor_id
-            0,                                     // DeviceIDs size
-            nullptr,                               // DeviceIDs
+            0,                                     // Devices size
+            nullptr,                               // Devices
             GpuControlList::kMultiGpuCategoryAny,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,    // multi_gpu_style
             nullptr,                               // driver info
@@ -2422,8 +2414,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                 // os_version
             0x00,                                      // vendor_id
-            0,                                         // DeviceIDs size
-            nullptr,                                   // DeviceIDs
+            0,                                         // Devices size
+            nullptr,                                   // Devices
             GpuControlList::kMultiGpuCategoryPrimary,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,        // multi_gpu_style
             nullptr,                                   // driver info
@@ -2456,8 +2448,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                   // os_version
             0x00,                                        // vendor_id
-            0,                                           // DeviceIDs size
-            nullptr,                                     // DeviceIDs
+            0,                                           // Devices size
+            nullptr,                                     // Devices
             GpuControlList::kMultiGpuCategorySecondary,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,          // multi_gpu_style
             nullptr,                                     // driver info
@@ -2490,8 +2482,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                              // os_version
             0x00,                                   // vendor_id
-            0,                                      // DeviceIDs size
-            nullptr,                                // DeviceIDs
+            0,                                      // Devices size
+            nullptr,                                // Devices
             GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
             nullptr,                                // driver info
@@ -2524,8 +2516,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                               // os_version
             0x00,                                    // vendor_id
-            0,                                       // DeviceIDs size
-            nullptr,                                 // DeviceIDs
+            0,                                       // Devices size
+            nullptr,                                 // Devices
             GpuControlList::kMultiGpuCategoryNone,   // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,      // multi_gpu_style
             nullptr,                                 // driver info
@@ -2558,8 +2550,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x00,                                     // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryNone,    // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             &kDriverInfoForGpuControlTestingEntry75,  // driver info
@@ -2592,8 +2584,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x8086,                                   // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryNone,    // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             &kDriverInfoForGpuControlTestingEntry76,  // driver info
@@ -2626,8 +2618,8 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
              GpuControlList::kVersionSchemaCommon, nullptr,
              nullptr},                                // os_version
             0x8086,                                   // vendor_id
-            0,                                        // DeviceIDs size
-            nullptr,                                  // DeviceIDs
+            0,                                        // Devices size
+            nullptr,                                  // Devices
             GpuControlList::kMultiGpuCategoryNone,    // multi_gpu_category
             GpuControlList::kMultiGpuStyleNone,       // multi_gpu_style
             &kDriverInfoForGpuControlTestingEntry77,  // driver info
@@ -2643,6 +2635,40 @@ const GpuControlList::Entry kGpuControlListTestingEntries[] = {
         0,        // exceptions count
         nullptr,  // exceptions
     },
+    {
+        78,  // id
+        "GpuControlListEntryTest.DeviceRevisionEntry",
+        base::size(kFeatureListForGpuControlTestingEntry78),  // features size
+        kFeatureListForGpuControlTestingEntry78,              // features
+        0,        // DisabledExtensions size
+        nullptr,  // DisabledExtensions
+        0,        // DisabledWebGLExtensions size
+        nullptr,  // DisabledWebGLExtensions
+        0,        // CrBugs size
+        nullptr,  // CrBugs
+        {
+            GpuControlList::kOsWin,  // os_type
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             GpuControlList::kVersionSchemaCommon, nullptr,
+             nullptr},                              // os_version
+            0x1002,                                 // vendor_id
+            0,                                      // Devices size
+            nullptr,                                // Devices
+            GpuControlList::kMultiGpuCategoryNone,  // multi_gpu_category
+            GpuControlList::kMultiGpuStyleNone,     // multi_gpu_style
+            nullptr,                                // driver info
+            nullptr,                                // GL strings
+            nullptr,                                // machine model info
+            0,                                      // intel_gpu_series size
+            nullptr,                                // intel_gpu_series
+            {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
+             GpuControlList::kVersionSchemaCommon, nullptr,
+             nullptr},                    // intel_gpu_generation
+            &kMoreForEntry78_1440601243,  // more data
+        },
+        base::size(kExceptionsForEntry78),  // exceptions count
+        kExceptionsForEntry78,              // exceptions
+    },
 };
-const size_t kGpuControlListTestingEntryCount = 77;
+const size_t kGpuControlListTestingEntryCount = 78;
 }  // namespace gpu

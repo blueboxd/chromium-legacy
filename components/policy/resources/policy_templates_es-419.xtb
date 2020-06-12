@@ -267,6 +267,9 @@ Si habilitas o no configuras esta política, se habilitará el desplazamiento de
 Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragmentos de texto específicos mediante la URL.</translation>
 <translation id="1474273443907024088">Inhabilitar TLS False Start</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
+<translation id="1480412981546860793">Si estableces la política, se especificará la configuración regional que usará <ph name="PRODUCT_NAME" />.
+
+      Si la desactivas o no la estableces, los usuarios podrán especificar la configuración regional general (si la opción está configurada), la del sistema o la alternativa (en-US).</translation>
 <translation id="1486021504508098388">Enviar información sobre la luz de fondo</translation>
 <translation id="1488406778491620405">La función de accesibilidad de <ph name="PRODUCT_NAME" />
           permite que los usuarios del lector de pantalla para personas con discapacidad visual
@@ -1135,6 +1138,15 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="267596348720209223">Especifica la codificación de caracteres admitida por el proveedor de búsqueda. Las codificaciones son nombres de páginas de códigos, como UTF-8, GB2312 e ISO-8859-1. Se prueban en el orden dado. Esta política es opcional. Si no se configura, se usará el valor predeterminado, que es UTF-8. Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="2678503605767349615">Certificados de cliente obligatorios en todo el dispositivo</translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
+<translation id="2691668238491124549">Si estableces la política (como solo recomendadas), se moverán al principio de la lista las configuraciones regionales recomendadas para una sesión administrada, en el orden en el que aparecen en la política. De forma predeterminada, estará seleccionada la primera configuración regional recomendada.
+
+      Si no estableces la política, se seleccionará de forma predeterminada la configuración regional actual de la IU.
+
+      Si se determinan más de una configuración regional recomendada, se asumirá que los usuarios desean elegir una de las recomendadas. En el inicio de una sesión administrada, se destacará más la selección de la configuración regional y la disposición del teclado. De lo contrario, se asumirá que la mayoría de los usuarios desean elegir la configuración regional predeterminada. En el inicio de una sesión administrada, se destacará menos la selección de la configuración regional y la disposición del teclado.
+
+      Si estableces la política y activas el acceso automático (consulta las políticas <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" /> y <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_DELAY_POLICY_NAME" />), la sesión administrada utilizará la primera configuración regional recomendada y la disposición del teclado más utilizada para esa configuración.
+
+      La disposición del teclado predeterminada siempre será la más utilizada con la configuración regional predeterminada. Los usuarios podrán elegir para su sesión cualquier otra configuración regional compatible con <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2693108589792503178">Configura la URL de cambio de contraseña.</translation>
 <translation id="2694143893026486692">Se habilitó la lupa con vista acoplada</translation>
 <translation id="2694188263972877487">Configura el tipo de descarga que bloqueará por completo <ph name="PRODUCT_NAME" />. No se permite que los usuarios anulen la decisión de seguridad.
@@ -1308,6 +1320,17 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Si la estableces como verdadera o no la estableces, las sesiones de invitado administradas se comportarán como "sesiones administradas" y no incluirán muchas de las restricciones que se aplican a las "sesiones públicas" estándar.
 
       Si la estableces, el usuario no podrá cambiarla ni anularla.</translation>
+<translation id="3001285126226650303">Permite que <ph name="PRODUCT_NAME" /> cargue las políticas experimentales.
+
+        ADVERTENCIA: Las políticas experimentales no son compatibles y pueden modificarse o quitarse sin previo aviso en futuras versiones del navegador.
+
+        Es posible que una política experimental no esté terminada o tenga defectos conocidos o desconocidos. Esta política puede modificarse o quitarse sin previo aviso. Si habilitas las políticas experimentales, podrías perder datos de navegación o poner en riesgo tu seguridad o privacidad.
+
+        Si una política no se encuentra en la lista y no se publicó oficialmente, se ignorará su valor en el canal estable y Beta.
+
+        Si una política se encuentra en la lista, pero no se publicó oficialmente, se aplicará su valor.
+
+        Esta política no prevalecerá sobre las políticas ya publicadas.</translation>
 <translation id="3016255526521614822">Incluir en la lista blanca las apps para tomar notas que se permiten en la pantalla bloqueada de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3020064401262077616">Controla las políticas de supervisión parental, que se aplican solo a las cuentas de menores de edad.</translation>
 <translation id="3020953534071988875">La configuración de esta política habilitará o inhabilitará la autenticación ambiental para los perfiles de incógnito y de invitado en <ph name="PRODUCT_NAME" />.
@@ -1347,6 +1370,9 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3034580675120919256">Te permite configurar si los sitios web pueden ejecutar JavaScript. La ejecución de JavaScript puede permitirse para todos los sitios web o denegarse para todos los sitios web. Si esta política no se configura, se usará "AllowJavaScript" y el usuario podrá cambiarla.</translation>
 <translation id="3038323923255997294">Continuar ejecutando aplicaciones en segundo plano cuando <ph name="PRODUCT_NAME" /> esté cerrado</translation>
+<translation id="3041887182529293512">Si estableces la política como verdadera o no la estableces, se mostrarán las sugerencias de contenido autogenerado en la página Nueva pestaña, según el historial de navegación del usuario, sus intereses y su ubicación.
+
+      Si la estableces como falsa, no se mostrarán estas sugerencias en la página Nueva pestaña.</translation>
 <translation id="3046192273793919231">Enviar paquetes de red al servidor de administración para controlar el estado en línea</translation>
 <translation id="3047732214002457234">Controlar cómo "Limpiar Chrome" informa datos a Google</translation>
 <translation id="3048744057455266684">Si se establece esta política y una URL de búsqueda sugerida desde el cuadro multifunción contiene este parámetro en la cadena de consulta o en el identificador de fragmentos, la sugerencia mostrará los términos de búsqueda y el proveedor de búsqueda en lugar de la URL de búsqueda sin procesar.
@@ -1396,6 +1422,13 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Esta política está disponible en instancias de Windows vinculadas a un dominio de <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="3119125876909100625">Permitir la carga de archivos protegidos con contraseña</translation>
 <translation id="3122082892722698079">Controla el uso de excepciones de contenido no seguro</translation>
+<translation id="3148152738273574834">Si estableces la política, se especificará una lista de sitios web que se instalan de manera discreta, sin la interacción del usuario y que este no puede desinstalar ni desactivar.
+
+      Cada elemento de la lista de la política es un objeto con un miembro obligatorio: <ph name="URL_LABEL" /> (la URL de la aplicación web que se instalará) y 2 miembros opcionales: <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (establece la manera en la que se abrirá la aplicación web; la opción predeterminada es una nueva pestaña) y <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> (verdadero, si se crean accesos directos de escritorio para <ph name="LINUX_OS_NAME" /> y Windows®).
+
+      Los usuarios podrán cambiar el contenedor en el que se abrirá la app y omitir la creación de accesos directos de escritorio.
+
+      Para fijar apps a la biblioteca de <ph name="PRODUCT_OS_NAME" />, consulta <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" />.</translation>
 <translation id="3152425128389603870">Habilitar el modo de escritorio unificado y activarlo de forma predeterminada</translation>
 <translation id="3159375329008977062">El usuario está habilitado para exportar o importar contenedores de Crostini mediante la IU</translation>
 <translation id="3165808775394012744">Se incluyen estas políticas aquí para que sea más fácil quitarlas.</translation>
@@ -1468,6 +1501,13 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
           Si no se establece esta política, los usuarios podrán agregar excepciones para permitir contenido mixto bloqueable y podrán inhabilitar las actualizaciones automáticas para el contenido mixto bloqueable de forma opcional.</translation>
 <translation id="3307971460556020865">Bloquear cargas y descargas de archivos grandes</translation>
+<translation id="3308724602356134956">Si estableces la política, <ph name="PRODUCT_OS_NAME" />
+
+      descargará y utilizará la imagen de fondo de pantalla que establezcas para la pantalla de acceso y el escritorio del usuario. Los usuarios no podrán cambiar esta configuración. Especifica la URL (que se pueda acceder sin autenticación) desde la cual <ph name="PRODUCT_OS_NAME" />
+
+      podrá descargar la imagen de fondo de pantalla y un hash criptográfico (en formato JPEG con un tamaño de archivo de hasta 16 MB) para verificar su integridad.
+
+      Si no estableces la política, los usuarios podrán elegir la imagen de fondo para la pantalla de acceso y el escritorio.</translation>
 <translation id="3312206664202507568">Habilita una página en chrome://password-change que permite a los usuarios de SAML cambiar sus contraseñas de SAML durante la sesión, lo que asegura que se sincronicen la contraseña de SAML y la de bloqueo de pantalla del dispositivo.
 
       Esta política también habilita las notificaciones para advertir a los usuarios de SAML de que sus contraseñas de SAML están a punto de caducar, para que puedan renovarlas de inmediato durante la sesión.
@@ -1916,9 +1956,9 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Si esta política se establece como verdadera, se enviarán paquetes de red de control (conocidos como <ph name="HEARTBEATS_TERM" />).
       Si se establece como falsa o no se establece, no se enviarán paquetes.</translation>
-<translation id="3942041691320538491">Si estableces la política con el valor "0" (la opción predeterminada), podrás acceder a las herramientas para desarrolladores y la Consola de JavaScript, aunque no podrás hacerlo en el contexto de extensiones instaladas por una política empresarial. Si estableces la política con el valor "1", podrás acceder a las herramientas para desarrolladores y la Consola de JavaScript en todos los contextos, incluido el de las extensiones instaladas por una política empresarial. Si estableces la política con el valor "2", no podrás acceder a las herramientas para desarrolladores ni inspeccionar elementos de sitios web.
+<translation id="3942041691320538491">Si le asignas a la política el valor "0" (la opción predeterminada), podrás acceder a las herramientas para desarrolladores y la Consola de JavaScript, aunque no podrás hacerlo en el contexto de extensiones instaladas por una política empresarial. Si le asignas a la política el valor "1", podrás acceder a las herramientas para desarrolladores y la Consola de JavaScript en todos los contextos, incluido el de extensiones instaladas por una política empresarial. Si le asignas a la política el valor "2", no podrás acceder a las herramientas para desarrolladores ni inspeccionar elementos de sitios web.
 
-      Esta configuración también desactivará las combinaciones de teclas y las entradas del menú contextual o de cualquier menú para abrir las herramientas para desarrolladores o la Consola de JavaScript.</translation>
+      Esta configuración también desactivará las combinaciones de teclas y las entradas del menú contextual o de cualquier menú que permiten abrir las herramientas para desarrolladores o la Consola de JavaScript.</translation>
 <translation id="3950110092991281616">Permite la autenticación ambiental solo en sesiones comunes.</translation>
 <translation id="3950239119790560549">Actualizar las restricciones de tiempo</translation>
 <translation id="3956686688560604829">Usar la política SiteList de Internet Explorer para la extensión Compatibilidad con navegadores heredados</translation>
@@ -2728,6 +2768,9 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Consulta también https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5249453807420671499">Los usuarios pueden agregar cuentas de Kerberos</translation>
+<translation id="5252995168844634755">Si estableces la política como verdadera, se activará el modo de escritorio unificado, el cual permite que las aplicaciones abarquen varias pantallas. Los usuarios podrán desactivar este modo en el caso de usar una sola pantalla.
+
+      Si estableces la política como falsa o no la estableces, se desactivará este modo y los usuarios no podrán activarlo.</translation>
 <translation id="5255162913209987122">Se puede recomendar</translation>
 <translation id="527237119693897329">Permite especificar los hosts de mensajería nativa que no se deben cargar.
 
@@ -3185,10 +3228,10 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Se expanden las variables del entorno. En Windows, <ph name="ENV_VARIABLE_WIN_EXAMPLE" /> se reemplaza con el valor de la variable del entorno ABC.</translation>
 <translation id="5861856285460256766">Configuración del código de acceso superior</translation>
 <translation id="5868414965372171132">Configuración de red de usuario</translation>
-<translation id="587242272905978723">Permite que <ph name="PLUGIN_VM_NAME" /> recopile los datos de uso de <ph name="PLUGIN_VM_NAME" />.
+<translation id="587242272905978723">Permite que <ph name="PLUGIN_VM_NAME" /> recopile datos de uso de <ph name="PLUGIN_VM_NAME" />.
 
       Si estableces la política como falsa o no la estableces, no se permitirá que <ph name="PLUGIN_VM_NAME" /> recopile datos.
-      Si la estableces como verdadera, <ph name="PLUGIN_VM_NAME" /> podrá recopilar los datos de uso de <ph name="PLUGIN_VM_NAME" />, que luego se combinarán y analizarán de forma exhaustiva para mejorar la experiencia de <ph name="PLUGIN_VM_NAME" />.</translation>
+      Si la estableces como verdadera, <ph name="PLUGIN_VM_NAME" /> podrá recopilar datos de uso de <ph name="PLUGIN_VM_NAME" />, que luego se combinarán y analizarán de forma exhaustiva para mejorar la experiencia en la utilización de <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="5879014913445067283">Controla la detección de archivos compartidos en la red a través de <ph name="NETBIOS_NAME" /></translation>
 <translation id="588135807064822874">Habilitar Tocar para buscar</translation>
 <translation id="5882345429632338713">Retraso antes de ejecutar otro navegador (milisegundos)</translation>
@@ -3599,6 +3642,15 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Para controlar los sitios web que pueden ejecutar Flash, consulta las políticas "DefaultPluginsSetting", "PluginsAllowedForUrls" y "PluginsBlockedForUrls".
 
       Si esta política se inhabilita o no se configura, es posible que se bloquee el contenido Flash pequeño o de otras fuentes.</translation>
+<translation id="6532026122543921610">Si estableces la política, se definirá el método de detección automática de la zona horaria, a menos que la política <ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> desactive esta opción. Los usuarios no podrán cambiar esta configuración.
+
+      La detección automática de la zona horaria tendrá diferentes comportamientos según el valor que se establezca en la política:
+       * Si se establece el valor <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONDISABLED" />, la detección automática de la zona horaria quedará desactivada.
+       * Si se establece el valor <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TTIMEZONEAUTOMATICDETECTIONIPONLY" />, la detección automática de la zona horaria quedará activada y utilizará el método de solo IP.
+       * Si se establece el valor <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDWIFIACCESSPOINTS" />, la detección automática de la zona horaria quedará activada y se enviará constantemente la lista de puntos de acceso Wi-Fi visibles al servidor de la API de ubicación geográfica para lograr una detección detallada de la zona horaria.
+       * Si se establece el valor <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDALLLOCATIONINFO" />, la detección automática de la zona horaria quedará activada y se enviará constantemente información sobre la ubicación (p. ej., puntos de acceso de Wi-Fi, torres de telefonía móvil accesibles o GPS) a un servidor para lograr una detección detallada de la zona horaria.
+
+      Si no la estableces o estableces Dejar que los usuarios decidan o None, los usuarios podrán administrar la detección automática de la zona horaria mediante los controles normales que se encuentran en chrome://settings.</translation>
 <translation id="6532769014584932288">Permitir bloqueos de activación</translation>
 <translation id="653645667373317432">Esta política controla el comando que se usará en URL abiertas en <ph name="PRODUCT_NAME" /> cuando cambias de Internet Explorer.
 
@@ -4621,6 +4673,9 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8118665053362250806">Configurar el tamaño de caché de disco de medios</translation>
 <translation id="8124468781472887384">Política de acceso para la configuración de las impresoras asociadas a dispositivos</translation>
 <translation id="8128192446158421884">Las URL donde se puede aplicar AutoOpenFileTypes</translation>
+<translation id="8133152694354699657">Si estableces la política como verdadera o no la estableces, la función Tocar para buscar estará disponible para los usuarios, quienes podrán activarla o desactivarla.
+
+      Si estableces la política como falsa, se desactivará la función por completo.</translation>
 <translation id="8140204717286305802">Informa sobre la lista de interfaces de red con sus tipos y direcciones de hardware al servidor.
 
       Si esta política se establece en "False", no se informará sobre la lista de interfaces.</translation>
@@ -5136,6 +5191,11 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
           Si la estableces, los usuarios no podrán cambiarla ni anularla.
 
           Si no la estableces, inicialmente la función estará inhabilitada en la pantalla de acceso, pero el usuario podrá habilitarla en cualquier momento.</translation>
+<translation id="8873089107816226072">Si estableces la política, se especificará la zona horaria del dispositivo y se desactivarán los ajustes automáticos basados en la ubicación. Además, se anulará la política <ph name="SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_POLICY_NAME" />. Los usuarios no podrán cambiar la zona horaria.
+
+      Los dispositivos nuevos tienen configurada la zona horaria "EE.UU./Pacífico". El formato del valor sigue los nombres de las zonas horarias de la "Base de datos de zona horaria de IANA" (https://en.wikipedia.org/wiki/Tz_database). Si ingresas un valor no válido, se establecerá la política con el formato GMT.
+
+      Si no la estableces o ingresas una string vacía, el dispositivo utilizará la zona horaria que esté activa actualmente, pero los usuarios podrán cambiarla.</translation>
 <translation id="8876188741456358123">Anula el modo predeterminado de impresión doble. Si el modo no está disponible, se ignorará esta política.</translation>
 <translation id="8878850056189891727">Los patrones de esta lista se compararán con el origen
       de seguridad de la URL solicitante.  Si se encuentra una coincidencia,
@@ -5222,6 +5282,9 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
       Esta política no debe habilitarse cuando se habilita la política <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />, dado que la función comparte la misma funcionalidad en el lado del cliente. En este caso, la sincronización alojada por Google se inhabilita por completo.</translation>
 <translation id="8955719471735800169">Volver al principio</translation>
+<translation id="8956310900055843601">Si estableces la política como verdadera o no la estableces, la pantalla de acceso del dispositivo tendrá el formato de reloj de 24 horas. Las sesiones de usuario tendrán este formato como predeterminado, pero los usuarios podrán cambiarlo.
+
+      Si estableces la política como falsa, el dispositivo tendrá el formato de reloj de 12 horas.</translation>
 <translation id="8959992920425111821">Configuración predeterminada</translation>
 <translation id="8970205333161758602">Elimina el mensaje de desactivación de <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8976248126101463034">Permitir autenticación gnubby para hosts de acceso remoto</translation>
@@ -5326,6 +5389,11 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="9152473318295429890">Habilitar las sugerencias contextuales de páginas web relacionadas</translation>
 <translation id="9153446010242995516">Implementa la reversión y mantiene la versión objetivo si la versión del sistema operativo es más reciente que la objetivo. Intenta llevar a cabo la configuración a nivel de dispositivos (incluidas las credenciales de red) mediante el proceso de reversión, si es posible, pero realiza la reversión completa con la función Powerwash, incluso si no es posible restablecer los datos (porque la versión objetivo no admite el restablecimiento de los datos o porque un cambio no es compatible con las versiones anteriores).
           Esta política es compatible con la versión 75 de <ph name="PRODUCT_OS_NAME" /> y versiones posteriores. Para los clientes anteriores, este valor significa que la reversión está inhabilitada.</translation>
+<translation id="9155375380628728544">Si estableces la política, los usuarios podrán agregar a la lista de idiomas preferidos solo uno de los idiomas de la lista de esta política.
+
+      Si no la estableces o la estableces como una lista vacía, los usuarios podrán especificar sus idiomas preferidos.
+
+      Si la estableces como una lista con valores no válidos, se ignorarán esos valores. Si los usuarios agregaron a la lista idiomas que esta política no permite, estos se quitarán. Si los usuarios establecieron en <ph name="PRODUCT_OS_NAME" /> un idioma que esta política no permite, la próxima vez que accedan, el idioma de la pantalla cambiará a un idioma de IU permitido. De lo contrario, si esta política solo tiene entradas no válidas, <ph name="PRODUCT_OS_NAME" /> seleccionará el primer valor válido que especifique esta política o una configuración regional alternativa, como "en-US".</translation>
 <translation id="9156175786579877198">Indica una lista de patrones de URL en los que es necesario revisar las descargas antes de guardarlas en el almacenamiento local para detectar si se infringen las normas relacionadas con la protección de datos sensibles.  Se utiliza esta política únicamente si se habilita <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />.
 
       Si no se establece esta política o se establece como una lista vacía de patrones de URL, no se revisarán las descargas para detectar si se infringen las normas relacionadas con la protección de datos sensibles.

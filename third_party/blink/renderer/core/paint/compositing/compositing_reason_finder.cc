@@ -81,9 +81,6 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
   if (layout_object.HasReflection())
     reasons |= CompositingReason::kReflectionWithCompositedDescendants;
 
-  if (layout_object.HasClipRelatedProperty())
-    reasons |= CompositingReason::kClipsCompositingDescendants;
-
   DCHECK(!(reasons & ~CompositingReason::kComboAllStyleDeterminedReasons));
   return reasons;
 }

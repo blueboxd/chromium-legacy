@@ -827,7 +827,8 @@ void InlineTextBoxPainter::PaintStyleableMarkerUnderline(
       run, FloatPoint(), 0, marker_offsets.start, marker_offsets.end);
   DocumentMarkerPainter::PaintStyleableMarkerUnderline(
       context, PhysicalOffsetToBeNoop(box_origin), marker, style, marker_rect,
-      inline_text_box_.LogicalHeight());
+      inline_text_box_.LogicalHeight(),
+      inline_text_box_.GetLineLayoutItem().GetDocument().InDarkMode());
 }
 
 void InlineTextBoxPainter::PaintTextMarkerForeground(

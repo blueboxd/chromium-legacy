@@ -86,6 +86,7 @@ js_library("toolbar_manager") {
 js_library("controller") {
   deps = [
     ":annotation_tool",
+    ":constants",
     ":viewport",
     "elements:viewer-pdf-toolbar",
     "//ui/webui/resources/js:assert.m",

@@ -137,13 +137,13 @@ public class SharedWebViewChromium {
         mAwContents.removeWebMessageListener(jsObjectName);
     }
 
-    public ScriptReference addDocumentStartJavascript(
+    public ScriptReference addDocumentStartJavaScript(
             final String script, final String[] allowedOriginRules) {
         if (checkNeedsPost()) {
             return mRunQueue.runOnUiThreadBlocking(
-                    () -> addDocumentStartJavascript(script, allowedOriginRules));
+                    () -> addDocumentStartJavaScript(script, allowedOriginRules));
         }
-        return mAwContents.addDocumentStartJavascript(script, allowedOriginRules);
+        return mAwContents.addDocumentStartJavaScript(script, allowedOriginRules);
     }
 
     public void setWebViewRendererClientAdapter(

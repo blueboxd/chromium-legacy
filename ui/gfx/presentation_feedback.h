@@ -48,6 +48,8 @@ struct PresentationFeedback {
     return {base::TimeTicks::Now(), base::TimeDelta(), Flags::kFailure};
   }
 
+  bool failed() const { return !!(flags & Flags::kFailure); }
+
   // The time when a buffer begins scan-out. If a buffer is never presented on
   // a screen, the |timestamp| will be set to the time of the failure.
   base::TimeTicks timestamp;

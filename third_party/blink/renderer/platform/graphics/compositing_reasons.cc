@@ -90,10 +90,6 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "blendingWithCompositedDescendants",
      "Has a blending effect that needs to be known by compositor because of "
      "composited descendants"},
-    {CompositingReason::kClipsCompositingDescendants,
-     "clipsCompositingDescendants",
-     "Has a clip that needs to be known by compositor because of composited "
-     "descendants"},
     {CompositingReason::kPerspectiveWith3DDescendants,
      "perspectiveWith3DDescendants",
      "Has a perspective transform that needs to be known by compositor because "

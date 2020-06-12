@@ -67,8 +67,8 @@ std::string ResultToString(BinaryUploadService::Result result) {
       return "UNAUTHORIZED";
     case BinaryUploadService::Result::FILE_ENCRYPTED:
       return "FILE_ENCRYPTED";
-    case BinaryUploadService::Result::UNSUPPORTED_FILE_TYPE:
-      return "UNSUPPORTED_FILE_TYPE";
+    case BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE:
+      return "DLP_SCAN_UNSUPPORTED_FILE_TYPE";
   }
 }
 

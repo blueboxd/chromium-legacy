@@ -3180,10 +3180,13 @@ void TabStrip::UpdateIdealBounds() {
     const int trailing_x =
         layout_helper_->UpdateIdealBounds(available_width_for_tabs);
 
+    int ntb_x_offset =
+        base::FeatureList::IsEnabled(features::kScrollableTabStrip)
+            ? trailing_x
+            : std::min(available_width_for_tabs, trailing_x);
+
     new_tab_button_ideal_bounds_.set_origin(
-        gfx::Point(std::min(available_width_for_tabs, trailing_x) +
-                       TabToNewTabButtonSpacing(),
-                   0));
+        gfx::Point(ntb_x_offset + TabToNewTabButtonSpacing(), 0));
   }
 }
 

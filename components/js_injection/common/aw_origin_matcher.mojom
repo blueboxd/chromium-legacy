@@ -4,7 +4,19 @@
 
 module js_injection.mojom;
 
-// This corresponds to the string representation of AwOriginMatcher.
+// Values correspond to that of SubdomainMatchingRule.
+struct SubdomainMatchingRule {
+  string scheme;
+  // An empty host matches any host.
+  string optional_host;
+  int32 optional_port;
+};
+
+struct OriginMatcherRule {
+  // If this is not set, the rule matches any url.
+  SubdomainMatchingRule? subdomain_matching_rule;
+};
+
 struct AwOriginMatcher {
-  array<string> rules;
+  array<OriginMatcherRule> rules;
 };

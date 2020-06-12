@@ -12,9 +12,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/frame_host/back_forward_cache_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
@@ -22,7 +25,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
-#include "content/public/browser/render_frame_host.h"
 #include "media/audio/audio_system.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_facing.h"
@@ -71,6 +73,18 @@ void MediaDevicesDispatcherHost::Create(
       std::make_unique<MediaDevicesDispatcherHost>(
           render_process_id, render_frame_id, media_stream_manager),
       std::move(receiver));
+
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(
+                     [](int render_process_id, int render_frame_id) {
+                       RenderFrameHost* render_frame_host =
+                           RenderFrameHost::FromID(render_process_id,
+                                                   render_frame_id);
+
+                       BackForwardCache::DisableForRenderFrameHost(
+                           render_frame_host, "MediaDevicesDispatcherHost");
+                     },
+                     render_process_id, render_frame_id));
 }
 
 MediaDevicesDispatcherHost::MediaDevicesDispatcherHost(

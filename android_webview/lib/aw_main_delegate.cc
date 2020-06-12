@@ -127,6 +127,11 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // metadata and controls.
   cl->AppendSwitch(switches::kDisableMediaSessionAPI);
 
+  // WebView does not support origin trials and so needs to force appcache
+  // to be enabled during the removal origin trial, until it is finally
+  // removed entirely.  See: http://crbug.com/582750
+  cl->AppendSwitch(switches::kAppCacheForceEnabled);
+
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
     // Browser process (no type specified).

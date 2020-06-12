@@ -46,14 +46,6 @@ class LocationBarModel {
   // Returns the security level that the toolbar should display.
   virtual security_state::SecurityLevel GetSecurityLevel() const = 0;
 
-  // Returns true if the toolbar should display the search terms. When this
-  // method returns true, the extracted search terms will be filled into
-  // |search_terms| if it's not nullptr.
-  //
-  // This method can be called with nullptr |search_terms| if the caller wants
-  // to check the display status only. Virtual for testing purposes.
-  virtual bool GetDisplaySearchTerms(base::string16* search_terms) = 0;
-
   // Classify the current page being viewed as, for example, the new tab
   // page or a normal web page.  Used for logging omnibox events for
   // UMA opted-in users.  Examines the user's profile to determine if the

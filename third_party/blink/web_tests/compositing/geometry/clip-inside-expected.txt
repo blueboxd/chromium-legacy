@@ -17,18 +17,10 @@ Test CSS clip with composited layers. Left and right sides should look the same.
       "transform": 2
     },
     {
-      "name": "LayoutNGBlockFlow (positioned) DIV class='box'",
-      "position": [5, 15],
-      "bounds": [90, 80],
-      "contentsOpaque": true,
-      "backgroundColor": "#808080",
-      "transform": 3
-    },
-    {
       "name": "LayoutNGBlockFlow (relative positioned) DIV class='composited inner'",
       "bounds": [120, 120],
       "backgroundColor": "#00000033",
-      "transform": 5
+      "transform": 4
     }
   ],
   "transforms": [
@@ -57,22 +49,12 @@ Test CSS clip with composited layers. Left and right sides should look the same.
         [1, 0, 0, 0],
         [0, 1, 0, 0],
         [0, 0, 1, 0],
-        [220, 20, 0, 1]
+        [210, 10, 0, 1]
       ]
     },
     {
       "id": 4,
       "parent": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [-10, -10, 0, 1]
-      ]
-    },
-    {
-      "id": 5,
-      "parent": 4,
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],

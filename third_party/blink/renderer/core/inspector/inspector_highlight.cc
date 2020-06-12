@@ -379,12 +379,8 @@ std::unique_ptr<protocol::ListValue> BuildGridPositiveLineNumberOffsets(
   std::unique_ptr<protocol::ListValue> number_offsets =
       protocol::ListValue::create();
   // Find index of the first explicit Grid Line.
-  // SmallestTrackStartForDirection returns integer <= 0 that indicates
-  // if there are any implicit lines at the start of the grid:
-  // I.e. -2 indicates that there are 2 implicit
-  // lines added before the first explicit line.
   size_t firstExplicitIndex =
-      0 - layout_grid->SmallestTrackStartForDirection(direction);
+      layout_grid->ExplicitGridStartForDirection(direction);
   LayoutUnit firstOffset = trackPositions.front();
   if (firstExplicitIndex == 0) {
     // First track line is beginning of grid

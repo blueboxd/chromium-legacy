@@ -1327,7 +1327,8 @@ void PrintRenderFrameHelper::OnPrintPreviewDialogClosed() {
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 void PrintRenderFrameHelper::PrintFrameContent(
-    mojom::PrintFrameContentParamsPtr params) {
+    mojom::PrintFrameContentParamsPtr params,
+    PrintFrameContentCallback callback) {
   ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
   if (ipc_nesting_level_ > 1)
     return;
@@ -1380,14 +1381,16 @@ void PrintRenderFrameHelper::PrintFrameContent(
   metafile.FinishFrameContent();
 
   // Send the printed result back.
-  mojom::DidPrintContentParams printed_frame_params;
-  if (!CopyMetafileDataToReadOnlySharedMem(metafile, &printed_frame_params)) {
+  mojom::DidPrintContentParamsPtr printed_frame_params =
+      mojom::DidPrintContentParams::New();
+  if (!CopyMetafileDataToReadOnlySharedMem(metafile,
+                                           printed_frame_params.get())) {
     DLOG(ERROR) << "CopyMetafileDataToSharedMem failed";
     return;
   }
 
-  Send(new PrintHostMsg_DidPrintFrameContent(
-      routing_id(), params->document_cookie, printed_frame_params));
+  std::move(callback).Run(params->document_cookie,
+                          std::move(printed_frame_params));
 
   if (!render_frame_gone_)
     frame->DispatchAfterPrintEvent();

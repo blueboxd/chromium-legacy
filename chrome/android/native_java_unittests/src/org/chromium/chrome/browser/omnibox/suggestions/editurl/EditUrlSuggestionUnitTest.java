@@ -19,6 +19,8 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
+import org.chromium.base.annotations.NativeJavaTestFeatures;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.UrlBarDelegate;
@@ -101,7 +103,6 @@ public final class EditUrlSuggestionUnitTest {
         when(mTab.getUrl()).thenReturn(mTestUrl);
         when(mTab.getTitle()).thenReturn(TEST_TITLE);
         when(mTab.isNativePage()).thenReturn(false);
-        when(mTab.isIncognito()).thenReturn(false);
 
         when(mWhatYouTypedSuggestion.getType())
                 .thenReturn(OmniboxSuggestionType.URL_WHAT_YOU_TYPED);
@@ -122,7 +123,98 @@ public final class EditUrlSuggestionUnitTest {
 
     /** Test that the suggestion is triggered. */
     @CalledByNativeJavaTest
-    public void testSuggestionTriggered() {
+    public void testUrlSuggestionTriggered() {
+        verifyUrlSuggestionTriggered(/* isIncognito */ false);
+    }
+
+    /** Test that the suggestion is triggered in Incognito. */
+    @CalledByNativeJavaTest
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_SEARCH_READY_INCOGNITO)
+    public void testSuggestionTriggered_Incognito() {
+        verifyUrlSuggestionTriggered(/* isIncognito */ true);
+    }
+
+    /** Test that the suggestion is not triggered if its url doesn't match the current page's. */
+    @CalledByNativeJavaTest
+    public void testWhatYouTypedWrongUrl() {
+        verifyWhatYouTypedWrongUrl(/* isIncognito */ false);
+    }
+
+    /**
+     * Test that the suggestion is not triggered if its url doesn't match the current page's in
+     * Incognito.
+     */
+    @CalledByNativeJavaTest
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_SEARCH_READY_INCOGNITO)
+    public void testWhatYouTypedWrongUrl_Incognito() {
+        verifyWhatYouTypedWrongUrl(/* isIncognito */ true);
+    }
+
+    /** Test the edit button is pressed, the correct method in the URL bar delegate is triggered. */
+    @CalledByNativeJavaTest
+    public void testEditButtonPress() {
+        verifyEditButtonPress(/* isIncognito */ false);
+    }
+
+    /**
+     * Test the edit button is pressed, the correct method in the URL bar delegate is triggered in
+     * Incognito.
+     */
+    @CalledByNativeJavaTest
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_SEARCH_READY_INCOGNITO)
+    public void testEditButtonPress_Incognito() {
+        verifyEditButtonPress(/* isIncognito */ true);
+    }
+
+    /** Test the share button is pressed, we trigger the share menu. */
+    @CalledByNativeJavaTest
+    public void testShareButtonPress() {
+        verifyShareButtonPress(/* isIncognito */ false);
+    }
+
+    /** Test the share button is pressed, we trigger the share menu in Incognito. */
+    @CalledByNativeJavaTest
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_SEARCH_READY_INCOGNITO)
+    public void testShareButtonPress_Incognito() {
+        verifyShareButtonPress(/* isIncognito */ true);
+    }
+
+    /** Test the copy button is pressed, we update clipboard. */
+    @CalledByNativeJavaTest
+    public void testCopyButtonPress() {
+        verifyCopyButtonPress(/* isIncognito */ false);
+    }
+
+    /** Test the copy button is pressed, we update clipboard in Incognito. */
+    @CalledByNativeJavaTest
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_SEARCH_READY_INCOGNITO)
+    public void testCopyButtonPress_Incognito() {
+        verifyCopyButtonPress(/* isIncognito */ true);
+    }
+
+    @CalledByNativeJavaTest
+    public void testSearchSuggestionTriggered() {
+        verifySearchSuggestionTriggered(/* isIncognito */ false);
+    }
+
+    @CalledByNativeJavaTest
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_SEARCH_READY_INCOGNITO)
+    public void testSearchSuggestionTriggered_Incognito() {
+        verifySearchSuggestionTriggered(/* isIncognito */ true);
+    }
+
+    @CalledByNativeJavaTest
+    @NativeJavaTestFeatures.Disable(ChromeFeatureList.OMNIBOX_SEARCH_READY_INCOGNITO)
+    public void testSuggestionNotTriggering_IncognitoDisabled() {
+        setIncognito(true);
+
+        mProcessor.onUrlFocusChange(true);
+        Assert.assertFalse("The processor shouldn't handle the \"what you typed\" suggestion.",
+                mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion, 0));
+    }
+
+    public void verifyUrlSuggestionTriggered(boolean isIncognito) {
+        setIncognito(isIncognito);
         mProcessor.onUrlFocusChange(true);
 
         Assert.assertTrue("The processor should handle the \"what you typed\" suggestion.",
@@ -138,9 +230,8 @@ public final class EditUrlSuggestionUnitTest {
                 mModel.get(SuggestionViewProperties.TEXT_LINE_2_TEXT).toString());
     }
 
-    /** Test that the suggestion is not triggered if its url doesn't match the current page's. */
-    @CalledByNativeJavaTest
-    public void testWhatYouTypedWrongUrl() {
+    public void verifyWhatYouTypedWrongUrl(boolean isIncognito) {
+        setIncognito(isIncognito);
         mProcessor.onUrlFocusChange(true);
 
         when(mWhatYouTypedSuggestion.getUrl()).thenReturn(mFoobarSearchUrl);
@@ -148,9 +239,8 @@ public final class EditUrlSuggestionUnitTest {
                 mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion, 0));
     }
 
-    /** Test the edit button is pressed, the correct method in the URL bar delegate is triggered. */
-    @CalledByNativeJavaTest
-    public void testEditButtonPress() {
+    public void verifyEditButtonPress(boolean isIncognito) {
+        setIncognito(isIncognito);
         mProcessor.onUrlFocusChange(true);
         mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion, 0);
         mProcessor.populateModel(mWhatYouTypedSuggestion, mModel, 0);
@@ -161,9 +251,8 @@ public final class EditUrlSuggestionUnitTest {
         verify(mUrlBarDelegate).setOmniboxEditingText(mTestUrl.getSpec());
     }
 
-    /** Test the share button is pressed, we trigger the share menu. */
-    @CalledByNativeJavaTest
-    public void testShareButtonPress() {
+    private void verifyShareButtonPress(boolean isIncognito) {
+        setIncognito(isIncognito);
         mProcessor.onUrlFocusChange(true);
         mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion, 0);
         mProcessor.populateModel(mWhatYouTypedSuggestion, mModel, 0);
@@ -174,9 +263,8 @@ public final class EditUrlSuggestionUnitTest {
         verify(mShareDelegate, times(1)).share(mTab, false /* shareDirectly */);
     }
 
-    /** Test the copy button is pressed, we update clipboard. */
-    @CalledByNativeJavaTest
-    public void testCopyButtonPress() {
+    private void verifyCopyButtonPress(boolean isIncognito) {
+        setIncognito(isIncognito);
         mProcessor.onUrlFocusChange(true);
         mProcessor.doesProcessSuggestion(mWhatYouTypedSuggestion, 0);
         mProcessor.populateModel(mWhatYouTypedSuggestion, mModel, 0);
@@ -193,8 +281,8 @@ public final class EditUrlSuggestionUnitTest {
                 mTestUrl.getSpec(), clipboardManager.getText());
     }
 
-    @CalledByNativeJavaTest
-    public void testSearchSuggestion() {
+    private void verifySearchSuggestionTriggered(boolean isIncognito) {
+        setIncognito(isIncognito);
         when(mTab.getUrl()).thenReturn(mFoobarSearchUrl);
         mProcessor.onUrlFocusChange(true);
         when(mTemplateUrlService.getSearchQueryForUrl(mFoobarSearchUrl))
@@ -210,5 +298,9 @@ public final class EditUrlSuggestionUnitTest {
 
         Assert.assertFalse(mProcessor.doesProcessSuggestion(mSearchSuggestion, 0));
         Assert.assertFalse(mProcessor.doesProcessSuggestion(mSearchSuggestion, 1));
+    }
+
+    private void setIncognito(boolean isIncognito) {
+        when(mTab.isIncognito()).thenReturn(isIncognito);
     }
 }

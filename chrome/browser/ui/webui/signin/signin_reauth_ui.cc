@@ -84,8 +84,6 @@ SigninReauthUI::SigninReauthUI(content::WebUI* web_ui)
                              IDS_ACCOUNT_PASSWORDS_REAUTH_CONFIRM_BUTTON_LABEL);
   source->AddLocalizedString("signinReauthCloseLabel",
                              IDS_ACCOUNT_PASSWORDS_REAUTH_CLOSE_BUTTON_LABEL);
-  source->AddLocalizedString("signinReauthTooltip",
-                             IDS_ACCOUNT_PASSWORDS_REAUTH_TOOLTIP);
 
   content::WebUIDataSource::Add(profile, source);
 }

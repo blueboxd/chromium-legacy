@@ -55,9 +55,10 @@ export class RecordTime {
 
   /**
    * Starts to count and show the elapsed recording time.
-   * @param {boolean=} resume If the time count is resumed from paused state.
+   * @param {{resume: boolean}} params If the time count is resumed from paused
+   *     state.
    */
-  start(resume = false) {
+  start({resume}) {
     if (!resume) {
       this.ticks_ = 0;
     }
@@ -72,10 +73,10 @@ export class RecordTime {
 
   /**
    * Stops counting and showing the elapsed recording time.
-   * @param {boolean=} pause If the time count is paused temporarily.
+   * @param {{pause: boolean}} param If the time count is paused temporarily.
    * @return {number} Recorded time in 1 minute buckets.
    */
-  stop(pause = false) {
+  stop({pause}) {
     speak('status_msg_recording_stopped');
     if (this.tickTimeout_) {
       clearInterval(this.tickTimeout_);

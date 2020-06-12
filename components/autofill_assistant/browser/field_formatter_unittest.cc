@@ -21,26 +21,36 @@ using ::testing::_;
 using ::testing::Eq;
 using ::testing::UnorderedElementsAreArray;
 
+TEST(FieldFormatterTest, FormatString) {
+  std::map<std::string, std::string> mappings = {
+      {"keyA", "valueA"}, {"keyB", "valueB"}, {"keyC", "valueC"}};
+
+  EXPECT_EQ(*FormatString("", mappings), "");
+  EXPECT_EQ(*FormatString("input", mappings), "input");
+  EXPECT_EQ(*FormatString("prefix ${keyA}", mappings), "prefix valueA");
+  EXPECT_EQ(*FormatString("prefix ${keyA}${keyB}${keyC} suffix", mappings),
+            "prefix valueAvalueBvalueC suffix");
+  EXPECT_EQ(*FormatString("keyA = ${keyA}", mappings), "keyA = valueA");
+  EXPECT_EQ(FormatString("${keyD}", mappings), base::nullopt);
+  EXPECT_EQ(FormatString("${keyA}${keyD}", mappings), base::nullopt);
+}
+
 TEST(FieldFormatterTest, AutofillProfile) {
   autofill::AutofillProfile profile(base::GenerateGUID(), kFakeUrl);
   autofill::test::SetProfileInfo(
       &profile, "John", "", "Doe", "editor@gmail.com", "", "203 Barfield Lane",
       "", "Mountain View", "CA", "94043", "US", "+12345678901");
   // NAME_FIRST
-  EXPECT_EQ(
-      *FormatAutofillString("3", CreateAutofillMappings(profile, "en-US")),
-      "John");
-  EXPECT_EQ(
-      *FormatAutofillString("${3}", CreateAutofillMappings(profile, "en-US")),
-      "John");
+  EXPECT_EQ(*FormatString("${3}", CreateAutofillMappings(profile, "en-US")),
+            "John");
 
   // UNKNOWN_TYPE
-  EXPECT_EQ(FormatAutofillString("1", CreateAutofillMappings(profile, "en-US")),
+  EXPECT_EQ(FormatString("${1}", CreateAutofillMappings(profile, "en-US")),
             base::nullopt);
 
   // PHONE_HOME_COUNTRY_CODE, PHONE_HOME_CITY_CODE, PHONE_HOME_NUMBER
-  EXPECT_EQ(*FormatAutofillString("(+${12}) (${11}) ${10}",
-                                  CreateAutofillMappings(profile, "en-US")),
+  EXPECT_EQ(*FormatString("(+${12}) (${11}) ${10}",
+                          CreateAutofillMappings(profile, "en-US")),
             "(+1) (234) 5678901");
 }
 
@@ -51,27 +61,27 @@ TEST(FieldFormatterTest, CreditCard) {
 
   // CREDIT_CARD_NAME_FULL
   EXPECT_EQ(
-      *FormatAutofillString("51", CreateAutofillMappings(credit_card, "en-US")),
+      *FormatString("${51}", CreateAutofillMappings(credit_card, "en-US")),
       "John Doe");
 
   // CREDIT_CARD_NUMBER
   EXPECT_EQ(
-      *FormatAutofillString("52", CreateAutofillMappings(credit_card, "en-US")),
+      *FormatString("${52}", CreateAutofillMappings(credit_card, "en-US")),
       "4111111111111111");
 
   // CREDIT_CARD_NUMBER_LAST_FOUR_DIGITS
-  EXPECT_EQ(*FormatAutofillString("**** ${-4}",
-                                  CreateAutofillMappings(credit_card, "en-US")),
-            "**** 1111");
+  EXPECT_EQ(
+      *FormatString("**** ${-4}", CreateAutofillMappings(credit_card, "en-US")),
+      "**** 1111");
 
   // CREDIT_CARD_EXP_MONTH, CREDIT_CARD_EXP_2_DIGIT_YEAR
-  EXPECT_EQ(*FormatAutofillString("${53}/${54}",
-                                  CreateAutofillMappings(credit_card, "en-US")),
+  EXPECT_EQ(*FormatString("${53}/${54}",
+                          CreateAutofillMappings(credit_card, "en-US")),
             "01/50");
 
   // CREDIT_CARD_NETWORK, CREDIT_CARD_NETWORK_FOR_DISPLAY
-  EXPECT_EQ(*FormatAutofillString("${-2} ${-5}",
-                                  CreateAutofillMappings(credit_card, "en-US")),
+  EXPECT_EQ(*FormatString("${-2} ${-5}",
+                          CreateAutofillMappings(credit_card, "en-US")),
             "visa Visa");
 }
 
@@ -81,23 +91,22 @@ TEST(FieldFormatterTest, SpecialCases) {
       &profile, "John", "", "Doe", "editor@gmail.com", "", "203 Barfield Lane",
       "", "Mountain View", "CA", "94043", "US", "+12345678901");
 
-  EXPECT_EQ(*FormatAutofillString("", CreateAutofillMappings(profile, "en-US")),
+  EXPECT_EQ(*FormatString("", CreateAutofillMappings(profile, "en-US")),
             std::string());
+  EXPECT_EQ(*FormatString("${3}", CreateAutofillMappings(profile, "en-US")),
+            "John");
+  EXPECT_EQ(FormatString("${-1}", CreateAutofillMappings(profile, "en-US")),
+            base::nullopt);
   EXPECT_EQ(
-      *FormatAutofillString("3", CreateAutofillMappings(profile, "en-US")),
-      "John");
-  EXPECT_EQ(
-      FormatAutofillString("-1", CreateAutofillMappings(profile, "en-US")),
-      base::nullopt);
-  EXPECT_EQ(
-      FormatAutofillString(base::NumberToString(autofill::MAX_VALID_FIELD_TYPE),
-                           CreateAutofillMappings(profile, "en-US")),
+      FormatString(
+          "${" + base::NumberToString(autofill::MAX_VALID_FIELD_TYPE) + "}",
+          CreateAutofillMappings(profile, "en-US")),
       base::nullopt);
 
   // Second {} is not prefixed with $.
-  EXPECT_EQ(*FormatAutofillString("${3} {10}",
-                                  CreateAutofillMappings(profile, "en-US")),
-            "John {10}");
+  EXPECT_EQ(
+      *FormatString("${3} {10}", CreateAutofillMappings(profile, "en-US")),
+      "John {10}");
 }
 
 TEST(FieldFormatterTest, DifferentLocales) {
@@ -108,19 +117,16 @@ TEST(FieldFormatterTest, DifferentLocales) {
   auto mappings = CreateAutofillMappings(profile, "de-DE");
 
   // 36 == ADDRESS_HOME_COUNTRY
-  EXPECT_EQ(
-      *FormatAutofillString("${36}", CreateAutofillMappings(profile, "en-US")),
-      "United States");
-  EXPECT_EQ(
-      *FormatAutofillString("${36}", CreateAutofillMappings(profile, "de-DE")),
-      "Vereinigte Staaten");
+  EXPECT_EQ(*FormatString("${36}", CreateAutofillMappings(profile, "en-US")),
+            "United States");
+  EXPECT_EQ(*FormatString("${36}", CreateAutofillMappings(profile, "de-DE")),
+            "Vereinigte Staaten");
 
   // Invalid locales default to "en-US".
-  EXPECT_EQ(*FormatAutofillString("36", CreateAutofillMappings(profile, "")),
+  EXPECT_EQ(*FormatString("${36}", CreateAutofillMappings(profile, "")),
             "United States");
-  EXPECT_EQ(
-      *FormatAutofillString("36", CreateAutofillMappings(profile, "invalid")),
-      "United States");
+  EXPECT_EQ(*FormatString("${36}", CreateAutofillMappings(profile, "invalid")),
+            "United States");
 }
 
 TEST(FieldFormatterTest, AddsAllProfileFields) {
@@ -179,25 +185,6 @@ TEST(FieldFormatterTest, AddsAllCreditCardFields) {
               UnorderedElementsAreArray(expected_values));
 }
 
-TEST(FieldFormatterTest, FormatString) {
-  std::map<std::string, std::string> mappings = {
-      {"keyA", "valueA"}, {"keyB", "valueB"}, {"keyC", "valueC"}};
-
-  EXPECT_EQ(*FormatString("", mappings), "");
-  EXPECT_EQ(*FormatString("input", mappings), "input");
-  EXPECT_EQ(*FormatString("prefix ${keyA}", mappings), "prefix valueA");
-  EXPECT_EQ(*FormatString("prefix ${keyA}${keyB}${keyC} suffix", mappings),
-            "prefix valueAvalueBvalueC suffix");
-  EXPECT_EQ(*FormatString("keyA = ${keyA}", mappings), "keyA = valueA");
-  EXPECT_EQ(FormatString("${keyD}", mappings), base::nullopt);
-  EXPECT_EQ(FormatString("${keyA}${keyD}", mappings), base::nullopt);
-
-  // In contrast to FormatAutofillString, FormatString does not interpret single
-  // input integers as ${N}.
-  mappings.emplace("1", "value1");
-  EXPECT_EQ(*FormatString("1", mappings), "1");
-  EXPECT_EQ(*FormatAutofillString("1", mappings), "value1");
-}
 }  // namespace
 }  // namespace field_formatter
 }  // namespace autofill_assistant

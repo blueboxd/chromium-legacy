@@ -32,6 +32,7 @@ import org.chromium.chrome.R;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.ProfileDataSource;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,7 +60,7 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
      * a user avatar.
      */
     public static class BadgeConfig {
-        private final Drawable mBadge;
+        private @Nullable Drawable mBadge;
         private final int mBadgeSize;
         private final Point mPosition;
         private final int mBorderSize;
@@ -81,6 +82,11 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
             mBorderSize = borderSize;
         }
 
+        void setBadge(@Nullable Drawable badge) {
+            mBadge = badge;
+        }
+
+        @Nullable
         Drawable getBadge() {
             return mBadge;
         }
@@ -146,6 +152,31 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
     }
 
     /**
+     * Creates a BadgeConfig object from the badgeResId and updates the profile image.
+     * @param badgeResId Resource id of the badge to be attached. If it is 0 then no badge is
+     *         attached
+     */
+    @MainThread
+    public void updateBadgeConfig(@DrawableRes int badgeResId) {
+        ThreadUtils.assertOnUiThread();
+        assert mBadgeConfig != null;
+        mBadgeConfig.setBadge(
+                badgeResId == 0 ? null : AppCompatResources.getDrawable(mContext, badgeResId));
+        if (mObservers.isEmpty()) {
+            return;
+        }
+
+        if (mProfileDataSource != null) {
+            updateCacheFromProfileDataSource();
+        } else {
+            // Clear mCachedProfileData and download the profiles again.
+            List<String> accounts = new ArrayList<>(mCachedProfileData.keySet());
+            mCachedProfileData.clear();
+            update(accounts);
+        }
+    }
+
+    /**
      * @return The {@link DisplayableProfileData} containing the profile data corresponding to the
      *         given account or a {@link DisplayableProfileData} with a placeholder image and null
      *         full and given name.
@@ -193,6 +224,16 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
         for (Map.Entry<String, ProfileDataSource.ProfileData> entry :
                 mProfileDataSource.getProfileDataMap().entrySet()) {
             mCachedProfileData.put(entry.getKey(), createDisplayableProfileData(entry.getValue()));
+        }
+    }
+
+    private void updateCacheFromProfileDataSource() {
+        for (Map.Entry<String, ProfileDataSource.ProfileData> entry :
+                mProfileDataSource.getProfileDataMap().entrySet()) {
+            mCachedProfileData.put(entry.getKey(), createDisplayableProfileData(entry.getValue()));
+            for (Observer observer : mObservers) {
+                observer.onProfileDataUpdated(entry.getKey());
+            }
         }
     }
 
@@ -258,7 +299,7 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
      * size.
      * @param context Context of the application to extract resources from
      * @param badgeResId Resource id of the badge to be attached. If it is 0 then no badge is
-     *                   attached
+     *         attached
      */
     public static ProfileDataCache createProfileDataCache(
             Context context, @DrawableRes int badgeResId) {
@@ -269,28 +310,28 @@ public class ProfileDataCache implements ProfileDownloader.Observer, ProfileData
     @VisibleForTesting
     static ProfileDataCache createProfileDataCache(
             Context context, @DrawableRes int badgeResId, ProfileDataSource profileDataSource) {
-        Resources resources = context.getResources();
-        int userPictureSize = resources.getDimensionPixelSize(R.dimen.user_picture_size);
-        if (badgeResId == 0) {
-            return new ProfileDataCache(context, userPictureSize, null, profileDataSource);
-        }
+        return new ProfileDataCache(context,
+                context.getResources().getDimensionPixelSize(R.dimen.user_picture_size),
+                createBadgeConfig(context, badgeResId), profileDataSource);
+    }
 
-        Drawable badge = AppCompatResources.getDrawable(context, badgeResId);
+    private static BadgeConfig createBadgeConfig(Context context, @DrawableRes int badgeResId) {
+        Resources resources = context.getResources();
+        Drawable badge =
+                badgeResId == 0 ? null : AppCompatResources.getDrawable(context, badgeResId);
         int badgePositionX = resources.getDimensionPixelOffset(R.dimen.badge_position_x);
         int badgePositionY = resources.getDimensionPixelOffset(R.dimen.badge_position_y);
         int badgeBorderSize = resources.getDimensionPixelSize(R.dimen.badge_border_size);
         int badgeSize = resources.getDimensionPixelSize(R.dimen.badge_size);
-        return new ProfileDataCache(context, userPictureSize,
-                new BadgeConfig(badge, badgeSize, new Point(badgePositionX, badgePositionY),
-                        badgeBorderSize),
-                profileDataSource);
+        return new BadgeConfig(
+                badge, badgeSize, new Point(badgePositionX, badgePositionY), badgeBorderSize);
     }
 
     private Drawable prepareAvatar(Bitmap bitmap) {
         Drawable croppedAvatar = bitmap != null
                 ? makeRoundAvatar(mContext.getResources(), bitmap, mImageSize)
                 : mPlaceholderImage;
-        if (mBadgeConfig == null) {
+        if (mBadgeConfig == null || mBadgeConfig.getBadge() == null) {
             return croppedAvatar;
         }
         return overlayBadgeOnUserPicture(croppedAvatar);

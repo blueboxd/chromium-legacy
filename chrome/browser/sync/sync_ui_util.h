@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_SYNC_UI_UTIL_H_
 
 #include "build/build_config.h"
+#include "components/sync/driver/sync_service_utils.h"
 
 class Browser;
 class GURL;
@@ -118,7 +119,9 @@ bool ShouldShowPassphraseError(const syncer::SyncService* service);
 bool ShouldShowSyncKeysMissingError(const syncer::SyncService* service);
 
 // Opens a tab to trigger a reauth to retrieve the trusted vault keys.
-void OpenTabForSyncKeyRetrieval(Browser* browser);
+void OpenTabForSyncKeyRetrieval(
+    Browser* browser,
+    syncer::KeyRetrievalTriggerForUMA key_retrieval_trigger);
 
 // Testing-only variant of the above which allows the caller to specify the
 // URL.

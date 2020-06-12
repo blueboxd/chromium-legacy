@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL H264 simulcast setup with three spatial layers assert_implements: H264 not supported undefined
+Harness: the test ran to completion.
+

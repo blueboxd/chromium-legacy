@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/containers/flat_set.h"
+#include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "components/printing/common/print.mojom.h"
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"
@@ -38,9 +39,6 @@ class PrintCompositeClient
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
 
   // IPC message handler.
-  void OnDidPrintFrameContent(content::RenderFrameHost* render_frame_host,
-                              int document_cookie,
-                              const mojom::DidPrintContentParams& params);
 #if BUILDFLAG(ENABLE_TAGGED_PDF)
   void OnAccessibilityTree(int document_cookie,
                            const ui::AXTreeUpdate& accessibility_tree);
@@ -115,6 +113,10 @@ class PrintCompositeClient
       mojom::PrintCompositor::Status status,
       base::ReadOnlySharedMemoryRegion region);
 
+  void OnDidPrintFrameContent(content::RenderFrameHost* render_frame_host,
+                              int document_cookie,
+                              mojom::DidPrintContentParamsPtr params);
+
   // Get the request or create a new one if none exists.
   // Since printed pages always share content with its document, they share the
   // same composite request.
@@ -155,6 +157,8 @@ class PrintCompositeClient
   std::map<content::RenderFrameHost*,
            mojo::AssociatedRemote<mojom::PrintRenderFrame>>
       print_render_frames_;
+
+  base::WeakPtrFactory<PrintCompositeClient> weak_ptr_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

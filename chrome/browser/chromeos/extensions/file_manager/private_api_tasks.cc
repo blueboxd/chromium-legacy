@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
+#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -73,57 +74,43 @@ std::set<std::string> GetUniqueMimeTypes(
   return mime_types;
 }
 
-// Intercepts usage of executeTask(..) that wants to invoke the old "Gallery"
-// chrome app. If the media app is enabled, substitute it.
-// TODO(crbug/1030935): Remove this when the gallery app is properly removed and
+// Intercepts usage of executeTask(..) that wants to invoke the new MediaApp and
+// switches it back to Gallery if MediaApp is not available.
+// TODO(crbug/1030935): Remove this when the gallery app is properly removed or
 // the camera app has a new API (not fileManagerPrivate) to invoke its
 // "Camera Roll" viewer.
 void MaybeAdjustTaskForGalleryAppRemoval(
     file_manager::file_tasks::TaskDescriptor* task,
     const std::vector<FileSystemURL>& urls,
     Profile* profile) {
-  if (!base::FeatureList::IsEnabled(chromeos::features::kMediaApp))
+  if (task->app_id != chromeos::default_web_apps::kMediaAppId)
     return;
-  if (task->app_id != file_manager::kGalleryAppId)
-    return;
-
-  DCHECK_EQ(task->task_type, file_manager::file_tasks::TASK_TYPE_FILE_HANDLER);
-
-  // Filter out any request with a RAW image type of a kind that the Gallery
-  // is known to register as a handler. Although from a product perspective, the
-  // Gallery should be entirely hidden, we still direct RAW images to Gallery
-  // until chrome://media-app supports them.
-  // Also filter out requests to open files on non-native files since
-  // TASK_TYPE_WEB_APP currently does not support these.
-  // See https://crbug.com/1079065.
-  for (const auto& url : urls) {
-    if (file_manager::file_tasks::IsRawImage(url.path()) ||
-        file_manager::util::IsNonNativeFileSystemType(url.type())) {
-      return;
-    }
-  }
 
   auto* provider = web_app::WebAppProvider::Get(profile);
   DCHECK(provider);
-
   base::Optional<web_app::AppId> optional_app_id =
       provider->system_web_app_manager().GetAppIdForSystemApp(
           web_app::SystemAppType::MEDIA);
 
-  // In tests, the SystemWebAppManager constructor early-exits without
-  // configuring any apps to install. So even if the MediaApp is enabled, it
-  // might not be installed.
-  // But note that even if the flag is enabled, app installation can sometimes
-  // fail. Don't crash in that case. See https://crbug.com/1024042.
-  if (!optional_app_id) {
-    DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
-        ::switches::kTestType))
-        << "MediaApp should only be missing in tests.";
+  // If the MediaApp is installed, then there's nothing to do.
+  if (optional_app_id) {
+    // Sanity check the app id when installed. The app id at runtime is
+    // determined by the origin and the "start_url" manifest property.
+    DCHECK_EQ(*optional_app_id, chromeos::default_web_apps::kMediaAppId);
     return;
   }
 
-  task->task_type = file_manager::file_tasks::TASK_TYPE_WEB_APP;
-  task->app_id = *optional_app_id;
+  // In tests, the SystemWebAppManager constructor early-exits without
+  // configuring any apps to install. So even if the MediaApp is enabled, it
+  // might not be installed.
+  DCHECK(
+      !base::FeatureList::IsEnabled(chromeos::features::kMediaApp) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType))
+      << "When enabled, MediaApp should only be missing in tests.";
+
+  DCHECK_EQ(task->task_type, file_manager::file_tasks::TASK_TYPE_WEB_APP);
+  task->task_type = file_manager::file_tasks::TASK_TYPE_FILE_HANDLER;
+  task->app_id = file_manager::kGalleryAppId;
 }
 
 }  // namespace

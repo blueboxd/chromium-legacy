@@ -1908,3 +1908,65 @@ TEST_F(PasswordControllerTest, FindDynamicallyAddedForm2) {
   auto& password_form = form_managers[0]->observed_form();
   EXPECT_EQ(ASCIIToUTF16("dynamic_form"), password_form.name);
 }
+
+// Tests that submission is detected on removal of the form that had user input.
+TEST_F(PasswordControllerTest, DetectSubmissionOnRemovedForm) {
+  ON_CALL(*store_, GetLogins)
+      .WillByDefault(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  LoadHtml(kHtmlWithPasswordForm);
+
+  std::string mainFrameID = web::GetMainWebFrameId(web_state());
+
+  SimulateUserTyping("login_form", FormRendererId(0), "username",
+                     FieldRendererId(1), "user1", mainFrameID);
+  SimulateUserTyping("login_form", FormRendererId(0), "pw", FieldRendererId(2),
+                     "password1", mainFrameID);
+
+  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+  EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr)
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+
+  web::WebFrame* frame = web::GetWebFrameWithId(web_state(), mainFrameID);
+  autofill::FormActivityParams params;
+  params.type = "password_form_removed";
+  params.unique_form_id = 0;
+  params.frame_id = mainFrameID;
+
+  [passwordController_ webState:web_state()
+        didRegisterFormActivity:params
+                        inFrame:frame];
+
+  EXPECT_EQ("https://chromium.test/",
+            form_manager_to_save->GetPendingCredentials().signon_realm);
+  EXPECT_EQ(ASCIIToUTF16("user1"),
+            form_manager_to_save->GetPendingCredentials().username_value);
+  EXPECT_EQ(ASCIIToUTF16("password1"),
+            form_manager_to_save->GetPendingCredentials().password_value);
+
+  auto* form_manager =
+      static_cast<PasswordFormManager*>(form_manager_to_save.get());
+  EXPECT_TRUE(form_manager->is_submitted());
+  EXPECT_FALSE(form_manager->IsPasswordUpdate());
+}
+
+// Tests that submission is not detected on removal of the form that never
+// had user input.
+TEST_F(PasswordControllerTest,
+       DetectNoSubmissionOnRemovedFormWithoutUserInput) {
+  ON_CALL(*store_, GetLogins)
+      .WillByDefault(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  LoadHtml(kHtmlWithPasswordForm);
+
+  EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr).Times(0);
+
+  std::string mainFrameID = web::GetMainWebFrameId(web_state());
+  web::WebFrame* frame = web::GetWebFrameWithId(web_state(), mainFrameID);
+  autofill::FormActivityParams params;
+  params.type = "password_form_removed";
+  params.unique_form_id = 0;
+  params.frame_id = mainFrameID;
+
+  [passwordController_ webState:web_state()
+        didRegisterFormActivity:params
+                        inFrame:frame];
+}

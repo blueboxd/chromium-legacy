@@ -37,12 +37,6 @@ enum class UploadState {
   kMaxValue = ACTIVE
 };
 
-// Returns whether |type| is being uploaded to Google. This is useful for
-// features that depend on user consent for uploading data (e.g. history) to
-// Google.
-UploadState GetUploadToGoogleState(const SyncService* sync_service,
-                                   ModelType type);
-
 // NOTE: Used in a UMA histogram, do not reorder etc.
 enum SyncEventCodes {
   // Events starting the sync service.
@@ -66,7 +60,32 @@ enum SyncEventCodes {
   MAX_SYNC_EVENT_CODE = 22
 };
 
+// Used for UMA histogram, do not reorder. Represents the UI elements which
+// contain trusted vault error button.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.sync
+enum class KeyRetrievalTriggerForUMA {
+  // Settings pages, used on all platforms except ChromeOS.
+  kSettings,
+  // Used on desktop platform only.
+  kProfileMenu,
+  // Used on Android and ChromeOS, represents OS-level notification.
+  kNotification,
+  // Used on iOS only. Represents Infobar on the New Tab Page.
+  // TODO(crbug.com/1083973): record this bucket bucket on Android once
+  // corresponding UI added.
+  kNewTabPageInfobar,
+  kMaxValue = kNewTabPageInfobar
+};
+
+// Returns whether |type| is being uploaded to Google. This is useful for
+// features that depend on user consent for uploading data (e.g. history) to
+// Google.
+UploadState GetUploadToGoogleState(const SyncService* sync_service,
+                                   ModelType type);
+
 void RecordSyncEvent(SyncEventCodes code);
+
+void RecordKeyRetrievalTrigger(KeyRetrievalTriggerForUMA trigger);
 
 }  // namespace syncer
 

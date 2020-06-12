@@ -246,9 +246,10 @@ class CORE_EXPORT WebFrameWidgetBase
   void DragSourceSystemDragEnded() override;
   void SetBackgroundOpaque(bool opaque) override;
 
-  // Changes the text direction of the currently selected input field (if any).
+  // For both mainframe and childframe change the text direction of the
+  // currently selected input field (if any).
   void SetTextDirection(
-      mojo_base::mojom::blink::TextDirection direction) override {}
+      mojo_base::mojom::blink::TextDirection direction) override;
 
   // Sets the inherited effective touch action on an out-of-process iframe.
   void SetInheritedEffectiveTouchActionForSubFrame(

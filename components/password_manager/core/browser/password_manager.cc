@@ -736,6 +736,20 @@ void PasswordManager::OnPasswordNoLongerGenerated(
   for (std::unique_ptr<PasswordFormManager>& manager : form_managers_)
     manager->PasswordNoLongerGenerated();
 }
+
+void PasswordManager::OnPasswordFormRemoved(PasswordManagerDriver* driver,
+                                            FormRendererId form_id) {
+  for (auto& manager : form_managers_) {
+    if (driver && !manager->GetDriver())
+      manager->SetDriver(driver->AsWeakPtr());
+    if (manager->DoesManageAccordingToRendererId(form_id, driver)) {
+      if (manager->is_submitted())
+        OnLoginSuccessful();
+      else
+        return;
+    }
+  }
+}
 #endif
 
 bool PasswordManager::IsAutomaticSavePromptAvailable() {

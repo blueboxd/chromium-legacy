@@ -83,6 +83,7 @@
   X("GAMEPAD")                                                           \
   X("gpu")                                                               \
   X("gpu.capture")                                                       \
+  X("gpu.memory")                                                        \
   X("headless")                                                          \
   X("hwoverlays")                                                        \
   X("identity")                                                          \

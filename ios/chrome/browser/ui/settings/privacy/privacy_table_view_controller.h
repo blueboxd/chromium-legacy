@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_PRIVACY_PRIVACY_TABLE_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_PRIVACY_PRIVACY_TABLE_VIEW_CONTROLLER_H_
 
+#import "ios/chrome/browser/ui/settings/privacy/cookies_status_consumer.h"
+#import "ios/chrome/browser/ui/settings/privacy/cookies_status_description.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
 class Browser;
@@ -25,14 +27,17 @@ extern NSString* const kPrivacyTableViewId;
 
 @end
 
-@interface PrivacyTableViewController : SettingsRootTableViewController
+@interface PrivacyTableViewController
+    : SettingsRootTableViewController <CookiesStatusConsumer>
 
 // Presentation delegate.
 @property(nonatomic, weak) id<PrivacyTableViewControllerPresentationDelegate>
     presentationDelegate;
 
 // |browserState| cannot be nil
-- (instancetype)initWithBrowser:(Browser*)browser NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBrowser:(Browser*)browser
+             cookiesDescription:(CookiesStatusDescription*)cookiesDescription
+    NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 

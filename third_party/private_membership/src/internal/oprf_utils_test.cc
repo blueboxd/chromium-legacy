@@ -39,7 +39,7 @@ TEST(OprfUtilsTest, ReEncryptIdSuccess) {
   ASSERT_OK_AND_ASSIGN(auto encrypted_id, ec_cipher1->Encrypt("plaintext id"));
 
   ASSERT_OK_AND_ASSIGN(auto doubly_encrypted_id,
-                       ReEncryptId(encrypted_id, *ec_cipher2));
+                       ReEncryptId(encrypted_id, ec_cipher2.get()));
   EXPECT_EQ(doubly_encrypted_id.queried_encrypted_id(), encrypted_id);
   ASSERT_OK_AND_ASSIGN(auto result, ec_cipher2->ReEncrypt(encrypted_id));
   EXPECT_EQ(doubly_encrypted_id.doubly_encrypted_id(), result);
@@ -52,7 +52,7 @@ TEST(OprfUtilsTest, ReEncryptIdFail) {
           kCurveId, private_join_and_compute::ECCommutativeCipher::HashType::SHA256));
   // Empty substring necessary due to forked StatusIs.
   EXPECT_THAT(
-      ReEncryptId("not encrypted id", *ec_cipher),
+      ReEncryptId("not encrypted id", ec_cipher.get()),
       StatusIs(absl::StatusCode::kInvalidArgument, testing::HasSubstr("")));
 }
 

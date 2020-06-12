@@ -167,16 +167,6 @@ const CGFloat kHeaderHeight = 70;
   cell.contentView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
   id<Credential> credential = [self credentialForIndexPath:indexPath];
-  if (credential.favicon.length) {
-    // TODO(crbug.com/1045454): draw actual icon.
-    cell.imageView.image = [[UIImage imageNamed:@"default_world_favicon"]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  } else {
-    cell.imageView.image = [[UIImage imageNamed:@"default_world_favicon"]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    cell.imageView.tintColor = [UIColor colorNamed:kPlaceholderImageTintColor];
-  }
-  cell.imageView.contentMode = UIViewContentModeScaleAspectFit;
   cell.accessoryView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   cell.textLabel.text = credential.serviceName;
   cell.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];

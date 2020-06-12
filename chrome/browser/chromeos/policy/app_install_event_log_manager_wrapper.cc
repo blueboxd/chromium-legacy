@@ -47,7 +47,7 @@ AppInstallEventLogManagerWrapper::AppInstallEventLogManagerWrapper(
     Profile* profile)
     : profile_(profile) {
   log_task_runner_ =
-      std::make_unique<AppInstallEventLogManager::LogTaskRunnerWrapper>();
+      std::make_unique<ArcAppInstallEventLogManager::LogTaskRunnerWrapper>();
 
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(
@@ -63,7 +63,7 @@ void AppInstallEventLogManagerWrapper::Init() {
 }
 
 void AppInstallEventLogManagerWrapper::CreateManager() {
-  log_manager_ = std::make_unique<AppInstallEventLogManager>(
+  log_manager_ = std::make_unique<ArcAppInstallEventLogManager>(
       log_task_runner_.get(),
       profile_->GetUserCloudPolicyManagerChromeOS()
           ->GetAppInstallEventLogUploader(),
@@ -82,7 +82,7 @@ void AppInstallEventLogManagerWrapper::EvaluatePref() {
     }
   } else {
     DestroyManager();
-    AppInstallEventLogManager::Clear(log_task_runner_.get(), profile_);
+    ArcAppInstallEventLogManager::Clear(log_task_runner_.get(), profile_);
   }
 }
 

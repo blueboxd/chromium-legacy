@@ -122,6 +122,11 @@
           "visible": {
             "type": "boolean",
             "description": "Sets true to show AssistiveWindow, sets false to hide."
+          },
+          "announceString" : {
+            "optional": true,
+            "type": "string",
+            "description": "Strings for ChromeVox to announce."
           }
         }
       },

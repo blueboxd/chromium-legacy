@@ -699,4 +699,78 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
+                       SetTextDirection) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a,b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  auto* web_contents = static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Main frame.
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  RenderWidgetHostImpl* root_widget =
+      root->current_frame_host()->GetRenderWidgetHost();
+  ASSERT_TRUE(
+      ExecuteScript(root->current_frame_host(),
+                    "var elem = document.createElement('input'); "
+                    "elem.id = 'mainframe_input_id';"
+                    "document.body.appendChild(elem);"
+                    "document.getElementById('mainframe_input_id').focus();"));
+  root_widget->UpdateTextDirection(base::i18n::RIGHT_TO_LEFT);
+  root_widget->NotifyTextDirection();
+  std::string mainframe_input_element_dir =
+      ExecuteScriptAndGetValue(
+          root->current_frame_host(),
+          "document.getElementById('mainframe_input_id').dir")
+          .GetString();
+  EXPECT_EQ(mainframe_input_element_dir, "rtl");
+
+  // In-process frame.
+  FrameTreeNode* ipchild = root->child_at(0);
+  RenderWidgetHostImpl* ipchild_widget =
+      ipchild->current_frame_host()->GetRenderWidgetHost();
+  ASSERT_TRUE(
+      ExecuteScript(ipchild->current_frame_host(),
+                    "var elem = document.createElement('input'); "
+                    "elem.id = 'ipchild_input_id';"
+                    "document.body.appendChild(elem);"
+                    "document.getElementById('ipchild_input_id').focus();"));
+  ipchild_widget->UpdateTextDirection(base::i18n::LEFT_TO_RIGHT);
+  ipchild_widget->NotifyTextDirection();
+  std::string ip_input_element_dir =
+      ExecuteScriptAndGetValue(
+          ipchild->current_frame_host(),
+          "document.getElementById('ipchild_input_id').dir")
+          .GetString();
+  EXPECT_EQ(ip_input_element_dir, "ltr");
+
+  // Out-of-process frame.
+  FrameTreeNode* oopchild = root->child_at(1);
+  RenderWidgetHostImpl* oopchild_widget =
+      oopchild->current_frame_host()->GetRenderWidgetHost();
+  ASSERT_TRUE(
+      ExecuteScript(oopchild->current_frame_host(),
+                    "var elem = document.createElement('input'); "
+                    "elem.id = 'oop_input_id';"
+                    "document.body.appendChild(elem);"
+                    "document.getElementById('oop_input_id').focus();"));
+  oopchild_widget->UpdateTextDirection(base::i18n::RIGHT_TO_LEFT);
+  oopchild_widget->NotifyTextDirection();
+  std::string oop_input_element_dir =
+      ExecuteScriptAndGetValue(oopchild->current_frame_host(),
+                               "document.getElementById('oop_input_id').dir")
+          .GetString();
+  EXPECT_EQ(oop_input_element_dir, "rtl");
+
+  // In case of UNKNOWN_DIRECTION, old value of direction is maintained.
+  oopchild_widget->UpdateTextDirection(base::i18n::UNKNOWN_DIRECTION);
+  oopchild_widget->NotifyTextDirection();
+  oop_input_element_dir =
+      ExecuteScriptAndGetValue(oopchild->current_frame_host(),
+                               "document.getElementById('oop_input_id').dir")
+          .GetString();
+  EXPECT_EQ(oop_input_element_dir, "rtl");
+}
+
 }  // namespace content

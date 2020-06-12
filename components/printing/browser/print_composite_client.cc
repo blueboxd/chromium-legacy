@@ -80,17 +80,17 @@ PrintCompositeClient::~PrintCompositeClient() {}
 bool PrintCompositeClient::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
+#if BUILDFLAG(ENABLE_TAGGED_PDF)
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(PrintCompositeClient, message,
                                    render_frame_host)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintFrameContent,
-                        OnDidPrintFrameContent)
-#if BUILDFLAG(ENABLE_TAGGED_PDF)
     IPC_MESSAGE_HANDLER(PrintHostMsg_AccessibilityTree, OnAccessibilityTree)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+#else
+  return false;
+#endif
 }
 
 void PrintCompositeClient::RenderFrameDeleted(
@@ -113,7 +113,7 @@ void PrintCompositeClient::RenderFrameDeleted(
 void PrintCompositeClient::OnDidPrintFrameContent(
     content::RenderFrameHost* render_frame_host,
     int document_cookie,
-    const mojom::DidPrintContentParams& params) {
+    mojom::DidPrintContentParamsPtr params) {
   auto* outer_contents = web_contents()->GetOuterWebContents();
   if (outer_contents) {
     // When the printed content belongs to an extension or app page, the print
@@ -125,7 +125,7 @@ void PrintCompositeClient::OnDidPrintFrameContent(
     auto* outer_client = PrintCompositeClient::FromWebContents(outer_contents);
     DCHECK(outer_client);
     outer_client->OnDidPrintFrameContent(render_frame_host, document_cookie,
-                                         params);
+                                         std::move(params));
     return;
   }
 
@@ -133,11 +133,11 @@ void PrintCompositeClient::OnDidPrintFrameContent(
   // is done here. Most of it will be directly forwarded to print compositor
   // service.
   auto* compositor = GetCompositeRequest(document_cookie);
-  auto region = params.metafile_data_region.Duplicate();
+  auto region = params->metafile_data_region.Duplicate();
   uint64_t frame_guid = GenerateFrameGuid(render_frame_host);
   compositor->AddSubframeContent(
       frame_guid, std::move(region),
-      ConvertContentInfoMap(render_frame_host, params.subframe_content_info));
+      ConvertContentInfoMap(render_frame_host, params->subframe_content_info));
 
   // Update our internal states about this frame.
   pending_subframe_cookies_[frame_guid].erase(document_cookie);
@@ -184,7 +184,11 @@ void PrintCompositeClient::PrintCrossProcessSubframe(
   }
 
   // Send the request to the destination frame.
-  GetPrintRenderFrame(subframe_host)->PrintFrameContent(std::move(params));
+  GetPrintRenderFrame(subframe_host)
+      ->PrintFrameContent(
+          std::move(params),
+          base::BindOnce(&PrintCompositeClient::OnDidPrintFrameContent,
+                         weak_ptr_factory_.GetWeakPtr(), subframe_host));
   pending_subframe_cookies_[frame_guid].insert(document_cookie);
 }
 

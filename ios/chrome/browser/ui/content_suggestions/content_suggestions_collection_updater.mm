@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_source.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recording.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
@@ -502,7 +503,9 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
 
     if ([model hasSectionForSectionIdentifier:sectionIdentifier] ||
         (!sectionInfo.showIfEmpty &&
-         [self.dataSource itemsForSectionInfo:sectionInfo].count == 0)) {
+         [self.dataSource itemsForSectionInfo:sectionInfo].count == 0) ||
+        (IsFromContentSuggestionsService(sectionIdentifier) &&
+         IsDiscoverFeedEnabled())) {
       continue;
     }
 

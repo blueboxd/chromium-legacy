@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/guid.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
@@ -252,16 +253,22 @@ TEST_F(UseAddressActionTest, ValidationSucceeds) {
 
   ActionProto action_proto = CreateUseAddressAction();
   AddRequiredField(&action_proto,
-                   base::NumberToString(
-                       static_cast<int>(autofill::ServerFieldType::NAME_FIRST)),
+                   base::StrCat({"${",
+                                 base::NumberToString(static_cast<int>(
+                                     autofill::ServerFieldType::NAME_FIRST)),
+                                 "}"}),
                    "#first_name");
   AddRequiredField(&action_proto,
-                   base::NumberToString(
-                       static_cast<int>(autofill::ServerFieldType::NAME_LAST)),
+                   base::StrCat({"${",
+                                 base::NumberToString(static_cast<int>(
+                                     autofill::ServerFieldType::NAME_LAST)),
+                                 "}"}),
                    "#last_name");
   AddRequiredField(&action_proto,
-                   base::NumberToString(static_cast<int>(
-                       autofill::ServerFieldType::EMAIL_ADDRESS)),
+                   base::StrCat({"${",
+                                 base::NumberToString(static_cast<int>(
+                                     autofill::ServerFieldType::EMAIL_ADDRESS)),
+                                 "}"}),
                    "#email");
 
   // Autofill succeeds.
@@ -284,16 +291,22 @@ TEST_F(UseAddressActionTest, FallbackFails) {
 
   ActionProto action_proto = CreateUseAddressAction();
   AddRequiredField(&action_proto,
-                   base::NumberToString(
-                       static_cast<int>(autofill::ServerFieldType::NAME_FIRST)),
+                   base::StrCat({"${",
+                                 base::NumberToString(static_cast<int>(
+                                     autofill::ServerFieldType::NAME_FIRST)),
+                                 "}"}),
                    "#first_name");
   AddRequiredField(&action_proto,
-                   base::NumberToString(
-                       static_cast<int>(autofill::ServerFieldType::NAME_LAST)),
+                   base::StrCat({"${",
+                                 base::NumberToString(static_cast<int>(
+                                     autofill::ServerFieldType::NAME_LAST)),
+                                 "}"}),
                    "#last_name");
   AddRequiredField(&action_proto,
-                   base::NumberToString(static_cast<int>(
-                       autofill::ServerFieldType::EMAIL_ADDRESS)),
+                   base::StrCat({"${",
+                                 base::NumberToString(static_cast<int>(
+                                     autofill::ServerFieldType::EMAIL_ADDRESS)),
+                                 "}"}),
                    "#email");
 
   // Autofill succeeds.
@@ -328,16 +341,22 @@ TEST_F(UseAddressActionTest, FallbackSucceeds) {
 
   ActionProto action_proto = CreateUseAddressAction();
   AddRequiredField(&action_proto,
-                   base::NumberToString(
-                       static_cast<int>(autofill::ServerFieldType::NAME_FIRST)),
+                   base::StrCat({"${",
+                                 base::NumberToString(static_cast<int>(
+                                     autofill::ServerFieldType::NAME_FIRST)),
+                                 "}"}),
                    "#first_name");
   AddRequiredField(&action_proto,
-                   base::NumberToString(
-                       static_cast<int>(autofill::ServerFieldType::NAME_LAST)),
+                   base::StrCat({"${",
+                                 base::NumberToString(static_cast<int>(
+                                     autofill::ServerFieldType::NAME_LAST)),
+                                 "}"}),
                    "#last_name");
   AddRequiredField(&action_proto,
-                   base::NumberToString(static_cast<int>(
-                       autofill::ServerFieldType::EMAIL_ADDRESS)),
+                   base::StrCat({"${",
+                                 base::NumberToString(static_cast<int>(
+                                     autofill::ServerFieldType::EMAIL_ADDRESS)),
+                                 "}"}),
                    "#email");
 
   // Autofill succeeds.
@@ -398,8 +417,10 @@ TEST_F(UseAddressActionTest,
 
   ActionProto action_proto = CreateUseAddressAction();
   AddRequiredField(&action_proto,
-                   base::NumberToString(
-                       static_cast<int>(autofill::ServerFieldType::NAME_FIRST)),
+                   base::StrCat({"${",
+                                 base::NumberToString(static_cast<int>(
+                                     autofill::ServerFieldType::NAME_FIRST)),
+                                 "}"}),
                    "#first_name");
 
   EXPECT_CALL(mock_action_delegate_,
@@ -478,8 +499,10 @@ TEST_F(UseAddressActionTest, ForcedFallbackWithKeystrokes) {
   ActionProto action_proto = CreateUseAddressAction();
   auto* name_required = AddRequiredField(
       &action_proto,
-      base::NumberToString(
-          static_cast<int>(autofill::ServerFieldType::NAME_FIRST)),
+      base::StrCat({"${",
+                    base::NumberToString(static_cast<int>(
+                        autofill::ServerFieldType::NAME_FIRST)),
+                    "}"}),
       "#first_name");
   name_required->set_forced(true);
   name_required->set_fill_strategy(SIMULATE_KEY_PRESSES);
@@ -495,7 +518,8 @@ TEST_F(UseAddressActionTest, ForcedFallbackWithKeystrokes) {
   ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
-  // But we still want the first name filled, with simulated keypresses.
+  // But we still want the first name filled, with
+  // simulated keypresses.
   EXPECT_CALL(mock_action_delegate_, OnSetFieldValue(Selector({"#first_name"}),
                                                      kFirstName, true, 1000, _))
       .WillOnce(RunOnceCallback<4>(OkClientStatus()));
@@ -511,8 +535,10 @@ TEST_F(UseAddressActionTest, SkippingAutofill) {
   ActionProto action_proto;
   action_proto.mutable_use_address()->set_name(kAddressName);
   AddRequiredField(&action_proto,
-                   base::NumberToString(
-                       static_cast<int>(autofill::ServerFieldType::NAME_FIRST)),
+                   base::StrCat({"${",
+                                 base::NumberToString(static_cast<int>(
+                                     autofill::ServerFieldType::NAME_FIRST)),
+                                 "}"}),
                    "#first_name");
   action_proto.mutable_use_address()->set_skip_autofill(true);
 

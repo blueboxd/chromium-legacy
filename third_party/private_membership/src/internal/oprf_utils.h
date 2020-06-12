@@ -25,9 +25,10 @@ namespace private_membership {
 //
 // Returns an INVALID_ARGUMENT error code if the given encrypted id is not a
 // valid encoding of a point on the curve as defined in ANSI X9.62 ECDSA.
+//
+// This method is not threadsafe because ec_cipher is not thread-safe.
 ::rlwe::StatusOr<DoublyEncryptedId> ReEncryptId(
-    absl::string_view encrypted_id,
-    const private_join_and_compute::ECCommutativeCipher& ec_cipher);
+    absl::string_view encrypted_id, private_join_and_compute::ECCommutativeCipher* ec_cipher);
 
 }  // namespace private_membership
 

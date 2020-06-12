@@ -11,6 +11,9 @@
 @class ShowSigninCommand;
 @class StartVoiceSearchCommand;
 @class UIViewController;
+namespace syncer {
+enum class KeyRetrievalTriggerForUMA;
+}  // namespace syncer
 
 // This protocol groups commands that are part of ApplicationCommands, but
 // may also be forwarded directly to a settings navigation controller.
@@ -79,8 +82,15 @@
     (UIViewController*)baseViewController;
 
 // Presents the Trusted Vault reauth dialog.
-- (void)showTrustedVaultReauthenticationFromViewController:
-    (UIViewController*)baseViewController;
+// |baseViewController| presents the sign-in.
+// |retrievalTrigger| UI elements where the trusted vault reauth has been
+// triggered.
+- (void)
+    showTrustedVaultReauthenticationFromViewController:
+        (UIViewController*)baseViewController
+                                      retrievalTrigger:
+                                          (syncer::KeyRetrievalTriggerForUMA)
+                                              retrievalTrigger;
 
 // Starts a voice search on the current BVC.
 - (void)startVoiceSearch;

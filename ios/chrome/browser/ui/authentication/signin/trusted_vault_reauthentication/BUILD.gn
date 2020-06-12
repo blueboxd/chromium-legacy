@@ -12,6 +12,7 @@ source_set("trusted_vault_reauthentication") {
   ]
   deps = [
     "//components/strings:components_strings_grit",
+    "//components/sync",
     "//ios/chrome/app/strings:ios_strings_grit",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/signin",

@@ -119,6 +119,8 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   void RegisterSharedImageBackingFactoryForTesting(
       SharedImageBackingFactory* factory);
 
+  MailboxManager* mailbox_manager() { return mailbox_manager_; }
+
  private:
   bool IsSharedBetweenThreads(uint32_t usage);
   bool CanUseWrappedSkImage(uint32_t usage) const;

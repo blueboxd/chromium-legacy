@@ -194,7 +194,7 @@ bool InputMethodEngine::AcceptSuggestionCandidate(
   IMEAssistiveWindowHandlerInterface* aw_handler =
       ui::IMEBridge::Get()->GetAssistiveWindowHandler();
   if (aw_handler)
-    aw_handler->HideSuggestion();
+    aw_handler->AcceptSuggestion(suggestion);
   return true;
 }
 

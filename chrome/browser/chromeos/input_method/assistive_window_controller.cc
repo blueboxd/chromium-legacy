@@ -7,11 +7,14 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_controller_delegate.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/views/widget/widget.h"
 
@@ -31,11 +34,52 @@ gfx::NativeView GetParentView() {
       ash::kShellWindowId_VirtualKeyboardContainer);
   return parent;
 }
+
+constexpr base::TimeDelta kTtsShowDelay =
+    base::TimeDelta::FromMilliseconds(100);
+
 }  // namespace
 
+TtsHandler::TtsHandler(Profile* profile) : profile_(profile) {}
+TtsHandler::~TtsHandler() = default;
+
+void TtsHandler::Announce(const std::string& text,
+                          const base::TimeDelta delay) {
+  const bool chrome_vox_enabled = profile_->GetPrefs()->GetBoolean(
+      ash::prefs::kAccessibilitySpokenFeedbackEnabled);
+  if (!chrome_vox_enabled)
+    return;
+
+  delay_timer_ = std::make_unique<base::OneShotTimer>();
+  delay_timer_->Start(
+      FROM_HERE, delay,
+      base::BindOnce(&TtsHandler::Speak, base::Unretained(this), text));
+}
+
+void TtsHandler::OnTtsEvent(content::TtsUtterance* utterance,
+                            content::TtsEventType event_type,
+                            int char_index,
+                            int length,
+                            const std::string& error_message) {}
+
+void TtsHandler::Speak(const std::string& text) {
+  std::unique_ptr<content::TtsUtterance> utterance =
+      content::TtsUtterance::Create(profile_);
+  utterance->SetText(text);
+  utterance->SetEventDelegate(this);
+
+  auto* tts_controller = content::TtsController::GetInstance();
+  tts_controller->Stop();
+  tts_controller->SpeakOrEnqueue(std::move(utterance));
+}
+
 AssistiveWindowController::AssistiveWindowController(
-    AssistiveWindowControllerDelegate* delegate)
-    : delegate_(delegate) {}
+    AssistiveWindowControllerDelegate* delegate,
+    Profile* profile,
+    std::unique_ptr<TtsHandler> tts_handler)
+    : delegate_(delegate),
+      tts_handler_(tts_handler ? std::move(tts_handler)
+                               : std::make_unique<TtsHandler>(profile)) {}
 
 AssistiveWindowController::~AssistiveWindowController() {
   if (suggestion_window_view_ && suggestion_window_view_->GetWidget())
@@ -74,6 +118,13 @@ void AssistiveWindowController::OnWidgetClosing(views::Widget* widget) {
     widget->RemoveObserver(this);
     undo_window_ = nullptr;
   }
+}
+
+void AssistiveWindowController::AcceptSuggestion(
+    const base::string16& suggestion) {
+  tts_handler_->Announce(base::StringPrintf(
+      "%s inserted.", base::UTF16ToUTF8(suggestion).c_str()));
+  HideSuggestion();
 }
 
 void AssistiveWindowController::HideSuggestion() {
@@ -116,6 +167,10 @@ void AssistiveWindowController::ShowMultipleSuggestions(
 void AssistiveWindowController::HighlightSuggestionCandidate(int index) {
   if (suggestion_window_view_)
     suggestion_window_view_->HighlightCandidate(index);
+  if (index < static_cast<int>(window_.candidates.size()))
+    tts_handler_->Announce(base::StringPrintf(
+        "%s. %d of %zu", base::UTF16ToUTF8(window_.candidates[index]).c_str(),
+        index + 1, window_.candidates.size()));
 }
 
 base::string16 AssistiveWindowController::GetSuggestionText() const {
@@ -128,15 +183,26 @@ size_t AssistiveWindowController::GetConfirmedLength() const {
 
 void AssistiveWindowController::SetAssistiveWindowProperties(
     const AssistiveWindowProperties& window) {
+  window_ = window;
   switch (window.type) {
     case ui::ime::AssistiveWindowType::kUndoWindow:
       if (!undo_window_)
         InitUndoWindow();
       window.visible ? undo_window_->Show() : undo_window_->Hide();
       break;
+    case ui::ime::AssistiveWindowType::kEmojiSuggestion:
+      if (!suggestion_window_view_)
+        InitSuggestionWindow();
+      if (window_.visible) {
+        suggestion_window_view_->ShowMultipleCandidates(window.candidates);
+      } else {
+        HideSuggestion();
+      }
+      break;
     case ui::ime::AssistiveWindowType::kNone:
       break;
   }
+  tts_handler_->Announce(window.announce_string, kTtsShowDelay);
 }
 
 void AssistiveWindowController::AssistiveWindowButtonClicked(

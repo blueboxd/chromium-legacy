@@ -38,20 +38,23 @@ void MultiStoreFormFetcher::Fetch() {
     need_to_refetch_ = true;
     return;
   }
-  // Issue a fetch from the profile password store using the base class
-  // FormFetcherImpl.
-  FormFetcherImpl::Fetch();
-  if (state_ == State::WAITING) {
-    // Fetching from the profile password store is in progress.
-    wait_counter_++;
-  }
 
-  // Issue a fetch from the account password store if available.
   PasswordStore* account_password_store = client_->GetAccountPasswordStore();
-  if (account_password_store) {
-    account_password_store->GetLogins(form_digest_, this);
-    state_ = State::WAITING;
+
+  // Issue a fetch from the profile store and, if it exists, also from the
+  // account store.
+  // Set up |wait_counter_| *before* triggering any of the fetches. This ensures
+  // that things work correctly (i.e. we don't notify of completion too early)
+  // even if the fetches return synchronously (which is the case in tests).
+  wait_counter_++;
+  if (account_password_store)
     wait_counter_++;
+
+  // Let the base class handle the fetch from the profile store.
+  FormFetcherImpl::Fetch();
+  if (account_password_store) {
+    state_ = State::WAITING;
+    account_password_store->GetLogins(form_digest_, this);
   }
 }
 

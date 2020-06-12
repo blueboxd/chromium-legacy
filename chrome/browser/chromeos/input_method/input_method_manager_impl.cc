@@ -1310,7 +1310,7 @@ void InputMethodManagerImpl::MaybeInitializeAssistiveWindowController() {
     return;
 
   assistive_window_controller_ =
-      std::make_unique<AssistiveWindowController>(this);
+      std::make_unique<AssistiveWindowController>(this, state_->profile);
   ui::IMEBridge::Get()->SetAssistiveWindowHandler(
       assistive_window_controller_.get());
 }

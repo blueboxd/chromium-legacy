@@ -172,6 +172,10 @@ const CGFloat kTabGridAnimationsTotalDuration = 0.5;
   CGFloat scaleSign = tabCount > self.view.tabGridButton.tabCount ? 1 : -1;
   self.view.tabGridButton.tabCount = tabCount;
 
+  if (IsRegularXRegularSizeClass(self))
+    // No animation on Regular x Regular.
+    return;
+
   CGFloat scaleFactor = 1 + scaleSign * kScaleFactorDiff;
 
   CGAffineTransform baseTransform =

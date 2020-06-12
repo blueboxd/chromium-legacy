@@ -49,6 +49,7 @@ class EmojiSuggester : public Suggester {
 
   // The current list of candidates.
   std::vector<base::string16> candidates_;
+  AssistiveWindowProperties properties_;
 
   // The current candidate_id chosen.
   int candidate_id_ = -1;

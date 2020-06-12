@@ -28,13 +28,13 @@ std::unique_ptr<Grid> Grid::Create(const LayoutGrid* layout_grid) {
 
 Grid::Grid(const LayoutGrid* grid) : order_iterator_(grid) {}
 
-void Grid::SetSmallestTracksStart(int row_start, int column_start) {
-  smallest_row_start_ = row_start;
-  smallest_column_start_ = column_start;
+void Grid::SetExplicitGridStart(size_t row_start, size_t column_start) {
+  explicit_row_start_ = row_start;
+  explicit_column_start_ = column_start;
 }
 
-int Grid::SmallestTrackStart(GridTrackSizingDirection direction) const {
-  return direction == kForRows ? smallest_row_start_ : smallest_column_start_;
+size_t Grid::ExplicitGridStart(GridTrackSizingDirection direction) const {
+  return direction == kForRows ? explicit_row_start_ : explicit_column_start_;
 }
 
 GridArea Grid::GridItemArea(const LayoutBox& item) const {
@@ -119,8 +119,8 @@ void Grid::SetNeedsItemsPlacement(bool needs_items_placement) {
   ClearGridDataStructure();
   grid_item_area_.clear();
   grid_items_indexes_map_.clear();
-  smallest_row_start_ = 0;
-  smallest_column_start_ = 0;
+  explicit_row_start_ = 0;
+  explicit_column_start_ = 0;
   auto_repeat_columns_ = 0;
   auto_repeat_rows_ = 0;
   auto_repeat_empty_columns_ = nullptr;

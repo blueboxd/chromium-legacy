@@ -8,7 +8,6 @@
  */
 
 const kTestPng = 'test_dir/test_file.png';
-const kTestRawImage = 'test_dir/test_file.arw';
 
 /**
  * Finds the `volumeType` volume then resolves the provided `path` as an Entry.
@@ -38,9 +37,9 @@ function getFileEntry(volumeType, path) {
  * testing. See chromeos/camera/src/js/browser_proxy/browser_proxy.js.
  */
 function openGallery(entry) {
-  // "nlkncpkkdoccmpiclbokaimcnedabhhm" is the Gallery component chrome app's
-  // extension ID. This task id is hard-coded in the Camera component app.
-  const id = 'nlkncpkkdoccmpiclbokaimcnedabhhm|app|open';
+  // "jhdjimmaggjajfjphpljagpgkidjilnj" is the MediaApp app id. This task id is
+  // hard-coded in the Camera component app.
+  const id = 'jhdjimmaggjajfjphpljagpgkidjilnj|web|open';
   function taskCallback(taskResult) {
     chrome.test.assertEq(
         chrome.fileManagerPrivate.TaskResult.MESSAGE_SENT, taskResult);
@@ -51,10 +50,6 @@ function openGallery(entry) {
 
 function testPngOpensGallery() {
   getFileEntry('testing', kTestPng).then(openGallery);
-}
-
-function testRawOpensGallery() {
-  getFileEntry('testing', kTestRawImage).then(openGallery);
 }
 
 // Handle the case where JSTestStarter has already injected a test to run.

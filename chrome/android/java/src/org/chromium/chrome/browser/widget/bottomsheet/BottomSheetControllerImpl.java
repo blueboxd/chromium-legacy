@@ -18,6 +18,7 @@ import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.util.AccessibilityUtil;
 import org.chromium.ui.util.TokenHolder;
 
 import java.util.ArrayList;
@@ -75,6 +76,9 @@ class BottomSheetControllerImpl implements BottomSheetControllerInternal {
      */
     private final TokenHolder mSuppressionTokens;
 
+    /** A means of checking whether accessibility is currently enabled. */
+    private AccessibilityUtil mAccessibilityUtil;
+
     /**
      * Build a new controller of the bottom sheet.
      * @param scrim A supplier of the scrim that shows when the bottom sheet is opened.
@@ -111,6 +115,7 @@ class BottomSheetControllerImpl implements BottomSheetControllerInternal {
         initializedCallback.onResult(mBottomSheet);
 
         mBottomSheet.init(window, keyboardDelegate);
+        mBottomSheet.setAccssibilityUtil(mAccessibilityUtil);
         mToolbarShadowHeight = mBottomSheet.getResources().getDimensionPixelOffset(
                 BottomSheet.getTopShadowResourceId());
         mShadowTopOffset = mBottomSheet.getResources().getDimensionPixelOffset(
@@ -352,6 +357,11 @@ class BottomSheetControllerImpl implements BottomSheetControllerInternal {
         }
         mContentWhenSuppressed = null;
         mSheetStateBeforeSuppress = SheetState.NONE;
+    }
+
+    @Override
+    public void setAccssibilityUtil(AccessibilityUtil enabledSupplier) {
+        mAccessibilityUtil = enabledSupplier;
     }
 
     @VisibleForTesting

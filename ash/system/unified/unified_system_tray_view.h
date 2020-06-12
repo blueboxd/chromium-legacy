@@ -142,6 +142,7 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   bool IsDetailedViewShown() const;
 
   // views::View:
+  gfx::Size CalculatePreferredSize() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void ChildPreferredSizeChanged(views::View* child) override;
   const char* GetClassName() const override;
@@ -168,8 +169,12 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
 
   View* detailed_view() { return detailed_view_container_; }
   View* detailed_view_for_testing() { return detailed_view_container_; }
+  PageIndicatorView* page_indicator_view_for_test() {
+    return page_indicator_view_;
+  }
 
  private:
+  class SystemTrayContainer;
   friend class UnifiedMessageCenterBubbleTest;
 
   // Get first and last focusable child views. These functions are used to
@@ -192,7 +197,7 @@ class ASH_EXPORT UnifiedSystemTrayView : public views::View,
   PageIndicatorView* const page_indicator_view_;
   UnifiedSlidersContainerView* const sliders_container_;
   UnifiedSystemInfoView* const system_info_view_;
-  views::View* const system_tray_container_;
+  SystemTrayContainer* const system_tray_container_;
   views::View* const detailed_view_container_;
   UnifiedMessageCenterView* message_center_view_ = nullptr;
 

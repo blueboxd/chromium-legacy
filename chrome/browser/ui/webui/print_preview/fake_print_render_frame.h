@@ -33,7 +33,8 @@ class FakePrintRenderFrame : public mojom::PrintRenderFrame {
       bool has_selection) override;
   void PrintPreview(base::Value settings) override;
   void OnPrintPreviewDialogClosed() override;
-  void PrintFrameContent(mojom::PrintFrameContentParamsPtr params) override;
+  void PrintFrameContent(mojom::PrintFrameContentParamsPtr params,
+                         PrintFrameContentCallback callback) override;
   void PrintingDone(bool success) override;
   void SetPrintingEnabled(bool enabled) override;
   void PrintNodeUnderContextMenu() override;

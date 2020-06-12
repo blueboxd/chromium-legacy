@@ -94,26 +94,6 @@ namespace base {
 //     SequenceBound<MyDerivedClass>(main_task_runner, ctor args);
 //   auto c = new SomeConsumer(std::move(widget));  // upcasts to MyClass
 
-namespace internal {
-
-// If we can't cast |Base*| into |Derived*|, then it's a virtual base if and
-// only if |Base| is actually a base class of |Derived|.  Otherwise (including
-// unrelated types), it isn't.  We default to Derived* so that the
-// specialization below will apply when the cast to |Derived*| is valid.
-template <typename Base, typename Derived, typename = Derived*>
-struct is_virtual_base_of : public std::is_base_of<Base, Derived> {};
-
-// If we can cast |Base*| into |Derived*|, then it's definitely not a virtual
-// base.  When this happens, we'll match the default third template argument.
-template <typename Base, typename Derived>
-struct is_virtual_base_of<Base,
-                          Derived,
-                          decltype(static_cast<Derived*>(
-                              static_cast<Base*>(nullptr)))> : std::false_type {
-};
-
-}  // namespace internal
-
 template <typename T>
 class SequenceBound {
  public:

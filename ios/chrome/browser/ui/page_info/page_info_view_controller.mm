@@ -9,7 +9,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/page_info/features.h"
-#import "ios/chrome/browser/ui/page_info/page_info_cookies_delegate.h"
+#import "ios/chrome/browser/ui/page_info/page_info_cookies_commands.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
@@ -38,12 +38,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSecurityHeader = kItemTypeEnumZero,
   ItemTypeSecurityDescription,
   ItemTypeCookiesHeader,
-  ItemTypeCookiesSwitch,
-  ItemTypeCookiesBlocked,
-  ItemTypeCookiesInUse,
-  ItemTypeCookiesClear,
-  ItemTypeCookiesDescription,
+  ITemTypeCookiesFooter,
 };
+
+// The vertical padding between the navigation bar and the Security header.
+float kPaddingSecurityHeader = 28.0f;
+// The vertical padding between the Security section and the Cookies section.
+float kPaddingCookiesHeader = 0.0f;
 
 }  // namespace
 
@@ -51,8 +52,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @property(nonatomic, strong)
     PageInfoSiteSecurityDescription* pageInfoSecurityDescription;
-@property(nonatomic, strong)
-    PageInfoCookiesDescription* pageInfoCookiesDescription;
+@property(nonatomic, strong) CookiesStatusDescription* cookiesDescription;
 
 @end
 
@@ -62,12 +62,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (instancetype)initWithSiteSecurityDescription:
                     (PageInfoSiteSecurityDescription*)siteSecurityDescription
-                             cookiesDescription:(PageInfoCookiesDescription*)
-                                                    cookiesDescription {
+                             cookiesDescription:
+                                 (CookiesStatusDescription*)cookiesDescription {
   self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
     _pageInfoSecurityDescription = siteSecurityDescription;
-    _pageInfoCookiesDescription = cookiesDescription;
+    _cookiesDescription = cookiesDescription;
   }
   return self;
 }
@@ -84,6 +84,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
                            target:self.handler
                            action:@selector(hidePageInfo)];
   self.navigationItem.rightBarButtonItem = dismissButton;
+  self.tableView.allowsSelection = NO;
 
   if (self.pageInfoSecurityDescription.isEmpty) {
     [self addEmptyTableViewWithMessage:self.pageInfoSecurityDescription.message
@@ -103,6 +104,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   [self.tableViewModel
       addSectionWithIdentifier:SectionIdentifierSecurityContent];
+  [self.tableViewModel
+      addSectionWithIdentifier:SectionIdentifierCookiesContent];
 
   TableViewDetailIconItem* securityHeader =
       [[TableViewDetailIconItem alloc] initWithType:ItemTypeSecurityHeader];
@@ -127,57 +130,30 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Adds Items to the tableView related to Cookies Settings.
 - (void)loadCookiesModel {
-  [self.tableViewModel
-      addSectionWithIdentifier:SectionIdentifierCookiesContent];
-
-  TableViewTextHeaderFooterItem* cookiesHeader =
-      [[TableViewTextHeaderFooterItem alloc]
-          initWithType:ItemTypeSecurityDescription];
+  TableViewDetailIconItem* cookiesHeader =
+      [[TableViewDetailIconItem alloc] initWithType:ItemTypeCookiesHeader];
   cookiesHeader.text = l10n_util::GetNSString(IDS_IOS_PAGE_INFO_COOKIES_HEADER);
-  [self.tableViewModel setHeader:cookiesHeader
-        forSectionWithIdentifier:SectionIdentifierCookiesContent];
-
-  SettingsSwitchItem* cookiesSwitchItem =
-      [[SettingsSwitchItem alloc] initWithType:ItemTypeCookiesSwitch];
-  cookiesSwitchItem.text =
-      l10n_util::GetNSString(IDS_IOS_PAGE_INFO_COOKIES_SWITCH_LABEL);
-  cookiesSwitchItem.on = self.pageInfoCookiesDescription.blockThirdPartyCookies;
-  [self.tableViewModel addItem:cookiesSwitchItem
+  cookiesHeader.detailText = self.cookiesDescription.headerDescription;
+  cookiesHeader.iconImageName = @"cookies_icon";
+  [self.tableViewModel addItem:cookiesHeader
        toSectionWithIdentifier:SectionIdentifierCookiesContent];
 
-  TableViewMultiDetailTextItem* cookiesBlocked =
-      [[TableViewMultiDetailTextItem alloc]
-          initWithType:ItemTypeCookiesBlocked];
-  cookiesBlocked.text =
-      l10n_util::GetNSString(IDS_IOS_PAGE_INFO_COOKIES_BLOCKED_LABEL);
-  cookiesBlocked.trailingDetailText = [NSString
-      stringWithFormat:@"%zd", self.pageInfoCookiesDescription.blockedCookies];
-  [self.tableViewModel addItem:cookiesBlocked
+  TableViewTextLinkItem* cookiesFooter =
+      [[TableViewTextLinkItem alloc] initWithType:ITemTypeCookiesFooter];
+  cookiesFooter.text = self.cookiesDescription.footerDescription;
+  cookiesFooter.linkURL = GURL(kChromeUICookiesSettingsURL);
+  [self.tableViewModel addItem:cookiesFooter
        toSectionWithIdentifier:SectionIdentifierCookiesContent];
+}
 
-  TableViewMultiDetailTextItem* cookiesInUse =
-      [[TableViewMultiDetailTextItem alloc] initWithType:ItemTypeCookiesInUse];
-  cookiesInUse.text =
-      l10n_util::GetNSString(IDS_IOS_PAGE_INFO_COOKIES_IN_USE_LABEL);
-  cookiesInUse.trailingDetailText = [NSString
-      stringWithFormat:@"%zd", self.pageInfoCookiesDescription.cookiesInUse];
-  [self.tableViewModel addItem:cookiesInUse
-       toSectionWithIdentifier:SectionIdentifierCookiesContent];
+#pragma mark - UITableViewDelegate
 
-  TableViewTextItem* cookiesClear =
-      [[TableViewTextItem alloc] initWithType:ItemTypeCookiesClear];
-  cookiesClear.text =
-      l10n_util::GetNSString(IDS_IOS_PAGE_INFO_COOKIES_CLEAR_SITE_LABEL);
-  cookiesClear.textColor = [UIColor colorNamed:kRedColor];
-  [self.tableViewModel addItem:cookiesClear
-       toSectionWithIdentifier:SectionIdentifierCookiesContent];
-
-  TableViewTextLinkItem* cookiesDescription =
-      [[TableViewTextLinkItem alloc] initWithType:ItemTypeCookiesDescription];
-  cookiesDescription.text =
-      l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_COOKIES_DESCRIPTION);
-  [self.tableViewModel addItem:cookiesDescription
-       toSectionWithIdentifier:SectionIdentifierCookiesContent];
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForHeaderInSection:(NSInteger)section {
+  if ([self.tableViewModel sectionIdentifierForSection:section] ==
+      SectionIdentifierSecurityContent)
+    return kPaddingSecurityHeader;
+  return kPaddingCookiesHeader;
 }
 
 #pragma mark - UITableViewDataSource
@@ -188,19 +164,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
                              cellForRowAtIndexPath:indexPath];
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
 
-  if (item.type == ItemTypeSecurityDescription) {
+  if (item.type == ItemTypeSecurityDescription ||
+      item.type == ITemTypeCookiesFooter) {
     TableViewTextLinkCell* tableViewTextLinkCell =
         base::mac::ObjCCastStrict<TableViewTextLinkCell>(cellToReturn);
     tableViewTextLinkCell.delegate = self;
   }
 
-  if (item.type == ItemTypeCookiesSwitch) {
-    SettingsSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<SettingsSwitchCell>(cellToReturn);
-    [switchCell.switchView addTarget:self
-                              action:@selector(cookiesSwitchToogled:)
-                    forControlEvents:UIControlEventValueChanged];
-  }
   return cellToReturn;
 }
 
@@ -208,49 +178,35 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
             didRequestOpenURL:(const GURL&)URL {
-  [self.handler showSecurityHelpPage];
-}
-
-#pragma mark - UITableViewDelegate
-
-- (void)tableView:(UITableView*)tableView
-    didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
-  ItemType itemType = static_cast<ItemType>(
-      [self.tableViewModel itemTypeForIndexPath:indexPath]);
-  if (itemType != ItemTypeCookiesClear)
-    return;
-  // TODO(crbug.com/1038919): Implement this.
-}
-
-- (NSIndexPath*)tableView:(UITableView*)tableView
-    willSelectRowAtIndexPath:(NSIndexPath*)indexPath {
-  [super tableView:tableView willSelectRowAtIndexPath:indexPath];
-  ItemType itemType = static_cast<ItemType>(
-      [self.tableViewModel itemTypeForIndexPath:indexPath]);
-  if (itemType == ItemTypeCookiesClear)
-    return indexPath;
-
-  return nil;
-}
-
-#pragma mark - Private
-
-// Updates Cookies preference according to the switch state.
-- (void)cookiesSwitchToogled:(UISwitch*)switchView {
-  [self.delegate blockThirdPartyCookies:switchView.isOn];
+  if (URL == GURL(kPageInfoHelpCenterURL))
+    [self.handler showSecurityHelpPage];
+  if (URL == GURL(kChromeUICookiesSettingsURL))
+    [self.handler showCookiesSettingsPage];
 }
 
 #pragma mark - PageInfoCookiesConsumer
 
-- (void)cookiesSwitchChanged:(BOOL)value {
-  NSIndexPath* switchPath = [self.tableViewModel
-      indexPathForItemType:ItemTypeCookiesSwitch
+- (void)cookiesOptionChangedToDescription:
+    (CookiesStatusDescription*)description {
+  // Update the Cookies Header.
+  NSIndexPath* headerPath = [self.tableViewModel
+      indexPathForItemType:ItemTypeCookiesHeader
          sectionIdentifier:SectionIdentifierCookiesContent];
-  SettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<SettingsSwitchItem>(
-          [self.tableViewModel itemAtIndexPath:switchPath]);
-  switchItem.on = value;
+  TableViewDetailIconItem* cookiesHeader =
+      base::mac::ObjCCastStrict<TableViewDetailIconItem>(
+          [self.tableViewModel itemAtIndexPath:headerPath]);
+  cookiesHeader.detailText = description.headerDescription;
+
+  // Update the Cookies footer.
+  NSIndexPath* footerPath = [self.tableViewModel
+      indexPathForItemType:ITemTypeCookiesFooter
+         sectionIdentifier:SectionIdentifierCookiesContent];
+  TableViewTextLinkItem* cookiesFooter =
+      base::mac::ObjCCastStrict<TableViewTextLinkItem>(
+          [self.tableViewModel itemAtIndexPath:footerPath]);
+  cookiesFooter.text = description.footerDescription;
+
+  [self reconfigureCellsForItems:@[ cookiesHeader, cookiesFooter ]];
 }
 
 @end

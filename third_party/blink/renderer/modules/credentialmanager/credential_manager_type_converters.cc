@@ -560,7 +560,9 @@ TypeConverter<PublicKeyCredentialRequestOptionsPtr,
         base::TimeDelta::FromMilliseconds(options->timeout());
   }
 
-  mojo_options->relying_party_id = options->rpId();
+  if (options->hasRpId()) {
+    mojo_options->relying_party_id = options->rpId();
+  }
 
   if (options->hasAllowCredentials()) {
     // Adds the allowList members

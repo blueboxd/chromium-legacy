@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/policy/app_install_event_log_manager.h"
+#include "chrome/browser/chromeos/policy/arc_app_install_event_log_manager.h"
 
 #include <iterator>
 #include <map>
@@ -37,11 +37,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
 using testing::AnyNumber;
 using testing::Invoke;
 using testing::Mock;
 using testing::Pointee;
-using testing::_;
 
 namespace em = enterprise_management;
 
@@ -133,7 +133,7 @@ MATCHER_P(MatchEvents, expected, "contains events") {
 }
 
 class TestLogTaskRunnerWrapper
-    : public AppInstallEventLogManager::LogTaskRunnerWrapper {
+    : public ArcAppInstallEventLogManager::LogTaskRunnerWrapper {
  public:
   TestLogTaskRunnerWrapper() {
     test_task_runner_ = new base::TestSimpleTaskRunner;
@@ -155,9 +155,9 @@ class TestLogTaskRunnerWrapper
 
 }  // namespace
 
-class AppInstallEventLogManagerTest : public testing::Test {
+class ArcAppInstallEventLogManagerTest : public testing::Test {
  protected:
-  AppInstallEventLogManagerTest()
+  ArcAppInstallEventLogManagerTest()
       : uploader_(&cloud_policy_client_, /*profile=*/nullptr),
         log_task_runner_(log_task_runner_wrapper_.test_task_runner()),
         log_file_path_(profile_.GetPath().Append(kLogFileName)),
@@ -192,7 +192,7 @@ class AppInstallEventLogManagerTest : public testing::Test {
   }
 
   void CreateManager() {
-    manager_ = std::make_unique<AppInstallEventLogManager>(
+    manager_ = std::make_unique<ArcAppInstallEventLogManager>(
         &log_task_runner_wrapper_, &uploader_, &profile_);
     FlushNonDelayedTasks();
   }
@@ -318,15 +318,15 @@ class AppInstallEventLogManagerTest : public testing::Test {
   em::AppInstallReportLogEvent event_;
   Events events_;
 
-  std::unique_ptr<AppInstallEventLogManager> manager_;
+  std::unique_ptr<ArcAppInstallEventLogManager> manager_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AppInstallEventLogManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(ArcAppInstallEventLogManagerTest);
 };
 
 // Create a manager with an empty log. Verify that no store is scheduled and no
 // upload occurs.
-TEST_F(AppInstallEventLogManagerTest, CreateEmpty) {
+TEST_F(ArcAppInstallEventLogManagerTest, CreateEmpty) {
   CreateManager();
 
   FastForwardUntilNoTasksRemain();
@@ -336,7 +336,7 @@ TEST_F(AppInstallEventLogManagerTest, CreateEmpty) {
 // Store a populated log. Create a manager that loads the non-empty log. Delete
 // the log. Verify that no store is scheduled and an expedited initial upload
 // occurs after fifteen minutes.
-TEST_F(AppInstallEventLogManagerTest, CreateNonEmpty) {
+TEST_F(ArcAppInstallEventLogManagerTest, CreateNonEmpty) {
   ArcAppInstallEventLog log(log_file_path_);
   events_[kPackageNames[0]].push_back(event_);
   log.Add(kPackageNames[0], event_);
@@ -362,7 +362,7 @@ TEST_F(AppInstallEventLogManagerTest, CreateNonEmpty) {
 // Add a log entry after two minutes. Verify that a store is scheduled after
 // five seconds and an expedited initial upload occurs after a total of fifteen
 // minutes.
-TEST_F(AppInstallEventLogManagerTest, AddBeforeInitialUpload) {
+TEST_F(ArcAppInstallEventLogManagerTest, AddBeforeInitialUpload) {
   CreateManager();
 
   const base::TimeDelta offset = base::TimeDelta::FromMinutes(2);
@@ -392,7 +392,7 @@ TEST_F(AppInstallEventLogManagerTest, AddBeforeInitialUpload) {
 // Wait twenty minutes. Add four log entries at two second cadence. Verify that
 // stores are scheduled after five and eleven seconds and an upload occurs
 // after three hours.
-TEST_F(AppInstallEventLogManagerTest, Add) {
+TEST_F(ArcAppInstallEventLogManagerTest, Add) {
   CreateManager();
 
   const base::TimeDelta offset = base::TimeDelta::FromMinutes(20);
@@ -438,7 +438,7 @@ TEST_F(AppInstallEventLogManagerTest, Add) {
 // Wait twenty minutes. Add an identical log entry for multiple apps. Verify
 // that a store is scheduled after five seconds and an upload occurs after three
 // hours.
-TEST_F(AppInstallEventLogManagerTest, AddForMultipleApps) {
+TEST_F(ArcAppInstallEventLogManagerTest, AddForMultipleApps) {
   CreateManager();
 
   const base::TimeDelta offset = base::TimeDelta::FromMinutes(20);
@@ -467,7 +467,7 @@ TEST_F(AppInstallEventLogManagerTest, AddForMultipleApps) {
 
 // Wait twenty minutes. Add an identical log entry for an empty set of apps.
 // Verify that no store is scheduled and no upload occurs.
-TEST_F(AppInstallEventLogManagerTest, AddForZeroApps) {
+TEST_F(ArcAppInstallEventLogManagerTest, AddForZeroApps) {
   CreateManager();
 
   const base::TimeDelta offset = base::TimeDelta::FromMinutes(20);
@@ -481,7 +481,7 @@ TEST_F(AppInstallEventLogManagerTest, AddForZeroApps) {
 // Wait twenty minutes. Fill the log for one app until its size exceeds the
 // threshold for expedited upload. Verify that a store is scheduled after five
 // seconds and an upload occurs after fifteen minutes.
-TEST_F(AppInstallEventLogManagerTest, AddToTriggerMaxSizeExpedited) {
+TEST_F(ArcAppInstallEventLogManagerTest, AddToTriggerMaxSizeExpedited) {
   CreateManager();
 
   const base::TimeDelta offset = base::TimeDelta::FromMinutes(20);
@@ -513,7 +513,7 @@ TEST_F(AppInstallEventLogManagerTest, AddToTriggerMaxSizeExpedited) {
 // Wait twenty minutes. Fill the logs for five apps until their total size
 // exceeds the threshold for expedited upload. Verify that a store is scheduled
 // after five seconds and an upload occurs after fifteen minutes.
-TEST_F(AppInstallEventLogManagerTest, AddToTriggerTotalSizeExpedited) {
+TEST_F(ArcAppInstallEventLogManagerTest, AddToTriggerTotalSizeExpedited) {
   CreateManager();
 
   const base::TimeDelta offset = base::TimeDelta::FromMinutes(20);
@@ -549,7 +549,7 @@ TEST_F(AppInstallEventLogManagerTest, AddToTriggerTotalSizeExpedited) {
 // until the log size exceeds the threshold for expedited upload. Verify that a
 // store is scheduled after five seconds and an upload occurs after fifteen
 // minutes.
-TEST_F(AppInstallEventLogManagerTest,
+TEST_F(ArcAppInstallEventLogManagerTest,
        AddForMultipleAppsToTriggerTotalSizeExpedited) {
   CreateManager();
 
@@ -584,7 +584,7 @@ TEST_F(AppInstallEventLogManagerTest,
 // expedited initial upload starts after fifteen minutes. Then, add another log
 // entry. Complete the upload. Verify that the pending log entry is stored.
 // Then, verify that a regular upload occurs three hours later.
-TEST_F(AppInstallEventLogManagerTest, RequestUploadAddUpload) {
+TEST_F(ArcAppInstallEventLogManagerTest, RequestUploadAddUpload) {
   CreateManager();
   AddLogEntry(0 /* app_index */);
 
@@ -627,7 +627,7 @@ TEST_F(AppInstallEventLogManagerTest, RequestUploadAddUpload) {
 // one app until its size exceeds the threshold for expedited upload. Complete
 // the upload. Verify that the pending log entries are stored. Then, verify that
 // an expedited upload occurs fifteen minutes later.
-TEST_F(AppInstallEventLogManagerTest, RequestUploadAddExpeditedUpload) {
+TEST_F(ArcAppInstallEventLogManagerTest, RequestUploadAddExpeditedUpload) {
   CreateManager();
   AddLogEntry(0 /* app_index */);
 
@@ -672,7 +672,7 @@ TEST_F(AppInstallEventLogManagerTest, RequestUploadAddExpeditedUpload) {
 // seconds and an upload starts after fifteen minutes. Then, add another log
 // entry. Complete the upload. Verify that the pending log entry is stored.
 // Then, verify that a regular upload occurs three hours later.
-TEST_F(AppInstallEventLogManagerTest, RequestExpeditedUploadAddUpload) {
+TEST_F(ArcAppInstallEventLogManagerTest, RequestExpeditedUploadAddUpload) {
   CreateManager();
 
   const base::TimeDelta offset = base::TimeDelta::FromMinutes(20);
@@ -718,7 +718,7 @@ TEST_F(AppInstallEventLogManagerTest, RequestExpeditedUploadAddUpload) {
 
 // Add a log entry. Destroy the manager. Verify that an immediate store is
 // scheduled during destruction.
-TEST_F(AppInstallEventLogManagerTest, StoreOnShutdown) {
+TEST_F(ArcAppInstallEventLogManagerTest, StoreOnShutdown) {
   CreateManager();
 
   AddLogEntry(0 /* app_index */);
@@ -733,7 +733,7 @@ TEST_F(AppInstallEventLogManagerTest, StoreOnShutdown) {
 // push-install has been requested and is still pending. Clear all data related
 // to the app-install event log. Verify that the prefs are cleared and an
 // immediate deletion of the log file is scheduled.
-TEST_F(AppInstallEventLogManagerTest, Clear) {
+TEST_F(ArcAppInstallEventLogManagerTest, Clear) {
   ArcAppInstallEventLog log(log_file_path_);
   events_[kPackageNames[0]].push_back(event_);
   log.Add(kPackageNames[0], event_);
@@ -744,7 +744,7 @@ TEST_F(AppInstallEventLogManagerTest, Clear) {
   profile_.GetPrefs()->Set(arc::prefs::kArcPushInstallAppsRequested, list);
   profile_.GetPrefs()->Set(arc::prefs::kArcPushInstallAppsPending, list);
 
-  AppInstallEventLogManager::Clear(&log_task_runner_wrapper_, &profile_);
+  ArcAppInstallEventLogManager::Clear(&log_task_runner_wrapper_, &profile_);
   EXPECT_TRUE(profile_.GetPrefs()
                   ->FindPreference(arc::prefs::kArcPushInstallAppsRequested)
                   ->IsDefaultValue());
@@ -763,7 +763,7 @@ TEST_F(AppInstallEventLogManagerTest, Clear) {
 // all data related to the app-install event log. Verify that the prefs are
 // cleared. Create a manager. Verify that the log file is deleted before the
 // manager attempts to load it.
-TEST_F(AppInstallEventLogManagerTest, RunClearRun) {
+TEST_F(ArcAppInstallEventLogManagerTest, RunClearRun) {
   CreateManager();
 
   AddLogEntry(0 /* app_index */);
@@ -778,7 +778,7 @@ TEST_F(AppInstallEventLogManagerTest, RunClearRun) {
   profile_.GetPrefs()->Set(arc::prefs::kArcPushInstallAppsRequested, list);
   profile_.GetPrefs()->Set(arc::prefs::kArcPushInstallAppsPending, list);
 
-  AppInstallEventLogManager::Clear(&log_task_runner_wrapper_, &profile_);
+  ArcAppInstallEventLogManager::Clear(&log_task_runner_wrapper_, &profile_);
   EXPECT_TRUE(profile_.GetPrefs()
                   ->FindPreference(arc::prefs::kArcPushInstallAppsRequested)
                   ->IsDefaultValue());

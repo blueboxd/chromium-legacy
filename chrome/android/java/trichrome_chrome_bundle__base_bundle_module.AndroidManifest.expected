@@ -508,7 +508,7 @@
         android:excludeFromRecents="true"
         android:exported="false"
         android:name="org.chromium.chrome.browser.sync.ui.TrustedVaultKeyRetrievalProxyActivity"
-        android:theme="@android:style/Theme.NoDisplay"/>
+        android:theme="@style/Theme.AppCompat"/>
     <activity
         android:excludeFromRecents="true"
         android:name="org.chromium.chrome.browser.webapps.WebappLauncherActivity"

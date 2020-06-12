@@ -3098,6 +3098,12 @@
     'linux_ozone_wayland_and_x11_gtests': {
       'accessibility_unittests': {},
       'aura_unittests': {},
+      'browser_tests': {
+        'experiment_percentage': 100,
+        'swarming': {
+          'shards': 10
+        },
+      },
       'compositor_unittests': {},
       'content_browsertests': {
         'swarming': {

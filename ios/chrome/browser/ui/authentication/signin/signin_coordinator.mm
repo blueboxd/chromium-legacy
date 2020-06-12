@@ -107,11 +107,16 @@ using signin_metrics::PromoAction;
 + (instancetype)
     trustedVaultReAuthenticationCoordiantorWithBaseViewController:
         (UIViewController*)viewController
-                                                          browser:(Browser*)
-                                                                      browser {
+                                                          browser:
+                                                              (Browser*)browser
+                                                 retrievalTrigger:
+                                                     (syncer::
+                                                          KeyRetrievalTriggerForUMA)
+                                                         retrievalTrigger {
   return [[TrustedVaultReauthenticationCoordinator alloc]
       initWithBaseViewController:viewController
-                         browser:browser];
+                         browser:browser
+                retrievalTrigger:retrievalTrigger];
 }
 
 - (void)dealloc {

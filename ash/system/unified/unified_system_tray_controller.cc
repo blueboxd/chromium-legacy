@@ -57,13 +57,6 @@
 
 namespace ash {
 
-namespace {
-
-// Threshold in pixel that fully collapses / expands the view through gesture.
-const int kDragThreshold = 200;
-
-}  // namespace
-
 // TODO(amehfooz): Add histograms for pagination metrics in system tray.
 void RecordPageSwitcherSourceByEventType(ui::EventType type,
                                          bool is_tablet_mode) {}
@@ -216,7 +209,8 @@ void UnifiedSystemTrayController::OnMessageCenterVisibilityUpdated() {
     bubble_->UpdateTransform();
 }
 
-void UnifiedSystemTrayController::BeginDrag(const gfx::Point& location) {
+void UnifiedSystemTrayController::BeginDrag(const gfx::PointF& location) {
+  UpdateDragThreshold();
   // Ignore swipe collapsing when a detailed view is shown as it's confusing.
   if (detailed_view_controller_)
     return;
@@ -224,7 +218,7 @@ void UnifiedSystemTrayController::BeginDrag(const gfx::Point& location) {
   was_expanded_ = IsExpanded();
 }
 
-void UnifiedSystemTrayController::UpdateDrag(const gfx::Point& location) {
+void UnifiedSystemTrayController::UpdateDrag(const gfx::PointF& location) {
   // Ignore swipe collapsing when a detailed view is shown as it's confusing.
   if (detailed_view_controller_)
     return;
@@ -253,7 +247,7 @@ void UnifiedSystemTrayController::StartAnimation(bool expand) {
   }
 }
 
-void UnifiedSystemTrayController::EndDrag(const gfx::Point& location) {
+void UnifiedSystemTrayController::EndDrag(const gfx::PointF& location) {
   // Ignore swipe collapsing when a detailed view is shown as it's confusing.
   if (detailed_view_controller_)
     return;
@@ -500,17 +494,22 @@ void UnifiedSystemTrayController::CollapseWithoutAnimating() {
   animation_->Reset(0);
 }
 
-double UnifiedSystemTrayController::GetDragExpandedAmount(
-    const gfx::Point& location) const {
-  double y_diff = (location - drag_init_point_).y();
+void UnifiedSystemTrayController::UpdateDragThreshold() {
+  UnifiedSystemTrayView* unified_view = bubble_->unified_view();
+  drag_threshold_ = unified_view->GetExpandedSystemTrayHeight() -
+                    unified_view->GetCollapsedSystemTrayHeight();
+}
 
+double UnifiedSystemTrayController::GetDragExpandedAmount(
+    const gfx::PointF& location) const {
+  double y_diff = (location - drag_init_point_).y();
   // If already expanded, only consider swiping down. Otherwise, only consider
   // swiping up.
   if (was_expanded_) {
-    return base::ClampToRange(1.0 - std::max(0.0, y_diff) / kDragThreshold, 0.0,
-                              1.0);
+    return base::ClampToRange(1.0 - std::max(0.0, y_diff) / drag_threshold_,
+                              0.0, 1.0);
   } else {
-    return base::ClampToRange(std::max(0.0, -y_diff) / kDragThreshold, 0.0,
+    return base::ClampToRange(std::max(0.0, -y_diff) / drag_threshold_, 0.0,
                               1.0);
   }
 }

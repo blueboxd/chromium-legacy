@@ -155,7 +155,7 @@ class PrivateMembershipRlweClient {
       const private_membership::rlwe::EncryptedBucket& encrypted_bucket);
 
   // Maximum encrypted bucket ID length.
-  static constexpr int kMaxEncryptedBucketIdLength = 30;
+  static constexpr int kMaxEncryptedBucketIdLength = 26;
 
   // Use case of the membership query.
   const private_membership::rlwe::RlweUseCase use_case_;

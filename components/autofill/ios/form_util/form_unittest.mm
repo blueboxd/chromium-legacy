@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "base/test/ios/wait_util.h"
 #include "components/autofill/ios/form_util/form_activity_tab_helper.h"
 #include "components/autofill/ios/form_util/test_form_activity_observer.h"
 #import "ios/web/public/browser_state.h"
@@ -15,6 +16,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForJSCompletionTimeout;
 
 class FormTestClient : public web::TestWebClient {
  public:
@@ -230,5 +234,27 @@ TEST_F(FormJsTest, AddOption) {
     return info != nil;
   });
   EXPECT_EQ("form_changed", info->form_activity.type);
+  EXPECT_FALSE(info->form_activity.input_missing);
+}
+
+// Tests that removing password form triggers 'password_form_removed" event.
+TEST_F(FormJsTest, RemoveForm) {
+  LoadHtml(@"<form id=\"form1\">"
+            "<input type=\"text\" name=\"username\" id=\"id1\">"
+            "<input type=\"password\" name=\"password\" id=\"id2\">"
+            "<input type=\"submit\" id=\"submit_input\"/>"
+            "</form>");
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);"
+                    @"__gCrWeb.formHandlers.trackFormMutations(10);"
+                    @"var form1 = document.getElementById('form1');"
+                    @"__gCrWeb.fill.setUniqueIDIfNeeded(form1);"
+                    @"form1.parentNode.removeChild(form1);");
+  autofill::TestFormActivityObserver* block_observer = observer_.get();
+  __block autofill::TestFormActivityInfo* info = nil;
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
+    info = block_observer->form_activity_info();
+    return info != nil;
+  }));
+  EXPECT_EQ("password_form_removed", info->form_activity.type);
   EXPECT_FALSE(info->form_activity.input_missing);
 }

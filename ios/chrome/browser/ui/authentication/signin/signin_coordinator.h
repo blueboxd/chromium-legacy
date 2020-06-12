@@ -14,6 +14,9 @@
 
 class Browser;
 @class ChromeIdentity;
+namespace syncer {
+enum class KeyRetrievalTriggerForUMA;
+}  // namespace syncer
 
 // Main class for sign-in coordinator. This class should not be instantiated
 // directly, this should be done using the class methods.
@@ -98,11 +101,17 @@ class Browser;
 // Vault for the primary identity. This is done with ChromeTrustedVaultService.
 // Related to IOSTrustedVaultClient.
 // |viewController| presents the sign-in.
+// |retrievalTrigger| UI elements where the trusted vault reauth has been
+// triggered.
 + (instancetype)
     trustedVaultReAuthenticationCoordiantorWithBaseViewController:
-        (UIViewController*)viewcontroller
+        (UIViewController*)viewController
                                                           browser:
-                                                              (Browser*)browser;
+                                                              (Browser*)browser
+                                                 retrievalTrigger:
+                                                     (syncer::
+                                                          KeyRetrievalTriggerForUMA)
+                                                         retrievalTrigger;
 
 // Interrupts the sign-in flow.
 // |signinCompletion(SigninCoordinatorResultInterrupted, nil)| is guaranteed to

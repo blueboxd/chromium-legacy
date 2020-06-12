@@ -31,6 +31,7 @@ js_library("layout") {
 js_library("modes") {
   deps = [
     ":recordtime",
+    "../../:async_job_queue",
     "../..:sound",
     "../..:toast",
     "../..:type",

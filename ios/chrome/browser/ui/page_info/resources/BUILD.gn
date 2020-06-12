@@ -59,3 +59,12 @@ imageset("security_icon_secure") {
     "security_icon_secure.imageset/security_icon_secure@3x.png",
   ]
 }
+
+imageset("cookies_icon") {
+  sources = [
+    "cookies_icon.imageset/Contents.json",
+    "cookies_icon.imageset/cookies_icon.png",
+    "cookies_icon.imageset/cookies_icon@2x.png",
+    "cookies_icon.imageset/cookies_icon@3x.png",
+  ]
+}

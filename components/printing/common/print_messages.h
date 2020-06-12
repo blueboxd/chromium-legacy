@@ -342,12 +342,6 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_DidPrintDocument,
                            /* page content */,
                            bool /* completed */)
 
-// Sends back to the browser the rendered subframe content that was
-// requested by a PrintMsg_PrintFrameContent message.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_DidPrintFrameContent,
-                    int /* rendered document cookie */,
-                    printing::mojom::DidPrintContentParams)
-
 #if BUILDFLAG(ENABLE_TAGGED_PDF)
 // Sends the accessibility tree corresponding to a document being
 // printed, needed for a tagged (accessible) PDF.

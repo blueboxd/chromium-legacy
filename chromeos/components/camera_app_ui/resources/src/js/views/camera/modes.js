@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {AsyncJobQueue} from '../../async_job_queue.js';
 import {browserProxy} from '../../browser_proxy/browser_proxy.js';
 import {assert, assertInstanceof} from '../../chrome_util.js';
 import {
@@ -673,11 +674,11 @@ export class Video extends ModeBase {
     this.recordTime_ = new RecordTime();
 
     /**
-     * Promise for the snapshot actions during current recording session.
-     * @type {!Promise}
+     * Queueing all taking video snapshot jobs requested in a single recording.
+     * @type {!AsyncJobQueue}
      * @private
      */
-    this.snapshots_ = Promise.resolve();
+    this.snapshots_ = new AsyncJobQueue();
 
     /**
      * Promise for process of toggling video pause/resume. Sets to null if CCA
@@ -693,16 +694,16 @@ export class Video extends ModeBase {
    * @return {!Promise} Promise resolved when video snapshot is finished.
    */
   takeSnapshot() {
-    const snapshot = (async () => {
+    const doSnapshot = async () => {
       const blob = await this.getPreviewFrame_();
       this.playShutterEffect_();
       const {width, height} = await util.blobToImage(blob);
       const imageName = (new Filenamer()).newImageName();
       await this.doSaveSnapshot_(
           {resolution: {width, height}, blob}, imageName);
-    })();
-    this.snapshots_ = this.snapshots_.then(() => snapshot);
-    return this.snapshots_;
+    };
+    this.snapshots_.push(doSnapshot);
+    return this.snapshots_.flush();
   }
 
   /**
@@ -717,21 +718,21 @@ export class Video extends ModeBase {
     this.togglePaused_ = waitable.wait();
 
     assert(this.mediaRecorder_.state !== 'inactive');
-    const toPaused = this.mediaRecorder_.state !== 'paused';
-    const toggledEvent = toPaused ? 'pause' : 'resume';
+    const toBePaused = this.mediaRecorder_.state !== 'paused';
+    const toggledEvent = toBePaused ? 'pause' : 'resume';
     const onToggled = () => {
       this.mediaRecorder_.removeEventListener(toggledEvent, onToggled);
-      state.set(state.State.RECORDING_PAUSED, toPaused);
+      state.set(state.State.RECORDING_PAUSED, toBePaused);
       this.togglePaused_ = null;
       waitable.signal();
     };
     this.mediaRecorder_.addEventListener(toggledEvent, onToggled);
 
-    if (toPaused) {
-      this.recordTime_.stop(true);
+    if (toBePaused) {
+      this.recordTime_.stop({pause: true});
       this.mediaRecorder_.pause();
     } else {
-      this.recordTime_.start(true);
+      this.recordTime_.start({resume: true});
       this.mediaRecorder_.resume();
     }
 
@@ -742,7 +743,7 @@ export class Video extends ModeBase {
    * @override
    */
   async start_() {
-    this.snapshots_ = Promise.resolve();
+    this.snapshots_ = new AsyncJobQueue();
     this.togglePaused_ = null;
     this.startSound_ = sound.play('#sound-rec-start');
     try {
@@ -764,7 +765,7 @@ export class Video extends ModeBase {
       }
     }
 
-    this.recordTime_.start();
+    this.recordTime_.start({resume: false});
     let /** ?VideoSaver */ videoSaver = null;
     let /** number */ duration = 0;
     try {
@@ -773,7 +774,7 @@ export class Video extends ModeBase {
       toast.show('error_msg_empty_recording');
       throw e;
     } finally {
-      duration = this.recordTime_.stop();
+      duration = this.recordTime_.stop({pause: false});
     }
     sound.play('#sound-rec-end');
 
@@ -791,7 +792,7 @@ export class Video extends ModeBase {
       throw e;
     }
 
-    await this.snapshots_;
+    await this.snapshots_.flush();
   }
 
   /**

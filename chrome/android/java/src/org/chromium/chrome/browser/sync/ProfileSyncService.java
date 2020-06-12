@@ -13,6 +13,7 @@ import org.json.JSONException;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.sync.KeyRetrievalTriggerForUMA;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
 
@@ -560,6 +561,14 @@ public class ProfileSyncService {
                 mNativeProfileSyncServiceAndroid, ProfileSyncService.this);
     }
 
+    /**
+     * Records TrustedVaultKeyRetrievalTrigger histogram.
+     */
+    public void recordKeyRetrievalTrigger(@KeyRetrievalTriggerForUMA int keyRetrievalTrigger) {
+        ProfileSyncServiceJni.get().recordKeyRetrievalTrigger(
+                mNativeProfileSyncServiceAndroid, ProfileSyncService.this, keyRetrievalTrigger);
+    }
+
     @VisibleForTesting
     public long getNativeProfileSyncServiceForTest() {
         return ProfileSyncServiceJni.get().getProfileSyncServiceForTest(
@@ -721,5 +730,7 @@ public class ProfileSyncService {
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
         void getAllNodes(long nativeProfileSyncServiceAndroid, ProfileSyncService caller,
                 GetAllNodesCallback callback);
+        void recordKeyRetrievalTrigger(long nativeProfileSyncServiceAndroid,
+                ProfileSyncService caller, int keyRetrievalTrigger);
     }
 }

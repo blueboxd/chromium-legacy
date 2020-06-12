@@ -128,6 +128,7 @@ input_ime::AssistiveWindowType ConvertAssistiveWindowType(
     const ui::ime::AssistiveWindowType& type) {
   switch (type) {
     case ui::ime::AssistiveWindowType::kNone:
+    case ui::ime::AssistiveWindowType::kEmojiSuggestion:
       return input_ime::AssistiveWindowType::ASSISTIVE_WINDOW_TYPE_NONE;
     case ui::ime::AssistiveWindowType::kUndoWindow:
       return input_ime::AssistiveWindowType::ASSISTIVE_WINDOW_TYPE_UNDO;
@@ -667,6 +668,8 @@ InputImeSetAssistiveWindowPropertiesFunction::Run() {
 
   assistive_window.visible = window.visible;
   assistive_window.type = ConvertAssistiveWindowType(window.type);
+  if (window.announce_string)
+    assistive_window.announce_string = *window.announce_string;
 
   engine->SetAssistiveWindowProperties(params.context_id, assistive_window,
                                        &error);

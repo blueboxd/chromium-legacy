@@ -185,7 +185,8 @@ def _PluckField(json_dict, field_path):
     return _PluckField(field_value, path_tail)
 
 
-def RunMetric(trace_processor_path, trace_file, metric_name):
+def RunMetric(trace_processor_path, trace_file, metric_name,
+              fetch_power_profile=False):
   """Run a TBMv3 metric using trace processor.
 
   Args:
@@ -199,12 +200,17 @@ def RunMetric(trace_processor_path, trace_file, metric_name):
   """
   trace_processor_path = _EnsureTraceProcessor(trace_processor_path)
   metric_files = _CreateMetricFiles(metric_name)
-  output = _RunTraceProcessor(
+  command_args = [
       trace_processor_path,
       '--run-metrics', metric_files.sql,
       '--metrics-output', 'json',
       trace_file,
-  )
+  ]
+  if fetch_power_profile:
+    power_profile_sql = binary_deps_manager.FetchDataFile(POWER_PROFILE_SQL)
+    command_args[1:1] = ['--pre-metrics', power_profile_sql]
+
+  output = _RunTraceProcessor(*command_args)
   measurements = json.loads(output)
 
   histograms = histogram_set.HistogramSet()

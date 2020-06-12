@@ -33,6 +33,7 @@
 #include "gpu/ipc/common/memory_stats.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
+#include "gpu/ipc/service/gpu_memory_ablation_experiment.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "third_party/skia/include/core/SkGraphics.h"
@@ -99,8 +100,11 @@ void FormatAllocationSourcesForTracing(
 
 }  // namespace
 
-GpuChannelManager::GpuPeakMemoryMonitor::GpuPeakMemoryMonitor()
-    : weak_factory_(this) {}
+GpuChannelManager::GpuPeakMemoryMonitor::GpuPeakMemoryMonitor(
+    GpuChannelManager* channel_manager)
+    : ablation_experiment_(
+          std::make_unique<GpuMemoryAblationExperiment>(channel_manager)),
+      weak_factory_(this) {}
 
 GpuChannelManager::GpuPeakMemoryMonitor::~GpuPeakMemoryMonitor() = default;
 
@@ -114,6 +118,12 @@ GpuChannelManager::GpuPeakMemoryMonitor::GetPeakMemoryUsage(
   if (sequence != sequence_trackers_.end()) {
     *out_peak_memory = sequence->second.total_memory_;
     allocation_per_source = sequence->second.peak_memory_per_source_;
+
+    uint64_t ablation_memory =
+        ablation_experiment_->GetPeakMemory(sequence_num);
+    *out_peak_memory += ablation_memory;
+    allocation_per_source[GpuPeakMemoryAllocationSource::SHARED_IMAGE_STUB] +=
+        ablation_memory;
   }
   return allocation_per_source;
 }
@@ -123,6 +133,7 @@ void GpuChannelManager::GpuPeakMemoryMonitor::StartGpuMemoryTracking(
   sequence_trackers_.emplace(
       sequence_num,
       SequenceTracker(current_memory_, current_memory_per_source_));
+  ablation_experiment_->StartSequence(sequence_num);
   TRACE_EVENT_ASYNC_BEGIN2("gpu", "PeakMemoryTracking", sequence_num, "start",
                            current_memory_, "start_sources",
                            StartTrackingTracedValue());
@@ -136,6 +147,7 @@ void GpuChannelManager::GpuPeakMemoryMonitor::StopGpuMemoryTracking(
                            sequence->second.total_memory_, "end_sources",
                            StopTrackingTracedValue(sequence->second));
     sequence_trackers_.erase(sequence);
+    ablation_experiment_->StopSequence(sequence_num);
   }
 }
 
@@ -217,6 +229,8 @@ void GpuChannelManager::GpuPeakMemoryMonitor::OnMemoryAllocatedChange(
   uint64_t diff = new_size - old_size;
   current_memory_ += diff;
   current_memory_per_source_[source] += diff;
+
+  ablation_experiment_->OnMemoryAllocated(old_size, new_size);
   if (old_size < new_size) {
     // When memory has increased, iterate over the sequences to update their
     // peak.
@@ -283,7 +297,8 @@ GpuChannelManager::GpuChannelManager(
                               base::Unretained(this))),
       vulkan_context_provider_(vulkan_context_provider),
       metal_context_provider_(metal_context_provider),
-      dawn_context_provider_(dawn_context_provider) {
+      dawn_context_provider_(dawn_context_provider),
+      peak_memory_monitor_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(io_task_runner);
@@ -737,6 +752,10 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
 
   // SkiaRenderer needs GrContext to composite output surface.
   need_gr_context |= features::IsUsingSkiaRenderer();
+
+  // GpuMemoryAblationExperiment needs a context to use Skia for Gpu
+  // allocations.
+  need_gr_context |= base::FeatureList::IsEnabled(kGPUMemoryAblationFeature);
 
   if (need_gr_context) {
     if (gpu_preferences_.gr_context_type == gpu::GrContextType::kGL) {

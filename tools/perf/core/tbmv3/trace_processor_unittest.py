@@ -173,3 +173,19 @@ class TraceProcessorTestCase(unittest.TestCase):
           # Checking that this doesn't throw errors.
           trace_processor.RunMetric(
               self.tp_path, '/path/to/proto', 'dummy_metric')
+
+  def testRunMetricFetchPowerProfile(self):
+    FETCH_METHOD = (
+        'core.tbmv3.trace_processor.binary_deps_manager.FetchDataFile')
+    metric_output = '{}'
+
+    with mock.patch(FETCH_METHOD) as fetch_patch:
+      with mock.patch(RUN_METHOD) as run_patch:
+          run_patch.return_value = metric_output
+          # Checking that this doesn't throw errors.
+          trace_processor.RunMetric(
+              self.tp_path, '/path/to/proto', 'dummy_metric',
+              fetch_power_profile=True)
+
+    self.assertEqual(fetch_patch.call_count, 1)
+    self.assertIn('--pre-metrics', run_patch.call_args[0])

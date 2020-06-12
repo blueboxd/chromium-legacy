@@ -766,7 +766,7 @@ LayoutGrid::ComputeEmptyTracksForAutoRepeat(
       is_row_axis ? StyleRef().GridAutoRepeatColumnsInsertionPoint()
                   : StyleRef().GridAutoRepeatRowsInsertionPoint();
   size_t first_auto_repeat_track =
-      insertion_point + std::abs(grid.SmallestTrackStart(direction));
+      insertion_point + grid.ExplicitGridStart(direction);
   size_t last_auto_repeat_track =
       first_auto_repeat_track + grid.AutoRepeatTracks(direction);
 
@@ -862,9 +862,9 @@ void LayoutGrid::PlaceItemsOnGrid(
 
     GridArea area = grid.GridItemArea(*child);
     if (!area.rows.IsIndefinite())
-      area.rows.Translate(abs(grid.SmallestTrackStart(kForRows)));
+      area.rows.Translate(grid.ExplicitGridStart(kForRows));
     if (!area.columns.IsIndefinite())
-      area.columns.Translate(abs(grid.SmallestTrackStart(kForColumns)));
+      area.columns.Translate(grid.ExplicitGridStart(kForColumns));
 
     if (area.rows.IsIndefinite() || area.columns.IsIndefinite()) {
       grid.SetGridItemArea(*child, area);
@@ -966,8 +966,8 @@ void LayoutGrid::PerformGridItemsPreLayout(
 
 void LayoutGrid::PopulateExplicitGridAndOrderIterator(Grid& grid) const {
   OrderIteratorPopulator populator(grid.GetOrderIterator());
-  int smallest_row_start = 0;
-  int smallest_column_start = 0;
+  size_t explicit_row_start = 0;
+  size_t explicit_column_start = 0;
 
   size_t auto_repeat_rows = grid.AutoRepeatTracks(kForRows);
   size_t auto_repeat_columns = grid.AutoRepeatTracks(kForColumns);
@@ -992,8 +992,8 @@ void LayoutGrid::PopulateExplicitGridAndOrderIterator(Grid& grid) const {
 
     // |positions| is 0 if we need to run the auto-placement algorithm.
     if (!row_positions.IsIndefinite()) {
-      smallest_row_start =
-          std::min(smallest_row_start, row_positions.UntranslatedStartLine());
+      explicit_row_start = std::max<int>(
+          explicit_row_start, -row_positions.UntranslatedStartLine());
       maximum_row_index =
           std::max<int>(maximum_row_index, row_positions.UntranslatedEndLine());
     } else {
@@ -1005,8 +1005,8 @@ void LayoutGrid::PopulateExplicitGridAndOrderIterator(Grid& grid) const {
     }
 
     if (!column_positions.IsIndefinite()) {
-      smallest_column_start = std::min(
-          smallest_column_start, column_positions.UntranslatedStartLine());
+      explicit_column_start = std::max<int>(
+          explicit_column_start, -column_positions.UntranslatedStartLine());
       maximum_column_index = std::max<int>(
           maximum_column_index, column_positions.UntranslatedEndLine());
     } else {
@@ -1018,9 +1018,9 @@ void LayoutGrid::PopulateExplicitGridAndOrderIterator(Grid& grid) const {
     }
   }
 
-  grid.SetSmallestTracksStart(smallest_row_start, smallest_column_start);
-  grid.EnsureGridSize(maximum_row_index + abs(smallest_row_start),
-                      maximum_column_index + abs(smallest_column_start));
+  grid.SetExplicitGridStart(explicit_row_start, explicit_column_start);
+  grid.EnsureGridSize(maximum_row_index + explicit_row_start,
+                      maximum_column_index + explicit_column_start);
 }
 
 std::unique_ptr<GridArea>
@@ -2054,10 +2054,10 @@ LayoutUnit LayoutGrid::GridAreaBreadthForOutOfFlowChild(
   if (span.IsIndefinite())
     return is_row_axis ? ClientLogicalWidth() : ClientLogicalHeight();
 
-  int smallest_start = abs(grid_->SmallestTrackStart(direction));
-  int start_line = span.UntranslatedStartLine() + smallest_start;
-  int end_line = span.UntranslatedEndLine() + smallest_start;
-  int last_line = NumTracks(direction, *grid_);
+  size_t explicit_start = grid_->ExplicitGridStart(direction);
+  size_t start_line = span.UntranslatedStartLine() + explicit_start;
+  size_t end_line = span.UntranslatedEndLine() + explicit_start;
+  size_t last_line = NumTracks(direction, *grid_);
   GridPosition start_position = direction == kForColumns
                                     ? child.StyleRef().GridColumnStart()
                                     : child.StyleRef().GridRowStart();

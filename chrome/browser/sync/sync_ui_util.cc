@@ -336,7 +336,10 @@ bool ShouldShowSyncKeysMissingError(const syncer::SyncService* service) {
          settings->IsTrustedVaultKeyRequiredForPreferredDataTypes();
 }
 
-void OpenTabForSyncKeyRetrieval(Browser* browser) {
+void OpenTabForSyncKeyRetrieval(
+    Browser* browser,
+    syncer::KeyRetrievalTriggerForUMA key_retrieval_trigger) {
+  RecordKeyRetrievalTrigger(key_retrieval_trigger);
   const GURL continue_url =
       GURL(UIThreadSearchTermsData().GoogleBaseURLValue());
   GURL retrieval_url = GaiaUrls::GetInstance()->signin_chrome_sync_keys_url();

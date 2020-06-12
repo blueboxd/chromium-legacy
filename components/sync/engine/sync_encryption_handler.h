@@ -127,12 +127,6 @@ class SyncEncryptionHandler {
     // recording the time).
     virtual void OnPassphraseTypeChanged(PassphraseType type,
                                          base::Time passphrase_time) = 0;
-
-    // The user has set a passphrase using this device.
-    // TODO(treib): This method is only overridden in tests which use it to
-    // capture the Nigori state; we should find a better way to do that.
-    virtual void OnLocalSetPassphraseEncryption(
-        const sync_pb::NigoriSpecifics& specifics) {}
   };
 
   SyncEncryptionHandler() = default;

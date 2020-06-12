@@ -12,6 +12,7 @@
 // chrome: URLs (including schemes). Should be kept in sync with the
 // URL components below.
 extern const char kChromeUIChromeURLsURL[];
+extern const char kChromeUICookiesSettingsURL[];
 extern const char kChromeUICreditsURL[];
 extern const char kChromeUIFlagsURL[];
 extern const char kChromeUIHistoryURL[];

@@ -987,8 +987,12 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
           baseViewController];
 }
 
-- (void)showTrustedVaultReauthenticationFromViewController:
-    (UIViewController*)baseViewController {
+- (void)
+    showTrustedVaultReauthenticationFromViewController:
+        (UIViewController*)baseViewController
+                                      retrievalTrigger:
+                                          (syncer::KeyRetrievalTriggerForUMA)
+                                              retrievalTrigger {
   Browser* mainBrowser = self.mainInterface.browser;
   if (!self.signinInteractionCoordinator) {
     self.signinInteractionCoordinator =
@@ -996,7 +1000,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   }
   [self.signinInteractionCoordinator
       showTrustedVaultReauthenticationWithPresentingViewController:
-          baseViewController];
+          baseViewController
+                                                  retrievalTrigger:
+                                                      retrievalTrigger];
 }
 
 // TODO(crbug.com/779791) : Remove settings commands from MainController.

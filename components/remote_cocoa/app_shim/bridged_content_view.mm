@@ -26,6 +26,7 @@
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/canvas_paint_mac.h"
 #include "ui/gfx/decorated_text.h"
 #import "ui/gfx/decorated_text_mac.h"
@@ -277,6 +278,8 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
   NSWindow* source = [theEvent window];
   NSWindow* target = [self window];
   DCHECK(target);
+  if (ui::PlatformEventSource::ShouldIgnoreNativePlatformEvents())
+    return;
 
   BOOL isScrollEvent = [theEvent type] == NSScrollWheel;
 

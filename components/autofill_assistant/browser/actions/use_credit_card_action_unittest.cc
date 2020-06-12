@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/guid.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
@@ -243,35 +244,55 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action = CreateUseCreditCardAction();
-  AddRequiredField(&action,
-                   base::NumberToString(static_cast<int>(
-                       AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
-                   "#cvc");
-  AddRequiredField(&action,
-                   base::NumberToString(static_cast<int>(
-                       autofill::ServerFieldType::CREDIT_CARD_EXP_MONTH)),
-                   "#expmonth");
   AddRequiredField(
       &action,
-      base::NumberToString(static_cast<int>(
-          autofill::ServerFieldType::CREDIT_CARD_EXP_2_DIGIT_YEAR)),
+      base::StrCat({"${",
+                    base::NumberToString(static_cast<int>(
+                        AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
+                    "}"}),
+      "#cvc");
+  AddRequiredField(
+      &action,
+      base::StrCat({"${",
+                    base::NumberToString(static_cast<int>(
+                        autofill::ServerFieldType::CREDIT_CARD_EXP_MONTH)),
+                    "}"}),
+      "#expmonth");
+  AddRequiredField(
+      &action,
+      base::StrCat(
+          {"${",
+           base::NumberToString(static_cast<int>(
+               autofill::ServerFieldType::CREDIT_CARD_EXP_2_DIGIT_YEAR)),
+           "}"}),
       "#expyear2");
   AddRequiredField(
       &action,
-      base::NumberToString(static_cast<int>(
-          autofill::ServerFieldType::CREDIT_CARD_EXP_4_DIGIT_YEAR)),
+      base::StrCat(
+          {"${",
+           base::NumberToString(static_cast<int>(
+               autofill::ServerFieldType::CREDIT_CARD_EXP_4_DIGIT_YEAR)),
+           "}"}),
       "#expyear4");
+  AddRequiredField(
+      &action,
+      base::StrCat({"${",
+                    base::NumberToString(static_cast<int>(
+                        autofill::ServerFieldType::CREDIT_CARD_NAME_FULL)),
+                    "}"}),
+      "#card_name");
+  AddRequiredField(
+      &action,
+      base::StrCat({"${",
+                    base::NumberToString(static_cast<int>(
+                        autofill::ServerFieldType::CREDIT_CARD_NUMBER)),
+                    "}"}),
+      "#card_number");
   AddRequiredField(&action,
-                   base::NumberToString(static_cast<int>(
-                       autofill::ServerFieldType::CREDIT_CARD_NAME_FULL)),
-                   "#card_name");
-  AddRequiredField(&action,
-                   base::NumberToString(static_cast<int>(
-                       autofill::ServerFieldType::CREDIT_CARD_NUMBER)),
-                   "#card_number");
-  AddRequiredField(&action,
-                   base::NumberToString(static_cast<int>(
-                       AutofillFormatProto::CREDIT_CARD_NETWORK)),
+                   base::StrCat({"${",
+                                 base::NumberToString(static_cast<int>(
+                                     AutofillFormatProto::CREDIT_CARD_NETWORK)),
+                                 "}"}),
                    "#network");
 
   // First validation fails.
@@ -363,8 +384,10 @@ TEST_F(UseCreditCardActionTest, ForcedFallbackWithKeystrokes) {
   ActionProto action = CreateUseCreditCardAction();
   auto* cvc_required = AddRequiredField(
       &action,
-      base::NumberToString(
-          static_cast<int>(AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
+      base::StrCat({"${",
+                    base::NumberToString(static_cast<int>(
+                        AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
+                    "}"}),
       "#cvc");
   cvc_required->set_forced(true);
   cvc_required->set_fill_strategy(SIMULATE_KEY_PRESSES);
@@ -393,10 +416,13 @@ TEST_F(UseCreditCardActionTest, SkippingAutofill) {
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action;
-  AddRequiredField(&action,
-                   base::NumberToString(static_cast<int>(
-                       AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
-                   "#cvc");
+  AddRequiredField(
+      &action,
+      base::StrCat({"${",
+                    base::NumberToString(static_cast<int>(
+                        AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
+                    "}"}),
+      "#cvc");
   action.mutable_use_card()->set_skip_autofill(true);
 
   EXPECT_CALL(mock_action_delegate_, OnShortWaitForElement(_, _)).Times(0);
@@ -444,10 +470,13 @@ TEST_F(UseCreditCardActionTest,
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action_proto = CreateUseCreditCardAction();
-  AddRequiredField(&action_proto,
-                   base::NumberToString(static_cast<int>(
-                       AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
-                   "#cvc");
+  AddRequiredField(
+      &action_proto,
+      base::StrCat({"${",
+                    base::NumberToString(static_cast<int>(
+                        AutofillFormatProto::CREDIT_CARD_VERIFICATION_CODE)),
+                    "}"}),
+      "#cvc");
 
   user_data_.selected_card_ = std::make_unique<autofill::CreditCard>();
   EXPECT_CALL(mock_action_delegate_,
@@ -522,7 +551,7 @@ TEST_F(UseCreditCardActionTest, FallbackFails) {
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
   ActionProto action_proto = CreateUseCreditCardAction();
-  AddRequiredField(&action_proto, "57", "#expiration_date");
+  AddRequiredField(&action_proto, "${57}", "#expiration_date");
 
   // Autofill succeeds.
   EXPECT_CALL(mock_action_delegate_,

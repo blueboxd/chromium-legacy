@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {AsyncJobQueue} from '../async_job_queue.js'
 import {assert, assertNotReached} from '../chrome_util.js';
 import * as Comlink from '../lib/comlink.js';
 import runFFmpeg from '../lib/ffmpeg.js';
 import {WaitableEvent} from '../waitable_event.js';
-import {
-  AsyncJobQueue,
-  AsyncWriter,  // eslint-disable-line no-unused-vars
-} from './async_writer.js';
+// eslint-disable-next-line no-unused-vars
+import {AsyncWriter} from './async_writer.js';
 
 /**
  * A file stream in Emscripten.

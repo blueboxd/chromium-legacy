@@ -144,6 +144,16 @@ __gCrWeb.fill.ROLE_ATTRIBUTE_PRESENTATION = 0;
 __gCrWeb.fill.RENDERER_ID_NOT_SET = '-1';
 
 /**
+ * The name of the JS Symbol used to set stable unique form and field IDs.
+ *
+ * This variable is |kNotSetRendererID| from
+ * chromium/src/components/autofill/ios/browser/autofill_util.h
+ *
+ * @const {string}
+ */
+__gCrWeb.fill.UNIQUE_ID_SYMBOL_NAME = '__gChrome~uniqueID';
+
+/**
  * Returns true if an element can be autocompleted.
  *
  * This method aims to provide the same logic as method
@@ -838,15 +848,8 @@ __gCrWeb.fill.webFormElementToFormData = function(
   form['name_attribute'] = formElement.getAttribute('name') || '';
   form['id_attribute'] = formElement.getAttribute('id') || '';
 
-  try {
-    __gCrWeb.fill.setUniqueIDIfNeeded(formElement);
-    const uniqueID = Symbol.for('__gChrome~uniqueID');
-    form['unique_renderer_id'] = isNaN(formElement[uniqueID]) ?
-        __gCrWeb.fill.RENDERER_ID_NOT_SET :
-        formElement[uniqueID].toString();
-  } catch (e) {
-    form['unique_renderer_id'] = __gCrWeb.fill.RENDERER_ID_NOT_SET;
-  }
+  __gCrWeb.fill.setUniqueIDIfNeeded(formElement);
+  form['unique_renderer_id'] = __gCrWeb.fill.getUniqueID(formElement);
 
   // Note different from form_autofill_util.cc version of this method, which
   // computes |form.action| using document.completeURL(form_element.action())
@@ -1940,14 +1943,8 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
   field['name_attribute'] = element.getAttribute('name') || '';
   field['id_attribute'] = element.getAttribute('id') || '';
 
-  try {
-    const uniqueID = Symbol.for('__gChrome~uniqueID');
-    field['unique_renderer_id'] = isNaN(element[uniqueID]) ?
-        __gCrWeb.fill.RENDERER_ID_NOT_SET :
-        element[uniqueID].toString();
-  } catch (e) {
-    field['unique_renderer_id'] = __gCrWeb.fill.RENDERER_ID_NOT_SET;
-  }
+  __gCrWeb.fill.setUniqueIDIfNeeded(element);
+  field['unique_renderer_id'] = __gCrWeb.fill.getUniqueID(element);
 
   field['form_control_type'] = element.type;
   const autocompleteAttribute = element.getAttribute('autocomplete');
@@ -2302,7 +2299,7 @@ __gCrWeb.fill.extractAutofillableElementsFromSet = function(controlElements) {
  * @param {int} nextAvailableID Next available integer.
  */
 __gCrWeb.fill['setUpForUniqueIDs'] = function(nextAvailableID) {
-  const uniqueID = Symbol.for('__gChrome~uniqueID');
+  const uniqueID = Symbol.for(__gCrWeb.fill.UNIQUE_ID_SYMBOL_NAME);
   document[uniqueID] = nextAvailableID;
 };
 
@@ -2310,9 +2307,29 @@ __gCrWeb.fill['setUpForUniqueIDs'] = function(nextAvailableID) {
  * @param {Element} element Form or form input element.
  */
 __gCrWeb.fill.setUniqueIDIfNeeded = function(element) {
-  const uniqueID = Symbol.for('__gChrome~uniqueID');
-  if (typeof element[uniqueID] === 'undefined') {
-    element[uniqueID] = document[uniqueID]++;
+  try {
+    const uniqueID = Symbol.for(__gCrWeb.fill.UNIQUE_ID_SYMBOL_NAME);
+    if (typeof element[uniqueID] === 'undefined') {
+      element[uniqueID] = document[uniqueID]++;
+    }
+  } catch (e) {
+  }
+};
+
+/**
+ * @param {Element} element Form or form input element.
+ * @return {String} Unique stable ID converted to string..
+ */
+__gCrWeb.fill.getUniqueID = function(element) {
+  try {
+    const uniqueID = Symbol.for(__gCrWeb.fill.UNIQUE_ID_SYMBOL_NAME);
+    if (typeof element[uniqueID] !== 'undefined' && !isNaN(element[uniqueID])) {
+      return element[uniqueID].toString();
+    } else {
+      return __gCrWeb.fill.RENDERER_ID_NOT_SET;
+    }
+  } catch (e) {
+    return __gCrWeb.fill.RENDERER_ID_NOT_SET;
   }
 };
 

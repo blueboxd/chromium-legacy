@@ -12,6 +12,7 @@
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_tick_clock.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -83,7 +84,7 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
   // and replace a form parsed before it (invalidating any pointers we might
   // hold) we track the newly created form signatures instead of remembering
   // the pointer values.
-  std::set<FormSignature> new_form_signatures;
+  std::set<FormRendererId> new_form_renderer_ids;
   for (const FormData& form : forms) {
     const auto parse_form_start_time = AutofillTickClock::NowTicks();
     FormStructure* cached_form_structure = nullptr;
@@ -104,21 +105,22 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
     if (!ParseForm(form, cached_form_structure, &form_structure))
       continue;
     DCHECK(form_structure);
-    new_form_signatures.insert(form_structure->form_signature());
+    new_form_renderer_ids.insert(form_structure->unique_renderer_id());
     AutofillMetrics::LogParseFormTiming(AutofillTickClock::NowTicks() -
                                         parse_form_start_time);
   }
 
-  if (new_form_signatures.empty())
+  if (new_form_renderer_ids.empty())
     return;
 
   // Populate the set of newly created form structures and call the
   // OnFormsParsed handler.
   std::vector<FormStructure*> new_form_structures;
-  new_form_structures.reserve(new_form_signatures.size());
-  for (auto signature : new_form_signatures) {
+  new_form_structures.reserve(new_form_renderer_ids.size());
+  for (auto renderer_id : new_form_renderer_ids) {
     FormStructure* form_structure = nullptr;
-    if (FindCachedForm(signature, &form_structure) && form_structure) {
+    if (FindCachedFormByRendererId(renderer_id, &form_structure) &&
+        form_structure) {
       new_form_structures.push_back(form_structure);
     } else {
       NOTREACHED();
@@ -236,9 +238,22 @@ bool AutofillHandler::GetCachedFormAndField(const FormData& form,
   return *autofill_field != nullptr;
 }
 
-bool AutofillHandler::FindCachedForm(FormSignature form_signature,
-                                     FormStructure** form_structure) const {
-  auto it = form_structures_.find(form_signature);
+bool AutofillHandler::FindCachedFormBySignature(
+    FormSignature form_signature,
+    FormStructure** form_structure) const {
+  for (const auto& p : form_structures_) {
+    if (p.second->form_signature() == form_signature) {
+      *form_structure = p.second.get();
+      return true;
+    }
+  }
+  return false;
+}
+
+bool AutofillHandler::FindCachedFormByRendererId(
+    FormRendererId form_renderer_id,
+    FormStructure** form_structure) const {
+  auto it = form_structures_.find(form_renderer_id);
   if (it != form_structures_.end()) {
     *form_structure = it->second.get();
     return true;
@@ -248,22 +263,7 @@ bool AutofillHandler::FindCachedForm(FormSignature form_signature,
 
 bool AutofillHandler::FindCachedForm(const FormData& form,
                                      FormStructure** form_structure) const {
-  // Find the FormStructure that corresponds to |form|.
-  if (FindCachedForm(autofill::CalculateFormSignature(form), form_structure))
-    return true;
-
-  // The form might have been modified by JavaScript which resulted in a change
-  // of form signature. Compare it to all the forms in the cache to look for a
-  // match.
-  for (const auto& it : form_structures_) {
-    if (it.second->unique_renderer_id() == form.unique_renderer_id) {
-      *form_structure = it.second.get();
-      return true;
-    }
-  }
-
-  *form_structure = nullptr;
-  return false;
+  return FindCachedFormByRendererId(form.unique_renderer_id, form_structure);
 }
 
 bool AutofillHandler::ParseForm(const FormData& form,
@@ -307,7 +307,7 @@ bool AutofillHandler::ParseForm(const FormData& form,
   //
   // Note that this insert/update takes ownership of the new form structure
   // and also destroys the previously cached form structure.
-  form_structures_[(*parsed_form_structure)->form_signature()] =
+  form_structures_[(*parsed_form_structure)->unique_renderer_id()] =
       std::move(form_structure);
 
   return true;

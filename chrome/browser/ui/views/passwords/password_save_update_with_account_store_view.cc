@@ -261,7 +261,6 @@ std::unique_ptr<views::Combobox> CreateDestinationCombobox(
       kHardwareComputerIcon, ui::NativeTheme::kColorId_DefaultIconColor,
       ComboboxIconSize());
 
-  // TODO(crbug.com/1044038): Use an internationalized string instead.
   std::vector<ComboboxItem> destinations = {
       {.combobox_text = l10n_util::GetStringUTF16(
            IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_SAVE_TO_ACCOUNT),
@@ -283,8 +282,8 @@ std::unique_ptr<views::Combobox> CreateDestinationCombobox(
   else
     combobox->SetSelectedRow(1);
 
-  // TODO(crbug.com/1044038): Use an internationalized string instead.
-  combobox->SetAccessibleName(base::ASCIIToUTF16("Destination"));
+  combobox->SetAccessibleName(l10n_util::GetStringUTF16(
+      IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_ACCESSIBLE_NAME));
   return combobox;
 }
 

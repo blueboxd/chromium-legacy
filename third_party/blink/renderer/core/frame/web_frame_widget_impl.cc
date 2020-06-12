@@ -642,13 +642,6 @@ void WebFrameWidgetImpl::SetRemoteViewportIntersection(
       intersection_state);
 }
 
-void WebFrameWidgetImpl::SetTextDirection(
-    mojo_base::mojom::blink::TextDirection direction) {
-  DCHECK(LocalRootImpl()->Parent());
-  DCHECK(LocalRootImpl()->Parent()->IsWebRemoteFrame());
-  LocalRootImpl()->GetFrame()->SetTextDirection(direction);
-}
-
 void WebFrameWidgetImpl::SetIsInertForSubFrame(bool inert) {
   DCHECK(LocalRootImpl()->Parent());
   DCHECK(LocalRootImpl()->Parent()->IsWebRemoteFrame());

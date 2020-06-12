@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/policy/app_install_event_log_manager.h"
+#include "chrome/browser/chromeos/policy/arc_app_install_event_log_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -59,7 +59,7 @@ class AppInstallEventLogManagerWrapper : public content::NotificationObserver {
   virtual void DestroyManager();
 
   // Provides the task runner used for all I/O on the log file.
-  std::unique_ptr<AppInstallEventLogManager::LogTaskRunnerWrapper>
+  std::unique_ptr<ArcAppInstallEventLogManager::LogTaskRunnerWrapper>
       log_task_runner_;
 
  private:
@@ -73,7 +73,7 @@ class AppInstallEventLogManagerWrapper : public content::NotificationObserver {
   Profile* const profile_;
 
   // Handles collection, storage and upload of app push-install event logs.
-  std::unique_ptr<AppInstallEventLogManager> log_manager_;
+  std::unique_ptr<ArcAppInstallEventLogManager> log_manager_;
 
   // Pref change observer.
   PrefChangeRegistrar pref_change_registrar_;

@@ -147,6 +147,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
               (const autofill::PasswordForm&, const PasswordFormManagerForUI*),
               (override));
   MOCK_METHOD(PasswordStore*, GetProfilePasswordStore, (), (const, override));
+  MOCK_METHOD(PasswordStore*, GetAccountPasswordStore, (), (const, override));
   // The code inside EXPECT_CALL for PromptUserToSaveOrUpdatePasswordPtr and
   // ShowManualFallbackForSavingPtr owns the PasswordFormManager* argument.
   MOCK_METHOD(void,
@@ -332,11 +333,28 @@ class PasswordManagerTest : public testing::Test {
  protected:
   void SetUp() override {
     store_ = new MockPasswordStore;
-    ASSERT_TRUE(store_->Init(nullptr));
+    ASSERT_TRUE(store_->Init(/*prefs=*/nullptr));
 
     ON_CALL(client_, GetProfilePasswordStore())
         .WillByDefault(Return(store_.get()));
     EXPECT_CALL(*store_, GetSiteStatsImpl(_)).Times(AnyNumber());
+
+    if (base::FeatureList::IsEnabled(
+            features::kEnablePasswordsAccountStorage)) {
+      account_store_ = new MockPasswordStore;
+      ASSERT_TRUE(account_store_->Init(/*prefs=*/nullptr));
+
+      ON_CALL(client_, GetAccountPasswordStore())
+          .WillByDefault(Return(account_store_.get()));
+
+      // Most tests don't really need the account store, but it'll still get
+      // queried by MultiStoreFormFetcher, so it needs to return something to
+      // its consumers. Let the account store return empty results by default,
+      // so that not every test has to set this up individually. Individual
+      // tests that do cover the account store can still override this.
+      ON_CALL(*account_store_, GetLogins(_, _))
+          .WillByDefault(WithArg<1>(InvokeEmptyConsumerWithForms()));
+    }
 
     manager_ = std::make_unique<PasswordManager>(&client_);
     password_autofill_manager_ =
@@ -384,6 +402,10 @@ class PasswordManagerTest : public testing::Test {
   }
 
   void TearDown() override {
+    if (account_store_) {
+      account_store_->ShutdownOnUIThread();
+      account_store_ = nullptr;
+    }
     store_->ShutdownOnUIThread();
     store_ = nullptr;
   }
@@ -398,6 +420,7 @@ class PasswordManagerTest : public testing::Test {
     form.password_value = ASCIIToUTF16("p4ssword");
     form.submit_element = ASCIIToUTF16("signIn");
     form.signon_realm = "http://www.google.com/";
+    form.in_store = PasswordForm::Store::kProfileStore;
     return form;
   }
 
@@ -481,35 +504,8 @@ class PasswordManagerTest : public testing::Test {
     android_form.username_value = ASCIIToUTF16("google");
     android_form.password_value = ASCIIToUTF16("password");
     android_form.is_affiliation_based_match = true;
+    android_form.in_store = PasswordForm::Store::kProfileStore;
     return android_form;
-  }
-
-  // Reproduction of the form present on twitter's login page.
-  PasswordForm MakeTwitterLoginForm() {
-    PasswordForm form;
-    form.url = GURL("https://twitter.com/");
-    form.action = GURL("https://twitter.com/sessions");
-    form.username_element = ASCIIToUTF16("Email");
-    form.password_element = ASCIIToUTF16("Passwd");
-    form.username_value = ASCIIToUTF16("twitter");
-    form.password_value = ASCIIToUTF16("password");
-    form.submit_element = ASCIIToUTF16("signIn");
-    form.signon_realm = "https://twitter.com/";
-    return form;
-  }
-
-  // Reproduction of the form present on twitter's failed login page.
-  PasswordForm MakeTwitterFailedLoginForm() {
-    PasswordForm form;
-    form.url = GURL("https://twitter.com/login/error?redirect_after_login");
-    form.action = GURL("https://twitter.com/sessions");
-    form.username_element = ASCIIToUTF16("EmailField");
-    form.password_element = ASCIIToUTF16("PasswdField");
-    form.username_value = ASCIIToUTF16("twitter");
-    form.password_value = ASCIIToUTF16("password");
-    form.submit_element = ASCIIToUTF16("signIn");
-    form.signon_realm = "https://twitter.com/";
-    return form;
   }
 
   PasswordForm MakeSimpleFormWithOnlyUsernameField() {
@@ -583,6 +579,7 @@ class PasswordManagerTest : public testing::Test {
   const GURL test_url_;
   base::test::SingleThreadTaskEnvironment task_environment_;
   scoped_refptr<MockPasswordStore> store_;
+  scoped_refptr<MockPasswordStore> account_store_;
   testing::NiceMock<MockPasswordManagerClient> client_;
   MockPasswordManagerDriver driver_;
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
@@ -3381,7 +3378,7 @@ TEST_F(PasswordManagerTest, FillSingleUsername) {
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillRepeatedly(WithArg<1>(InvokeConsumer(saved_match)));
 
-  // Create FormdData for a form with 1 text field.
+  // Create FormData for a form with 1 text field.
   FormData form_data;
   constexpr FormRendererId form_id(1001);
   form_data.unique_renderer_id = form_id;

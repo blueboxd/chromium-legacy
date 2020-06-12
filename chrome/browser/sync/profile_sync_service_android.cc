@@ -496,6 +496,14 @@ ProfileSyncServiceAndroid::GetSyncEnterCustomPassphraseBodyText(
       env, l10n_util::GetStringUTF8(IDS_SYNC_ENTER_PASSPHRASE_BODY));
 }
 
+void ProfileSyncServiceAndroid::RecordKeyRetrievalTrigger(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint trigger) {
+  syncer::RecordKeyRetrievalTrigger(
+      static_cast<syncer::KeyRetrievalTriggerForUMA>(trigger));
+}
+
 // Functionality only available for testing purposes.
 
 jlong ProfileSyncServiceAndroid::GetProfileSyncServiceForTest(

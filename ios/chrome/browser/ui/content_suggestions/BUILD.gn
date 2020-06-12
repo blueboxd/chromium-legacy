@@ -127,6 +127,7 @@ source_set("content_suggestions_ui") {
     ":constants",
     ":content_suggestions_constant",
     ":content_suggestions_ui_util",
+    ":feature_flags",
     "resources:content_suggestions_no_image",
     "resources:content_suggestions_offline",
     "resources:ntp_search_icon",

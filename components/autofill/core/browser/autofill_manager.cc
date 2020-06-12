@@ -1397,7 +1397,7 @@ void AutofillManager::OnLoadedServerPredictions(
     FormSignature form_signature;
     FormStructure* form_structure;
     if (base::StringToUint64(signature, &form_signature.value()) &&
-        FindCachedForm(form_signature, &form_structure)) {
+        FindCachedFormBySignature(form_signature, &form_structure)) {
       queried_forms.push_back(form_structure);
     }
   }

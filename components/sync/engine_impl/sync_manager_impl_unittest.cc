@@ -734,8 +734,6 @@ class SyncEncryptionHandlerObserverMock
   MOCK_METHOD2(OnPassphraseTypeChanged,
                void(PassphraseType,
                     base::Time));  // NOLINT
-  MOCK_METHOD1(OnLocalSetPassphraseEncryption,
-               void(const sync_pb::NigoriSpecifics&));
 };
 
 }  // namespace

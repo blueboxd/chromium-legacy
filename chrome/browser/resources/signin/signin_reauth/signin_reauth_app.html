@@ -1,4 +1,4 @@
-<style include="signin-dialog-shared cr-icons">
+<style include="signin-dialog-shared">
   :host {
     color: var(--cr-primary-text-color);
     display: flex;
@@ -60,18 +60,6 @@
     padding-inline-end: 16px;
     padding-inline-start: 16px;
   }
-
-  #reauthTooltip {
-    align-self: center;
-    margin-inline-end: auto;
-    order: -1;
-  }
-
-<if expr="is_macosx or is_linux">
-  #reauthTooltip {
-    order: 0;
-  }
-</if>
 </style>
 <div id="illustrationContainer">
   <div id="illustration"></div>
@@ -93,11 +81,4 @@
   <cr-button id="cancelButton" on-click="onCancel_">
     $i18n{signinReauthCloseLabel}
   </cr-button>
-  <cr-tooltip-icon
-      id="reauthTooltip"
-      icon-class="cr:info-outline"
-      icon-aria-label="$i18n{signinReauthTooltip}"
-      tooltip-text="$i18n{signinReauthTooltip}"
-      role="tooltip">
-  </cr-tooltip-icon>
 </div>

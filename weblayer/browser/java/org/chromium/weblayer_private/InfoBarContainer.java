@@ -396,9 +396,7 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
                 != null
             : "ChromeActivity should not be null when initializing InfoBarContainerView";
         mInfoBarContainerView = new InfoBarContainerView(chromeActivity, mContainerViewObserver,
-                // TODO(crbug.com/1025620): Determine how to get information of whether we're on a
-                // tablet.
-                false);
+                /*isTablet=*/!mTab.getBrowser().isWindowOnSmallDevice());
 
         mInfoBarContainerView.addOnAttachStateChangeListener(
                 new View.OnAttachStateChangeListener() {

@@ -7,6 +7,9 @@ source_set("privacy_ui") {
   sources = [
     "cookies_commands.h",
     "cookies_consumer.h",
+    "cookies_status_consumer.h",
+    "cookies_status_description.h",
+    "cookies_status_description.mm",
     "cookies_view_controller.h",
     "cookies_view_controller.mm",
     "handoff_table_view_controller.h",
@@ -53,6 +56,8 @@ source_set("privacy") {
     "cookies_coordinator.mm",
     "cookies_mediator.h",
     "cookies_mediator.mm",
+    "cookies_status_mediator.h",
+    "cookies_status_mediator.mm",
     "privacy_coordinator.h",
     "privacy_coordinator.mm",
   ]
@@ -61,6 +66,7 @@ source_set("privacy") {
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/prefs",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/main:public",
@@ -69,7 +75,9 @@ source_set("privacy") {
     "//ios/chrome/browser/ui/settings:settings_root",
     "//ios/chrome/browser/ui/settings/clear_browsing_data",
     "//ios/chrome/browser/ui/settings/utils",
+    "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view/cells",
+    "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
 }

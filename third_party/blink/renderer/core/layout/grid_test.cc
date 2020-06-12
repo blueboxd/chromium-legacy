@@ -36,8 +36,8 @@ TEST_F(GridTest, EmptyGrid) {
 
   EXPECT_FALSE(grid->HasGridItems());
 
-  EXPECT_EQ(0, grid->SmallestTrackStart(kForRows));
-  EXPECT_EQ(0, grid->SmallestTrackStart(kForColumns));
+  EXPECT_EQ(0u, grid->ExplicitGridStart(kForRows));
+  EXPECT_EQ(0u, grid->ExplicitGridStart(kForColumns));
 
   EXPECT_EQ(0u, grid->AutoRepeatTracks(kForRows));
   EXPECT_EQ(0u, grid->AutoRepeatTracks(kForColumns));
@@ -65,8 +65,8 @@ TEST_F(GridTest, SingleChild) {
 
   EXPECT_TRUE(grid->HasGridItems());
 
-  EXPECT_EQ(0, grid->SmallestTrackStart(kForRows));
-  EXPECT_EQ(0, grid->SmallestTrackStart(kForColumns));
+  EXPECT_EQ(0u, grid->ExplicitGridStart(kForRows));
+  EXPECT_EQ(0u, grid->ExplicitGridStart(kForColumns));
 
   auto area = grid->GridItemArea(*child);
   EXPECT_EQ(0u, area.columns.StartLine());
@@ -166,8 +166,8 @@ TEST_F(GridTest, IntrinsicGrid) {
 
   EXPECT_TRUE(grid->HasGridItems());
 
-  EXPECT_EQ(-2, grid->SmallestTrackStart(kForRows));
-  EXPECT_EQ(0, grid->SmallestTrackStart(kForColumns));
+  EXPECT_EQ(2u, grid->ExplicitGridStart(kForRows));
+  EXPECT_EQ(0u, grid->ExplicitGridStart(kForColumns));
 
   auto area = grid->GridItemArea(*child1);
   EXPECT_EQ(0u, area.columns.StartLine());
@@ -291,8 +291,8 @@ TEST_F(GridTest, ExplicitlyPositionedChild) {
 
   EXPECT_TRUE(grid->HasGridItems());
 
-  EXPECT_EQ(0, grid->SmallestTrackStart(kForRows));
-  EXPECT_EQ(0, grid->SmallestTrackStart(kForColumns));
+  EXPECT_EQ(0u, grid->ExplicitGridStart(kForRows));
+  EXPECT_EQ(0u, grid->ExplicitGridStart(kForColumns));
 
   auto area = grid->GridItemArea(*child);
   EXPECT_EQ(1u, area.columns.StartLine());

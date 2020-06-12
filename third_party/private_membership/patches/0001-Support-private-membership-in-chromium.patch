@@ -28,22 +28,22 @@ index f5f0ed9..3b46e50 100644
  }
  
 diff --git a/internal/oprf_utils.cc b/internal/oprf_utils.cc
-index 3f7346a..181383b 100644
+index e6dd9fd..b6b6a5d 100644
 --- a/internal/oprf_utils.cc
 +++ b/internal/oprf_utils.cc
 @@ -23,11 +23,16 @@ namespace private_membership {
-     const private_join_and_compute::ECCommutativeCipher& ec_cipher) {
+     private_join_and_compute::ECCommutativeCipher* ec_cipher) {
    DoublyEncryptedId doubly_encrypted_id;
  
 -  doubly_encrypted_id.set_queried_encrypted_id(encrypted_id);
 -
 -  RLWE_ASSIGN_OR_RETURN(auto reencrypted_id,
--                        ec_cipher.ReEncrypt(std::string(encrypted_id)));
+-                        ec_cipher->ReEncrypt(std::string(encrypted_id)));
 -  doubly_encrypted_id.set_doubly_encrypted_id(reencrypted_id);
 +  doubly_encrypted_id.set_queried_encrypted_id(std::string(encrypted_id));
 +
 +  auto status_or_reencrypted_id =
-+      ec_cipher.ReEncrypt(std::string(encrypted_id));
++      ec_cipher->ReEncrypt(std::string(encrypted_id));
 +  if (!status_or_reencrypted_id.ok()) {
 +    return absl::InvalidArgumentError(
 +        status_or_reencrypted_id.status().message());

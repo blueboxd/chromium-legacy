@@ -288,6 +288,13 @@ void WebFrameWidgetBase::SetBackgroundOpaque(bool opaque) {
   }
 }
 
+void WebFrameWidgetBase::SetTextDirection(
+    mojo_base::mojom::blink::TextDirection direction) {
+  LocalFrame* focusedFrame = FocusedLocalFrameInWidget();
+  if (focusedFrame)
+    focusedFrame->SetTextDirection(direction);
+}
+
 void WebFrameWidgetBase::CancelDrag() {
   // It's possible for this to be called while we're not doing a drag if
   // it's from a previous page that got unloaded.

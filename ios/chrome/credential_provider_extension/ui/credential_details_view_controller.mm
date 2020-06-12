@@ -17,15 +17,6 @@
 
 namespace {
 
-CGFloat kToastMinHeight = 40.0f;
-CGFloat kToastMinWidth = 200.0f;
-CGFloat kToastCornerRadius = 3.0f;
-CGFloat kToastHorizontalPadding = 10.0f;
-CGFloat kToastVerticalPadding = 4.0f;
-CGFloat kToastBottomMargin = 4.0f;
-CGFloat kToastSlideTime = 0.2f;
-CGFloat kToastUptime = 3.0f;
-
 NSString* kCellIdentifier = @"cdvcCell";
 
 NSString* const kMaskedPassword = @"••••••••";
@@ -174,9 +165,6 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
 - (void)copyURL {
   UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
   generalPasteboard.string = self.credential.serviceName;
-  [self showToast:NSLocalizedString(
-                      @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_URL_COPIED",
-                      @"URL was copied")];
   UpdateUMACountForKey(app_group::kCredentialExtensionCopyURLCount);
 }
 
@@ -184,9 +172,6 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
 - (void)copyUsername {
   UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
   generalPasteboard.string = self.credential.user;
-  [self showToast:NSLocalizedString(
-                      @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_USERNAME_COPIED",
-                      @"Username was copied")];
   UpdateUMACountForKey(app_group::kCredentialExtensionCopyUsernameCount);
 }
 
@@ -194,9 +179,6 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
 - (void)copyPassword {
   UIPasteboard* generalPasteboard = [UIPasteboard generalPasteboard];
   generalPasteboard.string = self.clearPassword;
-  [self showToast:NSLocalizedString(
-                      @"IDS_IOS_CREDENTIAL_PROVIDER_DETAILS_PASSWORD_COPIED",
-                      @"Password was copied")];
   UpdateUMACountForKey(app_group::kCredentialExtensionCopyPasswordCount);
 }
 
@@ -289,109 +271,6 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
                          inSection:0];
   [self.tableView reloadRowsAtIndexPaths:@[ indexPath ]
                         withRowAnimation:UITableViewRowAnimationAutomatic];
-}
-
-// Shows given message in a toast at the bottom.
-- (void)showToast:(NSString*)message {
-  dispatch_async(dispatch_get_main_queue(), ^{
-    UIView* keyWindow = self.keyWindow;
-
-    CGSize labelSize = [message sizeWithAttributes:@{
-      NSFontAttributeName :
-          [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote]
-    }];
-
-    CGFloat width =
-        MIN(MAX(kToastMinWidth, labelSize.width + 2 * kToastHorizontalPadding),
-            keyWindow.frame.size.width);
-    CGFloat height =
-        MAX(kToastMinHeight, labelSize.height + 2 * kToastVerticalPadding);
-
-    UILabel* label = [[UILabel alloc]
-        initWithFrame:CGRectMake(kToastHorizontalPadding, 0.0,
-                                 width - kToastHorizontalPadding, height)];
-    label.textAlignment = NSTextAlignmentLeft;
-    label.text = message;
-    label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
-    label.textColor = [UIColor colorNamed:kBackgroundColor];
-
-    UIView* toast =
-        [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, width, height)];
-    toast.backgroundColor = [UIColor colorNamed:kTextPrimaryColor];
-    toast.layer.cornerRadius = kToastCornerRadius;
-    toast.layer.masksToBounds = YES;
-    toast.center = CGPointMake(keyWindow.center.x,
-                               keyWindow.frame.size.height + height / 2);
-    toast.translatesAutoresizingMaskIntoConstraints = NO;
-
-    // Force toast size constraints.
-    [toast addConstraint:[NSLayoutConstraint
-                             constraintWithItem:toast
-                                      attribute:NSLayoutAttributeHeight
-                                      relatedBy:NSLayoutRelationEqual
-                                         toItem:nil
-                                      attribute:NSLayoutAttributeNotAnAttribute
-                                     multiplier:1
-                                       constant:height]];
-    [toast addConstraint:[NSLayoutConstraint
-                             constraintWithItem:toast
-                                      attribute:NSLayoutAttributeWidth
-                                      relatedBy:NSLayoutRelationEqual
-                                         toItem:nil
-                                      attribute:NSLayoutAttributeNotAnAttribute
-                                     multiplier:1
-                                       constant:width]];
-
-    [toast addSubview:label];
-    [keyWindow addSubview:toast];
-
-    // Animation constraint, based on bottom of window.
-    NSLayoutConstraint* constraint =
-        [NSLayoutConstraint constraintWithItem:toast
-                                     attribute:NSLayoutAttributeBottom
-                                     relatedBy:NSLayoutRelationEqual
-                                        toItem:keyWindow
-                                     attribute:NSLayoutAttributeBottom
-                                    multiplier:1.f
-                                      constant:height];
-    [keyWindow addConstraint:constraint];
-
-    // Force align toast with center X of window.
-    [keyWindow addConstraint:[NSLayoutConstraint
-                                 constraintWithItem:toast
-                                          attribute:NSLayoutAttributeCenterX
-                                          relatedBy:NSLayoutRelationEqual
-                                             toItem:keyWindow
-                                          attribute:NSLayoutAttributeCenterX
-                                         multiplier:1.f
-                                           constant:0]];
-
-    [UIView animateWithDuration:kToastSlideTime
-        delay:0.0
-        options:UIViewAnimationOptionCurveEaseOut
-        animations:^{
-          constraint.constant = -kToastBottomMargin;
-          [keyWindow layoutIfNeeded];
-        }
-        completion:^(BOOL finished) {
-          dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                                       (int64_t)(kToastUptime * NSEC_PER_SEC)),
-                         dispatch_get_main_queue(), ^{
-                           [toast removeFromSuperview];
-                         });
-        }];
-  });
-}
-
-// Find top window/view without using UIApplication.
-- (UIView*)keyWindow {
-  UIView* keyWindow = self.view;
-  while (keyWindow.superview) {
-    if ([keyWindow isKindOfClass:[UIWindow class]])
-      break;
-    keyWindow = keyWindow.superview;
-  }
-  return keyWindow;
 }
 
 - (void)showTootip:(NSString*)message

@@ -27,6 +27,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/account_id/account_id.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -57,7 +58,8 @@ void ShowSyncSetup(Profile* profile) {
 
 void TriggerSyncKeyRetrieval(Profile* profile) {
   chrome::ScopedTabbedBrowserDisplayer displayer(profile);
-  sync_ui_util::OpenTabForSyncKeyRetrieval(displayer.browser());
+  sync_ui_util::OpenTabForSyncKeyRetrieval(
+      displayer.browser(), syncer::KeyRetrievalTriggerForUMA::kNotification);
 }
 
 BubbleViewParameters GetBubbleViewParameters(

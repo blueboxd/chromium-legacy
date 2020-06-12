@@ -27,6 +27,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/browser/print_manager_utils.h"
+#include "components/printing/common/print.mojom-test-utils.h"
 #include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -143,66 +144,127 @@ class NupPrintingTestDelegate : public PrintingMessageFilter::TestDelegate {
   DISALLOW_COPY_AND_ASSIGN(NupPrintingTestDelegate);
 };
 
-class TestPrintFrameContentMsgFilter : public content::BrowserMessageFilter {
+class TestPrintRenderFrame
+    : public mojom::PrintRenderFrameInterceptorForTesting {
  public:
-  TestPrintFrameContentMsgFilter(int document_cookie,
-                                 base::RepeatingClosure msg_callback)
-      : content::BrowserMessageFilter(PrintMsgStart),
+  TestPrintRenderFrame(content::RenderFrameHost* frame_host,
+                       content::WebContents* web_contents,
+                       int document_cookie,
+                       base::RepeatingClosure msg_callback)
+      : frame_host_(frame_host),
+        web_contents_(web_contents),
         document_cookie_(document_cookie),
         task_runner_(base::SequencedTaskRunnerHandle::Get()),
         msg_callback_(msg_callback) {}
+  ~TestPrintRenderFrame() override = default;
 
-  bool OnMessageReceived(const IPC::Message& message) override {
-    // Only expect PrintHostMsg_DidPrintFrameContent message.
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(TestPrintFrameContentMsgFilter, message)
-      IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintFrameContent, CheckMessage)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    EXPECT_TRUE(handled);
+  void OnDidPrintFrameContent(int document_cookie,
+                              mojom::DidPrintContentParamsPtr param,
+                              PrintFrameContentCallback callback) const {
+    EXPECT_EQ(document_cookie, document_cookie_);
+    ASSERT_TRUE(param->metafile_data_region.IsValid());
+    EXPECT_GT(param->metafile_data_region.GetSize(), 0U);
     task_runner_->PostTask(FROM_HERE, msg_callback_);
-    return true;
+    std::move(callback).Run(document_cookie, std::move(param));
+  }
+
+  void Bind(mojo::ScopedInterfaceEndpointHandle handle) {
+    receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::PrintRenderFrame>(
+        std::move(handle)));
+  }
+
+  // mojom::PrintRenderFrameInterceptorForTesting
+  mojom::PrintRenderFrame* GetForwardingInterface() override {
+    NOTREACHED();
+    return nullptr;
+  }
+  void PrintFrameContent(mojom::PrintFrameContentParamsPtr params,
+                         PrintFrameContentCallback callback) override {
+    // Sends the printed result back.
+    mojom::DidPrintContentParamsPtr printed_frame_params =
+        mojom::DidPrintContentParams::New();
+    // Creates a small amount of region to avoid passing empty data to mojo.
+    constexpr size_t kSize = 10;
+    base::MappedReadOnlyRegion region_mapping =
+        base::ReadOnlySharedMemoryRegion::Create(kSize);
+    printed_frame_params->metafile_data_region =
+        std::move(region_mapping.region);
+    OnDidPrintFrameContent(params->document_cookie,
+                           std::move(printed_frame_params),
+                           std::move(callback));
+
+    auto* client = PrintCompositeClient::FromWebContents(web_contents_);
+    if (!client)
+      return;
+
+    // Prints its children.
+    content::RenderFrameHost* child = ChildFrameAt(frame_host_, 0);
+    for (size_t i = 1; child; i++) {
+      if (child->GetSiteInstance() != frame_host_->GetSiteInstance()) {
+        client->PrintCrossProcessSubframe(gfx::Rect(), params->document_cookie,
+                                          child);
+      }
+      child = ChildFrameAt(frame_host_, i);
+    }
   }
 
  private:
-  ~TestPrintFrameContentMsgFilter() override = default;
-
-  void CheckMessage(int document_cookie,
-                    const mojom::DidPrintContentParams& param) {
-    EXPECT_EQ(document_cookie, document_cookie_);
-    ASSERT_TRUE(param.metafile_data_region.IsValid());
-    EXPECT_GT(param.metafile_data_region.GetSize(), 0U);
-  }
-
+  content::RenderFrameHost* frame_host_;
+  content::WebContents* web_contents_;
   const int document_cookie_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::RepeatingClosure msg_callback_;
+  mojo::AssociatedReceiver<mojom::PrintRenderFrame> receiver_{this};
 };
 
-class KillPrintFrameContentMsgFilter : public content::BrowserMessageFilter {
+class KillPrintRenderFrame
+    : public mojom::PrintRenderFrameInterceptorForTesting {
  public:
-  explicit KillPrintFrameContentMsgFilter(content::RenderProcessHost* rph)
-      : content::BrowserMessageFilter(PrintMsgStart), rph_(rph) {}
+  explicit KillPrintRenderFrame(content::RenderProcessHost* rph) : rph_(rph) {}
+  ~KillPrintRenderFrame() override = default;
 
-  bool OnMessageReceived(const IPC::Message& message) override {
-    // Only handle PrintHostMsg_DidPrintFrameContent message.
-    bool handled = true;
-    IPC_BEGIN_MESSAGE_MAP(KillPrintFrameContentMsgFilter, message)
-      IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintFrameContent, KillRenderProcess)
-      IPC_MESSAGE_UNHANDLED(handled = false)
-    IPC_END_MESSAGE_MAP()
-    return handled;
+  void OverrideBinderForTesting(content::RenderFrameHost* render_frame_host) {
+    render_frame_host->GetRemoteAssociatedInterfaces()
+        ->OverrideBinderForTesting(
+            mojom::PrintRenderFrame::Name_,
+            base::BindRepeating(&KillPrintRenderFrame::Bind,
+                                base::Unretained(this)));
   }
 
- private:
-  ~KillPrintFrameContentMsgFilter() override = default;
-
   void KillRenderProcess(int document_cookie,
-                         const mojom::DidPrintContentParams& param) {
+                         mojom::DidPrintContentParamsPtr param,
+                         PrintFrameContentCallback callback) const {
+    std::move(callback).Run(document_cookie, std::move(param));
     rph_->Shutdown(0);
   }
 
-  content::RenderProcessHost* rph_;
+  void Bind(mojo::ScopedInterfaceEndpointHandle handle) {
+    receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::PrintRenderFrame>(
+        std::move(handle)));
+  }
+
+  // mojom::PrintRenderFrameInterceptorForTesting
+  mojom::PrintRenderFrame* GetForwardingInterface() override {
+    NOTREACHED();
+    return nullptr;
+  }
+  void PrintFrameContent(mojom::PrintFrameContentParamsPtr params,
+                         PrintFrameContentCallback callback) override {
+    // Sends the printed result back.
+    const size_t kSize = 10;
+    mojom::DidPrintContentParamsPtr printed_frame_params =
+        mojom::DidPrintContentParams::New();
+    base::MappedReadOnlyRegion region_mapping =
+        base::ReadOnlySharedMemoryRegion::Create(kSize);
+    printed_frame_params->metafile_data_region =
+        std::move(region_mapping.region);
+    KillRenderProcess(params->document_cookie, std::move(printed_frame_params),
+                      std::move(callback));
+  }
+
+ private:
+  content::RenderProcessHost* const rph_;
+  mojo::AssociatedReceiver<mojom::PrintRenderFrame> receiver_{this};
 };
 
 }  // namespace
@@ -215,7 +277,6 @@ class PrintBrowserTest : public InProcessBrowserTest {
   void SetUp() override {
     num_expected_messages_ = 1;  // By default, only wait on one message.
     num_received_messages_ = 0;
-    run_loop_.reset();
     InProcessBrowserTest::SetUp();
   }
 
@@ -251,23 +312,27 @@ class PrintBrowserTest : public InProcessBrowserTest {
     num_expected_messages_ = num;
   }
 
-  void WaitUntilMessagesReceived() {
-    run_loop_ = std::make_unique<base::RunLoop>();
-    run_loop_->Run();
+  void WaitUntilCallbackReceived() {
+    base::RunLoop run_loop;
+    quit_callback_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 
   void CheckForQuit() {
-    if (++num_received_messages_ == num_expected_messages_) {
-      run_loop_->QuitWhenIdle();
-    }
+    if (++num_received_messages_ != num_expected_messages_)
+      return;
+    if (quit_callback_)
+      std::move(quit_callback_).Run();
   }
 
-  void AddFilterForFrame(content::RenderFrameHost* frame_host) {
-    auto filter = base::MakeRefCounted<TestPrintFrameContentMsgFilter>(
-        kDefaultDocumentCookie,
-        base::BindRepeating(&PrintBrowserTest::CheckForQuit,
-                            base::Unretained(this)));
-    frame_host->GetProcess()->AddFilter(filter.get());
+  void CreateTestPrintRenderFrame(content::RenderFrameHost* frame_host,
+                                  content::WebContents* web_contents) {
+    frame_content_.emplace(
+        frame_host, std::make_unique<TestPrintRenderFrame>(
+                        frame_host, web_contents, kDefaultDocumentCookie,
+                        base::BindRepeating(&PrintBrowserTest::CheckForQuit,
+                                            base::Unretained(this))));
+    OverrideBinderForTesting(frame_host);
   }
 
   static mojom::PrintFrameContentParamsPtr GetDefaultPrintFrameParams() {
@@ -275,17 +340,34 @@ class PrintBrowserTest : public InProcessBrowserTest {
                                                kDefaultDocumentCookie);
   }
 
-  static const mojo::AssociatedRemote<mojom::PrintRenderFrame>
-  GetPrintRenderFrame(content::RenderFrameHost* rfh) {
-    mojo::AssociatedRemote<mojom::PrintRenderFrame> remote;
-    rfh->GetRemoteAssociatedInterfaces()->GetInterface(&remote);
-    return remote;
+  const mojo::AssociatedRemote<mojom::PrintRenderFrame>& GetPrintRenderFrame(
+      content::RenderFrameHost* rfh) {
+    if (!remote_)
+      rfh->GetRemoteAssociatedInterfaces()->GetInterface(&remote_);
+    return remote_;
   }
 
  private:
+  TestPrintRenderFrame* GetFrameContent(content::RenderFrameHost* host) const {
+    auto iter = frame_content_.find(host);
+    return iter != frame_content_.end() ? iter->second.get() : nullptr;
+  }
+
+  void OverrideBinderForTesting(content::RenderFrameHost* render_frame_host) {
+    render_frame_host->GetRemoteAssociatedInterfaces()
+        ->OverrideBinderForTesting(
+            mojom::PrintRenderFrame::Name_,
+            base::BindRepeating(
+                &TestPrintRenderFrame::Bind,
+                base::Unretained(GetFrameContent(render_frame_host))));
+  }
+
   unsigned int num_expected_messages_;
   unsigned int num_received_messages_;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  base::OnceClosure quit_callback_;
+  mojo::AssociatedRemote<mojom::PrintRenderFrame> remote_;
+  std::map<content::RenderFrameHost*, std::unique_ptr<TestPrintRenderFrame>>
+      frame_content_;
 };
 
 class SitePerProcessPrintBrowserTest : public PrintBrowserTest {
@@ -449,7 +531,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, SelectionContainsIframe) {
 
 // Printing frame content for the main frame of a generic webpage.
 // This test passes when the printed result is sent back and checked in
-// TestPrintFrameContentMsgFilter::CheckMessage().
+// TestPrintRenderFrame::OnDidPrintFrameContent().
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintFrameContent) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
@@ -458,18 +540,18 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintFrameContent) {
   content::WebContents* original_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::RenderFrameHost* rfh = original_contents->GetMainFrame();
-  AddFilterForFrame(rfh);
-
-  GetPrintRenderFrame(rfh)->PrintFrameContent(GetDefaultPrintFrameParams());
+  CreateTestPrintRenderFrame(rfh, original_contents);
+  GetPrintRenderFrame(rfh)->PrintFrameContent(GetDefaultPrintFrameParams(),
+                                              base::DoNothing());
 
   // The printed result will be received and checked in
-  // TestPrintFrameContentMsgFilter.
-  WaitUntilMessagesReceived();
+  // TestPrintRenderFrame.
+  WaitUntilCallbackReceived();
 }
 
 // Printing frame content for a cross-site iframe.
 // This test passes when the iframe responds to the print message.
-// The response is checked in TestPrintFrameContentMsgFilter::CheckMessage().
+// The response is checked in TestPrintRenderFrame::OnDidPrintFrameContent().
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeContent) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(
@@ -482,21 +564,20 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeContent) {
   content::RenderFrameHost* test_frame = original_contents->GetAllFrames()[1];
   ASSERT_TRUE(test_frame);
 
-  AddFilterForFrame(test_frame);
-
+  CreateTestPrintRenderFrame(test_frame, original_contents);
   GetPrintRenderFrame(test_frame)
-      ->PrintFrameContent(GetDefaultPrintFrameParams());
+      ->PrintFrameContent(GetDefaultPrintFrameParams(), base::DoNothing());
 
   // The printed result will be received and checked in
-  // TestPrintFrameContentMsgFilter.
-  WaitUntilMessagesReceived();
+  // TestPrintRenderFrame.
+  WaitUntilCallbackReceived();
 }
 
 // Printing frame content with a cross-site iframe which also has a cross-site
 // iframe. The site reference chain is a.com --> b.com --> c.com.
 // This test passes when both cross-site frames are printed and their
 // responses which are checked in
-// TestPrintFrameContentMsgFilter::CheckMessage().
+// TestPrintRenderFrame::OnDidPrintFrameContent().
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeChain) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL(
@@ -523,19 +604,19 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeChain) {
     ASSERT_NE(grandchild_frame->GetProcess(), main_frame->GetProcess());
   }
 
-  AddFilterForFrame(main_frame);
+  CreateTestPrintRenderFrame(main_frame, original_contents);
   if (oopif_enabled) {
-    AddFilterForFrame(child_frame);
-    AddFilterForFrame(grandchild_frame);
+    CreateTestPrintRenderFrame(child_frame, original_contents);
+    CreateTestPrintRenderFrame(grandchild_frame, original_contents);
   }
 
   GetPrintRenderFrame(main_frame)
-      ->PrintFrameContent(GetDefaultPrintFrameParams());
+      ->PrintFrameContent(GetDefaultPrintFrameParams(), base::DoNothing());
 
   // The printed result will be received and checked in
-  // TestPrintFrameContentMsgFilter.
+  // TestPrintRenderFrame.
   SetNumExpectedMessages(oopif_enabled ? 3 : 1);
-  WaitUntilMessagesReceived();
+  WaitUntilCallbackReceived();
 }
 
 // Printing frame content with a cross-site iframe who also has a cross site
@@ -543,7 +624,7 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeChain) {
 // The site reference loop is a.com --> b.com --> a.com.
 // This test passes when both cross-site frames are printed and send back
 // responses which are checked in
-// TestPrintFrameContentMsgFilter::CheckMessage().
+// TestPrintRenderFrame::OnDidPrintFrameContent().
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeABA) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL(
@@ -569,17 +650,19 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeABA) {
   // enabled, they will be in the same process.
   ASSERT_EQ(grandchild_frame->GetProcess(), main_frame->GetProcess());
 
-  AddFilterForFrame(main_frame);
-  if (oopif_enabled)
-    AddFilterForFrame(child_frame);
+  CreateTestPrintRenderFrame(main_frame, original_contents);
+  if (oopif_enabled) {
+    CreateTestPrintRenderFrame(child_frame, original_contents);
+    CreateTestPrintRenderFrame(grandchild_frame, original_contents);
+  }
 
   GetPrintRenderFrame(main_frame)
-      ->PrintFrameContent(GetDefaultPrintFrameParams());
+      ->PrintFrameContent(GetDefaultPrintFrameParams(), base::DoNothing());
 
   // The printed result will be received and checked in
-  // TestPrintFrameContentMsgFilter.
+  // TestPrintRenderFrame.
   SetNumExpectedMessages(oopif_enabled ? 3 : 1);
-  WaitUntilMessagesReceived();
+  WaitUntilCallbackReceived();
 }
 
 // Printing preview a simple webpage when site per process is enabled.
@@ -640,10 +723,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessPrintBrowserTest,
   ASSERT_TRUE(subframe);
   auto* subframe_rph = subframe->GetProcess();
 
-  auto filter =
-      base::MakeRefCounted<KillPrintFrameContentMsgFilter>(subframe_rph);
+  KillPrintRenderFrame frame_content(subframe_rph);
+  frame_content.OverrideBinderForTesting(subframe);
   content::ScopedAllowRendererCrashes allow_renderer_crashes(subframe_rph);
-  subframe_rph->AddFilter(filter.get());
 
   PrintAndWaitUntilPreviewIsReady(/*print_only_selection=*/false);
 }

@@ -83,6 +83,7 @@ extern const base::Feature kCompactSuggestions;
 extern const base::Feature kDeferredKeyboardPopup;
 extern const base::Feature kRichAutocompletion;
 extern const base::Feature kOmniboxLooseMaxLimitOnDedicatedRows;
+extern const base::Feature kOmniboxSearchReadyIncognito;
 extern const base::Feature kOmniboxSuggestionButtonRow;
 extern const base::Feature kOmniboxSuggestionsRecyclerView;
 extern const base::Feature kOmniboxSuggestionsWrapAround;

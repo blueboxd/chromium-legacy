@@ -45,7 +45,7 @@ const CGFloat kLayoutGuideMinHeight = 12.0;
 // The URL for the the Learn More page shown on incognito new tab.
 // Taken from ntp_resource_cache.cc.
 const char kLearnMoreIncognitoUrl[] =
-    "https://www.google.com/support/chrome/bin/answer.py?answer=95464";
+    "https://support.google.com/chrome/?p=incognito";
 
 GURL GetUrlWithLang(const GURL& url) {
   std::string locale = GetApplicationContext()->GetApplicationLocale();

@@ -5327,4 +5327,24 @@ You can manage this account’s settings by installing the Family Link app on yo
   <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_INVALID_PASSWORD" desc="Text on a password field that tells the user the password is incorrect.">
     Invalid password
   </message>
+
+  <!-- ADB sideloading policy-change notifications -->
+  <message name="IDS_ADB_SIDELOADING_POLICY_CHANGE_SIDELOADING_DISALLOWED_NOTIFICATION_TITLE" desc="Title for the notification informing the user that ADB sideloading has been disabled.">
+    ADB debugging disabled
+  </message>
+  <message name="IDS_ADB_SIDELOADING_POLICY_CHANGE_SIDELOADING_DISALLOWED_NOTIFICATION_MESSAGE" desc="Text for the notification informing the user that ADB sideloading has been disabled, but that the administrator is not forcing a powerwash.">
+    <ph name="DOMAIN">$1<ex>google.com</ex></ph> has disabled ADB debugging. No new applications can be sideloaded.
+  </message>
+  <message name="IDS_ADB_SIDELOADING_POLICY_CHANGE_POWERWASH_PLANNED_NOTIFICATION_TITLE" desc="Title for the notification informing the user that local data will be deleted.">
+    Device data will be deleted in 24 hours
+  </message>
+  <message name="IDS_ADB_SIDELOADING_POLICY_CHANGE_POWERWASH_ON_REBOOT_NOTIFICATION_TITLE" desc="Title for the notification informing the user that local data will be deleted after reboot.">
+    Device data will be deleted
+  </message>
+  <message name="IDS_ADB_SIDELOADING_POLICY_CHANGE_POWERWASH_NOTIFICATION_MESSAGE" desc="Text for the notification informing the user that that ADB sideloading has been disabled by the administrator which will result in local data being deleted after reboot.">
+    <ph name="DOMAIN">$1<ex>google.com</ex></ph> is disabling ADB debugging, which will reset your device. Back up your files before restarting.
+  </message>
+  <message name="IDS_ADB_SIDELOADING_POLICY_CHANGE_RESTART_TO_POWERWASH" meaning="button label" desc="Button label to restart the device which will result in local data being deleted.">
+    Restart to powerwash
+  </message>
 </grit-part>

@@ -167,7 +167,7 @@ bool ValueToString(UserModel* user_model,
                    << ": credit card not found";
           return false;
         }
-        auto formatted_string = field_formatter::FormatAutofillString(
+        auto formatted_string = field_formatter::FormatString(
             proto.autofill_format().pattern(),
             field_formatter::CreateAutofillMappings(
                 *credit_card, proto.autofill_format().locale()));
@@ -191,7 +191,7 @@ bool ValueToString(UserModel* user_model,
           DVLOG(2) << "Error evaluating " << __func__ << ": profile not found";
           return false;
         }
-        auto formatted_string = field_formatter::FormatAutofillString(
+        auto formatted_string = field_formatter::FormatString(
             proto.autofill_format().pattern(),
             field_formatter::CreateAutofillMappings(
                 *profile, proto.autofill_format().locale()));

@@ -113,7 +113,7 @@ TEST(EncryptedBucketIdTest, ToUint32Success) {
   ASSERT_OK_AND_ASSIGN(auto encrypted_bucket_id,
                        EncryptedBucketId::Create("\xFF\xFF\xFF\xFF", 32));
   ASSERT_OK_AND_ASSIGN(auto x, encrypted_bucket_id.ToUint32());
-  EXPECT_EQ(x, (1LL << 32) - 1);
+  EXPECT_EQ(x, (int64{1} << 32) - 1);
 }
 
 TEST(EncryptedBucketIdTest, EqualsFalse) {

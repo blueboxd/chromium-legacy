@@ -36,7 +36,8 @@ void FakePrintRenderFrame::PrintPreview(base::Value settings) {}
 void FakePrintRenderFrame::OnPrintPreviewDialogClosed() {}
 
 void FakePrintRenderFrame::PrintFrameContent(
-    mojom::PrintFrameContentParamsPtr params) {}
+    mojom::PrintFrameContentParamsPtr params,
+    PrintFrameContentCallback callback) {}
 
 void FakePrintRenderFrame::PrintingDone(bool success) {}
 

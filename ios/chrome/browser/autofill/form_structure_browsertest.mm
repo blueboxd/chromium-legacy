@@ -18,13 +18,16 @@
 #include "components/autofill/core/browser/data_driven_test.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/renderer_id.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#include "components/password_manager/ios/unique_id_tab_helper.h"
 #include "ios/chrome/browser/autofill/address_normalizer_factory.h"
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/passwords/password_controller.h"
 #import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
@@ -104,12 +107,14 @@ class FormStructureBrowserTest
   void SetUp() override;
   void TearDown() override;
 
+  bool LoadHtmlWithoutSubresourcesAndInitRendererIds(const std::string& html);
+
   // DataDrivenTest:
   void GenerateResults(const std::string& input, std::string* output) override;
 
   // Serializes the given |forms| into a string.
   std::string FormStructuresToString(
-      const AutofillManager::FormStructureMap& forms);
+      const std::map<FormRendererId, std::unique_ptr<FormStructure>>& forms);
 
   std::unique_ptr<autofill::ChromeAutofillClientIOS> autofill_client_;
   AutofillAgent* autofill_agent_;
@@ -117,6 +122,7 @@ class FormStructureBrowserTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
+  PasswordController* password_controller_;
   DISALLOW_COPY_AND_ASSIGN(FormStructureBrowserTest);
 };
 
@@ -135,6 +141,12 @@ FormStructureBrowserTest::FormStructureBrowserTest()
 
 void FormStructureBrowserTest::SetUp() {
   ChromeWebTest::SetUp();
+
+  // Create a PasswordController instance that will handle set up for renderer
+  // ids.
+  UniqueIDTabHelper::CreateForWebState(web_state());
+  password_controller_ =
+      [[PasswordController alloc] initWithWebState:web_state()];
 
   // AddressNormalizerFactory must be initialized in a blocking allowed scoped.
   // Initialize it now as it may DCHECK if it is initialized during the test.
@@ -165,9 +177,17 @@ void FormStructureBrowserTest::TearDown() {
   ChromeWebTest::TearDown();
 }
 
+bool FormStructureBrowserTest::LoadHtmlWithoutSubresourcesAndInitRendererIds(
+    const std::string& html) {
+  bool success = ChromeWebTest::LoadHtmlWithoutSubresources(html);
+  if (success)
+    ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  return success;
+}
+
 void FormStructureBrowserTest::GenerateResults(const std::string& input,
                                                std::string* output) {
-  ASSERT_TRUE(LoadHtmlWithoutSubresources(input));
+  ASSERT_TRUE(LoadHtmlWithoutSubresourcesAndInitRendererIds(input));
   base::ThreadPoolInstance::Get()->FlushForTesting();
   web::WebFrame* frame = web_state()->GetWebFramesManager()->GetMainWebFrame();
   AutofillManager* autofill_manager =
@@ -182,7 +202,7 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
 }
 
 std::string FormStructureBrowserTest::FormStructuresToString(
-    const AutofillManager::FormStructureMap& forms) {
+    const std::map<FormRendererId, std::unique_ptr<FormStructure>>& forms) {
   std::map<base::TimeTicks, const FormStructure*> sorted_forms;
   for (const auto& form_kv : forms) {
     const auto* form = form_kv.second.get();

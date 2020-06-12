@@ -561,14 +561,6 @@ size_t EraseIf(std::vector<T, Allocator>& container, Predicate pred) {
   return removed;
 }
 
-template <class T, class Allocator, class Value>
-size_t Erase(std::forward_list<T, Allocator>& container, const Value& value) {
-  // Unlike std::forward_list::remove, this function template accepts
-  // heterogeneous types and does not force a conversion to the container's
-  // value type before invoking the == operator.
-  return EraseIf(container, [&](const T& cur) { return cur == value; });
-}
-
 template <class T, class Allocator, class Predicate>
 size_t EraseIf(std::forward_list<T, Allocator>& container, Predicate pred) {
   // Note: std::forward_list does not have a size() API, thus we need to use the
@@ -577,14 +569,6 @@ size_t EraseIf(std::forward_list<T, Allocator>& container, Predicate pred) {
   size_t old_size = std::distance(container.begin(), container.end());
   container.remove_if(pred);
   return old_size - std::distance(container.begin(), container.end());
-}
-
-template <class T, class Allocator, class Value>
-size_t Erase(std::list<T, Allocator>& container, const Value& value) {
-  // Unlike std::list::remove, this function template accepts heterogeneous
-  // types and does not force a conversion to the container's value type before
-  // invoking the == operator.
-  return EraseIf(container, [&](const T& cur) { return cur == value; });
 }
 
 template <class T, class Allocator, class Predicate>
@@ -659,6 +643,22 @@ size_t EraseIf(
     std::unordered_multiset<Key, Hash, KeyEqual, Allocator>& container,
     Predicate pred) {
   return internal::IterateAndEraseIf(container, pred);
+}
+
+template <class T, class Allocator, class Value>
+size_t Erase(std::forward_list<T, Allocator>& container, const Value& value) {
+  // Unlike std::forward_list::remove, this function template accepts
+  // heterogeneous types and does not force a conversion to the container's
+  // value type before invoking the == operator.
+  return EraseIf(container, [&](const T& cur) { return cur == value; });
+}
+
+template <class T, class Allocator, class Value>
+size_t Erase(std::list<T, Allocator>& container, const Value& value) {
+  // Unlike std::list::remove, this function template accepts heterogeneous
+  // types and does not force a conversion to the container's value type before
+  // invoking the == operator.
+  return EraseIf(container, [&](const T& cur) { return cur == value; });
 }
 
 // A helper class to be used as the predicate with |EraseIf| to implement

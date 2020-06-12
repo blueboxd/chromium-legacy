@@ -162,8 +162,13 @@
   [self showAdvancedSigninSettings];
 }
 
-- (void)showTrustedVaultReauthenticationWithPresentingViewController:
-    (UIViewController*)viewController {
+- (void)
+    showTrustedVaultReauthenticationWithPresentingViewController:
+        (UIViewController*)viewController
+                                                retrievalTrigger:
+                                                    (syncer::
+                                                         KeyRetrievalTriggerForUMA)
+                                                        retrievalTrigger {
   DCHECK(!self.signinCompletion);
   DCHECK(!self.presentingViewController);
   DCHECK(!self.coordinator);
@@ -171,8 +176,9 @@
   self.coordinator = [SigninCoordinator
       trustedVaultReAuthenticationCoordiantorWithBaseViewController:
           viewController
-                                                            browser:
-                                                                self.browser];
+                                                            browser:self.browser
+                                                   retrievalTrigger:
+                                                       retrievalTrigger];
   __weak SigninInteractionCoordinator* weakSelf = self;
   self.coordinator.signinCompletion =
       ^(SigninCoordinatorResult, SigninCompletionInfo*) {

@@ -458,7 +458,7 @@ body.taking.video #recordvideo .white-square {
   width: var(--square-size);
 }
 
-#pause-recordvideo .two-bar {
+#pause-recordvideo .two-bars {
   --bar-size: 20px;
 
   background-image: url(../images/camera_shutter_video_pause.svg);
@@ -477,7 +477,7 @@ body.video.recording-paused #pause-recordvideo {
   --size: 60px;
 }
 
-body.video.recording-paused #pause-recordvideo .two-bar {
+body.video.recording-paused #pause-recordvideo .two-bars {
   --bar-size: 0px;
 }
 

@@ -19,6 +19,7 @@ enum class ButtonId {
 enum class AssistiveWindowType {
   kNone,
   kUndoWindow,
+  kEmojiSuggestion,
 };
 
 class UI_CHROMEOS_EXPORT AssistiveDelegate {

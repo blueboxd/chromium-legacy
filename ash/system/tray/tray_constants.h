@@ -186,6 +186,7 @@ constexpr int kUnifiedFeaturePodMinRows = 1;
 constexpr int kUnifiedFeaturePodMaxItemsInCollapsed = 5;
 constexpr int kUnifiedFeaturePodsPageSpacing = 48;
 constexpr int kUnifiedNotificationSeparatorThickness = 1;
+constexpr int kPageIndicatorViewMaxHeight = 20;
 
 // Constants used in system tray page transition animations.
 constexpr double kCollapseThreshold = 0.3;

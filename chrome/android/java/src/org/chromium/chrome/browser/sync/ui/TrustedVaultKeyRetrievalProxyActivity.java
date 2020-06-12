@@ -4,23 +4,23 @@
 
 package org.chromium.chrome.browser.sync.ui;
 
-import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.os.Bundle;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.init.AsyncInitializationActivity;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.TrustedVaultClient;
+import org.chromium.components.sync.KeyRetrievalTriggerForUMA;
 
 /**
  * {@link TrustedVaultKeyRetrievalProxyActivity} has no own UI and just launches real key retrieval
  * activity (passed via extra). The reason for using this proxy activity is to detect when real key
  * retrieval activity finishes and notify TrustedVaultClient about changed keys.
  */
-public class TrustedVaultKeyRetrievalProxyActivity extends Activity {
+public class TrustedVaultKeyRetrievalProxyActivity extends AsyncInitializationActivity {
     private static final String KEY_RETRIEVAL_INTENT_NAME = "key_retrieval";
     private static final String TAG = "SyncUI";
     private static final int REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL = 1;
@@ -43,13 +43,20 @@ public class TrustedVaultKeyRetrievalProxyActivity extends Activity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public boolean shouldStartGpuProcess() {
+        return false;
+    }
 
+    @Override
+    protected void triggerLayoutInflation() {
+        // This Activity has no own UI and uses external pending intent to provide it. Since this
+        // Activity requires native initialization it implements AsyncInitializationActivity and
+        // thus the pending intent is sent inside triggerLayoutInflation() instead of onCreate().
         PendingIntent keyRetrievalIntent =
                 getIntent().getParcelableExtra(KEY_RETRIEVAL_INTENT_NAME);
         assert keyRetrievalIntent != null;
         try {
+            // TODO(crbug.com/1090704): check getSavedInstanceState() before sending the intent.
             startIntentSenderForResult(keyRetrievalIntent.getIntentSender(),
                     REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL,
                     /* fillInIntent */ null, /* flagsMask */ 0,
@@ -58,20 +65,29 @@ public class TrustedVaultKeyRetrievalProxyActivity extends Activity {
         } catch (IntentSender.SendIntentException exception) {
             Log.w(TAG, "Error sending key retrieval intent: ", exception);
         }
+        onInitialLayoutInflationComplete();
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void finishNativeInitialization() {
+        super.finishNativeInitialization();
+        // Activity might be restored and this shouldn't cause recording the histogram second time.
+        if (getSavedInstanceState() == null) {
+            ProfileSyncService.get().recordKeyRetrievalTrigger(
+                    KeyRetrievalTriggerForUMA.NOTIFICATION);
+        }
+    }
+
+    @Override
+    public boolean onActivityResultWithNative(int requestCode, int resultCode, Intent intent) {
+        boolean result = super.onActivityResultWithNative(requestCode, resultCode, intent);
         assert requestCode == REQUEST_CODE_TRUSTED_VAULT_KEY_RETRIEVAL;
 
         // Upon key retrieval completion, the keys in TrustedVaultClient could have changed. This is
         // done even if the user cancelled the flow (i.e. resultCode != RESULT_OK) because it's
         // harmless to issue a redundant notifyKeysChanged().
-        // The Chrome browser process might be not alive, there is no need to start it, because new
-        // keys will be fetched during its next start automatically.
-        if (ChromeBrowserInitializer.getInstance().isFullBrowserInitialized()) {
-            TrustedVaultClient.get().notifyKeysChanged();
-        }
+        TrustedVaultClient.get().notifyKeysChanged();
         finish();
+        return result;
     }
 }

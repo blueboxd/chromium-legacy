@@ -173,6 +173,11 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>&);
 
+  void RecordKeyRetrievalTrigger(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jint trigger);
+
   // Functionality only available for testing purposes.
 
   jlong GetProfileSyncServiceForTest(

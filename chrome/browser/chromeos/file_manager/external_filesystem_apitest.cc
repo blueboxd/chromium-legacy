@@ -758,7 +758,9 @@ std::string MediaAppBoolString(const testing::TestParamInfo<bool> info) {
 
 }  // namespace
 
-// Check the interception of ExecuteTask calls to replace Gallery for PNGs.
+// Check the interception of ExecuteTask calls to replace Gallery for PNGs. The
+// MediaApp should be used only if it is enabled, otherwise fall back to
+// gallery.
 IN_PROC_BROWSER_TEST_P(FileSystemExtensionApiTestWithApps, OpenGalleryForPng) {
   base::HistogramTester histogram_tester;
   EXPECT_TRUE(RunBackgroundPageTestCase("open_gallery", "testPngOpensGallery"))
@@ -767,15 +769,6 @@ IN_PROC_BROWSER_TEST_P(FileSystemExtensionApiTestWithApps, OpenGalleryForPng) {
                                      MediaAppEnabled() ? 0 : 1);
   histogram_tester.ExpectBucketCount(kAppLaunchMetric, kMediaAppUmaBucket,
                                      MediaAppEnabled() ? 1 : 0);
-}
-
-// Ensures requests to invoke Gallery for raw files *always* open Gallery.
-IN_PROC_BROWSER_TEST_P(FileSystemExtensionApiTestWithApps, OpenGalleryForRaw) {
-  base::HistogramTester histogram_tester;
-  EXPECT_TRUE(RunBackgroundPageTestCase("open_gallery", "testRawOpensGallery"))
-      << message_;
-  histogram_tester.ExpectBucketCount(kAppLaunchMetric, kGalleryUmaBucket, 1);
-  histogram_tester.ExpectBucketCount(kAppLaunchMetric, kMediaAppUmaBucket, 0);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

@@ -84,7 +84,8 @@ def ProcessResults(options):
           max_num_values=options.max_values_per_test_case,
           test_path_format=options.test_path_format,
           trace_processor_path=options.trace_processor_path,
-          enable_tbmv3=options.experimental_tbmv3_metrics),
+          enable_tbmv3=options.experimental_tbmv3_metrics,
+          fetch_power_profile=options.fetch_power_profile),
       test_results,
       on_failure=util.SetUnexpectedFailure,
   )
@@ -120,10 +121,10 @@ def _AmortizeProcessingDuration(processing_duration, test_results):
         result['runDuration'] = unicode(str(new_story_cost) + 's', 'utf-8')
 
 
-def ProcessTestResult(test_result, upload_bucket, results_label,
-                      run_identifier, test_suite_start, should_compute_metrics,
-                      max_num_values, test_path_format, trace_processor_path,
-                      enable_tbmv3):
+def ProcessTestResult(test_result, upload_bucket, results_label, run_identifier,
+                      test_suite_start, should_compute_metrics, max_num_values,
+                      test_path_format, trace_processor_path, enable_tbmv3,
+                      fetch_power_profile):
   ConvertProtoTraces(test_result, trace_processor_path)
   AggregateTBMv2Traces(test_result)
   if enable_tbmv3:
@@ -135,7 +136,8 @@ def ProcessTestResult(test_result, upload_bucket, results_label,
     test_result['_histograms'] = histogram_set.HistogramSet()
     compute_metrics.ComputeTBMv2Metrics(test_result)
     if enable_tbmv3:
-      compute_metrics.ComputeTBMv3Metrics(test_result, trace_processor_path)
+      compute_metrics.ComputeTBMv3Metrics(test_result, trace_processor_path,
+                                          fetch_power_profile)
     ExtractMeasurements(test_result)
     num_values = len(test_result['_histograms'])
     if max_num_values is not None and num_values > max_num_values:

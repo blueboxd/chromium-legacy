@@ -80,9 +80,9 @@ TEST_F(RequiredFieldsFallbackHandlerTest,
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), ""));
 
   std::vector<RequiredField> required_fields = {
-      CreateRequiredField("51", {"#card_name"}),
-      CreateRequiredField("52", {"#card_number"}),
-      CreateRequiredField("-3", {"#card_network"})};
+      CreateRequiredField("${51}", {"#card_name"}),
+      CreateRequiredField("${52}", {"#card_number"}),
+      CreateRequiredField("${-3}", {"#card_network"})};
 
   std::map<std::string, std::string> fallback_values;
   fallback_values.emplace(
@@ -113,7 +113,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest,
                           .autofill_error_info()
                           .autofill_field_error(0)
                           .value_expression(),
-                      "52");
+                      "${52}");
             EXPECT_TRUE(detail_status.value()
                             .details()
                             .autofill_error_info()
@@ -124,7 +124,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest,
                           .autofill_error_info()
                           .autofill_field_error(1)
                           .value_expression(),
-                      "-3");
+                      "${-3}");
             EXPECT_TRUE(detail_status.value()
                             .details()
                             .autofill_error_info()
@@ -143,8 +143,8 @@ TEST_F(RequiredFieldsFallbackHandlerTest, AddsFirstFieldFillingError) {
       .WillByDefault(RunOnceCallback<2>(ClientStatus(OTHER_ACTION_STATUS)));
 
   std::vector<RequiredField> required_fields = {
-      CreateRequiredField("51", {"#card_name"}),
-      CreateRequiredField("52", {"#card_number"})};
+      CreateRequiredField("${51}", {"#card_name"}),
+      CreateRequiredField("${52}", {"#card_number"})};
 
   std::map<std::string, std::string> fallback_values;
   fallback_values.emplace(
@@ -175,7 +175,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, AddsFirstFieldFillingError) {
                           .autofill_error_info()
                           .autofill_field_error(0)
                           .value_expression(),
-                      "51");
+                      "${51}");
             EXPECT_EQ(detail_status.value()
                           .details()
                           .autofill_error_info()
@@ -194,7 +194,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, DoesNotFallbackIfFieldsAreFilled) {
   EXPECT_CALL(mock_action_delegate_, OnSetFieldValue(_, _, _)).Times(0);
 
   std::vector<RequiredField> required_fields = {
-      CreateRequiredField("51", {"#card_name"})};
+      CreateRequiredField("${51}", {"#card_name"})};
 
   RequiredFieldsFallbackHandler fallback_handler(required_fields, {},
                                                  &mock_action_delegate_);
@@ -223,7 +223,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, FillsEmptyRequiredField) {
       .WillOnce(RunOnceCallback<1>(OkClientStatus(), "John Doe"));
 
   std::vector<RequiredField> required_fields = {
-      CreateRequiredField("51", {"#card_name"})};
+      CreateRequiredField("${51}", {"#card_name"})};
 
   std::map<std::string, std::string> fallback_values;
   fallback_values.emplace(
@@ -254,7 +254,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, FallsBackForForcedFilledField) {
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   std::vector<RequiredField> required_fields = {
-      CreateRequiredField("51", {"#card_name"})};
+      CreateRequiredField("${51}", {"#card_name"})};
   required_fields[0].forced = true;
 
   std::map<std::string, std::string> fallback_values;
@@ -284,7 +284,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, FailsIfForcedFieldDidNotGetFilled) {
   EXPECT_CALL(mock_action_delegate_, OnSetFieldValue(_, _, _)).Times(0);
 
   std::vector<RequiredField> required_fields = {
-      CreateRequiredField("51", {"#card_name"})};
+      CreateRequiredField("${51}", {"#card_name"})};
   required_fields[0].forced = true;
 
   RequiredFieldsFallbackHandler fallback_handler(required_fields, {},
@@ -307,7 +307,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, FailsIfForcedFieldDidNotGetFilled) {
                           .autofill_error_info()
                           .autofill_field_error(0)
                           .value_expression(),
-                      "51");
+                      "${51}");
             EXPECT_TRUE(detail_status.value()
                             .details()
                             .autofill_error_info()
@@ -366,8 +366,8 @@ TEST_F(RequiredFieldsFallbackHandlerTest,
   EXPECT_CALL(mock_action_delegate_, OnSetFieldValue(_, _, _)).Times(0);
 
   std::vector<RequiredField> required_fields = {
-      CreateRequiredField("53", {"#card_expiry"}),
-      CreateRequiredField("-3", {"#card_network"})};
+      CreateRequiredField("${53}", {"#card_expiry"}),
+      CreateRequiredField("${-3}", {"#card_network"})};
 
   std::map<std::string, std::string> fallback_values;
   fallback_values.emplace(base::NumberToString(static_cast<int>(
@@ -394,7 +394,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest,
                           .autofill_error_info()
                           .autofill_field_error(0)
                           .value_expression(),
-                      "53");
+                      "${53}");
             EXPECT_TRUE(detail_status.value()
                             .details()
                             .autofill_error_info()
@@ -405,7 +405,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest,
                           .autofill_error_info()
                           .autofill_field_error(1)
                           .value_expression(),
-                      "-3");
+                      "${-3}");
             EXPECT_TRUE(detail_status.value()
                             .details()
                             .autofill_error_info()
@@ -435,7 +435,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, ClicksOnCustomDropdown) {
       .WillOnce(RunOnceCallback<2>(OkClientStatus()));
 
   std::vector<RequiredField> required_fields = {
-      CreateRequiredField("53", {"#card_expiry"})};
+      CreateRequiredField("${53}", {"#card_expiry"})};
   required_fields[0].fallback_click_element = Selector({".option"});
 
   std::map<std::string, std::string> fallback_values;
@@ -477,7 +477,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest, CustomDropdownClicksStopOnError) {
       .Times(0);
 
   std::vector<RequiredField> required_fields = {
-      CreateRequiredField("53", {"#card_expiry"})};
+      CreateRequiredField("${53}", {"#card_expiry"})};
   required_fields[0].fallback_click_element = Selector({".option"});
 
   std::map<std::string, std::string> fallback_values;

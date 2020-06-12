@@ -1416,6 +1416,11 @@ const char kOmniboxSearchEngineLogoName[] = "Omnibox search engine logo";
 const char kOmniboxSearchEngineLogoDescription[] =
     "Display the current default search engine's logo in the omnibox";
 
+const char kOmniboxSearchReadyIncognitoName[] =
+    "Search ready omnibox in incognito";
+const char kOmniboxSearchReadyIncognitoDescription[] =
+    "Show search ready omnibox when browsing incognito.";
+
 const char kOmniboxSpareRendererName[] =
     "Start spare renderer on omnibox focus";
 const char kOmniboxSpareRendererDescription[] =

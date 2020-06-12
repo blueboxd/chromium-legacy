@@ -37,6 +37,8 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEAssistiveWindowHandlerInterface {
   // Highlight a candidate when multiple suggestions is shown.
   virtual void HighlightSuggestionCandidate(int index) {}
 
+  virtual void AcceptSuggestion(const base::string16& suggestion) {}
+
   virtual void HideSuggestion() {}
 
   // Called to get the current suggestion text.

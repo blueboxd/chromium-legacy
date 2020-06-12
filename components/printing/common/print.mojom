@@ -126,8 +126,10 @@ interface PrintRenderFrame {
   [EnableIf=enable_print_preview]
   OnPrintPreviewDialogClosed();
 
-  // Prints the content of an out-of-process subframe.
-  PrintFrameContent(PrintFrameContentParams params);
+  // Prints the content of an out-of-process subframe. Replies back to the
+  // browser the rendered subframe content that was requested.
+  PrintFrameContent(PrintFrameContentParams params)
+      => (int32 document_cookie, DidPrintContentParams params);
 
   // Tells the RenderFrame whether printing is enabled or not.
   SetPrintingEnabled(bool enabled);

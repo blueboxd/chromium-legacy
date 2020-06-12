@@ -2,35 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {AsyncJobQueue} from '../async_job_queue.js'
 import {assert} from '../chrome_util.js';
-
-/**
- * Asynchronous job queue.
- */
-export class AsyncJobQueue {
-  /**
-   * @public
-   */
-  constructor() {
-    this.promise_ = Promise.resolve();
-  }
-
-  /**
-   * Pushes the given job into queue.
-   * @param {function(): !Promise} job
-   */
-  push(job) {
-    this.promise_ = this.promise_.then(() => job());
-  }
-
-  /**
-   * Flushes the job queue.
-   * @return {!Promise} Resolved when all jobs in the queue are finished.
-   */
-  async flush() {
-    await this.promise_;
-  }
-}
 
 /**
  * Asynchronous writer.

@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/autofill/core/common/signatures.h"
 
 namespace gfx {
@@ -45,9 +46,6 @@ class AutofillHandler {
    public:
     virtual void OnFormParsed() = 0;
   };
-
-  using FormStructureMap =
-      std::map<FormSignature, std::unique_ptr<FormStructure>>;
 
   virtual ~AutofillHandler();
 
@@ -136,14 +134,18 @@ class AutofillHandler {
   }
 
   // Returns the present form structures seen by Autofill handler.
-  const FormStructureMap& form_structures() const { return form_structures_; }
+  const std::map<FormRendererId, std::unique_ptr<FormStructure>>&
+  form_structures() const {
+    return form_structures_;
+  }
 
   AutofillDriver* driver() { return driver_; }
 
 #if defined(UNIT_TEST)
   // A public wrapper that calls |mutable_form_structures| for testing purposes
   // only.
-  FormStructureMap* mutable_form_structures_for_test() {
+  std::map<FormRendererId, std::unique_ptr<FormStructure>>*
+  mutable_form_structures_for_test() {
     return mutable_form_structures();
   }
 #endif
@@ -191,8 +193,16 @@ class AutofillHandler {
   // Fills |form_structure| with a pointer to the cached form structure
   // corresponding to |form_signature|. Returns false if no cached form
   // structure is found with a matching signature.
-  bool FindCachedForm(FormSignature form_signature,
-                      FormStructure** form_structure) const WARN_UNUSED_RESULT;
+  bool FindCachedFormBySignature(FormSignature form_signature,
+                                 FormStructure** form_structure) const
+      WARN_UNUSED_RESULT;
+
+  // Fills |form_structure| with a pointer to the cached form structure
+  // corresponding to |renderer_id|. Returns false if no cached form
+  // structure is found with a matching signature.
+  bool FindCachedFormByRendererId(FormRendererId renderer_id,
+                                  FormStructure** form_structure) const
+      WARN_UNUSED_RESULT;
 
   // Fills |form_structure| with a pointer to the cached form structure
   // corresponding to |form|. This will do a direct match of the form's
@@ -211,7 +221,10 @@ class AutofillHandler {
 
   bool value_from_dynamic_change_form_ = false;
 
-  FormStructureMap* mutable_form_structures() { return &form_structures_; }
+  std::map<FormRendererId, std::unique_ptr<FormStructure>>*
+  mutable_form_structures() {
+    return &form_structures_;
+  }
 
  private:
   // Provides driver-level context to the shared code of the component. Must
@@ -221,7 +234,7 @@ class AutofillHandler {
   LogManager* const log_manager_;
 
   // Our copy of the form data.
-  FormStructureMap form_structures_;
+  std::map<FormRendererId, std::unique_ptr<FormStructure>> form_structures_;
 
   // Will be not null only for |SaveCardBubbleViewsFullFormBrowserTest|.
   ObserverForTest* observer_for_testing_ = nullptr;

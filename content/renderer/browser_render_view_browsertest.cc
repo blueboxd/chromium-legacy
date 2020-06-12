@@ -34,7 +34,6 @@
 #include "content/shell/renderer/shell_content_renderer_client.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
-#include "net/http/failing_http_transaction_factory.h"
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"

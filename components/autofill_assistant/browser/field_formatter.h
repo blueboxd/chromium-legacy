@@ -22,13 +22,6 @@ base::Optional<std::string> FormatString(
     const std::string& input,
     const std::map<std::string, std::string>& mappings);
 
-// Same as |FormatString|, but also supports a special case: input patterns
-// containing a single integer are also allowed and implicitly interpreted as
-// ${N}.
-base::Optional<std::string> FormatAutofillString(
-    const std::string& pattern,
-    const std::map<std::string, std::string>& mappings);
-
 // Creates a lookup map for all non-empty autofill and custom
 // AutofillFormatProto::AutofillAssistantCustomField field types in
 // |autofill_data_model|.

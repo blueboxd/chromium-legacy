@@ -96,9 +96,6 @@ class CustomPassphraseSetter : public PendingLocalNigoriCommit {
                                       /*encrypt_everything=*/true);
 
     UMA_HISTOGRAM_BOOLEAN("Sync.CustomEncryption", true);
-
-    // OnLocalSetPassphraseEncryption() is intentionally not called here,
-    // because it's needed only for the Directory implementation unit tests.
   }
 
   void OnFailure(SyncEncryptionHandler::Observer* observer) override {

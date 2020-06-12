@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -2820,4 +2821,22 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, IsOffTheRecordBrowserInUse) {
 
   CloseBrowserSynchronously(incognito_browser);
   EXPECT_FALSE(BrowserList::IsOffTheRecordBrowserInUse(browser()->profile()));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, TestActiveTabChangedUserAction) {
+  base::UserActionTester user_action_tester;
+  chrome::NewTab(browser());
+  EXPECT_EQ(user_action_tester.GetActionCount("ActiveTabChanged"), 1);
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, TestNavEntryCommittedUserAction) {
+  base::UserActionTester user_action_tester;
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab"));
+  EXPECT_EQ(user_action_tester.GetActionCount("NavEntryCommitted"), 1);
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, TestActiveBrowserChangedUserAction) {
+  base::UserActionTester user_action_tester;
+  BrowserList::SetLastActive(browser());
+  EXPECT_EQ(user_action_tester.GetActionCount("ActiveBrowserChanged"), 1);
 }

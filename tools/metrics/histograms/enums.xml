@@ -39175,6 +39175,7 @@ from previous Chrome versions.
   <int value="-1618707999" label="enable-webfonts-intervention-v2"/>
   <int value="-1617183455" label="OfflineRecentPages:disabled"/>
   <int value="-1616855537" label="enable-manual-password-generation:disabled"/>
+  <int value="-1615727417" label="OmniboxSearchReadyIncognito:enabled"/>
   <int value="-1615704396"
       label="AutofillLocalCardMigrationUsesStrikeSystemV2:disabled"/>
   <int value="-1614912400" label="enable-link-disambiguation-popup"/>
@@ -41269,6 +41270,7 @@ from previous Chrome versions.
   <int value="709850261" label="disable-touch-editing"/>
   <int value="710700286" label="ImmersiveFullscreen:disabled"/>
   <int value="711424932" label="enable-cloud-print-xps"/>
+  <int value="713946324" label="OmniboxSearchReadyIncognito:disabled"/>
   <int value="715617684" label="OriginTrials:disabled"/>
   <int value="716073306" label="AssistantVoiceMatch:disabled"/>
   <int value="716080990" label="restrict-iframe-permissions"/>
@@ -68351,6 +68353,13 @@ Full version information for the fingerprint enum values:
 <enum name="TrustedVaultFetchKeysAttempt">
   <int value="0" label="First attempt"/>
   <int value="1" label="Second attempt"/>
+</enum>
+
+<enum name="TrustedVaultKeyRetrievalTrigger">
+  <int value="0" label="Settings page"/>
+  <int value="1" label="Profile menu"/>
+  <int value="2" label="OS-level notification"/>
+  <int value="3" label="New Tab Page Infobar"/>
 </enum>
 
 <enum name="TrustedWebActivityDelegatedNotificationSmallIconFallback">

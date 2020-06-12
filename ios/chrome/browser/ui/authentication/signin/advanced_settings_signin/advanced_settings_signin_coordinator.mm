@@ -12,7 +12,7 @@
 #import "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
-#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_mediator.h"
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_navigation_controller.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
@@ -44,7 +44,7 @@ using l10n_util::GetNSString;
     GoogleServicesSettingsCoordinator* googleServicesSettingsCoordinator;
 // Confirm cancel sign-in/sync dialog.
 @property(nonatomic, strong)
-    AlertCoordinator* cancelConfirmationAlertCoordinator;
+    ActionSheetCoordinator* cancelConfirmationAlertCoordinator;
 
 @end
 
@@ -134,7 +134,11 @@ using l10n_util::GetNSString;
 // Called when a button of |self.cancelConfirmationAlertCoordinator| is pressed.
 - (void)cancelConfirmationWithShouldCancelSignin:(BOOL)shouldCancelSignin {
   DCHECK(self.cancelConfirmationAlertCoordinator);
-  [self.cancelConfirmationAlertCoordinator stop];
+  // -[ActionSheetCoordinator stop] should not be called since the action sheet
+  // has been already dismissed. If it is called, the action sheet might dismiss
+  // the advanced settings sign-in view controller (instead of doing nothing).
+  // This case happens when tapping on the background of the action sheet on
+  // iPad.
   self.cancelConfirmationAlertCoordinator = nil;
   if (shouldCancelSignin) {
     [self dismissViewControllerAndFinishWithResult:
@@ -195,15 +199,16 @@ using l10n_util::GetNSString;
 - (void)showCancelConfirmationAlert {
   DCHECK(!self.cancelConfirmationAlertCoordinator);
   RecordAction(UserMetricsAction("Signin_Signin_CancelAdvancedSyncSettings"));
-  self.cancelConfirmationAlertCoordinator = [[AlertCoordinator alloc]
+  self.cancelConfirmationAlertCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.advancedSettingsSigninNavigationController
                          browser:self.browser
-                           title:
-                               GetNSString(
-                                   IDS_IOS_ADVANCED_SIGNIN_SETTINGS_CANCEL_SYNC_ALERT_TITLE)
+                           title:nil
                          message:
                              GetNSString(
-                                 IDS_IOS_ADVANCED_SIGNIN_SETTINGS_CANCEL_SYNC_ALERT_MESSAGE)];
+                                 IDS_IOS_ADVANCED_SIGNIN_SETTINGS_CANCEL_SYNC_ALERT_MESSAGE)
+                   barButtonItem:self.googleServicesSettingsCoordinator
+                                     .viewController.navigationItem
+                                     .leftBarButtonItem];
   __weak __typeof(self) weakSelf = self;
   [self.cancelConfirmationAlertCoordinator
       addItemWithTitle:
@@ -220,7 +225,7 @@ using l10n_util::GetNSString;
                 action:^{
                   [weakSelf cancelConfirmationWithShouldCancelSignin:YES];
                 }
-                 style:UIAlertActionStyleDefault];
+                 style:UIAlertActionStyleDestructive];
   [self.cancelConfirmationAlertCoordinator start];
 }
 

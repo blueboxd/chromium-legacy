@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "components/google/core/common/google_util.h"
 #include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_service_utils.h"
 #include "components/sync/driver/sync_user_settings.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -162,7 +163,10 @@
       static_cast<id<ApplicationCommands>>(
           self.browser->GetCommandDispatcher());
   [applicationCommands
-      showTrustedVaultReauthenticationFromViewController:self.viewController];
+      showTrustedVaultReauthenticationFromViewController:self.viewController
+                                        retrievalTrigger:
+                                            syncer::KeyRetrievalTriggerForUMA::
+                                                kSettings];
 }
 
 - (void)openWebAppActivityDialog {

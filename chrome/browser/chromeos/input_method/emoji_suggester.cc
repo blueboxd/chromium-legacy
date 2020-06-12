@@ -25,6 +25,10 @@ const base::FilePath::CharType kEmojiMapFilePath[] =
     FILE_PATH_LITERAL("/emoji/emoji-map.csv");
 const int kMaxSuggestionIndex = 31;
 const int kMaxSuggestionSize = kMaxSuggestionIndex + 1;
+const char kShowEmojiSuggestionMessage[] =
+    "Emoji suggested. Press up or down to choose an emoji. Press enter to "
+    "insert.";
+const char kDismissEmojiSuggestionMessage[] = "Emoji suggestion dismissed.";
 
 std::string ReadEmojiDataFromFile() {
   if (!base::DirectoryExists(base::FilePath(ime::kBundledInputMethodsDirPath)))
@@ -64,6 +68,7 @@ std::string GetLastWord(const std::string& str) {
 
 EmojiSuggester::EmojiSuggester(InputMethodEngine* engine) : engine_(engine) {
   LoadEmojiMap();
+  properties_.type = ui::ime::AssistiveWindowType::kEmojiSuggestion;
 }
 
 EmojiSuggester::~EmojiSuggester() = default;
@@ -168,7 +173,10 @@ void EmojiSuggester::ShowSuggestion(const std::string& text) {
   candidates_.clear();
   candidate_id_ = -1;
   candidates_ = emoji_map_.at(text);
-  engine_->ShowMultipleSuggestions(context_id_, candidates_, &error);
+  properties_.visible = true;
+  properties_.candidates = candidates_;
+  properties_.announce_string = kShowEmojiSuggestionMessage;
+  engine_->SetAssistiveWindowProperties(context_id_, properties_, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Fail to show suggestion. " << error;
   }
@@ -177,7 +185,9 @@ void EmojiSuggester::ShowSuggestion(const std::string& text) {
 void EmojiSuggester::DismissSuggestion() {
   std::string error;
   suggestion_shown_ = false;
-  engine_->DismissSuggestion(context_id_, &error);
+  properties_.visible = false;
+  properties_.announce_string = kDismissEmojiSuggestionMessage;
+  engine_->SetAssistiveWindowProperties(context_id_, properties_, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Failed to dismiss suggestion. " << error;
   }

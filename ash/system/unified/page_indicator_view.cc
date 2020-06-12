@@ -178,9 +178,7 @@ PageIndicatorView::~PageIndicatorView() {
 }
 
 gfx::Size PageIndicatorView::CalculatePreferredSize() const {
-  gfx::Size size = buttons_container_->GetPreferredSize();
-  size.set_height(size.height() * expanded_amount_);
-  return size;
+  return gfx::Size(kTrayMenuWidth, kPageIndicatorViewMaxHeight);
 }
 
 void PageIndicatorView::Layout() {

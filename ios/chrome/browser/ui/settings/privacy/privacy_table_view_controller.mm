@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/privacy/cookies_status_description.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
@@ -41,17 +42,17 @@ NSString* const kPrivacyTableViewId = @"kPrivacyTableViewId";
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierWebServices = kSectionIdentifierEnumZero,
-  SectionIndentifierCookies,
-  SectionIdentifierClearBrowsingData,
+  SectionIdentifierPrivacyContent = kSectionIdentifierEnumZero,
+  SectionIdentifierWebServices,
+
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypeOtherDevicesHandoff = kItemTypeEnumZero,
+  ItemTypeClearBrowsingDataClear = kItemTypeEnumZero,
   ItemTypeCookies,
-  ItemTypeClearBrowsingDataClear,
   // Footer to suggest the user to open Sync and Google services settings.
-  ItemTypeClearBrowsingDataFooter,
+  ItemTypePrivacyFooter,
+  ItemTypeOtherDevicesHandoff,
 };
 
 // Only used in this class to openn the Sync and Google services settings.
@@ -74,6 +75,7 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
 
 // Browser.
 @property(nonatomic, readonly) Browser* browser;
+@property(nonatomic, strong) CookiesStatusDescription* cookiesDescription;
 
 @end
 
@@ -81,7 +83,8 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
 
 #pragma mark - Initialization
 
-- (instancetype)initWithBrowser:(Browser*)browser {
+- (instancetype)initWithBrowser:(Browser*)browser
+             cookiesDescription:(CookiesStatusDescription*)cookiesDescription {
   DCHECK(browser);
   UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
                                ? UITableViewStylePlain
@@ -90,6 +93,7 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
   if (self) {
     _browser = browser;
     _browserState = browser->GetBrowserState();
+    _cookiesDescription = cookiesDescription;
     self.title =
         l10n_util::GetNSString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
 
@@ -127,25 +131,25 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
   [super loadModel];
 
   TableViewModel* model = self.tableViewModel;
-
-  // Web Services Section
+  [model addSectionWithIdentifier:SectionIdentifierPrivacyContent];
   [model addSectionWithIdentifier:SectionIdentifierWebServices];
-  [model addItem:[self handoffDetailItem]
-      toSectionWithIdentifier:SectionIdentifierWebServices];
+
+  // Clear Browsing item.
+  [model addItem:[self clearBrowsingDetailItem]
+      toSectionWithIdentifier:SectionIdentifierPrivacyContent];
 
   if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls)) {
-    // Cookies Section
-    [model addSectionWithIdentifier:SectionIndentifierCookies];
-    [model addItem:[self cookiesItem]
-        toSectionWithIdentifier:SectionIndentifierCookies];
+    // Cookies item.
+    [model addItem:[self cookiesItemWithDetailText:self.cookiesDescription
+                                                       .headerDescription]
+        toSectionWithIdentifier:SectionIdentifierPrivacyContent];
   }
+  [model setFooter:[self showPrivacyFooterItem]
+      forSectionWithIdentifier:SectionIdentifierPrivacyContent];
 
-  // Clear Browsing Section
-  [model addSectionWithIdentifier:SectionIdentifierClearBrowsingData];
-  [model addItem:[self clearBrowsingDetailItem]
-      toSectionWithIdentifier:SectionIdentifierClearBrowsingData];
-  [model setFooter:[self showClearBrowsingDataFooterItem]
-      forSectionWithIdentifier:SectionIdentifierClearBrowsingData];
+  // Web Services item.
+  [model addItem:[self handoffDetailItem]
+      toSectionWithIdentifier:SectionIdentifierWebServices];
 }
 
 #pragma mark - Model Objects
@@ -166,22 +170,22 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
 
 // Creates TableViewHeaderFooterItem instance to show a link to open the Sync
 // and Google services settings.
-- (TableViewHeaderFooterItem*)showClearBrowsingDataFooterItem {
-  TableViewLinkHeaderFooterItem* showClearBrowsingDataFooterItem =
+- (TableViewHeaderFooterItem*)showPrivacyFooterItem {
+  TableViewLinkHeaderFooterItem* showPrivacyFooterItem =
       [[TableViewLinkHeaderFooterItem alloc]
-          initWithType:ItemTypeClearBrowsingDataFooter];
-  showClearBrowsingDataFooterItem.text =
+          initWithType:ItemTypePrivacyFooter];
+  showPrivacyFooterItem.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_GOOGLE_SERVICES_FOOTER);
-  showClearBrowsingDataFooterItem.linkURL = GURL(kGoogleServicesSettingsURL);
+  showPrivacyFooterItem.linkURL = GURL(kGoogleServicesSettingsURL);
 
-  return showClearBrowsingDataFooterItem;
+  return showPrivacyFooterItem;
 }
 
 // Returns TableViewHeaderFooterItem instance to open Cookies screen.
-- (TableViewItem*)cookiesItem {
+- (TableViewItem*)cookiesItemWithDetailText:(NSString*)detailText {
   return [self detailItemWithType:ItemTypeCookies
                           titleId:IDS_IOS_OPTIONS_PRIVACY_COOKIES
-                       detailText:nil
+                       detailText:detailText
           accessibilityIdentifier:kSettingsCookiesCellId];
 }
 
@@ -266,6 +270,22 @@ const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
   } else {
     [super view:view didTapLinkURL:URL];
   }
+}
+
+#pragma mark - CookiesStatusConsumer
+
+- (void)cookiesOptionChangedToDescription:
+    (CookiesStatusDescription*)description {
+  // Update the Cookies Header.
+  NSIndexPath* indexPath = [self.tableViewModel
+      indexPathForItemType:ItemTypeCookies
+         sectionIdentifier:SectionIdentifierPrivacyContent];
+  TableViewDetailIconItem* cookiesHeader =
+      base::mac::ObjCCastStrict<TableViewDetailIconItem>(
+          [self.tableViewModel itemAtIndexPath:indexPath]);
+  cookiesHeader.detailText = description.headerDescription;
+
+  [self reconfigureCellsForItems:@[ cookiesHeader ]];
 }
 
 @end

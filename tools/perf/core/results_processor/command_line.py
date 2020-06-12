@@ -85,6 +85,11 @@ def ArgumentParser(standalone=False):
   group.add_argument(
       '--experimental-tbmv3-metrics', action='store_true',
       help='Enable running experimental TBMv3 metrics.')
+  group.add_argument(
+      '--fetch-power-profile',
+      action='store_true',
+      help=('Specify this if you want to run proxy power metrics that use '
+            'device power profiles.'))
   return parser
 
 

@@ -38,6 +38,7 @@
 #include "ui/views/border.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
 
 namespace ash {
@@ -88,30 +89,6 @@ class TopCornerBorder : public views::Border {
   gfx::Rect rect_below_scroll_;
 
   DISALLOW_COPY_AND_ASSIGN(TopCornerBorder);
-};
-
-// The container view for the system tray, i.e. the panel containing settings
-// buttons and sliders (e.g. sign out, lock, volume slider, etc.).
-class SystemTrayContainer : public views::View {
- public:
-  SystemTrayContainer() {
-    SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kVertical));
-    if (!features::IsUnifiedMessageCenterRefactorEnabled())
-      SetBorder(std::make_unique<TopCornerBorder>());
-  }
-
-  ~SystemTrayContainer() override = default;
-
-  // views::View:
-  void ChildPreferredSizeChanged(views::View* child) override {
-    PreferredSizeChanged();
-  }
-
-  const char* GetClassName() const override { return "SystemTrayContainer"; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SystemTrayContainer);
 };
 
 class DetailedViewContainer : public views::View {
@@ -217,6 +194,30 @@ void UnifiedSlidersContainerView::UpdateOpacity() {
   }
 }
 
+// The container view for the system tray, i.e. the panel containing settings
+// buttons and sliders (e.g. sign out, lock, volume slider, etc.).
+class UnifiedSystemTrayView::SystemTrayContainer : public views::View {
+ public:
+  SystemTrayContainer()
+      : layout_manager_(SetLayoutManager(std::make_unique<views::BoxLayout>(
+            views::BoxLayout::Orientation::kVertical))) {}
+  SystemTrayContainer(const SystemTrayContainer&) = delete;
+  SystemTrayContainer& operator=(const SystemTrayContainer&) = delete;
+
+  ~SystemTrayContainer() override = default;
+
+  void SetFlexForView(views::View* view) {
+    DCHECK_EQ(view->parent(), this);
+    layout_manager_->SetFlexForView(view, 1);
+  }
+
+  // views::View:
+  const char* GetClassName() const override { return "SystemTrayContainer"; }
+
+ private:
+  views::BoxLayout* const layout_manager_;
+};
+
 // FocusSearch whose purpose is to start focus traversal from the top of
 // SystemTrayContainer.
 class UnifiedSystemTrayView::FocusSearch : public views::FocusSearch {
@@ -303,9 +304,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
           std::make_unique<InteractedByTapRecorder>(this)) {
   DCHECK(controller_);
 
-  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kVertical));
-
+  SetLayoutManager(std::make_unique<views::FillLayout>());
   auto add_layered_child = [](views::View* parent, views::View* child) {
     parent->AddChildView(child);
     child->SetPaintToLayer();
@@ -319,14 +318,13 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
     message_center_view_ = new UnifiedMessageCenterView(
         this, controller->model(), nullptr /* message_center_bubble */);
     add_layered_child(this, message_center_view_);
-    layout->SetFlexForView(message_center_view_, 1);
   }
 
   notification_hidden_view_->SetVisible(
       session_controller->GetUserSession(0) &&
       session_controller->IsScreenLocked() &&
       !AshMessageCenterLockScreenController::IsEnabled());
-  add_layered_child(this, notification_hidden_view_);
+  add_layered_child(system_tray_container_, notification_hidden_view_);
 
   AddChildView(system_tray_container_);
 
@@ -336,6 +334,8 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   system_tray_container_->AddChildView(sliders_container_);
   add_layered_child(system_tray_container_, system_info_view_);
 
+  system_tray_container_->SetFlexForView(page_indicator_view_);
+
   if (features::IsManagedDeviceUIRedesignEnabled()) {
     managed_device_view_ = new UnifiedManagedDeviceView();
     system_tray_container_->AddChildView(managed_device_view_);
@@ -343,13 +343,6 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
 
   detailed_view_container_->SetVisible(false);
   add_layered_child(this, detailed_view_container_);
-
-  // UnifiedSystemTrayView::FocusSearch makes focus traversal start from
-  // |system_tray_container_|, but we have to complete the cycle by setting
-  // |message_center_view_| next to |detailed_view_container_|.
-  // Also, SetNextFocusableView does not support loop as mentioned in the doc,
-  // we have to set null to |notification_hidden_view_|.
-  notification_hidden_view_->SetNextFocusableView(nullptr);
 
   if (!features::IsUnifiedMessageCenterRefactorEnabled())
     detailed_view_container_->SetNextFocusableView(message_center_view_);
@@ -544,10 +537,17 @@ void UnifiedSystemTrayView::FocusEntered(bool reverse) {
   GetFocusManager()->SetFocusedView(focus_view);
 }
 
-void UnifiedSystemTrayView::OnGestureEvent(ui::GestureEvent* event) {
-  gfx::Point screen_location = event->location();
-  ConvertPointToScreen(this, &screen_location);
+gfx::Size UnifiedSystemTrayView::CalculatePreferredSize() const {
+  int expanded_height = GetExpandedSystemTrayHeight();
+  int collapsed_height = GetCollapsedSystemTrayHeight();
 
+  return gfx::Size(kTrayMenuWidth,
+                   collapsed_height + ((expanded_height - collapsed_height) *
+                                       expanded_amount_));
+}
+
+void UnifiedSystemTrayView::OnGestureEvent(ui::GestureEvent* event) {
+  gfx::PointF screen_location = event->root_location_f();
   switch (event->type()) {
     case ui::ET_GESTURE_SCROLL_BEGIN:
       controller_->BeginDrag(screen_location);

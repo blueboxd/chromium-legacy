@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/settings/privacy/privacy_coordinator.h"
 
 #import "base/mac/foundation_util.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -12,6 +14,7 @@
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_ui_delegate.h"
 #import "ios/chrome/browser/ui/settings/privacy/cookies_coordinator.h"
+#import "ios/chrome/browser/ui/settings/privacy/cookies_status_mediator.h"
 #import "ios/chrome/browser/ui/settings/privacy/handoff_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_table_view_controller.h"
@@ -30,6 +33,7 @@
 @property(nonatomic, strong) id<ApplicationCommands> handler;
 @property(nonatomic, strong) PrivacyTableViewController* viewController;
 @property(nonatomic, strong) PrivacyCookiesCoordinator* cookiesCoordinator;
+@property(nonatomic, strong) CookiesStatusMediator* cookiesStatusMediator;
 
 @end
 
@@ -51,8 +55,18 @@
 - (void)start {
   self.handler = HandlerForProtocol(self.browser->GetCommandDispatcher(),
                                     ApplicationCommands);
-  self.viewController =
-      [[PrivacyTableViewController alloc] initWithBrowser:self.browser];
+
+  self.cookiesStatusMediator = [[CookiesStatusMediator alloc]
+      initWithPrefService:self.browser->GetBrowserState()->GetPrefs()
+              settingsMap:ios::HostContentSettingsMapFactory::
+                              GetForBrowserState(
+                                  self.browser->GetBrowserState())];
+
+  self.viewController = [[PrivacyTableViewController alloc]
+         initWithBrowser:self.browser
+      cookiesDescription:[self.cookiesStatusMediator cookiesDescription]];
+
+  self.cookiesStatusMediator.consumer = self.viewController;
 
   DCHECK(self.baseNavigationController);
   self.viewController.handler = self;
@@ -68,6 +82,7 @@
   self.viewController = nil;
   [self.cookiesCoordinator stop];
   self.cookiesCoordinator = nil;
+  self.cookiesStatusMediator = nil;
 }
 
 #pragma mark - PrivacyTableViewControllerPresentationDelegate

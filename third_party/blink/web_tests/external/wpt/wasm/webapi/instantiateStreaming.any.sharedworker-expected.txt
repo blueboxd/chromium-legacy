@@ -1,0 +1,23 @@
+This is a testharness.js-based test.
+PASS Empty module without imports argument
+PASS Empty module with undefined imports argument
+PASS Empty module with empty imports argument
+PASS getter order for imports object
+PASS imports
+PASS No imports
+PASS exports and imports
+FAIL i64 exports and imports promise_test: Unhandled rejection with value: object "LinkError: WebAssembly.instantiate(): Import #0 module="module" function="global" error: global import cannot have type i64"
+PASS import with i32-returning function
+PASS import with function that takes and returns i32
+FAIL import with i64-returning function assert_true: Should have called into JS expected true got false
+FAIL import with function that takes and returns i64 promise_test: Unhandled rejection with value: object "TypeError: wasm function signature contains illegal type"
+PASS import with i32-taking function
+PASS import with i64-taking function
+FAIL export i64-returning function promise_test: Unhandled rejection with value: object "TypeError: wasm function signature contains illegal type"
+PASS i32 mutable WebAssembly.Global import
+FAIL i64 mutable WebAssembly.Global import promise_test: Unhandled rejection with value: object "TypeError: WebAssembly.Global(): Can't set the value of i64 WebAssembly.Global"
+FAIL Multiple i64 arguments promise_test: Unhandled rejection with value: object "TypeError: wasm function signature contains illegal type"
+PASS stray argument
+PASS Synchronous options handling
+Harness: the test ran to completion.
+

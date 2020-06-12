@@ -24,6 +24,7 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/renderer_id.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -48,6 +49,13 @@ std::string GetRandomCardNumber() {
   for (size_t i = 0; i < length; ++i)
     value.push_back(static_cast<char>(base::RandInt('0', '9')));
   return value;
+}
+
+// Returns numbers which are distinct from each other within the scope of one
+// test.
+FormRendererId MakeFormRendererId() {
+  static uint32_t counter = 10;
+  return FormRendererId(counter++);
 }
 
 }  // namespace
@@ -137,6 +145,7 @@ void CreateTestAddressFormData(FormData* form, const char* unique_id) {
 void CreateTestAddressFormData(FormData* form,
                                std::vector<ServerFieldTypeSet>* types,
                                const char* unique_id) {
+  form->unique_renderer_id = MakeFormRendererId();
   form->name =
       ASCIIToUTF16("MyForm") + ASCIIToUTF16(unique_id ? unique_id : "");
   form->button_titles = {
@@ -213,6 +222,7 @@ void CreateTestAddressFormData(FormData* form,
 
 void CreateTestPersonalInformationFormData(FormData* form,
                                            const char* unique_id) {
+  form->unique_renderer_id = MakeFormRendererId();
   form->name =
       ASCIIToUTF16("MyForm") + ASCIIToUTF16(unique_id ? unique_id : "");
   form->url = GURL("http://myform.com/form.html");
@@ -237,6 +247,7 @@ void CreateTestCreditCardFormData(FormData* form,
                                   bool use_month_type,
                                   bool split_names,
                                   const char* unique_id) {
+  form->unique_renderer_id = MakeFormRendererId();
   form->name =
       ASCIIToUTF16("MyForm") + ASCIIToUTF16(unique_id ? unique_id : "");
   if (is_https) {

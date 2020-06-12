@@ -154,8 +154,8 @@ void RequiredFieldsFallbackHandler::OnCheckRequiredFieldsDone(
       continue;
     }
 
-    if (field_formatter::FormatAutofillString(required_field.value_expression,
-                                              fallback_values_)
+    if (field_formatter::FormatString(required_field.value_expression,
+                                      fallback_values_)
             .has_value()) {
       has_fallbacks = true;
     } else {
@@ -192,7 +192,7 @@ void RequiredFieldsFallbackHandler::SetFallbackFieldValuesSequentially(
 
   // Set the next field to its fallback value.
   const RequiredField& required_field = required_fields_[required_fields_index];
-  auto fallback_value = field_formatter::FormatAutofillString(
+  auto fallback_value = field_formatter::FormatString(
       required_field.value_expression, fallback_values_);
   if (!fallback_value.has_value()) {
     VLOG(3) << "No fallback for " << required_field.selector;

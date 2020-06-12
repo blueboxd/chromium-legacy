@@ -46,22 +46,6 @@ std::map<std::string, std::string> CreateFormGroupMappings(
 namespace autofill_assistant {
 namespace field_formatter {
 
-base::Optional<std::string> FormatAutofillString(
-    const std::string& pattern,
-    const std::map<std::string, std::string>& mappings) {
-  if (pattern.empty()) {
-    return std::string();
-  }
-
-  // Special case: if the input is a single number, interpret as ${N}.
-  int field_type;
-  if (base::StringToInt(pattern, &field_type)) {
-    return GetFieldValue(mappings, pattern);
-  }
-
-  return FormatString(pattern, mappings);
-}
-
 base::Optional<std::string> FormatString(
     const std::string& pattern,
     const std::map<std::string, std::string>& mappings) {

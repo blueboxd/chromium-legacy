@@ -7,9 +7,26 @@
 
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 
+namespace syncer {
+enum class KeyRetrievalTriggerForUMA;
+}  // namespace syncer
+
 // Coordinates the Trusted Vault re-authentication dialog. Trusted Valut is
 // managed by IOSTrustedValueClient.
 @interface TrustedVaultReauthenticationCoordinator : SigninCoordinator
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
+
+// Designated initializer.
+// |viewController| presents the sign-in.
+// |retrievalTrigger| UI elements where the trusted vault reauth has been
+// triggered.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
+                          retrievalTrigger:(syncer::KeyRetrievalTriggerForUMA)
+                                               retrievalTrigger
+    NS_DESIGNATED_INITIALIZER;
 
 @end
 

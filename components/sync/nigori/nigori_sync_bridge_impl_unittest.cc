@@ -312,8 +312,6 @@ class MockObserver : public SyncEncryptionHandler::Observer {
   MOCK_METHOD2(OnCryptographerStateChanged,
                void(Cryptographer*, bool has_pending_keys));
   MOCK_METHOD2(OnPassphraseTypeChanged, void(PassphraseType, base::Time));
-  MOCK_METHOD1(OnLocalSetPassphraseEncryption,
-               void(const sync_pb::NigoriSpecifics&));
 };
 
 class MockNigoriStorage : public NigoriStorage {

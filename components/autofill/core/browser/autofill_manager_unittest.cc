@@ -831,6 +831,7 @@ TEST_F(AutofillManagerTest, OnFormsSeen_DifferentFormStructures) {
 
   // Different form structure.
   FormData form2;
+  form2.unique_renderer_id.value() = 2;
   form2.name = ASCIIToUTF16("MyForm");
   form2.url = GURL("https://myform.com/form.html");
   form2.action = GURL("https://myform.com/submit.html");
@@ -861,6 +862,7 @@ TEST_F(AutofillManagerTest, OnFormsSeen_SendAutofillTypePredictionsToRenderer) {
   FormData form2;
   FormFieldData field;
   test::CreateTestFormField("Querty", "qwerty", "", "text", &field);
+  form2.unique_renderer_id.value() = 2;
   form2.name = ASCIIToUTF16("NonQueryable");
   form2.url = form1.url;
   form2.action = GURL("https://myform.com/submit.html");
@@ -4961,6 +4963,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictionsFromLegacyServer) {
 
   // Similarly, a second form.
   FormData form2;
+  form2.unique_renderer_id.value() = 2;
   form2.name = ASCIIToUTF16("MyForm");
   form2.url = GURL("http://myform.com/form.html");
   form2.action = GURL("http://myform.com/submit.html");
@@ -5036,6 +5039,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictionsFromApi) {
 
   // First form on the page.
   FormData form;
+  form.unique_renderer_id.value() = 1;
   form.name = ASCIIToUTF16("MyForm");
   form.url = GURL("http://myform.com/form.html");
   form.action = GURL("http://myform.com/submit.html");
@@ -5059,6 +5063,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictionsFromApi) {
 
   // Second form on the page.
   FormData form2;
+  form2.unique_renderer_id.value() = 2;
   form2.name = ASCIIToUTF16("MyForm2");
   form2.url = GURL("http://myform.com/form.html");
   form2.action = GURL("http://myform.com/submit.html");

@@ -333,23 +333,6 @@ TEST_F(SequenceBoundTest, ResetOnNullObjectWorks) {
   derived.Reset();
 }
 
-TEST_F(SequenceBoundTest, IsVirtualBaseClassOf) {
-  // Check that is_virtual_base_of<> works properly.
-
-  // Neither |Base| nor |Derived| is a virtual base of the other.
-  static_assert(!internal::is_virtual_base_of<Base, Derived>::value,
-                "|Base| shouldn't be a virtual base of |Derived|");
-  static_assert(!internal::is_virtual_base_of<Derived, Base>::value,
-                "|Derived| shouldn't be a virtual base of |Base|");
-
-  // |Base| should be a virtual base class of |VirtuallyDerived|, but not the
-  // other way.
-  static_assert(internal::is_virtual_base_of<Base, VirtuallyDerived>::value,
-                "|Base| should be a virtual base of |VirtuallyDerived|");
-  static_assert(!internal::is_virtual_base_of<VirtuallyDerived, Base>::value,
-                "|VirtuallyDerived shouldn't be a virtual base of |Base|");
-}
-
 TEST_F(SequenceBoundTest, LvalueConstructionParameter) {
   // Note here that |value_ptr| is an lvalue, while |&value| would be an rvalue.
   Value value = kInitialValue;

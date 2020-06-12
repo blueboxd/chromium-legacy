@@ -70,7 +70,7 @@ class ChromeAppBrowserProxy {
 
   /** @override */
   async openGallery(file) {
-    const id = 'nlkncpkkdoccmpiclbokaimcnedabhhm|app|open';
+    const id = 'jhdjimmaggjajfjphpljagpgkidjilnj|web|open';
     try {
       const result = await util.promisify(
           chrome.fileManagerPrivate.executeTask)(id, [file]);

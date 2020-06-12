@@ -102,8 +102,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void SetFocus(bool enable) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   void SetRemoteViewportIntersection(const ViewportIntersectionState&) override;
-  void SetTextDirection(
-      mojo_base::mojom::blink::TextDirection direction) override;
   void SetIsInertForSubFrame(bool) override;
   void SetInheritedEffectiveTouchActionForSubFrame(TouchAction) override;
   void UpdateRenderThrottlingStatusForSubFrame(bool is_throttled,

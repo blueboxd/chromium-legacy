@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/settings/privacy/cookies_commands.h"
 #import "ios/chrome/browser/ui/settings/privacy/cookies_mediator.h"
 #import "ios/chrome/browser/ui/settings/privacy/cookies_view_controller.h"
+#import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -45,9 +46,25 @@
   self.viewController = [[PrivacyCookiesViewController alloc]
       initWithStyle:UITableViewStylePlain];
 
-  DCHECK(self.baseNavigationController);
-  [self.baseNavigationController pushViewController:self.viewController
-                                           animated:YES];
+  if (!self.baseNavigationController) {
+    self.viewController.navigationItem.rightBarButtonItem =
+        [[UIBarButtonItem alloc]
+            initWithBarButtonSystemItem:UIBarButtonSystemItemDone
+                                 target:self
+                                 action:@selector(hideCookiesSettings)];
+
+    TableViewNavigationController* navigationController =
+        [[TableViewNavigationController alloc]
+            initWithTable:self.viewController];
+
+    [self.baseViewController presentViewController:navigationController
+                                          animated:YES
+                                        completion:nil];
+  } else {
+    [self.baseNavigationController pushViewController:self.viewController
+                                             animated:YES];
+  }
+
   self.viewController.presentationDelegate = self;
 
   self.mediator = [[PrivacyCookiesMediator alloc]
@@ -70,6 +87,14 @@
     (PrivacyCookiesViewController*)controller {
   DCHECK_EQ(self.viewController, controller);
   [self.delegate privacyCookiesCoordinatorViewControllerWasRemoved:self];
+}
+
+#pragma mark - Private
+
+// Called when the view controller is displayed from the page info and the
+// user pressed 'Done'.
+- (void)hideCookiesSettings {
+  [self.delegate dismissPrivacyCookiesCoordinatorViewController:self];
 }
 
 @end

@@ -57,8 +57,8 @@ class CORE_EXPORT Grid {
   size_t GridItemPaintOrder(const LayoutBox&) const;
   void SetGridItemPaintOrder(const LayoutBox&, size_t order);
 
-  int SmallestTrackStart(GridTrackSizingDirection) const;
-  void SetSmallestTracksStart(int row_start, int column_start);
+  size_t ExplicitGridStart(GridTrackSizingDirection) const;
+  void SetExplicitGridStart(size_t row_start, size_t column_start);
 
   size_t AutoRepeatTracks(GridTrackSizingDirection) const;
   void SetAutoRepeatTracks(size_t auto_repeat_rows, size_t auto_repeat_columns);
@@ -124,8 +124,8 @@ class CORE_EXPORT Grid {
 
   OrderIterator order_iterator_;
 
-  int smallest_column_start_{0};
-  int smallest_row_start_{0};
+  size_t explicit_column_start_{0};
+  size_t explicit_row_start_{0};
 
   size_t auto_repeat_columns_{0};
   size_t auto_repeat_rows_{0};

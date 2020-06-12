@@ -1034,13 +1034,21 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   if (!frame || !frame->CanCallJavaScriptFunction())
     return;
 
-  // Return early if |params| is not complete or if forms are not changed.
-  if (params.input_missing || params.type != "form_changed")
+  // Return early if |params| is not complete.
+  if (params.input_missing)
     return;
 
   // If there's a change in password forms on a page, they should be parsed
   // again.
-  [self findPasswordFormsAndSendThemToPasswordStore];
+  if (params.type == "form_changed")
+    [self findPasswordFormsAndSendThemToPasswordStore];
+
+  // If the form was removed, PasswordManager should be informed to decide
+  // whether the form was submitted.
+  if (params.type == "password_form_removed") {
+    self.passwordManager->OnPasswordFormRemoved(
+        self.passwordManagerDriver, FormRendererId(params.unique_form_id));
+  }
 }
 
 @end

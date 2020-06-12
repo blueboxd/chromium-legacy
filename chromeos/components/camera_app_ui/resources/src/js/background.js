@@ -16,7 +16,7 @@ import {PerfEvent, PerfLogger} from './perf.js';
  * Fixed minimum width of the window inner-bounds in pixels.
  * @type {number}
  */
-const MIN_WIDTH = 850;
+const MIN_WIDTH = 864;
 
 /**
  * Initial apsect ratio of the window inner-bounds.

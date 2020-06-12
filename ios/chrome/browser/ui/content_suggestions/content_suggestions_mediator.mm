@@ -216,22 +216,24 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
   [sectionsInfo addObject:self.mostVisitedSectionInfo];
 
-  std::vector<ntp_snippets::Category> categories =
-      self.contentService->GetCategories();
+  if (!IsDiscoverFeedEnabled()) {
+    std::vector<ntp_snippets::Category> categories =
+        self.contentService->GetCategories();
 
-  for (auto& category : categories) {
-    ContentSuggestionsCategoryWrapper* categoryWrapper =
-        [ContentSuggestionsCategoryWrapper wrapperWithCategory:category];
-    if (!self.sectionInformationByCategory[categoryWrapper]) {
-      [self addSectionInformationForCategory:category];
+    for (auto& category : categories) {
+      ContentSuggestionsCategoryWrapper* categoryWrapper =
+          [ContentSuggestionsCategoryWrapper wrapperWithCategory:category];
+      if (!self.sectionInformationByCategory[categoryWrapper]) {
+        [self addSectionInformationForCategory:category];
+      }
+      if ([self isCategoryAvailable:category]) {
+        [sectionsInfo
+            addObject:self.sectionInformationByCategory[categoryWrapper]];
+      }
     }
-    if ([self isCategoryAvailable:category]) {
-      [sectionsInfo
-          addObject:self.sectionInformationByCategory[categoryWrapper]];
-    }
+
+    [sectionsInfo addObject:self.learnMoreSectionInfo];
   }
-
-  [sectionsInfo addObject:self.learnMoreSectionInfo];
 
   if (IsDiscoverFeedEnabled() &&
       self.contentArticlesEnabled->GetValue()->GetBool()) {
@@ -265,7 +267,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     [convertedSuggestions addObject:self.learnMoreItem];
   } else if (sectionInfo == self.discoverSectionInfo) {
     [convertedSuggestions addObject:self.discoverItem];
-  } else {
+  } else if (!IsDiscoverFeedEnabled()) {
     ntp_snippets::Category category =
         [[self categoryWrapperForSectionInfo:sectionInfo] category];
 
@@ -629,43 +631,26 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 // ntp_snippets doesn't differentiate between disabled vs collapsed, so if
 // the status is |CATEGORY_EXPLICITLY_DISABLED|, check the value of
 // |contentArticlesEnabled|.
-// The Articles category is always ignored if the Discover feed flag is
-// active.
 - (BOOL)isCategoryInitOrAvailable:(ntp_snippets::Category)category {
   ntp_snippets::CategoryStatus status =
       self.contentService->GetCategoryStatus(category);
-  if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES)) {
-    if (status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED) {
-      return self.contentArticlesEnabled->GetValue()->GetBool() &&
-             !IsDiscoverFeedEnabled();
-    } else {
-      return IsCategoryStatusInitOrAvailable(
-                 self.contentService->GetCategoryStatus(category)) &&
-             !IsDiscoverFeedEnabled();
-    }
-  } else {
+  if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES) &&
+      status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED)
+    return self.contentArticlesEnabled->GetValue()->GetBool();
+  else
     return IsCategoryStatusInitOrAvailable(
         self.contentService->GetCategoryStatus(category));
-  }
 }
 
 // ntp_snippets doesn't differentiate between disabled vs collapsed, so if
 // the status is |CATEGORY_EXPLICITLY_DISABLED|, check the value of
 // |contentArticlesEnabled|.
-// The Articles category is always ignored if the Discover feed flag is
-// active.
 - (BOOL)isCategoryAvailable:(ntp_snippets::Category)category {
   ntp_snippets::CategoryStatus status =
       self.contentService->GetCategoryStatus(category);
-  if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES)) {
-    if (status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED) {
-      return self.contentArticlesEnabled->GetValue()->GetBool() &&
-             !IsDiscoverFeedEnabled();
-    } else {
-      return IsCategoryStatusAvailable(
-                 self.contentService->GetCategoryStatus(category)) &&
-             !IsDiscoverFeedEnabled();
-    }
+  if (category.IsKnownCategory(ntp_snippets::KnownCategories::ARTICLES) &&
+      status == ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED) {
+    return self.contentArticlesEnabled->GetValue()->GetBool();
   } else {
     return IsCategoryStatusAvailable(
         self.contentService->GetCategoryStatus(category));

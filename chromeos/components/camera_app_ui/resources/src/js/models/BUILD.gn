@@ -34,6 +34,7 @@ js_library("video_saver") {
     "video_saver.js",
   ]
   deps = [
+    "..:async_job_queue",
     "..:intent",
     "..:waitable_event",
     "../externs:w3c_api",

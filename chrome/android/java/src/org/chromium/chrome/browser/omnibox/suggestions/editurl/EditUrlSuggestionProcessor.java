@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
@@ -74,13 +75,17 @@ public class EditUrlSuggestionProcessor extends BaseSuggestionViewProcessor {
 
     @Override
     public boolean doesProcessSuggestion(OmniboxSuggestion suggestion, int position) {
+        // The what-you-typed suggestion can potentially appear as the second suggestion in some
+        // cases. If the first suggestion isn't the one we want, ignore all subsequent suggestions.
         if (position != 0) return false;
 
         Tab activeTab = mTabSupplier.get();
-        // The what-you-typed suggestion can potentially appear as the second suggestion in some
-        // cases. If the first suggestion isn't the one we want, ignore all subsequent suggestions.
-        if (activeTab == null || activeTab.isNativePage() || activeTab.isIncognito()
-                || SadTab.isShowing(activeTab)) {
+        if (activeTab == null || activeTab.isNativePage() || SadTab.isShowing(activeTab)) {
+            return false;
+        }
+
+        if (activeTab.isIncognito()
+                && !ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SEARCH_READY_INCOGNITO)) {
             return false;
         }
 

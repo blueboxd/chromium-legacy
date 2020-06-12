@@ -54,13 +54,13 @@ const size_t kVidPidSize = 4;
 // Avoid enumerating and/or using certain devices due to they provoking crashes
 // or any other reason (http://crbug.com/378494). This enum is defined for the
 // purposes of UMA collection. Existing entries cannot be removed.
-enum BlacklistedCameraNames {
-  BLACKLISTED_CAMERA_GOOGLE_CAMERA_ADAPTER = 0,
-  BLACKLISTED_CAMERA_IP_CAMERA = 1,
-  BLACKLISTED_CAMERA_CYBERLINK_WEBCAM_SPLITTER = 2,
-  BLACKLISTED_CAMERA_EPOCCAM = 3,
+enum BlockedCameraNames {
+  BLOCKED_CAMERA_GOOGLE_CAMERA_ADAPTER = 0,
+  BLOCKED_CAMERA_IP_CAMERA = 1,
+  BLOCKED_CAMERA_CYBERLINK_WEBCAM_SPLITTER = 2,
+  BLOCKED_CAMERA_EPOCCAM = 3,
   // This one must be last, and equal to the previous enumerated value.
-  BLACKLISTED_CAMERA_MAX = BLACKLISTED_CAMERA_EPOCCAM,
+  BLOCKED_CAMERA_MAX = BLOCKED_CAMERA_EPOCCAM,
 };
 
 #define UWP_ENUM_ERROR_HANDLER(hr, err_log)                         \
@@ -68,21 +68,23 @@ enum BlacklistedCameraNames {
   origin_task_runner_->PostTask(FROM_HERE,                          \
                                 base::BindOnce(device_info_callback, nullptr))
 
-// Blacklisted devices are identified by a characteristic prefix of the name.
+// Blocked devices are identified by a characteristic prefix of the name.
 // This prefix is used case-insensitively. This list must be kept in sync with
-// |BlacklistedCameraNames|.
-const char* const kBlacklistedCameraNames[] = {
+// |BlockedCameraNames|.
+const char* const kBlockedCameraNames[] = {
     // Name of a fake DirectShow filter on computers with GTalk installed.
     "Google Camera Adapter",
     // The following software WebCams cause crashes.
-    "IP Camera [JPEG/MJPEG]", "CyberLink Webcam Splitter", "EpocCam",
+    "IP Camera [JPEG/MJPEG]",
+    "CyberLink Webcam Splitter",
+    "EpocCam",
 };
-static_assert(base::size(kBlacklistedCameraNames) == BLACKLISTED_CAMERA_MAX + 1,
-              "kBlacklistedCameraNames should be same size as "
-              "BlacklistedCameraNames enum");
+static_assert(base::size(kBlockedCameraNames) == BLOCKED_CAMERA_MAX + 1,
+              "kBlockedCameraNames should be same size as "
+              "BlockedCameraNames enum");
 
 // Use this list only for USB webcams.
-const char* const kModelIdsBlacklistedForMediaFoundation[] = {
+const char* const kModelIdsBlockedForMediaFoundation[] = {
     // Devices using Empia 2860 or 2820 chips, see https://crbug.com/849636.
     "eb1a:2860", "eb1a:2820", "1ce6:2820",
     // Elgato HD60 Pro
@@ -106,7 +108,7 @@ const char* const kModelIdsBlacklistedForMediaFoundation[] = {
     "0bda:57f2"};
 
 // Use this list only for non-USB webcams.
-const char* const kDisplayNamesBlacklistedForMediaFoundation[] = {
+const char* const kDisplayNamesBlockedForMediaFoundation[] = {
     // VMware Virtual Webcams cause hangs when there is no physical Webcam.
     // See https://crbug.com/1044974.
     "VMware Virtual Webcam"};
@@ -129,20 +131,18 @@ GetMFAttributes() {
   return *mf_attributes;
 }
 
-bool IsDeviceBlacklistedForQueryingDetailedFrameRates(
+bool IsDeviceBlockedForQueryingDetailedFrameRates(
     const std::string& display_name) {
   return display_name.find("WebcamMax") != std::string::npos;
 }
 
-bool IsDeviceBlacklistedForMediaFoundationByModelId(
-    const std::string& model_id) {
-  return base::Contains(kModelIdsBlacklistedForMediaFoundation, model_id);
+bool IsDeviceBlockedForMediaFoundationByModelId(const std::string& model_id) {
+  return base::Contains(kModelIdsBlockedForMediaFoundation, model_id);
 }
 
-bool IsDeviceBlacklistedForMediaFoundationByDisplayName(
+bool IsDeviceBlockedForMediaFoundationByDisplayName(
     const std::string& display_name) {
-  return base::Contains(kDisplayNamesBlacklistedForMediaFoundation,
-                        display_name);
+  return base::Contains(kDisplayNamesBlockedForMediaFoundation, display_name);
 }
 
 bool LoadMediaFoundationDlls() {
@@ -204,15 +204,15 @@ bool CreateVideoCaptureDeviceMediaFoundation(const Descriptor& descriptor,
   return SUCCEEDED(MFCreateDeviceSource(attributes.Get(), source));
 }
 
-bool IsDeviceBlackListed(const std::string& name) {
-  DCHECK_EQ(BLACKLISTED_CAMERA_MAX + 1,
-            static_cast<int>(base::size(kBlacklistedCameraNames)));
-  for (size_t i = 0; i < base::size(kBlacklistedCameraNames); ++i) {
-    if (base::StartsWith(name, kBlacklistedCameraNames[i],
+bool IsDeviceBlocked(const std::string& name) {
+  DCHECK_EQ(BLOCKED_CAMERA_MAX + 1,
+            static_cast<int>(base::size(kBlockedCameraNames)));
+  for (size_t i = 0; i < base::size(kBlockedCameraNames); ++i) {
+    if (base::StartsWith(name, kBlockedCameraNames[i],
                          base::CompareCase::INSENSITIVE_ASCII)) {
-      DVLOG(1) << "Enumerated blacklisted device: " << name;
+      DVLOG(1) << "Enumerated blocked device: " << name;
       UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.BlacklistedDevice", i,
-                                BLACKLISTED_CAMERA_MAX + 1);
+                                BLOCKED_CAMERA_MAX + 1);
       return true;
     }
   }
@@ -281,8 +281,7 @@ void GetDeviceSupportedFormatsDirectShow(const Descriptor& descriptor,
   DVLOG(1) << "GetDeviceSupportedFormatsDirectShow for "
            << descriptor.display_name();
   bool query_detailed_frame_rates =
-      !IsDeviceBlacklistedForQueryingDetailedFrameRates(
-          descriptor.display_name());
+      !IsDeviceBlockedForQueryingDetailedFrameRates(descriptor.display_name());
   CapabilityList capability_list;
   VideoCaptureDeviceWin::GetDeviceCapabilityList(
       descriptor.device_id, query_detailed_frame_rates, &capability_list);
@@ -671,9 +670,8 @@ void VideoCaptureDeviceFactoryWin::GetDeviceDescriptorsMediaFoundation(
           const std::string model_id = GetDeviceModelId(device_id);
           const std::string display_name =
               base::SysWideToUTF8(std::wstring(name, name_size));
-          if (IsDeviceBlacklistedForMediaFoundationByModelId(model_id) ||
-              IsDeviceBlacklistedForMediaFoundationByDisplayName(
-                  display_name)) {
+          if (IsDeviceBlockedForMediaFoundationByModelId(model_id) ||
+              IsDeviceBlockedForMediaFoundationByDisplayName(display_name)) {
             continue;
           }
           if (list_was_empty ||
@@ -772,7 +770,7 @@ void VideoCaptureDeviceFactoryWin::GetDeviceDescriptorsDirectShow(
       continue;
 
     const std::string device_name(base::SysWideToUTF8(V_BSTR(name.ptr())));
-    if (IsDeviceBlackListed(device_name))
+    if (IsDeviceBlocked(device_name))
       continue;
 
     name.Reset();

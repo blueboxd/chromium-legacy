@@ -13,6 +13,7 @@
   <release seq="1">
     <structures>
       <structure name="IDR_CAMERA_ANALYTICS_JS" file="src/js/lib/analytics.js" type="chrome_html" />
+      <structure name="IDR_CAMERA_ASYNC_JOB_QUEUE_JS" file="src/js/async_job_queue.js" type="chrome_html" />
       <structure name="IDR_CAMERA_ASYNC_WRITER_JS" file="src/js/models/async_writer.js" type="chrome_html" />
       <structure name="IDR_CAMERA_BACKGROUND_JS" file="src/js/background.js" type="chrome_html" />
       <structure name="IDR_CAMERA_BACKGROUND_OPS_JS" file="src/js/background_ops.js" type="chrome_html" />

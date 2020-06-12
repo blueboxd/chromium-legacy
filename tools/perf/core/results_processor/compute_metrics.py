@@ -84,7 +84,9 @@ def ComputeTBMv2Metrics(test_result):
       test_result['testPath'], time.time() - start))
 
 
-def ComputeTBMv3Metrics(test_result, trace_processor_path):
+def ComputeTBMv3Metrics(test_result,
+                        trace_processor_path,
+                        fetch_power_profile=False):
   artifacts = test_result.get('outputArtifacts', {})
 
   if test_result['status'] == 'SKIP':
@@ -109,7 +111,7 @@ def ComputeTBMv3Metrics(test_result, trace_processor_path):
   for metric in metrics:
     histograms = trace_processor.RunMetric(
         trace_processor_path, artifacts[CONCATENATED_PROTO_NAME]['filePath'],
-        metric)
+        metric, fetch_power_profile)
     test_result['_histograms'].Merge(histograms)
   logging.info('%s: Computing TBMv3 metrics took %.3f seconds.' % (
       test_result['testPath'], time.time() - start))

@@ -26,12 +26,12 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.MathUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent.HeightMode;
 import org.chromium.ui.KeyboardVisibilityDelegate;
+import org.chromium.ui.util.AccessibilityUtil;
 
 /**
  * This class defines the bottom sheet that has multiple states and a persistently showing toolbar.
@@ -159,6 +159,9 @@ class BottomSheet extends FrameLayout
     /** The ratio in the range [0, 1] that the browser controls are hidden. */
     private float mBrowserControlsHiddenRatio;
 
+    /** A means of checking whether accessibility is currently enabled. */
+    private AccessibilityUtil mAccessibilityUtil;
+
     @Override
     public boolean shouldGestureMoveSheet(MotionEvent initialEvent, MotionEvent currentEvent) {
         // If the sheet is scrolling off-screen or in the process of hiding, gestures should not
@@ -170,7 +173,7 @@ class BottomSheet extends FrameLayout
 
         // If the sheet is already open, the experiment is not enabled, or accessibility is enabled
         // there is no need to restrict the swipe area.
-        if (isSheetOpen() || ChromeAccessibilityUtil.get().isAccessibilityEnabled()) {
+        if (isSheetOpen() || mAccessibilityUtil.isAccessibilityEnabled()) {
             return true;
         }
 
@@ -212,6 +215,11 @@ class BottomSheet extends FrameLayout
         mIsTouchEnabled = false;
         mObservers.clear();
         endAnimations();
+    }
+
+    /** @param accessibilityUtil A mechanism for testing whether accessibility is enabled. */
+    void setAccssibilityUtil(AccessibilityUtil accessibilityUtil) {
+        mAccessibilityUtil = accessibilityUtil;
     }
 
     /** Immediately end all animations and null the animators. */

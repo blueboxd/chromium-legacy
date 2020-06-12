@@ -110,22 +110,16 @@ function formActivity_(evt) {
   if (target !== lastFocusedElement) {
     return;
   }
-  let formUniqueIdString = __gCrWeb.fill.RENDERER_ID_NOT_SET;
-  let fieldUniqueIdString = __gCrWeb.fill.RENDERER_ID_NOT_SET;
-  try {
-    __gCrWeb.fill.setUniqueIDIfNeeded(target.form);
-    __gCrWeb.fill.setUniqueIDIfNeeded(target);
-    const uniqueID = Symbol.for('__gChrome~uniqueID');
-    formUniqueIdString = target.form[uniqueID].toString();
-    fieldUniqueIdString = target[uniqueID].toString();
-  } catch (e) {
-  }
+  __gCrWeb.fill.setUniqueIDIfNeeded(target.form);
+  __gCrWeb.fill.setUniqueIDIfNeeded(target);
+  const formUniqueId = __gCrWeb.fill.getUniqueID(target.form);
+  const fieldUniqueId = __gCrWeb.fill.getUniqueID(target);
   const msg = {
     'command': 'form.activity',
     'formName': __gCrWeb.form.getFormIdentifier(target.form),
-    'uniqueFormID': formUniqueIdString,
+    'uniqueFormID': formUniqueId,
     'fieldIdentifier': __gCrWeb.form.getFieldIdentifier(target),
-    'uniqueFieldID': fieldUniqueIdString,
+    'uniqueFieldID': fieldUniqueId,
     'fieldType': fieldType,
     'type': evt.type,
     'value': value,
@@ -262,6 +256,45 @@ __gCrWeb.formHandlers['trackFormMutations'] = function(delay) {
           'uniqueFieldID': '',
           'fieldType': '',
           'type': 'form_changed',
+          'value': '',
+          'hasUserGesture': false
+        };
+        return sendFormMutationMessageAfterDelay_(msg, delay);
+      }
+
+      const removedElements = [];
+      for (let j = 0; j < mutation.removedNodes.length; j++) {
+        const node = mutation.removedNodes[j];
+        // Ignore non-element nodes.
+        if (node.nodeType !== Node.ELEMENT_NODE) {
+          continue;
+        }
+        removedElements.push(node);
+        [].push.apply(
+            removedElements, [].slice.call(node.getElementsByTagName('FORM')));
+      }
+      const formGone = removedElements.find(function(element) {
+        if (element.tagName.match(/(FORM)/)) {
+          for (let k = 0; k < element.elements.length; k++) {
+            if (element.elements[k].tagName.match(/(INPUT)/) &&
+                element.elements[k].type === 'password') {
+              return true;
+            }
+          }
+          return false;
+        }
+        return false;
+      });
+      const uniqueFormId = __gCrWeb.fill.getUniqueID(formGone);
+      if (formGone) {
+        const msg = {
+          'command': 'form.activity',
+          'formName': '',
+          'uniqueFormID': uniqueFormId,
+          'fieldIdentifier': '',
+          'uniqueFieldID': '',
+          'fieldType': '',
+          'type': 'password_form_removed',
           'value': '',
           'hasUserGesture': false
         };

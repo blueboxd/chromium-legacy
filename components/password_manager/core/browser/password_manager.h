@@ -241,6 +241,8 @@ class PasswordManager : public FormSubmissionObserver {
   // form parent frame.
   void OnPasswordNoLongerGenerated(PasswordManagerDriver* driver);
 
+  void OnPasswordFormRemoved(PasswordManagerDriver* driver,
+                             autofill::FormRendererId form_id);
 #endif
 
  private:

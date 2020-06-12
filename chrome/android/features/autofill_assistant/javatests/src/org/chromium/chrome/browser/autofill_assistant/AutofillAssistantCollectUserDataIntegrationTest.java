@@ -155,7 +155,7 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
 
         RequiredField fallbackTextField =
                 (RequiredField) RequiredField.newBuilder()
-                        .setValueExpression("57")
+                        .setValueExpression("${57}")
                         .setElement(SelectorProto.newBuilder().addFilters(
                                 SelectorProto.Filter.newBuilder().setCssSelector(
                                         "#fallback_entry")))
@@ -163,7 +163,7 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
                         .build();
         RequiredField fallbackJsDropdownField =
                 (RequiredField) RequiredField.newBuilder()
-                        .setValueExpression("55")
+                        .setValueExpression("${55}")
                         .setElement(SelectorProto.newBuilder().addFilters(
                                 SelectorProto.Filter.newBuilder().setCssSelector(
                                         "#js_dropdown_value")))

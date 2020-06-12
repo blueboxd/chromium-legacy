@@ -424,9 +424,8 @@
   <message name="IDS_SETTINGS_PASSWORD_REMOVE" desc="Label for a context menu item that removes the selected password." meaning="Remove selected password.">
     Remove
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once the final string is decided. -->
-  <message translateable="false" name="IDS_SETTINGS_PASSWORD_MOVE_TO_ACCOUNT" desc="Label for a context menu item that moves the selected password from the device to the user account.">
-    Move to your Google Account
+  <message name="IDS_SETTINGS_PASSWORD_MOVE_TO_ACCOUNT" desc="Label for a context menu item that moves the selected password from the device to the user account.">
+    Move to Google Account
   </message>
   <message name="IDS_SETTINGS_PASSWORD_SEARCH" desc="Placeholder/label for the text input field that allows a user to filter saved passwords.">
     Search passwords
@@ -438,7 +437,7 @@
     Hide password
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_VIEW_DETAILS_TITLE" desc="Title for the dialog that shows password details. This dialog lets a user see a saved password and copy the username.">
-    Saved password details
+    Password details
   </message>
   <message name="IDS_SETTINGS_PASSWORD_DETAILS" desc="Label for a context menu item that shows a dialog with details for the selected password.">
     Details
@@ -476,45 +475,35 @@
   <message name="IDS_SETTINGS_PASSWORD_DELETED_PASSWORD" desc="Label for an undo tooltip following a saved password deletion.">
     Password deleted
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
-  <message translateable="false" name="IDS_SETTINGS_PASSWORD_STORED_ON_DEVICE" desc="Message displayed in the edit dialog for a password stored on the device.">
-    Your password is saved on this device.
+  <message name="IDS_SETTINGS_PASSWORD_STORED_ON_DEVICE" desc="Message displayed in the edit dialog for a password stored on the device.">
+    Your password is saved on this device
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
-  <message translateable="false" name="IDS_SETTINGS_PASSWORD_STORED_IN_ACCOUNT" desc="Message displayed in the edit dialog for a password stored in the account.">
-    Your password is saved in your Google Account.
+  <message name="IDS_SETTINGS_PASSWORD_STORED_IN_ACCOUNT" desc="Message displayed in the edit dialog for a password stored in the account.">
+    Your password is saved in your Google Account
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
-  <message translateable="false" name="IDS_SETTINGS_PASSWORD_STORED_IN_ACCOUNT_AND_ON_DEVICE" desc="Message displayed in the edit dialog for a password stored both on the device and in the account.">
-    Your password is saved on this device and in your Google Account.
+  <message name="IDS_SETTINGS_PASSWORD_STORED_IN_ACCOUNT_AND_ON_DEVICE" desc="Message displayed in the edit dialog for a password stored both on the device and in the account.">
+    Your password is saved on this device and in your Google Account
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
-  <message translateable="false" name="IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_ACCOUNT" desc="Label for an undo tooltip following deletion of a password from the account.">
+  <message name="IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_ACCOUNT" desc="Label for an undo tooltip following deletion of a password from the account.">
     Password deleted from your Google Account
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
-  <message translateable="false" name="IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_DEVICE" desc="Label for an undo tooltip following deletion of a password from the device.">
+  <message name="IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_DEVICE" desc="Label for an undo tooltip following deletion of a password from the device.">
     Password deleted from this device
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
-  <message translateable="false" name="IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_ACCOUNT_AND_DEVICE" desc="Label for an undo tooltip following deletion of a password from the account and the device.">
-    Password deleted from your Google Account and this device
+  <message name="IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_ACCOUNT_AND_DEVICE" desc="Label for an undo tooltip following deletion of a password from the account and the device.">
+    Password deleted from this device and your Google Account
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final strings are available. -->
-  <message translateable="false" name="IDS_SETTINGS_PASSWORD_MOVE_TO_ACCOUNT_DIALOG_TITLE" desc="Title for the dialog that confirms whether the user wishes to move a password to their Google Account.">
+  <message name="IDS_SETTINGS_PASSWORD_MOVE_TO_ACCOUNT_DIALOG_TITLE" desc="Title for the dialog that confirms whether the user wishes to move a password to their Google Account.">
     Move to Google Account?
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final strings are available. -->
-  <message translateable="false" name="IDS_SETTINGS_PASSWORD_MOVE_TO_ACCOUNT_DIALOG_BODY" desc="Description message for the dialog that confirms whether the user wishes to move a password to their Google Account.">
+  <message name="IDS_SETTINGS_PASSWORD_MOVE_TO_ACCOUNT_DIALOG_BODY" desc="Description message for the dialog that confirms whether the user wishes to move a password to their Google Account.">
     Move your password to your Google Account to access it securely wherever you're signed in
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final strings are available. -->
-  <message translateable="false" name="IDS_SETTINGS_PASSWORD_MOVE_TO_ACCOUNT_DIALOG_MOVE_BUTTON_TEXT" desc="Text for the button that confirms moving a password to the user Google Account.">
+  <message name="IDS_SETTINGS_PASSWORD_MOVE_TO_ACCOUNT_DIALOG_MOVE_BUTTON_TEXT" desc="Text for the button that confirms moving a password to the user Google Account.">
     Move
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final strings are available. -->
-  <message translateable="false" name="IDS_SETTINGS_PASSWORD_MOVE_TO_ACCOUNT_DIALOG_CANCEL_BUTTON_TEXT" desc="Text for the button that cancels the action of moving a password to the user Google Account.">
-    No thanks
+  <message name="IDS_SETTINGS_PASSWORD_MOVE_TO_ACCOUNT_DIALOG_CANCEL_BUTTON_TEXT" desc="Text for the button that cancels the action of moving a password to the user Google Account.">
+    No, thanks
   </message>
   <message name="IDS_SETTINGS_DEVICE_PASSWORDS_LINK_LABEL_SINGULAR" desc="The label for the link on settings leading to the 'device passwords' page, when there is 1 device password.">
     You have 1 password saved on this device

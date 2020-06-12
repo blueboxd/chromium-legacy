@@ -6,6 +6,7 @@
 
 #import "base/strings/sys_string_conversions.h"
 #import "components/strings/grit/components_strings.h"
+#import "components/sync/driver/sync_service_utils.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -32,6 +33,17 @@ using l10n_util::GetNSStringF;
 @end
 
 @implementation TrustedVaultReauthenticationCoordinator
+
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                                   browser:(Browser*)browser
+                          retrievalTrigger:(syncer::KeyRetrievalTriggerForUMA)
+                                               retrievalTrigger {
+  self = [super initWithBaseViewController:viewController browser:browser];
+  if (self) {
+    syncer::RecordKeyRetrievalTrigger(retrievalTrigger);
+  }
+  return self;
+}
 
 #pragma mark - SigninCoordinator
 

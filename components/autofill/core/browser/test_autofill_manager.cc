@@ -116,8 +116,8 @@ void TestAutofillManager::AddSeenForm(
 
 void TestAutofillManager::AddSeenFormStructure(
     std::unique_ptr<FormStructure> form_structure) {
-  const auto signature = form_structure->form_signature();
-  (*mutable_form_structures())[signature] = std::move(form_structure);
+  const auto renderer_id = form_structure->unique_renderer_id();
+  (*mutable_form_structures())[renderer_id] = std::move(form_structure);
 }
 
 void TestAutofillManager::ClearFormStructures() {

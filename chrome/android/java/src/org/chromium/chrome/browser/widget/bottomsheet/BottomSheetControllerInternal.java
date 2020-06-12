@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet;
 
+import org.chromium.ui.util.AccessibilityUtil;
+
 /**
  * An interface for the owning object to manage interaction between the bottom sheet and the rest
  * of the system.
@@ -43,6 +45,9 @@ public interface BottomSheetControllerInternal extends BottomSheetController {
      * @param ratio The hidden ratio of the browser controls in range [0, 1].
      */
     void setBrowserControlsHiddenRatio(float ratio);
+
+    /** @param accessibilityUtil A mechanism for testing whether accessibility is enabled. */
+    void setAccssibilityUtil(AccessibilityUtil accessibilityUtil);
 
     /** Clean up any state maintained by the controller. */
     void destroy();

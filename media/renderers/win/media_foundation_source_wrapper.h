@@ -14,8 +14,8 @@
 
 #include "base/sequenced_task_runner.h"
 #include "media/base/media_resource.h"
+#include "media/base/win/mf_cdm_proxy.h"
 #include "media/renderers/win/media_foundation_stream_wrapper.h"
-#include "media/renderers/win/mf_cdm_proxy.h"
 
 namespace media {
 

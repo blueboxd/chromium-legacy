@@ -129,7 +129,6 @@ if (is_win) {
       "win/media_foundation_stream_wrapper.h",
       "win/media_foundation_video_stream.cc",
       "win/media_foundation_video_stream.h",
-      "win/mf_cdm_proxy.h",
     ]
     deps = [
       "//media",

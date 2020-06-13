@@ -10,7 +10,7 @@
 #include <windows.media.protection.h>
 #include <wrl.h>
 
-#include "media/renderers/win/mf_cdm_proxy.h"
+#include "media/base/win/mf_cdm_proxy.h"
 
 namespace media {
 

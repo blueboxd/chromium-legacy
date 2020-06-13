@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_RENDERERS_WIN_MF_CDM_PROXY_H_
-#define MEDIA_RENDERERS_WIN_MF_CDM_PROXY_H_
+#ifndef MEDIA_BASE_WIN_MF_CDM_PROXY_H_
+#define MEDIA_BASE_WIN_MF_CDM_PROXY_H_
 
 #include <stdint.h>
 #include <unknwn.h>
@@ -64,4 +64,4 @@ IMFCdmProxy : public IUnknown {
       _In_ IUnknown * request, _In_ IMFAsyncResult * result) = 0;
 };
 
-#endif  // MEDIA_RENDERERS_WIN_MF_CDM_PROXY_H_
+#endif  // MEDIA_BASE_WIN_MF_CDM_PROXY_H_

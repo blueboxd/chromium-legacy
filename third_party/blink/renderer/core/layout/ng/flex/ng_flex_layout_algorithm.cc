@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_space_utils.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -102,15 +103,20 @@ AxisEdge CrossAxisStaticPositionEdge(const ComputedStyle& style,
                                      const ComputedStyle& child_style) {
   ItemPosition alignment =
       FlexLayoutAlgorithm::AlignmentForChild(style, child_style);
-  bool is_wrap_reverse = style.FlexWrap() == EFlexWrap::kWrapReverse;
+  // AlignmentForChild already accounted for wrap-reverse for kFlexStart and
+  // kFlexEnd, but not kStretch. kStretch is supposed to act like kFlexStart.
+  if (style.FlexWrap() == EFlexWrap::kWrapReverse &&
+      alignment == ItemPosition::kStretch) {
+    return AxisEdge::kEnd;
+  }
 
   if (alignment == ItemPosition::kFlexEnd)
-    return is_wrap_reverse ? AxisEdge::kStart : AxisEdge::kEnd;
+    return AxisEdge::kEnd;
 
   if (alignment == ItemPosition::kCenter)
     return AxisEdge::kCenter;
 
-  return is_wrap_reverse ? AxisEdge::kEnd : AxisEdge::kStart;
+  return AxisEdge::kStart;
 }
 
 }  // namespace

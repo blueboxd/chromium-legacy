@@ -57,6 +57,11 @@ source_set("hresult_status_helper") {
   deps = [ "//media" ]
 }
 
+source_set("mf_cdm_proxy") {
+  sources = [ "mf_cdm_proxy.h" ]
+  deps = [ "//base" ]
+}
+
 source_set("d3d11_test_support") {
   testonly = true
   sources = [

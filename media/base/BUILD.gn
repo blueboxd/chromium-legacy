@@ -412,7 +412,10 @@ jumbo_source_set("base") {
   }
 
   if (is_win) {
-    public_deps += [ "//media/base/win:d3d11" ]
+    public_deps += [
+      "//media/base/win:d3d11",
+      "//media/base/win:mf_cdm_proxy",
+    ]
   }
 
   if (is_chromecast || is_fuchsia) {

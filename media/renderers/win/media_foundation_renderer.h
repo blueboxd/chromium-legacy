@@ -88,7 +88,7 @@ class MediaFoundationRenderer : public Renderer,
   void OnVideoNaturalSizeChanged();
   void OnTimeUpdate();
 
-  void OnCdmProxyReceived(IMFCdmProxy* cdm);
+  void OnCdmProxyReceived(Microsoft::WRL::ComPtr<IMFCdmProxy> cdm_proxy);
 
   HRESULT SetDCompModeInternal(bool enabled);
   HRESULT GetDCompSurfaceInternal(HANDLE* surface_handle);

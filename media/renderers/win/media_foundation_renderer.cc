@@ -331,8 +331,8 @@ void MediaFoundationRenderer::SetLatencyHint(
   NOTIMPLEMENTED() << "We do not use the latency hint today";
 }
 
-// TODO(frankli): Use ComPtr<> for |cdm|.
-void MediaFoundationRenderer::OnCdmProxyReceived(IMFCdmProxy* cdm) {
+void MediaFoundationRenderer::OnCdmProxyReceived(
+    ComPtr<IMFCdmProxy> cdm_proxy) {
   DVLOG_FUNC(1);
 
   if (!waiting_for_mf_cdm_ || !content_protection_manager_) {
@@ -343,8 +343,6 @@ void MediaFoundationRenderer::OnCdmProxyReceived(IMFCdmProxy* cdm) {
 
   waiting_for_mf_cdm_ = false;
 
-  ComPtr<IMFCdmProxy> cdm_proxy;
-  cdm_proxy.Attach(cdm);
   content_protection_manager_->SetCdmProxy(cdm_proxy.Get());
   mf_source_->SetCdmProxy(cdm_proxy.Get());
   HRESULT hr = SetSourceOnMediaEngine();

@@ -12,6 +12,7 @@
 #include "media/media_buildflags.h"
 
 #if defined(OS_WIN)
+#include <wrl/client.h>
 struct IMFCdmProxy;
 #endif
 
@@ -90,7 +91,8 @@ class MEDIA_EXPORT CdmContext {
   virtual int GetCdmId() const;
 
 #if defined(OS_WIN)
-  using GetMediaFoundationCdmProxyCB = base::OnceCallback<void(IMFCdmProxy*)>;
+  using GetMediaFoundationCdmProxyCB =
+      base::OnceCallback<void(Microsoft::WRL::ComPtr<IMFCdmProxy>)>;
   // This allows a CdmContext to expose an IMFTrustedInput instance for use in
   // a Media Foundation rendering pipeline. This method is asynchronous because
   // the underlying MF-based CDM might not have a native session created yet.

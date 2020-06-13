@@ -193,4 +193,13 @@ public class OmniboxSuggestionBuilderForTest {
         mClipboardImageData = clipboardImageData;
         return this;
     }
+
+    /**
+     * @param hasTabMatch Whether built suggestion has tab match.
+     * @return Omnibox suggestion builder.
+     */
+    public OmniboxSuggestionBuilderForTest setHasTabMatch(boolean hasTabMatch) {
+        mHasTabMatch = hasTabMatch;
+        return this;
+    }
 }

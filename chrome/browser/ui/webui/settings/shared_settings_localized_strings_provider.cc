@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -240,6 +241,17 @@ void AddSyncPageStrings(content::WebUIDataSource* html_source) {
         "manageSyncedDataTitle",
         IDS_SETTINGS_MANAGE_SYNCED_DATA_TITLE_UNIFIED_CONSENT);
   }
+}
+
+void AddNearbyShareData(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"nearbyShareTitle", IDS_SETTINGS_NEARBY_SHARE_TITLE},
+  };
+  AddLocalizedStringsBulk(html_source, kLocalizedStrings);
+
+  html_source->AddBoolean(
+      "nearbySharingFeatureFlag",
+      base::FeatureList::IsEnabled(features::kNearbySharing));
 }
 
 }  // namespace settings

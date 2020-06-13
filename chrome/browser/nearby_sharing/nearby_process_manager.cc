@@ -31,7 +31,7 @@ ProfileAttributesEntry* GetStoredNearbyProfile() {
     return nullptr;
 
   base::FilePath advertising_profile_path =
-      local_state->GetFilePath(kNearbySharingActiveProfilePrefName);
+      local_state->GetFilePath(::prefs::kNearbySharingActiveProfilePrefName);
   if (advertising_profile_path.empty())
     return nullptr;
 
@@ -45,7 +45,7 @@ ProfileAttributesEntry* GetStoredNearbyProfile() {
   ProfileAttributesEntry* entry;
   if (!storage.GetProfileAttributesWithPath(advertising_profile_path, &entry)) {
     // Stored profile path is invalid so remove it.
-    local_state->ClearPref(kNearbySharingActiveProfilePrefName);
+    local_state->ClearPref(::prefs::kNearbySharingActiveProfilePrefName);
     return nullptr;
   }
   return entry;
@@ -57,10 +57,10 @@ void SetStoredNearbyProfile(Profile* profile) {
     return;
 
   if (profile) {
-    local_state->SetFilePath(kNearbySharingActiveProfilePrefName,
+    local_state->SetFilePath(::prefs::kNearbySharingActiveProfilePrefName,
                              profile->GetPath());
   } else {
-    local_state->ClearPref(kNearbySharingActiveProfilePrefName);
+    local_state->ClearPref(::prefs::kNearbySharingActiveProfilePrefName);
   }
 }
 

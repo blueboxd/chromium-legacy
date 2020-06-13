@@ -11,8 +11,8 @@
 #include "components/prefs/pref_registry.h"
 #include "components/prefs/pref_registry_simple.h"
 
-const char kNearbySharingEnabledPrefName[] = "nearby_sharing.enabled";
-const char kNearbySharingActiveProfilePrefName[] =
+const char prefs::kNearbySharingEnabledPrefName[] = "nearby_sharing.enabled";
+const char prefs::kNearbySharingActiveProfilePrefName[] =
     "nearby_sharing.active_profile";
 
 void RegisterNearbySharingPrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -20,11 +20,11 @@ void RegisterNearbySharingPrefs(user_prefs::PrefRegistrySyncable* registry) {
   // TODO(vecore): Change the default to false after the settings ui is
   // available.
   registry->RegisterBooleanPref(
-      kNearbySharingEnabledPrefName, true /* default_value */,
+      prefs::kNearbySharingEnabledPrefName, true /* default_value */,
       PrefRegistry::PrefRegistrationFlags::NO_REGISTRATION_FLAGS /* flags */);
 }
 
 void RegisterNearbySharingLocalPrefs(PrefRegistrySimple* local_state) {
-  local_state->RegisterFilePathPref(kNearbySharingActiveProfilePrefName,
+  local_state->RegisterFilePathPref(prefs::kNearbySharingActiveProfilePrefName,
                                     base::FilePath() /* default_value */);
 }

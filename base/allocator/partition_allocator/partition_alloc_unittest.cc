@@ -829,7 +829,7 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
   actual_size = PartitionAllocGetSize<ThreadSafe>(ptr);
   EXPECT_EQ(predicted_size, actual_size);
   EXPECT_LT(requested_size, actual_size);
-#if defined(ARCH_CPU_64_BITS)
+#if defined(__LP64__)
   for (size_t offset = 0; offset < requested_size; ++offset) {
     size_t actual_offset = PartitionAllocGetSlotOffset<ThreadSafe>(
         static_cast<char*>(ptr) + offset);
@@ -847,7 +847,7 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
   actual_size = PartitionAllocGetSize<ThreadSafe>(ptr);
   EXPECT_EQ(predicted_size, actual_size);
   EXPECT_EQ(requested_size, actual_size);
-#if defined(ARCH_CPU_64_BITS)
+#if defined(__LP64__)
   for (size_t offset = 0; offset < requested_size; offset += 877) {
     size_t actual_offset = PartitionAllocGetSlotOffset<ThreadSafe>(
         static_cast<char*>(ptr) + offset);
@@ -869,7 +869,7 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
   actual_size = PartitionAllocGetSize<ThreadSafe>(ptr);
   EXPECT_EQ(predicted_size, actual_size);
   EXPECT_EQ(requested_size + kSystemPageSize, actual_size);
-#if defined(ARCH_CPU_64_BITS)
+#if defined(__LP64__)
   for (size_t offset = 0; offset < requested_size; offset += 4999) {
     size_t actual_offset = PartitionAllocGetSlotOffset<ThreadSafe>(
         static_cast<char*>(ptr) + offset);
@@ -902,7 +902,7 @@ TEST_F(PartitionAllocTest, GenericAllocGetSizeAndOffset) {
   EXPECT_EQ(requested_size, predicted_size);
 }
 
-#if defined(ARCH_CPU_64_BITS)
+#if defined(__LP64__)
 TEST_F(PartitionAllocTest, GetOffsetMultiplePages) {
   size_t size = 48;
   size_t real_size = size + kExtraAllocSize;
@@ -928,7 +928,7 @@ TEST_F(PartitionAllocTest, GetOffsetMultiplePages) {
     allocator.root()->Free(ptr);
   }
 }
-#endif  // #if defined(ARCH_CPU_64_BITS)
+#endif  // defined(__LP64__)
 
 // Test the realloc() contract.
 TEST_F(PartitionAllocTest, Realloc) {

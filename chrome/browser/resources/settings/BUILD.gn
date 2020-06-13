@@ -71,6 +71,7 @@ group("closure_compile") {
     "appearance_page:closure_compile",
     "controls:closure_compile",
     "languages_page:closure_compile",
+    "nearby_share_page:closure_compile",
     "people_page:closure_compile",
     "prefs:closure_compile",
     "privacy_page:closure_compile",

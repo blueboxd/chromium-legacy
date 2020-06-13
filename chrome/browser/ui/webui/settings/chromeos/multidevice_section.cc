@@ -4,12 +4,16 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_section.h"
 
+#include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/chromeos/android_sms/android_sms_service.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/chromeos/multidevice_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
+#include "chrome/browser/ui/webui/settings/shared_settings_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -17,6 +21,7 @@
 #include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -50,6 +55,7 @@ const std::vector<SearchConcept>& GetMultiDeviceSearchConcepts() {
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
        {.subpage = mojom::Subpage::kSmartLock}},
+
   });
   return *tags;
 }
@@ -86,6 +92,40 @@ const std::vector<SearchConcept>& GetMultiDeviceOptedOutSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>& GetNearbyShareOnSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_MULTIDEVICE_NEARBY_SHARE,
+       mojom::kNearbyShareSubpagePath,
+       mojom::SearchResultIcon::kNearbyShare,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kNearbyShare}},
+      {IDS_OS_SETTINGS_TAG_NEARBY_SHARE_TURN_OFF,
+       mojom::kNearbyShareSubpagePath,
+       mojom::SearchResultIcon::kNearbyShare,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kNearbyShareOnOff},
+       {IDS_OS_SETTINGS_TAG_NEARBY_SHARE_TURN_OFF_ALT1,
+        SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetNearbyShareOffSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_NEARBY_SHARE_TURN_ON,
+       mojom::kMultiDeviceSectionPath,
+       mojom::SearchResultIcon::kNearbyShare,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kNearbyShareOnOff},
+       {IDS_OS_SETTINGS_TAG_NEARBY_SHARE_TURN_ON_ALT1,
+        SearchConcept::kAltTagEnd}},
+  });
+  return *tags;
+}
+
 void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"easyUnlockSectionTitle", IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE},
@@ -115,6 +155,15 @@ MultiDeviceSection::MultiDeviceSection(
       multidevice_setup_client_(multidevice_setup_client),
       android_sms_service_(android_sms_service),
       pref_service_(pref_service) {
+  if (base::FeatureList::IsEnabled(features::kNearbySharing)) {
+    pref_change_registrar_.Init(pref_service_);
+    pref_change_registrar_.Add(
+        ::prefs::kNearbySharingEnabledPrefName,
+        base::BindRepeating(&MultiDeviceSection::OnNearbySharingEnabledChanged,
+                            base::Unretained(this)));
+    OnNearbySharingEnabledChanged();
+  }
+
   // Note: |multidevice_setup_client_| is null when multi-device features are
   // prohibited by policy.
   if (!multidevice_setup_client_)
@@ -208,6 +257,7 @@ void MultiDeviceSection::AddLoadTimeData(
           GetHelpUrlWithBoard(chrome::kEasyUnlockLearnMoreUrl)));
 
   AddEasyUnlockStrings(html_source);
+  ::settings::AddNearbyShareData(html_source);
 }
 
 void MultiDeviceSection::AddHandlers(content::WebUI* web_ui) {
@@ -278,6 +328,18 @@ void MultiDeviceSection::RegisterHierarchy(
                             generator);
   generator->RegisterNestedAltSetting(mojom::Setting::kSmartLockOnOff,
                                       mojom::Subpage::kMultiDeviceFeatures);
+
+  // Nearby Share, registered regardless of the flag.
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_NEARBY_SHARE_TITLE, mojom::Subpage::kNearbyShare,
+      mojom::SearchResultIcon::kNearbyShare,
+      mojom::SearchResultDefaultRank::kMedium, mojom::kNearbyShareSubpagePath);
+  static constexpr mojom::Setting kNearbyShareSettings[] = {
+      mojom::Setting::kNearbyShareOnOff,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kNearbyShare, kNearbyShareSettings,
+                            generator);
+  generator->RegisterTopLevelAltSetting(mojom::Setting::kNearbyShareOnOff);
 }
 
 void MultiDeviceSection::OnHostStatusChanged(
@@ -289,6 +351,16 @@ void MultiDeviceSection::OnHostStatusChanged(
   } else {
     registry()->RemoveSearchTags(GetMultiDeviceOptedInSearchConcepts());
     registry()->AddSearchTags(GetMultiDeviceOptedOutSearchConcepts());
+  }
+}
+
+void MultiDeviceSection::OnNearbySharingEnabledChanged() {
+  if (pref_service_->GetBoolean(::prefs::kNearbySharingEnabledPrefName)) {
+    registry()->RemoveSearchTags(GetNearbyShareOffSearchConcepts());
+    registry()->AddSearchTags(GetNearbyShareOnSearchConcepts());
+  } else {
+    registry()->RemoveSearchTags(GetNearbyShareOnSearchConcepts());
+    registry()->AddSearchTags(GetNearbyShareOffSearchConcepts());
   }
 }
 

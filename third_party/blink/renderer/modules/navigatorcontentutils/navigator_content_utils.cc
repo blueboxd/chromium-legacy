@@ -28,6 +28,7 @@
 
 #include "base/stl_util.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils_client.h"
@@ -198,11 +199,9 @@ void NavigatorContentUtils::registerProtocolHandler(
     const String& url,
     const String& title,
     ExceptionState& exception_state) {
-  LocalFrame* frame = navigator.GetFrame();
-  if (!frame)
+  LocalDOMWindow* window = navigator.DomWindow();
+  if (!window)
     return;
-  Document* document = frame->GetDocument();
-  DCHECK(document);
 
   // Per the HTML specification, exceptions for arguments must be surfaced in
   // the order of the arguments.
@@ -212,25 +211,25 @@ void NavigatorContentUtils::registerProtocolHandler(
     return;
   }
 
-  if (!VerifyCustomHandlerURL(*document, url, exception_state))
+  if (!VerifyCustomHandlerURL(*window->document(), url, exception_state))
     return;
 
   // Count usage; perhaps we can forbid this from cross-origin subframes as
   // proposed in https://crbug.com/977083.
   UseCounter::Count(
-      *document, frame->IsCrossOriginToMainFrame()
-                     ? WebFeature::kRegisterProtocolHandlerCrossOriginSubframe
-                     : WebFeature::kRegisterProtocolHandlerSameOriginAsTop);
+      window, window->GetFrame()->IsCrossOriginToMainFrame()
+                  ? WebFeature::kRegisterProtocolHandlerCrossOriginSubframe
+                  : WebFeature::kRegisterProtocolHandlerSameOriginAsTop);
   // Count usage. Context should now always be secure due to the same-origin
   // check and the requirement that the calling context be secure.
-  UseCounter::Count(*document,
-                    document->IsSecureContext()
+  UseCounter::Count(window,
+                    window->IsSecureContext()
                         ? WebFeature::kRegisterProtocolHandlerSecureOrigin
                         : WebFeature::kRegisterProtocolHandlerInsecureOrigin);
 
-  NavigatorContentUtils::From(navigator, *frame)
+  NavigatorContentUtils::From(navigator, *window->GetFrame())
       .Client()
-      ->RegisterProtocolHandler(scheme, document->CompleteURL(url), title);
+      ->RegisterProtocolHandler(scheme, window->CompleteURL(url), title);
 }
 
 void NavigatorContentUtils::unregisterProtocolHandler(

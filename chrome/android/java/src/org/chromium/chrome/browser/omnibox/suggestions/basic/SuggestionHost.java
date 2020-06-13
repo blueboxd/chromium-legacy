@@ -28,6 +28,13 @@ public interface SuggestionHost {
     void onRefineSuggestion(OmniboxSuggestion suggestion);
 
     /**
+     * Triggered when the user selects switch to tab .
+     *
+     * @param suggestion Suggestion which sugegstions a URL that is opened in another tab.
+     */
+    void onSwitchToTab(OmniboxSuggestion suggestion);
+
+    /**
      * Toggle expanded state of suggestion items belonging to specific group.
      *
      * @param groupId ID of Suggestion Group whose visibility changed.

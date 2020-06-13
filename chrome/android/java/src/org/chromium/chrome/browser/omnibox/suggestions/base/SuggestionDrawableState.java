@@ -28,6 +28,10 @@ public class SuggestionDrawableState {
     public final boolean useRoundedCorners;
     /** Whether drawable should be displayed as large. */
     public final boolean isLarge;
+    /** The resource id for the icon to use. */
+    // TODO(1092147): Remove this once robolectric shadows available in
+    // chrome/android/native_java_unittests
+    public final @DrawableRes int resourceId;
 
     /** Helper to construct SuggestionDrawableState objects.  */
     public static final class Builder {
@@ -35,6 +39,7 @@ public class SuggestionDrawableState {
         private boolean mAllowTint;
         private boolean mUseRoundedCorners;
         private boolean mIsLarge;
+        private @DrawableRes int mResourceId;
 
         /**
          * Create new Builder object.
@@ -82,7 +87,7 @@ public class SuggestionDrawableState {
          * @param res Drawable resource to use.
          */
         public static Builder forDrawableRes(Context ctx, @DrawableRes int res) {
-            return new Builder(AppCompatResources.getDrawable(ctx, res));
+            return new Builder(AppCompatResources.getDrawable(ctx, res)).setDrawableRes(res);
         }
 
         /**
@@ -125,19 +130,31 @@ public class SuggestionDrawableState {
         }
 
         /**
+         * Specify Drawable resource.
+         *
+         * @param res Drawable resourc.
+         */
+        private Builder setDrawableRes(@DrawableRes int res) {
+            mResourceId = res;
+            return this;
+        }
+
+        /**
          * Build SuggestionDrawableState object.
          */
         public SuggestionDrawableState build() {
-            return new SuggestionDrawableState(mDrawable, mUseRoundedCorners, mIsLarge, mAllowTint);
+            return new SuggestionDrawableState(
+                    mDrawable, mUseRoundedCorners, mIsLarge, mAllowTint, mResourceId);
         }
     }
 
-    private SuggestionDrawableState(
-            Drawable drawable, boolean useRoundedCorners, boolean isLarge, boolean allowTint) {
+    private SuggestionDrawableState(Drawable drawable, boolean useRoundedCorners, boolean isLarge,
+            boolean allowTint, @DrawableRes int resId) {
         this.drawable = drawable;
         this.useRoundedCorners = useRoundedCorners;
         this.isLarge = isLarge;
         this.allowTint = allowTint;
+        this.resourceId = resId;
     }
 
     @Override

@@ -1036,14 +1036,6 @@ SecureContextMode Document::GetSecureContextMode() const {
   return GetSecurityContext().GetSecureContextMode();
 }
 
-bool Document::IsSecureContext() const {
-  return GetExecutionContext()->IsSecureContext();
-}
-
-bool Document::IsSecureContext(String& error_message) const {
-  return GetExecutionContext()->IsSecureContext(error_message);
-}
-
 void Document::SetReferrerPolicy(network::mojom::ReferrerPolicy policy) {
   GetExecutionContext()->SetReferrerPolicy(policy);
 }
@@ -6620,7 +6612,7 @@ KURL Document::OpenSearchDescriptionURL() {
     WebFeature osd_disposition;
     scoped_refptr<const SecurityOrigin> target =
         SecurityOrigin::Create(link_element->Href());
-    if (IsSecureContext()) {
+    if (execution_context_->IsSecureContext()) {
       osd_disposition = target->IsPotentiallyTrustworthy()
                             ? WebFeature::kOpenSearchSecureOriginSecureTarget
                             : WebFeature::kOpenSearchSecureOriginInsecureTarget;
@@ -8161,7 +8153,7 @@ PropertyRegistry& Document::EnsurePropertyRegistry() {
 
 void Document::MaybeQueueSendDidEditFieldInInsecureContext() {
   if (logged_field_edit_ || sensitive_input_edited_task_.IsActive() ||
-      IsSecureContext()) {
+      execution_context_->IsSecureContext()) {
     // Send a message on the first edit; the browser process doesn't care
     // about the presence of additional edits.
     //

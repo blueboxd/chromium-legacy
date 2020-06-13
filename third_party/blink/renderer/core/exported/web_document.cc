@@ -90,7 +90,7 @@ WebSecurityOrigin WebDocument::GetSecurityOrigin() const {
 
 bool WebDocument::IsSecureContext() const {
   const Document* document = ConstUnwrap<Document>();
-  return document && document->IsSecureContext();
+  return document && document->GetExecutionContext()->IsSecureContext();
 }
 
 WebString WebDocument::Encoding() const {

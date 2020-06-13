@@ -8,8 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
+#include "components/download/public/common/download_schedule.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "url/gurl.h"
 
@@ -120,6 +122,9 @@ struct InProgressInfo {
 
   // Whether the download is initiated on a metered network
   bool metered = false;
+
+  // When to start the download. Used by download later feature.
+  base::Optional<DownloadSchedule> download_schedule;
 };
 
 }  // namespace download

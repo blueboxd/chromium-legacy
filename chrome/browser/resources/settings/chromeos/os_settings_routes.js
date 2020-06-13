@@ -50,6 +50,7 @@
  *   MANAGE_TTS_SETTINGS: !settings.Route,
  *   MULTIDEVICE: !settings.Route,
  *   MULTIDEVICE_FEATURES: !settings.Route,
+ *   NEARBY_SHARE: !settings.Route,
  *   NETWORK_DETAIL: !settings.Route,
  *   OS_ACCESSIBILITY: !settings.Route,
  *   OS_LANGUAGES: !settings.Route,

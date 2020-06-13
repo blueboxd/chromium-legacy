@@ -201,7 +201,7 @@ void PartitionAllocGlobalInit(OomFunction on_out_of_memory) {
   DCHECK(on_out_of_memory);
   internal::g_oom_handling_function = on_out_of_memory;
 
-#if defined(ARCH_CPU_64_BITS)
+#if defined(__LP64__)
   // Reserve address space for partition alloc.
   if (IsPartitionAllocGigaCageEnabled())
     internal::PartitionAddressSpace::Init();
@@ -209,7 +209,7 @@ void PartitionAllocGlobalInit(OomFunction on_out_of_memory) {
 }
 
 void PartitionAllocGlobalUninitForTesting() {
-#if defined(ARCH_CPU_64_BITS)
+#if defined(__LP64__)
   if (IsPartitionAllocGigaCageEnabled())
     internal::PartitionAddressSpace::UninitForTesting();
 #endif

@@ -182,7 +182,7 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
 
         if (!mUrlBarEditingTextProvider.getTextWithoutAutocomplete().trim().equalsIgnoreCase(
                     suggestion.getDisplayText())) {
-            setRefineAction(model, suggestion);
+            setTabSwitchOrRefineAction(model, suggestion);
         }
     }
 

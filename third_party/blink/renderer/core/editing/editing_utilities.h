@@ -123,6 +123,8 @@ HTMLSpanElement* TabSpanElement(const Node*);
 Element* TableElementJustAfter(const VisiblePosition&);
 CORE_EXPORT Element* TableElementJustBefore(const VisiblePosition&);
 CORE_EXPORT Element* TableElementJustBefore(const VisiblePositionInFlatTree&);
+Element* EnclosingTableCell(const Position&);
+Element* EnclosingTableCell(const PositionInFlatTree&);
 
 template <typename Strategy>
 ContainerNode* ParentCrossingShadowBoundaries(const Node&);

@@ -49,6 +49,7 @@ enum Subpage {
   // MultiDevice section.
   kMultiDeviceFeatures = 200,
   kSmartLock = 201,
+  kNearbyShare = 202,
 
   // People section.
   kMyAccounts = 300,
@@ -142,6 +143,7 @@ const string kBluetoothDevicesSubpagePath = "bluetoothDevices";
 const string kMultiDeviceSectionPath = "multidevice";
 const string kMultiDeviceFeaturesSubpagePath = "multidevice/features";
 const string kSmartLockSubpagePath = "multidevice/features/smartLock";
+const string kNearbyShareSubpagePath = "multidevice/nearbyshare";
 
 // People section.
 const string kPeopleSectionPath = "osPeople";

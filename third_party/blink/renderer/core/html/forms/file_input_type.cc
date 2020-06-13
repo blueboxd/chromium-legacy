@@ -195,7 +195,7 @@ void FileInputType::HandleDOMActivateEvent(Event& event) {
     params.requestor = document.Url();
 
     UseCounter::Count(
-        document, document.IsSecureContext()
+        document, GetElement().GetExecutionContext()->IsSecureContext()
                       ? WebFeature::kInputTypeFileSecureOriginOpenChooser
                       : WebFeature::kInputTypeFileInsecureOriginOpenChooser);
     chrome_client->OpenFileChooser(document.GetFrame(), NewFileChooser(params));
@@ -320,11 +320,11 @@ FileList* FileInputType::CreateFileList(const FileChooserFileInfoList& files,
 }
 
 void FileInputType::CountUsage() {
-  Document* document = &GetElement().GetDocument();
-  if (document->IsSecureContext())
-    UseCounter::Count(*document, WebFeature::kInputTypeFileInsecureOrigin);
+  ExecutionContext* context = GetElement().GetExecutionContext();
+  if (context->IsSecureContext())
+    UseCounter::Count(context, WebFeature::kInputTypeFileInsecureOrigin);
   else
-    UseCounter::Count(*document, WebFeature::kInputTypeFileSecureOrigin);
+    UseCounter::Count(context, WebFeature::kInputTypeFileSecureOrigin);
 }
 
 void FileInputType::CreateShadowSubtree() {

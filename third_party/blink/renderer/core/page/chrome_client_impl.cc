@@ -1122,7 +1122,7 @@ void ChromeClientImpl::DidChangeValueInTextField(
   // Value changes caused by |document.execCommand| calls should not be
   // interpreted as a user action. See https://crbug.com/764760.
   if (!doc.IsRunningExecCommand()) {
-    UseCounter::Count(doc, doc.IsSecureContext()
+    UseCounter::Count(doc, doc.GetExecutionContext()->IsSecureContext()
                                ? WebFeature::kFieldEditInSecureContext
                                : WebFeature::kFieldEditInNonSecureContext);
     doc.MaybeQueueSendDidEditFieldInInsecureContext();

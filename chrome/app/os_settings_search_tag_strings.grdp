@@ -219,6 +219,22 @@
   <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SET_UP" desc="Text for search result item which, when clicked, navigates the user to connected devices settings, with a button to set up the feature.">
     Connected devices setup
   </message>
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_NEARBY_SHARE" desc="Text for search result item which, when clicked, navigates the user to connected multi-device settings Nearby Share.">
+    Nearby Share
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_NEARBY_SHARE_TURN_ON" desc="Text for search result item which, when clicked, navigates the user to Nearby Share settings. Alternate phrase for: 'Enable Nearby Share'">
+    Turn on Nearby Share
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_NEARBY_SHARE_TURN_ON_ALT1" desc="Text for search result item which, when clicked, navigates the user to Nearby Share settings. Alternate phrase for: 'Turn on Nearby Share'" >
+    Enable Nearby Share
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_NEARBY_SHARE_TURN_OFF" desc="Text for search result item which, when clicked, navigates the user to Nearby Share settings. Alternate phrase for: 'Disable Nearby Share'">
+    Turn off Nearby Share
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_NEARBY_SHARE_TURN_OFF_ALT1" desc="Text for search result item which, when clicked, navigates the user to Nearby Share settings. Alternate phrase for: 'Turn off Nearby Share'">
+    Disable Nearby Share
+  </message>
+
 
   <!-- People section. -->
   <message name="IDS_OS_SETTINGS_TAG_PEOPLE" desc="Text for search result item which, when clicked, navigates the user to people settings.">

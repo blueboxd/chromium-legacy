@@ -79,10 +79,6 @@ Node* HighestNodeToRemoveInPruning(Node* node, const Node* exclude_node) {
   return nullptr;
 }
 
-Element* EnclosingTableCell(const Position& p) {
-  return To<Element>(EnclosingNodeOfType(p, IsTableCell));
-}
-
 bool IsTableStructureNode(const Node* node) {
   LayoutObject* layout_object = node->GetLayoutObject();
   return (layout_object &&

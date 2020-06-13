@@ -162,7 +162,7 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
                         .setLarge(true)
                         .build());
 
-        setRefineAction(model, suggestion);
+        setTabSwitchOrRefineAction(model, suggestion);
         maybeFetchAnswerIcon(model, suggestion);
     }
 

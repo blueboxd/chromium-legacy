@@ -96,6 +96,10 @@ component("public") {
     "//components/download/internal/common:internal",
     "//components/download/database",
   ]
+
+  if (is_win && is_component_build) {
+    ldflags = [ "/IGNORE:4217" ]
+  }
 }
 
 if (is_android) {

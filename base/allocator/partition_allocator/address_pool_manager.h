@@ -21,8 +21,10 @@ namespace internal {
 
 using pool_handle = unsigned;
 
-// The address space reservation is supported only on 64-bit architectures.
-#if defined(ARCH_CPU_64_BITS)
+// The feature is not applicable to 32-bit address space.
+#if defined(__LP64__)
+
+static_assert(sizeof(size_t) >= 8, "Nee more than 32-bit address space");
 
 // AddressPoolManager takes a reserved virtual address space and manages address
 // space allocation.
@@ -86,7 +88,7 @@ class BASE_EXPORT AddressPoolManager {
   DISALLOW_COPY_AND_ASSIGN(AddressPoolManager);
 };
 
-#endif  // defined(ARCH_CPU_64_BITS)
+#endif  // defined(__LP64__)
 
 }  // namespace internal
 }  // namespace base

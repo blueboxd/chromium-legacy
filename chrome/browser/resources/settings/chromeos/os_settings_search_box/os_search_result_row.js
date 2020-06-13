@@ -550,6 +550,8 @@ cr.define('settings', function() {
           return 'os-settings:multidevice-messages';
         case Icon.kMouse:
           return 'os-settings:mouse';
+        case Icon.kNearbyShare:
+          return 'settings:nearby-share';
         case Icon.kPaintbrush:
           return 'os-settings:paint-brush';
         case Icon.kPenguin:

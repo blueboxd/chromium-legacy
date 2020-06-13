@@ -31,6 +31,9 @@ void AddPasswordPromptDialogStrings(content::WebUIDataSource* html_source);
 // Adds strings used by the <settings-sync-page> element.
 void AddSyncPageStrings(content::WebUIDataSource* html_source);
 
+// Adds load time data used by the <settings-nearby-share-subpage>.
+void AddNearbyShareData(content::WebUIDataSource* html_source);
+
 }  // namespace settings
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SETTINGS_SHARED_SETTINGS_LOCALIZED_STRINGS_PROVIDER_H_

@@ -11,8 +11,10 @@
 <link rel="import" href="../os_route.html">
 <link rel="import" href="../../router.html">
 <link rel="import" href="../../controls/password_prompt_dialog.html">
+<link rel="import" href="../../nearby_share_page/nearby_share_subpage.html">
 <link rel="import" href="../../settings_page/settings_animated_pages.html">
 <link rel="import" href="../../settings_page/settings_subpage.html">
+<link rel="import" href="../../prefs/prefs_behavior.html">
 <link rel="import" href="../../settings_shared_css.html">
 <link rel="import" href="../localized_link/localized_link.html">
 <link rel="import" href="../metrics_recorder.html">
@@ -99,6 +101,34 @@
             </settings-multidevice-feature-toggle>
           </template>
         </div>
+        <template is="dom-if" if="[[nearbySharingFeatureEnabled_]]" restamp>
+          <div id="nearbyshare-item" class="settings-box two-line no-padding">
+            <div class="link-wrapper" actionable on-click="nearbyShareClick_">
+              <iron-icon icon="settings:nearby-share">
+              </iron-icon>
+              <div id="nearbyShareLabel" class="middle settings-box-text"
+                  aria-hidden="true">
+                $i18n{nearbyShareTitle}
+                <div class="secondary" id="nearbyShareSecondary">
+                  [[getOnOffString_(prefs.nearby_sharing.enabled.value,
+                      '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
+                </div>
+              </div>
+              <template is="dom-if" if="[[prefs.nearby_sharing.enabled.value]]"
+                  restamp>
+                <cr-icon-button class="subpage-arrow"
+                    aria-labelledby="nearbyShareLabel"
+                    aria-describedby="nearbyShareSecondary"
+                    aria-roledescription="$i18n{subpageArrowRoleDescription}">
+                </cr-icon-button>
+              </template>
+            </div>
+            <div class="separator"></div>
+            <settings-toggle-button id="nearbySharingToggleButton"
+                pref="{{prefs.nearby_sharing.enabled}}">
+            </settings-toggle-button>
+          </div>
+        </template>
       </div>
       <template is="dom-if" route-path="/multidevice/features" restamp>
         <settings-subpage associated-control="[[$$('#multidevice-item')]]"
@@ -118,6 +148,15 @@
               page-content-data="[[pageContentData]]">
           </settings-multidevice-smartlock-subpage>
         </settings-subpage>
+      </template>
+      <template is="dom-if" if="[[nearbySharingFeatureEnabled_]]" restamp>
+        <template is="dom-if" route-path="/multidevice/nearbyshare" restamp>
+          <settings-subpage associated-control="[[$$('#nearbyshare-item')]]"
+              page-title="$i18n{nearbyShareTitle}">
+            <settings-nearby-share-subpage prefs="{{prefs}}">
+            </settings-nearby-share-subpage>
+          </settings-subpage>
+        </template>
       </template>
     </settings-animated-pages>
     <template is="dom-if" if="[[showPasswordPromptDialog_]]" restamp>

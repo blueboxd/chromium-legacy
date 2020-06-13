@@ -30,6 +30,7 @@ enum SearchResultIcon {
   kMagnifyingGlass,
   kMessages,
   kMouse,
+  kNearbyShare,
   kPaintbrush,
   kPenguin,
   kPhone,

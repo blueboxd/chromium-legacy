@@ -9,6 +9,7 @@ Polymer({
     settings.RouteObserverBehavior,
     MultiDeviceFeatureBehavior,
     WebUIListenerBehavior,
+    PrefsBehavior,
   ],
 
   properties: {
@@ -59,6 +60,18 @@ Polymer({
     showPasswordPromptDialog_: {
       type: Boolean,
       value: false,
+    },
+
+    /**
+     * The value of the Nearby Share feature flag which controls if the
+     * Nearby Share settings and subpage are accessible.
+     * @private {boolean}
+     */
+    nearbySharingFeatureEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('nearbySharingFeatureFlag');
+      }
     },
   },
 
@@ -360,6 +373,13 @@ Polymer({
       return;
     }
 
+    // Host status doesn't matter if we are navigating to Nearby Share
+    // settings.
+    if (settings.routes.NEARBY_SHARE ==
+        settings.Router.getInstance().getCurrentRoute()) {
+      return;
+    }
+
     // If the user gets to the a nested page without a host (e.g. by clicking a
     // stale 'existing user' notifications after forgetting their host) we
     // direct them back to the main settings page.
@@ -390,5 +410,30 @@ Polymer({
    */
   onTokenObtained_(e) {
     this.authToken_ = e.detail;
+  },
+
+
+  /**
+   * @param {boolean} state boolean state that determines which string to show
+   * @param {string} onstr string to show when state is true
+   * @param {string} offstr string to show when state is false
+   * @return {string} localized string
+   * @private
+   */
+  getOnOffString_(state, onstr, offstr) {
+    return state ? onstr : offstr;
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  nearbyShareClick_(event) {
+    if (!this.getPref('nearby_sharing.enabled').value) {
+      this.setPrefValue('nearby_sharing.enabled', true);
+    } else {
+      // Navigate to Nearby Share subpage.
+      settings.Router.getInstance().navigateTo(settings.routes.NEARBY_SHARE);
+    }
   },
 });

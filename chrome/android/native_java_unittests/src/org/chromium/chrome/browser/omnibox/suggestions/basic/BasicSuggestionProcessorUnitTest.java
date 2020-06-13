@@ -24,6 +24,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
 import org.chromium.base.annotations.NativeJavaTestFeatures;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
@@ -35,6 +36,8 @@ import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewPrope
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.ui.modelutil.PropertyModel;
+
+import java.util.List;
 
 /**
  * Tests for {@link BasicSuggestionProcessor}.
@@ -108,13 +111,14 @@ public class BasicSuggestionProcessorUnitTest {
      * Create Suggestion for test.
      * Do not use directly; use helper methods to create specific suggestion type instead.
      */
-    private void createSuggestion(
-            int type, boolean isSearch, boolean isBookmark, String title, String description) {
+    private void createSuggestion(int type, boolean isSearch, boolean isBookmark,
+            boolean hasTabMatch, String title, String description) {
         mSuggestion = OmniboxSuggestionBuilderForTest.searchWithType(type)
                               .setDisplayText(title)
                               .setDescription(description)
                               .setIsSearch(isSearch)
                               .setIsStarred(isBookmark)
+                              .setHasTabMatch(hasTabMatch)
                               .build();
         mModel = mProcessor.createModel();
         mProcessor.populateModel(mSuggestion, mModel, 0);
@@ -122,17 +126,22 @@ public class BasicSuggestionProcessorUnitTest {
 
     /** Create bookmark suggestion for test. */
     private void createBookmarkSuggestion(int type, String title, String description) {
-        createSuggestion(type, false, true, title, description);
+        createSuggestion(type, false, true, false, title, description);
     }
 
     /** Create search suggestion for test. */
     private void createSearchSuggestion(int type, String title, String description) {
-        createSuggestion(type, true, false, title, description);
+        createSuggestion(type, true, false, false, title, description);
     }
 
     /** Create URL suggestion for test. */
     private void createUrlSuggestion(int type, String title, String description) {
-        createSuggestion(type, false, false, title, description);
+        createSuggestion(type, false, false, false, title, description);
+    }
+
+    /** Create switch to tab suggestion for test. */
+    private void createSwitchToTabSuggestion(int type, String title, String description) {
+        createSuggestion(type, false, false, true, title, description);
     }
 
     private void assertSuggestionTypeAndIcon(
@@ -273,6 +282,27 @@ public class BasicSuggestionProcessorUnitTest {
         createUrlSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, refined, "");
         mProcessor.populateModel(mSuggestion, model, 0);
         Assert.assertNotNull(mModel.get(BaseSuggestionViewProperties.ACTIONS));
+
+        final List<BaseSuggestionViewProperties.Action> actions =
+                mModel.get(BaseSuggestionViewProperties.ACTIONS);
+        Assert.assertEquals(actions.size(), 1);
+        final SuggestionDrawableState iconState = actions.get(0).icon;
+        Assert.assertEquals(iconState.resourceId, R.drawable.btn_suggestion_refine);
+    }
+
+    @CalledByNativeJavaTest
+    public void switchTabIconShownForSwitchToTabSuggestions() {
+        final String tabMatch = "tab match";
+        createSwitchToTabSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, tabMatch, "");
+        PropertyModel model = mProcessor.createModel();
+        mProcessor.populateModel(mSuggestion, model, 0);
+        Assert.assertNotNull(mModel.get(BaseSuggestionViewProperties.ACTIONS));
+
+        final List<BaseSuggestionViewProperties.Action> actions =
+                mModel.get(BaseSuggestionViewProperties.ACTIONS);
+        Assert.assertEquals(actions.size(), 1);
+        final SuggestionDrawableState iconState = actions.get(0).icon;
+        Assert.assertEquals(iconState.resourceId, R.drawable.switch_to_tab);
     }
 
     @CalledByNativeJavaTest

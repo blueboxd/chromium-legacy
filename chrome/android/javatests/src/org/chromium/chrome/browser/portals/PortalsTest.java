@@ -698,6 +698,7 @@ public class PortalsTest {
         });
         // Activate portal while dialog is visible.
         executeScriptAndAwaitSwap(tab, "activatePortal()");
+        JavaScriptUtils.runJavascriptWithAsyncResult(tab.getWebContents(), "waitForAdoption()");
         final WebContents portalContents = TestThreadUtils.runOnUiThreadBlocking(() -> {
             List<? extends WebContents> innerContents = tab.getWebContents().getInnerWebContents();
             Assert.assertEquals(1, innerContents.size());

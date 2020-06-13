@@ -20,7 +20,7 @@ namespace internal {
 namespace {
 
 void DecommitPages(void* address, size_t size) {
-#if defined(ARCH_CPU_64_BITS)
+#if defined(__LP64__)
   internal::AddressPoolManager::GetInstance()->Free(
       internal::GetDirectMapPool(), address, size);
 #if defined(OS_MACOSX)

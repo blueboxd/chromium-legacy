@@ -10,7 +10,9 @@ import android.graphics.Typeface;
 import android.text.Spannable;
 import android.text.style.StyleSpan;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -103,22 +105,33 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
     }
 
     /**
-     * Specify data for Refine action.
+     * Setup action icon base on the suggestion, either show query build arrow or switch to tab.
      *
      * @param model Property model to update.
-     * @param refineText Text to update Omnibox with when Refine button is pressed.
-     * @param isSearchQuery Whether refineText is an URL or Search query.
+     * @param suggestion Suggestion associated with the action button.
      */
-    protected void setRefineAction(PropertyModel model, OmniboxSuggestion suggestion) {
+    protected void setTabSwitchOrRefineAction(PropertyModel model, OmniboxSuggestion suggestion) {
+        @DrawableRes
+        int icon = 0;
+        @StringRes
+        int iconString = 0;
+        Runnable action = null;
+        if (suggestion.hasTabMatch()) {
+            icon = R.drawable.switch_to_tab;
+            iconString = R.string.accessibility_omnibox_switch_to_tab;
+            action = () -> mSuggestionHost.onSwitchToTab(suggestion);
+        } else {
+            icon = R.drawable.btn_suggestion_refine;
+            iconString = R.string.accessibility_omnibox_btn_refine;
+            action = () -> mSuggestionHost.onRefineSuggestion(suggestion);
+        }
         setCustomActions(model,
-                Arrays.asList(new Action(
-                        SuggestionDrawableState.Builder
-                                .forDrawableRes(mContext, R.drawable.btn_suggestion_refine)
-                                .setLarge(true)
-                                .setAllowTint(true)
-                                .build(),
-                        R.string.accessibility_omnibox_btn_refine,
-                        () -> mSuggestionHost.onRefineSuggestion(suggestion))));
+                Arrays.asList(
+                        new Action(SuggestionDrawableState.Builder.forDrawableRes(mContext, icon)
+                                           .setLarge(true)
+                                           .setAllowTint(true)
+                                           .build(),
+                                iconString, action)));
     }
 
     @Override

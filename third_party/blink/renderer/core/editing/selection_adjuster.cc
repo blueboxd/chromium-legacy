@@ -185,12 +185,23 @@ class GranularityAdjuster final {
         // |kNextWordIfOnBoundary|);
         const VisiblePositionTemplate<Strategy> original_end =
             CreateVisiblePosition(passed_end);
+        bool is_end_of_paragraph = IsEndOfParagraph(original_end);
+        // Get last word of paragraph. If original_end is already known to be
+        // the last word, use that. If not the last word, find it with
+        // EndOfWordPosition
         const VisiblePositionTemplate<Strategy> word_end =
-            CreateVisiblePosition(EndOfWordPosition(
-                passed_end.GetPosition(), ChooseWordSide(original_end)));
-        if (!IsEndOfParagraph(original_end))
+            is_end_of_paragraph
+                ? original_end
+                : CreateVisiblePosition(EndOfWordPosition(
+                      passed_end.GetPosition(), ChooseWordSide(original_end)));
+        if (!is_end_of_paragraph)
           return word_end.DeepEquivalent();
         if (IsEmptyTableCell(start.AnchorNode()))
+          return word_end.DeepEquivalent();
+
+        // If the end was in a table cell, we don't want the \t from between
+        // cells or \n after the row, so return last word
+        if (EnclosingTableCell(original_end.DeepEquivalent()))
           return word_end.DeepEquivalent();
 
         // Select the paragraph break (the space from the end of a paragraph

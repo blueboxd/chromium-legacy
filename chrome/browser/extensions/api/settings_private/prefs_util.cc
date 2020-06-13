@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/api/settings_private/generated_prefs.h"
 #include "chrome/browser/extensions/api/settings_private/generated_prefs_factory.h"
 #include "chrome/browser/extensions/settings_api_helpers.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -290,6 +291,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[chromeos::prefs::kAssistPersonalInfoEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif
+
+  // Nearby Share.
+  (*s_whitelist)[::prefs::kNearbySharingEnabledPrefName] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kNearbySharingActiveProfilePrefName] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Search page.
   (*s_whitelist)[DefaultSearchManager::kDefaultSearchProviderDataPrefName] =

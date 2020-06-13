@@ -600,6 +600,11 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         }
     }
 
+    @Override
+    public void onSwitchToTab(OmniboxSuggestion suggestion) {
+        // TODO(1043372): implement function of switch to tab.
+    }
+
     /**
      * Triggered when the user long presses the omnibox suggestion.
      * @param suggestion The suggestion selected.

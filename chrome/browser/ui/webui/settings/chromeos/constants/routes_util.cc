@@ -37,6 +37,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kMultiDeviceSectionPath,
       chromeos::settings::mojom::kMultiDeviceFeaturesSubpagePath,
       chromeos::settings::mojom::kSmartLockSubpagePath,
+      chromeos::settings::mojom::kNearbyShareSubpagePath,
 
       // People section.
       chromeos::settings::mojom::kPeopleSectionPath,

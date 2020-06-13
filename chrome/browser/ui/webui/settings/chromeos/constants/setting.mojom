@@ -49,6 +49,7 @@ enum Setting {
   kMessagesSetUp = 205,
   kMessagesOnOff = 206,
   kForgetPhone = 207,
+  kNearbyShareOnOff = 208,
 
   // People section.
   kAddAccount = 300,

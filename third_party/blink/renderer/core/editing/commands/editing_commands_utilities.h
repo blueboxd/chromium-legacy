@@ -60,7 +60,6 @@ class SetSelectionOptions;
 
 Node* HighestNodeToRemoveInPruning(Node*, const Node* exclude_node = nullptr);
 
-Element* EnclosingTableCell(const Position&);
 Node* EnclosingEmptyListItem(const VisiblePosition&);
 
 bool IsTableStructureNode(const Node*);

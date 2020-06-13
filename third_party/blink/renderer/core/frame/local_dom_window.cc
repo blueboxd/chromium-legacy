@@ -925,7 +925,7 @@ ApplicationCache* LocalDOMWindow::applicationCache() const {
   DCHECK(RuntimeEnabledFeatures::AppCacheEnabled(this));
   if (!IsCurrentlyDisplayedInFrame())
     return nullptr;
-  if (!isSecureContext()) {
+  if (!IsSecureContext()) {
     Deprecation::CountDeprecation(
         document(), WebFeature::kApplicationCacheAPIInsecureOrigin);
   }
@@ -1725,10 +1725,7 @@ External* LocalDOMWindow::external() {
 }
 
 bool LocalDOMWindow::isSecureContext() const {
-  if (!GetFrame())
-    return false;
-
-  return document()->IsSecureContext();
+  return GetFrame() && IsSecureContext();
 }
 
 void LocalDOMWindow::ClearIsolatedWorldCSPForTesting(int32_t world_id) {

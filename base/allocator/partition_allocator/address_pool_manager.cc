@@ -15,9 +15,7 @@
 namespace base {
 namespace internal {
 
-#if defined(ARCH_CPU_64_BITS)
-
-static_assert(sizeof(size_t) >= 8, "Need at least 64-bit address space");
+#if defined(__LP64__)
 
 constexpr size_t AddressPoolManager::Pool::kMaxBits;
 
@@ -164,7 +162,7 @@ ALWAYS_INLINE AddressPoolManager::Pool* AddressPoolManager::GetPool(
   return pool;
 }
 
-#endif  // defined(ARCH_CPU_64_BITS)
+#endif  // defined(__LP64__)
 
 }  // namespace internal
 }  // namespace base

@@ -782,22 +782,22 @@ bool MixedContentChecker::ShouldAutoupgrade(
 void MixedContentChecker::CheckMixedPrivatePublic(
     LocalFrame* frame,
     const AtomicString& resource_ip_address) {
-  if (!frame || !frame->GetDocument() || !frame->GetDocument()->Loader())
+  if (!frame)
     return;
 
   // Just count these for the moment, don't block them.
   if (network_utils::IsReservedIPAddress(resource_ip_address) &&
-      frame->GetDocument()->GetSecurityContext().AddressSpace() ==
+      frame->GetSecurityContext()->AddressSpace() ==
           network::mojom::IPAddressSpace::kPublic) {
-    UseCounter::Count(frame->GetDocument(),
+    UseCounter::Count(frame->DomWindow(),
                       WebFeature::kMixedContentPrivateHostnameInPublicHostname);
     // We can simplify the IP checks here, as we've already verified that
     // |resourceIPAddress| is a reserved IP address, which means it's also a
     // valid IP address in a normalized form.
     if (resource_ip_address.StartsWith("127.0.0.") ||
         resource_ip_address == "[::1]") {
-      UseCounter::Count(frame->GetDocument(),
-                        frame->GetDocument()->IsSecureContext()
+      UseCounter::Count(frame->DomWindow(),
+                        frame->DomWindow()->IsSecureContext()
                             ? WebFeature::kLoopbackEmbeddedInSecureContext
                             : WebFeature::kLoopbackEmbeddedInNonSecureContext);
     }

@@ -607,7 +607,7 @@ TEST_F(CheckedPtrTest, AssignmentFromNullptr) {
   EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
-#if defined(ARCH_CPU_64_BITS)
+#if defined(__LP64__)
 
 TEST(CheckedPtr2Impl, WrapNull) {
   ASSERT_EQ(base::internal::CheckedPtr2Impl::GetWrappedNullPtr(), 0u);
@@ -695,6 +695,6 @@ TEST(CheckedPtr2Impl, SafelyUnwrapDisabled) {
             addr);
 }
 
-#endif  // #if defined(ARCH_CPU_64_BITS)
+#endif  // defined(__LP64__)
 
 }  // namespace

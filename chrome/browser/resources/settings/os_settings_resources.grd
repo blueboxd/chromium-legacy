@@ -1212,6 +1212,12 @@
       <structure name="IDR_OS_SETTINGS_MULTIDEVICE_TETHER_ITEM_JS"
                  file="chromeos/multidevice_page/multidevice_tether_item.js"
                  compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_NEARBY_SHARE_SUBPAGE_HTML"
+                 file="nearby_share_page/nearby_share_subpage.html"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_NEARBY_SHARE_SUBPAGE_JS"
+                 file="nearby_share_page/nearby_share_subpage.js"
+                 compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_NETWORK_PROXY_SECTION_HTML"
                  file="chromeos/internet_page/network_proxy_section.html"
                  compress="false" type="chrome_html" />

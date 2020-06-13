@@ -52,7 +52,7 @@ KeyedService* NearbySharingServiceFactory::BuildServiceInstanceFor(
 
   PrefService* pref_service = Profile::FromBrowserContext(context)->GetPrefs();
 
-  if (!pref_service->GetBoolean(kNearbySharingEnabledPrefName)) {
+  if (!pref_service->GetBoolean(::prefs::kNearbySharingEnabledPrefName)) {
     VLOG(1) << __func__ << ": Nearby Sharing feature not enabled in prefs.";
     return nullptr;
   }

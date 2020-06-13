@@ -92,6 +92,11 @@
     Default
   </message>
 
+  <!-- Nearby Share -->
+  <message name="IDS_SETTINGS_NEARBY_SHARE_TITLE" desc="Name of the settings page for the Nearby Share feature">
+    Nearby Share
+  </message>
+
  <!-- Personalization Options SubPage (strings used by the <settings-personalization-options> element) -->
   <message name="IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION" desc="The label of the checkbox to enable/disable url keyed anonymized data collection.">
     Make searches and browsing better

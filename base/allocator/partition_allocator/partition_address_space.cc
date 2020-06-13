@@ -13,25 +13,7 @@ namespace base {
 
 namespace internal {
 
-#if defined(ARCH_CPU_64_BITS)
-
-static_assert(sizeof(size_t) >= 8, "Need 64-bit address space");
-static_assert(
-    bits::IsPowerOfTwo(PartitionAddressSpace::kReservedAddressSpaceAlignment),
-    "kReservedAddressSpaceALignment should be a power of two.");
-static_assert(PartitionAddressSpace::kReservedAddressSpaceAlignment >=
-                  PartitionAddressSpace::kDesiredAddressSpaceSize,
-              "kReservedAddressSpaceAlignment should be larger or equal to "
-              "kDesiredAddressSpaceSize.");
-static_assert(PartitionAddressSpace::kReservedAddressSpaceAlignment / 2 <
-                  PartitionAddressSpace::kDesiredAddressSpaceSize,
-              "kReservedAddressSpaceAlignment should be the smallest power of "
-              "two greater or equal to kDesiredAddressSpaceSize. So a half of "
-              "the alignment should be smaller than the desired size.");
-static_assert(PartitionAddressSpace::kReservedAddressSpaceSize >
-                  PartitionAddressSpace::kReservedAddressSpaceAlignment,
-              "kReservedAddressSpaceSize should be larger than "
-              "kReservedAddressSpaceAlignment.");
+#if defined(__LP64__)
 
 uintptr_t PartitionAddressSpace::reserved_address_start_ = 0;
 // Before PartitionAddressSpace::Init(), no allocation are allocated from a
@@ -89,7 +71,7 @@ void PartitionAddressSpace::UninitForTesting() {
   internal::AddressPoolManager::GetInstance()->ResetForTesting();
 }
 
-#endif  // defined(ARCH_CPU_64_BITS)
+#endif  // defined(__LP64__)
 
 }  // namespace internal
 

@@ -18,8 +18,10 @@ namespace base {
 
 namespace internal {
 
-// The address space reservation is supported only on 64-bit architecture.
-#if defined(ARCH_CPU_64_BITS)
+// The feature is not applicable to 32-bit address space.
+#if defined(__LP64__)
+
+static_assert(sizeof(size_t) >= 8, "Nee more than 32-bit address space");
 
 // Reserves address space for PartitionAllocator.
 class BASE_EXPORT PartitionAddressSpace {
@@ -50,12 +52,16 @@ class BASE_EXPORT PartitionAddressSpace {
   void* operator new(size_t) = delete;
   void* operator new(size_t, void*) = delete;
 
+ private:
   // Partition Alloc Address Space
   // Reserves 64Gbytes address space for 1 direct map space(16G) and 1 normal
   // bucket space(16G). The remaining 32G is for padding, so that we can
   // guarantee a 32G alignment somewhere within the reserved region. Address
   // space is cheap and abundant on 64-bit systems.
-  // TODO(tasak): release unused address space.
+  // TODO(tasak): Telease unused address space.
+  // TODO(bartekn): Look into devices with 39-bit address space that have 256G
+  // user-mode space. Libraries loaded at random addresses may stand in the way
+  // of reserving a contiguous 64G region.
   //
   // +----------------+ reserved address start
   // |  (unused)      |
@@ -98,7 +104,24 @@ class BASE_EXPORT PartitionAddressSpace {
   static constexpr uintptr_t kReservedAddressSpaceBaseMask =
       ~kReservedAddressSpaceOffsetMask;
 
- private:
+  static_assert(
+      bits::IsPowerOfTwo(PartitionAddressSpace::kReservedAddressSpaceAlignment),
+      "kReservedAddressSpaceALignment should be a power of two.");
+  static_assert(PartitionAddressSpace::kReservedAddressSpaceAlignment >=
+                    PartitionAddressSpace::kDesiredAddressSpaceSize,
+                "kReservedAddressSpaceAlignment should be larger or equal to "
+                "kDesiredAddressSpaceSize.");
+  static_assert(
+      PartitionAddressSpace::kReservedAddressSpaceAlignment / 2 <
+          PartitionAddressSpace::kDesiredAddressSpaceSize,
+      "kReservedAddressSpaceAlignment should be the smallest power of "
+      "two greater or equal to kDesiredAddressSpaceSize. So a half of "
+      "the alignment should be smaller than the desired size.");
+  static_assert(PartitionAddressSpace::kReservedAddressSpaceSize >
+                    PartitionAddressSpace::kReservedAddressSpaceAlignment,
+                "kReservedAddressSpaceSize should be larger than "
+                "kReservedAddressSpaceAlignment.");
+
   // See the comment describing the address layout above.
   static uintptr_t reserved_address_start_;
   static uintptr_t reserved_base_address_;
@@ -119,7 +142,7 @@ ALWAYS_INLINE internal::pool_handle GetNormalBucketPool() {
   return PartitionAddressSpace::GetNormalBucketPool();
 }
 
-#else  // !defined(ARCH_CPU_64_BITS)
+#else  // defined(__LP64__)
 
 ALWAYS_INLINE internal::pool_handle GetDirectMapPool() {
   NOTREACHED();
@@ -131,7 +154,7 @@ ALWAYS_INLINE internal::pool_handle GetNormalBucketPool() {
   return 0;
 }
 
-#endif
+#endif  // defined(__LP64__)
 
 }  // namespace internal
 

@@ -275,13 +275,13 @@ TEST_F(SelectionControllerTest,
   EXPECT_TRUE(SelectClosestWordFromHitTestResult(
       result, AppendTrailingWhitespace::kDontAppend,
       SelectInputEventType::kMouse));
-  EXPECT_EQ("<pre>(1)^\n(|2)</pre>", GetSelectionTextFromBody());
+  EXPECT_EQ("<pre>(1)^\n|(2)</pre>", GetSelectionTextFromBody());
 
   // Select word by tap
   EXPECT_FALSE(SelectClosestWordFromHitTestResult(
       result, AppendTrailingWhitespace::kDontAppend,
       SelectInputEventType::kTouch));
-  EXPECT_EQ("<pre>(1)^\n(|2)</pre>", GetSelectionTextFromBody())
+  EXPECT_EQ("<pre>(1)^\n|(2)</pre>", GetSelectionTextFromBody())
       << "selection isn't changed";
 }
 
@@ -304,15 +304,138 @@ TEST_F(SelectionControllerTest,
   EXPECT_TRUE(SelectClosestWordFromHitTestResult(
       result, AppendTrailingWhitespace::kDontAppend,
       SelectInputEventType::kMouse));
-  // TODO(yosin): This should be "<pre>ab:^\ncd|</pre>"
-  EXPECT_EQ("<pre>ab:^\nc|d</pre>", GetSelectionTextFromBody());
+  EXPECT_EQ("<pre>ab:^\n|cd</pre>", GetSelectionTextFromBody());
 
   // Select word by tap
   EXPECT_FALSE(SelectClosestWordFromHitTestResult(
       result, AppendTrailingWhitespace::kDontAppend,
       SelectInputEventType::kTouch));
-  EXPECT_EQ("<pre>ab:^\nc|d</pre>", GetSelectionTextFromBody())
+  EXPECT_EQ("<pre>ab:^\n|cd</pre>", GetSelectionTextFromBody())
       << "selection isn't changed";
+}
+
+// For http://crbug.com/1092554
+TEST_F(SelectionControllerTest, SelectWordToEndOfLine) {
+  LoadAhem();
+  InsertStyleElement("body { margin: 0; padding: 0; font: 10px/10px Ahem; }");
+  SetBodyContent("<div>abc def<br/>ghi</div>");
+
+  // Select foo
+  blink::WebMouseEvent double_click(
+      blink::WebMouseEvent::Type::kMouseDown, 0,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  // Frame scale defaults to 0, which would cause a divide-by-zero problem.
+  double_click.SetFrameScale(1);
+  HitTestLocation location((IntPoint(20, 5)));
+  double_click.button = blink::WebMouseEvent::Button::kLeft;
+  double_click.click_count = 2;
+  HitTestResult result =
+      GetFrame().GetEventHandler().HitTestResultAtLocation(location);
+  GetFrame().GetEventHandler().GetSelectionController().HandleMousePressEvent(
+      MouseEventWithHitTestResults(double_click, location, result));
+  ASSERT_EQ("<div>ab|c def<br>ghi</div>",
+            GetSelectionTextFromBody(
+                SelectionInDOMTree::Builder()
+                    .Collapse(GetPositionFromHitTestResult(result))
+                    .Build()));
+
+  // Select word by mouse
+  EXPECT_TRUE(SelectClosestWordFromHitTestResult(
+      result, AppendTrailingWhitespace::kDontAppend,
+      SelectInputEventType::kMouse));
+  EXPECT_EQ("<div>^abc| def<br>ghi</div>", GetSelectionTextFromBody());
+
+  // Select to end of line
+  blink::WebMouseEvent single_shift_click(
+      blink::WebMouseEvent::Type::kMouseDown,
+      blink::WebInputEvent::Modifiers::kShiftKey,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  // Frame scale defaults to 0, which would cause a divide-by-zero problem.
+  single_shift_click.SetFrameScale(1);
+  HitTestLocation single_click_location((IntPoint(400, 5)));
+  single_shift_click.button = blink::WebMouseEvent::Button::kLeft;
+  single_shift_click.click_count = 1;
+  HitTestResult single_click_result =
+      GetFrame().GetEventHandler().HitTestResultAtLocation(
+          single_click_location);
+  GetFrame().GetEventHandler().GetSelectionController().HandleMousePressEvent(
+      MouseEventWithHitTestResults(single_shift_click, single_click_location,
+                                   single_click_result));
+  EXPECT_EQ("<div>^abc def<br>|ghi</div>", GetSelectionTextFromBody());
+}
+
+// For http://crbug.com/892750
+TEST_F(SelectionControllerTest, SelectWordToEndOfTableCell) {
+  LoadAhem();
+  InsertStyleElement(
+      "body { margin: 0; padding: 0; font: 10px/10px Ahem; } td {width: "
+      "200px}");
+  SetBodyContent("<table><td>foo</td><td>bar</td></table>");
+
+  // Select foo
+  blink::WebMouseEvent double_click(
+      blink::WebMouseEvent::Type::kMouseDown, 0,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  // Frame scale defaults to 0, which would cause a divide-by-zero problem.
+  double_click.SetFrameScale(1);
+  HitTestLocation location((IntPoint(20, 5)));
+  double_click.button = WebMouseEvent::Button::kLeft;
+  double_click.click_count = 2;
+  HitTestResult result =
+      GetFrame().GetEventHandler().HitTestResultAtLocation(location);
+  GetFrame().GetEventHandler().GetSelectionController().HandleMousePressEvent(
+      MouseEventWithHitTestResults(double_click, location, result));
+  ASSERT_EQ("<table><tbody><tr><td>fo|o</td><td>bar</td></tr></tbody></table>",
+            GetSelectionTextFromBody(
+                SelectionInDOMTree::Builder()
+                    .Collapse(GetPositionFromHitTestResult(result))
+                    .Build()));
+  // Select word by mouse
+  EXPECT_TRUE(SelectClosestWordFromHitTestResult(
+      result, AppendTrailingWhitespace::kDontAppend,
+      SelectInputEventType::kMouse));
+  EXPECT_EQ("<table><tbody><tr><td>^foo|</td><td>bar</td></tr></tbody></table>",
+            GetSelectionTextFromBody());
+
+  // Select to end of cell 1
+  blink::WebMouseEvent cell1_single_shift_click(
+      blink::WebMouseEvent::Type::kMouseDown,
+      blink::WebInputEvent::Modifiers::kShiftKey,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  // Frame scale defaults to 0, which would cause a divide-by-zero problem.
+  cell1_single_shift_click.SetFrameScale(1);
+  HitTestLocation cell1_single_click_location((IntPoint(175, 5)));
+  cell1_single_shift_click.button = blink::WebMouseEvent::Button::kLeft;
+  cell1_single_shift_click.click_count = 1;
+  HitTestResult cell1_single_click_result =
+      GetFrame().GetEventHandler().HitTestResultAtLocation(
+          cell1_single_click_location);
+  GetFrame().GetEventHandler().GetSelectionController().HandleMousePressEvent(
+      MouseEventWithHitTestResults(cell1_single_shift_click,
+                                   cell1_single_click_location,
+                                   cell1_single_click_result));
+  EXPECT_EQ("<table><tbody><tr><td>^foo|</td><td>bar</td></tr></tbody></table>",
+            GetSelectionTextFromBody());
+
+  // Select to end of cell 2
+  blink::WebMouseEvent cell2_single_shift_click(
+      blink::WebMouseEvent::Type::kMouseDown,
+      blink::WebInputEvent::Modifiers::kShiftKey,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  // Frame scale defaults to 0, which would cause a divide-by-zero problem.
+  cell2_single_shift_click.SetFrameScale(1);
+  HitTestLocation cell2_single_click_location((IntPoint(375, 5)));
+  cell2_single_shift_click.button = blink::WebMouseEvent::Button::kLeft;
+  cell2_single_shift_click.click_count = 1;
+  HitTestResult cell2_single_click_result =
+      GetFrame().GetEventHandler().HitTestResultAtLocation(
+          cell2_single_click_location);
+  GetFrame().GetEventHandler().GetSelectionController().HandleMousePressEvent(
+      MouseEventWithHitTestResults(cell2_single_shift_click,
+                                   cell2_single_click_location,
+                                   cell2_single_click_result));
+  EXPECT_EQ("<table><tbody><tr><td>^foo</td><td>bar|</td></tr></tbody></table>",
+            GetSelectionTextFromBody());
 }
 
 TEST_P(ParameterizedSelectionControllerTest, Scroll) {

@@ -83,7 +83,7 @@ struct CheckedPtrNoOpImpl {
   static ALWAYS_INLINE void IncrementSwapCountForTest() {}
 };
 
-#if defined(ARCH_CPU_64_BITS)
+#if defined(__LP64__)
 
 constexpr int kValidAddressBits = 48;
 constexpr uintptr_t kAddressMask = (1ull << kValidAddressBits) - 1;
@@ -99,8 +99,11 @@ static_assert((kTopBit & kGenerationMask) > 0,
 static volatile bool g_enabled = true;
 
 struct CheckedPtr2Impl {
-  static_assert(sizeof(uintptr_t) == 8,
-                "only 64-bit architectures are supported");
+  // This implementation assumes that pointers are 64 bits long and at least 16
+  // top bits are unused. The latter is harder to verify statically, but this is
+  // true for all currently supported 64-bit architectures (DCHECK when wrapping
+  // will verify that).
+  static_assert(sizeof(void*) >= 8, "Need 64-bit pointers");
 
   // Wraps a pointer, and returns its uintptr_t representation.
   static ALWAYS_INLINE uintptr_t WrapRawPtr(const volatile void* cv_ptr) {
@@ -146,7 +149,7 @@ struct CheckedPtr2Impl {
     // (depending on the algorithm variant), on the
     // !CHECKED_PTR2_PROTECTION_ENABLED path.
     uintptr_t generation = *(static_cast<volatile uint16_t*>(ptr));
-#endif  // #else CHECKED_PTR2_PROTECTION_ENABLED
+#endif  // CHECKED_PTR2_PROTECTION_ENABLED
     generation <<= kValidAddressBits;
     addr |= generation;
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
@@ -157,9 +160,9 @@ struct CheckedPtr2Impl {
     // If the top bit was set, the unwrapper would read from before the address
     // address, but with it cleared, it'll read from the address itself.
     addr &= kAddressMask;
-#endif  // #if !CHECKED_PTR2_PROTECTION_ENABLED
-#endif  // #if CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
-#endif  // #if CHECKED_PTR2_USE_NO_OP_WRAPPER
+#endif  // !CHECKED_PTR2_PROTECTION_ENABLED
+#endif  // CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
+#endif  // CHECKED_PTR2_USE_NO_OP_WRAPPER
     return addr;
   }
 
@@ -245,7 +248,7 @@ struct CheckedPtr2Impl {
     //   Ex.2: returning 0x0000000012345678
     static_assert(CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING, "");
     return generation ^ wrapped_ptr;
-#else  // #if CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
+#else  // CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
     uintptr_t ptr_generation = wrapped_ptr >> kValidAddressBits;
     if (ptr_generation > 0) {
       // Read generation from before the allocation.
@@ -278,12 +281,12 @@ struct CheckedPtr2Impl {
       volatile bool x = false;
       if (ptr_generation != read_generation)
         x = true;
-#endif  // #else CHECKED_PTR2_PROTECTION_ENABLED
+#endif  // CHECKED_PTR2_PROTECTION_ENABLED
       return wrapped_ptr & kAddressMask;
-#endif  // #else CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
+#endif  // CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
     }
     return wrapped_ptr;
-#endif  // #else CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
+#endif  // CHECKED_PTR2_AVOID_BRANCH_WHEN_CHECKING_ENABLED
   }
 
   // Unwraps the pointer's uintptr_t representation, while asserting that memory
@@ -350,7 +353,7 @@ struct CheckedPtr2Impl {
   static constexpr uintptr_t kWrappedNullPtr = 0;
 };
 
-#endif  // #if defined(ARCH_CPU_64_BITS)
+#endif  // defined(__LP64__)
 
 template <typename T>
 struct DereferencedPointerType {
@@ -378,7 +381,7 @@ struct DereferencedPointerType<void> {};
 //    we aren't striving to maximize compatibility with raw pointers, merely
 //    adding support for cases encountered so far).
 template <typename T,
-#if defined(ARCH_CPU_64_BITS)
+#if defined(__LP64__)
           typename Impl = internal::CheckedPtr2Impl>
 #else
           typename Impl = internal::CheckedPtrNoOpImpl>

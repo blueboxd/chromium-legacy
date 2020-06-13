@@ -23,7 +23,7 @@ namespace internal {
 namespace {
 
 char* CommitPages(internal::pool_handle pool, size_t map_size) {
-#if defined(ARCH_CPU_64_BITS)
+#if defined(__LP64__)
   char* ptr =
       internal::AddressPoolManager::GetInstance()->Alloc(pool, map_size);
   if (UNLIKELY(!ptr))

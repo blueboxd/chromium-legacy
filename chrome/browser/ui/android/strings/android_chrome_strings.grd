@@ -2779,6 +2779,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_ACCESSIBILITY_OMNIBOX_BTN_REFINE" desc="Content description for the omnibox refine button.">
         Refine
       </message>
+      <message name="IDS_ACCESSIBILITY_OMNIBOX_SWITCH_TO_TAB" desc="Content description for the omnibox switch to tab button.">
+        Switch To Tab
+      </message>
 
 
       <message name="IDS_ACCESSIBILITY_SHARE_SELECTED_ITEMS" desc="Content description for the button to share selected items. [ICU Syntax]">

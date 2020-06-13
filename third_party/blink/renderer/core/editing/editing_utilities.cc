@@ -1079,6 +1079,13 @@ Element* TableElementJustBefore(
       visible_position);
 }
 
+Element* EnclosingTableCell(const Position& p) {
+  return To<Element>(EnclosingNodeOfType(p, IsTableCell));
+}
+Element* EnclosingTableCell(const PositionInFlatTree& p) {
+  return To<Element>(EnclosingNodeOfType(p, IsTableCell));
+}
+
 Element* TableElementJustAfter(const VisiblePosition& visible_position) {
   Position downstream(
       MostForwardCaretPosition(visible_position.DeepEquivalent()));

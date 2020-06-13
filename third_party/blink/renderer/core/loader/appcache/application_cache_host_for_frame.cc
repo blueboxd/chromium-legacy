@@ -210,15 +210,15 @@ void ApplicationCacheHostForFrame::SelectCacheWithoutManifest() {
 void ApplicationCacheHostForFrame::SelectCacheWithManifest(
     const KURL& manifest_url) {
   LocalFrame* frame = document_loader_->GetFrame();
-  Document* document = frame->GetDocument();
-  if (document->IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin)) {
+  LocalDOMWindow* window = frame->DomWindow();
+  if (window->IsSandboxed(network::mojom::blink::WebSandboxFlags::kOrigin)) {
     // Prevent sandboxes from establishing application caches.
     SelectCacheWithoutManifest();
     return;
   }
-  CHECK(document->IsSecureContext());
+  CHECK(window->IsSecureContext());
   Deprecation::CountDeprecation(
-      document, WebFeature::kApplicationCacheManifestSelectSecureOrigin);
+      window, WebFeature::kApplicationCacheManifestSelectSecureOrigin);
 
   if (!backend_host_.is_bound())
     return;

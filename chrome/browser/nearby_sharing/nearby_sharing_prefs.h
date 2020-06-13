@@ -11,8 +11,10 @@ class PrefRegistrySyncable;
 
 class PrefRegistrySimple;
 
+namespace prefs {
 extern const char kNearbySharingEnabledPrefName[];
 extern const char kNearbySharingActiveProfilePrefName[];
+}  // namespace prefs
 
 void RegisterNearbySharingPrefs(user_prefs::PrefRegistrySyncable* registry);
 

@@ -853,6 +853,7 @@ chrome_java_resources = [
   "java/res/drawable/signin_header_animation.xml",
   "java/res/drawable/smartphone_black_24dp.xml",
   "java/res/drawable/store_locally_tooltip_background.xml",
+  "java/res/drawable/switch_to_tab.xml",
   "java/res/drawable/tab_indicator.xml",
   "java/res/drawable/telephone.xml",
   "java/res/drawable/thumbnail_gradient_top_left.xml",

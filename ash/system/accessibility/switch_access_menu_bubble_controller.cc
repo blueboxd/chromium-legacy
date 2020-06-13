@@ -26,12 +26,14 @@ SwitchAccessMenuBubbleController::~SwitchAccessMenuBubbleController() {
 }
 
 void SwitchAccessMenuBubbleController::ShowBackButton(const gfx::Rect& anchor) {
-  back_button_controller_->ShowBackButton(anchor, /*showFocusRing=*/true);
+  back_button_controller_->ShowBackButton(anchor, /*show_focus_ring=*/true,
+                                          menu_open_);
 }
 
 void SwitchAccessMenuBubbleController::ShowMenu(
     const gfx::Rect& anchor,
     const std::vector<std::string>& actions_to_show) {
+  menu_open_ = true;
   if (!widget_) {
     TrayBubbleView::InitParams init_params;
     init_params.delegate = this;
@@ -83,7 +85,8 @@ void SwitchAccessMenuBubbleController::ShowMenu(
   bubble_view_->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
                                          true);
   back_button_controller_->ShowBackButton(resting_bounds,
-                                          /*showFocusRing=*/false);
+                                          /*show_focus_ring=*/false,
+                                          /*for_menu=*/true);
 }
 
 void SwitchAccessMenuBubbleController::HideBackButton() {
@@ -94,6 +97,7 @@ void SwitchAccessMenuBubbleController::HideBackButton() {
 }
 
 void SwitchAccessMenuBubbleController::HideMenuBubble() {
+  menu_open_ = false;
   back_button_controller_->Hide();
   if (widget_)
     widget_->Hide();

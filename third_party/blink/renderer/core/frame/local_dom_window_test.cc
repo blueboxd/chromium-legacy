@@ -1,0 +1,142 @@
+/*
+ * Copyright (c) 2014, Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
+
+#include "base/strings/stringprintf.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
+#include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+
+namespace blink {
+
+using network::mojom::ContentSecurityPolicySource;
+using network::mojom::ContentSecurityPolicyType;
+
+// Test fixture parameterized on whether the "IsolatedWorldCSP" feature is
+// enabled.
+class IsolatedWorldCSPTest : public PageTestBase,
+                             public testing::WithParamInterface<bool>,
+                             private ScopedIsolatedWorldCSPForTest {
+ public:
+  IsolatedWorldCSPTest() : ScopedIsolatedWorldCSPForTest(GetParam()) {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(IsolatedWorldCSPTest);
+};
+
+// Tests ExecutionContext::GetContentSecurityPolicyForWorld().
+TEST_P(IsolatedWorldCSPTest, CSPForWorld) {
+  using ::testing::ElementsAre;
+
+  // Set a CSP for the main world.
+  const char* kMainWorldCSP = "connect-src https://google.com;";
+  GetFrame().DomWindow()->GetContentSecurityPolicy()->DidReceiveHeader(
+      kMainWorldCSP, ContentSecurityPolicyType::kEnforce,
+      ContentSecurityPolicySource::kHTTP);
+
+  LocalFrame* frame = &GetFrame();
+  ScriptState* main_world_script_state = ToScriptStateForMainWorld(frame);
+  v8::Isolate* isolate = main_world_script_state->GetIsolate();
+
+  constexpr int kIsolatedWorldWithoutCSPId = 1;
+  scoped_refptr<DOMWrapperWorld> world_without_csp =
+      DOMWrapperWorld::EnsureIsolatedWorld(isolate, kIsolatedWorldWithoutCSPId);
+  ASSERT_TRUE(world_without_csp->IsIsolatedWorld());
+  ScriptState* isolated_world_without_csp_script_state =
+      ToScriptState(frame, *world_without_csp);
+
+  const char* kIsolatedWorldCSP = "script-src 'none';";
+  constexpr int kIsolatedWorldWithCSPId = 2;
+  scoped_refptr<DOMWrapperWorld> world_with_csp =
+      DOMWrapperWorld::EnsureIsolatedWorld(isolate, kIsolatedWorldWithCSPId);
+  ASSERT_TRUE(world_with_csp->IsIsolatedWorld());
+  ScriptState* isolated_world_with_csp_script_state =
+      ToScriptState(frame, *world_with_csp);
+  IsolatedWorldCSP::Get().SetContentSecurityPolicy(
+      kIsolatedWorldWithCSPId, kIsolatedWorldCSP,
+      SecurityOrigin::Create(KURL("chrome-extension://123")));
+
+  // Returns the csp headers being used for the current world.
+  auto get_csp_headers = [this]() {
+    auto* csp = GetFrame().DomWindow()->GetContentSecurityPolicyForWorld();
+    return csp->Headers();
+  };
+
+  {
+    SCOPED_TRACE("In main world.");
+    ScriptState::Scope scope(main_world_script_state);
+    EXPECT_THAT(get_csp_headers(),
+                ElementsAre(CSPHeaderAndType(
+                    {kMainWorldCSP, ContentSecurityPolicyType::kEnforce})));
+  }
+
+  {
+    SCOPED_TRACE("In isolated world without csp.");
+    ScriptState::Scope scope(isolated_world_without_csp_script_state);
+
+    // If we are in an isolated world with no CSP defined, we use the main world
+    // CSP.
+    EXPECT_THAT(get_csp_headers(),
+                ElementsAre(CSPHeaderAndType(
+                    {kMainWorldCSP, ContentSecurityPolicyType::kEnforce})));
+  }
+
+  {
+    bool is_isolated_world_csp_enabled = GetParam();
+    SCOPED_TRACE(base::StringPrintf(
+        "In isolated world with csp and 'IsolatedWorldCSP' %s",
+        is_isolated_world_csp_enabled ? "enabled" : "disabled"));
+    ScriptState::Scope scope(isolated_world_with_csp_script_state);
+
+    if (!is_isolated_world_csp_enabled) {
+      // With 'IsolatedWorldCSP' feature disabled, we should just bypass the
+      // main world CSP by using an empty CSP.
+      EXPECT_TRUE(get_csp_headers().IsEmpty());
+    } else {
+      // With 'IsolatedWorldCSP' feature enabled, we use the isolated world's
+      // CSP if it specified one.
+      EXPECT_THAT(
+          get_csp_headers(),
+          ElementsAre(CSPHeaderAndType(
+              {kIsolatedWorldCSP, ContentSecurityPolicyType::kEnforce})));
+    }
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         IsolatedWorldCSPTest,
+                         testing::Values(true, false));
+}  // namespace blink

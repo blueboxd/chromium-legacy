@@ -394,7 +394,7 @@ class CheckedPtr {
 
   // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
   // NOLINTNEXTLINE(runtime/explicit)
-  constexpr ALWAYS_INLINE CheckedPtr(nullptr_t) noexcept
+  constexpr ALWAYS_INLINE CheckedPtr(std::nullptr_t) noexcept
       : wrapped_ptr_(Impl::GetWrappedNullPtr()) {}
 
   // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
@@ -531,16 +531,16 @@ class CheckedPtr {
   // Needed for comparisons against nullptr. Without these, a slightly more
   // costly version would be called that extracts wrapped pointer, as opposed
   // to plain comparison against 0.
-  friend ALWAYS_INLINE bool operator==(const CheckedPtr& lhs, nullptr_t) {
+  friend ALWAYS_INLINE bool operator==(const CheckedPtr& lhs, std::nullptr_t) {
     return !lhs;
   }
-  friend ALWAYS_INLINE bool operator!=(const CheckedPtr& lhs, nullptr_t) {
+  friend ALWAYS_INLINE bool operator!=(const CheckedPtr& lhs, std::nullptr_t) {
     return !!lhs;  // Use !! otherwise the costly implicit cast will be used.
   }
-  friend ALWAYS_INLINE bool operator==(nullptr_t, const CheckedPtr& rhs) {
+  friend ALWAYS_INLINE bool operator==(std::nullptr_t, const CheckedPtr& rhs) {
     return !rhs;
   }
-  friend ALWAYS_INLINE bool operator!=(nullptr_t, const CheckedPtr& rhs) {
+  friend ALWAYS_INLINE bool operator!=(std::nullptr_t, const CheckedPtr& rhs) {
     return !!rhs;  // Use !! otherwise the costly implicit cast will be used.
   }
 

@@ -168,12 +168,20 @@ class MenuItemViewTestInsertWithSubmenu : public MenuTestBase {
     submenu_->AppendMenuItem(101, ASCIIToUTF16("submenu item 1"));
     submenu_->AppendMenuItem(101, ASCIIToUTF16("submenu item 2"));
     menu->AppendMenuItem(2, ASCIIToUTF16("item 2"));
+    EXPECT_EQ(GetAXEventCount(ax::mojom::Event::kMenuStart), 0);
+    EXPECT_EQ(GetAXEventCount(ax::mojom::Event::kMenuPopupStart), 0);
+    EXPECT_EQ(GetAXEventCount(ax::mojom::Event::kMenuPopupEnd), 0);
+    EXPECT_EQ(GetAXEventCount(ax::mojom::Event::kMenuEnd), 0);
   }
 
   // Post submenu.
   void DoTestWithMenuOpen() override {
     Click(submenu_,
           CreateEventTask(this, &MenuItemViewTestInsertWithSubmenu::Step2));
+    EXPECT_EQ(GetAXEventCount(ax::mojom::Event::kMenuStart), 1);
+    EXPECT_EQ(GetAXEventCount(ax::mojom::Event::kMenuPopupStart), 1);
+    EXPECT_EQ(GetAXEventCount(ax::mojom::Event::kMenuPopupEnd), 0);
+    EXPECT_EQ(GetAXEventCount(ax::mojom::Event::kMenuEnd), 0);
   }
 
   // Insert item at INSERT_INDEX.
@@ -190,7 +198,13 @@ class MenuItemViewTestInsertWithSubmenu : public MenuTestBase {
           CreateEventTask(this, &MenuItemViewTestInsertWithSubmenu::Step3));
   }
 
-  void Step3() { Done(); }
+  void Step3() {
+    Done();
+    EXPECT_EQ(GetAXEventCount(ax::mojom::Event::kMenuStart), 1);
+    EXPECT_EQ(GetAXEventCount(ax::mojom::Event::kMenuPopupStart), 2);
+    EXPECT_EQ(GetAXEventCount(ax::mojom::Event::kMenuPopupEnd), 2);
+    EXPECT_EQ(GetAXEventCount(ax::mojom::Event::kMenuEnd), 1);
+  }
 
  private:
   views::MenuItemView* submenu_ = nullptr;

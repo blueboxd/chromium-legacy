@@ -221,17 +221,36 @@ TEST_F(BoundsAnimatorTest, DeleteDelegateOnCancel) {
   EXPECT_TRUE(OwnedDelegate::GetAndClearDeleted());
 }
 
-// Make sure an AnimationDelegate is deleted when another animation is
-// scheduled.
+// Make sure that the AnimationDelegate of the running animation is deleted when
+// a new animation is scheduled.
 TEST_F(BoundsAnimatorTest, DeleteDelegateOnNewAnimate) {
-  animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
+  const gfx::Rect target_bounds_first(0, 0, 10, 10);
+  animator()->AnimateViewTo(child(), target_bounds_first);
   animator()->SetAnimationDelegate(child(), std::make_unique<OwnedDelegate>());
 
-  animator()->AnimateViewTo(child(), gfx::Rect(0, 0, 10, 10));
+  // Start an animation on the same view with different target bounds.
+  const gfx::Rect target_bounds_second(0, 5, 10, 10);
+  animator()->AnimateViewTo(child(), target_bounds_second);
 
   // Starting a new animation should both cancel the delegate and delete it.
   EXPECT_TRUE(OwnedDelegate::GetAndClearDeleted());
   EXPECT_TRUE(OwnedDelegate::GetAndClearCanceled());
+}
+
+// Make sure that the duplicate animation request does not interrupt the running
+// animation.
+TEST_F(BoundsAnimatorTest, HandleDuplicateAnimation) {
+  const gfx::Rect target_bounds(0, 0, 10, 10);
+
+  animator()->AnimateViewTo(child(), target_bounds);
+  animator()->SetAnimationDelegate(child(), std::make_unique<OwnedDelegate>());
+
+  // Request the animation with the same view/target bounds.
+  animator()->AnimateViewTo(child(), target_bounds);
+
+  // Verify that the existing animation is not interrupted.
+  EXPECT_FALSE(OwnedDelegate::GetAndClearDeleted());
+  EXPECT_FALSE(OwnedDelegate::GetAndClearCanceled());
 }
 
 // Makes sure StopAnimating works.

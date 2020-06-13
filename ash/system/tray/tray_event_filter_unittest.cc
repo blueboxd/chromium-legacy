@@ -14,7 +14,6 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
-#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -35,7 +34,6 @@ class TrayEventFilterTest : public AshTestBase {
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
-    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   }
 
   ui::MouseEvent outside_event() {
@@ -71,11 +69,6 @@ class TrayEventFilterTest : public AshTestBase {
     return notification_id;
   }
 
-  void EnableMessageCenterRefactor() {
-    scoped_feature_list_->InitAndEnableFeature(
-        features::kUnifiedMessageCenterRefactor);
-  }
-
   void ShowSystemTrayMainView() {
     GetPrimaryUnifiedSystemTray()->ShowBubble(false /* show_by_click */);
   }
@@ -109,7 +102,6 @@ class TrayEventFilterTest : public AshTestBase {
 
  private:
   int notification_id_ = 0;
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
   DISALLOW_COPY_AND_ASSIGN(TrayEventFilterTest);
 };
 
@@ -200,7 +192,6 @@ TEST_F(TrayEventFilterTest, ClickingOnKeyboardContainerDoesNotCloseBubble) {
 }
 
 TEST_F(TrayEventFilterTest, MessageCenterAndSystemTrayStayOpenTogether) {
-  EnableMessageCenterRefactor();
   AddNotification();
 
   ShowSystemTrayMainView();
@@ -221,7 +212,6 @@ TEST_F(TrayEventFilterTest, MessageCenterAndSystemTrayStayOpenTogether) {
 }
 
 TEST_F(TrayEventFilterTest, MessageCenterAndSystemTrayCloseTogether) {
-  EnableMessageCenterRefactor();
   AddNotification();
 
   ShowSystemTrayMainView();

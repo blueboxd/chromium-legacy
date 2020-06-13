@@ -10,7 +10,7 @@ if (!window.internals)
 
 function configureShadowRoot(shadow) {
     shadow.innerHTML =
-        '<div id="x" style="position: relative;"><content></content></div>';
+        '<div id="x" style="position: relative;"><slot></slot></div>';
     shadow.positionedElement = shadow.querySelector('#x');
 }
 
@@ -30,7 +30,7 @@ var host = document.createElement('div');
 container.appendChild(host);
 var child = document.createElement('div');
 host.appendChild(child);
-var shadow = host.createShadowRoot();
+var shadow = host.attachShadow({mode: 'open'});
 configureShadowRoot(shadow);
 shouldBe('child.offsetParent', 'shadow.positionedElement');
 

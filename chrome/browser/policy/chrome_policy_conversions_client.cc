@@ -162,7 +162,7 @@ Value ChromePolicyConversionsClient::GetExtensionPolicies(
         GetPolicyValues(extension_profile->GetProfilePolicyConnector()
                             ->policy_service()
                             ->GetPolicies(policy_namespace),
-                        &empty_error_map, DeprecatedPoliciesSet(),
+                        &empty_error_map, PoliciesSet(), PoliciesSet(),
                         GetKnownPolicies(schema_map, policy_namespace));
     Value extension_policies_data(Value::Type::DICTIONARY);
     extension_policies_data.SetKey("name", Value(extension->name()));
@@ -233,15 +233,16 @@ Value ChromePolicyConversionsClient::GetDeviceLocalAccountPolicies() {
     const ConfigurationPolicyHandlerList* handler_list =
         connector->GetHandlerList();
     PolicyErrorMap errors;
-    DeprecatedPoliciesSet deprecated_policies;
+    PoliciesSet deprecated_policies;
+    PoliciesSet future_policies;
     handler_list->ApplyPolicySettings(map, nullptr, &errors,
-                                      &deprecated_policies);
+                                      &deprecated_policies, &future_policies);
 
     // Convert dictionary values to strings for display.
     handler_list->PrepareForDisplaying(&map);
 
     Value current_account_policies =
-        GetPolicyValues(map, &errors, deprecated_policies,
+        GetPolicyValues(map, &errors, deprecated_policies, future_policies,
                         GetKnownPolicies(schema_map, policy_namespace));
     Value current_account_policies_data(Value::Type::DICTIONARY);
     current_account_policies_data.SetKey("id", Value(user_id));

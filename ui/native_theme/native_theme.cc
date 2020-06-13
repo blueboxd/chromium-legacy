@@ -263,8 +263,6 @@ NativeTheme::HighContrastColorScheme NativeTheme::GetHighContrastColorScheme()
       return HighContrastColorScheme::kDark;
     case NativeTheme::PreferredColorScheme::kLight:
       return HighContrastColorScheme::kLight;
-    case NativeTheme::PreferredColorScheme::kNoPreference:
-      return NativeTheme::HighContrastColorScheme::kCustom;
   }
   NOTREACHED();
   return NativeTheme::HighContrastColorScheme::kNone;

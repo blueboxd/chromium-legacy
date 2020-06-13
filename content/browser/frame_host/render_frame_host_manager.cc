@@ -134,7 +134,8 @@ bool IsSiteInstanceCompatibleWithErrorIsolation(SiteInstance* site_instance,
   // SiteInstance but the navigation will fail and actually need an error page
   // SiteInstance.
   bool is_site_instance_for_failures =
-      site_instance->GetSiteURL() == GURL(kUnreachableWebDataURL);
+      static_cast<SiteInstanceImpl*>(site_instance)->GetSiteInfo() ==
+      SiteInfo::CreateForErrorPage();
   return is_site_instance_for_failures == is_failure;
 }
 
@@ -1392,7 +1393,7 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
       !render_frame_host_->last_successful_url().is_empty()
           ? SiteInstanceImpl::GetEffectiveURL(
                 browser_context, render_frame_host_->last_successful_url())
-          : render_frame_host_->GetSiteInstance()->GetSiteURL();
+          : render_frame_host_->GetSiteInstance()->GetSiteInfo().site_url();
 
   // Determine if the current RenderFrameHost is in view source mode.
   // TODO(clamy): If the current_effective_url doesn't match the last committed
@@ -1632,11 +1633,11 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     // thus use the correct process.
     DCHECK_EQ(controller.GetBrowserContext(),
               current_instance_impl->GetBrowserContext());
-    const GURL dest_site_url = SiteInstanceImpl::GetSiteForURL(
+    const SiteInfo dest_site_info = SiteInstanceImpl::ComputeSiteInfo(
         current_instance_impl->GetIsolationContext(), dest_url);
     bool use_process_per_site =
-        RenderProcessHost::ShouldUseProcessPerSite(
-            current_instance_impl->GetBrowserContext(), dest_site_url) &&
+        RenderProcessHostImpl::ShouldUseProcessPerSite(
+            current_instance_impl->GetBrowserContext(), dest_site_info) &&
         RenderProcessHostImpl::GetSoleProcessHostForURL(
             current_instance_impl->GetIsolationContext(), dest_url);
     if (current_instance_impl->HasRelatedSiteInstance(dest_url) ||

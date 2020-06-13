@@ -12,7 +12,7 @@ import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabObserver;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
-import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
@@ -51,7 +51,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
     private final ChromeFullscreenManager.FullscreenListener mFullscreenListener;
 
     /** A listener for browser controls offset changes. */
-    private final BrowserControlsStateProvider.Observer mBrowserControlsObserver;
+    private final BrowserControlsVisibilityManager.Observer mBrowserControlsObserver;
 
     /** An observer for the tab provider. */
     private final ActivityTabObserver mActivityTabObserver;
@@ -60,7 +60,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
     private final TabObserver mTabObserver;
 
     /** A browser controls manager for polling browser controls offsets. */
-    private BrowserControlsStateProvider mBrowserControlsStateProvider;
+    private BrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
 
     /** A fullscreen manager for listening to fullscreen events. */
     private ChromeFullscreenManager mFullscreenManager;
@@ -116,7 +116,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
             Supplier<OverlayPanelManager> overlayManager) {
         mSheetController = controller;
         mTabProvider = tabProvider;
-        mBrowserControlsStateProvider = fullscreenManager;
+        mBrowserControlsVisibilityManager = fullscreenManager;
         mFullscreenManager = fullscreenManager;
         mDialogManager = dialogManager;
         mSnackbarManager = snackbarManagerSupplier;
@@ -194,15 +194,15 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
         };
         VrModuleProvider.registerVrModeObserver(mVrModeObserver);
 
-        mBrowserControlsObserver = new BrowserControlsStateProvider.Observer() {
+        mBrowserControlsObserver = new BrowserControlsVisibilityManager.Observer() {
             @Override
             public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
                     int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
                 controller.setBrowserControlsHiddenRatio(
-                        mFullscreenManager.getBrowserControlHiddenRatio());
+                        mBrowserControlsVisibilityManager.getBrowserControlHiddenRatio());
             }
         };
-        mBrowserControlsStateProvider.addObserver(mBrowserControlsObserver);
+        mBrowserControlsVisibilityManager.addObserver(mBrowserControlsObserver);
 
         mFullscreenListener = new ChromeFullscreenManager.FullscreenListener() {
             /** A token held while this object is suppressing the bottom sheet. */
@@ -249,10 +249,11 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
 
     @Override
     public void onSheetOpened(int reason) {
-        if (mFullscreenManager.getBrowserVisibilityDelegate() != null) {
+        if (mBrowserControlsVisibilityManager.getBrowserVisibilityDelegate() != null) {
             // Browser controls should stay visible until the sheet is closed.
             mPersistentControlsToken =
-                    mFullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
+                    mBrowserControlsVisibilityManager.getBrowserVisibilityDelegate()
+                            .showControlsPersistent();
         }
 
         Tab activeTab = mTabProvider.get();
@@ -285,11 +286,11 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
 
     @Override
     public void onSheetClosed(int reason) {
-        if (mFullscreenManager.getBrowserVisibilityDelegate() != null) {
+        if (mBrowserControlsVisibilityManager.getBrowserVisibilityDelegate() != null) {
             // Update the browser controls since they are permanently shown while the sheet is
             // open.
-            mFullscreenManager.getBrowserVisibilityDelegate().releasePersistentShowingToken(
-                    mPersistentControlsToken);
+            mBrowserControlsVisibilityManager.getBrowserVisibilityDelegate()
+                    .releasePersistentShowingToken(mPersistentControlsToken);
         }
 
         BottomSheetContent content = mSheetController.getCurrentSheetContent();
@@ -341,7 +342,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
         mTabProvider.removeObserver(mActivityTabObserver);
         mSheetController.removeObserver(this);
         mFullscreenManager.removeListener(mFullscreenListener);
-        mBrowserControlsStateProvider.removeObserver(mBrowserControlsObserver);
+        mBrowserControlsVisibilityManager.removeObserver(mBrowserControlsObserver);
         mOmniboxFocusStateSupplier.removeObserver(mOmniboxFocusObserver);
         VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);
     }

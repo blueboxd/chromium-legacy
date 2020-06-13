@@ -12,6 +12,8 @@
 #include "third_party/blink/public/platform/modules/mediastream/web_media_stream_audio_sink.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 
 namespace blink {
 
@@ -38,12 +40,12 @@ MediaStreamAudioTrack::~MediaStreamAudioTrack() {
 
 // static
 MediaStreamAudioTrack* MediaStreamAudioTrack::From(
-    const WebMediaStreamTrack& track) {
-  if (track.IsNull() ||
-      track.Source().GetType() != WebMediaStreamSource::kTypeAudio) {
+    const MediaStreamComponent* component) {
+  if (!component ||
+      component->Source()->GetType() != MediaStreamSource::kTypeAudio) {
     return nullptr;
   }
-  return static_cast<MediaStreamAudioTrack*>(track.GetPlatformTrack());
+  return static_cast<MediaStreamAudioTrack*>(component->GetPlatformTrack());
 }
 
 void MediaStreamAudioTrack::AddSink(WebMediaStreamAudioSink* sink) {

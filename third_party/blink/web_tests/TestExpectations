@@ -644,7 +644,6 @@ crbug.com/880802 external/wpt/css/css-contain/contain-paint-021.html [ Failure ]
 crbug.com/882367 external/wpt/css/css-contain/contain-paint-clip-015.html [ Failure ]
 crbug.com/882367 external/wpt/css/css-contain/contain-paint-clip-016.html [ Failure ]
 crbug.com/882383 external/wpt/css/css-contain/counter-scoping-002.html [ Failure ]
-crbug.com/882383 external/wpt/css/css-contain/counter-scoping-003.html [ Failure ]
 crbug.com/882385 external/wpt/css/css-contain/quote-scoping-001.html [ Failure ]
 crbug.com/882385 external/wpt/css/css-contain/quote-scoping-002.html [ Failure ]
 crbug.com/882385 external/wpt/css/css-contain/quote-scoping-003.html [ Failure ]
@@ -1184,7 +1183,6 @@ virtual/layout_ng_fragment_traversal/external/wpt/css/CSS2/text/* [ Skip ]
 # Fail in NG flex, pass in legacy flex.
 crbug.com/845235 virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/quirks-auto-block-size-with-percentage-item.html [ Pass Failure ]
 crbug.com/846557 [ Mac ] virtual/layout_ng_flex_box/css3/flexbox/button.html [ Failure ]
-crbug.com/1066859 external/wpt/css/css-flexbox/position-absolute-009.html [ Failure ]
 
 # Fail in both legacy flex and NG flex
 crbug.com/626703 virtual/layout_ng_flex_box/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-008.xhtml [ Failure ]
@@ -4335,10 +4333,12 @@ crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algori
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-minimum-contribution-baseline-shim-vertical-rl.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-minimum-contribution-baseline-shim.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/layout-algorithm/grid-stretch-respects-min-size-001.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-columns-computed-implicit-track.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-columns-computed-withcontent.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-columns-computed.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-repeat-auto-computed-withcontent-001.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-repeat-auto-computed-withcontent-002.html [ Failure ]
+crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-rows-computed-implicit-track.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-rows-computed-withcontent.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/parsing/grid-template-rows-computed.html [ Failure ]
 crbug.com/1045599 virtual/layout-ng-grid/external/wpt/css/css-grid/placement/grid-auto-flow-sparse-001.html [ Failure ]
@@ -4628,7 +4628,6 @@ crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/distribution
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/form-in-shadow.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/no-style-sharing-with-uncommon-attribute-nodes.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-dynamic-style-change-via-mutation-and-selector.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-element-rendering-single.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowhost-keyframes.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowroot-keyframes.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/transition-on-shadow-host-createshadowroot.html [ Skip ]
@@ -4643,10 +4642,6 @@ crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/custom-pseud
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/dynamically-created-shadow-root.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/new-fallback.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-on-image.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowdom-for-button-complex-shadow.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowdom-for-button-without-shadow.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowroot-of-insertionpoint.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/table-border.html [ Skip ]
 
 
 # == These fail with or without the WCv0 features disabled, and most/all already
@@ -5123,7 +5118,6 @@ skbug.com/7641 external/wpt/css/css-paint-api/paint2d-paths.https.html [ Failure
 
 # Sheriff failures 2018-01-25
 # Flaking on Linux Tests, WebKit Linux Trusty (also ASAN, Leak)
-crbug.com/805794 [ Linux ] virtual/android/rootscroller/nested-rootscroller-browser-controls-bounds-shown.html [ Pass Failure ]
 crbug.com/805794 [ Linux ] virtual/android/url-bar/bottom-fixed-adjusted-when-showing-url-bar.html [ Pass Failure ]
 
 # Sheriff failures 2018-02-05
@@ -6417,10 +6411,6 @@ crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/back
 crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/backface-visibility-hidden-animated-002.html [ Pass ]
 crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/preserve-3d-flat-grouping-properties.tentative.html [ Pass ]
 crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/subpixel-perspective-backface-hidden.html [ Failure ]
-
-# Fails due to anonymous layout objects causing flattening
-crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/transform-table-010.html [ Failure ]
-crbug.com/1008483 virtual/transform-interop/external/wpt/css/css-transforms/transform-table-011.html [ Failure ]
 
 # Swiftshader issue.
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-innerwidth.html [ Crash Timeout ]

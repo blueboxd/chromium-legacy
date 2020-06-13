@@ -65,6 +65,8 @@ void CloudSpeechRecognitionClient::OnDownstreamDataReceived(
   // protocol chunks and HTTP chunks, in the sense that a single HTTP chunk can
   // contain a portion of one chunk or even more chunks together.
   chunked_byte_buffer_.Append(new_response_data);
+  std::string result;
+  bool is_final = false;
 
   // A single HTTP chunk can contain more than one data chunk, thus the while.
   while (chunked_byte_buffer_.HasChunks()) {
@@ -75,8 +77,11 @@ void CloudSpeechRecognitionClient::OnDownstreamDataReceived(
       return;
     }
 
-    std::string result;
+    // A speech recognition event can have multiple recognition results in
+    // descending order of stability. Concatenate all of the recognition result
+    // parts to build the full transcription.
     for (const auto& recognition_result : event.result()) {
+      is_final |= recognition_result.final();
       if (recognition_result.has_stability()) {
         for (const auto& alternative : recognition_result.alternative()) {
           if (alternative.has_transcript())
@@ -85,7 +90,19 @@ void CloudSpeechRecognitionClient::OnDownstreamDataReceived(
       }
     }
 
-    recognition_event_callback().Run(result, false);
+    // Remove the leading whitespace that the Open Speech API automatically
+    // prepends because the captioning bubble will handle the formatting.
+    if (!result.empty() && result[0] == ' ')
+      result.erase(0, 1);
+
+    // The Open Speech API returns an empty recognition event with |final|
+    // marked as true to indicate that the previous result returned was a final
+    // recognition result.
+    if (is_final && result.empty())
+      result = previous_result_;
+
+    previous_result_ = result;
+    recognition_event_callback().Run(result, is_final);
   }
 }
 

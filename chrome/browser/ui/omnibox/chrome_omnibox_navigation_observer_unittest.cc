@@ -181,7 +181,7 @@ TEST_F(ChromeOmniboxNavigationObserverTest, DeleteBrokenCustomSearchEngines) {
   for (size_t i = 0; i < cases.size(); ++i) {
     SCOPED_TRACE("case #" + base::NumberToString(i));
     // The keyword should always exist at the beginning.
-    EXPECT_TRUE(model()->GetTemplateURLForKeyword(cases[i].keyword) != nullptr);
+    EXPECT_TRUE(model()->GetTemplateURLForKeyword(cases[i].keyword));
 
     AutocompleteMatch match;
     match.keyword = cases[i].keyword;

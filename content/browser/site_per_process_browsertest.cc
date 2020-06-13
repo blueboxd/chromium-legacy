@@ -12455,12 +12455,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       new UpdateViewportIntersectionMessageFilter();
   child->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
-  // Get the page offset of the middle frame within the top document.
-  EvalJsResult top_eval_result = EvalJs(
-      root->current_frame_host(),
-      "document.getElementsByTagName('div')[0].getBoundingClientRect().top;");
-  ASSERT_TRUE(top_eval_result.error.empty());
-  int top_div_offset_top = top_eval_result.ExtractInt();
+  // Scroll the child frame so that it is partially clipped. This will cause the
+  // top 10 pixels of the child frame to be clipped. Applying the scale factor
+  // means that in the coordinate system of the subframes, 50px are clipped.
+  ASSERT_TRUE(EvalJsAfterLifecycleUpdate(root->current_frame_host(),
+                                         "window.scrollBy(0, 10)", "")
+                  .error.empty());
 
   // This scrolls the div containing in the 'Site B' iframe that contains the
   // 'Site C' iframe, and then we verify that the 'Site C' frame receives the
@@ -12485,26 +12485,37 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // See comment in ScaledIframeRasterSize for explanation of this. In this
   // case, the raster area of the large iframe should be restricted to
-  // approximately the area of the smaller iframe in which it is embedded.
-  int view_height = child->current_frame_host()
-                        ->GetRenderWidgetHost()
-                        ->GetView()
-                        ->GetViewBounds()
-                        .height() *
+  // approximately the area of its containing frame which is unclipped by the
+  // main frame. The containing frame is clipped by 50 pixels at the top, due
+  // to the scroll offset of the main frame, so we subtract that from the full
+  // height of the containing frame.
+  int view_height = (child->current_frame_host()
+                         ->GetRenderWidgetHost()
+                         ->GetView()
+                         ->GetViewBounds()
+                         .height() -
+                     50) *
                     scale_factor;
+  // 30% padding is added to the view_height to prevent frequent re-rasters.
   int expected_height = view_height * 13 / 10;
-  // Multiply top_div_offset_top by 5 to account for transform:scale(0.2)
-  int expected_offset =
-      ((5000 - (top_div_offset_top * 5) - child_div_offset_top) *
-       scale_factor) -
-      (expected_height - view_height) / 2;
+
+  // Explanation of terms:
+  //   5000 = offset from top of nested iframe to top of containing div, due to
+  //          scroll offset of div
+  //   child_div_offset_top = offset of containing div from top of child frame
+  //   50 = offset of child frame's intersection with the top document viewport
+  //       from the top of the child frame (i.e, clipped amount at top of child)
+  //   view_height * 0.15 = padding added to the top of the compositing rect
+  //                        (half the the 30% total padding)
+  int expected_offset = 5000 - ((child_div_offset_top - 50) * scale_factor) -
+                        roundf(view_height * 0.15);
 
   // Allow a small amount for rounding differences from applying page and
   // device scale factors at different times.
-  EXPECT_GE(compositing_rect.height(), expected_height - 3);
-  EXPECT_LE(compositing_rect.height(), expected_height + 3);
-  EXPECT_GE(compositing_rect.y(), expected_offset - 3);
-  EXPECT_LE(compositing_rect.y(), expected_offset + 3);
+  EXPECT_GE(compositing_rect.height(), expected_height - 1);
+  EXPECT_LE(compositing_rect.height(), expected_height + 1);
+  EXPECT_GE(compositing_rect.y(), expected_offset - 1);
+  EXPECT_LE(compositing_rect.y(), expected_offset + 1);
 }
 
 // Verify that OOPIF select element popup menu coordinates account for scroll

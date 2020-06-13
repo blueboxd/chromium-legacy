@@ -65,7 +65,7 @@ class FakeImageSource : public CanvasImageSource {
   FakeImageSource(IntSize, BitmapOpacity);
 
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                               AccelerationHint,
+                                               RasterModeHint,
                                                const FloatSize&) override;
 
   bool WouldTaintOrigin() const override { return false; }
@@ -95,7 +95,7 @@ FakeImageSource::FakeImageSource(IntSize size, BitmapOpacity opacity)
 
 scoped_refptr<Image> FakeImageSource::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    AccelerationHint,
+    RasterModeHint,
     const FloatSize&) {
   if (status)
     *status = kNormalSourceImageStatus;
@@ -128,7 +128,7 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
     Context2D()->FinalizeFrame();
     CanvasElement().PostFinalizeFrame();
     // Grabbing an image forces a flush
-    CanvasElement().Snapshot(kBackBuffer, kPreferAcceleration);
+    CanvasElement().Snapshot(kBackBuffer, RasterModeHint::kPreferGPU);
   }
 
   enum LatencyMode { kNormalLatency, kLowLatency };
@@ -285,9 +285,9 @@ class FakeCanvas2DLayerBridge : public Canvas2DLayerBridge {
  public:
   FakeCanvas2DLayerBridge(const IntSize& size,
                           CanvasColorParams color_params,
-                          AccelerationHint hint)
+                          RasterModeHint hint)
       : Canvas2DLayerBridge(size, kDisableAcceleration, color_params),
-        is_accelerated_(hint != kPreferNoAcceleration) {}
+        is_accelerated_(hint != RasterModeHint::kPreferCPU) {}
   ~FakeCanvas2DLayerBridge() override = default;
   bool IsAccelerated() const override { return is_accelerated_; }
   void SetIsAccelerated(bool is_accelerated) {
@@ -307,7 +307,7 @@ class FakeCanvasResourceProvider : public CanvasResourceProvider {
  public:
   FakeCanvasResourceProvider(const IntSize& size,
                              CanvasColorParams color_params,
-                             AccelerationHint hint)
+                             RasterModeHint hint)
       : CanvasResourceProvider(CanvasResourceProvider::kBitmap,
                                size,
                                kLow_SkFilterQuality,
@@ -315,7 +315,7 @@ class FakeCanvasResourceProvider : public CanvasResourceProvider {
                                /*is_origin_top_left=*/false,
                                nullptr,
                                nullptr),
-        is_accelerated_(hint != kPreferNoAcceleration) {}
+        is_accelerated_(hint != RasterModeHint::kPreferCPU) {}
   ~FakeCanvasResourceProvider() override = default;
   bool IsAccelerated() const override { return is_accelerated_; }
   scoped_refptr<CanvasResource> ProduceCanvasResource() override {
@@ -607,10 +607,10 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
   IntSize size(10, 10);
   std::unique_ptr<FakeCanvasResourceProvider> fake_resource_provider =
       std::make_unique<FakeCanvasResourceProvider>(size, CanvasColorParams(),
-                                                   kPreferAcceleration);
+                                                   RasterModeHint::kPreferGPU);
   std::unique_ptr<FakeCanvas2DLayerBridge> fake_2d_layer_bridge =
       std::make_unique<FakeCanvas2DLayerBridge>(size, CanvasColorParams(),
-                                                kPreferAcceleration);
+                                                RasterModeHint::kPreferGPU);
   FakeCanvas2DLayerBridge* fake_2d_layer_bridge_ptr =
       fake_2d_layer_bridge.get();
   CanvasElement().SetResourceProviderForTesting(
@@ -635,10 +635,10 @@ TEST_F(CanvasRenderingContext2DTest, GPUMemoryUpdateForAcceleratedCanvas) {
   IntSize size2(10, 5);
   std::unique_ptr<FakeCanvas2DLayerBridge> fake_2d_layer_bridge2 =
       std::make_unique<FakeCanvas2DLayerBridge>(size2, CanvasColorParams(),
-                                                kPreferAcceleration);
+                                                RasterModeHint::kPreferGPU);
   std::unique_ptr<FakeCanvasResourceProvider> fake_resource_provider2 =
       std::make_unique<FakeCanvasResourceProvider>(size2, CanvasColorParams(),
-                                                   kPreferAcceleration);
+                                                   RasterModeHint::kPreferGPU);
   anotherCanvas->SetResourceProviderForTesting(
       std::move(fake_resource_provider2), std::move(fake_2d_layer_bridge2),
       size2);
@@ -683,7 +683,7 @@ TEST_F(CanvasRenderingContext2DTest,
   CreateContext(kNonOpaque);
   IntSize size(10, 10);
   auto fake_accelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(
-      size, CanvasColorParams(), kPreferAcceleration);
+      size, CanvasColorParams(), RasterModeHint::kPreferGPU);
   CanvasElement().SetResourceProviderForTesting(
       nullptr, std::move(fake_accelerate_surface), size);
 
@@ -697,7 +697,7 @@ TEST_F(CanvasRenderingContext2DTest,
 
   IntSize size(10, 10);
   auto fake_accelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(
-      size, CanvasColorParams(), kPreferAcceleration);
+      size, CanvasColorParams(), RasterModeHint::kPreferGPU);
   CanvasElement().SetResourceProviderForTesting(
       nullptr, std::move(fake_accelerate_surface), size);
   CanvasRenderingContext2D* context = Context2D();
@@ -724,13 +724,13 @@ TEST_F(CanvasRenderingContext2DTest,
   CreateContext(kNonOpaque);
   IntSize size(10, 10);
   auto fake_accelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(
-      size, CanvasColorParams(), kPreferAcceleration);
+      size, CanvasColorParams(), RasterModeHint::kPreferGPU);
   CanvasElement().SetResourceProviderForTesting(
       nullptr, std::move(fake_accelerate_surface), size);
 
   FakeCanvasResourceHost host(size);
   auto fake_deaccelerate_surface = std::make_unique<FakeCanvas2DLayerBridge>(
-      size, CanvasColorParams(), kPreferNoAcceleration);
+      size, CanvasColorParams(), RasterModeHint::kPreferCPU);
   fake_deaccelerate_surface->SetCanvasResourceHost(&host);
 
   FakeCanvas2DLayerBridge* surface_ptr = fake_deaccelerate_surface.get();
@@ -1033,9 +1033,10 @@ TEST_F(CanvasRenderingContext2DTest,
   DrawSomething();
   EXPECT_TRUE(Context2D()->getContextAttributes()->desynchronized());
   EXPECT_TRUE(CanvasElement().LowLatencyEnabled());
-  EXPECT_FALSE(CanvasElement()
-                   .GetOrCreateCanvasResourceProvider(kPreferNoAcceleration)
-                   ->SupportsSingleBuffering());
+  EXPECT_FALSE(
+      CanvasElement()
+          .GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferCPU)
+          ->SupportsSingleBuffering());
   EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
 }
 
@@ -1065,7 +1066,7 @@ TEST_F(CanvasRenderingContext2DTestAccelerated,
   EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
   // Take a snapshot to trigger lazy resource provider creation
   CanvasElement().GetCanvas2DLayerBridge()->NewImageSnapshot(
-      kPreferAcceleration);
+      RasterModeHint::kPreferGPU);
   EXPECT_TRUE(!!CanvasElement().ResourceProvider());
   EXPECT_TRUE(CanvasElement().ResourceProvider()->IsAccelerated());
   EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());
@@ -1138,9 +1139,10 @@ TEST_F(CanvasRenderingContext2DTestAccelerated, LowLatencyIsNotSingleBuffered) {
   DrawSomething();
   EXPECT_TRUE(Context2D()->getContextAttributes()->desynchronized());
   EXPECT_TRUE(CanvasElement().LowLatencyEnabled());
-  EXPECT_FALSE(CanvasElement()
-                   .GetOrCreateCanvasResourceProvider(kPreferAcceleration)
-                   ->SupportsSingleBuffering());
+  EXPECT_FALSE(
+      CanvasElement()
+          .GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)
+          ->SupportsSingleBuffering());
   EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
 }
 
@@ -1178,17 +1180,17 @@ TEST_F(CanvasRenderingContext2DTestImageChromium, LowLatencyIsSingleBuffered) {
   EXPECT_TRUE(CanvasElement().LowLatencyEnabled());
   EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
   EXPECT_TRUE(CanvasElement()
-                  .GetOrCreateCanvasResourceProvider(kPreferAcceleration)
+                  .GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)
                   ->SupportsSingleBuffering());
   auto frame1_resource =
       CanvasElement()
-          .GetOrCreateCanvasResourceProvider(kPreferAcceleration)
+          .GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)
           ->ProduceCanvasResource();
   EXPECT_TRUE(frame1_resource);
   DrawSomething();
   auto frame2_resource =
       CanvasElement()
-          .GetOrCreateCanvasResourceProvider(kPreferAcceleration)
+          .GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)
           ->ProduceCanvasResource();
   EXPECT_TRUE(frame2_resource);
   EXPECT_EQ(frame1_resource.get(), frame2_resource.get());
@@ -1222,17 +1224,17 @@ TEST_F(CanvasRenderingContext2DTestSwapChain, LowLatencyIsSingleBuffered) {
   EXPECT_TRUE(CanvasElement().LowLatencyEnabled());
   EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
   EXPECT_TRUE(CanvasElement()
-                  .GetOrCreateCanvasResourceProvider(kPreferAcceleration)
+                  .GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)
                   ->SupportsSingleBuffering());
   auto frame1_resource =
       CanvasElement()
-          .GetOrCreateCanvasResourceProvider(kPreferAcceleration)
+          .GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)
           ->ProduceCanvasResource();
   EXPECT_TRUE(frame1_resource);
   DrawSomething();
   auto frame2_resource =
       CanvasElement()
-          .GetOrCreateCanvasResourceProvider(kPreferAcceleration)
+          .GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)
           ->ProduceCanvasResource();
   EXPECT_TRUE(frame2_resource);
   EXPECT_EQ(frame1_resource.get(), frame2_resource.get());

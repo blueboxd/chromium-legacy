@@ -920,7 +920,6 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   bool ShouldPaintAsActive() const override;
   bool IsNativeWidgetInitialized() const override;
   bool OnNativeWidgetActivationChanged(bool active) override;
-  void OnNativeWidgetNonClientActivationChanged(bool active) override;
   void OnNativeFocus() override;
   void OnNativeBlur() override;
   void OnNativeWidgetVisibilityChanging(bool visible) override;

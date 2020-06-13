@@ -27,9 +27,10 @@ SwitchAccessBackButtonBubbleController::
 
 void SwitchAccessBackButtonBubbleController::ShowBackButton(
     const gfx::Rect& anchor,
-    bool showFocusRing) {
+    bool show_focus_ring,
+    bool for_menu) {
   if (!widget_) {
-    back_button_view_ = new SwitchAccessBackButtonView();
+    back_button_view_ = new SwitchAccessBackButtonView(for_menu);
     back_button_view_->SetBackground(UnifiedSystemTrayView::CreateBackground());
 
     TrayBubbleView::InitParams init_params;
@@ -51,10 +52,12 @@ void SwitchAccessBackButtonBubbleController::ShowBackButton(
     widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
     TrayBackgroundView::InitializeBubbleAnimations(widget_);
     bubble_view_->InitializeAndShowBubble();
+  } else {
+    back_button_view_->SetForMenu(for_menu);
   }
 
   DCHECK(bubble_view_);
-  back_button_view_->SetFocusRing(showFocusRing);
+  back_button_view_->SetFocusRing(show_focus_ring);
   bubble_view_->ChangeAnchorRect(AdjustAnchorRect(anchor));
   widget_->Show();
   bubble_view_->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,

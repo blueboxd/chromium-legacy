@@ -74,14 +74,11 @@
         aria-label$="[[i18nDynamic(locale, 'syncConsentScreenTitle')]]" hidden>
       <hd-iron-icon slot="oobe-icon" icon1x="sync-consent-32:googleg" icon2x="sync-consent-64:googleg">
       </hd-iron-icon>
-      <h1 slot="title" consent-description>
-        [[i18nDynamic(locale, 'syncConsentScreenTitle')]]
-      </h1>
       <!-- The string contains a substitution, so consent is recorded directly
            by SyncConsentScreenHandler instead of using consent-description. -->
-      <div slot="subtitle">
-        [[i18nDynamic(locale, 'syncConsentScreenSubtitle', userEmail_)]]
-      </div>
+      <h1 slot="title">
+        [[i18nDynamic(locale, 'syncConsentScreenTitleWithDevice', deviceType_)]]
+      </h1>
       <div slot="footer" class="layout vertical flex">
 
         <!-- "Chrome OS settings sync" -->

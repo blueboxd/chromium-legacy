@@ -576,12 +576,6 @@ class HostResolverManager::RequestImpl
     return results_ ? results_.value().hostnames() : *nullopt_result;
   }
 
-  const base::Optional<EsniContent>& GetEsniResults() const override {
-    DCHECK(complete_);
-    static const base::NoDestructor<base::Optional<EsniContent>> nullopt_result;
-    return results_ ? results_.value().esni_data() : *nullopt_result;
-  }
-
   const base::Optional<std::vector<bool>>& GetIntegrityResultsForTesting()
       const override {
     DCHECK(complete_);
@@ -1122,11 +1116,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       transactions_needed_.push(DnsQueryType::A);
       transactions_needed_.push(DnsQueryType::AAAA);
 
-      if (secure_ &&
-          base::FeatureList::IsEnabled(features::kRequestEsniDnsRecords)) {
-        transactions_needed_.push(DnsQueryType::ESNI);
-      }
-
       // Queue up an INTEGRITY query if we are allowed to.
       const bool is_httpssvc_experiment_domain =
           features::dns_httpssvc_experiment::IsExperimentDomain(hostname);
@@ -1204,8 +1193,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   void OnExperimentalQueryTimeout(uint16_t qtype,
                                   base::Optional<std::string> doh_provider_id) {
-    // Currently, the HTTPSSVC/INTEGRITY or ESNI transaction timer only gets
-    // started when all other transactions have completed.
+    // The experimental query timer is only started when all other transactions
+    // have completed.
     DCHECK(TaskIsCompleteOrOnlyQtypeTransactionsRemain(qtype));
 
     num_completed_transactions_ += transactions_started_.size();
@@ -1291,9 +1280,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       case DnsQueryType::SRV:
         parse_result = ParseServiceDnsResponse(response, &results);
         break;
-      case DnsQueryType::ESNI:
-        parse_result = ParseEsniDnsResponse(response, &results);
-        break;
       case DnsQueryType::INTEGRITY:
         // Parse the INTEGRITY records, condensing them into a vector<bool>.
         parse_result = ParseIntegrityDnsResponse(response, &results);
@@ -1339,13 +1325,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
           results = HostCache::Entry::MergeEntries(
               std::move(results), std::move(saved_results_).value());
           break;
-        case DnsQueryType::ESNI:
-          // It doesn't matter whether the ESNI record is the "front"
-          // or the "back" argument to the merge, since the logic for
-          // merging addresses from ESNI records is the same in each case.
-          results = HostCache::Entry::MergeEntries(
-              std::move(results), std::move(saved_results_).value());
-          break;
         case DnsQueryType::INTEGRITY:
           results = HostCache::Entry::MergeEntries(
               std::move(results), std::move(saved_results_).value());
@@ -1363,7 +1342,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     ++num_completed_transactions_;
     if (num_completed_transactions_ < num_needed_transactions()) {
       delegate_->OnIntermediateTransactionComplete();
-      MaybeStartEsniTimer();
       // If the experimental query times out, blame the provider that gave the
       // last A/AAAA result. If we were being 100% correct, we would blame the
       // provider associated with the experimental query.
@@ -1371,10 +1349,8 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       return;
     }
 
-    // Since all transactions are complete, in particular, all ESNI transactions
-    // are complete (if any were started).
-    esni_cancellation_timer_.Stop();
-
+    // Since all transactions are complete, in particular, all experimental
+    // transactions are complete (if any were started).
     experimental_query_cancellation_timer_.Stop();
 
     ProcessResultsOnCompletion();
@@ -1388,20 +1364,13 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
     // If there are multiple addresses, and at least one is IPv6, need to
     // sort them.
-    // When there are no ESNI keys in the record, IPv6 addresses are always
-    // put before IPv4 ones, so it's sufficient to just check the family of
-    // the first address.
-    // When there are ESNI keys, there could be ESNI-equipped
-    // IPv4 addresses preceding the first IPv6 address, so it's necessary to
-    // scan the list.
     bool at_least_one_ipv6_address =
         results.addresses() && !results.addresses().value().empty() &&
         (results.addresses().value()[0].GetFamily() == ADDRESS_FAMILY_IPV6 ||
-         (results.esni_data() &&
-          std::any_of(results.addresses().value().begin(),
-                      results.addresses().value().end(), [](auto& e) {
-                        return e.GetFamily() == ADDRESS_FAMILY_IPV6;
-                      })));
+         std::any_of(results.addresses().value().begin(),
+                     results.addresses().value().end(), [](auto& e) {
+                       return e.GetFamily() == ADDRESS_FAMILY_IPV6;
+                     }));
 
     if (at_least_one_ipv6_address) {
       // Sort addresses if needed.  Sort could complete synchronously.
@@ -1522,59 +1491,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         std::move(ordered_service_targets), HostCache::Entry::SOURCE_DNS,
         response_ttl);
     return DnsResponse::DNS_PARSE_OK;
-  }
-
-  DnsResponse::Result ParseEsniDnsResponse(const DnsResponse* response,
-                                           HostCache::Entry* out_results) {
-    DCHECK(response);
-    std::vector<std::unique_ptr<const RecordParsed>> records;
-    base::Optional<base::TimeDelta> response_ttl;
-    DnsResponse::Result parse_result = ParseAndFilterResponseRecords(
-        response, dns_protocol::kExperimentalTypeEsniDraft4, &records,
-        &response_ttl);
-
-    if (parse_result != DnsResponse::DNS_PARSE_OK) {
-      *out_results = GetMalformedResponseResult();
-      return parse_result;
-    }
-
-    // Glom the ESNI response records into a single EsniContent;
-    // this also dedups keys and (key, address) associations.
-    EsniContent content;
-    for (const auto& record : records) {
-      const EsniRecordRdata& rdata = *record->rdata<EsniRecordRdata>();
-
-      for (const IPAddress& address : rdata.addresses())
-        content.AddKeyForAddress(address, rdata.esni_keys());
-    }
-
-    // As a first pass, deliberately ignore ESNI records with no addresses
-    // included. Later, the implementation can be extended to handle "at-large"
-    // ESNI keys not specifically associated with collections of addresses.
-    // (We're declining the "...clients MAY initiate..." choice in ESNI draft 4,
-    // Section 4.2.2 Step 2.)
-    if (content.keys_for_addresses().empty()) {
-      *out_results =
-          HostCache::Entry(ERR_NAME_NOT_RESOLVED, EsniContent(),
-                           HostCache::Entry::SOURCE_DNS, response_ttl);
-    } else {
-      AddressList addresses, ipv4_addresses_temporary;
-      addresses.set_canonical_name(hostname_);
-      for (const auto& kv : content.keys_for_addresses())
-        (kv.first.IsIPv6() ? addresses : ipv4_addresses_temporary)
-            .push_back(IPEndPoint(kv.first, 0));
-      addresses.insert(addresses.end(), ipv4_addresses_temporary.begin(),
-                       ipv4_addresses_temporary.end());
-
-      // Store the addresses separately from the ESNI key-address
-      // associations, so that the addresses can be merged later with
-      // addresses from A and AAAA records.
-      *out_results = HostCache::Entry(
-          OK, std::move(content), HostCache::Entry::SOURCE_DNS, response_ttl);
-      out_results->set_addresses(std::move(addresses));
-    }
-
-    return parse_result;
   }
 
   DnsResponse::Result ParseIntegrityDnsResponse(const DnsResponse* response,
@@ -1774,14 +1690,13 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
 
   // Returns whether all transactions left to execute are of transaction type
   // |qtype|. (In particular, this is the case if all transactions are
-  // complete.) Used for logging and starting the ESNI transaction timer (see
-  // MaybeStartEsniTimer).
+  // complete.) Used for logging and starting the experimental query timer (see
+  // MaybeStartExperimentalQueryTimer).
   bool TaskIsCompleteOrOnlyQtypeTransactionsRemain(uint16_t qtype) const {
-    // Since DoH runs all transactions concurrently and
-    // DnsQueryType::UNSPECIFIED-with-ESNI tasks are only run using DoH,
-    // this method only needs to check the transactions in transactions_started_
-    // because transactions_needed_ is empty from the time the first
-    // transaction is started.
+    // Since DoH runs all transactions concurrently and experimental types are
+    // only queried over DoH, this method only needs to check the transactions
+    // in transactions_started_ because transactions_needed_ is empty from the
+    // time the first transaction is started.
     DCHECK(transactions_needed_.empty());
 
     return std::all_of(
@@ -1792,40 +1707,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         });
   }
 
-  bool TaskIsCompleteOrOnlyEsniTransactionsRemain() const {
-    return TaskIsCompleteOrOnlyQtypeTransactionsRemain(
-        dns_protocol::kExperimentalTypeEsniDraft4);
-  }
-
-  // If ESNI transactions are being executed as part of this task
-  // and all transactions except the ESNI transactions have finished, and the
-  // ESNI transactions have not finished, starts a timer after which to abort
-  // the ESNI transactions.
-  //
-  // This timer has duration equal to the shorter of two parameterized values:
-  // - a fixed, absolute duration
-  // - a relative duration (as a proportion of the total time taken for
-  // the task's other transactions).
-  void MaybeStartEsniTimer() {
-    DCHECK(!transactions_started_.empty());
-    DCHECK(saved_results_);
-    if (!esni_cancellation_timer_.IsRunning() &&
-        TaskIsCompleteOrOnlyEsniTransactionsRemain()) {
-      base::TimeDelta total_time_taken_for_other_transactions =
-          tick_clock_->NowTicks() - task_start_time_;
-
-      esni_cancellation_timer_.Start(
-          FROM_HERE,
-          std::min(
-              features::EsniDnsMaxAbsoluteAdditionalWait(),
-              total_time_taken_for_other_transactions *
-                  (0.01 *
-                   features::kEsniDnsMaxRelativeAdditionalWaitPercent.Get())),
-          base::BindOnce(
-              &DnsTask::OnExperimentalQueryTimeout, base::Unretained(this),
-              dns_protocol::kExperimentalTypeEsniDraft4, base::nullopt));
-    }
-  }
 
   void MaybeStartExperimentalQueryTimer(
       base::Optional<std::string> doh_provider_id) {
@@ -1888,17 +1769,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   base::TimeTicks task_start_time_;
 
   base::Optional<HttpssvcMetrics> httpssvc_metrics_;
-
-  // In order to histogram the relative end-to-end elapsed times of
-  // a task's ESNI and non-ESNI transactions, store the end-to-end time
-  // elapsed from task start to the end of the task's ESNI transaction
-  // (if any) and its final non-ESNI transaction.
-  base::TimeDelta esni_elapsed_for_logging_;
-  base::TimeDelta non_esni_elapsed_for_logging_;
-
-  // Timer for early abort of ESNI transactions. See comments describing
-  // the timeout parameters in net/base/features.h.
-  base::OneShotTimer esni_cancellation_timer_;
 
   // Timer for early abort of experimental queries. See comments describing the
   // timeout parameters in net/base/features.h.

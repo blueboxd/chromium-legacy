@@ -216,7 +216,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
 
   if (!GetOrCreateCanvasResourceProvider())
     return nullptr;
-  scoped_refptr<StaticBitmapImage> image = GetImage(kPreferAcceleration);
+  scoped_refptr<StaticBitmapImage> image = GetImage(RasterModeHint::kPreferGPU);
   if (!image)
     return nullptr;
   image->SetOriginClean(this->OriginClean());
@@ -237,7 +237,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
 }
 
 scoped_refptr<StaticBitmapImage> OffscreenCanvasRenderingContext2D::GetImage(
-    AccelerationHint hint) {
+    RasterModeHint hint) {
   FinalizeFrame();
   if (!IsPaintable())
     return nullptr;

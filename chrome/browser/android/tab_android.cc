@@ -221,6 +221,16 @@ std::unique_ptr<content::WebContents> TabAndroid::SwapWebContents(
   return base::WrapUnique(old_contents);
 }
 
+bool TabAndroid::IsCustomTab() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_TabImpl_isCustomTab(env, weak_java_tab_.get(env));
+}
+
+bool TabAndroid::IsHidden() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_TabImpl_isHidden(env, weak_java_tab_.get(env));
+}
+
 void TabAndroid::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }

@@ -5,10 +5,8 @@
 const appName = 'com.google.chrome.test.echo';
 const kExtensionURL  = 'chrome-extension://knldjmfmopnpolahpmmgbagdohdnhkik/';
 
-// NOTE: These tests are based on (copied from =P)
-// chrome/test/data/extensions/api_test/native_messaging/test.js [1].
-// TODO(lazyboy): We should run tests with and without Service Worker based
-// background from the same place! This will require some tweaking.
+// TODO(crbug.com/1094027): We should run tests with and without Service Worker
+// based background from the same place! This will require some tweaking.
 chrome.test.runTests([
   function invalidHostName() {
     console.log('invalid host -name test');

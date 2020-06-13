@@ -1252,6 +1252,12 @@ views::View* ScrollableShelfView::GetViewForEvent(const ui::Event& event) {
   return nullptr;
 }
 
+bool ScrollableShelfView::ShouldStartDrag(
+    const std::string& app_id,
+    const gfx::Point& location_in_screen_coordinates) const {
+  return false;
+}
+
 void ScrollableShelfView::CreateDragIconProxyByLocationWithNoAnimation(
     const gfx::Point& origin_in_screen_coordinates,
     const gfx::ImageSkia& icon,

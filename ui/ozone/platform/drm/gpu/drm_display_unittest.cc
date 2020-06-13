@@ -31,9 +31,9 @@ MATCHER_P(MatchesLinearRamp, scale, "") {
 
   const auto middle_element = arg[arg.size() / 2];
   const uint16_t middle_value = max_value * (arg.size() / 2) / (arg.size() - 1);
-  EXPECT_EQ(middle_element.r, middle_value);
-  EXPECT_EQ(middle_element.g, middle_value);
-  EXPECT_EQ(middle_element.b, middle_value);
+  EXPECT_NEAR(middle_element.r, middle_value, 1);
+  EXPECT_NEAR(middle_element.g, middle_value, 1);
+  EXPECT_NEAR(middle_element.b, middle_value, 1);
 
   const uint16_t last_value = max_value;
   EXPECT_EQ(arg.back().r, last_value);
@@ -154,10 +154,10 @@ TEST_F(DrmDisplayTest, SetColorSpace) {
   drm_display_.SetColorSpace(kHDRColorSpace);
 
   const auto kSDRColorSpace = gfx::ColorSpace::CreateREC709();
-  constexpr float kSDRReducedScale = 0.55;
+  constexpr float kHDRLevel = 2.0;
   EXPECT_CALL(
       *plane_manager,
-      SetGammaCorrection(_, SizeIs(0), MatchesLinearRamp(kSDRReducedScale)));
+      SetGammaCorrection(_, SizeIs(0), MatchesLinearRamp(1.0 / kHDRLevel)));
   drm_display_.SetColorSpace(kSDRColorSpace);
 }
 
@@ -181,10 +181,10 @@ TEST_F(DrmDisplayTest, SetEmptyGammaCorrectionHDRDisplay) {
   ON_CALL(*plane_manager, SetGammaCorrection(_, _, _))
       .WillByDefault(::testing::Return(true));
 
-  constexpr float kSDRReducedScale = 0.55;
+  constexpr float kHDRLevel = 2.0;
   EXPECT_CALL(
       *plane_manager,
-      SetGammaCorrection(_, SizeIs(0), MatchesLinearRamp(kSDRReducedScale)));
+      SetGammaCorrection(_, SizeIs(0), MatchesLinearRamp(1.0 / kHDRLevel)));
   drm_display_.SetGammaCorrection(std::vector<display::GammaRampRGBEntry>(),
                                   std::vector<display::GammaRampRGBEntry>());
 }

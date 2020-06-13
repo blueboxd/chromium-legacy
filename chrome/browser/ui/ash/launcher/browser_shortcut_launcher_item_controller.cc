@@ -89,7 +89,7 @@ bool IsBrowserRepresentedInBrowserList(Browser* browser) {
 
     // V1 App popup windows may have their own item.
     ash::ShelfID id(web_app::GetAppIdFromApplicationName(browser->app_name()));
-    if (ChromeLauncherController::instance()->GetItem(id) != nullptr)
+    if (ChromeLauncherController::instance()->GetItem(id))
       return false;
   }
 

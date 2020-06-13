@@ -497,7 +497,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
                            this,
                            &HTMLMediaElement::DeferredLoadTimerFired),
       cc_layer_(nullptr),
-      display_mode_(kUnknown),
       official_playback_position_(0),
       official_playback_position_needs_update_(true),
       fragment_end_time_(std::numeric_limits<double>::quiet_NaN()),
@@ -510,6 +509,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       paused_(true),
       seeking_(false),
       paused_by_context_paused_(false),
+      show_poster_flag_(true),
       sent_stalled_event_(false),
       ignore_preload_none_(false),
       text_tracks_visible_(false),
@@ -732,13 +732,12 @@ void HTMLMediaElement::RemovedFrom(ContainerNode& insertion_point) {
 void HTMLMediaElement::AttachLayoutTree(AttachContext& context) {
   HTMLElement::AttachLayoutTree(context);
 
-  if (GetLayoutObject())
-    GetLayoutObject()->UpdateFromElement();
+  UpdateLayoutObject();
 }
 
 void HTMLMediaElement::DidRecalcStyle(const StyleRecalcChange change) {
-  if (!change.ReattachLayoutTree() && GetLayoutObject())
-    GetLayoutObject()->UpdateFromElement();
+  if (!change.ReattachLayoutTree())
+    UpdateLayoutObject();
 }
 
 void HTMLMediaElement::ScheduleTextTrackResourceLoad() {
@@ -836,6 +835,8 @@ void HTMLMediaElement::load() {
   InvokeLoadAlgorithm();
 }
 
+// Implements the "media element load algorithm" as defined by
+// https://html.spec.whatwg.org/multipage/media.html#media-element-load-algorithm
 // TODO(srirama.m): Currently ignore_preload_none_ is reset before calling
 // invokeLoadAlgorithm() in all places except load(). Move it inside here
 // once microtask is implemented for "Await a stable state" step
@@ -852,7 +853,6 @@ void HTMLMediaElement::InvokeLoadAlgorithm() {
   pending_action_flags_ &= ~kLoadMediaResource;
   sent_stalled_event_ = false;
   have_fired_loaded_data_ = false;
-  display_mode_ = kUnknown;
 
   autoplay_policy_->StopAutoplayMutedWhenVisible();
 
@@ -978,7 +978,7 @@ void HTMLMediaElement::InvokeResourceSelectionAlgorithm() {
   SetNetworkState(kNetworkNoSource);
 
   // 2 - Set the element's show poster flag to true
-  // TODO(srirama.m): Introduce show poster flag and update it as per spec
+  SetShowPosterFlag(true);
 
   played_time_ranges_ = MakeGarbageCollected<TimeRanges>();
 
@@ -1058,7 +1058,7 @@ void HTMLMediaElement::SelectMediaResource() {
       UseCounter::Count(GetDocument(),
                         WebFeature::kHTMLMediaElementEmptyLoadWithFutureData);
     }
-    UpdateDisplayState();
+    UpdateLayoutObject();
 
     DVLOG(3) << "selectMediaResource(" << *this << "), nothing to load";
     return;
@@ -1185,9 +1185,7 @@ void HTMLMediaElement::LoadResource(const WebMediaPlayerSource& source,
 
   StartProgressEventTimer();
 
-  // Reset display mode to force a recalculation of what to show because we are
-  // resetting the player.
-  SetDisplayMode(kUnknown);
+  SetShowPosterFlag(true);
 
   SetPlayerPreload();
 
@@ -1239,13 +1237,6 @@ void HTMLMediaElement::LoadResource(const WebMediaPlayerSource& source,
                                      ? "Unable to load URL due to content type"
                                      : "Unable to attach MediaSource"));
   }
-
-  // If there is no poster to display, allow the media engine to render video
-  // frames as soon as they are available.
-  UpdateDisplayState();
-
-  if (GetLayoutObject())
-    GetLayoutObject()->UpdateFromElement();
 }
 
 void HTMLMediaElement::StartPlayerLoad() {
@@ -1548,10 +1539,7 @@ void HTMLMediaElement::WaitForSourceChange() {
   // delaying the load event.
   SetShouldDelayLoadEvent(false);
 
-  UpdateDisplayState();
-
-  if (GetLayoutObject())
-    GetLayoutObject()->UpdateFromElement();
+  UpdateLayoutObject();
 }
 
 void HTMLMediaElement::NoneSupported(const String& input_message) {
@@ -1581,7 +1569,7 @@ void HTMLMediaElement::NoneSupported(const String& input_message) {
   SetNetworkState(kNetworkNoSource);
 
   // 4 - Set the element's show poster flag to true.
-  UpdateDisplayState();
+  SetShowPosterFlag(true);
 
   // 5 - Fire a simple event named error at the media element.
   ScheduleEvent(event_type_names::kError);
@@ -1595,8 +1583,7 @@ void HTMLMediaElement::NoneSupported(const String& input_message) {
   // delaying the load event.
   SetShouldDelayLoadEvent(false);
 
-  if (GetLayoutObject())
-    GetLayoutObject()->UpdateFromElement();
+  UpdateLayoutObject();
 }
 
 void HTMLMediaElement::MediaEngineError(MediaError* err) {
@@ -1710,7 +1697,7 @@ void HTMLMediaElement::MediaLoadingFailed(WebMediaPlayer::NetworkState error,
     }
   }
 
-  UpdateDisplayState();
+  UpdateLayoutObject();
 }
 
 void HTMLMediaElement::SetNetworkState(WebMediaPlayer::NetworkState state) {
@@ -1905,11 +1892,8 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
       jumped = true;
     }
 
-    if (GetLayoutObject())
-      GetLayoutObject()->UpdateFromElement();
+    UpdateLayoutObject();
   }
-
-  bool should_update_display_state = false;
 
   bool is_potentially_playing = PotentiallyPlaying();
   if (ready_state_ >= kHaveCurrentData && old_state < kHaveCurrentData &&
@@ -1920,7 +1904,6 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
     SetOfficialPlaybackPosition(CurrentPlaybackPosition());
 
     have_fired_loaded_data_ = true;
-    should_update_display_state = true;
     ScheduleEvent(event_type_names::kLoadeddata);
     SetShouldDelayLoadEvent(false);
 
@@ -1932,7 +1915,6 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
     ScheduleEvent(event_type_names::kCanplay);
     if (is_potentially_playing)
       ScheduleNotifyPlaying();
-    should_update_display_state = true;
   }
 
   if (ready_state_ == kHaveEnoughData && old_state < kHaveEnoughData &&
@@ -1945,21 +1927,30 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
 
     if (autoplay_policy_->RequestAutoplayByAttribute()) {
       paused_ = false;
+      SetShowPosterFlag(false);
       ScheduleEvent(event_type_names::kPlay);
       ScheduleNotifyPlaying();
       can_autoplay_ = false;
     }
 
     ScheduleEvent(event_type_names::kCanplaythrough);
-
-    should_update_display_state = true;
   }
-
-  if (should_update_display_state)
-    UpdateDisplayState();
 
   UpdatePlayState();
   GetCueTimeline().UpdateActiveCues(currentTime());
+}
+
+void HTMLMediaElement::SetShowPosterFlag(bool value) {
+  if (value == show_poster_flag_)
+    return;
+
+  show_poster_flag_ = value;
+  UpdateLayoutObject();
+}
+
+void HTMLMediaElement::UpdateLayoutObject() {
+  if (GetLayoutObject())
+    GetLayoutObject()->UpdateFromElement();
 }
 
 void HTMLMediaElement::ProgressEventTimerFired(TimerBase*) {
@@ -1979,8 +1970,7 @@ void HTMLMediaElement::ProgressEventTimerFired(TimerBase*) {
     ScheduleEvent(event_type_names::kProgress);
     previous_progress_time_ = base::ElapsedTimer();
     sent_stalled_event_ = false;
-    if (GetLayoutObject())
-      GetLayoutObject()->UpdateFromElement();
+    UpdateLayoutObject();
   } else if (!media_source_ &&
              previous_progress_time_->Elapsed() >
                  kStalledNotificationInterval &&
@@ -2065,6 +2055,9 @@ void HTMLMediaElement::SetIgnorePreloadNone() {
 
 void HTMLMediaElement::Seek(double time) {
   DVLOG(2) << "seek(" << *this << ", " << time << ")";
+
+  // 1 - Set the media element's show poster flag to false.
+  SetShowPosterFlag(false);
 
   // 2 - If the media element's readyState is HAVE_NOTHING, abort these steps.
   // FIXME: remove web_media_player_ check once we figure out how
@@ -2156,8 +2149,6 @@ void HTMLMediaElement::FinishSeek() {
 
   // 17 - Queue a task to fire a simple event named seeked at the element.
   ScheduleEvent(event_type_names::kSeeked);
-
-  SetDisplayMode(kVideo);
 }
 
 HTMLMediaElement::ReadyState HTMLMediaElement::getReadyState() const {
@@ -2530,6 +2521,7 @@ void HTMLMediaElement::PlayInternal() {
 
   if (paused_) {
     paused_ = false;
+    SetShowPosterFlag(false);
     ScheduleEvent(event_type_names::kPlay);
 
     if (ready_state_ <= kHaveCurrentData)
@@ -3371,8 +3363,7 @@ void HTMLMediaElement::DurationChanged(double duration, bool request_seek) {
   if (web_media_player_)
     web_media_player_->OnTimeUpdate();
 
-  if (GetLayoutObject())
-    GetLayoutObject()->UpdateFromElement();
+  UpdateLayoutObject();
 
   if (request_seek)
     Seek(duration);
@@ -3417,7 +3408,7 @@ void HTMLMediaElement::Repaint() {
   if (cc_layer_)
     cc_layer_->SetNeedsDisplay();
 
-  UpdateDisplayState();
+  UpdateLayoutObject();
   if (GetLayoutObject())
     GetLayoutObject()->SetShouldDoFullPaintInvalidation();
 }
@@ -3429,8 +3420,7 @@ void HTMLMediaElement::SizeChanged() {
   if (ready_state_ > kHaveNothing && IsHTMLVideoElement())
     ScheduleEvent(event_type_names::kResize);
 
-  if (GetLayoutObject())
-    GetLayoutObject()->UpdateFromElement();
+  UpdateLayoutObject();
 }
 
 WebTimeRanges HTMLMediaElement::BufferedInternal() const {
@@ -3529,8 +3519,6 @@ void HTMLMediaElement::UpdatePlayState() {
     was_always_muted_ = false;
 
   if (should_be_playing) {
-    SetDisplayMode(kVideo);
-
     if (!is_playing) {
       // Set rate, muted before calling play in case they were set before the
       // media engine was setup.  The media engine should just stash the rate
@@ -3554,8 +3542,7 @@ void HTMLMediaElement::UpdatePlayState() {
       AddPlayedRange(last_seek_time_, time);
   }
 
-  if (GetLayoutObject())
-    GetLayoutObject()->UpdateFromElement();
+  UpdateLayoutObject();
 
   if (web_media_player_)
     web_media_player_->OnTimeUpdate();
@@ -3635,8 +3622,7 @@ void HTMLMediaElement::ContextDestroyed() {
   paused_ = true;
   seeking_ = false;
 
-  if (GetLayoutObject())
-    GetLayoutObject()->UpdateFromElement();
+  UpdateLayoutObject();
 
   StopPeriodicTimers();
   removed_from_document_timer_.Stop();

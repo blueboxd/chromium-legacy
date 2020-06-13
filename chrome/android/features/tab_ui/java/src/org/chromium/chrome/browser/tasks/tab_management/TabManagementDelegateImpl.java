@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestio
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestionsOrchestrator;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceDelegate;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -36,13 +37,16 @@ import org.chromium.ui.modelutil.PropertyModel;
 @UsedByReflection("TabManagementModule")
 public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
-    public TasksSurface createTasksSurface(ChromeActivity activity, PropertyModel propertyModel,
+    public TasksSurface createTasksSurface(ChromeActivity activity,
+            ScrimCoordinator scrimCoordinator, PropertyModel propertyModel,
             @TabSwitcherType int tabSwitcherType, boolean hasMVTiles) {
-        return new TasksSurfaceCoordinator(activity, propertyModel, tabSwitcherType, hasMVTiles);
+        return new TasksSurfaceCoordinator(
+                activity, scrimCoordinator, propertyModel, tabSwitcherType, hasMVTiles);
     }
 
     @Override
-    public TabSwitcher createGridTabSwitcher(ChromeActivity activity, ViewGroup containerView) {
+    public TabSwitcher createGridTabSwitcher(
+            ChromeActivity activity, ViewGroup containerView, ScrimCoordinator scrimCoordinator) {
         if (UmaSessionStats.isMetricsServiceAvailable()) {
             UmaSessionStats.registerSyntheticFieldTrial(
                     ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + SYNTHETIC_TRIAL_POSTFIX,
@@ -54,6 +58,7 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
                 activity.getFullscreenManager(), activity,
                 activity.getMenuOrKeyboardActionController(), containerView,
                 activity.getShareDelegateSupplier(), activity.getMultiWindowModeStateDispatcher(),
+                scrimCoordinator,
                 TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()
                                 && SysUtils.isLowEndDevice()
                         ? TabListCoordinator.TabListMode.LIST
@@ -61,19 +66,20 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     }
 
     @Override
-    public TabSwitcher createCarouselTabSwitcher(ChromeActivity activity, ViewGroup containerView) {
+    public TabSwitcher createCarouselTabSwitcher(
+            ChromeActivity activity, ViewGroup containerView, ScrimCoordinator scrimCoordinator) {
         return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
                 activity.getFullscreenManager(), activity,
                 activity.getMenuOrKeyboardActionController(), containerView,
                 activity.getShareDelegateSupplier(), activity.getMultiWindowModeStateDispatcher(),
-                TabListCoordinator.TabListMode.CAROUSEL);
+                scrimCoordinator, TabListCoordinator.TabListMode.CAROUSEL);
     }
 
     @Override
-    public TabGroupUi createTabGroupUi(
-            ViewGroup parentView, ThemeColorProvider themeColorProvider) {
-        return new TabGroupUiCoordinator(parentView, themeColorProvider);
+    public TabGroupUi createTabGroupUi(ViewGroup parentView, ThemeColorProvider themeColorProvider,
+            ScrimCoordinator scrimCoordinator) {
+        return new TabGroupUiCoordinator(parentView, themeColorProvider, scrimCoordinator);
     }
 
     @Override
@@ -84,8 +90,9 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     }
 
     @Override
-    public StartSurface createStartSurface(ChromeActivity activity) {
-        return StartSurfaceDelegate.createStartSurface(activity);
+    public StartSurface createStartSurface(
+            ChromeActivity activity, ScrimCoordinator scrimCoordinator) {
+        return StartSurfaceDelegate.createStartSurface(activity, scrimCoordinator);
     }
 
     @Override

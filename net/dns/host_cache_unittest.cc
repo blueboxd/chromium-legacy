@@ -939,7 +939,6 @@ TEST(HostCacheTest, SerializeAndDeserialize) {
   EXPECT_TRUE(result1->first.secure);
   ASSERT_TRUE(result1->second.addresses());
   EXPECT_FALSE(result1->second.text_records());
-  EXPECT_FALSE(result1->second.esni_data());
   EXPECT_FALSE(result1->second.hostnames());
   EXPECT_EQ(1u, result1->second.addresses().value().size());
   EXPECT_EQ(address_ipv4,
@@ -1106,105 +1105,6 @@ TEST(HostCacheTest, SerializeAndDeserialize_Text) {
   EXPECT_EQ(text_records, result->second.text_records().value());
 }
 
-TEST(HostCacheTest, SerializeAndDeserialize_Esni) {
-  base::TimeTicks now;
-
-  base::TimeDelta ttl = base::TimeDelta::FromSeconds(99);
-  HostCache::Key key("example.com", DnsQueryType::A, 0, HostResolverSource::DNS,
-                     NetworkIsolationKey());
-  key.secure = true;
-
-  const std::string kEsniKey = "a";
-  const std::string kAddresslessEsniKey = "b";
-  const IPAddress kAddressBack(0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                               0);
-  EsniContent esni_content;
-  esni_content.AddKeyForAddress(kAddressBack, kEsniKey);
-  esni_content.AddKey(kAddresslessEsniKey);
-  HostCache::Entry entry(OK, esni_content, HostCache::Entry::SOURCE_DNS, ttl);
-  ASSERT_TRUE(entry.esni_data());
-
-  HostCache cache(kMaxCacheEntries);
-  cache.Set(key, entry, now, ttl);
-  EXPECT_EQ(1u, cache.size());
-
-  base::ListValue serialized_cache;
-  cache.GetAsListValue(&serialized_cache, false /* include_staleness */,
-                       HostCache::SerializationType::kRestorable);
-  HostCache restored_cache(kMaxCacheEntries);
-  restored_cache.RestoreFromListValue(serialized_cache);
-
-  ASSERT_EQ(1u, restored_cache.size());
-  HostCache::EntryStaleness staleness;
-  const std::pair<const HostCache::Key, HostCache::Entry>* result =
-      restored_cache.LookupStale(key, now, &staleness);
-  ASSERT_TRUE(result);
-  EXPECT_TRUE(result->first.secure);
-
-  EXPECT_FALSE(result->second.addresses());
-  EXPECT_FALSE(result->second.text_records());
-  EXPECT_FALSE(result->second.hostnames());
-  EXPECT_THAT(result->second.esni_data(), Optional(esni_content));
-}
-
-class HostCacheMalformedEsniSerializationTest : public ::testing::Test {
- public:
-  HostCacheMalformedEsniSerializationTest()
-      : serialized_cache_(),
-        // We'll only need one entry.
-        restored_cache_(1) {}
-
- protected:
-  void SetUp() override {
-    base::TimeTicks now;
-
-    base::TimeDelta ttl = base::TimeDelta::FromSeconds(99);
-    HostCache::Key key("example.com", DnsQueryType::A, 0,
-                       HostResolverSource::DNS, NetworkIsolationKey());
-    key.secure = true;
-
-    const std::string esni_key = "a";
-    const IPAddress kAddressBack(0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                                 0);
-    EsniContent esni_content;
-    esni_content.AddKeyForAddress(kAddressBack, esni_key);
-    HostCache::Entry entry(OK, esni_content, HostCache::Entry::SOURCE_DNS, ttl);
-    ASSERT_TRUE(entry.esni_data());
-    HostCache cache(kMaxCacheEntries);
-    cache.Set(key, entry, now, ttl);
-    EXPECT_EQ(1u, cache.size());
-    cache.GetAsListValue(&serialized_cache_, true /* include_staleness */,
-                         HostCache::SerializationType::kRestorable);
-  }
-
-  base::ListValue serialized_cache_;
-  HostCache restored_cache_;
-};
-
-// The key corresponds to kEsniDataKey from host_cache.cc.
-const char kEsniDataKey[] = "esni_data";
-
-TEST_F(HostCacheMalformedEsniSerializationTest, RejectsNonDictElement) {
-  base::Value non_dict_element(base::Value::Type::LIST);
-
-  base::Value::ListStorage cache_entries = serialized_cache_.TakeList();
-  cache_entries[0].SetKey(kEsniDataKey, std::move(non_dict_element));
-  serialized_cache_ = base::ListValue(std::move(cache_entries));
-
-  EXPECT_FALSE(restored_cache_.RestoreFromListValue(serialized_cache_));
-}
-
-TEST_F(HostCacheMalformedEsniSerializationTest, RejectsNonStringAddress) {
-  base::Value dict_with_non_string_value(base::Value::Type::DICTIONARY);
-  dict_with_non_string_value.SetKey("a", base::Value(1));
-
-  base::Value::ListStorage cache_entries = serialized_cache_.TakeList();
-  cache_entries[0].SetKey(kEsniDataKey, std::move(dict_with_non_string_value));
-  serialized_cache_ = base::ListValue(std::move(cache_entries));
-
-  EXPECT_FALSE(restored_cache_.RestoreFromListValue(serialized_cache_));
-}
-
 TEST(HostCacheTest, SerializeAndDeserialize_Hostname) {
   base::TimeTicks now;
 
@@ -1234,7 +1134,6 @@ TEST(HostCacheTest, SerializeAndDeserialize_Hostname) {
   EXPECT_FALSE(result->first.secure);
   EXPECT_FALSE(result->second.addresses());
   EXPECT_FALSE(result->second.text_records());
-  EXPECT_FALSE(result->second.esni_data());
   ASSERT_TRUE(result->second.hostnames());
   EXPECT_EQ(hostnames, result->second.hostnames().value());
 }
@@ -1394,136 +1293,25 @@ TEST(HostCacheTest, SortsAndDeduplicatesAddresses) {
           ElementsAreArray(MakeEndpoints({"::3", "0.0.0.1", "0.0.0.2"})))));
 }
 
-TEST(HostCacheTest, PrefersAddressesWithEsniContent) {
-  IPAddressList front_addresses = MakeIPList({"0.0.0.2", "0.0.0.4"});
+TEST(HostCacheTest, PrefersAddressesWithIpv6) {
+  IPAddressList front_addresses = MakeIPList({"::1", "0.0.0.2", "0.0.0.4"});
   IPAddressList back_addresses =
       MakeIPList({"0.0.0.2", "0.0.0.2", "::3", "::3", "0.0.0.4"});
-
-  EsniContent esni_content_front, esni_content_back;
-  esni_content_front.AddKeyForAddress(MakeIP("0.0.0.4"), "key for 0.0.0.4");
-  esni_content_back.AddKeyForAddress(MakeIP("::3"), "key for ::3");
 
   HostCache::Entry front(
       OK, AddressList::CreateFromIPAddressList(front_addresses, "front"),
       HostCache::Entry::SOURCE_DNS);
-  front.set_esni_data(esni_content_front);
   HostCache::Entry back(
       OK, AddressList::CreateFromIPAddressList(back_addresses, "back"),
       HostCache::Entry::SOURCE_DNS);
-  back.set_esni_data(esni_content_back);
 
   HostCache::Entry result =
       HostCache::Entry::MergeEntries(std::move(front), std::move(back));
 
-  EXPECT_THAT(
-      result.addresses(),
-      Optional(Property(
-          &AddressList::endpoints,
-          ElementsAreArray(MakeEndpoints({"::3", "0.0.0.4", "0.0.0.2"})))));
-
-  EXPECT_THAT(result.esni_data(),
-              Optional(Property(
-                  &EsniContent::keys_for_addresses,
-                  UnorderedElementsAre(
-                      Pair(MakeIP("::3"), UnorderedElementsAre("key for ::3")),
-                      Pair(MakeIP("0.0.0.4"),
-                           UnorderedElementsAre("key for 0.0.0.4"))))));
-}
-
-TEST(HostCacheTest, MergesManyEntriesWithEsniContent) {
-  IPAddressList front_addresses, back_addresses;
-  EsniContent esni_content_front, esni_content_back;
-
-  // Add several IPv4 and IPv6 addresses to both the front and
-  // back ESNI structs and address_lists, and associate some of each
-  // with ESNI keys.
-  const std::string ipv4_prefix = "1.2.3.", ipv6_prefix = "::";
-  for (int i = 0; i < 50; ++i) {
-    IPAddress next =
-        MakeIP((i % 2 ? ipv4_prefix : ipv6_prefix) + base::NumberToString(i));
-    bool is_front = !!(i % 3);
-    if (is_front) {
-      front_addresses.push_back(next);
-    } else {
-      back_addresses.push_back(next);
-    }
-    if (i % 5) {
-      std::string key = base::NumberToString(i % 5);
-      if (is_front) {
-        esni_content_front.AddKeyForAddress(next, key);
-      } else {
-        esni_content_back.AddKeyForAddress(next, key);
-      }
-    }
-  }
-
-  HostCache::Entry front(
-      OK,
-      AddressList::CreateFromIPAddressList(front_addresses, "front_canonname"),
-      HostCache::Entry::SOURCE_DNS);
-  front.set_esni_data(esni_content_front);
-
-  HostCache::Entry back(
-      OK,
-      AddressList::CreateFromIPAddressList(back_addresses, "back_canonname"),
-      HostCache::Entry::SOURCE_DNS);
-  back.set_esni_data(esni_content_back);
-
-  HostCache::Entry result =
-      HostCache::Entry::MergeEntries(std::move(front), std::move(back));
-
-  ASSERT_TRUE(result.addresses());
-  EXPECT_EQ(result.addresses()->canonical_name(), "front_canonname");
-
-  EXPECT_EQ(result.addresses()->size(),
-            std::set<IPEndPoint>(result.addresses()->begin(),
-                                 result.addresses()->end())
-                .size())
-      << "Addresses should have been deduplicated.";
-
-  ASSERT_TRUE(result.esni_data());
-
-  auto has_keys = [&](const IPEndPoint& e) {
-    return !!result.esni_data()->keys_for_addresses().count(e.address());
-  };
-
-  // Helper for determining whether the resulting addresses are correctly
-  // ordered. Returns true if it's an error for |e2| to come before |e1| in
-  // *results.addresses().
-  auto address_must_precede = [&](const IPEndPoint& e1,
-                                  const IPEndPoint& e2) -> bool {
-    if (has_keys(e1) != has_keys(e2)) {
-      return has_keys(e1) && !has_keys(e2);
-    }
-    if (e1.address().IsIPv6() != e2.address().IsIPv6()) {
-      return e1.address().IsIPv6() && !e2.address().IsIPv6();
-    }
-
-    // If e1 and e2 were in the same input entry, and they're otherwise
-    // tied in the precedence ordering, then their order in the input entry
-    // should be preserved in the output.
-    bool e1_in_front = base::Contains(front_addresses, e1.address());
-    bool e2_in_front = base::Contains(front_addresses, e2.address());
-    bool e1_in_back = base::Contains(back_addresses, e1.address());
-    bool e2_in_back = base::Contains(back_addresses, e2.address());
-    if (e1_in_front == e2_in_front && e1_in_front != e1_in_back &&
-        e2_in_front != e2_in_back) {
-      const IPAddressList common_list =
-          e1_in_front ? front_addresses : back_addresses;
-      return std::find(common_list.begin(), common_list.end(), e1.address()) <
-             std::find(common_list.begin(), common_list.end(), e2.address());
-    }
-    return false;
-  };
-
-  for (size_t i = 0; i < result.addresses()->size() - 1; ++i) {
-    EXPECT_FALSE(address_must_precede((*result.addresses())[i + 1],
-                                      (*result.addresses())[i]));
-  }
-
-  auto esni_content_merged = esni_content_front;
-  esni_content_merged.MergeFrom(esni_content_back);
-  EXPECT_THAT(result.esni_data(), Optional(esni_content_merged));
+  EXPECT_THAT(result.addresses(),
+              Optional(Property(&AddressList::endpoints,
+                                ElementsAreArray(MakeEndpoints(
+                                    {"::1", "::3", "0.0.0.2", "0.0.0.4"})))));
 }
 
 TEST(HostCacheTest, MergeEntries_frontEmpty) {
@@ -1536,10 +1324,6 @@ TEST(HostCacheTest, MergeEntries_frontEmpty) {
                         HostCache::Entry::SOURCE_DNS,
                         base::TimeDelta::FromHours(4));
   back.set_text_records(std::vector<std::string>{"text2"});
-  EsniContent esni_content_back;
-  const std::string esni_key = "a";
-  esni_content_back.AddKeyForAddress(kAddressBack, esni_key);
-  back.set_esni_data(esni_content_back);
   const HostPortPair kHostnameBack("host", 2);
   back.set_hostnames(std::vector<HostPortPair>{kHostnameBack});
 
@@ -1554,7 +1338,6 @@ TEST(HostCacheTest, MergeEntries_frontEmpty) {
               ElementsAre(kEndpointBack));
   EXPECT_THAT(result.text_records(), Optional(ElementsAre("text2")));
   EXPECT_THAT(result.hostnames(), Optional(ElementsAre(kHostnameBack)));
-  EXPECT_THAT(result.esni_data(), Optional(esni_content_back));
 
   EXPECT_EQ(base::TimeDelta::FromHours(4), result.ttl());
 }
@@ -1566,10 +1349,6 @@ TEST(HostCacheTest, MergeEntries_backEmpty) {
                          HostCache::Entry::SOURCE_DNS,
                          base::TimeDelta::FromMinutes(5));
   front.set_text_records(std::vector<std::string>{"text1"});
-  EsniContent esni_content_front;
-  const std::string esni_key = "a";
-  esni_content_front.AddKeyForAddress(kAddressFront, esni_key);
-  front.set_esni_data(esni_content_front);
   const HostPortPair kHostnameFront("host", 1);
   front.set_hostnames(std::vector<HostPortPair>{kHostnameFront});
 
@@ -1586,7 +1365,6 @@ TEST(HostCacheTest, MergeEntries_backEmpty) {
               ElementsAre(kEndpointFront));
   EXPECT_THAT(result.text_records(), Optional(ElementsAre("text1")));
   EXPECT_THAT(result.hostnames(), Optional(ElementsAre(kHostnameFront)));
-  EXPECT_THAT(result.esni_data(), Optional(esni_content_front));
 
   EXPECT_EQ(base::TimeDelta::FromMinutes(5), result.ttl());
 }
@@ -1604,7 +1382,6 @@ TEST(HostCacheTest, MergeEntries_bothEmpty) {
   EXPECT_FALSE(result.addresses());
   EXPECT_FALSE(result.text_records());
   EXPECT_FALSE(result.hostnames());
-  EXPECT_FALSE(result.esni_data());
   EXPECT_FALSE(result.has_ttl());
 }
 

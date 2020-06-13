@@ -14,7 +14,7 @@ You can run web tests using `run_web_tests.py` (in
 `src/third_party/blink/tools`).
 
 ```bash
-python third_party/blink/tools/run_web_tests.py storage/indexeddb
+python third_party/blink/tools/run_web_tests.py -t <build directory> storage/indexeddb
 ```
 To see a complete list of arguments supported, run with `--help`.
 
@@ -85,6 +85,8 @@ Then run the test with a localhost URL:
 out/Default/content_shell --run-web-tests http://localhost:8000/<test>
 ```
 
+It may be necessary specify [--enable-blink-features](https://source.chromium.org/search?q=%22--enable-blink-features%3D%22) explicitly for some tests.
+
 #### Running WPT Tests in Content Shell
 
 Similar to HTTP tests, many WPT (a.k.a. web-platform-tests under
@@ -92,14 +94,7 @@ Similar to HTTP tests, many WPT (a.k.a. web-platform-tests under
 tests require some setup before running in Content Shell:
 
 ```bash
-python third_party/blink/tools/run_blink_wptserve.py
-```
-
-run_blink_wptserve.py serves generated content from out/Release/gen. If you are
-using a different build directory it can be symlinked:
-
-```bash
-ln -s /path/to/out/Build/gen /path/to/out/Release/gen
+python third_party/blink/tools/run_blink_wptserve.py -t <build directory>
 ```
 
 Then run the test:

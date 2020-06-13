@@ -60,10 +60,12 @@ UmaPerformanceClass ToUmaPerformanceClass(PerformanceClass performance_class) {
   }
 }
 
+// New values should be added to the PerformanceHintsSource histogram_suffix.
 enum class HintLookupSource {
   kLinkHint = 0,
   kPageHint = 1,
-  kMaxValue = kPageHint,
+  kFastHostHint = 2,
+  kMaxValue = kFastHostHint,
 };
 
 const char* ToString(HintLookupSource source) {
@@ -72,6 +74,8 @@ const char* ToString(HintLookupSource source) {
       return "LinkHint";
     case HintLookupSource::kPageHint:
       return "PageHint";
+    case HintLookupSource::kFastHostHint:
+      return "FastHostHint";
   }
 }
 }  // namespace
@@ -91,6 +95,8 @@ static jint JNI_PerformanceHintsObserver_GetPerformanceClassForURL(
 
 const base::Feature kPerformanceHintsObserver{
     "PerformanceHintsObserver", base::FEATURE_DISABLED_BY_DEFAULT};
+constexpr base::FeatureParam<bool> kUseFastHostHints{
+    &kPerformanceHintsObserver, "use_fast_host_hints", true};
 const base::Feature kPerformanceHintsTreatUnknownAsFast{
     "PerformanceHintsTreatUnknownAsFast", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kPerformanceHintsHandleRewrites{
@@ -105,9 +111,13 @@ PerformanceHintsObserver::PerformanceHintsObserver(
   optimization_guide_decider_ =
       OptimizationGuideKeyedServiceFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  std::vector<optimization_guide::proto::OptimizationType> opts;
+  opts.push_back(optimization_guide::proto::PERFORMANCE_HINTS);
+  if (kUseFastHostHints.Get()) {
+    opts.push_back(optimization_guide::proto::FAST_HOST_HINTS);
+  }
   if (optimization_guide_decider_) {
-    optimization_guide_decider_->RegisterOptimizationTypesAndTargets(
-        {optimization_guide::proto::PERFORMANCE_HINTS}, {});
+    optimization_guide_decider_->RegisterOptimizationTypesAndTargets(opts, {});
   }
 
   rewrite_handler_ =
@@ -237,6 +247,12 @@ PerformanceHintsObserver::HintForURLResult PerformanceHintsObserver::HintForURL(
   sources.emplace_back(HintLookupSource::kPageHint,
                        base::BindOnce(&PerformanceHintsObserver::PageHintForURL,
                                       base::Unretained(this)));
+  if (kUseFastHostHints.Get()) {
+    sources.emplace_back(
+        HintLookupSource::kFastHostHint,
+        base::BindOnce(&PerformanceHintsObserver::FastHostHintForURL,
+                       base::Unretained(this)));
+  }
 
   for (std::tuple<HintLookupSource, LookupFn>& source : sources) {
     SourceLookupStatus lookup_status = SourceLookupStatus::kNotQueried;
@@ -321,6 +337,29 @@ PerformanceHintsObserver::PageHintForURL(const GURL& url) const {
   }
 
   return {SourceLookupStatus::kNoMatch, base::nullopt};
+}
+
+std::tuple<PerformanceHintsObserver::SourceLookupStatus,
+           base::Optional<optimization_guide::proto::PerformanceHint>>
+PerformanceHintsObserver::FastHostHintForURL(const GURL& url) const {
+  if (!optimization_guide_decider_) {
+    return {SourceLookupStatus::kNoMatch, base::nullopt};
+  }
+
+  OptimizationGuideDecision decision =
+      optimization_guide_decider_->CanApplyOptimization(
+          url, optimization_guide::proto::FAST_HOST_HINTS, nullptr);
+  switch (decision) {
+    case OptimizationGuideDecision::kTrue: {
+      optimization_guide::proto::PerformanceHint hint;
+      hint.set_performance_class(optimization_guide::proto::PERFORMANCE_FAST);
+      return {SourceLookupStatus::kHintFound, hint};
+    }
+    case OptimizationGuideDecision::kFalse:
+      return {SourceLookupStatus::kNoMatch, base::nullopt};
+    case OptimizationGuideDecision::kUnknown:
+      return {SourceLookupStatus::kNotReady, base::nullopt};
+  }
 }
 
 void PerformanceHintsObserver::DidFinishNavigation(

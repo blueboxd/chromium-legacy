@@ -15,8 +15,6 @@ const DefaultActionVerb = chrome.automation.DefaultActionVerb;
  *    - isInterestingSubtree
  *    - isVisible
  *    - isTextInput
- *    - isNotContainer
- *    - isSwitchAccessMenuPanel
  *
  * In addition to these basic predicates, there are also methods to get the
  * restrictions required by TreeWalker for specific traversal situations.
@@ -184,24 +182,6 @@ const SwitchAccessPredicate = {
   isTextInput: (node) => !!node && !!node.state[StateType.EDITABLE],
 
   /**
-   * Returns true if |node| does not have a role of desktop, window, web view,
-   * or root web area.
-   * @param {!AutomationNode} node
-   * @return {boolean}
-   */
-  isNotContainer: (node) => node.role !== RoleType.ROOT_WEB_AREA &&
-      node.role !== RoleType.WINDOW && node.role !== RoleType.DESKTOP &&
-      node.role !== RoleType.WEB_VIEW,
-
-  /**
-   * Returns true if |node| is the Switch Access menu.
-   * @param {!AutomationNode} node
-   * @return {boolean}
-   */
-  isSwitchAccessMenuPanel: (node) =>
-      node.htmlAttributes.id === SAConstants.MENU_PANEL_ID,
-
-  /**
    * Returns a Restrictions object ready to be passed to AutomationTreeWalker.
    *
    * @param {!AutomationNode} scope
@@ -249,17 +229,5 @@ const SwitchAccessPredicate = {
   visit(scope) {
     return (node) => node.role !== RoleType.DESKTOP &&
         SwitchAccessPredicate.isInteresting(node, scope);
-  },
-
-  /**
-   * TODO(anastasi): Remove once using views based menu
-   * Returns a Restrictions object for finding the Switch Access Menu root.
-   * @return {!AutomationTreeWalkerRestriction}
-   */
-  switchAccessMenuPanelDiscoveryRestrictions: () => {
-    return {
-      leaf: SwitchAccessPredicate.isNotContainer,
-      visit: SwitchAccessPredicate.isSwitchAccessMenuPanel
-    };
   }
 };

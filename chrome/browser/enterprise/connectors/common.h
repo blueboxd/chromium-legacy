@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "url/gurl.h"
 
 namespace enterprise_connectors {
@@ -22,14 +23,6 @@ constexpr char kKeyBlockUntilVerdict[] = "block_until_verdict";
 constexpr char kKeyBlockPasswordProtected[] = "block_password_protected";
 constexpr char kKeyBlockLargeFiles[] = "block_large_files";
 constexpr char kKeyBlockUnsupportedFileTypes[] = "block_unsupported_file_types";
-
-// Enums representing each connector to be used as arguments so the appropriate
-// policies/settings can be read.
-enum class AnalysisConnector {
-  FILE_DOWNLOADED,
-  FILE_ATTACHED,
-  BULK_DATA_ENTRY,
-};
 
 enum class ReportingConnector {
   SECURITY_EVENT,

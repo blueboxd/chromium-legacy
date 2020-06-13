@@ -47,6 +47,73 @@ namespace {
 struct VisualOrdering;
 
 template <typename Strategy, typename Ordering>
+static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
+    const PositionWithAffinityTemplate<Strategy>& c) {
+  if (c.IsNull())
+    return PositionWithAffinityTemplate<Strategy>();
+  const PositionWithAffinityTemplate<Strategy> adjusted =
+      ComputeInlineAdjustedPosition(c);
+
+  if (const LayoutBlockFlow* context =
+          NGInlineFormattingContextOf(adjusted.GetPosition())) {
+    DCHECK((std::is_same<Ordering, VisualOrdering>::value) ||
+           !RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
+        << "Logical line boundary for BidiCaretAffinity is not implemented yet";
+
+    const NGCaretPosition caret_position = ComputeNGCaretPosition(adjusted);
+    if (caret_position.IsNull()) {
+      // TODO(crbug.com/947593): Support |ComputeNGCaretPosition()| on content
+      // hidden by 'text-overflow:ellipsis' so that we always have a non-null
+      // |caret_position| here.
+      return PositionWithAffinityTemplate<Strategy>();
+    }
+    NGInlineCursor line_box = caret_position.cursor;
+    line_box.MoveToContainingLine();
+    return FromPositionInDOMTree<Strategy>(line_box.PositionForEndOfLine());
+  }
+
+  const InlineBox* inline_box =
+      adjusted.IsNotNull() ? ComputeInlineBoxPosition(c).inline_box : nullptr;
+  if (!inline_box) {
+    // There are VisiblePositions at offset 0 in blocks without
+    // RootInlineBoxes, like empty editable blocks and bordered blocks.
+    const PositionTemplate<Strategy> p = c.GetPosition();
+    if (p.AnchorNode()->GetLayoutObject() &&
+        p.AnchorNode()->GetLayoutObject()->IsLayoutBlock() &&
+        !p.ComputeEditingOffset())
+      return c;
+    return PositionWithAffinityTemplate<Strategy>();
+  }
+
+  const RootInlineBox& root_box = inline_box->Root();
+  const InlineBox* const end_box = Ordering::EndNonPseudoBoxOf(root_box);
+  if (!end_box)
+    return PositionWithAffinityTemplate<Strategy>();
+
+  const Node* const end_node = end_box->GetLineLayoutItem().NonPseudoNode();
+  DCHECK(end_node);
+  if (IsA<HTMLBRElement>(*end_node)) {
+    return PositionWithAffinityTemplate<Strategy>(
+        PositionTemplate<Strategy>::BeforeNode(*end_node),
+        TextAffinity::kUpstreamIfPossible);
+  }
+
+  auto* end_text_node = DynamicTo<Text>(end_node);
+  if (end_box->IsInlineTextBox() && end_text_node) {
+    const InlineTextBox* end_text_box = ToInlineTextBox(end_box);
+    int end_offset = end_text_box->Start();
+    if (!end_text_box->IsLineBreak())
+      end_offset += end_text_box->Len();
+    return PositionWithAffinityTemplate<Strategy>(
+        PositionTemplate<Strategy>(end_text_node, end_offset),
+        TextAffinity::kUpstreamIfPossible);
+  }
+  return PositionWithAffinityTemplate<Strategy>(
+      PositionTemplate<Strategy>::AfterNode(*end_node),
+      TextAffinity::kUpstreamIfPossible);
+}
+
+template <typename Strategy, typename Ordering>
 PositionWithAffinityTemplate<Strategy> StartPositionForLine(
     const PositionWithAffinityTemplate<Strategy>& c) {
   if (c.IsNull())
@@ -225,73 +292,6 @@ VisiblePositionInFlatTree LogicalStartOfLine(
   DCHECK(current_position.IsValid()) << current_position;
   return CreateVisiblePosition(
       LogicalStartOfLine(current_position.ToPositionWithAffinity()));
-}
-
-template <typename Strategy, typename Ordering>
-static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
-    const PositionWithAffinityTemplate<Strategy>& c) {
-  if (c.IsNull())
-    return PositionWithAffinityTemplate<Strategy>();
-  const PositionWithAffinityTemplate<Strategy> adjusted =
-      ComputeInlineAdjustedPosition(c);
-
-  if (const LayoutBlockFlow* context =
-          NGInlineFormattingContextOf(adjusted.GetPosition())) {
-    DCHECK((std::is_same<Ordering, VisualOrdering>::value) ||
-           !RuntimeEnabledFeatures::BidiCaretAffinityEnabled())
-        << "Logical line boundary for BidiCaretAffinity is not implemented yet";
-
-    const NGCaretPosition caret_position = ComputeNGCaretPosition(adjusted);
-    if (caret_position.IsNull()) {
-      // TODO(crbug.com/947593): Support |ComputeNGCaretPosition()| on content
-      // hidden by 'text-overflow:ellipsis' so that we always have a non-null
-      // |caret_position| here.
-      return PositionWithAffinityTemplate<Strategy>();
-    }
-    NGInlineCursor line_box = caret_position.cursor;
-    line_box.MoveToContainingLine();
-    return FromPositionInDOMTree<Strategy>(line_box.PositionForEndOfLine());
-  }
-
-  const InlineBox* inline_box =
-      adjusted.IsNotNull() ? ComputeInlineBoxPosition(c).inline_box : nullptr;
-  if (!inline_box) {
-    // There are VisiblePositions at offset 0 in blocks without
-    // RootInlineBoxes, like empty editable blocks and bordered blocks.
-    const PositionTemplate<Strategy> p = c.GetPosition();
-    if (p.AnchorNode()->GetLayoutObject() &&
-        p.AnchorNode()->GetLayoutObject()->IsLayoutBlock() &&
-        !p.ComputeEditingOffset())
-      return c;
-    return PositionWithAffinityTemplate<Strategy>();
-  }
-
-  const RootInlineBox& root_box = inline_box->Root();
-  const InlineBox* const end_box = Ordering::EndNonPseudoBoxOf(root_box);
-  if (!end_box)
-    return PositionWithAffinityTemplate<Strategy>();
-
-  const Node* const end_node = end_box->GetLineLayoutItem().NonPseudoNode();
-  DCHECK(end_node);
-  if (IsA<HTMLBRElement>(*end_node)) {
-    return PositionWithAffinityTemplate<Strategy>(
-        PositionTemplate<Strategy>::BeforeNode(*end_node),
-        TextAffinity::kUpstreamIfPossible);
-  }
-
-  auto* end_text_node = DynamicTo<Text>(end_node);
-  if (end_box->IsInlineTextBox() && end_text_node) {
-    const InlineTextBox* end_text_box = ToInlineTextBox(end_box);
-    int end_offset = end_text_box->Start();
-    if (!end_text_box->IsLineBreak())
-      end_offset += end_text_box->Len();
-    return PositionWithAffinityTemplate<Strategy>(
-        PositionTemplate<Strategy>(end_text_node, end_offset),
-        TextAffinity::kUpstreamIfPossible);
-  }
-  return PositionWithAffinityTemplate<Strategy>(
-      PositionTemplate<Strategy>::AfterNode(*end_node),
-      TextAffinity::kUpstreamIfPossible);
 }
 
 // TODO(yosin) Rename this function to reflect the fact it ignores bidi levels.

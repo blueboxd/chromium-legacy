@@ -3564,7 +3564,8 @@ TEST_F(PersonalDataManagerTest,
 
 // Test that a card that doesn't have a number is not shown in the suggestions
 // when querying credit cards by their number.
-TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_NumberMissing) {
+TEST_F(PersonalDataManagerTest,
+       GetCreditCardSuggestions_NumberMissing_QueryNumberField) {
   // Create one normal credit card and one credit card with the number missing.
   ASSERT_EQ(0U, personal_data_->GetCreditCards().size());
 
@@ -3608,6 +3609,36 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_NumberMissing) {
 #else
   EXPECT_EQ(base::ASCIIToUTF16("Expires on 04/99"), suggestions[0].label);
 #endif  // defined (OS_ANDROID) || defined(OS_IOS)
+}
+
+// Test that a card that doesn't have a number is shown in the suggestion list
+// with nickname if a non-number field is queried.
+TEST_F(PersonalDataManagerTest,
+       GetCreditCardSuggestions_NumberMissing_QueryNonNumberField) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillEnableSurfacingServerCardNickname);
+  ASSERT_EQ(0U, personal_data_->GetCreditCards().size());
+
+  CreditCard credit_card("1141084B-72D7-4B73-90CF-3D6AC154673B",
+                         test::kEmptyOrigin);
+  test::SetCreditCardInfo(&credit_card, "John Dillinger", "", "01", "2999",
+                          "1");
+  credit_card.SetNickname(base::UTF8ToUTF16("nickname"));
+  personal_data_->AddCreditCard(credit_card);
+
+  // Make sure everything is set up correctly.
+  WaitForOnPersonalDataChanged();
+  ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
+
+  // Ensures the suggestion label is the card's nickname.
+  std::vector<Suggestion> suggestions =
+      personal_data_->GetCreditCardSuggestions(
+          AutofillType(CREDIT_CARD_NAME_FULL),
+          /*field_contents=*/base::string16(),
+          /*include_server_cards=*/true);
+  ASSERT_EQ(1U, suggestions.size());
+  EXPECT_EQ(base::UTF8ToUTF16("nickname"), suggestions[0].label);
 }
 
 // Tests the suggestions of duplicate local and server credit cards.
@@ -7824,8 +7855,11 @@ class PersonalDataManagerTestForSharingNickname
   void SetUp() override {
     PersonalDataManagerTest::SetUp();
     EnableWalletCardImport();
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kAutofillEnableSurfacingServerCardNickname);
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{features::
+                                  kAutofillEnableSurfacingServerCardNickname,
+                              features::kAutofillEnableCardNicknameManagement},
+        /*disabled_features=*/{});
   }
 
  private:

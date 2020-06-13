@@ -23,6 +23,7 @@
 #include "content/browser/initiator_csp_context.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/navigation_subresource_loader_params.h"
+#include "content/browser/site_instance_impl.h"
 #include "content/browser/web_package/web_bundle_handle.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.h"
@@ -73,7 +74,6 @@ class NavigationUIData;
 class NavigatorDelegate;
 class PrefetchedSignedExchangeCache;
 class ServiceWorkerMainResourceHandle;
-class SiteInstanceImpl;
 struct SubresourceLoaderParams;
 
 // A structure that groups information about how COOP has interacted with the
@@ -405,11 +405,11 @@ class CONTENT_EXPORT NavigationRequest
   // url we're navigating to.
   void SetExpectedProcess(RenderProcessHost* expected_process);
 
-  // Updates the destination site URL for this navigation. This is called on
+  // Updates the destination SiteInfo for this navigation. This is called on
   // redirects. |post_redirect_process| is the renderer process that should
   // handle the navigation following the redirect if it can be handled by an
   // existing RenderProcessHost. Otherwise, it should be null.
-  void UpdateSiteURL(RenderProcessHost* post_redirect_process);
+  void UpdateSiteInfo(RenderProcessHost* post_redirect_process);
 
   int nav_entry_id() const { return nav_entry_id_; }
 
@@ -900,9 +900,9 @@ class CONTENT_EXPORT NavigationRequest
   void UpdateNavigationHandleTimingsOnResponseReceived();
   void UpdateNavigationHandleTimingsOnCommitSent();
 
-  // Helper function that computes the site URL for |common_params_.url|.
-  // Note: |site_url_| should only be updated with the result of this function.
-  GURL GetSiteForCommonParamsURL() const;
+  // Helper function that computes the SiteInfo for |common_params_.url|.
+  // Note: |site_info_| should only be updated with the result of this function.
+  SiteInfo GetSiteInfoForCommonParamsURL() const;
 
   // Updates the state of the navigation handle after encountering a server
   // redirect.
@@ -1134,8 +1134,9 @@ class CONTENT_EXPORT NavigationRequest
   // commit.
   int expected_render_process_host_id_;
 
-  // The site URL of this navigation, as obtained from SiteInstance::GetSiteURL.
-  GURL site_url_;
+  // The SiteInfo of this navigation, as obtained from
+  // SiteInstanceImpl::ComputeSiteInfo().
+  SiteInfo site_info_;
 
   const std::unique_ptr<InitiatorCSPContext> initiator_csp_context_;
 

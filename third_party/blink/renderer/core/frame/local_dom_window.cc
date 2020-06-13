@@ -37,6 +37,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
+#include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -234,7 +235,10 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
           MakeGarbageCollected<InputMethodController>(*this, frame)),
       spell_checker_(MakeGarbageCollected<SpellChecker>(*this)),
       text_suggestion_controller_(
-          MakeGarbageCollected<TextSuggestionController>(*this)) {}
+          MakeGarbageCollected<TextSuggestionController>(*this)),
+      isolated_world_csp_map_(
+          MakeGarbageCollected<
+              HeapHashMap<int, Member<ContentSecurityPolicy>>>()) {}
 
 void LocalDOMWindow::AcceptLanguagesChanged() {
   if (navigator_)
@@ -307,7 +311,31 @@ bool LocalDOMWindow::ShouldInstallV8Extensions() const {
 }
 
 ContentSecurityPolicy* LocalDOMWindow::GetContentSecurityPolicyForWorld() {
-  return document()->GetContentSecurityPolicyForWorld();
+  v8::Isolate* isolate = GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
+
+  // This can be called before we enter v8, hence the context might be empty,
+  // which implies we are not in an isolated world.
+  if (v8_context.IsEmpty())
+    return GetContentSecurityPolicy();
+
+  DOMWrapperWorld& world = DOMWrapperWorld::Current(isolate);
+  if (!world.IsIsolatedWorld())
+    return GetContentSecurityPolicy();
+
+  int32_t world_id = world.GetWorldId();
+  auto it = isolated_world_csp_map_->find(world_id);
+  if (it != isolated_world_csp_map_->end())
+    return it->value;
+
+  ContentSecurityPolicy* policy =
+      IsolatedWorldCSP::Get().CreateIsolatedWorldCSP(*this, world_id);
+  if (!policy)
+    return GetContentSecurityPolicy();
+
+  isolated_world_csp_map_->insert(world_id, policy);
+  return policy;
 }
 
 const KURL& LocalDOMWindow::Url() const {
@@ -1703,6 +1731,10 @@ bool LocalDOMWindow::isSecureContext() const {
   return document()->IsSecureContext();
 }
 
+void LocalDOMWindow::ClearIsolatedWorldCSPForTesting(int32_t world_id) {
+  isolated_world_csp_map_->erase(world_id);
+}
+
 void LocalDOMWindow::AddedEventListener(
     const AtomicString& event_type,
     RegisteredEventListener& registered_listener) {
@@ -1970,6 +2002,7 @@ void LocalDOMWindow::Trace(Visitor* visitor) const {
   visitor->Trace(input_method_controller_);
   visitor->Trace(spell_checker_);
   visitor->Trace(text_suggestion_controller_);
+  visitor->Trace(isolated_world_csp_map_);
   DOMWindow::Trace(visitor);
   ExecutionContext::Trace(visitor);
   Supplementable<LocalDOMWindow>::Trace(visitor);

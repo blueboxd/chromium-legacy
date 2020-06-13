@@ -26,6 +26,14 @@ imageset("encryption_error") {
   ]
 }
 
+imageset("enterprise_icon") {
+  sources = [
+    "enterprise_icon.imageset/Contents.json",
+    "enterprise_icon.imageset/enterprise_icon@2x.png",
+    "enterprise_icon.imageset/enterprise_icon@3x.png",
+  ]
+}
+
 imageset("settings_accounts_add_account") {
   sources = [
     "settings_accounts_add_account.imageset/Contents.json",

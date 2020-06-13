@@ -1117,7 +1117,7 @@ void DownloadItemView::TransitionToDeepScanningDialog() {
 
   UpdateAccessibleAlert(
       l10n_util::GetStringFUTF16(
-          IDS_PROMPT_APP_DEEP_SCANNING_ACCESSIBLE_ALERT,
+          IDS_DEEP_SCANNING_ACCESSIBLE_ALERT,
           model_->GetFileNameToReportUser().LossyDisplayName()),
       false);
 
@@ -1187,6 +1187,14 @@ void DownloadItemView::ShowWarningDialog() {
     auto scan_button = views::MdTextButton::Create(
         this, l10n_util::GetStringUTF16(IDS_SCAN_DOWNLOAD));
     scan_button_ = AddChildView(std::move(scan_button));
+    announce_accessible_alert_soon_ = true;
+    UpdateAccessibleAlert(
+        l10n_util::GetStringFUTF16(
+            IDS_PROMPT_APP_DEEP_SCANNING_ACCESSIBLE_ALERT,
+            model_->GetFileNameToReportUser().LossyDisplayName()),
+        false);
+  } else {
+    UpdateAccessibleAlert(model_->GetWarningText(font_list_, kTextWidth), true);
   }
 
   base::string16 dangerous_label =

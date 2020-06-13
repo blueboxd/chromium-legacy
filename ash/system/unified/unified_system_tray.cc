@@ -114,10 +114,7 @@ bool UnifiedSystemTray::UiDelegate::ShowMessageCenter(bool show_by_click) {
   return true;
 }
 
-void UnifiedSystemTray::UiDelegate::HideMessageCenter() {
-  if (!features::IsUnifiedMessageCenterRefactorEnabled())
-    owner_->HideBubbleInternal();
-}
+void UnifiedSystemTray::UiDelegate::HideMessageCenter() {}
 
 UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
@@ -247,9 +244,6 @@ void UnifiedSystemTray::SetTrayBubbleHeight(int height) {
 }
 
 void UnifiedSystemTray::FocusFirstNotification() {
-  if (!features::IsUnifiedMessageCenterRefactorEnabled())
-    return;
-
   FocusMessageCenter(false /*reverse*/);
 
   // Do not focus an individual element in quick settings if chrome vox is
@@ -372,8 +366,7 @@ void UnifiedSystemTray::CloseBubble() {
   // HideMessageCenterBubbleInternal will be called from UiDelegate.
   ui_delegate_->ui_controller()->HideMessageCenterBubble();
 
-  if (features::IsUnifiedMessageCenterRefactorEnabled())
-    HideBubbleInternal();
+  HideBubbleInternal();
 }
 
 base::string16 UnifiedSystemTray::GetAccessibleNameForBubble() {
@@ -446,10 +439,8 @@ void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
 
   bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this, show_by_click);
 
-  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
-    message_center_bubble_ = std::make_unique<UnifiedMessageCenterBubble>(this);
-    message_center_bubble_->ShowBubble();
-  }
+  message_center_bubble_ = std::make_unique<UnifiedMessageCenterBubble>(this);
+  message_center_bubble_->ShowBubble();
 
   first_interaction_recorded_ = false;
 

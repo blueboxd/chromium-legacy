@@ -17,14 +17,24 @@ namespace {
 constexpr CGFloat kInsetValue = 20;
 // Desired percentage of the width of the presented view controller.
 constexpr CGFloat kWidthProportion = 0.75;
+// Distance between the primary text label and the secondary text label.
+constexpr CGFloat kVerticalDistance = 24;
 
 }  // namespace
 
 @interface PopoverLabelViewController () <
     UIPopoverPresentationControllerDelegate>
 
-// The message being presented.
+// The main message being presented.
 @property(nonatomic, strong, readonly) NSString* message;
+
+// The attributed string being presented as primary text.
+@property(nonatomic, strong, readonly)
+    NSAttributedString* primaryAttributedString;
+
+// The attributed string being presented as secondary text.
+@property(nonatomic, strong, readonly)
+    NSAttributedString* secondaryAttributedString;
 
 @end
 
@@ -34,6 +44,20 @@ constexpr CGFloat kWidthProportion = 0.75;
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _message = message;
+    self.modalPresentationStyle = UIModalPresentationPopover;
+    self.popoverPresentationController.delegate = self;
+  }
+  return self;
+}
+
+- (instancetype)initWithPrimaryAttributedString:
+                    (NSAttributedString*)primaryAttributedString
+                      secondaryAttributedString:
+                          (NSAttributedString*)secondaryAttributedString {
+  self = [super initWithNibName:nil bundle:nil];
+  if (self) {
+    _primaryAttributedString = primaryAttributedString;
+    _secondaryAttributedString = secondaryAttributedString;
     self.modalPresentationStyle = UIModalPresentationPopover;
     self.popoverPresentationController.delegate = self;
   }
@@ -56,29 +80,83 @@ constexpr CGFloat kWidthProportion = 0.75;
   [self.view addSubview:scrollView];
   AddSameConstraints(self.view.layoutMarginsGuide, scrollView);
 
-  UILabel* label = [[UILabel alloc] init];
-  label.numberOfLines = 0;
-  label.textColor = [UIColor colorNamed:kTextSecondaryColor];
-  label.textAlignment = NSTextAlignmentNatural;
-  label.adjustsFontForContentSizeCategory = YES;
-  label.text = self.message;
-  label.translatesAutoresizingMaskIntoConstraints = NO;
-  label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
-  [scrollView addSubview:label];
+  UILayoutGuide* textLayoutGuide = [[UILayoutGuide alloc] init];
+  [self.view addLayoutGuide:textLayoutGuide];
+  AddSameConstraints(textLayoutGuide, scrollView);
 
-  AddSameConstraints(label, scrollView);
+  UILabel* primaryLabel = [[UILabel alloc] init];
+  primaryLabel.numberOfLines = 0;
+  primaryLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  primaryLabel.textAlignment = NSTextAlignmentNatural;
+  primaryLabel.adjustsFontForContentSizeCategory = YES;
+  if (self.message) {
+    primaryLabel.text = self.message;
+  } else if (self.primaryAttributedString) {
+    primaryLabel.attributedText = self.primaryAttributedString;
+  }
+  primaryLabel.translatesAutoresizingMaskIntoConstraints = NO;
+  primaryLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
+  [scrollView addSubview:primaryLabel];
 
-  [label.widthAnchor constraintEqualToAnchor:scrollView.widthAnchor].active =
-      YES;
+  UILabel* secondaryLabel = [[UILabel alloc] init];
+  secondaryLabel.numberOfLines = 0;
+  secondaryLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  secondaryLabel.textAlignment = NSTextAlignmentNatural;
+  secondaryLabel.adjustsFontForContentSizeCategory = YES;
+  if (self.secondaryAttributedString) {
+    secondaryLabel.attributedText = self.secondaryAttributedString;
+  }
+  secondaryLabel.translatesAutoresizingMaskIntoConstraints = NO;
+  secondaryLabel.font =
+      [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
+  [scrollView addSubview:secondaryLabel];
 
   NSLayoutConstraint* heightConstraint = [scrollView.heightAnchor
       constraintEqualToAnchor:scrollView.contentLayoutGuide.heightAnchor
                    multiplier:1];
+
   // UILayoutPriorityDefaultHigh is the default priority for content
   // compression. Setting this lower avoids compressing the content of the
   // scroll view.
   heightConstraint.priority = UILayoutPriorityDefaultHigh - 1;
   heightConstraint.active = YES;
+
+  // Set the compression resistance to high priority to avoid the text
+  // being trimmed when using large font size. Set the primary text with higher
+  // priority so if the space can't contain both text, the secondary text will
+  // be trimmed.
+  [primaryLabel
+      setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 2
+                                      forAxis:UILayoutConstraintAxisVertical];
+  [secondaryLabel
+      setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
+                                      forAxis:UILayoutConstraintAxisVertical];
+
+  CGFloat verticalOffset =
+      (secondaryLabel.attributedText) ? -kVerticalDistance : 0;
+  NSLayoutConstraint* verticalConstraint = [primaryLabel.bottomAnchor
+      constraintEqualToAnchor:secondaryLabel.topAnchor
+                     constant:verticalOffset];
+
+  [NSLayoutConstraint activateConstraints:@[
+    [textLayoutGuide.widthAnchor
+        constraintEqualToAnchor:scrollView.widthAnchor],
+    [textLayoutGuide.leadingAnchor
+        constraintEqualToAnchor:primaryLabel.leadingAnchor],
+    [textLayoutGuide.leadingAnchor
+        constraintEqualToAnchor:secondaryLabel.leadingAnchor],
+    [textLayoutGuide.trailingAnchor
+        constraintEqualToAnchor:primaryLabel.trailingAnchor],
+    [textLayoutGuide.trailingAnchor
+        constraintEqualToAnchor:secondaryLabel.trailingAnchor],
+    verticalConstraint,
+    [textLayoutGuide.topAnchor constraintEqualToAnchor:primaryLabel.topAnchor
+                                              constant:-kInsetValue],
+    [textLayoutGuide.bottomAnchor
+        constraintEqualToAnchor:secondaryLabel.bottomAnchor
+                       constant:kInsetValue],
+  ]];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -117,8 +195,7 @@ constexpr CGFloat kWidthProportion = 0.75;
   CGSize size = [self.view systemLayoutSizeFittingSize:CGSizeMake(width, 0)
                          withHorizontalFittingPriority:UILayoutPriorityRequired
                                verticalFittingPriority:500];
-  self.preferredContentSize =
-      CGSizeMake(size.width, size.height + 2 * kInsetValue);
+  self.preferredContentSize = size;
 }
 
 @end

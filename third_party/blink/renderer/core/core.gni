@@ -19,12 +19,11 @@ core_config_add = [
 ]
 core_config_remove = []
 
-# Compute the optimization level. The GYP code sets "optimize: max" which sets
-# speed-over-size optimization for official builds on Windows only. The GN's
-# build optimize_max config applies this optimization on all platforms, so
-# compute how to modify the config list to duplicate the GYP behavior.
-# TODO revisit this behavior, as the Windows-specific part seems suspicious.
-if (is_win && is_official_build) {
+# Compute the optimization level. `optimize_max` ensures that speed is preferred
+# over size on all platforms.
+# TODO: It's unclear if the perf vs size win here is a good trade-off for
+# Android. Investigate that.
+if (!is_debug && !is_android) {
   core_config_remove += [ "//build/config/compiler:default_optimization" ]
   core_config_add += [ "//build/config/compiler:optimize_max" ]
 }

@@ -39,10 +39,32 @@ class TCPServerSocket;
 namespace test_server {
 
 class EmbeddedTestServerConnectionListener;
-class EmbeddedTestServerHandle;
 class HttpConnection;
 class HttpResponse;
 struct HttpRequest;
+
+class EmbeddedTestServer;
+
+// Returned by the Start[AcceptingConnections]WithHandle() APIs, to simplify
+// correct shutdown ordering of the EmbeddedTestServer. Shutdown() is invoked
+// on the associated test server when the handle goes out of scope. The handle
+// must therefore be destroyed before the test server.
+class EmbeddedTestServerHandle {
+ public:
+  EmbeddedTestServerHandle() = default;
+  EmbeddedTestServerHandle(EmbeddedTestServerHandle&& other);
+  EmbeddedTestServerHandle& operator=(EmbeddedTestServerHandle&& other);
+  ~EmbeddedTestServerHandle();
+
+  bool is_valid() const { return test_server_; }
+  explicit operator bool() const { return test_server_; }
+
+ private:
+  friend class EmbeddedTestServer;
+
+  explicit EmbeddedTestServerHandle(EmbeddedTestServer* test_server);
+  EmbeddedTestServer* test_server_ = nullptr;
+};
 
 // Class providing an HTTP server for testing purpose. This is a basic server
 // providing only an essential subset of HTTP/1.1 protocol. Especially,
@@ -274,7 +296,8 @@ class EmbeddedTestServer {
   typedef base::RepeatingCallback<void(const HttpRequest& request)>
       MonitorRequestCallback;
 
-  // Creates a http test server. Start() must be called to start the server.
+  // Creates a http test server. StartAndReturnHandle() must be called to start
+  // the server.
   // |type| indicates the protocol type of the server (HTTP/HTTPS).
   //
   //  When a TYPE_HTTPS server is created, EmbeddedTestServer will call
@@ -299,13 +322,14 @@ class EmbeddedTestServer {
 
   // Initializes and waits until the server is ready to accept requests.
   // This is the equivalent of calling InitializeAndListen() followed by
-  // StartAcceptingConnections().
+  // StartAcceptingConnectionsAndReturnHandle().
   // Returns a "handle" which will ShutdownAndWaitUntilComplete() when
   // destroyed, or null if the listening socket could not be created.
   EmbeddedTestServerHandle StartAndReturnHandle(int port = 0)
       WARN_UNUSED_RESULT;
 
-  // Deprecated equivalent of StartAndReturnHandle().
+  // Equivalent of StartAndReturnHandle(), but requires manual Shutdown() by
+  // the caller.
   bool Start(int port = 0) WARN_UNUSED_RESULT;
 
   // Starts listening for incoming connections but will not yet accept them.
@@ -313,9 +337,16 @@ class EmbeddedTestServer {
   bool InitializeAndListen(int port = 0) WARN_UNUSED_RESULT;
 
   // Starts the Accept IO Thread and begins accepting connections.
+  EmbeddedTestServerHandle StartAcceptingConnectionsAndReturnHandle()
+      WARN_UNUSED_RESULT;
+
+  // Equivalent of StartAcceptingConnectionsAndReturnHandle(), but requires
+  // manual Shutdown() by the caller.
   void StartAcceptingConnections();
 
   // Shuts down the http server and waits until the shutdown is complete.
+  // Prefer to use the Start*AndReturnHandle() APIs to manage shutdown, if
+  // possible.
   bool ShutdownAndWaitUntilComplete() WARN_UNUSED_RESULT;
 
   // Checks if the server has started listening for incoming connections.
@@ -386,23 +417,22 @@ class EmbeddedTestServer {
   // |directory| directory, relative to DIR_SOURCE_ROOT.
   void AddDefaultHandlers(const base::FilePath& directory);
 
-  // The most general purpose method. Any request processing can be added using
-  // this method. Takes ownership of the object. The |callback| is called
-  // on the server's IO thread so all handlers must be registered before the
-  // server is started.
+  // Adds a request handler that can perform any general-purpose processing.
+  // |callback| will be invoked on the server's IO thread. Note that:
+  // 1. All handlers must be registered before the server is Start()ed.
+  // 2. The server should be Shutdown() before any variables referred to by
+  //    |callback| (e.g. via base::Unretained(&local)) are deleted. Using the
+  //    Start*WithHandle() API variants is recommended for this reason.
   void RegisterRequestHandler(const HandleRequestCallback& callback);
 
-  // Adds request monitors. The |callback| is called before any handlers are
-  // called, but can not respond it. This is useful to monitor requests that
-  // will be handled by other request handlers. The |callback| is called
-  // on the server's IO thread so all monitors must be registered before the
-  // server is started.
+  // Adds a request monitor that will be called before any handlers. Monitors
+  // can be used to observe requests, but not to respond to them.
+  // See RegisterRequestHandler() for notes on usage.
   void RegisterRequestMonitor(const MonitorRequestCallback& callback);
 
-  // Adds default handlers, including those added by AddDefaultHandlers, to be
-  // tried after all other user-specified handlers have been tried. The
-  // |callback| is called on the server's IO thread so all handlers must be
-  // registered before the server is started.
+  // Adds a default request handler, to be called if no user-specified handler
+  // handles the request.
+  // See RegisterRequestHandler() for notes on usage.
   void RegisterDefaultHandler(const HandleRequestCallback& callback);
 
   bool FlushAllSocketsAndConnectionsOnUIThread();
@@ -523,23 +553,6 @@ class EmbeddedTestServer {
   base::WeakPtrFactory<EmbeddedTestServer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedTestServer);
-};
-
-class EmbeddedTestServerHandle {
- public:
-  EmbeddedTestServerHandle() = default;
-  EmbeddedTestServerHandle(EmbeddedTestServerHandle&& other);
-  EmbeddedTestServerHandle& operator=(EmbeddedTestServerHandle&& other);
-
-  ~EmbeddedTestServerHandle();
-
-  explicit operator bool() const { return test_server_; }
-
- private:
-  friend class EmbeddedTestServer;
-
-  explicit EmbeddedTestServerHandle(EmbeddedTestServer* test_server);
-  EmbeddedTestServer* test_server_ = nullptr;
 };
 
 }  // namespace test_server

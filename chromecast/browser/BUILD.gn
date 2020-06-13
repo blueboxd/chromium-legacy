@@ -186,7 +186,7 @@ cast_source_set("browser") {
     "//components/download/public/common:public",
     "//components/media_control/browser",
     "//components/metrics",
-    "//components/metrics:gpu",
+    "//components/metrics:content",
     "//components/metrics:net",
     "//components/variations/net",
 

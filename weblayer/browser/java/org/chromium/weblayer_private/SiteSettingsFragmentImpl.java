@@ -59,6 +59,7 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
     // resource IDs.
     private Context mContext;
 
+    private boolean mStarted;
     private FragmentController mFragmentController;
 
     /**
@@ -182,8 +183,9 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
 
         @Override
         public LayoutInflater onGetLayoutInflater() {
-            return (LayoutInflater) mFragmentImpl.getWebLayerContext().getSystemService(
-                    Context.LAYOUT_INFLATER_SERVICE);
+            Context context = mFragmentImpl.getWebLayerContext();
+            return ((LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE))
+                    .cloneInContext(context);
         }
 
         @Override
@@ -298,7 +300,11 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
     @Override
     public void onStart() {
         super.onStart();
-        mFragmentController.dispatchActivityCreated();
+
+        if (!mStarted) {
+            mStarted = true;
+            mFragmentController.dispatchActivityCreated();
+        }
         mFragmentController.noteStateNotSaved();
         mFragmentController.execPendingActions();
         mFragmentController.dispatchStart();

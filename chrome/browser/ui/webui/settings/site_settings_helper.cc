@@ -347,7 +347,7 @@ const ChooserTypeNameEntry kChooserTypeGroupNames[] = {
 bool HasRegisteredGroupName(ContentSettingsType type) {
   for (size_t i = 0; i < base::size(kContentSettingsTypeGroupNames); ++i) {
     if (type == kContentSettingsTypeGroupNames[i].type &&
-        kContentSettingsTypeGroupNames[i].name != nullptr) {
+        kContentSettingsTypeGroupNames[i].name) {
       return true;
     }
   }
@@ -368,7 +368,7 @@ std::string ContentSettingsTypeToGroupName(ContentSettingsType type) {
   for (size_t i = 0; i < base::size(kContentSettingsTypeGroupNames); ++i) {
     if (type == kContentSettingsTypeGroupNames[i].type) {
       const char* name = kContentSettingsTypeGroupNames[i].name;
-      if (name != nullptr)
+      if (name)
         return name;
       break;
     }

@@ -4,8 +4,8 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/test/nacl/nacl_browsertest_util.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/renderer/platform_info.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
@@ -61,7 +61,7 @@ bool IsSubzeroSupportedForArch() {
 void FetchHistogramsFromChildProcesses() {
   // Support both traditional IPC and new "shared memory" channels.
   content::FetchHistogramsFromChildProcesses();
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 }
 
 NACL_BROWSER_TEST_F(NaClBrowserTest, SuccessfulLoadUMA, {

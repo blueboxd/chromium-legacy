@@ -88,12 +88,35 @@ class ConversionStorageTest : public testing::Test {
 
   ConfigurableStorageDelegate* delegate() { return delegate_; }
 
+ protected:
+  base::ScopedTempDir dir_;
+
  private:
   ConfigurableStorageDelegate* delegate_;
   base::SimpleTestClock clock_;
-  base::ScopedTempDir dir_;
   std::unique_ptr<ConversionStorage> storage_;
 };
+
+TEST_F(ConversionStorageTest,
+       StorageUsedAfterFailedInitilization_FailsSilently) {
+  // We fake a failed initialization by never initializing |storage|.
+  std::unique_ptr<ConversionStorage> storage =
+      std::make_unique<ConversionStorageSql>(
+          dir_.GetPath(), std::make_unique<ConfigurableStorageDelegate>(),
+          clock());
+
+  // Test all public methods on ConversionStorage.
+  EXPECT_NO_FATAL_FAILURE(
+      storage->StoreImpression(ImpressionBuilder(clock()->Now()).Build()));
+  EXPECT_EQ(0,
+            storage->MaybeCreateAndStoreConversionReports(DefaultConversion()));
+  EXPECT_TRUE(storage->GetConversionsToReport(clock()->Now()).empty());
+  EXPECT_TRUE(storage->GetActiveImpressions().empty());
+  EXPECT_EQ(0, storage->DeleteExpiredImpressions());
+  EXPECT_EQ(0, storage->DeleteConversion(0UL));
+  EXPECT_NO_FATAL_FAILURE(storage->ClearData(
+      base::Time::Min(), base::Time::Max(), base::NullCallback()));
+}
 
 TEST_F(ConversionStorageTest, ImpressionStoredAndRetrieved_ValuesIdentical) {
   auto impression = ImpressionBuilder(clock()->Now()).Build();

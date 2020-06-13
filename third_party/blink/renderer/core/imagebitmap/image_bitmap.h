@@ -105,7 +105,7 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
 
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                               AccelerationHint,
+                                               RasterModeHint,
                                                const FloatSize&) override;
   bool WouldTaintOrigin() const override { return !image_->OriginClean(); }
   FloatSize ElementSize(const FloatSize&,

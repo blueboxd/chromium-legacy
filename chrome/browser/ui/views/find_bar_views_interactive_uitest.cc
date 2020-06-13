@@ -46,7 +46,7 @@ class WebContentsFocusChangedWatcher : public content::WebContentsObserver {
  public:
   explicit WebContentsFocusChangedWatcher(WebContents* web_contents)
       : WebContentsObserver(web_contents) {
-    EXPECT_TRUE(web_contents != nullptr);
+    EXPECT_TRUE(web_contents);
   }
   ~WebContentsFocusChangedWatcher() override {}
 

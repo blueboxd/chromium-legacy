@@ -1449,7 +1449,7 @@ TEST_F(DisplayInfoProviderChromeosTest, DisplayMode) {
       gfx::Size(other_mode->width_in_native_pixels,
                 other_mode->height_in_native_pixels),
       active_mode.refresh_rate(), active_mode.is_interlaced(),
-      active_mode.native(), other_mode->device_scale_factor);
+      other_mode->is_native, other_mode->device_scale_factor);
   EXPECT_FALSE(active_mode.IsEquivalent(other_mode_ash));
 
   // Switch modes.

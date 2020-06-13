@@ -139,7 +139,7 @@ public class FullscreenManagerUnitTest {
                 /*topControlsMinHeightOffsetY*/ 0, /*bottomControlsMinHeightOffsetY*/ 0);
         // Initially, the controls should be fully visible.
         assertTrue("Browser controls aren't fully visible.",
-                mFullscreenManager.areBrowserControlsFullyVisible());
+                BrowserControlsUtils.areBrowserControlsFullyVisible(mFullscreenManager));
         assertTrue("ControlsResizeView is false,"
                         + " but it should be true when the controls are fully visible.",
                 mFullscreenManager.controlsResizeView());
@@ -161,7 +161,7 @@ public class FullscreenManagerUnitTest {
         assertFalse("Browser controls are hidden when they should be fully visible.",
                 mFullscreenManager.areBrowserControlsAtMinHeight());
         assertTrue("Browser controls aren't fully visible.",
-                mFullscreenManager.areBrowserControlsFullyVisible());
+                BrowserControlsUtils.areBrowserControlsFullyVisible(mFullscreenManager));
         // #controlsResizeView should be flipped back to true.
         assertTrue("ControlsResizeView is false,"
                         + " but it should be true when the controls are fully visible.",
@@ -191,7 +191,7 @@ public class FullscreenManagerUnitTest {
                 /*topControlsMinHeightOffsetY*/ 25, /*bottomControlsMinHeightOffsetY*/ 0);
         // Initially, the controls should be fully visible.
         assertTrue("Browser controls aren't fully visible.",
-                mFullscreenManager.areBrowserControlsFullyVisible());
+                BrowserControlsUtils.areBrowserControlsFullyVisible(mFullscreenManager));
         assertTrue("ControlsResizeView is false,"
                         + " but it should be true when the controls are fully visible.",
                 mFullscreenManager.controlsResizeView());
@@ -213,7 +213,7 @@ public class FullscreenManagerUnitTest {
         assertFalse("Browser controls are at min-height when they should be fully visible.",
                 mFullscreenManager.areBrowserControlsAtMinHeight());
         assertTrue("Browser controls aren't fully visible.",
-                mFullscreenManager.areBrowserControlsFullyVisible());
+                BrowserControlsUtils.areBrowserControlsFullyVisible(mFullscreenManager));
         // #controlsResizeView should be flipped back to true.
         assertTrue("ControlsResizeView is false,"
                         + " but it should be true when the controls are fully visible.",

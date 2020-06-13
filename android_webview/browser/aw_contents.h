@@ -24,7 +24,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "components/js_injection/browser/js_java_configurator_host.h"
+#include "components/js_injection/browser/js_communication_host.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class SkBitmap;
@@ -221,7 +221,7 @@ class AwContents : public FindHelper::Listener,
   jint GetEffectivePriority(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj);
 
-  js_injection::JsJavaConfiguratorHost* GetJsJavaConfiguratorHost();
+  js_injection::JsCommunicationHost* GetJsCommunicationHost();
 
   jint AddDocumentStartJavaScript(
       JNIEnv* env,
@@ -429,8 +429,7 @@ class AwContents : public FindHelper::Listener,
   std::unique_ptr<AwPdfExporter> pdf_exporter_;
   std::unique_ptr<PermissionRequestHandler> permission_request_handler_;
   std::unique_ptr<autofill::AutofillProvider> autofill_provider_;
-  std::unique_ptr<js_injection::JsJavaConfiguratorHost>
-      js_java_configurator_host_;
+  std::unique_ptr<js_injection::JsCommunicationHost> js_communication_host_;
 
   bool view_tree_force_dark_state_ = false;
 

@@ -256,7 +256,7 @@ std::string FocusListToString(views::View* view) {
   std::ostringstream result;
   base::flat_set<views::View*> seen_views;
 
-  while (view != nullptr) {
+  while (view) {
     if (base::Contains(seen_views, view)) {
       result << "*CYCLE TO " << view->GetClassName() << "*";
       break;
@@ -275,12 +275,12 @@ void CheckFocusListForCycles(views::View* const start_view) {
 
   base::flat_set<views::View*> seen_views;
 
-  while (view != nullptr) {
+  while (view) {
     DCHECK(!base::Contains(seen_views, view)) << FocusListToString(start_view);
     seen_views.insert(view);
 
     views::View* next_view = view->GetNextFocusableView();
-    if (next_view != nullptr) {
+    if (next_view) {
       DCHECK_EQ(view, next_view->GetPreviousFocusableView())
           << view->GetClassName();
     }

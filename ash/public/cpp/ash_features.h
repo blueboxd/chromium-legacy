@@ -131,10 +131,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kShelfAppScaling;
 // may have choppier app list animations while in this mode. crbug.com/765292.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableBackgroundBlur;
 
-// Enables refactored UnifiedMessageCenter which is completely separated from
-// the UnifiedSystemTrayView.
-ASH_PUBLIC_EXPORT extern const base::Feature kUnifiedMessageCenterRefactor;
-
 // Enables going back to previous page while swiping from the left edge of the
 // display. Only for tablet mode.
 ASH_PUBLIC_EXPORT extern const base::Feature kSwipingFromLeftEdgeToGoBack;
@@ -196,8 +192,6 @@ ASH_PUBLIC_EXPORT bool IsTrilinearFilteringEnabled();
 ASH_PUBLIC_EXPORT bool IsSupervisedUserDeprecationNoticeEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSwapSideVolumeButtonsForOrientationEnabled();
-
-ASH_PUBLIC_EXPORT bool IsUnifiedMessageCenterRefactorEnabled();
 
 ASH_PUBLIC_EXPORT bool IsBackgroundBlurEnabled();
 

@@ -35,3 +35,58 @@ class SimpleCanvasPage(rendering_story.RenderingStory):
 class CanvasToCanvasDrawPage(SimpleCanvasPage):
   BASE_NAME = 'canvas_to_canvas_draw'
   URL = 'file://../simple_canvas/canvas_to_canvas_draw.html'
+
+
+class DocsPaper(SimpleCanvasPage):
+  BASE_NAME = 'docs_paper.html'
+  URL = 'file://../simple_canvas/docs_paper.html'
+
+
+class DocsResume(SimpleCanvasPage):
+  BASE_NAME = 'docs_resume.html'
+  URL = 'file://../simple_canvas/docs_resume.html'
+
+
+class DocsTable(SimpleCanvasPage):
+  BASE_NAME = 'docs_table.html'
+  URL = 'file://../simple_canvas/docs_table.html'
+
+
+class DynamicCanvasToHWAcceleratedCanvas(SimpleCanvasPage):
+  BASE_NAME = 'dynamic_canvas_to_hw_accelerated_canvas.html'
+  URL = 'file://../simple_canvas/dynamic_canvas_to_hw_accelerated_canvas.html'
+
+
+class DynamicWebglToHWAcceleratedCanvas(SimpleCanvasPage):
+  BASE_NAME = 'dynamic_webgl_to_hw_accelerated_canvas.html'
+  URL = 'file://../simple_canvas/dynamic_webgl_to_hw_accelerated_canvas.html'
+
+
+class GetImageData(SimpleCanvasPage):
+  BASE_NAME = 'get_image_data.html'
+  URL = 'file://../simple_canvas/get_image_data.html'
+
+
+class HWAcceleratedCanvasToSWCanvas(SimpleCanvasPage):
+  BASE_NAME = 'hw_accelerated_canvas_to_sw_canvas.html'
+  URL = 'file://../simple_canvas/hw_accelerated_canvas_to_sw_canvas.html'
+
+
+class PutAndCreateImageBitmapFromImageData(SimpleCanvasPage):
+  BASE_NAME = 'put_and_create_imagebitmap_from_imagedata'
+  URL = 'file://../simple_canvas/put_and_create_imageBitmap_from_imageData.html'
+
+
+class PutImageData(SimpleCanvasPage):
+  BASE_NAME = 'put_image_data.html'
+  URL = 'file://../simple_canvas/put_image_data.html'
+
+
+class StaticCanvasToHWAcceleratedCanvas(SimpleCanvasPage):
+  BASE_NAME = 'static_canvas_to_hw_accelerated_canvas.html'
+  URL = 'file://../simple_canvas/static_canvas_to_hw_accelerated_canvas.html'
+
+
+class StaticWebglToHWAcceleratedCanvas(SimpleCanvasPage):
+  BASE_NAME = 'static_webgl_to_hw_accelerated_canvas.html'
+  URL = 'file://../simple_canvas/static_webgl_to_hw_accelerated_canvas.html'

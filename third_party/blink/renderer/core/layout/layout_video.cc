@@ -43,7 +43,7 @@ LayoutSize LayoutVideo::DefaultSize() {
 }
 
 void LayoutVideo::IntrinsicSizeChanged() {
-  if (VideoElement()->ShouldDisplayPosterImage())
+  if (VideoElement()->IsShowPosterFlagSet())
     LayoutMedia::IntrinsicSizeChanged();
   UpdateIntrinsicSize(/* is_in_layout */ false);
 }
@@ -96,7 +96,7 @@ LayoutSize LayoutVideo::CalculateIntrinsicSize() {
       return LayoutSize(size);
   }
 
-  if (video->ShouldDisplayPosterImage() && !cached_image_size_.IsEmpty() &&
+  if (video->IsShowPosterFlagSet() && !cached_image_size_.IsEmpty() &&
       !ImageResource()->ErrorOccurred())
     return cached_image_size_;
 
@@ -120,8 +120,13 @@ void LayoutVideo::ImageChanged(WrappedImagePtr new_image,
   UpdateIntrinsicSize(/* is_in_layout */ false);
 }
 
-bool LayoutVideo::ShouldDisplayVideo() const {
-  return !VideoElement()->ShouldDisplayPosterImage();
+LayoutVideo::DisplayMode LayoutVideo::GetDisplayMode() const {
+  if (!VideoElement()->IsShowPosterFlagSet() ||
+      VideoElement()->PosterImageURL().IsEmpty()) {
+    return kVideo;
+  } else {
+    return kPoster;
+  }
 }
 
 void LayoutVideo::PaintReplaced(const PaintInfo& paint_info,
@@ -142,7 +147,6 @@ void LayoutVideo::UpdateFromElement() {
   LayoutMedia::UpdateFromElement();
   UpdatePlayer(/* is_in_layout */ false);
 
-  // If the DisplayMode of the video changed, then we need to paint.
   SetShouldDoFullPaintInvalidation();
 }
 
@@ -174,7 +178,7 @@ LayoutUnit LayoutVideo::MinimumReplacedHeight() const {
 }
 
 PhysicalRect LayoutVideo::ReplacedContentRect() const {
-  if (ShouldDisplayVideo()) {
+  if (GetDisplayMode() == kVideo) {
     // Video codecs may need to restart from an I-frame when the output is
     // resized. Round size in advance to avoid 1px snap difference.
     return PreSnappedRectForPersistentSizing(ComputeObjectFit());
@@ -193,7 +197,7 @@ CompositingReasons LayoutVideo::AdditionalCompositingReasons() const {
   if (element->IsFullscreen() && element->UsesOverlayFullscreenVideo())
     return CompositingReason::kVideo;
 
-  if (ShouldDisplayVideo() && SupportsAcceleratedRendering())
+  if (GetDisplayMode() == kVideo && SupportsAcceleratedRendering())
     return CompositingReason::kVideo;
 
   return CompositingReason::kNone;

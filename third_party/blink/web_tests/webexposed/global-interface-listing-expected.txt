@@ -1690,7 +1690,6 @@ interface Document : Node
     getter readyState
     getter referrer
     getter rootElement
-    getter rootScroller
     getter scripts
     getter scrollingElement
     getter styleSheets
@@ -1883,7 +1882,6 @@ interface Document : Node
     setter onwebkitfullscreenerror
     setter onwebkittransitionend
     setter onwheel
-    setter rootScroller
     setter title
     setter vlinkColor
     setter xmlStandalone

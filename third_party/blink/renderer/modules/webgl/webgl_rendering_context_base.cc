@@ -752,7 +752,7 @@ void WebGLRenderingContextBase::commit() {
   int height = GetDrawingBuffer()->Size().Height();
 
   if (PaintRenderingResultsToCanvas(kBackBuffer)) {
-    if (Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
+    if (Host()->GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)) {
       Host()->Commit(Host()->ResourceProvider()->ProduceCanvasResource(),
                      SkIRect::MakeWH(width, height));
     }
@@ -761,7 +761,7 @@ void WebGLRenderingContextBase::commit() {
 }
 
 scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
-    AccelerationHint hint) {
+    RasterModeHint hint) {
   if (!GetDrawingBuffer())
     return nullptr;
 
@@ -1502,7 +1502,7 @@ void WebGLRenderingContextBase::DidDraw() {
 bool WebGLRenderingContextBase::PushFrame() {
   int submitted_frame = false;
   if (PaintRenderingResultsToCanvas(kBackBuffer)) {
-    if (Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
+    if (Host()->GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)) {
       int width = GetDrawingBuffer()->Size().Width();
       int height = GetDrawingBuffer()->Size().Height();
       submitted_frame =
@@ -1676,7 +1676,7 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
   }
 
   CanvasResourceProvider* resource_provider =
-      Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration);
+      Host()->GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU);
   if (!resource_provider)
     return false;
 
@@ -1747,7 +1747,7 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
   // Note: This code path could work for all cases. The only reason there
   // is a separate path for the accelerated case is that we assume texture
   // copying is faster than drawImage.
-  scoped_refptr<StaticBitmapImage> image = GetImage(kPreferAcceleration);
+  scoped_refptr<StaticBitmapImage> image = GetImage(RasterModeHint::kPreferGPU);
   if (!image || !image->PaintImageForCurrentFrame())
     return false;
   cc::PaintFlags paint_flags;
@@ -5548,7 +5548,7 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
         To<WebGLRenderingContextBase>(context_host->RenderingContext());
   } else {
     image = context_host->GetSourceImageForCanvas(
-        &source_image_status, kPreferAcceleration,
+        &source_image_status, RasterModeHint::kPreferGPU,
         FloatSize(source_sub_rectangle.Width(), source_sub_rectangle.Height()));
     if (source_image_status != kNormalSourceImageStatus)
       return;

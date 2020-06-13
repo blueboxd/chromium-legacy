@@ -654,7 +654,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 TabManagementDelegate tabManagementDelegate =
                         TabManagementModuleProvider.getDelegate();
                 if (tabManagementDelegate != null) {
-                    mStartSurface = tabManagementDelegate.createStartSurface(this);
+                    mStartSurface = tabManagementDelegate.createStartSurface(
+                            this, mRootUiCoordinator.getScrimCoordinator());
                 }
             }
             mLayoutManager = new LayoutManagerChromePhone(compositorViewHolder, mStartSurface);

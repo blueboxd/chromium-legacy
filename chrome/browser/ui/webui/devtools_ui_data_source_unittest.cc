@@ -96,7 +96,7 @@ class DevToolsUIDataSourceTest : public testing::Test {
  private:
   void OnDataReceived(scoped_refptr<base::RefCountedMemory> bytes) {
     data_received_ = true;
-    if (bytes.get() != nullptr) {
+    if (bytes.get()) {
       data_ = base::StringPiece(reinterpret_cast<const char*>(bytes->front()),
                                 bytes->size())
                   .as_string();

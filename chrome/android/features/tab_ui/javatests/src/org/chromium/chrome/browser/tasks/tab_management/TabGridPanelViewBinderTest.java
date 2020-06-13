@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.areAnimatorsEnabled;
 
 import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.support.test.annotation.UiThreadTest;
@@ -29,9 +30,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -56,7 +57,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     private ChromeImageView mLeftButton;
     private EditText mTitleTextView;
     private View mMainContent;
-    private ScrimView mScrimView;
+    private ScrimCoordinator mScrimCoordinator;
 
     @Override
     public void setUpTest() throws Exception {
@@ -70,15 +71,15 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
             mContentView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
             mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(getActivity())
                                    .inflate(R.layout.bottom_tab_grid_toolbar, mContentView, false);
-            mScrimView = new ScrimView(getActivity(), null, parentView);
             LayoutInflater.from(getActivity())
                     .inflate(R.layout.tab_grid_dialog_layout, parentView, true);
             mTabGridDialogView = parentView.findViewById(R.id.dialog_parent_view);
-            mTabGridDialogView.setupScrimView(mScrimView);
             mLeftButton = mToolbarView.findViewById(R.id.toolbar_left_button);
             mRightButton = mToolbarView.findViewById(R.id.toolbar_right_button);
             mTitleTextView = mToolbarView.findViewById(R.id.title);
             mMainContent = mToolbarView.findViewById(R.id.main_content);
+            mScrimCoordinator = new ScrimCoordinator(getActivity(), null, parentView, Color.RED);
+            mTabGridDialogView.setupScrimCoordinator(mScrimCoordinator);
 
             mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
 
@@ -191,21 +192,13 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     public void testSetScrimViewObserver() {
         AtomicBoolean scrimViewClicked = new AtomicBoolean();
         scrimViewClicked.set(false);
-        ScrimView.ScrimObserver scrimObserver = new ScrimView.ScrimObserver() {
-            @Override
-            public void onScrimClick() {
-                scrimViewClicked.set(true);
-            }
+        Runnable scrimClickRunnable = () -> scrimViewClicked.set(true);
 
-            @Override
-            public void onScrimVisibilityChanged(boolean visible) {}
-        };
-
-        mModel.set(TabGridPanelProperties.SCRIMVIEW_OBSERVER, scrimObserver);
+        mModel.set(TabGridPanelProperties.SCRIMVIEW_CLICK_RUNNABLE, scrimClickRunnable);
         // Open the dialog to show the ScrimView.
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
-        Assert.assertEquals(View.VISIBLE, mScrimView.getVisibility());
-        mScrimView.performClick();
+        View scrimView = mScrimCoordinator.getViewForTesting();
+        scrimView.performClick();
         Assert.assertTrue(scrimViewClicked.get());
     }
 
@@ -214,9 +207,12 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     public void testSetDialogVisibility() {
         Assert.assertNull(mTabGridDialogView.getCurrentDialogAnimatorForTesting());
 
-        // Setup basic dialog animation. The dialog show/hide animation is always initialized before
-        // the visibility of dialog is set.
-        TestThreadUtils.runOnUiThreadBlocking(() -> mTabGridDialogView.setupDialogAnimation(null));
+        // Setup basic dialog animation and a dummy scrim view click runnable. These are always
+        // initialized before the visibility of dialog is set.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mTabGridDialogView.setupDialogAnimation(null);
+            mTabGridDialogView.setScrimClickRunnable(() -> {});
+        });
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true));

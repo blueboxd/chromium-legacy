@@ -43,6 +43,8 @@ constexpr wchar_t kRegMdmSupportsMultiUser[] = L"enable_multi_user_login";
 constexpr wchar_t kRegMdmAllowConsumerAccounts[] = L"enable_consumer_accounts ";
 constexpr wchar_t kRegDeviceDetailsUploadStatus[] =
     L"device_details_upload_status";
+constexpr wchar_t kRegDeviceDetailsUploadFailures[] =
+    L"device_details_upload_failures";
 constexpr wchar_t kRegGlsPath[] = L"gls_path";
 constexpr wchar_t kRegUserDeviceResourceId[] = L"device_resource_id";
 constexpr wchar_t kUserPasswordLsaStoreKeyPrefix[] =
@@ -52,6 +54,7 @@ constexpr wchar_t kUserPasswordLsaStoreKeyPrefix[] =
     L"Chromium-GCPW-";
 #endif
 const char kErrorKeyInRequestResult[] = "error";
+constexpr int kMaxNumConsecutiveUploadDeviceFailures = 3;
 
 // Overridden in tests to force the MDM enrollment to either succeed or fail.
 enum class EnrollmentStatus {
@@ -362,7 +365,18 @@ bool UploadDeviceDetailsNeeded(const base::string16& sid) {
   DWORD status = 0;
   GetUserProperty(sid, kRegDeviceDetailsUploadStatus, &status);
 
-  return status != 1;
+  if (status != 1) {
+    DWORD device_upload_failures = 1;
+    GetUserProperty(sid, kRegDeviceDetailsUploadFailures,
+                    &device_upload_failures);
+    if (device_upload_failures > kMaxNumConsecutiveUploadDeviceFailures) {
+      LOGFN(WARNING) << "Reauth not enforced due to upload device details "
+                        "failures exceeding threshhold.";
+      return false;
+    }
+    return true;
+  }
+  return false;
 }
 
 bool MdmEnrollmentEnabled() {

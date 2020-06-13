@@ -406,7 +406,13 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
 void PasswordsPrivateDelegateImpl::MovePasswordToAccount(
     int id,
     content::WebContents* web_contents) {
-  NOTIMPLEMENTED();
+  auto* client = ChromePasswordManagerClient::FromWebContents(web_contents);
+  // TODO(victorvianna): Use a DCHECK instead.
+  if (!client)
+    return;
+
+  if (const std::string* sort_key = password_id_generator_.TryGetKey(id))
+    password_manager_presenter_->MovePasswordToAccountStore(*sort_key, client);
 }
 
 void PasswordsPrivateDelegateImpl::ImportPasswords(

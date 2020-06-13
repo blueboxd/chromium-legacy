@@ -54,7 +54,6 @@ crbug.com/24182 fast/canvas/color-space/canvas-colorManaged-toBlob-toDataURL.htm
 crbug.com/24182 fast/dom/timer-throttling-background-page-near-alignment-interval.html [ Slow ]
 crbug.com/24182 http/tests/perf/large-inlined-script.html [ Slow ]
 crbug.com/24182 fast/css/should-not-insert-stylesheet-into-detached-document.html [ Slow ]
-crbug.com/24182 fast/dom/shadow/svg-style-in-shadow-tree-crash.html [ Slow ]
 crbug.com/24182 fast/encoding/char-encoding.html [ Slow ]
 crbug.com/24182 fast/frames/sandboxed-iframe-navigation-targetlink.html [ Slow ]
 crbug.com/24182 html/marquee/marquee-destroyed-without-removed-from-crash.html [ Slow ]
@@ -128,6 +127,8 @@ crbug.com/357427 http/tests/workers/terminate-during-sync-operation-file.html [ 
 crbug.com/357427 http/tests/workers/terminate-during-sync-operation-filesystem.html [ Slow ]
 crbug.com/402379 [ Debug ] storage/indexeddb/cursor-continue-validity.html [ Slow ]
 crbug.com/402379 [ Debug ] storage/indexeddb/mozilla/indexes.html [ Slow ]
+crbug.com/402379 [ Release Win ] storage/indexeddb/mozilla/indexes.html [ Slow ]
+
 crbug.com/504703 inspector-protocol/debugger/debugger-step-into-dedicated-worker.js [ Slow ]
 
 crbug.com/419993 [ Debug ] fast/css/giant-stylesheet-crash.html [ Slow ]

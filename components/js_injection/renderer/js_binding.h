@@ -26,23 +26,23 @@ class RenderFrame;
 }  // namespace content
 
 namespace js_injection {
-class JsJavaConfigurator;
+class JsCommunication;
 // A gin::Wrappable class used for providing JavaScript API. We will inject the
-// object of this class to JavaScript world in JsJavaConfigurator.
-// JsJavaConfigurator will own at most one instance of this class. When the
+// object of this class to JavaScript world in JsCommunication.
+// JsCommunication will own at most one instance of this class. When the
 // RenderFrame gone or another DidClearWindowObject comes, the instance will be
 // destroyed.
 class JsBinding : public gin::Wrappable<JsBinding>,
-                  public mojom::JavaToJsMessaging {
+                  public mojom::BrowserToJsMessaging {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
   static std::unique_ptr<JsBinding> Install(
       content::RenderFrame* render_frame,
       const base::string16& js_object_name,
-      JsJavaConfigurator* js_java_configurator);
+      JsCommunication* js_java_configurator);
 
-  // mojom::JavaToJsMessaging implementation.
+  // mojom::BrowserToJsMessaging implementation.
   void OnPostMessage(const base::string16& message) override;
 
   void ReleaseV8GlobalObjects();
@@ -52,7 +52,7 @@ class JsBinding : public gin::Wrappable<JsBinding>,
  private:
   explicit JsBinding(content::RenderFrame* render_frame,
                      const base::string16& js_object_name,
-                     JsJavaConfigurator* js_java_configurator);
+                     JsCommunication* js_java_configurator);
 
   // gin::Wrappable implementation
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
@@ -75,9 +75,9 @@ class JsBinding : public gin::Wrappable<JsBinding>,
   std::vector<v8::Global<v8::Function>> listeners_;
   // |js_java_configurator| owns JsBinding objects, so it will out live
   // JsBinding's life cycle, it is safe to access it.
-  JsJavaConfigurator* js_java_configurator_;
+  JsCommunication* js_java_configurator_;
 
-  mojo::AssociatedReceiver<mojom::JavaToJsMessaging> receiver_{this};
+  mojo::AssociatedReceiver<mojom::BrowserToJsMessaging> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(JsBinding);
 };

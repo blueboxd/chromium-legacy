@@ -25,7 +25,10 @@
 #import "ios/chrome/browser/ui/settings/autofill/features.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #include "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_cell.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -47,6 +50,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAutofillCardSwitch = kItemTypeEnumZero,
+  ItemTypeAutofillCardManaged,
   ItemTypeAutofillCardSwitchSubtitle,
   ItemTypeCard,
   ItemTypeHeader,
@@ -161,8 +165,16 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewModel* model = self.tableViewModel;
 
   [model addSectionWithIdentifier:SectionIdentifierSwitches];
-  [model addItem:[self cardSwitchItem]
-      toSectionWithIdentifier:SectionIdentifierSwitches];
+  if (base::FeatureList::IsEnabled(kEnableIOSManagedSettingsUI) &&
+      _browser->GetBrowserState()->GetPrefs()->IsManagedPreference(
+          autofill::prefs::kAutofillCreditCardEnabled)) {
+    [model addItem:[self cardManagedItem]
+        toSectionWithIdentifier:SectionIdentifierSwitches];
+  } else {
+    [model addItem:[self cardSwitchItem]
+        toSectionWithIdentifier:SectionIdentifierSwitches];
+  }
+
   [model setFooter:[self cardSwitchFooter]
       forSectionWithIdentifier:SectionIdentifierSwitches];
 
@@ -196,6 +208,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   switchItem.on = [self isAutofillCreditCardEnabled];
   switchItem.accessibilityIdentifier = kAutofillCreditCardSwitchViewId;
   return switchItem;
+}
+
+- (TableViewInfoButtonItem*)cardManagedItem {
+  TableViewInfoButtonItem* cardManagedItem = [[TableViewInfoButtonItem alloc]
+      initWithType:ItemTypeAutofillCardManaged];
+  cardManagedItem.text =
+      l10n_util::GetNSString(IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_LABEL);
+  // The status could only be off when the pref is managed.
+  cardManagedItem.statusText = l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
+  cardManagedItem.accessibilityIdentifier = kAutofillCreditCardManagedViewId;
+  return cardManagedItem;
 }
 
 - (TableViewHeaderFooterItem*)cardSwitchFooter {
@@ -253,6 +276,26 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self deleteItemAtIndexPaths:indexPaths];
 }
 
+#pragma mark - Actions
+
+// Called when the user clicks on the information button of the managed
+// setting's UI. Shows a textual bubble with the information of the enterprise.
+- (void)didTapManagedUIInfoButton:(UIButton*)buttonView {
+  EnterpriseInfoPopoverViewController* bubbleViewController =
+      [[EnterpriseInfoPopoverViewController alloc] initWithEnterpriseName:nil];
+  [self presentViewController:bubbleViewController animated:YES completion:nil];
+
+  // Disable the button when showing the bubble.
+  buttonView.enabled = NO;
+
+  // Set the anchor and arrow direction of the bubble.
+  bubbleViewController.popoverPresentationController.sourceView = buttonView;
+  bubbleViewController.popoverPresentationController.sourceRect =
+      buttonView.bounds;
+  bubbleViewController.popoverPresentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionAny;
+}
+
 #pragma mark - UITableViewDataSource
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
@@ -260,14 +303,29 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UITableViewCell* cell = [super tableView:tableView
                      cellForRowAtIndexPath:indexPath];
 
-  ItemType itemType = static_cast<ItemType>(
-      [self.tableViewModel itemTypeForIndexPath:indexPath]);
-  if (itemType == ItemTypeAutofillCardSwitch) {
-    SettingsSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
-    [switchCell.switchView addTarget:self
-                              action:@selector(autofillCardSwitchChanged:)
-                    forControlEvents:UIControlEventValueChanged];
+  switch (static_cast<ItemType>(
+      [self.tableViewModel itemTypeForIndexPath:indexPath])) {
+    case ItemTypeAutofillCardSwitchSubtitle:
+    case ItemTypeCard:
+    case ItemTypeHeader:
+      break;
+    case ItemTypeAutofillCardSwitch: {
+      SettingsSwitchCell* switchCell =
+          base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
+      [switchCell.switchView addTarget:self
+                                action:@selector(autofillCardSwitchChanged:)
+                      forControlEvents:UIControlEventValueChanged];
+      break;
+    }
+    case ItemTypeAutofillCardManaged: {
+      TableViewInfoButtonCell* managedCell =
+          base::mac::ObjCCastStrict<TableViewInfoButtonCell>(cell);
+      [managedCell.trailingButton
+                 addTarget:self
+                    action:@selector(didTapManagedUIInfoButton:)
+          forControlEvents:UIControlEventTouchUpInside];
+      break;
+    }
   }
 
   return cell;

@@ -69,7 +69,7 @@ FakeRTCRtpSenderImpl::DtlsTransportInformation() {
   return dummy;
 }
 
-blink::WebMediaStreamTrack FakeRTCRtpSenderImpl::Track() const {
+MediaStreamComponent* FakeRTCRtpSenderImpl::Track() const {
   return track_id_ ? CreateWebMediaStreamTrack(*track_id_, task_runner_)
                    : nullptr;
 }
@@ -83,8 +83,8 @@ Vector<String> FakeRTCRtpSenderImpl::StreamIds() const {
   return wtf_stream_ids;
 }
 
-void FakeRTCRtpSenderImpl::ReplaceTrack(blink::WebMediaStreamTrack with_track,
-                                        blink::RTCVoidRequest* request) {
+void FakeRTCRtpSenderImpl::ReplaceTrack(MediaStreamComponent* with_track,
+                                        RTCVoidRequest* request) {
   NOTIMPLEMENTED();
 }
 

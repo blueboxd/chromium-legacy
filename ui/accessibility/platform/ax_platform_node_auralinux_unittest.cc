@@ -1820,23 +1820,10 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkPopupWindowActive) {
   {
     ActivationTester tester(menu_atk_node);
     GetPlatformNode(menu_node)->NotifyAccessibilityEvent(
-        ax::mojom::Event::kMenuPopupHide);
+        ax::mojom::Event::kMenuPopupEnd);
     EXPECT_FALSE(tester.saw_activate_);
     EXPECT_TRUE(tester.saw_deactivate_);
     EXPECT_FALSE(tester.IsActivatedInStateSet());
-    EXPECT_EQ(focus_events_on_original_node, 0);
-  }
-
-  {
-    ActivationTester tester(menu_atk_node);
-    GetPlatformNode(menu_node)->NotifyAccessibilityEvent(
-        ax::mojom::Event::kMenuPopupEnd);
-    EXPECT_FALSE(tester.saw_activate_);
-    EXPECT_FALSE(tester.saw_deactivate_);
-    EXPECT_FALSE(tester.IsActivatedInStateSet());
-
-    // The menu has closed so the original node should have received focus
-    // again.
     EXPECT_EQ(focus_events_on_original_node, 1);
   }
 

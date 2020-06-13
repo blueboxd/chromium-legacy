@@ -1544,11 +1544,6 @@ if (enable_java_templates) {
   #     deps = [ ":my_java_lib" ]
   #     output = "$root_build_dir/MyLibrary.jar"
   #   }
-  #   dist_jar("sideloaded_dex") {
-  #     deps = [ ":my_java_lib" ]
-  #     output = "$root_build_dir/MyLibrary.jar"
-  #     dex_path = "$root_build_dir/MyLibrary.dex"
-  #   }
   template("dist_jar") {
     # TODO(crbug.com/1042017): Remove.
     not_needed(invoker, [ "no_build_hooks" ])
@@ -1684,14 +1679,18 @@ if (enable_java_templates) {
     _deps += [ ":$_build_config_target_name" ]
 
     dex(target_name) {
-      deps = _deps
-      build_config = _build_config
       forward_variables_from(invoker,
                              [
+                               "data",
+                               "data_deps",
+                               "visibility",
+                               "testonly",
                                "proguard_configs",
                                "proguard_enabled",
                                "min_sdk_version",
                              ])
+      deps = _deps
+      build_config = _build_config
       enable_multidex = false
       output = invoker.output
       if (defined(proguard_enabled) && proguard_enabled) {
@@ -1830,8 +1829,6 @@ if (enable_java_templates) {
   # Supports all variables of java_library(), plus:
   #   deps: In addition to defining java deps, this can also include
   #     android_assets() and android_resources() targets.
-  #   dex_path: If set, the resulting .dex.jar file will be placed under this
-  #     path.
   #   alternative_android_sdk_ijar: if set, the given android_sdk_ijar file
   #     replaces the default android_sdk_ijar.
   #   alternative_android_sdk_ijar_dep: the target that generates
@@ -2430,9 +2427,7 @@ if (enable_java_templates) {
 
     _final_deps = []
 
-    _enable_main_dex_list =
-        _enable_multidex &&
-        (!defined(invoker.min_sdk_version) || invoker.min_sdk_version < 21)
+    _enable_main_dex_list = _enable_multidex && _min_sdk_version < 21
     if (_enable_main_dex_list) {
       _generated_proguard_main_dex_config =
           "$_base_path.resources.main-dex-proguard.txt"
@@ -2927,12 +2922,17 @@ if (enable_java_templates) {
           deps += _deps + [ ":$_compile_resources_target" ]
           proguard_mapping_path = _proguard_mapping_path
           proguard_sourcefile_suffix = "$android_channel-$_version_code"
-        } else {
+          has_apk_under_test = defined(invoker.apk_under_test)
+        } else if (_min_sdk_version >= default_min_sdk_version) {
+          # Enable dex merging only when min_sdk_version is >= what the library
+          # .dex files were created with.
           input_dex_filearg =
               "@FileArg(${_rebased_build_config}:final_dex:all_dex_files)"
           if (_enable_main_dex_list) {
-            main_dex_list_input_classes_filearg = "@FileArg(${_rebased_build_config}:deps_info:java_runtime_classpath)"
+            main_dex_list_input_classes_filearg = "@FileArg(${_rebased_build_config}:deps_info:java_runtime_classpath_extended)"
           }
+        } else {
+          input_classes_filearg = "@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)"
         }
 
         if (_is_static_library_provider) {

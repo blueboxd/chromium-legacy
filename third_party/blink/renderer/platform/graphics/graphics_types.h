@@ -116,12 +116,9 @@ enum OpacityMode {
   kOpaque,
 };
 
-enum AccelerationHint {
-  kPreferAcceleration,
-  // The PreferAccelerationAfterVisibilityChange hint suggests we should switch
-  // back to acceleration in the context of the canvas becoming visible again.
-  kPreferAccelerationAfterVisibilityChange,
-  kPreferNoAcceleration,
+enum class RasterModeHint {
+  kPreferGPU,
+  kPreferCPU,
 };
 
 enum MailboxSyncMode {

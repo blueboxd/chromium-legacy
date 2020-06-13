@@ -66,5 +66,9 @@ interface SpeechRecognitionRecognizerClient {
 // renderer.
 struct SpeechRecognitionResult {
   string transcription;
+
+  // A flag indicating whether the result is final. If true, the result is
+  // locked in and the next result returned will not overlap with the previous
+  // final result.
   bool is_final;
 };

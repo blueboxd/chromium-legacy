@@ -533,7 +533,7 @@ template("monochrome_public_common_apk_or_module_tmpl") {
         }
 
         deps += [
-          "//android_webview/glue",
+          "//android_webview/glue:glue_java",
           "//android_webview/nonembedded:nonembedded_java",
           "//chrome/android:monochrome_java",
         ]

@@ -31,7 +31,6 @@
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
 #include "net/dns/dns_util.h"
-#include "net/dns/esni_content.h"
 #include "net/dns/host_resolver_source.h"
 #include "net/dns/public/dns_query_type.h"
 #include "net/log/net_log_capture_mode.h"
@@ -161,10 +160,6 @@ class NET_EXPORT HostCache {
     void set_hostnames(base::Optional<std::vector<HostPortPair>> hostnames) {
       hostnames_ = std::move(hostnames);
     }
-    const base::Optional<EsniContent>& esni_data() const { return esni_data_; }
-    void set_esni_data(base::Optional<EsniContent> esni_data) {
-      esni_data_ = std::move(esni_data);
-    }
     const base::Optional<std::vector<bool>>& integrity_data() const {
       return integrity_data_;
     }
@@ -183,16 +178,14 @@ class NET_EXPORT HostCache {
     // Public for the net-internals UI.
     int network_changes() const { return network_changes_; }
 
-    // Merge |front| and |back|, representing results from multiple
-    // transactions for the same overall host resolution query.
+    // Merge |front| and |back|, representing results from multiple transactions
+    // for the same overall host resolution query.
     //
-    // - When merging result hostname and text record lists, result
-    // elements from |front| will be merged in front of elements from |back|.
-    // - Merging address lists deduplicates addresses and sorts them in a stable
-    // manner by (breaking ties by continuing down the list):
-    //   1. Addresses with associated ESNI keys precede addresses without
-    //   2. IPv6 addresses precede IPv4 addresses
-    // - Fields that cannot be merged take precedence from |front|.
+    // Merges lists, placing elements from |front| before elements from |back|.
+    // Further, dedupes address lists and moves IPv6 addresses before IPv4
+    // addresses (maintaining stable order otherwise).
+    //
+    // Fields that cannot be merged take precedence from |front|.
     static Entry MergeEntries(Entry front, Entry back);
 
     // Creates a value representation of the entry for use with NetLog.
@@ -214,7 +207,6 @@ class NET_EXPORT HostCache {
           const base::Optional<AddressList>& addresses,
           base::Optional<std::vector<std::string>>&& text_results,
           base::Optional<std::vector<HostPortPair>>&& hostnames,
-          base::Optional<EsniContent>&& esni_data,
           base::Optional<std::vector<bool>>&& integrity_data,
           Source source,
           base::TimeTicks expires,
@@ -229,7 +221,6 @@ class NET_EXPORT HostCache {
     void SetResult(std::vector<HostPortPair> hostnames) {
       hostnames_ = std::move(hostnames);
     }
-    void SetResult(EsniContent esni_data) { esni_data_ = std::move(esni_data); }
     void SetResult(std::vector<bool> integrity_data) {
       integrity_data_ = std::move(integrity_data);
     }
@@ -243,20 +234,11 @@ class NET_EXPORT HostCache {
                       int network_changes,
                       EntryStaleness* out) const;
 
-    // Combines the addresses of |source| with those already stored,
-    // resulting in the following order:
-    //
-    // 1. IPv6 addresses associated with ESNI keys
-    // 2. IPv4 addresses associated with ESNI keys
-    // 3. IPv6 addresses not associated with ESNI keys
-    // 4. IPv4 addresses not associated with ESNI keys
-    //
-    // - Conducts the merge in a stable fashion (other things equal, addresses
-    // from |*this| will precede those from |source|, and addresses earlier in
-    // one entry's list will precede other addresses from later in the same
-    // list).
-    // - Deduplicates the entries during the merge so that |*this|'s
-    // address list will not contain duplicates after the call.
+    // Merges addresses from |source| into the stored list of addresses and
+    // deduplicates. The address list can be accessed with |addresses()|. This
+    // method performs a stable sort to ensure IPv6 addresses precede IPv4
+    // addresses. IP versions being equal, addresses from |*this| will precede
+    // those from |source|.
     void MergeAddressesFrom(const HostCache::Entry& source);
 
     base::DictionaryValue GetAsValue(bool include_staleness) const;
@@ -266,7 +248,6 @@ class NET_EXPORT HostCache {
     base::Optional<AddressList> addresses_;
     base::Optional<std::vector<std::string>> text_records_;
     base::Optional<std::vector<HostPortPair>> hostnames_;
-    base::Optional<EsniContent> esni_data_;
     base::Optional<std::vector<bool>> integrity_data_;
     // Where results were obtained (e.g. DNS lookup, hosts file, etc).
     Source source_ = SOURCE_UNKNOWN;

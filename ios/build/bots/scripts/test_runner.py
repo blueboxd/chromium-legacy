@@ -550,6 +550,11 @@ class TestRunner(object):
 
     result.passed_tests.extend(parser.PassedTests(include_flaky=True))
 
+    # Only GTest outputs compiled tests in a json file.
+    if not self.xctest:
+      result.disabled_tests_from_compiled_tests_file.extend(
+          parser.DisabledTestsFromCompiledTestsFile())
+
     LOGGER.info('%s returned %s\n', cmd[0], returncode)
 
     # xcodebuild can return 5 if it exits noncleanly even if all tests passed.
@@ -610,6 +615,7 @@ class TestRunner(object):
       passed = result.passed_tests
       failed = result.failed_tests
       flaked = result.flaked_tests
+      disabled = result.disabled_tests_from_compiled_tests_file
 
       try:
         while result.crashed and result.crashed_test:
@@ -628,6 +634,9 @@ class TestRunner(object):
           passed.extend(result.passed_tests)
           failed.update(result.failed_tests)
           flaked.update(result.flaked_tests)
+          if not disabled:
+            disabled = result.disabled_tests_from_compiled_tests_file
+
       except OSError as e:
         if e.errno == errno.E2BIG:
           LOGGER.error('Too many test cases to resume.')
@@ -660,6 +669,8 @@ class TestRunner(object):
             # Save the result of the latest run for each test.
             retry_results[test] = retry_result
 
+      output.mark_all_skipped(disabled)
+
       # Build test_results.json.
       # Check if if any of the retries crashed in addition to the original run.
       interrupted = (result.crashed or
@@ -673,6 +684,8 @@ class TestRunner(object):
       self.test_results['tests'] = output.tests
 
       self.logs['passed tests'] = passed
+      if disabled:
+        self.logs['disabled tests'] = disabled
       if flaked:
         self.logs['flaked tests'] = flaked
       if failed:

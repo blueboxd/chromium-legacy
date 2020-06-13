@@ -22,8 +22,7 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE"/>
                 <data android:scheme="https"
-                      android:host="www.example.com"
-                      android:pathPrefix="/notifications"/>
+                      android:host="www.example.com"/>
             </intent-filter>
         </activity>
 

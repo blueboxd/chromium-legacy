@@ -81,11 +81,18 @@ void UpdatePolicyInfo(em::Policy* policy_info,
                           policy_info->mutable_value());
   const std::string* error = policy.FindStringKey("error");
   std::string deprecated_error;
+  std::string future_error;
+  // Because server side use keyword "deprecated" to determine policy
+  // deprecation error. Using l10n string actually causing issue.
   if (policy.FindBoolKey("deprecated"))
-    deprecated_error = l10n_util::GetStringUTF8(IDS_POLICY_DEPRECATED);
+    deprecated_error = "This policy has been deprecated";
+
+  if (policy.FindBoolKey("future"))
+    future_error = "This policy hasn't been released";
 
   if (error && !deprecated_error.empty())
-    policy_info->set_error(base::JoinString({*error, deprecated_error}, "\n"));
+    policy_info->set_error(
+        base::JoinString({*error, deprecated_error, future_error}, "\n"));
   else if (error)
     policy_info->set_error(*error);
   else if (!deprecated_error.empty())

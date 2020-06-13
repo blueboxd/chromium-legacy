@@ -132,6 +132,11 @@ class PerFrameContentTranslateDriver : public ContentTranslateDriver {
 
   bool awaiting_contents_ = false;
 
+  // Time when the navigation was finished (i.e., DidFinishNavigation
+  // in the main frame). This is used to know a duration time to when the
+  // page language is determined.
+  base::TimeTicks finish_navigation_time_;
+
   // Time when a page language is determined. This is used to know a duration
   // time from showing infobar to requesting translation.
   base::TimeTicks language_determined_time_;

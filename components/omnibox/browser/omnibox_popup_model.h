@@ -242,7 +242,10 @@ class OmniboxPopupModel {
   // Triggers the action on |selection| (usually an auxiliary button).
   // If the popup model supports the action and performs it, this returns true.
   // This can't handle all actions currently, and returns false in those cases.
-  bool TriggerSelectionAction(Selection selection);
+  // The timestamp parameter is currently only used by FOCUSED_BUTTON_TAB_SWITCH
+  // and FOCUSED_BUTTON_PEDAL, so is set by default for other use cases.
+  bool TriggerSelectionAction(Selection selection,
+                              base::TimeTicks timestamp = base::TimeTicks());
 
   // This returns the accessibility label for current selection. This is an
   // extended version of AutocompleteMatchType::ToAccessibilityLabel() which

@@ -511,4 +511,22 @@
   <message name="IDS_LEGACY_TLS_EXPLANATION" desc="Part of an extended description hidden behind an 'Advanced' button on an error page. A user visits a website that uses an obsolete version of TLS and they are shown this error. Page title and additional description of the error are shown above.">
     The connection used to load this site used TLS 1.0 or TLS 1.1, which are deprecated and will be disabled in the future. Once disabled, users will be prevented from loading this site. The server should enable TLS 1.2 or later.
   </message>
+  
+  <!-- Insecure form submission interstitial-->
+  <message name="IDS_INSECURE_FORM_TITLE" desc="Tab Title for insecure form submission warning">
+    Insecure Form
+  </message>
+  <message name="IDS_INSECURE_FORM_HEADING" desc="Large heading of the warning shown when submitting an insecure form">
+    The data in this form is being sent through an insecure connection
+  </message>
+  <message name="IDS_INSECURE_FORM_PRIMARY_PARAGRAPH" desc="Main paragraph of the insecure form submission warning. This warning is shown when a form shown on a secure website is submitted over an insecure connection.">
+    This form is being submitted over an insecure connection, which may expose your information (for example, passwords, messages, or credit cards) when it is sent to this site.
+  </message>
+  <message name="IDS_INSECURE_FORM_BACK_BUTTON" desc="Text for the button in the insecure form warning that takes the user back to the previous page">
+    Go Back
+  </message>
+  <message name="IDS_INSECURE_FORM_SUBMIT_BUTTON" desc="Text for the button in the insecure form warning that bypasses the warning and submits the form">
+    Submit Anyways
+  </message>
+
 </grit-part>

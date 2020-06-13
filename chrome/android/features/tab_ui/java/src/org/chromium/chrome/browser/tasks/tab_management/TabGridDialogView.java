@@ -34,10 +34,13 @@ import androidx.core.widget.ImageViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
+import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -71,8 +74,8 @@ public class TabGridDialogView extends FrameLayout
     private ViewGroup mParent;
     private TextView mUngroupBarTextView;
     private RelativeLayout mDialogContainerView;
-    private ScrimView.ScrimParams mScrimParams;
-    private ScrimView mScrimView;
+    private PropertyModel mScrimPropertyModel;
+    private ScrimCoordinator mScrimCoordinator;
     private FrameLayout.LayoutParams mContainerParams;
     private ViewTreeObserver.OnGlobalLayoutListener mParentGlobalLayoutListener;
     private Animator mCurrentDialogAnimator;
@@ -113,7 +116,8 @@ public class TabGridDialogView extends FrameLayout
         mParentHeight = mParent.getHeight();
         mParentWidth = mParent.getWidth();
         mParentGlobalLayoutListener = () -> {
-            if (mParent.getWidth() == mParentWidth) return;
+            // Skip updating the parent view size caused by keyboard showing.
+            if (KeyboardVisibilityDelegate.getInstance().isKeyboardShowing(mContext, this)) return;
             mParentWidth = mParent.getWidth();
             mParentHeight = mParent.getHeight();
         };
@@ -591,17 +595,22 @@ public class TabGridDialogView extends FrameLayout
     }
 
     /**
-     * Setup mScrimParams with the {@code scrimViewObserver}.
+     * Setup the {@link PropertyModel} used to show scrim view.
      *
-     * @param scrimViewObserver The ScrimObserver to be used to setup mScrimParams.
+     * @param scrimClickRunnable The {@link Runnable} that runs when scrim view is clicked.
      */
-    void setScrimViewObserver(ScrimView.ScrimObserver scrimViewObserver) {
-        mScrimParams =
-                new ScrimView.ScrimParams(mDialogContainerView, false, true, 0, scrimViewObserver);
+    void setScrimClickRunnable(Runnable scrimClickRunnable) {
+        mScrimPropertyModel = new PropertyModel.Builder(ScrimProperties.REQUIRED_KEYS)
+                                      .with(ScrimProperties.ANCHOR_VIEW, mDialogContainerView)
+                                      .with(ScrimProperties.SHOW_IN_FRONT_OF_ANCHOR_VIEW, false)
+                                      .with(ScrimProperties.AFFECTS_STATUS_BAR, true)
+                                      .with(ScrimProperties.TOP_MARGIN, 0)
+                                      .with(ScrimProperties.CLICK_DELEGATE, scrimClickRunnable)
+                                      .build();
     }
 
-    void setupScrimView(ScrimView scrimView) {
-        mScrimView = scrimView;
+    void setupScrimCoordinator(ScrimCoordinator scrimCoordinator) {
+        mScrimCoordinator = scrimCoordinator;
     }
 
     /**
@@ -629,9 +638,8 @@ public class TabGridDialogView extends FrameLayout
             mCurrentDialogAnimator.end();
         }
         mCurrentDialogAnimator = mShowDialogAnimation;
-        if (mScrimParams != null) {
-            mScrimView.showScrim(mScrimParams);
-        }
+        assert mScrimCoordinator != null && mScrimPropertyModel != null;
+        mScrimCoordinator.showScrim(mScrimPropertyModel);
         setVisibility(View.VISIBLE);
         mShowDialogAnimation.start();
     }
@@ -644,7 +652,8 @@ public class TabGridDialogView extends FrameLayout
             mCurrentDialogAnimator.end();
         }
         mCurrentDialogAnimator = mHideDialogAnimation;
-        mScrimView.hideScrim(true);
+        assert mScrimCoordinator != null && mScrimPropertyModel != null;
+        mScrimCoordinator.hideScrim(true);
         mHideDialogAnimation.start();
     }
 

@@ -304,7 +304,7 @@ This file contains the strings for ash.
         Night Light is off.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_SETTINGS_TOOLTIP" desc="The tooltip text used for the button in the status tray to show the Night Light feature (which controls the color temperature of the screen) settings.">
-        Show Night Light settings
+        Show display settings
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NIGHT_LIGHT_OFF_STATE" desc="Button label for the Night Light feature." meaning="Night Light feature is off.">
         Off

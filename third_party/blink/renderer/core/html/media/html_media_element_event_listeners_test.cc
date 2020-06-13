@@ -37,8 +37,10 @@ static constexpr base::TimeDelta kFakeMediaPlayerAutoIncrementTimeDelta =
 // exception of the mocked methods).
 class FakeWebMediaPlayer final : public EmptyWebMediaPlayer {
  public:
-  FakeWebMediaPlayer(WebMediaPlayerClient* client, ExecutionContext* context)
-      : client_(client), context_(context) {}
+  FakeWebMediaPlayer(WebMediaPlayerClient* client,
+                     ExecutionContext* context,
+                     double duration)
+      : client_(client), context_(context), duration_(duration) {}
 
   MOCK_METHOD1(SetIsEffectivelyFullscreen,
                void(blink::WebFullscreenVideoStatus));
@@ -48,7 +50,7 @@ class FakeWebMediaPlayer final : public EmptyWebMediaPlayer {
   }
 
   // Establish a large so tests can attempt seeking.
-  double Duration() const override { return 1000000; }
+  double Duration() const override { return duration_; }
 
   WebTimeRanges Seekable() const override {
     WebTimeRange single_range[] = {WebTimeRange(0, Duration())};
@@ -64,6 +66,7 @@ class FakeWebMediaPlayer final : public EmptyWebMediaPlayer {
   }
   void Pause() override { playing_ = false; }
   bool Paused() const override { return !playing_; }
+  bool IsEnded() const override { return current_time_ == duration_; }
 
   void FinishSeek() {
     ASSERT_GE(last_seek_time_, 0);
@@ -71,6 +74,8 @@ class FakeWebMediaPlayer final : public EmptyWebMediaPlayer {
     last_seek_time_ = -1;
 
     client_->TimeChanged();
+    if (playing_)
+      ScheduleTimeIncrement();
   }
 
   void SetAutoIncrementCurrentTime(bool auto_increment) {
@@ -101,7 +106,14 @@ class FakeWebMediaPlayer final : public EmptyWebMediaPlayer {
 
     scheduled_time_increment_ = false;
     current_time_ += kFakeMediaPlayerAutoIncrementTimeDelta.InSecondsF();
-    ScheduleTimeIncrement();
+
+    // Notify the client if we've reached the end of the set duration
+    if (current_time_ >= duration_) {
+      current_time_ = duration_;
+      client_->TimeChanged();
+    } else {
+      ScheduleTimeIncrement();
+    }
 
     // Run V8 Microtasks (update OfficialPlaybackPosition)
     Microtask::PerformCheckpoint(context_->GetIsolate());
@@ -114,6 +126,7 @@ class FakeWebMediaPlayer final : public EmptyWebMediaPlayer {
   bool auto_increment_current_time_ = false;
   bool scheduled_time_increment_ = false;
   double last_seek_time_ = -1;
+  const double duration_;
 };
 
 class MediaStubLocalFrameClient : public EmptyLocalFrameClient {
@@ -122,9 +135,16 @@ class MediaStubLocalFrameClient : public EmptyLocalFrameClient {
       HTMLMediaElement& element,
       const WebMediaPlayerSource&,
       WebMediaPlayerClient* client) override {
-    return std::make_unique<FakeWebMediaPlayer>(client,
-                                                element.GetExecutionContext());
+    return std::make_unique<FakeWebMediaPlayer>(
+        client, element.GetExecutionContext(), media_duration_);
   }
+
+  void SetMediaDuration(double media_duration) {
+    media_duration_ = media_duration;
+  }
+
+ private:
+  double media_duration_ = 1000000;
 };
 
 using testing::_;
@@ -141,19 +161,33 @@ class HTMLMediaElementEventListenersTest : public PageTestBase {
   }
 
   void DestroyDocument() { PageTestBase::TearDown(); }
+
   HTMLVideoElement* Video() {
     return To<HTMLVideoElement>(GetDocument().QuerySelector("video"));
   }
+
   FakeWebMediaPlayer* WebMediaPlayer() {
     return static_cast<FakeWebMediaPlayer*>(Video()->GetWebMediaPlayer());
   }
+
+  MediaStubLocalFrameClient* LocalFrameClient() {
+    return static_cast<MediaStubLocalFrameClient*>(GetFrame().Client());
+  }
+
+  void SetMediaDuration(double duration) {
+    LocalFrameClient()->SetMediaDuration(duration);
+  }
+
   MediaControls* Controls() { return Video()->GetMediaControls(); }
+
   void SimulateReadyState(HTMLMediaElement::ReadyState state) {
     Video()->SetReadyState(state);
   }
+
   void SimulateNetworkState(HTMLMediaElement::NetworkState state) {
     Video()->SetNetworkState(state);
   }
+
   MediaCustomControlsFullscreenDetector* FullscreenDetector() {
     return Video()->custom_controls_fullscreen_detector_;
   }
@@ -405,6 +439,78 @@ TEST_F(HTMLMediaElementWithMockSchedulerTest, PeriodicTimeupdateAfterSeek) {
   EXPECT_CALL(*timeupdate_handler, Invoke(_, _)).Times(1);
   platform()->RunForPeriodSeconds(.250);
   platform()->RunUntilIdle();
+}
+
+TEST_F(HTMLMediaElementWithMockSchedulerTest, ShowPosterFlag_FalseAfterLoop) {
+  testing::InSequence dummy;
+
+  // Adjust the duration of the media to something we can reasonably loop
+  SetMediaDuration(10.0);
+
+  // Create a looping video with a source
+  GetDocument().body()->setInnerHTML(
+      "<video loop src=\"http://example.com\"></video>");
+  platform()->RunUntilIdle();
+  EXPECT_NE(WebMediaPlayer(), nullptr);
+  EXPECT_EQ(WebMediaPlayer()->Duration(), 10.0);
+  EXPECT_TRUE(Video()->Loop());
+
+  SimulateNetworkState(HTMLMediaElement::kNetworkIdle);
+  SimulateReadyState(HTMLMediaElement::kHaveEnoughData);
+
+  // Simulate advancing playback time to enable periodic timeupdates.
+  WebMediaPlayer()->SetAutoIncrementCurrentTime(true);
+  Video()->Play();
+
+  // Ensure the 'seeking' and 'seeked' events are fired, so we know a loop
+  // occurred
+  auto* seeking_handler = MakeGarbageCollected<MockEventListener>();
+  EXPECT_CALL(*seeking_handler, Invoke(_, _)).Times(1);
+  Video()->addEventListener(event_type_names::kSeeking, seeking_handler);
+  platform()->RunForPeriodSeconds(15);
+  testing::Mock::VerifyAndClearExpectations(seeking_handler);
+
+  auto* seeked_handler = MakeGarbageCollected<MockEventListener>();
+  EXPECT_CALL(*seeked_handler, Invoke(_, _)).Times(1);
+  Video()->addEventListener(event_type_names::kSeeked, seeked_handler);
+  WebMediaPlayer()->FinishSeek();
+  platform()->RunUntilIdle();
+  testing::Mock::VerifyAndClearExpectations(seeked_handler);
+
+  // ShowPosterFlag should be false after looping
+  EXPECT_FALSE(Video()->IsShowPosterFlagSet());
+}
+
+TEST_F(HTMLMediaElementWithMockSchedulerTest, ShowPosterFlag_FalseAfterEnded) {
+  testing::InSequence dummy;
+
+  // Adjust the duration of the media to something we can reach the end of
+  SetMediaDuration(10.0);
+
+  // Create a video with a source
+  GetDocument().body()->setInnerHTML(
+      "<video src=\"http://example.com\"></video>");
+  platform()->RunUntilIdle();
+  EXPECT_NE(WebMediaPlayer(), nullptr);
+  EXPECT_EQ(WebMediaPlayer()->Duration(), 10.0);
+
+  SimulateNetworkState(HTMLMediaElement::kNetworkIdle);
+  SimulateReadyState(HTMLMediaElement::kHaveEnoughData);
+
+  // Simulate advancing playback time to enable periodic timeupdates.
+  WebMediaPlayer()->SetAutoIncrementCurrentTime(true);
+  Video()->Play();
+
+  // Ensure the 'ended' event is fired
+  auto* ended_handler = MakeGarbageCollected<MockEventListener>();
+  Video()->addEventListener(event_type_names::kEnded, ended_handler);
+
+  EXPECT_CALL(*ended_handler, Invoke(_, _)).Times(1);
+  platform()->RunForPeriodSeconds(15);
+  testing::Mock::VerifyAndClearExpectations(ended_handler);
+
+  // ShowPosterFlag should be false even after ending
+  EXPECT_FALSE(Video()->IsShowPosterFlagSet());
 }
 
 }  // namespace blink

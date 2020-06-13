@@ -5,7 +5,7 @@
 #include "chrome/browser/previews/previews_test_util.h"
 
 #include "base/task/thread_pool/thread_pool_instance.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 
 std::string GetScriptLog(Browser* browser) {
   std::string script_log;
@@ -23,7 +23,7 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
     base::RunLoop().RunUntilIdle();
 
     content::FetchHistogramsFromChildProcesses();
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
     const std::vector<base::Bucket> buckets =
         histogram_tester->GetAllSamples(histogram_name);

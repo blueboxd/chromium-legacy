@@ -8,6 +8,7 @@
 #include "weblayer/browser/browser_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_impl.h"
+#include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/weblayer_browser_test.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
 
@@ -22,15 +23,13 @@ class UrlBarBrowserTest : public WebLayerBrowserTest {
   void SetUpOnMainThread() override {
     WebLayerBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
-    browser_ = Browser::Create(GetProfile(), nullptr);
-    tab_ = static_cast<TabImpl*>(browser_->CreateTab());
-    another_tab_ = static_cast<TabImpl*>(browser_->CreateTab());
-    browser_->SetActiveTab(tab_);
+    tab_ = static_cast<TabImpl*>(shell()->browser()->CreateTab());
+    another_tab_ = static_cast<TabImpl*>(shell()->browser()->CreateTab());
+    SetActiveTab(tab_);
   }
   void PostRunTestOnMainThread() override {
     tab_ = nullptr;
     another_tab_ = nullptr;
-    browser_.reset();
     WebLayerBrowserTest::PostRunTestOnMainThread();
   }
 
@@ -44,16 +43,15 @@ class UrlBarBrowserTest : public WebLayerBrowserTest {
         std::move(closure));
   }
 
-  void SetActiveTab(TabImpl* tab) { browser_->SetActiveTab(tab); }
+  void SetActiveTab(TabImpl* tab) { shell()->browser()->SetActiveTab(tab); }
 
  protected:
   TabImpl* tab_ = nullptr;
   TabImpl* another_tab_ = nullptr;
 
  private:
-  std::unique_ptr<Browser> browser_;
   BrowserImpl* browser_impl() {
-    return static_cast<BrowserImpl*>(browser_.get());
+    return static_cast<BrowserImpl*>(shell()->browser());
   }
 };
 

@@ -10,20 +10,30 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/base_paths_android.h"
+#include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
+#include "base/metrics/persistent_histogram_allocator.h"
+#include "base/path_service.h"
+#include "base/process/process_handle.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "components/embedder_support/android/metrics/android_metrics_log_uploader.h"
 #include "components/embedder_support/android/metrics/jni/AndroidMetricsServiceClient_jni.h"
 #include "components/metrics/android_metrics_provider.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
+#include "components/metrics/content/gpu_metrics_provider.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/metrics/cpu_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
-#include "components/metrics/gpu/gpu_metrics_provider.h"
+#include "components/metrics/file_metrics_provider.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/net/cellular_logic_helper.h"
 #include "components/metrics/net/network_metrics_provider.h"
+#include "components/metrics/persistent_histograms.h"
 #include "components/metrics/stability_metrics_helper.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/version_utils.h"
@@ -35,6 +45,8 @@
 namespace metrics {
 
 namespace {
+
+const int kMaxHistogramStorageKiB = 100 << 10;  // 100 MiB
 
 // Callbacks for MetricsStateManager::Create. Store/LoadClientInfo
 // allow Windows Chrome to back up ClientInfo. They're no-ops for
@@ -61,15 +73,121 @@ int UintToPerMille(uint32_t value) {
   return static_cast<int>(value_per_mille);
 }
 
+bool IsProcessRunning(base::ProcessId pid) {
+  // Sending a signal value of 0 will cause error checking to be performed
+  // with no signal being sent.
+  return (kill(pid, 0) == 0 || errno != ESRCH);
+}
+
+metrics::FileMetricsProvider::FilterAction FilterBrowserMetricsFiles(
+    const base::FilePath& path) {
+  base::ProcessId pid;
+  if (!base::GlobalHistogramAllocator::ParseFilePath(path, nullptr, nullptr,
+                                                     &pid)) {
+    return metrics::FileMetricsProvider::FILTER_PROCESS_FILE;
+  }
+
+  if (pid == base::GetCurrentProcId())
+    return metrics::FileMetricsProvider::FILTER_ACTIVE_THIS_PID;
+
+  if (IsProcessRunning(pid))
+    return metrics::FileMetricsProvider::FILTER_TRY_LATER;
+
+  return metrics::FileMetricsProvider::FILTER_PROCESS_FILE;
+}
+
+// Constructs the name of a persistent metrics file from a directory and metrics
+// name, and either registers that file as associated with a previous run if
+// metrics reporting is enabled, or deletes it if not.
+void RegisterOrRemovePreviousRunMetricsFile(
+    bool metrics_reporting_enabled,
+    const base::FilePath& dir,
+    base::StringPiece metrics_name,
+    metrics::FileMetricsProvider::SourceAssociation association,
+    metrics::FileMetricsProvider* file_metrics_provider) {
+  base::FilePath metrics_file;
+  base::GlobalHistogramAllocator::ConstructFilePaths(
+      dir, metrics_name, &metrics_file, nullptr, nullptr);
+
+  if (metrics_reporting_enabled) {
+    // Enable reading any existing saved metrics.
+    file_metrics_provider->RegisterSource(metrics::FileMetricsProvider::Params(
+        metrics_file,
+        metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_FILE,
+        association, metrics_name));
+  } else {
+    // When metrics reporting is not enabled, any existing file should be
+    // deleted in order to preserve user privacy.
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+        base::BindOnce(base::IgnoreResult(&base::DeleteFile), metrics_file,
+                       /*recursive=*/false));
+  }
+}
+
+std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
+    PrefService* pref_service,
+    bool metrics_reporting_enabled) {
+  // Create an object to monitor files of metrics and include them in reports.
+  std::unique_ptr<metrics::FileMetricsProvider> file_metrics_provider(
+      new metrics::FileMetricsProvider(pref_service));
+
+  base::FilePath user_data_dir;
+  base::PathService::Get(base::DIR_ANDROID_APP_DATA, &user_data_dir);
+  // Register the Crashpad metrics files.
+  // Register the data from the previous run if crashpad_handler didn't exit
+  // cleanly.
+  RegisterOrRemovePreviousRunMetricsFile(
+      metrics_reporting_enabled, user_data_dir, kCrashpadHistogramAllocatorName,
+      metrics::FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE_OR_PREVIOUS_RUN,
+      file_metrics_provider.get());
+
+  base::FilePath browser_metrics_upload_dir =
+      user_data_dir.AppendASCII(kBrowserMetricsName);
+  if (metrics_reporting_enabled) {
+    metrics::FileMetricsProvider::Params browser_metrics_params(
+        browser_metrics_upload_dir,
+        metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ATOMIC_DIR,
+        metrics::FileMetricsProvider::ASSOCIATE_INTERNAL_PROFILE,
+        kBrowserMetricsName);
+    browser_metrics_params.max_dir_kib = kMaxHistogramStorageKiB;
+    browser_metrics_params.filter =
+        base::BindRepeating(FilterBrowserMetricsFiles);
+    file_metrics_provider->RegisterSource(browser_metrics_params);
+
+    base::FilePath active_path;
+    base::GlobalHistogramAllocator::ConstructFilePaths(
+        user_data_dir, kCrashpadHistogramAllocatorName, nullptr, &active_path,
+        nullptr);
+    // Register data that will be populated for the current run. "Active"
+    // files need an empty "prefs_key" because they update the file itself.
+    file_metrics_provider->RegisterSource(metrics::FileMetricsProvider::Params(
+        active_path,
+        metrics::FileMetricsProvider::SOURCE_HISTOGRAMS_ACTIVE_FILE,
+        metrics::FileMetricsProvider::ASSOCIATE_CURRENT_RUN));
+  }
+
+  return file_metrics_provider;
+}
+
 }  // namespace
+
+// Needs to be kept in sync with the writer in
+// third_party/crashpad/crashpad/handler/handler_main.cc.
+const char kCrashpadHistogramAllocatorName[] = "CrashpadMetrics";
 
 AndroidMetricsServiceClient::AndroidMetricsServiceClient() = default;
 AndroidMetricsServiceClient::~AndroidMetricsServiceClient() = default;
 
 // static
 void AndroidMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
-  MetricsService::RegisterPrefs(registry);
-  StabilityMetricsHelper::RegisterPrefs(registry);
+  metrics::MetricsService::RegisterPrefs(registry);
+  metrics::FileMetricsProvider::RegisterPrefs(registry, kBrowserMetricsName);
+  metrics::FileMetricsProvider::RegisterPrefs(registry,
+                                              kCrashpadHistogramAllocatorName);
+  metrics::StabilityMetricsHelper::RegisterPrefs(registry);
 }
 
 void AndroidMetricsServiceClient::Initialize(PrefService* pref_service) {
@@ -122,11 +240,17 @@ AndroidMetricsServiceClient::CreateMetricsService(
     AndroidMetricsServiceClient* client,
     PrefService* prefs) {
   auto service = std::make_unique<MetricsService>(state_manager, client, prefs);
+  service->RegisterMetricsProvider(
+      std::make_unique<metrics::SubprocessMetricsProvider>());
   service->RegisterMetricsProvider(std::make_unique<NetworkMetricsProvider>(
       content::CreateNetworkConnectionTrackerAsyncGetter()));
   service->RegisterMetricsProvider(std::make_unique<CPUMetricsProvider>());
   service->RegisterMetricsProvider(
       std::make_unique<ScreenInfoMetricsProvider>());
+  if (client->EnablePersistentHistograms()) {
+    service->RegisterMetricsProvider(CreateFileMetricsProvider(
+        pref_service_, metrics_state_manager_->IsMetricsReportingEnabled()));
+  }
   service->RegisterMetricsProvider(
       std::make_unique<CallStackProfileMetricsProvider>());
   service->RegisterMetricsProvider(
@@ -137,6 +261,9 @@ AndroidMetricsServiceClient::CreateMetricsService(
   service->RegisterMetricsProvider(
       std::make_unique<metrics::GPUMetricsProvider>());
   RegisterAdditionalMetricsProviders(service.get());
+
+  // The file metrics provider makes IO.
+  base::ScopedAllowBlocking allow_io;
   service->InitializeMetricsRecordingState();
   return service;
 }
@@ -314,6 +441,10 @@ bool AndroidMetricsServiceClient::IsInPackageNameSample() {
 
 void AndroidMetricsServiceClient::RegisterAdditionalMetricsProviders(
     MetricsService* service) {}
+
+bool AndroidMetricsServiceClient::EnablePersistentHistograms() {
+  return false;
+}
 
 std::string AndroidMetricsServiceClient::GetAppPackageName() {
   if (IsInPackageNameSample() && CanRecordPackageNameForAppType())

@@ -12,7 +12,6 @@
 #include "base/i18n/rtl.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
-#include "mojo/public/mojom/base/text_direction.mojom-forward.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/css/page_size_type.h"
@@ -443,7 +442,8 @@ class WebLocalFrame : public WebFrame {
   // (i.e its anchor is its start).
   virtual bool IsSelectionAnchorFirst() const = 0;
   // Changes the text direction of the selected input node.
-  virtual void SetTextDirectionForTesting(mojo_base::mojom::TextDirection) = 0;
+  virtual void SetTextDirectionForTesting(
+      base::i18n::TextDirection direction) = 0;
 
   // Selection -----------------------------------------------------------
 

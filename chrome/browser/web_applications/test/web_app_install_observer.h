@@ -21,6 +21,12 @@ class WebAppInstallObserver final : public AppRegistrarObserver {
  public:
   explicit WebAppInstallObserver(AppRegistrar* registrar);
   explicit WebAppInstallObserver(Profile* profile);
+
+  // Restricts this observer to only listen for the given |listen_for_app_id|.
+  explicit WebAppInstallObserver(AppRegistrar* registrar,
+                                 const AppId& listen_for_app_id);
+  explicit WebAppInstallObserver(Profile* profile,
+                                 const AppId& listen_for_app_id);
   ~WebAppInstallObserver() override;
 
   AppId AwaitNextInstall();
@@ -46,6 +52,7 @@ class WebAppInstallObserver final : public AppRegistrarObserver {
  private:
   base::RunLoop run_loop_;
   AppId app_id_;
+  AppId listening_for_app_id_;
 
   WebAppInstalledDelegate app_installed_delegate_;
   WebAppUninstalledDelegate app_uninstalled_delegate_;

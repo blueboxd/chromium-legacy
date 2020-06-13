@@ -35,7 +35,10 @@ class AffiliatedSessionServiceTest
         std::make_unique<AffiliatedSessionService>(&test_clock_);
   }
 
-  void TearDown() override { chromeos::PowerManagerClient::Shutdown(); }
+  void TearDown() override {
+    affiliated_session_service_.reset();
+    chromeos::PowerManagerClient::Shutdown();
+  }
 
   std::unique_ptr<TestingProfile> CreateProfile(AccountId account_id,
                                                 bool is_affiliated,
@@ -53,7 +56,7 @@ class AffiliatedSessionServiceTest
   }
 
   AffiliatedSessionService* affiliated_session_service() {
-    return AffiliatedSessionService::Get();
+    return affiliated_session_service_.get();
   }
 
   session_manager::SessionManager* session_manager() {

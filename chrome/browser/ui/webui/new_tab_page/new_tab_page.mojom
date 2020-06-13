@@ -261,6 +261,33 @@ enum CustomizeDialogAction {
   SHORTCUTS_VISIBILITY_TOGGLE_CLICKED,
 };
 
+// Action the user performed while using voice search. Used for metrics logging
+// only. Actions correspond to items in NTPLoggingEventType.
+enum VoiceSearchAction {
+  ACTIVATE_SEARCH_BOX,
+  ACTIVATE_KEYBOARD,
+  CLOSE_OVERLAY,
+  QUERY_SUBMITTED,
+  SUPPORT_LINK_CLICKED,
+  TRY_AGAIN_LINK,
+  TRY_AGAIN_MIC_BUTTON,
+};
+
+// Errors occurred while using voice search. Errors correspond to items in
+// NTPLoggingEventType.
+enum VoiceSearchError {
+  ABORTED,
+  NO_SPEECH,
+  AUDIO_CAPTURE,
+  NETWORK,
+  NOT_ALLOWED,
+  LANGUAGE_NOT_SUPPORTED,
+  NO_MATCH,
+  SERVICE_NOT_ALLOWED,
+  BAD_GRAMMAR,
+  OTHER,
+};
+
 // Used by the WebUI page to bootstrap bidirectional communication.
 interface PageHandlerFactory {
   // The WebUI page's |BrowserProxy| singleton calls this method when the page
@@ -361,6 +388,10 @@ interface PageHandler {
                  string? share_id);
   // Logs that a link on a promo has been clicked.
   OnPromoLinkClicked();
+  // Logs an action performed while using voice search.
+  OnVoiceSearchAction(VoiceSearchAction action);
+  // Logs an error occurred while using voice search.
+  OnVoiceSearchError(VoiceSearchError error);
 
   // ======= REALBOX =======
   // Queries autocomplete matches from the browser.

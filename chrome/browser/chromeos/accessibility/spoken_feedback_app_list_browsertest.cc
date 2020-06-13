@@ -226,7 +226,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, LauncherStateTransition) {
   // Press space on expand arrow to go to fullscreen launcher.
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_SPACE); });
   sm_.ExpectSpeech(
-      "Search your device, apps, and web."
+      "Search your device, apps, settings, and web."
       " Use the arrow keys to navigate your apps.");
   sm_.ExpectSpeech("Edit text");
   // Check that Launcher, all apps state is announced.
@@ -346,8 +346,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest,
   // Move focus to app list window;
   sm_.Call([this]() { SendKeyPressWithSearch(ui::VKEY_RIGHT); });
   sm_.ExpectSpeech(
-      "Search your device, apps, and web. Use the arrow keys to navigate your "
-      "apps.");
+      "Search your device, apps, settings, and web. Use the arrow keys to "
+      "navigate your apps.");
   // Move focus to search box;
   sm_.ExpectSpeech("Edit text");
   sm_.Replay();
@@ -372,8 +372,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, NavigateAppLauncher) {
   // Click on the launcher, it brings up the app list UI.
   sm_.Call([this]() { SendKeyPress(ui::VKEY_SPACE); });
   sm_.ExpectSpeech(
-      "Search your device, apps, and web. Use the arrow keys to navigate your "
-      "apps.");
+      "Search your device, apps, settings, and web. Use the arrow keys to "
+      "navigate your apps.");
   sm_.ExpectSpeech("Edit text");
 
   // Close it and open it again.
@@ -387,8 +387,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListTest, NavigateAppLauncher) {
 
   sm_.Call([this]() { SendKeyPress(ui::VKEY_SPACE); });
   sm_.ExpectSpeech(
-      "Search your device, apps, and web. Use the arrow keys to navigate your "
-      "apps.");
+      "Search your device, apps, settings, and web. Use the arrow keys to "
+      "navigate your apps.");
 
   // Now press the right arrow and we should be focused on an app button
   // in a dialog.

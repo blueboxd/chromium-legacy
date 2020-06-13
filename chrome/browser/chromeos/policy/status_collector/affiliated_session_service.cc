@@ -9,7 +9,6 @@
 namespace policy {
 
 namespace {
-AffiliatedSessionService* g_instance = nullptr;
 
 constexpr base::TimeDelta kMinimumSuspendDuration =
     base::TimeDelta::FromMinutes(1);
@@ -30,23 +29,15 @@ bool IsPrimaryAndAffiliated(Profile* profile) {
 
 AffiliatedSessionService::AffiliatedSessionService(base::Clock* clock)
     : clock_(clock), session_manager_(session_manager::SessionManager::Get()) {
-  DCHECK(!g_instance);
-  session_manager_->AddObserver(this);
-  chromeos::PowerManagerClient::Get()->AddObserver(this);
-  is_session_locked_ = session_manager_->IsScreenLocked();
-  g_instance = this;
+  if (session_manager_) {
+    // To alleviate tight coupling in unit tests to DeviceStatusCollector.
+    session_manager_observer_.Add(session_manager_);
+    is_session_locked_ = session_manager_->IsScreenLocked();
+  }
+  power_manager_observer_.Add(chromeos::PowerManagerClient::Get());
 }
 
-AffiliatedSessionService::~AffiliatedSessionService() {
-  DCHECK_EQ(g_instance, this);
-  g_instance = nullptr;
-}
-
-// static
-AffiliatedSessionService* AffiliatedSessionService::Get() {
-  DCHECK(g_instance);
-  return g_instance;
-}
+AffiliatedSessionService::~AffiliatedSessionService() = default;
 
 void AffiliatedSessionService::AddObserver(
     AffiliatedSessionService::Observer* observer) {
@@ -83,7 +74,7 @@ void AffiliatedSessionService::OnUserProfileLoaded(
   if (!IsPrimaryAndAffiliated(profile)) {
     return;
   }
-  profile->AddObserver(this);
+  profile_observer_.Add(profile);
   for (auto& observer : observers_) {
     observer.OnAffiliatedLogin(profile);
   }
@@ -97,7 +88,7 @@ void AffiliatedSessionService::OnProfileWillBeDestroyed(Profile* profile) {
   for (auto& observer : observers_) {
     observer.OnAffiliatedLogout(profile);
   }
-  profile->RemoveObserver(this);
+  profile_observer_.Remove(profile);
 }
 
 void AffiliatedSessionService::SuspendDone(

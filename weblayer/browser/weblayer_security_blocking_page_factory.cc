@@ -201,6 +201,16 @@ WebLayerSecurityBlockingPageFactory::CreateBlockedInterceptionBlockingPage(
   return interstitial_page;
 }
 
+std::unique_ptr<security_interstitials::InsecureFormBlockingPage>
+WebLayerSecurityBlockingPageFactory::CreateInsecureFormBlockingPage(
+    content::WebContents* web_contents,
+    const GURL& request_url) {
+  // TODO(crbug.com/1093102): Insecure form warnings are not yet implemented in
+  // Weblayer.
+  NOTREACHED();
+  return nullptr;
+}
+
 #if defined(OS_ANDROID)
 // static
 GURL WebLayerSecurityBlockingPageFactory::

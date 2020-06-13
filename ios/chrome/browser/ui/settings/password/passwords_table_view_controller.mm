@@ -38,10 +38,9 @@
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_managed_cell.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_managed_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/password_details_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_exporter.h"
@@ -50,6 +49,8 @@
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_cell.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
@@ -59,7 +60,6 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
-#import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -174,7 +174,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // The item related to the switch for the password manager setting.
   SettingsSwitchItem* _savePasswordsItem;
   // The item related to the enterprise managed save password setting.
-  SettingsManagedItem* _managedSavePasswordItem;
+  TableViewInfoButtonItem* _managedSavePasswordItem;
   // The item related to the button for exporting passwords.
   TableViewTextItem* _exportPasswordsItem;
   // The interface for getting and manipulating a user's saved passwords.
@@ -462,9 +462,10 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return savePasswordsItem;
 }
 
-- (SettingsManagedItem*)managedSavePasswordItem {
-  SettingsManagedItem* managedSavePasswordItem =
-      [[SettingsManagedItem alloc] initWithType:ItemTypeManagedSavePasswords];
+- (TableViewInfoButtonItem*)managedSavePasswordItem {
+  TableViewInfoButtonItem* managedSavePasswordItem =
+      [[TableViewInfoButtonItem alloc]
+          initWithType:ItemTypeManagedSavePasswords];
   managedSavePasswordItem.text = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
   managedSavePasswordItem.statusText =
       [_passwordManagerEnabled value]
@@ -542,16 +543,17 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   [_passwordManagerEnabled setValue:switchView.on];
 }
 
-// Being called when the user clicks on the information button of the managed
+// Called when the user clicks on the information button of the managed
 // setting's UI. Shows a textual bubble with the information of the enterprise.
 - (void)didTapManagedUIInfoButton:(UIButton*)buttonView {
-  // TODO(crbug.com/1085202): show customized text bubble.
-  // Now showing a PopoverLabelView as a placeholder.
-  NSString* text = l10n_util::GetNSString(
-      IDS_IOS_TOGGLE_SETTING_MANAGED_INFO_BUBBLE_MESSAGE);
-  PopoverLabelViewController* bubbleViewController =
-      [[PopoverLabelViewController alloc] initWithMessage:text];
+  EnterpriseInfoPopoverViewController* bubbleViewController =
+      [[EnterpriseInfoPopoverViewController alloc] initWithEnterpriseName:nil];
   [self presentViewController:bubbleViewController animated:YES completion:nil];
+
+  // Disable the button when showing the bubble.
+  buttonView.enabled = NO;
+
+  // Set the anchor and arrow direction of the bubble.
   bubbleViewController.popoverPresentationController.sourceView = buttonView;
   bubbleViewController.popoverPresentationController.sourceRect =
       buttonView.bounds;
@@ -1074,8 +1076,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       break;
     }
     case ItemTypeManagedSavePasswords: {
-      SettingsManagedCell* managedCell =
-          base::mac::ObjCCastStrict<SettingsManagedCell>(cell);
+      TableViewInfoButtonCell* managedCell =
+          base::mac::ObjCCastStrict<TableViewInfoButtonCell>(cell);
       [managedCell.trailingButton
                  addTarget:self
                     action:@selector(didTapManagedUIInfoButton:)

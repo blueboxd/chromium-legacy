@@ -5,11 +5,14 @@
 package org.chromium.chrome.browser.browserservices;
 
 import android.app.Notification;
+import android.os.Bundle;
+import android.os.RemoteException;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.browser.trusted.Token;
 import androidx.browser.trusted.TokenStore;
+import androidx.browser.trusted.TrustedWebActivityCallbackRemote;
 import androidx.browser.trusted.TrustedWebActivityService;
 
 /**
@@ -19,6 +22,15 @@ public class TestTrustedWebActivityService extends TrustedWebActivityService {
     // TODO(peconn): Add an image resource to chrome_public_test_support, supply that in
     // getSmallIconId and verify it is used in notifyNotificationWithChannel.
     public static final int SMALL_ICON_ID = 42;
+
+    private static final String CHECK_LOCATION_PERMISSION_COMMAND_NAME =
+            "checkAndroidLocationPermission";
+    private static final String LOCATION_PERMISSION_RESULT = "locationPermissionResult";
+    private static final String START_LOCATION_COMMAND_NAME = "startLocation";
+    private static final String STOP_LOCATION_COMMAND_NAME = "stopLocation";
+    private static final String LOCATION_ARG_ENABLE_HIGH_ACCURACY = "enableHighAccuracy";
+    private static final String EXTRA_NEW_LOCATION_AVAILABLE_CALLBACK = "onNewLocationAvailable";
+    private static final String EXTRA_NEW_LOCATION_ERROR_CALLBACK = "onNewLocationError";
 
     private final TokenStore mTokenStore = new InMemoryStore();
 
@@ -53,6 +65,50 @@ public class TestTrustedWebActivityService extends TrustedWebActivityService {
     public int onGetSmallIconId() {
         MessengerService.sMessageHandler.recordGetSmallIconId();
         return SMALL_ICON_ID;
+    }
+
+    @Override
+    public Bundle onExtraCommand(
+            String commandName, Bundle args, @Nullable TrustedWebActivityCallbackRemote callback) {
+        Bundle executionResult = new Bundle();
+        switch (commandName) {
+            case CHECK_LOCATION_PERMISSION_COMMAND_NAME: {
+                if (callback == null) break;
+
+                Bundle permission = new Bundle();
+                permission.putBoolean(LOCATION_PERMISSION_RESULT, true);
+                try {
+                    callback.runExtraCallback(CHECK_LOCATION_PERMISSION_COMMAND_NAME, permission);
+                } catch (RemoteException e) {
+                }
+
+                executionResult.putBoolean(commandName, true);
+                break;
+            }
+            case START_LOCATION_COMMAND_NAME: {
+                if (callback == null) break;
+
+                Bundle locationResult = new Bundle();
+                locationResult.putDouble("latitude", 1.0);
+                locationResult.putDouble("longitude", -2.0);
+                locationResult.putLong("timeStamp", System.currentTimeMillis());
+                try {
+                    callback.runExtraCallback(
+                            EXTRA_NEW_LOCATION_AVAILABLE_CALLBACK, locationResult);
+                } catch (RemoteException e) {
+                }
+
+                executionResult.putBoolean(commandName, true);
+                break;
+            }
+            case STOP_LOCATION_COMMAND_NAME: {
+                executionResult.putBoolean(commandName, true);
+                break;
+            }
+            default:
+                executionResult.putBoolean(commandName, false);
+        }
+        return executionResult;
     }
 
     private static class InMemoryStore implements TokenStore {

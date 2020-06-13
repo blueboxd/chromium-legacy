@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.bottom.BottomControlsViewBinder.ViewHolder;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -75,6 +76,7 @@ public class BottomControlsCoordinator {
      * @param setUrlBarFocusAction The function that sets Url bar focus. The first argument is
      *         whether the bar should be focused, and the second is the OmniboxFocusReason.
      * @param overviewModeBehaviorSupplier Supplier for the overview mode manager.
+     * @param scrimCoordinator The {@link ScrimCoordinator} to control scrim view.
      */
     @SuppressLint("CutPasteId") // Not actually cut and paste since it's View vs ViewGroup.
     public BottomControlsCoordinator(ChromeFullscreenManager fullscreenManager, ViewStub stub,
@@ -83,7 +85,8 @@ public class BottomControlsCoordinator {
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             Supplier<Boolean> showStartSurfaceCallable, Runnable openHomepageAction,
             Callback<Integer> setUrlBarFocusAction,
-            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
+            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
+            ScrimCoordinator scrimCoordinator) {
         final ScrollingBottomViewResourceFrameLayout root =
                 (ScrollingBottomViewResourceFrameLayout) stub.inflate();
 
@@ -111,7 +114,8 @@ public class BottomControlsCoordinator {
                             && BottomToolbarConfiguration.isBottomToolbarEnabled()))
                 || TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
             mTabGroupUi = TabManagementModuleProvider.getDelegate().createTabGroupUi(
-                    root.findViewById(R.id.bottom_container_slot), themeColorProvider);
+                    root.findViewById(R.id.bottom_container_slot), themeColorProvider,
+                    scrimCoordinator);
         } else {
             mBottomToolbarCoordinator =
                     new BottomToolbarCoordinator(root.findViewById(R.id.bottom_toolbar_stub),

@@ -136,6 +136,9 @@ enum OptimizationType {
   // This optimization provides the Loading Predictor with resources predicted
   // to be on the page.
   LOADING_PREDICTOR = 9;
+  // This optimization provides information about hosts that historically
+  // provide a fast and responsive user experience.
+  FAST_HOST_HINTS = 10;
 }
 
 // Presents semantics for how page load URLs should be matched.

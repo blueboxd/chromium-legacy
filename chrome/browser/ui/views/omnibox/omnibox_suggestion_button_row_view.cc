@@ -90,19 +90,24 @@ void OmniboxSuggestionButtonRowView::OnStyleRefresh() {
 
 void OmniboxSuggestionButtonRowView::ButtonPressed(views::Button* button,
                                                    const ui::Event& event) {
+  OmniboxPopupModel* popup_model = popup_contents_view_->model();
+  if (!popup_model)
+    return;
+
   if (button == tab_switch_button_) {
-    popup_contents_view_->OpenMatch(
-        model_index_, WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
+    popup_model->TriggerSelectionAction(
+        OmniboxPopupModel::Selection(
+            model_index_, OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH),
+        event.time_stamp());
   } else if (button == keyword_button_) {
+    // TODO(yoangela): Port to PopupModel and merge with keyEvent
     // TODO(orinj): Clear out existing suggestions, particularly this one, as
     // once we AcceptKeyword, we are really in a new scope state and holding
     // onto old suggestions is confusing and error prone. Without this check,
     // a second click of the button violates assumptions in |AcceptKeyword|.
     if (model()->edit_model()->is_keyword_hint()) {
       auto method = metrics::OmniboxEventProto::INVALID;
-      if (event.IsKeyEvent()) {
-        method = metrics::OmniboxEventProto::KEYBOARD_SHORTCUT;
-      } else if (event.IsMouseEvent()) {
+      if (event.IsMouseEvent()) {
         method = metrics::OmniboxEventProto::CLICK_HINT_VIEW;
       } else if (event.IsGestureEvent()) {
         method = metrics::OmniboxEventProto::TAP_HINT_VIEW;
@@ -111,9 +116,10 @@ void OmniboxSuggestionButtonRowView::ButtonPressed(views::Button* button,
       model()->edit_model()->AcceptKeyword(method);
     }
   } else if (button == pedal_button_) {
-    DCHECK(match().pedal);
-    // Pedal action intent means we execute the match instead of opening it.
-    model()->edit_model()->ExecutePedal(match(), event.time_stamp());
+    popup_model->TriggerSelectionAction(
+        OmniboxPopupModel::Selection(model_index_,
+                                     OmniboxPopupModel::FOCUSED_BUTTON_PEDAL),
+        event.time_stamp());
   }
 }
 

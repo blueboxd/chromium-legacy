@@ -7,7 +7,12 @@ import("//android_webview/variables.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
-android_library("glue") {
+# TODO(agrieve): Remove once downstream reference is removed.
+java_group("glue") {
+  deps = [ ":glue_java" ]
+}
+
+android_library("glue_java") {
   deps = [
     "//android_webview:android_webview_product_config_java",
     "//android_webview:browser_java",

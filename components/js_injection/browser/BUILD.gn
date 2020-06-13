@@ -4,10 +4,10 @@
 
 source_set("browser") {
   sources = [
-    "js_java_configurator_host.cc",
-    "js_java_configurator_host.h",
-    "js_to_java_messaging.cc",
-    "js_to_java_messaging.h",
+    "js_communication_host.cc",
+    "js_communication_host.h",
+    "js_to_browser_messaging.cc",
+    "js_to_browser_messaging.h",
     "web_message.cc",
     "web_message.h",
     "web_message_host.h",

@@ -372,6 +372,12 @@ class WebstorePrivateGetExtensionStatusFunction : public ExtensionFunction {
  private:
   ~WebstorePrivateGetExtensionStatusFunction() override;
 
+  ExtensionFunction::ResponseValue BuildResponseWithoutManifest(
+      const ExtensionId& extension_id,
+      Profile* profile);
+  void OnManifestParsed(const ExtensionId& extension_id,
+                        data_decoder::DataDecoder::ValueOrError result);
+
   // ExtensionFunction:
   ExtensionFunction::ResponseAction Run() override;
 

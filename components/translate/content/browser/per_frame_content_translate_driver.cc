@@ -262,6 +262,9 @@ void PerFrameContentTranslateDriver::DidFinishNavigation(
   if (!navigation_handle->HasCommitted())
     return;
 
+  if (navigation_handle->IsInMainFrame())
+    finish_navigation_time_ = base::TimeTicks::Now();
+
   // Let the LanguageState clear its state.
   const bool reload =
       navigation_handle->GetReloadType() != content::ReloadType::NONE ||
@@ -326,6 +329,8 @@ void PerFrameContentTranslateDriver::OnPageLanguageDetermined(
     const LanguageDetectionDetails& details,
     bool page_needs_translation) {
   language_determined_time_ = base::TimeTicks::Now();
+  ReportLanguageDeterminedDuration(finish_navigation_time_,
+                                   language_determined_time_);
 
   // If we have a language histogram (i.e. we're not in incognito), update it
   // with the detected language of every page visited.

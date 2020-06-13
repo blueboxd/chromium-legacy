@@ -49,30 +49,83 @@ class SharedImageRepresentationGLTexturePassthroughImpl
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
 };
 
-// Common superclass for SharedImageBackingGLTexture,
-// SharedImageBackingPassthroughGLImage, and
-// SharedImageRepresentationSkiaImpl.
-class SharedImageBackingWithReadAccess : public SharedImageBacking {
+// Common superclass for SharedImageBackingGLTexture and
+// SharedImageBackingPassthroughGLImage.
+class SharedImageBackingGLCommon : public SharedImageBacking {
  public:
-  SharedImageBackingWithReadAccess(const Mailbox& mailbox,
-                                   viz::ResourceFormat format,
-                                   const gfx::Size& size,
-                                   const gfx::ColorSpace& color_space,
-                                   uint32_t usage,
-                                   size_t estimated_size,
-                                   bool is_thread_safe);
-  ~SharedImageBackingWithReadAccess() override;
+  SharedImageBackingGLCommon(const Mailbox& mailbox,
+                             viz::ResourceFormat format,
+                             const gfx::Size& size,
+                             const gfx::ColorSpace& color_space,
+                             uint32_t usage,
+                             bool is_passthrough);
+  ~SharedImageBackingGLCommon() override;
 
-  virtual void BeginReadAccess() = 0;
+  // This function explicitly initializes the GL texture according to the
+  // specified parameters.
+  // TODO(https://crbug.com/1092155): The goal here is to cache these parameters
+  // (which are specified at initialization), so that the GL texture can be
+  // allocated and bound lazily. In that world, |service_id| will not be a
+  // parameter, but will be allocated lazily, and |image| will be handled by the
+  // relevant sub-class.
+  struct InitializeGLTextureParams {
+    GLenum target = 0;
+    GLenum internal_format = 0;
+    GLenum format = 0;
+    GLenum type = 0;
+    const gles2::Texture::CompatibilitySwizzle* swizzle = nullptr;
+    gles2::Texture::ImageState image_state = gles2::Texture::UNBOUND;
+    bool is_cleared = false;
+    bool has_immutable_storage = false;
+  };
+  void InitializeGLTexture(GLuint service_id,
+                           scoped_refptr<gl::GLImage> image,
+                           const InitializeGLTextureParams& params);
+
+  gles2::Texture* texture() const { return texture_; }
+  gles2::TexturePassthrough* texture_passthrough() const {
+    return passthrough_texture_.get();
+  }
+
+  virtual void BeginSkiaReadAccess() = 0;
+
+ protected:
+  // SharedImageBacking:
+  gfx::Rect ClearedRect() const final;
+  void SetClearedRect(const gfx::Rect& cleared_rect) final;
+  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) final;
+  std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker) final;
+  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+  ProduceGLTexturePassthrough(SharedImageManager* manager,
+                              MemoryTypeTracker* tracker) final;
+  std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state) final;
+  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      WGPUDevice device) final;
+
+  bool IsPassthrough() const { return is_passthrough_; }
+  GLenum GetGLTarget() const;
+  GLuint GetGLServiceId() const;
+
+  const bool is_passthrough_;
+  gles2::Texture* texture_ = nullptr;
+  scoped_refptr<gles2::TexturePassthrough> passthrough_texture_;
+
+  sk_sp<SkPromiseImageTexture> cached_promise_texture_;
 };
 
-// Skia representation for both SharedImageBackingGLTexture and
-// SharedImageBackingGLTexturePassthrough.
+// Skia representation for both SharedImageBackingGLCommon.
 class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
  public:
   SharedImageRepresentationSkiaImpl(
       SharedImageManager* manager,
-      SharedImageBackingWithReadAccess* backing,
+      SharedImageBackingGLCommon* backing,
       scoped_refptr<SharedContextState> context_state,
       sk_sp<SkPromiseImageTexture> cached_promise_texture,
       MemoryTypeTracker* tracker,
@@ -93,10 +146,8 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
   sk_sp<SkPromiseImageTexture> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores) override;
-  bool SupportsMultipleConcurrentReadAccess() override;
-
-  // SharedImageBackingWithReadAccess:
   void EndReadAccess() override;
+  bool SupportsMultipleConcurrentReadAccess() override;
 
   void CheckContext();
 
@@ -111,58 +162,35 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
 
 // Implementation of SharedImageBacking that creates a GL Texture that is not
 // backed by a GLImage.
-class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
+class SharedImageBackingGLTexture : public SharedImageBackingGLCommon {
  public:
-  SharedImageBackingGLTexture(
-      const Mailbox& mailbox,
-      viz::ResourceFormat format,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      uint32_t usage,
-      gles2::Texture* texture,
-      scoped_refptr<gles2::TexturePassthrough> passthrough_texture);
+  SharedImageBackingGLTexture(const Mailbox& mailbox,
+                              viz::ResourceFormat format,
+                              const gfx::Size& size,
+                              const gfx::ColorSpace& color_space,
+                              uint32_t usage,
+                              bool is_passthrough);
+  SharedImageBackingGLTexture(const SharedImageBackingGLTexture&) = delete;
+  SharedImageBackingGLTexture& operator=(const SharedImageBackingGLTexture&) =
+      delete;
   ~SharedImageBackingGLTexture() override;
 
  private:
   // SharedImageBacking:
-  gfx::Rect ClearedRect() const override;
-  void SetClearedRect(const gfx::Rect& cleared_rect) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
-  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
   void OnMemoryDump(const std::string& dump_name,
                     base::trace_event::MemoryAllocatorDump* dump,
                     base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t client_tracing_id) override;
-  std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override;
-  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-  ProduceGLTexturePassthrough(SharedImageManager* manager,
-                              MemoryTypeTracker* tracker) override;
-  std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker,
-      scoped_refptr<SharedContextState> context_state) override;
-  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker,
-      WGPUDevice device) override;
 
-  // SharedImageBackingWithReadAccess:
-  void BeginReadAccess() override;
-
-  bool IsPassthrough() const;
-
-  gles2::Texture* texture_ = nullptr;
-  scoped_refptr<gles2::TexturePassthrough> passthrough_texture_;
-
-  sk_sp<SkPromiseImageTexture> cached_promise_texture_;
+  // SharedImageBackingGLCommon:
+  void BeginSkiaReadAccess() override;
 };
 
 // Implementation of SharedImageBacking that creates a GL Texture that is backed
 // by a GLImage and stores it as a gles2::Texture. Can be used with the legacy
 // mailbox implementation.
-class SharedImageBackingGLImage : public SharedImageBackingWithReadAccess {
+class SharedImageBackingGLImage : public SharedImageBackingGLCommon {
  public:
   SharedImageBackingGLImage(
       scoped_refptr<gl::GLImage> image,
@@ -171,91 +199,32 @@ class SharedImageBackingGLImage : public SharedImageBackingWithReadAccess {
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       uint32_t usage,
-      gles2::Texture* texture,
-      const SharedImageBackingFactoryGLTexture::UnpackStateAttribs& attribs);
+      const SharedImageBackingFactoryGLTexture::UnpackStateAttribs& attribs,
+      bool is_passthrough);
+  SharedImageBackingGLImage(const SharedImageBackingGLImage& other) = delete;
+  SharedImageBackingGLImage& operator=(const SharedImageBackingGLImage& other) =
+      delete;
   ~SharedImageBackingGLImage() override;
 
  private:
   // SharedImageBacking:
-  gfx::Rect ClearedRect() const override;
-  void SetClearedRect(const gfx::Rect& cleared_rect) override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
-  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
   void OnMemoryDump(const std::string& dump_name,
                     base::trace_event::MemoryAllocatorDump* dump,
                     base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t client_tracing_id) override;
   scoped_refptr<gfx::NativePixmap> GetNativePixmap() override;
-  std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override;
   std::unique_ptr<SharedImageRepresentationGLTexture>
   ProduceRGBEmulationGLTexture(SharedImageManager* manager,
                                MemoryTypeTracker* tracker) override;
-  std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker,
-      scoped_refptr<SharedContextState> context_state) override;
-  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker,
-      WGPUDevice device) override;
 
-  // SharedImageBackingWithReadAccess:
-  void BeginReadAccess() override;
+  // SharedImageBackingGLCommon:
+  void BeginSkiaReadAccess() override;
 
   scoped_refptr<gl::GLImage> image_;
-  gles2::Texture* texture_ = nullptr;
   gles2::Texture* rgb_emulation_texture_ = nullptr;
-  sk_sp<SkPromiseImageTexture> cached_promise_texture_;
   const SharedImageBackingFactoryGLTexture::UnpackStateAttribs attribs_;
   scoped_refptr<gfx::NativePixmap> native_pixmap_;
-};
-
-// Implementation of SharedImageBacking that creates a GL Texture and stores it
-// as a gles2::TexturePassthrough. Can be used with the legacy mailbox
-// implementation.
-class SharedImageBackingPassthroughGLImage
-    : public SharedImageBackingWithReadAccess {
- public:
-  SharedImageBackingPassthroughGLImage(
-      scoped_refptr<gl::GLImage> image,
-      const Mailbox& mailbox,
-      viz::ResourceFormat format,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      uint32_t usage,
-      scoped_refptr<gles2::TexturePassthrough> passthrough_texture);
-  ~SharedImageBackingPassthroughGLImage() override;
-
- private:
-  // SharedImageBacking:
-  gfx::Rect ClearedRect() const override;
-  void SetClearedRect(const gfx::Rect& cleared_rect) override;
-  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
-  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) override;
-  void OnMemoryDump(const std::string& dump_name,
-                    base::trace_event::MemoryAllocatorDump* dump,
-                    base::trace_event::ProcessMemoryDump* pmd,
-                    uint64_t client_tracing_id) override;
-  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-  ProduceGLTexturePassthrough(SharedImageManager* manager,
-                              MemoryTypeTracker* tracker) override;
-  std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker,
-      scoped_refptr<SharedContextState> context_state) override;
-  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker,
-      WGPUDevice device) override;
-
-  // SharedImageBackingWithReadAccess:
-  void BeginReadAccess() override;
-
-  scoped_refptr<gl::GLImage> image_;
-  scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
-  sk_sp<SkPromiseImageTexture> cached_promise_texture_;
 };
 
 }  // namespace gpu

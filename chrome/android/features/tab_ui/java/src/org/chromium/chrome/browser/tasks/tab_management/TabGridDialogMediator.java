@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -100,7 +99,7 @@ public class TabGridDialogMediator {
     private final AnimationSourceViewProvider mAnimationSourceViewProvider;
     private final DialogHandler mTabGridDialogHandler;
     private final ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
-    private final ScrimView.ScrimObserver mScrimObserver;
+    private final Runnable mScrimClickRunnable;
     private final String mComponentName;
 
     private TabGroupTitleEditor mTabGroupTitleEditor;
@@ -209,17 +208,12 @@ public class TabGridDialogMediator {
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
 
-        // Setup ScrimView observer.
-        mScrimObserver = new ScrimView.ScrimObserver() {
-            @Override
-            public void onScrimClick() {
-                mModel.set(TabGridPanelProperties.IS_KEYBOARD_VISIBLE, false);
-                mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, false);
-                hideDialog(true);
-                RecordUserAction.record("TabGridDialog.Exit");
-            }
-            @Override
-            public void onScrimVisibilityChanged(boolean visible) {}
+        // Setup ScrimView click Runnable.
+        mScrimClickRunnable = () -> {
+            mModel.set(TabGridPanelProperties.IS_KEYBOARD_VISIBLE, false);
+            mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, false);
+            hideDialog(true);
+            RecordUserAction.record("TabGridDialog.Exit");
         };
     }
 
@@ -277,6 +271,7 @@ public class TabGridDialogMediator {
     }
 
     void hideDialog(boolean showAnimation) {
+        if (!mModel.get(TabGridPanelProperties.IS_DIALOG_VISIBLE)) return;
         if (!showAnimation) {
             mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
         } else {
@@ -310,7 +305,7 @@ public class TabGridDialogMediator {
             }
             updateDialog();
             updateDialogScrollPosition();
-            mModel.set(TabGridPanelProperties.SCRIMVIEW_OBSERVER, mScrimObserver);
+            mModel.set(TabGridPanelProperties.SCRIMVIEW_CLICK_RUNNABLE, mScrimClickRunnable);
             mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
         } else {
             mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
@@ -569,7 +564,7 @@ public class TabGridDialogMediator {
     }
 
     @VisibleForTesting
-    ScrimView.ScrimObserver getScrimObserverForTesting() {
-        return mScrimObserver;
+    Runnable getScrimClickRunnableForTesting() {
+        return mScrimClickRunnable;
     }
 }

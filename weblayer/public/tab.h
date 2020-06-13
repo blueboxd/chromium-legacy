@@ -33,11 +33,7 @@ class TabObserver;
 // Represents a tab that is navigable.
 class Tab {
  public:
-#if defined(OS_ANDROID)
-  static Tab* GetLastTabForTesting();
-#endif
-
-  virtual ~Tab() {}
+  virtual ~Tab() = default;
 
   // Sets the ErrorPageDelegate. If none is set, a default action will be taken
   // for any given interaction with an error page.

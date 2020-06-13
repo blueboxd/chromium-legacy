@@ -34,6 +34,10 @@ gfx::NativeCursor TestCursorClient::GetCursor() const {
   return ui::mojom::CursorType::kNull;
 }
 
+void TestCursorClient::SetCursorForced(gfx::NativeCursor cursor) {
+  SetCursor(cursor);
+}
+
 void TestCursorClient::ShowCursor() {
   visible_ = true;
   for (aura::client::CursorClientObserver& observer : observers_)

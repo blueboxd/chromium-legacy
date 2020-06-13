@@ -3,9 +3,8 @@
 Code reviews are a central part of developing high-quality code for Chromium.
 All changes must be reviewed.
 
-The bigger patch-upload-and-land process is covered in more detail the
-[contributing code](https://www.chromium.org/developers/contributing-code)
-page.
+The general patch, upload, and land process is covered in more detail in the
+[contributing code](contributing.md) page.
 
 # Code review policies
 

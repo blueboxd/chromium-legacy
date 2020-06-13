@@ -114,7 +114,9 @@ class SequenceBound {
                 Args&&... args)
       : impl_task_runner_(std::move(task_runner)) {
     // Allocate space for but do not construct an instance of |T|.
-    storage_ = AlignedAlloc(sizeof(T), alignof(T));
+    // AlignedAlloc() requires alignment be a multiple of sizeof(void*).
+    storage_ = AlignedAlloc(
+        sizeof(T), sizeof(void*) > alignof(T) ? sizeof(void*) : alignof(T));
     t_ = reinterpret_cast<T*>(storage_);
 
     // Post construction to the impl thread.

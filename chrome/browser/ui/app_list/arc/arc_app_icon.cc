@@ -227,7 +227,7 @@ ArcAppIcon::ArcAppIcon(content::BrowserContext* context,
       resource_size_in_dip_(resource_size_in_dip),
       observer_(observer),
       serve_compressed_icons_(serve_compressed_icons) {
-  CHECK(observer_ != nullptr);
+  CHECK(observer_);
 
   if (!serve_compressed_icons_) {
     auto source = std::make_unique<Source>(weak_ptr_factory_.GetWeakPtr(),

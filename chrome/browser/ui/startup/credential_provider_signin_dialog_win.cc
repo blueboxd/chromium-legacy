@@ -48,7 +48,7 @@ void WriteResultToHandle(const base::Value& result) {
     // ::GetStdHandle(STD_OUTPUT_HANDLE) will result in an invalid or null
     // handle if Chrome was started without providing a console.
     HANDLE output_handle = ::GetStdHandle(STD_OUTPUT_HANDLE);
-    if (output_handle != nullptr && output_handle != INVALID_HANDLE_VALUE) {
+    if (output_handle && output_handle != INVALID_HANDLE_VALUE) {
       DWORD written;
       if (!::WriteFile(output_handle, json_result.c_str(), json_result.length(),
                        &written, nullptr)) {

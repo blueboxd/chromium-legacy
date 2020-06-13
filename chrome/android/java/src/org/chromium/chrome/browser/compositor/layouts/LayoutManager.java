@@ -33,6 +33,8 @@ import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.scene_layer.SceneLayer;
 import org.chromium.chrome.browser.compositor.scene_layer.ToolbarSceneLayer;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsUtils;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.tab.SadTab;
@@ -820,18 +822,19 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
             mActiveLayout = layout;
         }
 
-        ChromeFullscreenManager fullscreenManager = mHost.getFullscreenManager();
-        if (fullscreenManager != null) {
-            mPreviousLayoutShowingToolbar = !fullscreenManager.areBrowserControlsOffScreen();
+        BrowserControlsVisibilityManager controlsVisibilityManager = mHost.getFullscreenManager();
+        if (controlsVisibilityManager != null) {
+            mPreviousLayoutShowingToolbar =
+                    !BrowserControlsUtils.areBrowserControlsOffScreen(controlsVisibilityManager);
 
             // Release any old fullscreen token we were holding.
-            fullscreenManager.getBrowserVisibilityDelegate().releasePersistentShowingToken(
+            controlsVisibilityManager.getBrowserVisibilityDelegate().releasePersistentShowingToken(
                     mControlsShowingToken);
 
             // Grab a new fullscreen token if this layout can't be in fullscreen.
             if (getActiveLayout().forceShowBrowserControlsAndroidView()) {
-                mControlsShowingToken =
-                        fullscreenManager.getBrowserVisibilityDelegate().showControlsPersistent();
+                mControlsShowingToken = controlsVisibilityManager.getBrowserVisibilityDelegate()
+                                                .showControlsPersistent();
             }
         }
 

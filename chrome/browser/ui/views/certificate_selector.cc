@@ -274,7 +274,7 @@ base::string16 CertificateSelector::GetWindowTitle() const {
 }
 
 bool CertificateSelector::IsDialogButtonEnabled(ui::DialogButton button) const {
-  return button != ui::DIALOG_BUTTON_OK || GetSelectedCert() != nullptr;
+  return button != ui::DIALOG_BUTTON_OK || GetSelectedCert();
 }
 
 views::View* CertificateSelector::GetInitiallyFocusedView() {

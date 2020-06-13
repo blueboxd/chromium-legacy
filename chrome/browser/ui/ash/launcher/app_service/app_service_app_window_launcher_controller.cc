@@ -471,8 +471,8 @@ void AppServiceAppWindowLauncherController::RegisterWindow(
     if (shelf_id.app_id == arc::kPlayStoreAppId) {
       AppWindowLauncherItemController* item_controller =
           owner()->shelf_model()->GetAppWindowLauncherItemController(shelf_id);
-      if (item_controller != nullptr &&
-          shelf_id.app_id == arc::kPlayStoreAppId && arc_tracker_) {
+      if (item_controller && shelf_id.app_id == arc::kPlayStoreAppId &&
+          arc_tracker_) {
         OnItemDelegateDiscarded(item_controller);
       }
     }

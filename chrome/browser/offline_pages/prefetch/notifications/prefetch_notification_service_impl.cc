@@ -16,6 +16,13 @@
 namespace offline_pages {
 namespace prefetch {
 namespace {
+
+constexpr base::TimeDelta kFirstStageIgnoreTimeoutDuration =
+    base::TimeDelta::FromDays(1);
+
+constexpr base::TimeDelta kSecondStageIgnoreTimeoutDuration =
+    base::TimeDelta::FromDays(7);
+
 void BuildNotificationData(const base::string16& title,
                            const base::string16& body,
                            notifications::NotificationData* out) {
@@ -24,19 +31,22 @@ void BuildNotificationData(const base::string16& title,
   out->message = body;
 }
 
-notifications::ScheduleParams BuildScheduleParams() {
+notifications::ScheduleParams BuildScheduleParams(
+    base::TimeDelta ignore_timeout_duration) {
   notifications::ScheduleParams schedule_params;
   // Explicit dismissing, clicking unhelpful button, and not interacting for a
   // while(1 day at first stage, 7 days at second stage) are considered as
   // negative feedback.
-  // TODO(hesen): Support timeout config for implicit dismiss(ignore) in
-  // framework.
   schedule_params.impression_mapping.emplace(
       notifications::UserFeedback::kDismiss,
+      notifications::ImpressionResult::kNegative);
+  schedule_params.impression_mapping.emplace(
+      notifications::UserFeedback::kIgnore,
       notifications::ImpressionResult::kNegative);
   schedule_params.deliver_time_start = base::make_optional(base::Time::Now());
   schedule_params.deliver_time_end =
       base::make_optional(base::Time::Now() + base::TimeDelta::FromMinutes(1));
+  schedule_params.ignore_timeout_duration = ignore_timeout_duration;
   return schedule_params;
 }
 
@@ -67,11 +77,16 @@ void PrefetchNotificationServiceImpl::ScheduleInternal(
   if (overview.impression_detail.current_max_daily_show == 0)
     return;
 
+  base::TimeDelta ignore_timeout_duration =
+      overview.impression_detail.num_negative_events
+          ? kSecondStageIgnoreTimeoutDuration
+          : kFirstStageIgnoreTimeoutDuration;
+
   notifications::NotificationData data;
   BuildNotificationData(title, body, &data);
   auto params = std::make_unique<notifications::NotificationParams>(
       notifications::SchedulerClientType::kPrefetch, std::move(data),
-      BuildScheduleParams());
+      BuildScheduleParams(ignore_timeout_duration));
   params->enable_ihnr_buttons = true;
   schedule_service_->Schedule(std::move(params));
 }

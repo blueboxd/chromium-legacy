@@ -129,15 +129,6 @@ class AccessibilityPrivateToggleDictationFunction : public ExtensionFunction {
                              ACCESSIBILITY_PRIVATE_TOGGLEDICTATION)
 };
 
-// API function that is called to show or hide the Switch Access menu.
-class AccessibilityPrivateSetSwitchAccessMenuStateFunction
-    : public ExtensionFunction {
-  ~AccessibilityPrivateSetSwitchAccessMenuStateFunction() override {}
-  ResponseAction Run() override;
-  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setSwitchAccessMenuState",
-                             ACCESSIBILITY_PRIVATE_SETSWITCHACCESSMENUSTATE)
-};
-
 // API function that requests that key events be forwarded to the Switch
 // Access extension.
 class AccessibilityPrivateForwardKeyEventsToSwitchAccessFunction

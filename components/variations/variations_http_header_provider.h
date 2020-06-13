@@ -64,9 +64,19 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // apps.
   std::string GetGoogleAppVariationsString();
 
-  // Returns the collection of of variation ids matching the given |key|. Each
+  // Returns the collection of variation ids matching the given |key|. Each
   // entry in the returned vector will be unique.
   std::vector<VariationID> GetVariationsVector(IDCollectionKey key);
+
+  // Returns the collection of variation ids matching any of the given
+  // |keys|. Each entry in the returned vector will be unique.
+  // TODO(rogerm): rename/move to private impl function.
+  std::vector<VariationID> GetVariationsVector(
+      const std::set<IDCollectionKey>& key);
+
+  // Returns the collection of variations ids for all Google Web Properties
+  // related keys.
+  std::vector<VariationID> GetVariationsVectorForWebPropertiesKeys();
 
   // Result of ForceVariationIds() call.
   enum class ForceIdsResult {
@@ -120,7 +130,11 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            GetVariationsString);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
-                           GetVariationsVector);
+                           GetVariationsVectorByKey);
+  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
+                           GetVariationsVectorByKeySet);
+  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
+                           GetVariationsVectorForWebPropertiesKeys);
 
   VariationsHttpHeaderProvider();
   ~VariationsHttpHeaderProvider() override;

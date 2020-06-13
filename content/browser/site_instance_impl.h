@@ -22,6 +22,68 @@ namespace content {
 class BrowsingInstance;
 class RenderProcessHostFactory;
 
+// SiteInfo represents the principal of a SiteInstance. All documents and
+// workers within a SiteInstance are considered part of this principal and will
+// share a renderer process. Any two documents within the same browsing context
+// group (i.e., BrowsingInstance) that are allowed to script each other *must*
+// have the same SiteInfo principal, so that they end up in the same renderer
+// process.
+//
+// As a result, SiteInfo is primarily defined in terms of "site URL," which is
+// often the scheme plus the eTLD+1 of a URL. This allows same-site URLs to
+// always share a process even when document.domain is modified. However, some
+// site URLs can be finer grained (e.g., origins) or coarser grained (e.g.,
+// file://). See |site_url()| for more considerations.
+//
+// In the future, we may add more information to SiteInfo for cases where the
+// site URL is not sufficient to identify which process a document belongs in.
+// For example, origin isolation (https://crbug.com/1067389) will introduce a
+// 'keying' bit ('site' or 'origin') to avoid an ambiguity between sites and
+// origins, and it will be possible for two SiteInstances with different keying
+// values to have the same site URL. It is important that any extra members of
+// SiteInfo do not cause two documents that can script each other to end up in
+// different SiteInfos and thus different processes.
+//
+// TODO(wjmaclean): This should eventually move to
+// content/public/browser/site_info.h.
+class CONTENT_EXPORT SiteInfo {
+ public:
+  static SiteInfo CreateForErrorPage();
+
+  explicit SiteInfo(const GURL& site_url);
+  SiteInfo() = default;
+
+  // Returns the site URL associated with all of the documents and workers in
+  // this principal, as described above.
+  //
+  // NOTE: In most cases, code should be performing checks against the origin
+  // returned by |RenderFrameHost::GetLastCommittedOrigin()|. In contrast, the
+  // GURL returned by |site_url()| should not be considered authoritative
+  // because:
+  // - A SiteInstance can host pages from multiple sites if "site per process"
+  //   is not enabled and the SiteInstance isn't hosting pages that require
+  //   process isolation (e.g. WebUI or extensions).
+  // - Even with site per process, the site URL is not an origin: while often
+  //   derived from the origin, it only contains the scheme and the eTLD + 1,
+  //   i.e. an origin with the host "deeply.nested.subdomain.example.com"
+  //   corresponds to a site URL with the host "example.com".
+  // - When origin isolation is in use, there may be multiple SiteInstance with
+  //   the same site_url() but that differ in other properties.
+  const GURL& site_url() const { return site_url_; }
+
+  bool operator==(const SiteInfo& other) const;
+  bool operator!=(const SiteInfo& other) const;
+
+  // Returns a string representation of this SiteInfo principal.
+  std::string GetDebugString() const;
+
+ private:
+  GURL site_url_;
+  // TODO(crbug.com/1067389): Add site vs origin granularity.
+};
+
+std::ostream& operator<<(std::ostream& out, const SiteInfo& site_info);
+
 class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
                                               public RenderProcessHostObserver {
  public:
@@ -183,10 +245,24 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   // URLs.
   static bool HasEffectiveURL(BrowserContext* browser_context, const GURL& url);
 
+  // SiteInfo related functions.
+
+  // Returns the SiteInfo principal identifying all documents and workers within
+  // this SiteInstance.
+  // TODO(wjmaclean): eventually this function will replace const GURL&
+  // GetSiteURL().
+  const SiteInfo& GetSiteInfo();
+
+  // Note: eventually this function will replace GetSiteForURL().
+  static SiteInfo ComputeSiteInfo(const IsolationContext& isolation_context,
+                                  const GURL& url);
+
   // Returns the site for the given URL, which includes only the scheme and
   // registered domain.  Returns an empty GURL if the URL has no host.
   // |url| will be resolved to an effective URL (via
   // ContentBrowserClient::GetEffectiveURL()) before determining the site.
+  // NOTE: This function will soon be removed, and replaced by
+  // ComputeSiteInfo(). New code should use that function instead.
   static GURL GetSiteForURL(const IsolationContext& isolation_context,
                             const GURL& url);
 
@@ -456,7 +532,7 @@ class CONTENT_EXPORT SiteInstanceImpl final : public SiteInstance,
   bool can_associate_with_spare_process_;
 
   // The web site that this SiteInstance is rendering pages for.
-  GURL site_;
+  SiteInfo site_;
 
   // Whether SetSite has been called.
   bool has_site_;

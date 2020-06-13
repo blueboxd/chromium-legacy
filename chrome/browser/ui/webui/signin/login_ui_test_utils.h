@@ -60,9 +60,6 @@ bool CompleteSigninEmailConfirmationDialog(
     base::TimeDelta timeout,
     SigninEmailConfirmationDialog::Action action);
 
-// Waits for the reauth confirmation dialog to get displayed.
-void WaitUntilReauthUIIsReady(Browser* browser);
-
 // Waits for the reauth confirmation dialog to get displayed, then executes
 // javascript to click on confirm button. Returns false if dialog wasn't
 // dismissed before |timeout|.

@@ -655,4 +655,64 @@ TEST_P(HTMLMediaElementTest, OnTimeUpdate_Seeking) {
   Media()->setCurrentTime(2);
 }
 
+TEST_P(HTMLMediaElementTest, ShowPosterFlag_InitiallyTrue) {
+  // ShowPosterFlag should be true upon initialization
+  EXPECT_TRUE(Media()->IsShowPosterFlagSet());
+
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  test::RunPendingTasks();
+
+  EXPECT_TRUE(Media()->IsShowPosterFlagSet());
+
+  SetReadyState(HTMLMediaElement::kHaveEnoughData);
+  test::RunPendingTasks();
+
+  // ShowPosterFlag should still be true once video is ready to play
+  EXPECT_TRUE(Media()->IsShowPosterFlagSet());
+}
+
+TEST_P(HTMLMediaElementTest, ShowPosterFlag_FalseAfterPlay) {
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  test::RunPendingTasks();
+
+  SetReadyState(HTMLMediaElement::kHaveEnoughData);
+  test::RunPendingTasks();
+
+  Media()->Play();
+  test::RunPendingTasks();
+
+  // ShowPosterFlag should be false once video is playing
+  ASSERT_FALSE(Media()->paused());
+  EXPECT_FALSE(Media()->IsShowPosterFlagSet());
+}
+
+TEST_P(HTMLMediaElementTest, ShowPosterFlag_FalseAfterSeek) {
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  test::RunPendingTasks();
+
+  SetReadyState(HTMLMediaElement::kHaveEnoughData);
+  test::RunPendingTasks();
+
+  ASSERT_NE(Media()->duration(), 0.0);
+  Media()->setCurrentTime(Media()->duration() / 2);
+  test::RunPendingTasks();
+
+  EXPECT_FALSE(Media()->IsShowPosterFlagSet());
+}
+
+TEST_P(HTMLMediaElementTest, ShowPosterFlag_FalseAfterAutoPlay) {
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  test::RunPendingTasks();
+
+  Media()->SetBooleanAttribute(html_names::kAutoplayAttr, true);
+  test::RunPendingTasks();
+
+  SetReadyState(HTMLMediaElement::kHaveEnoughData);
+  test::RunPendingTasks();
+
+  ASSERT_TRUE(WasAutoplayInitiated());
+  ASSERT_FALSE(Media()->paused());
+  EXPECT_FALSE(Media()->IsShowPosterFlagSet());
+}
+
 }  // namespace blink

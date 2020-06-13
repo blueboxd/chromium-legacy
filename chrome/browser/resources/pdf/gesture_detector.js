@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+
 /**
  * @typedef {{
- *   type: string,
  *   center: !{x: number, y: number},
  *   direction: (string|undefined),
  *   scaleRatio: (?number|undefined),
  *   startScaleRatio: (?number|undefined),
  * }}
  */
-export let PinchEvent;
+export let PinchEventDetail;
 
 // A class that listens for touch events and produces events when these
 // touches form gestures (e.g. pinching).
@@ -61,21 +62,13 @@ export class GestureDetector {
      */
     this.wheelEndTimeout_ = null;
 
-    /** @private {!Map<string, !Array<!Function>>} */
-    this.listeners_ =
-        new Map([['pinchstart', []], ['pinchupdate', []], ['pinchend', []]]);
+    /** @private {!EventTarget} */
+    this.eventTarget_ = new EventTarget();
   }
 
-  /**
-   * Add a |listener| to be notified of |type| events.
-   *
-   * @param {string} type The event type to be notified for.
-   * @param {!Function} listener The callback.
-   */
-  addEventListener(type, listener) {
-    if (this.listeners_.has(type)) {
-      this.listeners_.get(type).push(listener);
-    }
+  /** @return {!EventTarget} */
+  getEventTarget() {
+    return this.eventTarget_;
   }
 
   /**
@@ -87,16 +80,13 @@ export class GestureDetector {
   }
 
   /**
-   * Call the relevant listeners with the given |pinchEvent|.
-   * @param {!PinchEvent} pinchEvent The event to notify the listeners of.
+   * Call the relevant listeners with the given |PinchEventDetail|.
+   * @param {string} type The type of pinch event.
+   * @param {!PinchEventDetail} detail The event to notify the listeners of.
    * @private
    */
-  notify_(pinchEvent) {
-    const listeners = this.listeners_.get(pinchEvent.type);
-
-    for (const l of listeners) {
-      l(pinchEvent);
-    }
+  notify_(type, detail) {
+    this.eventTarget_.dispatchEvent(new CustomEvent(type, {detail}));
   }
 
   /**
@@ -112,7 +102,7 @@ export class GestureDetector {
 
     this.pinchStartEvent_ = event;
     this.lastEvent_ = event;
-    this.notify_({type: 'pinchstart', center: GestureDetector.center_(event)});
+    this.notify_('pinchstart', {center: GestureDetector.center_(event)});
   }
 
   /**
@@ -133,14 +123,12 @@ export class GestureDetector {
       const startScaleRatio =
           GestureDetector.pinchScaleRatio_(lastEvent, this.pinchStartEvent_);
       const center = GestureDetector.center_(lastEvent);
-      const endEvent = {
-        type: 'pinchend',
-        startScaleRatio: startScaleRatio,
-        center: center
-      };
       this.pinchStartEvent_ = null;
       this.lastEvent_ = null;
-      this.notify_(endEvent);
+      this.notify_('pinchend', {
+        startScaleRatio: startScaleRatio,
+        center: center,
+      });
       return;
     }
 
@@ -148,12 +136,11 @@ export class GestureDetector {
     const startScaleRatio =
         GestureDetector.pinchScaleRatio_(event, this.pinchStartEvent_);
     const center = GestureDetector.center_(event);
-    this.notify_({
-      type: 'pinchupdate',
+    this.notify_('pinchupdate', {
       scaleRatio: scaleRatio,
       direction: scaleRatio > 1.0 ? 'in' : 'out',
       startScaleRatio: startScaleRatio,
-      center: center
+      center: center,
     });
 
     this.lastEvent_ = event;
@@ -185,16 +172,15 @@ export class GestureDetector {
 
     if (this.accumulatedWheelScale_ == null) {
       this.accumulatedWheelScale_ = 1.0;
-      this.notify_({type: 'pinchstart', center: position});
+      this.notify_('pinchstart', {center: position});
     }
 
     this.accumulatedWheelScale_ *= scale;
-    this.notify_({
-      type: 'pinchupdate',
+    this.notify_('pinchupdate', {
       scaleRatio: scale,
       direction: scale > 1.0 ? 'in' : 'out',
       startScaleRatio: this.accumulatedWheelScale_,
-      center: position
+      center: position,
     });
 
     // We don't get any phase information for the ctrl-wheels, so we don't know
@@ -206,15 +192,14 @@ export class GestureDetector {
     }
     const gestureEndDelayMs = 100;
     const endEvent = {
-      type: 'pinchend',
       startScaleRatio: this.accumulatedWheelScale_,
-      center: position
+      center: position,
     };
-    this.wheelEndTimeout_ = window.setTimeout(function(endEvent) {
-      this.notify_(endEvent);
+    this.wheelEndTimeout_ = window.setTimeout(() => {
+      this.notify_('pinchend', endEvent);
       this.wheelEndTimeout_ = null;
       this.accumulatedWheelScale_ = null;
-    }.bind(this), gestureEndDelayMs, endEvent);
+    }, gestureEndDelayMs);
   }
 
   /**

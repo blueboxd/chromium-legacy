@@ -2279,7 +2279,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-use-hdr-transfer-function",
      flag_descriptions::kEnableUseHDRTransferFunctionName,
      flag_descriptions::kEnableUseHDRTransferFunctionDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kEnableUseHDRTransferFunction)},
+     SINGLE_DISABLE_VALUE_TYPE(switches::kEnableUseHDRTransferFunction)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS)
     {"ash-limit-alt-tab-to-active-desk",
@@ -2401,9 +2401,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"trim-on-memory-pressure", flag_descriptions::kTrimOnMemoryPressureName,
      flag_descriptions::kTrimOnMemoryPressureDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(performance_manager::features::kTrimOnMemoryPressure)},
-    {"message-center-redesign", flag_descriptions::kMessageCenterRedesignName,
-     flag_descriptions::kMessageCenterRedesignDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kUnifiedMessageCenterRefactor)},
     {"system-tray-mic-gain", flag_descriptions::kSystemTrayMicGainName,
      flag_descriptions::kSystemTrayMicGainDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kSystemTrayMicGainSetting)},
@@ -4434,6 +4431,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableQuickAnswersTextAnnotatorName,
      flag_descriptions::kEnableQuickAnswersTextAnnotatorDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kQuickAnswersTextAnnotator)},
+
+    {"enable-on-device-assistant",
+     flag_descriptions::kEnableOnDeviceAssistantName,
+     flag_descriptions::kEnableOnDeviceAssistantDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         chromeos::assistant::features::kEnableOnDeviceAssistant)},
 
 #endif  // defined(OS_CHROMEOS)
 

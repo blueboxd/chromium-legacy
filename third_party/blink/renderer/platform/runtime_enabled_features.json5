@@ -1644,10 +1644,6 @@
       name: "ServiceWorkerFetchEventWorkerTiming",
       status: "experimental",
     },
-    {
-      name: "SetRootScroller",
-      status: "experimental",
-    },
     // TODO(937746): Web Components v0 is disabled by default, and will be
     // removed after M87.
     {

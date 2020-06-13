@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <set>
 #include <string>
 #include <vector>
@@ -85,6 +86,11 @@ std::string VariationsHttpHeaderProvider::GetVariationsString() {
 
 std::vector<VariationID> VariationsHttpHeaderProvider::GetVariationsVector(
     IDCollectionKey key) {
+  return GetVariationsVector(std::set<IDCollectionKey>{key});
+}
+
+std::vector<VariationID> VariationsHttpHeaderProvider::GetVariationsVector(
+    const std::set<IDCollectionKey>& keys) {
   InitVariationIDsCacheIfNeeded();
 
   // Get all the active variation ids while holding the lock.
@@ -94,15 +100,27 @@ std::vector<VariationID> VariationsHttpHeaderProvider::GetVariationsVector(
     all_variation_ids = GetAllVariationIds();
   }
 
-  // Copy the requested variations to the output vector. Note that the ids will
-  // be in sorted order because they're coming from a std::set.
+  // Copy the requested variations to the output vector.
   std::vector<VariationID> result;
   result.reserve(all_variation_ids.size());
   for (const VariationIDEntry& entry : all_variation_ids) {
-    if (entry.second == key)
+    if (keys.find(entry.second) != keys.end())
       result.push_back(entry.first);
   }
+
+  // Make sure each enry is unique. As a side-effect, the output will be sorted.
+  std::sort(result.begin(), result.end());
+  result.erase(std::unique(result.begin(), result.end()), result.end());
   return result;
+}
+
+std::vector<VariationID>
+VariationsHttpHeaderProvider::GetVariationsVectorForWebPropertiesKeys() {
+  const std::set<IDCollectionKey> web_properties_keys{
+      variations::GOOGLE_WEB_PROPERTIES,
+      variations::GOOGLE_WEB_PROPERTIES_SIGNED_IN,
+      variations::GOOGLE_WEB_PROPERTIES_TRIGGER};
+  return GetVariationsVector(web_properties_keys);
 }
 
 VariationsHttpHeaderProvider::ForceIdsResult

@@ -249,7 +249,7 @@ TEST_F(RecentTabsSubMenuModelTest, RecentlyClosedTabsFromCurrentSession) {
 
   EXPECT_EQ(NULL, model.GetLabelFontListAt(0));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(1));
-  EXPECT_TRUE(model.GetLabelFontListAt(2) != nullptr);
+  EXPECT_TRUE(model.GetLabelFontListAt(2));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(3));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(4));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(5));
@@ -369,7 +369,7 @@ TEST_F(RecentTabsSubMenuModelTest,
 
   EXPECT_EQ(NULL, model.GetLabelFontListAt(0));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(1));
-  EXPECT_TRUE(model.GetLabelFontListAt(2) != nullptr);
+  EXPECT_TRUE(model.GetLabelFontListAt(2));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(3));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(4));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(5));
@@ -465,12 +465,12 @@ TEST_F(RecentTabsSubMenuModelTest, OtherDevices) {
   EXPECT_EQ(NULL, model.GetLabelFontListAt(1));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(2));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(3));
-  EXPECT_TRUE(model.GetLabelFontListAt(4) != nullptr);
+  EXPECT_TRUE(model.GetLabelFontListAt(4));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(5));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(6));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(7));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(8));
-  EXPECT_TRUE(model.GetLabelFontListAt(9) != nullptr);
+  EXPECT_TRUE(model.GetLabelFontListAt(9));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(10));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(11));
   EXPECT_EQ(NULL, model.GetLabelFontListAt(12));

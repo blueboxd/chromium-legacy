@@ -26,7 +26,7 @@ class Schema;
 class SchemaMap;
 class SchemaRegistry;
 
-using DeprecatedPoliciesSet = std::set<std::string>;
+using PoliciesSet = std::set<std::string>;
 
 // PolicyConversionsClient supplies embedder-specific information that is needed
 // by the PolicyConversions class.  It also provides common utilities and
@@ -113,11 +113,13 @@ class POLICY_EXPORT PolicyConversionsClient {
   // optional errors in |errors| to determine the status of each policy.
   // |known_policy_schemas| contains |Schema|s for known policies in the same
   // policy namespace of |map|. |deprecated_policies| holds deprecated policies.
-  // A policy without an entry in |known_policy_schemas| is an unknown policy.
+  // |future_policies| holds unreleased policies. A policy without an entry in
+  // |known_policy_schemas| is an unknown policy.
   base::Value GetPolicyValue(
       const std::string& policy_name,
       const PolicyMap::Entry& policy,
-      const DeprecatedPoliciesSet& deprecated_policies,
+      const PoliciesSet& deprecated_policies,
+      const PoliciesSet& future_policies,
       PolicyErrorMap* errors,
       const base::Optional<PolicyConversions::PolicyToSchemaMap>&
           known_policy_schemas) const;
@@ -126,12 +128,13 @@ class POLICY_EXPORT PolicyConversionsClient {
   // optional errors in |errors| to determine the status of each policy.
   // |known_policy_schemas| contains |Schema|s for known policies in the same
   // policy namespace of |map|. |deprecated_policies| holds deprecated policies.
-  // A policy in |map| but without an entry |known_policy_schemas| is an unknown
-  // policy.
+  // |future_policies| holds unreleased policies. A policy in |map| but without
+  // an entry |known_policy_schemas| is an unknown policy.
   base::Value GetPolicyValues(
       const PolicyMap& map,
       PolicyErrorMap* errors,
-      const DeprecatedPoliciesSet& deprecated_policies,
+      const PoliciesSet& deprecated_policies,
+      const PoliciesSet& future_policies,
       const base::Optional<PolicyConversions::PolicyToSchemaMap>&
           known_policy_schemas) const;
 

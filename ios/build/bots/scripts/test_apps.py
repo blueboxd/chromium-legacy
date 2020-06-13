@@ -105,6 +105,9 @@ class GTestsApp(object):
     self.test_app_path = test_app
     self.project_path = os.path.dirname(self.test_app_path)
     self.test_args = test_args or []
+    # TODO(crbug.com/1092583): Move this switch as a test variant running only
+    # in selected builder that should output disabled tests.
+    self.test_args.append('--write-compiled-tests-json-to-writable-path')
     self.env_vars = {}
     for env_var in env_vars or []:
       env_var = env_var.split('=', 1)

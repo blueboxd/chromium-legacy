@@ -31,6 +31,7 @@
 #include "base/test/scoped_path_override.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_data.h"
@@ -98,6 +99,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/aura/env.h"
+#include "ui/aura/test/test_windows.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -258,6 +261,7 @@ class TestingDeviceStatusCollectorOptions {
   policy::DeviceStatusCollector::GraphicsStatusFetcher graphics_status_fetcher;
   policy::DeviceStatusCollector::CrashReportInfoFetcher
       crash_report_info_fetcher;
+  std::unique_ptr<policy::AppInfoGenerator> app_info_generator;
 };
 
 class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
@@ -278,11 +282,11 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
                                       options->stateful_partition_info_fetcher,
                                       options->cros_healthd_data_fetcher,
                                       options->graphics_status_fetcher,
-                                      options->crash_report_info_fetcher),
+                                      options->crash_report_info_fetcher,
+                                      clock),
         test_clock_(*clock) {
     // Set the baseline time to a fixed value (1 hour after day start) to
     // prevent test flakiness due to a single activity period spanning two days.
-    clock_ = clock;
     test_clock_.SetNow(Time::Now().LocalMidnight() + kHour);
   }
 
@@ -782,6 +786,7 @@ class DeviceStatusCollectorTest : public testing::Test {
   virtual void RestartStatusCollector(
       std::unique_ptr<TestingDeviceStatusCollectorOptions> options) {
     std::vector<em::VolumeInfo> expected_volume_info;
+    status_collector_.reset();
     status_collector_ = std::make_unique<TestingDeviceStatusCollector>(
         &local_state_, &fake_statistics_provider_, std::move(options),
         &test_clock_);
@@ -820,6 +825,8 @@ class DeviceStatusCollectorTest : public testing::Test {
         base::BindRepeating(&GetEmptyGraphicsStatus);
     options->crash_report_info_fetcher =
         base::BindRepeating(&GetEmptyCrashReportInfo);
+    options->app_info_generator = std::make_unique<policy::AppInfoGenerator>(
+        base::TimeDelta::FromDays(0));
     return options;
   }
 
@@ -863,6 +870,8 @@ class DeviceStatusCollectorTest : public testing::Test {
 
     EXPECT_CALL(*user_manager_, IsLoggedInAsKioskApp())
         .WillRepeatedly(Return(false));
+    EXPECT_CALL(*user_manager_, FindUser(account_id))
+        .WillRepeatedly(Return(user));
   }
 
   void MockRegularUserWithAffiliation(const AccountId& account_id,
@@ -3219,6 +3228,57 @@ TEST_F(DeviceStatusCollectorTest, TestPartialCrosHealthdInfo) {
   EXPECT_FALSE(device_status_.has_storage_status());
   EXPECT_EQ(device_status_.backlight_info_size(), 0);
   EXPECT_EQ(device_status_.fan_info_size(), 0);
+}
+
+TEST_F(DeviceStatusCollectorTest, GenerateAppInfo) {
+  const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
+  MockRegularUserWithAffiliation(account_id, true);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceAppInfo, true);
+  status_collector_->GetAffiliatedSessionServiceForTesting()
+      ->OnUserProfileLoaded(account_id);
+  auto* app_proxy =
+      apps::AppServiceProxyFactory::GetForProfile(testing_profile_.get());
+  auto app1 = apps::mojom::App::New();
+  app1->app_id = "id";
+  auto app2 = apps::mojom::App::New();
+  app2->app_id = "id2";
+  std::vector<apps::mojom::AppPtr> apps;
+  apps.push_back(std::move(app1));
+  apps.push_back(std::move(app2));
+  app_proxy->AppRegistryCache().OnApps(std::move(apps));
+
+  // Start app instance
+  base::Time start_time;
+  EXPECT_TRUE(base::Time::FromString("29-MAR-2020 1:30pm", &start_time));
+  test_clock_.SetNow(start_time);
+  // Env::CreateInstance must be called for test window.
+  auto env = aura::Env::CreateInstance();
+  aura::Window* window = aura::test::CreateTestWindowWithId(/*id=*/0, nullptr);
+  auto instance = std::make_unique<apps::Instance>("id", window);
+  instance->UpdateState(apps::InstanceState::kStarted, start_time);
+  std::vector<std::unique_ptr<apps::Instance>> deltas;
+  deltas.push_back(std::move(instance));
+  app_proxy->InstanceRegistry().OnInstances(deltas);
+
+  base::Time report_time;
+  EXPECT_TRUE(base::Time::FromString("30-MAR-2020 2:30pm", &report_time));
+  test_clock_.SetNow(report_time);
+  GetStatus();
+
+  EXPECT_EQ(session_status_.app_infos(0).app_id(), "id");
+  EXPECT_EQ(session_status_.app_infos(0).active_time_periods_size(), 1);
+  auto first = session_status_.app_infos(0).active_time_periods()[0];
+  base::Time reported_start_time;
+  EXPECT_TRUE(
+      base::Time::FromUTCString("29-MAR-2020 12:00am", &reported_start_time));
+  EXPECT_EQ(first.start_timestamp(), reported_start_time.ToJavaTime());
+  base::Time reported_end_time;
+  EXPECT_TRUE(
+      base::Time::FromUTCString("29-MAR-2020 10:30am", &reported_end_time));
+  EXPECT_EQ(first.end_timestamp(), reported_end_time.ToJavaTime());
+  EXPECT_EQ(session_status_.app_infos(1).app_id(), "id2");
+  EXPECT_EQ(session_status_.app_infos(1).active_time_periods_size(), 0);
 }
 
 // Fake device state.

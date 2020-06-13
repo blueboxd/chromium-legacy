@@ -265,6 +265,20 @@ mojom_component("base") {
         "//mojo/public/cpp/base:shared_typemap_traits",
       ]
     },
+    {
+      types = [
+        {
+          mojom = "mojo_base.mojom.TextDirection"
+          cpp = "::base::i18n::TextDirection"
+        },
+      ]
+      traits_headers =
+          [ "//mojo/public/cpp/base/text_direction_mojom_traits.h" ]
+      traits_public_deps = [
+        "//base:i18n",
+        "//mojo/public/cpp/base:typemap_traits",
+      ]
+    },
   ]
 
   cpp_typemaps = common_typemaps
@@ -367,20 +381,6 @@ mojom_component("base") {
       traits_headers = [ "//mojo/public/cpp/base/string16_mojom_traits.h" ]
       traits_public_deps = [
         "//base",
-        "//mojo/public/cpp/base:typemap_traits",
-      ]
-    },
-    {
-      types = [
-        {
-          mojom = "mojo_base.mojom.TextDirection"
-          cpp = "::base::i18n::TextDirection"
-        },
-      ]
-      traits_headers =
-          [ "//mojo/public/cpp/base/text_direction_mojom_traits.h" ]
-      traits_public_deps = [
-        "//base:i18n",
         "//mojo/public/cpp/base:typemap_traits",
       ]
     },

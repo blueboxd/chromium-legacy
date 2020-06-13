@@ -42,8 +42,12 @@ class SyncUsernameTestBase : public testing::Test {
     return identity_test_env_.identity_manager();
   }
 
+  void FastForwardBy(base::TimeDelta delta) { task_env_.FastForwardBy(delta); }
+  void RunUntilIdle() { task_env_.RunUntilIdle(); }
+
  private:
-  base::test::TaskEnvironment scoped_task_env_;
+  base::test::TaskEnvironment task_env_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   signin::IdentityTestEnvironment identity_test_env_;
   syncer::TestSyncService sync_service_;
 };

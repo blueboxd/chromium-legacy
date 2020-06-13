@@ -124,6 +124,7 @@ class RenderProcessHostFactory;
 class RenderProcessHostTest;
 class RenderWidgetHelper;
 class ResolveProxyHelper;
+class SiteInfo;
 class SiteInstance;
 class SiteInstanceImpl;
 class StoragePartition;
@@ -172,7 +173,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static RenderProcessHost* CreateRenderProcessHost(
       BrowserContext* browser_context,
       StoragePartitionImpl* storage_partition_impl,
-      SiteInstance* site_instance);
+      SiteInstanceImpl* site_instance);
+
+  // Returns whether the process-per-site model is in use (globally or just for
+  // the current site), in which case we should ensure there is only one
+  // RenderProcessHost per site for the entire browser context.
+  static bool ShouldUseProcessPerSite(BrowserContext* browser_context,
+                                      const SiteInfo& site_info);
 
   ~RenderProcessHostImpl() override;
 
@@ -331,6 +338,9 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // not the actual site that the process is locked to, which happens for
   // hosted apps. |is_guest| should be set to true if the call is being made
   // for a <webview> guest SiteInstance.
+  // TODO(wjmaclean): Rethink |how site_url|/|lock_url| parameters are passed.
+  // |site_url| will probably become a SiteInfo, but whether we want to combine
+  // |lock_url| into that or keep it separate needs to be decided.
   static bool IsSuitableHost(RenderProcessHost* host,
                              const IsolationContext& isolation_context,
                              const GURL& site_url,
@@ -343,7 +353,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // This should only be used for process-per-site mode, which can be enabled
   // globally with a command line flag or per-site, as determined by
   // SiteInstanceImpl::ShouldUseProcessPerSite.
-  // Important: |url| should be a full URL and *not* a site URL.
+  // Important: |url| should be a full URL and *not* a SiteInfo.
   static RenderProcessHost* GetSoleProcessHostForURL(
       const IsolationContext& isolation_context,
       const GURL& url);
@@ -353,7 +363,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // to true if the call is being made for a <webview> guest SiteInstance.
   static RenderProcessHost* GetSoleProcessHostForSite(
       const IsolationContext& isolation_context,
-      const GURL& site_url,
+      const SiteInfo& site_info,
       const GURL& lock_url,
       const bool is_guest);
 
@@ -494,25 +504,25 @@ class CONTENT_EXPORT RenderProcessHostImpl
   static RenderProcessHostFactory*
   get_render_process_host_factory_for_testing();
 
-  // Tracks which sites frames are hosted in which RenderProcessHosts.
+  // Tracks which sites' frames are hosted in which RenderProcessHosts.
   // TODO(ericrobinson): These don't need to be static.
   static void AddFrameWithSite(BrowserContext* browser_context,
                                RenderProcessHost* render_process_host,
-                               const GURL& site_url);
+                               const SiteInfo& site_info);
   static void RemoveFrameWithSite(BrowserContext* browser_context,
                                   RenderProcessHost* render_process_host,
-                                  const GURL& site_url);
+                                  const SiteInfo& site_info);
 
   // Tracks which sites navigations are expected to commit in which
   // RenderProcessHosts.
   static void AddExpectedNavigationToSite(
       BrowserContext* browser_context,
       RenderProcessHost* render_process_host,
-      const GURL& site_url);
+      const SiteInfo& site_info);
   static void RemoveExpectedNavigationToSite(
       BrowserContext* browser_context,
       RenderProcessHost* render_process_host,
-      const GURL& site_url);
+      const SiteInfo& site_info);
 
   // Discards the spare RenderProcessHost.  After this call,
   // GetSpareRenderProcessHostForTesting will return nullptr.

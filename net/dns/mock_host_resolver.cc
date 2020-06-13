@@ -139,12 +139,6 @@ class MockHostResolverBase::RequestImpl
     return *nullopt_result;
   }
 
-  const base::Optional<EsniContent>& GetEsniResults() const override {
-    DCHECK(complete_);
-    static const base::NoDestructor<base::Optional<EsniContent>> nullopt_result;
-    return *nullopt_result;
-  }
-
   net::ResolveErrorInfo GetResolveErrorInfo() const override {
     DCHECK(complete_);
     return resolve_error_info_;
@@ -1025,10 +1019,6 @@ class HangingHostResolver::RequestImpl
 
   const base::Optional<std::vector<HostPortPair>>& GetHostnameResults()
       const override {
-    IMMEDIATE_CRASH();
-  }
-
-  const base::Optional<EsniContent>& GetEsniResults() const override {
     IMMEDIATE_CRASH();
   }
 

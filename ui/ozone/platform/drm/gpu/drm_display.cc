@@ -265,10 +265,10 @@ void DrmDisplay::SetColorSpace(const gfx::ColorSpace& color_space) {
 
   // TODO(mcasas) This should be the same value as in DisplayChangeObservers's
   // FillDisplayColorSpaces, move to a common place.
-  constexpr float kSDRJoint = 0.55;
+  constexpr float kHDRLevel = 2.0;
   // TODO(mcasas): Retrieve this from the |drm_| HardwareDisplayPlaneManager.
   constexpr size_t kNumGammaSamples = 16ul;
-  FillLinearValues(&gamma, kNumGammaSamples, kSDRJoint);
+  FillLinearValues(&gamma, kNumGammaSamples, 1.0 / kHDRLevel);
   CommitGammaCorrection(degamma, gamma);
 }
 

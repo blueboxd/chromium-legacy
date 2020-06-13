@@ -244,19 +244,6 @@ chrome.accessibilityPrivate.setKeyboardListener = function(enabled, capture) {};
 chrome.accessibilityPrivate.darkenScreen = function(enabled) {};
 
 /**
- * Shows or hides the Switch Access menu. If shown, it is at the indicated
- * location.
-TODO(anastasi): Remove this function once the menu refactor is
- * complete.
- * @param {boolean} show If true, show the menu. If false, hide the menu.
- * @param {!chrome.accessibilityPrivate.ScreenRect} element_bounds Position of
- *     an element, in global screen coordinates, to place the menu next to.
- * @param {number} item_count The number of items that need to be shown in the
- *     menu.
- */
-chrome.accessibilityPrivate.setSwitchAccessMenuState = function(show, element_bounds, item_count) {};
-
-/**
  * When enabled, forwards key events to the Switch Access extension
  * @param {boolean} shouldForward
  */

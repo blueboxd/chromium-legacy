@@ -2189,15 +2189,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SetOriginAndIsolationInfoOfNewFrame(
       const url::Origin& new_frame_creator);
 
-  // Called when a navigation commits succesfully to |url|. This will update
-  // |last_committed_site_url_| with the site URL corresponding to |url|.
-  // Note that this will recompute the site URL from |url| rather than using
-  // GetSiteInstance()->GetSiteURL(), so that |last_committed_site_url_| is
+  // Called when a navigation commits successfully to |url|. This will update
+  // |last_committed_site_info_| with the SiteInfo corresponding to |url|.
+  // Note that this will recompute the SiteInfo from |url| rather than using
+  // GetSiteInstance()->GetSiteInfo(), so that |last_committed_site_info_| is
   // always meaningful: e.g., without site isolation, b.com could commit in a
   // SiteInstance for a.com, but this function will still compute the last
-  // committed site URL as b.com.  For example, this can be used to track which
+  // committed SiteInfo as b.com.  For example, this can be used to track which
   // sites have committed in which process.
-  void SetLastCommittedSiteUrl(const GURL& url);
+  void SetLastCommittedSiteInfo(const GURL& url);
 
   // Clears any existing policy and constructs a new policy for this frame,
   // based on its parent frame.
@@ -2463,9 +2463,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   network::CrossOriginOpenerPolicy cross_origin_opener_policy_;
 
-  // Track the site URL of the last site we committed successfully, as obtained
-  // from SiteInstance::GetSiteURL.
-  GURL last_committed_site_url_;
+  // Track the SiteInfo of the last site we committed successfully, as obtained
+  // from SiteInstanceImpl::GetSiteInfoForURL().
+  SiteInfo last_committed_site_info_;
 
   // The most recent non-error URL to commit in this frame.
   // TODO(clamy): Remove this in favor of GetLastCommittedURL().

@@ -120,6 +120,9 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
                       const std::string& doodle_id,
                       const base::Optional<std::string>& share_id) override;
   void OnPromoLinkClicked() override;
+  void OnVoiceSearchAction(
+      new_tab_page::mojom::VoiceSearchAction action) override;
+  void OnVoiceSearchError(new_tab_page::mojom::VoiceSearchError error) override;
   void QueryAutocomplete(const base::string16& input,
                          bool prevent_inline_autocomplete) override;
   void StopAutocomplete(bool clear_result) override;

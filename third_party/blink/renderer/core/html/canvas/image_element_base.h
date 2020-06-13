@@ -33,7 +33,7 @@ class CORE_EXPORT ImageElementBase : public CanvasImageSource,
                                   ExceptionState&) override;
 
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                               AccelerationHint,
+                                               RasterModeHint,
                                                const FloatSize&) override;
 
   bool WouldTaintOrigin() const override;

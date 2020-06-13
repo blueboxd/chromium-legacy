@@ -11,7 +11,7 @@ namespace features {
 // display settings and setting any one of them exactly as requested, which can
 // be very useful for debugging and development purposes.
 const base::Feature kListAllDisplayModes = {"ListAllDisplayModes",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 bool IsListAllDisplayModesEnabled() {
   return base::FeatureList::IsEnabled(kListAllDisplayModes);

@@ -782,8 +782,7 @@ void LocalFrame::RemoveBackForwardCacheEviction() {
   }
 }
 
-void LocalFrame::SetTextDirection(
-    mojo_base::mojom::blink::TextDirection direction) {
+void LocalFrame::SetTextDirection(base::i18n::TextDirection direction) {
   // The Editor::SetBaseWritingDirection() function checks if we can change
   // the text direction of the selected node and updates its DOM "dir"
   // attribute and its CSS "direction" property.
@@ -793,15 +792,15 @@ void LocalFrame::SetTextDirection(
     return;
 
   switch (direction) {
-    case mojo_base::mojom::blink::TextDirection::UNKNOWN_DIRECTION:
+    case base::i18n::TextDirection::UNKNOWN_DIRECTION:
       editor.SetBaseWritingDirection(WritingDirection::kNatural);
       break;
 
-    case mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT:
+    case base::i18n::TextDirection::LEFT_TO_RIGHT:
       editor.SetBaseWritingDirection(WritingDirection::kLeftToRight);
       break;
 
-    case mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT:
+    case base::i18n::TextDirection::RIGHT_TO_LEFT:
       editor.SetBaseWritingDirection(WritingDirection::kRightToLeft);
       break;
 

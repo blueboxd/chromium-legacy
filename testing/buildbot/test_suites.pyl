@@ -2614,10 +2614,6 @@
           '${buildername}',
           '--extra-browser-args=--use-cmd-decoder=validating',
         ],
-        'android_args': [
-          # TODO(crbug.com/1093085): Remove this once we fix the tests.
-          '--extra-browser-args=--force-online-connection-state-for-indicator',
-        ],
         'chromeos_args': [
           '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],

@@ -13,10 +13,11 @@
 // the case of touch-tablet mode on Windows).
 class CaptionButtonContainer : public views::View {
  public:
-  // Tests to see if the specified |point| (in this view's coordinates) is
-  // within one of the caption buttons. Returns one of HitTestCompat enum
-  // defined in ui/base/hit_test.h, HTCAPTION if the area hit would be part of
-  // the window's drag handle, and HTNOWHERE otherwise.
+  // Tests to see if the specified |point| (which is expressed in this view's
+  // coordinates and which must be within this view's bounds) is within one of
+  // the caption buttons. Returns one of HitTestCompat enum defined in
+  // ui/base/hit_test.h, HTCAPTION if the area hit would be part of the window's
+  // drag handle, and HTNOWHERE otherwise.
   // See also ClientView::NonClientHitTest.
   virtual int NonClientHitTest(const gfx::Point& point) const = 0;
 };

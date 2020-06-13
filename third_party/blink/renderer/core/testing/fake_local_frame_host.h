@@ -72,9 +72,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void DispatchLoad() override;
   void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override;
   void RenderFallbackContentInParentProcess() override;
-  void UpdateTitle(
-      const WTF::String& title,
-      mojo_base::mojom::blink::TextDirection title_direction) override;
+  void UpdateTitle(const WTF::String& title,
+                   base::i18n::TextDirection title_direction) override;
   void UpdateUserActivationState(
       mojom::blink::UserActivationUpdateType update_type) override;
   void HandleAccessibilityFindInPageResult(

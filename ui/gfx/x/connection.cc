@@ -84,6 +84,16 @@ Connection::Event::Event(xcb_generic_event_t* xcb_event,
   }
 
   _XEnq(display, reinterpret_cast<xEvent*>(xcb_event));
+  if (!XEventsQueued(display, QueuedAlready)) {
+    // If Xlib gets an event it doesn't recognize (eg. from an
+    // extension it doesn't know about), it won't add the event to the
+    // queue.  In this case, zero-out the event data.  This will set
+    // the event type to 0, which does not correspond to any event.
+    // This is safe because event handlers should always check the
+    // event type before downcasting to a concrete event.
+    memset(&xlib_event, 0, sizeof(xlib_event));
+    return;
+  }
   XNextEvent(display, &xlib_event);
   if (xlib_event.type == x11::GeGenericEvent::opcode)
     XGetEventData(display, &xlib_event.xcookie);

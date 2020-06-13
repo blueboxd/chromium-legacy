@@ -151,17 +151,25 @@ LayoutObject* HTMLVideoElement::CreateLayoutObject(const ComputedStyle&,
 
 void HTMLVideoElement::AttachLayoutTree(AttachContext& context) {
   HTMLMediaElement::AttachLayoutTree(context);
+  UpdatePosterImage();
+}
 
-  UpdateDisplayState();
-  if (ShouldDisplayPosterImage()) {
+void HTMLVideoElement::UpdatePosterImage() {
+  ImageResourceContent* image_content = nullptr;
+
+  // Load the poster if set, |VideoLayout| will decide whether to draw it.
+  if (!PosterImageURL().IsEmpty()) {
     if (!image_loader_)
       image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
     image_loader_->UpdateFromElement();
-    if (GetLayoutObject()) {
-      ToLayoutImage(GetLayoutObject())
-          ->ImageResource()
-          ->SetImageResource(image_loader_->GetContent());
-    }
+    image_content = image_loader_->GetContent();
+  }
+
+  if (GetLayoutObject()) {
+    ToLayoutImage(GetLayoutObject())
+        ->ImageResource()
+        ->SetImageResource(image_content);
+    UpdateLayoutObject();
   }
 }
 
@@ -187,25 +195,8 @@ bool HTMLVideoElement::IsPresentationAttribute(
 void HTMLVideoElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == html_names::kPosterAttr) {
-    // In case the poster attribute is set after playback, don't update the
-    // display state, post playback the correct state will be picked up.
-    if (GetDisplayMode() < kVideo || !HasAvailableVideoFrame()) {
-      // Force a poster recalc by setting display_mode_ to kUnknown directly
-      // before calling UpdateDisplayState.
-      HTMLMediaElement::SetDisplayMode(kUnknown);
-      UpdateDisplayState();
-    }
-    if (!PosterImageURL().IsEmpty()) {
-      if (!image_loader_)
-        image_loader_ = MakeGarbageCollected<HTMLImageLoader>(this);
-      image_loader_->UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
-    } else {
-      if (GetLayoutObject()) {
-        ToLayoutImage(GetLayoutObject())
-            ->ImageResource()
-            ->SetImageResource(nullptr);
-      }
-    }
+    UpdatePosterImage();
+
     // Notify the player when the poster image URL changes.
     if (GetWebMediaPlayer())
       GetWebMediaPlayer()->SetPoster(PosterImageURL());
@@ -262,25 +253,6 @@ const AtomicString HTMLVideoElement::ImageSourceURL() const {
   if (!StripLeadingAndTrailingHTMLSpaces(url).IsEmpty())
     return url;
   return default_poster_url_;
-}
-
-void HTMLVideoElement::SetDisplayMode(DisplayMode mode) {
-  DisplayMode old_mode = GetDisplayMode();
-  KURL poster = PosterImageURL();
-
-  if (!poster.IsEmpty()) {
-    // We have a poster path, but only show it until the user triggers display
-    // by playing or seeking and the media engine has something to display.
-    // Don't show the poster if there is a seek operation or the video has
-    // restarted because of loop attribute
-    if (mode == kVideo && old_mode == kPoster && !HasAvailableVideoFrame())
-      return;
-  }
-
-  HTMLMediaElement::SetDisplayMode(mode);
-
-  if (GetLayoutObject() && GetDisplayMode() != old_mode)
-    GetLayoutObject()->UpdateFromElement();
 }
 
 void HTMLVideoElement::UpdatePictureInPictureAvailability() {
@@ -347,13 +319,6 @@ void HTMLVideoElement::OnBecamePersistentVideo(bool value) {
 
 bool HTMLVideoElement::IsPersistent() const {
   return is_persistent_;
-}
-
-void HTMLVideoElement::UpdateDisplayState() {
-  if (PosterImageURL().IsEmpty() || HasAvailableVideoFrame())
-    SetDisplayMode(kVideo);
-  else if (GetDisplayMode() < kPoster)
-    SetDisplayMode(kPoster);
 }
 
 void HTMLVideoElement::OnPlay() {
@@ -598,7 +563,7 @@ KURL HTMLVideoElement::PosterImageURL() const {
 
 scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    AccelerationHint,
+    RasterModeHint,
     const FloatSize&) {
   if (!HasAvailableVideoFrame()) {
     *status = kInvalidSourceImageStatus;
@@ -607,7 +572,7 @@ scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
 
   IntSize intrinsic_size(videoWidth(), videoHeight());
   // TODO(fserb): this should not be default software.
-  // FIXME: Not sure if we should we be doing anything with the AccelerationHint
+  // FIXME: Not sure if we should we be doing anything with the RasterModeHint
   // argument here? Currently we use unacceleration mode.
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::CreateBitmapProvider(

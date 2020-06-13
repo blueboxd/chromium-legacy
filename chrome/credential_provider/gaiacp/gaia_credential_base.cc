@@ -2023,10 +2023,19 @@ HRESULT CGaiaCredentialBase::SaveAccountInfo(const base::Value& properties) {
     // Upload device details to gem database.
     hr = GemDeviceDetailsManager::Get()->UploadDeviceDetails(access_token, sid,
                                                              username, domain);
-    if (FAILED(hr) && hr != E_NOTIMPL)
-      LOGFN(ERROR) << "UploadDeviceDetails hr=" << putHR(hr);
 
+    DWORD device_upload_failures = 0;
+    GetUserProperty(sid, kRegDeviceDetailsUploadFailures,
+                    &device_upload_failures);
+    if (FAILED(hr)) {
+      LOGFN(ERROR) << "UploadDeviceDetails hr=" << putHR(hr);
+      ++device_upload_failures;
+    } else {
+      device_upload_failures = 0;
+    }
     SetUserProperty(sid, kRegDeviceDetailsUploadStatus, SUCCEEDED(hr) ? 1 : 0);
+    SetUserProperty(sid, kRegDeviceDetailsUploadFailures,
+                    device_upload_failures);
 
     // Below setter is only used for unit testing.
     GemDeviceDetailsManager::Get()->SetUploadStatusForTesting(hr);

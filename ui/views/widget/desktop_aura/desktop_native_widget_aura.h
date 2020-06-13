@@ -98,10 +98,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // we are being activated/deactivated.
   void HandleActivationChanged(bool active);
 
-  // Ensures that the non-client area of the window is updated appropriately
-  // according to the activation state.
-  void HandleNonClientActivationChanged(bool active);
-
   // Overridden from internal::NativeWidgetPrivate:
   gfx::NativeWindow GetNativeWindow() const override;
 

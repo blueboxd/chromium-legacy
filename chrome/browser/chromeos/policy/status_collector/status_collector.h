@@ -86,7 +86,8 @@ class StatusCollector {
       chromeos::system::StatisticsProvider* statistics_provider);
 
   StatusCollector(chromeos::system::StatisticsProvider* provider,
-                  chromeos::CrosSettings* cros_settings);
+                  chromeos::CrosSettings* cros_settings,
+                  base::Clock* clock = base::DefaultClock::GetInstance());
   virtual ~StatusCollector();
 
   // Gathers status information and calls the passed response callback.
@@ -139,7 +140,7 @@ class StatusCollector {
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       boot_mode_subscription_;
 
-  base::Clock* clock_ = base::DefaultClock::GetInstance();
+  base::Clock* clock_;
 
   // Task runner in the creation thread where responses are sent to.
   scoped_refptr<base::SequencedTaskRunner> task_runner_ = nullptr;

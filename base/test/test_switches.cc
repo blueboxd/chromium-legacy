@@ -101,4 +101,7 @@ const char switches::kUiTestActionMaxTimeout[] = "ui-test-action-max-timeout";
 // If enabled, runs unittests using the XCTest test runner.
 const char switches::kEnableRunIOSUnittestsWithXCTest[] =
     "enable-run-ios-unittests-with-xctest";
+// Write a compiled test json file to a location where writable.
+const char switches::kWriteCompiledTestsJsonToWritablePath[] =
+    "write-compiled-tests-json-to-writable-path";
 #endif

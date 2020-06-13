@@ -56,13 +56,12 @@ enum Event {
   kLocationChanged,       // Web
   kMediaStartedPlaying,   // Native / Automation
   kMediaStoppedPlaying,   // Native / Automation
-  kMenuEnd,               // Native / Win
+  kMenuEnd,               // Native / web: menu interaction has ended.
   kMenuListItemSelected,  // Web
   kMenuListValueChanged,  // Web
-  kMenuPopupEnd,          // Native
-  kMenuPopupHide,         // Native / AuraLinux
-  kMenuPopupStart,        // Native
-  kMenuStart,             // Native / Win
+  kMenuPopupEnd,          // Native / web: a menu/submenu is hidden/closed.
+  kMenuPopupStart,        // Native / web: a menu/submenu is shown/opened.
+  kMenuStart,             // Native / web: menu interaction has begun.
   kMouseCanceled,
   kMouseDragged,
   kMouseMoved,

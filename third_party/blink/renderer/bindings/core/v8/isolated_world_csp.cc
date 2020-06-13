@@ -9,8 +9,8 @@
 #include "base/check.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -31,11 +31,11 @@ class IsolatedWorldCSPDelegate final
   USING_GARBAGE_COLLECTED_MIXIN(IsolatedWorldCSPDelegate);
 
  public:
-  IsolatedWorldCSPDelegate(Document& document,
+  IsolatedWorldCSPDelegate(LocalDOMWindow& window,
                            scoped_refptr<SecurityOrigin> security_origin,
                            int32_t world_id,
                            bool apply_policy)
-      : document_(&document),
+      : window_(&window),
         security_origin_(std::move(security_origin)),
         world_id_(world_id),
         apply_policy_(apply_policy) {
@@ -43,7 +43,7 @@ class IsolatedWorldCSPDelegate final
   }
 
   void Trace(Visitor* visitor) const override {
-    visitor->Trace(document_);
+    visitor->Trace(window_);
     ContentSecurityPolicyDelegate::Trace(visitor);
   }
 
@@ -90,19 +90,19 @@ class IsolatedWorldCSPDelegate final
   }
 
   void Count(WebFeature feature) override {
-    // Log the features used by isolated world CSPs on the underlying Document.
-    UseCounter::Count(document_, feature);
+    // Log the features used by isolated world CSPs on the underlying window.
+    UseCounter::Count(window_, feature);
   }
 
   void AddConsoleMessage(ConsoleMessage* console_message) override {
-    // Add console messages on the underlying Document.
-    document_->AddConsoleMessage(console_message);
+    // Add console messages on the underlying window.
+    window_->AddConsoleMessage(console_message);
   }
 
   void DisableEval(const String& error_message) override {
-    if (!document_->GetFrame())
+    if (!window_->GetFrame())
       return;
-    document_->GetFrame()->GetScriptController().DisableEvalForIsolatedWorld(
+    window_->GetFrame()->GetScriptController().DisableEvalForIsolatedWorld(
         world_id_, error_message);
   }
 
@@ -110,15 +110,14 @@ class IsolatedWorldCSPDelegate final
       const String& directive_text) override {
     // This allows users to set breakpoints in the Devtools for the case when
     // script execution is blocked by CSP.
-    probe::ScriptExecutionBlockedByCSP(document_->GetExecutionContext(),
-                                       directive_text);
+    probe::ScriptExecutionBlockedByCSP(window_.Get(), directive_text);
   }
 
   void DidAddContentSecurityPolicies(
       WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr>) override {}
 
  private:
-  const Member<Document> document_;
+  const Member<LocalDOMWindow> window_;
   const scoped_refptr<SecurityOrigin> security_origin_;
   const int32_t world_id_;
 
@@ -164,7 +163,7 @@ bool IsolatedWorldCSP::HasContentSecurityPolicy(int32_t world_id) const {
 }
 
 ContentSecurityPolicy* IsolatedWorldCSP::CreateIsolatedWorldCSP(
-    Document& document,
+    LocalDOMWindow& window,
     int32_t world_id) {
   DCHECK(IsMainThread());
   DCHECK(DOMWrapperWorld::IsIsolatedWorldId(world_id));
@@ -182,7 +181,7 @@ ContentSecurityPolicy* IsolatedWorldCSP::CreateIsolatedWorldCSP(
 
   IsolatedWorldCSPDelegate* delegate =
       MakeGarbageCollected<IsolatedWorldCSPDelegate>(
-          document, std::move(self_origin), world_id, apply_policy);
+          window, std::move(self_origin), world_id, apply_policy);
   csp->BindToDelegate(*delegate);
 
   if (apply_policy) {

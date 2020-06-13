@@ -50,15 +50,16 @@ TEST(NativeThemeWinTest, CalculatePreferredColorScheme) {
 
   theme.SetUsesHighContrastColors(true);
   theme.SetSystemColor(SystemThemeColor::kWindow, SK_ColorBLACK);
-  theme.SetSystemColor(SystemThemeColor::kWindowText, SK_ColorWHITE);
   ASSERT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kDark);
 
   theme.SetSystemColor(SystemThemeColor::kWindow, SK_ColorWHITE);
-  theme.SetSystemColor(SystemThemeColor::kWindowText, SK_ColorBLACK);
   ASSERT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kLight);
 
-  theme.SetSystemColor(SystemThemeColor::kWindowText, SK_ColorBLUE);
-  ASSERT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kNoPreference);
+  theme.SetSystemColor(SystemThemeColor::kWindow, SK_ColorBLUE);
+  ASSERT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kDark);
+
+  theme.SetSystemColor(SystemThemeColor::kWindow, SK_ColorYELLOW);
+  ASSERT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kLight);
 
   theme.SetUsesHighContrastColors(false);
   ASSERT_EQ(theme.CalculatePreferredColorScheme(), PrefScheme::kLight);

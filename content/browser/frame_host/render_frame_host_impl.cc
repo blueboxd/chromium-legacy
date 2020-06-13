@@ -475,11 +475,10 @@ base::Histogram::Sample HashInterfaceNameToHistogramSample(
 // Set crash keys that will help understand the circumstances of a renderer
 // kill.  Note that the commit URL is already reported in a crash key, and
 // additional keys are logged in RenderProcessHostImpl::ShutdownForBadMessage.
-void LogRendererKillCrashKeys(const GURL& site_url) {
+void LogRendererKillCrashKeys(const SiteInfo& site_info) {
   static auto* site_url_key = base::debug::AllocateCrashKeyString(
       "current_site_url", base::debug::CrashKeySize::Size64);
-  base::debug::SetCrashKeyString(site_url_key,
-                                 site_url.possibly_invalid_spec());
+  base::debug::SetCrashKeyString(site_url_key, site_info.GetDebugString());
 }
 
 void LogCanCommitOriginAndUrlFailureReason(const std::string& failure_reason) {
@@ -499,8 +498,8 @@ bool ShouldBypassChecksForErrorPage(
 
   bool is_main_frame = !frame->GetParent();
   if (SiteIsolationPolicy::IsErrorPageIsolationEnabled(is_main_frame)) {
-    if (frame->GetSiteInstance()->GetSiteURL() ==
-        GURL(content::kUnreachableWebDataURL)) {
+    if (frame->GetSiteInstance()->GetSiteInfo() ==
+        SiteInfo::CreateForErrorPage()) {
       if (should_commit_unreachable_url)
         *should_commit_unreachable_url = true;
 
@@ -1055,7 +1054,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // RenderFrameHost during cleanup.
   ClearWebUI();
 
-  SetLastCommittedSiteUrl(GURL());
+  SetLastCommittedSiteInfo(GURL());
   if (last_committed_document_priority_) {
     GetProcess()->UpdateFrameWithPriority(last_committed_document_priority_,
                                           base::nullopt);
@@ -6104,8 +6103,8 @@ void RenderFrameHostImpl::CommitNavigation(
       std::string partition_name;
       bool in_memory;
       GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-          browser_context, site_instance_->GetSiteURL(), true, &storage_domain,
-          &partition_name, &in_memory);
+          browser_context, site_instance_->GetSiteInfo().site_url(), true,
+          &storage_domain, &partition_name, &in_memory);
     }
     non_network_url_loader_factories_.emplace(
         url::kFileSystemScheme,
@@ -6512,7 +6511,7 @@ bool RenderFrameHostImpl::IsFocused() {
 bool RenderFrameHostImpl::CreateWebUI(const GURL& dest_url,
                                       int entry_bindings) {
   // Verify expectation that WebUI should not be created for error pages.
-  DCHECK_NE(GetSiteInstance()->GetSiteURL(), GURL(kUnreachableWebDataURL));
+  DCHECK_NE(GetSiteInstance()->GetSiteInfo(), SiteInfo::CreateForErrorPage());
 
   WebUI::TypeID new_web_ui_type =
       WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
@@ -7720,27 +7719,27 @@ void RenderFrameHostImpl::BeforeUnloadTimeout() {
   SimulateBeforeUnloadCompleted(true /* proceed */);
 }
 
-void RenderFrameHostImpl::SetLastCommittedSiteUrl(const GURL& url) {
-  GURL site_url = url.is_empty()
-                      ? GURL()
-                      : SiteInstanceImpl::GetSiteForURL(
-                            GetSiteInstance()->GetIsolationContext(), url);
+void RenderFrameHostImpl::SetLastCommittedSiteInfo(const GURL& url) {
+  SiteInfo site_info = url.is_empty()
+                           ? SiteInfo()
+                           : SiteInstanceImpl::ComputeSiteInfo(
+                                 GetSiteInstance()->GetIsolationContext(), url);
 
-  if (last_committed_site_url_ == site_url)
+  if (last_committed_site_info_ == site_info)
     return;
 
-  if (!last_committed_site_url_.is_empty()) {
+  if (!last_committed_site_info_.site_url().is_empty()) {
     RenderProcessHostImpl::RemoveFrameWithSite(
         frame_tree()->controller()->GetBrowserContext(), GetProcess(),
-        last_committed_site_url_);
+        last_committed_site_info_);
   }
 
-  last_committed_site_url_ = site_url;
+  last_committed_site_info_ = site_info;
 
-  if (!last_committed_site_url_.is_empty()) {
+  if (!last_committed_site_info_.site_url().is_empty()) {
     RenderProcessHostImpl::AddFrameWithSite(
         frame_tree()->controller()->GetBrowserContext(), GetProcess(),
-        last_committed_site_url_);
+        last_committed_site_info_);
   }
 }
 
@@ -7992,9 +7991,9 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
 void RenderFrameHostImpl::UpdateSiteURL(const GURL& url,
                                         bool url_is_unreachable) {
   if (url_is_unreachable) {
-    SetLastCommittedSiteUrl(GURL());
+    SetLastCommittedSiteInfo(GURL());
   } else {
-    SetLastCommittedSiteUrl(url);
+    SetLastCommittedSiteInfo(url);
   }
 }
 
@@ -8762,7 +8761,7 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
     const GURL& url,
     bool is_same_document_navigation,
     NavigationRequest* navigation_request) {
-  LogRendererKillCrashKeys(GetSiteInstance()->GetSiteURL());
+  LogRendererKillCrashKeys(GetSiteInstance()->GetSiteInfo());
 
   // Temporary instrumentation to debug the root cause of renderer process
   // terminations. See https://crbug.com/931895.
@@ -8851,8 +8850,8 @@ void RenderFrameHostImpl::LogCannotCommitUrlCrashKeys(
         base::debug::AllocateCrashKeyString("starting_site_instance",
                                             base::debug::CrashKeySize::Size64),
         navigation_request->GetStartingSiteInstance()
-            ->GetSiteURL()
-            .possibly_invalid_spec());
+            ->GetSiteInfo()
+            .GetDebugString());
 
     // Recompute the target SiteInstance to see if it matches the current
     // one at commit time.
@@ -8891,7 +8890,7 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
 void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
     bool is_same_document_navigation,
     NavigationRequest* navigation_request) {
-  LogRendererKillCrashKeys(GetSiteInstance()->GetSiteURL());
+  LogRendererKillCrashKeys(GetSiteInstance()->GetSiteInfo());
 
   // Temporary instrumentation to debug the root cause of
   // https://crbug.com/923144.
@@ -8953,8 +8952,8 @@ void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
         base::debug::AllocateCrashKeyString("starting_site_instance",
                                             base::debug::CrashKeySize::Size64),
         navigation_request->GetStartingSiteInstance()
-            ->GetSiteURL()
-            .possibly_invalid_spec());
+            ->GetSiteInfo()
+            .GetDebugString());
   }
 }
 
@@ -8963,7 +8962,7 @@ void RenderFrameHostImpl::EnableMojoJsBindings() {
   DCHECK_NE(WebUI::kNoWebUI,
             WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
                 GetSiteInstance()->GetBrowserContext(),
-                site_instance_->GetSiteURL()));
+                site_instance_->GetSiteInfo().site_url()));
 
   if (!frame_bindings_control_)
     GetRemoteAssociatedInterfaces()->GetInterface(&frame_bindings_control_);

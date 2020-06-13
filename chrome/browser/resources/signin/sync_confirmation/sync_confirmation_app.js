@@ -36,26 +36,13 @@ Polymer({
   /** @private {?SyncConfirmationBrowserProxy} */
   syncConfirmationBrowserProxy_: null,
 
-  /** @private {?function(Event)} */
-  boundKeyDownHandler_: null,
-
   /** @override */
   attached() {
     this.syncConfirmationBrowserProxy_ =
         SyncConfirmationBrowserProxyImpl.getInstance();
-    this.boundKeyDownHandler_ = this.onKeyDown_.bind(this);
-    // This needs to be bound to document instead of "this" because the dialog
-    // window opens initially, the focus level is only on document, so the key
-    // event is not captured by "this".
-    document.addEventListener('keydown', this.boundKeyDownHandler_);
     this.addWebUIListener(
         'account-image-changed', this.handleAccountImageChanged_.bind(this));
     this.syncConfirmationBrowserProxy_.requestAccountImage();
-  },
-
-  /** @override */
-  detached() {
-    document.removeEventListener('keydown', this.boundKeyDownHandler_);
   },
 
   /** @private */
@@ -73,14 +60,6 @@ Polymer({
   onGoToSettings_(e) {
     this.syncConfirmationBrowserProxy_.goToSettings(
         this.getConsentDescription_(), this.getConsentConfirmation_(e.path));
-  },
-
-  /** @private */
-  onKeyDown_(e) {
-    if (e.key == 'Enter' && !/^(A|CR-BUTTON)$/.test(e.path[0].tagName)) {
-      this.onConfirm_(e);
-      e.preventDefault();
-    }
   },
 
   /**

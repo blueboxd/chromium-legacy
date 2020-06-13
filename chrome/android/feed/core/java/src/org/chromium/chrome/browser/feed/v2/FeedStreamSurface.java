@@ -21,6 +21,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
+import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -39,6 +40,8 @@ import org.chromium.components.feed.proto.FeedUiProto.Slice.SliceDataCase;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate.SliceUpdate.UpdateCase;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.network.mojom.ReferrerPolicy;
@@ -80,15 +83,38 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
     public static ProcessScope xSurfaceProcessScope() {
         if (sXSurfaceProcessScope == null) {
-            sXSurfaceProcessScope =
-                    AppHooks.get().getExternalSurfaceProcessScope(new SurfaceDependencyProvider() {
-                        @Override
-                        public Context getContext() {
-                            return ContextUtils.getApplicationContext();
-                        }
-                    });
+            sXSurfaceProcessScope = AppHooks.get().getExternalSurfaceProcessScope(
+                    new FeedSurfaceDependencyProvider());
         }
         return sXSurfaceProcessScope;
+    }
+
+    /**
+     * Provides logging and context for all surfaces.
+     *
+     * TODO(rogerm): Find a more global home for this.
+     * TODO(rogerm): implement getClientInstanceId.
+     */
+    private static class FeedSurfaceDependencyProvider implements SurfaceDependencyProvider {
+        FeedSurfaceDependencyProvider() {}
+
+        @Override
+        public Context getContext() {
+            return ContextUtils.getApplicationContext();
+        }
+
+        @Override
+        public String getAccountName() {
+            CoreAccountInfo primaryAccount =
+                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
+                            ConsentLevel.NOT_REQUIRED);
+            return primaryAccount == null ? "" : primaryAccount.getEmail();
+        }
+
+        @Override
+        public int[] getExperimentIds() {
+            return FeedStreamSurfaceJni.get().getExperimentIds();
+        }
     }
 
     /**
@@ -144,7 +170,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
 
         ProcessScope processScope = xSurfaceProcessScope();
         if (processScope != null) {
-            mSurfaceScope = xSurfaceProcessScope().obtainSurfaceScope(mActivity);
+            mSurfaceScope = processScope.obtainSurfaceScope(mActivity);
         } else {
             mSurfaceScope = null;
         }
@@ -424,6 +450,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     @NativeMethods
     interface Natives {
         long init(FeedStreamSurface caller);
+        int[] getExperimentIds();
         // TODO(jianli): Call this function at the appropriate time.
         void reportSliceViewed(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, String sliceId);

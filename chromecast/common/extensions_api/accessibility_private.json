@@ -252,29 +252,6 @@
         "platforms": ["chromeos"]
       },
       {
-            "name": "setSwitchAccessMenuState",
-            "type": "function",
-            "description": "Shows or hides the Switch Access menu. If shown, it is at the indicated location.",
-            "parameters": [
-              {
-                "name": "show",
-                "type": "boolean",
-                "description": "If true, show the menu. If false, hide the menu."
-              },
-              {
-                "name": "element_bounds",
-                "$ref": "ScreenRect",
-                "description": "Position of an element, in global screen coordinates, to place the menu next to."
-              },
-              {
-                "name": "item_count",
-                "type": "integer",
-                "description": "The number of items that need to be shown in the menu."
-              }
-            ],
-            "platforms": ["chromeos"]
-      },
-      {
         "name": "forwardKeyEventsToSwitchAccess",
         "type": "function",
         "description": "When enabled, forwards key events to the Switch Access extension",

@@ -132,14 +132,16 @@ StyleElement::ProcessingResult StyleElement::CreateSheet(Element& element,
   Document& document = element.GetDocument();
 
   const ContentSecurityPolicy* csp =
-      document.GetContentSecurityPolicyForWorld();
+      element.GetExecutionContext()
+          ? element.GetExecutionContext()->GetContentSecurityPolicyForWorld()
+          : nullptr;
 
   // CSP is bypassed for style elements in user agent shadow DOM.
   bool passes_content_security_policy_checks =
       IsInUserAgentShadowDOM(element) ||
-      csp->AllowInline(ContentSecurityPolicy::InlineType::kStyle, &element,
-                       text, element.nonce(), document.Url(),
-                       start_position_.line_);
+      (csp && csp->AllowInline(ContentSecurityPolicy::InlineType::kStyle,
+                               &element, text, element.nonce(), document.Url(),
+                               start_position_.line_));
 
   // Clearing the current sheet may remove the cache entry so create the new
   // sheet first

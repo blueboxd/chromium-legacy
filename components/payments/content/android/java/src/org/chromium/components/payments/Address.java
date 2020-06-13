@@ -69,7 +69,7 @@ public class Address {
     }
 
     // Keys in shipping address bundle.
-    public static final String EXTRA_ADDRESS_COUNTRY = "country";
+    public static final String EXTRA_ADDRESS_COUNTRY = "countryCode";
     public static final String EXTRA_ADDRESS_LINES = "addressLines";
     public static final String EXTRA_ADDRESS_REGION = "region";
     public static final String EXTRA_ADDRESS_CITY = "city";

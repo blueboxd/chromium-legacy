@@ -163,11 +163,11 @@ String SerializeSender(const String& indent,
   // track:'id',
   result.Append(indent);
   result.Append("  track:");
-  if (sender.Track().IsNull()) {
+  if (!sender.Track()) {
     result.Append("null");
   } else {
     result.Append("'");
-    result.Append(String(sender.Track().Source().Id()));
+    result.Append(sender.Track()->Source()->Id());
     result.Append("'");
   }
   result.Append(",\n");

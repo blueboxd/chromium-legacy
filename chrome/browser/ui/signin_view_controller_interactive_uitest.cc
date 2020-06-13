@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
@@ -14,6 +15,8 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service.h"
+#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
@@ -23,10 +26,34 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+
+namespace {
+
+// Synchronously waits for the Sync confirmation to be closed.
+class SyncConfirmationClosedObserver : public LoginUIService::Observer {
+ public:
+  LoginUIService::SyncConfirmationUIClosedResult WaitForConfirmationClosed() {
+    run_loop_.Run();
+    return *result_;
+  }
+
+ private:
+  void OnSyncConfirmationUIClosed(
+      LoginUIService::SyncConfirmationUIClosedResult result) override {
+    run_loop_.Quit();
+    result_ = result;
+  }
+
+  base::RunLoop run_loop_;
+  base::Optional<LoginUIService::SyncConfirmationUIClosedResult> result_;
+};
+
+}  // namespace
 
 class SignInViewControllerBrowserTest : public InProcessBrowserTest {
  public:
@@ -67,12 +94,39 @@ IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, Accelerators) {
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
 }
 
+// Tests that the confirm button is focused by default in the sync confirmation
+// dialog.
+IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest,
+                       SyncConfirmationDefaultFocus) {
+  signin::MakePrimaryAccountAvailable(GetIdentityManager(), "alice@gmail.com");
+  content::TestNavigationObserver content_observer(
+      GURL("chrome://sync-confirmation/"));
+  content_observer.StartWatchingNewWebContents();
+  browser()->signin_view_controller()->ShowModalSyncConfirmationDialog();
+  content_observer.Wait();
+
+  SyncConfirmationClosedObserver sync_confirmation_observer;
+  LoginUIServiceFactory::GetForProfile(browser()->profile())
+      ->AddObserver(&sync_confirmation_observer);
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_RETURN,
+                                              /*control=*/false,
+                                              /*shift=*/false, /*alt=*/false,
+                                              /*command=*/false));
+
+  LoginUIService::SyncConfirmationUIClosedResult result =
+      sync_confirmation_observer.WaitForConfirmationClosed();
+  EXPECT_EQ(result, LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
+}
+
 // Tests that the confirm button is focused by default in the reauth dialog.
 IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, ReauthDefaultFocus) {
   CoreAccountId account_id = signin::SetUnconsentedPrimaryAccount(
                                  GetIdentityManager(), "alice@gmail.com")
                                  .account_id;
   signin::ReauthResult reauth_result;
+  content::TestNavigationObserver content_observer(
+      GURL("chrome://signin-reauth/"));
+  content_observer.StartWatchingNewWebContents();
   base::RunLoop run_loop;
   std::unique_ptr<SigninViewController::ReauthAbortHandle> abort_handle =
       browser()->signin_view_controller()->ShowReauthPrompt(
@@ -81,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, ReauthDefaultFocus) {
             reauth_result = result;
             run_loop.Quit();
           }));
-  login_ui_test_utils::WaitUntilReauthUIIsReady(browser());
+  content_observer.Wait();
   ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_RETURN,
                                               /*control=*/false,
                                               /*shift=*/false, /*alt=*/false,

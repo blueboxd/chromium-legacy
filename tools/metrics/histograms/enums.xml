@@ -1990,6 +1990,7 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Report a bug"/>
   <int value="2" label="Check for updates"/>
   <int value="3" label="Refresh the crash list"/>
+  <int value="4" label="About WebView DevTools"/>
 </enum>
 
 <enum name="AndroidWebViewDevUiMetricsTransmission">
@@ -2002,6 +2003,12 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="Success"/>
   <int value="1" label="Malformed protobuf"/>
   <int value="2" label="IOException"/>
+</enum>
+
+<enum name="AndroidWebViewNonEmbeddedMetricsRetrieveMetricsTaskStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="ExecutionException"/>
+  <int value="2" label="InterruptionException"/>
 </enum>
 
 <enum name="AndroidWebViewProxySchemeFilterType">
@@ -27701,6 +27708,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3313" label="RubyTextWithNonDefaultTextAlign"/>
   <int value="3314" label="HTMLMetaElementReferrerPolicyOutsideHead"/>
   <int value="3315" label="HTMLMetaElementReferrerPolicyMultipleTokens"/>
+  <int value="3316" label="FetchAPINonGetOrHeadOpaqueResponse"/>
+  <int value="3317" label="FetchAPINonGetOrHeadOpaqueResponseWithRedirect"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -39035,6 +39044,7 @@ from previous Chrome versions.
   <int value="-1799801575" label="CookieDeprecationMessages:enabled"/>
   <int value="-1798337879" label="enable-md-downloads"/>
   <int value="-1797739460" label="brotli-encoding:disabled"/>
+  <int value="-1794276584" label="OnDeviceAssistant:enabled"/>
   <int value="-1791226955" label="BreakingNewsPush:enabled"/>
   <int value="-1790227231" label="show-autofill-signatures"/>
   <int value="-1789139269" label="SmbFs:disabled"/>
@@ -39482,7 +39492,6 @@ from previous Chrome versions.
   <int value="-1302904242" label="enable-navigation-tracing"/>
   <int value="-1302859198" label="enable-stylus-virtual-keyboard:disabled"/>
   <int value="-1297079591" label="EnableRemovingAllThirdPartyCookies:disabled"/>
-  <int value="-1294656363" label="UnifiedMessageCenterRefactor:enabled"/>
   <int value="-1294050129" label="ContentFullscreen:disabled"/>
   <int value="-1293987566" label="OmniboxZeroSuggestionsOnNTPRealbox:disabled"/>
   <int value="-1292615467"
@@ -41004,7 +41013,6 @@ from previous Chrome versions.
   <int value="401983950" label="enable-spdy4"/>
   <int value="402143634" label="enable-search-button-in-omnibox-always"/>
   <int value="403288255" label="enable-wheel-scroll-latching"/>
-  <int value="403939322" label="UnifiedMessageCenterRefactor:disabled"/>
   <int value="405329388"
       label="FramebustingNeedsSameOriginOrUserGesture:enabled"/>
   <int value="408190863" label="OmniboxDisableInstantExtendedLimit:disabled"/>
@@ -41030,6 +41038,7 @@ from previous Chrome versions.
   <int value="430776375" label="TextureLayerSkipWaitForActivation:disabled"/>
   <int value="430959979" label="SyncStandaloneTransport:disabled"/>
   <int value="431691805" label="MediaDocumentDownloadButton:enabled"/>
+  <int value="433667885" label="OnDeviceAssistant:disabled"/>
   <int value="434033638" label="PwaPersistentNotification:disabled"/>
   <int value="434530296"
       label="HappinessTrackingSurveysForDesktopMigration:disabled"/>

@@ -25,9 +25,9 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
 
   WebMediaPlayer* media_player =
       layout_video_.MediaElement()->GetWebMediaPlayer();
-  bool displaying_poster =
-      layout_video_.VideoElement()->ShouldDisplayPosterImage();
-  if (!displaying_poster && !media_player)
+  bool should_display_poster =
+      layout_video_.GetDisplayMode() == LayoutVideo::kPoster;
+  if (!should_display_poster && !media_player)
     return;
 
   PhysicalRect replaced_rect = layout_video_.ReplacedContentRect();
@@ -62,7 +62,7 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
 
   bool paint_with_foreign_layer =
       RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-      paint_info.phase == PaintPhase::kForeground && !displaying_poster &&
+      paint_info.phase == PaintPhase::kForeground && !should_display_poster &&
       !force_software_video_paint;
   if (paint_with_foreign_layer) {
     if (cc::Layer* layer = layout_video_.MediaElement()->CcLayer()) {
@@ -78,7 +78,7 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
 
   DrawingRecorder recorder(context, layout_video_, paint_info.phase);
 
-  if (displaying_poster || !force_software_video_paint) {
+  if (should_display_poster || !force_software_video_paint) {
     // This will display the poster image, if one is present, and otherwise
     // paint nothing.
     DCHECK(paint_info.PaintContainer());

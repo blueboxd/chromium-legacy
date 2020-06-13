@@ -164,6 +164,11 @@ class ContentTranslateDriver : public TranslateDriver,
   // other end of this receiver in the form of a ContentTranslateDriver.
   mojo::ReceiverSet<translate::mojom::ContentTranslateDriver> receivers_;
 
+  // Time when the navigation was finished (i.e., DidFinishNavigation
+  // in the main frame). This is used to know a duration time to when the
+  // page language is determined.
+  base::TimeTicks finish_navigation_time_;
+
   base::WeakPtrFactory<ContentTranslateDriver> weak_pointer_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ContentTranslateDriver);

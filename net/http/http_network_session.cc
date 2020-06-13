@@ -284,8 +284,6 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    quic_params->reduced_ping_timeout.InSeconds());
   dict->SetBoolean("retry_without_alt_svc_on_quic_errors",
                    quic_params->retry_without_alt_svc_on_quic_errors);
-  dict->SetBoolean("race_cert_verification",
-                   quic_params->race_cert_verification);
   dict->SetBoolean("disable_bidirectional_streams",
                    quic_params->disable_bidirectional_streams);
   dict->SetBoolean("close_sessions_on_ip_change",

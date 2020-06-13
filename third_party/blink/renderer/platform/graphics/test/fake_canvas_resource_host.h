@@ -25,16 +25,16 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
   void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const override {}
   void UpdateMemoryUsage() override {}
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
-      AccelerationHint hint) override {
+      RasterModeHint hint) override {
     return GetOrCreateCanvasResourceProviderImpl(hint);
   }
   CanvasResourceProvider* GetOrCreateCanvasResourceProviderImpl(
-      AccelerationHint hint) override {
+      RasterModeHint hint) override {
     if (ResourceProvider())
       return ResourceProvider();
 
     std::unique_ptr<CanvasResourceProvider> provider;
-    if (hint == kPreferAcceleration ||
+    if (hint == RasterModeHint::kPreferGPU ||
         RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
       uint32_t shared_image_usage_flags =
           gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
@@ -42,7 +42,7 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
           size_, SharedGpuContext::ContextProviderWrapper(),
           kMedium_SkFilterQuality, CanvasColorParams(),
           false /*is_origin_top_left*/,
-          hint == kPreferAcceleration
+          hint == RasterModeHint::kPreferGPU
               ? CanvasResourceProvider::RasterMode::kGPU
               : CanvasResourceProvider::RasterMode::kCPU,
           shared_image_usage_flags);

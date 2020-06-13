@@ -181,9 +181,15 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
   card_network_icon->set_tooltip_text(card.NetworkForDisplay());
   description_view->AddChildView(card_network_icon);
 
-  description_view->AddChildView(new views::Label(GetCardIdentifierString(),
-                                                  CONTEXT_BODY_TEXT_LARGE,
-                                                  views::style::STYLE_PRIMARY));
+  views::Label* label = description_view->AddChildView(
+      new views::Label(GetCardIdentifierString(), CONTEXT_BODY_TEXT_LARGE,
+                       views::style::STYLE_PRIMARY));
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  int label_width =
+      GetPreferredSize().width() -
+      card_network_icon->GetPreferredSize().width() -
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
 
   if (!card.IsExpired(base::Time::Now())) {
     // The spacer will stretch to use the available horizontal space in the
@@ -197,8 +203,12 @@ std::unique_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
         CONTEXT_BODY_TEXT_LARGE, views::style::STYLE_SECONDARY);
     expiration_date_label->SetID(DialogViewId::EXPIRATION_DATE_LABEL);
     description_view->AddChildView(expiration_date_label);
+    constexpr int kExpirationDateLabelWidth = 60;
+    label_width -=
+        kExpirationDateLabelWidth +
+        provider->GetDistanceMetric(views::DISTANCE_RELATED_BUTTON_HORIZONTAL);
   }
-
+  label->SetMaximumWidth(label_width);
   return view;
 }
 

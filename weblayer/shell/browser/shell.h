@@ -77,6 +77,7 @@ class Shell : public TabObserver,
   static void SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure);
 
   Tab* tab();
+  Browser* browser();
 
   gfx::NativeWindow window() { return window_; }
 

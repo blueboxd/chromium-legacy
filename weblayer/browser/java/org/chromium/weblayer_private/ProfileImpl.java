@@ -5,6 +5,7 @@
 package org.chromium.weblayer_private;
 
 import android.content.Intent;
+import android.text.TextUtils;
 import android.webkit.ValueCallback;
 
 import androidx.annotation.NonNull;
@@ -25,7 +26,10 @@ import org.chromium.weblayer_private.interfaces.SettingType;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Implementation of IProfile.
@@ -168,6 +172,33 @@ public final class ProfileImpl extends IProfile.Stub implements BrowserContextHa
         return mCookieManager;
     }
 
+    @Override
+    public void getBrowserPersistenceIds(@NonNull IObjectWrapper callback) {
+        StrictModeWorkaround.apply();
+        checkNotDestroyed();
+        ValueCallback<Set<String>> valueCallback =
+                (ValueCallback<Set<String>>) ObjectWrapper.unwrap(callback, ValueCallback.class);
+        Callback<String[]> baseCallback = (String[] result) -> {
+            valueCallback.onReceiveValue(new HashSet<String>(Arrays.asList(result)));
+        };
+        ProfileImplJni.get().getBrowserPersistenceIds(mNativeProfile, baseCallback);
+    }
+
+    @Override
+    public void removeBrowserPersistenceStorage(String[] ids, @NonNull IObjectWrapper callback) {
+        StrictModeWorkaround.apply();
+        checkNotDestroyed();
+        ValueCallback<Boolean> valueCallback =
+                (ValueCallback<Boolean>) ObjectWrapper.unwrap(callback, ValueCallback.class);
+        Callback<Boolean> baseCallback = valueCallback::onReceiveValue;
+        for (String id : ids) {
+            if (TextUtils.isEmpty(id)) {
+                throw new IllegalArgumentException("id must be non-null and non-empty");
+            }
+        }
+        ProfileImplJni.get().removeBrowserPersistenceStorage(mNativeProfile, ids, baseCallback);
+    }
+
     void checkNotDestroyed() {
         if (!mBeingDeleted) return;
         throw new IllegalArgumentException("Profile being destroyed: " + mName);
@@ -232,5 +263,8 @@ public final class ProfileImpl extends IProfile.Stub implements BrowserContextHa
         void ensureBrowserContextInitialized(long nativeProfileImpl);
         void setBooleanSetting(long nativeProfileImpl, int type, boolean value);
         boolean getBooleanSetting(long nativeProfileImpl, int type);
+        void getBrowserPersistenceIds(long nativeProfileImpl, Callback<String[]> callback);
+        void removeBrowserPersistenceStorage(
+                long nativeProfileImpl, String[] ids, Callback<Boolean> callback);
     }
 }

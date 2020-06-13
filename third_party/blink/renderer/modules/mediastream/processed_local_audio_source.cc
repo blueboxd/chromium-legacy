@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "media/audio/audio_source_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/sample_rates.h"
@@ -475,7 +476,7 @@ void ProcessedLocalAudioSource::CaptureUsingProcessor(
 
 int ProcessedLocalAudioSource::GetBufferSize(int sample_rate) const {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMECAST)
   // TODO(henrika): Re-evaluate whether to use same logic as other platforms.
   // https://crbug.com/638081
   return (2 * sample_rate / 100);

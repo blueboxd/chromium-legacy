@@ -44,7 +44,7 @@ class MediaToolbarButtonWatcher : public MediaToolbarButtonObserver,
 
   ~MediaToolbarButtonWatcher() override {
     button_->RemoveObserver(this);
-    if (observed_dialog_ != nullptr &&
+    if (observed_dialog_ &&
         observed_dialog_ == MediaDialogView::GetDialogViewForTesting()) {
       observed_dialog_->RemoveObserver(this);
     }

@@ -299,12 +299,13 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // Then see if the point is within any of the window controls.
   if (OwnsCaptionButtons()) {
     gfx::Point local_point = point;
-    DCHECK_EQ(origin(), gfx::Point());
     ConvertPointToTarget(parent(), caption_button_container_, &local_point);
-    const int hit_test_result =
-        caption_button_container_->NonClientHitTest(local_point);
-    if (hit_test_result != HTNOWHERE)
-      return hit_test_result;
+    if (caption_button_container_->HitTestPoint(local_point)) {
+      const int hit_test_result =
+          caption_button_container_->NonClientHitTest(local_point);
+      if (hit_test_result != HTNOWHERE)
+        return hit_test_result;
+    }
   }
 
   // On Windows 8+, the caption buttons are almost butted up to the top right

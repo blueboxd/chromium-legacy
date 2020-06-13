@@ -6153,10 +6153,13 @@ void Element::StyleAttributeChanged(
   } else if (modification_reason == AttributeModificationReason::kByCloning ||
              (ContainingShadowRoot() &&
               ContainingShadowRoot()->IsUserAgent()) ||
-             GetDocument().GetContentSecurityPolicyForWorld()->AllowInline(
-                 ContentSecurityPolicy::InlineType::kStyleAttribute, this,
-                 new_style_string, String() /* nonce */, GetDocument().Url(),
-                 start_line_number)) {
+             (GetExecutionContext() &&
+              GetExecutionContext()
+                  ->GetContentSecurityPolicyForWorld()
+                  ->AllowInline(
+                      ContentSecurityPolicy::InlineType::kStyleAttribute, this,
+                      new_style_string, String() /* nonce */,
+                      GetDocument().Url(), start_line_number))) {
     SetInlineStyleFromString(new_style_string);
   }
 

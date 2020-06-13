@@ -132,16 +132,6 @@ BrailleController* GetBrailleController() {
   return BrailleController::GetInstance();
 }
 
-void EnableChromeVoxAfterSwitchAccessMetric(bool val) {
-  base::UmaHistogramBoolean("Accessibility.CrosChromeVoxAfterSwitchAccess",
-                            val);
-}
-
-void EnableSwitchAccessAfterChromeVoxMetric(bool val) {
-  base::UmaHistogramBoolean("Accessibility.CrosSwitchAccessAfterChromeVox",
-                            val);
-}
-
 // Restarts (stops, then starts brltty). If |address| is empty, only stops.
 // In Upstart, sending an explicit restart command is a no-op if the job isn't
 // already started. Without knowledge regarding brltty's current job status,
@@ -502,15 +492,6 @@ void AccessibilityManager::EnableSpokenFeedback(bool enabled) {
   if (!profile_)
     return;
 
-  if (enabled) {
-    if (IsSwitchAccessEnabled()) {
-      SetSwitchAccessEnabled(false);
-      EnableChromeVoxAfterSwitchAccessMetric(true);
-    } else {
-      EnableChromeVoxAfterSwitchAccessMetric(false);
-    }
-  }
-
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->SetBoolean(ash::prefs::kAccessibilitySpokenFeedbackEnabled,
                            enabled);
@@ -523,17 +504,6 @@ void AccessibilityManager::OnSpokenFeedbackChanged() {
 
   const bool enabled = profile_->GetPrefs()->GetBoolean(
       ash::prefs::kAccessibilitySpokenFeedbackEnabled);
-
-  if (enabled) {
-    if (IsSwitchAccessEnabled()) {
-      LOG(ERROR) << "Switch Access and ChromeVox is not supported.";
-      LOG(WARNING) << "Disabling Switch Access.";
-      SetSwitchAccessEnabled(false);
-      EnableChromeVoxAfterSwitchAccessMetric(true);
-    } else {
-      EnableChromeVoxAfterSwitchAccessMetric(false);
-    }
-  }
 
   if (!chromeos::ProfileHelper::IsSigninProfile(profile_) &&
       !chromeos::ProfileHelper::IsLockScreenAppProfile(profile_)) {
@@ -965,15 +935,6 @@ void AccessibilityManager::SetSwitchAccessEnabled(bool enabled) {
   if (!profile_)
     return;
 
-  if (enabled) {
-    if (IsSpokenFeedbackEnabled()) {
-      LOG(ERROR) << "Enabling Switch Access with ChromeVox is not supported.";
-      EnableSwitchAccessAfterChromeVoxMetric(true);
-      return;
-    }
-    EnableSwitchAccessAfterChromeVoxMetric(false);
-  }
-
   PrefService* pref_service = profile_->GetPrefs();
   pref_service->SetBoolean(ash::prefs::kAccessibilitySwitchAccessEnabled,
                            enabled);
@@ -990,17 +951,6 @@ void AccessibilityManager::OnSwitchAccessChanged() {
 
   const bool enabled = profile_->GetPrefs()->GetBoolean(
       ash::prefs::kAccessibilitySwitchAccessEnabled);
-
-  if (enabled) {
-    if (IsSpokenFeedbackEnabled()) {
-      LOG(ERROR) << "Enabling Switch Access with ChromeVox is not supported.";
-      SetSwitchAccessEnabled(false);
-      EnableSwitchAccessAfterChromeVoxMetric(true);
-      return;
-    }
-    EnableSwitchAccessAfterChromeVoxMetric(false);
-    switch_access_loader_->SetProfile(profile_, base::RepeatingClosure());
-  }
 
   if (switch_access_enabled_ == enabled)
     return;
@@ -1534,15 +1484,6 @@ void AccessibilityManager::PostUnloadSelectToSpeak() {
 }
 
 void AccessibilityManager::PostLoadSwitchAccess() {
-  if (!switch_access_panel_) {
-    switch_access_panel_ = new SwitchAccessPanel(profile_);
-    switch_access_panel_widget_observer_.reset(
-        new AccessibilityPanelWidgetObserver(
-            switch_access_panel_->GetWidget(),
-            base::BindOnce(&AccessibilityManager::OnSwitchAccessPanelDestroying,
-                           base::Unretained(this))));
-  }
-
   InitializeFocusRings(extension_misc::kSwitchAccessExtensionId);
 }
 
@@ -1552,17 +1493,6 @@ void AccessibilityManager::PostUnloadSwitchAccess() {
 
   // Clear the accessibility focus ring.
   RemoveFocusRings(extension_misc::kSwitchAccessExtensionId);
-
-  // Close the context menu
-  if (switch_access_panel_) {
-    switch_access_panel_->Close();
-    switch_access_panel_ = nullptr;
-  }
-}
-
-void AccessibilityManager::OnSwitchAccessPanelDestroying() {
-  switch_access_panel_widget_observer_.reset(nullptr);
-  switch_access_panel_ = nullptr;
 }
 
 void AccessibilityManager::PostLoadAutoclick() {
@@ -1583,18 +1513,6 @@ void AccessibilityManager::SetKeyboardListenerExtensionId(
       extensions::ExtensionRegistry::Get(context);
   if (!extension_registry_observer_.IsObserving(registry) && !id.empty())
     extension_registry_observer_.Add(registry);
-}
-
-void AccessibilityManager::HideSwitchAccessMenu() {
-  switch_access_panel_->Hide();
-}
-
-void AccessibilityManager::ShowSwitchAccessMenu(const gfx::Rect& element_bounds,
-                                                int menu_width,
-                                                int menu_height,
-                                                bool back_button_only) {
-  switch_access_panel_->Show(element_bounds, menu_width, menu_height,
-                             back_button_only);
 }
 
 bool AccessibilityManager::ToggleDictation() {

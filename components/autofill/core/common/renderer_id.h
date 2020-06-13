@@ -29,6 +29,8 @@ using FieldRendererIdType =
 // order to avoid having to define out-of-line constructors in all structs that
 // contain renderer IDs.
 
+// The FormRendererId of a synthetic form is_null(). A synthetic form is the
+// collection of form fields outside of the scope of any <form> tag in a page.
 class FormRendererId : public internal::FormRendererIdType {
   using internal::FormRendererIdType::IdType;
 };

@@ -3574,6 +3574,10 @@ const char kEnableNewShortcutMappingName[] = "Enable New Shortcut Mapping";
 const char kEnableNewShortcutMappingDescription[] =
     "Enables experimental new shortcut mapping";
 
+const char kEnableOnDeviceAssistantName[] = "Enable On Device Assistant";
+const char kEnableOnDeviceAssistantDescription[] =
+    "Enable On Device Assistant.";
+
 const char kEnablePalmOnMaxTouchMajorName[] =
     "Enable Palm when Touch is Maximum";
 const char kEnablePalmOnMaxTouchMajorDescription[] =
@@ -3881,11 +3885,6 @@ const char kStreamlinedUsbPrinterSetupDescription[] =
 const char kSyncWifiConfigurationsName[] = "Sync Wi-Fi network configurations";
 const char kSyncWifiConfigurationsDescription[] =
     "Enables the option to sync Wi-Fi network configurations with Chrome Sync.";
-
-const char kMessageCenterRedesignName[] = "Enable Message Center Redesign";
-const char kMessageCenterRedesignDescription[] =
-    "Enables split message center, stacked notification icons and system tray "
-    "pagination";
 
 const char kTerminalSystemAppName[] = "Terminal System App";
 const char kTerminalSystemAppDescription[] =

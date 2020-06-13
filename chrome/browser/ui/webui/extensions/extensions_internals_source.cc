@@ -389,7 +389,7 @@ void AddEventListenerData(extensions::EventRouter* event_router,
                            base::Value(listener_entry->listener_url().spec()));
       // Add the filter if one exists.
       base::Value* const filter = listener_entry->filter();
-      if (filter != nullptr) {
+      if (filter) {
         listener_data.SetKey(kFilterKey, filter->Clone());
       }
       listeners_list.Append(std::move(listener_data));

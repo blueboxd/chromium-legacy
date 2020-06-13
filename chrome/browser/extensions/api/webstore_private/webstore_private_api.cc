@@ -49,7 +49,10 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/permissions_parser.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -267,6 +270,9 @@ ConvertExtensionInstallStatusForAPI(ExtensionInstallStatus status) {
 // successfully. Otherwise, returns the initial extension install status.
 ExtensionInstallStatus AddExtensionToPendingList(const ExtensionId& id,
                                                  Profile* profile) {
+  // There is no need to check whether the extension's required permissions or
+  // manifest type are blocked  by the enterprise policy because extensions
+  // blocked by those are still requestable.
   ExtensionInstallStatus status =
       GetWebstoreExtensionInstallStatus(id, profile);
   // We put the |id| into the pending request list if it can be requested.
@@ -447,8 +453,9 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
   // Check the management policy before the installation process begins.
-  ExtensionInstallStatus install_status =
-      GetWebstoreExtensionInstallStatus(id, profile);
+  ExtensionInstallStatus install_status = GetWebstoreExtensionInstallStatus(
+      id, profile, dummy_extension_->manifest()->type(),
+      PermissionsParser::GetRequiredPermissions(dummy_extension_.get()));
   if (install_status == kBlockedByPolicy) {
     ShowBlockedByPolicyDialog(
         dummy_extension_.get(), icon_, web_contents,
@@ -1095,12 +1102,58 @@ WebstorePrivateGetExtensionStatusFunction::Run() {
     return RespondNow(Error(kWebstoreInvalidIdError));
   }
 
+  if (!params->manifest)
+    return RespondNow(BuildResponseWithoutManifest(extension_id, profile));
+
+  data_decoder::DataDecoder::ParseJsonIsolated(
+      *(params->manifest),
+      base::BindOnce(
+          &WebstorePrivateGetExtensionStatusFunction::OnManifestParsed, this,
+          extension_id));
+  return RespondLater();
+}
+
+ExtensionFunction::ResponseValue
+WebstorePrivateGetExtensionStatusFunction::BuildResponseWithoutManifest(
+    const ExtensionId& extension_id,
+    Profile* profile) {
   ExtensionInstallStatus status =
       GetWebstoreExtensionInstallStatus(extension_id, profile);
   api::webstore_private::ExtensionInstallStatus api_status =
       ConvertExtensionInstallStatusForAPI(status);
-  return RespondNow(
-      OneArgument(GetExtensionStatus::Results::Create(api_status)));
+  return OneArgument(GetExtensionStatus::Results::Create(api_status));
+}
+
+void WebstorePrivateGetExtensionStatusFunction::OnManifestParsed(
+    const ExtensionId& extension_id,
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!result.value || !result.value->is_dict()) {
+    Respond(Error(kWebstoreInvalidManifestError));
+    return;
+  }
+
+  if (!g_browser_process->profile_manager()->IsValidProfile(
+          chrome_details_.GetProfile())) {
+    Respond(Error(kWebstoreUserCancelledError));
+  }
+
+  std::string error;
+  auto dummy_extension =
+      Extension::Create(base::FilePath(), Manifest::INTERNAL,
+                        base::Value::AsDictionaryValue(*result.value),
+                        Extension::FROM_WEBSTORE, extension_id, &error);
+
+  if (!dummy_extension) {
+    Respond(Error(kWebstoreInvalidManifestError));
+    return;
+  }
+
+  ExtensionInstallStatus status = GetWebstoreExtensionInstallStatus(
+      extension_id, chrome_details_.GetProfile(), dummy_extension->GetType(),
+      PermissionsParser::GetRequiredPermissions(dummy_extension.get()));
+  api::webstore_private::ExtensionInstallStatus api_status =
+      ConvertExtensionInstallStatusForAPI(status);
+  Respond(OneArgument(GetExtensionStatus::Results::Create(api_status)));
 }
 
 WebstorePrivateRequestExtensionFunction::

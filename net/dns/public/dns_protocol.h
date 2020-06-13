@@ -153,11 +153,6 @@ static const uint16_t kTypeANY = 255;
 
 // Experimental DNS record types pending IANA assignment.
 //
-// Record type proposed for TLS Encrypted Server Name Indication
-// (ESNI, draft 4) records:
-// https://tools.ietf.org/html/draft-ietf-tls-esni-04#section-8.3
-static const uint16_t kExperimentalTypeEsniDraft4 = 65439;
-
 // The INTEGRITY RR type exists purely for measuring how the DNS ecosystem
 // handles new RR types.
 // https://docs.google.com/document/d/14eCqVyT_3MSj7ydqNFl1Yl0yg1fs6g24qmYUUdi5V-k/edit?usp=sharing

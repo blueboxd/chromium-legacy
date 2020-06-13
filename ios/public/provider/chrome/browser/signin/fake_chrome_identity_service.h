@@ -13,6 +13,8 @@
 @class NSMutableArray;
 
 namespace ios {
+// Email suffix used for managed accounts.
+extern NSString* const kManagedIdentityEmailSuffix;
 
 // A fake ChromeIdentityService used for testing.
 class FakeChromeIdentityService : public ChromeIdentityService {

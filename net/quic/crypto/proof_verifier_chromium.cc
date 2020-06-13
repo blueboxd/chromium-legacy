@@ -243,8 +243,8 @@ quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
 
   // We call VerifySignature first to avoid copying of server_config and
   // signature.
-  if (!signature.empty() && !VerifySignature(server_config, quic_version,
-                                             chlo_hash, signature, certs[0])) {
+  if (!VerifySignature(server_config, quic_version, chlo_hash, signature,
+                       certs[0])) {
     *error_details = "Failed to verify signature of server config";
     DLOG(WARNING) << *error_details;
     verify_details_->cert_verify_result.cert_status = CERT_STATUS_INVALID;
@@ -558,6 +558,11 @@ bool ProofVerifierChromium::Job::VerifySignature(
     default:
       LOG(ERROR) << "Unsupported public key type " << type;
       return false;
+  }
+
+  if (signature.empty()) {
+    DLOG(WARNING) << "Signature is empty, thus cannot possibly be valid";
+    return false;
   }
 
   crypto::SignatureVerifier verifier;

@@ -188,6 +188,22 @@ class TestGraphImpl : public GraphImpl {
   int next_frame_routing_id_ = 0;
 };
 
+// A test harness that initializes the graph without the rest of
+// PerformanceManager. Allows for creating individual nodes without going
+// through an embedder. The structs in mock_graphs.h are useful for this.
+//
+// This is intended for testing code that is entirely bound to the
+// PerformanceManager sequence. Since the PerformanceManager itself is not
+// initialized messages posted using CallOnGraph or
+// PerformanceManager::GetTaskRunner will go into the void. To test code that
+// posts to and from the PerformanceManager sequence use
+// PerformanceManagerTestHarness.
+//
+// If you need to write tests that manipulate graph nodes and also use
+// CallOnGraph, you probably want to split the code under test into a
+// sequence-bound portion that deals with the graph (tested using
+// GraphTestHarness) and an interface that marshals to the PerformanceManager
+// sequence (tested using PerformanceManagerTestHarness).
 class GraphTestHarness : public ::testing::Test {
  public:
   GraphTestHarness();

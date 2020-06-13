@@ -22,10 +22,15 @@ mojom("mojom") {
   generate_java = true
   sources = [
     "ime_types.mojom",
+    "text_input_state.mojom",
     "virtual_keyboard_types.mojom",
   ]
 
-  public_deps = [ "//mojo/public/mojom/base" ]
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//ui/gfx/geometry/mojom",
+    "//ui/gfx/range/mojom",
+  ]
 
   cpp_typemaps = [
     {
@@ -43,6 +48,14 @@ mojom("mojom") {
           cpp = "::ui::ImeTextSpan::UnderlineStyle"
         },
         {
+          mojom = "ui.mojom.TextInputAction"
+          cpp = "::ui::TextInputAction"
+        },
+        {
+          mojom = "ui.mojom.TextInputMode"
+          cpp = "::ui::TextInputMode"
+        },
+        {
           mojom = "ui.mojom.TextInputType"
           cpp = "::ui::TextInputType"
         },
@@ -56,6 +69,9 @@ mojom("mojom") {
     },
   ]
   blink_cpp_typemaps = cpp_typemaps
+  export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/blink/public/platform/web_common.h"
 }
 
 mojom("test_interfaces") {

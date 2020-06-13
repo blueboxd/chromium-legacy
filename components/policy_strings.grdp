@@ -238,9 +238,6 @@
   <message name="IDS_POLICY_OVERRIDDEN" desc="The text displayed in the status column when the corresponding policy is being ignored because another policy is overriding it.">
     Ignored because it was overridden by <ph name="POLICY_NAME">$1<ex>ProxyMode</ex></ph>.
   </message>
-  <message name="IDS_POLICY_DEPRECATED" desc="The text displayed in the status column when the corresponding policy is deprecated.">
-    This policy has been deprecated.
-  </message>
   <message name="IDS_POLICY_VALUE_DEPRECATED" desc="The text displayed in the status column when a specific value for a policy is deprecated.">
     This value is deprecated for this policy.
   </message>
@@ -370,6 +367,9 @@ Additional details:
   </message>
   <message name="IDS_POLICY_LABEL_DEPRECATED" desc="Label for the status of a deprecated policy.">
     Deprecated
+  </message>
+  <message name="IDS_POLICY_LABEL_FUTURE" desc="Label for the status of an unreleased policy.">
+    Unreleased
   </message>
   <message name="IDS_POLICY_LABEL_IGNORED" desc="Label for the ignored row in the policy table.">
     Ignored

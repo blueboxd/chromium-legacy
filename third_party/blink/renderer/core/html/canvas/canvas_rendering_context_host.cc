@@ -86,17 +86,17 @@ bool CanvasRenderingContextHost::Is2d() const {
 
 CanvasResourceProvider*
 CanvasRenderingContextHost::GetOrCreateCanvasResourceProvider(
-    AccelerationHint hint) {
+    RasterModeHint hint) {
   return GetOrCreateCanvasResourceProviderImpl(hint);
 }
 
 CanvasResourceProvider*
 CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
-    AccelerationHint hint) {
+    RasterModeHint hint) {
   if (!ResourceProvider() && !did_fail_to_create_resource_provider_) {
     if (IsValidImageSize(Size())) {
       if (Is3d()) {
-        CreateCanvasResourceProvider3D(hint);
+        CreateCanvasResourceProvider3D();
       } else {
         CreateCanvasResourceProvider2D(hint);
       }
@@ -107,8 +107,7 @@ CanvasRenderingContextHost::GetOrCreateCanvasResourceProviderImpl(
   return ResourceProvider();
 }
 
-void CanvasRenderingContextHost::CreateCanvasResourceProvider3D(
-    AccelerationHint hint) {
+void CanvasRenderingContextHost::CreateCanvasResourceProvider3D() {
   DCHECK(Is3d());
 
   base::WeakPtr<CanvasResourceDispatcher> dispatcher =
@@ -183,7 +182,7 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider3D(
 }
 
 void CanvasRenderingContextHost::CreateCanvasResourceProvider2D(
-    AccelerationHint hint) {
+    RasterModeHint hint) {
   DCHECK(Is2d());
   base::WeakPtr<CanvasResourceDispatcher> dispatcher =
       GetOrCreateResourceDispatcher()
@@ -192,7 +191,7 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider2D(
 
   std::unique_ptr<CanvasResourceProvider> provider;
   const bool use_gpu =
-      hint == kPreferAcceleration && ShouldAccelerate2dContext();
+      hint == RasterModeHint::kPreferGPU && ShouldAccelerate2dContext();
   // It is important to not use the context's IsOriginTopLeft() here
   // because that denotes the current state and could change after the
   // new resource provider is created e.g. due to switching between
@@ -318,7 +317,7 @@ ScriptPromise CanvasRenderingContextHost::convertToBlob(
 
   base::TimeTicks start_time = base::TimeTicks::Now();
   scoped_refptr<StaticBitmapImage> image_bitmap =
-      RenderingContext()->GetImage(kPreferNoAcceleration);
+      RenderingContext()->GetImage(RasterModeHint::kPreferCPU);
   if (image_bitmap) {
     auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     CanvasAsyncBlobCreator::ToBlobFunctionType function_type =

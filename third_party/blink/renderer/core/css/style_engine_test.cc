@@ -1618,9 +1618,6 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
       @media (forced-colors: none) and (prefers-color-scheme: dark) {
         body { color: green }
       }
-      @media (forced-colors: active) and (prefers-color-scheme: no-preference) {
-        body { color: yellow }
-      }
       @media (forced-colors: active) and (prefers-color-scheme: dark) {
         body { color: orange }
       }
@@ -2688,9 +2685,6 @@ TEST_F(StyleEngineTest, PrintNoDarkColorScheme) {
       :root { color-scheme: light dark }
       @media (prefers-color-scheme: light) {
         body { color: green; }
-      }
-      @media (prefers-color-scheme: no-preference) {
-        body { color: orange; }
       }
       @media (prefers-color-scheme: dark) {
         body { color: red; }

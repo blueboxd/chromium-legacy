@@ -191,7 +191,7 @@ class CustomTabBarTitleOriginView : public views::View {
   }
 
   bool IsShowingOriginForTesting() const {
-    return location_label_ != nullptr && location_label_->GetVisible();
+    return location_label_ && location_label_->GetVisible();
   }
 
  private:
@@ -430,8 +430,7 @@ void CustomTabBarView::GoBackToAppForTesting() {
 }
 
 bool CustomTabBarView::IsShowingOriginForTesting() const {
-  return title_origin_view_ != nullptr &&
-         title_origin_view_->IsShowingOriginForTesting();
+  return title_origin_view_ && title_origin_view_->IsShowingOriginForTesting();
 }
 
 // TODO(tluk): Remove the use of GetDefaultFrameColor() completely here. When

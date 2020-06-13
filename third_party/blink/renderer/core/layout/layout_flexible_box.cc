@@ -1268,31 +1268,112 @@ void LayoutFlexibleBox::SetOverrideMainAxisContentSizeForChild(FlexItem& item) {
   }
 }
 
+namespace {
+
+LayoutUnit MainAxisStaticPositionCommon(const LayoutBox& child,
+                                        LayoutBox* parent,
+                                        LayoutUnit available_space) {
+  LayoutUnit offset = FlexLayoutAlgorithm::InitialContentPositionOffset(
+      parent->StyleRef(), available_space,
+      FlexLayoutAlgorithm::ResolvedJustifyContent(parent->StyleRef()), 1);
+  if (parent->StyleRef().ResolvedIsRowReverseFlexDirection() ||
+      parent->StyleRef().ResolvedIsColumnReverseFlexDirection())
+    offset = available_space - offset;
+  return offset;
+}
+
+LayoutUnit StaticMainAxisPositionForNGPositionedChild(const LayoutBox& child,
+                                                      LayoutBox* parent) {
+  const LayoutUnit available_space =
+      FlexLayoutAlgorithm::IsHorizontalFlow(parent->StyleRef())
+          ? parent->ContentWidth() - child.Size().Width()
+          : parent->ContentHeight() - child.Size().Height();
+  return MainAxisStaticPositionCommon(child, parent, available_space);
+}
+
+LayoutUnit CrossAxisStaticPositionCommon(const LayoutBox& child,
+                                         LayoutBox* parent,
+                                         LayoutUnit available_space) {
+  return FlexItem::AlignmentOffset(
+      available_space,
+      FlexLayoutAlgorithm::AlignmentForChild(parent->StyleRef(),
+                                             child.StyleRef()),
+      LayoutUnit(), LayoutUnit(),
+      parent->StyleRef().FlexWrap() == EFlexWrap::kWrapReverse,
+      parent->StyleRef().IsDeprecatedWebkitBox());
+}
+
+LayoutUnit StaticCrossAxisPositionForNGPositionedChild(const LayoutBox& child,
+                                                       LayoutBox* parent) {
+  const LayoutUnit available_space =
+      FlexLayoutAlgorithm::IsHorizontalFlow(parent->StyleRef())
+          ? parent->ContentHeight() - child.Size().Height()
+          : parent->ContentWidth() - child.Size().Width();
+  return CrossAxisStaticPositionCommon(child, parent, available_space);
+}
+
+LayoutUnit StaticInlinePositionForNGPositionedChild(const LayoutBox& child,
+                                                    LayoutBlock* parent) {
+  const LayoutUnit start_offset = parent->StartOffsetForContent();
+  if (parent->StyleRef().IsDeprecatedWebkitBox())
+    return start_offset;
+  return start_offset +
+         (parent->StyleRef().ResolvedIsColumnFlexDirection()
+              ? StaticCrossAxisPositionForNGPositionedChild(child, parent)
+              : StaticMainAxisPositionForNGPositionedChild(child, parent));
+}
+
+LayoutUnit StaticBlockPositionForNGPositionedChild(const LayoutBox& child,
+                                                   LayoutBlock* parent) {
+  return parent->BorderAndPaddingBefore() +
+         (parent->StyleRef().ResolvedIsColumnFlexDirection()
+              ? StaticMainAxisPositionForNGPositionedChild(child, parent)
+              : StaticCrossAxisPositionForNGPositionedChild(child, parent));
+}
+
+}  // namespace
+
+bool LayoutFlexibleBox::SetStaticPositionForChildInFlexNGContainer(
+    LayoutBox& child,
+    LayoutBlock* parent) {
+  const ComputedStyle& style = parent->StyleRef();
+  bool position_changed = false;
+  PaintLayer* child_layer = child.Layer();
+  if (child.StyleRef().HasStaticInlinePosition(
+          style.IsHorizontalWritingMode())) {
+    LayoutUnit inline_position =
+        StaticInlinePositionForNGPositionedChild(child, parent);
+    if (child_layer->StaticInlinePosition() != inline_position) {
+      child_layer->SetStaticInlinePosition(inline_position);
+      position_changed = true;
+    }
+  }
+  if (child.StyleRef().HasStaticBlockPosition(
+          style.IsHorizontalWritingMode())) {
+    LayoutUnit block_position =
+        StaticBlockPositionForNGPositionedChild(child, parent);
+    if (child_layer->StaticBlockPosition() != block_position) {
+      child_layer->SetStaticBlockPosition(block_position);
+      position_changed = true;
+    }
+  }
+  return position_changed;
+}
+
 LayoutUnit LayoutFlexibleBox::StaticMainAxisPositionForPositionedChild(
     const LayoutBox& child) {
   const LayoutUnit available_space =
       MainAxisContentExtent(ContentLogicalHeight()) -
       MainAxisExtentForChild(child);
 
-  LayoutUnit offset = FlexLayoutAlgorithm::InitialContentPositionOffset(
-      StyleRef(), available_space,
-      FlexLayoutAlgorithm::ResolvedJustifyContent(StyleRef()), 1);
-  if (StyleRef().ResolvedIsRowReverseFlexDirection() ||
-      StyleRef().ResolvedIsColumnReverseFlexDirection())
-    offset = available_space - offset;
-  return offset;
+  return MainAxisStaticPositionCommon(child, this, available_space);
 }
 
 LayoutUnit LayoutFlexibleBox::StaticCrossAxisPositionForPositionedChild(
     const LayoutBox& child) {
   LayoutUnit available_space =
       CrossAxisContentExtent() - CrossAxisExtentForChild(child);
-  return FlexItem::AlignmentOffset(
-      available_space,
-      FlexLayoutAlgorithm::AlignmentForChild(StyleRef(), child.StyleRef()),
-      LayoutUnit(), LayoutUnit(),
-      StyleRef().FlexWrap() == EFlexWrap::kWrapReverse,
-      StyleRef().IsDeprecatedWebkitBox());
+  return CrossAxisStaticPositionCommon(child, this, available_space);
 }
 
 LayoutUnit LayoutFlexibleBox::StaticInlinePositionForPositionedChild(

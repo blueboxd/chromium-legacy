@@ -8,16 +8,28 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/views/accessibility/ax_event_manager.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/test/menu_test_utils.h"
 #include "ui/views/widget/widget.h"
 
-MenuTestBase::MenuTestBase()
-    : ViewEventTestBase(), button_(nullptr), menu_(nullptr), last_command_(0) {}
+MenuTestBase::MenuTestBase() : last_command_(0) {
+  ax_event_counts_.fill(0);
+  views::AXEventManager::Get()->AddObserver(this);
+}
 
 MenuTestBase::~MenuTestBase() {
+  views::AXEventManager::Get()->RemoveObserver(this);
+}
+
+void MenuTestBase::OnViewEvent(views::View*, ax::mojom::Event event_type) {
+  ++ax_event_counts_[static_cast<size_t>(event_type)];
+}
+
+int MenuTestBase::GetAXEventCount(ax::mojom::Event event_type) const {
+  return ax_event_counts_[static_cast<size_t>(event_type)];
 }
 
 void MenuTestBase::Click(views::View* view, base::OnceClosure next) {

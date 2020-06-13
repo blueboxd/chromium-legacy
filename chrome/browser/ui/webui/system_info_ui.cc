@@ -79,6 +79,7 @@ class SystemInfoHandler : public WebUIMessageHandler {
   ~SystemInfoHandler() override;
 
   // WebUIMessageHandler implementation.
+  void OnJavascriptDisallowed() override;
   void RegisterMessages() override;
 
   // Callback for the "requestSystemInfo" message. This asynchronously requests
@@ -100,6 +101,10 @@ class SystemInfoHandler : public WebUIMessageHandler {
 SystemInfoHandler::SystemInfoHandler() {}
 
 SystemInfoHandler::~SystemInfoHandler() {}
+
+void SystemInfoHandler::OnJavascriptDisallowed() {
+  weak_ptr_factory_.InvalidateWeakPtrs();
+}
 
 void SystemInfoHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(

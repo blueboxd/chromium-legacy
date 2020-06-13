@@ -166,79 +166,7 @@ DnsResourceRecord BuildServiceRecord(std::string name,
   return record;
 }
 
-void AppendU16LengthPrefixed(base::StringPiece in, std::string* out) {
-  DCHECK(out);
-  char buf[2];
-  base::WriteBigEndian(buf, base::checked_cast<uint16_t>(in.size()));
-  out->append(buf, 2);
-  out->insert(out->end(), in.begin(), in.end());
-}
 
-// Builds an ESNI (TLS 1.3 Encrypted Server Name Indication, draft 4) record.
-//
-// An ESNI record associates an "ESNI key object" (an opaque string used
-// by the TLS library) with a collection of IP addresses.
-DnsResourceRecord BuildEsniRecord(std::string name, EsniContent esni_content) {
-  DCHECK(!name.empty());
-
-  DnsResourceRecord record;
-  record.name = std::move(name);
-  record.type = dns_protocol::kExperimentalTypeEsniDraft4;
-  record.klass = dns_protocol::kClassIN;
-  record.ttl = base::TimeDelta::FromDays(1).InSeconds();
-
-  std::string rdata;
-
-  // An esni_content struct corresponding to a single record
-  // should have exactly one key object, along with zero or more addresses
-  // corresponding to the key object.
-  DCHECK_EQ(esni_content.keys().size(), 1u);
-  rdata += *esni_content.keys().begin();
-
-  if (esni_content.keys_for_addresses().empty()) {
-    // No addresses: leave the "dns_extensions" field of the
-    // ESNI record empty and conclude the rdata with the
-    // "dns_extensions" field's length prefix (two zero bytes).
-    rdata.push_back(0);
-    rdata.push_back(0);
-    record.SetOwnedRdata(std::move(rdata));
-    return record;
-  }
-
-  // When the "dns_extensions" field of a draft-4 ESNI record is nonempty,
-  // it stores an IP addresses: more specifically, it contains
-  // - a 16-bit length prefix,
-  // - the 16-bit "extension type" label of the single address_set
-  // extension (the only type of extension) contained in the extensions object,
-  // - a 16-bit length prefix for the address_set extension's contents, and
-  // - the contents of the address_set extension, which is just a list
-  // of type-prefixed network-order IP addresses.
-  //
-  // (See the draft spec for the complete definition.)
-  std::string dns_extensions;
-
-  std::string address_set;
-  char buf[2];
-  base::WriteBigEndian(buf, EsniRecordRdata::kAddressSetExtensionType);
-  address_set.append(buf, 2);
-
-  std::string serialized_addresses;
-  for (const auto& kv : esni_content.keys_for_addresses()) {
-    IPAddress address = kv.first;
-
-    uint8_t address_type = address.IsIPv4() ? 4 : 6;
-    serialized_addresses.push_back(address_type);
-    serialized_addresses.insert(serialized_addresses.end(),
-                                address.bytes().begin(), address.bytes().end());
-  }
-
-  AppendU16LengthPrefixed(serialized_addresses, &address_set);
-  AppendU16LengthPrefixed(address_set, &dns_extensions);
-  rdata.append(dns_extensions);
-
-  record.SetOwnedRdata(std::move(rdata));
-  return record;
-}
 
 DnsResourceRecord BuildIntegrityRecord(
     std::string name,
@@ -277,28 +205,6 @@ DnsResourceRecord BuildTestAddressRecord(std::string name,
   return record;
 }
 
-const char kWellFormedEsniKeys[] = {
-    0xff, 0x3,  0x0,  0x1,  0xff, 0x0,  0x24, 0x0,  0x1d, 0x0,  0x20,
-    0xed, 0xed, 0xc8, 0x68, 0xc1, 0x71, 0xd6, 0x9e, 0xa9, 0xf0, 0xa2,
-    0xc9, 0xf5, 0xa9, 0xdc, 0xcf, 0xf9, 0xb8, 0xed, 0x15, 0x5c, 0xc4,
-    0x5a, 0xec, 0x6f, 0xb2, 0x86, 0x14, 0xb7, 0x71, 0x1b, 0x7c, 0x0,
-    0x2,  0x13, 0x1,  0x1,  0x4,  0x0,  0x0};
-const size_t kWellFormedEsniKeysSize = sizeof(kWellFormedEsniKeys);
-
-std::string GenerateWellFormedEsniKeys(base::StringPiece custom_data) {
-  std::string well_formed_esni_keys(kWellFormedEsniKeys,
-                                    kWellFormedEsniKeysSize);
-  // Dead-reckon to the first byte after ESNIKeys.keys.group (0x001d).
-  //
-  // Overwrite at most 0x22 bytes: this is the length of the "keys" field
-  // in the example struct (0x0024, specified as a 16-bit big-endian value
-  // by the index-5 and index-6 bytes), minus 2 because the 0x0, 0x1d bytes
-  // will not be overwritten.
-  custom_data = custom_data.substr(0, 0x22);
-  std::copy(custom_data.begin(), custom_data.end(),
-            well_formed_esni_keys.begin() + 9);
-  return well_formed_esni_keys;
-}
 
 std::unique_ptr<DnsResponse> BuildTestDnsResponse(std::string name,
                                                   const IPAddress& ip) {
@@ -400,30 +306,6 @@ std::unique_ptr<DnsResponse> BuildTestDnsServiceResponse(
   CHECK(DNSDomainFromDot(name, &dns_name));
   base::Optional<DnsQuery> query(base::in_place, 0, dns_name,
                                  dns_protocol::kTypeSRV);
-
-  return std::make_unique<DnsResponse>(
-      0, false, std::move(answers),
-      std::vector<DnsResourceRecord>() /* authority_records */,
-      std::vector<DnsResourceRecord>() /* additional_records */, query);
-}
-
-std::unique_ptr<DnsResponse> BuildTestDnsEsniResponse(
-    std::string hostname,
-    std::vector<EsniContent> esni_records,
-    std::string answer_name) {
-  if (answer_name.empty())
-    answer_name = hostname;
-
-  std::vector<DnsResourceRecord> answers;
-  answers.reserve(esni_records.size());
-  for (EsniContent& c : esni_records) {
-    answers.push_back(BuildEsniRecord(answer_name, c));
-  }
-
-  std::string dns_name;
-  CHECK(DNSDomainFromDot(hostname, &dns_name));
-  base::Optional<DnsQuery> query(base::in_place, 0, dns_name,
-                                 dns_protocol::kExperimentalTypeEsniDraft4);
 
   return std::make_unique<DnsResponse>(
       0, false, std::move(answers),

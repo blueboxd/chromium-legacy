@@ -688,7 +688,7 @@ void PaymentRequestBrowserTestBase::RetryPaymentRequest(
 bool PaymentRequestBrowserTestBase::IsViewVisible(DialogViewID view_id) const {
   views::View* view =
       delegate_->dialog_view()->GetViewByID(static_cast<int>(view_id));
-  return view != nullptr && view->GetVisible();
+  return view && view->GetVisible();
 }
 
 base::string16 PaymentRequestBrowserTestBase::GetEditorTextfieldValue(

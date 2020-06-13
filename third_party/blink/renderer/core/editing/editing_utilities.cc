@@ -1701,7 +1701,7 @@ static scoped_refptr<Image> ImageFromNode(const Node& node) {
 
   if (layout_object->IsCanvas()) {
     return To<HTMLCanvasElement>(const_cast<Node&>(node))
-        .Snapshot(kFrontBuffer, kPreferNoAcceleration);
+        .Snapshot(kFrontBuffer, RasterModeHint::kPreferCPU);
   }
 
   if (!layout_object->IsImage())

@@ -977,8 +977,11 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   TRACE_EVENT0("browser", "ProfileManager::InitProfileUserPrefs");
   ProfileAttributesStorage& storage = GetProfileAttributesStorage();
 
-  if (!IsAllowedProfilePath(profile->GetPath()))
+  if (!IsAllowedProfilePath(profile->GetPath())) {
+    LOG(WARNING) << "Failed to initialize prefs for a profile at invalid path: "
+                 << profile->GetPath().AsUTF8Unsafe();
     return;
+  }
 
 #if defined(OS_CHROMEOS)
   // User object may already have changed user type, so we apply that
@@ -1621,8 +1624,11 @@ void ProfileManager::AddProfileToStorage(Profile* profile) {
   TRACE_EVENT0("browser", "ProfileManager::AddProfileToCache");
   if (profile->IsGuestSession() || profile->IsSystemProfile())
     return;
-  if (!IsAllowedProfilePath(profile->GetPath()))
+  if (!IsAllowedProfilePath(profile->GetPath())) {
+    LOG(WARNING) << "Failed to add to storage a profile at invalid path: "
+                 << profile->GetPath().AsUTF8Unsafe();
     return;
+  }
 
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);

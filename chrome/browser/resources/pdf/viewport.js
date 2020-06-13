@@ -7,7 +7,7 @@ import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {$, hasKeyModifiers} from 'chrome://resources/js/util.m.js';
 
 import {FittingType} from './constants.js';
-import {GestureDetector, PinchEvent} from './gesture_detector.js';
+import {GestureDetector, PinchEventDetail} from './gesture_detector.js';
 import {InactiveZoomManager, ZoomManager} from './zoom_manager.js';
 
 /**
@@ -178,12 +178,18 @@ export class Viewport {
     /** @private {boolean} */
     this.sentPinchEvent_ = false;
 
-    this.gestureDetector_.addEventListener(
-        'pinchstart', e => this.onPinchStart_(e));
-    this.gestureDetector_.addEventListener(
-        'pinchupdate', e => this.onPinchUpdate_(e));
-    this.gestureDetector_.addEventListener(
-        'pinchend', e => this.onPinchEnd_(e));
+    this.gestureDetector_.getEventTarget().addEventListener(
+        'pinchstart',
+        e => this.onPinchStart_(
+            /** @type {!CustomEvent<!PinchEventDetail>} */ (e)));
+    this.gestureDetector_.getEventTarget().addEventListener(
+        'pinchupdate',
+        e => this.onPinchUpdate_(
+            /** @type {!CustomEvent<!PinchEventDetail>} */ (e)));
+    this.gestureDetector_.getEventTarget().addEventListener(
+        'pinchend',
+        e => this.onPinchEnd_(
+            /** @type {!CustomEvent<!PinchEventDetail>} */ (e)));
 
     // Set to a default zoom manager - used in tests.
     this.setZoomManager(new InactiveZoomManager(this.getZoom.bind(this), 1));
@@ -1341,7 +1347,7 @@ export class Viewport {
 
   /**
    * A callback that's called when an update to a pinch zoom is detected.
-   * @param {!PinchEvent} e the pinch event.
+   * @param {!CustomEvent<!PinchEventDetail>} e the pinch event.
    * @private
    */
   onPinchUpdate_(e) {
@@ -1354,21 +1360,22 @@ export class Viewport {
     this.window_.requestAnimationFrame(() => {
       this.sentPinchEvent_ = false;
       this.mightZoom_(() => {
-        this.pinchPhase_ = e.direction === 'out' ?
+        const {direction, center, startScaleRatio} = e.detail;
+        this.pinchPhase_ = direction === 'out' ?
             Viewport.PinchPhase.PINCH_UPDATE_ZOOM_OUT :
             Viewport.PinchPhase.PINCH_UPDATE_ZOOM_IN;
 
-        const scaleDelta = e.startScaleRatio / this.prevScale_;
+        const scaleDelta = startScaleRatio / this.prevScale_;
         if (this.firstPinchCenterInFrame_ != null) {
           this.pinchPanVector_ =
-              vectorDelta(e.center, this.firstPinchCenterInFrame_);
+              vectorDelta(center, this.firstPinchCenterInFrame_);
         }
 
         const needsScrollbars =
             this.documentNeedsScrollbars(this.zoomManager_.applyBrowserZoom(
                 this.clampZoom_(this.internalZoom_ * scaleDelta)));
 
-        this.pinchCenter_ = e.center;
+        this.pinchCenter_ = center;
 
         // If there's no horizontal scrolling, keep the content centered so
         // the user can't zoom in on the non-content area.
@@ -1383,21 +1390,20 @@ export class Viewport {
           };
         } else if (this.keepContentCentered_) {
           this.oldCenterInContent_ =
-              this.frameToContent_(frameToPluginCoordinate(e.center));
+              this.frameToContent_(frameToPluginCoordinate(center));
           this.keepContentCentered_ = false;
         }
 
-        this.setPinchZoomInternal_(
-            scaleDelta, frameToPluginCoordinate(e.center));
+        this.setPinchZoomInternal_(scaleDelta, frameToPluginCoordinate(center));
         this.updateViewport_();
-        this.prevScale_ = /** @type {number} */ (e.startScaleRatio);
+        this.prevScale_ = /** @type {number} */ (startScaleRatio);
       });
     });
   }
 
   /**
    * A callback that's called when the end of a pinch zoom is detected.
-   * @param {!PinchEvent} e the pinch event.
+   * @param {!CustomEvent<!PinchEventDetail>} e the pinch event.
    * @private
    */
   onPinchEnd_(e) {
@@ -1405,12 +1411,12 @@ export class Viewport {
     // sent after the pinch end.
     this.window_.requestAnimationFrame(() => {
       this.mightZoom_(() => {
+        const {center, startScaleRatio} = e.detail;
         this.pinchPhase_ = Viewport.PinchPhase.PINCH_END;
-        const scaleDelta = e.startScaleRatio / this.prevScale_;
-        this.pinchCenter_ = /** @type {!Point} */ (e.center);
+        const scaleDelta = startScaleRatio / this.prevScale_;
+        this.pinchCenter_ = /** @type {!Point} */ (center);
 
-        this.setPinchZoomInternal_(
-            scaleDelta, frameToPluginCoordinate(e.center));
+        this.setPinchZoomInternal_(scaleDelta, frameToPluginCoordinate(center));
         this.updateViewport_();
       });
 
@@ -1423,7 +1429,7 @@ export class Viewport {
 
   /**
    * A callback that's called when the start of a pinch zoom is detected.
-   * @param {!PinchEvent} e the pinch event.
+   * @param {!CustomEvent<!PinchEventDetail>} e the pinch event.
    * @private
    */
   onPinchStart_(e) {
@@ -1433,13 +1439,13 @@ export class Viewport {
       this.pinchPhase_ = Viewport.PinchPhase.PINCH_START;
       this.prevScale_ = 1;
       this.oldCenterInContent_ =
-          this.frameToContent_(frameToPluginCoordinate(e.center));
+          this.frameToContent_(frameToPluginCoordinate(e.detail.center));
 
       const needsScrollbars = this.documentNeedsScrollbars(this.getZoom());
       this.keepContentCentered_ = !needsScrollbars.horizontal;
       // We keep track of beginning of the pinch.
       // By doing so we will be able to compute the pan distance.
-      this.firstPinchCenterInFrame_ = e.center;
+      this.firstPinchCenterInFrame_ = e.detail.center;
     });
   }
 }

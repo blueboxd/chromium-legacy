@@ -288,10 +288,7 @@ std::vector<Notification*> UnifiedMessageListView::GetNotificationsAboveY(
     int y_offset) const {
   std::vector<Notification*> notifications;
   for (views::View* view : children()) {
-    int bottom_limit =
-        features::IsUnifiedMessageCenterRefactorEnabled()
-            ? view->bounds().y() + kNotificationIconStackThreshold
-            : view->bounds().bottom();
+    int bottom_limit = view->bounds().y() + kNotificationIconStackThreshold;
     if (bottom_limit <= y_offset) {
       Notification* notification =
           MessageCenter::Get()->FindVisibleNotificationById(

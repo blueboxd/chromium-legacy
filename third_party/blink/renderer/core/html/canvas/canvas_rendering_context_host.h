@@ -97,9 +97,9 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   // Partial CanvasResourceHost implementation
   void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const final;
   CanvasResourceProvider* GetOrCreateCanvasResourceProviderImpl(
-      AccelerationHint hint) final;
+      RasterModeHint hint) final;
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
-      AccelerationHint hint) override;
+      RasterModeHint hint) override;
 
   bool Is3d() const;
   bool Is2d() const;
@@ -115,8 +115,8 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
 
   scoped_refptr<StaticBitmapImage> CreateTransparentImage(const IntSize&) const;
 
-  void CreateCanvasResourceProvider2D(AccelerationHint hint);
-  void CreateCanvasResourceProvider3D(AccelerationHint hint);
+  void CreateCanvasResourceProvider2D(RasterModeHint hint);
+  void CreateCanvasResourceProvider3D();
 
   bool did_fail_to_create_resource_provider_ = false;
   bool did_record_canvas_size_to_uma_ = false;

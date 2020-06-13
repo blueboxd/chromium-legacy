@@ -70,9 +70,10 @@ void CheckPolicyToPrefTranslation(const PolicyMap& policy_map,
                                   const PerInputEnvironment& per_input_env) {
   PrefValueMap prefs;
   PolicyErrorMap errors;
-  DeprecatedPoliciesSet deprecated_policies;
+  PoliciesSet deprecated_policies;
+  PoliciesSet future_policies;
   per_input_env.policy_handler_list->ApplyPolicySettings(
-      policy_map, &prefs, &errors, &deprecated_policies);
+      policy_map, &prefs, &errors, &deprecated_policies, &future_policies);
 }
 
 void CheckPolicyToCrosSettingsTranslation(

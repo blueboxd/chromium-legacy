@@ -1323,24 +1323,29 @@ void PopulateGridTrackList(CSSValueList* list,
                            OrderedNamedLinesCollector& collector,
                            const Vector<T>& tracks,
                            F getTrackSize,
-                           wtf_size_t start,
-                           wtf_size_t end,
-                           size_t offset = 0) {
-  DCHECK_LE(end, tracks.size());
-  for (wtf_size_t i = start; i < end; ++i) {
-    AddValuesForNamedGridLinesAtIndex(collector, i + offset, *list);
+                           int start,
+                           int end,
+                           int offset = 0) {
+  DCHECK_LE(0, start);
+  DCHECK_LE(start, end);
+  DCHECK_LE((unsigned)end, tracks.size());
+  for (int i = start; i < end; ++i) {
+    if (i + offset >= 0)
+      AddValuesForNamedGridLinesAtIndex(collector, i + offset, *list);
     list->Append(*getTrackSize(tracks[i]));
   }
-  AddValuesForNamedGridLinesAtIndex(collector, end + offset, *list);
+  if (end + offset >= 0)
+    AddValuesForNamedGridLinesAtIndex(collector, end + offset, *list);
 }
 
 template <typename T, typename F>
 void PopulateGridTrackList(CSSValueList* list,
                            OrderedNamedLinesCollector& collector,
                            const Vector<T>& tracks,
-                           F getTrackSize) {
+                           F getTrackSize,
+                           int offset = 0) {
   PopulateGridTrackList<T>(list, collector, tracks, getTrackSize, 0,
-                           tracks.size());
+                           tracks.size(), offset);
 }
 
 CSSValue* ComputedStyleUtils::ValueForGridTrackList(
@@ -1378,9 +1383,14 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
     OrderedNamedLinesCollectorInGridLayout collector(
         style, is_row_axis, grid->AutoRepeatCountForDirection(direction),
         auto_repeat_track_sizes.size());
+    // Named grid line indices are relative to the explicit grid, but we are
+    // including all tracks. So we need to subtract the number of leading
+    // implicit tracks in order to get the proper line index.
+    int offset = -grid->ExplicitGridStartForDirection(direction);
     PopulateGridTrackList(
         list, collector, grid->TrackSizesForComputedStyle(direction),
-        [&](const LayoutUnit& v) { return ZoomAdjustedPixelValue(v, style); });
+        [&](const LayoutUnit& v) { return ZoomAdjustedPixelValue(v, style); },
+        offset);
     return list;
   }
 

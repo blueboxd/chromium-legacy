@@ -10,6 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "chrome/updater/prefs_impl.h"
+#include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -19,7 +21,22 @@
 
 namespace updater {
 
-std::unique_ptr<PrefService> CreatePrefService() {
+UpdaterPrefs::UpdaterPrefs(std::unique_ptr<ScopedPrefsLock> lock,
+                           std::unique_ptr<PrefService> prefs)
+    : lock_(std::move(lock)), prefs_(std::move(prefs)) {}
+
+UpdaterPrefs::~UpdaterPrefs() = default;
+
+PrefService* UpdaterPrefs::GetPrefService() const {
+  return prefs_.get();
+}
+
+std::unique_ptr<UpdaterPrefs> CreateGlobalPrefs() {
+  std::unique_ptr<ScopedPrefsLock> lock =
+      AcquireGlobalPrefsLock(base::TimeDelta::FromMinutes(2));
+  if (!lock)
+    return nullptr;
+
   base::FilePath product_data_dir;
   if (!GetProductDirectory(&product_data_dir))
     return nullptr;
@@ -31,7 +48,25 @@ std::unique_ptr<PrefService> CreatePrefService() {
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
   update_client::RegisterPrefs(pref_registry.get());
 
-  return pref_service_factory.Create(pref_registry);
+  return std::make_unique<UpdaterPrefs>(
+      std::move(lock), pref_service_factory.Create(pref_registry));
+}
+
+std::unique_ptr<UpdaterPrefs> CreateLocalPrefs() {
+  base::FilePath product_data_dir;
+  if (!GetProductDirectory(&product_data_dir))
+    return nullptr;
+
+  PrefServiceFactory pref_service_factory;
+  pref_service_factory.set_user_prefs(base::MakeRefCounted<JsonPrefStore>(
+      product_data_dir.AppendASCII(UPDATER_VERSION_STRING)
+          .Append(FILE_PATH_LITERAL("prefs.json"))));
+
+  auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
+  update_client::RegisterPrefs(pref_registry.get());
+
+  return std::make_unique<UpdaterPrefs>(
+      nullptr, pref_service_factory.Create(pref_registry));
 }
 
 void PrefsCommitPendingWrites(PrefService* pref_service) {

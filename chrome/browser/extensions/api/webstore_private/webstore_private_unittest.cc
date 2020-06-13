@@ -23,6 +23,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension_builder.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 
 namespace extensions {
 namespace {
@@ -32,7 +33,10 @@ constexpr int kFakeTime = 12345;
 constexpr char kExtensionManifest[] = R"({
   \"name\" : \"Extension\",
   \"manifest_version\": 3,
-  \"version\": \"0.1\"})";
+  \"version\": \"0.1\",
+  \"permissions\": [ \"example.com\", \"downloads\"],
+  \"optional_permissions\" : [\"audio\"]})";
+
 constexpr char kBlockAllExtensionSettings[] = R"({
   "*": {
     "installation_mode":"blocked",
@@ -54,6 +58,24 @@ constexpr char kAllowedExtensionSettings[] = R"({
 constexpr char kBlockedExtensionSettings[] = R"({
   "abcdefghijklmnopabcdefghijklmnop" : {
     "installation_mode": "blocked"
+  }
+})";
+
+constexpr char kBlockedManifestTypeExtensionSettings[] = R"({
+  "*": {
+    "allowed_types": ["theme", "hosted_app"]
+  }
+})";
+
+constexpr char kBlockedDownloadsPermissionsExtensionSettings[] = R"({
+  "*": {
+    "blocked_permissions": ["downloads"]
+  }
+})";
+
+constexpr char kBlockedAudioPermissionsExtensionSettings[] = R"({
+  "*": {
+    "blocked_permissions": ["audio"]
   }
 })";
 
@@ -103,6 +125,10 @@ class WebstorePrivateExtensionInstallRequestBase : public ExtensionApiUnittest {
     return base::StringPrintf(R"(["%s"])", id);
   }
 
+  std::string GenerateArgs(const char* id, const char* manifest) {
+    return base::StringPrintf(R"(["%s", "%s"])", id, manifest);
+  }
+
   scoped_refptr<const Extension> CreateExtension(const ExtensionId& id) {
     return ExtensionBuilder("extension").SetID(id).Build();
   }
@@ -121,7 +147,18 @@ class WebstorePrivateExtensionInstallRequestBase : public ExtensionApiUnittest {
 };
 
 class WebstorePrivateGetExtensionStatusTest
-    : public WebstorePrivateExtensionInstallRequestBase {};
+    : public WebstorePrivateExtensionInstallRequestBase {
+ public:
+  void SetUp() override {
+    WebstorePrivateExtensionInstallRequestBase::SetUp();
+    in_process_data_decoder_ =
+        std::make_unique<data_decoder::test::InProcessDataDecoder>();
+  }
+
+ private:
+  std::unique_ptr<data_decoder::test::InProcessDataDecoder>
+      in_process_data_decoder_;
+};
 
 TEST_F(WebstorePrivateGetExtensionStatusTest, InvalidExtensionId) {
   auto function =
@@ -138,6 +175,49 @@ TEST_F(WebstorePrivateGetExtensionStatusTest, ExtensionEnabled) {
   std::unique_ptr<base::Value> response =
       RunFunctionAndReturnValue(function.get(), GenerateArgs(kExtensionId));
   VerifyResponse(ExtensionInstallStatus::EXTENSION_INSTALL_STATUS_ENABLED,
+                 response.get());
+}
+
+TEST_F(WebstorePrivateGetExtensionStatusTest, InvalidManifest) {
+  auto function =
+      base::MakeRefCounted<WebstorePrivateGetExtensionStatusFunction>();
+  EXPECT_EQ(
+      "Invalid manifest",
+      RunFunctionAndReturnError(
+          function.get(), GenerateArgs(kExtensionId, "invalid-manifest")));
+}
+
+TEST_F(WebstorePrivateGetExtensionStatusTest, ExtensionBlockdedByManifestType) {
+  SetExtensionSettings(kBlockedManifestTypeExtensionSettings, profile());
+  auto function =
+      base::MakeRefCounted<WebstorePrivateGetExtensionStatusFunction>();
+  std::unique_ptr<base::Value> response = RunFunctionAndReturnValue(
+      function.get(), GenerateArgs(kExtensionId, kExtensionManifest));
+  VerifyResponse(
+      ExtensionInstallStatus::EXTENSION_INSTALL_STATUS_BLOCKED_BY_POLICY,
+      response.get());
+}
+
+TEST_F(WebstorePrivateGetExtensionStatusTest, ExtensionBlockdedByPermission) {
+  SetExtensionSettings(kBlockedDownloadsPermissionsExtensionSettings,
+                       profile());
+  auto function =
+      base::MakeRefCounted<WebstorePrivateGetExtensionStatusFunction>();
+  std::unique_ptr<base::Value> response = RunFunctionAndReturnValue(
+      function.get(), GenerateArgs(kExtensionId, kExtensionManifest));
+  VerifyResponse(
+      ExtensionInstallStatus::EXTENSION_INSTALL_STATUS_BLOCKED_BY_POLICY,
+      response.get());
+}
+
+TEST_F(WebstorePrivateGetExtensionStatusTest,
+       ExtensionNotBlockdedByOptionalPermission) {
+  SetExtensionSettings(kBlockedAudioPermissionsExtensionSettings, profile());
+  auto function =
+      base::MakeRefCounted<WebstorePrivateGetExtensionStatusFunction>();
+  std::unique_ptr<base::Value> response = RunFunctionAndReturnValue(
+      function.get(), GenerateArgs(kExtensionId, kExtensionManifest));
+  VerifyResponse(ExtensionInstallStatus::EXTENSION_INSTALL_STATUS_INSTALLABLE,
                  response.get());
 }
 
@@ -432,6 +512,59 @@ TEST_F(WebstorePrivateBeginInstallWithManifest3Test,
                               profile());
   VerifyPendingList({}, profile());
   VerifyBlockedByPolicyFunctionResult(function.get(), base::string16());
+}
+
+TEST_F(WebstorePrivateBeginInstallWithManifest3Test,
+       ExtensionBlockdedByManifestType) {
+  SetExtensionSettings(kBlockedManifestTypeExtensionSettings);
+
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+  auto function =
+      base::MakeRefCounted<WebstorePrivateBeginInstallWithManifest3Function>();
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+
+  api_test_utils::RunFunction(function.get(),
+                              GenerateArgs(kExtensionId, kExtensionManifest),
+                              profile());
+  VerifyBlockedByPolicyFunctionResult(function.get(), base::string16());
+}
+
+TEST_F(WebstorePrivateBeginInstallWithManifest3Test,
+       ExtensionBlockdedByPermission) {
+  SetExtensionSettings(kBlockedDownloadsPermissionsExtensionSettings);
+
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+  auto function =
+      base::MakeRefCounted<WebstorePrivateBeginInstallWithManifest3Function>();
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+
+  api_test_utils::RunFunction(function.get(),
+                              GenerateArgs(kExtensionId, kExtensionManifest),
+                              profile());
+  VerifyBlockedByPolicyFunctionResult(function.get(), base::string16());
+}
+
+TEST_F(WebstorePrivateBeginInstallWithManifest3Test,
+       ExtensionNotBlockdedByOptionalPermission) {
+  SetExtensionSettings(kBlockedAudioPermissionsExtensionSettings);
+
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+  auto function =
+      base::MakeRefCounted<WebstorePrivateBeginInstallWithManifest3Function>();
+  function->SetRenderFrameHost(web_contents->GetMainFrame());
+  ScopedTestDialogAutoConfirm auto_confirm(ScopedTestDialogAutoConfirm::ACCEPT);
+
+  std::unique_ptr<base::Value> response = RunFunctionAndReturnValue(
+      function.get(), GenerateArgs(kExtensionId, kExtensionManifest));
+  // The API returns empty string when extension is installed successfully.
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->is_string());
+  EXPECT_EQ(std::string(), response->GetString());
 }
 
 }  // namespace extensions

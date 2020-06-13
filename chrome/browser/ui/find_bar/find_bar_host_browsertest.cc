@@ -594,7 +594,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(web_contents != nullptr);
+  ASSERT_TRUE(web_contents);
   int ordinal = 0;
 
   // Move the selection to the text span.

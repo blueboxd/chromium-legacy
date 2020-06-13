@@ -161,16 +161,19 @@ TEST_F(CredentialProviderServiceTest, AccountChange) {
   EXPECT_FALSE(auth_service_->GetAuthenticatedIdentity());
   EXPECT_FALSE(credential_store_.credentials.firstObject.validationIdentifier);
 
-  FakeChromeIdentity* identity =
-      [FakeChromeIdentity identityWithEmail:@"example@example.com"
-                                     gaiaID:@"92847292"
-                                       name:@"Name Lastname"];
+  ios::FakeChromeIdentityService* identity_service =
+      ios::FakeChromeIdentityService::GetInstanceFromChromeProvider();
+  identity_service->AddManagedIdentities(@[ @"Name" ]);
+  ChromeIdentity* identity =
+      identity_service->GetAllIdentitiesSortedForDisplay().firstObject;
   auth_service_->SignIn(identity);
-  EXPECT_TRUE(auth_service_->GetAuthenticatedIdentity());
+
+  ASSERT_TRUE(auth_service_->GetAuthenticatedIdentity());
+  ASSERT_TRUE(auth_service_->IsAuthenticatedIdentityManaged());
 
   credential_provider_service_->OnPrimaryAccountSet(CoreAccountInfo());
 
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForFileOperationTimeout, ^{
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForFileOperationTimeout, ^{
     base::RunLoop().RunUntilIdle();
     return [auth_service_->GetAuthenticatedIdentity().gaiaID
         isEqualToString:credential_store_.credentials.firstObject
@@ -181,7 +184,7 @@ TEST_F(CredentialProviderServiceTest, AccountChange) {
                          /*force_clear_browsing_data=*/false, nil);
   credential_provider_service_->OnPrimaryAccountCleared(CoreAccountInfo());
 
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForFileOperationTimeout, ^{
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForFileOperationTimeout, ^{
     base::RunLoop().RunUntilIdle();
     return ![auth_service_->GetAuthenticatedIdentity().gaiaID
         isEqualToString:credential_store_.credentials.firstObject

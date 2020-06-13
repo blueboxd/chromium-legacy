@@ -6,6 +6,7 @@ package org.chromium.components.payments.intent;
 
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.text.TextUtils;
 import android.util.JsonWriter;
 
 import androidx.annotation.Nullable;
@@ -20,10 +21,10 @@ import java.util.List;
  * this package. This class should be independent of the org.chromium package.
  *
  * @see <a
- *         href="https://developers.google.com/web/fundamentals/payments/payment-apps-developer-guide/android-payment-apps#payment_parameters">Payment
+ *         href="https://web.dev/android-payment-apps-overview/#parameters-2">Payment
  *         parameters</a>
  * @see <a
- *         href="https://developers.google.com/web/fundamentals/payments/payment-apps-developer-guide/android-payment-apps#%E2%80%9Cis_ready_to_pay%E2%80%9D_parameters">“Is
+ *         href="https://web.dev/android-payment-apps-overview/#parameters">“Is
  *         ready to pay” parameters</a>
  */
 public final class WebPaymentIntentHelperType {
@@ -33,6 +34,9 @@ public final class WebPaymentIntentHelperType {
      * The class that corresponds to mojom.PaymentCurrencyAmount, with minimally required fields.
      */
     public static final class PaymentCurrencyAmount {
+        public static String EXTRA_CURRENCY = "currency";
+        public static String EXTRA_VALUE = "value";
+
         public final String currency;
         public final String value;
         public PaymentCurrencyAmount(String currency, String value) {
@@ -53,7 +57,7 @@ public final class WebPaymentIntentHelperType {
             // }}}
         }
         /**
-         * [Serializes this object
+         * Serializes this object
          * @return The serialized payment currency amount.
          */
         public String serialize() {
@@ -65,6 +69,13 @@ public final class WebPaymentIntentHelperType {
                 return null;
             }
             return stringWriter.toString();
+        }
+
+        /* package */ Bundle asBundle() {
+            Bundle bundle = new Bundle();
+            bundle.putString(EXTRA_CURRENCY, currency);
+            bundle.putString(EXTRA_VALUE, value);
+            return bundle;
         }
     }
 
@@ -234,5 +245,128 @@ public final class WebPaymentIntentHelperType {
     }
     private static void checkNotNull(Object value, String name) {
         if (value == null) throw new IllegalArgumentException(name + " should not be null.");
+    }
+
+    /** The class that mirrors mojom.PaymentHandlerMethodData. */
+    public static final class PaymentHandlerMethodData {
+        public static final String EXTRA_METHOD_NAME = "methodName";
+        public static final String EXTRA_STRINGIFIED_DETAILS = "details";
+
+        public final String methodName;
+        public final String stringifiedData;
+        public PaymentHandlerMethodData(String methodName, String stringifiedData) {
+            this.methodName = methodName;
+            this.stringifiedData = stringifiedData;
+        }
+
+        /* package */ Bundle asBundle() {
+            Bundle bundle = new Bundle();
+            bundle.putString(EXTRA_METHOD_NAME, methodName);
+            bundle.putString(EXTRA_STRINGIFIED_DETAILS, stringifiedData);
+            return bundle;
+        }
+    }
+
+    /** The class that mirrors mojom.PaymentHandlerModifier. */
+    public static final class PaymentHandlerModifier {
+        public static String EXTRA_TOTAL = "total";
+        public static String EXTRA_METHOD_DATA = "methodData";
+        @Nullable
+        public final PaymentCurrencyAmount total;
+        public final PaymentHandlerMethodData methodData;
+        public PaymentHandlerModifier(
+                @Nullable PaymentCurrencyAmount total, PaymentHandlerMethodData methodData) {
+            this.total = total;
+            this.methodData = methodData;
+        }
+
+        private Bundle asBundle() {
+            Bundle bundle = new Bundle();
+            if (total != null) bundle.putBundle(EXTRA_TOTAL, total.asBundle());
+            bundle.putBundle(EXTRA_METHOD_DATA, methodData.asBundle());
+            return bundle;
+        }
+
+        /**
+         * Create a parcelable array of payment handler modifiers.
+         * @param  modifiers The list of available modifiers.
+         * @return The parcelable array of payment handler modifiers passed to the native payment
+         *         app.
+         */
+        /* package */ static Parcelable[] buildPaymentHandlerModifierArray(
+                List<PaymentHandlerModifier> modifiers) {
+            Parcelable[] result = new Parcelable[modifiers.size()];
+            int index = 0;
+            for (PaymentHandlerModifier modifier : modifiers) {
+                result[index++] = modifier.asBundle();
+            }
+            return result;
+        }
+    }
+
+    /** The class that mirrors mojom.PaymentRequestDetailsUpdate. */
+    public static final class PaymentRequestDetailsUpdate {
+        public static final String EXTRA_TOTAL = "total";
+        public static final String EXTRA_SHIPPING_OPTIONS = "shippingOptions";
+        public static final String EXTRA_MODIFIERS = "modifiers";
+        public static final String EXTRA_ERROR_MESSAGE = "error";
+        public static final String EXTRA_STRINGIFIED_PAYMENT_METHOD_ERRORS =
+                "stringifiedPaymentMethodErrors";
+        public static final String EXTRA_ADDRESS_ERRORS = "addressErrors";
+
+        @Nullable
+        public final PaymentCurrencyAmount total;
+        @Nullable
+        public final List<PaymentShippingOption> shippingOptions;
+        @Nullable
+        public final List<PaymentHandlerModifier> modifiers;
+        @Nullable
+        public final String error;
+        @Nullable
+        public final String stringifiedPaymentMethodErrors;
+        @Nullable
+        public final Bundle bundledShippingAddressErrors;
+
+        public PaymentRequestDetailsUpdate(@Nullable PaymentCurrencyAmount total,
+                @Nullable List<PaymentShippingOption> shippingOptions,
+                @Nullable List<PaymentHandlerModifier> modifiers, @Nullable String error,
+                @Nullable String stringifiedPaymentMethodErrors,
+                @Nullable Bundle bundledShippingAddressErrors) {
+            this.total = total;
+            this.shippingOptions = shippingOptions;
+            this.modifiers = modifiers;
+            this.error = error;
+            this.stringifiedPaymentMethodErrors = stringifiedPaymentMethodErrors;
+            this.bundledShippingAddressErrors = bundledShippingAddressErrors;
+        }
+
+        /**
+         * Converts PaymentRequestDetailsUpdate to a bundle which will be passed to the invoked
+         * payment app.
+         * @return The converted PaymentRequestDetailsUpdate
+         */
+        public Bundle asBundle() {
+            Bundle bundle = new Bundle();
+            if (total != null) {
+                bundle.putBundle(WebPaymentIntentHelper.EXTRA_TOTAL, total.asBundle());
+            }
+            if (shippingOptions != null && !shippingOptions.isEmpty()) {
+                bundle.putParcelableArray(EXTRA_SHIPPING_OPTIONS,
+                        PaymentShippingOption.buildPaymentShippingOptionList(shippingOptions));
+            }
+            if (modifiers != null && !modifiers.isEmpty()) {
+                bundle.putParcelableArray(EXTRA_MODIFIERS,
+                        PaymentHandlerModifier.buildPaymentHandlerModifierArray(modifiers));
+            }
+            if (!TextUtils.isEmpty(error)) bundle.putString(EXTRA_ERROR_MESSAGE, error);
+            if (!TextUtils.isEmpty(stringifiedPaymentMethodErrors)) {
+                bundle.putString(
+                        EXTRA_STRINGIFIED_PAYMENT_METHOD_ERRORS, stringifiedPaymentMethodErrors);
+            }
+            if (bundledShippingAddressErrors != null) {
+                bundle.putBundle(EXTRA_ADDRESS_ERRORS, bundledShippingAddressErrors);
+            }
+            return bundle;
+        }
     }
 }

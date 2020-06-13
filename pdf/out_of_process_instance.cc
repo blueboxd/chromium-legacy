@@ -552,163 +552,13 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
   std::string type = dict.Get(kType).AsString();
 
   if (type == kJSViewportType) {
-    pp::Var layout_options_var = dict.Get(kJSLayoutOptions);
-    if (!layout_options_var.is_undefined()) {
-      DocumentLayout::Options layout_options;
-      layout_options.FromVar(layout_options_var);
-      // TODO(crbug.com/1013800): Eliminate need to get document size from here.
-      document_size_ = engine_->ApplyDocumentLayout(layout_options);
-      OnGeometryChanged(zoom_, device_scale_);
-    }
-
-    if (!(dict.Get(pp::Var(kJSXOffset)).is_number() &&
-          dict.Get(pp::Var(kJSYOffset)).is_number() &&
-          dict.Get(pp::Var(kJSZoom)).is_number() &&
-          dict.Get(pp::Var(kJSPinchPhase)).is_number())) {
-      NOTREACHED();
-      return;
-    }
-    received_viewport_message_ = true;
-    stop_scrolling_ = false;
-    PinchPhase pinch_phase =
-        static_cast<PinchPhase>(dict.Get(pp::Var(kJSPinchPhase)).AsInt());
-    double zoom = dict.Get(pp::Var(kJSZoom)).AsDouble();
-    double zoom_ratio = zoom / zoom_;
-
-    pp::FloatPoint scroll_offset(dict.Get(pp::Var(kJSXOffset)).AsDouble(),
-                                 dict.Get(pp::Var(kJSYOffset)).AsDouble());
-
-    if (pinch_phase == PINCH_START) {
-      scroll_offset_at_last_raster_ = scroll_offset;
-      last_bitmap_smaller_ = false;
-      needs_reraster_ = false;
-      return;
-    }
-
-    // When zooming in, we set a layer transform to avoid unneeded rerasters.
-    // Also, if we're zooming out and the last time we rerastered was when
-    // we were even further zoomed out (i.e. we pinch zoomed in and are now
-    // pinch zooming back out in the same gesture), we update the layer
-    // transform instead of rerastering.
-    if (pinch_phase == PINCH_UPDATE_ZOOM_IN ||
-        (pinch_phase == PINCH_UPDATE_ZOOM_OUT && zoom_ratio > 1.0)) {
-      if (!(dict.Get(pp::Var(kJSPinchX)).is_number() &&
-            dict.Get(pp::Var(kJSPinchY)).is_number() &&
-            dict.Get(pp::Var(kJSPinchVectorX)).is_number() &&
-            dict.Get(pp::Var(kJSPinchVectorY)).is_number())) {
-        NOTREACHED();
-        return;
-      }
-
-      pp::Point pinch_center(dict.Get(pp::Var(kJSPinchX)).AsDouble(),
-                             dict.Get(pp::Var(kJSPinchY)).AsDouble());
-      // Pinch vector is the panning caused due to change in pinch
-      // center between start and end of the gesture.
-      pp::Point pinch_vector =
-          pp::Point(dict.Get(kJSPinchVectorX).AsDouble() * zoom_ratio,
-                    dict.Get(kJSPinchVectorY).AsDouble() * zoom_ratio);
-      pp::Point scroll_delta;
-      // If the rendered document doesn't fill the display area we will
-      // use |paint_offset| to anchor the paint vertically into the same place.
-      // We use the scroll bars instead of the pinch vector to get the actual
-      // position on screen of the paint.
-      pp::Point paint_offset;
-
-      if (plugin_size_.width() > GetDocumentPixelWidth() * zoom_ratio) {
-        // We want to keep the paint in the middle but it must stay in the same
-        // position relative to the scroll bars.
-        paint_offset = pp::Point(0, (1 - zoom_ratio) * pinch_center.y());
-        scroll_delta =
-            pp::Point(0, (scroll_offset.y() -
-                          scroll_offset_at_last_raster_.y() * zoom_ratio));
-
-        pinch_vector = pp::Point();
-        last_bitmap_smaller_ = true;
-      } else if (last_bitmap_smaller_) {
-        pinch_center = pp::Point((plugin_size_.width() / device_scale_) / 2,
-                                 (plugin_size_.height() / device_scale_) / 2);
-        const double zoom_when_doc_covers_plugin_width =
-            zoom_ * plugin_size_.width() / GetDocumentPixelWidth();
-        paint_offset = pp::Point(
-            (1 - zoom / zoom_when_doc_covers_plugin_width) * pinch_center.x(),
-            (1 - zoom_ratio) * pinch_center.y());
-        pinch_vector = pp::Point();
-        scroll_delta =
-            pp::Point((scroll_offset.x() -
-                       scroll_offset_at_last_raster_.x() * zoom_ratio),
-                      (scroll_offset.y() -
-                       scroll_offset_at_last_raster_.y() * zoom_ratio));
-      }
-
-      paint_manager_.SetTransform(zoom_ratio, pinch_center,
-                                  pinch_vector + paint_offset + scroll_delta,
-                                  true);
-      needs_reraster_ = false;
-      return;
-    }
-
-    if (pinch_phase == PINCH_UPDATE_ZOOM_OUT || pinch_phase == PINCH_END) {
-      // We reraster on pinch zoom out in order to solve the invalid regions
-      // that appear after zooming out.
-      // On pinch end the scale is again 1.f and we request a reraster
-      // in the new position.
-      paint_manager_.ClearTransform();
-      last_bitmap_smaller_ = false;
-      needs_reraster_ = true;
-
-      // If we're rerastering due to zooming out, we need to update
-      // |scroll_offset_at_last_raster_|, in case the user continues the
-      // gesture by zooming in.
-      scroll_offset_at_last_raster_ = scroll_offset;
-    }
-
-    // Bound the input parameters.
-    zoom = std::max(kMinZoom, zoom);
-    DCHECK(dict.Get(pp::Var(kJSUserInitiated)).is_bool());
-
-    SetZoom(zoom);
-    scroll_offset = BoundScrollOffsetToDocument(scroll_offset);
-    engine_->ScrolledToXPosition(scroll_offset.x() * device_scale_);
-    engine_->ScrolledToYPosition(scroll_offset.y() * device_scale_);
+    HandleViewportMessage(dict);
   } else if (type == kJSGetPasswordCompleteType) {
-    if (!dict.Get(pp::Var(kJSPassword)).is_string()) {
-      NOTREACHED();
-      return;
-    }
-    if (password_callback_) {
-      pp::CompletionCallbackWithOutput<pp::Var> callback = *password_callback_;
-      password_callback_.reset();
-      *callback.output() = dict.Get(pp::Var(kJSPassword)).pp_var();
-      callback.Run(PP_OK);
-    } else {
-      NOTREACHED();
-    }
+    HandleGetPasswordCompleteMessage(dict);
   } else if (type == kJSPrintType) {
     Print();
   } else if (type == kJSSaveType) {
-    if (!(dict.Get(pp::Var(kJSToken)).is_string() &&
-          dict.Get(pp::Var(kJSSaveRequestType)).is_int())) {
-      NOTREACHED();
-      return;
-    }
-    const SaveRequestType request_type = static_cast<SaveRequestType>(
-        dict.Get(pp::Var(kJSSaveRequestType)).AsInt());
-    switch (request_type) {
-      case SaveRequestType::kAnnotation:
-        // In annotation mode, assume the user will make edits and prefer saving
-        // using the plugin data.
-        pp::PDF::SetPluginCanSave(this, true);
-        SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
-        break;
-      case SaveRequestType::kOriginal:
-        pp::PDF::SetPluginCanSave(this, false);
-        SaveToFile(dict.Get(pp::Var(kJSToken)).AsString());
-        pp::PDF::SetPluginCanSave(this, CanSaveEdits());
-        break;
-      case SaveRequestType::kEdited:
-        SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
-        break;
-    }
+    HandlePrintMessage(dict);
   } else if (type == kJSRotateClockwiseType) {
     RotateClockwise();
   } else if (type == kJSRotateCounterclockwiseType) {
@@ -718,101 +568,17 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
   } else if (type == kJSSelectAllType) {
     engine_->SelectAll();
   } else if (type == kJSBackgroundColorChangedType) {
-    if (!dict.Get(pp::Var(kJSBackgroundColor)).is_string()) {
-      NOTREACHED();
-      return;
-    }
-    base::HexStringToUInt(dict.Get(pp::Var(kJSBackgroundColor)).AsString(),
-                          &background_color_);
+    HandleBackgroundColorChangedMessage(dict);
   } else if (type == kJSResetPrintPreviewModeType) {
-    if (!(dict.Get(pp::Var(kJSPrintPreviewUrl)).is_string() &&
-          dict.Get(pp::Var(kJSPrintPreviewGrayscale)).is_bool() &&
-          dict.Get(pp::Var(kJSPrintPreviewPageCount)).is_int())) {
-      NOTREACHED();
-      return;
-    }
-
-    // For security reasons, crash if the URL that is trying to be loaded here
-    // isn't a print preview one.
-    std::string url = dict.Get(pp::Var(kJSPrintPreviewUrl)).AsString();
-    CHECK(IsPrintPreview());
-    CHECK(IsPrintPreviewUrl(url));
-
-    int print_preview_page_count =
-        dict.Get(pp::Var(kJSPrintPreviewPageCount)).AsInt();
-    if (print_preview_page_count < 0) {
-      NOTREACHED();
-      return;
-    }
-
-    // The page count is zero if the print preview source is a PDF. In which
-    // case, the page index for |url| should be at |kCompletePDFIndex|.
-    // When the page count is not zero, then the source is not PDF. In which
-    // case, the page index for |url| should be non-negative.
-    bool is_previewing_pdf = IsPreviewingPDF(print_preview_page_count);
-    int page_index = ExtractPrintPreviewPageIndex(url);
-    if (is_previewing_pdf) {
-      if (page_index != kCompletePDFIndex) {
-        NOTREACHED();
-        return;
-      }
-    } else {
-      if (page_index < 0) {
-        NOTREACHED();
-        return;
-      }
-    }
-
-    print_preview_page_count_ = print_preview_page_count;
-    print_preview_loaded_page_count_ = 0;
-    url_ = url;
-    preview_pages_info_ = base::queue<PreviewPageInfo>();
-    preview_document_load_state_ = LOAD_STATE_COMPLETE;
-    document_load_state_ = LOAD_STATE_LOADING;
-    LoadUrl(url_, /*is_print_preview=*/false);
-    preview_engine_.reset();
-    engine_ = PDFEngine::Create(this, false);
-    engine_->SetGrayscale(dict.Get(pp::Var(kJSPrintPreviewGrayscale)).AsBool());
-    engine_->New(url_.c_str(), nullptr /* empty header */);
-
-    paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
+    HandleResetPrintPreviewModeMessage(dict);
   } else if (type == kJSLoadPreviewPageType) {
-    if (!(dict.Get(pp::Var(kJSPreviewPageUrl)).is_string() &&
-          dict.Get(pp::Var(kJSPreviewPageIndex)).is_int())) {
-      NOTREACHED();
-      return;
-    }
-
-    std::string url = dict.Get(pp::Var(kJSPreviewPageUrl)).AsString();
-    // For security reasons we crash if the URL that is trying to be loaded here
-    // isn't a print preview one.
-    CHECK(IsPrintPreview());
-    CHECK(IsPrintPreviewUrl(url));
-    ProcessPreviewPageInfo(url, dict.Get(pp::Var(kJSPreviewPageIndex)).AsInt());
+    HandleLoadPreviewPageMessage(dict);
   } else if (type == kJSStopScrollingType) {
     stop_scrolling_ = true;
   } else if (type == kJSGetSelectedTextType) {
-    std::string selected_text = engine_->GetSelectedText();
-    // Always return unix newlines to JS.
-    base::ReplaceChars(selected_text, "\r", std::string(), &selected_text);
-    pp::VarDictionary reply;
-    reply.Set(pp::Var(kType), pp::Var(kJSGetSelectedTextReplyType));
-    reply.Set(pp::Var(kJSSelectedText), selected_text);
-    PostMessage(reply);
+    HandleGetSelectedTextMessage();
   } else if (type == kJSGetNamedDestinationType) {
-    if (!dict.Get(pp::Var(kJSGetNamedDestination)).is_string()) {
-      NOTREACHED();
-      return;
-    }
-    base::Optional<PDFEngine::NamedDestination> named_destination =
-        engine_->GetNamedDestination(
-            dict.Get(pp::Var(kJSGetNamedDestination)).AsString());
-    pp::VarDictionary reply;
-    reply.Set(pp::Var(kType), pp::Var(kJSGetNamedDestinationReplyType));
-    reply.Set(
-        pp::Var(kJSNamedDestinationPageNumber),
-        named_destination ? static_cast<int>(named_destination->page) : -1);
-    PostMessage(reply);
+    HandleGetNamedDestinationMessage(dict);
   } else {
     NOTREACHED();
   }
@@ -1741,6 +1507,275 @@ std::string OutOfProcessInstance::GetFileNameFromUrl(const std::string& url) {
       std::string() /* referrer_charset */, std::string() /* suggested_name */,
       std::string() /* mime_type */, std::string() /* default_name */);
   return base::UTF16ToUTF8(file_name);
+}
+
+void OutOfProcessInstance::HandleBackgroundColorChangedMessage(
+    const pp::VarDictionary& dict) {
+  if (!dict.Get(pp::Var(kJSBackgroundColor)).is_string()) {
+    NOTREACHED();
+    return;
+  }
+  base::HexStringToUInt(dict.Get(pp::Var(kJSBackgroundColor)).AsString(),
+                        &background_color_);
+}
+
+void OutOfProcessInstance::HandleGetNamedDestinationMessage(
+    const pp::VarDictionary& dict) {
+  if (!dict.Get(pp::Var(kJSGetNamedDestination)).is_string()) {
+    NOTREACHED();
+    return;
+  }
+  base::Optional<PDFEngine::NamedDestination> named_destination =
+      engine_->GetNamedDestination(
+          dict.Get(pp::Var(kJSGetNamedDestination)).AsString());
+  pp::VarDictionary reply;
+  reply.Set(pp::Var(kType), pp::Var(kJSGetNamedDestinationReplyType));
+  reply.Set(pp::Var(kJSNamedDestinationPageNumber),
+            named_destination ? static_cast<int>(named_destination->page) : -1);
+  PostMessage(reply);
+}
+
+void OutOfProcessInstance::HandleGetPasswordCompleteMessage(
+    const pp::VarDictionary& dict) {
+  if (!dict.Get(pp::Var(kJSPassword)).is_string()) {
+    NOTREACHED();
+    return;
+  }
+  if (password_callback_) {
+    pp::CompletionCallbackWithOutput<pp::Var> callback = *password_callback_;
+    password_callback_.reset();
+    *callback.output() = dict.Get(pp::Var(kJSPassword)).pp_var();
+    callback.Run(PP_OK);
+  } else {
+    NOTREACHED();
+  }
+}
+
+void OutOfProcessInstance::HandleGetSelectedTextMessage() {
+  std::string selected_text = engine_->GetSelectedText();
+  // Always return unix newlines to JS.
+  base::ReplaceChars(selected_text, "\r", std::string(), &selected_text);
+  pp::VarDictionary reply;
+  reply.Set(pp::Var(kType), pp::Var(kJSGetSelectedTextReplyType));
+  reply.Set(pp::Var(kJSSelectedText), selected_text);
+  PostMessage(reply);
+}
+
+void OutOfProcessInstance::HandleLoadPreviewPageMessage(
+    const pp::VarDictionary& dict) {
+  if (!(dict.Get(pp::Var(kJSPreviewPageUrl)).is_string() &&
+        dict.Get(pp::Var(kJSPreviewPageIndex)).is_int())) {
+    NOTREACHED();
+    return;
+  }
+
+  std::string url = dict.Get(pp::Var(kJSPreviewPageUrl)).AsString();
+  // For security reasons we crash if the URL that is trying to be loaded here
+  // isn't a print preview one.
+  CHECK(IsPrintPreview());
+  CHECK(IsPrintPreviewUrl(url));
+  ProcessPreviewPageInfo(url, dict.Get(pp::Var(kJSPreviewPageIndex)).AsInt());
+}
+
+void OutOfProcessInstance::HandlePrintMessage(const pp::VarDictionary& dict) {
+  if (!(dict.Get(pp::Var(kJSToken)).is_string() &&
+        dict.Get(pp::Var(kJSSaveRequestType)).is_int())) {
+    NOTREACHED();
+    return;
+  }
+  const SaveRequestType request_type = static_cast<SaveRequestType>(
+      dict.Get(pp::Var(kJSSaveRequestType)).AsInt());
+  switch (request_type) {
+    case SaveRequestType::kAnnotation:
+      // In annotation mode, assume the user will make edits and prefer saving
+      // using the plugin data.
+      pp::PDF::SetPluginCanSave(this, true);
+      SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
+      break;
+    case SaveRequestType::kOriginal:
+      pp::PDF::SetPluginCanSave(this, false);
+      SaveToFile(dict.Get(pp::Var(kJSToken)).AsString());
+      pp::PDF::SetPluginCanSave(this, CanSaveEdits());
+      break;
+    case SaveRequestType::kEdited:
+      SaveToBuffer(dict.Get(pp::Var(kJSToken)).AsString());
+      break;
+  }
+}
+
+void OutOfProcessInstance::HandleResetPrintPreviewModeMessage(
+    const pp::VarDictionary& dict) {
+  if (!(dict.Get(pp::Var(kJSPrintPreviewUrl)).is_string() &&
+        dict.Get(pp::Var(kJSPrintPreviewGrayscale)).is_bool() &&
+        dict.Get(pp::Var(kJSPrintPreviewPageCount)).is_int())) {
+    NOTREACHED();
+    return;
+  }
+
+  // For security reasons, crash if the URL that is trying to be loaded here
+  // isn't a print preview one.
+  std::string url = dict.Get(pp::Var(kJSPrintPreviewUrl)).AsString();
+  CHECK(IsPrintPreview());
+  CHECK(IsPrintPreviewUrl(url));
+
+  int print_preview_page_count =
+      dict.Get(pp::Var(kJSPrintPreviewPageCount)).AsInt();
+  if (print_preview_page_count < 0) {
+    NOTREACHED();
+    return;
+  }
+
+  // The page count is zero if the print preview source is a PDF. In which
+  // case, the page index for |url| should be at |kCompletePDFIndex|.
+  // When the page count is not zero, then the source is not PDF. In which
+  // case, the page index for |url| should be non-negative.
+  bool is_previewing_pdf = IsPreviewingPDF(print_preview_page_count);
+  int page_index = ExtractPrintPreviewPageIndex(url);
+  if (is_previewing_pdf) {
+    if (page_index != kCompletePDFIndex) {
+      NOTREACHED();
+      return;
+    }
+  } else {
+    if (page_index < 0) {
+      NOTREACHED();
+      return;
+    }
+  }
+
+  print_preview_page_count_ = print_preview_page_count;
+  print_preview_loaded_page_count_ = 0;
+  url_ = url;
+  preview_pages_info_ = base::queue<PreviewPageInfo>();
+  preview_document_load_state_ = LOAD_STATE_COMPLETE;
+  document_load_state_ = LOAD_STATE_LOADING;
+  LoadUrl(url_, /*is_print_preview=*/false);
+  preview_engine_.reset();
+  engine_ = PDFEngine::Create(this, false);
+  engine_->SetGrayscale(dict.Get(pp::Var(kJSPrintPreviewGrayscale)).AsBool());
+  engine_->New(url_.c_str(), nullptr /* empty header */);
+
+  paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
+}
+
+void OutOfProcessInstance::HandleViewportMessage(
+    const pp::VarDictionary& dict) {
+  pp::Var layout_options_var = dict.Get(kJSLayoutOptions);
+  if (!layout_options_var.is_undefined()) {
+    DocumentLayout::Options layout_options;
+    layout_options.FromVar(layout_options_var);
+    // TODO(crbug.com/1013800): Eliminate need to get document size from here.
+    document_size_ = engine_->ApplyDocumentLayout(layout_options);
+    OnGeometryChanged(zoom_, device_scale_);
+  }
+
+  if (!(dict.Get(pp::Var(kJSXOffset)).is_number() &&
+        dict.Get(pp::Var(kJSYOffset)).is_number() &&
+        dict.Get(pp::Var(kJSZoom)).is_number() &&
+        dict.Get(pp::Var(kJSPinchPhase)).is_number())) {
+    NOTREACHED();
+    return;
+  }
+  received_viewport_message_ = true;
+  stop_scrolling_ = false;
+  PinchPhase pinch_phase =
+      static_cast<PinchPhase>(dict.Get(pp::Var(kJSPinchPhase)).AsInt());
+  double zoom = dict.Get(pp::Var(kJSZoom)).AsDouble();
+  double zoom_ratio = zoom / zoom_;
+
+  pp::FloatPoint scroll_offset(dict.Get(pp::Var(kJSXOffset)).AsDouble(),
+                               dict.Get(pp::Var(kJSYOffset)).AsDouble());
+
+  if (pinch_phase == PINCH_START) {
+    scroll_offset_at_last_raster_ = scroll_offset;
+    last_bitmap_smaller_ = false;
+    needs_reraster_ = false;
+    return;
+  }
+
+  // When zooming in, we set a layer transform to avoid unneeded rerasters.
+  // Also, if we're zooming out and the last time we rerastered was when
+  // we were even further zoomed out (i.e. we pinch zoomed in and are now
+  // pinch zooming back out in the same gesture), we update the layer
+  // transform instead of rerastering.
+  if (pinch_phase == PINCH_UPDATE_ZOOM_IN ||
+      (pinch_phase == PINCH_UPDATE_ZOOM_OUT && zoom_ratio > 1.0)) {
+    if (!(dict.Get(pp::Var(kJSPinchX)).is_number() &&
+          dict.Get(pp::Var(kJSPinchY)).is_number() &&
+          dict.Get(pp::Var(kJSPinchVectorX)).is_number() &&
+          dict.Get(pp::Var(kJSPinchVectorY)).is_number())) {
+      NOTREACHED();
+      return;
+    }
+
+    pp::Point pinch_center(dict.Get(pp::Var(kJSPinchX)).AsDouble(),
+                           dict.Get(pp::Var(kJSPinchY)).AsDouble());
+    // Pinch vector is the panning caused due to change in pinch
+    // center between start and end of the gesture.
+    pp::Point pinch_vector =
+        pp::Point(dict.Get(kJSPinchVectorX).AsDouble() * zoom_ratio,
+                  dict.Get(kJSPinchVectorY).AsDouble() * zoom_ratio);
+    pp::Point scroll_delta;
+    // If the rendered document doesn't fill the display area we will
+    // use |paint_offset| to anchor the paint vertically into the same place.
+    // We use the scroll bars instead of the pinch vector to get the actual
+    // position on screen of the paint.
+    pp::Point paint_offset;
+
+    if (plugin_size_.width() > GetDocumentPixelWidth() * zoom_ratio) {
+      // We want to keep the paint in the middle but it must stay in the same
+      // position relative to the scroll bars.
+      paint_offset = pp::Point(0, (1 - zoom_ratio) * pinch_center.y());
+      scroll_delta = pp::Point(
+          0,
+          (scroll_offset.y() - scroll_offset_at_last_raster_.y() * zoom_ratio));
+
+      pinch_vector = pp::Point();
+      last_bitmap_smaller_ = true;
+    } else if (last_bitmap_smaller_) {
+      pinch_center = pp::Point((plugin_size_.width() / device_scale_) / 2,
+                               (plugin_size_.height() / device_scale_) / 2);
+      const double zoom_when_doc_covers_plugin_width =
+          zoom_ * plugin_size_.width() / GetDocumentPixelWidth();
+      paint_offset = pp::Point(
+          (1 - zoom / zoom_when_doc_covers_plugin_width) * pinch_center.x(),
+          (1 - zoom_ratio) * pinch_center.y());
+      pinch_vector = pp::Point();
+      scroll_delta = pp::Point(
+          (scroll_offset.x() - scroll_offset_at_last_raster_.x() * zoom_ratio),
+          (scroll_offset.y() - scroll_offset_at_last_raster_.y() * zoom_ratio));
+    }
+
+    paint_manager_.SetTransform(zoom_ratio, pinch_center,
+                                pinch_vector + paint_offset + scroll_delta,
+                                true);
+    needs_reraster_ = false;
+    return;
+  }
+
+  if (pinch_phase == PINCH_UPDATE_ZOOM_OUT || pinch_phase == PINCH_END) {
+    // We reraster on pinch zoom out in order to solve the invalid regions
+    // that appear after zooming out.
+    // On pinch end the scale is again 1.f and we request a reraster
+    // in the new position.
+    paint_manager_.ClearTransform();
+    last_bitmap_smaller_ = false;
+    needs_reraster_ = true;
+
+    // If we're rerastering due to zooming out, we need to update
+    // |scroll_offset_at_last_raster_|, in case the user continues the
+    // gesture by zooming in.
+    scroll_offset_at_last_raster_ = scroll_offset;
+  }
+
+  // Bound the input parameters.
+  zoom = std::max(kMinZoom, zoom);
+  DCHECK(dict.Get(pp::Var(kJSUserInitiated)).is_bool());
+
+  SetZoom(zoom);
+  scroll_offset = BoundScrollOffsetToDocument(scroll_offset);
+  engine_->ScrolledToXPosition(scroll_offset.x() * device_scale_);
+  engine_->ScrolledToYPosition(scroll_offset.y() * device_scale_);
 }
 
 void OutOfProcessInstance::PreviewDocumentLoadComplete() {

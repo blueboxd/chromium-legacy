@@ -191,4 +191,20 @@ public class DeveloperUiTest {
                 IntentMatchers.hasData(hasHost("details")),
                 IntentMatchers.hasData(hasParamWithValue("id", TEST_WEBVIEW_PACKAGE_NAME))));
     }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView"})
+    public void testMenuOptions_aboutDevTools() throws Throwable {
+        openActionBarOverflowOrOptionsMenu(
+                InstrumentationRegistry.getInstrumentation().getTargetContext());
+
+        onView(withText("About WebView DevTools")).check(matches(isDisplayed()));
+        onView(withText("About WebView DevTools")).perform(click());
+        intended(allOf(IntentMatchers.hasAction(Intent.ACTION_VIEW),
+                IntentMatchers.hasData(hasScheme("https")),
+                IntentMatchers.hasData(hasHost("chromium.googlesource.com")),
+                IntentMatchers.hasData(
+                        hasPath("/chromium/src/+/HEAD/android_webview/docs/developer-ui.md"))));
+    }
 }

@@ -730,17 +730,16 @@ NativeThemeWin::CalculatePreferredColorScheme() const {
   if (!UsesHighContrastColors())
     return NativeTheme::CalculatePreferredColorScheme();
 
-  // The Windows SystemParametersInfo API will return the high contrast theme
-  // as a string. However, this string is language dependent. Instead, to
-  // account for non-English systems, sniff out the system colors to
-  // determine the high contrast color scheme.
-  SkColor fg_color = system_colors_[SystemThemeColor::kWindowText];
+  // According to the spec, the preferred color scheme for web content is 'dark'
+  // if 'Canvas' has L<33% and 'light' if L>67%. On Windows, the 'Canvas'
+  // keyword is mapped to the 'Window' system color. As such, we use the
+  // luminance of 'Window' to calculate the corresponding luminance of 'Canvas'.
+  // https://www.w3.org/TR/css-color-adjust-1/#forced
   SkColor bg_color = system_colors_[SystemThemeColor::kWindow];
-  if (bg_color == SK_ColorWHITE && fg_color == SK_ColorBLACK)
-    return NativeTheme::PreferredColorScheme::kLight;
-  if (bg_color == SK_ColorBLACK && fg_color == SK_ColorWHITE)
+  float luminance = color_utils::GetRelativeLuminance(bg_color);
+  if (luminance < 0.33)
     return NativeTheme::PreferredColorScheme::kDark;
-  return NativeTheme::PreferredColorScheme::kNoPreference;
+  return NativeTheme::PreferredColorScheme::kLight;
 }
 
 NativeTheme::ColorScheme NativeThemeWin::GetDefaultSystemColorScheme() const {

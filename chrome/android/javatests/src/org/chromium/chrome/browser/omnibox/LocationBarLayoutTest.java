@@ -611,6 +611,18 @@ public class LocationBarLayoutTest {
                 WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE, softInputModeCallable));
     }
 
+    /** Test NPE when focus callback triggers after LocationBarLayout is destroyed. */
+    @Test
+    @MediumTest
+    @Feature("Omnibox")
+    public void testAutocompleteCoordinatorNpeWhenFocusedAfterDestroy() {
+        LocationBarLayout locationBar = getLocationBar();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            locationBar.destroy();
+            locationBar.onUrlFocusChange(false);
+        });
+    }
+
     /** Load a new URL and also update the locaiton bar models. */
     private Tab loadUrlInNewTabAndUpdateModels(
             String url, boolean incognito, LocationBarLayout locationBar) {

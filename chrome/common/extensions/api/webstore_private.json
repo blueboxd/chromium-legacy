@@ -396,6 +396,11 @@
             "name": "id",
             "type": "string",
             "description": "The id of the extension"
+          }, {
+            "name": "manifest",
+            "type": "string",
+            "optional": true,
+            "description": "The manifest of the extension"
           },
           {
             "name": "callback",

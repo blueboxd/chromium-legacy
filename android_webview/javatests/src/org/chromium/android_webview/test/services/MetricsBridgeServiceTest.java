@@ -42,7 +42,7 @@ import java.util.concurrent.FutureTask;
 @RunWith(AwJUnit4ClassRunner.class)
 @OnlyRunIn(SINGLE_PROCESS)
 public class MetricsBridgeServiceTest {
-    private static final HistogramRecord PARSING_LOG_RESULT_SUCCESS_RECORD =
+    private static final byte[] PARSING_LOG_RESULT_SUCCESS_RECORD =
             HistogramRecord.newBuilder()
                     .setRecordType(RecordType.HISTOGRAM_LINEAR)
                     .setHistogramName("Android.WebView.NonEmbeddedMetrics.ParsingLogResult")
@@ -50,7 +50,20 @@ public class MetricsBridgeServiceTest {
                     .setMin(1)
                     .setMax(MetricsBridgeService.ParsingLogResult.COUNT)
                     .setNumBuckets(MetricsBridgeService.ParsingLogResult.COUNT + 1)
-                    .build();
+                    .build()
+                    .toByteArray();
+
+    private static final byte[] RETRIEVE_METRICS_TASK_STATUS_SUCCESS_RECORD =
+            HistogramRecord.newBuilder()
+                    .setRecordType(RecordType.HISTOGRAM_LINEAR)
+                    .setHistogramName(
+                            "Android.WebView.NonEmbeddedMetrics.RetrieveMetricsTaskStatus")
+                    .setSample(MetricsBridgeService.RetrieveMetricsTaskStatus.SUCCESS)
+                    .setMin(1)
+                    .setMax(MetricsBridgeService.RetrieveMetricsTaskStatus.COUNT)
+                    .setNumBuckets(MetricsBridgeService.RetrieveMetricsTaskStatus.COUNT + 1)
+                    .build()
+                    .toByteArray();
 
     private File mTempFile;
 
@@ -143,7 +156,8 @@ public class MetricsBridgeServiceTest {
 
         byte[][] expectedData = new byte[][] {recordBooleanProto.toByteArray(),
                 recordLinearProto.toByteArray(), recordBooleanProto.toByteArray(),
-                PARSING_LOG_RESULT_SUCCESS_RECORD.toByteArray(), recordBooleanProto.toByteArray()};
+                PARSING_LOG_RESULT_SUCCESS_RECORD, recordBooleanProto.toByteArray(),
+                RETRIEVE_METRICS_TASK_STATUS_SUCCESS_RECORD};
 
         // Assert file is deleted after the retrieve call
         Assert.assertFalse(
@@ -163,7 +177,8 @@ public class MetricsBridgeServiceTest {
                         .setHistogramName("testRecordAndRetrieveNonembeddedMetrics")
                         .setSample(1)
                         .build();
-        byte[][] expectedData = new byte[][] {recordProto.toByteArray()};
+        byte[][] expectedData = new byte[][] {
+                recordProto.toByteArray(), RETRIEVE_METRICS_TASK_STATUS_SUCCESS_RECORD};
 
         Intent intent =
                 new Intent(ContextUtils.getApplicationContext(), MetricsBridgeService.class);
@@ -189,7 +204,8 @@ public class MetricsBridgeServiceTest {
                         .setHistogramName("testClearAfterRetrieveNonembeddedMetrics")
                         .setSample(1)
                         .build();
-        byte[][] expectedData = new byte[][] {recordProto.toByteArray()};
+        byte[][] expectedData = new byte[][] {
+                recordProto.toByteArray(), RETRIEVE_METRICS_TASK_STATUS_SUCCESS_RECORD};
 
         Intent intent =
                 new Intent(ContextUtils.getApplicationContext(), MetricsBridgeService.class);
@@ -207,8 +223,9 @@ public class MetricsBridgeServiceTest {
             // Retrieve data a second time to make sure it has been cleared after the first call
             retrievedDataList = service.retrieveNonembeddedMetrics();
 
-            Assert.assertTrue(
-                    "metrics kept by the service hasn't been cleared", retrievedDataList.isEmpty());
+            Assert.assertArrayEquals("metrics kept by the service hasn't been cleared",
+                    new byte[][] {RETRIEVE_METRICS_TASK_STATUS_SUCCESS_RECORD},
+                    retrievedDataList.toArray());
         }
     }
 

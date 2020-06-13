@@ -1550,21 +1550,69 @@
     },
     {
       "id": 154,
-      "description": "Protected video decoding with swap chain is for Windows and Intel only",
-      "features": [
-        "protected_video_decode"
-      ],
+      "description": "Protected video decoding with swap chain is for certain Intel and AMD GPUs on Windows",
+      "cr_bugs": [1093625],
       "exceptions": [
         {
+          "vendor_id": "0x8086",
           "os": {
             "type": "win",
             "version": {
               "op": ">=",
-              "value": "10.0"
+              "value": "10"
             }
+          }
+        },
+        {
+          "vendor_id": "0x1002",
+          "device_id": ["0x15d8"],
+          "device_revision": ["0xe1", "0xe2"],
+          "driver_version": {
+            "op": ">=",
+            "value": "26.20.12055.1000"
           },
-          "vendor_id": "0x8086"
+          "os": {
+            "type": "win",
+            "version": {
+              "op": ">=",
+              "value": "10"
+            }
+          }
+        },
+        {
+          "vendor_id": "0x1002",
+          "device_id": ["0x15d8", "0x15dd"],
+          "device_revision": ["0x93", "0x86"],
+          "driver_version": {
+            "op": ">=",
+            "value": "26.20.15023.6032"
+          },
+          "os": {
+            "type": "win",
+            "version": {
+              "op": ">=",
+              "value": "10"
+            }
+          }
+        },
+        {
+          "vendor_id": "0x1002",
+          "device_id": ["0x15d8", "0x15dd"],
+          "driver_version": {
+            "op": ">=",
+            "value": "27.20.1002.34"
+          },
+          "os": {
+            "type": "win",
+            "version": {
+              "op": ">=",
+              "value": "10"
+            }
+          }
         }
+      ],
+      "features": [
+        "protected_video_decode"
       ]
     },
     {

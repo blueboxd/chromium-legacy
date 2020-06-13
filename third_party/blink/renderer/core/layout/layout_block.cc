@@ -901,12 +901,13 @@ void LayoutBlock::LayoutPositionedObject(LayoutBox* positioned_object,
 
   LayoutObject* parent = positioned_object->Parent();
   bool layout_changed = false;
-  // TODO(dgrogan): The NG flexbox implementation doesn't have an analogous
-  // method yet, so abspos children of NG flexboxes that have a legacy
-  // containing block will not be positioned correctly.
-  if (parent->IsFlexibleBox() &&
-      ToLayoutFlexibleBox(parent)->SetStaticPositionForPositionedLayout(
-          *positioned_object)) {
+  if ((parent->IsLayoutNGFlexibleBox() &&
+       !positioned_object->IsLayoutNGMixin() &&
+       LayoutFlexibleBox::SetStaticPositionForChildInFlexNGContainer(
+           *positioned_object, To<LayoutBlock>(parent))) ||
+      (parent->IsFlexibleBox() &&
+       ToLayoutFlexibleBox(parent)->SetStaticPositionForPositionedLayout(
+           *positioned_object))) {
     // The static position of an abspos child of a flexbox depends on its size
     // (for example, they can be centered). So we may have to reposition the
     // item after layout.

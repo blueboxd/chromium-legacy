@@ -513,7 +513,7 @@ void ChromeLauncherController::UpdateAppState(content::WebContents* contents,
   // If the tab changed apps, remove its association with the previous app item.
   if (web_contents_to_app_id_.find(contents) != web_contents_to_app_id_.end()) {
     ash::ShelfID old_id(web_contents_to_app_id_[contents]);
-    if (old_id != shelf_id && GetItem(old_id) != nullptr) {
+    if (old_id != shelf_id && GetItem(old_id)) {
       // Since GetAppState() will use |web_contents_to_app_id_| we remove
       // the connection before calling it.
       web_contents_to_app_id_.erase(contents);
@@ -700,7 +700,7 @@ bool ChromeLauncherController::IsWebContentHandledByApplication(
 
 bool ChromeLauncherController::ContentCanBeHandledByGmailApp(
     content::WebContents* web_contents) {
-  if (GetItem(ash::ShelfID(kGmailAppId)) != nullptr) {
+  if (GetItem(ash::ShelfID(kGmailAppId))) {
     const GURL url = web_contents->GetURL();
     // We need to extend the application matching for the gMail app beyond the
     // manifest file's specification. This is required because of the namespace
@@ -938,7 +938,7 @@ void ChromeLauncherController::OnAppUninstalledPrepared(
   // outstanding locks which needs to be removed.
   const Profile* profile = Profile::FromBrowserContext(browser_context);
   ash::ShelfID shelf_id(app_id);
-  if (GetItem(shelf_id) != nullptr)
+  if (GetItem(shelf_id))
     CloseWindowedAppsFromRemovedExtension(app_id, profile);
 
   // Some apps may be removed locally. Unpin the item without removing the pin

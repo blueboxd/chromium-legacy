@@ -3,7 +3,7 @@ namespace {{module.namespace}} {
 {% endif %}
 {#--- Constants #}
 {%- for constant in module.constants %}
-export const {{constant.name}}: {{constant.kind|typescript_type_with_nullability}} =
+export const {{constant.name}}: {{constant.kind|typescript_type_with_nullability(use_es_modules)}} =
   {{constant|constant_value}};
 {%- endfor %}
 
@@ -26,7 +26,7 @@ export enum {{enum.name}} {
 {%- for struct in structs %}
 export interface {{struct.name}} {
 {%- for packed_field in struct.packed.packed_fields %}
-    {{packed_field.field.name}}: {{packed_field.field.kind|typescript_type_with_nullability}};
+    {{packed_field.field.name}}: {{packed_field.field.kind|typescript_type_with_nullability(use_es_modules)}};
 {%- endfor %}
 }
 {% endfor %}

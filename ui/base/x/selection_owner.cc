@@ -55,7 +55,9 @@ bool GetAtomPairArrayProperty(
     x11::Atom property,
     std::vector<std::pair<x11::Atom, x11::Atom>>* value) {
   std::vector<x11::Atom> atoms;
-  if (!ui::GetArrayProperty(window, property, &atoms))
+  // Since this is an array of atom pairs, ensure ensure |atoms|
+  // has an element count that's a multiple of 2.
+  if (!ui::GetArrayProperty(window, property, &atoms) || atoms.size() % 2 != 0)
     return false;
 
   value->clear();

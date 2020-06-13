@@ -1172,13 +1172,13 @@ void TestRunnerBindings::SetTextDirection(const std::string& direction_name) {
     return;
 
   // Map a direction name to a base::i18n::TextDirection value.
-  mojo_base::mojom::TextDirection direction;
+  base::i18n::TextDirection direction;
   if (direction_name == "auto")
-    direction = mojo_base::mojom::TextDirection::UNKNOWN_DIRECTION;
+    direction = base::i18n::TextDirection::UNKNOWN_DIRECTION;
   else if (direction_name == "rtl")
-    direction = mojo_base::mojom::TextDirection::RIGHT_TO_LEFT;
+    direction = base::i18n::TextDirection::RIGHT_TO_LEFT;
   else if (direction_name == "ltr")
-    direction = mojo_base::mojom::TextDirection::LEFT_TO_RIGHT;
+    direction = base::i18n::TextDirection::LEFT_TO_RIGHT;
   else
     return;
 

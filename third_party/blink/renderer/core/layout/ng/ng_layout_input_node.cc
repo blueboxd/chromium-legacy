@@ -95,7 +95,7 @@ NGLayoutInputNode NGLayoutInputNode::NextSibling() {
 
 PhysicalSize NGLayoutInputNode::InitialContainingBlockSize() const {
   IntSize icb_size =
-      GetDocument().GetLayoutView()->GetLayoutSize(kExcludeScrollbars);
+      GetDocument().GetLayoutView()->GetLayoutSize(kIncludeScrollbars);
   return PhysicalSize(icb_size);
 }
 

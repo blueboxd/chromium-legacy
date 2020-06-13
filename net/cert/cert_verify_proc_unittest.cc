@@ -461,7 +461,8 @@ INSTANTIATE_TEST_SUITE_P(All,
 // Tests that a certificate is recognized as EV, when the valid EV policy OID
 // for the trust anchor is the second candidate EV oid in the target
 // certificate. This is a regression test for crbug.com/705285.
-TEST_P(CertVerifyProcInternalTest, EVVerificationMultipleOID) {
+// Started failing: https://crbug.com/1094358
+TEST_P(CertVerifyProcInternalTest, DISABLED_EVVerificationMultipleOID) {
   if (!SupportsEV()) {
     LOG(INFO) << "Skipping test as EV verification is not yet supported";
     return;

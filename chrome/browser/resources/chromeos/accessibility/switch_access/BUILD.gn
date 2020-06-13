@@ -58,10 +58,6 @@ run_jsbundler("switch_access_copied_files") {
     "icons/textSelectionEnd.svg",
     "icons/textSelectionStart.svg",
     "menu_manager.js",
-    "menu_panel.css",
-    "menu_panel.html",
-    "menu_panel.js",
-    "menu_panel_interface.js",
     "metrics.js",
     "navigation_manager.js",
     "nodes/back_button_node.js",
@@ -146,8 +142,6 @@ js_type_check("closure_compile") {
     ":history",
     ":keyboard_node",
     ":menu_manager",
-    ":menu_panel",
-    ":menu_panel_interface",
     ":metrics",
     ":modal_dialog_node",
     ":navigation_manager",
@@ -234,7 +228,6 @@ js_library("event_helper") {
 
 js_library("focus_ring_manager") {
   deps = [
-    ":menu_panel_interface",
     ":node_wrapper",
     ":switch_access_constants",
     ":switch_access_node",
@@ -298,17 +291,6 @@ js_library("menu_manager") {
   ]
 }
 
-js_library("menu_panel") {
-  deps = [
-    ":menu_manager",
-    ":switch_access_constants",
-  ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
-}
-
-js_library("menu_panel_interface") {
-}
-
 js_library("metrics") {
   deps = [ ":switch_access_constants" ]
   externs_list = [ "$externs_path/metrics_private.js" ]
@@ -332,7 +314,6 @@ js_library("navigation_manager") {
     ":history",
     ":keyboard_node",
     ":menu_manager",
-    ":menu_panel_interface",
     ":metrics",
     ":modal_dialog_node",
     ":node_wrapper",
@@ -387,7 +368,6 @@ js_library("switch_access") {
     ":auto_scan_manager",
     ":commands",
     ":menu_manager",
-    ":menu_panel_interface",
     ":navigation_manager",
     ":preferences",
     ":switch_access_constants",

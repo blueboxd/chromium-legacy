@@ -223,10 +223,8 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReady) {
   args.Set(0, std::make_unique<base::Value>(kDefaultDialogHeight));
   handler()->HandleInitializedWithSize(&args);
 
+  ASSERT_EQ(1U, web_ui()->call_data().size());
   ExpectAccountImageChanged(*web_ui()->call_data()[0]);
-  EXPECT_EQ("cr.webUIListenerCallback",
-            web_ui()->call_data()[1]->function_name());
-  EXPECT_EQ("clear-focus", web_ui()->call_data()[1]->arg1()->GetString());
 }
 
 TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
@@ -234,19 +232,16 @@ TEST_F(SyncConfirmationHandlerTest, TestSetImageIfPrimaryAccountReadyLater) {
   args.Set(0, std::make_unique<base::Value>(kDefaultDialogHeight));
   handler()->HandleInitializedWithSize(&args);
 
-  EXPECT_EQ(2U, web_ui()->call_data().size());
+  ASSERT_EQ(1U, web_ui()->call_data().size());
   ExpectAccountImageChanged(*web_ui()->call_data()[0]);
-  EXPECT_EQ("cr.webUIListenerCallback",
-            web_ui()->call_data()[1]->function_name());
-  EXPECT_EQ("clear-focus", web_ui()->call_data()[1]->arg1()->GetString());
 
   identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
       account_info_.account_id, account_info_.email, account_info_.gaia, "",
       "full_name", "given_name", "locale",
       "http://picture.example.com/picture.jpg");
 
-  EXPECT_EQ(3U, web_ui()->call_data().size());
-  ExpectAccountImageChanged(*web_ui()->call_data()[2]);
+  ASSERT_EQ(2U, web_ui()->call_data().size());
+  ExpectAccountImageChanged(*web_ui()->call_data()[1]);
 }
 
 TEST_F(SyncConfirmationHandlerTest,
@@ -254,7 +249,7 @@ TEST_F(SyncConfirmationHandlerTest,
   base::ListValue args;
   args.Set(0, std::make_unique<base::Value>(kDefaultDialogHeight));
   handler()->HandleInitializedWithSize(&args);
-  EXPECT_EQ(2U, web_ui()->call_data().size());
+  EXPECT_EQ(1U, web_ui()->call_data().size());
 
   AccountInfo account_info =
       identity_test_env()->MakeAccountAvailable("bar@example.com");
@@ -265,7 +260,7 @@ TEST_F(SyncConfirmationHandlerTest,
 
   // Updating the account info of a secondary account should not update the
   // image of the sync confirmation dialog.
-  EXPECT_EQ(2U, web_ui()->call_data().size());
+  EXPECT_EQ(1U, web_ui()->call_data().size());
 
   identity_test_env()->SimulateSuccessfulFetchOfAccountInfo(
       account_info_.account_id, account_info_.email, account_info_.gaia, "",
@@ -274,8 +269,8 @@ TEST_F(SyncConfirmationHandlerTest,
 
   // Updating the account info of the primary account should update the
   // image of the sync confirmation dialog.
-  EXPECT_EQ(3U, web_ui()->call_data().size());
-  ExpectAccountImageChanged(*web_ui()->call_data()[2]);
+  ASSERT_EQ(2U, web_ui()->call_data().size());
+  ExpectAccountImageChanged(*web_ui()->call_data()[1]);
 }
 
 TEST_F(SyncConfirmationHandlerTest, TestHandleUndo) {

@@ -1,0 +1,106 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package enterprise_connectors;
+
+// For ClientDownloadRequest.
+import "components/safe_browsing/core/proto/csd.proto";
+
+// Which connector is calling BinaryUploadService so that the proper rules can
+// be triggered.  BinaryUploadService also uses this value to find the URL that
+// the payload should be uploaded to.
+//
+// The values in this enum can be extended in future versions of Chrome to
+// support new analysis connectors.
+enum AnalysisConnector {
+  ANALYSIS_CONNECTOR_UNSPECIFIED = 0;
+  FILE_DOWNLOADED = 1;
+  FILE_ATTACHED = 2;
+  BULK_DATA_ENTRY = 3;
+}
+
+message ContentMetaData {
+  // The URL containing the file download/upload or to which web content is
+  // being uploaded.
+  optional string url = 1;
+
+  // Name of file on user system (if applicable).
+  optional string filename = 2;
+
+  // Sha256 digest of file.
+  optional string digest = 3;
+
+  // Specifically for the download case.
+  optional safe_browsing.ClientDownloadRequest csd = 4;
+}
+
+// Analysis request sent from chrome to backend.
+message ContentAnalysisRequest {
+  // The TokenID for Enterprise-enrolled devices.  This identifies a specific
+  // chrome instance.
+  optional string device_token = 1;
+
+  // Firebase Cloud Messaging token used to notify this client of the verdict.
+  // This identifies a specific chrome instance.
+  optional string fcm_notification_token = 2;
+
+  // Which enterprise connector fired this request.
+  optional AnalysisConnector analysis_connector = 9;
+
+  // Information about the data that triggered the content analysis request.
+  optional ContentMetaData request_data = 10;
+
+  // Token used to correlate requests and responses. This is different than the
+  // FCM token in that it is unique for each request.
+  optional string request_token = 5;
+
+  // The tags configured for the URL that triggered the content analysis.
+  repeated string tags = 11;
+
+  // Reserved to make sure there is no overlap with DeepScanningClientRequest.
+  reserved 3, 4, 6 to 8;
+}
+
+// Scanning response sent from backend to Chrome.
+message ContentAnalysisResponse {
+  // Token used to correlate requests and responses. Corresponds to field in
+  // ContentAnalysisRequest with the same name.
+  optional string request_token = 1;
+
+  // Represents the analysis result from a given tag.
+  message Result {
+    optional string tag = 1;
+
+    // The status of this result.
+    enum Status {
+      STATUS_UNKNOWN = 0;
+      SUCCESS = 1;
+      FAILURE = 2;
+    }
+    optional Status status = 2;
+
+    // Identifies the detection rules that were triggered by the analysis.
+    // Only relevant when status is SUCCESS.
+    message TriggeredRule {
+      enum Action {
+        ACTION_UNSPECIFIED = 0;
+        REPORT_ONLY = 1;
+        WARN = 2;
+        BLOCK = 3;
+      }
+      optional Action action = 1;
+      optional string rule_name = 2;
+      optional string rule_id = 3;
+    }
+    repeated TriggeredRule triggered_rules = 3;
+  }
+  repeated Result results = 4;
+
+  // Reserved to make sure there is no overlap with DeepScanningClientResponse.
+  reserved 2 to 3;
+}

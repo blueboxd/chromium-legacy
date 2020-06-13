@@ -278,12 +278,6 @@ int GetQuicMaxIdleTimeBeforeCryptoHandshakeSeconds(
   return 0;
 }
 
-bool ShouldQuicRaceCertVerification(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "race_cert_verification"), "true");
-}
-
 bool ShouldQuicEstimateInitialRtt(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -513,8 +507,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
           base::TimeDelta::FromSeconds(
               max_idle_time_before_crypto_handshake_seconds);
     }
-    quic_params->race_cert_verification =
-        ShouldQuicRaceCertVerification(quic_trial_params);
     quic_params->estimate_initial_rtt =
         ShouldQuicEstimateInitialRtt(quic_trial_params);
     quic_params->headers_include_h2_stream_dependency =

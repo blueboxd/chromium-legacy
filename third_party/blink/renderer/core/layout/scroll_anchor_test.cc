@@ -536,64 +536,6 @@ TEST_P(ScrollAnchorTest, FlexboxDelayedAdjustmentRespectsSANACLAP) {
   EXPECT_EQ(100, ScrollerForElement(scroller)->ScrollOffsetInt().Height());
 }
 
-// TODO(skobes): Convert this to web-platform-tests when document.rootScroller
-// is launched (http://crbug.com/505516).
-TEST_P(ScrollAnchorTest, NonDefaultRootScroller) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-        ::-webkit-scrollbar {
-          width: 0px; height: 0px;
-        }
-        body, html {
-          margin: 0px; width: 100%; height: 100%;
-        }
-        #rootscroller {
-          overflow: scroll; width: 100%; height: 100%;
-        }
-        .spacer {
-          height: 600px; width: 100px;
-        }
-        #target {
-          height: 100px; width: 100px; background-color: red;
-        }
-    </style>
-    <div id='rootscroller'>
-        <div id='firstChild' class='spacer'></div>
-        <div id='target'></div>
-        <div class='spacer'></div>
-    </div>
-    <div class='spacer'></div>
-  )HTML");
-
-  Element* root_scroller_element = GetDocument().getElementById("rootscroller");
-
-  NonThrowableExceptionState non_throw;
-  GetDocument().setRootScroller(root_scroller_element, non_throw);
-  UpdateAllLifecyclePhasesForTest();
-
-  ScrollableArea* scroller = ScrollerForElement(root_scroller_element);
-
-  // By making the #rootScroller DIV the rootScroller, it should become the
-  // layout viewport on the RootFrameViewport.
-  ASSERT_EQ(scroller,
-            &GetDocument().View()->GetRootFrameViewport()->LayoutViewport());
-
-  // The #rootScroller DIV's anchor should have the RootFrameViewport set as
-  // the scroller, rather than the FrameView's anchor.
-
-  root_scroller_element->setScrollTop(600);
-
-  SetHeight(GetDocument().getElementById("firstChild"), 1000);
-
-  // Scroll anchoring should be applied to #rootScroller.
-  EXPECT_EQ(1000, scroller->GetScrollOffset().Height());
-  EXPECT_EQ(GetDocument().getElementById("target")->GetLayoutObject(),
-            GetScrollAnchor(scroller).AnchorObject());
-  // Scroll anchoring should not apply within main frame.
-  EXPECT_EQ(0, LayoutViewport()->GetScrollOffset().Height());
-  EXPECT_EQ(nullptr, GetScrollAnchor(LayoutViewport()).AnchorObject());
-}
-
 // This test verifies that scroll anchoring is disabled when the document is in
 // printing mode.
 TEST_P(ScrollAnchorTest, AnchoringDisabledForPrinting) {

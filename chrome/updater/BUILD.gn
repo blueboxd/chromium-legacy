@@ -39,8 +39,12 @@ if (is_win || is_mac) {
       "crash_client.h",
       "crash_reporter.cc",
       "crash_reporter.h",
+      "dm_cached_policy_info.cc",
+      "dm_cached_policy_info.h",
       "dm_policy_manager.cc",
       "dm_policy_manager.h",
+      "dm_storage.cc",
+      "dm_storage.h",
       "external_constants.cc",
       "external_constants.h",
       "external_constants_impl.h",
@@ -52,6 +56,7 @@ if (is_win || is_mac) {
       "policy_manager.h",
       "prefs.cc",
       "prefs.h",
+      "prefs_impl.h",
       "registration_data.cc",
       "registration_data.h",
       "unzipper.cc",
@@ -77,13 +82,21 @@ if (is_win || is_mac) {
       "//url",
     ]
 
+    public_deps = [ "//components/policy/proto" ]
+
     if (is_mac) {
-      sources += [ "external_constants_mac.mm" ]
+      sources += [
+        "dm_storage_mac.mm",
+        "external_constants_mac.mm",
+        "prefs_mac.mm",
+      ]
     }
 
     if (is_win) {
       sources += [
+        "dm_storage_win.cc",
         "external_constants_win.cc",
+        "prefs_win.cc",
         "win/group_policy_manager.cc",
         "win/group_policy_manager.h",
       ]
@@ -201,6 +214,10 @@ if (is_win || is_mac) {
       "COPYRIGHT=\"updater_copyright\"",
       "-e",
       "MAC_BUNDLE_IDENTIFIER=\"$mac_updater_bundle_identifier\"",
+      "-e",
+      "BROWSER_NAME=\"$browser_name\"",
+      "-e",
+      "MAC_BROWSER_BUNDLE_IDENTIFIER=\"$mac_browser_bundle_identifier\"",
     ]
 
     template_file = "updater_version.h.in"
@@ -212,6 +229,7 @@ if (is_win || is_mac) {
 
     sources = [
       "dm_policy_manager_unittest.cc",
+      "dm_storage_unittest.cc",
       "external_constants_unittest.cc",
       "external_constants_unittest.h",
       "lib_util_unittest.cc",
@@ -243,7 +261,7 @@ if (is_win || is_mac) {
       "//url",
     ]
 
-    public_deps = [ "//components/policy/proto" ]
+    public_deps = [ "//chrome/updater/protos:omaha_proto" ]
 
     if (is_win) {
       sources += [

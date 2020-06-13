@@ -5,7 +5,13 @@
 import {$$, BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flushTasks, isVisible} from 'chrome://test/test_util.m.js';
-import {assertStyle, createTestProxy, keydown} from './test_support.js';
+import {assertNotStyle, assertStyle, createTestProxy, keydown} from './test_support.js';
+
+/** @typedef {newTabPage.mojom.VoiceSearchAction} */
+const Action = newTabPage.mojom.VoiceSearchAction;
+
+/** @typedef {newTabPage.mojom.VoiceSearchError} */
+const Error = newTabPage.mojom.VoiceSearchError;
 
 function createResults(n) {
   return {
@@ -155,22 +161,50 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
     assertFalse(
         voiceSearchOverlay.$.micContainer.classList.contains('receiving'));
     assertStyle(voiceSearchOverlay.$.micVolume, '--mic-volume-level', '0');
+    assertEquals(
+        Action.QUERY_SUBMITTED,
+        await testProxy.handler.whenCalled('onVoiceSearchAction'));
   });
 
-  test('on error received shows error text', () => {
-    // Act.
-    mockSpeechRecognition.onerror({error: 'audio-capture'});
+  [['no-speech', 'no-speech', 'learn-more', Error.NO_SPEECH],
+   ['audio-capture', 'audio-capture', 'learn-more', Error.AUDIO_CAPTURE],
+   ['network', 'network', 'none', Error.NETWORK],
+   ['not-allowed', 'not-allowed', 'details', Error.NOT_ALLOWED],
+   ['service-not-allowed', 'not-allowed', 'details', Error.SERVICE_NOT_ALLOWED],
+   [
+     'language-not-supported', 'language-not-supported', 'none',
+     Error.LANGUAGE_NOT_SUPPORTED
+   ],
+   ['aborted', 'other', 'none', Error.ABORTED],
+   ['bad-grammar', 'other', 'none', Error.BAD_GRAMMAR],
+   ['foo', 'other', 'none', Error.OTHER],
+   ['no-match', 'no-match', 'try-again', Error.NO_MATCH],
+  ].forEach(([error, text, link, logError]) => {
+    test(`on '${error}' received shows error text`, async () => {
+      // Act.
+      if (error === 'no-match') {
+        mockSpeechRecognition.onnomatch();
+      } else {
+        mockSpeechRecognition.onerror({error});
+      }
 
-    // Assert.
-    assertTrue(isVisible(
-        voiceSearchOverlay.shadowRoot.querySelector('#texts *[text=error]')));
-    assertTrue(isVisible(
-        voiceSearchOverlay.shadowRoot.querySelector('#errors *[error="2"]')));
-    assertFalse(
-        voiceSearchOverlay.$.micContainer.classList.contains('listening'));
-    assertFalse(
-        voiceSearchOverlay.$.micContainer.classList.contains('receiving'));
-    assertStyle(voiceSearchOverlay.$.micVolume, '--mic-volume-level', '0');
+      // Assert.
+      assertTrue(isVisible(
+          voiceSearchOverlay.shadowRoot.querySelector('#texts *[text=error]')));
+      assertTrue(isVisible(voiceSearchOverlay.shadowRoot.querySelector(
+          `#errors *[error="${text}"]`)));
+      assertNotStyle(
+          voiceSearchOverlay.shadowRoot.querySelector(
+              `#errorLinks *[link="${link}"]`),
+          'display', 'none');
+      assertFalse(
+          voiceSearchOverlay.$.micContainer.classList.contains('listening'));
+      assertFalse(
+          voiceSearchOverlay.$.micContainer.classList.contains('receiving'));
+      assertStyle(voiceSearchOverlay.$.micVolume, '--mic-volume-level', '0');
+      assertEquals(
+          logError, await testProxy.handler.whenCalled('onVoiceSearchError'));
+    });
   });
 
   test('on end received shows error text if no final result', () => {
@@ -180,8 +214,8 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
     // Assert.
     assertTrue(isVisible(
         voiceSearchOverlay.shadowRoot.querySelector('#texts *[text=error]')));
-    assertTrue(isVisible(
-        voiceSearchOverlay.shadowRoot.querySelector('#errors *[error="2"]')));
+    assertTrue(isVisible(voiceSearchOverlay.shadowRoot.querySelector(
+        '#errors *[error="audio-capture"]')));
   });
 
   test('on end received shows result text if final result', () => {
@@ -274,28 +308,21 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
     assertTrue(mockSpeechRecognition.abortCalled);
   });
 
-  const retryTestParams = [
-    {
-      name: 'retry link',
-      element: 'retryLink',
-    },
-    {
-      name: 'mic button',
-      element: 'micButton',
-    }
-  ];
-
-  retryTestParams.forEach(param => {
-    test(`${param.name} click starts voice search if in retry state`, () => {
+  [['#retryLink', Action.TRY_AGAIN_LINK],
+   ['#micButton', Action.TRY_AGAIN_MIC_BUTTON],
+  ].forEach(([id, action]) => {
+    test(`clicking '${id}' starts voice search if in retry state`, async () => {
       // Arrange.
       mockSpeechRecognition.onnomatch();
       mockSpeechRecognition.startCalled = false;
 
       // Act.
-      voiceSearchOverlay.shadowRoot.querySelector(`#${param.element}`).click();
+      $$(voiceSearchOverlay, id).click();
 
       // Assert.
       assertTrue(mockSpeechRecognition.startCalled);
+      assertEquals(
+          action, await testProxy.handler.whenCalled('onVoiceSearchAction'));
     });
   });
 
@@ -339,5 +366,43 @@ suite('NewTabPageVoiceSearchOverlayTest', () => {
       assertEquals(0, testProxy.getCallCount('navigate'));
       assertFalse(voiceSearchOverlay.$.dialog.open);
     });
+  });
+
+  test('\'Escape\' closes overlay', async () => {
+    // Act.
+    keydown(voiceSearchOverlay.shadowRoot.activeElement, 'Escape');
+
+    // Assert.
+    assertFalse(voiceSearchOverlay.$.dialog.open);
+    assertEquals(
+        Action.CLOSE_OVERLAY,
+        await testProxy.handler.whenCalled('onVoiceSearchAction'));
+  });
+
+  test('Click closes overlay', async () => {
+    // Act.
+    voiceSearchOverlay.$.dialog.click();
+
+    // Assert.
+    assertFalse(voiceSearchOverlay.$.dialog.open);
+    assertEquals(
+        Action.CLOSE_OVERLAY,
+        await testProxy.handler.whenCalled('onVoiceSearchAction'));
+  });
+
+  test('Clicking learn more logs action', async () => {
+    // Arrange.
+    mockSpeechRecognition.onerror({error: 'audio-capture'});
+    const link = $$(voiceSearchOverlay, '[link=learn-more]');
+    link.href = '#';
+    link.target = '_self';
+
+    // Act.
+    link.click();
+
+    // Assert.
+    assertEquals(
+        Action.SUPPORT_LINK_CLICKED,
+        await testProxy.handler.whenCalled('onVoiceSearchAction'));
   });
 });

@@ -28,24 +28,18 @@ class PopupBlockerBrowserTest : public WebLayerBrowserTest,
   // WebLayerBrowserTest:
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
-    // Android expects the browser and tabs to be created in Java. Desktop needs
-    // to explicitly handle OnNewTab() to make sure to add it to the browser.
-#if defined(OS_ANDROID)
-    browser_ = static_cast<TabImpl*>(shell()->tab())->browser();
     original_tab_ = shell()->tab();
-#else
-    browser_ = Browser::Create(GetProfile(), nullptr);
-    original_tab_ = browser_->CreateTab();
+#if !defined(OS_ANDROID)
+    // Android does this in Java.
     original_tab_->SetNewTabDelegate(this);
 #endif
-    browser_->AddObserver(this);
+    shell()->browser()->AddObserver(this);
 
     NavigateAndWaitForCompletion(embedded_test_server()->GetURL("/echo"),
                                  original_tab_);
   }
   void TearDownOnMainThread() override {
-    browser_->RemoveObserver(this);
-    browser_ = nullptr;
+    shell()->browser()->RemoveObserver(this);
   }
 
   // NewTabDelegate:
@@ -119,25 +113,10 @@ class PopupBlockerBrowserTest : public WebLayerBrowserTest,
 
   Tab* original_tab() { return original_tab_; }
 
-  Browser* browser() {
-#if defined(OS_ANDROID)
-    return browser_;
-#else
-    return browser_.get();
-#endif
-  }
-
  private:
   std::unique_ptr<base::RunLoop> new_tab_run_loop_;
   std::unique_ptr<base::RunLoop> close_tab_run_loop_;
 
-  // On Android the browser is owned by the Java side, while on desktop C++ owns
-  // the browser.
-#if defined(OS_ANDROID)
-  Browser* browser_ = nullptr;
-#else
-  std::unique_ptr<Browser> browser_;
-#endif
   Tab* original_tab_ = nullptr;
   Tab* new_tab_ = nullptr;
 };
@@ -224,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   // Navigate the original tab, then make sure we still only have a single tab.
   NavigateAndWaitForCompletion(embedded_test_server()->GetURL("/echo"),
                                original_tab());
-  EXPECT_EQ(browser()->GetTabs().size(), 1u);
+  EXPECT_EQ(shell()->browser()->GetTabs().size(), 1u);
 
   // Restore the old delegate to make sure it is cleaned up on Android.
   original_tab()->SetNewTabDelegate(old_delegate);
@@ -244,7 +223,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   // Navigate the original tab, then make sure we still only have a single tab.
   NavigateAndWaitForCompletion(embedded_test_server()->GetURL("/echo"),
                                original_tab());
-  EXPECT_EQ(browser()->GetTabs().size(), 1u);
+  EXPECT_EQ(shell()->browser()->GetTabs().size(), 1u);
 
   // Restore the old delegate to make sure it is cleaned up on Android.
   original_tab()->SetNewTabDelegate(old_delegate);

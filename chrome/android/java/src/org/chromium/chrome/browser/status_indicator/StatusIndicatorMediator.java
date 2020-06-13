@@ -160,23 +160,21 @@ class StatusIndicatorMediator
             return;
         }
 
-        if (mStatusBarAnimation == null) {
-            mStatusBarAnimation = ValueAnimator.ofInt(statusBarColor, backgroundColor);
-            mStatusBarAnimation.setEvaluator(new ArgbEvaluator());
-            mStatusBarAnimation.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-            mStatusBarAnimation.setDuration(STATUS_BAR_COLOR_TRANSITION_DURATION_MS);
-            mStatusBarAnimation.addUpdateListener(anim -> {
-                for (StatusIndicatorCoordinator.StatusIndicatorObserver observer : mObservers) {
-                    observer.onStatusIndicatorColorChanged((int) anim.getAnimatedValue());
-                }
-            });
-            mStatusBarAnimation.addListener(new CancelAwareAnimatorListener() {
-                @Override
-                public void onEnd(Animator animation) {
-                    initializeProperties.run();
-                }
-            });
-        }
+        mStatusBarAnimation = ValueAnimator.ofInt(statusBarColor, backgroundColor);
+        mStatusBarAnimation.setEvaluator(new ArgbEvaluator());
+        mStatusBarAnimation.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
+        mStatusBarAnimation.setDuration(STATUS_BAR_COLOR_TRANSITION_DURATION_MS);
+        mStatusBarAnimation.addUpdateListener(anim -> {
+            for (StatusIndicatorCoordinator.StatusIndicatorObserver observer : mObservers) {
+                observer.onStatusIndicatorColorChanged((int) anim.getAnimatedValue());
+            }
+        });
+        mStatusBarAnimation.addListener(new CancelAwareAnimatorListener() {
+            @Override
+            public void onEnd(Animator animation) {
+                initializeProperties.run();
+            }
+        });
         mStatusBarAnimation.start();
     }
 
@@ -234,56 +232,54 @@ class StatusIndicatorMediator
         assert changed
             : "#animateUpdate() shouldn't be called without any change to the status indicator.";
 
-        if (mUpdateAnimatorSet == null) {
-            // 1. Fade out old text.
-            ValueAnimator fadeOldOut = ValueAnimator.ofFloat(1.f, 0.f);
-            fadeOldOut.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-            fadeOldOut.setDuration(FADE_TEXT_DURATION_MS);
-            fadeOldOut.addUpdateListener(anim -> {
-                final float currentAlpha = (float) anim.getAnimatedValue();
-                mModel.set(StatusIndicatorProperties.TEXT_ALPHA, currentAlpha);
-            });
-            fadeOldOut.addListener(new CancelAwareAnimatorListener() {
-                @Override
-                public void onEnd(Animator animation) {
-                    mModel.set(StatusIndicatorProperties.STATUS_TEXT, statusText);
-                    mModel.set(StatusIndicatorProperties.STATUS_ICON, statusIcon);
-                    mModel.set(StatusIndicatorProperties.TEXT_COLOR, textColor);
-                    mModel.set(StatusIndicatorProperties.ICON_TINT, iconTint);
-                }
-            });
+        // 1. Fade out old text.
+        ValueAnimator fadeOldOut = ValueAnimator.ofFloat(1.f, 0.f);
+        fadeOldOut.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
+        fadeOldOut.setDuration(FADE_TEXT_DURATION_MS);
+        fadeOldOut.addUpdateListener(anim -> {
+            final float currentAlpha = (float) anim.getAnimatedValue();
+            mModel.set(StatusIndicatorProperties.TEXT_ALPHA, currentAlpha);
+        });
+        fadeOldOut.addListener(new CancelAwareAnimatorListener() {
+            @Override
+            public void onEnd(Animator animation) {
+                mModel.set(StatusIndicatorProperties.STATUS_TEXT, statusText);
+                mModel.set(StatusIndicatorProperties.STATUS_ICON, statusIcon);
+                mModel.set(StatusIndicatorProperties.TEXT_COLOR, textColor);
+                mModel.set(StatusIndicatorProperties.ICON_TINT, iconTint);
+            }
+        });
 
-            // 2. Simultaneously transition the background.
-            ValueAnimator colorAnimation = ValueAnimator.ofInt(
-                    mModel.get(StatusIndicatorProperties.BACKGROUND_COLOR), backgroundColor);
-            colorAnimation.setEvaluator(new ArgbEvaluator());
-            colorAnimation.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-            colorAnimation.setDuration(UPDATE_COLOR_TRANSITION_DURATION_MS);
-            colorAnimation.addUpdateListener(anim -> {
-                final int currentColor = (int) anim.getAnimatedValue();
-                mModel.set(StatusIndicatorProperties.BACKGROUND_COLOR, currentColor);
-                notifyColorChange(currentColor);
-            });
+        // 2. Simultaneously transition the background.
+        ValueAnimator colorAnimation = ValueAnimator.ofInt(
+                mModel.get(StatusIndicatorProperties.BACKGROUND_COLOR), backgroundColor);
+        colorAnimation.setEvaluator(new ArgbEvaluator());
+        colorAnimation.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
+        colorAnimation.setDuration(UPDATE_COLOR_TRANSITION_DURATION_MS);
+        colorAnimation.addUpdateListener(anim -> {
+            final int currentColor = (int) anim.getAnimatedValue();
+            mModel.set(StatusIndicatorProperties.BACKGROUND_COLOR, currentColor);
+            notifyColorChange(currentColor);
+        });
 
-            // 3. Fade in new text, after #1 and #2 are done.
-            ValueAnimator fadeNewIn = ValueAnimator.ofFloat(0.f, 1.f);
-            fadeNewIn.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-            fadeNewIn.setDuration(FADE_TEXT_DURATION_MS);
-            fadeNewIn.addUpdateListener(anim -> {
-                final float currentAlpha = (float) anim.getAnimatedValue();
-                mModel.set(StatusIndicatorProperties.TEXT_ALPHA, currentAlpha);
-            });
+        // 3. Fade in new text, after #1 and #2 are done.
+        ValueAnimator fadeNewIn = ValueAnimator.ofFloat(0.f, 1.f);
+        fadeNewIn.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
+        fadeNewIn.setDuration(FADE_TEXT_DURATION_MS);
+        fadeNewIn.addUpdateListener(anim -> {
+            final float currentAlpha = (float) anim.getAnimatedValue();
+            mModel.set(StatusIndicatorProperties.TEXT_ALPHA, currentAlpha);
+        });
 
-            mUpdateAnimatorSet = new AnimatorSet();
-            mUpdateAnimatorSet.play(fadeOldOut).with(colorAnimation);
-            mUpdateAnimatorSet.play(fadeNewIn).after(colorAnimation);
-            mUpdateAnimatorSet.addListener(new CancelAwareAnimatorListener() {
-                @Override
-                public void onEnd(Animator animation) {
-                    animationCompleteCallback.run();
-                }
-            });
-        }
+        mUpdateAnimatorSet = new AnimatorSet();
+        mUpdateAnimatorSet.play(fadeOldOut).with(colorAnimation);
+        mUpdateAnimatorSet.play(fadeNewIn).after(colorAnimation);
+        mUpdateAnimatorSet.addListener(new CancelAwareAnimatorListener() {
+            @Override
+            public void onEnd(Animator animation) {
+                animationCompleteCallback.run();
+            }
+        });
         mUpdateAnimatorSet.start();
     }
 
@@ -300,46 +296,44 @@ class StatusIndicatorMediator
      * Indicator slides out                 |         *--------*
      */
     void animateHide() {
-        if (mHideAnimatorSet == null) {
-            // 1. Transition the background.
-            ValueAnimator colorAnimation =
-                    ValueAnimator.ofInt(mModel.get(StatusIndicatorProperties.BACKGROUND_COLOR),
-                            mStatusBarWithoutIndicatorColorSupplier.get());
-            colorAnimation.setEvaluator(new ArgbEvaluator());
-            colorAnimation.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-            colorAnimation.setDuration(STATUS_BAR_COLOR_TRANSITION_DURATION_MS);
-            colorAnimation.addUpdateListener(anim -> {
-                final int currentColor = (int) anim.getAnimatedValue();
-                mModel.set(StatusIndicatorProperties.BACKGROUND_COLOR, currentColor);
-                notifyColorChange(currentColor);
-            });
-            colorAnimation.addListener(new CancelAwareAnimatorListener() {
-                @Override
-                public void onEnd(Animator animation) {
-                    notifyColorChange(Color.TRANSPARENT);
-                }
-            });
+        // 1. Transition the background.
+        ValueAnimator colorAnimation =
+                ValueAnimator.ofInt(mModel.get(StatusIndicatorProperties.BACKGROUND_COLOR),
+                        mStatusBarWithoutIndicatorColorSupplier.get());
+        colorAnimation.setEvaluator(new ArgbEvaluator());
+        colorAnimation.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
+        colorAnimation.setDuration(STATUS_BAR_COLOR_TRANSITION_DURATION_MS);
+        colorAnimation.addUpdateListener(anim -> {
+            final int currentColor = (int) anim.getAnimatedValue();
+            mModel.set(StatusIndicatorProperties.BACKGROUND_COLOR, currentColor);
+            notifyColorChange(currentColor);
+        });
+        colorAnimation.addListener(new CancelAwareAnimatorListener() {
+            @Override
+            public void onEnd(Animator animation) {
+                notifyColorChange(Color.TRANSPARENT);
+            }
+        });
 
-            // 2. Fade out the text simultaneously with #1.
-            ValueAnimator fadeOut = ValueAnimator.ofFloat(1.f, 0.f);
-            fadeOut.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-            fadeOut.setDuration(FADE_TEXT_DURATION_MS);
-            fadeOut.addUpdateListener(anim -> mModel.set(
-                    StatusIndicatorProperties.TEXT_ALPHA, (float) anim.getAnimatedValue()));
+        // 2. Fade out the text simultaneously with #1.
+        ValueAnimator fadeOut = ValueAnimator.ofFloat(1.f, 0.f);
+        fadeOut.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
+        fadeOut.setDuration(FADE_TEXT_DURATION_MS);
+        fadeOut.addUpdateListener(anim -> mModel.set(
+                StatusIndicatorProperties.TEXT_ALPHA, (float) anim.getAnimatedValue()));
 
-            mHideAnimatorSet = new AnimatorSet();
-            mHideAnimatorSet.play(colorAnimation).with(fadeOut);
-            mHideAnimatorSet.addListener(new CancelAwareAnimatorListener() {
-                @Override
-                public void onEnd(Animator animation) {
-                    if (mCanAnimateNativeBrowserControls.get()) {
-                        mInvalidateCompositorView.onResult(() -> updateVisibility(true));
-                    } else {
-                        updateVisibility(true);
-                    }
+        mHideAnimatorSet = new AnimatorSet();
+        mHideAnimatorSet.play(colorAnimation).with(fadeOut);
+        mHideAnimatorSet.addListener(new CancelAwareAnimatorListener() {
+            @Override
+            public void onEnd(Animator animation) {
+                if (mCanAnimateNativeBrowserControls.get()) {
+                    mInvalidateCompositorView.onResult(() -> updateVisibility(true));
+                } else {
+                    updateVisibility(true);
                 }
-            });
-        }
+            }
+        });
         mHideAnimatorSet.start();
     }
 

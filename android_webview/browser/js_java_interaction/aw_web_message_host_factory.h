@@ -9,7 +9,7 @@
 #include "components/js_injection/browser/web_message_host_factory.h"
 
 namespace js_injection {
-class JsJavaConfiguratorHost;
+class JsCommunicationHost;
 }
 
 namespace android_webview {
@@ -28,7 +28,7 @@ class AwWebMessageHostFactory : public js_injection::WebMessageHostFactory {
   // Returns an array of WebMessageListenerInfos based on the registered
   // factories.
   static base::android::ScopedJavaLocalRef<jobjectArray>
-  GetWebMessageListenerInfo(js_injection::JsJavaConfiguratorHost* host,
+  GetWebMessageListenerInfo(js_injection::JsCommunicationHost* host,
                             JNIEnv* env,
                             const base::android::JavaParamRef<jclass>& clazz);
 

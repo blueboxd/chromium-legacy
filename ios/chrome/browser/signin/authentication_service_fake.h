@@ -40,6 +40,8 @@ class AuthenticationServiceFake : public AuthenticationService {
 
   ChromeIdentity* GetAuthenticatedIdentity() const override;
 
+  bool IsAuthenticatedIdentityManaged() const override;
+
  private:
   AuthenticationServiceFake(PrefService* pref_service,
                             SyncSetupService* sync_setup_service,

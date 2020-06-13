@@ -50,16 +50,6 @@ class TestUnifiedMessageCenterView : public UnifiedMessageCenterView {
 
   ~TestUnifiedMessageCenterView() override = default;
 
-  void SetNotificationRectBelowScroll(
-      const gfx::Rect& rect_below_scroll) override {
-    rect_below_scroll_ = rect_below_scroll;
-  }
-
-  const gfx::Rect& rect_below_scroll() const { return rect_below_scroll_; }
-
- private:
-  gfx::Rect rect_below_scroll_;
-
   DISALLOW_COPY_AND_ASSIGN(TestUnifiedMessageCenterView);
 };
 
@@ -293,9 +283,7 @@ TEST_F(UnifiedMessageCenterViewTest, RemoveNotificationAtTail) {
   // The message center should autoscroll to the bottom of the list (with some
   // padding) after adding a new notification.
   auto id_to_remove = AddNotification();
-  int spacing = features::IsUnifiedMessageCenterRefactorEnabled()
-                    ? 0
-                    : kUnifiedNotificationCenterSpacing;
+  int spacing = 0;
   int scroll_position = GetScroller()->GetVisibleRect().y();
   EXPECT_EQ(GetMessageListView()->height() - GetScroller()->height() + spacing,
             scroll_position);
@@ -411,12 +399,6 @@ TEST_F(UnifiedMessageCenterViewTest, InitialPosition) {
   // MessageCenterView is not maxed out.
   EXPECT_LT(GetMessageListView()->bounds().height(),
             message_center_view()->bounds().height());
-
-  if (!features::IsUnifiedMessageCenterRefactorEnabled()) {
-    EXPECT_EQ(kUnifiedNotificationCenterSpacing,
-              message_center_view()->bounds().bottom() -
-                  GetMessageViewVisibleBounds(1).bottom());
-  }
 }
 
 TEST_F(UnifiedMessageCenterViewTest, InitialPositionMaxOut) {
@@ -428,12 +410,6 @@ TEST_F(UnifiedMessageCenterViewTest, InitialPositionMaxOut) {
   // MessageCenterView is maxed out.
   EXPECT_GT(GetMessageListView()->bounds().height(),
             message_center_view()->bounds().height());
-
-  if (!features::IsUnifiedMessageCenterRefactorEnabled()) {
-    EXPECT_EQ(kUnifiedNotificationCenterSpacing,
-              message_center_view()->bounds().bottom() -
-                  GetMessageViewVisibleBounds(5).bottom());
-  }
 }
 
 TEST_F(UnifiedMessageCenterViewTest, InitialPositionWithLargeNotification) {
@@ -565,13 +541,9 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterNotificationRemoval) {
   EXPECT_TRUE(GetNotificationBarClearAllButton()->GetVisible());
 
   // The MessageCenterView should be tall enough to contain the bar, two
-  // notifications, and extra padding.
-  int spacing = features::IsUnifiedMessageCenterRefactorEnabled()
-                    ? 0
-                    : kUnifiedNotificationCenterSpacing;
-  EXPECT_EQ(
-      kStackedNotificationBarHeight + GetMessageListView()->height() + spacing,
-      message_center_view()->height());
+  // notifications.
+  EXPECT_EQ(kStackedNotificationBarHeight + GetMessageListView()->height(),
+            message_center_view()->height());
 
   // Dismiss until there is only 1 notification left. The bar should be
   // hidden after an animation.
@@ -621,110 +593,6 @@ TEST_F(UnifiedMessageCenterViewTest, StackingCounterLabelRelaidOutOnScroll) {
   GetScroller()->ScrollToPosition(GetScrollBar(), scroll_amount);
   message_center_view()->OnMessageCenterScrolled();
   EXPECT_GT(GetNotificationBarLabel()->bounds().width(), label_width);
-}
-
-TEST_F(UnifiedMessageCenterViewTest, RectBelowScroll) {
-  if (features::IsUnifiedMessageCenterRefactorEnabled())
-    return;
-
-  for (size_t i = 0; i < 6; ++i)
-    AddNotification();
-  CreateMessageCenterView();
-  EXPECT_TRUE(message_center_view()->GetVisible());
-
-  // MessageCenterView is maxed out.
-  EXPECT_GT(GetMessageListView()->bounds().height(),
-            message_center_view()->bounds().height());
-  message_center_view()->OnMessageCenterScrolled();
-
-  EXPECT_EQ(0, message_center_view()->rect_below_scroll().height());
-
-  GetScroller()->ScrollToPosition(GetScrollBar(), 0);
-  message_center_view()->OnMessageCenterScrolled();
-  EXPECT_LT(0, message_center_view()->rect_below_scroll().height());
-}
-
-TEST_F(UnifiedMessageCenterViewTest,
-       RectBelowScrollWithTargetingFirstNotification) {
-  if (features::IsUnifiedMessageCenterRefactorEnabled())
-    return;
-
-  std::vector<std::string> ids;
-  for (size_t i = 0; i < 10; ++i)
-    ids.push_back(AddNotification());
-  // Set the first notification as the target.
-  model()->SetTargetNotification(ids[0]);
-
-  CreateMessageCenterView();
-  EXPECT_TRUE(message_center_view()->GetVisible());
-
-  EXPECT_GT(GetMessageListView()->bounds().height(),
-            message_center_view()->bounds().height());
-  message_center_view()->OnMessageCenterScrolled();
-
-  EXPECT_EQ(0, GetScroller()->GetVisibleRect().y());
-  EXPECT_EQ(
-      GetMessageListView()->height() - GetScroller()->GetVisibleRect().height(),
-      message_center_view()->rect_below_scroll().height());
-}
-
-TEST_F(UnifiedMessageCenterViewTest, RectBelowScrollWithTargetingNotification) {
-  if (features::IsUnifiedMessageCenterRefactorEnabled())
-    return;
-
-  std::vector<std::string> ids;
-  for (size_t i = 0; i < 10; ++i)
-    ids.push_back(AddNotification());
-  // Set the second last notification as the target.
-  model()->SetTargetNotification(ids[8]);
-
-  CreateMessageCenterView();
-  EXPECT_TRUE(message_center_view()->GetVisible());
-
-  EXPECT_GT(GetMessageListView()->bounds().height(),
-            message_center_view()->bounds().height());
-  message_center_view()->OnMessageCenterScrolled();
-
-  EXPECT_EQ(GetMessageListView()->GetLastNotificationBounds().height(),
-            message_center_view()->rect_below_scroll().height());
-}
-
-TEST_F(UnifiedMessageCenterViewTest,
-       RectBelowScrollWithTargetingLastNotification) {
-  std::vector<std::string> ids;
-  for (size_t i = 0; i < 10; ++i)
-    ids.push_back(AddNotification());
-  // Set the second last notification as the target.
-  model()->SetTargetNotification(ids[9]);
-
-  CreateMessageCenterView();
-  EXPECT_TRUE(message_center_view()->GetVisible());
-
-  EXPECT_GT(GetMessageListView()->bounds().height(),
-            message_center_view()->bounds().height());
-  message_center_view()->OnMessageCenterScrolled();
-
-  EXPECT_EQ(0, message_center_view()->rect_below_scroll().height());
-}
-
-TEST_F(UnifiedMessageCenterViewTest,
-       RectBelowScrollWithTargetingInvalidNotification) {
-  if (features::IsUnifiedMessageCenterRefactorEnabled())
-    return;
-  std::vector<std::string> ids;
-  for (size_t i = 0; i < 10; ++i)
-    ids.push_back(AddNotification());
-  // Set the second last notification as the target.
-  model()->SetTargetNotification("INVALID_ID");
-
-  CreateMessageCenterView();
-  EXPECT_TRUE(message_center_view()->GetVisible());
-
-  EXPECT_GT(GetMessageListView()->bounds().height(),
-            message_center_view()->bounds().height());
-  message_center_view()->OnMessageCenterScrolled();
-
-  EXPECT_EQ(0, message_center_view()->rect_below_scroll().height());
 }
 
 // We need a widget to initialize a FocusManager.

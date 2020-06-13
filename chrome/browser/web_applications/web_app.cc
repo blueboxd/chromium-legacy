@@ -69,6 +69,10 @@ bool WebApp::IsDefaultApp() const {
   return sources_[Source::kDefault];
 }
 
+bool WebApp::IsPolicyInstalledApp() const {
+  return sources_[Source::kPolicy];
+}
+
 bool WebApp::IsSystemApp() const {
   return sources_[Source::kSystem];
 }

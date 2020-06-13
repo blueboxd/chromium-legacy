@@ -82,7 +82,7 @@ chrome_version = None
 
 def GetChromeVersion():
   with TestDriver() as t:
-    t.LoadURL('http://check.googlezip.net/connect')
+    t.LoadURL('about:blank')
     ua = t.ExecuteJavascriptStatement('navigator.userAgent')
     match = re.search('Chrome/[0-9\.]+', ua)
     if not match:

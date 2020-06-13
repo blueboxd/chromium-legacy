@@ -9,6 +9,9 @@
 
 namespace security_interstitials {
 
+// Controls whether an interstitial is shown when submitting a mixed form.
+extern const base::Feature kInsecureFormSubmissionInterstitial;
+
 }  // namespace security_interstitials
 
 #endif  // COMPONENTS_SECURITY_INTERSTITIALS_CORE_FEATURES_H_

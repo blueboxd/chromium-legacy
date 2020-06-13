@@ -28,10 +28,10 @@ Polymer({
     },
 
     /**
-     * The display email address of the current user.
+     * The device type (e.g. "Chromebook" or "Chromebox").
      * @private
      */
-    userEmail_: String,
+    deviceType_: String,
   },
 
   /**
@@ -43,10 +43,10 @@ Polymer({
   },
 
   /**
-   * @param userEmail {string} The display email address of the current user.
+   * @param deviceType {string} The device type (e.g. "Chromebook").
    */
-  setUserEmail(userEmail) {
-    this.userEmail_ = userEmail;
+  setDeviceType(deviceType) {
+    this.deviceType_ = deviceType;
   },
 
   /** @override */

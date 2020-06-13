@@ -64,6 +64,9 @@ TEST_F(FontPreloadManagerTest, FastFontFinishBeforeBody) {
             href="https://example.com/font.woff">
   )HTML");
 
+  // Make sure timer doesn't fire in case the test runs slow.
+  GetFontPreloadManager().SetRenderDelayTimeoutForTest(base::TimeDelta::Max());
+
   // Rendering is blocked due to ongoing font preloading.
   EXPECT_TRUE(Compositor().DeferMainFrameUpdate());
   EXPECT_TRUE(GetFontPreloadManager().HasPendingRenderBlockingFonts());
@@ -463,6 +466,9 @@ TEST_F(FontPreloadManagerTest, OptionalFontFastImperativeLoad) {
     </script>
     <span id=target>0123456789</span>
   )HTML");
+
+  // Make sure timer doesn't fire in case the test runs slow.
+  GetFontPreloadManager().SetRenderDelayTimeoutForTest(base::TimeDelta::Max());
 
   // Rendering is blocked due to font being preloaded.
   EXPECT_TRUE(Compositor().DeferMainFrameUpdate());

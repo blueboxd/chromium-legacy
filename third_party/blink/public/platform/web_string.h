@@ -31,7 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_STRING_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_STRING_H_
 
+#include <cstring>
 #include <string>
+
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/strings/latin1_string_conversions.h"
@@ -109,7 +111,7 @@ class WebString {
   BLINK_PLATFORM_EXPORT bool Equals(const WebString&) const;
   BLINK_PLATFORM_EXPORT bool Equals(const char* characters, size_t len) const;
   bool Equals(const char* characters) const {
-    return Equals(characters, characters ? strlen(characters) : 0);
+    return Equals(characters, characters ? std::strlen(characters) : 0);
   }
 
   BLINK_PLATFORM_EXPORT size_t length() const;

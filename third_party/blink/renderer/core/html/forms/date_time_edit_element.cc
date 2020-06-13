@@ -847,6 +847,13 @@ bool DateTimeEditElement::HasFocusedField() {
   return FocusedFieldIndex() != kInvalidFieldIndex;
 }
 
+void PopulateOnlyYearMonthDay(const DateComponents& date,
+                              DateTimeFieldsState& date_time_fields_state) {
+  date_time_fields_state.SetYear(date.FullYear());
+  date_time_fields_state.SetMonth(date.Month() + 1);
+  date_time_fields_state.SetDayOfMonth(date.MonthDay());
+}
+
 void DateTimeEditElement::SetOnlyYearMonthDay(const DateComponents& date) {
   DCHECK_EQ(date.GetType(), DateComponents::kDate);
 
@@ -854,11 +861,20 @@ void DateTimeEditElement::SetOnlyYearMonthDay(const DateComponents& date) {
     return;
 
   DateTimeFieldsState date_time_fields_state = ValueAsDateTimeFieldsState();
-  date_time_fields_state.SetYear(date.FullYear());
-  date_time_fields_state.SetMonth(date.Month() + 1);
-  date_time_fields_state.SetDayOfMonth(date.MonthDay());
+  PopulateOnlyYearMonthDay(date, date_time_fields_state);
   SetValueAsDateTimeFieldsState(date_time_fields_state);
   edit_control_owner_->EditControlValueChanged();
+}
+
+void PopulateOnlyTime(const DateComponents& date,
+                      DateTimeFieldsState& date_time_fields_state) {
+  date_time_fields_state.SetHour(date.Hour() % 12 ? date.Hour() % 12 : 12);
+  date_time_fields_state.SetMinute(date.Minute());
+  date_time_fields_state.SetSecond(date.Second());
+  date_time_fields_state.SetMillisecond(date.Millisecond());
+  date_time_fields_state.SetAMPM(date.Hour() >= 12
+                                     ? DateTimeFieldsState::kAMPMValuePM
+                                     : DateTimeFieldsState::kAMPMValueAM);
 }
 
 void DateTimeEditElement::SetOnlyTime(const DateComponents& date) {
@@ -868,13 +884,25 @@ void DateTimeEditElement::SetOnlyTime(const DateComponents& date) {
     return;
 
   DateTimeFieldsState date_time_fields_state = ValueAsDateTimeFieldsState();
-  date_time_fields_state.SetHour(date.Hour() % 12 ? date.Hour() % 12 : 12);
-  date_time_fields_state.SetMinute(date.Minute());
-  date_time_fields_state.SetSecond(date.Second());
-  date_time_fields_state.SetMillisecond(date.Millisecond());
-  date_time_fields_state.SetAMPM(date.Hour() >= 12
-                                     ? DateTimeFieldsState::kAMPMValuePM
-                                     : DateTimeFieldsState::kAMPMValueAM);
+  PopulateOnlyTime(date, date_time_fields_state);
+  SetValueAsDateTimeFieldsState(date_time_fields_state);
+  edit_control_owner_->EditControlValueChanged();
+}
+
+void PopulateDateTimeLocal(const DateComponents& date,
+                           DateTimeFieldsState& date_time_fields_state) {
+  PopulateOnlyYearMonthDay(date, date_time_fields_state);
+  PopulateOnlyTime(date, date_time_fields_state);
+}
+
+void DateTimeEditElement::SetDateTimeLocal(const DateComponents& date) {
+  DCHECK_EQ(date.GetType(), DateComponents::kDateTimeLocal);
+
+  if (!edit_control_owner_)
+    return;
+
+  DateTimeFieldsState date_time_fields_state = ValueAsDateTimeFieldsState();
+  PopulateDateTimeLocal(date, date_time_fields_state);
   SetValueAsDateTimeFieldsState(date_time_fields_state);
   edit_control_owner_->EditControlValueChanged();
 }

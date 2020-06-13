@@ -1527,7 +1527,10 @@ test("content_browsertests") {
       "//mojo/public/cpp/platform",
       "//mojo/public/mojom/base",
     ]
-    data_deps += [ "//content/shell:content_shell" ]
+    data_deps += [
+      "//content/shell:content_shell",
+      "//mojo/core:shared_library",
+    ]
   }
 
   if (!is_chrome_branded) {

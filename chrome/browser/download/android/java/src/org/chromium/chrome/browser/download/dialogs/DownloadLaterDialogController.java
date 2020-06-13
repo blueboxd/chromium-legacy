@@ -12,5 +12,10 @@ public interface DownloadLaterDialogController {
      * Called when the selection changed in the download later dialog.
      * @param choice The selection of the download time in the download later dialog.
      */
-    void onChoiceChanged(@DownloadLaterDialogChoice int choice);
+    void onDownloadLaterDialogComplete(@DownloadLaterDialogChoice int choice);
+
+    /**
+     * Called when the user cancel or dismiss the download location dialog.
+     */
+    void onDownloadLaterDialogCanceled();
 }

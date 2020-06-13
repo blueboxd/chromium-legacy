@@ -13,6 +13,7 @@
 #include "components/login/localized_values_builder.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 
 namespace {
 
@@ -111,8 +112,9 @@ void SyncConsentScreenHandler::DeclareLocalizedValues(
                          builder);
 
   // SplitSettingsSync strings.
-  RememberLocalizedValue("syncConsentScreenSubtitle",
-                         IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE, builder);
+  RememberLocalizedValue("syncConsentScreenTitleWithDevice",
+                         IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE_WITH_DEVICE,
+                         builder);
   RememberLocalizedValue("syncConsentScreenOsSyncName",
                          IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME, builder);
   RememberLocalizedValue("syncConsentScreenOsSyncDescription",
@@ -136,7 +138,7 @@ void SyncConsentScreenHandler::Show() {
   auto* user_manager = user_manager::UserManager::Get();
   base::DictionaryValue data;
   data.SetBoolean("isChildAccount", user_manager->IsLoggedInAsChildUser());
-  data.SetString("userEmail", user_manager->GetActiveUser()->GetDisplayEmail());
+  data.SetString("deviceType", ui::GetChromeOSDeviceName());
   ShowScreenWithData(kScreenId, &data);
 }
 
@@ -227,7 +229,8 @@ void SyncConsentScreenHandler::Continue(
                 &consent_description_ids, &consent_confirmation_id);
   // Manually add this ID because the string contains a runtime substitution,
   // so it's not included in GetConsentIDs().
-  consent_description_ids.push_back(IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE);
+  consent_description_ids.push_back(
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE_WITH_DEVICE);
   screen_->OnContinue(consent_description_ids, consent_confirmation_id, choice);
 
   SyncConsentScreen::SyncConsentScreenTestDelegate* test_delegate =

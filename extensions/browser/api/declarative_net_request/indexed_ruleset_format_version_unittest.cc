@@ -64,11 +64,14 @@ enum IndexType : ubyte {
   count
 }
 enum HeaderOperation : ubyte {
+  append,
+  set,
   remove
 }
 table ModifyHeaderInfo {
   operation: HeaderOperation;
   header: string;
+  value: string;
 }
 table RegexRule {
   url_rule: url_pattern_index.flat.UrlRule;
@@ -146,7 +149,7 @@ TEST_F(IndexedRulesetFormatVersionTest, CheckVersionUpdated) {
   EXPECT_EQ(StripCommentsAndWhitespace(kFlatbufferSchemaExpected),
             StripCommentsAndWhitespace(flatbuffer_schema))
       << "Schema change detected; update this test and the schema version.";
-  EXPECT_EQ(17, GetIndexedRulesetFormatVersionForTesting())
+  EXPECT_EQ(18, GetIndexedRulesetFormatVersionForTesting())
       << "Update this test if you update the schema version.";
 }
 

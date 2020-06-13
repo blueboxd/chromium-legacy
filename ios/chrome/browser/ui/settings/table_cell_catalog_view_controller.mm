@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
@@ -14,9 +15,12 @@
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
+#import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_cell.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_multi_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
@@ -67,6 +71,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAccountSignInItem,
   ItemTypeSettingsSwitch1,
   ItemTypeSettingsSwitch2,
+  ItemTypeTableViewInfoButton1,
+  ItemTypeTableViewInfoButton2,
   ItemTypeSyncSwitch,
   ItemTypeSettingsSyncError,
   ItemTypeAutofillData,
@@ -333,6 +339,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:settingsSwitchItem2
       toSectionWithIdentifier:SectionIdentifierSettings];
 
+  TableViewInfoButtonItem* tableViewInfoButtonItem =
+      [[TableViewInfoButtonItem alloc]
+          initWithType:ItemTypeTableViewInfoButton1];
+  tableViewInfoButtonItem.text = @"Setting item with an info accessory";
+  tableViewInfoButtonItem.statusText = @"Status";
+  [model addItem:tableViewInfoButtonItem
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  TableViewInfoButtonItem* tableViewInfoButtonItem2 =
+      [[TableViewInfoButtonItem alloc]
+          initWithType:ItemTypeTableViewInfoButton2];
+  tableViewInfoButtonItem.text = @"Setting item with an info accessory";
+  tableViewInfoButtonItem.detailText = @"Detail text";
+  tableViewInfoButtonItem.statusText = @"Status";
+  [model addItem:tableViewInfoButtonItem2
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
   SyncSwitchItem* syncSwitchItem =
       [[SyncSwitchItem alloc] initWithType:ItemTypeSyncSwitch];
   syncSwitchItem.text = @"This is a sync switch item";
@@ -447,6 +470,45 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.URL = GURL("https://photos.google.com/");
   item.badgeImage = [UIImage imageNamed:@"table_view_cell_check_mark"];
   [model addItem:item toSectionWithIdentifier:SectionIdentifierURL];
+}
+
+#pragma mark - Actions
+
+// Called when the user clicks on the information button of the managed
+// setting's UI. Shows a textual bubble with the information of the enterprise.
+- (void)didTapManagedUIInfoButton:(UIButton*)buttonView {
+  EnterpriseInfoPopoverViewController* bubbleViewController =
+      [[EnterpriseInfoPopoverViewController alloc] initWithEnterpriseName:nil];
+  [self presentViewController:bubbleViewController animated:YES completion:nil];
+
+  // Disable the button when showing the bubble.
+  buttonView.enabled = NO;
+
+  // Set the anchor and arrow direction of the bubble.
+  bubbleViewController.popoverPresentationController.sourceView = buttonView;
+  bubbleViewController.popoverPresentationController.sourceRect =
+      buttonView.bounds;
+  bubbleViewController.popoverPresentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionAny;
+}
+
+#pragma mark - UITableViewDataSource
+
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [super tableView:tableView
+                     cellForRowAtIndexPath:indexPath];
+  ItemType itemType = static_cast<ItemType>(
+      [self.tableViewModel itemTypeForIndexPath:indexPath]);
+  if (itemType == ItemTypeTableViewInfoButton1 ||
+      itemType == ItemTypeTableViewInfoButton2) {
+    TableViewInfoButtonCell* managedCell =
+        base::mac::ObjCCastStrict<TableViewInfoButtonCell>(cell);
+    [managedCell.trailingButton addTarget:self
+                                   action:@selector(didTapManagedUIInfoButton:)
+                         forControlEvents:UIControlEventTouchUpInside];
+  }
+  return cell;
 }
 
 @end

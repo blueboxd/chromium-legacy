@@ -2062,9 +2062,9 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
                               ? Suggestion::PREFIX_MATCH
                               : Suggestion::SUBSTRING_MATCH;
 
-      // Possibly there is a nickname to be shared between the card and its
-      // duplicates.
-      base::string16 shared_nickname =
+      // Get the nickname for the card suggestion, which may not be the same as
+      // the card's nickname if there are duplicates of the card on file.
+      base::string16 suggestion_nickname =
           GetDisplayNicknameForCreditCard(*credit_card);
 
       // If the value is the card number, the label is the expiration date.
@@ -2072,7 +2072,7 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
       // cardholder name. The label should never repeat the value.
       if (type.GetStorableType() == CREDIT_CARD_NUMBER) {
         suggestion->value = credit_card->CardIdentifierStringForAutofillDisplay(
-            shared_nickname);
+            suggestion_nickname);
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
         suggestion->label = credit_card->GetInfo(
@@ -2082,9 +2082,10 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
       } else if (credit_card->number().empty()) {
-        // TODO(crbug/1059087): Update suggestion label with nickname for
-        // empty-number local cards when nickname is supported for local card.
-        if (type.GetStorableType() != CREDIT_CARD_NAME_FULL) {
+        DCHECK_EQ(credit_card->record_type(), CreditCard::LOCAL_CARD);
+        if (credit_card->HasValidNickname()) {
+          suggestion->label = credit_card->nickname();
+        } else if (type.GetStorableType() != CREDIT_CARD_NAME_FULL) {
           suggestion->label = credit_card->GetInfo(
               AutofillType(CREDIT_CARD_NAME_FULL), app_locale_);
         }
@@ -2097,7 +2098,7 @@ std::vector<Suggestion> PersonalDataManager::GetSuggestionsForCards(
             base::FeatureList::IsEnabled(features::kAutofillKeyboardAccessory)
                 ? credit_card->ObfuscatedLastFourDigits()
                 : credit_card->CardIdentifierStringForAutofillDisplay(
-                      shared_nickname);
+                      suggestion_nickname);
 #elif defined(OS_IOS)
         // E.g. "••••1234"".
         suggestion->label = credit_card->ObfuscatedLastFourDigits();
@@ -2654,6 +2655,11 @@ void PersonalDataManager::MigrateUserOptedInWalletSyncTransportIfNeeded() {
 
 base::string16 PersonalDataManager::GetDisplayNicknameForCreditCard(
     const CreditCard& card) const {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillEnableCardNicknameManagement)) {
+    return base::string16();
+  }
+
   // Always prefer a local nickname if available.
   if (card.HasValidNickname() && card.record_type() == CreditCard::LOCAL_CARD)
     return card.nickname();

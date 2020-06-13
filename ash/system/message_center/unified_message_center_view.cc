@@ -45,13 +45,8 @@ constexpr base::TimeDelta kCollapseAnimationDuration =
 class ScrollerContentsView : public views::View {
  public:
   ScrollerContentsView(UnifiedMessageListView* message_list_view) {
-    int bottom_padding = features::IsUnifiedMessageCenterRefactorEnabled()
-                             ? 0
-                             : kUnifiedNotificationCenterSpacing;
-
     auto* contents_layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kVertical,
-        gfx::Insets(0, 0, bottom_padding, 0)));
+        views::BoxLayout::Orientation::kVertical));
     contents_layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kStretch);
     AddChildView(message_list_view);
@@ -185,9 +180,7 @@ void UnifiedMessageCenterView::OnNotificationSlidOut() {
 void UnifiedMessageCenterView::ListPreferredSizeChanged() {
   UpdateVisibility();
   PreferredSizeChanged();
-
-  if (features::IsUnifiedMessageCenterRefactorEnabled())
-    SetMaxHeight(available_height_);
+  SetMaxHeight(available_height_);
 
   Layout();
 
@@ -238,7 +231,6 @@ void UnifiedMessageCenterView::Layout() {
   }
 
   ScrollToTarget();
-  NotifyRectBelowScroll();
 }
 
 gfx::Size UnifiedMessageCenterView::CalculatePreferredSize() const {
@@ -288,8 +280,6 @@ void UnifiedMessageCenterView::OnMessageCenterScrolled() {
     // on-screen position of notification list does not change.
     scroll_bar_->ScrollByContentsOffset(previous_y - scroller_->y());
   }
-
-  NotifyRectBelowScroll();
 }
 
 void UnifiedMessageCenterView::OnWillChangeFocus(views::View* before,
@@ -302,7 +292,7 @@ void UnifiedMessageCenterView::OnDidChangeFocus(views::View* before,
 
   OnMessageCenterScrolled();
 
-  if (features::IsUnifiedMessageCenterRefactorEnabled() && !collapsed()) {
+  if (!collapsed()) {
     views::View* first_view = GetFirstFocusableChild();
     views::View* last_view = GetLastFocusableChild();
 
@@ -363,11 +353,6 @@ void UnifiedMessageCenterView::AnimationCanceled(
   AnimationEnded(animation);
 }
 
-void UnifiedMessageCenterView::SetNotificationRectBelowScroll(
-    const gfx::Rect& rect_below_scroll) {
-  parent_->SetNotificationRectBelowScroll(rect_below_scroll);
-}
-
 void UnifiedMessageCenterView::StartHideStackingBarAnimation() {
   animation_->End();
   animation_state_ = UnifiedMessageCenterAnimationState::HIDE_STACKING_BAR;
@@ -406,7 +391,6 @@ void UnifiedMessageCenterView::UpdateVisibility() {
     // targeted next time.
     model_->set_notification_target_mode(
         UnifiedSystemTrayModel::NotificationTargetMode::LAST_NOTIFICATION);
-    NotifyRectBelowScroll();
 
     // Transfer focus to quick settings when going invisible.
     auto* widget = GetWidget();
@@ -495,28 +479,6 @@ UnifiedMessageCenterView::GetStackedNotifications() const {
   return message_list_view_->GetNotificationsAboveY(y_offset);
 }
 
-void UnifiedMessageCenterView::NotifyRectBelowScroll() {
-  if (features::IsUnifiedMessageCenterRefactorEnabled())
-    return;
-  // If the message center is hidden, make sure rounded corners are not drawn.
-  if (!GetVisible()) {
-    SetNotificationRectBelowScroll(gfx::Rect());
-    return;
-  }
-
-  gfx::Rect rect_below_scroll;
-  rect_below_scroll.set_height(
-      std::max(0, message_list_view_->GetLastNotificationBounds().bottom() -
-                      scroller_->GetVisibleRect().bottom()));
-
-  gfx::Rect notification_bounds =
-      message_list_view_->GetNotificationBoundsBelowY(
-          scroller_->GetVisibleRect().bottom());
-  rect_below_scroll.set_x(notification_bounds.x());
-  rect_below_scroll.set_width(notification_bounds.width());
-
-  SetNotificationRectBelowScroll(rect_below_scroll);
-}
 
 void UnifiedMessageCenterView::FocusOut(bool reverse) {
   if (message_center_bubble_ && message_center_bubble_->FocusOut(reverse)) {

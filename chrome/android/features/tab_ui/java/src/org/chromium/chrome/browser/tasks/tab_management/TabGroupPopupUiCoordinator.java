@@ -45,7 +45,7 @@ public class TabGroupPopupUiCoordinator
         PropertyModel model = new PropertyModel(TabGroupPopupUiProperties.ALL_KEYS);
         mTabGroupPopupUiParent = new TabGroupPopupUiParent(activity, mAnchorView);
         mTabGroupUiCoordinator = new TabGroupUiCoordinator(
-                mTabGroupPopupUiParent.getCurrentContainerView(), mThemeColorProvider);
+                mTabGroupPopupUiParent.getCurrentContainerView(), mThemeColorProvider, null);
         mTabGroupUiCoordinator.initializeWithNative(activity, null);
         mModelChangeProcessor = PropertyModelChangeProcessor.create(
                 model, mTabGroupPopupUiParent, TabGroupPopupUiViewBinder::bind);

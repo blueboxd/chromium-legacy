@@ -320,7 +320,7 @@ java_group("android_webview_no_weblayer_java") {
     # here because there's currently no good way to enforce that it gets included
     # when it's depended on via JNI.
     ":common_java",
-    "//android_webview/glue",
+    "//android_webview/glue:glue_java",
     "//android_webview/nonembedded:nonembedded_java",
     "//android_webview/support_library:support_lib_glue_java",
   ]

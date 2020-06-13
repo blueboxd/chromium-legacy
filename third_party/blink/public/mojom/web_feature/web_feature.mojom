@@ -2650,6 +2650,8 @@ enum WebFeature {
   kRubyTextWithNonDefaultTextAlign = 3313,
   kHTMLMetaElementReferrerPolicyOutsideHead = 3314,
   kHTMLMetaElementReferrerPolicyMultipleTokens = 3315,
+  kFetchAPINonGetOrHeadOpaqueResponse = 3316,
+  kFetchAPINonGetOrHeadOpaqueResponseWithRedirect = 3317,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

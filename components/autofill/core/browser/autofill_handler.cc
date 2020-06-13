@@ -87,12 +87,11 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
   std::set<FormRendererId> new_form_renderer_ids;
   for (const FormData& form : forms) {
     const auto parse_form_start_time = AutofillTickClock::NowTicks();
-    FormStructure* cached_form_structure = nullptr;
-    FormStructure* form_structure = nullptr;
     // Try to find the FormStructure that corresponds to |form| if the form
     // contains credit card fields only.
     // |cached_form_structure| may still be nullptr after this call.
-    ignore_result(FindCachedForm(form, &cached_form_structure));
+    FormStructure* cached_form_structure =
+        FindCachedFormByRendererId(form.unique_renderer_id);
     if (cached_form_structure) {
       for (const FormType& form_type : cached_form_structure->GetFormTypes()) {
         if (form_type != CREDIT_CARD_FORM) {
@@ -102,7 +101,8 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
       }
     }
 
-    if (!ParseForm(form, cached_form_structure, &form_structure))
+    FormStructure* form_structure = ParseForm(form, cached_form_structure);
+    if (!form_structure)
       continue;
     DCHECK(form_structure);
     new_form_renderer_ids.insert(form_structure->unique_renderer_id());
@@ -118,9 +118,8 @@ void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
   std::vector<FormStructure*> new_form_structures;
   new_form_structures.reserve(new_form_renderer_ids.size());
   for (auto renderer_id : new_form_renderer_ids) {
-    FormStructure* form_structure = nullptr;
-    if (FindCachedFormByRendererId(renderer_id, &form_structure) &&
-        form_structure) {
+    FormStructure* form_structure = FindCachedFormByRendererId(renderer_id);
+    if (form_structure) {
       new_form_structures.push_back(form_structure);
     } else {
       NOTREACHED();
@@ -206,8 +205,9 @@ bool AutofillHandler::GetCachedFormAndField(const FormData& form,
                                             FormStructure** form_structure,
                                             AutofillField** autofill_field) {
   // Maybe find an existing FormStructure that corresponds to |form|.
-  FormStructure* cached_form = nullptr;
-  if (FindCachedForm(form, &cached_form)) {
+  FormStructure* cached_form =
+      FindCachedFormByRendererId(form.unique_renderer_id);
+  if (cached_form) {
     DCHECK(cached_form);
     if (!CachedFormNeedsUpdate(form, *cached_form)) {
       // There is no data to return if there are no auto-fillable fields.
@@ -223,7 +223,8 @@ bool AutofillHandler::GetCachedFormAndField(const FormData& form,
 
   // The form is new or updated, parse it and discard |cached_form|.
   // i.e., |cached_form| is no longer valid after this call.
-  if (!ParseForm(form, std::move(cached_form), form_structure))
+  *form_structure = ParseForm(form, cached_form);
+  if (!*form_structure)
     return false;
 
   // Annotate the updated form with its predicted types.
@@ -238,50 +239,36 @@ bool AutofillHandler::GetCachedFormAndField(const FormData& form,
   return *autofill_field != nullptr;
 }
 
-bool AutofillHandler::FindCachedFormBySignature(
-    FormSignature form_signature,
-    FormStructure** form_structure) const {
+FormStructure* AutofillHandler::FindCachedFormBySignature(
+    FormSignature form_signature) const {
   for (const auto& p : form_structures_) {
     if (p.second->form_signature() == form_signature) {
-      *form_structure = p.second.get();
-      return true;
+      return p.second.get();
     }
   }
-  return false;
+  return nullptr;
 }
 
-bool AutofillHandler::FindCachedFormByRendererId(
-    FormRendererId form_renderer_id,
-    FormStructure** form_structure) const {
+FormStructure* AutofillHandler::FindCachedFormByRendererId(
+    FormRendererId form_renderer_id) const {
   auto it = form_structures_.find(form_renderer_id);
-  if (it != form_structures_.end()) {
-    *form_structure = it->second.get();
-    return true;
-  }
-  return false;
+  return it != form_structures_.end() ? it->second.get() : nullptr;
 }
 
-bool AutofillHandler::FindCachedForm(const FormData& form,
-                                     FormStructure** form_structure) const {
-  return FindCachedFormByRendererId(form.unique_renderer_id, form_structure);
-}
-
-bool AutofillHandler::ParseForm(const FormData& form,
-                                const FormStructure* cached_form,
-                                FormStructure** parsed_form_structure) {
-  DCHECK(parsed_form_structure);
+FormStructure* AutofillHandler::ParseForm(const FormData& form,
+                                          const FormStructure* cached_form) {
   if (form_structures_.size() >= kAutofillHandlerMaxFormCacheSize) {
     if (log_manager_) {
       log_manager_->Log() << LoggingScope::kAbortParsing
                           << LogMessage::kAbortParsingTooManyForms << form;
     }
-    return false;
+    return nullptr;
   }
 
   auto form_structure = std::make_unique<FormStructure>(form);
   form_structure->ParseFieldTypesFromAutocompleteAttributes();
   if (!form_structure->ShouldBeParsed(log_manager_))
-    return false;
+    return nullptr;
 
   if (cached_form) {
     // We need to keep the server data if available. We need to use them while
@@ -300,17 +287,17 @@ bool AutofillHandler::ParseForm(const FormData& form,
 
   // Hold the parsed_form_structure we intend to return. We can use this to
   // reference the form_signature when transferring ownership below.
-  *parsed_form_structure = form_structure.get();
+  FormStructure* parsed_form_structure = form_structure.get();
 
   // Ownership is transferred to |form_structures_| which maintains it until
   // the form is parsed again or the AutofillHandler is destroyed.
   //
   // Note that this insert/update takes ownership of the new form structure
   // and also destroys the previously cached form structure.
-  form_structures_[(*parsed_form_structure)->unique_renderer_id()] =
+  form_structures_[parsed_form_structure->unique_renderer_id()] =
       std::move(form_structure);
 
-  return true;
+  return parsed_form_structure;
 }
 
 void AutofillHandler::Reset() {

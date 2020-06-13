@@ -725,6 +725,73 @@ void NewTabPageHandler::OnPromoLinkClicked() {
   LogEvent(NTP_MIDDLE_SLOT_PROMO_LINK_CLICKED);
 }
 
+void NewTabPageHandler::OnVoiceSearchAction(
+    new_tab_page::mojom::VoiceSearchAction action) {
+  NTPLoggingEventType event;
+  switch (action) {
+    case new_tab_page::mojom::VoiceSearchAction::ACTIVATE_SEARCH_BOX:
+      event = NTP_VOICE_ACTION_ACTIVATE_SEARCH_BOX;
+      break;
+    case new_tab_page::mojom::VoiceSearchAction::ACTIVATE_KEYBOARD:
+      event = NTP_VOICE_ACTION_ACTIVATE_KEYBOARD;
+      break;
+    case new_tab_page::mojom::VoiceSearchAction::CLOSE_OVERLAY:
+      event = NTP_VOICE_ACTION_CLOSE_OVERLAY;
+      break;
+    case new_tab_page::mojom::VoiceSearchAction::QUERY_SUBMITTED:
+      event = NTP_VOICE_ACTION_QUERY_SUBMITTED;
+      break;
+    case new_tab_page::mojom::VoiceSearchAction::SUPPORT_LINK_CLICKED:
+      event = NTP_VOICE_ACTION_SUPPORT_LINK_CLICKED;
+      break;
+    case new_tab_page::mojom::VoiceSearchAction::TRY_AGAIN_LINK:
+      event = NTP_VOICE_ACTION_TRY_AGAIN_LINK;
+      break;
+    case new_tab_page::mojom::VoiceSearchAction::TRY_AGAIN_MIC_BUTTON:
+      event = NTP_VOICE_ACTION_TRY_AGAIN_MIC_BUTTON;
+      break;
+  }
+  LogEvent(event);
+}
+
+void NewTabPageHandler::OnVoiceSearchError(
+    new_tab_page::mojom::VoiceSearchError error) {
+  NTPLoggingEventType event;
+  switch (error) {
+    case new_tab_page::mojom::VoiceSearchError::ABORTED:
+      event = NTP_VOICE_ERROR_ABORTED;
+      break;
+    case new_tab_page::mojom::VoiceSearchError::NO_SPEECH:
+      event = NTP_VOICE_ERROR_NO_SPEECH;
+      break;
+    case new_tab_page::mojom::VoiceSearchError::AUDIO_CAPTURE:
+      event = NTP_VOICE_ERROR_AUDIO_CAPTURE;
+      break;
+    case new_tab_page::mojom::VoiceSearchError::NETWORK:
+      event = NTP_VOICE_ERROR_NETWORK;
+      break;
+    case new_tab_page::mojom::VoiceSearchError::NOT_ALLOWED:
+      event = NTP_VOICE_ERROR_NOT_ALLOWED;
+      break;
+    case new_tab_page::mojom::VoiceSearchError::LANGUAGE_NOT_SUPPORTED:
+      event = NTP_VOICE_ERROR_LANGUAGE_NOT_SUPPORTED;
+      break;
+    case new_tab_page::mojom::VoiceSearchError::NO_MATCH:
+      event = NTP_VOICE_ERROR_NO_MATCH;
+      break;
+    case new_tab_page::mojom::VoiceSearchError::SERVICE_NOT_ALLOWED:
+      event = NTP_VOICE_ERROR_SERVICE_NOT_ALLOWED;
+      break;
+    case new_tab_page::mojom::VoiceSearchError::BAD_GRAMMAR:
+      event = NTP_VOICE_ERROR_BAD_GRAMMAR;
+      break;
+    case new_tab_page::mojom::VoiceSearchError::OTHER:
+      event = NTP_VOICE_ERROR_OTHER;
+      break;
+  }
+  LogEvent(event);
+}
+
 void NewTabPageHandler::QueryAutocomplete(const base::string16& input,
                                           bool prevent_inline_autocomplete) {
   if (!autocomplete_controller_) {

@@ -67,7 +67,12 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   static bool g_run_in_memory_;
 
   const base::FilePath path_to_database_;
-  sql::Database db_;
+
+  // May be null if the database:
+  //  - could not be opened
+  //  - table/index initialization failed
+  //  - suffered from an unrecoverable error.
+  std::unique_ptr<sql::Database> db_;
 
   // Must outlive |this|.
   const base::Clock* clock_;

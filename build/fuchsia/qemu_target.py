@@ -55,7 +55,11 @@ class QemuTarget(emu_target.EmuTarget):
     if kvm_supported and same_arch:
       return True
     elif self._require_kvm:
-      raise FuchsiaTargetException('KVM required but unavailable.')
+      if same_arch:
+        raise FuchsiaTargetException('KVM required but unavailable.')
+      else:
+        raise FuchsiaTargetException('KVM unavailable when CPU architecture of'\
+                                     ' host is different from that of target.')
     else:
       return False
 

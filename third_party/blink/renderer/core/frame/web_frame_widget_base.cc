@@ -288,8 +288,7 @@ void WebFrameWidgetBase::SetBackgroundOpaque(bool opaque) {
   }
 }
 
-void WebFrameWidgetBase::SetTextDirection(
-    mojo_base::mojom::blink::TextDirection direction) {
+void WebFrameWidgetBase::SetTextDirection(base::i18n::TextDirection direction) {
   LocalFrame* focusedFrame = FocusedLocalFrameInWidget();
   if (focusedFrame)
     focusedFrame->SetTextDirection(direction);

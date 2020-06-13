@@ -26,6 +26,7 @@ extern const char kTranslateUserActionDuration[];
 extern const char kTranslatePageScheme[];
 extern const char kTranslateSimilarLanguageMatch[];
 extern const char kTranslateLanguageDetectionConflict[];
+extern const char kTranslateLanguageDeterminedDuration[];
 
 }  // namespace metrics_internal
 
@@ -94,6 +95,10 @@ void ReportPageScheme(const std::string& scheme);
 // Called when CLD agreed on a language which is different, but in the similar
 // language list.
 void ReportSimilarLanguageMatch(bool match);
+
+// Called when the page language is determined.
+void ReportLanguageDeterminedDuration(base::TimeTicks begin,
+                                      base::TimeTicks end);
 
 }  // namespace translate
 

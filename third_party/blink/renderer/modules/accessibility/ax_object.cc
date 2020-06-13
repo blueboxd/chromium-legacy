@@ -1570,13 +1570,14 @@ bool AXObject::CanSetValueAttribute() const {
     case ax::mojom::blink::Role::kColorWell:
     case ax::mojom::blink::Role::kDate:
     case ax::mojom::blink::Role::kDateTime:
+    case ax::mojom::blink::Role::kInputTime:
     case ax::mojom::blink::Role::kScrollBar:
+    case ax::mojom::blink::Role::kSearchBox:
     case ax::mojom::blink::Role::kSlider:
     case ax::mojom::blink::Role::kSpinButton:
     case ax::mojom::blink::Role::kSplitter:
     case ax::mojom::blink::Role::kTextField:
     case ax::mojom::blink::Role::kTextFieldWithComboBox:
-    case ax::mojom::blink::Role::kSearchBox:
       return Restriction() == kRestrictionNone;
     default:
       return false;

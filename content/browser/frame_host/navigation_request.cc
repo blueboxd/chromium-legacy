@@ -1451,7 +1451,7 @@ void NavigationRequest::StartNavigation(bool is_for_commit) {
   // starting SiteInstance.
   starting_site_instance_ =
       frame_tree_node->current_frame_host()->GetSiteInstance();
-  site_url_ = GetSiteForCommonParamsURL();
+  site_info_ = GetSiteInfoForCommonParamsURL();
 
   // Compute the redirect chain.
   // TODO(clamy): Try to simplify this and have the redirects be part of
@@ -3179,7 +3179,7 @@ void NavigationRequest::ResetExpectedProcess() {
   if (process) {
     RenderProcessHostImpl::RemoveExpectedNavigationToSite(
         frame_tree_node()->navigator().GetController()->GetBrowserContext(),
-        process, site_url_);
+        process, site_info_);
     process->RemoveObserver(this);
   }
   expected_render_process_host_id_ = ChildProcessHost::kInvalidUniqueID;
@@ -3200,12 +3200,12 @@ void NavigationRequest::SetExpectedProcess(
     return;
 
   // Keep track of the speculative RenderProcessHost and tell it to expect a
-  // navigation to |site_url_|.
+  // navigation to |site_info_|.
   expected_render_process_host_id_ = expected_process->GetID();
   expected_process->AddObserver(this);
   RenderProcessHostImpl::AddExpectedNavigationToSite(
       frame_tree_node()->navigator().GetController()->GetBrowserContext(),
-      expected_process, site_url_);
+      expected_process, site_info_);
 }
 
 void NavigationRequest::RenderProcessHostDestroyed(RenderProcessHost* host) {
@@ -3249,23 +3249,23 @@ void NavigationRequest::UpdateNavigationHandleTimingsOnCommitSent() {
       base::TimeTicks::Now();
 }
 
-void NavigationRequest::UpdateSiteURL(
+void NavigationRequest::UpdateSiteInfo(
     RenderProcessHost* post_redirect_process) {
-  GURL new_site_url = GetSiteForCommonParamsURL();
+  SiteInfo new_site_info = GetSiteInfoForCommonParamsURL();
   int post_redirect_process_id = post_redirect_process
                                      ? post_redirect_process->GetID()
                                      : ChildProcessHost::kInvalidUniqueID;
-  if (new_site_url == site_url_ &&
+  if (new_site_info == site_info_ &&
       post_redirect_process_id == expected_render_process_host_id_) {
     return;
   }
 
-  // Stop expecting a navigation to the current site URL in the current expected
+  // Stop expecting a navigation to the current SiteInfo in the current expected
   // process.
   ResetExpectedProcess();
 
-  // Update the site URL and the expected process.
-  site_url_ = new_site_url;
+  // Update the SiteInfo and the expected process.
+  site_info_ = new_site_info;
   SetExpectedProcess(post_redirect_process);
 }
 
@@ -3835,7 +3835,7 @@ void NavigationRequest::WillRedirectRequest(
   EnterChildTraceEvent("WillRedirectRequest", this, "url",
                        common_params_->url.possibly_invalid_spec());
   UpdateStateFollowingRedirect(new_referrer_url);
-  UpdateSiteURL(post_redirect_process);
+  UpdateSiteInfo(post_redirect_process);
 
   if (IsSelfReferentialURL()) {
     SetState(CANCELING);
@@ -3985,10 +3985,10 @@ void NavigationRequest::DidCommitNavigation(
   }
 }
 
-GURL NavigationRequest::GetSiteForCommonParamsURL() const {
+SiteInfo NavigationRequest::GetSiteInfoForCommonParamsURL() const {
   // TODO(alexmos): Using |starting_site_instance_|'s IsolationContext may not
   // be correct for cross-BrowsingInstance redirects.
-  return SiteInstanceImpl::GetSiteForURL(
+  return SiteInstanceImpl::ComputeSiteInfo(
       starting_site_instance_->GetIsolationContext(), common_params_->url);
 }
 

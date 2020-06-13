@@ -248,8 +248,7 @@ class CORE_EXPORT WebFrameWidgetBase
 
   // For both mainframe and childframe change the text direction of the
   // currently selected input field (if any).
-  void SetTextDirection(
-      mojo_base::mojom::blink::TextDirection direction) override;
+  void SetTextDirection(base::i18n::TextDirection direction) override;
 
   // Sets the inherited effective touch action on an out-of-process iframe.
   void SetInheritedEffectiveTouchActionForSubFrame(

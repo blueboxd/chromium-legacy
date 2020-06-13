@@ -39,6 +39,7 @@ extern const char kUiTestActionMaxTimeout[];
 
 #if defined(OS_IOS)
 extern const char kEnableRunIOSUnittestsWithXCTest[];
+extern const char kWriteCompiledTestsJsonToWritablePath[];
 #endif
 
 }  // namespace switches

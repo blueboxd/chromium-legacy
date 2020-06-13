@@ -421,37 +421,19 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
 
   std::vector<WebFormControlElement> control_elements;
 
-  // First check the synthetic form.
-  bool found_synthetic_form = false;
-  if (form.data.SameFormAs(synthetic_form_)) {
-    found_synthetic_form = true;
+  if (form.data.unique_renderer_id.is_null()) {  // Form is synthetic.
     WebDocument document = frame_->GetDocument();
     control_elements = form_util::GetUnownedAutofillableFormFieldElements(
         document.All(), nullptr);
-  }
-
-  if (!found_synthetic_form) {
-    // Find the real form by searching through the WebDocuments.
-    bool found_form = false;
-
+  } else {
     for (const WebFormElement& form_element : frame_->GetDocument().Forms()) {
-      // To match two forms, we look for the form's name and the number of
-      // fields on that form. (Form names may not be unique.)
-      // Note: WebString() == WebString(string16()) does not evaluate to |true|
-      // -- WebKit distinguishes between a "null" string (lhs) and an "empty"
-      // string (rhs). We don't want that distinction, so forcing to string16.
-      base::string16 element_name = form_util::GetFormIdentifier(form_element);
-      if (element_name == form.data.name) {
-        found_form = true;
+      FormRendererId form_id(form_element.UniqueRendererFormId());
+      if (form_id == form.data.unique_renderer_id) {
         control_elements =
             form_util::ExtractAutofillableElementsInForm(form_element);
-        if (control_elements.size() == form.fields.size())
-          break;
+        break;
       }
     }
-
-    if (!found_form)
-      return false;
   }
 
   if (control_elements.size() != form.fields.size()) {
@@ -465,11 +447,9 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
     WebFormControlElement& element = control_elements[i];
 
     const FormFieldData& field_data = form.data.fields[i];
-    if (element.NameForAutofill().Utf16() != field_data.name) {
-      // Keep things simple.  Don't show predictions for elements whose names
-      // were modified between page load and the server's response to our query.
+    FieldRendererId field_id(element.UniqueRendererFormControlId());
+    if (field_id != field_data.unique_renderer_id)
       continue;
-    }
     const FormFieldDataPredictions& field = form.fields[i];
 
     // Possibly add a console warning for this field regarding the usage of

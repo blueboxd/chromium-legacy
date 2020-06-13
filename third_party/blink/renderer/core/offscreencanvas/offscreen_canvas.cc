@@ -216,7 +216,7 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(
 
 scoped_refptr<Image> OffscreenCanvas::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    AccelerationHint hint,
+    RasterModeHint hint,
     const FloatSize& size) {
   if (!context_) {
     *status = kInvalidSourceImageStatus;

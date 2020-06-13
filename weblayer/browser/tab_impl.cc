@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_tick_clock.h"
 #include "cc/layers/layer.h"
@@ -164,8 +165,6 @@ struct UserData : public base::SupportsUserData::Data {
 };
 
 #if defined(OS_ANDROID)
-Tab* g_last_tab;
-
 void HandleJavaScriptResult(const ScopedJavaGlobalRef<jobject>& callback,
                             base::Value result) {
   std::string json;
@@ -217,6 +216,11 @@ void OnScreenShotCaptured(const ScopedJavaGlobalRef<jobject>& value_callback,
 
 #endif  // OS_ANDROID
 
+std::set<TabImpl*>& GetTabs() {
+  static base::NoDestructor<std::set<TabImpl*>> s_all_tab_impl;
+  return *s_all_tab_impl;
+}
+
 }  // namespace
 
 #if defined(OS_ANDROID)
@@ -244,9 +248,7 @@ TabImpl::TabImpl(ProfileImpl* profile,
     : profile_(profile),
       web_contents_(std::move(web_contents)),
       guid_(guid.empty() ? base::GenerateGUID() : guid) {
-#if defined(OS_ANDROID)
-  g_last_tab = this;
-#endif
+  GetTabs().insert(this);
   if (web_contents_) {
     // This code path is hit when the page requests a new tab, which should
     // only be possible from the same profile.
@@ -347,6 +349,7 @@ TabImpl::~TabImpl() {
   Observe(nullptr);
   web_contents_->SetDelegate(nullptr);
   web_contents_.reset();
+  GetTabs().erase(this);
 }
 
 // static
@@ -357,6 +360,11 @@ TabImpl* TabImpl::FromWebContents(content::WebContents* web_contents) {
   UserData* user_data = reinterpret_cast<UserData*>(
       web_contents->GetUserData(&kWebContentsUserDataKey));
   return user_data ? user_data->tab : nullptr;
+}
+
+// static
+std::set<TabImpl*> TabImpl::GetAllTabImpl() {
+  return GetTabs();
 }
 
 void TabImpl::AddDataObserver(DataObserver* observer) {
@@ -1080,12 +1088,6 @@ void TabImpl::SetBrowserControlsConstraint(
   Java_TabImpl_setBrowserControlsVisibilityConstraint(
       base::android::AttachCurrentThread(), java_impl_,
       static_cast<int>(reason), constraint);
-}
-#endif
-
-#if defined(OS_ANDROID)
-Tab* Tab::GetLastTabForTesting() {
-  return g_last_tab;
 }
 #endif
 

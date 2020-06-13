@@ -138,10 +138,10 @@ class MODULES_EXPORT RTCRtpSenderImpl : public blink::RTCRtpSenderPlatform {
   uintptr_t Id() const override;
   rtc::scoped_refptr<webrtc::DtlsTransportInterface> DtlsTransport() override;
   webrtc::DtlsTransportInformation DtlsTransportInformation() override;
-  blink::WebMediaStreamTrack Track() const override;
+  MediaStreamComponent* Track() const override;
   Vector<String> StreamIds() const override;
-  void ReplaceTrack(blink::WebMediaStreamTrack with_track,
-                    blink::RTCVoidRequest* request) override;
+  void ReplaceTrack(MediaStreamComponent* with_track,
+                    RTCVoidRequest* request) override;
   std::unique_ptr<blink::RtcDtmfSenderHandler> GetDtmfSender() const override;
   std::unique_ptr<webrtc::RtpParameters> GetParameters() const override;
   void SetParameters(Vector<webrtc::RtpEncodingParameters>,
@@ -159,7 +159,7 @@ class MODULES_EXPORT RTCRtpSenderImpl : public blink::RTCRtpSenderPlatform {
   // top of this, which returns the result in a callback instead. Allows doing
   // ReplaceTrack() without having a blink::RTCVoidRequest, which can only be
   // constructed inside of blink.
-  void ReplaceTrack(blink::WebMediaStreamTrack with_track,
+  void ReplaceTrack(MediaStreamComponent* with_track,
                     base::OnceCallback<void(bool)> callback);
   bool RemoveFromPeerConnection(webrtc::PeerConnectionInterface* pc);
 

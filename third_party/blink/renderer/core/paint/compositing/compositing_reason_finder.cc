@@ -45,8 +45,7 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
 
   const ComputedStyle& style = layout_object.StyleRef();
 
-  if (RequiresCompositingFor3DTransform(layout_object))
-    reasons |= CompositingReason::k3DTransform;
+  reasons |= CompositingReasonsFor3DTransform(layout_object);
 
   if (style.BackfaceVisibility() == EBackfaceVisibility::kHidden)
     reasons |= CompositingReason::kBackfaceVisibilityHidden;
@@ -128,8 +127,7 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
   auto reasons = CompositingReasonsForAnimation(object) |
                  CompositingReasonsForWillChange(style);
 
-  if (RequiresCompositingFor3DTransform(object))
-    reasons |= CompositingReason::k3DTransform;
+  reasons |= CompositingReasonsFor3DTransform(object);
 
   auto* layer = ToLayoutBoxModelObject(object).Layer();
   if (layer->Has3DTransformedDescendant()) {
@@ -181,19 +179,28 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
   return reasons;
 }
 
-bool CompositingReasonFinder::RequiresCompositingFor3DTransform(
+CompositingReasons CompositingReasonFinder::CompositingReasonsFor3DTransform(
     const LayoutObject& layout_object) {
   // Note that we ask the layoutObject if it has a transform, because the
   // style may have transforms, but the layoutObject may be an inline that
   // doesn't support them.
   if (!layout_object.HasTransformRelatedProperty())
-    return false;
+    return CompositingReason::kNone;
 
   // Don't composite "trivial" 3D transforms such as translateZ(0).
-  if (Platform::Current()->IsLowEndDevice())
-    return layout_object.StyleRef().HasNonTrivial3DTransformOperation();
+  if (Platform::Current()->IsLowEndDevice()) {
+    return layout_object.StyleRef().HasNonTrivial3DTransformOperation()
+               ? CompositingReason::k3DTransform
+               : CompositingReason::kNone;
+  }
 
-  return layout_object.StyleRef().Has3DTransformOperation();
+  if (layout_object.StyleRef().Has3DTransformOperation()) {
+    return layout_object.StyleRef().HasNonTrivial3DTransformOperation()
+               ? CompositingReason::k3DTransform
+               : CompositingReason::kTrivial3DTransform;
+  }
+
+  return CompositingReason::kNone;
 }
 
 CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(

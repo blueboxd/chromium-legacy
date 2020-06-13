@@ -41,6 +41,7 @@ class ASH_EXPORT SwitchAccessMenuBubbleController
 
   std::unique_ptr<SwitchAccessBackButtonBubbleController>
       back_button_controller_;
+  bool menu_open_ = false;
 
   // Owned by views hierarchy.
   SwitchAccessMenuView* menu_view_ = nullptr;

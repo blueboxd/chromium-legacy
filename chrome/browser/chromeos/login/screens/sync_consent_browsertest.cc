@@ -128,7 +128,6 @@ class SyncConsentTest : public OobeBaseTest {
     OobeBaseTest::SetUpOnMainThread();
     if (features::IsSplitSettingsSyncEnabled()) {
       expected_consent_ids_ = {
-          IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE,
           IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME,
           IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION,
           IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME,
@@ -448,8 +447,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DefaultFlow) {
   // Consent was recorded for all descriptions, including the confirmation
   // button label.
   std::vector<int> expected_ids = {
-      IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE,
-      IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE,
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE_WITH_DEVICE,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME,

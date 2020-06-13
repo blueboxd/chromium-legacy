@@ -6,8 +6,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("common_mojom") {
   sources = [
-    "aw_origin_matcher.mojom",
     "interfaces.mojom",
+    "origin_matcher.mojom",
   ]
 
   public_deps = [
@@ -19,8 +19,8 @@ mojom("common_mojom") {
     {
       types = [
         {
-          mojom = "js_injection.mojom.AwOriginMatcher"
-          cpp = "::js_injection::AwOriginMatcher"
+          mojom = "js_injection.mojom.OriginMatcher"
+          cpp = "::js_injection::OriginMatcher"
         },
         {
           mojom = "js_injection.mojom.OriginMatcherRule"
@@ -28,8 +28,11 @@ mojom("common_mojom") {
           move_only = true
         },
       ]
-      traits_headers = [ "aw_origin_matcher_mojom_traits.h" ]
-      traits_sources = [ "aw_origin_matcher_mojom_traits.cc" ]
+      traits_headers = [
+        "origin_matcher_mojom_traits.h",
+        "origin_matcher.h",
+      ]
+      traits_sources = [ "origin_matcher_mojom_traits.cc" ]
       traits_public_deps = [ ":common" ]
     },
   ]
@@ -38,9 +41,9 @@ mojom("common_mojom") {
 }
 
 source_set("common") {
-  public = [ "aw_origin_matcher.h" ]
+  public = [ "origin_matcher.h" ]
   sources = [
-    "aw_origin_matcher.cc",
+    "origin_matcher.cc",
     "origin_matcher_internal.cc",
     "origin_matcher_internal.h",
   ]
@@ -56,7 +59,7 @@ source_set("common") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "aw_origin_matcher_unittest.cc" ]
+  sources = [ "origin_matcher_unittest.cc" ]
   deps = [
     ":common",
     ":common_mojom",

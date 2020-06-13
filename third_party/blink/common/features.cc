@@ -252,8 +252,8 @@ const char kMixedContentAutoupgradeModeAllPassive[] = "all-passive";
 // Decodes jpeg 4:2:0 formatted images to YUV instead of RGBX and stores in this
 // format in the image decode cache. See crbug.com/919627 for details on the
 // feature.
-const base::Feature kDecodeJpeg420ImagesToYUV{"DecodeJpeg420ImagesToYUV",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kDecodeJpeg420ImagesToYUV{
+    "DecodeJpeg420ImagesToYUV", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Decodes lossy WebP images to YUV instead of RGBX and stores in this format
 // in the image decode cache. See crbug.com/900264 for details on the feature.
@@ -464,9 +464,6 @@ const base::Feature kDawn2dCanvas{"Dawn2dCanvas",
 
 const base::Feature kCSSReducedFontLoadingInvalidations{
     "CSSReducedFontLoadingInvalidations", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kCSSReducedFontLoadingLayoutInvalidations{
-    "CSSReducedFontLoadingLayoutInvalidations",
-    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // When enabled, frees up CachedMetadata after consumption by script resources
 // and modules. Needed for the experiment in http://crbug.com/1045052.

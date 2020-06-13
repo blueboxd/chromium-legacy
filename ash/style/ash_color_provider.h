@@ -97,6 +97,9 @@ class ASH_EXPORT AshColorProvider {
     // Color for sliders (volume, brightness etc.)
     kSliderThumbEnabled,
     kSliderThumbDisabled,
+
+    // The default color for button labels.
+    kButtonLabel,
   };
 
   // Attributes of ripple, includes the base color, opacity of inkdrop and
@@ -164,6 +167,11 @@ class ASH_EXPORT AshColorProvider {
   // color of the UI element that wants to show inkdrop.
   RippleAttributes GetRippleAttributes(SkColor bg_color) const;
 
+  // Gets the background color that can be applied on any layer. The returned
+  // color will be different based on |color_mode| and color theme (see
+  // |is_themed_|).
+  SkColor GetBackgroundColor(AshColorMode color_mode) const;
+
   AshColorMode color_mode() const { return color_mode_; }
 
  private:
@@ -191,8 +199,21 @@ class ASH_EXPORT AshColorProvider {
   SkColor GetContentLayerColorImpl(ContentLayerType type,
                                    AshColorMode color_mode) const;
 
+  // Gets the background default color.
+  SkColor GetBackgroundDefaultColor(AshColorMode color_mode) const;
+
+  // Gets the background themed color that's calculated based on the color
+  // extracted from wallpaper. For dark mode, it will be dark muted wallpaper
+  // prominent color + SK_ColorBLACK 50%. For light mode, it will be light
+  // muted wallpaper prominent color + SK_ColorWHITE 50%.
+  SkColor GetBackgroundThemedColor(AshColorMode color_mode) const;
+
   // Current color mode of system UI.
   AshColorMode color_mode_ = AshColorMode::kDefault;
+
+  // Whether the system color mode is themed, by default is true. If true, the
+  // background color will be calculated based on extracted wallpaper color.
+  bool is_themed_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(AshColorProvider);
 };

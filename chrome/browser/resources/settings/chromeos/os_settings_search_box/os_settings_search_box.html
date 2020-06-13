@@ -19,8 +19,11 @@
     <style include="settings-shared">
       :host {
         --cr-toolbar-field-width: 480px;
+        --cr-toolbar-focused-min-height: 48px;
         --cr-toolbar-icon-container-size: 32px;
-        --cr-toolbar-icon-margin: 6px 12px;
+        --cr-toolbar-icon-margin: 8px;
+        --cr-toolbar-query-exists-min-height:
+            var(--cr-toolbar-focused-min-height);
         --separator-height: 8px;
         display: flex;
         flex-basis: var(--cr-toolbar-field-width);
@@ -53,6 +56,11 @@
       :host(:focus-within) cr-toolbar-search-field {
         --cr-toolbar-search-field-background: var(--cr-card-background-color);
         box-shadow: var(--cr-menu-shadow);
+        min-height: var(--cr-toolbar-focused-min-height);
+      }
+
+      :host([has-search-query]) cr-toolbar-search-field {
+        min-height: var(--cr-toolbar-query-exists-min-height);
       }
 
       :host(:not(:focus-within)) cr-toolbar-search-field {
@@ -61,8 +69,9 @@
 
       :host(:focus-within[should-show-dropdown_]) cr-toolbar-search-field {
         --cr-toolbar-search-field-border-radius: 20px 20px 0 0;
-        height: 56px;
+        height: 50px;
         margin-top: var(--separator-height);
+        padding-bottom: var(--separator-height);
       }
 
       :host([narrow]) iron-dropdown {

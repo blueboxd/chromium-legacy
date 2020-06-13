@@ -202,7 +202,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                               AccelerationHint,
+                                               RasterModeHint,
                                                const FloatSize&) override;
   bool WouldTaintOrigin() const override;
   FloatSize ElementSize(const FloatSize&,
@@ -224,7 +224,7 @@ class CORE_EXPORT HTMLCanvasElement final
   SkFilterQuality FilterQuality() const override;
   bool LowLatencyEnabled() const override;
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
-      AccelerationHint hint) override;
+      RasterModeHint hint) override;
   bool IsPrinting() const override;
 
   void DisableAcceleration(std::unique_ptr<Canvas2DLayerBridge>
@@ -300,7 +300,7 @@ class CORE_EXPORT HTMLCanvasElement final
   }
 
   scoped_refptr<StaticBitmapImage> Snapshot(SourceDrawingBuffer,
-                                            AccelerationHint) const;
+                                            RasterModeHint) const;
 
   // Returns the cc layer containing the contents. It's the cc layer of
   // SurfaceLayerBridge() or RenderingContext(), or nullptr if the canvas is not
@@ -366,7 +366,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   scoped_refptr<StaticBitmapImage> GetSourceImageForCanvasInternal(
       SourceImageStatus*,
-      AccelerationHint);
+      RasterModeHint);
 
   void OnContentsCcLayerChanged();
 

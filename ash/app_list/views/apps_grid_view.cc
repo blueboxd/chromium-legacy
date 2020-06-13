@@ -76,6 +76,11 @@ namespace {
 // other pages.
 constexpr int kDragBufferPx = 20;
 
+// Time delay before shelf starts to handle icon drag operation,
+// such as shelf icons re-layout.
+constexpr base::TimeDelta kShelfHandleIconDragDelay =
+    base::TimeDelta::FromMilliseconds(500);
+
 // Delay in milliseconds to do the page flip in fullscreen app list.
 constexpr int kPageFlipDelayInMsFullscreen = 500;
 
@@ -1018,6 +1023,10 @@ void AppsGridView::ClearDragState() {
   drag_start_grid_view_ = gfx::Point();
   drag_start_page_ = -1;
   drag_view_offset_ = gfx::Point();
+
+  // Drag may end before |host_drag_start_timer_| gets fired.
+  if (host_drag_start_timer_.IsRunning())
+    host_drag_start_timer_.AbandonAndStop();
 
   if (drag_view_) {
     drag_view_->OnDragEnded();
@@ -2374,6 +2383,13 @@ bool AppsGridView::FireFolderDroppingTimerForTest() {
   return true;
 }
 
+bool AppsGridView::FireDragToShelfTimerForTest() {
+  if (!host_drag_start_timer_.IsRunning())
+    return false;
+  host_drag_start_timer_.FireNow();
+  return true;
+}
+
 void AppsGridView::StartDragAndDropHostDrag(const gfx::Point& grid_location) {
   // When a drag and drop host is given, the item can be dragged out of the app
   // list window. In that case a proxy widget needs to be used.
@@ -2400,6 +2416,11 @@ void AppsGridView::DispatchDragEventToDragAndDropHost(
   if (!drag_view_ || !drag_and_drop_host_)
     return;
 
+  const bool should_host_start_drag = drag_and_drop_host_->ShouldStartDrag(
+      drag_view_->item()->id(), location_in_screen_coordinates);
+  if (!should_host_start_drag && host_drag_start_timer_.IsRunning())
+    host_drag_start_timer_.AbandonAndStop();
+
   if (GetLocalBounds().Contains(last_drag_point_)) {
     // The event was issued inside the app menu and we should get all events.
     if (forward_events_to_drag_and_drop_host_) {
@@ -2408,27 +2429,27 @@ void AppsGridView::DispatchDragEventToDragAndDropHost(
       forward_events_to_drag_and_drop_host_ = false;
       drag_and_drop_host_->EndDrag(true);
     }
-  } else {
-    if (IsFolderItem(drag_view_->item()))
-      return;
+    return;
+  }
 
-    // The event happened outside our app menu and we might need to dispatch.
-    if (forward_events_to_drag_and_drop_host_) {
-      // Dispatch since we have already started.
-      if (!drag_and_drop_host_->Drag(location_in_screen_coordinates)) {
-        // The host is not active any longer and we cancel the operation.
-        forward_events_to_drag_and_drop_host_ = false;
-        drag_and_drop_host_->EndDrag(true);
-      }
-    } else {
-      if (drag_and_drop_host_->StartDrag(drag_view_->item()->id(),
-                                         location_in_screen_coordinates)) {
-        // From now on we forward the drag events.
-        forward_events_to_drag_and_drop_host_ = true;
-        // Any flip operations are stopped.
-        StopPageFlipTimer();
-      }
+  if (IsFolderItem(drag_view_->item()))
+    return;
+
+  // The event happened outside our app menu and we might need to dispatch.
+  if (forward_events_to_drag_and_drop_host_) {
+    // Dispatch since we have already started.
+    if (!drag_and_drop_host_->Drag(location_in_screen_coordinates)) {
+      // The host is not active any longer and we cancel the operation.
+      forward_events_to_drag_and_drop_host_ = false;
+      drag_and_drop_host_->EndDrag(true);
     }
+    return;
+  }
+
+  if (should_host_start_drag && !host_drag_start_timer_.IsRunning()) {
+    host_drag_start_timer_.Start(FROM_HERE, kShelfHandleIconDragDelay, this,
+                                 &AppsGridView::OnHostDragStartTimerFired);
+    StopPageFlipTimer();
   }
 }
 
@@ -3842,6 +3863,16 @@ void AppsGridView::BeginHideCurrentGhostImageView() {
 
   if (current_ghost_view_)
     current_ghost_view_->FadeOut();
+}
+
+void AppsGridView::OnHostDragStartTimerFired() {
+  gfx::Point last_drag_point_in_screen = last_drag_point_;
+  views::View::ConvertPointToScreen(this, &last_drag_point_in_screen);
+  if (drag_and_drop_host_->StartDrag(drag_view_->item()->id(),
+                                     last_drag_point_in_screen)) {
+    // From now on we forward the drag events.
+    forward_events_to_drag_and_drop_host_ = true;
+  }
 }
 
 bool AppsGridView::ShouldHandleDragEvent(const ui::LocatedEvent& event) {

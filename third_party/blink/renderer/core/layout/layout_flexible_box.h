@@ -98,6 +98,8 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   // Returns true if the position changed. In that case, the child will have to
   // be laid out again.
   bool SetStaticPositionForPositionedLayout(LayoutBox& child);
+  static bool SetStaticPositionForChildInFlexNGContainer(LayoutBox& child,
+                                                         LayoutBlock* parent);
   LayoutUnit CrossAxisContentExtent() const;
 
  protected:

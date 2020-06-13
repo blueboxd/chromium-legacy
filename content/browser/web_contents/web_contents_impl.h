@@ -2031,7 +2031,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   bool using_dark_colors_ = false;
   ui::NativeTheme::PreferredColorScheme preferred_color_scheme_ =
-      ui::NativeTheme::PreferredColorScheme::kNoPreference;
+      ui::NativeTheme::PreferredColorScheme::kLight;
 
   // Prevents navigations in this contents while a javascript modal dialog is
   // showing.

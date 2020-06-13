@@ -15,6 +15,7 @@
 #import "chrome/updater/configurator.h"
 #import "chrome/updater/mac/setup/info_plist.h"
 #import "chrome/updater/mac/xpc_service_names.h"
+#include "chrome/updater/prefs.h"
 #include "chrome/updater/server/mac/service_delegate.h"
 #include "chrome/updater/update_service_in_process.h"
 
@@ -42,7 +43,7 @@ AppServer::AppServer() = default;
 AppServer::~AppServer() = default;
 
 void AppServer::Initialize() {
-  config_ = base::MakeRefCounted<Configurator>();
+  config_ = base::MakeRefCounted<Configurator>(CreateGlobalPrefs());
 }
 
 void AppServer::FirstTaskRun() {

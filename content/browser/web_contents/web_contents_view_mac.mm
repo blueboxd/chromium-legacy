@@ -370,6 +370,16 @@ RenderWidgetHostViewBase* WebContentsViewMac::CreateViewForChildWidget(
     RenderWidgetHost* render_widget_host) {
   RenderWidgetHostViewMac* view =
       new RenderWidgetHostViewMac(render_widget_host);
+
+  // If the parent RenderWidgetHostViewMac is hosted in another process, ensure
+  // that the popup window will be created created in the same process.
+  // https://crbug.com/1091179
+  if (views_host_) {
+    auto* remote_cocoa_application = views_host_->GetRemoteCocoaApplication();
+    view->MigrateNSViewBridge(remote_cocoa_application,
+                              remote_cocoa::kInvalidNSViewId);
+  }
+
   if (delegate()) {
     base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate>>
         rw_delegate(delegate()->CreateRenderWidgetHostViewDelegate(

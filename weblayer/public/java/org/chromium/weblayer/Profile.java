@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Profile holds state (typically on disk) needed for browsing. Create a
@@ -117,13 +118,13 @@ public class Profile {
     }
 
     /**
-     * Delete all profile data stored on disk. There are a number of edge cases with deleting
-     * profile data:
-     * * This method will throw an exception if there are any existing usage of this Profile. For
-     *   example, all BrowserFragment belonging to this profile must be destroyed.
-     * * This object is considered destroyed after this method returns. Calling any other method
-     *   after will throw exceptions.
-     * * Creating a new profile of the same name before doneCallback runs will throw an exception.
+     * Delete all profile data stored on disk. There are a number of edge cases with deleting
+     * profile data:
+     * * This method will throw an exception if there are any existing usage of this Profile. For
+     *   example, all BrowserFragment belonging to this profile must be destroyed.
+     * * This object is considered destroyed after this method returns. Calling any other method
+     *   after will throw exceptions.
+     * * Creating a new profile of the same name before doneCallback runs will throw an exception.
      * @since 82
      */
     public void destroyAndDeleteDataFromDisk(@Nullable Runnable completionCallback) {
@@ -223,6 +224,11 @@ public class Profile {
      * @since 84
      */
     public void setBooleanSetting(@SettingType int type, boolean value) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 84) {
+            throw new UnsupportedOperationException();
+        }
+
         try {
             mImpl.setBooleanSetting(type, value);
         } catch (RemoteException e) {
@@ -237,8 +243,71 @@ public class Profile {
      * @since 84
      */
     public boolean getBooleanSetting(@SettingType int type) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 84) {
+            throw new UnsupportedOperationException();
+        }
+
         try {
             return mImpl.getBooleanSetting(type);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Asynchronously fetches the set of known Browser persistence-ids. See
+     * {@link WebLayer#createBrowserFragment} for details on the persistence-id.
+     *
+     * @param callback The callback that is supplied the set of ids.
+     *
+     * @throws IllegalStateException If called on an in memory profile.
+     *
+     * @since 85
+     */
+    public void getBrowserPersistenceIds(@NonNull Callback<Set<String>> callback) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 85) {
+            throw new UnsupportedOperationException();
+        }
+        if (mName.isEmpty()) {
+            throw new IllegalStateException(
+                    "getBrowserPersistenceIds() is not applicable to in-memory profiles");
+        }
+        try {
+            mImpl.getBrowserPersistenceIds(
+                    ObjectWrapper.wrap((ValueCallback<Set<String>>) callback::onResult));
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Asynchronously removes the storage associated with the set of Browser persistence-ids. This
+     * ignores ids actively in use. {@link doneCallback} is supplied the result of the operation. A
+     * value of true means all files were removed. A value of false indicates at least one of the
+     * files could not be removed.
+     *
+     * @param callback The callback that is supplied the result of the operation.
+     *
+     * @throws IllegalStateException If called on an in memory profile.
+     * @throws IllegalArgumentException if {@link ids} contains an empty/null string.
+     *
+     * @since 85
+     */
+    public void removeBrowserPersistenceStorage(
+            @NonNull Set<String> ids, @NonNull Callback<Boolean> callback) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 85) {
+            throw new UnsupportedOperationException();
+        }
+        if (mName.isEmpty()) {
+            throw new IllegalStateException(
+                    "removetBrowserPersistenceStorage() is not applicable to in-memory profiles");
+        }
+        try {
+            mImpl.removeBrowserPersistenceStorage(ids.toArray(new String[ids.size()]),
+                    ObjectWrapper.wrap((ValueCallback<Boolean>) callback::onResult));
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

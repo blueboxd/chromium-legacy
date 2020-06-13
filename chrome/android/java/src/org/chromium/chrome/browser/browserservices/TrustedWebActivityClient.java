@@ -64,9 +64,10 @@ public class TrustedWebActivityClient {
     private static final Executor UI_THREAD_EXECUTOR =
             (Runnable r) -> PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, r);
 
-    private static final String EXTRA_COMMAND_EXECUTION_RESULT = "executionResult";
     private static final String CHECK_LOCATION_PERMISSION_COMMAND_NAME =
             "checkAndroidLocationPermission";
+    private static final String LOCATION_PERMISSION_RESULT = "locationPermissionResult";
+
     private static final String START_LOCATION_COMMAND_NAME = "startLocation";
     private static final String STOP_LOCATION_COMMAND_NAME = "stopLocation";
     private static final String LOCATION_ARG_ENABLE_HIGH_ACCURACY = "enableHighAccuracy";
@@ -170,7 +171,7 @@ public class TrustedWebActivityClient {
                         boolean granted = false;
                         if (TextUtils.equals(callbackName, CHECK_LOCATION_PERMISSION_COMMAND_NAME)
                                 && bundle != null) {
-                            granted = bundle.getBoolean(EXTRA_COMMAND_EXECUTION_RESULT);
+                            granted = bundle.getBoolean(LOCATION_PERMISSION_RESULT);
                         }
                         callback.onPermissionCheck(service.getComponentName(), granted);
                     }
@@ -179,8 +180,9 @@ public class TrustedWebActivityClient {
                 Bundle executionResult = service.sendExtraCommand(
                         CHECK_LOCATION_PERMISSION_COMMAND_NAME, Bundle.EMPTY, resultCallback);
                 // Set permission to false if the service does not know how to handle the
-                // extraCommand.
-                if (executionResult == null) {
+                // extraCommand or did not handle the command.
+                if (executionResult == null
+                        || !executionResult.getBoolean(CHECK_LOCATION_PERMISSION_COMMAND_NAME)) {
                     callback.onPermissionCheck(service.getComponentName(), false);
                 }
             }
@@ -204,7 +206,8 @@ public class TrustedWebActivityClient {
                         START_LOCATION_COMMAND_NAME, args, locationCallback);
 
                 // Notify an error if the service does not know how to handle the extraCommand.
-                if (executionResult == null) {
+                if (executionResult == null
+                        || !executionResult.getBoolean(START_LOCATION_COMMAND_NAME)) {
                     notifyLocationUpdateError(
                             locationCallback, "Failed to request location updates");
                 }

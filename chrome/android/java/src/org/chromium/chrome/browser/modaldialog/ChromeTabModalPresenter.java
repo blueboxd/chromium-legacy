@@ -18,6 +18,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsUtils;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.tab.Tab;
@@ -43,6 +45,7 @@ public class ChromeTabModalPresenter
     private final ChromeActivity mChromeActivity;
     private final Supplier<TabObscuringHandler> mTabObscuringHandlerSupplier;
     private final ChromeFullscreenManager mChromeFullscreenManager;
+    private final BrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
     private final TabModalBrowserControlsVisibilityDelegate mVisibilityDelegate;
 
     /** The active tab of which the dialog will be shown on top. */
@@ -84,13 +87,14 @@ public class ChromeTabModalPresenter
         mChromeActivity = chromeActivity;
         mTabObscuringHandlerSupplier = tabObscuringHandler;
         mChromeFullscreenManager = mChromeActivity.getFullscreenManager();
-        mChromeFullscreenManager.addObserver(this);
+        mBrowserControlsVisibilityManager = mChromeFullscreenManager;
+        mBrowserControlsVisibilityManager.addObserver(this);
         mVisibilityDelegate = new TabModalBrowserControlsVisibilityDelegate();
         mTabObscuringToken = TokenHolder.INVALID_TOKEN;
     }
 
     public void destroy() {
-        mChromeFullscreenManager.removeObserver(this);
+        mBrowserControlsVisibilityManager.removeObserver(this);
     }
 
     /**
@@ -144,15 +148,16 @@ public class ChromeTabModalPresenter
     protected void showDialogContainer() {
         if (mShouldUpdateContainerLayoutParams) {
             MarginLayoutParams params = (MarginLayoutParams) getDialogContainer().getLayoutParams();
-            params.topMargin =
-                    getContainerTopMargin(mChromeActivity.getResources(), mChromeFullscreenManager);
+            params.topMargin = getContainerTopMargin(
+                    mChromeActivity.getResources(), mBrowserControlsVisibilityManager);
             params.bottomMargin = mBottomControlsHeight;
             getDialogContainer().setLayoutParams(params);
             mShouldUpdateContainerLayoutParams = false;
         }
 
         // Don't show the dialog container before browser controls are guaranteed fully visible.
-        if (mChromeFullscreenManager.areBrowserControlsFullyVisible()) {
+        if (BrowserControlsUtils.areBrowserControlsFullyVisible(
+                    mBrowserControlsVisibilityManager)) {
             runEnterAnimation();
         } else {
             mRunEnterAnimationOnCallback = true;
@@ -222,7 +227,8 @@ public class ChromeTabModalPresenter
     public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
             int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
         if (getDialogModel() == null || !mRunEnterAnimationOnCallback
-                || !mChromeFullscreenManager.areBrowserControlsFullyVisible()) {
+                || !BrowserControlsUtils.areBrowserControlsFullyVisible(
+                        mBrowserControlsVisibilityManager)) {
             return;
         }
         mRunEnterAnimationOnCallback = false;
@@ -291,10 +297,10 @@ public class ChromeTabModalPresenter
 
         // Also need to update browser control state after dismissal to refresh the constraints.
         if (isShowing && areRendererInputEventsIgnored()) {
-            mChromeFullscreenManager.showAndroidControls(true);
+            mBrowserControlsVisibilityManager.showAndroidControls(true);
         } else {
             TabBrowserControlsConstraintsHelper.update(mActiveTab, BrowserControlsState.SHOWN,
-                    !mChromeFullscreenManager.offsetOverridden());
+                    !mBrowserControlsVisibilityManager.offsetOverridden());
         }
     }
 

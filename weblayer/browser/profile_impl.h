@@ -96,6 +96,13 @@ class ProfileImpl : public Profile {
   void EnsureBrowserContextInitialized(JNIEnv* env);
   void SetBooleanSetting(JNIEnv* env, jint j_type, jboolean j_value);
   jboolean GetBooleanSetting(JNIEnv* env, jint j_type);
+  void GetBrowserPersistenceIds(
+      JNIEnv* env,
+      const base::android::JavaRef<jobject>& j_callback);
+  void RemoveBrowserPersistenceStorage(
+      JNIEnv* env,
+      const base::android::JavaRef<jobjectArray>& j_ids,
+      const base::android::JavaRef<jobject>& j_callback);
 #endif
 
   const base::FilePath& download_directory() { return download_directory_; }

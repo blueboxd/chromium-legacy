@@ -801,7 +801,7 @@ void WebLocalFrameImpl::ClearIsolatedWorldCSPForTesting(int32_t world_id) {
     return;
   }
 
-  GetFrame()->GetDocument()->ClearIsolatedWorldCSPForTesting(world_id);
+  GetFrame()->DomWindow()->ClearIsolatedWorldCSPForTesting(world_id);
 }
 
 void WebLocalFrameImpl::SetIsolatedWorldInfo(int32_t world_id,
@@ -1182,7 +1182,7 @@ bool WebLocalFrameImpl::IsSelectionAnchorFirst() const {
 }
 
 void WebLocalFrameImpl::SetTextDirectionForTesting(
-    mojo_base::mojom::blink::TextDirection direction) {
+    base::i18n::TextDirection direction) {
   frame_->SetTextDirection(direction);
 }
 

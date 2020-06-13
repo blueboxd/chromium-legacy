@@ -103,6 +103,9 @@ class TabAndroid {
       bool did_start_load,
       bool did_finish_load);
 
+  bool IsCustomTab();
+  bool IsHidden();
+
   // Methods called from Java via JNI -----------------------------------------
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);

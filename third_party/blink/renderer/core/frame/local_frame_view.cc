@@ -641,8 +641,12 @@ void LocalFrameView::PerformPreLayoutTasks() {
 
   Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
 
-  if (was_resized)
+  if (was_resized) {
     document->ClearResizedForViewportUnits();
+
+    // Mark all of writing-mode roots for layout, as the ICB size has changed.
+    MarkOrthogonalWritingModeRootsForLayout();
+  }
 }
 
 bool LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
@@ -1627,6 +1631,17 @@ void LocalFrameView::ScheduleOrthogonalWritingModeRootsForLayout() {
   }
 }
 
+void LocalFrameView::MarkOrthogonalWritingModeRootsForLayout() {
+  for (auto& root : orthogonal_writing_mode_root_list_.Ordered()) {
+    // OOF-positioned objects don't depend on the ICB size.
+    if (root->NeedsLayout() || root->IsOutOfFlowPositioned())
+      continue;
+
+    root->SetNeedsLayoutAndIntrinsicWidthsRecalc(
+        layout_invalidation_reason::kSizeChanged);
+  }
+}
+
 bool LocalFrameView::CheckLayoutInvalidationIsAllowed() const {
 #if DCHECK_IS_ON()
   if (allows_layout_invalidation_after_layout_clean_)
@@ -2457,8 +2472,7 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
 
   // PerformRootScrollerSelection can dirty layout if an effective root
   // scroller is changed so make sure we get back to LayoutClean.
-  if (RuntimeEnabledFeatures::ImplicitRootScrollerEnabled() ||
-      RuntimeEnabledFeatures::SetRootScrollerEnabled()) {
+  if (RuntimeEnabledFeatures::ImplicitRootScrollerEnabled()) {
     ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
       if (frame_view.NeedsLayout())
         frame_view.UpdateLayout();

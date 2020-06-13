@@ -252,7 +252,7 @@ const base::Feature kDesktopPWAsTabStripLinkCapturing{
 // Enables Desktop PWA installs to have a menu of shortcuts associated with
 // the app icon in the taskbar on Windows, or the dock on macOS or Linux.
 const base::Feature kDesktopPWAsAppIconShortcutsMenu{
-    "DesktopPWAsAppIconShortcutsMenu", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DesktopPWAsAppIconShortcutsMenu", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables usage of shared LevelDB instance (ModelTypeStoreService).
 // If this flag is disabled, the new Web Apps system uses its own isolated

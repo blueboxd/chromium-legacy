@@ -24,6 +24,7 @@ class GURL;
 
 namespace content {
 class RenderProcessHost;
+class SiteInfo;
 class SiteInstanceImpl;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -119,6 +120,8 @@ class CONTENT_EXPORT BrowsingInstance final
   // values would be if we called GetSiteInstanceForURL() with the same
   // |url| and |allow_default_instance|. This method is used when we need this
   // information, but do not want to create a SiteInstance yet.
+  // TODO(wjmaclean): Convert the |site_url| parameter to be SiteInfo. See
+  // https://crbug.com/1085275/#c2.
   void GetSiteAndLockForURL(const GURL& url,
                             bool allow_default_instance,
                             GURL* site_url,
@@ -167,6 +170,8 @@ class CONTENT_EXPORT BrowsingInstance final
   // not indicate that the site has already been committed to that process.
   // Returns false if no request for |site_url| has resulted in this object
   // returning the default SiteInstance.
+  // TODO(wjmaclean): Update this function to use SiteInfo instead.
+  // https://crbug.com/1085275
   bool IsSiteInDefaultSiteInstance(const GURL& site_url) const;
 
   // Attempts to convert |site_instance| into a default SiteInstance,
@@ -178,12 +183,14 @@ class CONTENT_EXPORT BrowsingInstance final
                                      const GURL& url);
 
   // Helper function used by other methods in this class to ensure consistent
-  // mapping between |url| and site URL.
+  // mapping between |url| and SiteInfo.
   // Note: This should not be used by code outside this class.
-  GURL GetSiteForURL(const GURL& url) const;
+  SiteInfo GetSiteInfoForURL(const GURL& url) const;
 
   // Map of site to SiteInstance, to ensure we only have one SiteInstance per
   // site.
+  // TODO(wjmaclean): This map will be updated in CL#3 as described in
+  // https://crbug.com/1085275#c2 to use a SiteInfo hashkey as the key string.
   typedef std::unordered_map<std::string, SiteInstanceImpl*> SiteInstanceMap;
 
   // The next available browser-global BrowsingInstance ID.
@@ -225,6 +232,7 @@ class CONTENT_EXPORT BrowsingInstance final
 
   // Keeps track of the site URLs that this object mapped to the
   // |default_site_instance_|.
+  // TODO(wjmaclean): convert this to use a SiteInfo hash key instead.
   std::set<GURL> site_url_set_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingInstance);

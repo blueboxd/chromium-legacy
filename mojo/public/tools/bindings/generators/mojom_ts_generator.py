@@ -7,6 +7,7 @@
 import mojom.generate.generator as generator
 import mojom.generate.module as mojom
 from mojom.generate.template_expander import UseJinja
+import os
 
 _kind_to_typescript_type = {
   mojom.BOOL:                  "boolean",
@@ -45,7 +46,6 @@ class TypescriptStylizer(generator.Stylizer):
   def StylizeConstant(self, mojom_name):
     return generator.ToUpperSnakeCase(mojom_name)
 
-
 class Generator(generator.Generator):
   def _GetParameters(self, use_es_modules=False):
     return {
@@ -63,6 +63,7 @@ class Generator(generator.Generator):
     ts_filters = {
         "typescript_type_with_nullability": self._TypescriptTypeWithNullability,
         "constant_value": self._ConstantValue,
+        "relative_path": self._RelativePath,
     }
     return ts_filters
 
@@ -80,17 +81,47 @@ class Generator(generator.Generator):
 
     self.module.Stylize(TypescriptStylizer())
 
+    self._SetUniqueAliasesForImports()
+
     self.Write(self._GenerateBindings(), "%s-lite.ts" % self.module.path)
     self.Write(self._GenerateESModulesBindings(),
                "%s-lite.m.ts" % self.module.path)
 
-  def _TypescriptType(self, kind):
+  # Function that sets unique alias names for all imported modules based on
+  # their namespace. For example, for two imported modules with namespace
+  # "mojo.foo", we would generate two aliases "mojoFoo" and "mojoFoo$0".
+  def _SetUniqueAliasesForImports(self):
+    used_aliases = set()
+    for each_import in self.module.imports:
+      # Per the style guide module aliases start with lower case.
+      simple_alias = generator.ToCamel(identifier=each_import.namespace,
+                                       lower_initial=True,
+                                       delimiter='.')
+      unique_alias = simple_alias
+      counter = 0
+      while unique_alias in used_aliases:
+        unique_alias = '%s$%d' % (simple_alias, counter)
+        counter += 1
+
+      used_aliases.add(unique_alias)
+      each_import.unique_alias = unique_alias
+
+  def _TypescriptType(self, kind, use_es_modules):
     if kind in mojom.PRIMITIVES:
       return _kind_to_typescript_type[kind]
+
+    if mojom.IsStructKind(kind):
+      if kind.module and kind.module.path != self.module.path:
+        namespace = (kind.module.unique_alias
+                     if use_es_modules else kind.module.namespace)
+        return '.'.join([namespace, kind.name])
+
+      return kind.name
+
     raise Exception("Type is not supported yet.")
 
-  def _TypescriptTypeWithNullability(self, kind):
-    return (self._TypescriptType(kind) +
+  def _TypescriptTypeWithNullability(self, kind, use_es_modules):
+    return (self._TypescriptType(kind, use_es_modules) +
             (" | null" if mojom.IsNullableKind(kind) else ""))
 
   def _ConstantValue(self, constant):
@@ -113,3 +144,6 @@ class Generator(generator.Generator):
       return "BigInt('%s')" % value
 
     return value
+
+  def _RelativePath(self, path):
+    return os.path.relpath(path, os.path.dirname(self.module.path))

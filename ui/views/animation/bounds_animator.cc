@@ -41,9 +41,15 @@ void BoundsAnimator::AnimateViewTo(
   DCHECK(view);
   DCHECK_EQ(view->parent(), parent_);
 
-  Data existing_data;
+  const bool is_animating = IsAnimating(view);
 
-  if (IsAnimating(view)) {
+  // Return early if the existing animation on |view| has the same target
+  // bounds.
+  if (is_animating && target == data_[view].target_bounds)
+    return;
+
+  Data existing_data;
+  if (is_animating) {
     DCHECK(base::Contains(data_, view));
     const bool used_transforms = data_[view].target_transform.has_value();
     if (used_transforms) {

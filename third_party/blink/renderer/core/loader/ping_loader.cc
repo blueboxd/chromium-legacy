@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
@@ -185,10 +186,7 @@ class BeaconFormData final : public Beacon {
 bool SendBeaconCommon(LocalFrame* frame,
                       const KURL& url,
                       const Beacon& beacon) {
-  if (!frame->GetDocument())
-    return false;
-
-  if (!frame->GetDocument()
+  if (!frame->DomWindow()
            ->GetContentSecurityPolicyForWorld()
            ->AllowConnectToSource(url, url, RedirectStatus::kNoRedirect)) {
     // We're simulating a network failure here, so we return 'true'.

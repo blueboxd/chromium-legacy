@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/test_webrtc_stats_report_obtainer.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_stats.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
@@ -157,14 +158,14 @@ class RTCRtpSenderImplTest : public ::testing::Test {
 TEST_F(RTCRtpSenderImplTest, CreateSender) {
   auto web_track = CreateWebTrack("track_id");
   sender_ = CreateSender(web_track);
-  EXPECT_FALSE(sender_->Track().IsNull());
-  EXPECT_EQ(web_track.UniqueId(), sender_->Track().UniqueId());
+  EXPECT_TRUE(sender_->Track());
+  EXPECT_EQ(web_track.UniqueId(), sender_->Track()->UniqueId());
 }
 
 TEST_F(RTCRtpSenderImplTest, CreateSenderWithNullTrack) {
   blink::WebMediaStreamTrack null_track;
   sender_ = CreateSender(null_track);
-  EXPECT_TRUE(sender_->Track().IsNull());
+  EXPECT_FALSE(sender_->Track());
 }
 
 TEST_F(RTCRtpSenderImplTest, ReplaceTrackSetsTrack) {
@@ -175,8 +176,8 @@ TEST_F(RTCRtpSenderImplTest, ReplaceTrackSetsTrack) {
   EXPECT_CALL(*mock_webrtc_sender_, SetTrack(_)).WillOnce(Return(true));
   auto replaceTrackRunLoopAndGetResult = ReplaceTrack(web_track2);
   EXPECT_TRUE(std::move(replaceTrackRunLoopAndGetResult).Run());
-  ASSERT_FALSE(sender_->Track().IsNull());
-  EXPECT_EQ(web_track2.UniqueId(), sender_->Track().UniqueId());
+  ASSERT_TRUE(sender_->Track());
+  EXPECT_EQ(web_track2.UniqueId(), sender_->Track()->UniqueId());
 }
 
 TEST_F(RTCRtpSenderImplTest, ReplaceTrackWithNullTrack) {
@@ -187,22 +188,22 @@ TEST_F(RTCRtpSenderImplTest, ReplaceTrackWithNullTrack) {
   EXPECT_CALL(*mock_webrtc_sender_, SetTrack(_)).WillOnce(Return(true));
   auto replaceTrackRunLoopAndGetResult = ReplaceTrack(null_track);
   EXPECT_TRUE(std::move(replaceTrackRunLoopAndGetResult).Run());
-  EXPECT_TRUE(sender_->Track().IsNull());
+  EXPECT_FALSE(sender_->Track());
 }
 
 TEST_F(RTCRtpSenderImplTest, ReplaceTrackCanFail) {
   auto web_track = CreateWebTrack("track_id");
   sender_ = CreateSender(web_track);
-  ASSERT_FALSE(sender_->Track().IsNull());
-  EXPECT_EQ(web_track.UniqueId(), sender_->Track().UniqueId());
+  ASSERT_TRUE(sender_->Track());
+  EXPECT_EQ(web_track.UniqueId(), sender_->Track()->UniqueId());
 
   blink::WebMediaStreamTrack null_track;
   EXPECT_CALL(*mock_webrtc_sender_, SetTrack(_)).WillOnce(Return(false));
   auto replaceTrackRunLoopAndGetResult = ReplaceTrack(null_track);
   EXPECT_FALSE(std::move(replaceTrackRunLoopAndGetResult).Run());
   // The track should not have been set.
-  ASSERT_FALSE(sender_->Track().IsNull());
-  EXPECT_EQ(web_track.UniqueId(), sender_->Track().UniqueId());
+  ASSERT_TRUE(sender_->Track());
+  EXPECT_EQ(web_track.UniqueId(), sender_->Track()->UniqueId());
 }
 
 TEST_F(RTCRtpSenderImplTest, ReplaceTrackIsNotSetSynchronously) {
@@ -213,8 +214,8 @@ TEST_F(RTCRtpSenderImplTest, ReplaceTrackIsNotSetSynchronously) {
   EXPECT_CALL(*mock_webrtc_sender_, SetTrack(_)).WillOnce(Return(true));
   auto replaceTrackRunLoopAndGetResult = ReplaceTrack(web_track2);
   // The track should not be set until the run loop has executed.
-  ASSERT_FALSE(sender_->Track().IsNull());
-  EXPECT_NE(web_track2.UniqueId(), sender_->Track().UniqueId());
+  ASSERT_TRUE(sender_->Track());
+  EXPECT_NE(web_track2.UniqueId(), sender_->Track()->UniqueId());
   // Wait for operation to run to ensure EXPECT_CALL is satisfied.
   std::move(replaceTrackRunLoopAndGetResult).Run();
 }
@@ -258,8 +259,8 @@ TEST_F(RTCRtpSenderImplTest, CopiedSenderSharesInternalStates) {
   EXPECT_TRUE(std::move(replaceTrackRunLoopAndGetResult).Run());
 
   // Both original and copy shows a modified state.
-  EXPECT_TRUE(sender_->Track().IsNull());
-  EXPECT_TRUE(copy->Track().IsNull());
+  EXPECT_FALSE(sender_->Track());
+  EXPECT_FALSE(copy->Track());
 }
 
 }  // namespace blink

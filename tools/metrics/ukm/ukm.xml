@@ -9910,6 +9910,14 @@ be describing additional metrics about the same event.
     <summary>
       Whether the user activated Reader Mode via the omnibox badge.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 
@@ -9926,6 +9934,14 @@ be describing additional metrics about the same event.
       Whether the distillability service determined the page to be distillable,
       i.e. likely to render well in Reader Mode.
     </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <enumeration/>
+        </statistics>
+      </history>
+    </aggregation>
   </metric>
 </event>
 

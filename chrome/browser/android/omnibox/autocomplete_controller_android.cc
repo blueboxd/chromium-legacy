@@ -596,7 +596,8 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       ToJavaByteArray(env, post_content),
       match.suggestion_group_id.value_or(
           SearchSuggestionParser::kNoSuggestionGroupId),
-      j_query_tiles, ToJavaByteArray(env, clipboard_image_data));
+      j_query_tiles, ToJavaByteArray(env, clipboard_image_data),
+      match.has_tab_match);
 }
 
 void AutocompleteControllerAndroid::PopulateOmniboxGroupHeaders(

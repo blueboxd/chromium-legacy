@@ -11,7 +11,30 @@ class PrefService;
 
 namespace updater {
 
-std::unique_ptr<PrefService> CreatePrefService();
+class ScopedPrefsLock;
+
+class UpdaterPrefs {
+ public:
+  UpdaterPrefs(std::unique_ptr<ScopedPrefsLock> lock,
+               std::unique_ptr<PrefService> prefs);
+  UpdaterPrefs(const UpdaterPrefs&) = delete;
+  UpdaterPrefs& operator=(const UpdaterPrefs&) = delete;
+  ~UpdaterPrefs();
+
+  PrefService* GetPrefService() const;
+
+ private:
+  std::unique_ptr<ScopedPrefsLock> lock_;
+  std::unique_ptr<PrefService> prefs_;
+};
+
+// Open the global prefs. These prefs are protected by a mutex, and shared by
+// all updaters on the system. Returns nullptr if the mutex cannot be acquired.
+std::unique_ptr<UpdaterPrefs> CreateGlobalPrefs();
+
+// Open the version-specific prefs. These prefs are not protected by any mutex
+// and not shared with other versions of the updater.
+std::unique_ptr<UpdaterPrefs> CreateLocalPrefs();
 
 // Commits prefs changes to storage. This function should only be called
 // when the changes must be written immediately, for instance, during program

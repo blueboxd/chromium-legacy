@@ -223,7 +223,7 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   void UpdateInertIfPossible();
 
   // Changes the text direction of the selected input node.
-  virtual void SetTextDirection(mojo_base::mojom::blink::TextDirection) = 0;
+  virtual void SetTextDirection(base::i18n::TextDirection) = 0;
 
   virtual void SetInheritedEffectiveTouchAction(TouchAction) = 0;
   void UpdateInheritedEffectiveTouchActionIfPossible();

@@ -16,9 +16,8 @@ from blinkpy.common import version_check  # pylint: disable=unused-import
 from blinkpy.web_tests.servers import cli_wrapper
 from blinkpy.web_tests.servers import wptserve
 
-print(
-    "Generated content (out/BUILD_DIR/gen) is *only* served from "
-    "out/Release/gen. It is possible to symlink a gen dir from another build "
-    "directory.")
+print("Generated content (out/<build directory>/gen) is served from "
+      "out/Release/gen by default. Specify an alternate directory with "
+      "'-t <build directory>'.")
 
 cli_wrapper.main(wptserve.WPTServe, description=__doc__)

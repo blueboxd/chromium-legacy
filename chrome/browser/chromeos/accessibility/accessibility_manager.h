@@ -18,7 +18,6 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/accessibility/chromevox_panel.h"
-#include "chrome/browser/chromeos/accessibility/switch_access_panel.h"
 #include "chrome/browser/extensions/api/braille_display_private/braille_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
@@ -276,7 +275,6 @@ class AccessibilityManager
 
   // Called by our widget observer when the respective panel is closing.
   void OnChromeVoxPanelDestroying();
-  void OnSwitchAccessPanelDestroying();
 
   // Profile having the a11y context.
   Profile* profile() { return profile_; }
@@ -290,15 +288,6 @@ class AccessibilityManager
 
   // Set the keys to be captured by Switch Access.
   void SetSwitchAccessKeys(const std::set<int>& key_codes);
-
-  // Hides the Switch Access menu.
-  void HideSwitchAccessMenu();
-
-  // Shows the Switch Access menu.
-  void ShowSwitchAccessMenu(const gfx::Rect& element_bounds,
-                            int menu_width,
-                            int menu_height,
-                            bool back_button_only = false);
 
   // Starts or stops dictation (type what you speak).
   bool ToggleDictation();
@@ -462,10 +451,6 @@ class AccessibilityManager
   ChromeVoxPanel* chromevox_panel_ = nullptr;
   std::unique_ptr<AccessibilityPanelWidgetObserver>
       chromevox_panel_widget_observer_;
-
-  SwitchAccessPanel* switch_access_panel_ = nullptr;
-  std::unique_ptr<AccessibilityPanelWidgetObserver>
-      switch_access_panel_widget_observer_;
 
   std::string keyboard_listener_extension_id_;
   bool keyboard_listener_capture_ = false;

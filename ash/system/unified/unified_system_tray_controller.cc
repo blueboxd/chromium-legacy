@@ -482,9 +482,8 @@ void UnifiedSystemTrayController::ResetToCollapsedIfRequired() {
   if (model_->IsExplicitlyExpanded())
     return;
 
-  if (features::IsUnifiedMessageCenterRefactorEnabled() &&
-      unified_view_->feature_pods_container()->row_count() ==
-          kUnifiedFeaturePodMinRows) {
+  if (unified_view_->feature_pods_container()->row_count() ==
+      kUnifiedFeaturePodMinRows) {
     CollapseWithoutAnimating();
   }
 }

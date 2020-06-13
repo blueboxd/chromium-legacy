@@ -94,24 +94,6 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryGLTexture
                                          gfx::BufferFormat format,
                                          SurfaceHandle surface_handle,
                                          const gfx::Size& size);
-  static std::unique_ptr<SharedImageBacking> MakeBacking(
-      bool passthrough,
-      const Mailbox& mailbox,
-      GLenum target,
-      GLuint service_id,
-      scoped_refptr<gl::GLImage> image,
-      gles2::Texture::ImageState image_state,
-      GLuint internal_format,
-      GLuint gl_format,
-      GLuint gl_type,
-      const gles2::Texture::CompatibilitySwizzle* swizzle,
-      bool is_cleared,
-      bool has_immutable_storage,
-      viz::ResourceFormat format,
-      const gfx::Size& size,
-      const gfx::ColorSpace& color_space,
-      uint32_t usage,
-      const UnpackStateAttribs& attribs);
 
   // This is meant to be used only on Android. Return nullptr for other
   // platforms.

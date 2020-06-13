@@ -6,10 +6,13 @@
 
 #include "base/command_line.h"
 #include "content/app/content_main_runner_impl.h"
+#include "content/common/mojo_core_library_support.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
+#include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/dynamic_library_support.h"
 #include "services/service_manager/embedder/switches.h"
 
 #if defined(OS_WIN)
@@ -68,12 +71,13 @@ ContentServiceManagerMainDelegate::OverrideProcessType() {
   return content_main_params_.delegate->OverrideProcessType();
 }
 
-void ContentServiceManagerMainDelegate::OverrideMojoConfiguration(
+void ContentServiceManagerMainDelegate::InitializeMojo(
     mojo::core::Configuration* config) {
   // If this is the browser process and there's no Mojo invitation pipe on the
   // command line, we will serve as the global Mojo broker.
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kProcessType)) {
+  const bool is_browser = !command_line.HasSwitch(switches::kProcessType);
+  if (is_browser) {
     if (mojo::PlatformChannel::CommandLineHasPassedEndpoint(command_line)) {
       config->is_broker_process = false;
       config->force_direct_shared_memory_allocation = true;
@@ -90,6 +94,27 @@ void ContentServiceManagerMainDelegate::OverrideMojoConfiguration(
     }
 #endif
   }
+
+  if (!IsMojoCoreSharedLibraryEnabled()) {
+    mojo::core::Init(*config);
+    return;
+  }
+
+  if (!is_browser) {
+    // Note that when dynamic Mojo Core is used, initialization for child
+    // processes happens elsewhere. See ContentMainRunnerImpl::Run() and
+    // ChildProcess construction.
+    return;
+  }
+
+  MojoInitializeFlags flags = MOJO_INITIALIZE_FLAG_NONE;
+  if (config->is_broker_process)
+    flags |= MOJO_INITIALIZE_FLAG_AS_BROKER;
+  if (config->force_direct_shared_memory_allocation)
+    flags |= MOJO_INITIALIZE_FLAG_FORCE_DIRECT_SHARED_MEMORY_ALLOCATION;
+  MojoResult result =
+      mojo::LoadAndInitializeCoreLibrary(GetMojoCoreSharedLibraryPath(), flags);
+  CHECK_EQ(MOJO_RESULT_OK, result);
 }
 
 std::vector<service_manager::Manifest>

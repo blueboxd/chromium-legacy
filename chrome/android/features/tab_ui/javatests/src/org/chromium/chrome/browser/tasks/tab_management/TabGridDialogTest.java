@@ -531,6 +531,29 @@ public class TabGridDialogTest {
         mSelectionEditorRobot.resultRobot.verifyTabSelectionEditorIsHidden();
         assertTrue(isDialogShowing(cta));
         checkPopupPosition(cta, true, false);
+
+        // Verify the positioning in multi-window mode. Adjusting the height of the root view to
+        // mock entering/exiting multi-window mode.
+        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
+        CriteriaHelper.pollUiThread(() -> parentView.getHeight() > parentView.getWidth());
+        View rootView = cta.findViewById(R.id.coordinator);
+        int rootViewHeight = rootView.getHeight();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ViewGroup.LayoutParams params = rootView.getLayoutParams();
+            params.height = rootViewHeight / 2;
+            rootView.setLayoutParams(params);
+        });
+        checkPopupPosition(cta, true, true);
+        openSelectionEditorAndVerify(cta, 3);
+        checkPopupPosition(cta, false, true);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ViewGroup.LayoutParams params = rootView.getLayoutParams();
+            params.height = rootViewHeight;
+            rootView.setLayoutParams(params);
+        });
+        checkPopupPosition(cta, false, true);
+        checkPopupPosition(cta, true, true);
     }
 
     @Test
@@ -805,6 +828,10 @@ public class TabGridDialogTest {
 
     private void clickScrimToExitDialog(ChromeTabbedActivity cta) throws ExecutionException {
         CriteriaHelper.pollUiThread(() -> isDialogShowing(cta));
-        TestThreadUtils.runOnUiThreadBlocking(() -> cta.getScrim().performClick());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            View scrimView =
+                    cta.getRootUiCoordinatorForTesting().getScrimCoordinator().getViewForTesting();
+            scrimView.performClick();
+        });
     }
 }

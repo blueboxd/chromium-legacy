@@ -86,7 +86,6 @@ const char kQuicRetryOnAlternateNetworkBeforeHandshake[] =
 const char kQuicRaceStaleDNSOnConnection[] = "race_stale_dns_on_connection";
 const char kQuicDisableBidirectionalStreams[] =
     "quic_disable_bidirectional_streams";
-const char kQuicRaceCertVerification[] = "race_cert_verification";
 const char kQuicHostWhitelist[] = "host_whitelist";
 const char kQuicEnableSocketRecvOptimization[] =
     "enable_socket_recv_optimization";
@@ -500,12 +499,6 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
                                 &quic_disable_bidirectional_streams)) {
         quic_params->disable_bidirectional_streams =
             quic_disable_bidirectional_streams;
-      }
-
-      bool quic_race_cert_verification = false;
-      if (quic_args->GetBoolean(kQuicRaceCertVerification,
-                                &quic_race_cert_verification)) {
-        quic_params->race_cert_verification = quic_race_cert_verification;
       }
 
       std::string quic_host_allowlist;

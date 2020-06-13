@@ -34,11 +34,18 @@ NSURL* CredentialProviderSharedArchivableStoreURL() {
       URLByAppendingPathComponent:kArchivableStorageFilename];
 }
 
+// If an update requires a forced sync, update the version from VN to V(N+1) and
+// keep in sync with kUserDefaultsCredentialProviderFirstTimeSyncCompleted.
 NSString* const kUserDefaultsCredentialProviderASIdentityStoreSyncCompleted =
-    @"UserDefaultsCredentialProviderASIdentityStoreSyncCompleted";
+    @"UserDefaultsCredentialProviderASIdentityStoreSyncCompleted.V0";
 
+// If an update requires a forced sync, update the version from VN to V(N+1) and
+// keep in sync with kUserDefaultsCredentialProviderFirstTimeSyncCompleted.
 NSString* const kUserDefaultsCredentialProviderFirstTimeSyncCompleted =
-    @"UserDefaultsCredentialProviderFirstTimeSyncCompleted";
+    @"UserDefaultsCredentialProviderFirstTimeSyncCompleted.V0";
 
 NSString* const kUserDefaultsCredentialProviderConsentVerified =
     @"UserDefaultsCredentialProviderConsentVerified";
+
+NSString* const kUserDefaultsCredentialProviderManagedUserID =
+    @"kUserDefaultsCredentialProviderManagedUserID";

@@ -28,8 +28,9 @@ enum NTPLoggingEventType {
   // by the single-iframe version of the NTP.
   NTP_ALL_TILES_LOADED = 11,
 
-  // Activated by clicking on the fakebox icon. Logged by Voice Search.
-  NTP_VOICE_ACTION_ACTIVATE_FAKEBOX = 13,
+  // Activated by clicking on the fakebox or realbox icon. Logged by Voice
+  // Search.
+  NTP_VOICE_ACTION_ACTIVATE_SEARCH_BOX = 13,
   // Activated by keyboard shortcut.
   NTP_VOICE_ACTION_ACTIVATE_KEYBOARD = 14,
   // Close the voice overlay by a user's explicit action.

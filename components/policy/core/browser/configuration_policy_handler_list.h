@@ -46,21 +46,27 @@ class POLICY_EXPORT ConfigurationPolicyHandlerList {
 
   // Translates |policies| to their corresponding preferences in |prefs|. Any
   // errors found while processing the policies are stored in |errors|.
-  // All deprecated policies will be stored into |deprecated_policies|. |prefs|,
-  // |deprecated_policies| or |errors| can be nullptr, and won't be filled in
-  // that case.
+  // All deprecated policies will be stored into |deprecated_policies|.
+  // All non-applying unreleased policies will be stored into |future_policies|.
+  // |prefs|, |deprecated_policies|, |future_policies| or |errors| can be
+  // nullptr, and won't be filled in that case.
   void ApplyPolicySettings(const PolicyMap& policies,
                            PrefValueMap* prefs,
                            PolicyErrorMap* errors,
-                           DeprecatedPoliciesSet* deprecated_policies) const;
+                           PoliciesSet* deprecated_policies,
+                           PoliciesSet* future_policies) const;
 
   // Converts sensitive policy values to others more appropriate for displaying.
   void PrepareForDisplaying(PolicyMap* policies) const;
 
  private:
   // Returns true if the policy |iter| shouldn't be passed to the |handlers_|.
+  // On Stable and Beta channel, future policies that are not in the
+  // |enabled_future_policies| will be filtered out and put into the
+  // |future_policies|.
   bool FilterOutUnsupportedPolicies(
       const base::flat_set<std::string>& enabled_future_policies,
+      PoliciesSet* future_policies,
       const PolicyMap::const_iterator iter) const;
 
   bool IsPlatformDevicePolicy(const PolicyDetails& policy_details,

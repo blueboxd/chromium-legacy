@@ -146,8 +146,6 @@ class AppInfoGeneratorTest : public ::testing::TestWithParam<ProviderType> {
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(user_manager));
     profile_ = std::make_unique<TestingProfile>();
-    AppInfoGenerator::RegisterProfilePrefs(
-        profile_->GetTestingPrefService()->registry());
     test_clock().SetNow(MakeLocalTime("25-MAR-2020 1:30am"));
 
     web_app::WebAppProviderFactory::GetInstance()->SetTestingFactoryAndUse(

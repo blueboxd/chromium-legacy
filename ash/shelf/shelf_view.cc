@@ -1027,12 +1027,18 @@ DragImageView* ShelfView::RetrieveDragIconProxyAndClearDragProxyState() {
   return temp_drag_image_view;
 }
 
+bool ShelfView::ShouldStartDrag(
+    const std::string& app_id,
+    const gfx::Point& location_in_screen_coordinates) const {
+  // Do not start drag if an operation is already going on - or the cursor is
+  // not inside. This could happen if mouse / touch operations overlap.
+  return (drag_and_drop_shelf_id_.IsNull() && !app_id.empty() &&
+          GetBoundsInScreen().Contains(location_in_screen_coordinates));
+}
+
 bool ShelfView::StartDrag(const std::string& app_id,
                           const gfx::Point& location_in_screen_coordinates) {
-  // Bail if an operation is already going on - or the cursor is not inside.
-  // This could happen if mouse / touch operations overlap.
-  if (!drag_and_drop_shelf_id_.IsNull() || app_id.empty() ||
-      !GetBoundsInScreen().Contains(location_in_screen_coordinates))
+  if (!ShouldStartDrag(app_id, location_in_screen_coordinates))
     return false;
 
   // If the AppsGridView (which was dispatching this event) was opened by our

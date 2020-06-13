@@ -21,6 +21,7 @@ import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarConfiguration;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.features.start_surface.StartSurfaceMediator.SurfaceMode;
 import org.chromium.chrome.start_surface.R;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -34,6 +35,7 @@ import java.util.Arrays;
  */
 public class StartSurfaceCoordinator implements StartSurface {
     private final ChromeActivity mActivity;
+    private final ScrimCoordinator mScrimCoordinator;
     private final StartSurfaceMediator mStartSurfaceMediator;
     private final @SurfaceMode int mSurfaceMode;
     private final BottomSheetController mBottomSheetController;
@@ -86,8 +88,9 @@ public class StartSurfaceCoordinator implements StartSurface {
     private boolean mIsSecondaryTaskInitPending;
 
     // TODO(http://crbug.com/1093421): Remove dependency on ChromeActivity.
-    public StartSurfaceCoordinator(ChromeActivity activity) {
+    public StartSurfaceCoordinator(ChromeActivity activity, ScrimCoordinator scrimCoordinator) {
         mActivity = activity;
+        mScrimCoordinator = scrimCoordinator;
         mSurfaceMode = computeSurfaceMode();
         mBottomSheetController = mActivity.getBottomSheetController();
 
@@ -97,7 +100,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (mSurfaceMode == SurfaceMode.NO_START_SURFACE) {
             // Create Tab switcher directly to save one layer in the view hierarchy.
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createGridTabSwitcher(
-                    mActivity, mActivity.getCompositorViewHolder());
+                    mActivity, mActivity.getCompositorViewHolder(), scrimCoordinator);
         } else {
             createAndSetStartSurface(excludeMVTiles);
         }
@@ -288,7 +291,7 @@ public class StartSurfaceCoordinator implements StartSurface {
             tabSwitcherType = TabSwitcherType.SINGLE;
         }
         mTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
-                mActivity, mPropertyModel, tabSwitcherType, !excludeMVTiles);
+                mActivity, mScrimCoordinator, mPropertyModel, tabSwitcherType, !excludeMVTiles);
         mTasksSurface.getView().setId(R.id.primary_tasks_surface_view);
 
         mTasksSurfacePropertyModelChangeProcessor =
@@ -315,7 +318,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         PropertyModel propertyModel = new PropertyModel(TasksSurfaceProperties.ALL_KEYS);
         mStartSurfaceMediator.setSecondaryTasksSurfacePropertyModel(propertyModel);
         mSecondaryTasksSurface = TabManagementModuleProvider.getDelegate().createTasksSurface(
-                mActivity, propertyModel,
+                mActivity, mScrimCoordinator, propertyModel,
                 StartSurfaceConfiguration.isStartSurfaceStackTabSwitcherEnabled()
                         ? TabSwitcherType.NONE
                         : TabSwitcherType.GRID,

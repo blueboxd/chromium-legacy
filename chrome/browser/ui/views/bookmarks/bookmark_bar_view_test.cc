@@ -2143,7 +2143,7 @@ class BookmarkBarViewTest25 : public BookmarkBarViewEventTestBase {
   void Step2() {
     // Menu should be showing.
     views::MenuItemView* menu = bb_view_->GetMenu();
-    ASSERT_TRUE(menu != nullptr);
+    ASSERT_TRUE(menu);
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Send KEYCODE key event, which should close the menu.
@@ -2185,7 +2185,7 @@ class BookmarkBarViewTest26 : public BookmarkBarViewEventTestBase {
   void Step2() {
     // Menu should be showing.
     views::MenuItemView* menu = bb_view_->GetMenu();
-    ASSERT_TRUE(menu != nullptr);
+    ASSERT_TRUE(menu);
     ASSERT_TRUE(menu->GetSubmenu()->IsShowing());
 
     // Send WM_CANCELMODE, which should close the menu. The message is sent

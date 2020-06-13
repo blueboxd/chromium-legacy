@@ -174,6 +174,8 @@ bool InputBufferFragmentSplitter::IsPartialFramePending() const {
 H264InputBufferFragmentSplitter::H264InputBufferFragmentSplitter()
     : h264_parser_(new H264Parser()) {}
 
+H264InputBufferFragmentSplitter::~H264InputBufferFragmentSplitter() = default;
+
 bool H264InputBufferFragmentSplitter::AdvanceFrameFragment(const uint8_t* data,
                                                            size_t size,
                                                            size_t* endpos) {

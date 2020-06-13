@@ -206,8 +206,8 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnWindowActivated();
   void OnWindowDeactivated();
   void OnMenuPopupStart();
-  void OnMenuPopupHide();
   void OnMenuPopupEnd();
+  void OnAllMenusEnded();
   void OnSelected();
   void OnSelectedChildrenChanged();
   void OnTextSelectionChanged();

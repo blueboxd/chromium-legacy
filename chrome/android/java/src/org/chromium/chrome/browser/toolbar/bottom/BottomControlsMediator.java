@@ -9,6 +9,7 @@ import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsSizer;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.ui.KeyboardVisibilityDelegate;
@@ -28,8 +29,11 @@ class BottomControlsMediator implements BrowserControlsStateProvider.Observer,
     /** The model for the bottom controls component that holds all of its view state. */
     private final PropertyModel mModel;
 
-    /** The fullscreen manager to observe browser controls events. */
+    /** The fullscreen manager to observe fullscreen events. */
     private final ChromeFullscreenManager mFullscreenManager;
+
+    /** The browser controls sizer/manager to observe browser controls events. */
+    private final BrowserControlsSizer mBrowserControlsSizer;
 
     /**
      * The height of the bottom bar in pixels, not including the top shadow.
@@ -64,7 +68,8 @@ class BottomControlsMediator implements BrowserControlsStateProvider.Observer,
         mModel = model;
 
         mFullscreenManager = fullscreenManager;
-        mFullscreenManager.addObserver(this);
+        mBrowserControlsSizer = fullscreenManager;
+        mBrowserControlsSizer.addObserver(this);
 
         mBottomControlsHeight = bottomControlsHeight;
     }
@@ -96,7 +101,7 @@ class BottomControlsMediator implements BrowserControlsStateProvider.Observer,
      * Clean up anything that needs to be when the bottom controls component is destroyed.
      */
     void destroy() {
-        mFullscreenManager.removeObserver(this);
+        mBrowserControlsSizer.removeObserver(this);
         if (mWindowAndroid != null) {
             mWindowAndroid.getKeyboardDelegate().removeKeyboardVisibilityListener(this);
             mWindowAndroid = null;
@@ -161,9 +166,9 @@ class BottomControlsMediator implements BrowserControlsStateProvider.Observer,
         final boolean isCompositedViewVisible =
                 mIsBottomControlsVisible && !mIsKeyboardVisible && !isInFullscreenMode();
         mModel.set(BottomControlsProperties.COMPOSITED_VIEW_VISIBLE, isCompositedViewVisible);
-        mFullscreenManager.setBottomControlsHeight(
+        mBrowserControlsSizer.setBottomControlsHeight(
                 isCompositedViewVisible ? mBottomControlsHeight : 0,
-                mFullscreenManager.getBottomControlsMinHeight());
+                mBrowserControlsSizer.getBottomControlsMinHeight());
     }
 
     /**
@@ -176,7 +181,7 @@ class BottomControlsMediator implements BrowserControlsStateProvider.Observer,
     private void updateAndroidViewVisibility() {
         mModel.set(BottomControlsProperties.ANDROID_VIEW_VISIBLE,
                 mIsBottomControlsVisible && !mIsKeyboardVisible && !mIsOverlayPanelShowing
-                        && !mIsInSwipeLayout && mFullscreenManager.getBottomControlOffset() == 0
+                        && !mIsInSwipeLayout && mBrowserControlsSizer.getBottomControlOffset() == 0
                         && !isInFullscreenMode());
     }
 }

@@ -789,9 +789,6 @@ Document::Document(const DocumentInit& initializer,
       needs_to_record_ukm_outlive_time_(false),
       viewport_data_(MakeGarbageCollected<ViewportData>(*this)),
       is_for_external_handler_(initializer.IsForExternalHandler()),
-      isolated_world_csp_map_(
-          MakeGarbageCollected<
-              HeapHashMap<int, Member<ContentSecurityPolicy>>>()),
       display_lock_document_state_(
           MakeGarbageCollected<DisplayLockDocumentState>(this)),
       permission_service_(GetExecutionContext()),
@@ -978,36 +975,6 @@ Location* Document::location() const {
   return domWindow()->location();
 }
 
-ContentSecurityPolicy* Document::GetContentSecurityPolicyForWorld() {
-  if (!GetExecutionContext())
-    return GetContentSecurityPolicy();
-  v8::Isolate* isolate = GetExecutionContext()->GetIsolate();
-  v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> v8_context = isolate->GetCurrentContext();
-
-  // This can be called before we enter v8, hence the context might be empty,
-  // which implies we are not in an isolated world.
-  if (v8_context.IsEmpty())
-    return GetContentSecurityPolicy();
-
-  DOMWrapperWorld& world = DOMWrapperWorld::Current(isolate);
-  if (!world.IsIsolatedWorld())
-    return GetContentSecurityPolicy();
-
-  int32_t world_id = world.GetWorldId();
-  auto it = isolated_world_csp_map_->find(world_id);
-  if (it != isolated_world_csp_map_->end())
-    return it->value;
-
-  ContentSecurityPolicy* policy =
-      IsolatedWorldCSP::Get().CreateIsolatedWorldCSP(*this, world_id);
-  if (!policy)
-    return GetContentSecurityPolicy();
-
-  isolated_world_csp_map_->insert(world_id, policy);
-  return policy;
-}
-
 bool Document::FeatureEnabled(OriginTrialFeature feature) const {
   return GetOriginTrialContext()->IsFeatureEnabled(feature);
 }
@@ -1111,14 +1078,6 @@ void Document::ChildrenChanged(const ChildrenChange& change) {
   // frames when there's only a <head>, but such documents are pretty rare.
   if (document_element_ && !IsA<HTMLDocument>(this))
     BeginLifecycleUpdatesIfRenderingReady();
-}
-
-void Document::setRootScroller(Element* new_scroller, ExceptionState&) {
-  root_scroller_controller_->Set(new_scroller);
-}
-
-Element* Document::rootScroller() const {
-  return root_scroller_controller_->Get();
 }
 
 bool Document::IsInMainFrame() const {
@@ -1897,7 +1856,7 @@ void Document::DispatchDidReceiveTitle() {
   if (GetFrame() && !GetFrame()->Tree().Parent()) {
     String shortened_title = title_.Substring(0, mojom::blink::kMaxTitleChars);
     GetFrame()->GetLocalFrameHostRemote().UpdateTitle(
-        shortened_title, mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT);
+        shortened_title, base::i18n::TextDirection::LEFT_TO_RIGHT);
   }
   GetFrame()->Client()->DispatchDidReceiveTitle(title_);
 }
@@ -7290,27 +7249,27 @@ bool Document::AllowInlineEventHandler(Node* node,
                                        const String& context_url,
                                        const WTF::OrdinalNumber& context_line) {
   auto* element = DynamicTo<Element>(node);
-
-  // https://html.spec.whatwg.org/multipage/webappapis.html#event-handler-content-attributes
-  // Step 5.1. If the Should element's inline behavior be blocked by Content
-  // Security Policy? algorithm returns "Blocked" when executed upon element,
-  // "script attribute", and value, then return. [CSP] [spec text]
-  if (!GetContentSecurityPolicyForWorld()->AllowInline(
-          ContentSecurityPolicy::InlineType::kScriptAttribute, element,
-          listener->ScriptBody(), String() /* nonce */, context_url,
-          context_line))
-    return false;
-
   // HTML says that inline script needs browsing context to create its execution
   // environment.
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/webappapis.html#event-handler-attributes
   // Also, if the listening node came from other document, which happens on
   // context-less event dispatching, we also need to ask the owner document of
   // the node.
-  LocalFrame* frame = ExecutingFrame();
-  if (!frame)
+  LocalDOMWindow* window = ExecutingWindow();
+  if (!window)
     return false;
-  if (!execution_context_->CanExecuteScripts(kNotAboutToExecuteScript))
+
+  // https://html.spec.whatwg.org/multipage/webappapis.html#event-handler-content-attributes
+  // Step 5.1. If the Should element's inline behavior be blocked by Content
+  // Security Policy? algorithm returns "Blocked" when executed upon element,
+  // "script attribute", and value, then return. [CSP] [spec text]
+  if (!window->GetContentSecurityPolicyForWorld()->AllowInline(
+          ContentSecurityPolicy::InlineType::kScriptAttribute, element,
+          listener->ScriptBody(), String() /* nonce */, context_url,
+          context_line))
+    return false;
+
+  if (!window->CanExecuteScripts(kNotAboutToExecuteScript))
     return false;
   if (node && node->GetDocument() != this &&
       !node->GetDocument().AllowInlineEventHandler(node, listener, context_url,
@@ -8334,7 +8293,6 @@ void Document::Trace(Visitor* visitor) const {
   visitor->Trace(viewport_data_);
   visitor->Trace(navigation_initiator_);
   visitor->Trace(lazy_load_image_observer_);
-  visitor->Trace(isolated_world_csp_map_);
   visitor->Trace(computed_node_mapping_);
   visitor->Trace(mime_handler_view_before_unload_event_listener_);
   visitor->Trace(cookie_jar_);
@@ -8506,10 +8464,6 @@ bool Document::IsInWebAppScope() const {
 
   DCHECK_EQ(KURL(web_app_scope).GetString(), web_app_scope);
   return Url().GetString().StartsWith(web_app_scope);
-}
-
-void Document::ClearIsolatedWorldCSPForTesting(int32_t world_id) {
-  isolated_world_csp_map_->erase(world_id);
 }
 
 bool Document::ChildrenCanHaveStyle() const {

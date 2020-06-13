@@ -37,8 +37,8 @@ const int kDelayOneHour = kDelayOneMinute * 60;
 
 namespace updater {
 
-Configurator::Configurator()
-    : pref_service_(CreatePrefService()),
+Configurator::Configurator(std::unique_ptr<UpdaterPrefs> prefs)
+    : prefs_(std::move(prefs)),
       external_constants_(CreateExternalConstants()),
       unzip_factory_(base::MakeRefCounted<UnzipperFactory>()),
       patch_factory_(base::MakeRefCounted<PatcherFactory>()) {}
@@ -135,7 +135,7 @@ bool Configurator::EnabledCupSigning() const {
 }
 
 PrefService* Configurator::GetPrefService() const {
-  return pref_service_.get();
+  return prefs_->GetPrefService();
 }
 
 update_client::ActivityDataService* Configurator::GetActivityDataService()

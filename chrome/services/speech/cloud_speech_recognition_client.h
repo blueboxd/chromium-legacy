@@ -87,6 +87,8 @@ class CloudSpeechRecognitionClient : public speech::UpstreamLoaderClient,
   int channel_count_ = 0;
   std::string language_code_;
 
+  std::string previous_result_;
+
   // Stores the last time the stream was reset.
   base::Time last_reset_;
 

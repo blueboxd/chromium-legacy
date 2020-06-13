@@ -32,6 +32,7 @@ js_library("constants") {
 }
 
 js_library("gesture_detector") {
+  deps = [ "//ui/webui/resources/js/cr:event_target.m" ]
 }
 
 js_library("open_pdf_params_parser") {

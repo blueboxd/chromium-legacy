@@ -215,14 +215,15 @@ static_library("component_metrics") {
 }
 
 if (!is_ios) {
-  static_library("gpu") {
+  static_library("content") {
     sources = [
-      "gpu/gpu_metrics_provider.cc",
-      "gpu/gpu_metrics_provider.h",
-      "gpu/rendering_perf_metrics_provider.cc",
-      "gpu/rendering_perf_metrics_provider.h",
+      "content/gpu_metrics_provider.cc",
+      "content/gpu_metrics_provider.h",
+      "content/rendering_perf_metrics_provider.cc",
+      "content/rendering_perf_metrics_provider.h",
+      "content/subprocess_metrics_provider.cc",
+      "content/subprocess_metrics_provider.h",
     ]
-
     public_deps = [ ":metrics" ]
     deps = [
       "//base",
@@ -506,14 +507,13 @@ source_set("unit_tests") {
   # these tests.
   if (is_ios) {
     sources -= [ "child_call_stack_profile_collector_unittest.cc" ]
-  }
-
-  if (is_ios) {
     deps += [ "//ios/web/public/test" ]
-  }
-
-  if (!is_ios) {
-    deps += [ "//content/test:test_support" ]
+  } else {
+    sources += [ "content/subprocess_metrics_provider_unittest.cc" ]
+    deps += [
+      ":content",
+      "//content/test:test_support",
+    ]
   }
 }
 

@@ -19,8 +19,9 @@ namespace ash {
 namespace {
 
 // Returns true if |window| is considered to be a toplevel window.
+// Please see the aura::Window::GetToplevelWindow() for the condition.
 bool IsTopLevelWindow(aura::Window* window) {
-  return window->layer()->type() == ui::LAYER_TEXTURED;
+  return !!window->delegate();
 }
 
 // Returns true if |window| can be a target at |screen_point| by |targeter|.

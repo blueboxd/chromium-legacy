@@ -122,10 +122,6 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // new state.
   virtual void HandleActivationChanged(bool active) = 0;
 
-  // Called when WN_NCACTIVATE is sent to the window, indicating that the window
-  // frame should render as active or inactive.
-  virtual void HandleNonClientActivationChanged(bool active) = 0;
-
   // Called when a well known "app command" from the system was performed.
   // Returns true if the command was handled.
   virtual bool HandleAppCommand(int command) = 0;

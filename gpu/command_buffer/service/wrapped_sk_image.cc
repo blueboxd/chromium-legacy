@@ -172,24 +172,28 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
     DCHECK(!!context_state_);
   }
 
-  bool Initialize(const SkImageInfo& info,
-                  SharedMemoryRegionWrapper shm_wrapper) {
-    base::Optional<SkPixmap> pixmap(
-        base::in_place, info, shm_wrapper.GetMemory(), shm_wrapper.GetStride());
-    if (Initialize(info, pixmap)) {
+  bool InitializeGMB(const SkImageInfo& info,
+                     SharedMemoryRegionWrapper shm_wrapper) {
+    if (Initialize(info, shm_wrapper.GetMemoryAsSpan(),
+                   shm_wrapper.GetStride())) {
       shared_memory_wrapper_ = std::move(shm_wrapper);
       return true;
     }
     return false;
   }
 
-  // |pixmap| optionally contains pixels to be uploaded to texture.
+  // |pixels| optionally contains pixel data to upload to the texture. If pixel
+  // data is provided and the image format is not ETC1 then |stride| is used. If
+  // |stride| is non-zero then it's used as the stride, otherwise
+  // SkImageInfo::minRowBytes() is used for the stride. For ETC1 textures pixel
+  // data must be provided since updating compressed textures is not supported.
   bool Initialize(const SkImageInfo& info,
-                  const base::Optional<SkPixmap>& pixmap) {
+                  base::span<const uint8_t> pixels,
+                  size_t stride) {
     if (context_state_->context_lost())
       return false;
-    DCHECK(context_state_->IsCurrent(nullptr));
 
+    DCHECK(context_state_->IsCurrent(nullptr));
     context_state_->set_need_context_state_reset(true);
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -203,16 +207,18 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
     auto is_protected = GrProtected::kNo;
 #endif
 
-    if (pixmap) {
+    if (pixels.data()) {
       if (format() == viz::ResourceFormat::ETC1) {
         backend_texture_ =
             context_state_->gr_context()->createCompressedBackendTexture(
                 size().width(), size().height(), SkImage::kETC1_CompressionType,
-                pixmap->addr(), pixmap->computeByteSize(), GrMipMapped::kNo,
-                is_protected);
+                pixels.data(), pixels.size(), GrMipMapped::kNo, is_protected);
       } else {
+        if (!stride)
+          stride = info.minRowBytes();
+        SkPixmap pixmap(info, pixels.data(), stride);
         backend_texture_ = context_state_->gr_context()->createBackendTexture(
-            *pixmap, GrRenderable::kNo, is_protected);
+            pixmap, GrRenderable::kNo, is_protected);
       }
 
       if (!backend_texture_.isValid())
@@ -220,11 +226,11 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
 
       SetCleared();
     } else {
+      DCHECK_NE(format(), viz::ResourceFormat::ETC1);
+#if DCHECK_IS_ON()
       // Initializing to bright green makes it obvious if the pixels are not
       // properly set before they are displayed (e.g. https://crbug.com/956555).
       // We don't do this on release builds because there is a slight overhead.
-
-#if DCHECK_IS_ON()
       backend_texture_ = context_state_->gr_context()->createBackendTexture(
           size().width(), size().height(), GetSkColorType(), SkColors::kBlue,
           GrMipMapped::kNo, GrRenderable::kYes, is_protected);
@@ -233,12 +239,12 @@ class WrappedSkImage : public ClearTrackingSharedImageBacking {
           size().width(), size().height(), GetSkColorType(), GrMipMapped::kNo,
           GrRenderable::kYes, is_protected);
 #endif
-    }
 
-    if (!backend_texture_.isValid()) {
-      DLOG(ERROR) << "createBackendTexture() failed with SkColorType:"
-                  << GetSkColorType();
-      return false;
+      if (!backend_texture_.isValid()) {
+        DLOG(ERROR) << "createBackendTexture() failed with SkColorType:"
+                    << GetSkColorType();
+        return false;
+      }
     }
 
     promise_texture_ = SkPromiseImageTexture::Make(backend_texture_);
@@ -374,10 +380,7 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
   std::unique_ptr<WrappedSkImage> texture(
       new WrappedSkImage(mailbox, format, size, color_space, usage,
                          estimated_size, context_state_));
-  base::Optional<SkPixmap> pixmap;
-  if (data.data())
-    pixmap.emplace(info, data.data(), info.minRowBytes());
-  if (!texture->Initialize(info, pixmap))
+  if (!texture->Initialize(info, data, /*stride=*/0))
     return nullptr;
   return texture;
 }
@@ -417,7 +420,7 @@ std::unique_ptr<SharedImageBacking> WrappedSkImageFactory::CreateSharedImage(
   std::unique_ptr<WrappedSkImage> texture(
       new WrappedSkImage(mailbox, format, size, color_space, usage,
                          info.computeMinByteSize(), context_state_));
-  if (!texture->Initialize(info, std::move(shm_wrapper)))
+  if (!texture->InitializeGMB(info, std::move(shm_wrapper)))
     return nullptr;
 
   return texture;

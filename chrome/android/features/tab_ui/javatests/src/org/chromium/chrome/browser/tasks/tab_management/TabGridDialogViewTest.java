@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.a
 
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
@@ -24,9 +25,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -57,19 +58,21 @@ public class TabGridDialogViewTest extends DummyUiActivityTestCase {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mDummyParent = new FrameLayout(getActivity());
-            ScrimView scrimView = new ScrimView(getActivity(), null, mDummyParent);
             getActivity().setContentView(mDummyParent);
             LayoutInflater.from(getActivity())
                     .inflate(R.layout.tab_grid_dialog_layout, mDummyParent, true);
 
             mTabGridDialogView = mDummyParent.findViewById(R.id.dialog_parent_view);
-            mTabGridDialogView.setupScrimView(scrimView);
             mTabGridDialogContainer = mTabGridDialogView.findViewById(R.id.dialog_container_view);
             mUngroupBar = mTabGridDialogContainer.findViewById(R.id.dialog_ungroup_bar);
             mUngroupBarTextView = mUngroupBar.findViewById(R.id.dialog_ungroup_bar_text);
             mContainerParams = (FrameLayout.LayoutParams) mTabGridDialogContainer.getLayoutParams();
             mAnimationCardView = mTabGridDialogView.findViewById(R.id.dialog_animation_card_view);
             mBackgroundFrameView = mTabGridDialogView.findViewById(R.id.dialog_frame);
+            ScrimCoordinator scrimCoordinator =
+                    new ScrimCoordinator(getActivity(), null, mDummyParent, Color.RED);
+            mTabGridDialogView.setupScrimCoordinator(scrimCoordinator);
+            mTabGridDialogView.setScrimClickRunnable(() -> {});
 
             mToolbarHeight = (int) getActivity().getResources().getDimension(
                     R.dimen.tab_group_toolbar_height);

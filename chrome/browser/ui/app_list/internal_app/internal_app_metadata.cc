@@ -152,7 +152,7 @@ bool HasRecommendableForeignTab(
   std::vector<const sync_sessions::SyncedSession*> foreign_sessions;
   sync_sessions::OpenTabsUIDelegate* delegate =
       test_delegate ? test_delegate : service->GetOpenTabsUIDelegate();
-  if (delegate != nullptr)
+  if (delegate)
     delegate->GetAllForeignSessions(&foreign_sessions);
 
   constexpr int kMaxForeignTabAgeInMinutes = 120;

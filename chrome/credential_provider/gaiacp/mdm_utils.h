@@ -53,11 +53,18 @@ extern const char kErrorKeyInRequestResult[];
 // Upload status for device details.
 extern const wchar_t kRegDeviceDetailsUploadStatus[];
 
+// Number of consecutive failures encountered when uploading device details.
+extern const wchar_t kRegDeviceDetailsUploadFailures[];
+
 // Specifies custom Chrome path to use for GLS.
 extern const wchar_t kRegGlsPath[];
 
 // Registry key where user device resource ID is stored.
 extern const wchar_t kRegUserDeviceResourceId[];
+
+// Maximum number of consecutive Upload device details failures for which we do
+// enforce auth.
+extern const int kMaxNumConsecutiveUploadDeviceFailures;
 
 // Class used in tests to force either a successful on unsuccessful enrollment
 // to google MDM.

@@ -73,6 +73,24 @@ void PassFilePathsToJavaCallback(
       callback, base::android::ToJavaArrayOfStrings(
                     base::android::AttachCurrentThread(), file_paths));
 }
+
+void OnGotBrowserPersistenceIds(
+    const base::android::ScopedJavaGlobalRef<jobject>& callback,
+    base::flat_set<std::string> ids) {
+  std::vector<std::string> as_vector;
+  for (const std::string& id : ids)
+    as_vector.push_back(id);
+  base::android::RunObjectCallbackAndroid(
+      callback,
+      base::android::ToJavaArrayOfStrings(AttachCurrentThread(), as_vector));
+}
+
+void OnDidRemoveBrowserPersistenceStorage(
+    const base::android::ScopedJavaGlobalRef<jobject>& callback,
+    bool result) {
+  base::android::RunBooleanCallbackAndroid(callback, result);
+}
+
 #endif  // OS_ANDROID
 
 }  // namespace
@@ -417,6 +435,26 @@ void ProfileImpl::SetBooleanSetting(JNIEnv* env,
 
 jboolean ProfileImpl::GetBooleanSetting(JNIEnv* env, jint j_type) {
   return GetBooleanSetting(static_cast<SettingType>(j_type));
+}
+
+void ProfileImpl::GetBrowserPersistenceIds(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& j_callback) {
+  GetBrowserPersistenceIds(
+      base::BindOnce(&OnGotBrowserPersistenceIds,
+                     base::android::ScopedJavaGlobalRef<jobject>(j_callback)));
+}
+
+void ProfileImpl::RemoveBrowserPersistenceStorage(
+    JNIEnv* env,
+    const base::android::JavaRef<jobjectArray>& j_ids,
+    const base::android::JavaRef<jobject>& j_callback) {
+  std::vector<std::string> ids;
+  base::android::AppendJavaStringArrayToStringVector(env, j_ids, &ids);
+  RemoveBrowserPersistenceStorage(
+      base::BindOnce(&OnDidRemoveBrowserPersistenceStorage,
+                     base::android::ScopedJavaGlobalRef<jobject>(j_callback)),
+      base::flat_set<std::string>(ids.begin(), ids.end()));
 }
 
 #endif  // OS_ANDROID

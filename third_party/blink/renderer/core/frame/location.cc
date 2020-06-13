@@ -282,14 +282,13 @@ void Location::SetLocation(const String& url,
   // URLs. Although the spec states we should perform this check on task
   // execution, there are concerns about the correctness of that statement,
   // see http://github.com/whatwg/html/issues/2591.
-  Document* incumbent_document = incumbent_window->document();
-  if (incumbent_document && completed_url.ProtocolIsJavaScript()) {
+  if (completed_url.ProtocolIsJavaScript()) {
     String script_source = DecodeURLEscapeSequences(
         completed_url.GetString(), DecodeURLMode::kUTF8OrIsomorphic);
-    if (!incumbent_document->GetContentSecurityPolicyForWorld()->AllowInline(
+    if (!incumbent_window->GetContentSecurityPolicyForWorld()->AllowInline(
             ContentSecurityPolicy::InlineType::kNavigation,
             nullptr /* element */, script_source, String() /* nonce */,
-            incumbent_document->Url(), OrdinalNumber())) {
+            incumbent_window->Url(), OrdinalNumber())) {
       return;
     }
   }
@@ -305,7 +304,8 @@ void Location::SetLocation(const String& url,
     activity_logger->LogEvent("blinkSetAttribute", argv.size(), argv.data());
   }
 
-  FrameLoadRequest request(incumbent_document, ResourceRequest(completed_url));
+  FrameLoadRequest request(incumbent_window->document(),
+                           ResourceRequest(completed_url));
   request.SetClientRedirectReason(ClientNavigationReason::kFrameNavigation);
   WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
   if (set_location_policy == SetLocationPolicy::kReplaceThisFrame)

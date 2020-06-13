@@ -807,14 +807,6 @@ void DesktopWindowTreeHostWin::HandleActivationChanged(bool active) {
   desktop_native_widget_aura_->HandleActivationChanged(active);
 }
 
-void DesktopWindowTreeHostWin::HandleNonClientActivationChanged(bool active) {
-  // See note on HandleActivationChanged() above.
-  if (!dispatcher())
-    return;
-
-  desktop_native_widget_aura_->HandleNonClientActivationChanged(active);
-}
-
 bool DesktopWindowTreeHostWin::HandleAppCommand(int command) {
   // We treat APPCOMMAND ids as an extension of our command namespace, and just
   // let the delegate figure out what to do...

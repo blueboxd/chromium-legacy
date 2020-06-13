@@ -602,7 +602,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   };
 
   scoped_refptr<StaticBitmapImage> GetImage(
-      AccelerationHint = kPreferAcceleration) override;
+      RasterModeHint = RasterModeHint::kPreferGPU) override;
   void SetFilterQuality(SkFilterQuality) override;
   bool IsWebGL2OrHigher() {
     return context_type_ == Platform::kWebGL2ContextType ||

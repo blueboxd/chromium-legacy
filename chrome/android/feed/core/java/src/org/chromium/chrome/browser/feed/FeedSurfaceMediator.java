@@ -288,14 +288,15 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
 
     /** Update whether the section header should be expanded and its text contents. */
     private void updateSectionHeader() {
+        boolean suggestionsVisible =
+                PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
+        if (mSectionHeader.isExpanded() != suggestionsVisible) mSectionHeader.toggleHeader();
+
         mSectionHeader.setHeaderText(getSectionHeaderText(mSectionHeader.isExpanded()));
         if (mHasHeaderMenu) {
             mSectionHeader.setMenuModelList(buildMenuItems());
         }
 
-        boolean suggestionsVisible =
-                PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
-        if (mSectionHeader.isExpanded() != suggestionsVisible) mSectionHeader.toggleHeader();
         if (mSignInPromo != null) {
             mSignInPromo.setCanShowPersonalizedSuggestions(suggestionsVisible);
         }

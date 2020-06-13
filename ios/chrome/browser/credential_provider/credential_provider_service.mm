@@ -110,8 +110,7 @@ CredentialProviderService::CredentialProviderService(
   password_store_->AddObserver(this);
 
   DCHECK(authentication_service_);
-  account_validation_id_ =
-      authentication_service_->GetAuthenticatedIdentity().gaiaID;
+  UpdateAccountValidationId();
 
   if (identity_manager_) {
     identity_manager_->AddObserver(this);
@@ -139,20 +138,38 @@ void CredentialProviderService::Shutdown() {
 
 void CredentialProviderService::OnPrimaryAccountSet(
     const CoreAccountInfo& primary_account_info) {
-  account_validation_id_ =
-      authentication_service_->GetAuthenticatedIdentity().gaiaID;
   RequestSyncAllCredentials();
 }
 
 void CredentialProviderService::OnPrimaryAccountCleared(
     const CoreAccountInfo& previous_primary_account_info) {
-  account_validation_id_ =
-      authentication_service_->GetAuthenticatedIdentity().gaiaID;
   RequestSyncAllCredentials();
 }
 
 void CredentialProviderService::RequestSyncAllCredentials() {
+  UpdateAccountValidationId();
   password_store_->GetAutofillableLogins(this);
+}
+
+void CredentialProviderService::UpdateAccountValidationId() {
+  if (authentication_service_->IsAuthenticatedIdentityManaged()) {
+    account_validation_id_ =
+        authentication_service_->GetAuthenticatedIdentity().gaiaID;
+  } else {
+    account_validation_id_ = nil;
+  }
+  [app_group::GetGroupUserDefaults()
+      setObject:account_validation_id_
+         forKey:kUserDefaultsCredentialProviderManagedUserID];
+}
+
+void CredentialProviderService::SyncStore(void (^completion)(NSError*)) const {
+  [archivable_credential_store_ saveDataWithCompletion:^(NSError* error) {
+    DCHECK(!error) << "An error occurred while saving to disk";
+    if (completion) {
+      completion(error);
+    }
+  }];
 }
 
 void CredentialProviderService::OnGetPasswordStoreResults(
@@ -173,15 +190,6 @@ void CredentialProviderService::OnGetPasswordStoreResults(
       SyncASIdentityStore(archivable_credential_store_);
     }
   });
-}
-
-void CredentialProviderService::SyncStore(void (^completion)(NSError*)) const {
-  [archivable_credential_store_ saveDataWithCompletion:^(NSError* error) {
-    DCHECK(!error) << "An error occurred while saving to disk";
-    if (completion) {
-      completion(error);
-    }
-  }];
 }
 
 void CredentialProviderService::OnLoginsChanged(

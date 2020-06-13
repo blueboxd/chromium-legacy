@@ -6,8 +6,8 @@ source_set("renderer") {
   sources = [
     "js_binding.cc",
     "js_binding.h",
-    "js_java_configurator.cc",
-    "js_java_configurator.h",
+    "js_communication.cc",
+    "js_communication.h",
   ]
 
   deps = [

@@ -9,7 +9,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:background="@drawable/popup_bg_tinted">
+    android:background="@drawable/message_card_background_with_inset">
     <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/icon"
         android:layout_width="0dp"

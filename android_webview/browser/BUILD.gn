@@ -56,6 +56,8 @@ source_set("browser") {
     "aw_feature_list.cc",
     "aw_feature_list_creator.cc",
     "aw_feature_list_creator.h",
+    "aw_field_trials.cc",
+    "aw_field_trials.h",
     "aw_form_database.cc",
     "aw_form_database_service.cc",
     "aw_form_database_service.h",

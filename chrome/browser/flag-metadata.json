@@ -1899,6 +1899,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "enable-on-device-assistant",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 88
+  },
+  {
     "name": "enable-oop-rasterization",
     "owners": [ "enne", "khushalsagar" ],
     "expiry_milestone": 86
@@ -3004,11 +3009,6 @@
     // capture a memlog without disturbing the situation under test by
     // restarting to apply a switch. It should not be removed.
     "expiry_milestone": -1
-  },
-  {
-    "name": "message-center-redesign",
-    "owners": ["amehfooz", "tengs"],
-    "expiry_milestone": 81
   },
   {
     "name": "messages-block-popup-infobars",

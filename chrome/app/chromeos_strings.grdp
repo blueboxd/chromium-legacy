@@ -820,14 +820,17 @@
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE" desc="The title of the dialog that welcomes the user on the first log in, and explains Chrome Sync and privacy options.">
     You're signed in!
   </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE_WITH_DEVICE" desc="Alternate title for the dialog that explains Chrome Sync and privacy options on first login.">
+    Personalize your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+  </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE" desc="The subtitle of the dialog that explains Chrome Sync and privacy options on first login.">
-    By continuing, Google will sync data from <ph name="EMAIL">$1<ex>user@example.com</ex></ph> with this device.
+    The following services help keep your data safe and secure. You can turn these features off at any time.
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME" desc="Title of the 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Chrome OS settings sync
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION" desc="Description of 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-    Your apps, settings, and other customizations will sync across all Chrome OS devices signed in with your Google Account.
+    Your apps, settings, and other customizations will be synced across all Chrome OS devices signed in with your Google Account.
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME" desc="Title of the 'Chrome browser sync' section of the sync confirmation dialog that is displayed on the first user log in.">
     Chrome browser sync
@@ -853,11 +856,19 @@
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE" desc="The label on the button that closes dialog while accepting the selected settings.">
     Accept and continue
   </message>
+  <!-- TODO(jamescook): We landed both sets of labels to get them in before
+       string freeze. After M85 branches, delete the ones we didn't use. -->
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT" desc="The label on the button that closes the dialog while agreeing to sync.">
     Yes, I'm in
   </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_DECLINE" desc="The label on the button that closes the dialog while not agreeing to sync.">
     No, thanks
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT2" desc="Alternate label on the button that closes the dialog while agreeing to sync.">
+    Got it
+  </message>
+  <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_DECLINE2" desc="Alternate label on the button that closes the dialog while not agreeing to sync.">
+    No thanks
   </message>
 
   <message name="IDS_LOGIN_RECOMMEND_APPS_SCREEN_TITLE" desc="The title of the dialog that recommend apps which user has installed in other devices">

@@ -1,7 +1,7 @@
 rootWebArea
 ++genericContainer ignored
 ++++genericContainer ignored
-++++++article setSize=0 posInSet=0
+++++++article
 ++++++++staticText name='ARIA Articles outside of feeds should have PosInSet and SetSize of 0.'
 ++++++++++inlineTextBox name='ARIA Articles outside of feeds should have PosInSet and SetSize of 0.'
 ++++++feed setSize=5

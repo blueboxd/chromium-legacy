@@ -53,12 +53,13 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
             WebLayer.loadAsync(getApplication(), webLayer -> {
                 mWebLayer = webLayer;
                 createShell();
+
+                NativeBrowserTest.javaStartupTasksComplete();
             });
         } catch (Exception e) {
             throw new RuntimeException("failed loading WebLayer", e);
         }
 
-        NativeBrowserTest.javaStartupTasksComplete();
     }
 
     protected void createShell() {

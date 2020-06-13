@@ -61,6 +61,9 @@ class ConversionStorage {
   };
   virtual ~ConversionStorage() = default;
 
+  // When adding a new method, also add it to
+  // ConversionStorageTest.StorageUsedAfterFailedInitilization_FailsSilently.
+
   // Initializes the storage. Returns true on success, otherwise the storage
   // should not be used.
   virtual bool Initialize() = 0;

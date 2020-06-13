@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/status_collector/activity_storage.h"
+#include "chrome/browser/chromeos/policy/status_collector/app_info_generator.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -76,6 +77,8 @@ void StatusCollector::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterTimePref(prefs::kLastChildScreenTimeReset, base::Time());
   registry->RegisterTimePref(prefs::kLastChildScreenTimeSaved, base::Time());
   registry->RegisterIntegerPref(prefs::kChildScreenTimeMilliseconds, 0);
+
+  AppInfoGenerator::RegisterProfilePrefs(registry);
 }
 
 // static
@@ -99,8 +102,11 @@ base::Optional<std::string> StatusCollector::GetBootMode(
 }
 
 StatusCollector::StatusCollector(chromeos::system::StatisticsProvider* provider,
-                                 chromeos::CrosSettings* cros_settings)
-    : statistics_provider_(provider), cros_settings_(cros_settings) {}
+                                 chromeos::CrosSettings* cros_settings,
+                                 base::Clock* clock)
+    : statistics_provider_(provider),
+      cros_settings_(cros_settings),
+      clock_(clock) {}
 
 StatusCollector::~StatusCollector() = default;
 

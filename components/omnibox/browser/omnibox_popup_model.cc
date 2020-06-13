@@ -554,21 +554,54 @@ bool OmniboxPopupModel::IsControlPresentOnMatch(Selection selection) const {
   return false;
 }
 
-bool OmniboxPopupModel::TriggerSelectionAction(Selection selection) {
+bool OmniboxPopupModel::TriggerSelectionAction(Selection selection,
+                                               base::TimeTicks timestamp) {
   // Early exit for the kNoMatch case. Also exits if the calling UI passes in
   // an invalid |selection|.
   if (selection.line >= result().size())
     return false;
 
   auto& match = result().match_at(selection.line);
-  if (selection.state == HEADER_BUTTON_FOCUSED &&
-      match.suggestion_group_id.has_value()) {
-    omnibox::ToggleSuggestionGroupIdVisibility(
-        pref_service_, match.suggestion_group_id.value());
-    return true;
+  switch (selection.state) {
+    case HEADER_BUTTON_FOCUSED:
+      DCHECK(match.suggestion_group_id.has_value());
+      omnibox::ToggleSuggestionGroupIdVisibility(
+          pref_service_, match.suggestion_group_id.value());
+      break;
+
+    case FOCUSED_BUTTON_KEYWORD:
+      // TODO(yoangela): Merge logic with mouse/gesture events in
+      // OmniboxSuggestionButtonRowView::ButtonPressed - This case currently
+      // is only reached by the call in OmniboxViewViews::HandleKeyEvent.
+      if (edit_model()->is_keyword_hint()) {
+        // TODO(yoangela): Rename once tab to keyword search is deprecated
+        // Accept/ClearKeyword() has special conditions to handle searches
+        // initiated by pressing Tab. Since tab+enter on this button behaves
+        // more similar to a Tab than a Keyboard shortcut, it's easier
+        // for now to treat it as a Tab entry method, otherwise the
+        // autocomplete results will reset, leaving us in an unknown state.
+        edit_model()->AcceptKeyword(metrics::OmniboxEventProto::TAB);
+      }
+      break;
+
+    case FOCUSED_BUTTON_TAB_SWITCH:
+      DCHECK(timestamp != base::TimeTicks());
+      edit_model()->AcceptInput(WindowOpenDisposition::SWITCH_TO_TAB,
+                                timestamp);
+      break;
+
+    case FOCUSED_BUTTON_PEDAL:
+      DCHECK(timestamp != base::TimeTicks());
+      DCHECK(match.pedal);
+      edit_model()->ExecutePedal(match, timestamp);
+      break;
+
+    default:
+      // Behavior is not yet supported, return false.
+      return false;
   }
 
-  return false;
+  return true;
 }
 
 base::string16 OmniboxPopupModel::GetAccessibilityLabelForCurrentSelection(

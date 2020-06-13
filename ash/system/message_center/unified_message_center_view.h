@@ -135,11 +135,6 @@ class ASH_EXPORT UnifiedMessageCenterView
 
   bool collapsed() { return collapsed_; }
 
- protected:
-  // Virtual for testing.
-  virtual void SetNotificationRectBelowScroll(
-      const gfx::Rect& rect_below_scroll);
-
  private:
   friend class UnifiedMessageCenterViewTest;
   friend class UnifiedMessageCenterBubbleTest;
@@ -159,10 +154,6 @@ class ASH_EXPORT UnifiedMessageCenterView
 
   // Scroll the notification list to the target position.
   void ScrollToTarget();
-
-  // Notifies rect below scroll to |parent_| so that it can update
-  // TopCornerBorder.
-  void NotifyRectBelowScroll();
 
   // Get first and last focusable child views. These functions are used to
   // figure out if we need to focus out or to set the correct focused view

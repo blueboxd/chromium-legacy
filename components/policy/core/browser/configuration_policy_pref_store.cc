@@ -25,15 +25,18 @@ namespace policy {
 namespace {
 
 void LogErrors(std::unique_ptr<PolicyErrorMap> errors,
-               DeprecatedPoliciesSet deprecated_policies) {
+               PoliciesSet deprecated_policies,
+               PoliciesSet future_policies) {
   DCHECK(errors->IsReady());
   for (auto& pair : *errors) {
     base::string16 policy = base::ASCIIToUTF16(pair.first);
     DLOG(WARNING) << "Policy " << policy << ": " << pair.second;
   }
   for (const auto& policy : deprecated_policies) {
-    DLOG(WARNING) << "Policy " << policy << ": "
-                  << l10n_util::GetStringUTF16(IDS_POLICY_DEPRECATED);
+    DLOG(WARNING) << "Policy " << policy << " has been deprecated.";
+  }
+  for (const auto& policy : future_policies) {
+    DLOG(WARNING) << "Policy " << policy << " has not been released yet.";
   }
 }
 
@@ -137,16 +140,20 @@ PrefValueMap* ConfigurationPolicyPrefStore::CreatePreferencesFromPolicies() {
 
   std::unique_ptr<PolicyErrorMap> errors = std::make_unique<PolicyErrorMap>();
 
-  DeprecatedPoliciesSet deprecated_policies;
+  PoliciesSet deprecated_policies;
+  PoliciesSet future_policies;
   handler_list_->ApplyPolicySettings(filtered_policies, prefs.get(),
-                                     errors.get(), &deprecated_policies);
+                                     errors.get(), &deprecated_policies,
+                                     &future_policies);
 
   if (!errors->empty()) {
     if (errors->IsReady()) {
-      LogErrors(std::move(errors), std::move(deprecated_policies));
+      LogErrors(std::move(errors), std::move(deprecated_policies),
+                std::move(future_policies));
     } else if (policy_connector_) {  // May be null in tests.
       policy_connector_->NotifyWhenResourceBundleReady(base::BindOnce(
-          &LogErrors, std::move(errors), std::move(deprecated_policies)));
+          &LogErrors, std::move(errors), std::move(deprecated_policies),
+          std::move(future_policies)));
     }
   }
 

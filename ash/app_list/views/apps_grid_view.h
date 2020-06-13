@@ -320,6 +320,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   bool FirePageFlipTimerForTest();
   bool FireFolderItemReparentTimerForTest();
   bool FireFolderDroppingTimerForTest();
+  bool FireDragToShelfTimerForTest();
 
   // For test: Return if the drag and drop handler was set.
   bool has_drag_and_drop_host_for_test() {
@@ -725,6 +726,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   void BeginHideCurrentGhostImageView();
 
+  // Invoked when |host_drag_start_timer_| fires.
+  void OnHostDragStartTimerFired();
+
   // Indicates whether the drag event (from the gesture or mouse) should be
   // handled by AppsGridView.
   bool ShouldHandleDragEvent(const ui::LocatedEvent& event);
@@ -805,6 +809,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Timer for dragging a folder item out of folder container ink bubble.
   base::OneShotTimer folder_item_reparent_timer_;
+
+  // Timer for |drag_and_drop_host_| to start handling drag operations.
+  base::OneShotTimer host_drag_start_timer_;
 
   // An application target drag and drop host which accepts dnd operations.
   ApplicationDragAndDropHost* drag_and_drop_host_ = nullptr;

@@ -132,7 +132,7 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
             if (dir.type == DirectoryOption.DownloadLocationDirectoryType.DEFAULT) {
                 assert (!TextUtils.isEmpty(dir.location));
                 DownloadDialogBridge.setDownloadAndSaveFileDefaultDirectory(dir.location);
-                mController.onComplete(mSuggestedPath);
+                mController.onDownloadLocationDialogComplete(mSuggestedPath);
             }
             return;
         }
@@ -212,8 +212,9 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
                 directoryOption.type, DirectoryOption.DownloadLocationDirectoryType.NUM_ENTRIES);
 
         File file = new File(directoryOption.location, fileName);
+
         assert mController != null;
-        mController.onComplete(file.getAbsolutePath());
+        mController.onDownloadLocationDialogComplete(file.getAbsolutePath());
 
         // Update preference to show prompt based on whether checkbox is checked only when the user
         // click the positive button.
@@ -226,6 +227,6 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
 
     private void cancel() {
         assert mController != null;
-        mController.onCancel();
+        mController.onDownloadLocationDialogCanceled();
     }
 }

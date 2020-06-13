@@ -29,7 +29,7 @@ class ContentServiceManagerMainDelegate : public service_manager::MainDelegate {
   int RunEmbedderProcess() override;
   void ShutDownEmbedderProcess() override;
   service_manager::ProcessType OverrideProcessType() override;
-  void OverrideMojoConfiguration(mojo::core::Configuration* config) override;
+  void InitializeMojo(mojo::core::Configuration* config) override;
   std::vector<service_manager::Manifest> GetServiceManifests() override;
   bool ShouldLaunchAsServiceProcess(
       const service_manager::Identity& identity) override;

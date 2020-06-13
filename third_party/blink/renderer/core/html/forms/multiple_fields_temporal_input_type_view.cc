@@ -294,6 +294,11 @@ void MultipleFieldsTemporalInputTypeView::PickerIndicatorChooseValue(
   if (input_type_->FormControlType() == input_type_names::kTime) {
     if (date.ParseTime(value, 0, end) && end == value.length())
       edit->SetOnlyTime(date);
+  } else if (features::IsFormControlsRefreshEnabled() &&
+             input_type_->FormControlType() ==
+                 input_type_names::kDatetimeLocal) {
+    if (date.ParseDateTimeLocal(value, 0, end) && end == value.length())
+      edit->SetDateTimeLocal(date);
   } else {
     if (date.ParseDate(value, 0, end) && end == value.length())
       edit->SetOnlyYearMonthDay(date);

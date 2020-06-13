@@ -30,6 +30,7 @@ import org.chromium.chrome.test.pagecontroller.rules.ChromeUiAutomatorTestRule;
  * Tests for the NewTabPageController.
  */
 @SmallTest
+@DisabledTest(message = "https://crbug.com/1094334")
 @RunWith(BaseJUnit4ClassRunner.class)
 public class NewTabPageControllerTest {
     public ChromeUiAutomatorTestRule mRule = new ChromeUiAutomatorTestRule();

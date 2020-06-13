@@ -25,6 +25,7 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/updater/configurator.h"
+#include "chrome/updater/prefs.h"
 #include "chrome/updater/server/win/com_classes.h"
 #include "chrome/updater/server/win/com_classes_legacy.h"
 #include "chrome/updater/update_service_in_process.h"
@@ -141,7 +142,7 @@ void ComServerApp::Stop() {
 }
 
 void ComServerApp::Initialize() {
-  config_ = base::MakeRefCounted<Configurator>();
+  config_ = base::MakeRefCounted<Configurator>(CreateGlobalPrefs());
 }
 
 void ComServerApp::FirstTaskRun() {

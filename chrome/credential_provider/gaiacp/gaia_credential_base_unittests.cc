@@ -2733,19 +2733,22 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 // Test Upload device details to GEM service with different failure scenarios.
 // Parameters are:
-// 0. Successfully uploaded device details.
-// 1. Fails the upload device details call due to network timeout.
-// 2. Fails the upload device details call due to invalid response
-//    from the GEM http server.
-// 3  A previously saved device resource ID is present on the device.
+// int - 0. Successfully uploaded device details.
+//       1. Fails the upload device details call due to network timeout.
+//       2. Fails the upload device details call due to invalid response
+//          from the GEM http server.
+//       3. A previously saved device resource ID is present on the device.
+// int - number of previously failed upload device details attempts.
 class GcpGaiaCredentialBaseUploadDeviceDetailsTest
     : public GcpGaiaCredentialBaseTest,
-      public ::testing::WithParamInterface<int> {};
+      public ::testing::WithParamInterface<std::tuple<int, int>> {};
 
 TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
-  bool fail_upload_device_details_timeout = (GetParam() == 1);
-  bool fail_upload_device_details_invalid_response = (GetParam() == 2);
-  bool registry_has_device_resource_id = (GetParam() == 3);
+  bool fail_upload_device_details_timeout = (std::get<0>(GetParam()) == 1);
+  bool fail_upload_device_details_invalid_response =
+      (std::get<0>(GetParam()) == 2);
+  bool registry_has_device_resource_id = (std::get<0>(GetParam()) == 3);
+  const DWORD num_previous_failures = std::get<1>(GetParam());
 
   GoogleMdmEnrolledStatusForTesting force_success(true);
   // Set a fake serial number.
@@ -2799,6 +2802,15 @@ TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
     EXPECT_TRUE(SUCCEEDED(hr));
   }
 
+  // Set status and num failures from previous attempts.
+  HRESULT hr = SetUserProperty(sid.Copy(), kRegDeviceDetailsUploadStatus,
+                               num_previous_failures ? 0 : 1);
+  EXPECT_TRUE(SUCCEEDED(hr));
+
+  hr = SetUserProperty(sid.Copy(), kRegDeviceDetailsUploadFailures,
+                       num_previous_failures);
+  EXPECT_TRUE(SUCCEEDED(hr));
+
   // Create provider and start logon.
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
 
@@ -2813,7 +2825,7 @@ TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
   // status code. Since the login process doesn't get affected by the status of
   // the upload device details process, the login attempt would always succeed
   // irrespective of the upload status.
-  HRESULT hr = fake_gem_device_details_manager()->GetUploadStatusForTesting();
+  hr = fake_gem_device_details_manager()->GetUploadStatusForTesting();
   bool has_upload_failed = (fail_upload_device_details_timeout ||
                             fail_upload_device_details_invalid_response);
   ASSERT_TRUE(has_upload_failed ? FAILED(hr) : SUCCEEDED(hr));
@@ -2857,8 +2869,18 @@ TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
               device_resource_id);
   }
 
+  DWORD device_upload_status = 0;
+  hr = GetUserProperty(sid.Copy(), kRegDeviceDetailsUploadStatus,
+                       &device_upload_status);
+  DWORD device_upload_failures = 0;
+  hr = GetUserProperty(sid.Copy(), kRegDeviceDetailsUploadFailures,
+                       &device_upload_failures);
+
   if (!fail_upload_device_details_timeout &&
       !fail_upload_device_details_invalid_response) {
+    ASSERT_EQ(1UL, device_upload_status);
+    ASSERT_EQ(0UL, device_upload_failures);
+
     wchar_t resource_id[512];
     ULONG resource_id_size = base::size(resource_id);
     hr = GetUserProperty(sid.Copy(), kRegUserDeviceResourceId, resource_id,
@@ -2866,6 +2888,9 @@ TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
     ASSERT_TRUE(SUCCEEDED(hr));
     ASSERT_TRUE(resource_id_size > 0);
     ASSERT_EQ(device_resource_id, base::UTF16ToUTF8(resource_id));
+  } else {
+    ASSERT_EQ(0UL, device_upload_status);
+    ASSERT_EQ(num_previous_failures + 1, device_upload_failures);
   }
 
   ASSERT_EQ(S_OK, ReleaseProvider());
@@ -2873,7 +2898,8 @@ TEST_P(GcpGaiaCredentialBaseUploadDeviceDetailsTest, UploadDeviceDetails) {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          GcpGaiaCredentialBaseUploadDeviceDetailsTest,
-                         ::testing::Values(0, 1, 2, 3));
+                         ::testing::Combine(::testing::Values(0, 1, 2, 3),
+                                            ::testing::Values(0, 1, 2)));
 
 class GcpGaiaCredentialBaseFullNameUpdateTest
     : public GcpGaiaCredentialBaseTest,

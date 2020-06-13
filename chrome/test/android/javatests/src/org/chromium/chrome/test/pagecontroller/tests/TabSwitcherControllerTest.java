@@ -15,6 +15,7 @@ import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.test.pagecontroller.controllers.ntp.NewTabPageController;
 import org.chromium.chrome.test.pagecontroller.controllers.tabswitcher.TabSwitcherController;
 import org.chromium.chrome.test.pagecontroller.controllers.tabswitcher.TabSwitcherMenuController;
@@ -27,6 +28,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
  * Tests for the TabSwitcherController.
  */
 @SmallTest
+@DisabledTest(message = "https://crbug.com/1094334")
 @RunWith(BaseJUnit4ClassRunner.class)
 public class TabSwitcherControllerTest {
     public ChromeUiAutomatorTestRule mRule = new ChromeUiAutomatorTestRule();

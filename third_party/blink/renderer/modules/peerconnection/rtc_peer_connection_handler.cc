@@ -1967,16 +1967,16 @@ RTCPeerConnectionHandler::RemoveTrack(blink::RTCRtpSenderPlatform* web_sender) {
 bool RTCPeerConnectionHandler::RemoveTrackPlanB(
     blink::RTCRtpSenderPlatform* web_sender) {
   DCHECK_EQ(configuration_.sdp_semantics, webrtc::SdpSemantics::kPlanB);
-  auto web_track = web_sender->Track();
+  auto* track = web_sender->Track();
   auto it = FindSender(web_sender->Id());
   if (it == rtp_senders_.end())
     return false;
   if (!(*it)->RemoveFromPeerConnection(native_peer_connection_.get()))
     return false;
-  if (web_track) {
+  if (track) {
     track_metrics_.RemoveTrack(MediaStreamTrackMetrics::Direction::kSend,
-                               MediaStreamTrackMetricsKind(web_track),
-                               web_track.Id().Utf8());
+                               MediaStreamTrackMetricsKind(track),
+                               track->Id().Utf8());
   }
   if (peer_connection_tracker_) {
     auto sender_only_transceiver =

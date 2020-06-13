@@ -379,6 +379,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   }
   SpellChecker& GetSpellChecker() const { return *spell_checker_; }
 
+  void ClearIsolatedWorldCSPForTesting(int32_t world_id);
+
  protected:
   // EventTarget overrides.
   void AddedEventListener(const AtomicString& event_type,
@@ -457,6 +459,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   Member<InputMethodController> input_method_controller_;
   Member<SpellChecker> spell_checker_;
   Member<TextSuggestionController> text_suggestion_controller_;
+
+  // Map from isolated world IDs to their ContentSecurityPolicy instances.
+  Member<HeapHashMap<int, Member<ContentSecurityPolicy>>>
+      isolated_world_csp_map_;
 
   // Tracks which features have already been potentially violated in this
   // document. This helps to count them only once per page load.

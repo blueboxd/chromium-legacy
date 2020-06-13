@@ -313,11 +313,6 @@ class QuicStreamFactoryTestBase : public WithTaskEnvironment {
     return QuicStreamFactoryPeer::HasActiveJob(factory_.get(), server_id);
   }
 
-  bool HasActiveCertVerifierJob(const quic::QuicServerId& server_id) {
-    return QuicStreamFactoryPeer::HasActiveCertVerifierJob(factory_.get(),
-                                                           server_id);
-  }
-
   // Get the pending, not activated session, if there is only one session alive.
   QuicChromiumClientSession* GetPendingSession(
       const HostPortPair& host_port_pair) {
@@ -11207,78 +11202,6 @@ TEST_P(QuicStreamFactoryTest,
                     factory_.get(), kQuicServerId, network_isolation_keys[j]));
     }
   }
-}
-
-TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {
-  Initialize();
-
-  MockQuicData socket_data(version_);
-  socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
-  if (VersionUsesHttp3(version_.transport_version))
-    socket_data.AddWrite(SYNCHRONOUS, ConstructInitialSettingsPacket());
-  socket_data.AddSocketDataToFactory(socket_factory_.get());
-
-  // Save current state of |race_cert_verification|.
-  bool race_cert_verification =
-      QuicStreamFactoryPeer::GetRaceCertVerification(factory_.get());
-
-  // Need to hold onto this through the test, to keep the QuicCryptoClientConfig
-  // alive.
-  std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config_handle =
-      QuicStreamFactoryPeer::GetCryptoConfig(factory_.get(),
-                                             NetworkIsolationKey());
-
-  // Load server config.
-  HostPortPair host_port_pair(kDefaultServerHostName, kDefaultServerPort);
-  quic::QuicServerId quic_server_id(host_port_pair_.host(),
-                                    host_port_pair_.port(),
-                                    privacy_mode_ == PRIVACY_MODE_ENABLED);
-  QuicStreamFactoryPeer::CacheDummyServerConfig(factory_.get(), quic_server_id,
-                                                NetworkIsolationKey());
-
-  QuicStreamFactoryPeer::SetRaceCertVerification(factory_.get(), true);
-  EXPECT_FALSE(HasActiveCertVerifierJob(quic_server_id));
-
-  // Start CertVerifyJob.
-  quic::QuicAsyncStatus status = QuicStreamFactoryPeer::StartCertVerifyJob(
-      factory_.get(), quic_server_id, NetworkIsolationKey(),
-      /*cert_verify_flags=*/0, net_log_);
-  if (status == quic::QUIC_PENDING) {
-    // Verify CertVerifierJob has started.
-    EXPECT_TRUE(HasActiveCertVerifierJob(quic_server_id));
-
-    while (HasActiveCertVerifierJob(quic_server_id)) {
-      base::RunLoop().RunUntilIdle();
-    }
-  }
-  // Verify CertVerifierJob has finished.
-  EXPECT_FALSE(HasActiveCertVerifierJob(quic_server_id));
-
-  // Start a QUIC request.
-  QuicStreamRequest request(factory_.get());
-  EXPECT_EQ(
-      ERR_IO_PENDING,
-      request.Request(
-          host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
-          SocketTag(), NetworkIsolationKey(), false /* disable_secure_dns */,
-          /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
-          failed_on_default_network_callback_, callback_.callback()));
-
-  EXPECT_EQ(OK, callback_.WaitForResult());
-
-  std::unique_ptr<HttpStream> stream = CreateStream(&request);
-  EXPECT_TRUE(stream.get());
-
-  // Restore |race_cert_verification|.
-  QuicStreamFactoryPeer::SetRaceCertVerification(factory_.get(),
-                                                 race_cert_verification);
-
-  EXPECT_TRUE(socket_data.AllReadDataConsumed());
-  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
-
-  // Verify there are no outstanding CertVerifierJobs after request has
-  // finished.
-  EXPECT_FALSE(HasActiveCertVerifierJob(quic_server_id));
 }
 
 TEST_P(QuicStreamFactoryTest, YieldAfterPackets) {

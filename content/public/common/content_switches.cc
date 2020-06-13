@@ -620,6 +620,10 @@ const char kMessageLoopTypeUi[] = "message-loop-type-ui";
 const char kMockCertVerifierDefaultResultForTesting[] =
     "mock-cert-verifier-default-result-for-testing";
 
+// Initializes Mojo Core from a shared library at the specified path, rather
+// than using the version of Mojo Core embedded within the Content executable.
+const char kMojoCoreLibraryPath[] = "mojo-core-library-path";
+
 // Use a Mojo-based LocalStorage implementation.
 const char kMojoLocalStorage[]              = "mojo-local-storage";
 
@@ -1002,10 +1006,6 @@ const char kEnableAdaptiveSelectionHandleOrientation[] =
 
 // Enable drag manipulation of longpress-triggered text selections.
 const char kEnableLongpressDragSelection[]  = "enable-longpress-drag-selection";
-
-// Prevent the offline indicator from showing.
-const char kForceOnlineConnectionStateForIndicator[] =
-    "force-online-connection-state-for-indicator";
 
 // The telephony region (ISO country code) to use in phone number detection.
 const char kNetworkCountryIso[] = "network-country-iso";

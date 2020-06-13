@@ -18,6 +18,7 @@
 #include "base/json/json_parser.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
@@ -600,9 +601,14 @@ TEST_F(AuthenticatorImplTest, ClientDataJSONSerialization) {
 
 // Verify behavior for various combinations of origins and RP IDs.
 TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
-  // These instances should return security errors (for circumstances
-  // that would normally crash the renderer).
-  for (auto test_case : kInvalidRelyingPartyTestCases) {
+  std::vector<OriginClaimedAuthorityPair> tests(
+      &kValidRelyingPartyTestCases[0],
+      &kValidRelyingPartyTestCases[base::size(kValidRelyingPartyTestCases)]);
+  tests.insert(tests.end(), &kInvalidRelyingPartyTestCases[0],
+               &kInvalidRelyingPartyTestCases[base::size(
+                   kInvalidRelyingPartyTestCases)]);
+
+  for (const auto& test_case : tests) {
     SCOPED_TRACE(std::string(test_case.claimed_authority) + " " +
                  std::string(test_case.origin));
 
@@ -618,139 +624,53 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     callback_receiver.WaitForCallback();
     EXPECT_EQ(test_case.expected_status, callback_receiver.status());
   }
-
-  // These instances time out with NOT_ALLOWED_ERROR due to unsupported
-  // algorithm.
-  for (auto test_case : kValidRelyingPartyTestCases) {
-    SCOPED_TRACE(std::string(test_case.claimed_authority) + " " +
-                 std::string(test_case.origin));
-
-    NavigateAndCommit(GURL(test_case.origin));
-    auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
-        base::Time::Now(), base::TimeTicks::Now());
-    auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-
-    PublicKeyCredentialCreationOptionsPtr options =
-        GetTestPublicKeyCredentialCreationOptions();
-    options->relying_party.id = test_case.claimed_authority;
-    options->public_key_parameters = GetTestPublicKeyCredentialParameters(123);
-
-    TestMakeCredentialCallback callback_receiver;
-    authenticator->MakeCredential(std::move(options),
-                                  callback_receiver.callback());
-    // Trigger timer.
-    base::RunLoop().RunUntilIdle();
-    task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
-    callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
-              callback_receiver.status());
-  }
 }
 
-// Test that MakeCredential request returns INVALID_ICON_URL if the RP or user
-// icon URLs are not a priori-authenticated URLs.
-TEST_F(AuthenticatorImplTest, MakeCredentialInvalidIconUrl) {
-  SimulateNavigation(GURL(kTestOrigin1));
-  const GURL kInvalidIconUrlTestCases[] = {
-      GURL("http://insecure-origin.com/kitten.png"),
-      GURL("invalid:/url"),
-  };
-
-  // Test relying party icons.
-  for (auto test_case : kInvalidIconUrlTestCases) {
-    SCOPED_TRACE(test_case.possibly_invalid_spec());
-    mojo::Remote<blink::mojom::Authenticator> authenticator =
-        ConnectToAuthenticator();
-    PublicKeyCredentialCreationOptionsPtr options =
-        GetTestPublicKeyCredentialCreationOptions();
-    options->relying_party.icon_url = test_case;
-    TestMakeCredentialCallback callback_receiver;
-    authenticator->MakeCredential(std::move(options),
-                                  callback_receiver.callback());
-    callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::INVALID_ICON_URL,
-              callback_receiver.status());
-  }
-
-  // Test user icons.
-  for (auto test_case : kInvalidIconUrlTestCases) {
-    SCOPED_TRACE(test_case.possibly_invalid_spec());
-    mojo::Remote<blink::mojom::Authenticator> authenticator =
-        ConnectToAuthenticator();
-    PublicKeyCredentialCreationOptionsPtr options =
-        GetTestPublicKeyCredentialCreationOptions();
-    options->user.icon_url = test_case;
-    TestMakeCredentialCallback callback_receiver;
-    authenticator->MakeCredential(std::move(options),
-                                  callback_receiver.callback());
-    callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::INVALID_ICON_URL,
-              callback_receiver.status());
-  }
-}
-
-// Test that MakeCredential request does not return INVALID_ICON_URL for a
-// priori-authenticated URLs.
-TEST_F(AuthenticatorImplTest, MakeCredentialValidIconUrl) {
-  const GURL kValidUrlTestCases[] = {
-      GURL(),
-      GURL("https://secure-origin.com/kitten.png"),
-      GURL("about:blank"),
-      GURL("about:srcdoc"),
-      GURL("data:image/"
+// Test that MakeCredential returns INVALID_ICON_URL in the correct cases.
+TEST_F(AuthenticatorImplTest, MakeCredentialURLs) {
+  constexpr auto ok = AuthenticatorStatus::SUCCESS;
+  constexpr auto bad = AuthenticatorStatus::INVALID_ICON_URL;
+  const std::pair<GURL, AuthenticatorStatus> kTestCases[] = {
+      {GURL(), ok},
+      {GURL("https://secure-origin.com/kitten.png"), ok},
+      {GURL("about:blank"), ok},
+      {GURL("about:srcdoc"), ok},
+      {GURL(
+           "data:image/"
            "png;base64,"
            "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAACXBIWXMAAC4jAAAuIwF"
            "4pT92AAAAB3RJTUUH4wYUETEs5V5U8gAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdG"
            "ggR0lNUFeBDhcAAABGSURBVCjPY/z//"
            "z8DKYAJmcPYyICHi0UDyTYMDg2MFIUSnsAZAp5mbGT4X49DBcxLEAUsBMxrRCiFABb8"
            "gYNpLTXiAT8AAEeHFZvhj9g8AAAAAElFTkSuQmCC"),
+       ok},
+
+      {GURL("http://insecure-origin.com/kitten.png"), bad},
+      {GURL("invalid:/url"), bad},
   };
+
   SimulateNavigation(GURL(kTestOrigin1));
+  auto authenticator = ConnectToAuthenticator();
 
-  // Test relying party icons.
-  for (auto test_case : kValidUrlTestCases) {
-    SCOPED_TRACE(test_case.possibly_invalid_spec());
-    auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
-        base::Time::Now(), base::TimeTicks::Now());
-    auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+  for (const bool test_user_icon : {false, true}) {
+    for (auto test_case : kTestCases) {
+      SCOPED_TRACE(test_case.first.possibly_invalid_spec());
+      SCOPED_TRACE(test_user_icon);
 
-    PublicKeyCredentialCreationOptionsPtr options =
-        GetTestPublicKeyCredentialCreationOptions();
-    options->public_key_parameters = GetTestPublicKeyCredentialParameters(123);
-    options->relying_party.icon_url = test_case;
+      PublicKeyCredentialCreationOptionsPtr options =
+          GetTestPublicKeyCredentialCreationOptions();
+      if (test_user_icon) {
+        options->user.icon_url = test_case.first;
+      } else {
+        options->relying_party.icon_url = test_case.first;
+      }
 
-    TestMakeCredentialCallback callback_receiver;
-    authenticator->MakeCredential(std::move(options),
-                                  callback_receiver.callback());
-    // Trigger timer.
-    base::RunLoop().RunUntilIdle();
-    task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
-    callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
-              callback_receiver.status());
-  }
-
-  // Test user icons.
-  for (auto test_case : kValidUrlTestCases) {
-    SCOPED_TRACE(test_case.possibly_invalid_spec());
-    auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
-        base::Time::Now(), base::TimeTicks::Now());
-    auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-
-    PublicKeyCredentialCreationOptionsPtr options =
-        GetTestPublicKeyCredentialCreationOptions();
-    options->public_key_parameters = GetTestPublicKeyCredentialParameters(123);
-    options->user.icon_url = test_case;
-
-    TestMakeCredentialCallback callback_receiver;
-    authenticator->MakeCredential(std::move(options),
-                                  callback_receiver.callback());
-    // Trigger timer.
-    base::RunLoop().RunUntilIdle();
-    task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
-    callback_receiver.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
-              callback_receiver.status());
+      TestMakeCredentialCallback callback_receiver;
+      authenticator->MakeCredential(std::move(options),
+                                    callback_receiver.callback());
+      callback_receiver.WaitForCallback();
+      EXPECT_EQ(test_case.second, callback_receiver.status());
+    }
   }
 }
 
@@ -764,7 +684,9 @@ TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
 
   PublicKeyCredentialCreationOptionsPtr options =
       GetTestPublicKeyCredentialCreationOptions();
-  options->public_key_parameters = GetTestPublicKeyCredentialParameters(123);
+  options->public_key_parameters =
+      GetTestPublicKeyCredentialParameters(static_cast<int32_t>(
+          device::CoseAlgorithmIdentifier::kInvalidForTesting));
 
   TestMakeCredentialCallback callback_receiver;
   authenticator->MakeCredential(std::move(options),
@@ -2616,16 +2538,13 @@ TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
       ConnectToAuthenticator();
 
   {
-    PublicKeyCredentialCreationOptionsPtr options =
-        GetTestPublicKeyCredentialCreationOptions();
-    options->public_key_parameters = GetTestPublicKeyCredentialParameters(123);
-
     TestMakeCredentialCallback cb;
     TestRequestStartedCallback request_started;
     test_client_.action_callbacks_registered_callback =
         request_started.callback();
 
-    authenticator->MakeCredential(std::move(options), cb.callback());
+    authenticator->MakeCredential(GetTestPublicKeyCredentialCreationOptions(),
+                                  cb.callback());
     cb.WaitForCallback();
 
     EXPECT_EQ(AuthenticatorStatus::NOT_FOCUSED, cb.status());
@@ -2633,9 +2552,6 @@ TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
   }
 
   {
-    PublicKeyCredentialRequestOptionsPtr options =
-        GetTestPublicKeyCredentialRequestOptions();
-
     device::PublicKeyCredentialDescriptor credential;
     credential.SetCredentialTypeForTesting(device::CredentialType::kPublicKey);
     credential.GetIdForTesting().resize(16);
@@ -2644,6 +2560,8 @@ TEST_F(AuthenticatorContentBrowserClientTest, Unfocused) {
 
     ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
         credential.id(), kTestRelyingPartyId));
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
     options->allow_credentials.emplace_back(credential);
 
     TestGetAssertionCallback cb;

@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestio
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.LayoutViewBuilder;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -139,7 +140,7 @@ public class TabSwitcherCoordinator
             MenuOrKeyboardActionController menuOrKeyboardActionController, ViewGroup container,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
-            @TabListCoordinator.TabListMode int mode) {
+            ScrimCoordinator scrimCoordinator, @TabListCoordinator.TabListMode int mode) {
         mMode = mode;
         mTabModelSelector = tabModelSelector;
         mContainer = container;
@@ -179,7 +180,8 @@ public class TabSwitcherCoordinator
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
                     tabContentManager, tabCreatorManager,
                     ((ChromeTabbedActivity) context).findViewById(R.id.coordinator), this,
-                    mMediator, this::getTabGridDialogAnimationSourceView, shareDelegateSupplier);
+                    mMediator, this::getTabGridDialogAnimationSourceView, shareDelegateSupplier,
+                    scrimCoordinator);
             mMediator.setTabGridDialogController(mTabGridDialogCoordinator.getDialogController());
         } else {
             mTabGridDialogCoordinator = null;

@@ -11,7 +11,7 @@
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/path_utils.h"
 #include "chromecast/browser/metrics/cast_stability_metrics_provider.h"
-#include "components/metrics/gpu/gpu_metrics_provider.h"
+#include "components/metrics/content/gpu_metrics_provider.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"

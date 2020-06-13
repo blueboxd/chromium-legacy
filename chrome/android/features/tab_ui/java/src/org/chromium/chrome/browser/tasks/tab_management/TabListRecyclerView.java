@@ -8,6 +8,7 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceLayout.ZOOM
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
@@ -31,6 +32,7 @@ import android.widget.RelativeLayout;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -110,6 +112,28 @@ class TabListRecyclerView
         }
     }
 
+    private class RemoveItemAnimator extends DefaultItemAnimator {
+        @Override
+        public boolean animateRemove(ViewHolder holder) {
+            AnimatorSet scaleAnimator = new AnimatorSet();
+            scaleAnimator.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    holder.itemView.setScaleX(1.0f);
+                    holder.itemView.setScaleY(1.0f);
+                }
+            });
+            ObjectAnimator scaleX = ObjectAnimator.ofFloat(holder.itemView, View.SCALE_X, 0.5f);
+            ObjectAnimator scaleY = ObjectAnimator.ofFloat(holder.itemView, View.SCALE_Y, 0.5f);
+            scaleX.setDuration(BASE_ANIMATION_DURATION_MS);
+            scaleY.setDuration(BASE_ANIMATION_DURATION_MS);
+            scaleAnimator.play(scaleX).with(scaleY);
+            scaleAnimator.start();
+
+            return super.animateRemove(holder);
+        }
+    }
+
     private final int mResourceId;
     private ValueAnimator mFadeInAnimator;
     private ValueAnimator mFadeOutAnimator;
@@ -118,10 +142,11 @@ class TabListRecyclerView
     private ViewResourceAdapter mDynamicView;
     private boolean mIsDynamicViewRegistered;
     private long mLastDirtyTime;
-    private RecyclerView.ItemAnimator mOriginalAnimator;
     private ImageView mShadowImageView;
     private int mShadowTopMargin;
     private TabListOnScrollListener mScrollListener;
+
+    private final RemoveItemAnimator mRemoveItemAnimator = new RemoveItemAnimator();
 
     /**
      * Basic constructor to use during inflation from xml.
@@ -147,7 +172,6 @@ class TabListRecyclerView
         registerDynamicView();
 
         // Stop all the animations to make all the items show up and scroll to position immediately.
-        mOriginalAnimator = getItemAnimator();
         setItemAnimator(null);
     }
 
@@ -175,7 +199,7 @@ class TabListRecyclerView
                 mFadeInAnimator = null;
                 mListener.finishedShowing();
                 // Restore the original value.
-                setItemAnimator(mOriginalAnimator);
+                setItemAnimator(mRemoveItemAnimator);
                 setShadowVisibility(computeVerticalScrollOffset() > 0);
                 if (mDynamicView != null) {
                     mDynamicView.dropCachedBitmap();

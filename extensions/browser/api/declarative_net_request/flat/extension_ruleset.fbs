@@ -101,6 +101,8 @@ enum IndexType : ubyte {
 /// The type of header operation for modifyHeaders rules. Corresponds to
 /// extensions::api::declarative_net_request::HeaderOperation.
 enum HeaderOperation : ubyte {
+  append,
+  set,
   remove
 }
 
@@ -112,6 +114,9 @@ table ModifyHeaderInfo {
   /// case-insensitive, the header name is normalized by converting it to
   /// lowercase.
   header: string;
+  /// The value of the header to be set/appended. Should be specified only if
+  /// |operation| is append or set.
+  value: string;
 }
 
 /// Completely represents a rule with a regex filter.

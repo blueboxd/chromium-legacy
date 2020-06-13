@@ -5,7 +5,11 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_STORE_METRICS_REPORTER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_STORE_METRICS_REPORTER_H_
 
+#include <memory>
+
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "components/password_manager/core/browser/password_store.h"
 
 class PrefService;
 
@@ -34,7 +38,7 @@ class StoreMetricsReporter {
   // |client| to obtain the password store and password syncing state. Uses
   // |sync_service| and |identity_manager| to obtain the sync username to report
   // about its presence among saved credentials. Uses the |prefs| to obtain
-  // information wither the password manager and the leak detection feature is
+  // information whether the password manager and the leak detection feature is
   // enabled.
   StoreMetricsReporter(PasswordManagerClient* client,
                        const syncer::SyncService* sync_service,
@@ -44,6 +48,16 @@ class StoreMetricsReporter {
   ~StoreMetricsReporter();
 
  private:
+  class MultiStoreMetricsReporter;
+
+  void ReportMultiStoreMetrics(scoped_refptr<PasswordStore> profile_store,
+                               scoped_refptr<PasswordStore> account_store);
+  void MultiStoreMetricsDone();
+
+  std::unique_ptr<MultiStoreMetricsReporter> multi_store_reporter_;
+
+  base::WeakPtrFactory<StoreMetricsReporter> weak_ptr_factory_{this};
+
   DISALLOW_COPY_AND_ASSIGN(StoreMetricsReporter);
 };
 

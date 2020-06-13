@@ -6,6 +6,7 @@
 #define WEBLAYER_BROWSER_TAB_IMPL_H_
 
 #include <memory>
+#include <set>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -103,6 +104,8 @@ class TabImpl : public Tab,
   // Returns the TabImpl from the specified WebContents (which may be null), or
   // null if |web_contents| was not created by a TabImpl.
   static TabImpl* FromWebContents(content::WebContents* web_contents);
+
+  static std::set<TabImpl*> GetAllTabImpl();
 
   ProfileImpl* profile() { return profile_; }
 

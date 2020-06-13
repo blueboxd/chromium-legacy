@@ -186,6 +186,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Transfers ownership of |drag_image_|, and cleans up DragIconProxy state.
   DragImageView* RetrieveDragIconProxyAndClearDragProxyState();
 
+  bool ShouldStartDrag(
+      const std::string& app_id,
+      const gfx::Point& location_in_screen_coordinates) const override;
   bool StartDrag(const std::string& app_id,
                  const gfx::Point& location_in_screen_coordinates) override;
   bool Drag(const gfx::Point& location_in_screen_coordinates) override;

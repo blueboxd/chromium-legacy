@@ -57,7 +57,7 @@ class CrostiniAnsibleSoftwareConfigViewBrowserTest
   }
 
   // A new Widget was created in ShowUi() or since the last VerifyUi().
-  bool HasView() { return VerifyUi() && ActiveView() != nullptr; }
+  bool HasView() { return VerifyUi() && ActiveView(); }
 
   // No new Widget was created in ShowUi() or since last VerifyUi().
   bool HasNoView() {

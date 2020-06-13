@@ -104,7 +104,7 @@ class TestClient : public AndroidMetricsServiceClient {
 
 std::unique_ptr<TestingPrefServiceSimple> CreateTestPrefs() {
   auto prefs = std::make_unique<TestingPrefServiceSimple>();
-  metrics::MetricsService::RegisterPrefs(prefs->registry());
+  AndroidMetricsServiceClient::RegisterPrefs(prefs->registry());
   return prefs;
 }
 

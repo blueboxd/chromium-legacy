@@ -7,7 +7,6 @@ import {addWebUIListener} from 'chrome://resources/js/cr.m.js';
 import {SyncConfirmationBrowserProxyImpl} from './sync_confirmation_browser_proxy.js';
 
 function initialize() {
-  addWebUIListener('clear-focus', clearFocus);
   const syncConfirmationBrowserProxy =
       SyncConfirmationBrowserProxyImpl.getInstance();
   // Prefer using |document.body.offsetHeight| instead of
@@ -19,10 +18,6 @@ function initialize() {
   // auto. This makes sure that the body only takes up the viewable width,
   // e.g. when there is a scrollbar.
   document.body.style.width = 'auto';
-}
-
-function clearFocus() {
-  document.activeElement.blur();
 }
 
 document.addEventListener('DOMContentLoaded', initialize);

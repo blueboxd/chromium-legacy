@@ -289,7 +289,7 @@ static const struct {
     {H264PROFILE_HIGH, VAProfileH264High},
     {VP8PROFILE_ANY, VAProfileVP8Version0_3},
     {VP9PROFILE_PROFILE0, VAProfileVP9Profile0},
-    // VP9 hw encode/decode on profile 1 is not enabled on chromium-vaapi.
+    // Chrome does not support VP9 Profile 1, see b/153680337.
     // {VP9PROFILE_PROFILE1, VAProfileVP9Profile1},
     {VP9PROFILE_PROFILE2, VAProfileVP9Profile2},
     {VP9PROFILE_PROFILE3, VAProfileVP9Profile3},
@@ -1491,8 +1491,10 @@ VAEntrypoint VaapiWrapper::GetDefaultVaEntryPoint(CodecMode mode,
     case VaapiWrapper::kEncodeConstantQuantizationParameter:
       if (profile == VAProfileJPEGBaseline)
         return VAEntrypointEncPicture;
-      else
-        return VAEntrypointEncSlice;
+      DCHECK(IsModeEncoding(mode));
+      if (IsLowPowerEncSupported(profile))
+        return VAEntrypointEncSliceLP;
+      return VAEntrypointEncSlice;
     case VaapiWrapper::kVideoProcess:
       return VAEntrypointVideoProc;
     case VaapiWrapper::kCodecModeMax:
@@ -2276,11 +2278,7 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
   if (mode != kVideoProcess)
     TryToSetVADisplayAttributeToLocalGPU();
 
-  VAEntrypoint entrypoint = GetDefaultVaEntryPoint(mode, va_profile);
-  if (IsModeEncoding(mode) && IsLowPowerEncSupported(va_profile)) {
-    entrypoint = VAEntrypointEncSliceLP;
-    DVLOG(2) << "VA-API Low-Power Encode Entrypoint enabled";
-  }
+  const VAEntrypoint entrypoint = GetDefaultVaEntryPoint(mode, va_profile);
 
   base::AutoLock auto_lock(*va_lock_);
   std::vector<VAConfigAttrib> required_attribs;
@@ -2289,7 +2287,7 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
     return false;
   }
 
-  VAStatus va_res =
+  const VAStatus va_res =
       vaCreateConfig(va_display_, va_profile, entrypoint,
                      required_attribs.empty() ? nullptr : &required_attribs[0],
                      required_attribs.size(), &va_config_id_);

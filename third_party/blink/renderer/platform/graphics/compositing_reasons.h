@@ -18,6 +18,7 @@ using CompositingReasons = uint64_t;
 #define FOR_EACH_COMPOSITING_REASON(V)                                        \
   /* Intrinsic reasons that can be known right away by the layer. */          \
   V(3DTransform)                                                              \
+  V(Trivial3DTransform)                                                       \
   V(Video)                                                                    \
   V(Canvas)                                                                   \
   V(Plugin)                                                                   \
@@ -118,9 +119,10 @@ class PLATFORM_EXPORT CompositingReason {
         kActiveFilterAnimation | kActiveBackdropFilterAnimation,
 
     kComboAllDirectStyleDeterminedReasons =
-        k3DTransform | kBackfaceVisibilityHidden | kComboActiveAnimation |
-        kWillChangeTransform | kWillChangeOpacity | kWillChangeFilter |
-        kWillChangeOther | kBackdropFilter | kWillChangeBackdropFilter,
+        k3DTransform | kTrivial3DTransform | kBackfaceVisibilityHidden |
+        kComboActiveAnimation | kWillChangeTransform | kWillChangeOpacity |
+        kWillChangeFilter | kWillChangeOther | kBackdropFilter |
+        kWillChangeBackdropFilter,
 
     kComboAllDirectNonStyleDeterminedReasons =
         kVideo | kCanvas | kPlugin | kIFrame | kOverflowScrollingParent |
@@ -132,7 +134,8 @@ class PLATFORM_EXPORT CompositingReason {
                              kComboAllDirectNonStyleDeterminedReasons,
 
     kComboTransformedRasterizationDisallowedReasons =
-        kComboAllDirectReasons & ~kScrollDependentPosition,
+        kComboAllDirectReasons & ~kScrollDependentPosition &
+        ~kTrivial3DTransform & ~kBackfaceVisibilityHidden,
 
     kComboAllCompositedScrollingDeterminedReasons =
         kScrollDependentPosition | kOverflowScrolling,
@@ -157,9 +160,9 @@ class PLATFORM_EXPORT CompositingReason {
         kScrollDependentPosition | kVideo | kCanvas | kPlugin | kIFrame,
 
     kDirectReasonsForTransformProperty =
-        k3DTransform | kWillChangeTransform | kWillChangeOther |
-        kPerspectiveWith3DDescendants | kPreserve3DWith3DDescendants |
-        kActiveTransformAnimation,
+        k3DTransform | kTrivial3DTransform | kWillChangeTransform |
+        kWillChangeOther | kPerspectiveWith3DDescendants |
+        kPreserve3DWith3DDescendants | kActiveTransformAnimation,
     kDirectReasonsForScrollTranslationProperty =
         kRootScroller | kOverflowScrolling,
     kDirectReasonsForEffectProperty =

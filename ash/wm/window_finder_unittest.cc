@@ -6,11 +6,13 @@
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/container_finder.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/window_state.h"
+#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/gfx/geometry/insets.h"
 
@@ -24,6 +26,21 @@ TEST_F(WindowFinderTest, RealTopmostCanBeNullptr) {
   std::set<aura::Window*> ignore;
 
   EXPECT_EQ(window1.get(), GetTopmostWindowAtPoint(gfx::Point(10, 10), ignore));
+}
+
+TEST_F(WindowFinderTest, ToplevelanBeNotDrawn) {
+  aura::test::TestWindowDelegate delegate;
+  auto window = std::make_unique<aura::Window>(&delegate,
+                                               aura::client::WINDOW_TYPE_POPUP);
+  window->Init(ui::LAYER_NOT_DRAWN);
+  gfx::Rect bounds(0, 0, 100, 100);
+  window->SetBounds(bounds);
+  auto* parent = GetDefaultParentForWindow(window.get(), bounds);
+  parent->AddChild(window.get());
+  window->Show();
+
+  std::set<aura::Window*> ignore;
+  EXPECT_EQ(window.get(), GetTopmostWindowAtPoint(gfx::Point(10, 10), ignore));
 }
 
 TEST_F(WindowFinderTest, MultipleDisplays) {

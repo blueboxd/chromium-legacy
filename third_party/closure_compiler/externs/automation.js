@@ -52,7 +52,6 @@ chrome.automation.EventType = {
   MENU_LIST_ITEM_SELECTED: 'menuListItemSelected',
   MENU_LIST_VALUE_CHANGED: 'menuListValueChanged',
   MENU_POPUP_END: 'menuPopupEnd',
-  MENU_POPUP_HIDE: 'menuPopupHide',
   MENU_POPUP_START: 'menuPopupStart',
   MENU_START: 'menuStart',
   MOUSE_CANCELED: 'mouseCanceled',

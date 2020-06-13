@@ -100,9 +100,6 @@ const base::Feature kSupervisedUserDeprecationNotice{
 const base::Feature kSwapSideVolumeButtonsForOrientation{
     "SwapSideVolumeButtonsForOrientation", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kUnifiedMessageCenterRefactor{
-    "UnifiedMessageCenterRefactor", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -193,11 +190,6 @@ bool IsSupervisedUserDeprecationNoticeEnabled() {
 
 bool IsSwapSideVolumeButtonsForOrientationEnabled() {
   return base::FeatureList::IsEnabled(kSwapSideVolumeButtonsForOrientation);
-}
-
-bool IsUnifiedMessageCenterRefactorEnabled() {
-  return base::FeatureList::IsEnabled(kUnifiedMessageCenterRefactor) ||
-         chromeos::switches::ShouldShowShelfHotseat();
 }
 
 bool IsBackgroundBlurEnabled() {

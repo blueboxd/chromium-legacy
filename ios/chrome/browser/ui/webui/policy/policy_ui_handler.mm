@@ -51,6 +51,8 @@ void PolicyUIHandler::AddCommonLocalizedStringsToSource(
       {"levelMandatory", IDS_POLICY_LEVEL_MANDATORY},
       {"levelRecommended", IDS_POLICY_LEVEL_RECOMMENDED},
       {"error", IDS_POLICY_LABEL_ERROR},
+      {"deprecated", IDS_POLICY_LABEL_DEPRECATED},
+      {"future", IDS_POLICY_LABEL_FUTURE},
       {"ignored", IDS_POLICY_LABEL_IGNORED},
       {"notSpecified", IDS_POLICY_NOT_SPECIFIED},
       {"ok", IDS_POLICY_OK},

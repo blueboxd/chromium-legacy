@@ -1022,8 +1022,11 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
       overview_item_view_->RefreshPreviewView();
     } else {
       // Transient window is repositioned. The new position within the
-      // overview item needs to be recomputed.
-      SetBounds(target_bounds_, OVERVIEW_ANIMATION_NONE);
+      // overview item needs to be recomputed. No need to recompute if the
+      // transient is invisible. It will get placed properly when it reshows on
+      // overview end.
+      if (window->IsVisible())
+        SetBounds(target_bounds_, OVERVIEW_ANIMATION_NONE);
     }
   }
 

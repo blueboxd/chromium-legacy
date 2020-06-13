@@ -4,7 +4,7 @@ rootWebArea
 ++++++listBox setSize=4
 ++++++++listBoxOption name='Item 1' setSize=4 posInSet=1 selected=false
 ++++++++listBoxOption name='Item 2' setSize=4 posInSet=2 selected=false
-++++++++listBoxOption invisible name='Hidden' selected=false
+++++++++listBoxOption invisible name='Hidden' setSize=4 posInSet=4 selected=false
 ++++++++listBoxOption name='Item 3' setSize=4 posInSet=3 selected=false
 ++++++++listBoxOption name='Item 4' setSize=4 posInSet=4 selected=false
 ++++++listBox setSize=5

@@ -18,6 +18,10 @@ namespace performance_manager {
 // browser tests.
 //
 // Meant to be used from components_unittests, but not from unit_tests.
+//
+// If you just want to test how code interacts with the graph use
+// GraphTestHarness, which has a richer set of methods for creating graph
+// nodes.
 class PerformanceManagerTestHarness
     : public content::RenderViewHostTestHarness {
  public:

@@ -109,7 +109,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
   std::unique_ptr<MockRenderProcessHost> host(CreateRenderProcessHost());
   host->Init();
   RenderProcessHostImpl::AddFrameWithSite(browser_context_.get(), host.get(),
-                                          kSiteUrl);
+                                          SiteInfo(kSiteUrl));
 
   const std::map<int, scoped_refptr<SiteInstance>>& processes =
       worker_process_map();
@@ -139,7 +139,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
   EXPECT_TRUE(processes.empty());
 
   RenderProcessHostImpl::RemoveFrameWithSite(browser_context_.get(), host.get(),
-                                             kSiteUrl);
+                                             SiteInfo(kSiteUrl));
 }
 
 TEST_F(ServiceWorkerProcessManagerTest,
@@ -150,7 +150,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
   // Create a process that is hosting a frame with kSiteUrl.
   std::unique_ptr<MockRenderProcessHost> host(CreateRenderProcessHost());
   RenderProcessHostImpl::AddFrameWithSite(browser_context_.get(), host.get(),
-                                          kSiteUrl);
+                                          SiteInfo(kSiteUrl));
 
   const std::map<int, scoped_refptr<SiteInstance>>& processes =
       worker_process_map();
@@ -179,7 +179,7 @@ TEST_F(ServiceWorkerProcessManagerTest,
   EXPECT_TRUE(processes.empty());
 
   RenderProcessHostImpl::RemoveFrameWithSite(browser_context_.get(), host.get(),
-                                             kSiteUrl);
+                                             SiteInfo(kSiteUrl));
 }
 
 TEST_F(ServiceWorkerProcessManagerTest, AllocateWorkerProcess_InShutdown) {

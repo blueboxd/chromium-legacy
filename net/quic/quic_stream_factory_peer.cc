@@ -50,12 +50,6 @@ bool QuicStreamFactoryPeer::HasActiveJob(QuicStreamFactory* factory,
                                               false /* disable_secure_dns */));
 }
 
-bool QuicStreamFactoryPeer::HasActiveCertVerifierJob(
-    QuicStreamFactory* factory,
-    const quic::QuicServerId& server_id) {
-  return factory->HasActiveCertVerifierJob(server_id);
-}
-
 // static
 QuicChromiumClientSession* QuicStreamFactoryPeer::GetPendingSession(
     QuicStreamFactory* factory,
@@ -121,27 +115,6 @@ void QuicStreamFactoryPeer::SetTickClock(QuicStreamFactory* factory,
 quic::QuicTime::Delta QuicStreamFactoryPeer::GetPingTimeout(
     QuicStreamFactory* factory) {
   return factory->ping_timeout_;
-}
-
-bool QuicStreamFactoryPeer::GetRaceCertVerification(
-    QuicStreamFactory* factory) {
-  return factory->params_.race_cert_verification;
-}
-
-void QuicStreamFactoryPeer::SetRaceCertVerification(
-    QuicStreamFactory* factory,
-    bool race_cert_verification) {
-  factory->params_.race_cert_verification = race_cert_verification;
-}
-
-quic::QuicAsyncStatus QuicStreamFactoryPeer::StartCertVerifyJob(
-    QuicStreamFactory* factory,
-    const quic::QuicServerId& server_id,
-    const NetworkIsolationKey& network_isolation_key,
-    int cert_verify_flags,
-    const NetLogWithSource& net_log) {
-  return factory->StartCertVerifyJobForTesting(server_id, network_isolation_key,
-                                               cert_verify_flags, net_log);
 }
 
 void QuicStreamFactoryPeer::SetYieldAfterPackets(QuicStreamFactory* factory,

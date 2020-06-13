@@ -126,7 +126,7 @@ ash::ShelfID CrostiniAppWindowShelfController::RemoveFromShelf(
       owner()->shelf_model()->GetAppWindowLauncherItemController(
           app_window->shelf_id());
 
-  if (item_controller != nullptr && item_controller->window_count() == 0) {
+  if (item_controller && item_controller->window_count() == 0) {
     ash::ShelfID shelf_id = item_controller->shelf_id();
     owner()->CloseLauncherItem(shelf_id);
     return shelf_id;

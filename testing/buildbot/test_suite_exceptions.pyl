@@ -413,6 +413,20 @@
       'Win10 Tests x64 (dbg)',
     ],
     'modifications': {
+      'CrWinAsan': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/794372
+        'swarming': {
+          'shards': 40,
+        },
+      },
+      'CrWinAsan(dll)': {
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/794372
+        'swarming': {
+          'shards': 40,
+        },
+      },
       'Linux - Future (dbg)': {  # client.v8.chromium
         'swarming': {
           'shards': 10,
@@ -559,10 +573,10 @@
         },
       },
       'win-asan': {
-        # browser_tests shards were reaching a timeout limit of 60 minutes on win-asan
-        # (https://crbug.com/1031096).
+        # These are very slow on the ASAN trybot for some reason.
+        # crbug.com/794372
         'swarming': {
-          'shards': 20,
+          'shards': 40,
         },
       },
     },
@@ -1496,6 +1510,18 @@
       'fuchsia-fyi-x64-dbg',  # https://crbug.com/844416
     ],
     'modifications': {
+      'CrWinAsan': {
+        # TODO(crbug.com/794372): net_unittests is slow under ASan.
+        'swarming': {
+          'shards': 16,
+        },
+      },
+      'CrWinAsan(dll)': {
+        # TODO(crbug.com/794372): net_unittests is slow under ASan.
+        'swarming': {
+          'shards': 16,
+        },
+      },
       'Linux ASan LSan Tests (1)': {
         # These are very slow on the ASAN trybot for some reason.
         # crbug.com/794372
@@ -1565,6 +1591,12 @@
       'linux-chromeos-dbg': {
         'swarming': {
           'shards': 2,
+        },
+      },
+      'win-asan': {
+        # TODO(crbug.com/794372): net_unittests is slow under ASan.
+        'swarming': {
+          'shards': 16,
         },
       },
     },

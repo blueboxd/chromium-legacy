@@ -11,10 +11,21 @@ namespace web_app {
 WebAppInstallObserver::WebAppInstallObserver(AppRegistrar* registrar) {
   observer_.Add(registrar);
 }
+WebAppInstallObserver::WebAppInstallObserver(AppRegistrar* registrar,
+                                             const AppId& listening_for_id)
+    : listening_for_app_id_(listening_for_id) {
+  observer_.Add(registrar);
+}
 
 WebAppInstallObserver::WebAppInstallObserver(Profile* profile)
     : WebAppInstallObserver(
           &WebAppProviderBase::GetProviderBase(profile)->registrar()) {}
+
+WebAppInstallObserver::WebAppInstallObserver(Profile* profile,
+                                             const AppId& listening_for_id)
+    : WebAppInstallObserver(
+          &WebAppProviderBase::GetProviderBase(profile)->registrar(),
+          listening_for_id) {}
 
 WebAppInstallObserver::~WebAppInstallObserver() = default;
 
@@ -39,6 +50,9 @@ void WebAppInstallObserver::SetWebAppProfileWillBeDeletedDelegate(
 }
 
 void WebAppInstallObserver::OnWebAppInstalled(const AppId& app_id) {
+  if (!listening_for_app_id_.empty() && app_id != listening_for_app_id_)
+    return;
+
   if (app_installed_delegate_)
     app_installed_delegate_.Run(app_id);
 
@@ -47,11 +61,17 @@ void WebAppInstallObserver::OnWebAppInstalled(const AppId& app_id) {
 }
 
 void WebAppInstallObserver::OnWebAppUninstalled(const AppId& app_id) {
+  if (!listening_for_app_id_.empty() && app_id != listening_for_app_id_)
+    return;
+
   if (app_uninstalled_delegate_)
     app_uninstalled_delegate_.Run(app_id);
 }
 
 void WebAppInstallObserver::OnWebAppProfileWillBeDeleted(const AppId& app_id) {
+  if (!listening_for_app_id_.empty() && app_id != listening_for_app_id_)
+    return;
+
   if (app_profile_will_be_deleted_delegate_)
     app_profile_will_be_deleted_delegate_.Run(app_id);
 }

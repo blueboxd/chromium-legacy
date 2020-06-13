@@ -60,6 +60,12 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    hasSearchQuery: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
     // Value is proxied through to cr-toolbar-search-field. When true,
     // the search field will show a processing spinner.
     spinnerActive: Boolean,
@@ -135,7 +141,7 @@ Polymer({
   listeners: {
     'blur': 'onBlur_',
     'keydown': 'onKeyDown_',
-    'search-changed': 'fetchSearchResults_',
+    'search-changed': 'onSearchChanged_',
   },
 
   /** @override */
@@ -192,6 +198,12 @@ Polymer({
    */
   computeSearchResultsExist_() {
     return this.searchResults_.length !== 0;
+  },
+
+  /** @private */
+  onSearchChanged_() {
+    this.hasSearchQuery = !!this.getCurrentQuery_();
+    this.fetchSearchResults_();
   },
 
   /** @private */

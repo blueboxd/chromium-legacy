@@ -330,8 +330,13 @@ public class CrashesListFragment extends DevUiBaseFragment {
                     WebViewCrashInfoCollector crashCollector = new WebViewCrashInfoCollector();
                     // Only show crashes from the same WebView channel, which usually means the
                     // same package.
-                    List<CrashInfo> crashes = crashCollector.loadCrashesInfo(crashInfo
-                            -> getCrashInfoChannel(crashInfo) == VersionConstants.CHANNEL);
+                    List<CrashInfo> crashes = crashCollector.loadCrashesInfo(crashInfo -> {
+                        @Channel
+                        int channel = getCrashInfoChannel(crashInfo);
+                        // Always show the crash if the channel is unknown (to handle missing
+                        // channel info for example for crashes from older versions).
+                        return channel == Channel.DEFAULT || channel == VersionConstants.CHANNEL;
+                    });
                     if (crashes.size() > MAX_CRASHES_NUMBER) {
                         return crashes.subList(0, MAX_CRASHES_NUMBER);
                     }
@@ -362,8 +367,8 @@ public class CrashesListFragment extends DevUiBaseFragment {
     }
 
     @Channel
-    private static int getCrashInfoChannel(CrashInfo c) {
-        switch (c.getCrashKey(CrashInfo.WEBVIEW_CHANNEL_KEY)) {
+    private static int getCrashInfoChannel(@NonNull CrashInfo c) {
+        switch (c.getCrashKeyOrDefault(CrashInfo.WEBVIEW_CHANNEL_KEY, "default")) {
             case "canary":
                 return Channel.CANARY;
             case "dev":

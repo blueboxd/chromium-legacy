@@ -120,19 +120,17 @@ void RemoteFrameView::UpdateCompositingRect() {
   // If the local frame root is an OOPIF itself, then we use the root's
   // intersection rect. This represents a conservative maximum for the area
   // that needs to be rastered by the OOPIF compositor.
-  IntSize viewport_size = local_root_view->Size();
+  IntRect viewport_rect(IntPoint(), local_root_view->Size());
   if (local_root_view->GetPage()->MainFrame() != local_root_view->GetFrame()) {
-    viewport_size =
-        local_root_view->GetFrame().RemoteViewportIntersection().Size();
+    viewport_rect = local_root_view->GetFrame().RemoteViewportIntersection();
   }
 
-  // The viewport size needs to account for intermediate CSS transforms before
+  // The viewport rect needs to account for intermediate CSS transforms before
   // being compared to the frame size.
-  PhysicalRect viewport_rect =
+  PhysicalRect local_viewport_rect =
       remote_frame_->OwnerLayoutObject()->AncestorToLocalRect(
-          nullptr, PhysicalRect(PhysicalOffset(), PhysicalSize(viewport_size)),
-          kApplyRemoteRootFrameOffset | kTraverseDocumentBoundaries);
-  compositing_rect_ = EnclosingIntRect(viewport_rect);
+          nullptr, PhysicalRect(viewport_rect), kTraverseDocumentBoundaries);
+  compositing_rect_ = EnclosingIntRect(local_viewport_rect);
   IntSize frame_size = Size();
 
   // Iframes that fit within the window viewport get fully rastered. For
@@ -143,8 +141,8 @@ void RemoteFrameView::UpdateCompositingRect() {
   // it seems to make guttering rare with slow to medium speed wheel scrolling.
   // Can we collect UMA data to estimate how much extra rastering this causes,
   // and possibly how common guttering is?
-  compositing_rect_.InflateX(ceilf(viewport_rect.Width() * 0.15f));
-  compositing_rect_.InflateY(ceilf(viewport_rect.Height() * 0.15f));
+  compositing_rect_.InflateX(ceilf(local_viewport_rect.Width() * 0.15f));
+  compositing_rect_.InflateY(ceilf(local_viewport_rect.Height() * 0.15f));
   compositing_rect_.SetWidth(
       std::min(frame_size.Width(), compositing_rect_.Width()));
   compositing_rect_.SetHeight(

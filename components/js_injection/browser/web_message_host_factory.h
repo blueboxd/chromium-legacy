@@ -14,7 +14,7 @@ class WebMessageHost;
 class WebMessageReplyProxy;
 
 // Creates a WebMessageHost in response to a page interacting with the object
-// registered by way of JsJavaConfiguratorHost::AddWebMessageHostFactory(). A
+// registered by way of JsCommunicationHost::AddWebMessageHostFactory(). A
 // WebMessageHost is created for every page that matches the parameters of
 // AddWebMessageHostFactory().
 class WebMessageHostFactory {

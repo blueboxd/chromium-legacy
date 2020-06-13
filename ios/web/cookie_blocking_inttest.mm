@@ -18,6 +18,7 @@
 #include "ios/web/public/web_state.h"
 #include "net/base/escape.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -29,6 +30,10 @@
 using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::kWaitForPageLoadTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
+
+using net::test_server::BasicHttpResponse;
+using net::test_server::HttpRequest;
+using net::test_server::HttpResponse;
 
 namespace {
 // Page with text "Main frame body" and iframe with src URL equal to the URL
@@ -60,8 +65,50 @@ class CookieBlockingTest : public WebTestWithWebState {
     server_.RegisterRequestHandler(
         base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/iframe",
                             base::BindRepeating(&testing::HandleIFrame)));
+    server_.RegisterRequestHandler(base::BindRepeating(
+        &net::test_server::HandlePrefixedRequest, "/set-cookies",
+        base::BindRepeating(&CookieBlockingTest::HandleSetCookiesRequest,
+                            base::Unretained(this))));
+    server_.RegisterRequestHandler(base::BindRepeating(
+        &net::test_server::HandlePrefixedRequest, "/get-cookies",
+        base::BindRepeating(&CookieBlockingTest::HandleGetCookiesRequest,
+                            base::Unretained(this))));
+
+    third_party_server_.RegisterRequestHandler(base::BindRepeating(
+        &net::test_server::HandlePrefixedRequest, "/set-cookies",
+        base::BindRepeating(&CookieBlockingTest::HandleSetCookiesRequest,
+                            base::Unretained(this))));
+    third_party_server_.RegisterRequestHandler(base::BindRepeating(
+        &net::test_server::HandlePrefixedRequest, "/get-cookies",
+        base::BindRepeating(&CookieBlockingTest::HandleGetCookiesRequest,
+                            base::Unretained(this))));
     ASSERT_TRUE(server_.Start());
     ASSERT_TRUE(third_party_server_.Start());
+  }
+
+  std::unique_ptr<HttpResponse> HandleSetCookiesRequest(
+      const HttpRequest& request) {
+    auto http_response = std::make_unique<BasicHttpResponse>();
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content("set-cookies");
+    http_response->set_content_type("text/plain");
+    http_response->AddCustomHeader("Set-Cookie", "a=b");
+    return http_response;
+  }
+
+  std::unique_ptr<HttpResponse> HandleGetCookiesRequest(
+      const HttpRequest& request) {
+    auto http_response = std::make_unique<BasicHttpResponse>();
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content("get-cookies");
+    http_response->set_content_type("text/plain");
+    auto pos = request.headers.find("Cookie");
+    if (pos == request.headers.end()) {
+      latest_get_cookies_ = "";
+    } else {
+      latest_get_cookies_ = pos->second;
+    }
+    return http_response;
   }
 
   std::string FailureMessage(WebFrame* frame) {
@@ -72,6 +119,11 @@ class CookieBlockingTest : public WebTestWithWebState {
 
   net::EmbeddedTestServer server_;
   net::EmbeddedTestServer third_party_server_;
+
+  // Holds the cookies provided in the latest request to /get-cookies.
+  // The requests are asynchronous, so the cookies in the request need to be
+  // saved here so they can be checked in the test.
+  std::string latest_get_cookies_;
 };
 
 // Tests that cookies are accessible from JavaScript in all frames
@@ -113,10 +165,10 @@ TEST_F(CookieBlockingTest, CookiesAllowed) {
 // when the blocking mode is set to block.
 TEST_F(CookieBlockingTest, CookiesBlocked) {
   __block bool success = false;
-  bool* success_ptr = &success;
-  GetBrowserState()->SetCookieBlockingMode(
-      CookieBlockingMode::kBlock,
-      base::BindLambdaForTesting([&]() { *success_ptr = true; }));
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;
@@ -148,10 +200,10 @@ TEST_F(CookieBlockingTest, CookiesBlocked) {
 // inaccessible from a third-party iframe when third party cookies are blocked.
 TEST_F(CookieBlockingTest, ThirdPartyCookiesBlocked) {
   __block bool success = false;
-  bool* success_ptr = &success;
-  GetBrowserState()->SetCookieBlockingMode(
-      CookieBlockingMode::kBlockThirdParty,
-      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlockThirdParty,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;
@@ -188,10 +240,10 @@ TEST_F(CookieBlockingTest, ThirdPartyCookiesBlocked) {
 // cookies are blocked.
 TEST_F(CookieBlockingTest, FirstPartyCookiesNotBlockedWhenThirdPartyBlocked) {
   __block bool success = false;
-  bool* success_ptr = &success;
-  GetBrowserState()->SetCookieBlockingMode(
-      CookieBlockingMode::kBlockThirdParty,
-      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlockThirdParty,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;
@@ -223,10 +275,10 @@ TEST_F(CookieBlockingTest, FirstPartyCookiesNotBlockedWhenThirdPartyBlocked) {
 // JavaScript.
 TEST_F(CookieBlockingTest, CookiesBlockedUndeletable) {
   __block bool success = false;
-  bool* success_ptr = &success;
-  GetBrowserState()->SetCookieBlockingMode(
-      CookieBlockingMode::kBlock,
-      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;
@@ -256,10 +308,10 @@ TEST_F(CookieBlockingTest, CookiesBlockedUndeletable) {
 // when the blocking mode is set to allow.
 TEST_F(CookieBlockingTest, LocalStorageAllowed) {
   __block bool success = false;
-  bool* success_ptr = &success;
-  GetBrowserState()->SetCookieBlockingMode(
-      CookieBlockingMode::kAllow,
-      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kAllow,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;
@@ -297,10 +349,10 @@ TEST_F(CookieBlockingTest, LocalStorageAllowed) {
 // when the blocking mode is set to block.
 TEST_F(CookieBlockingTest, LocalStorageBlocked) {
   __block bool success = false;
-  bool* success_ptr = &success;
-  GetBrowserState()->SetCookieBlockingMode(
-      CookieBlockingMode::kBlock,
-      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;
@@ -339,10 +391,10 @@ TEST_F(CookieBlockingTest, LocalStorageBlocked) {
 // Tests that the localStorage override is undeletable via extra JavaScript.
 TEST_F(CookieBlockingTest, LocalStorageBlockedUndeletable) {
   __block bool success = false;
-  bool* success_ptr = &success;
-  GetBrowserState()->SetCookieBlockingMode(
-      CookieBlockingMode::kBlock,
-      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;
@@ -379,10 +431,10 @@ TEST_F(CookieBlockingTest, LocalStorageBlockedUndeletable) {
 // when the blocking mode is set to allow.
 TEST_F(CookieBlockingTest, SessionStorageAllowed) {
   __block bool success = false;
-  bool* success_ptr = &success;
-  GetBrowserState()->SetCookieBlockingMode(
-      CookieBlockingMode::kAllow,
-      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kAllow,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;
@@ -420,10 +472,10 @@ TEST_F(CookieBlockingTest, SessionStorageAllowed) {
 // when the blocking mode is set to block.
 TEST_F(CookieBlockingTest, SessionStorageBlocked) {
   __block bool success = false;
-  bool* success_ptr = &success;
-  GetBrowserState()->SetCookieBlockingMode(
-      CookieBlockingMode::kBlock,
-      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;
@@ -462,10 +514,10 @@ TEST_F(CookieBlockingTest, SessionStorageBlocked) {
 // Tests that the sessionStorage override is undeletable via extra JavaScript.
 TEST_F(CookieBlockingTest, SessionStorageBlockedUndeletable) {
   __block bool success = false;
-  bool* success_ptr = &success;
-  GetBrowserState()->SetCookieBlockingMode(
-      CookieBlockingMode::kBlock,
-      base::BindLambdaForTesting([&] { *success_ptr = true; }));
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;
@@ -495,6 +547,99 @@ TEST_F(CookieBlockingTest, SessionStorageBlockedUndeletable) {
       web::test::GetSessionStorage(main_frame, @"x", &result, &error_message));
   EXPECT_NSEQ(error_message, kSessionStorageErrorMessage);
   EXPECT_NSEQ(nil, result);
+}
+
+// Tests that the cookies sent in HTTP headers are allowed.
+TEST_F(CookieBlockingTest, RequestCookiesAllowed) {
+  __block bool success = false;
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kAllow,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
+
+  // Check that page doesn't send a=b cookie initially.
+  test::LoadUrl(web_state(), server_.GetURL("/get-cookies"));
+  EXPECT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+  EXPECT_EQ(std::string::npos, latest_get_cookies_.find("a=b"));
+
+  // Set cookie.
+  test::LoadUrl(web_state(), server_.GetURL("/set-cookies"));
+  EXPECT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+
+  // Check that page does send a=b cookie.
+  test::LoadUrl(web_state(), server_.GetURL("/get-cookies"));
+  EXPECT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+
+  EXPECT_NE(std::string::npos, latest_get_cookies_.find("a=b"));
+}
+
+// Tests that the cookies sent in HTTP headers are blocked.
+TEST_F(CookieBlockingTest, RequestCookiesBlocked) {
+  __block bool success = false;
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
+
+  // Check that page doesn't send a=b cookie initially.
+  test::LoadUrl(web_state(), server_.GetURL("/get-cookies"));
+  EXPECT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+  EXPECT_EQ(std::string::npos, latest_get_cookies_.find("a=b"));
+
+  // Set cookie.
+  test::LoadUrl(web_state(), server_.GetURL("/set-cookies"));
+  EXPECT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+
+  // Check that page stil doesn't send a=b cookie.
+  test::LoadUrl(web_state(), server_.GetURL("/get-cookies"));
+  EXPECT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+  EXPECT_EQ(std::string::npos, latest_get_cookies_.find("a=b"));
+}
+
+// Tests that the cookies sent in HTTP headers are blocked.
+TEST_F(CookieBlockingTest, RequestCookiesBlockedThirdParty) {
+  __block bool success = false;
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlockThirdParty,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
+
+  // Check that page doesn't send a=b cookie.
+  test::LoadUrl(web_state(), third_party_server_.GetURL("/get-cookies"));
+  EXPECT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+  EXPECT_EQ(std::string::npos, latest_get_cookies_.find("a=b"));
+
+  // Set cookie.
+  test::LoadUrl(web_state(), third_party_server_.GetURL("/set-cookies"));
+  EXPECT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+
+  // Check that page does send a=b cookie in a first-party context.
+  test::LoadUrl(web_state(), third_party_server_.GetURL("/get-cookies"));
+  EXPECT_TRUE(test::WaitForPageToFinishLoading(web_state()));
+  EXPECT_NE(std::string::npos, latest_get_cookies_.find("a=b"));
+
+  // Load page in third-party context and check that page doesn't send cookie.
+  GURL iframe_url = third_party_server_.GetURL("/get-cookies");
+  std::string url_spec = kPageUrl + net::EscapeQueryParamValue(
+                                        iframe_url.spec(), /*use_plus=*/true);
+  test::LoadUrl(web_state(), server_.GetURL(url_spec));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return web_state()->GetWebFramesManager()->GetAllWebFrames().size() == 2;
+  }));
+  EXPECT_EQ(std::string::npos, latest_get_cookies_.find("a=b"));
 }
 
 }  // namespace web

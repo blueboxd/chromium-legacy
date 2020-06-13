@@ -1,7 +1,7 @@
 [document web]
-++[article] posinset:0 setsize:0
+++[article]
 ++++[static] name='This is an ARIA article 1.'
-++[article] posinset:0 setsize:0
+++[article]
 ++++[static] name='This is an ARIA article 2.'
 ++[list box] setsize:2
 ++++[list item] name='Item 1' selectable posinset:1 setsize:2

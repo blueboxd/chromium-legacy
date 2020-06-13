@@ -104,7 +104,12 @@ void ScriptExecutor::Run(const UserData* user_data,
   callback_ = std::move(callback);
   DCHECK(delegate_->GetService());
 
+#ifdef NDEBUG
+  VLOG(2) << "GetActions for (redacted)";
+#else
   VLOG(2) << "GetActions for " << delegate_->GetCurrentURL().host();
+#endif
+
   delegate_->GetService()->GetActions(
       script_path_, delegate_->GetScriptURL(),
       MergedTriggerContext(

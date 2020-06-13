@@ -15,7 +15,7 @@
 namespace blink {
 
 class ContentSecurityPolicy;
-class Document;
+class LocalDOMWindow;
 
 // A singleton storing content security policy for each isolated world.
 class CORE_EXPORT IsolatedWorldCSP {
@@ -40,9 +40,9 @@ class CORE_EXPORT IsolatedWorldCSP {
   bool HasContentSecurityPolicy(int32_t world_id) const;
 
   // Creates a ContentSecurityPolicy instance for the given isolated |world_id|
-  // and |document|. Returns null if no ContentSecurityPolicy is defined for the
+  // and |window|. Returns null if no ContentSecurityPolicy is defined for the
   // given isolated |world_id|.
-  ContentSecurityPolicy* CreateIsolatedWorldCSP(Document& document,
+  ContentSecurityPolicy* CreateIsolatedWorldCSP(LocalDOMWindow& window,
                                                 int32_t world_id);
 
  private:

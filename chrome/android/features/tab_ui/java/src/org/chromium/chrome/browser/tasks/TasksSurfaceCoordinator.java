@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.Ta
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -37,8 +38,8 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     private MostVisitedListCoordinator mMostVisitedList;
     private final PropertyModel mPropertyModel;
 
-    public TasksSurfaceCoordinator(ChromeActivity activity, PropertyModel propertyModel,
-            @TabSwitcherType int tabSwitcherType, boolean hasMVTiles) {
+    public TasksSurfaceCoordinator(ChromeActivity activity, ScrimCoordinator scrimCoordinator,
+            PropertyModel propertyModel, @TabSwitcherType int tabSwitcherType, boolean hasMVTiles) {
         mView = (TasksView) LayoutInflater.from(activity).inflate(R.layout.tasks_view_layout, null);
         mView.initialize(activity.getLifecycleDispatcher());
         mPropertyModelChangeProcessor =
@@ -46,10 +47,10 @@ public class TasksSurfaceCoordinator implements TasksSurface {
         mPropertyModel = propertyModel;
         if (tabSwitcherType == TabSwitcherType.CAROUSEL) {
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createCarouselTabSwitcher(
-                    activity, mView.getCarouselTabSwitcherContainer());
+                    activity, mView.getCarouselTabSwitcherContainer(), scrimCoordinator);
         } else if (tabSwitcherType == TabSwitcherType.GRID) {
             mTabSwitcher = TabManagementModuleProvider.getDelegate().createGridTabSwitcher(
-                    activity, mView.getBodyViewContainer());
+                    activity, mView.getBodyViewContainer(), scrimCoordinator);
         } else if (tabSwitcherType == TabSwitcherType.SINGLE) {
             mTabSwitcher = new SingleTabSwitcherCoordinator(
                     activity, mView.getCarouselTabSwitcherContainer());

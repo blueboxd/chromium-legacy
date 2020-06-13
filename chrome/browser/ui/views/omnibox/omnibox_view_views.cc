@@ -1725,8 +1725,8 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
   switch (event.key_code()) {
     case ui::VKEY_RETURN: {
       OmniboxPopupModel* popup_model = model()->popup_model();
-      if (popup_model &&
-          popup_model->TriggerSelectionAction(popup_model->selection())) {
+      if (popup_model && popup_model->TriggerSelectionAction(
+                             popup_model->selection(), event.time_stamp())) {
         return true;
       } else if (MaybeTriggerSecondaryButton(event)) {
         return true;
@@ -1881,8 +1881,8 @@ bool OmniboxViewViews::HandleKeyEvent(views::Textfield* textfield,
     case ui::VKEY_SPACE: {
       if (!control && !alt && !shift && SelectionAtEnd()) {
         OmniboxPopupModel* popup_model = model()->popup_model();
-        if (popup_model &&
-            popup_model->TriggerSelectionAction(popup_model->selection())) {
+        if (popup_model && popup_model->TriggerSelectionAction(
+                               popup_model->selection(), event.time_stamp())) {
           return true;
         }
 

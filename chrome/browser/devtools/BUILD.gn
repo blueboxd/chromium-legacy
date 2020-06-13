@@ -92,6 +92,15 @@ static_library("devtools") {
 
   deps = [
     "//base",
+
+    # To prevent circular GN dependencies, this target does not depend on
+    # //chrome/browser:browser, even though it has a real build dependency on
+    # it.  However, depending on the order in which this target and
+    # //chrome/browser:browser are built it's possible that the connectors
+    # proto header (which //chrome/browser:browser depends on) is not generated
+    # yet causing devtools not to compile.  Adding this indirect dependency to
+    # the proto to fix that.
+    "//components/enterprise/common/proto:connectors_proto",
     "//content/public/browser",
     "//net",
     "//services/viz/privileged/mojom/compositing",

@@ -80,8 +80,8 @@ blink_core_sources("parser") {
 
   # Optimizing the HTML parser for speed yields significant gains in performance
   # in parser-heavy scenarios. See https://crbug.com/787512.
-  # Windows builds already override the default optimization in core.gni.
-  if (!is_debug && !is_win) {
+  # All other platforms already override this in core.gni.
+  if (!is_debug && is_android) {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_max" ]
   }

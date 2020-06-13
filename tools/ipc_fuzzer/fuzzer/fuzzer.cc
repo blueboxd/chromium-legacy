@@ -714,6 +714,15 @@ struct FuzzTraits<viz::FrameSinkId> {
   }
 };
 
+template <>
+struct FuzzTraits<viz::ResourceFormat> {
+  static bool Fuzz(viz::ResourceFormat* p, Fuzzer* fuzzer) {
+    int format = RandInRange(viz::ResourceFormat::RESOURCE_FORMAT_MAX + 1);
+    *p = static_cast<viz::ResourceFormat>(format);
+    return true;
+  }
+};
+
 template <class A>
 struct FuzzTraits<cc::ListContainer<A>> {
   static bool Fuzz(cc::ListContainer<A>* p, Fuzzer* fuzzer) {
@@ -843,6 +852,111 @@ struct FuzzTraits<extensions::URLPatternSet> {
 };
 
 template <>
+struct FuzzTraits<gfx::BufferFormat> {
+  static bool Fuzz(gfx::BufferFormat* p, Fuzzer* fuzzer) {
+    int format = RandInRange(static_cast<int>(gfx::BufferFormat::LAST) + 1);
+    *p = static_cast<gfx::BufferFormat>(format);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gfx::ColorSpace> {
+  static bool Fuzz(gfx::ColorSpace* p, Fuzzer* fuzzer) {
+    gfx::ColorSpace::PrimaryID primaries;
+    gfx::ColorSpace::TransferID transfer;
+    gfx::ColorSpace::MatrixID matrix;
+    gfx::ColorSpace::RangeID range;
+    if (!FuzzParam(&primaries, fuzzer))
+      return false;
+    if (!FuzzParam(&transfer, fuzzer))
+      return false;
+    if (!FuzzParam(&matrix, fuzzer))
+      return false;
+    if (!FuzzParam(&range, fuzzer))
+      return false;
+    *p = gfx::ColorSpace(primaries, transfer, matrix, range);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gfx::ColorSpace::MatrixID> {
+  static bool Fuzz(gfx::ColorSpace::MatrixID* p, Fuzzer* fuzzer) {
+    uint8_t matrix =
+        RandInRange(static_cast<int>(gfx::ColorSpace::MatrixID::kMaxValue) + 1);
+    *p = static_cast<gfx::ColorSpace::MatrixID>(matrix);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gfx::ColorSpace::PrimaryID> {
+  static bool Fuzz(gfx::ColorSpace::PrimaryID* p, Fuzzer* fuzzer) {
+    int primaries = RandInRange(
+        static_cast<int>(gfx::ColorSpace::PrimaryID::kMaxValue) + 1);
+    *p = static_cast<gfx::ColorSpace::PrimaryID>(primaries);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gfx::ColorSpace::RangeID> {
+  static bool Fuzz(gfx::ColorSpace::RangeID* p, Fuzzer* fuzzer) {
+    uint8_t range =
+        RandInRange(static_cast<int>(gfx::ColorSpace::RangeID::kMaxValue) + 1);
+    *p = static_cast<gfx::ColorSpace::RangeID>(range);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gfx::ColorSpace::TransferID> {
+  static bool Fuzz(gfx::ColorSpace::TransferID* p, Fuzzer* fuzzer) {
+    uint8_t transfer = RandInRange(
+        static_cast<int>(gfx::ColorSpace::TransferID::kMaxValue) + 1);
+    *p = static_cast<gfx::ColorSpace::TransferID>(transfer);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gfx::GpuFenceHandle> {
+  static bool Fuzz(gfx::GpuFenceHandle* p, Fuzzer* fuzzer) {
+    if (!FuzzParam(&p->type, fuzzer))
+      return false;
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gfx::GpuFenceHandleType> {
+  static bool Fuzz(gfx::GpuFenceHandleType* p, Fuzzer* fuzzer) {
+    int type =
+        RandInRange(static_cast<int>(gfx::GpuFenceHandleType::kLast) + 1);
+    *p = static_cast<gfx::GpuFenceHandleType>(type);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gfx::GpuMemoryBufferHandle> {
+  static bool Fuzz(gfx::GpuMemoryBufferHandle* p, Fuzzer* fuzzer) {
+    int type;
+    if (!FuzzParam(&type, fuzzer))
+      return false;
+    if (!FuzzParam(&p->offset, fuzzer))
+      return false;
+    if (!FuzzParam(&p->stride, fuzzer))
+      return false;
+    if (!FuzzParam(&p->region, fuzzer))
+      return false;
+    p->type = static_cast<gfx::GpuMemoryBufferType>(type);
+    return true;
+  }
+};
+
+template <>
 struct FuzzTraits<gfx::Point> {
   static bool Fuzz(gfx::Point* p, Fuzzer* fuzzer) {
     int x = p->x();
@@ -866,6 +980,19 @@ struct FuzzTraits<gfx::PointF> {
     if (!FuzzParam(&y, fuzzer))
       return false;
     p->SetPoint(x, y);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gfx::PresentationFeedback> {
+  static bool Fuzz(gfx::PresentationFeedback* p, Fuzzer* fuzzer) {
+    if (!FuzzParam(&p->timestamp, fuzzer))
+      return false;
+    if (!FuzzParam(&p->interval, fuzzer))
+      return false;
+    if (!FuzzParam(&p->flags, fuzzer))
+      return false;
     return true;
   }
 };
@@ -1012,9 +1139,91 @@ struct FuzzTraits<util::StrongAlias<extensions::ActivationSequenceTag, int>> {
 };
 
 template <>
+struct FuzzTraits<gl::GpuPreference> {
+  static bool Fuzz(gl::GpuPreference* p, Fuzzer* fuzzer) {
+    int preference =
+        RandInRange(static_cast<int>(gl::GpuPreference::kMaxValue) + 1);
+    *p = static_cast<gl::GpuPreference>(preference);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gpu::ColorSpace> {
+  static bool Fuzz(gpu::ColorSpace* p, Fuzzer* fuzzer) {
+    int color_space = RandInRange(gpu::ColorSpace::COLOR_SPACE_LAST + 1);
+    *p = static_cast<gpu::ColorSpace>(color_space);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gpu::CommandBufferNamespace> {
+  static bool Fuzz(gpu::CommandBufferNamespace* p, Fuzzer* fuzzer) {
+    int name_space =
+        RandInRange(gpu::CommandBufferNamespace::NUM_COMMAND_BUFFER_NAMESPACES);
+    *p = static_cast<gpu::CommandBufferNamespace>(name_space);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gpu::ContextCreationAttribs> {
+  static bool Fuzz(gpu::ContextCreationAttribs* p, Fuzzer* fuzzer) {
+    if (!FuzzParam(&p->offscreen_framebuffer_size, fuzzer))
+      return false;
+    if (!FuzzParam(&p->gpu_preference, fuzzer))
+      return false;
+    if (!FuzzParam(&p->context_type, fuzzer))
+      return false;
+    if (!FuzzParam(&p->color_space, fuzzer))
+      return false;
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gpu::ContextType> {
+  static bool Fuzz(gpu::ContextType* p, Fuzzer* fuzzer) {
+    int type = RandInRange(gpu::ContextType::CONTEXT_TYPE_LAST + 1);
+    *p = static_cast<gpu::ContextType>(type);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gpu::error::ContextLostReason> {
+  static bool Fuzz(gpu::error::ContextLostReason* p, Fuzzer* fuzzer) {
+    int reason =
+        RandInRange(gpu::error::ContextLostReason::kContextLostReasonLast + 1);
+    *p = static_cast<gpu::error::ContextLostReason>(reason);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gpu::error::Error> {
+  static bool Fuzz(gpu::error::Error* p, Fuzzer* fuzzer) {
+    int error = RandInRange(gpu::error::Error::kErrorLast + 1);
+    *p = static_cast<gpu::error::Error>(error);
+    return true;
+  }
+};
+
+template <>
 struct FuzzTraits<gpu::Mailbox> {
   static bool Fuzz(gpu::Mailbox* p, Fuzzer* fuzzer) {
     fuzzer->FuzzBytes(p->name, sizeof(p->name));
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gpu::SchedulingPriority> {
+  static bool Fuzz(gpu::SchedulingPriority* p, Fuzzer* fuzzer) {
+    int priority =
+        RandInRange(static_cast<int>(gpu::SchedulingPriority::kLast) + 1);
+    *p = static_cast<gpu::SchedulingPriority>(priority);
     return true;
   }
 };
@@ -1245,6 +1454,16 @@ struct FuzzTraits<media::VideoPixelFormat> {
   static bool Fuzz(media::VideoPixelFormat* p, Fuzzer* fuzzer) {
     int format = RandInRange(media::VideoPixelFormat::PIXEL_FORMAT_MAX + 1);
     *p = static_cast<media::VideoPixelFormat>(format);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<net::EffectiveConnectionType> {
+  static bool Fuzz(net::EffectiveConnectionType* p, Fuzzer* fuzzer) {
+    int type = RandInRange(
+        net::EffectiveConnectionType::EFFECTIVE_CONNECTION_TYPE_LAST + 1);
+    *p = static_cast<net::EffectiveConnectionType>(type);
     return true;
   }
 };
@@ -1488,6 +1707,15 @@ struct FuzzTraits<ppapi::SocketOptionData> {
     if (!FuzzParam(&tmp, fuzzer))
       return false;
     p->SetInt32(tmp);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<printing::MarginType> {
+  static bool Fuzz(printing::MarginType* p, Fuzzer* fuzzer) {
+    int type = RandInRange(printing::MarginType::MARGIN_TYPE_LAST + 1);
+    *p = static_cast<printing::MarginType>(type);
     return true;
   }
 };

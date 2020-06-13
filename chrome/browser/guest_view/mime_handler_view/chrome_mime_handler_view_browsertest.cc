@@ -13,7 +13,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pdf_util.h"
@@ -22,6 +21,7 @@
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, UMA_SameOriginResource) {
                     {UMAType::kAccessiblePrint, 2},
                     {UMAType::kPostMessageToEmbeddedMimeHandlerView, 5}};
   base::HistogramTester histogram_tester;
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   for (const auto& pair : kTestCases) {
     histogram_tester.ExpectBucketCount(
         extensions::MimeHandlerViewUMATypes::kUMAName, pair.first, pair.second);
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, UMA_CrossOriginResource) {
                     {UMAType::kInaccessiblePrint, 2},
                     {UMAType::kPostMessageToEmbeddedMimeHandlerView, 5}};
   base::HistogramTester histogram_tester;
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   for (const auto& pair : kTestCases) {
     histogram_tester.ExpectBucketCount(
         extensions::MimeHandlerViewUMATypes::kUMAName, pair.first, pair.second);
@@ -231,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, UMAPDFLoadStatsFullPage) {
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
   }
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   histogram_tester.ExpectBucketCount(
       "PDF.LoadStatus", PDFLoadStatus::kLoadedFullPagePdfWithPdfium, 1);
 }
@@ -250,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(ChromeMimeHandlerViewTest, UMAPDFLoadStatsEmbedded) {
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
     run_loop.Run();
   }
-  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
   histogram_tester.ExpectBucketCount(
       "PDF.LoadStatus", PDFLoadStatus::kLoadedEmbeddedPdfWithPdfium, 1);
 }

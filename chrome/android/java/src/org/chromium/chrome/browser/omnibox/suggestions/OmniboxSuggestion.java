@@ -76,6 +76,7 @@ public class OmniboxSuggestion {
     private final int mGroupId;
     private final List<QueryTile> mQueryTiles;
     private final byte[] mClipboardImageData;
+    private final boolean mHasTabMatch;
 
     public OmniboxSuggestion(int nativeType, boolean isSearchType, int relevance, int transition,
             String displayText, List<MatchClassification> displayTextClassifications,
@@ -83,7 +84,7 @@ public class OmniboxSuggestion {
             SuggestionAnswer answer, String fillIntoEdit, GURL url, GURL imageUrl,
             String imageDominantColor, boolean isStarred, boolean isDeletable,
             String postContentType, byte[] postData, int groupId, List<QueryTile> queryTiles,
-            byte[] clipboardImageData) {
+            byte[] clipboardImageData, boolean hasTabMatch) {
         mType = nativeType;
         mIsSearchType = isSearchType;
         mRelevance = relevance;
@@ -106,6 +107,7 @@ public class OmniboxSuggestion {
         mGroupId = groupId;
         mQueryTiles = queryTiles;
         mClipboardImageData = clipboardImageData;
+        mHasTabMatch = hasTabMatch;
     }
 
     public int getType() {
@@ -185,6 +187,10 @@ public class OmniboxSuggestion {
 
     public byte[] getPostData() {
         return mPostData;
+    }
+
+    public boolean hasTabMatch() {
+        return mHasTabMatch;
     }
 
     /**

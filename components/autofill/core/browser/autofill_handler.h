@@ -190,34 +190,19 @@ class AutofillHandler {
   virtual void OnFormsParsed(const std::vector<FormStructure*>& form_structures,
                              const base::TimeTicks timestamp) = 0;
 
-  // Fills |form_structure| with a pointer to the cached form structure
-  // corresponding to |form_signature|. Returns false if no cached form
-  // structure is found with a matching signature.
-  bool FindCachedFormBySignature(FormSignature form_signature,
-                                 FormStructure** form_structure) const
-      WARN_UNUSED_RESULT;
+  // Returns nullptr if no cached form structure is found with a matching
+  // renderer ID. Runs in logarithmic time.
+  FormStructure* FindCachedFormBySignature(FormSignature form_signature) const;
 
-  // Fills |form_structure| with a pointer to the cached form structure
-  // corresponding to |renderer_id|. Returns false if no cached form
-  // structure is found with a matching signature.
-  bool FindCachedFormByRendererId(FormRendererId renderer_id,
-                                  FormStructure** form_structure) const
-      WARN_UNUSED_RESULT;
-
-  // Fills |form_structure| with a pointer to the cached form structure
-  // corresponding to |form|. This will do a direct match of the form's
-  // signature as well as fuzzy match of the forms structure if no directly
-  // matching form signature is found. Returns false if no match is found.
-  bool FindCachedForm(const FormData& form,
-                      FormStructure** form_structure) const WARN_UNUSED_RESULT;
+  // Returns nullptr if no cached form structure is found with a matching
+  // signature. Runs in linear time.
+  FormStructure* FindCachedFormByRendererId(FormRendererId renderer_id) const;
 
   // Parses the |form| with the server data retrieved from the |cached_form|
-  // (if any), and writes it to the |parse_form_structure|. Adds the
-  // |parse_form_structure| to the |form_structures_|. Returns true if the form
-  // is parsed.
-  bool ParseForm(const FormData& form,
-                 const FormStructure* cached_form,
-                 FormStructure** parsed_form_structure);
+  // (if any). Returns nullptr if the form should not be parsed. Otherwise, adds
+  // the returned form structure to the |form_structures_|.
+  FormStructure* ParseForm(const FormData& form,
+                           const FormStructure* cached_form);
 
   bool value_from_dynamic_change_form_ = false;
 

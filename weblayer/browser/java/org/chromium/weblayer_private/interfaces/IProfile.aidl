@@ -30,4 +30,9 @@ interface IProfile {
   // Added in Version 84.
   void setBooleanSetting(int type, boolean value) = 7;
   boolean getBooleanSetting(int type) = 8;
+
+  // Added in Version 85.
+  void getBrowserPersistenceIds(in IObjectWrapper resultCallback) = 9;
+  void removeBrowserPersistenceStorage(in String[] ids,
+                                       in IObjectWrapper resultCallback) = 10;
 }

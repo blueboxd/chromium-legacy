@@ -464,7 +464,7 @@ void HTMLCanvasElement::PreFinalizeFrame() {
   // Low-latency 2d canvases produce their frames after the resource gets single
   // buffered.
   if (LowLatencyEnabled() && !dirty_rect_.IsEmpty() &&
-      GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
+      GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)) {
     // TryEnableSingleBuffering() the first time we FinalizeFrame().  This is
     // a nop if already single buffered or if single buffering is unsupported.
     ResourceProvider()->TryEnableSingleBuffering();
@@ -473,7 +473,7 @@ void HTMLCanvasElement::PreFinalizeFrame() {
 
 void HTMLCanvasElement::PostFinalizeFrame() {
   if (LowLatencyEnabled() && !dirty_rect_.IsEmpty() &&
-      GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
+      GetOrCreateCanvasResourceProvider(RasterModeHint::kPreferGPU)) {
     const base::TimeTicks start_time = base::TimeTicks::Now();
     const scoped_refptr<CanvasResource> canvas_resource =
         ResourceProvider()->ProduceCanvasResource();
@@ -688,7 +688,7 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
   if (listener_needs_new_frame_capture) {
     SourceImageStatus status;
     scoped_refptr<StaticBitmapImage> source_image =
-        GetSourceImageForCanvasInternal(&status, kPreferNoAcceleration);
+        GetSourceImageForCanvasInternal(&status, RasterModeHint::kPreferCPU);
     if (status != kNormalSourceImageStatus)
       return;
     for (CanvasDrawListener* listener : listeners_) {
@@ -838,7 +838,7 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
     FloatRect src_rect = FloatRect(FloatPoint(), FloatSize(Size()));
     scoped_refptr<StaticBitmapImage> snapshot =
         canvas2d_bridge_
-            ? canvas2d_bridge_->NewImageSnapshot(kPreferAcceleration)
+            ? canvas2d_bridge_->NewImageSnapshot(RasterModeHint::kPreferGPU)
             : (ResourceProvider() ? ResourceProvider()->Snapshot() : nullptr);
     if (snapshot) {
       // GraphicsContext cannot handle gpu resource serialization.
@@ -880,7 +880,7 @@ const AtomicString HTMLCanvasElement::ImageSourceURL() const {
 
 scoped_refptr<StaticBitmapImage> HTMLCanvasElement::Snapshot(
     SourceDrawingBuffer source_buffer,
-    AccelerationHint hint) const {
+    RasterModeHint hint) const {
   if (size_.IsEmpty())
     return nullptr;
 
@@ -935,7 +935,7 @@ String HTMLCanvasElement::ToDataURLInternal(
           mime_type, ImageEncoderUtils::kEncodeReasonToDataURL);
 
   scoped_refptr<StaticBitmapImage> image_bitmap =
-      Snapshot(source_buffer, kPreferNoAcceleration);
+      Snapshot(source_buffer, RasterModeHint::kPreferCPU);
   if (image_bitmap) {
     std::unique_ptr<ImageDataBuffer> data_buffer =
         ImageDataBuffer::Create(image_bitmap);
@@ -1043,7 +1043,7 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
 
   CanvasAsyncBlobCreator* async_creator = nullptr;
   scoped_refptr<StaticBitmapImage> image_bitmap =
-      Snapshot(kBackBuffer, kPreferNoAcceleration);
+      Snapshot(kBackBuffer, RasterModeHint::kPreferCPU);
   if (image_bitmap) {
     auto* options = ImageEncodeOptions::Create();
     options->setType(ImageEncodingMimeTypeName(encoding_mime_type));
@@ -1287,14 +1287,14 @@ void HTMLCanvasElement::WillDrawImageTo2DContext(CanvasImageSource* source) {
 
 scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    AccelerationHint hint,
+    RasterModeHint hint,
     const FloatSize&) {
   return GetSourceImageForCanvasInternal(status, hint);
 }
 
 scoped_refptr<StaticBitmapImage>
 HTMLCanvasElement::GetSourceImageForCanvasInternal(SourceImageStatus* status,
-                                                   AccelerationHint hint) {
+                                                   RasterModeHint hint) {
   if (!width() || !height()) {
     *status = kZeroSizeCanvasSourceImageStatus;
     return nullptr;
@@ -1358,7 +1358,7 @@ FloatSize HTMLCanvasElement::ElementSize(
     const FloatSize&,
     const RespectImageOrientationEnum) const {
   if (context_ && HasImageBitmapContext()) {
-    scoped_refptr<Image> image = context_->GetImage(kPreferNoAcceleration);
+    scoped_refptr<Image> image = context_->GetImage(RasterModeHint::kPreferCPU);
     if (image)
       return FloatSize(image->width(), image->height());
     return FloatSize(0, 0);
@@ -1561,7 +1561,7 @@ void HTMLCanvasElement::ReplaceExisting2dLayerBridge(
   scoped_refptr<StaticBitmapImage> image;
   std::unique_ptr<Canvas2DLayerBridge> old_layer_bridge;
   if (canvas2d_bridge_) {
-    image = canvas2d_bridge_->NewImageSnapshot(kPreferNoAcceleration);
+    image = canvas2d_bridge_->NewImageSnapshot(RasterModeHint::kPreferCPU);
     // image can be null if allocation failed in which case we should just
     // abort the surface switch to retain the old surface which is still
     // functional.
@@ -1608,7 +1608,7 @@ void HTMLCanvasElement::ReplaceExisting2dLayerBridge(
 }
 
 CanvasResourceProvider* HTMLCanvasElement::GetOrCreateCanvasResourceProvider(
-    AccelerationHint hint) {
+    RasterModeHint hint) {
   if (Is2d())
     return GetOrCreateCanvas2DLayerBridge()->GetOrCreateResourceProvider(hint);
 

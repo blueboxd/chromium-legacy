@@ -7,7 +7,6 @@
 #import <WebKit/WebKit.h>
 
 #include "base/supports_user_data.h"
-#import "base/test/bind_test_util.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/web/public/browsing_data/cookie_blocking_mode.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
@@ -54,10 +53,10 @@ TEST_F(BrowserStateTest, FromSupportsUserData) {
 TEST_F(BrowserStateTest, SetCookieBlockingMode) {
   web::TestBrowserState browser_state;
   __block bool success = false;
-  bool* success_ptr = &success;
-  browser_state.SetCookieBlockingMode(
-      web::CookieBlockingMode::kAllow,
-      base::BindLambdaForTesting([&]() { *success_ptr = true; }));
+  browser_state.SetCookieBlockingMode(web::CookieBlockingMode::kAllow,
+                                      base::BindOnce(^{
+                                        success = true;
+                                      }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;
@@ -78,9 +77,10 @@ TEST_F(BrowserStateTest, SetCookieBlockingMode) {
                                            .userContentController.userScripts]);
 
   success = false;
-  browser_state.SetCookieBlockingMode(
-      web::CookieBlockingMode::kBlock,
-      base::BindLambdaForTesting([&]() { *success_ptr = true; }));
+  browser_state.SetCookieBlockingMode(web::CookieBlockingMode::kBlock,
+                                      base::BindOnce(^{
+                                        success = true;
+                                      }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;

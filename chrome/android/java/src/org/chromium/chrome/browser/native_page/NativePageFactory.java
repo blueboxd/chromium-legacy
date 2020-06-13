@@ -18,7 +18,7 @@ import org.chromium.chrome.browser.bookmarks.BookmarkPage;
 import org.chromium.chrome.browser.download.DownloadPage;
 import org.chromium.chrome.browser.explore_sites.ExploreSitesPage;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsMarginSupplier;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
@@ -232,12 +232,12 @@ public class NativePageFactory {
     /** Simple implementation of NativePageHost backed by a {@link Tab} */
     private static class TabShim implements NativePageHost {
         private final Tab mTab;
-        private final ChromeFullscreenManager mFullscreenManager;
+        private final BrowserControlsStateProvider mBrowserControlsStateProvider;
         private final TabModelSelector mTabModelSelector;
 
         public TabShim(Tab tab, ChromeActivity activity) {
             mTab = tab;
-            mFullscreenManager = activity.getFullscreenManager();
+            mBrowserControlsStateProvider = activity.getFullscreenManager();
             mTabModelSelector = activity.getTabModelSelector();
         }
 
@@ -269,7 +269,7 @@ public class NativePageFactory {
 
         @Override
         public DestroyableObservableSupplier<Rect> createDefaultMarginSupplier() {
-            return new BrowserControlsMarginSupplier(mFullscreenManager);
+            return new BrowserControlsMarginSupplier(mBrowserControlsStateProvider);
         }
     }
 }

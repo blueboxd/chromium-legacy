@@ -55,14 +55,9 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   // Returns true if the native widget has been initialized.
   virtual bool IsNativeWidgetInitialized() const = 0;
 
-  // Called when window activation changes, which controls focus, input, etc.
-  // Returns true if activation was successful; false if activation is disabled
-  // (e.g. for testing).
+  // Called when the activation state of a window has changed.
+  // Returns true if this event should be handled.
   virtual bool OnNativeWidgetActivationChanged(bool active) = 0;
-
-  // Called when non-client activation changes, which controls how the window
-  // frame is rendered.
-  virtual void OnNativeWidgetNonClientActivationChanged(bool active) = 0;
 
   // Called when native focus moves from one native view to another.
   virtual void OnNativeFocus() = 0;

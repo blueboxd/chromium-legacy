@@ -48,18 +48,18 @@ std::unique_ptr<UiInterface> UiModuleFactory::Create(
       break;
     }
   }
-  DCHECK(ui_library_handle != nullptr)
+  CHECK(ui_library_handle != nullptr)
       << "Could not open VR UI library:" << dlerror();
 
   CreateUiFunction* create_ui =
       reinterpret_cast<CreateUiFunction*>(dlsym(ui_library_handle, "CreateUi"));
-  DCHECK(create_ui != nullptr);
+  CHECK(create_ui != nullptr);
 
   std::unique_ptr<UiInterface> ui = base::WrapUnique(
       create_ui(browser, content_input_forwarder, std::move(keyboard_delegate),
                 std::move(text_input_delegate), std::move(audio_delegate),
                 ui_initial_state));
-  DCHECK(ui != nullptr);
+  CHECK(ui != nullptr);
 
   return ui;
 }

@@ -15,12 +15,16 @@
     android:paddingStart="@dimen/card_padding"
     android:gravity="center_vertical">
 
+    <!-- Note: Setting textDirection to "locale" makes sure that a non-translated English word in
+         the title text view is aligned based on the device locale and not the text content.
+    -->
     <TextView
         android:id="@+id/header_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textAppearance="@style/TextAppearance.TextSmall.Secondary" />
+        android:textAppearance="@style/TextAppearance.TextSmall.Secondary"
+        android:textDirection="locale" />
 
     <org.chromium.components.browser_ui.widget.listmenu.ListMenuButton
         android:id="@+id/header_menu"

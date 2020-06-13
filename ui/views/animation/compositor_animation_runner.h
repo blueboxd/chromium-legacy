@@ -13,6 +13,7 @@
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/compositor/compositor_observer.h"
 #include "ui/gfx/animation/animation_container.h"
+#include "ui/views/views_export.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace ui {
@@ -24,9 +25,10 @@ namespace views {
 class Widget;
 
 // An animation runner based on ui::Compositor.
-class CompositorAnimationRunner : public gfx::AnimationRunner,
-                                  public ui::CompositorAnimationObserver,
-                                  public WidgetObserver {
+class VIEWS_EXPORT CompositorAnimationRunner
+    : public gfx::AnimationRunner,
+      public ui::CompositorAnimationObserver,
+      public WidgetObserver {
  public:
   explicit CompositorAnimationRunner(Widget* widget);
   CompositorAnimationRunner(CompositorAnimationRunner&) = delete;

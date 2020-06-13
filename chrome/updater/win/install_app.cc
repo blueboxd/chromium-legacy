@@ -717,7 +717,7 @@ class AppInstall : public App {
 
 void AppInstall::Initialize() {
   base::i18n::InitializeICU();
-  config_ = base::MakeRefCounted<Configurator>();
+  config_ = base::MakeRefCounted<Configurator>(CreateGlobalPrefs());
 }
 
 void AppInstall::Uninitialize() {

@@ -31,7 +31,7 @@ function getChromeUILanguage() {
  */
 const LOG_TYPE = {
   // Activated by clicking on the fakebox icon.
-  ACTION_ACTIVATE_FAKEBOX: 13,
+  ACTION_ACTIVATE_SEARCH_BOX: 13,
   // Activated by keyboard shortcut.
   ACTION_ACTIVATE_KEYBOARD: 14,
   // Close the voice overlay by a user's explicit action.
@@ -308,7 +308,7 @@ speech.init = function(
   fakeboxMicrophoneElem.onclick = function(event) {
     // If propagated, closes the overlay (click on the background).
     event.stopPropagation();
-    speech.logEvent(LOG_TYPE.ACTION_ACTIVATE_FAKEBOX);
+    speech.logEvent(LOG_TYPE.ACTION_ACTIVATE_SEARCH_BOX);
     speech.start();
   };
   fakeboxMicrophoneElem.onkeydown = function(event) {

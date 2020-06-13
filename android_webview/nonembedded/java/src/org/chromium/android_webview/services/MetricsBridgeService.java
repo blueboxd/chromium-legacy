@@ -28,10 +28,10 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Service that keeps record of UMA method calls in nonembedded WebView processes.
@@ -49,6 +49,12 @@ public final class MetricsBridgeService extends Service {
     // Not guarded by a lock because it should only be accessed in a SequencedTaskRunner.
     private FileOutputStream mFileOutputStream;
     private List<byte[]> mRecordsList = new ArrayList<>();
+
+    // To avoid any potential synchronization issues as well as avoid blocking the caller thread
+    // (e.g when the caller is a thread from the same process.), we post all read/write operations
+    // to be run serially using a SequencedTaskRunner instead of using a lock.
+    private final TaskRunner mSequencedTaskRunner =
+            PostTask.createSequencedTaskRunner(TaskTraits.BEST_EFFORT_MAY_BLOCK);
 
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused.
@@ -83,17 +89,44 @@ public final class MetricsBridgeService extends Service {
         mRecordsList.add(record.toByteArray());
     }
 
-    // To avoid any potential synchronization issues as well as avoid blocking the caller thread
-    // (e.g when the caller is a thread from the same process.), we post all read/write operations
-    // to be run serially using a SequencedTaskRunner instead of using a lock.
-    private static final TaskRunner sSequencedTaskRunner =
-            PostTask.createSequencedTaskRunner(TaskTraits.BEST_EFFORT_MAY_BLOCK);
-    private static final AtomicInteger sTaskCount = new AtomicInteger();
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    @VisibleForTesting
+    @IntDef({RetrieveMetricsTaskStatus.EXECUTION_EXCEPTION,
+            RetrieveMetricsTaskStatus.INTERRUPTED_EXCEPTION})
+    public @interface RetrieveMetricsTaskStatus {
+        int SUCCESS = 0;
+        int EXECUTION_EXCEPTION = 1;
+        int INTERRUPTED_EXCEPTION = 2;
+        int COUNT = 3;
+    }
+
+    // Build a histogram record synchronously so it can be included in the batch of records sent to
+    // the client instead of calling the base.metrics.RecordHistogram API (which is async and will
+    // log in the next batch of records). This histogram captures errors that might happen when the
+    // service is unable to send the current batch to the client. That's why this has to be added to
+    // the current batch being sent.
+    private static byte[] logRetrieveMetricsTaskStatus(@RetrieveMetricsTaskStatus int sample) {
+        // Similar to calling RecordHistogram.recordEnumeratedHistogram(
+        //        "Android.WebView.NonEmbeddedMetrics.RetrieveMetricsTaskStatus", sample,
+        //        RetrieveMetricsTaskStatus.COUNT);
+        HistogramRecord record =
+                HistogramRecord.newBuilder()
+                        .setRecordType(RecordType.HISTOGRAM_LINEAR)
+                        .setHistogramName(
+                                "Android.WebView.NonEmbeddedMetrics.RetrieveMetricsTaskStatus")
+                        .setSample(sample)
+                        .setMin(1)
+                        .setMax(RetrieveMetricsTaskStatus.COUNT)
+                        .setNumBuckets(ParsingLogResult.COUNT + 1)
+                        .build();
+        return record.toByteArray();
+    }
 
     @Override
     public void onCreate() {
         // Restore saved histograms from disk.
-        postSequencedTask(() -> {
+        mSequencedTaskRunner.postTask(() -> {
             File file = getMetricsLogFile();
             if (!file.exists()) return;
             try (FileInputStream in = new FileInputStream(file)) {
@@ -134,7 +167,7 @@ public final class MetricsBridgeService extends Service {
             }
             // If this is called within the same process, it will run on the caller thread, so we
             // will always punt this to thread pool.
-            postSequencedTask(() -> {
+            mSequencedTaskRunner.postTask(() -> {
                 // Make sure that we don't add records indefinitely in case of no embedded
                 // WebView connects to the service to retrieve and clear the records.
                 if (mRecordsList.size() >= MAX_HISTOGRAM_COUNT) {
@@ -167,14 +200,20 @@ public final class MetricsBridgeService extends Service {
                 List<byte[]> list = mRecordsList;
                 mRecordsList = new ArrayList<>();
                 deleteMetricsLogFile();
+                list.add(logRetrieveMetricsTaskStatus(RetrieveMetricsTaskStatus.SUCCESS));
                 return list;
             });
-            postSequencedTask(retrieveFutureTask);
+            mSequencedTaskRunner.postTask(retrieveFutureTask);
             try {
                 return retrieveFutureTask.get();
-            } catch (ExecutionException | InterruptedException e) {
+            } catch (ExecutionException e) {
                 Log.e(TAG, "error executing retrieveNonembeddedMetrics future task", e);
-                return new ArrayList<>();
+                return Collections.singletonList(logRetrieveMetricsTaskStatus(
+                        RetrieveMetricsTaskStatus.EXECUTION_EXCEPTION));
+            } catch (InterruptedException e) {
+                Log.e(TAG, "retrieveNonembeddedMetrics future task interrupted", e);
+                return Collections.singletonList(logRetrieveMetricsTaskStatus(
+                        RetrieveMetricsTaskStatus.INTERRUPTED_EXCEPTION));
             }
         }
     };
@@ -182,23 +221,6 @@ public final class MetricsBridgeService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return mBinder;
-    }
-
-    private void postSequencedTask(Runnable r) {
-        if (sTaskCount.incrementAndGet() == 1) {
-            // Base Context can be null for some tests that doesn't actually launch the service.
-            if (getBaseContext() != null) {
-                startService(new Intent(this, MetricsBridgeService.class));
-            }
-        }
-        sSequencedTaskRunner.postTask(() -> {
-            r.run();
-            if (sTaskCount.decrementAndGet() == 0) {
-                // This will only stop the service if there are no bound clients.
-                // No need to check for base context to call this.
-                stopSelf();
-            }
-        });
     }
 
     private File getMetricsLogFile() {
@@ -236,12 +258,12 @@ public final class MetricsBridgeService extends Service {
 
     /**
      * Add a FutureTask that can be used to block until all the tasks in the local
-     * {@code sSequencedTaskRunner} are finished for testing.
+     * {@code mSequencedTaskRunner} are finished for testing.
      */
     @VisibleForTesting
     public FutureTask addTaskToBlock() {
         FutureTask<Object> blockTask = new FutureTask<Object>(() -> {}, new Object());
-        postSequencedTask(blockTask);
+        mSequencedTaskRunner.postTask(blockTask);
         return blockTask;
     }
 }

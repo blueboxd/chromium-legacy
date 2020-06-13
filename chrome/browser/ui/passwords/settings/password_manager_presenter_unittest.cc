@@ -13,14 +13,23 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/run_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "components/password_manager/core/browser/mock_password_feature_manager.h"
+#include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/signin/public/identity_manager/account_info.h"
+#include "components/sync/driver/test_sync_service.h"
 #if !defined(OS_ANDROID)
 #include "base/test/metrics/histogram_tester.h"
 #endif
 #include "base/test/mock_callback.h"
 #include "build/build_config.h"
+#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/passwords/settings/password_ui_view.h"
 #include "chrome/browser/ui/passwords/settings/password_ui_view_mock.h"
@@ -38,7 +47,9 @@ using testing::_;
 using testing::Each;
 using testing::ElementsAre;
 using testing::IsEmpty;
+using testing::NiceMock;
 using testing::Pair;
+using testing::Return;
 using testing::SizeIs;
 using testing::UnorderedElementsAre;
 
@@ -63,6 +74,49 @@ MATCHER_P(HasUrl, url, "") {
   return arg->url == url;
 }
 
+// Ensures that all previously-started operations in the store have completed.
+class PasswordStoreWaiter : public password_manager::PasswordStoreConsumer {
+ public:
+  explicit PasswordStoreWaiter(password_manager::PasswordStore* store);
+  ~PasswordStoreWaiter() override = default;
+
+  PasswordStoreWaiter(const PasswordStoreWaiter&) = delete;
+  PasswordStoreWaiter& operator=(const PasswordStoreWaiter&) = delete;
+
+ private:
+  void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>>) override;
+
+  base::RunLoop run_loop_;
+};
+
+PasswordStoreWaiter::PasswordStoreWaiter(
+    password_manager::PasswordStore* store) {
+  store->GetAllLoginsWithAffiliationAndBrandingInformation(this);
+  run_loop_.Run();
+}
+
+void PasswordStoreWaiter::OnGetPasswordStoreResults(
+    std::vector<std::unique_ptr<autofill::PasswordForm>>) {
+  run_loop_.Quit();
+}
+
+class MockPasswordManagerClient
+    : public password_manager::StubPasswordManagerClient {
+ public:
+  MockPasswordManagerClient() = default;
+  ~MockPasswordManagerClient() override = default;
+
+  MOCK_METHOD(password_manager::PasswordStore*,
+              GetProfilePasswordStore,
+              (),
+              (const override));
+  MOCK_METHOD(password_manager::PasswordStore*,
+              GetAccountPasswordStore,
+              (),
+              (const override));
+};
+
 std::vector<std::pair<std::string, std::string>> GetUsernamesAndPasswords(
     const std::vector<autofill::PasswordForm>& forms) {
   std::vector<std::pair<std::string, std::string>> result;
@@ -75,40 +129,100 @@ std::vector<std::pair<std::string, std::string>> GetUsernamesAndPasswords(
   return result;
 }
 
+autofill::PasswordForm AddPasswordToStore(
+    password_manager::PasswordStore* store,
+    const GURL& url,
+    base::StringPiece username,
+    base::StringPiece password) {
+  autofill::PasswordForm form;
+  form.url = url;
+  form.signon_realm = url.GetOrigin().spec();
+  form.username_value = base::ASCIIToUTF16(username);
+  form.password_value = base::ASCIIToUTF16(password);
+  store->AddLogin(form);
+  return form;
+}
+
+std::vector<autofill::PasswordForm> GetPasswordsInStoreForRealm(
+    const password_manager::TestPasswordStore& store,
+    base::StringPiece signon_realm) {
+  const auto& stored_passwords = store.stored_passwords();
+  auto for_realm_it = stored_passwords.find(signon_realm);
+  return for_realm_it != stored_passwords.end()
+             ? for_realm_it->second
+             : std::vector<autofill::PasswordForm>();
+}
+
+void SetUpSyncInTransportMode(Profile* profile) {
+  auto* sync_service = static_cast<syncer::TestSyncService*>(
+      ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+          profile,
+          base::BindRepeating(
+              [](content::BrowserContext*) -> std::unique_ptr<KeyedService> {
+                return std::make_unique<syncer::TestSyncService>();
+              })));
+  CoreAccountInfo account;
+  account.email = "foo@gmail.com";
+  account.gaia = "foo";
+  account.account_id = CoreAccountId::FromGaiaId(account.gaia);
+  sync_service->SetAuthenticatedAccountInfo(account);
+  sync_service->SetDisableReasons({});
+  sync_service->SetTransportState(syncer::SyncService::TransportState::ACTIVE);
+  sync_service->SetIsAuthenticatedAccountPrimary(false);
+  ASSERT_FALSE(sync_service->IsSyncFeatureEnabled());
+}
+
 }  // namespace
 
 class PasswordManagerPresenterTest : public testing::Test {
  protected:
-  PasswordManagerPresenterTest() {
-    store_ = base::WrapRefCounted(static_cast<password_manager::PasswordStore*>(
-        PasswordStoreFactory::GetInstance()
-            ->SetTestingFactoryAndUse(
-                &profile_,
-                base::BindRepeating(&password_manager::BuildPasswordStore<
-                                    content::BrowserContext,
-                                    password_manager::TestPasswordStore>))
-            .get()));
+  explicit PasswordManagerPresenterTest(bool with_account_store = false) {
+    store_ =
+        base::WrapRefCounted(static_cast<password_manager::TestPasswordStore*>(
+            PasswordStoreFactory::GetInstance()
+                ->SetTestingFactoryAndUse(
+                    &profile_,
+                    base::BindRepeating(&password_manager::BuildPasswordStore<
+                                        content::BrowserContext,
+                                        password_manager::TestPasswordStore>))
+                .get()));
+
+    // The account store setup is done here and not in
+    // PasswordManagerPresenterTestWithAccountStore to initialize the feature
+    // list and testing factories as soon as possible.
+    if (with_account_store) {
+      feature_list_.InitAndEnableFeature(
+          password_manager::features::kEnablePasswordsAccountStorage);
+      account_store_ = base::WrapRefCounted(
+          static_cast<password_manager::TestPasswordStore*>(
+              AccountPasswordStoreFactory::GetInstance()
+                  ->SetTestingFactoryAndUse(
+                      &profile_,
+                      base::BindRepeating(&password_manager::BuildPasswordStore<
+                                          content::BrowserContext,
+                                          password_manager::TestPasswordStore>))
+                  .get()));
+
+      SetUpSyncInTransportMode(&profile_);
+    }
   }
 
   ~PasswordManagerPresenterTest() override {
     store_->ShutdownOnUIThread();
+    if (account_store_) {
+      account_store_->ShutdownOnUIThread();
+    }
     task_environment_.RunUntilIdle();
   }
 
+  // TODO(victorvianna): Inline calls to this.
   autofill::PasswordForm AddPasswordEntry(const GURL& url,
                                           base::StringPiece username,
                                           base::StringPiece password) {
-    autofill::PasswordForm form;
-    form.url = url;
-    form.signon_realm = url.GetOrigin().spec();
-    form.username_element = base::ASCIIToUTF16("Email");
-    form.username_value = base::ASCIIToUTF16(username);
-    form.password_element = base::ASCIIToUTF16("Passwd");
-    form.password_value = base::ASCIIToUTF16(password);
-    store_->AddLogin(form);
-    return form;
+    return AddPasswordToStore(store_.get(), url, username, password);
   }
 
+  // TODO(victorvianna): Move to anonymous namespace taking store as argument.
   autofill::PasswordForm AddPasswordException(const GURL& url) {
     autofill::PasswordForm form;
     form.url = url;
@@ -148,21 +262,25 @@ class PasswordManagerPresenterTest : public testing::Test {
 
   MockPasswordUIView& GetUIController() { return mock_controller_; }
 
-  const std::vector<autofill::PasswordForm>& GetStoredPasswordsForRealm(
+  // TODO(victorvianna): Inline this.
+  std::vector<autofill::PasswordForm> GetStoredPasswordsForRealm(
       base::StringPiece signon_realm) {
-    const auto& stored_passwords =
-        static_cast<const password_manager::TestPasswordStore&>(*store_)
-            .stored_passwords();
-    auto for_realm_it = stored_passwords.find(signon_realm);
-    EXPECT_NE(stored_passwords.end(), for_realm_it);
-    return for_realm_it->second;
+    return GetPasswordsInStoreForRealm(*store_, signon_realm);
+  }
+
+  password_manager::TestPasswordStore* profile_store() { return store_.get(); }
+  password_manager::TestPasswordStore* account_store() {
+    return account_store_.get();
   }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   MockPasswordUIView mock_controller_{&profile_};
-  scoped_refptr<password_manager::PasswordStore> store_;
+  // TODO(victorvianna): Rename to profile_store_.
+  scoped_refptr<password_manager::TestPasswordStore> store_;
+  base::test::ScopedFeatureList feature_list_;
+  scoped_refptr<password_manager::TestPasswordStore> account_store_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerPresenterTest);
 };
@@ -523,6 +641,63 @@ TEST_F(PasswordManagerPresenterTest, TestExceptionBatchRemovalAndUndo) {
               SetPasswordExceptionList(UnorderedElementsAre(
                   HasUrl(exception1.url), HasUrl(exception2.url))));
   UpdatePasswordLists();
+}
+
+class PasswordManagerPresenterTestWithAccountStore
+    : public PasswordManagerPresenterTest {
+ public:
+  PasswordManagerPresenterTestWithAccountStore()
+      : PasswordManagerPresenterTest(/*with_account_store=*/true) {
+    ON_CALL(*(client_.GetPasswordFeatureManager()), IsOptedInForAccountStorage)
+        .WillByDefault(Return(true));
+    ON_CALL(client_, GetProfilePasswordStore)
+        .WillByDefault(Return(profile_store()));
+    ON_CALL(client_, GetAccountPasswordStore)
+        .WillByDefault(Return(account_store()));
+  }
+  password_manager::PasswordManagerClient* client() { return &client_; }
+
+ private:
+  NiceMock<MockPasswordManagerClient> client_;
+};
+
+TEST_F(PasswordManagerPresenterTestWithAccountStore,
+       TestMovePasswordToAccountStore) {
+  // Fill the profile store with two entries in the same equivalence class.
+  autofill::PasswordForm password =
+      AddPasswordEntry(GURL(kExampleCom), kUsername, kPassword);
+  AddPasswordEntry(GURL(kExampleCom).Resolve("someOtherPath"), kUsername,
+                   kPassword);
+  // Since there are 2 stores, SetPasswordList() and SetPasswordExceptionList()
+  // are called twice.
+  EXPECT_CALL(GetUIController(), SetPasswordList).Times(2);
+  EXPECT_CALL(GetUIController(), SetPasswordExceptionList).Times(2);
+  UpdatePasswordLists();
+  ASSERT_THAT(
+      GetUsernamesAndPasswords(
+          GetPasswordsInStoreForRealm(*profile_store(), kExampleCom)),
+      ElementsAre(Pair(kUsername, kPassword), Pair(kUsername, kPassword)));
+  ASSERT_THAT(GetUsernamesAndPasswords(
+                  GetPasswordsInStoreForRealm(*account_store(), kExampleCom)),
+              IsEmpty());
+  testing::Mock::VerifyAndClearExpectations(&GetUIController());
+
+  // Move |password| to account and wait for stores to be updated.
+  GetUIController().GetPasswordManagerPresenter()->MovePasswordToAccountStore(
+      password_manager::CreateSortKey(password), client());
+  PasswordStoreWaiter profile_store_waiter(profile_store());
+  PasswordStoreWaiter account_store_waiter(account_store());
+
+  // Both passwords should have moved.
+  EXPECT_CALL(GetUIController(), SetPasswordList).Times(2);
+  EXPECT_CALL(GetUIController(), SetPasswordExceptionList).Times(2);
+  UpdatePasswordLists();
+  EXPECT_THAT(GetPasswordsInStoreForRealm(*profile_store(), kExampleCom),
+              IsEmpty());
+  EXPECT_THAT(
+      GetUsernamesAndPasswords(
+          GetPasswordsInStoreForRealm(*account_store(), kExampleCom)),
+      ElementsAre(Pair(kUsername, kPassword), Pair(kUsername, kPassword)));
 }
 
 }  // namespace

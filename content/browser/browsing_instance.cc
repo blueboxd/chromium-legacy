@@ -61,7 +61,7 @@ bool BrowsingInstance::IsSiteInDefaultSiteInstance(const GURL& site_url) const {
 }
 
 bool BrowsingInstance::HasSiteInstance(const GURL& url) {
-  std::string site = GetSiteForURL(url).possibly_invalid_spec();
+  std::string site = GetSiteInfoForURL(url).site_url().possibly_invalid_spec();
   return site_instance_map_.find(site) != site_instance_map_.end();
 }
 
@@ -97,7 +97,7 @@ void BrowsingInstance::GetSiteAndLockForURL(const GURL& url,
     return;
   }
 
-  *site_url = GetSiteForURL(url);
+  *site_url = GetSiteInfoForURL(url).site_url();
   *lock_url =
       SiteInstanceImpl::DetermineProcessLockURL(isolation_context_, url);
 }
@@ -106,10 +106,10 @@ bool BrowsingInstance::TrySettingDefaultSiteInstance(
     SiteInstanceImpl* site_instance,
     const GURL& url) {
   DCHECK(!site_instance->HasSite());
-  const GURL site_url = GetSiteForURL(url);
+  const SiteInfo site_info = GetSiteInfoForURL(url);
   if (default_site_instance_ ||
-      !SiteInstanceImpl::CanBePlacedInDefaultSiteInstance(isolation_context_,
-                                                          url, site_url)) {
+      !SiteInstanceImpl::CanBePlacedInDefaultSiteInstance(
+          isolation_context_, url, site_info.site_url())) {
     return false;
   }
 
@@ -117,14 +117,14 @@ bool BrowsingInstance::TrySettingDefaultSiteInstance(
   // properly trigger default SiteInstance behavior inside that method.
   default_site_instance_ = site_instance;
   site_instance->SetSite(SiteInstanceImpl::GetDefaultSiteURL());
-  site_url_set_.insert(site_url);
+  site_url_set_.insert(site_info.site_url());
   return true;
 }
 
 scoped_refptr<SiteInstanceImpl> BrowsingInstance::GetSiteInstanceForURLHelper(
     const GURL& url,
     bool allow_default_instance) {
-  const GURL site_url = GetSiteForURL(url);
+  const GURL site_url = GetSiteInfoForURL(url).site_url();
   auto i = site_instance_map_.find(site_url.possibly_invalid_spec());
   if (i != site_instance_map_.end())
     return i->second;
@@ -224,8 +224,8 @@ BrowsingInstance::~BrowsingInstance() {
   policy->RemoveOptInIsolatedOriginsForBrowsingInstance(isolation_context_);
 }
 
-GURL BrowsingInstance::GetSiteForURL(const GURL& url) const {
-  return SiteInstanceImpl::GetSiteForURL(isolation_context_, url);
+SiteInfo BrowsingInstance::GetSiteInfoForURL(const GURL& url) const {
+  return SiteInstanceImpl::ComputeSiteInfo(isolation_context_, url);
 }
 
 }  // namespace content

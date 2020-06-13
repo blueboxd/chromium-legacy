@@ -47,6 +47,9 @@ class CredentialProviderService
   // Syncs the credential store to disk.
   void SyncStore(void (^completion)(NSError*)) const;
 
+  // Syncs account_validation_id_.
+  void UpdateAccountValidationId();
+
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;

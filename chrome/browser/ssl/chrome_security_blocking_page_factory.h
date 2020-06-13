@@ -11,6 +11,7 @@
 #include "components/security_interstitials/content/bad_clock_blocking_page.h"
 #include "components/security_interstitials/content/blocked_interception_blocking_page.h"
 #include "components/security_interstitials/content/captive_portal_blocking_page.h"
+#include "components/security_interstitials/content/insecure_form_blocking_page.h"
 #include "components/security_interstitials/content/legacy_tls_blocking_page.h"
 #include "components/security_interstitials/content/mitm_software_blocking_page.h"
 #include "components/security_interstitials/content/security_blocking_page_factory.h"
@@ -72,6 +73,9 @@ class ChromeSecurityBlockingPageFactory : public SecurityBlockingPageFactory {
       const GURL& request_url,
       std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
       const net::SSLInfo& ssl_info) override;
+  std::unique_ptr<security_interstitials::InsecureFormBlockingPage>
+  CreateInsecureFormBlockingPage(content::WebContents* web_contents,
+                                 const GURL& request_url) override;
 
   // Overrides the calculation of whether the app is enterprise-managed for
   // tests.

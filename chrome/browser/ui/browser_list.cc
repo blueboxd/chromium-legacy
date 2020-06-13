@@ -286,7 +286,7 @@ void BrowserList::SetLastActive(Browser* browser) {
          instance->end())
       << "SetLastActive called for a browser before the browser was added to "
          "the BrowserList.";
-  DCHECK(browser->window() != nullptr)
+  DCHECK(browser->window())
       << "SetLastActive called for a browser with no window set.";
 
   base::RecordAction(UserMetricsAction("ActiveBrowserChanged"));
@@ -305,7 +305,7 @@ void BrowserList::NotifyBrowserNoLongerActive(Browser* browser) {
          instance->end())
       << "NotifyBrowserNoLongerActive called for a browser before the browser "
          "was added to the BrowserList.";
-  DCHECK(browser->window() != nullptr)
+  DCHECK(browser->window())
       << "NotifyBrowserNoLongerActive called for a browser with no window set.";
 
   for (BrowserListObserver& observer : observers_.Get())

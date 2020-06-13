@@ -1207,8 +1207,9 @@ DeviceStatusCollector::DeviceStatusCollector(
     const StatefulPartitionInfoFetcher& stateful_partition_info_fetcher,
     const CrosHealthdDataFetcher& cros_healthd_data_fetcher,
     const GraphicsStatusFetcher& graphics_status_fetcher,
-    const CrashReportInfoFetcher& crash_report_info_fetcher)
-    : StatusCollector(provider, chromeos::CrosSettings::Get()),
+    const CrashReportInfoFetcher& crash_report_info_fetcher,
+    base::Clock* clock)
+    : StatusCollector(provider, chromeos::CrosSettings::Get(), clock),
       pref_service_(pref_service),
       firmware_fetch_error_(kFirmwareNotInitialized),
       volume_info_fetcher_(volume_info_fetcher),
@@ -1221,7 +1222,8 @@ DeviceStatusCollector::DeviceStatusCollector(
       cros_healthd_data_fetcher_(cros_healthd_data_fetcher),
       graphics_status_fetcher_(graphics_status_fetcher),
       crash_report_info_fetcher_(crash_report_info_fetcher),
-      power_manager_(chromeos::PowerManagerClient::Get()) {
+      power_manager_(chromeos::PowerManagerClient::Get()),
+      app_info_generator_(kMaxStoredPastActivityInterval, clock_) {
   // protected fields of `StatusCollector`.
   max_stored_past_activity_interval_ = kMaxStoredPastActivityInterval;
   max_stored_future_activity_interval_ = kMaxStoredFutureActivityInterval;
@@ -1316,8 +1318,12 @@ DeviceStatusCollector::DeviceStatusCollector(
       chromeos::kReportDeviceFanInfo, callback);
   vpd_info_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDeviceVpdInfo, callback);
+  app_info_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceAppInfo, callback);
   stats_reporting_pref_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kStatsReportingPref, callback);
+
+  affiliated_session_service_.AddObserver(&app_info_generator_);
 
   power_manager_->AddObserver(this);
 
@@ -1371,6 +1377,7 @@ DeviceStatusCollector::DeviceStatusCollector(
 
 DeviceStatusCollector::~DeviceStatusCollector() {
   power_manager_->RemoveObserver(this);
+  affiliated_session_service_.RemoveObserver(&app_info_generator_);
 }
 
 // static
@@ -1473,6 +1480,12 @@ void DeviceStatusCollector::UpdateReportingSettings() {
                                   &report_vpd_info_)) {
     report_vpd_info_ = false;
   }
+  report_app_info_ = false;
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceAppInfo,
+                                  &report_app_info_)) {
+    report_app_info_ = false;
+  }
+  app_info_generator_.OnReportingChanged(report_app_info_);
   if (!cros_settings_->GetBoolean(chromeos::kStatsReportingPref,
                                   &stat_reporting_pref_)) {
     stat_reporting_pref_ = false;
@@ -2285,6 +2298,10 @@ bool DeviceStatusCollector::GetCrashReportInfo(
 
 void DeviceStatusCollector::GetStatusAsync(
     const StatusCollectorCallback& response) {
+  last_requested_ = clock_->Now();
+
+  app_info_generator_.OnWillReport();
+
   // Must be on creation thread since some stats are written to in that thread
   // and accessing them from another thread would lead to race conditions.
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -2401,6 +2418,14 @@ void DeviceStatusCollector::GetSessionStatus(
     anything_reported |= GetSessionStatusForUser(state, status, primary_user);
   }
 
+  // |app_infos|
+  const auto app_infos = app_info_generator_.Generate();
+  anything_reported |= app_infos.has_value();
+  if (app_infos) {
+    *status->mutable_app_infos() = {app_infos.value().begin(),
+                                    app_infos.value().end()};
+  }
+
   // Wipe pointer if we didn't actually add any data.
   if (!anything_reported)
     state->response_params().session_status.reset();
@@ -2493,6 +2518,7 @@ std::string DeviceStatusCollector::GetAppVersion(
 void DeviceStatusCollector::OnSubmittedSuccessfully() {
   activity_storage_->TrimActivityPeriods(last_reported_end_timestamp_,
                                          std::numeric_limits<int64_t>::max());
+  app_info_generator_.OnReportedSuccessfully(last_requested_);
 }
 
 bool DeviceStatusCollector::ShouldReportActivityTimes() const {

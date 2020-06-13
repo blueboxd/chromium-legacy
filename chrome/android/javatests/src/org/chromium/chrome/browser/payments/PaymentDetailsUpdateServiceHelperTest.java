@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Parcelable;
 import android.support.test.filters.MediumTest;
 import android.text.TextUtils;
 
@@ -28,16 +29,25 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.payments.Address;
+import org.chromium.components.payments.ErrorStrings;
 import org.chromium.components.payments.IPaymentDetailsUpdateService;
 import org.chromium.components.payments.IPaymentDetailsUpdateServiceCallback;
 import org.chromium.components.payments.PaymentDetailsUpdateService;
 import org.chromium.components.payments.PaymentDetailsUpdateServiceHelper;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentRequestUpdateEventListener;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentCurrencyAmount;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentHandlerMethodData;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentHandlerModifier;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentRequestDetailsUpdate;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentShippingOption;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.payments.mojom.PaymentAddress;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests for PaymentDetailsUpdateServiceHelper.
@@ -59,6 +69,19 @@ public class PaymentDetailsUpdateServiceHelperTest {
     private final MockPackageManagerDelegate mPackageManager = new MockPackageManagerDelegate();
 
     private Context mContext;
+
+    private Bundle defaultAddressBundle() {
+        Bundle bundle = new Bundle();
+        bundle.putString(Address.EXTRA_ADDRESS_COUNTRY, "Canada");
+        String[] addressLine = {"111 Richmond Street West"};
+        bundle.putStringArray(Address.EXTRA_ADDRESS_LINES, addressLine);
+        bundle.putString(Address.EXTRA_ADDRESS_REGION, "Ontario");
+        bundle.putString(Address.EXTRA_ADDRESS_CITY, "Toronto");
+        bundle.putString(Address.EXTRA_ADDRESS_POSTAL_CODE, "M5H2G4");
+        bundle.putString(Address.EXTRA_ADDRESS_RECIPIENT, "John Smith");
+        bundle.putString(Address.EXTRA_ADDRESS_PHONE, "4169158200");
+        return bundle;
+    }
 
     private boolean mBound;
     private IPaymentDetailsUpdateService mIPaymentDetailsUpdateService;
@@ -95,6 +118,107 @@ public class PaymentDetailsUpdateServiceHelperTest {
             PaymentDetailsUpdateServiceHelper.getInstance().initialize(
                     mPackageManager, /*packageName=*/"com.bobpay", mUpdateListener);
         });
+    }
+
+    private void updateWithDefaultDetails() throws Throwable {
+        PaymentCurrencyAmount total =
+                new PaymentCurrencyAmount(/*currency=*/"CAD", /*value=*/"10.00");
+
+        // Populate shipping options.
+        List<PaymentShippingOption> shippingOptions = new ArrayList<PaymentShippingOption>();
+        shippingOptions.add(new PaymentShippingOption(
+                "shippingId", "Free shipping", "CAD", "0.00", /*selected=*/true));
+
+        // Populate modifiers.
+        List<PaymentHandlerModifier> modifiers = new ArrayList<PaymentHandlerModifier>();
+        modifiers.add(new PaymentHandlerModifier(
+                new PaymentCurrencyAmount(/*currency=*/"CAD", /*value=*/"2.00"),
+                new PaymentHandlerMethodData("method name", "stringified method data")));
+
+        // Populate address errors.
+        Bundle bundledShippingAddressErrors = new Bundle();
+        bundledShippingAddressErrors.putString("addressLine", "invalid address line");
+        bundledShippingAddressErrors.putString("city", "invalid city");
+        bundledShippingAddressErrors.putString("countryCode", "invalid country code");
+        bundledShippingAddressErrors.putString("dependentLocality", "invalid dependent locality");
+        bundledShippingAddressErrors.putString("organization", "invalid organization");
+        bundledShippingAddressErrors.putString("phone", "invalid phone");
+        bundledShippingAddressErrors.putString("postalCode", "invalid postal code");
+        bundledShippingAddressErrors.putString("recipient", "invalid recipient");
+        bundledShippingAddressErrors.putString("region", "invalid region");
+        bundledShippingAddressErrors.putString("sortingCode", "invalid sorting code");
+
+        PaymentRequestDetailsUpdate response =
+                new PaymentRequestDetailsUpdate(total, shippingOptions, modifiers,
+                        /*error=*/"error message",
+                        /*pstringifiedPaymentMethodErrors=*/"stringified payment method",
+                        bundledShippingAddressErrors);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { PaymentDetailsUpdateServiceHelper.getInstance().updateWith(response); });
+    }
+
+    private void onPaymentDetailsNotUpdated() throws Throwable {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PaymentDetailsUpdateServiceHelper.getInstance().onPaymentDetailsNotUpdated();
+        });
+    }
+
+    private void verifyUpdatedDefaultDetails() {
+        Bundle total = mUpdatedPaymentDetails.getBundle(PaymentRequestDetailsUpdate.EXTRA_TOTAL);
+        Assert.assertEquals("CAD", total.getString(PaymentCurrencyAmount.EXTRA_CURRENCY));
+        Assert.assertEquals("10.00", total.getString(PaymentCurrencyAmount.EXTRA_VALUE));
+
+        // Validate shipping options
+        Parcelable[] shippingOptions = mUpdatedPaymentDetails.getParcelableArray(
+                PaymentRequestDetailsUpdate.EXTRA_SHIPPING_OPTIONS);
+        Assert.assertEquals(1, shippingOptions.length);
+        Bundle shippingOption = (Bundle) shippingOptions[0];
+        Assert.assertEquals("shippingId",
+                shippingOption.getString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_ID));
+        Assert.assertEquals("Free shipping",
+                shippingOption.getString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_LABEL));
+        Assert.assertEquals("CAD",
+                shippingOption.getString(
+                        PaymentShippingOption.EXTRA_SHIPPING_OPTION_AMOUNT_CURRENCY));
+        Assert.assertEquals("0.00",
+                shippingOption.getString(PaymentShippingOption.EXTRA_SHIPPING_OPTION_AMOUNT_VALUE));
+        Assert.assertTrue(
+                shippingOption.getBoolean(PaymentShippingOption.EXTRA_SHIPPING_OPTION_SELECTED));
+
+        // Validate modifiers
+        Parcelable[] modifiers = mUpdatedPaymentDetails.getParcelableArray(
+                PaymentRequestDetailsUpdate.EXTRA_MODIFIERS);
+        Assert.assertEquals(1, modifiers.length);
+        Bundle modifier = (Bundle) modifiers[0];
+        Bundle modifierTotal = modifier.getBundle(PaymentHandlerModifier.EXTRA_TOTAL);
+        Assert.assertEquals("CAD", modifierTotal.getString(PaymentCurrencyAmount.EXTRA_CURRENCY));
+        Assert.assertEquals("2.00", modifierTotal.getString(PaymentCurrencyAmount.EXTRA_VALUE));
+        Bundle modifierMethodData = modifier.getBundle(PaymentHandlerModifier.EXTRA_METHOD_DATA);
+        Assert.assertEquals("method name",
+                modifierMethodData.getString(PaymentHandlerMethodData.EXTRA_METHOD_NAME));
+        Assert.assertEquals("stringified method data",
+                modifierMethodData.getString(PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS));
+
+        Assert.assertEquals("error message",
+                mUpdatedPaymentDetails.getString(PaymentRequestDetailsUpdate.EXTRA_ERROR_MESSAGE));
+        Assert.assertEquals("stringified payment method",
+                mUpdatedPaymentDetails.getString(
+                        PaymentRequestDetailsUpdate.EXTRA_STRINGIFIED_PAYMENT_METHOD_ERRORS));
+
+        // Validate address errors
+        Bundle addressError =
+                mUpdatedPaymentDetails.getBundle(PaymentRequestDetailsUpdate.EXTRA_ADDRESS_ERRORS);
+        Assert.assertEquals("invalid address line", addressError.getString("addressLine"));
+        Assert.assertEquals("invalid city", addressError.getString("city"));
+        Assert.assertEquals("invalid country code", addressError.getString("countryCode"));
+        Assert.assertEquals(
+                "invalid dependent locality", addressError.getString("dependentLocality"));
+        Assert.assertEquals("invalid organization", addressError.getString("organization"));
+        Assert.assertEquals("invalid phone", addressError.getString("phone"));
+        Assert.assertEquals("invalid postal code", addressError.getString("postalCode"));
+        Assert.assertEquals("invalid recipient", addressError.getString("recipient"));
+        Assert.assertEquals("invalid region", addressError.getString("region"));
+        Assert.assertEquals("invalid sorting code", addressError.getString("sortingCode"));
     }
 
     private void startPaymentDetailsUpdateService() {
@@ -138,13 +262,24 @@ public class PaymentDetailsUpdateServiceHelperTest {
         }
     }
 
+    private Bundle mUpdatedPaymentDetails;
+    private boolean mPaymentDetailsDidNotUpdate;
     private class PaymentDetailsUpdateServiceCallback
             extends IPaymentDetailsUpdateServiceCallback.Stub {
         @Override
-        public void updateWith(Bundle updatedPaymentDetails) {}
+        public void updateWith(Bundle updatedPaymentDetails) {
+            mUpdatedPaymentDetails = updatedPaymentDetails;
+        }
 
         @Override
-        public void paymentDetailsNotUpdated() {}
+        public void paymentDetailsNotUpdated() {
+            mPaymentDetailsDidNotUpdate = true;
+        }
+    }
+
+    private String receivedErrorString() {
+        return mUpdatedPaymentDetails.getString(
+                PaymentRequestDetailsUpdate.EXTRA_ERROR_MESSAGE, "");
     }
 
     private void verifyIsWaitingForPaymentDetailsUpdate(boolean expected) {
@@ -162,27 +297,33 @@ public class PaymentDetailsUpdateServiceHelperTest {
         installPaymentApp();
         startPaymentDetailsUpdateService();
         Bundle bundle = new Bundle();
-        bundle.putString(PaymentDetailsUpdateServiceHelper.KEY_METHOD_NAME, "method name");
-        bundle.putString(PaymentDetailsUpdateServiceHelper.KEY_STRINGIFIED_DETAILS, "details");
+        bundle.putString(PaymentHandlerMethodData.EXTRA_METHOD_NAME, "method name");
+        bundle.putString(PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS, "details");
         mIPaymentDetailsUpdateService.changePaymentMethod(
                 bundle, new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(false);
         Assert.assertFalse(mMethodChangeListenerNotified);
+        // An unauthorized app won't get a callback with error.
+        Assert.assertEquals(null, mUpdatedPaymentDetails);
+        Assert.assertFalse(mPaymentDetailsDidNotUpdate);
     }
 
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testChangePaymentMethod() throws Throwable {
+    public void testSuccessfulChangePaymentMethod() throws Throwable {
         installAndInvokePaymentApp();
         startPaymentDetailsUpdateService();
         Bundle bundle = new Bundle();
-        bundle.putString(PaymentDetailsUpdateServiceHelper.KEY_METHOD_NAME, "method name");
-        bundle.putString(PaymentDetailsUpdateServiceHelper.KEY_STRINGIFIED_DETAILS, "details");
+        bundle.putString(PaymentHandlerMethodData.EXTRA_METHOD_NAME, "method name");
+        bundle.putString(PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS, "details");
         mIPaymentDetailsUpdateService.changePaymentMethod(
                 bundle, new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(true);
         Assert.assertTrue(mMethodChangeListenerNotified);
+        updateWithDefaultDetails();
+        verifyUpdatedDefaultDetails();
+        verifyIsWaitingForPaymentDetailsUpdate(false);
     }
 
     @Test
@@ -195,6 +336,7 @@ public class PaymentDetailsUpdateServiceHelperTest {
                 null, new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(false);
         Assert.assertFalse(mMethodChangeListenerNotified);
+        Assert.assertEquals(ErrorStrings.METHOD_DATA_REQUIRED, receivedErrorString());
     }
 
     @Test
@@ -204,23 +346,27 @@ public class PaymentDetailsUpdateServiceHelperTest {
         installAndInvokePaymentApp();
         startPaymentDetailsUpdateService();
         Bundle bundle = new Bundle();
-        bundle.putString(PaymentDetailsUpdateServiceHelper.KEY_STRINGIFIED_DETAILS, "details");
+        bundle.putString(PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS, "details");
         mIPaymentDetailsUpdateService.changePaymentMethod(
                 bundle, new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(false);
         Assert.assertFalse(mMethodChangeListenerNotified);
+        Assert.assertEquals(ErrorStrings.METHOD_NAME_REQUIRED, receivedErrorString());
     }
 
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testChangeShippingOption() throws Throwable {
+    public void testSuccessfulChangeShippingOption() throws Throwable {
         installAndInvokePaymentApp();
         startPaymentDetailsUpdateService();
         mIPaymentDetailsUpdateService.changeShippingOption(
                 "shipping option id", new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(true);
         Assert.assertTrue(mShippingOptionChangeListenerNotified);
+        updateWithDefaultDetails();
+        verifyUpdatedDefaultDetails();
+        verifyIsWaitingForPaymentDetailsUpdate(false);
     }
 
     @Test
@@ -233,27 +379,22 @@ public class PaymentDetailsUpdateServiceHelperTest {
                 /*shippingOptionId=*/"", new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(false);
         Assert.assertFalse(mShippingOptionChangeListenerNotified);
+        Assert.assertEquals(ErrorStrings.SHIPPING_OPTION_ID_REQUIRED, receivedErrorString());
     }
 
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testChangeShippingAddress() throws Throwable {
+    public void testSuccessfulChangeShippingAddress() throws Throwable {
         installAndInvokePaymentApp();
         startPaymentDetailsUpdateService();
-        Bundle bundle = new Bundle();
-        bundle.putString(Address.EXTRA_ADDRESS_COUNTRY, "Canada");
-        String[] addressLine = {"111 Richmond Street West"};
-        bundle.putStringArray(Address.EXTRA_ADDRESS_LINES, addressLine);
-        bundle.putString(Address.EXTRA_ADDRESS_REGION, "Ontario");
-        bundle.putString(Address.EXTRA_ADDRESS_CITY, "Toronto");
-        bundle.putString(Address.EXTRA_ADDRESS_POSTAL_CODE, "M5H2G4");
-        bundle.putString(Address.EXTRA_ADDRESS_RECIPIENT, "John Smith");
-        bundle.putString(Address.EXTRA_ADDRESS_PHONE, "4169158200");
         mIPaymentDetailsUpdateService.changeShippingAddress(
-                bundle, new PaymentDetailsUpdateServiceCallback());
+                defaultAddressBundle(), new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(true);
         Assert.assertTrue(mShippingAddressChangeListenerNotified);
+        updateWithDefaultDetails();
+        verifyUpdatedDefaultDetails();
+        verifyIsWaitingForPaymentDetailsUpdate(false);
     }
 
     @Test
@@ -266,6 +407,7 @@ public class PaymentDetailsUpdateServiceHelperTest {
                 null, new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(false);
         Assert.assertFalse(mShippingAddressChangeListenerNotified);
+        Assert.assertEquals(ErrorStrings.SHIPPING_ADDRESS_INVALID, receivedErrorString());
     }
 
     @Test
@@ -275,8 +417,8 @@ public class PaymentDetailsUpdateServiceHelperTest {
         installAndInvokePaymentApp();
         startPaymentDetailsUpdateService();
         Bundle bundle = new Bundle();
-        bundle.putString(PaymentDetailsUpdateServiceHelper.KEY_METHOD_NAME, "method name");
-        bundle.putString(PaymentDetailsUpdateServiceHelper.KEY_STRINGIFIED_DETAILS, "details");
+        bundle.putString(PaymentHandlerMethodData.EXTRA_METHOD_NAME, "method name");
+        bundle.putString(PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS, "details");
         mIPaymentDetailsUpdateService.changePaymentMethod(
                 bundle, new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(true);
@@ -287,5 +429,21 @@ public class PaymentDetailsUpdateServiceHelperTest {
                 "shipping option id", new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(true);
         Assert.assertFalse(mShippingOptionChangeListenerNotified);
+        Assert.assertEquals(ErrorStrings.INVALID_STATE, receivedErrorString());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testPaymentDetailsNotUpdated() throws Throwable {
+        installAndInvokePaymentApp();
+        startPaymentDetailsUpdateService();
+        mIPaymentDetailsUpdateService.changeShippingOption(
+                "shipping option id", new PaymentDetailsUpdateServiceCallback());
+        verifyIsWaitingForPaymentDetailsUpdate(true);
+        Assert.assertTrue(mShippingOptionChangeListenerNotified);
+        onPaymentDetailsNotUpdated();
+        Assert.assertTrue(mPaymentDetailsDidNotUpdate);
+        verifyIsWaitingForPaymentDetailsUpdate(false);
     }
 }

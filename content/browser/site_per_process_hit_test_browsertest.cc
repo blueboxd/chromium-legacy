@@ -3762,7 +3762,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   // should initiate mouse capture for the main frame.
   mouse_event.SetType(blink::WebInputEvent::Type::kMouseDown);
   mouse_event.SetModifiers(blink::WebInputEvent::kLeftButtonDown);
-  SetWebEventPositions(&mouse_event, gfx::Point(100, 25), root_view);
+  SetWebEventPositions(&mouse_event, gfx::Point(100, 105), root_view);
   RouteMouseEventAndWaitUntilDispatch(router, root_view, root_view,
                                       &mouse_event);
   EXPECT_TRUE(main_frame_monitor.EventWasReceived());

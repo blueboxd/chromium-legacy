@@ -24,7 +24,7 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.datareduction.DataReductionPromoScreen;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsSizer;
 import org.chromium.chrome.browser.gesturenav.HistoryNavigationCoordinator;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.language.LanguageAskPrompt;
@@ -237,9 +237,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
             return;
         }
 
-        final ChromeFullscreenManager fullscreenManager = mActivity.getFullscreenManager();
+        final BrowserControlsSizer browserControlsSizer = mActivity.getFullscreenManager();
         mStatusIndicatorCoordinator = new StatusIndicatorCoordinator(mActivity,
-                mActivity.getCompositorViewHolder().getResourceManager(), fullscreenManager,
+                mActivity.getCompositorViewHolder().getResourceManager(), browserControlsSizer,
                 mActivity.getStatusBarColorController()::getStatusBarColorWithoutStatusIndicator,
                 mCanAnimateBrowserControls, layoutManager::requestUpdate);
         layoutManager.setStatusIndicatorSceneOverlay(mStatusIndicatorCoordinator.getSceneLayer());
@@ -250,9 +250,9 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
                 final int topControlsNewHeight =
                         mActivity.getResources().getDimensionPixelSize(resourceId)
                         + indicatorHeight;
-                fullscreenManager.setAnimateBrowserControlsHeightChanges(true);
-                fullscreenManager.setTopControlsHeight(topControlsNewHeight, indicatorHeight);
-                fullscreenManager.setAnimateBrowserControlsHeightChanges(false);
+                browserControlsSizer.setAnimateBrowserControlsHeightChanges(true);
+                browserControlsSizer.setTopControlsHeight(topControlsNewHeight, indicatorHeight);
+                browserControlsSizer.setAnimateBrowserControlsHeightChanges(false);
             }
         };
         mStatusIndicatorCoordinator.addObserver(mStatusIndicatorObserver);

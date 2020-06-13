@@ -30,15 +30,15 @@ constexpr char kUniqueId[] = "switch_access_back_button";
 constexpr int kRadiusDp = 18;
 }  // namespace
 
-SwitchAccessBackButtonView::SwitchAccessBackButtonView()
-    : back_button_(
-          new FloatingMenuButton(this,
-                                 kSwitchAccessBackIcon,
-                                 IDS_ASH_SWITCH_ACCESS_BACK_BUTTON_DESCRIPTION,
-                                 /*flip_for_rtl=*/false,
-                                 2 * kRadiusDp,
-                                 /*draw_highlight=*/true,
-                                 /*is_a11y_togglable=*/false)) {
+SwitchAccessBackButtonView::SwitchAccessBackButtonView(bool for_menu)
+    : back_button_(new FloatingMenuButton(
+          this,
+          for_menu ? kSwitchAccessCloseIcon : kSwitchAccessBackIcon,
+          IDS_ASH_SWITCH_ACCESS_BACK_BUTTON_DESCRIPTION,
+          /*flip_for_rtl=*/false,
+          2 * kRadiusDp,
+          /*draw_highlight=*/true,
+          /*is_a11y_togglable=*/false)) {
   views::BoxLayout* layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
           views::BoxLayout::Orientation::kHorizontal, gfx::Insets()));
@@ -59,6 +59,13 @@ void SwitchAccessBackButtonView::SetFocusRing(bool should_show) {
     return;
   show_focus_ring_ = should_show;
   SchedulePaint();
+}
+
+void SwitchAccessBackButtonView::SetForMenu(bool for_menu) {
+  if (for_menu)
+    back_button_->SetVectorIcon(kSwitchAccessCloseIcon);
+  else
+    back_button_->SetVectorIcon(kSwitchAccessBackIcon);
 }
 
 void SwitchAccessBackButtonView::ButtonPressed(views::Button* sender,

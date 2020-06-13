@@ -2081,6 +2081,9 @@ extern const char kEnableNeuralStylusPalmRejectionDescription[];
 extern const char kEnableNewShortcutMappingName[];
 extern const char kEnableNewShortcutMappingDescription[];
 
+extern const char kEnableOnDeviceAssistantName[];
+extern const char kEnableOnDeviceAssistantDescription[];
+
 extern const char kEnablePalmOnMaxTouchMajorName[];
 extern const char kEnablePalmOnMaxTouchMajorDescription[];
 
@@ -2284,9 +2287,6 @@ extern const char kStreamlinedUsbPrinterSetupDescription[];
 
 extern const char kSyncWifiConfigurationsName[];
 extern const char kSyncWifiConfigurationsDescription[];
-
-extern const char kMessageCenterRedesignName[];
-extern const char kMessageCenterRedesignDescription[];
 
 extern const char kTetherName[];
 extern const char kTetherDescription[];

@@ -7,3 +7,7 @@ module mojo.tstest.exported;
 import "mojo/public/js/ts/bindings/tests/export3.test-mojom";
 
 const uint8 kAlsoThree = mojo.tstest.exported.kThree;
+
+struct ExportedStructFour {
+  ExportedStructThree value;
+};

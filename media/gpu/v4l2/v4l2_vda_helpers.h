@@ -97,6 +97,7 @@ class InputBufferFragmentSplitter {
 class H264InputBufferFragmentSplitter : public InputBufferFragmentSplitter {
  public:
   explicit H264InputBufferFragmentSplitter();
+  ~H264InputBufferFragmentSplitter() override;
 
   bool AdvanceFrameFragment(const uint8_t* data,
                             size_t size,

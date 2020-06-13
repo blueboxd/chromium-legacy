@@ -62,9 +62,6 @@ std::unique_ptr<const RecordParsed> RecordParsed::CreateFrom(
     case OptRecordRdata::kType:
       rdata = OptRecordRdata::Create(record.rdata, *parser);
       break;
-    case EsniRecordRdata::kType:
-      rdata = EsniRecordRdata::Create(record.rdata, *parser);
-      break;
     case IntegrityRecordRdata::kType:
       rdata = IntegrityRecordRdata::Create(record.rdata);
       break;

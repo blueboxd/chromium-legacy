@@ -36,7 +36,7 @@ p, h2, h3, h4 {
   background-color: rgba(255, 0, 0, 0.1);
 }
 
-#help {
+.popup {
   font-family: sans-serif;
   box-sizing: border-box;
   position: fixed;
@@ -194,15 +194,37 @@ p, h2, h3, h4 {
 .unexpected-pass {
   color: green;
 }
+
+#timing-stats-table {
+  text-align: right;
+}
+
+#timing-stats-table th {
+  padding-left: 10px;
+}
+
+.stat-bar {
+  background: blue;
+  height: 10px;
+  margin-left: 10px;
+}
 </style>
 <body>
 <h3>Test run summary <span id="builder_name"></span> <span class="flag_name"></span></h3>
 
 <div id="right-toolbar">
-  <a id="help_button" href="javascript:GUI.toggleVisibility('help')">help</a>
+  <a href="javascript:GUI.showTimingStats()">Timing stats</a>
+  &nbsp;
+  <a id="help_button" href="javascript:GUI.toggleVisibility('help')">Help</a>
 </div>
 
-<div id="help" class="hidden hide-on-esc">
+<div id="timing-stats" class="popup hidden hide-on-esc">
+  <button style="position:fixed;right:40px;" onclick="GUI.toggleVisibility('timing-stats')">Close</button>
+  <h3>Timing stats</h3>
+  <table id="timing-stats-table"></table>
+</div>
+
+<div id="help" class="popup hidden hide-on-esc">
   <button style="position:fixed;right:40px;" onclick="GUI.toggleVisibility('help')">Close</button>
   <h3>Keyboard navigation</h3>
 
@@ -1603,7 +1625,54 @@ const GUI = {
       return;
     expectation.querySelector(".details").classList.remove("open");
     expectation.nextSibling.remove();
-  }
+  },
+
+  showTimingStats: function() {
+    let table = document.querySelector("#timing-stats-table");
+    if (!table.firstChild) {
+      let counts = [];
+      let timeout_counts = [];
+      let total_count = 0;
+      let max = 0;
+      new Traversal(globalResults.tests).traverse(
+        test => test.actualFinal != "SKIP",
+        (test, path) => {
+          let time = Math.floor(test.time || 0);
+          counts[time] = (counts[time] || 0) + 1;
+          // result.time is measured during the first run, so check the first
+          // TIMEOUT here.
+          if (test.actual.startsWith('TIMEOUT'))
+            timeout_counts[time] = (timeout_counts[time] || 0) + 1;
+          total_count++;
+          max = Math.max(max, time + 1);
+        }
+      );
+      let i = 0;
+      let html = `<tr>
+                    <th>Range(s)</th><th>Count</th><th>Percent</th>
+                    <th>Timeouts</th><th style='width: 60%'></th>
+                  </tr>`;
+      for (let end of [1, 2, 3, 4, 6, 8, 10, 15, 20, 30, 999]) {
+        let begin = i;
+        end = Math.min(end, max);
+        let count = 0, timeout_count = 0;
+        for (; i < end; i++) {
+          count += (counts[i] || 0);
+          timeout_count += (timeout_counts[i] || 0);
+        }
+        let percent = (count / total_count * 100).toFixed(2);
+        html += `<tr>
+                   <td>${begin}-${end}</td><td>${count}</td><td>${percent}%</td>
+                   <td>${timeout_count}</td>
+                   <td><div class="stat-bar" style="width: ${percent}%"></div></td>
+                 </tr>`;
+        if (end == max)
+          break;
+      }
+      table.innerHTML = html;
+    }
+    GUI.toggleVisibility('timing-stats');
+  },
 }; // GUI
 
 </script>

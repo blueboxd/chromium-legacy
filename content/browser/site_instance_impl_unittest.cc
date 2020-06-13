@@ -875,7 +875,7 @@ TEST_F(SiteInstanceTest, NoProcessPerSiteForEmptySite) {
   EXPECT_FALSE(RenderProcessHostImpl::GetSoleProcessHostForURL(
       instance->GetIsolationContext(), GURL()));
   EXPECT_FALSE(RenderProcessHostImpl::GetSoleProcessHostForSite(
-      instance->GetIsolationContext(), GURL(), GURL(), false));
+      instance->GetIsolationContext(), SiteInfo(), GURL(), false));
 
   DrainMessageLoop();
 }

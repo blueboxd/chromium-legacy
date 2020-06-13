@@ -12,11 +12,11 @@
 // functions are stubs, as WebView has no specific field trials.
 class AwFieldTrials : public variations::PlatformFieldTrials {
  public:
-  AwFieldTrials() {}
-  ~AwFieldTrials() override {}
+  AwFieldTrials() = default;
+  ~AwFieldTrials() override = default;
 
   // variations::PlatformFieldTrials:
-  void SetupFieldTrials() override {}
+  void SetupFieldTrials() override;
   void SetupFeatureControllingFieldTrials(
       bool has_seed,
       base::FeatureList* feature_list) override {}

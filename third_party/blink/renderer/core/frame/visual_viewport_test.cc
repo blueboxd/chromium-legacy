@@ -2056,63 +2056,6 @@ TEST_P(VisualViewportTest, ResizeWithScrollAnchoring) {
             frame_view.LayoutViewport()->GetScrollOffset());
 }
 
-// Ensure that resize anchoring as happens when browser controls hide/show
-// affects the scrollable area that's currently set as the root scroller.
-TEST_P(VisualViewportTest, ResizeAnchoringWithRootScroller) {
-  ScopedSetRootScrollerForTest root_scroller(true);
-
-  InitializeWithAndroidSettings();
-  WebView()->MainFrameWidget()->Resize(IntSize(800, 600));
-
-  RegisterMockedHttpURLLoad("root-scroller-div.html");
-  NavigateTo(base_url_ + "root-scroller-div.html");
-
-  LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
-
-  Element* scroller = GetFrame()->GetDocument()->getElementById("rootScroller");
-  NonThrowableExceptionState non_throw;
-  GetFrame()->GetDocument()->setRootScroller(scroller, non_throw);
-
-  WebView()->SetPageScaleFactor(3.f);
-  frame_view.GetScrollableArea()->SetScrollOffset(
-      ScrollOffset(0, 400), mojom::blink::ScrollType::kProgrammatic);
-
-  VisualViewport& visual_viewport = WebView()->GetPage()->GetVisualViewport();
-  visual_viewport.SetScrollOffset(
-      ScrollOffset(0, 400), mojom::blink::ScrollType::kProgrammatic,
-      mojom::blink::ScrollBehavior::kInstant, ScrollableArea::ScrollCallback());
-
-  WebView()->MainFrameWidget()->Resize(IntSize(800, 500));
-
-  EXPECT_EQ(ScrollOffset(), frame_view.LayoutViewport()->GetScrollOffset());
-}
-
-// Ensure that resize anchoring as happens when the device is rotated affects
-// the scrollable area that's currently set as the root scroller.
-TEST_P(VisualViewportTest, RotationAnchoringWithRootScroller) {
-  ScopedSetRootScrollerForTest root_scroller(true);
-
-  InitializeWithAndroidSettings();
-  WebView()->MainFrameWidget()->Resize(IntSize(800, 600));
-
-  RegisterMockedHttpURLLoad("root-scroller-div.html");
-  NavigateTo(base_url_ + "root-scroller-div.html");
-
-  LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
-
-  Element* scroller = GetFrame()->GetDocument()->getElementById("rootScroller");
-  NonThrowableExceptionState non_throw;
-  GetFrame()->GetDocument()->setRootScroller(scroller, non_throw);
-  UpdateAllLifecyclePhases();
-
-  scroller->setScrollTop(800);
-
-  WebView()->MainFrameWidget()->Resize(IntSize(600, 800));
-
-  EXPECT_EQ(ScrollOffset(), frame_view.LayoutViewport()->GetScrollOffset());
-  EXPECT_EQ(600, scroller->scrollTop());
-}
-
 // Make sure a composited background-attachment:fixed background gets resized
 // by browser controls.
 TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {

@@ -42,13 +42,15 @@ void ConfigurationPolicyHandlerList::ApplyPolicySettings(
     const PolicyMap& policies,
     PrefValueMap* prefs,
     PolicyErrorMap* errors,
-    DeprecatedPoliciesSet* deprecated_policies) const {
+    PoliciesSet* deprecated_policies,
+    PoliciesSet* future_policies) const {
+  if (deprecated_policies)
+    deprecated_policies->clear();
+  if (future_policies)
+    future_policies->clear();
   // This function is used both to apply the policy settings, and to check them
   // and list errors. As such it must get all the errors even if it isn't
   // applying the policies.
-  // TODO(aberent): split into two functions.
-  // TODO(crbug.com/1076560): Returns filtered out future policies for better
-  // user interface.
   std::unique_ptr<PolicyMap> filtered_policies = policies.DeepCopy();
   base::flat_set<std::string> enabled_future_policies =
       allow_future_policies_ ? base::flat_set<std::string>()
@@ -56,7 +58,7 @@ void ConfigurationPolicyHandlerList::ApplyPolicySettings(
                                    key::kEnableExperimentalPolicies));
   filtered_policies->EraseMatching(base::BindRepeating(
       &ConfigurationPolicyHandlerList::FilterOutUnsupportedPolicies,
-      base::Unretained(this), enabled_future_policies));
+      base::Unretained(this), enabled_future_policies, future_policies));
 
   PolicyErrorMap scoped_errors;
   if (!errors)
@@ -90,6 +92,7 @@ void ConfigurationPolicyHandlerList::PrepareForDisplaying(
 
 bool ConfigurationPolicyHandlerList::FilterOutUnsupportedPolicies(
     const base::flat_set<std::string>& enabled_future_policies,
+    PoliciesSet* future_policies,
     const PolicyMap::const_iterator iter) const {
   // Callback might be missing in tests.
   if (!details_callback_) {
@@ -105,8 +108,13 @@ bool ConfigurationPolicyHandlerList::FilterOutUnsupportedPolicies(
     return false;
   }
 
-  return IsPlatformDevicePolicy(*policy_details, iter) ||
-         IsFuturePolicy(enabled_future_policies, *policy_details, iter);
+  if (IsFuturePolicy(enabled_future_policies, *policy_details, iter)) {
+    if (future_policies)
+      future_policies->insert(iter->first);
+    return true;
+  }
+
+  return IsPlatformDevicePolicy(*policy_details, iter);
 }
 
 bool ConfigurationPolicyHandlerList::IsPlatformDevicePolicy(

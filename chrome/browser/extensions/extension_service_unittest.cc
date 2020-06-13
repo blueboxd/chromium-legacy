@@ -5397,10 +5397,9 @@ TEST_F(ExtensionServiceTest, UnpackedValidatesLocales) {
   base::FilePath ms_messages_file = bad_locale.AppendASCII("_locales")
                                               .AppendASCII("ms")
                                               .AppendASCII("messages.json");
-  EXPECT_THAT(base::UTF16ToUTF8(GetErrors()[0]), testing::AllOf(
-       testing::HasSubstr(
-           base::UTF16ToUTF8(ms_messages_file.LossyDisplayName())),
-       testing::HasSubstr("Dictionary keys must be quoted.")));
+  EXPECT_THAT(base::UTF16ToUTF8(GetErrors()[0]),
+              testing::HasSubstr(
+                  base::UTF16ToUTF8(ms_messages_file.LossyDisplayName())));
   ASSERT_EQ(0u, loaded_.size());
 }
 

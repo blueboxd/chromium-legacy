@@ -250,6 +250,7 @@
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/realtime/url_lookup_service.h"
+#include "components/security_interstitials/content/insecure_form_navigation_throttle.h"
 #include "components/security_interstitials/content/origin_policy_ui.h"
 #include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
@@ -3454,7 +3455,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kDark;
       break;
     case ui::NativeTheme::PreferredColorScheme::kLight:
-    case ui::NativeTheme::PreferredColorScheme::kNoPreference:
       web_prefs->preferred_color_scheme = blink::PreferredColorScheme::kLight;
       break;
   }
@@ -4105,6 +4105,12 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
         performance_manager_registry->CreateThrottlesForNavigation(handle),
         &throttles);
   }
+
+  MaybeAddThrottle(
+      security_interstitials::InsecureFormNavigationThrottle::
+          MaybeCreateNavigationThrottle(
+              handle, std::make_unique<ChromeSecurityBlockingPageFactory>()),
+      &throttles);
 
   return throttles;
 }

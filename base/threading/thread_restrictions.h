@@ -196,6 +196,9 @@ class PaintCanvasVideoRenderer;
 namespace memory_instrumentation {
 class OSMetrics;
 }
+namespace metrics {
+class AndroidMetricsServiceClient;
+}
 namespace midi {
 class TaskService;  // https://crbug.com/796830
 }
@@ -378,6 +381,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class cronet::CronetPrefsManager;
   friend class cronet::CronetURLRequestContext;
   friend class memory_instrumentation::OSMetrics;
+  friend class metrics::AndroidMetricsServiceClient;
   friend class module_installer::ScopedAllowModulePakLoad;
   friend class mojo::CoreLibraryInitializer;
   friend class printing::LocalPrinterHandlerDefault;

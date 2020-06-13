@@ -22,5 +22,10 @@
              android:id="@+id/options_menu_check_updates"
              android:title="Check for WebView updates"
              android:showAsAction="never"/>
+        <!--suppress HardcodedText -->
+        <item
+             android:id="@+id/options_menu_about_devui"
+             android:title="About WebView DevTools"
+             android:showAsAction="never"/>
     </group>
 </menu>

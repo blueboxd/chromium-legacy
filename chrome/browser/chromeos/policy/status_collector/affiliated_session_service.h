@@ -49,8 +49,6 @@ class AffiliatedSessionService : public session_manager::SessionManagerObserver,
   AffiliatedSessionService& operator=(const AffiliatedSessionService&) = delete;
   ~AffiliatedSessionService() override;
 
-  static AffiliatedSessionService* Get();
-
   void AddObserver(Observer* observer);
 
   void RemoveObserver(Observer* observer);
@@ -78,6 +76,9 @@ class AffiliatedSessionService : public session_manager::SessionManagerObserver,
   ScopedObserver<session_manager::SessionManager,
                  session_manager::SessionManagerObserver>
       session_manager_observer_{this};
+  ScopedObserver<chromeos::PowerManagerClient,
+                 chromeos::PowerManagerClient::Observer>
+      power_manager_observer_{this};
 };
 
 }  // namespace policy

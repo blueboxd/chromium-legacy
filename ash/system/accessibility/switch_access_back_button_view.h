@@ -16,7 +16,7 @@ class FloatingMenuButton;
 class SwitchAccessBackButtonView : public views::View,
                                    public views::ButtonListener {
  public:
-  explicit SwitchAccessBackButtonView();
+  explicit SwitchAccessBackButtonView(bool for_menu);
   ~SwitchAccessBackButtonView() override = default;
 
   SwitchAccessBackButtonView(const SwitchAccessBackButtonView&) = delete;
@@ -24,6 +24,7 @@ class SwitchAccessBackButtonView : public views::View,
       delete;
 
   void SetFocusRing(bool should_show);
+  void SetForMenu(bool for_menu);
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

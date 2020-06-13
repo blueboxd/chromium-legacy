@@ -234,25 +234,19 @@ StackedNotificationBar::StackedNotificationBar(
               IDS_ASH_MESSAGE_CENTER_EXPAND_ALL_NOTIFICATIONS_BUTTON_LABEL),
           message_center_view)) {
   SetVisible(false);
-  int left_padding = features::IsUnifiedMessageCenterRefactorEnabled()
-                         ? 0
-                         : kStackingNotificationClearAllButtonPadding.left();
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal,
-      gfx::Insets(0, left_padding, 0, 0)));
+      views::BoxLayout::Orientation::kHorizontal));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
-  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
-    notification_icons_container_ = new views::View();
-    notification_icons_container_->SetLayoutManager(
-        std::make_unique<views::BoxLayout>(
-            views::BoxLayout::Orientation::kHorizontal,
-            kStackedNotificationIconsContainerPadding,
-            kStackedNotificationBarIconSpacing));
-    AddChildView(notification_icons_container_);
-    message_center::MessageCenter::Get()->AddObserver(this);
-  }
+  notification_icons_container_ = new views::View();
+  notification_icons_container_->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kHorizontal,
+          kStackedNotificationIconsContainerPadding,
+          kStackedNotificationBarIconSpacing));
+  AddChildView(notification_icons_container_);
+  message_center::MessageCenter::Get()->AddObserver(this);
 
   count_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
       AshColorProvider::ContentLayerType::kTextSecondary,
@@ -434,18 +428,13 @@ void StackedNotificationBar::UpdateStackedNotifications(
   int stacked_notification_count = stacked_notifications.size();
   int notification_overflow_count = 0;
 
-  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
-    if (stacked_notification_count_ > stacked_notification_count)
-      ShiftIconsLeft(stacked_notifications);
-    else if (stacked_notification_count_ < stacked_notification_count)
-      ShiftIconsRight(stacked_notifications);
+  if (stacked_notification_count_ > stacked_notification_count)
+    ShiftIconsLeft(stacked_notifications);
+  else if (stacked_notification_count_ < stacked_notification_count)
+    ShiftIconsRight(stacked_notifications);
 
-    notification_overflow_count = std::max(
-        stacked_notification_count_ - kStackedNotificationBarMaxIcons, 0);
-  } else {
-    stacked_notification_count_ = stacked_notification_count;
-    notification_overflow_count = stacked_notification_count;
-  }
+  notification_overflow_count = std::max(
+      stacked_notification_count_ - kStackedNotificationBarMaxIcons, 0);
 
   // Update overflow count label
   if (notification_overflow_count > 0) {

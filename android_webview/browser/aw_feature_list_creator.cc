@@ -29,7 +29,9 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/switches.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/embedder_support/android/metrics/android_metrics_service_client.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/persistent_histograms.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/json_pref_store.h"
@@ -100,6 +102,11 @@ std::unique_ptr<PrefService> CreatePrefService() {
   std::set<std::string> persistent_prefs;
   for (const char* const pref_name : kPersistentPrefsWhitelist)
     persistent_prefs.insert(pref_name);
+
+  persistent_prefs.insert(std::string(metrics::prefs::kMetricsLastSeenPrefix) +
+                          kBrowserMetricsName);
+  persistent_prefs.insert(std::string(metrics::prefs::kMetricsLastSeenPrefix) +
+                          metrics::kCrashpadHistogramAllocatorName);
 
   // SegregatedPrefStore may be validated with a MAC (message authentication
   // code). On Android, the store is protected by app sandboxing, so validation

@@ -902,54 +902,14 @@ bool AXNode::IsOrderedSet() const {
   return ui::IsSetLike(data().role);
 }
 
-// pos_in_set and set_size related functions.
-// Uses AXTree's cache to calculate node's pos_in_set.
+// Uses AXTree's cache to calculate node's PosInSet.
 base::Optional<int> AXNode::GetPosInSet() {
-  // Only allow this to be called on nodes that can hold pos_in_set values,
-  // which are defined in the ARIA spec.
-  if (!IsOrderedSetItem() || IsIgnored())
-    return base::nullopt;
-
-  const AXNode* ordered_set = GetOrderedSet();
-  if (!ordered_set) {
-    return base::nullopt;
-  }
-
-  // If tree is being updated, return no value.
-  if (tree()->GetTreeUpdateInProgressState())
-    return base::nullopt;
-
-  // See AXTree::GetPosInSet
-  return tree_->GetPosInSet(*this, ordered_set);
+  return tree_->GetPosInSet(*this);
 }
 
-// Uses AXTree's cache to calculate node's set_size.
+// Uses AXTree's cache to calculate node's SetSize.
 base::Optional<int> AXNode::GetSetSize() {
-  // Only allow this to be called on nodes that can hold set_size values, which
-  // are defined in the ARIA spec.
-  if ((!IsOrderedSetItem() && !IsOrderedSet()) || IsIgnored())
-    return base::nullopt;
-
-  // If node is item-like, find its outerlying ordered set. Otherwise,
-  // this node is the ordered set.
-  const AXNode* ordered_set = this;
-  if (IsItemLike(data().role))
-    ordered_set = GetOrderedSet();
-  if (!ordered_set)
-    return base::nullopt;
-
-  // If tree is being updated, return no value.
-  if (tree()->GetTreeUpdateInProgressState())
-    return base::nullopt;
-
-  if (IsEmbeddedGroup())
-    return base::nullopt;
-
-  // See AXTree::GetSetSize
-  int32_t set_size = tree_->GetSetSize(*this, ordered_set);
-  if (set_size < 0)
-    return base::nullopt;
-  return set_size;
+  return tree_->GetSetSize(*this);
 }
 
 // Returns true if the role of ordered set matches the role of item.
@@ -1004,7 +964,8 @@ bool AXNode::SetRoleMatchesItemRole(const AXNode* ordered_set) const {
 }
 
 bool AXNode::IsIgnoredContainerForOrderedSet() const {
-  return IsIgnored() || data().role == ax::mojom::Role::kListItem ||
+  return IsIgnored() || IsEmbeddedGroup() ||
+         data().role == ax::mojom::Role::kListItem ||
          data().role == ax::mojom::Role::kGenericContainer ||
          data().role == ax::mojom::Role::kUnknown;
 }
@@ -1029,9 +990,7 @@ AXNode* AXNode::GetOrderedSet() const {
   AXNode* result = parent();
   // Continue walking up while parent is invalid, ignored, a generic container,
   // unknown, or embedded group.
-  while (result && (result->IsEmbeddedGroup() || result->IsIgnored() ||
-                    result->data().role == ax::mojom::Role::kGenericContainer ||
-                    result->data().role == ax::mojom::Role::kUnknown)) {
+  while (result && result->IsIgnoredContainerForOrderedSet()) {
     result = result->parent();
   }
 

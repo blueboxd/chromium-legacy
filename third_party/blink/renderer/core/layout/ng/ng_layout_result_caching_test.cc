@@ -1677,5 +1677,31 @@ TEST_F(NGLayoutResultCachingTest, HitFlexLegacyGrid) {
   EXPECT_NE(result.get(), nullptr);
 }
 
+TEST_F(NGLayoutResultCachingTest, HitOrthogonalRoot) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      span { display: inline-block; width: 20px; height: 250px }
+    </style>
+    <div id="target" style="display: flex;">
+      <div style="writing-mode: vertical-rl; line-height: 0;">
+        <span></span><span></span>
+      </div>
+    </div>
+  )HTML");
+
+  auto* target = To<LayoutBlock>(GetLayoutObjectByElementId("target"));
+
+  NGLayoutCacheStatus cache_status;
+  base::Optional<NGFragmentGeometry> fragment_geometry;
+  const NGConstraintSpace& space =
+      target->GetCachedLayoutResult()->GetConstraintSpaceForCaching();
+  scoped_refptr<const NGLayoutResult> result = target->CachedLayoutResult(
+      space, nullptr, nullptr, &fragment_geometry, &cache_status);
+
+  // We should hit the cache using the same constraint space.
+  EXPECT_EQ(cache_status, NGLayoutCacheStatus::kHit);
+  EXPECT_NE(result.get(), nullptr);
+}
+
 }  // namespace
 }  // namespace blink

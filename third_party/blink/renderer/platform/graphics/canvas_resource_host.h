@@ -26,9 +26,9 @@ class PLATFORM_EXPORT CanvasResourceHost {
   virtual void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const = 0;
   virtual void UpdateMemoryUsage() = 0;
   virtual CanvasResourceProvider* GetOrCreateCanvasResourceProvider(
-      AccelerationHint hint) = 0;
+      RasterModeHint hint) = 0;
   virtual CanvasResourceProvider* GetOrCreateCanvasResourceProviderImpl(
-      AccelerationHint hint) = 0;
+      RasterModeHint hint) = 0;
 
   virtual SkFilterQuality FilterQuality() const = 0;
   virtual bool LowLatencyEnabled() const { return false; }

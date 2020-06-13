@@ -23,10 +23,13 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "content/public/test/browser_test.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/test/result_catcher.h"
 
 namespace extensions {
 namespace {
+
+using ContextType = ExtensionApiTest::ContextType;
 
 class NativeMessagingApiTest : public ExtensionApiTest {
  protected:
@@ -41,6 +44,48 @@ IN_PROC_BROWSER_TEST_F(NativeMessagingApiTest, NativeMessagingBasic) {
 IN_PROC_BROWSER_TEST_F(NativeMessagingApiTest, UserLevelNativeMessaging) {
   ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestHost(true));
   ASSERT_TRUE(RunExtensionTest("native_messaging")) << message_;
+}
+
+// TODO(crbug.com/1094027): Clean up duplicate test coverage.
+class NativeMessagingLazyApiTest
+    : public NativeMessagingApiTest,
+      public testing::WithParamInterface<ContextType> {
+ public:
+  void SetUp() override {
+    NativeMessagingApiTest::SetUp();
+    // Service Workers are currently only available on certain channels, so set
+    // the channel for those tests.
+    if (GetParam() == ContextType::kServiceWorker)
+      current_channel_ = std::make_unique<ScopedWorkerBasedExtensionsChannel>();
+  }
+
+ protected:
+  bool RunLazyTest(const std::string& extension_name) {
+    if (GetParam() == ContextType::kEventPage) {
+      return RunExtensionTest(extension_name);
+    }
+    return RunExtensionTestWithFlags(
+        extension_name, kFlagRunAsServiceWorkerBasedExtension, kFlagNone);
+  }
+
+  std::unique_ptr<ScopedWorkerBasedExtensionsChannel> current_channel_;
+};
+
+INSTANTIATE_TEST_SUITE_P(EventPage,
+                         NativeMessagingLazyApiTest,
+                         ::testing::Values(ContextType::kEventPage));
+INSTANTIATE_TEST_SUITE_P(ServiceWorker,
+                         NativeMessagingLazyApiTest,
+                         ::testing::Values(ContextType::kServiceWorker));
+
+IN_PROC_BROWSER_TEST_P(NativeMessagingLazyApiTest, NativeMessagingBasic) {
+  ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestHost(false));
+  ASSERT_TRUE(RunLazyTest("native_messaging_lazy")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_P(NativeMessagingLazyApiTest, UserLevelNativeMessaging) {
+  ASSERT_NO_FATAL_FAILURE(test_host_.RegisterTestHost(true));
+  ASSERT_TRUE(RunLazyTest("native_messaging_lazy")) << message_;
 }
 
 #if !defined(OS_CHROMEOS)

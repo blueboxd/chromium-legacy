@@ -1119,12 +1119,25 @@ void SkiaRenderer::PrepareCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
     }
   }
 
+  if (rpdq_params.mask_image.get()) {
+    // The old behavior (in skia) was to filter the clipmask based on the
+    // setting in the layer's paint. Now we can set that to whatever we want
+    // when we make the clip-shader. For now, I will replicate the old (impl)
+    // logic.
+    SkFilterQuality filtering =
+        layer_paint.getFilterQuality() == kNone_SkFilterQuality
+            ? kNone_SkFilterQuality
+            : kLow_SkFilterQuality;
+    current_canvas_->save();
+    current_canvas_->clipShader(rpdq_params.mask_image->makeShader(
+        SkTileMode::kClamp, SkTileMode::kClamp,
+        &rpdq_params.mask_to_quad_matrix, filtering));
+  }
   SkRect bounds = gfx::RectFToSkRect(rpdq_params.bypass_clip.has_value()
                                          ? *rpdq_params.bypass_clip
                                          : params->visible_rect);
-  current_canvas_->saveLayer(SkCanvas::SaveLayerRec(
-      &bounds, &layer_paint, backdrop_filter.get(),
-      rpdq_params.mask_image.get(), &rpdq_params.mask_to_quad_matrix, 0));
+  current_canvas_->saveLayer(
+      SkCanvas::SaveLayerRec(&bounds, &layer_paint, backdrop_filter.get(), 0));
 
   // If we have backdrop filtered content (and not transparent black like with
   // regular render passes), we have to clear out the parts of the layer that

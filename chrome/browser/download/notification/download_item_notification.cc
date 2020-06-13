@@ -475,7 +475,8 @@ void DownloadItemNotification::UpdateNotificationData(bool display,
     switch (item_->GetState()) {
       case download::DownloadItem::IN_PROGRESS: {
         int percent_complete = item_->PercentComplete();
-        if (percent_complete >= 0) {
+        // Show "running" progress when percent is unknown or during cloud scan.
+        if (percent_complete >= 0 && !IsScanning()) {
           notification_->set_progress(percent_complete);
         } else {
           // Negative progress value shows an indeterminate progress bar.

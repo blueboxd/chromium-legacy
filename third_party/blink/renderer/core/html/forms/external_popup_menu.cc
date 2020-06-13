@@ -269,10 +269,7 @@ void ExternalPopupMenu::GetPopupMenuInfo(
     }
     popup_item->enabled = !item_element.IsDisabledFormControl();
     const ComputedStyle& style = *owner_element.ItemComputedStyle(item_element);
-    popup_item->text_direction =
-        style.Direction() == TextDirection::kLtr
-            ? mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT
-            : mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT;
+    popup_item->text_direction = ToBaseTextDirection(style.Direction());
     popup_item->has_text_direction_override =
         IsOverride(style.GetUnicodeBidi());
     menu_items->push_back(std::move(popup_item));

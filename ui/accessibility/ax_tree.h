@@ -147,18 +147,14 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   // conflict with positive-numbered node IDs from tree sources.
   int32_t GetNextNegativeInternalNodeId();
 
-  // Returns the pos_in_set of node. Looks in node_set_size_pos_in_set_info_map_
-  // for cached value. Calculates pos_in_set and set_size for node (and all
-  // other nodes in the same ordered set) if no value is present in the cache.
-  // This function is guaranteed to be only called on nodes that can hold
-  // pos_in_set values, minimizing the size of the cache.
-  int32_t GetPosInSet(const AXNode& node, const AXNode* ordered_set) override;
-  // Returns the set_size of node. Looks in node_set_size_pos_in_set_info_map_
-  // for cached value. Calculates pos_inset_set and set_size for node (and all
-  // other nodes in the same ordered set) if no value is present in the cache.
-  // This function is guaranteed to be only called on nodes that can hold
-  // set_size values, minimizing the size of the cache.
-  int32_t GetSetSize(const AXNode& node, const AXNode* ordered_set) override;
+  // Returns the PosInSet of |node|. Looks in node_set_size_pos_in_set_info_map_
+  // for cached value. Calls |ComputeSetSizePosInSetAndCache|if no value is
+  // present in the cache.
+  base::Optional<int> GetPosInSet(const AXNode& node) override;
+  // Returns the SetSize of |node|. Looks in node_set_size_pos_in_set_info_map_
+  // for cached value. Calls |ComputeSetSizePosInSetAndCache|if no value is
+  // present in the cache.
+  base::Optional<int> GetSetSize(const AXNode& node) override;
 
   Selection GetUnignoredSelection() const override;
 
@@ -337,8 +333,8 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
     NodeSetSizePosInSetInfo();
     ~NodeSetSizePosInSetInfo();
 
-    int32_t pos_in_set = 0;
-    int32_t set_size = 0;
+    base::Optional<int> pos_in_set;
+    base::Optional<int> set_size;
     base::Optional<int> lowest_hierarchical_level;
   };
 

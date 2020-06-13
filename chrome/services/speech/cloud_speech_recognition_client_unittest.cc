@@ -84,10 +84,12 @@ class CloudSpeechRecognitionClientUnitTest : public testing::Test {
   void ProvideMockStringResponseDownstream(const std::string& response_string);
   void ProvideMockProtoResultDownstream(
       const content::proto::SpeechRecognitionEvent& result);
-  void ProvideMockResultDownstream(std::vector<std::string> result_strings);
+  void ProvideMockResultDownstream(std::vector<std::string> result_strings,
+                                   bool is_final);
   static std::string SerializeProtobufResponse(
       const content::proto::SpeechRecognitionEvent& msg);
-  void ExpectResultsReceived(const std::vector<std::string>& expected_results);
+  void ExpectResultsReceived(const std::vector<std::string>& expected_results,
+                             bool is_final);
 
   std::unique_ptr<CloudSpeechRecognitionClient> client_under_test_;
   std::unique_ptr<SpeechRecognitionServiceImplMock>
@@ -98,6 +100,7 @@ class CloudSpeechRecognitionClientUnitTest : public testing::Test {
   mojo::Remote<network::mojom::ChunkedDataPipeGetter> chunked_data_pipe_getter_;
   mojo::ScopedDataPipeConsumerHandle upstream_data_pipe_;
   base::queue<std::string> results_;
+  bool is_final_ = false;
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 };
@@ -163,6 +166,7 @@ void CloudSpeechRecognitionClientUnitTest::OnRecognitionEvent(
     const std::string& result,
     const bool is_final) {
   results_.push(result);
+  is_final_ = is_final;
 }
 
 void CloudSpeechRecognitionClientUnitTest::InjectDummyAudio() {
@@ -335,7 +339,8 @@ void CloudSpeechRecognitionClientUnitTest::ProvideMockProtoResultDownstream(
 }
 
 void CloudSpeechRecognitionClientUnitTest::ProvideMockResultDownstream(
-    std::vector<std::string> result_strings) {
+    std::vector<std::string> result_strings,
+    bool is_final) {
   std::vector<blink::mojom::SpeechRecognitionResultPtr> results;
   results.push_back(blink::mojom::SpeechRecognitionResult::New());
   blink::mojom::SpeechRecognitionResultPtr& result = results.back();
@@ -351,7 +356,7 @@ void CloudSpeechRecognitionClientUnitTest::ProvideMockResultDownstream(
       content::proto::SpeechRecognitionEvent::STATUS_SUCCESS);
   content::proto::SpeechRecognitionResult* proto_result =
       proto_event.add_result();
-  proto_result->set_final(!result->is_provisional);
+  proto_result->set_final(is_final);
   proto_result->set_stability(1.0);
   for (const auto& hypothesis : result->hypotheses) {
     content::proto::SpeechRecognitionAlternative* proto_alternative =
@@ -377,13 +382,16 @@ std::string CloudSpeechRecognitionClientUnitTest::SerializeProtobufResponse(
 }
 
 void CloudSpeechRecognitionClientUnitTest::ExpectResultsReceived(
-    const std::vector<std::string>& expected_results) {
+    const std::vector<std::string>& expected_results,
+    bool is_final) {
   ASSERT_GE(1U, results_.size());
   std::string expected_transcription;
   for (std::string result : expected_results) {
     expected_transcription += result;
   }
 
+  ASSERT_EQ(is_final, is_final_);
+  ASSERT_TRUE(!expected_transcription.empty());
   ASSERT_TRUE(expected_transcription == results_.front());
   results_.pop();
 }
@@ -403,8 +411,9 @@ TEST_F(CloudSpeechRecognitionClientUnitTest, StreamingRecognition) {
   result_strings.push_back("hypothesis 1");
   result_strings.push_back("hypothesis 2");
 
-  ProvideMockResultDownstream(result_strings);
-  ExpectResultsReceived(result_strings);
+  bool is_final = false;
+  ProvideMockResultDownstream(result_strings, is_final);
+  ExpectResultsReceived(result_strings, is_final);
 }
 
 TEST_F(CloudSpeechRecognitionClientUnitTest, DidAudioPropertyChange) {
@@ -450,8 +459,9 @@ TEST_F(CloudSpeechRecognitionClientUnitTest, NetworkReset) {
   std::vector<std::string> result_strings;
   result_strings.push_back("hypothesis 1");
 
-  ProvideMockResultDownstream(result_strings);
-  ExpectResultsReceived(result_strings);
+  bool is_final = false;
+  ProvideMockResultDownstream(result_strings, is_final);
+  ExpectResultsReceived(result_strings, is_final);
 }
 
 // Verifies that the stream is reset after 295 seconds. The Open Speech API
@@ -479,6 +489,50 @@ TEST_F(CloudSpeechRecognitionClientUnitTest, StreamReset) {
   // The URLs after the reset should contain a different request key.
   ASSERT_NE(UploadUrlBeforeReset, UploadUrlAfterReset);
   ASSERT_NE(DownloadUrlBeforeReset, DownloadUrlAfterReset);
+}
+
+TEST_F(CloudSpeechRecognitionClientUnitTest, FinalRecognitionResult) {
+  ASSERT_TRUE(client_under_test_->IsInitialized());
+  ASSERT_TRUE(GetUpstreamRequest());
+  ASSERT_TRUE(GetDownstreamRequest());
+  ASSERT_EQ("", ConsumeChunkedUploadData(0));
+
+  InjectDummyAudio();
+  ASSERT_FALSE(ConsumeChunkedUploadData(kDummyAudioBytes).empty());
+
+  // Simulate a protobuf message streamed from the server containing a single
+  // result.
+  std::vector<std::string> result_strings;
+  result_strings.push_back("hypothesis 2");
+
+  bool is_final = true;
+  ProvideMockResultDownstream(result_strings, is_final);
+  ExpectResultsReceived(result_strings, is_final);
+}
+
+// Verify that the leading whitespace is trimmed.
+TEST_F(CloudSpeechRecognitionClientUnitTest, TrimLeadingWhitespace) {
+  ASSERT_TRUE(client_under_test_->IsInitialized());
+  ASSERT_TRUE(GetUpstreamRequest());
+  ASSERT_TRUE(GetDownstreamRequest());
+  ASSERT_EQ("", ConsumeChunkedUploadData(0));
+
+  InjectDummyAudio();
+  ASSERT_FALSE(ConsumeChunkedUploadData(kDummyAudioBytes).empty());
+
+  // Simulate a protobuf message streamed from the server containing two
+  // results.
+  std::vector<std::string> result_strings;
+  result_strings.push_back(" hypothesis 1");
+  result_strings.push_back(" hypothesis 2");
+
+  std::vector<std::string> expected_result_strings;
+  expected_result_strings.push_back("hypothesis 1");
+  expected_result_strings.push_back(" hypothesis 2");
+
+  bool is_final = false;
+  ProvideMockResultDownstream(result_strings, is_final);
+  ExpectResultsReceived(expected_result_strings, is_final);
 }
 
 }  // namespace speech

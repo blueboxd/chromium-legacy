@@ -123,6 +123,12 @@ class PerformanceHintsObserver
              base::Optional<optimization_guide::proto::PerformanceHint>>
   PageHintForURL(const GURL& url) const;
 
+  // Attempts to retrieve a PerformanceHint for |url| from the fast host bloom
+  // filter.
+  std::tuple<SourceLookupStatus,
+             base::Optional<optimization_guide::proto::PerformanceHint>>
+  FastHostHintForURL(const GURL& url) const;
+
   // HintForURLStatus represents the overall lookup result for a given URL.
   // Exactly one sample will be recorded for each call to HintForURL.
   //

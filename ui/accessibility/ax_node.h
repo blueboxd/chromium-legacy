@@ -56,10 +56,9 @@ class AX_EXPORT AXNode final {
     // See AXTree::GetFromId.
     virtual AXNode* GetFromId(int32_t id) const = 0;
 
-    virtual int32_t GetPosInSet(const AXNode& node,
-                                const AXNode* ordered_set) = 0;
-    virtual int32_t GetSetSize(const AXNode& node,
-                               const AXNode* ordered_set) = 0;
+    virtual base::Optional<int> GetPosInSet(const AXNode& node) = 0;
+    virtual base::Optional<int> GetSetSize(const AXNode& node) = 0;
+
     virtual Selection GetUnignoredSelection() const = 0;
     virtual bool GetTreeUpdateInProgressState() const = 0;
     virtual bool HasPaginationSupport() const = 0;
@@ -415,6 +414,9 @@ class AX_EXPORT AXNode final {
   // Returns the text field ancestor of this current node if any.
   AXNode* GetTextFieldAncestor() const;
 
+  // Finds and returns a pointer to ordered set containing node.
+  AXNode* GetOrderedSet() const;
+
  private:
   // Computes the text offset where each line starts by traversing all child
   // leaf nodes.
@@ -427,9 +429,6 @@ class AX_EXPORT AXNode final {
   int UpdateUnignoredCachedValuesRecursive(int startIndex);
   AXNode* ComputeLastUnignoredChildRecursive() const;
   AXNode* ComputeFirstUnignoredChildRecursive() const;
-
-  // Finds and returns a pointer to ordered set containing node.
-  AXNode* GetOrderedSet() const;
 
   OwnerTree* const tree_;  // Owns this.
   size_t index_in_parent_;

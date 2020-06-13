@@ -58,7 +58,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   bool ShouldClose() override;
   void HookBackForwardCacheEviction() override {}
   void RemoveBackForwardCacheEviction() override {}
-  void SetTextDirection(mojo_base::mojom::blink::TextDirection) override {}
+  void SetTextDirection(base::i18n::TextDirection) override {}
   void SetIsInert(bool) override;
   void SetInheritedEffectiveTouchAction(TouchAction) override;
   bool BubbleLogicalScrollFromChildFrame(

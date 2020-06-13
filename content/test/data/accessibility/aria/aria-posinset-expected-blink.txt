@@ -1,10 +1,10 @@
 rootWebArea
 ++genericContainer ignored
 ++++genericContainer ignored
-++++++article setSize=0 posInSet=0
+++++++article
 ++++++++staticText name='This is an ARIA article 1.'
 ++++++++++inlineTextBox name='This is an ARIA article 1.'
-++++++article setSize=0 posInSet=0
+++++++article
 ++++++++staticText name='This is an ARIA article 2.'
 ++++++++++inlineTextBox name='This is an ARIA article 2.'
 ++++++listBox setSize=2

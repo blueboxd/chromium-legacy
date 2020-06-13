@@ -241,15 +241,15 @@ Printer::PpdReference GetPpdReference(const base::Value* info) {
 
   Printer::PpdReference ret;
 
-  if (user_supplied_ppd_url != nullptr) {
+  if (user_supplied_ppd_url) {
     ret.user_supplied_ppd_url = user_supplied_ppd_url->GetString();
   }
 
-  if (effective_make_and_model != nullptr) {
+  if (effective_make_and_model) {
     ret.effective_make_and_model = effective_make_and_model->GetString();
   }
 
-  if (autoconf != nullptr) {
+  if (autoconf) {
     ret.autoconf = autoconf->GetBool();
   }
 

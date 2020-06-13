@@ -63,28 +63,24 @@ bool IsSyncDataEqual(const WebApp& expected_app,
       expected_app, std::move(app_to_apply_sync_data), entity_data);
 }
 
-bool SyncDataBatchMatchesRegistry(
+bool RegistryContainsSyncDataBatchChanges(
     const Registry& registry,
     std::unique_ptr<syncer::DataBatch> data_batch) {
   if (!data_batch || !data_batch->HasNext())
-    return false;
+    return registry.empty();
 
-  syncer::KeyAndData key_and_data1 = data_batch->Next();
-  if (!IsSyncDataEqual(*registry.at(key_and_data1.first),
-                       *key_and_data1.second)) {
-    return false;
+  while (data_batch->HasNext()) {
+    syncer::KeyAndData key_and_data = data_batch->Next();
+    auto web_app_iter = registry.find(key_and_data.first);
+    if (web_app_iter == registry.end()) {
+      LOG(ERROR) << "App not found in registry: " << key_and_data.first;
+      return false;
+    }
+
+    if (!IsSyncDataEqual(*web_app_iter->second, *key_and_data.second))
+      return false;
   }
-
-  if (!data_batch->HasNext())
-    return false;
-
-  syncer::KeyAndData key_and_data2 = data_batch->Next();
-  if (!IsSyncDataEqual(*registry.at(key_and_data2.first),
-                       *key_and_data2.second)) {
-    return false;
-  }
-
-  return !data_batch->HasNext();
+  return true;
 }
 
 std::unique_ptr<WebApp> CreateWebApp(const std::string& url) {
@@ -274,6 +270,8 @@ class WebAppSyncBridgeTest : public WebAppTest {
   std::unique_ptr<TestWebAppRegistryController> test_registry_controller_;
 };
 
+// Tests that the WebAppSyncBridge correctly reports data from the
+// WebAppDatabase.
 TEST_F(WebAppSyncBridgeTest, GetData) {
   Registry registry;
 
@@ -303,6 +301,7 @@ TEST_F(WebAppSyncBridgeTest, GetData) {
 
   {
     WebAppSyncBridge::StorageKeyList storage_keys;
+    // Add an unknown key to test this is handled gracefully.
     storage_keys.push_back("unknown");
     for (const Registry::value_type& id_and_web_app : registry)
       storage_keys.push_back(id_and_web_app.first);
@@ -312,8 +311,8 @@ TEST_F(WebAppSyncBridgeTest, GetData) {
         std::move(storage_keys),
         base::BindLambdaForTesting(
             [&](std::unique_ptr<syncer::DataBatch> data_batch) {
-              EXPECT_TRUE(SyncDataBatchMatchesRegistry(registry,
-                                                       std::move(data_batch)));
+              EXPECT_TRUE(RegistryContainsSyncDataBatchChanges(
+                  registry, std::move(data_batch)));
               run_loop.Quit();
             }));
     run_loop.Run();
@@ -323,14 +322,15 @@ TEST_F(WebAppSyncBridgeTest, GetData) {
     base::RunLoop run_loop;
     sync_bridge().GetAllDataForDebugging(base::BindLambdaForTesting(
         [&](std::unique_ptr<syncer::DataBatch> data_batch) {
-          EXPECT_TRUE(
-              SyncDataBatchMatchesRegistry(registry, std::move(data_batch)));
+          EXPECT_TRUE(RegistryContainsSyncDataBatchChanges(
+              registry, std::move(data_batch)));
           run_loop.Quit();
         }));
     run_loop.Run();
   }
 }
 
+// Tests that the client & storage tags are correct for entity data.
 TEST_F(WebAppSyncBridgeTest, Identities) {
   std::unique_ptr<WebApp> app =
       CreateWebAppWithSyncOnlyFields("https://example.com/");
@@ -340,6 +340,7 @@ TEST_F(WebAppSyncBridgeTest, Identities) {
   EXPECT_EQ(app->app_id(), sync_bridge().GetStorageKey(*entity_data));
 }
 
+// Test that a empty local data results in no changes sent to the sync system.
 TEST_F(WebAppSyncBridgeTest, MergeSyncData_LocalSetAndServerSetAreEmpty) {
   InitSyncBridge();
 
@@ -363,6 +364,8 @@ TEST_F(WebAppSyncBridgeTest, MergeSyncData_LocalSetEqualsServerSet) {
   syncer::EntityChangeList sync_data_list;
   ConvertAppsListToEntityChangeList(apps, &sync_data_list);
 
+  // The local app state is the same as the server state, so no changes should
+  // be sent.
   EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
 
   sync_bridge().MergeSyncData(sync_bridge().CreateMetadataChangeList(),
@@ -389,6 +392,8 @@ TEST_F(WebAppSyncBridgeTest, MergeSyncData_LocalSetGreaterThanServerSet) {
   syncer::EntityChangeList sync_data_list;
   ConvertAppsListToEntityChangeList(local_and_server_apps, &sync_data_list);
 
+  // MergeSyncData below should send |expected_local_apps_to_upload| to the
+  // processor() to upload to USS.
   base::RunLoop run_loop;
   ON_CALL(processor(), Put(_, _, _))
       .WillByDefault([&](const std::string& storage_key,
@@ -433,6 +438,7 @@ TEST_F(WebAppSyncBridgeTest, MergeSyncData_LocalSetLessThanServerSet) {
   EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
 
   base::RunLoop run_loop;
+  // This is called after apps are installed from sync in MergeSyncData() below.
   controller().SetInstallWebAppsAfterSyncDelegate(base::BindLambdaForTesting(
       [&](std::vector<WebApp*> apps_to_install,
           TestWebAppRegistryController::RepeatingInstallCallback callback) {
@@ -533,6 +539,8 @@ TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_AddUpdateDelete) {
                              &entity_changes);
   }
 
+  // There should be no changes sent to USS in the next ApplySyncChanges()
+  // operation.
   EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
   EXPECT_CALL(processor(), Delete(_, _)).Times(0);
 
@@ -607,6 +615,8 @@ TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_UpdateOnly) {
 
   EXPECT_CALL(processor(), Put(_, _, _)).Times(0);
   EXPECT_CALL(processor(), Delete(_, _)).Times(0);
+
+  // No installs or uninstalls are made here, only app updates.
   SetSyncInstallDelegateFailureIfCalled();
 
   sync_bridge().ApplySyncChanges(sync_bridge().CreateMetadataChangeList(),
@@ -709,6 +719,9 @@ TEST_F(WebAppSyncBridgeTest,
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 }
 
+// Tests that if a policy app is installed, and that app is also in 'sync' and
+// is uninstalled through sync, then it should remain on the system as a policy
+// app.
 TEST_F(WebAppSyncBridgeTest,
        ApplySyncChanges_DeleteSyncAppsWithOverlappingPolicyApps) {
   AppsList policy_and_sync_apps;
@@ -754,6 +767,9 @@ TEST_F(WebAppSyncBridgeTest,
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 }
 
+// Commits local data (e.g. installed web apps) before sync is hooked up. This
+// tests that the web apps are correctly sent to USS after MergeSyncData is
+// called.
 TEST_F(WebAppSyncBridgeTest, CommitUpdate_CommitWhileNotTrackingMetadata) {
   EXPECT_CALL(processor(), ModelReadyToSync(_)).Times(1);
   InitSyncBridge();
@@ -1018,6 +1034,9 @@ TEST_F(WebAppSyncBridgeTest,
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 }
 
+// Test that any apps that are still pending install from sync (or,
+// |is_in_sync_install|) are continued to be installed when the bridge
+// initializes.
 TEST_F(WebAppSyncBridgeTest, InstallAppsInSyncInstall) {
   AppsList apps_in_sync_install = CreateAppsList("https://example.com/", 10);
   for (std::unique_ptr<WebApp>& app : apps_in_sync_install) {

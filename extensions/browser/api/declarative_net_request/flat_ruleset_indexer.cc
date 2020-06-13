@@ -162,13 +162,17 @@ FlatVectorOffset<flat::ModifyHeaderInfo> BuildModifyHeaderInfoOffset(
 
   for (const dnr_api::ModifyHeaderInfo& header_info : modify_header_list) {
     flat::HeaderOperation operation = flat::HeaderOperation_remove;
+    FlatStringOffset header_value;
 
     switch (header_info.operation) {
       case dnr_api::HeaderOperation::HEADER_OPERATION_NONE:
       case dnr_api::HEADER_OPERATION_APPEND:
+        operation = flat::HeaderOperation_append;
+        header_value = builder->CreateSharedString(*header_info.value);
+        break;
       case dnr_api::HEADER_OPERATION_SET:
-        // TODO(crbug.com/1081544): Add indexing for append/set operations.
-        NOTREACHED();
+        operation = flat::HeaderOperation_set;
+        header_value = builder->CreateSharedString(*header_info.value);
         break;
       case dnr_api::HEADER_OPERATION_REMOVE:
         operation = flat::HeaderOperation_remove;
@@ -177,8 +181,8 @@ FlatVectorOffset<flat::ModifyHeaderInfo> BuildModifyHeaderInfoOffset(
 
     FlatStringOffset header_name =
         builder->CreateSharedString(base::ToLowerASCII(header_info.header));
-    flat_modify_header_list.push_back(
-        flat::CreateModifyHeaderInfo(*builder, operation, header_name));
+    flat_modify_header_list.push_back(flat::CreateModifyHeaderInfo(
+        *builder, operation, header_name, header_value));
   }
 
   return builder->CreateVector(flat_modify_header_list);

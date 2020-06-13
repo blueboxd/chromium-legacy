@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestions;
 import org.chromium.chrome.features.start_surface.StartSurface;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.module_installer.builder.ModuleInterface;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -47,38 +48,45 @@ public interface TabManagementDelegate {
     /**
      * Create the {@link TasksSurface}
      * @param activity The {@link ChromeActivity} that creates this surface.
+     * @param scrimCoordinator The {@link ScrimCoordinator} that controls scrim view.
      * @param propertyModel The {@link PropertyModel} contains the {@link TasksSurfaceProperties} to
      *         communicate with this surface.
      * @param tabSwitcherType The type of the tab switcher to show.
      * @param hasMVTiles whether has MV tiles on the surface.
      * @return The {@link TasksSurface}.
      */
-    TasksSurface createTasksSurface(ChromeActivity activity, PropertyModel propertyModel,
-            @TabSwitcherType int tabSwitcherType, boolean hasMVTiles);
+    TasksSurface createTasksSurface(ChromeActivity activity, ScrimCoordinator scrimCoordinator,
+            PropertyModel propertyModel, @TabSwitcherType int tabSwitcherType, boolean hasMVTiles);
 
     /**
      * Create the {@link TabSwitcher} to display Tabs in grid.
      * @param context The {@link Context} of this switcher.
      * @param containerView The {@link ViewGroup} to add the switcher to.
+     * @param scrimCoordinator The {@link ScrimCoordinator} to control the scrim view.
      * @return The {@link TabSwitcher}.
      */
-    TabSwitcher createGridTabSwitcher(ChromeActivity context, ViewGroup containerView);
+    TabSwitcher createGridTabSwitcher(
+            ChromeActivity context, ViewGroup containerView, ScrimCoordinator scrimCoordinator);
 
     /**
      * Create the {@link TabSwitcher} to display Tabs in carousel.
      * @param context The {@link Context} of this switcher.
      * @param containerView The {@link ViewGroup} to add the switcher to.
+     * @param scrimCoordinator The {@link ScrimCoordinator} to control the scrim view.
      * @return The {@link TabSwitcher}.
      */
-    TabSwitcher createCarouselTabSwitcher(ChromeActivity context, ViewGroup containerView);
+    TabSwitcher createCarouselTabSwitcher(
+            ChromeActivity context, ViewGroup containerView, ScrimCoordinator scrimCoordinator);
 
     /**
      * Create the {@link TabGroupUi}.
      * @param parentView The parent view of this UI.
      * @param themeColorProvider The {@link ThemeColorProvider} for this UI.
+     * @param scrimCoordinator   The {@link ScrimCoordinator} to control scrim view.
      * @return The {@link TabGroupUi}.
      */
-    TabGroupUi createTabGroupUi(ViewGroup parentView, ThemeColorProvider themeColorProvider);
+    TabGroupUi createTabGroupUi(ViewGroup parentView, ThemeColorProvider themeColorProvider,
+            ScrimCoordinator scrimCoordinator);
 
     /**
      * Create the {@link StartSurfaceLayout}.
@@ -94,9 +102,10 @@ public interface TabManagementDelegate {
     /**
      * Create the {@link StartSurface}
      * @param activity The {@link ChromeActivity} creates this {@link StartSurface}.
+     * @param scrimCoordinator The {@link ScrimCoordinator} to control the scrim view.
      * @return the {@link StartSurface}
      */
-    StartSurface createStartSurface(ChromeActivity activity);
+    StartSurface createStartSurface(ChromeActivity activity, ScrimCoordinator scrimCoordinator);
 
     /**
      * Create a {@link TabGroupModelFilter} for the given {@link TabModel}.

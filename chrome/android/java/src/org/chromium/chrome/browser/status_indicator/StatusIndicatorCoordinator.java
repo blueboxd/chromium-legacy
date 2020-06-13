@@ -15,7 +15,7 @@ import androidx.annotation.NonNull;
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -50,8 +50,8 @@ public class StatusIndicatorCoordinator {
      * Constructs the status indicator.
      * @param activity The {@link Activity} to find and inflate the status indicator view.
      * @param resourceManager The {@link ResourceManager} for the status indicator's cc layer.
-     * @param fullscreenManager The {@link ChromeFullscreenManager} to listen to for the changes in
-     *                          controls offsets.
+     * @param browserControlsStateProvider The {@link BrowserControlsStateProvider} to listen to
+     *                          for the changes in controls offsets.
      * @param statusBarColorWithoutStatusIndicatorSupplier A supplier that will get the status bar
      *                                                     color without taking the status indicator
      *                                                     into account.
@@ -62,7 +62,7 @@ public class StatusIndicatorCoordinator {
      * @param requestRender Runnable to request a render when the cc-layer needs to be updated.
      */
     public StatusIndicatorCoordinator(Activity activity, ResourceManager resourceManager,
-            ChromeFullscreenManager fullscreenManager,
+            BrowserControlsStateProvider browserControlsStateProvider,
             Supplier<Integer> statusBarColorWithoutStatusIndicatorSupplier,
             Supplier<Boolean> canAnimateNativeBrowserControls, Callback<Runnable> requestRender) {
         // TODO(crbug.com/1005843): Create this view lazily if/when we need it. This is a task for
@@ -70,7 +70,7 @@ public class StatusIndicatorCoordinator {
         // in case it's never used.
         final ViewStub stub = activity.findViewById(R.id.status_indicator_stub);
         ViewResourceFrameLayout root = (ViewResourceFrameLayout) stub.inflate();
-        mSceneLayer = new StatusIndicatorSceneLayer(root, () -> fullscreenManager);
+        mSceneLayer = new StatusIndicatorSceneLayer(root, () -> browserControlsStateProvider);
         PropertyModel model =
                 new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
                         .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
@@ -85,7 +85,7 @@ public class StatusIndicatorCoordinator {
         };
         Runnable requestLayout = () -> root.requestLayout();
 
-        mMediator = new StatusIndicatorMediator(model, fullscreenManager,
+        mMediator = new StatusIndicatorMediator(model, browserControlsStateProvider,
                 statusBarColorWithoutStatusIndicatorSupplier, canAnimateNativeBrowserControls,
                 invalidateCompositorView, requestLayout);
         resourceManager.getDynamicResourceLoader().registerResource(

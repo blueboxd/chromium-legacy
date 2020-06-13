@@ -25,6 +25,9 @@ const char* ConnectorPref(AnalysisConnector connector) {
       return kOnFileDownloadedPref;
     case AnalysisConnector::FILE_ATTACHED:
       return kOnFileAttachedPref;
+    case AnalysisConnector::ANALYSIS_CONNECTOR_UNSPECIFIED:
+      NOTREACHED() << "Using unspecified analysis connector";
+      return "";
   }
 }
 

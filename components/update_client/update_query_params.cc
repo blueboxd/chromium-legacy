@@ -62,11 +62,11 @@ const char kArch[] =
 #error "unknown arch"
 #endif
 
-const char kChrome[] = "chrome";
-
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+const char kChrome[] = "chrome";
 const char kCrx[] = "chromecrx";
 #else
+const char kChrome[] = "chromium";
 const char kCrx[] = "chromiumcrx";
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 

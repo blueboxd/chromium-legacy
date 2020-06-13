@@ -189,6 +189,8 @@ class AppElement extends PolymerElement {
     super();
     /** @private {!newTabPage.mojom.PageCallbackRouter} */
     this.callbackRouter_ = BrowserProxy.getInstance().callbackRouter;
+    /** @private {newTabPage.mojom.PageHandlerRemote} */
+    this.pageHandler_ = BrowserProxy.getInstance().handler;
     /** @private {!BackgroundManager} */
     this.backgroundManager_ = BackgroundManager.getInstance();
     /** @private {?number} */
@@ -301,9 +303,8 @@ class AppElement extends PolymerElement {
       return;
     }
 
-    const {parts} =
-        await BrowserProxy.getInstance().handler.getOneGoogleBarParts(
-            window.location.search.replace(/^[?]/, '&'));
+    const {parts} = await this.pageHandler_.getOneGoogleBarParts(
+        window.location.search.replace(/^[?]/, '&'));
     if (!parts) {
       return;
     }
@@ -336,8 +337,7 @@ class AppElement extends PolymerElement {
     endOfBodyScript.appendChild(document.createTextNode(parts.endOfBodyScript));
     document.body.appendChild(endOfBodyScript);
 
-    BrowserProxy.getInstance().handler.onOneGoogleBarRendered(
-        BrowserProxy.getInstance().now());
+    this.pageHandler_.onOneGoogleBarRendered(BrowserProxy.getInstance().now());
   }
 
   /** @private */
@@ -437,8 +437,10 @@ class AppElement extends PolymerElement {
   }
 
   /** @private */
-  onVoiceSearchClick_() {
+  onOpenVoiceSearch_() {
     this.showVoiceSearchOverlay_ = true;
+    this.pageHandler_.onVoiceSearchAction(
+        newTabPage.mojom.VoiceSearchAction.ACTIVATE_SEARCH_BOX);
   }
 
   /** @private */
@@ -469,6 +471,8 @@ class AppElement extends PolymerElement {
     // </if>
     if (ctrlKeyPressed && e.code === 'Period' && e.shiftKey) {
       this.showVoiceSearchOverlay_ = true;
+      this.pageHandler_.onVoiceSearchAction(
+          newTabPage.mojom.VoiceSearchAction.ACTIVATE_KEYBOARD);
     }
   }
 
@@ -632,7 +636,7 @@ class AppElement extends PolymerElement {
         oneGoogleBar.style.zIndex = '1000';
       }
       this.oneGoogleBarLoaded_ = true;
-      BrowserProxy.getInstance().handler.onOneGoogleBarRendered(
+      this.pageHandler_.onOneGoogleBarRendered(
           BrowserProxy.getInstance().now());
     } else if (data.messageType === 'overlaysUpdated') {
       this.$.oneGoogleBarClipPath.querySelectorAll('rect').forEach(el => {
@@ -675,11 +679,9 @@ class AppElement extends PolymerElement {
       };
       this.eventTracker_.add(window, 'resize', onResize);
       onResize();
-      BrowserProxy.getInstance().handler.onPromoRendered(
-          BrowserProxy.getInstance().now());
+      this.pageHandler_.onPromoRendered(BrowserProxy.getInstance().now());
     } else if (data.messageType === 'link-clicked') {
-      BrowserProxy.getInstance().handler.onPromoLinkClicked(
-          BrowserProxy.getInstance().now());
+      this.pageHandler_.onPromoLinkClicked();
     }
   }
 

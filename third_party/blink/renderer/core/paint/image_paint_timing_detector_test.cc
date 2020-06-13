@@ -33,12 +33,12 @@
 
 namespace blink {
 
-#define SIMPLE_IMAGE           \
-  "url(data:image/gif;base64," \
-  "R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==)"
+#define SIMPLE_IMAGE       \
+  "data:image/gif;base64," \
+  "R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
 
 #define LARGE_IMAGE                                                            \
-  "url(data:image/gif;base64,"                                                 \
+  "data:image/gif;base64,"                                                     \
   "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSF" \
   "lzAAAN1wAADdcBQiibeAAAAb5JREFUOMulkr1KA0EQgGdvTwwnYmER0gQsrFKmSy+pLESw9Qm0" \
   "F/ICNnba+h6iEOuAEWslKJKTOyJJvIT72d1xZuOFC0giOLA77O7Mt/PnNptN+I+49Xr9GhH3f3" \
@@ -48,7 +48,7 @@ namespace blink {
   "Ign+2BsVA8jVYuWlgJ3yBj0icgq2uoK+lg4t+ZvLomSKamSQ4AI5BcMADtMhyNoSgNIISUaFNt" \
   "wlazcDcBc4gjjVwCWid2usCWroYEhnaqbzFJLUzAHIXRDChXCcQP8zhkSZ5eNLgHAUzwDcRu4C" \
   "oIRn/wsGUQIIy4Vr9TH6SYFCNzw4nALn5627K4vIttOUOwfa5YnrDYzt/9OLv9I5l8kk5hZ3XL" \
-  "O20b7tbR7zHLy/BX8G0IeBEM7ZN1NGIaFUaKLgAAAAAElFTkSuQmCC)"
+  "O20b7tbR7zHLy/BX8G0IeBEM7ZN1NGIaFUaKLgAAAAAElFTkSuQmCC"
 
 class ImagePaintTimingDetectorTest : public testing::Test,
                                      public PaintTestConfigurations {
@@ -246,14 +246,6 @@ class ImagePaintTimingDetectorTest : public testing::Test,
     // Set image and make it loaded.
     ImageResourceContent* content = CreateImageForTest(width, height);
     To<HTMLImageElement>(element)->SetImageForTest(content);
-  }
-
-  void SetVideoImageAndPaint(AtomicString id, int width, int height) {
-    Element* element = GetDocument().getElementById(id);
-    DCHECK(element);
-    // Set image and make it loaded.
-    ImageResourceContent* content = CreateImageForTest(width, height);
-    To<HTMLVideoElement>(element)->SetImageForTest(content);
   }
 
   void SetSVGImageAndPaint(AtomicString id, int width, int height) {
@@ -749,7 +741,7 @@ TEST_P(ImagePaintTimingDetectorTest,
   SetBodyInnerHTML(R"HTML(
     <style>
       #target {
-        background-image: )HTML" SIMPLE_IMAGE R"HTML(;
+        background-image: url()HTML" SIMPLE_IMAGE R"HTML();
       }
     </style>
     <div id="parent">
@@ -915,10 +907,8 @@ TEST_P(ImagePaintTimingDetectorTest, OneSwapPromiseForOneFrame) {
 
 TEST_P(ImagePaintTimingDetectorTest, VideoImage) {
   SetBodyInnerHTML(R"HTML(
-    <video id="target"></video>
+    <video id="target" poster=")HTML" LARGE_IMAGE R"HTML("></video>
   )HTML");
-
-  SetVideoImageAndPaint("target", 5, 5);
 
   UpdateAllLifecyclePhasesAndInvokeCallbackIfAny();
   ImageRecord* record = FindLargestPaintCandidate();
@@ -955,7 +945,7 @@ TEST_P(ImagePaintTimingDetectorTest, BackgroundImage) {
   SetBodyInnerHTML(R"HTML(
     <style>
       div {
-        background-image: )HTML" SIMPLE_IMAGE R"HTML(;
+        background-image: url()HTML" SIMPLE_IMAGE R"HTML();
       }
     </style>
     <div>place-holder</div>
@@ -970,7 +960,7 @@ TEST_P(ImagePaintTimingDetectorTest,
   SetBodyInnerHTML(R"HTML(
     <style>
       img {
-        background-image: )HTML" LARGE_IMAGE R"HTML(;
+        background-image: url()HTML" LARGE_IMAGE R"HTML();
       }
     </style>
     <img id="target">
@@ -986,12 +976,14 @@ TEST_P(ImagePaintTimingDetectorTest,
 }
 
 TEST_P(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreBody) {
-  SetBodyInnerHTML("<style>body { background-image: " SIMPLE_IMAGE "}</style>");
+  SetBodyInnerHTML("<style>body { background-image: url(" SIMPLE_IMAGE
+                   ")}</style>");
   EXPECT_EQ(CountVisibleImageRecords(), 0u);
 }
 
 TEST_P(ImagePaintTimingDetectorTest, BackgroundImage_IgnoreHtml) {
-  SetBodyInnerHTML("<style>html { background-image: " SIMPLE_IMAGE "}</style>");
+  SetBodyInnerHTML("<style>html { background-image: url(" SIMPLE_IMAGE
+                   ")}</style>");
   EXPECT_EQ(CountVisibleImageRecords(), 0u);
 }
 
@@ -1018,7 +1010,7 @@ TEST_P(ImagePaintTimingDetectorTest, BackgroundImageTrackedDifferently) {
         width: 50px;
         height: 50px;
         background-image:
-          )HTML" SIMPLE_IMAGE "," LARGE_IMAGE R"HTML(;
+          url()HTML" SIMPLE_IMAGE "), url(" LARGE_IMAGE R"HTML();
       }
     </style>
     <div id="d"></div>
@@ -1163,7 +1155,7 @@ TEST_P(ImagePaintTimingDetectorTest,
       #d {
         width: 50px;
         height: 50px;
-        background-image: )HTML" SIMPLE_IMAGE R"HTML(;
+        background-image: url()HTML" SIMPLE_IMAGE R"HTML();
       }
     </style>
     <div id="d"></div>
@@ -1181,7 +1173,7 @@ TEST_P(ImagePaintTimingDetectorTest,
       #d {
         width: 5px;
         height: 5px;
-        background-image: )HTML" LARGE_IMAGE R"HTML(;
+        background-image: url()HTML" LARGE_IMAGE R"HTML();
       }
     </style>
     <div id="d"></div>

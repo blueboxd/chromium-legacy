@@ -450,11 +450,11 @@ INSTANTIATE_TEST_SUITE_P(
 //          1. Gaia ID is not available
 //          2. Email is not available
 //          3. Both are unavailable.
-// 7. bool - is device details upload failed.
+// 7. int - number of times device details upload failed.
 class GcpCredentialProviderWithGaiaUsersTest
     : public GcpCredentialProviderTest,
       public ::testing::WithParamInterface<
-          std::tuple<bool, bool, bool, bool, bool, int, bool>> {
+          std::tuple<bool, bool, bool, bool, bool, int, int>> {
  protected:
   void SetUp() override;
 };
@@ -474,7 +474,9 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
                    : FakeInternetAvailabilityChecker::kHicForceNo);
   const bool is_offline_validity_expired = std::get<4>(GetParam());
   const int user_property_status = std::get<5>(GetParam());
-  const bool is_upload_devie_details_failed = std::get<6>(GetParam());
+  const int num_upload_device_details_failures = std::get<6>(GetParam());
+  const bool is_upload_device_details_failed =
+      num_upload_device_details_failures > 0;
 
   CComBSTR sid;
   if (is_ad_user) {
@@ -514,8 +516,11 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
   if (!has_token_handle)
     ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, kUserTokenHandle, L""));
 
+  // Set upload device details status and failure count.
   ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, kRegDeviceDetailsUploadStatus,
-                                  is_upload_devie_details_failed ? 0 : 1));
+                                  is_upload_device_details_failed ? 0 : 1));
+  ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, kRegDeviceDetailsUploadFailures,
+                                  num_upload_device_details_failures));
 
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
   Microsoft::WRL::ComPtr<ICredentialProvider> provider;
@@ -529,7 +534,8 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
   // - the user properties don't contain email and gaia id
   // - no internet with offline validity hasn't expired
   // - with internet and when all of the following is satisfied:
-  //   - device details upload succeeded
+  //   - device details upload succeeded or failed more than the max number of
+  //     times failure is allowed.
   //   - has token handle
   //   - token handle is valid
   // In all other cases, reauth must be added, thus should_reauth_user is set to
@@ -537,8 +543,10 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
   bool should_reauth_user =
       (user_property_status != 3) &&
       ((!has_internet && is_offline_validity_expired) ||
-       (has_internet && (is_upload_devie_details_failed || !has_token_handle ||
-                         !valid_token_handle)));
+       (has_internet && ((is_upload_device_details_failed &&
+                          num_upload_device_details_failures <=
+                              kMaxNumConsecutiveUploadDeviceFailures) ||
+                         !has_token_handle || !valid_token_handle)));
 
   // Check if there is a IReauthCredential depending on the state of the token
   // handle.
@@ -552,15 +560,17 @@ TEST_P(GcpCredentialProviderWithGaiaUsersTest, ReauthCredentialTest) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         GcpCredentialProviderWithGaiaUsersTest,
-                         ::testing::Combine(::testing::Bool(),
-                                            ::testing::Bool(),
-                                            ::testing::Bool(),
-                                            ::testing::Bool(),
-                                            ::testing::Bool(),
-                                            ::testing::Values(0, 1, 2, 3),
-                                            ::testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    GcpCredentialProviderWithGaiaUsersTest,
+    ::testing::Combine(
+        ::testing::Bool(),
+        ::testing::Bool(),
+        ::testing::Bool(),
+        ::testing::Bool(),
+        ::testing::Bool(),
+        ::testing::Values(0, 1, 2, 3),
+        ::testing::Range(0, 2 * kMaxNumConsecutiveUploadDeviceFailures)));
 
 // Check that reauth credentials only exists when either user is an AD user or
 // the token handle for the associated user is no longer valid when internet is
@@ -592,7 +602,7 @@ TEST_P(GcpCredentialProviderWithADUsersTest, ReauthCredentialTest) {
   const bool is_ad_user = std::get<2>(GetParam());
   const bool has_internet = std::get<3>(GetParam());
   const bool is_offline_validity_expired = std::get<4>(GetParam());
-  const bool is_upload_devie_details_failed = std::get<5>(GetParam());
+  const bool is_upload_device_details_failed = std::get<5>(GetParam());
 
   fake_internet_checker()->SetHasInternetConnection(
       has_internet ? FakeInternetAvailabilityChecker::kHicForceYes
@@ -631,7 +641,7 @@ TEST_P(GcpCredentialProviderWithADUsersTest, ReauthCredentialTest) {
     }
 
     ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, kRegDeviceDetailsUploadStatus,
-                                    is_upload_devie_details_failed ? 0 : 1));
+                                    is_upload_device_details_failed ? 0 : 1));
   }
 
   Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
@@ -646,7 +656,7 @@ TEST_P(GcpCredentialProviderWithADUsersTest, ReauthCredentialTest) {
       (!has_internet && is_offline_validity_expired && has_user_id) ||
       (has_internet &&
        ((!has_user_id && is_ad_user) || (has_user_id && !valid_token_handle) ||
-        (has_user_id && is_upload_devie_details_failed)));
+        (has_user_id && is_upload_device_details_failed)));
 
   // We expect one reauth credential for AD/Local user
   // and one anonymous credential.

@@ -1937,11 +1937,11 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
   render_thread_->sink().ClearMessages();
 
   static const struct {
-    mojo_base::mojom::blink::TextDirection direction;
+    base::i18n::TextDirection direction;
     const wchar_t* expected_result;
   } kTextDirection[] = {
-      {mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT, L"rtl,rtl"},
-      {mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT, L"ltr,ltr"},
+      {base::i18n::TextDirection::RIGHT_TO_LEFT, L"rtl,rtl"},
+      {base::i18n::TextDirection::LEFT_TO_RIGHT, L"ltr,ltr"},
   };
   for (auto& test_case : kTextDirection) {
     // Set the text direction of the <textarea> element.

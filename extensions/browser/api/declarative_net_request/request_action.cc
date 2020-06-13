@@ -20,6 +20,10 @@ namespace dnr_api = api::declarative_net_request;
 dnr_api::HeaderOperation ConvertFlatHeaderOperation(
     flat::HeaderOperation operation) {
   switch (operation) {
+    case flat::HeaderOperation_append:
+      return dnr_api::HEADER_OPERATION_APPEND;
+    case flat::HeaderOperation_set:
+      return dnr_api::HEADER_OPERATION_SET;
     case flat::HeaderOperation_remove:
       return dnr_api::HEADER_OPERATION_REMOVE;
   }

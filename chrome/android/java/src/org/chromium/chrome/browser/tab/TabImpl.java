@@ -677,6 +677,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         for (TabObserver observer : mObservers) observer.onClosingStateChanged(this, closing);
     }
 
+    @CalledByNative
     @Override
     public boolean isHidden() {
         return mIsHidden;
@@ -1457,6 +1458,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         return restored;
     }
 
+    @CalledByNative
     private boolean isCustomTab() {
         ChromeActivity activity = getActivity();
         return activity != null && activity.isCustomTab();

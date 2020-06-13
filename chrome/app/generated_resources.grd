@@ -2014,6 +2014,10 @@ are declared in tools/grit/grit_rule.gni.
           </message>
         </else>
       </if>
+      <message name="IDS_DEEP_SCANNING_ACCESSIBLE_ALERT"
+               desc="The title of a download notification inidcating that the file may be malicious, and the Advanced Protection Program recommends sending the file to Google. This message is for screen reader users">
+        <ph name="FILE_NAME">$1<ex>file.exe</ex></ph> is being scanned.
+      </message>
 
       <!-- Download Notification Labels -->
       <message name="IDS_DOWNLOAD_NOTIFICATION_COPY_TO_CLIPBOARD"
@@ -9868,6 +9872,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
     </message>
     <message name="IDS_HEAVY_AD_INTERVENTION_SUMMARY" desc="Summary in heavy ad intervention page when ad was removed for using too many system resources.">
       This ad used too many resources for your device, so Chrome removed it.
+    </message>
+    <message name="IDS_HEAVY_AD_INTERVENTION_BUTTON_RELOAD" desc="Label for the button that reloads the page and disables the intervention">
+      Reload and show anyway
     </message>
 
     <if expr="is_win">

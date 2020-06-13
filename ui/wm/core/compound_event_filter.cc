@@ -110,7 +110,12 @@ void CompoundEventFilter::UpdateCursor(aura::Window* target,
         return;
       }
     }
-    cursor_client->SetCursor(cursor);
+    // For ET_MOUSE_ENTERED, force the update of the cursor because it may have
+    // changed without |cursor_client| knowing about it.
+    if (event->type() == ui::ET_MOUSE_ENTERED)
+      cursor_client->SetCursorForced(cursor);
+    else
+      cursor_client->SetCursor(cursor);
   }
 }
 

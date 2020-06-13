@@ -18,6 +18,7 @@
 #include "components/feed/core/proto/v2/ui.pb.h"
 #include "components/feed/core/v2/public/feed_service.h"
 #include "components/feed/core/v2/public/feed_stream_api.h"
+#include "components/variations/variations_http_header_provider.h"
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;
@@ -29,6 +30,17 @@ namespace feed {
 static jlong JNI_FeedStreamSurface_Init(JNIEnv* env,
                                         const JavaParamRef<jobject>& j_this) {
   return reinterpret_cast<intptr_t>(new FeedStreamSurface(j_this));
+}
+
+static base::android::ScopedJavaLocalRef<jintArray>
+JNI_FeedStreamSurface_GetExperimentIds(JNIEnv* env) {
+  auto* variations_http_header_provider =
+      variations::VariationsHttpHeaderProvider::GetInstance();
+  DCHECK(variations_http_header_provider != nullptr);
+
+  return base::android::ToJavaIntArray(
+      env, variations_http_header_provider
+               ->GetVariationsVectorForWebPropertiesKeys());
 }
 
 FeedStreamSurface::FeedStreamSurface(const JavaRef<jobject>& j_this)

@@ -151,6 +151,9 @@ suite('NewTabPageAppTest', () => {
 
     // Assert.
     assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
+    assertEquals(
+        newTabPage.mojom.VoiceSearchAction.ACTIVATE_SEARCH_BOX,
+        await testProxy.handler.whenCalled('onVoiceSearchAction'));
   });
 
   test('voice search keyboard shortcut', async () => {
@@ -165,6 +168,9 @@ suite('NewTabPageAppTest', () => {
 
     // Assert.
     assertTrue(!!app.shadowRoot.querySelector('ntp-voice-search-overlay'));
+    assertEquals(
+        newTabPage.mojom.VoiceSearchAction.ACTIVATE_KEYBOARD,
+        await testProxy.handler.whenCalled('onVoiceSearchAction'));
 
     // Test other shortcut doesn't close voice search.
     // Act

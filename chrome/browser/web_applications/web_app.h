@@ -124,6 +124,7 @@ class WebApp {
 
   bool IsSynced() const;
   bool IsDefaultApp() const;
+  bool IsPolicyInstalledApp() const;
   bool IsSystemApp() const;
   bool CanUserUninstallExternalApp() const;
   bool WasInstalledByUser() const;

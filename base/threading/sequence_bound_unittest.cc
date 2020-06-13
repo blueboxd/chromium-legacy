@@ -391,4 +391,10 @@ TEST_F(SequenceBoundTest, ResetWithCallbackAfterDestruction) {
   loop.Run();
 }
 
+TEST_F(SequenceBoundTest, SmallObject) {
+  class EmptyClass {};
+  SequenceBound<EmptyClass> value(task_runner_);
+  // Test passes if SequenceBound constructor does not crash in AlignedAlloc().
+}
+
 }  // namespace base

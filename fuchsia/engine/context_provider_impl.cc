@@ -409,18 +409,8 @@ void ContextProviderImpl::Create(
     // SkiaRenderer requires out-of-process rasterization be enabled.
     launch_command.AppendSwitch(switches::kEnableOopRasterization);
 
-    if (!enable_protected_graphics) {
-      launch_command.AppendSwitchASCII(switches::kUseGL,
-                                       gl::kGLImplementationANGLEName);
-    } else {
-      DLOG(WARNING) << "ANGLE is not compatible with "
-                    << switches::kEnforceVulkanProtectedMemory
-                    << ", disabling GL";
-      // TODO(crbug.com/1059010): Fix this; probably don't protect canvas
-      // resources.
-      launch_command.AppendSwitchASCII(switches::kUseGL,
-                                       gl::kGLImplementationStubName);
-    }
+    launch_command.AppendSwitchASCII(switches::kUseGL,
+                                     gl::kGLImplementationANGLEName);
   } else {
     VLOG(1) << "Disabling GPU acceleration.";
     // Disable use of Vulkan GPU, and use of the software-GL rasterizer. The

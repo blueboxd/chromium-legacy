@@ -55,9 +55,6 @@ class SwitchAccess {
     return this.enableImprovedTextInput_;
   }
 
-  /** TODO(anastasi): Remove this once menu migration is complete. */
-  connectMenuPanel() {}
-
   /**
    * Helper function to robustly find a node fitting a given predicate, even if
    * that node has not yet been created.

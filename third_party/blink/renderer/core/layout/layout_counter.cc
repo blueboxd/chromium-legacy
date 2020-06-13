@@ -433,8 +433,13 @@ CounterNode* MakeCounterNodeIfNeeded(LayoutObject& object,
     object.SetHasCounterNodeMap(true);
   }
   node_map->Set(identifier, new_node);
-  if (new_node->Parent())
+  // If the new node has a parent, that means any descendant would have been
+  // updated by `CounterNode::MoveNonResetSiblingsToChildOf()` above, so we
+  // don't need to update descendants. Likewise, if the object has style
+  // containment, any descendant should not become parented across the boundary.
+  if (new_node->Parent() || object.ShouldApplyStyleContainment())
     return new_node.get();
+
   // Checking if some nodes that were previously counter tree root nodes
   // should become children of this node now.
   CounterMaps& maps = GetCounterMaps();
@@ -445,6 +450,10 @@ CounterNode* MakeCounterNodeIfNeeded(LayoutObject& object,
        current_layout_object;
        current_layout_object = NextInPreOrder(*current_layout_object,
                                               stay_within, skip_descendants)) {
+    // We'll update the current object and we might recurse into the
+    // descendants. However, if the object has style containment then we do not
+    // cross the boundary which begins right after the object. In other words we
+    // skip the descendants of this object.
     skip_descendants = current_layout_object->ShouldApplyStyleContainment();
     if (!current_layout_object->HasCounterNodeMap())
       continue;
@@ -452,6 +461,9 @@ CounterNode* MakeCounterNodeIfNeeded(LayoutObject& object,
         maps.at(current_layout_object)->at(identifier);
     if (!current_counter)
       continue;
+    // At this point we found a counter to reparent. So we don't need to descend
+    // into the layout tree further, since any further counters we find would be
+    // at most parented to `current_counter` we just found.
     skip_descendants = true;
     if (current_counter->Parent())
       continue;

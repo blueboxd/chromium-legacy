@@ -48,6 +48,10 @@ class ApplicationDragAndDropHost {
   // Removes the OS dependent drag proxy from the screen.
   virtual void DestroyDragIconProxy() = 0;
 
+  // Returns whether the host wants to handle the drag start operation.
+  virtual bool ShouldStartDrag(const std::string& app_id,
+                               const gfx::Point& location_in_screen) const = 0;
+
   // A drag operation could get started. The recipient has to return true if
   // it wants to take it - e.g. |location_in_screen_poordinates| is over a
   // target area. The passed |app_id| identifies the application which should

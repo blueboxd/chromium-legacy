@@ -667,7 +667,19 @@ bool GetRawBytesOfProperty(XID window,
                            x11::Atom property,
                            std::vector<uint8_t>* out_data,
                            x11::Atom* out_type) {
-  return GetArrayProperty(window, property, out_data, out_type);
+  auto future = x11::Connection::Get()->GetProperty({
+      .window = static_cast<x11::Window>(window),
+      .property = property,
+      // Don't limit the amount of returned data.
+      .long_length = std::numeric_limits<uint32_t>::max(),
+  });
+  auto response = future.Sync();
+  if (!response || !response->format)
+    return false;
+  *out_data = std::move(response->value);
+  if (out_type)
+    *out_type = response->type;
+  return true;
 }
 
 bool GetIntProperty(XID window, const std::string& property_name, int* value) {

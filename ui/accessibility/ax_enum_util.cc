@@ -81,8 +81,6 @@ const char* ToString(ax::mojom::Event event) {
       return "menuListValueChanged";
     case ax::mojom::Event::kMenuPopupEnd:
       return "menuPopupEnd";
-    case ax::mojom::Event::kMenuPopupHide:
-      return "menuPopupHide";
     case ax::mojom::Event::kMenuPopupStart:
       return "menuPopupStart";
     case ax::mojom::Event::kMenuStart:
@@ -211,8 +209,6 @@ ax::mojom::Event ParseEvent(const char* event) {
     return ax::mojom::Event::kMenuListValueChanged;
   if (0 == strcmp(event, "menuPopupEnd"))
     return ax::mojom::Event::kMenuPopupEnd;
-  if (0 == strcmp(event, "menuPopupHide"))
-    return ax::mojom::Event::kMenuPopupHide;
   if (0 == strcmp(event, "menuPopupStart"))
     return ax::mojom::Event::kMenuPopupStart;
   if (0 == strcmp(event, "menuStart"))

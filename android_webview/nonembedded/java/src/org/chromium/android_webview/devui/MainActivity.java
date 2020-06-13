@@ -55,7 +55,8 @@ public class MainActivity extends FragmentActivity {
         int REPORT_BUG = 1;
         int CHECK_UPDATES = 2;
         int CRASHES_REFRESH = 3;
-        int COUNT = 4;
+        int ABOUT_DEVTOOLS = 4;
+        int COUNT = 5;
     }
 
     public static void logMenuSelection(@MenuChoice int selectedMenuItem) {
@@ -287,6 +288,12 @@ public class MainActivity extends FragmentActivity {
                                         .build();
                 startActivity(new Intent(Intent.ACTION_VIEW, marketUri));
             }
+            return true;
+        } else if (item.getItemId() == R.id.options_menu_about_devui) {
+            logMenuSelection(MenuChoice.ABOUT_DEVTOOLS);
+            Uri uri = Uri.parse(
+                    "https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/developer-ui.md");
+            startActivity(new Intent(Intent.ACTION_VIEW, uri));
             return true;
         }
         return super.onOptionsItemSelected(item);

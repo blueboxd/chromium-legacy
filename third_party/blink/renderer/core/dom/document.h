@@ -320,7 +320,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // TODO(crbug.com/1029822) Former ExecutionContext overrides. Most of these
   // should move to LocalDOMWindow.
-  ContentSecurityPolicy* GetContentSecurityPolicyForWorld();
   LocalDOMWindow* ExecutingWindow() const;
   String OutgoingReferrer() const;
   network::mojom::ReferrerPolicy GetReferrerPolicy() const;
@@ -1448,8 +1447,6 @@ class CORE_EXPORT Document : public ContainerNode,
     return shadow_cascade_order_ == ShadowCascadeOrder::kShadowCascadeV1;
   }
 
-  Element* rootScroller() const;
-  void setRootScroller(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
   RootScrollerController& GetRootScrollerController() const {
     DCHECK(root_scroller_controller_);
     return *root_scroller_controller_;
@@ -1585,8 +1582,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   // A new vision deficiency is being emulated through DevTools.
   void VisionDeficiencyChanged();
-
-  void ClearIsolatedWorldCSPForTesting(int32_t world_id);
 
   // A META element with name=color-scheme was added, removed, or modified.
   // Update the presentation level color-scheme property for the root element.
@@ -2189,10 +2184,6 @@ class CORE_EXPORT Document : public ContainerNode,
   Vector<bool> parsed_document_policies_;
 
   AtomicString override_last_modified_;
-
-  // Map from isolated world IDs to their ContentSecurityPolicy instances.
-  Member<HeapHashMap<int, Member<ContentSecurityPolicy>>>
-      isolated_world_csp_map_;
 
   // Used to keep track of which ComputedAccessibleNodes have already been
   // instantiated in this document to avoid constructing duplicates.

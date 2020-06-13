@@ -42,6 +42,7 @@ cr.define('policy', function() {
    *    error: string,
    *    value: any,
    *    deprecated: ?boolean,
+   *    future: ?boolean,
    *    allSourcesMerged: ?boolean,
    *    conflicts: ?Array<!Conflict>,
    * }}
@@ -264,6 +265,9 @@ cr.define('policy', function() {
       /** @private {boolean} */
       this.deprecated_ = !!policy.deprecated;
 
+      /** @private {boolean} */
+      this.future_ = !!policy.future;
+
       // Populate the name column.
       const nameDisplay = this.querySelector('.name .link span');
       nameDisplay.textContent = policy.name;
@@ -316,6 +320,8 @@ cr.define('policy', function() {
             this.hasErrors_ ? loadTimeData.getString('error') : '';
         const deprecationNotice =
             this.deprecated_ ? loadTimeData.getString('deprecated') : '';
+        const futureNotice =
+            this.future_ ? loadTimeData.getString('future') : '';
         const warningsNotice =
             this.hasWarnings_ ? loadTimeData.getString('warning') : '';
         const conflictsNotice = this.hasConflicts_ && !this.isMergedValue_ ?
@@ -325,8 +331,8 @@ cr.define('policy', function() {
             this.policy.ignored ? loadTimeData.getString('ignored') : '';
         const notice =
             [
-              errorsNotice, deprecationNotice, warningsNotice, ignoredNotice,
-              conflictsNotice
+              errorsNotice, deprecationNotice, futureNotice, warningsNotice,
+              ignoredNotice, conflictsNotice
             ].filter(x => !!x)
                 .join(', ') ||
             loadTimeData.getString('ok');

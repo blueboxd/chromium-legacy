@@ -8,10 +8,12 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/webui/resources/css/cros_colors.h"
@@ -39,6 +41,13 @@ constexpr int kAlpha60 = 153;  // 60%
 constexpr int kAlpha80 = 204;  // 80%
 constexpr int kAlpha90 = 230;  // 90%
 
+// Alpha value that is used to calculate themed color.
+constexpr int kAlpha50 = 127;  // 50%
+
+// The default background color that can be applied on any layer.
+constexpr SkColor kBackgroundColorDefaultLight = SK_ColorWHITE;
+constexpr SkColor kBackgroundColorDefaultDark = gfx::kGoogleGrey900;
+
 // Gets the color mode value from feature flag "--ash-color-mode".
 AshColorProvider::AshColorMode GetColorModeFromCommandLine() {
   const base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
@@ -55,6 +64,10 @@ AshColorProvider::AshColorMode GetColorModeFromCommandLine() {
     return AshColorProvider::AshColorMode::kLight;
 
   return AshColorProvider::AshColorMode::kDefault;
+}
+
+bool IsLightMode(AshColorProvider::AshColorMode color_mode) {
+  return color_mode == AshColorProvider::AshColorMode::kLight;
 }
 
 }  // namespace
@@ -163,19 +176,24 @@ AshColorProvider::RippleAttributes AshColorProvider::GetRippleAttributes(
   return RippleAttributes(base_color, opacity, opacity);
 }
 
+SkColor AshColorProvider::GetBackgroundColor(AshColorMode color_mode) const {
+  DCHECK(color_mode == AshColorProvider::AshColorMode::kLight ||
+         color_mode == AshColorProvider::AshColorMode::kDark);
+  return is_themed_ ? GetBackgroundThemedColor(color_mode)
+                    : GetBackgroundDefaultColor(color_mode);
+}
+
 SkColor AshColorProvider::GetShieldLayerColorImpl(
     ShieldLayerType type,
     AshColorMode color_mode) const {
   const int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha80, kAlpha90};
   DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
-  return SkColorSetA(
-      color_mode == AshColorMode::kLight ? SK_ColorWHITE : gfx::kGoogleGrey900,
-      kAlphas[static_cast<int>(type)]);
+  return SkColorSetA(GetBackgroundColor(color_mode),
+                     kAlphas[static_cast<int>(type)]);
 }
 
 SkColor AshColorProvider::GetBaseLayerColorImpl(BaseLayerType type,
                                                 AshColorMode color_mode) const {
-  SkColor light_color, dark_color;
   const int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha80,
                          kAlpha90, 0xFF,     0xFF};
   DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
@@ -187,19 +205,12 @@ SkColor AshColorProvider::GetBaseLayerColorImpl(BaseLayerType type,
     case BaseLayerType::kTransparent60:
     case BaseLayerType::kTransparent80:
     case BaseLayerType::kTransparent90:
-      light_color = SkColorSetA(SK_ColorWHITE, transparent_alpha);
-      dark_color = SkColorSetA(gfx::kGoogleGrey900, transparent_alpha);
-      break;
+      return SkColorSetA(GetBackgroundColor(color_mode), transparent_alpha);
     case BaseLayerType::kOpaque:
-      light_color = SK_ColorWHITE;
-      dark_color = gfx::kGoogleGrey900;
-      break;
+      return GetBackgroundColor(color_mode);
     case BaseLayerType::kRed:
-      light_color = gfx::kGoogleRed600;
-      dark_color = gfx::kGoogleRed300;
-      break;
+      return IsLightMode(color_mode) ? gfx::kGoogleRed600 : gfx::kGoogleRed300;
   }
-  return color_mode == AshColorMode::kLight ? light_color : dark_color;
 }
 
 SkColor AshColorProvider::GetControlsLayerColorImpl(
@@ -221,7 +232,7 @@ SkColor AshColorProvider::GetControlsLayerColorImpl(
       dark_color = gfx::kGoogleBlue300;
       break;
   }
-  return color_mode == AshColorMode::kLight ? light_color : dark_color;
+  return IsLightMode(color_mode) ? light_color : dark_color;
 }
 
 SkColor AshColorProvider::GetContentLayerColorImpl(
@@ -265,8 +276,44 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
       light_color = gfx::kGoogleGrey200;
       dark_color = gfx::kGoogleGrey900;
       break;
+    case ContentLayerType::kButtonLabel:
+      light_color = gfx::kGoogleGrey700;
+      dark_color = gfx::kGoogleGrey200;
   }
-  return color_mode == AshColorMode::kLight ? light_color : dark_color;
+  return IsLightMode(color_mode) ? light_color : dark_color;
+}
+
+SkColor AshColorProvider::GetBackgroundDefaultColor(
+    AshColorMode color_mode) const {
+  DCHECK(color_mode == AshColorProvider::AshColorMode::kLight ||
+         color_mode == AshColorProvider::AshColorMode::kDark);
+  return IsLightMode(color_mode) ? kBackgroundColorDefaultLight
+                                 : kBackgroundColorDefaultDark;
+}
+
+SkColor AshColorProvider::GetBackgroundThemedColor(
+    AshColorMode color_mode) const {
+  DCHECK(color_mode == AshColorProvider::AshColorMode::kLight ||
+         color_mode == AshColorProvider::AshColorMode::kDark);
+  const SkColor default_color = GetBackgroundDefaultColor(color_mode);
+  WallpaperControllerImpl* wallpaper_controller =
+      Shell::Get()->wallpaper_controller();
+  if (!wallpaper_controller)
+    return default_color;
+
+  color_utils::LumaRange luma_range = IsLightMode(color_mode)
+                                          ? color_utils::LumaRange::LIGHT
+                                          : color_utils::LumaRange::DARK;
+  SkColor muted_color =
+      wallpaper_controller->GetProminentColor(color_utils::ColorProfile(
+          luma_range, color_utils::SaturationRange::MUTED));
+  if (muted_color == kInvalidWallpaperColor)
+    return default_color;
+
+  return color_utils::GetResultingPaintColor(
+      SkColorSetA(IsLightMode(color_mode) ? SK_ColorWHITE : SK_ColorBLACK,
+                  kAlpha50),
+      muted_color);
 }
 
 }  // namespace ash

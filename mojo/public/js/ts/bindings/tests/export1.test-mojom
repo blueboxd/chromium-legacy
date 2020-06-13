@@ -5,3 +5,7 @@
 module mojo.tstest.exported;
 
 const uint8 kOne = 1;
+
+struct ExportedStructOne {
+  bool value;
+};

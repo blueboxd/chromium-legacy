@@ -1294,4 +1294,51 @@ TEST_P(VisualRectMappingTest, InclusiveIntersect) {
                                       kDefaultVisualRectFlags, false);
 }
 
+TEST_P(VisualRectMappingTest, Perspective) {
+  ScopedTransformInteropForTest enabled(true);
+
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin:0; }</style>
+    <div id='ancestor' style='perspective: 100px'>
+      <div>
+        <div id='child' style='width: 10px; height: 10px;
+            transform: rotateY(45deg); position: absolute'></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* ancestor =
+      ToLayoutBox(GetDocument().getElementById("ancestor")->GetLayoutObject());
+  auto* child =
+      ToLayoutBox(GetDocument().getElementById("child")->GetLayoutObject());
+
+  PhysicalRect rect(0, 0, 10, 10);
+  child->MapToVisualRectInAncestorSpace(ancestor, rect);
+  EXPECT_EQ(IntRect(1, 0, 8, 10), EnclosingIntRect(rect));
+}
+
+TEST_P(VisualRectMappingTest, PerspectiveWithAnonymousTable) {
+  ScopedTransformInteropForTest enabled(true);
+
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin:0; }</style>
+    <div id='ancestor' style='display: table; perspective: 100px; width: 10px;
+        height: 10px;'>
+      <div id='child' style='display: table-cell; width: 10px; height: 10px;
+          transform: rotateY(45deg); position: absolute'></div>
+    </table>
+  )HTML");
+
+  auto* ancestor =
+      ToLayoutBox(GetDocument().getElementById("ancestor")->GetLayoutObject());
+  auto* child =
+      ToLayoutBox(GetDocument().getElementById("child")->GetLayoutObject());
+
+  PhysicalRect rect(0, 0, 10, 10);
+  child->MapToVisualRectInAncestorSpace(ancestor, rect);
+  EXPECT_EQ(IntRect(1, -1, 8, 12), EnclosingIntRect(rect));
+}
+
 }  // namespace blink

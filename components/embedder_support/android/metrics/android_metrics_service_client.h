@@ -25,6 +25,8 @@ class PrefService;
 namespace metrics {
 class MetricsStateManager;
 
+extern const char kCrashpadHistogramAllocatorName[];
+
 // AndroidMetricsServiceClient is a singleton which manages metrics collection
 // intended for use by WebView & WebLayer.
 //
@@ -184,6 +186,12 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   // Called by CreateMetricsService, allows the embedder to register additional
   // MetricsProviders. Does nothing by default.
   virtual void RegisterAdditionalMetricsProviders(MetricsService* service);
+
+  // Called by CreateMetricsService if metrics should be persisted. If the
+  // client returns true then its
+  // variations::PlatformFieldTrials::SetupFieldTrials needs to also call
+  // InstantiatePersistentHistograms.
+  virtual bool EnablePersistentHistograms();
 
   // Returns the embedding application's package name (unconditionally). Virtual
   // for testing.

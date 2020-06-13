@@ -10,12 +10,15 @@
 
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_service.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/variations/hashing.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/android/channel_getter.h"
 #include "weblayer/browser/android/metrics/weblayer_metrics_service_accessor.h"
 #include "weblayer/browser/java/jni/MetricsServiceClient_jni.h"
+#include "weblayer/browser/tab_impl.h"
 
 namespace weblayer {
 
@@ -39,6 +42,28 @@ const int kBetaDevCanarySampledInRatePerMille = 990;
 // uploading UMA records due to sampling). Do not change this constant without
 // consulting with the privacy team.
 const int kPackageNameLimitRatePerMille = 100;
+
+// MetricsProvider that interfaces with page_load_metrics.
+class PageLoadMetricsProvider : public metrics::MetricsProvider {
+ public:
+  PageLoadMetricsProvider() = default;
+  ~PageLoadMetricsProvider() override = default;
+
+  // metrics:MetricsProvider implementation:
+  void OnAppEnterBackground() override {
+    auto tabs = TabImpl::GetAllTabImpl();
+    for (auto* tab : tabs) {
+      page_load_metrics::MetricsWebContentsObserver* observer =
+          page_load_metrics::MetricsWebContentsObserver::FromWebContents(
+              tab->web_contents());
+      if (observer)
+        observer->FlushMetricsOnAppEnterBackground();
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsProvider);
+};
 
 }  // namespace
 
@@ -112,6 +137,15 @@ void WebLayerMetricsServiceClient::OnMetricsNotStarted() {
 
 int WebLayerMetricsServiceClient::GetPackageNameLimitRatePerMille() {
   return kPackageNameLimitRatePerMille;
+}
+
+void WebLayerMetricsServiceClient::RegisterAdditionalMetricsProviders(
+    metrics::MetricsService* service) {
+  service->RegisterMetricsProvider(std::make_unique<PageLoadMetricsProvider>());
+}
+
+bool WebLayerMetricsServiceClient::EnablePersistentHistograms() {
+  return true;
 }
 
 // static

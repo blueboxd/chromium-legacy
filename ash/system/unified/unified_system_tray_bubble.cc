@@ -321,8 +321,7 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
   }
 
   // Don't close the bubble if the message center is gaining activation.
-  if (features::IsUnifiedMessageCenterRefactorEnabled() &&
-      tray_->IsMessageCenterBubbleShown()) {
+  if (tray_->IsMessageCenterBubbleShown()) {
     views::Widget* message_center_widget =
         tray_->message_center_bubble()->GetBubbleWidget();
     if (message_center_widget ==

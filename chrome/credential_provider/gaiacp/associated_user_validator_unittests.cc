@@ -630,6 +630,66 @@ INSTANTIATE_TEST_SUITE_P(
                        ::testing::Bool(),
                        ::testing::Bool()));
 
+// Tests auth enforcement when multiple number of device details uploads fail
+// consecutively.
+// Parameters are: int - number of failures while uploading device details.
+class AssociatedUserValidatorMultipleUploadDeviceFailuresTest
+    : public AssociatedUserValidatorTest,
+      public ::testing::WithParamInterface<int> {};
+
+TEST_P(AssociatedUserValidatorMultipleUploadDeviceFailuresTest,
+       WithNumFailures) {
+  const int num_upload_device_details_failures = GetParam();
+  const bool is_upload_device_details_failed =
+      num_upload_device_details_failures > 0;
+  GoogleMdmEnrolledStatusForTesting mdm_enrolled(true);
+
+  CComBSTR sid;
+  constexpr wchar_t username[] = L"username";
+  ASSERT_EQ(S_OK, fake_os_user_manager()->CreateTestOSUser(
+                      username, L"password", L"fullname", L"comment",
+                      L"gaia-id", base::string16(), &sid));
+  std::vector<base::string16> reauth_sids;
+  reauth_sids.push_back((BSTR)sid);
+
+  ASSERT_EQ(S_OK, SetGlobalFlagForTesting(kRegDisablePasswordSync, 0));
+  // Store encrypted password.
+  base::string16 store_key = GetUserPasswordLsaStoreKey(OLE2W(sid));
+  auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
+  EXPECT_TRUE(SUCCEEDED(
+      policy->StorePrivateData(store_key.c_str(), L"encrypted_data")));
+  EXPECT_TRUE(policy->PrivateDataExists(store_key.c_str()));
+
+  // Set successful upload status and number of failures.
+  ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, kRegDeviceDetailsUploadStatus,
+                                  is_upload_device_details_failed ? 0 : 1));
+  ASSERT_EQ(S_OK, SetUserProperty((BSTR)sid, kRegDeviceDetailsUploadFailures,
+                                  num_upload_device_details_failures));
+
+  // Token handle fetch result.
+  fake_http_url_fetcher_factory()->SetFakeResponse(
+      GURL(AssociatedUserValidator::kTokenInfoUrl),
+      FakeWinHttpUrlFetcher::Headers(), "{\"expires_in\":1}");
+
+  FakeAssociatedUserValidator validator;
+  validator.StartRefreshingTokenHandleValidity();
+
+  bool is_get_auth_enforced = is_upload_device_details_failed &&
+                              (num_upload_device_details_failures <=
+                               kMaxNumConsecutiveUploadDeviceFailures);
+
+  EXPECT_EQ(is_get_auth_enforced, validator.IsAuthEnforcedForUser(OLE2W(sid)));
+  EXPECT_EQ(is_get_auth_enforced
+                ? AssociatedUserValidator::UPLOAD_DEVICE_DETAILS_FAILED
+                : AssociatedUserValidator::NOT_ENFORCED,
+            validator.GetAuthEnforceReason(OLE2W(sid)));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    AssociatedUserValidatorMultipleUploadDeviceFailuresTest,
+    ::testing::Range(0, 2 * kMaxNumConsecutiveUploadDeviceFailures));
+
 TEST_F(AssociatedUserValidatorTest, ValidTokenHandle_Refresh) {
   GoogleUploadDeviceDetailsNeededForTesting upload_device_details_needed(false);
 

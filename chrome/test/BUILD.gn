@@ -3192,7 +3192,6 @@ test("unit_tests") {
     "../browser/metrics/chrome_metrics_services_manager_client_unittest.cc",
     "../browser/metrics/oom/out_of_memory_reporter_unittest.cc",
     "../browser/metrics/process_memory_metrics_emitter_unittest.cc",
-    "../browser/metrics/subprocess_metrics_provider_unittest.cc",
     "../browser/metrics/tab_footprint_aggregator_unittest.cc",
     "../browser/metrics/thread_watcher_android_unittest.cc",
     "../browser/metrics/thread_watcher_unittest.cc",
@@ -3594,6 +3593,7 @@ test("unit_tests") {
       "../browser/sharing/webrtc/sharing_service_host_unittest.cc",
       "../browser/sharing/webrtc/sharing_webrtc_connection_host_unittest.cc",
       "../browser/sharing/webrtc/webrtc_signalling_host_fcm_unittest.cc",
+      "../browser/speech/speech_recognition_service_factory_unittest.cc",
       "../browser/tab_contents/form_interaction_tab_helper_unittest.cc",
       "../browser/ui/autofill/payments/autofill_dialog_models_unittest.cc",
       "../browser/ui/bookmarks/bookmark_editor_unittest.cc",
@@ -5826,7 +5826,6 @@ if (!is_android) {
       "../browser/ui/views/accessibility/navigation_accessibility_uitest_win.cc",
       "../browser/ui/views/content_test_utils.cc",
       "../browser/ui/views/content_test_utils.h",
-      "../browser/ui/views/tabs/tab_spinner_interactive_uitest.cc",
       "../browser/ui/views/web_apps/web_app_frame_toolbar_interactive_uitest.cc",
       "../browser/ui/views/web_dialog_view_browsertest.cc",
       "../browser/webauth_interactive_uitest.cc",
@@ -6034,13 +6033,6 @@ if (!is_android) {
       }
     }
 
-    # tab_spinner_interactive_uitest.cc is a UIPerformanceTest, so excluding
-    # it. See below for the details.
-    if (using_sanitizer) {
-      sources -=
-          [ "../browser/ui/views/tabs/tab_spinner_interactive_uitest.cc" ]
-    }
-
     if (is_chromeos) {
       deps += [
         "//chrome/browser/media/router:test_support",
@@ -6050,29 +6042,6 @@ if (!is_android) {
           [ "../browser/ui/signin_view_controller_interactive_uitest.cc" ]
       sources +=
           [ "../browser/ui/app_list/app_list_client_interactive_uitest.cc" ]
-
-      # UIPerformanceTests in interactive_ui_tests. Since flakiness is usually
-      # observed on those tests when sanitizer is enabled, and considering that
-      # their performance numbers won't be useful anyways, these tests are
-      # excluded from builds with sanitizer. See https://crbug.com/1057868.
-      if (!using_sanitizer) {
-        sources += [
-          "../browser/ui/ash/homescreen_interactive_uitest.cc",
-          "../browser/ui/ash/launcher_animations_interactive_uitest.cc",
-          "../browser/ui/ash/launcher_drag_interactive_uitest.cc",
-          "../browser/ui/ash/launcher_page_switches_interactive_uitest.cc",
-          "../browser/ui/ash/overview_animations_interactive_uitest.cc",
-          "../browser/ui/ash/overview_scroll_interactive_uitest.cc",
-          "../browser/ui/ash/overview_window_drag_interactive_uitest.cc",
-          "../browser/ui/ash/screen_rotation_interactive_uitest.cc",
-          "../browser/ui/ash/split_view_interactive_uitest.cc",
-          "../browser/ui/ash/tablet_mode_transition_interactive_uitest.cc",
-          "../browser/ui/ash/window_resize_interactive_uitest.cc",
-          "../browser/ui/views/tabs/tab_hover_interactive_uitest.cc",
-          "base/perf/drag_event_generator.cc",
-          "base/perf/drag_event_generator.h",
-        ]
-      }
     } else {  # ! is_chromeos
       # Non-ChromeOS notifications tests.
       sources += [
@@ -6468,6 +6437,7 @@ if (!is_fuchsia && !is_android) {
       "../browser/sync/test/integration/two_client_typed_urls_sync_test.cc",
       "../browser/sync/test/integration/two_client_user_events_sync_test.cc",
       "../browser/sync/test/integration/two_client_wallet_sync_test.cc",
+      "../browser/sync/test/integration/two_client_web_apps_bmo_sync_test.cc",
       "../browser/sync/test/integration/two_client_web_apps_sync_test.cc",
     ]
 

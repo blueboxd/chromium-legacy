@@ -74,8 +74,8 @@ class ConfigurationPolicyHandlerListTest : public ::testing::Test {
   }
 
   void ApplySettings() {
-    handler_list_->ApplyPolicySettings(policies_, &prefs_, &errors_,
-                                       &deprecated_policies_);
+    handler_list_->ApplyPolicySettings(
+        policies_, &prefs_, &errors_, &deprecated_policies_, &future_policies_);
   }
 
   void CreateHandlerList(bool allow_all_future_policies = false) {
@@ -97,7 +97,8 @@ class ConfigurationPolicyHandlerListTest : public ::testing::Test {
 
   void VerifyPolicyAndPref(const std::string& policy_name,
                            bool in_pref,
-                           bool in_deprecated = false) {
+                           bool in_deprecated = false,
+                           bool in_future = false) {
     int pref_value;
 
     ASSERT_EQ(in_pref, prefs_.GetInteger(policy_name, &pref_value));
@@ -111,13 +112,16 @@ class ConfigurationPolicyHandlerListTest : public ::testing::Test {
 
     EXPECT_EQ(in_deprecated, deprecated_policies_.find(policy_name) !=
                                  deprecated_policies_.end());
+    EXPECT_EQ(in_future,
+              future_policies_.find(policy_name) != future_policies_.end());
   }
 
  private:
   PrefValueMap prefs_;
   PolicyErrorMap errors_;
   PolicyMap policies_;
-  DeprecatedPoliciesSet deprecated_policies_;
+  PoliciesSet deprecated_policies_;
+  PoliciesSet future_policies_;
   PolicyDetails details_{false, false, false, 0, 0, {}};
 
   std::unique_ptr<ConfigurationPolicyHandlerList> handler_list_;
@@ -137,7 +141,8 @@ TEST_F(ConfigurationPolicyHandlerListTest, ApplySettingsWithFuturePolicy) {
 
   ApplySettings();
 
-  VerifyPolicyAndPref(kPolicyName, /* in_pref */ false);
+  VerifyPolicyAndPref(kPolicyName, /* in_pref */ false,
+                      /* in_deprecated */ false, /* in_future */ true);
 
   // Whitelist a different policy.
   base::Value::ListStorage enabled_future_policies;
@@ -147,7 +152,8 @@ TEST_F(ConfigurationPolicyHandlerListTest, ApplySettingsWithFuturePolicy) {
 
   ApplySettings();
 
-  VerifyPolicyAndPref(kPolicyName, /* in_pref */ false);
+  VerifyPolicyAndPref(kPolicyName, /* in_pref */ false,
+                      /* in_deprecated */ false, /* in_future */ true);
 
   // Whitelist the policy.
   enabled_future_policies.push_back(base::Value(kPolicyName));
@@ -169,6 +175,7 @@ TEST_F(ConfigurationPolicyHandlerListTest,
 
   VerifyPolicyAndPref(kPolicyName, /* in_pref */ true);
 }
+
 // Device platform policy will be fitered out.
 TEST_F(ConfigurationPolicyHandlerListTest,
        ApplySettingsWithPlatformDevicePolicy) {

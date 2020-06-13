@@ -178,11 +178,11 @@ TEST(ExtensionL10nUtil, LoadMessageCatalogsBadJSONFormat) {
   std::string error;
   EXPECT_FALSE(extension_l10n_util::LoadMessageCatalogs(
       src_path, "en_US", GzippedMessagesPermission::kDisallow, &error));
-  EXPECT_EQ(ErrorUtils::FormatErrorMessage(
+  EXPECT_NE(std::string::npos,
+            error.find(ErrorUtils::FormatErrorMessage(
                 errors::kLocalesInvalidLocale,
                 base::UTF16ToUTF8(messages_file.LossyDisplayName()),
-                "Line: 1, column: 10, Unexpected token."),
-            error);
+                "Line: 1, column: 10,")));
 }
 
 TEST(ExtensionL10nUtil, LoadMessageCatalogsDuplicateKeys) {

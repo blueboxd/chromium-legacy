@@ -122,6 +122,7 @@ test("weblayer_browsertests") {
     "../browser/site_isolation_browsertest.cc",
     "../browser/ssl_browsertest.cc",
     "../browser/translate_browsertest.cc",
+    "../browser/url_bar/url_bar_browsertest.cc",
     "../browser/weblayer_variations_http_browsertest.cc",
     "../browser/webui/webui_browsertest.cc",
     "browsertests_main.cc",
@@ -194,7 +195,6 @@ test("weblayer_browsertests") {
       # integration tests.
       "../browser/persistence/browser_persister_browsertest.cc",
       "../browser/persistence/minimal_browser_persister_browsertest.cc",
-      "../browser/url_bar/url_bar_browsertest.cc",
     ]
   }
 }

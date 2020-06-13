@@ -384,7 +384,7 @@ TargetList ClipboardX11::X11Details::WaitAndGetTargetsList(
       // Some apps return an |out_type| of "TARGETS". (crbug.com/377893)
       if (out_type == x11::Atom::ATOM || out_type == gfx::GetAtom(kTargets)) {
         const x11::Atom* atom_array =
-            reinterpret_cast<const x11::Atom*>(data.front());
+            reinterpret_cast<const x11::Atom*>(data.data());
         for (size_t i = 0; i < data.size() / sizeof(x11::Atom); ++i)
           out.push_back(atom_array[i]);
       }

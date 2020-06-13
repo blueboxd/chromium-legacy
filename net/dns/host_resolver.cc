@@ -57,11 +57,6 @@ class FailingRequestImpl : public HostResolver::ResolveHostRequest,
     return *nullopt_result;
   }
 
-  const base::Optional<EsniContent>& GetEsniResults() const override {
-    static const base::NoDestructor<base::Optional<EsniContent>> nullopt_result;
-    return *nullopt_result;
-  }
-
   ResolveErrorInfo GetResolveErrorInfo() const override {
     return ResolveErrorInfo(error_);
   }

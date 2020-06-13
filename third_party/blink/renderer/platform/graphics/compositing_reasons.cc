@@ -19,6 +19,8 @@ struct CompositingReasonStringMap {
 
 constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
     {CompositingReason::k3DTransform, "transform3D", "Has a 3d transform"},
+    {CompositingReason::kTrivial3DTransform, "trivialTransform3D",
+     "Has a trivial 3d transform"},
     {CompositingReason::kVideo, "video", "Is an accelerated video"},
     {CompositingReason::kCanvas, "canvas",
      "Is an accelerated canvas, or is a display list backed canvas that was "

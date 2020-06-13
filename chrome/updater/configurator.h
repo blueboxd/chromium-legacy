@@ -28,11 +28,12 @@ class ProtocolHandlerFactory;
 
 namespace updater {
 
+class UpdaterPrefs;
 class ExternalConstants;
 
 class Configurator : public update_client::Configurator {
  public:
-  Configurator();
+  explicit Configurator(std::unique_ptr<UpdaterPrefs> prefs);
   Configurator(const Configurator&) = delete;
   Configurator& operator=(const Configurator&) = delete;
 
@@ -69,7 +70,7 @@ class Configurator : public update_client::Configurator {
   friend class base::RefCountedThreadSafe<Configurator>;
   ~Configurator() override;
 
-  std::unique_ptr<PrefService> pref_service_;
+  std::unique_ptr<UpdaterPrefs> prefs_;
   std::unique_ptr<ExternalConstants> external_constants_;
   scoped_refptr<update_client::NetworkFetcherFactory> network_fetcher_factory_;
   scoped_refptr<update_client::UnzipperFactory> unzip_factory_;

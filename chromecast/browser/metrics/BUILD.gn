@@ -22,7 +22,7 @@ cast_source_set("metrics") {
     "//chromecast/base:cast_version",
     "//chromecast/metrics",
     "//components/metrics",
-    "//components/metrics:gpu",
+    "//components/metrics:content",
     "//components/metrics:net",
     "//components/metrics:ui",
     "//components/prefs",

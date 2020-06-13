@@ -204,7 +204,7 @@ void InternalAppWindowShelfController::RemoveFromShelf(
       owner()->shelf_model()->GetAppWindowLauncherItemController(
           app_window->shelf_id());
 
-  if (item_controller != nullptr && item_controller->window_count() == 0)
+  if (item_controller && item_controller->window_count() == 0)
     owner()->CloseLauncherItem(item_controller->shelf_id());
 }
 

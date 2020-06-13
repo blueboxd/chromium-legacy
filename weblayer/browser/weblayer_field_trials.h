@@ -14,11 +14,11 @@ namespace weblayer {
 // functions are stubs, as WebLayer has no specific field trials.
 class WebLayerFieldTrials : public variations::PlatformFieldTrials {
  public:
-  WebLayerFieldTrials() {}
-  ~WebLayerFieldTrials() override {}
+  WebLayerFieldTrials() = default;
+  ~WebLayerFieldTrials() override = default;
 
   // variations::PlatformFieldTrials:
-  void SetupFieldTrials() override {}
+  void SetupFieldTrials() override;
   void SetupFeatureControllingFieldTrials(
       bool has_seed,
       base::FeatureList* feature_list) override {}

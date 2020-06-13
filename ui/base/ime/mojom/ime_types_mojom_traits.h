@@ -10,9 +10,27 @@
 #include "base/component_export.h"
 #include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/mojom/ime_types.mojom-shared.h"
+#include "ui/base/ime/text_input_action.h"
+#include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 
 namespace mojo {
+
+template <>
+struct COMPONENT_EXPORT(IME_SHARED_MOJOM_TRAITS)
+    EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode> {
+  static ui::mojom::TextInputMode ToMojom(ui::TextInputMode text_input_mode);
+  static bool FromMojom(ui::mojom::TextInputMode input, ui::TextInputMode* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(IME_SHARED_MOJOM_TRAITS)
+    EnumTraits<ui::mojom::TextInputAction, ui::TextInputAction> {
+  static ui::mojom::TextInputAction ToMojom(
+      ui::TextInputAction text_input_action);
+  static bool FromMojom(ui::mojom::TextInputAction input,
+                        ui::TextInputAction* out);
+};
 
 template <>
 struct COMPONENT_EXPORT(IME_SHARED_MOJOM_TRAITS)

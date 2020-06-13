@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -64,6 +65,14 @@ bool AuthenticationServiceFake::IsAuthenticated() const {
 
 ChromeIdentity* AuthenticationServiceFake::GetAuthenticatedIdentity() const {
   return authenticated_identity_;
+}
+
+bool AuthenticationServiceFake::IsAuthenticatedIdentityManaged() const {
+  if (!authenticated_identity_) {
+    return false;
+  }
+  return [authenticated_identity_.userEmail
+      hasSuffix:ios::kManagedIdentityEmailSuffix];
 }
 
 std::unique_ptr<KeyedService>

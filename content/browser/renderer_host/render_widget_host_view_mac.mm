@@ -20,6 +20,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "components/remote_cocoa/browser/ns_view_ids.h"
 #include "components/remote_cocoa/common/application.mojom.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
@@ -269,7 +270,11 @@ void RenderWidgetHostViewMac::MigrateNSViewBridge(
       std::move(stub_client), std::move(stub_bridge_receiver));
 
   ns_view_ = remote_ns_view_.get();
-  remote_ns_view_->SetParentWebContentsNSView(parent_ns_view_id);
+
+  // Popup windows will specify an invalid |parent_ns_view_id|, because popups
+  // have their own NSWindows (of which they are the content NSView).
+  if (parent_ns_view_id != remote_cocoa::kInvalidNSViewId)
+    remote_ns_view_->SetParentWebContentsNSView(parent_ns_view_id);
 }
 
 void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {

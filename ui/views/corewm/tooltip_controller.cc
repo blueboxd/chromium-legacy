@@ -233,18 +233,22 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
 
 void TooltipController::OnTouchEvent(ui::TouchEvent* event) {
   // Hide the tooltip for touch events.
-  tooltip_->Hide();
-  SetTooltipWindow(nullptr);
+  HideTooltipAndResetStates();
   last_touch_loc_ = event->location();
 }
 
 void TooltipController::OnCancelMode(ui::CancelModeEvent* event) {
-  tooltip_->Hide();
-  SetTooltipWindow(nullptr);
+  HideTooltipAndResetStates();
 }
 
 void TooltipController::OnCursorVisibilityChanged(bool is_visible) {
   UpdateIfRequired();
+}
+
+void TooltipController::OnWindowVisibilityChanged(aura::Window* window,
+                                                  bool visible) {
+  if (!visible)
+    HideTooltipAndResetStates();
 }
 
 void TooltipController::OnWindowDestroyed(aura::Window* window) {
@@ -348,6 +352,19 @@ void TooltipController::ShowTooltip() {
                                base::TimeDelta::FromMilliseconds(timeout), this,
                                &TooltipController::TooltipShownTimerFired);
   }
+}
+
+void TooltipController::HideTooltipAndResetStates() {
+  // Hide any open tooltips.
+  if (tooltip_shown_timer_.IsRunning())
+    tooltip_shown_timer_.Stop();
+  tooltip_->Hide();
+
+  // Cancel pending tooltips and reset controller states.
+  if (tooltip_defer_timer_.IsRunning())
+    tooltip_defer_timer_.Stop();
+  SetTooltipWindow(nullptr);
+  tooltip_id_ = nullptr;
 }
 
 bool TooltipController::IsTooltipVisible() {

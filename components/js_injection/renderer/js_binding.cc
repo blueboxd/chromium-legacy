@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/strings/string_util.h"
-#include "components/js_injection/renderer/js_java_configurator.h"
+#include "components/js_injection/renderer/js_communication.h"
 #include "content/public/renderer/render_frame.h"
 #include "gin/data_object_builder.h"
 #include "gin/handle.h"
@@ -36,7 +36,7 @@ gin::WrapperInfo JsBinding::kWrapperInfo = {gin::kEmbedderNativeGin};
 std::unique_ptr<JsBinding> JsBinding::Install(
     content::RenderFrame* render_frame,
     const base::string16& js_object_name,
-    JsJavaConfigurator* js_java_configurator) {
+    JsCommunication* js_java_configurator) {
   CHECK(!js_object_name.empty())
       << "JavaScript wrapper name shouldn't be empty";
 
@@ -67,14 +67,14 @@ std::unique_ptr<JsBinding> JsBinding::Install(
 
 JsBinding::JsBinding(content::RenderFrame* render_frame,
                      const base::string16& js_object_name,
-                     JsJavaConfigurator* js_java_configurator)
+                     JsCommunication* js_java_configurator)
     : render_frame_(render_frame),
       js_object_name_(js_object_name),
       js_java_configurator_(js_java_configurator) {
-  mojom::JsToJavaMessaging* js_to_java_messaging =
+  mojom::JsToBrowserMessaging* js_to_java_messaging =
       js_java_configurator_->GetJsToJavaMessage(js_object_name_);
   if (js_to_java_messaging) {
-    js_to_java_messaging->SetJavaToJsMessaging(
+    js_to_java_messaging->SetBrowserToJsMessaging(
         receiver_.BindNewEndpointAndPassRemote());
   }
 }
@@ -161,7 +161,7 @@ void JsBinding::PostMessage(gin::Arguments* args) {
     ports.emplace_back(port.value());
   }
 
-  mojom::JsToJavaMessaging* js_to_java_messaging =
+  mojom::JsToBrowserMessaging* js_to_java_messaging =
       js_java_configurator_->GetJsToJavaMessage(js_object_name_);
   if (js_to_java_messaging) {
     js_to_java_messaging->PostMessage(

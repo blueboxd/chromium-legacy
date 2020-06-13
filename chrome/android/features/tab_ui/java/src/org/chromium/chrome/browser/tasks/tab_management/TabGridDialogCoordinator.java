@@ -15,13 +15,13 @@ import androidx.annotation.Nullable;
 import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -48,7 +48,8 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
             ViewGroup containerView, TabSwitcherMediator.ResetHandler resetHandler,
             TabListMediator.GridCardOnClickListenerProvider gridCardOnClickListenerProvider,
             TabGridDialogMediator.AnimationSourceViewProvider animationSourceViewProvider,
-            ObservableSupplier<ShareDelegate> shareDelegateSupplier) {
+            ObservableSupplier<ShareDelegate> shareDelegateSupplier,
+            ScrimCoordinator scrimCoordinator) {
         mComponentName = animationSourceViewProvider == null ? "TabGridDialogFromStrip"
                                                              : "TabGridDialogInSwitcher";
 
@@ -60,7 +61,7 @@ public class TabGridDialogCoordinator implements TabGridDialogMediator.DialogCon
             LayoutInflater.from(context).inflate(
                     R.layout.tab_grid_dialog_layout, containerView, true);
             mDialogView = containerView.findViewById(R.id.dialog_parent_view);
-            mDialogView.setupScrimView(((ChromeActivity) context).getScrim());
+            mDialogView.setupScrimCoordinator(scrimCoordinator);
         }
 
         mMediator = new TabGridDialogMediator(context, this, mModel, tabModelSelector,

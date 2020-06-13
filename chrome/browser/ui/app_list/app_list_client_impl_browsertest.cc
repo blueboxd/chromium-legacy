@@ -482,12 +482,12 @@ class AppListAppLaunchTest : public extensions::ExtensionBrowserTest {
     extensions::ExtensionBrowserTest::SetUpOnMainThread();
 
     AppListClientImpl* app_list = AppListClientImpl::GetInstance();
-    EXPECT_TRUE(app_list != nullptr);
+    EXPECT_TRUE(app_list);
 
     // Need to set the profile to get the model updater.
     app_list->UpdateProfile();
     model_updater_ = app_list->GetModelUpdaterForTest();
-    EXPECT_TRUE(model_updater_ != nullptr);
+    EXPECT_TRUE(model_updater_);
   }
 
   void LaunchChromeAppListItem(const std::string& id) {

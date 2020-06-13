@@ -1275,4 +1275,52 @@ TEST_F(LayoutObjectTest, ContainValueIsRelayoutBoundary) {
   EXPECT_TRUE(GetLayoutObjectByElementId("target6")->IsRelayoutBoundary());
 }
 
+TEST_F(LayoutObjectTest, PerspectiveIsNotParent) {
+  ScopedTransformInteropForTest enabled(true);
+
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin:0; }</style>
+    <div id='ancestor' style='perspective: 100px'>
+      <div>
+        <div id='child' style='width: 10px; height: 10px; transform: rotateY(45deg);
+        position: absolute'></div>
+      </div>
+    </div>
+  )HTML");
+
+  auto* ancestor =
+      ToLayoutBox(GetDocument().getElementById("ancestor")->GetLayoutObject());
+  auto* child =
+      ToLayoutBox(GetDocument().getElementById("child")->GetLayoutObject());
+
+  TransformationMatrix transform;
+  child->GetTransformFromContainer(ancestor, PhysicalOffset(), transform);
+  TransformationMatrix::DecomposedType decomposed;
+  EXPECT_TRUE(transform.Decompose(decomposed));
+  EXPECT_EQ(0, decomposed.perspective_z);
+}
+
+TEST_F(LayoutObjectTest, PerspectiveWithAnonymousTable) {
+  ScopedTransformInteropForTest enabled(true);
+
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin:0; }</style>
+    <div id='ancestor' style='display: table; perspective: 100px; width: 100px; height: 100px;'>
+      <div id='child' style='display: table-cell; width: 100px; height: 100px; transform: rotateY(45deg);
+        position: absolute'></div>
+    </table>
+  )HTML");
+
+  LayoutObject* child = GetLayoutObjectByElementId("child");
+  LayoutBoxModelObject* ancestor =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("ancestor"));
+
+  TransformationMatrix transform;
+  child->GetTransformFromContainer(ancestor, PhysicalOffset(), transform);
+  TransformationMatrix::DecomposedType decomposed;
+  EXPECT_TRUE(transform.Decompose(decomposed));
+  EXPECT_EQ(-0.01, decomposed.perspective_z);
+}
+
 }  // namespace blink

@@ -123,6 +123,7 @@ class CORE_EXPORT NGPhysicalContainerFragment : public NGPhysicalFragment {
     return has_adjoining_object_descendants_;
   }
 
+  // TODO(ikilpatrick): Remove this flag as its not used anymore.
   bool HasOrthogonalFlowRoots() const { return has_orthogonal_flow_roots_; }
 
   // Returns true if we have a descendant within this formatting context, which

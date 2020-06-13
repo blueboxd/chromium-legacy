@@ -1174,11 +1174,13 @@ void AutofillManager::OnDidFillAutofillFormData(const FormData& form,
 
   UpdatePendingForm(form);
 
-  FormStructure* form_structure = nullptr;
   std::set<FormType> form_types;
   // Find the FormStructure that corresponds to |form|. Use default form type if
   // form is not present in our cache, which will happen rarely.
-  if (FindCachedForm(form, &form_structure)) {
+
+  FormStructure* form_structure =
+      FindCachedFormByRendererId(form.unique_renderer_id);
+  if (form_structure) {
     form_types = form_structure->GetFormTypes();
   }
 
@@ -1371,14 +1373,13 @@ void AutofillManager::SetDataList(const std::vector<base::string16>& values,
 }
 
 void AutofillManager::SelectFieldOptionsDidChange(const FormData& form) {
-  FormStructure* form_structure = nullptr;
-
   // Look for a cached version of the form. It will be a null pointer if none is
   // found, which is fine.
-  FormStructure* cached_form = nullptr;
-  ignore_result(FindCachedForm(form, &cached_form));
+  FormStructure* cached_form =
+      FindCachedFormByRendererId(form.unique_renderer_id);
 
-  if (!ParseForm(form, cached_form, &form_structure))
+  FormStructure* form_structure = ParseForm(form, cached_form);
+  if (!form_structure)
     return;
 
   if (ShouldTriggerRefill(*form_structure))
@@ -1395,10 +1396,11 @@ void AutofillManager::OnLoadedServerPredictions(
     // The |signature| is the direct string representation of the FormSignature.
     // Convert it to a uint64_t to do the lookup.
     FormSignature form_signature;
-    FormStructure* form_structure;
-    if (base::StringToUint64(signature, &form_signature.value()) &&
-        FindCachedFormBySignature(form_signature, &form_structure)) {
-      queried_forms.push_back(form_structure);
+    if (base::StringToUint64(signature, &form_signature.value())) {
+      FormStructure* form_structure = FindCachedFormBySignature(form_signature);
+      if (form_structure) {
+        queried_forms.push_back(form_structure);
+      }
     }
   }
 
@@ -1887,9 +1889,9 @@ std::unique_ptr<FormStructure> AutofillManager::ValidateSubmittedForm(
     const FormData& form) {
   // Ignore forms not present in our cache.  These are typically forms with
   // wonky JavaScript that also makes them not auto-fillable.
-  FormStructure* cached_submitted_form;
-  if (!FindCachedForm(form, &cached_submitted_form) ||
-      !ShouldUploadForm(*cached_submitted_form)) {
+  FormStructure* cached_submitted_form =
+      FindCachedFormByRendererId(form.unique_renderer_id);
+  if (!cached_submitted_form || !ShouldUploadForm(*cached_submitted_form)) {
     return nullptr;
   }
 
@@ -2432,8 +2434,9 @@ bool AutofillManager::ShouldTriggerRefill(const FormStructure& form_structure) {
 }
 
 void AutofillManager::TriggerRefill(const FormData& form) {
-  FormStructure* form_structure = nullptr;
-  if (!FindCachedForm(form, &form_structure))
+  FormStructure* form_structure =
+      FindCachedFormByRendererId(form.unique_renderer_id);
+  if (!form_structure)
     return;
 
   DCHECK(form_structure);

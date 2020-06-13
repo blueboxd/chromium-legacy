@@ -84,7 +84,6 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
             quic_params_.max_time_before_crypto_handshake);
   EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kInitialIdleTimeoutSecs),
             quic_params_.max_idle_time_before_crypto_handshake);
-  EXPECT_FALSE(quic_params_.race_cert_verification);
   EXPECT_FALSE(quic_params_.estimate_initial_rtt);
   EXPECT_FALSE(quic_params_.migrate_sessions_on_network_change_v2);
   EXPECT_FALSE(quic_params_.migrate_sessions_early_v2);
@@ -302,17 +301,6 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
   EXPECT_EQ(base::TimeDelta::FromSeconds(quic::kInitialIdleTimeoutSecs),
             quic_params_.max_idle_time_before_crypto_handshake);
-}
-
-TEST_F(NetworkSessionConfiguratorTest, QuicRaceCertVerification) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["race_cert_verification"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(quic_params_.race_cert_verification);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, EnableServerPushCancellation) {

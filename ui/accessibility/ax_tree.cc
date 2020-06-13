@@ -2036,7 +2036,7 @@ void AXTree::RecursivelyPopulateOrderedSetItemsMap(
     // If |child| is an ignored container for ordered set and should not be used
     // to contribute to |items_map_to_be_populated|, we recurse into |child|'s
     // descendants to populate |items_map_to_be_populated|.
-    if (child->IsIgnoredContainerForOrderedSet() || child->IsEmbeddedGroup()) {
+    if (child->IsIgnoredContainerForOrderedSet()) {
       RecursivelyPopulateOrderedSetItemsMap(original_node, ordered_set, child,
                                             ordered_set_min_level, curr_level,
                                             items_map_to_be_populated);
@@ -2207,30 +2207,69 @@ void AXTree::ComputeSetSizePosInSetAndCacheHelper(
   }  // End of iterating over each item in |ordered_set_content|.
 }
 
-// Returns the pos_in_set of item. Looks in |node_set_size_pos_in_set_info_map_|
-// for cached value. Calculates pos_in_set and set_size for item (and all other
-// items in the same ordered set) if no value is present in the cache. This
-// function is guaranteed to be only called on nodes that can hold pos_in_set
-// values, minimizing the size of the cache.
-int32_t AXTree::GetPosInSet(const AXNode& node, const AXNode* ordered_set) {
-  // If item's id is not in the cache, compute it.
-  if (node_set_size_pos_in_set_info_map_.find(node.id()) ==
-      node_set_size_pos_in_set_info_map_.end())
-    ComputeSetSizePosInSetAndCache(node, ordered_set);
-  return node_set_size_pos_in_set_info_map_[node.id()].pos_in_set;
+base::Optional<int> AXTree::GetPosInSet(const AXNode& node) {
+  if (node_set_size_pos_in_set_info_map_.find(node.id()) !=
+      node_set_size_pos_in_set_info_map_.end()) {
+    // If item's id is in the cache, return stored PosInSet value.
+    return node_set_size_pos_in_set_info_map_[node.id()].pos_in_set;
+  }
+
+  if (GetTreeUpdateInProgressState())
+    return base::nullopt;
+
+  // Only allow this to be called on nodes that can hold PosInSet values,
+  // which are defined in the ARIA spec.
+  if (!node.IsOrderedSetItem() || node.IsIgnored())
+    return base::nullopt;
+
+  const AXNode* ordered_set = node.GetOrderedSet();
+  if (!ordered_set)
+    return base::nullopt;
+
+  // Compute, cache, then return.
+  ComputeSetSizePosInSetAndCache(node, ordered_set);
+  base::Optional<int> pos_in_set =
+      node_set_size_pos_in_set_info_map_[node.id()].pos_in_set;
+  if (pos_in_set.has_value() && pos_in_set.value() < 1)
+    return base::nullopt;
+
+  return pos_in_set;
 }
 
-// Returns the set_size of node. node could be an ordered set or an item.
-// Looks in |node_set_size_pos_in_set_info_map_| for cached value. Calculates
-// pos_in_set and set_size for all nodes in same ordered set if no value is
-// present in the cache. This function is guaranteed to be only called on nodes
-// that can hold set_size values, minimizing the size of the cache.
-int32_t AXTree::GetSetSize(const AXNode& node, const AXNode* ordered_set) {
-  // If node's id is not in the cache, compute it.
-  if (node_set_size_pos_in_set_info_map_.find(node.id()) ==
-      node_set_size_pos_in_set_info_map_.end())
-    ComputeSetSizePosInSetAndCache(node, ordered_set);
-  return node_set_size_pos_in_set_info_map_[node.id()].set_size;
+base::Optional<int> AXTree::GetSetSize(const AXNode& node) {
+  if (node_set_size_pos_in_set_info_map_.find(node.id()) !=
+      node_set_size_pos_in_set_info_map_.end()) {
+    // If item's id is in the cache, return stored SetSize value.
+    return node_set_size_pos_in_set_info_map_[node.id()].set_size;
+  }
+
+  if (GetTreeUpdateInProgressState())
+    return base::nullopt;
+
+  // Only allow this to be called on nodes that can hold SetSize values, which
+  // are defined in the ARIA spec. However, we allow set-like items to receive
+  // SetSize values for internal purposes.
+  if ((!node.IsOrderedSetItem() && !node.IsOrderedSet()) || node.IsIgnored() ||
+      node.IsEmbeddedGroup()) {
+    return base::nullopt;
+  }
+
+  // If |node| is item-like, find its outerlying ordered set. Otherwise,
+  // |node| is the ordered set.
+  const AXNode* ordered_set = &node;
+  if (IsItemLike(node.data().role))
+    ordered_set = node.GetOrderedSet();
+  if (!ordered_set)
+    return base::nullopt;
+
+  // Compute, cache, then return.
+  ComputeSetSizePosInSetAndCache(node, ordered_set);
+  base::Optional<int> set_size =
+      node_set_size_pos_in_set_info_map_[node.id()].set_size;
+  if (set_size.has_value() && set_size.value() < 0)
+    return base::nullopt;
+
+  return set_size;
 }
 
 AXTree::Selection AXTree::GetUnignoredSelection() const {

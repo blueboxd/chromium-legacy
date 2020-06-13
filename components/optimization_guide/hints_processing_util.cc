@@ -43,6 +43,8 @@ std::string GetStringNameForOptimizationType(
       return "CompressPublicImages";
     case proto::OptimizationType::LOADING_PREDICTOR:
       return "LoadingPredictor";
+    case proto::OptimizationType::FAST_HOST_HINTS:
+      return "FastHostHints";
   }
   NOTREACHED();
   return std::string();

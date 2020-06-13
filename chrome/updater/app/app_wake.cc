@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "chrome/updater/app/app.h"
 #include "chrome/updater/configurator.h"
+#include "chrome/updater/prefs.h"
 #include "chrome/updater/update_apps.h"
 #include "chrome/updater/update_service.h"
 
@@ -32,7 +33,7 @@ class AppWake : public App {
 };
 
 void AppWake::Initialize() {
-  config_ = base::MakeRefCounted<Configurator>();
+  config_ = base::MakeRefCounted<Configurator>(CreateGlobalPrefs());
 }
 
 void AppWake::Uninitialize() {

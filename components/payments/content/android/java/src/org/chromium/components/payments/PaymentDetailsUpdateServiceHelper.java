@@ -7,12 +7,15 @@ package org.chromium.components.payments;
 import android.content.pm.PackageInfo;
 import android.content.pm.Signature;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentHandlerMethodData;
+import org.chromium.components.payments.intent.WebPaymentIntentHelperType.PaymentRequestDetailsUpdate;
 
 import java.util.Arrays;
 
@@ -22,10 +25,6 @@ import java.util.Arrays;
  */
 public class PaymentDetailsUpdateServiceHelper {
     private static final String TAG = "PaymentDetailsUpdate";
-
-    // Bundle keys used to send data to this service.
-    public static final String KEY_METHOD_NAME = "methodName";
-    public static final String KEY_STRINGIFIED_DETAILS = "details";
 
     @Nullable
     private IPaymentDetailsUpdateServiceCallback mCallback;
@@ -83,14 +82,16 @@ public class PaymentDetailsUpdateServiceHelper {
             runCallbackWithError(ErrorStrings.METHOD_DATA_REQUIRED, callback);
             return;
         }
-        String methodName = paymentHandlerMethodData.getString(KEY_METHOD_NAME);
+        String methodName =
+                paymentHandlerMethodData.getString(PaymentHandlerMethodData.EXTRA_METHOD_NAME);
         if (TextUtils.isEmpty(methodName)) {
             runCallbackWithError(ErrorStrings.METHOD_NAME_REQUIRED, callback);
             return;
         }
 
         @Nullable
-        String stringifiedDetails = paymentHandlerMethodData.getString(KEY_STRINGIFIED_DETAILS);
+        String stringifiedDetails = paymentHandlerMethodData.getString(
+                PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS);
 
         if (isWaitingForPaymentDetailsUpdate() || mListener == null
                 || !mListener.changePaymentMethodFromInvokedApp(methodName, stringifiedDetails)) {
@@ -165,6 +166,38 @@ public class PaymentDetailsUpdateServiceHelper {
     }
 
     /**
+     * Notifies the invoked app about merchant's response to the change event.
+     * @param response - Modified payment request details to be sent to the invoked app.
+     */
+    public void updateWith(PaymentRequestDetailsUpdate response) {
+        ThreadUtils.assertOnUiThread();
+        if (mCallback == null) return;
+        try {
+            mCallback.updateWith(response.asBundle());
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error calling updateWith", e);
+        } finally {
+            mCallback = null;
+        }
+    }
+
+    /**
+     * Notfies the invoked app that the merchant has not updated any of the payment request details
+     * in response to a change event.
+     */
+    public void onPaymentDetailsNotUpdated() {
+        ThreadUtils.assertOnUiThread();
+        if (mCallback == null) return;
+        try {
+            mCallback.paymentDetailsNotUpdated();
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error calling paymentDetailsNotUpdated", e);
+        } finally {
+            mCallback = null;
+        }
+    }
+
+    /**
      * @param callerUid The Uid of the service requester.
      * @return True when the service requester's package name and signature are the same as the
      *         invoked payment app's.
@@ -192,9 +225,18 @@ public class PaymentDetailsUpdateServiceHelper {
         return result;
     }
 
-    private void runCallbackWithError(String error, IPaymentDetailsUpdateServiceCallback callback) {
+    private void runCallbackWithError(
+            String errorMessage, IPaymentDetailsUpdateServiceCallback callback) {
         ThreadUtils.assertOnUiThread();
-        // TODO(https://crbug.com/1026667): Call Callback.updateWith with a
-        // updatedPaymentDetails bundle including the error message only.
+        if (callback == null) return;
+        // Only populate the error field.
+        Bundle blankUpdatedPaymentDetails = new Bundle();
+        blankUpdatedPaymentDetails.putString(
+                PaymentRequestDetailsUpdate.EXTRA_ERROR_MESSAGE, errorMessage);
+        try {
+            callback.updateWith(blankUpdatedPaymentDetails);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Error calling updateWith", e);
+        }
     }
 }

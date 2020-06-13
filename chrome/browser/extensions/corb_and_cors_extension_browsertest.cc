@@ -28,13 +28,13 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/embedder_support/switches.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "content/public/browser/browser_context.h"
@@ -336,7 +336,7 @@ class CorbAndCorsExtensionBrowserTest
   void VerifyPassiveUmaForAllowlistForCors(
       const base::HistogramTester& histograms,
       base::Optional<bool> expected_value) {
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
     const char* kUmaName =
         "SiteIsolation.XSD.Browser.AllowedByCorbButNotCors.ContentScript";
@@ -392,7 +392,7 @@ class CorbAndCorsExtensionBrowserTest
       const base::HistogramTester& histograms) {
     // Make sure that histograms logged in other processes (e.g. in
     // NetworkService process) get synced.
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
     if (IsCorbExpectedToBeTurnedOffAltogether()) {
       EXPECT_EQ(0u,
@@ -416,7 +416,7 @@ class CorbAndCorsExtensionBrowserTest
       bool expecting_sniffing = false) {
     // Make sure that histograms logged in other processes (e.g. in
     // NetworkService process) get synced.
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
     if (IsCorbExpectedToBeTurnedOffAltogether()) {
       EXPECT_EQ(0u,
@@ -449,7 +449,7 @@ class CorbAndCorsExtensionBrowserTest
       const content::WebContentsConsoleObserver& console_observer,
       const std::string& actual_fetch_result,
       const std::string& expected_fetch_result) {
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
     // VerifyCorbEligibleFetchFromContentScript is only called for Content Types
     // covered by CORB and therefore these requests carry no risk for
@@ -889,7 +889,7 @@ IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
       document.getElementById('fetch-button').click();
     )";
   {
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
     base::HistogramTester histograms;
     content::WebContentsConsoleObserver console_observer(active_web_contents());
 
@@ -909,7 +909,7 @@ IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
   EXPECT_FALSE(ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
       extension->id()));
   {
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
     base::HistogramTester histograms;
     content::WebContentsConsoleObserver console_observer(active_web_contents());
 
@@ -1127,7 +1127,7 @@ IN_PROC_BROWSER_TEST_P(
 
     // CORB is not used from FileURLLoaderFactory - verify that no CORB UMAs
     // have been logged.
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
     EXPECT_EQ(
         0u,
         histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser").size());
@@ -1158,7 +1158,7 @@ IN_PROC_BROWSER_TEST_P(
 
     // CORB is not used from FileURLLoaderFactory - verify that no CORB UMAs
     // have been logged.
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
     EXPECT_EQ(
         0u,
         histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser").size());
@@ -1775,7 +1775,7 @@ IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
     EXPECT_EQ("nosniff.xml - body\n", fetch_result);
 
     // CORB should be disabled for extension origins.
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
     EXPECT_EQ(
         0u,
         histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser").size());
@@ -1800,7 +1800,7 @@ IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
     VerifyFetchWasBlockedByCors(console_observer);
 
     // CORB should be disabled for extension origins.
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
     EXPECT_EQ(
         0u,
         histograms.GetTotalCountsForPrefix("SiteIsolation.XSD.Browser").size());
@@ -1965,7 +1965,7 @@ IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
   // RenderFrameHostImpl::MarkInitiatorsAsRequiringSeparateURLLoaderFactory
   // does not clobber the default URLLoaderFactory).
   {
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
     base::HistogramTester histograms;
     content::WebContentsConsoleObserver console_observer(active_web_contents());
     GURL cross_site_resource(
@@ -2000,7 +2000,7 @@ IN_PROC_BROWSER_TEST_P(CorbAndCorsExtensionBrowserTest,
   // from the crash by 1) refreshing the URLLoaderFactory for the content script
   // and 2) without cloberring the default factory for the AppCache.
   {
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+    metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
     base::HistogramTester histograms;
     content::WebContentsConsoleObserver console_observer(active_web_contents());
     GURL cross_site_resource(

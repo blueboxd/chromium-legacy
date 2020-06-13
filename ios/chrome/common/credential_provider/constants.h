@@ -24,4 +24,8 @@ extern NSString* const kUserDefaultsCredentialProviderFirstTimeSyncCompleted;
 // given consent for the credential provider extension.
 extern NSString* const kUserDefaultsCredentialProviderConsentVerified;
 
+// Key for the app group user defaults containing the managed user ID to be
+// validated in the extension.
+extern NSString* const kUserDefaultsCredentialProviderManagedUserID;
+
 #endif  // IOS_CHROME_COMMON_CREDENTIAL_PROVIDER_CONSTANTS_H_

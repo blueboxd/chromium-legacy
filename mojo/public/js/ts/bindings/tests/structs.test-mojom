@@ -7,6 +7,10 @@ module mojo.tstest;
 struct EmptyStruct {
 };
 
+struct StructMemberStruct {
+  EmptyStruct empty_struct;
+};
+
 struct IntStruct {
   int8 value;
 };

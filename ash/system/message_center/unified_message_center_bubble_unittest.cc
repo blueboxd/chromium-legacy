@@ -15,7 +15,6 @@
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/test/ash_test_base.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/message_center/message_center.h"
 
 using message_center::MessageCenter;
@@ -33,7 +32,6 @@ class UnifiedMessageCenterBubbleTest : public AshTestBase {
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
-    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
   }
 
  protected:
@@ -46,11 +44,6 @@ class UnifiedMessageCenterBubbleTest : public AshTestBase {
         message_center::NotifierId(), message_center::RichNotificationData(),
         new message_center::NotificationDelegate()));
     return id;
-  }
-
-  void EnableMessageCenterRefactor() {
-    scoped_feature_list_->InitAndEnableFeature(
-        features::kUnifiedMessageCenterRefactor);
   }
 
   UnifiedMessageCenterBubble* GetMessageCenterBubble() {
@@ -124,14 +117,12 @@ class UnifiedMessageCenterBubbleTest : public AshTestBase {
 
  private:
   int id_ = 0;
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedMessageCenterBubbleTest);
 };
 
 TEST_F(UnifiedMessageCenterBubbleTest, PositionedAboveSystemTray) {
   const int total_notifications = 5;
-  EnableMessageCenterRefactor();
   GetPrimaryUnifiedSystemTray()->ShowBubble(true);
   AddNotification();
 
@@ -160,7 +151,6 @@ TEST_F(UnifiedMessageCenterBubbleTest, PositionedAboveSystemTray) {
 }
 
 TEST_F(UnifiedMessageCenterBubbleTest, FocusCycle) {
-  EnableMessageCenterRefactor();
   GetPrimaryUnifiedSystemTray()->ShowBubble(true);
   AddNotification();
   AddNotification();
@@ -209,7 +199,6 @@ TEST_F(UnifiedMessageCenterBubbleTest, FocusCycle) {
 }
 
 TEST_F(UnifiedMessageCenterBubbleTest, ReverseFocusCycle) {
-  EnableMessageCenterRefactor();
   GetPrimaryUnifiedSystemTray()->ShowBubble(true);
   AddNotification();
   AddNotification();
@@ -258,7 +247,6 @@ TEST_F(UnifiedMessageCenterBubbleTest, ReverseFocusCycle) {
 }
 
 TEST_F(UnifiedMessageCenterBubbleTest, CollapseState) {
-  EnableMessageCenterRefactor();
   AddNotification();
   AddNotification();
 
@@ -305,7 +293,6 @@ TEST_F(UnifiedMessageCenterBubbleTest, CollapseState) {
 }
 
 TEST_F(UnifiedMessageCenterBubbleTest, FocusCycleWithNoNotifications) {
-  EnableMessageCenterRefactor();
   GetPrimaryUnifiedSystemTray()->ShowBubble(true);
 
   views::Widget* quick_settings_widget =

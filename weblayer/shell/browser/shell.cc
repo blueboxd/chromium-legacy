@@ -100,12 +100,21 @@ void Shell::SetMainMessageLoopQuitClosure(base::OnceClosure quit_closure) {
 }
 
 Tab* Shell::tab() {
+  if (!browser())
+    return nullptr;
+  CHECK(!browser()->GetTabs().empty());
+  return browser()->GetTabs()[0];
+}
+
+Browser* Shell::browser() {
 #if defined(OS_ANDROID)
   // TODO(jam): this won't work if we need more than one Shell in a test.
-  return Tab::GetLastTabForTesting();
+  const auto& browsers = BrowserImpl::GetAllBrowsers();
+  if (browsers.empty())
+    return nullptr;
+  return browsers[0];
 #else
-  CHECK(!browser_->GetTabs().empty());
-  return browser_->GetTabs()[0];
+  return browser_.get();
 #endif
 }
 

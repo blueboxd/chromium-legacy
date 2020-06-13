@@ -95,21 +95,15 @@ void CursorManager::ResetCursorVisibilityStateForTest() {
 }
 
 void CursorManager::SetCursor(gfx::NativeCursor cursor) {
-  bool previously_visible = GetCursor().type() != ui::mojom::CursorType::kNone;
-  state_on_unlock_->set_cursor(cursor);
-  if (cursor_lock_count_ == 0 &&
-      GetCursor() != state_on_unlock_->cursor()) {
-    delegate_->SetCursor(state_on_unlock_->cursor(), this);
-    bool is_visible = cursor.type() != ui::mojom::CursorType::kNone;
-    if (is_visible != previously_visible) {
-      for (auto& observer : observers_)
-        observer.OnCursorVisibilityChanged(is_visible);
-    }
-  }
+  SetCursorImpl(cursor, /*forced=*/false);
 }
 
 gfx::NativeCursor CursorManager::GetCursor() const {
   return current_state_->cursor();
+}
+
+void CursorManager::SetCursorForced(gfx::NativeCursor cursor) {
+  SetCursorImpl(cursor, /*forced=*/true);
 }
 
 void CursorManager::ShowCursor() {
@@ -252,6 +246,20 @@ void CursorManager::CommitCursorSize(ui::CursorSize cursor_size) {
 
 void CursorManager::CommitMouseEventsEnabled(bool enabled) {
   current_state_->SetMouseEventsEnabled(enabled);
+}
+
+void CursorManager::SetCursorImpl(gfx::NativeCursor cursor, bool forced) {
+  bool previously_visible = GetCursor().type() != ui::mojom::CursorType::kNone;
+  state_on_unlock_->set_cursor(cursor);
+  if (cursor_lock_count_ == 0 &&
+      (forced || GetCursor() != state_on_unlock_->cursor())) {
+    delegate_->SetCursor(state_on_unlock_->cursor(), this);
+    bool is_visible = cursor.type() != ui::mojom::CursorType::kNone;
+    if (is_visible != previously_visible) {
+      for (auto& observer : observers_)
+        observer.OnCursorVisibilityChanged(is_visible);
+    }
+  }
 }
 
 }  // namespace wm

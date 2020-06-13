@@ -22,6 +22,7 @@
 #include "components/translate/content/browser/content_record_page_language.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
+#include "components/translate/core/common/translate_metrics.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
@@ -246,6 +247,9 @@ void ContentTranslateDriver::DidFinishNavigation(
   if (!navigation_handle->HasCommitted())
     return;
 
+  if (navigation_handle->IsInMainFrame())
+    finish_navigation_time_ = base::TimeTicks::Now();
+
   // Let the LanguageState clear its state.
   const bool reload =
       navigation_handle->GetReloadType() != content::ReloadType::NONE ||
@@ -283,6 +287,10 @@ void ContentTranslateDriver::RegisterPage(
     mojo::PendingRemote<translate::mojom::TranslateAgent> translate_agent,
     const translate::LanguageDetectionDetails& details,
     const bool page_needs_translation) {
+  base::TimeTicks language_determined_time = base::TimeTicks::Now();
+  ReportLanguageDeterminedDuration(finish_navigation_time_,
+                                   language_determined_time);
+
   // If we have a language histogram (i.e. we're not in incognito), update it
   // with the detected language of every page visited.
   if (language_histogram_ && details.is_cld_reliable)

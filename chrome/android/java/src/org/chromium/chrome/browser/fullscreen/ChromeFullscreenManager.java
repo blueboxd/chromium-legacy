@@ -64,7 +64,7 @@ import java.util.ArrayList;
 public class ChromeFullscreenManager implements ActivityStateListener, WindowFocusChangedListener,
                                                 ViewGroup.OnHierarchyChangeListener,
                                                 View.OnSystemUiVisibilityChangeListener,
-                                                VrModeObserver, BrowserControlsStateProvider {
+                                                VrModeObserver, BrowserControlsSizer {
     // The amount of time to delay the control show request after returning to a once visible
     // activity.  This delay is meant to allow Android to run its Activity focusing animation and
     // have the controls scroll back in smoothly once that has finished.
@@ -311,10 +311,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         scheduleVisibilityUpdate();
     }
 
-    /**
-     * @return The visibility delegate that allows browser UI to control the browser control
-     *         visibility.
-     */
+    @Override
     public BrowserStateBrowserControlsVisibilityDelegate getBrowserVisibilityDelegate() {
         return mBrowserVisibilityDelegate;
     }
@@ -490,38 +487,17 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
     }
 
     /**
-     * @return True if the browser controls are completely off screen.
-     */
-    public boolean areBrowserControlsOffScreen() {
-        return getBrowserControlHiddenRatio() == 1.0f;
-    }
-
-    /**
      * @return True if the browser controls are showing as much as the min height. Note that this is
-     * the same as {@link #areBrowserControlsOffScreen()} when both min-heights are 0.
+     * the same as
+     * {@link BrowserControlsUtils#areBrowserControlsOffScreen(BrowserControlsStateProvider)} when
+     * both min-heights are 0.
      */
     @VisibleForTesting
     boolean areBrowserControlsAtMinHeight() {
         return mControlsAtMinHeight.get();
     }
 
-    /**
-     * @return True if the browser controls are currently completely visible.
-     */
-    public boolean areBrowserControlsFullyVisible() {
-        return getBrowserControlHiddenRatio() == 0.f;
-    }
-
-    /**
-     * @return Whether the browser controls should be drawn as a texture.
-     */
-    public boolean drawControlsAsTexture() {
-        return getBrowserControlHiddenRatio() > 0;
-    }
-
-    /**
-     * Sets the height of the bottom controls.
-     */
+    @Override
     public void setBottomControlsHeight(int bottomControlsHeight, int bottomControlsMinHeight) {
         if (mBottomControlContainerHeight == bottomControlsHeight
                 && mBottomControlsMinHeight == bottomControlsMinHeight) {
@@ -535,9 +511,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         }
     }
 
-    /**
-     * Sets the height of the top controls.
-     */
+    @Override
     public void setTopControlsHeight(int topControlsHeight, int topControlsMinHeight) {
         if (mTopControlContainerHeight == topControlsHeight
                 && mTopControlsMinHeight == topControlsMinHeight) {
@@ -550,10 +524,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         }
     }
 
-    /**
-     * Sets whether the changes to the browser controls heights should be animated.
-     * @param animateBrowserControlsHeightChanges True if the height changes should be animated.
-     */
+    @Override
     public void setAnimateBrowserControlsHeightChanges(
             boolean animateBrowserControlsHeightChanges) {
         mAnimateBrowserControlsHeightChanges = animateBrowserControlsHeightChanges;
@@ -771,14 +742,14 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         return mHidingTokenHolder.acquireToken();
     }
 
-    /** Similar to {@link #hideAndroidControls}, but also replaces an old token */
+    @Override
     public int hideAndroidControlsAndClearOldToken(int oldToken) {
         int newToken = hideAndroidControls();
         mHidingTokenHolder.releaseToken(oldToken);
         return newToken;
     }
 
-    /** Release a hiding token. */
+    @Override
     public void releaseAndroidControlsHidingToken(int token) {
         mHidingTokenHolder.releaseToken(token);
     }
@@ -798,7 +769,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
             }
         }
 
-        boolean showControls = !drawControlsAsTexture();
+        boolean showControls = !BrowserControlsUtils.drawControlsAsTexture(this);
         ViewGroup contentView = getContentView();
         if (contentView == null) return showControls;
 
@@ -978,10 +949,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         TabModelImpl.setActualTabSwitchLatencyMetricRequired();
     }
 
-    /**
-     * Shows the Android browser controls view.
-     * @param animate Whether a slide-in animation should be run.
-     */
+    @Override
     public void showAndroidControls(boolean animate) {
         if (animate) {
             runBrowserDrivenShowAnimation();
@@ -1042,7 +1010,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         }
     }
 
-    /** @return {@code true} if browser control offset is overridden by animation. */
+    @Override
     public boolean offsetOverridden() {
         return mOffsetOverridden;
     }

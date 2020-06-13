@@ -89,11 +89,21 @@ class ExportNotifier(object):
         """Processes and comments on CLs with failed TackCluster status."""
         _log.info('Processing %d CLs with failed Taskcluster status.',
                   len(gerrit_dict))
+
+        # Uses a dummy CL to test export_notifier on prod. The real comments will be dumped to
+        # https://chromium-review.googlesource.com/c/chromium/src/+/2241634.
+        try:
+            dummy_cl = self.gerrit.query_cl_comments_and_revisions(
+                'I4fd5039cd4ec991bb8f840eabe55574b37243ef2')
+        except GerritError as e:
+            _log.error('Could not process Dummy CL: %s', str(e))
+            return
+
         for change_id, pr_status_info in gerrit_dict.items():
             try:
                 cl = self.gerrit.query_cl_comments_and_revisions(change_id)
                 has_commented = self.has_latest_taskcluster_status_commented(
-                    cl.messages, pr_status_info)
+                    dummy_cl.messages, pr_status_info)
                 if has_commented:
                     continue
 
@@ -110,7 +120,7 @@ class ExportNotifier(object):
                     _log.debug('Comments are:\n %s\n', cl_comment)
                 else:
                     _log.info('Commenting on CL %s\n', change_id)
-                    cl.post_comment(cl_comment)
+                    dummy_cl.post_comment(cl_comment)
             except GerritError as e:
                 _log.error('Could not process Gerrit CL %s: %s', change_id,
                            str(e))
@@ -126,7 +136,8 @@ class ExportNotifier(object):
         """
         for message in reversed(messages):
             cl_gerrit_sha = PRStatusInfo.get_gerrit_sha_from_comment(
-                message['message'])
+                message['message'], pr_status_info.pr_number)
+
             if cl_gerrit_sha:
                 return cl_gerrit_sha == pr_status_info.gerrit_sha
 
@@ -196,10 +207,11 @@ class PRStatusInfo(object):
         return self._gerrit_sha
 
     @staticmethod
-    def get_gerrit_sha_from_comment(comment):
+    def get_gerrit_sha_from_comment(comment, pr_number):
+        dummy_tag = str(pr_number) + PRStatusInfo.CL_SHA_TAG
         for line in comment.splitlines():
-            if line.startswith(PRStatusInfo.CL_SHA_TAG):
-                return line[len(PRStatusInfo.CL_SHA_TAG):]
+            if line.startswith(dummy_tag):
+                return line[len(dummy_tag):]
 
         return None
 
@@ -212,7 +224,8 @@ class PRStatusInfo(object):
             pr_url='%spull/%d' % (WPT_GH_URL, self.pr_number)
         )
         link_line = ('\n\n{}{}').format(PRStatusInfo.LINK_TAG, self.link)
-        sha_line = ('\n{}{}').format(PRStatusInfo.CL_SHA_TAG, self.gerrit_sha)
+        dummy_tag = str(self.pr_number) + PRStatusInfo.CL_SHA_TAG
+        sha_line = ('\n{}{}').format(dummy_tag, self.gerrit_sha)
 
         comment = status_line + link_line + sha_line
         if patchset is not None:

@@ -154,6 +154,11 @@ void LayoutShiftTracker::ObjectShifted(
   if (source.IsSVG())
     return;
 
+  if (Element* element = DynamicTo<Element>(source.GetNode())) {
+    if (element->IsSliderThumbElement())
+      return;
+  }
+
   const auto root_state = PropertyTreeStateFor(*source.View());
 
   FloatClipRect clip_rect =

@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.download.dialogs;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import android.app.Activity;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -26,10 +26,14 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.browser_ui.widget.RadioButtonWithDescription;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
 import org.chromium.ui.modelutil.PropertyModel;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Test to verify download later dialog.
@@ -47,7 +51,7 @@ public class DownloadLaterDialogTest {
     private DownloadLaterDialogController mController;
 
     @Mock
-    private ModalDialogProperties.Controller mModalDialogController;
+    private WindowAndroid mWindowAndroid;
 
     private ModalDialogManager getModalDialogManager() {
         return mActivityTestRule.getActivity().getModalDialogManager();
@@ -63,27 +67,37 @@ public class DownloadLaterDialogTest {
         MockitoAnnotations.initMocks(this);
         mActivityTestRule.startMainActivityOnBlankPage();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertNotNull(mController);
+            when(mWindowAndroid.getActivity())
+                    .thenReturn(new WeakReference<Activity>(mActivityTestRule.getActivity()));
             mModel = new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
                              .with(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION,
                                      DownloadLaterDialogChoice.ON_WIFI)
-                             .with(DownloadLaterDialogProperties.CONTROLLER, mController)
                              .build();
-
-            mDialogCoordinator = new DownloadLaterDialogCoordinator(mActivityTestRule.getActivity(),
-                    getModalDialogManager(), mModel, mModalDialogController);
+            mDialogCoordinator = new DownloadLaterDialogCoordinator();
+            Assert.assertNotNull(mController);
+            mDialogCoordinator.initialize(mController);
         });
+    }
+
+    private void showDialog() {
+        mDialogCoordinator.showDialog(mWindowAndroid, mModel);
+    }
+
+    private void clickPositiveButton() {
+        PropertyModel modalDialogModel = getModalDialogManager().getCurrentDialogForTest();
+        modalDialogModel.get(ModalDialogProperties.CONTROLLER)
+                .onClick(modalDialogModel, ButtonType.POSITIVE);
     }
 
     @Test
     @MediumTest
     public void testShowDialogThenDismiss() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mDialogCoordinator.showDialog();
+            showDialog();
             Assert.assertTrue(mActivityTestRule.getActivity().getModalDialogManager().isShowing());
             mDialogCoordinator.dismissDialog(DialogDismissalCause.UNKNOWN);
             Assert.assertFalse(getModalDialogManager().isShowing());
-            verify(mModalDialogController).onDismiss(any(), anyInt());
+            verify(mController).onDownloadLaterDialogCanceled();
         });
     }
 
@@ -91,7 +105,7 @@ public class DownloadLaterDialogTest {
     @MediumTest
     public void testShowDialogThenDestroy() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mDialogCoordinator.showDialog();
+            showDialog();
             Assert.assertTrue(getModalDialogManager().isShowing());
             mDialogCoordinator.destroy();
         });
@@ -99,9 +113,15 @@ public class DownloadLaterDialogTest {
 
     @Test
     @MediumTest
+    public void testDestroyWithoutShowDialog() {
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mDialogCoordinator.destroy(); });
+    }
+
+    @Test
+    @MediumTest
     public void testSelectRadioButton() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mDialogCoordinator.showDialog();
+            showDialog();
 
             // Verify the initial selection of the dialog. The controller should not get an event
             // for the initial setup.
@@ -117,7 +137,9 @@ public class DownloadLaterDialogTest {
             Assert.assertNotNull(downloadNowButton);
             downloadNowButton.setChecked(true);
             getDownloadLaterDialogView().onCheckedChanged(null, -1);
-            verify(mController).onChoiceChanged(eq(DownloadLaterDialogChoice.DOWNLOAD_NOW));
+            clickPositiveButton();
+            verify(mController)
+                    .onDownloadLaterDialogComplete(eq(DownloadLaterDialogChoice.DOWNLOAD_NOW));
         });
     }
 }

@@ -33,6 +33,7 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   const base::string16& GetGeneratedPassword() const override;
   FormSaver* GetFormSaver() const override;
 
+  // |metrics_recorder| and |votes_uploader| can both be nullptr.
   void Init(PasswordManagerClient* client,
             const FormFetcher* form_fetcher,
             scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder,
@@ -159,9 +160,10 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   // Handles the user flows related to the generation.
   std::unique_ptr<PasswordGenerationManager> generation_manager_;
 
-  // Takes care of recording metrics and events for |*this|.
+  // Takes care of recording metrics and events for |*this|. Can be nullptr.
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;
 
+  // Can be nullptr.
   VotesUploader* votes_uploader_;
 };
 

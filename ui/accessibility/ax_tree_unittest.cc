@@ -3218,10 +3218,13 @@ TEST(AXTreeTest, SetSizeAssignedOnContainer) {
   // Items should inherit SetSize from ordered set if not specified.
   AXNode* item1 = tree.GetFromId(2);
   EXPECT_OPTIONAL_EQ(7, item1->GetSetSize());
+  EXPECT_OPTIONAL_EQ(1, item1->GetPosInSet());
   AXNode* item2 = tree.GetFromId(3);
   EXPECT_OPTIONAL_EQ(7, item2->GetSetSize());
+  EXPECT_OPTIONAL_EQ(2, item2->GetPosInSet());
   AXNode* item3 = tree.GetFromId(4);
   EXPECT_OPTIONAL_EQ(7, item3->GetSetSize());
+  EXPECT_OPTIONAL_EQ(3, item3->GetPosInSet());
 }
 
 // Tests GetPosInSet and GetSetSize on a list containing various roles.
@@ -3261,8 +3264,8 @@ TEST(AXTreeTest, SetSizePosInSetDiverseList) {
   EXPECT_OPTIONAL_EQ(4, item3->GetPosInSet());
   EXPECT_OPTIONAL_EQ(4, item3->GetSetSize());
   AXNode* tab = tree.GetFromId(6);
-  EXPECT_OPTIONAL_EQ(0, tab->GetPosInSet());
-  EXPECT_OPTIONAL_EQ(0, tab->GetSetSize());
+  EXPECT_FALSE(tab->GetPosInSet());
+  EXPECT_FALSE(tab->GetSetSize());
 }
 
 // Tests GetPosInSet and GetSetSize on a nested list.
@@ -3680,8 +3683,8 @@ TEST(AXTreeTest, OrderedSetReportsSetSize) {
   // Only 1 item whose role matches.
   EXPECT_OPTIONAL_EQ(1, inner_list3->GetSetSize());
   AXNode* inner_list3_article1 = tree.GetFromId(10);
-  EXPECT_OPTIONAL_EQ(0, inner_list3_article1->GetPosInSet());
-  EXPECT_OPTIONAL_EQ(0, inner_list3_article1->GetSetSize());
+  EXPECT_FALSE(inner_list3_article1->GetPosInSet());
+  EXPECT_FALSE(inner_list3_article1->GetSetSize());
   AXNode* inner_list3_item1 = tree.GetFromId(11);
   EXPECT_OPTIONAL_EQ(1, inner_list3_item1->GetPosInSet());
   EXPECT_OPTIONAL_EQ(1, inner_list3_item1->GetSetSize());
@@ -3713,11 +3716,11 @@ TEST(AXTreeTest, SetSizePosInSetInvalid) {
   EXPECT_FALSE(item1->GetPosInSet());
   EXPECT_FALSE(item1->GetSetSize());
   AXNode* item2 = tree.GetFromId(2);
-  EXPECT_OPTIONAL_EQ(0, item2->GetPosInSet());
-  EXPECT_OPTIONAL_EQ(0, item2->GetSetSize());
+  EXPECT_FALSE(item2->GetPosInSet());
+  EXPECT_FALSE(item2->GetSetSize());
   AXNode* item3 = tree.GetFromId(3);
-  EXPECT_OPTIONAL_EQ(0, item3->GetPosInSet());
-  EXPECT_OPTIONAL_EQ(0, item3->GetSetSize());
+  EXPECT_FALSE(item3->GetPosInSet());
+  EXPECT_FALSE(item3->GetSetSize());
 }
 
 // Tests GetPosInSet and GetSetSize code on kRadioButtons. Radio buttons
@@ -4356,6 +4359,45 @@ TEST(AXTreeTest, SetSizePosInSetGroup) {
   EXPECT_FALSE(outer_group->GetSetSize());
   AXNode* inner_group = last_tree.GetFromId(4);
   EXPECT_FALSE(inner_group->GetSetSize());
+}
+
+TEST(AXTreeTest, SetSizePosInSetHidden) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(6);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].role = ax::mojom::Role::kListBox;  // SetSize = 4
+  tree_update.nodes[0].child_ids = {2, 3, 4, 5, 6};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].role = ax::mojom::Role::kListBoxOption;  // 1 of 4
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].role = ax::mojom::Role::kListBoxOption;  // 2 of 4
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].role = ax::mojom::Role::kListBoxOption;  // Hidden
+  tree_update.nodes[3].AddState(ax::mojom::State::kInvisible);
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].role = ax::mojom::Role::kListBoxOption;  // 3 of 4
+  tree_update.nodes[5].id = 6;
+  tree_update.nodes[5].role = ax::mojom::Role::kListBoxOption;  // 4 of 4
+  AXTree tree(tree_update);
+
+  AXNode* list_box = tree.GetFromId(1);
+  EXPECT_OPTIONAL_EQ(4, list_box->GetSetSize());
+  AXNode* option1 = tree.GetFromId(2);
+  EXPECT_OPTIONAL_EQ(1, option1->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(4, option1->GetSetSize());
+  AXNode* option2 = tree.GetFromId(3);
+  EXPECT_OPTIONAL_EQ(2, option2->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(4, option2->GetSetSize());
+  AXNode* option_hidden = tree.GetFromId(4);
+  EXPECT_FALSE(option_hidden->GetPosInSet());
+  EXPECT_FALSE(option_hidden->GetSetSize());
+  AXNode* option3 = tree.GetFromId(5);
+  EXPECT_OPTIONAL_EQ(3, option3->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(4, option3->GetSetSize());
+  AXNode* option4 = tree.GetFromId(6);
+  EXPECT_OPTIONAL_EQ(4, option4->GetPosInSet());
+  EXPECT_OPTIONAL_EQ(4, option4->GetSetSize());
 }
 
 TEST(AXTreeTest, OnNodeWillBeDeletedHasValidUnignoredParent) {

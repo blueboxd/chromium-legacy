@@ -435,7 +435,7 @@ class RTCPeerConnectionHandlerTest : public ::testing::Test {
   std::vector<std::unique_ptr<blink::RTCRtpSenderImpl>>::iterator
   FindSenderForTrack(const blink::WebMediaStreamTrack& web_track) {
     for (auto it = senders_.begin(); it != senders_.end(); ++it) {
-      if ((*it)->Track().UniqueId() == web_track.UniqueId())
+      if ((*it)->Track()->UniqueId() == web_track.UniqueId())
         return it;
     }
     return senders_.end();

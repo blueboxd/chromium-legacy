@@ -21,11 +21,12 @@ namespace blink {
 
 class WebMediaStreamAudioSink;
 class MediaStreamAudioSource;
+class MediaStreamComponent;
 
 // Provides the part of the audio pipeline delivering audio from a
 // MediaStreamAudioSource to one or more WebMediaStreamAudioSinks. An instance
-// of this class is owned by WebMediaStreamTrack, and clients should use
-// From() to gain access to a MediaStreamAudioTrack.
+// of this class is owned by MediaStreamComponent/WebMediaStreamTrack, and
+// clients should use From() to gain access to a MediaStreamAudioTrack.
 class PLATFORM_EXPORT MediaStreamAudioTrack
     : public WebPlatformMediaStreamTrack {
  public:
@@ -35,7 +36,7 @@ class PLATFORM_EXPORT MediaStreamAudioTrack
 
   // Returns the MediaStreamAudioTrack instance owned by the given blink |track|
   // or null.
-  static MediaStreamAudioTrack* From(const WebMediaStreamTrack& track);
+  static MediaStreamAudioTrack* From(const MediaStreamComponent* component);
 
   // Provides a weak reference to this MediaStreamAudioTrack which is
   // invalidated when Stop() is called. The weak pointer may only be

@@ -171,7 +171,8 @@ void PasswordSaveManagerImpl::CreatePendingCredentials(
       submitted_form, generated_password, is_http_auth, is_credential_api_save,
       similar_saved_form);
 
-  SetVotesAndRecordMetricsForPendingCredentials(parsed_submitted_form);
+  if (votes_uploader_)
+    SetVotesAndRecordMetricsForPendingCredentials(parsed_submitted_form);
 }
 
 void PasswordSaveManagerImpl::SetVotesAndRecordMetricsForPendingCredentials(

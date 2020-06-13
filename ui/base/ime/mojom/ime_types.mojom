@@ -6,6 +6,29 @@ module ui.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
 
+enum TextInputMode {
+  kDefault,
+  kNone,
+  kText,
+  kTel,
+  kUrl,
+  kEmail,
+  kNumeric,
+  kDecimal,
+  kSearch,
+};
+
+enum TextInputAction {
+  kDefault,
+  kEnter,
+  kDone,
+  kGo,
+  kNext,
+  kPrevious,
+  kSearch,
+  kSend,
+};
+
 // Text input type which is based on blink::WebTextInputType.
 enum TextInputType {
   NONE,

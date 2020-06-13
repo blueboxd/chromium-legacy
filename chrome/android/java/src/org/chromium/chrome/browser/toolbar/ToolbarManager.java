@@ -45,6 +45,7 @@ import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
@@ -158,7 +159,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private final Callback<Boolean> mUrlFocusChangedCallback;
     private final Handler mHandler = new Handler();
     private final ChromeActivity mActivity;
-    private final BrowserControlsStateProvider mBrowserControlsStateProvider;
+    private final BrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
     private final ChromeFullscreenManager mFullscreenManager;
     private LocationBarFocusScrimHandler mLocationBarFocusHandler;
     private ComponentCallbacks mComponentCallbacks;
@@ -195,6 +196,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     // TODO(https://crbug.com/865801): Consolidate isBottomToolbarVisible(),
     // onBottomToolbarVisibilityChanged, etc. to all use mBottomToolbarVisibilitySupplier.
     private final ObservableSupplierImpl<Boolean> mBottomToolbarVisibilitySupplier;
+    private final ScrimCoordinator mScrimCoordinator;
 
     /**
      * Creates a ToolbarManager object.
@@ -235,12 +237,13 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             ObservableSupplier<AppMenuCoordinator> appMenuCoordinatorSupplier,
             boolean shouldShowUpdateBadge) {
         mActivity = activity;
-        mBrowserControlsStateProvider = fullscreenManager;
+        mBrowserControlsVisibilityManager = fullscreenManager;
         mFullscreenManager = fullscreenManager;
         mActionBarDelegate = new ViewShiftingActionBarDelegate(activity, controlContainer);
         mShareDelegateSupplier = shareDelegateSupplier;
         mBottomToolbarVisibilitySupplier = bottomToolbarVisibilitySupplier;
         mCanAnimateNativeBrowserControls = canAnimateNativeBrowserControls;
+        mScrimCoordinator = scrimCoordinator;
 
         mLocationBarModel = new LocationBarModel(activity);
         mControlContainer = controlContainer;
@@ -305,7 +308,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 new ActionModeController(mActivity, mActionBarDelegate, toolbarActionModeCallback);
 
         BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate =
-                mFullscreenManager.getBrowserVisibilityDelegate();
+                mBrowserControlsVisibilityManager.getBrowserVisibilityDelegate();
         assert controlsVisibilityDelegate != null;
         mControlsVisibilityDelegate = controlsVisibilityDelegate;
 
@@ -548,7 +551,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 setControlContainerTopMargin(getToolbarExtraYOffset());
             }
         };
-        mBrowserControlsStateProvider.addObserver(mBrowserControlsObserver);
+        mBrowserControlsVisibilityManager.addObserver(mBrowserControlsObserver);
 
         mFullscreenListener = new FullscreenListener() {
             @Override
@@ -699,7 +702,9 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                                 id -> mActivity.onOptionsItemSelected(id, null)),
                 mAppThemeColorProvider, mShareDelegateSupplier, mShowStartSurfaceSupplier,
                 mToolbarTabController::openHomepage,
-                (reason) -> setUrlBarFocus(true, reason), mOverviewModeBehaviorSupplier);
+                (reason)
+                        -> setUrlBarFocus(true, reason),
+                mOverviewModeBehaviorSupplier, mScrimCoordinator);
 
         boolean isBottomToolbarVisible = BottomToolbarConfiguration.isBottomToolbarEnabled()
                 && (!BottomToolbarConfiguration.isAdaptiveToolbarEnabled()
@@ -937,7 +942,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         mLocationBarModel.destroy();
         mHandler.removeCallbacksAndMessages(null); // Cancel delayed tasks.
-        mBrowserControlsStateProvider.removeObserver(mBrowserControlsObserver);
+        mBrowserControlsVisibilityManager.removeObserver(mBrowserControlsObserver);
         mFullscreenManager.removeListener(mFullscreenListener);
         if (mLocationBar != null) {
             mLocationBar.removeUrlFocusChangeListener(mLocationBarFocusHandler);
@@ -1129,7 +1134,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private int getToolbarExtraYOffset() {
         final int stripAndToolbarHeight = mActivity.getResources().getDimensionPixelSize(
                 R.dimen.tab_strip_and_toolbar_height);
-        return mBrowserControlsStateProvider.getTopControlsHeight() - stripAndToolbarHeight;
+        return mBrowserControlsVisibilityManager.getTopControlsHeight() - stripAndToolbarHeight;
     }
 
     /**

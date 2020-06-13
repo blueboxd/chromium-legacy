@@ -162,6 +162,16 @@ class OutOfProcessInstance : public pp::Instance,
   static std::string GetFileNameFromUrl(const std::string& url);
 
  private:
+  // Message handlers.
+  void HandleBackgroundColorChangedMessage(const pp::VarDictionary& dict);
+  void HandleGetNamedDestinationMessage(const pp::VarDictionary& dict);
+  void HandleGetPasswordCompleteMessage(const pp::VarDictionary& dict);
+  void HandleGetSelectedTextMessage();
+  void HandleLoadPreviewPageMessage(const pp::VarDictionary& dict);
+  void HandlePrintMessage(const pp::VarDictionary& dict);
+  void HandleResetPrintPreviewModeMessage(const pp::VarDictionary& dict);
+  void HandleViewportMessage(const pp::VarDictionary& dict);
+
   void ResetRecentlySentFindUpdate(int32_t);
 
   // Called whenever the plugin geometry changes to update the location of the

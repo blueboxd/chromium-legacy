@@ -4,7 +4,12 @@
 
 import collections
 import copy
+import json
+import logging
 import re
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 # These labels should match the ones output by gtest's JSON.
@@ -45,6 +50,12 @@ class GTestResult(object):
   @property
   def command(self):
     return self._command
+
+  @property
+  def disabled_tests_from_compiled_tests_file(self):
+    if self.__finalized:
+      return copy.deepcopy(self._disabled_tests_from_compiled_tests_file)
+    return self._disabled_tests_from_compiled_tests_file
 
   @property
   def failed_tests(self):
@@ -88,6 +99,7 @@ class GTestResult(object):
     self._command = tuple(command)
     self._crashed = False
     self._crashed_test = None
+    self._disabled_tests_from_compiled_tests_file = []
     self._failed_tests = collections.OrderedDict()
     self._flaked_tests = collections.OrderedDict()
     self._passed_tests = []
@@ -148,6 +160,9 @@ class GTestLogParser(object):
     # This may be either text or a number. It will be used in the phrase
     # '%s disabled' or '%s flaky' on the waterfall display.
     self._disabled_tests = 0
+
+    # Disabled tests by parsing the compiled tests json file output from GTest.
+    self._disabled_tests_from_compiled_tests_file = []
     self._flaky_tests = 0
 
     # Regular expressions for parsing GTest logs. Test names look like
@@ -175,6 +190,9 @@ class GTestLogParser(object):
 
     self._retry_message = re.compile('RETRYING FAILED TESTS:')
     self.retrying_failed = False
+
+    self._compiled_tests_file_path = re.compile(
+        '.*Wrote compiled tests to file: (\S+)')
 
     self.TEST_STATUS_MAP = {
       'OK': TEST_SUCCESS_LABEL,
@@ -268,6 +286,15 @@ class GTestLogParser(object):
     of disabled tests.
     """
     return self._disabled_tests
+
+  def DisabledTestsFromCompiledTestsFile(self):
+    """Returns the list of disabled tests in format '{TestCaseName}/{TestName}'.
+
+       Find all test names starting with DISABLED_ from the compiled test json
+       file if there is one. If there isn't or error in parsing, returns an
+       empty list.
+    """
+    return self._disabled_tests_from_compiled_tests_file
 
   def FlakyTests(self):
     """Returns the name of the flaky test (if there is only 1) or the number
@@ -448,6 +475,31 @@ class GTestLogParser(object):
     results = self._retry_message.match(line)
     if results:
       self.retrying_failed = True
+      return
+
+    # Is it the line containing path to the compiled tests json file?
+    results = self._compiled_tests_file_path.match(line)
+    if results:
+      path = results.group(1)
+      LOGGER.info('Compiled tests json file path: %s' % path)
+      try:
+        # TODO(crbug.com/1091345): Read the file when running on device.
+        with open(path) as f:
+          disabled_tests_from_json = []
+          compiled_tests = json.load(f)
+          for single_test in compiled_tests:
+            test_case_name = single_test.get('test_case_name')
+            test_name = single_test.get('test_name')
+            if test_case_name and test_name and test_name.startswith(
+                'DISABLED_'):
+              disabled_tests_from_json.append('%s/%s' %
+                                              (test_case_name, test_name))
+          self._disabled_tests_from_compiled_tests_file = (
+              disabled_tests_from_json)
+      except Exception as e:
+        LOGGER.warning(
+            'Error when finding disabled tests in compiled tests json file: %s'
+            % e)
       return
 
     # Random line: if we're in a test, collect it for the failure description.

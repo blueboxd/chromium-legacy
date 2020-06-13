@@ -1447,7 +1447,7 @@ bool CompositedLayerMapping::ContainsPaintedContent() const {
   // fill the border box entirely, and set background color on the layer in that
   // case, instead of allocating backing store and painting.
   auto* layout_video = DynamicTo<LayoutVideo>(layout_object);
-  if (layout_video && layout_video->ShouldDisplayVideo())
+  if (layout_video && layout_video->GetDisplayMode() == LayoutVideo::kVideo)
     return owning_layer_.HasBoxDecorationsOrBackground();
 
   if (layout_object.GetNode() && layout_object.GetNode()->IsDocumentNode()) {

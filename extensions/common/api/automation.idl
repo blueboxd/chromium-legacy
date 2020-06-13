@@ -46,7 +46,6 @@
     menuListItemSelected,
     menuListValueChanged,
     menuPopupEnd,
-    menuPopupHide,
     menuPopupStart,
     menuStart,
     mouseCanceled,

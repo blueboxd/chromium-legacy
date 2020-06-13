@@ -236,7 +236,7 @@ void CreateChromeApplicationShortcutView::OnDialogAccepted() {
 
   web_app::ShortcutLocations creation_locations;
   creation_locations.on_desktop = desktop_check_box_->GetChecked();
-  if (menu_check_box_ != nullptr && menu_check_box_->GetChecked()) {
+  if (menu_check_box_ && menu_check_box_->GetChecked()) {
     creation_locations.applications_menu_location =
         web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
   }

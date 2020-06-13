@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/strings/sys_string_conversions.h"
-#import "base/test/bind_test_util.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/common/web_view_creation_util.h"
 #include "ios/web/public/browsing_data/cookie_blocking_mode.h"
@@ -66,10 +65,10 @@ TEST_F(PageScriptUtilTest, AllFrameStartCookieReplacement) {
   web::BrowserState* browser_state = GetBrowserState();
 
   __block bool success = false;
-  bool* success_ptr = &success;
-  browser_state->SetCookieBlockingMode(
-      web::CookieBlockingMode::kAllow,
-      base::BindLambdaForTesting([&]() { *success_ptr = true; }));
+  browser_state->SetCookieBlockingMode(web::CookieBlockingMode::kAllow,
+                                       base::BindOnce(^{
+                                         success = true;
+                                       }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;
@@ -81,8 +80,9 @@ TEST_F(PageScriptUtilTest, AllFrameStartCookieReplacement) {
 
   success = false;
   browser_state->SetCookieBlockingMode(
-      web::CookieBlockingMode::kBlockThirdParty,
-      base::BindLambdaForTesting([&]() { *success_ptr = true; }));
+      web::CookieBlockingMode::kBlockThirdParty, base::BindOnce(^{
+        success = true;
+      }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;
@@ -92,9 +92,10 @@ TEST_F(PageScriptUtilTest, AllFrameStartCookieReplacement) {
   EXPECT_LT(0U, [script rangeOfString:@"(\"block-third-party\")"].length);
 
   success = false;
-  browser_state->SetCookieBlockingMode(
-      web::CookieBlockingMode::kBlock,
-      base::BindLambdaForTesting([&]() { *success_ptr = true; }));
+  browser_state->SetCookieBlockingMode(web::CookieBlockingMode::kBlock,
+                                       base::BindOnce(^{
+                                         success = true;
+                                       }));
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
     return success;

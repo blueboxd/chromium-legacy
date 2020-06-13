@@ -139,6 +139,9 @@ android_apk("net_test_support_apk") {
   # just disable it.
   enable_multidex = false
 
+  # Cronet still supports kitkat.
+  min_sdk_version = 19
+
   deps = [
     ":net_java_test_support",
     ":net_java_test_support_provider",

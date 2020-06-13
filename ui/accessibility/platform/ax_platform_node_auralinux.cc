@@ -3379,7 +3379,7 @@ void AXPlatformNodeAuraLinux::OnMenuPopupStart() {
   atk_object_notify_state_change(parent_frame, ATK_STATE_ACTIVE, TRUE);
 }
 
-void AXPlatformNodeAuraLinux::OnMenuPopupHide() {
+void AXPlatformNodeAuraLinux::OnMenuPopupEnd() {
   AtkObject* atk_object = GetOrCreateAtkObject();
   AtkObject* parent_frame = FindAtkObjectParentFrame(atk_object);
   if (!parent_frame)
@@ -3390,35 +3390,24 @@ void AXPlatformNodeAuraLinux::OnMenuPopupHide() {
   // kMenuPopupHide may be called multiple times for the same menu, so only
   // remove it if our parent frame matches the most recently opened menu.
   std::vector<AtkObject*>& active_menus = GetActiveMenus();
-  if (active_menus.empty())
-    return;
-
-  // When multiple levels of menu are closed at once, they may be hidden out
-  // of order. When this happens, we just remove the open menu from the stack.
-  if (active_menus.back() != atk_object) {
-    auto it = std::find(active_menus.rbegin(), active_menus.rend(), atk_object);
-    if (it != active_menus.rend()) {
-      // We used a reverse iterator, so we need to convert it into a normal
-      // iterator to use it for std::vector::erase(...).
-      auto to_remove = --(it.base());
-      active_menus.erase(to_remove);
-    }
-    return;
-  }
+  DCHECK(!active_menus.empty())
+      << "Asymmetrical menupopupend events -- too many";
 
   active_menus.pop_back();
-
-  // We exit early if the newly activated menu has the same AtkWindow as the
-  // previous one.
   AtkObject* new_active_item = ComputeActiveTopLevelFrame();
-  if (new_active_item == parent_frame)
-    return;
-  g_signal_emit_by_name(parent_frame, "deactivate");
-  atk_object_notify_state_change(parent_frame, ATK_STATE_ACTIVE, FALSE);
-  if (new_active_item) {
-    g_signal_emit_by_name(new_active_item, "activate");
-    atk_object_notify_state_change(new_active_item, ATK_STATE_ACTIVE, TRUE);
+  if (new_active_item != parent_frame) {
+    // Newly activated menu has the different AtkWindow as the previous one.
+    g_signal_emit_by_name(parent_frame, "deactivate");
+    atk_object_notify_state_change(parent_frame, ATK_STATE_ACTIVE, FALSE);
+    if (new_active_item) {
+      g_signal_emit_by_name(new_active_item, "activate");
+      atk_object_notify_state_change(new_active_item, ATK_STATE_ACTIVE, TRUE);
+    }
   }
+
+  // All menus are closed.
+  if (active_menus.empty())
+    OnAllMenusEnded();
 }
 
 void AXPlatformNodeAuraLinux::ResendFocusSignalsForCurrentlyFocusedNode() {
@@ -3434,7 +3423,8 @@ void AXPlatformNodeAuraLinux::ResendFocusSignalsForCurrentlyFocusedNode() {
   atk_object_notify_state_change(focused_node, ATK_STATE_FOCUSED, true);
 }
 
-void AXPlatformNodeAuraLinux::OnMenuPopupEnd() {
+// All menus have closed.
+void AXPlatformNodeAuraLinux::OnAllMenusEnded() {
   if (!GetActiveMenus().empty() && g_active_top_level_frame &&
       ComputeActiveTopLevelFrame() != g_active_top_level_frame) {
     g_signal_emit_by_name(g_active_top_level_frame, "activate");
@@ -3442,8 +3432,8 @@ void AXPlatformNodeAuraLinux::OnMenuPopupEnd() {
                                    TRUE);
   }
 
-  ResendFocusSignalsForCurrentlyFocusedNode();
   GetActiveMenus().clear();
+  ResendFocusSignalsForCurrentlyFocusedNode();
 }
 
 void AXPlatformNodeAuraLinux::OnWindowActivated() {
@@ -3919,20 +3909,14 @@ void AXPlatformNodeAuraLinux::NotifyAccessibilityEvent(
     return;
   AXPlatformNodeBase::NotifyAccessibilityEvent(event_type);
   switch (event_type) {
-    // There are three types of messages that we receive for popup menus. Each
-    // time a popup menu is shown, we get a kMenuPopupStart message. This
-    // includes if the menu is hidden and then re-shown. When a menu is hidden
-    // we receive the kMenuPopupHide message. Finally, when the entire menu is
-    // closed we receive the kMenuPopupEnd message for the parent menu and all
-    // of the submenus that were opened when navigating through the menu.
-    case ax::mojom::Event::kMenuPopupEnd:
-      OnMenuPopupEnd();
-      break;
-    case ax::mojom::Event::kMenuPopupHide:
-      OnMenuPopupHide();
-      break;
+    // kMenuStart/kMenuEnd: the menu system has started / stopped.
+    // kMenuPopupStart/kMenuPopupEnd: an individual menu/submenu has
+    // opened/closed.
     case ax::mojom::Event::kMenuPopupStart:
       OnMenuPopupStart();
+      break;
+    case ax::mojom::Event::kMenuPopupEnd:
+      OnMenuPopupEnd();
       break;
     case ax::mojom::Event::kActiveDescendantChanged:
       OnActiveDescendantChanged();

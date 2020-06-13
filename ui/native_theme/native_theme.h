@@ -108,7 +108,6 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // OS-level preferred color scheme. (Ex. high contrast or dark mode color
   // preference.)
   enum PreferredColorScheme {
-    kNoPreference,
     kDark,
     kLight,
     kMaxValue = kLight,
@@ -124,8 +123,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kNone = 0,
     kDark = 1,
     kLight = 2,
-    kCustom = 3,
-    kMaxValue = kCustom,
+    kMaxValue = kLight,
   };
 
   // The color scheme used for painting the native controls.
@@ -488,12 +486,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
   // Some platforms override this behavior. On Windows, for example, we also
   // look at the high contrast setting. If high contrast is enabled, the
   // preferred color scheme calculation will ignore the state of dark mode.
-  // Instead, preferred color scheme will be light, dark, or no-preference
-  // depending on the OS high contrast theme. If high contrast is off, the
-  // preferred color scheme calculation will follow the default behavior.
-  //
-  // Note, if the preferred color scheme is based on dark mode, it will never
-  // be set to no-preference.
+  // Instead, preferred color scheme will be light, or dark depending on the OS
+  // high contrast theme. If high contrast is off, the preferred color scheme
+  // calculation will follow the default behavior.
   virtual PreferredColorScheme CalculatePreferredColorScheme() const;
 
   // A function to be called by native theme instances that need to set state
@@ -529,8 +524,7 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   bool should_use_dark_colors_ = false;
   bool is_high_contrast_ = false;
-  PreferredColorScheme preferred_color_scheme_ =
-      PreferredColorScheme::kNoPreference;
+  PreferredColorScheme preferred_color_scheme_ = PreferredColorScheme::kLight;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTheme);
 };

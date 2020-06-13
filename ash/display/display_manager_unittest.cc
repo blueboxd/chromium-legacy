@@ -1749,7 +1749,7 @@ TEST_F(DisplayManagerTest, DontRememberBestResolution) {
   display_manager()->OnNativeDisplaysChanged(display_info_list);
 
   display::ManagedDisplayMode expected_mode(gfx::Size(1000, 500), 58.0f, false,
-                                            false);
+                                            true);
 
   display::ManagedDisplayMode mode;
   EXPECT_FALSE(
@@ -1794,7 +1794,7 @@ TEST_F(DisplayManagerTest, DontRememberBestResolution) {
   EXPECT_TRUE(mode.native());
 
   expected_mode =
-      display::ManagedDisplayMode(gfx::Size(1000, 500), 58.0f, false, false);
+      display::ManagedDisplayMode(gfx::Size(1000, 500), 58.0f, false, true);
 
   EXPECT_TRUE(
       display_manager()->GetActiveModeForDisplayId(display_id, &active_mode));
@@ -1843,6 +1843,7 @@ TEST_F(DisplayManagerTest, ResolutionFallback) {
                                         gfx::Size(800, 300));
     display::ManagedDisplayInfo new_native_display_info =
         display::CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1000, 500));
+    new_native_display_info.set_native(true);
     display::ManagedDisplayInfo::ManagedDisplayModeList copy = display_modes;
     new_native_display_info.SetManagedDisplayModes(copy);
     std::vector<display::ManagedDisplayInfo> new_display_info_list;

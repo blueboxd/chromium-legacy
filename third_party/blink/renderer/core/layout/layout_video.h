@@ -35,7 +35,7 @@ class HTMLVideoElement;
 
 class LayoutVideo final : public LayoutMedia {
  public:
-  LayoutVideo(HTMLVideoElement*);
+  explicit LayoutVideo(HTMLVideoElement*);
   ~LayoutVideo() override;
 
   static LayoutSize DefaultSize();
@@ -44,7 +44,9 @@ class LayoutVideo final : public LayoutMedia {
 
   bool SupportsAcceleratedRendering() const;
 
-  bool ShouldDisplayVideo() const;
+  enum DisplayMode { kPoster, kVideo };
+  DisplayMode GetDisplayMode() const;
+
   HTMLVideoElement* VideoElement() const;
 
   const char* GetName() const override { return "LayoutVideo"; }

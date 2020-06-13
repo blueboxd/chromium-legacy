@@ -10,10 +10,10 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "components/js_injection/browser/js_java_configurator_host.h"
+#include "components/js_injection/browser/js_communication_host.h"
 #include "components/js_injection/browser/web_message.h"
 #include "components/js_injection/browser/web_message_host.h"
-#include "components/js_injection/common/aw_origin_matcher.h"
+#include "components/js_injection/common/origin_matcher.h"
 #include "content/public/browser/android/app_web_message_port.h"
 
 namespace android_webview {
@@ -65,7 +65,7 @@ AwWebMessageHostFactory::~AwWebMessageHostFactory() = default;
 // static
 base::android::ScopedJavaLocalRef<jobjectArray>
 AwWebMessageHostFactory::GetWebMessageListenerInfo(
-    js_injection::JsJavaConfiguratorHost* host,
+    js_injection::JsCommunicationHost* host,
     JNIEnv* env,
     const base::android::JavaParamRef<jclass>& clazz) {
   auto factories = host->GetWebMessageHostFactories();

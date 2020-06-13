@@ -8,7 +8,7 @@ import("//testing/test.gni")
 viz_remove_configs = []
 viz_add_configs = [ "//build/config:precompiled_headers" ]
 
-if (!is_debug && (is_win || is_android)) {
+if (!is_debug) {
   viz_remove_configs += [ "//build/config/compiler:default_optimization" ]
   viz_add_configs += [ "//build/config/compiler:optimize_max" ]
 }

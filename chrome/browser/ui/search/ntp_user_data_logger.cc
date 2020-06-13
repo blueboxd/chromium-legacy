@@ -28,8 +28,8 @@ namespace {
 // This enum must match the numbering for NewTabPageVoiceAction in enums.xml.
 // Do not reorder or remove items, only add new items before VOICE_ACTION_MAX.
 enum VoiceAction {
-  // Activated by clicking on the fakebox icon.
-  VOICE_ACTION_ACTIVATE_FAKEBOX = 0,
+  // Activated by clicking on the fakebox or realbox icon.
+  VOICE_ACTION_ACTIVATE_SEARCH_BOX = 0,
   // Activated by keyboard shortcut.
   VOICE_ACTION_ACTIVATE_KEYBOARD = 1,
   // Close the voice overlay by a user's explicit action.
@@ -50,8 +50,8 @@ enum VoiceAction {
 // is an action value. Otherwise, |VOICE_ACTION_MAX| is returned.
 VoiceAction LoggingEventToVoiceAction(NTPLoggingEventType event) {
   switch (event) {
-    case NTP_VOICE_ACTION_ACTIVATE_FAKEBOX:
-      return VOICE_ACTION_ACTIVATE_FAKEBOX;
+    case NTP_VOICE_ACTION_ACTIVATE_SEARCH_BOX:
+      return VOICE_ACTION_ACTIVATE_SEARCH_BOX;
     case NTP_VOICE_ACTION_ACTIVATE_KEYBOARD:
       return VOICE_ACTION_ACTIVATE_KEYBOARD;
     case NTP_VOICE_ACTION_CLOSE_OVERLAY:
@@ -431,7 +431,7 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
     case NTP_ALL_TILES_LOADED:
       // permitted above for non-Google search providers
       break;
-    case NTP_VOICE_ACTION_ACTIVATE_FAKEBOX:
+    case NTP_VOICE_ACTION_ACTIVATE_SEARCH_BOX:
     case NTP_VOICE_ACTION_ACTIVATE_KEYBOARD:
     case NTP_VOICE_ACTION_CLOSE_OVERLAY:
     case NTP_VOICE_ACTION_QUERY_SUBMITTED:

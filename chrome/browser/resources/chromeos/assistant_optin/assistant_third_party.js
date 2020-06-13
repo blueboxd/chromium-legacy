@@ -62,6 +62,9 @@ Polymer({
   /** @private {?assistant.BrowserProxy} */
   browserProxy_: null,
 
+  /** @private {Object} */
+  webview_: null,
+
   /**
    * On-tap event handler for next button.
    *
@@ -78,6 +81,20 @@ Polymer({
   /** @override */
   created() {
     this.browserProxy_ = assistant.BrowserProxyImpl.getInstance();
+  },
+
+  /**
+   * Reset the webview and add load complete handler.
+   */
+  resetWebview() {
+    this.webview_ = document.createElement('webview');
+    this.webview_.id = 'overlay-webview';
+    this.webview_.classList.add('flex');
+    var webviewContainer = this.$['webview-container'];
+    this.webview_.onloadstop = function() {
+      webviewContainer.classList.remove('overlay-loading');
+    };
+    this.$$('#overlay-webview').replaceWith(this.webview_);
   },
 
   /**
@@ -100,7 +117,7 @@ Polymer({
    */
   showThirdPartyOverlay(url, title) {
     this.$['webview-container'].classList.add('overlay-loading');
-    this.$['overlay-webview'].src = url;
+    this.webview_.src = url;
     this.$['third-party-overlay'].setTitleAriaLabel(title);
     this.$['third-party-overlay'].showModal();
     this.$['overlay-close-button'].focus();
@@ -110,6 +127,7 @@ Polymer({
    * Hides overlay dialog.
    */
   hideOverlay() {
+    this.resetWebview();
     this.$['third-party-overlay'].close();
     if (this.lastFocusedElement) {
       this.lastFocusedElement.focus();
@@ -211,10 +229,7 @@ Polymer({
   onShow() {
     this.$['overlay-close-button'].addEventListener(
         'click', this.hideOverlay.bind(this));
-    var webviewContainer = this.$['webview-container'];
-    this.$['overlay-webview'].addEventListener('contentload', function() {
-      webviewContainer.classList.remove('overlay-loading');
-    });
+    this.resetWebview();
 
     if (!this.settingZippyLoaded_ || !this.consentStringLoaded_) {
       this.reloadPage();

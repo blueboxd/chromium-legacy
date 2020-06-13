@@ -66,7 +66,6 @@ source_set("dns") {
       "dns_transaction.cc",
       "dns_udp_tracker.cc",
       "dns_udp_tracker.h",
-      "esni_content.cc",
       "host_cache.cc",
       "host_resolver.cc",
       "host_resolver_manager.cc",
@@ -204,7 +203,6 @@ source_set("host_resolver") {
     sources += [
       "dns_config.h",
       "dns_config_overrides.h",
-      "esni_content.h",
       "host_cache.h",
       "host_resolver.h",
       "host_resolver_source.h",
@@ -398,7 +396,6 @@ source_set("tests") {
     "dns_transaction_unittest.cc",
     "dns_udp_tracker_unittest.cc",
     "dns_util_unittest.cc",
-    "esni_content_unittest.cc",
     "host_cache_unittest.cc",
     "host_resolver_manager_unittest.cc",
     "httpssvc_metrics_unittest.cc",

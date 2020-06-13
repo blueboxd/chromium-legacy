@@ -1672,6 +1672,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       LayoutObject* container,
       AncestorSkipInfo* = nullptr);
 
+  // Returns the nearest anceestor in the layout tree that is not anonymous,
+  // or null if there is none.
+  LayoutObject* NonAnonymousAncestor() const;
+
   const LayoutBlock* InclusiveContainingBlock() const;
 
   bool CanContainAbsolutePositionObjects() const {

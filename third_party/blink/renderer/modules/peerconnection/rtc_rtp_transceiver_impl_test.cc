@@ -425,7 +425,7 @@ TEST_F(RTCRtpTransceiverImplTest, TransceiverStateUpdateModeSetDescription) {
               webrtc::RtpTransceiverDirection::kSendRecv);
   EXPECT_FALSE(transceiver.FiredDirection());
   // The sender still has a track, even though the modified state doesn't.
-  EXPECT_FALSE(transceiver.Sender()->Track().IsNull());
+  EXPECT_TRUE(transceiver.Sender()->Track());
   // The direction still "sendrecv", even though the modified state has
   // "inactive".
   EXPECT_EQ(transceiver.Direction(),

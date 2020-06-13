@@ -2809,6 +2809,7 @@ ci.memory_builder(
     # TODO(https://crbug.com/919430) Remove the larger timeout once compile
     # times have been brought down to reasonable level
     execution_timeout = time.hour * 9 / 2,  # 4.5 (can't multiply float * duration)
+    main_console_view = 'main',
 )
 
 ci.memory_builder(
@@ -2821,6 +2822,7 @@ ci.memory_builder(
     # TODO(thakis): Remove once https://crbug.com/927738 is resolved.
     execution_timeout = 4 * time.hour,
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
+    main_console_view = 'main',
 )
 
 ci.memory_builder(
@@ -2832,6 +2834,7 @@ ci.memory_builder(
     # TODO(crbug.com/1030593): Builds take more than 3 hours sometimes. Remove
     # once the builds are faster.
     execution_timeout = 6 * time.hour,
+    main_console_view = 'main',
 )
 
 ci.memory_builder(
@@ -2841,6 +2844,7 @@ ci.memory_builder(
         short_name = 'tst',
     ),
     triggered_by = ['Linux Chromium OS ASan LSan Builder'],
+    main_console_view = 'main',
 )
 
 ci.memory_builder(
@@ -2849,6 +2853,7 @@ ci.memory_builder(
         category = 'cros|msan',
         short_name = 'bld',
     ),
+    main_console_view = 'main',
 )
 
 ci.memory_builder(
@@ -2858,6 +2863,7 @@ ci.memory_builder(
         short_name = 'tst',
     ),
     triggered_by = ['Linux ChromiumOS MSan Builder'],
+    main_console_view = 'main',
 )
 
 ci.memory_builder(
@@ -2867,6 +2873,7 @@ ci.memory_builder(
         short_name = 'bld',
     ),
     goma_jobs = goma.jobs.MANY_JOBS_FOR_CI,
+    main_console_view = 'main',
 )
 
 ci.memory_builder(
@@ -2876,6 +2883,7 @@ ci.memory_builder(
         short_name = 'tst',
     ),
     triggered_by = ['Linux MSan Builder'],
+    main_console_view = 'main',
 )
 
 ci.memory_builder(
@@ -2888,6 +2896,7 @@ ci.memory_builder(
     goma_debug = True,  # TODO(hinoka): Remove this after debugging.
     goma_jobs = None,
     cores = None,  # Swapping between 8 and 24
+    main_console_view = 'main',
     os = os.MAC_DEFAULT,
     triggering_policy = scheduler.greedy_batching(
         max_concurrent_invocations = 2,
@@ -2901,6 +2910,7 @@ ci.memory_builder(
         category = 'mac',
         short_name = 'tst',
     ),
+    main_console_view = 'main',
     os = os.MAC_DEFAULT,
     triggered_by = ['Mac ASan 64 Builder'],
 )
@@ -2911,6 +2921,7 @@ ci.memory_builder(
         category = 'linux|webkit',
         short_name = 'asn',
     ),
+    main_console_view = 'main',
 )
 
 ci.memory_builder(
@@ -2919,6 +2930,7 @@ ci.memory_builder(
         category = 'linux|webkit',
         short_name = 'lk',
     ),
+    main_console_view = 'main',
 )
 
 ci.memory_builder(
@@ -2927,6 +2939,7 @@ ci.memory_builder(
         category = 'linux|webkit',
         short_name = 'msn',
     ),
+    main_console_view = 'main',
 )
 
 ci.memory_builder(
@@ -2935,6 +2948,7 @@ ci.memory_builder(
         category = 'android',
         short_name = 'asn',
     ),
+    main_console_view = 'main',
 )
 
 ci.memory_builder(
@@ -2945,6 +2959,7 @@ ci.memory_builder(
     ),
     cores = 32,
     builderless = True,
+    main_console_view = 'main',
     os = os.WINDOWS_DEFAULT,
 )
 

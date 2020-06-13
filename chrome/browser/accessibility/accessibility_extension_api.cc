@@ -58,11 +58,6 @@ namespace {
 
 const char kErrorNotSupported[] = "This API is not supported on this platform.";
 
-#if defined(OS_CHROMEOS)
-constexpr int kBackButtonWidth = 45;
-constexpr int kBackButtonHeight = 45;
-#endif
-
 }  // namespace
 
 ExtensionFunction::ResponseAction
@@ -416,57 +411,6 @@ AccessibilityPrivateToggleDictationFunction::Run() {
 
   ash::AccessibilityController::Get()->ToggleDictationFromSource(source);
 
-  return RespondNow(NoArguments());
-}
-
-ExtensionFunction::ResponseAction
-AccessibilityPrivateSetSwitchAccessMenuStateFunction::Run() {
-  // TODO(anastasi): Remove this function once menu refactor is complete.
-  std::unique_ptr<accessibility_private::SetSwitchAccessMenuState::Params>
-      params = accessibility_private::SetSwitchAccessMenuState::Params::Create(
-          *args_);
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  chromeos::AccessibilityManager* manager =
-      chromeos::AccessibilityManager::Get();
-
-  if (!params->show) {
-    manager->HideSwitchAccessMenu();
-    return RespondNow(NoArguments());
-  }
-
-  accessibility_private::ScreenRect elem = std::move(params->element_bounds);
-  gfx::Rect element_bounds(elem.left, elem.top, elem.width, elem.height);
-  int item_count = params->item_count;
-
-  // If we have an item count of 0, the panel is showing only the back button.
-  if (item_count == 0) {
-    manager->ShowSwitchAccessMenu(element_bounds, kBackButtonWidth,
-                                  kBackButtonHeight,
-                                  true /* back_button_only */);
-    return RespondNow(NoArguments());
-  }
-
-  int padding = 40;
-  int item_width = 88;
-
-  int item_height;
-  if (::switches::IsExperimentalAccessibilitySwitchAccessTextEnabled()) {
-    item_height = 85;
-  } else {
-    item_height = 60;
-  }
-  // TODO(anastasi): This should be a preference that the user can change.
-  int max_cols = 3;
-
-  // The number of rows is the number of items divided by the max columns,
-  // rounded down.
-  int rows = 1 + (item_count - 1) / max_cols;
-  int cols = rows == 1 ? item_count : max_cols;
-  int width = padding + (item_width * cols);
-  int height = padding + (item_height * rows);
-
-  manager->ShowSwitchAccessMenu(element_bounds, width, height);
   return RespondNow(NoArguments());
 }
 

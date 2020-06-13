@@ -57,6 +57,7 @@ class VIEWS_EXPORT TooltipController
   void OnCursorVisibilityChanged(bool is_visible) override;
 
   // Overridden from aura::WindowObserver.
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
   void OnWindowDestroyed(aura::Window* window) override;
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
@@ -71,6 +72,9 @@ class VIEWS_EXPORT TooltipController
 
   // Show the tooltip.
   void ShowTooltip();
+
+  // Hide the tooltip, clear timers, and reset controller states.
+  void HideTooltipAndResetStates();
 
   // Updates the tooltip if required (if there is any change in the tooltip
   // text, tooltip id or the aura::Window).

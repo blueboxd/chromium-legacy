@@ -245,6 +245,13 @@ class BuildConfigGenerator extends DefaultTask {
         if (isPlayServicesTarget(targetName)) {
             return targetName.replaceFirst("com_", "").replaceFirst("android_gms_", "")
         }
+        // To avoid stale depfile issues, rename this. (due to recently removed
+        // alias from lite to javalite and the recently added alias from
+        // javalite to lite, causing a dep cycle because stale depfiles).
+        // Todo(mheikal): remove this after crbug.com/1093059 .
+        if (targetName.equals("com_google_protobuf_protobuf_lite")) {
+          return "com_google_protobuf_protobuf_lite_cr1"
+        }
         return targetName
     }
 

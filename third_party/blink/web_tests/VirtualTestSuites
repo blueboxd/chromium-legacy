@@ -138,8 +138,7 @@
   },
   {
     "prefix": "android",
-    "bases": ["fullscreen",
-              "rootscroller"],
+    "bases": ["fullscreen"],
     "args": ["--enable-features=OverlayScrollbar",
              "--enable-threaded-compositing",
              "--enable-prefer-compositing-to-lcd-text",

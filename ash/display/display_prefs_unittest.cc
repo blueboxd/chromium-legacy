@@ -473,7 +473,7 @@ TEST_F(DisplayPrefsTest, BasicStores) {
   EXPECT_FALSE(property->GetInteger("width", &width));
   EXPECT_FALSE(property->GetInteger("height", &height));
 
-  display::ManagedDisplayMode mode(gfx::Size(300, 200), 60.0f, false, true,
+  display::ManagedDisplayMode mode(gfx::Size(300, 200), 60.0f, false, false,
                                    1.25f /* device_scale_factor */);
   display_manager()->SetDisplayMode(id2, mode);
 

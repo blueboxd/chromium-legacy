@@ -332,26 +332,6 @@ class SigninViewControllerTestUtil {
 #endif
   }
 
-  static bool IsReauthConfirmationDialogReady(Browser* browser) {
-#if defined(OS_CHROMEOS)
-    NOTREACHED();
-    return false;
-#else
-    SigninViewController* signin_view_controller =
-        browser->signin_view_controller();
-    DCHECK(signin_view_controller);
-    if (!signin_view_controller->ShowsModalDialog())
-      return false;
-    content::WebContents* dialog_web_contents =
-        signin_view_controller->GetModalDialogWebContentsForTesting();
-    DCHECK(dialog_web_contents);
-    const std::string button_selector = GetButtonSelectorForApp(
-        "signin-reauth-app", GetButtonIdForReauthConfirmationDialogAction(
-                                 ReauthDialogAction::kConfirm));
-    return IsElementReady(dialog_web_contents, button_selector);
-#endif
-  }
-
   static bool TryCompleteReauthConfirmationDialog(Browser* browser,
                                                   ReauthDialogAction action) {
 #if defined(OS_CHROMEOS)
@@ -524,14 +504,6 @@ bool CompleteSigninEmailConfirmationDialog(
     RunLoopFor(base::TimeDelta::FromMilliseconds(1000));
   }
   return false;
-}
-
-void WaitUntilReauthUIIsReady(Browser* browser) {
-  WaitUntilCondition(
-      base::BindRepeating(
-          &SigninViewControllerTestUtil::IsReauthConfirmationDialogReady,
-          base::Unretained(browser)),
-      "Could not find reauth confirm button");
 }
 
 bool CompleteReauthConfirmationDialog(Browser* browser,

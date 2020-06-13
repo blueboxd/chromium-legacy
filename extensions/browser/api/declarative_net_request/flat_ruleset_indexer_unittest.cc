@@ -60,7 +60,18 @@ std::vector<dnr_api::ModifyHeaderInfo> ToVector(
     dnr_api::ModifyHeaderInfo header_info;
 
     const flat::HeaderOperation flat_operation = flat_header_info->operation();
+    const flatbuffers::String* flat_value = flat_header_info->value();
     switch (flat_operation) {
+      case flat::HeaderOperation_append:
+        header_info.operation = dnr_api::HEADER_OPERATION_APPEND;
+        DCHECK(flat_value);
+        header_info.value = std::make_unique<std::string>(ToString(flat_value));
+        break;
+      case flat::HeaderOperation_set:
+        header_info.operation = dnr_api::HEADER_OPERATION_SET;
+        DCHECK(flat_value);
+        header_info.value = std::make_unique<std::string>(ToString(flat_value));
+        break;
       case flat::HeaderOperation_remove:
         header_info.operation = dnr_api::HEADER_OPERATION_REMOVE;
         break;
@@ -467,11 +478,17 @@ TEST_F(FlatRulesetIndexerTest, MultipleRules) {
   // Modify headers rules.
   std::vector<dnr_api::ModifyHeaderInfo> request_headers_1;
   request_headers_1.push_back(CreateModifyHeaderInfo(
-      dnr_api::HEADER_OPERATION_REMOVE, "cookie", base::nullopt));
+      dnr_api::HEADER_OPERATION_SET, "cookie", "sample-cookie"));
 
   std::vector<dnr_api::ModifyHeaderInfo> response_headers_1;
   response_headers_1.push_back(CreateModifyHeaderInfo(
       dnr_api::HEADER_OPERATION_REMOVE, "set-cookie", base::nullopt));
+
+  response_headers_1.push_back(CreateModifyHeaderInfo(
+      dnr_api::HEADER_OPERATION_APPEND, "custom-1", "value-1"));
+
+  response_headers_1.push_back(CreateModifyHeaderInfo(
+      dnr_api::HEADER_OPERATION_SET, "custom-2", "value-2"));
 
   rules_to_index.push_back(CreateIndexedRule(
       23, kMinValidPriority, flat_rule::OptionFlag_IS_CASE_INSENSITIVE,
@@ -546,6 +563,8 @@ TEST_F(FlatRulesetIndexerTest, RegexRules) {
   std::vector<dnr_api::ModifyHeaderInfo> request_headers;
   request_headers.push_back(CreateModifyHeaderInfo(
       dnr_api::HEADER_OPERATION_REMOVE, "referer", base::nullopt));
+  request_headers.push_back(CreateModifyHeaderInfo(
+      dnr_api::HEADER_OPERATION_SET, "cookie", "sample-cookie"));
   rules_to_index.push_back(CreateIndexedRule(
       21, kMinValidPriority, flat_rule::OptionFlag_IS_CASE_INSENSITIVE,
       flat_rule::ElementType_SUBDOCUMENT, flat_rule::ActivationType_NONE,

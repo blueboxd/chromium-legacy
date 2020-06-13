@@ -362,7 +362,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
  private:
   class Job;
-  class CertVerifierJob;
   class QuicCryptoClientConfigOwner;
   class CryptoClientConfigHandle;
   friend class test::QuicStreamFactoryPeer;
@@ -376,8 +375,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   typedef std::map<IPEndPoint, SessionSet> IPAliasMap;
   typedef std::map<QuicChromiumClientSession*, IPEndPoint> SessionPeerIPMap;
   typedef std::map<QuicSessionKey, std::unique_ptr<Job>> JobMap;
-  typedef std::map<quic::QuicServerId, std::unique_ptr<CertVerifierJob>>
-      CertVerifierJobMap;
   using QuicCryptoClientConfigMap =
       std::map<NetworkIsolationKey,
                std::unique_ptr<QuicCryptoClientConfigOwner>>;
@@ -385,10 +382,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   bool HasMatchingIpSession(const QuicSessionAliasKey& key,
                             const AddressList& address_list);
   void OnJobComplete(Job* job, int rv);
-  void OnCertVerifyJobComplete(CertVerifierJob* job, int rv);
   bool HasActiveSession(const QuicSessionKey& session_key) const;
   bool HasActiveJob(const QuicSessionKey& session_key) const;
-  bool HasActiveCertVerifierJob(const quic::QuicServerId& server_id) const;
   int CreateSession(const QuicSessionAliasKey& key,
                     quic::ParsedQuicVersion quic_version,
                     int cert_verify_flags,
@@ -424,20 +419,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Helper methods.
   bool WasQuicRecentlyBroken(const QuicSessionKey& session_key) const;
-
-  // Starts an asynchronous job for cert verification if
-  // |params_.race_cert_verification| is enabled and if there are cached certs
-  // for the given |server_id|.
-  //
-  // Takes a constant reference to a CryptoClientConfigHandle instead of a
-  // NetworkIsolationKey to force the caller to keep the corresponding
-  // QuicCryptoClientConfig alive. There's no guarantee it won't be garbage
-  // collected beyond when this method completes, otherwise.
-  quic::QuicAsyncStatus StartCertVerifyJob(
-      const CryptoClientConfigHandle& crypto_config_handle,
-      const quic::QuicServerId& server_id,
-      int cert_verify_flags,
-      const NetLogWithSource& net_log);
 
   // Helper method to initialize the following migration options and check
   // pre-requisites:
@@ -478,12 +459,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   std::unique_ptr<QuicCryptoClientConfigHandle> GetCryptoConfigForTesting(
       const NetworkIsolationKey& network_isolation_key);
-
-  quic::QuicAsyncStatus StartCertVerifyJobForTesting(
-      const quic::QuicServerId& server_id,
-      const NetworkIsolationKey& network_isolation_key,
-      int cert_verify_flags,
-      const NetLogWithSource& net_log);
 
   bool CryptoConfigCacheIsEmptyForTesting(
       const quic::QuicServerId& server_id,
@@ -551,9 +526,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   const quic::QuicConfig config_;
 
   JobMap active_jobs_;
-
-  // Map of quic::QuicServerId to owning CertVerifierJob.
-  CertVerifierJobMap active_cert_verifier_jobs_;
 
   // PING timeout for connections.
   quic::QuicTime::Delta ping_timeout_;

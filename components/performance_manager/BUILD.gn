@@ -143,6 +143,8 @@ static_library("performance_manager") {
 
   if (!is_android) {
     sources += [
+      "decorators/site_data_recorder.cc",
+      "decorators/site_data_recorder.h",
       "persistence/site_data/exponential_moving_average.cc",
       "persistence/site_data/exponential_moving_average.h",
       "persistence/site_data/feature_usage.h",
@@ -225,6 +227,7 @@ source_set("unit_tests") {
   # The site data database isn't supported on Android.
   if (!is_android) {
     sources += [
+      "decorators/site_data_recorder_unittest.cc",
       "persistence/site_data/exponential_moving_average_unittest.cc",
       "persistence/site_data/leveldb_site_data_store_unittest.cc",
       "persistence/site_data/non_recording_site_data_cache_unittest.cc",

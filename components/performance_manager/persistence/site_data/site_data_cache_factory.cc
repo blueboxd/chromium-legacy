@@ -84,18 +84,21 @@ bool SiteDataCacheFactory::IsDataCacheRecordingForTesting(
   return it->second->IsRecordingForTesting();
 }
 
-void SiteDataCacheFactory::ReplaceCacheForTesting(
+void SiteDataCacheFactory::SetCacheForTesting(
     const std::string& browser_context_id,
-    std::unique_ptr<SiteDataCacheImpl> cache) {
+    std::unique_ptr<SiteDataCache> cache) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto* cache_raw = cache.get();
 
-  DCHECK(base::Contains(data_cache_map_, browser_context_id));
   data_cache_map_.erase(browser_context_id);
   data_cache_map_.emplace(browser_context_id, std::move(cache));
+}
 
+void SiteDataCacheFactory::SetCacheInspectorForTesting(
+    const std::string& browser_context_id,
+    SiteDataCacheInspector* inspector) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!base::Contains(data_cache_inspector_map_, browser_context_id));
-  data_cache_inspector_map_.emplace(browser_context_id, cache_raw);
+  data_cache_inspector_map_.emplace(browser_context_id, inspector);
 }
 
 void SiteDataCacheFactory::OnBrowserContextCreated(

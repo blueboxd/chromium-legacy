@@ -33,8 +33,9 @@ class PerformanceManagerTestHarness
   // initialize its BrowserTaskEnvironment.
   template <typename... TaskEnvironmentTraits>
   explicit PerformanceManagerTestHarness(TaskEnvironmentTraits&&... traits)
-      : RenderViewHostTestHarness(
-            std::forward<TaskEnvironmentTraits>(traits)...) {}
+      : Super(std::forward<TaskEnvironmentTraits>(traits)...) {
+    helper_ = std::make_unique<PerformanceManagerTestHarnessHelper>();
+  }
 
   PerformanceManagerTestHarness(const PerformanceManagerTestHarness&) = delete;
   PerformanceManagerTestHarness& operator=(

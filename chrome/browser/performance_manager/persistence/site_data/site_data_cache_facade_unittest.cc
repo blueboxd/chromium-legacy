@@ -132,8 +132,10 @@ class SiteDataCacheFacadeTest : public testing::TestWithPerformanceManager {
               std::make_unique<MockSiteDataCache>(browser_context_id);
           mock_cache_raw = mock_cache.get();
 
-          SiteDataCacheFactory::GetInstance()->ReplaceCacheForTesting(
+          SiteDataCacheFactory::GetInstance()->SetCacheForTesting(
               browser_context_id, std::move(mock_cache));
+          SiteDataCacheFactory::GetInstance()->SetCacheInspectorForTesting(
+              browser_context_id, mock_cache_raw);
           std::move(quit_closure).Run();
         }));
     run_loop.Run();

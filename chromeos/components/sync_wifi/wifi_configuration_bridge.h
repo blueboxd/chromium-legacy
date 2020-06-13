@@ -79,6 +79,7 @@ class WifiConfigurationBridge : public syncer::ModelTypeSyncBridge,
                                     const std::string& guid) override;
   void OnConfigurationRemoved(const std::string& service_path,
                               const std::string& guid) override;
+  void OnShuttingDown() override;
 
   // Comes from |entries_| the in-memory map.
   std::vector<NetworkIdentifier> GetAllIdsForTesting();

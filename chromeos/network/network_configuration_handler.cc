@@ -484,6 +484,8 @@ void NetworkConfigurationHandler::NetworkListChanged() {
 void NetworkConfigurationHandler::OnShuttingDown() {
   network_state_handler_->RemoveObserver(this, FROM_HERE);
   network_state_handler_ = nullptr;
+  for (auto& observer : observers_)
+    observer.OnShuttingDown();
 }
 
 // NetworkConfigurationHandler Private methods

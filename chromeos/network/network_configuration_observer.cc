@@ -27,4 +27,6 @@ void NetworkConfigurationObserver::OnConfigurationRemoved(
     const std::string& service_path,
     const std::string& guid) {}
 
+void NetworkConfigurationObserver::OnShuttingDown() {}
+
 }  // namespace chromeos

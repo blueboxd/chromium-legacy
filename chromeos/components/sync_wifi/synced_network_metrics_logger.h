@@ -100,6 +100,7 @@ class SyncedNetworkMetricsLogger : public NetworkConnectionObserver,
 
   // NetworkStateObserver::
   void NetworkConnectionStateChanged(const NetworkState* network) override;
+  void OnShuttingDown() override;
 
   // Only record after all retries have failed.
   void RecordApplyNetworkFailed();

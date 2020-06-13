@@ -79,11 +79,17 @@ WifiConfigurationBridge::WifiConfigurationBridge(
 }
 
 WifiConfigurationBridge::~WifiConfigurationBridge() {
+  OnShuttingDown();
+}
+
+void WifiConfigurationBridge::OnShuttingDown() {
   if (network_metadata_store_) {
     network_metadata_store_->RemoveObserver(this);
+    network_metadata_store_ = nullptr;
   }
   if (network_configuration_handler_) {
     network_configuration_handler_->RemoveObserver(this);
+    network_configuration_handler_ = nullptr;
   }
 }
 

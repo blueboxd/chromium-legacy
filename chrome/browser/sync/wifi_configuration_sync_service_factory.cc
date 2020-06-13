@@ -11,6 +11,7 @@
 #include "chrome/common/channel_info.h"
 #include "chromeos/components/sync_wifi/pending_network_configuration_tracker_impl.h"
 #include "chromeos/components/sync_wifi/wifi_configuration_sync_service.h"
+#include "chromeos/network/network_handler.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/sync/model/model_type_store_service.h"
@@ -36,9 +37,12 @@ WifiConfigurationSyncServiceFactory::GetInstance() {
 // static
 bool WifiConfigurationSyncServiceFactory::ShouldRunInProfile(
     const Profile* profile) {
+  // Run when signed in to a real account.  Skip during tests when network stack
+  // has not been initialized.
   return profile && !chromeos::ProfileHelper::IsSigninProfile(profile) &&
          !chromeos::ProfileHelper::IsLockScreenAppProfile(profile) &&
-         !profile->IsOffTheRecord();
+         !profile->IsOffTheRecord() &&
+         chromeos::NetworkHandler::IsInitialized();
 }
 
 WifiConfigurationSyncServiceFactory::WifiConfigurationSyncServiceFactory()

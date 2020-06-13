@@ -43,6 +43,7 @@ class SiteDataWriter {
  protected:
   friend class SiteDataWriterTest;
   friend class SiteDataCacheImpl;
+  friend class LenientMockDataWriter;
 
   // Protected constructor, these objects are meant to be created by a site data
   // store.

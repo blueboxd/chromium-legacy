@@ -98,10 +98,19 @@ SyncedNetworkMetricsLogger::SyncedNetworkMetricsLogger(
 }
 
 SyncedNetworkMetricsLogger::~SyncedNetworkMetricsLogger() {
-  if (network_connection_handler_)
-    network_connection_handler_->RemoveObserver(this);
-  if (network_state_handler_)
+  OnShuttingDown();
+}
+
+void SyncedNetworkMetricsLogger::OnShuttingDown() {
+  if (network_state_handler_) {
     network_state_handler_->RemoveObserver(this, FROM_HERE);
+    network_state_handler_ = nullptr;
+  }
+
+  if (network_connection_handler_) {
+    network_connection_handler_->RemoveObserver(this);
+    network_connection_handler_ = nullptr;
+  }
 }
 
 void SyncedNetworkMetricsLogger::ConnectSucceeded(

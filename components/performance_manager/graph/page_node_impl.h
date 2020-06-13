@@ -123,6 +123,7 @@ class PageNodeImpl
   friend class PageAggregatorAccess;
   friend class PageLoadTrackerAccess;
   friend class PageNodeImplDescriber;
+  friend class SiteDataAccess;
 
   // PageNode implementation.
   const std::string& GetBrowserContextID() const override;
@@ -266,6 +267,9 @@ class PageNodeImpl
 
   // Storage for PageLoadTracker user data.
   std::unique_ptr<NodeAttachedData> page_load_tracker_data_;
+
+  // Storage for SiteDataNodeData user data.
+  std::unique_ptr<NodeAttachedData> site_data_;
 
   // Inline storage for FrozenFrameAggregator user data.
   InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;

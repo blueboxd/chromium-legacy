@@ -27,8 +27,14 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/sync/wifi_configuration_sync_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chromeos/components/sync_wifi/wifi_configuration_sync_service.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/dbus/shill/shill_manager_client.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #endif
 
 class ProfileSyncServiceFactoryTest : public testing::Test {
@@ -50,8 +56,18 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
   }
 
  protected:
+#if defined(OS_CHROMEOS)
+  ProfileSyncServiceFactoryTest() {
+    // Fake network stack is required for WIFI_CONFIGURATIONS datatype.
+    chromeos::NetworkHandler::Initialize();
+  }
+  ~ProfileSyncServiceFactoryTest() override {
+    chromeos::NetworkHandler::Shutdown();
+  }
+#else
   ProfileSyncServiceFactoryTest() = default;
   ~ProfileSyncServiceFactoryTest() override = default;
+#endif
 
   // Returns the collection of default datatypes.
   std::vector<syncer::ModelType> DefaultDatatypes() {
@@ -151,9 +167,17 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
 
   Profile* profile() { return profile_.get(); }
 
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
+
  private:
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
+
+#if defined(OS_CHROMEOS)
+  // Sets up  and  tears down the Chrome OS networking mojo service as needed
+  // for the WIFI_CONFIGURATIONS sync service.
+  chromeos::network_config::CrosNetworkConfigTestHelper network_config_helper_;
+#endif
 };
 
 // Verify that the disable sync flag disables creation of the sync service.
@@ -170,6 +194,9 @@ TEST_F(ProfileSyncServiceFactoryTest, CreatePSSDefault) {
   syncer::ModelTypeSet types = pss->GetRegisteredDataTypes();
   EXPECT_EQ(DefaultDatatypesCount(), types.Size());
   CheckDefaultDatatypesInSetExcept(types, syncer::ModelTypeSet());
+
+  pss->Shutdown();
+  RunUntilIdle();
 }
 
 // Verify that a PSS with a disabled datatype can be created and properly
@@ -182,6 +209,9 @@ TEST_F(ProfileSyncServiceFactoryTest, CreatePSSDisableOne) {
   syncer::ModelTypeSet types = pss->GetRegisteredDataTypes();
   EXPECT_EQ(DefaultDatatypesCount() - disabled_types.Size(), types.Size());
   CheckDefaultDatatypesInSetExcept(types, disabled_types);
+
+  pss->Shutdown();
+  RunUntilIdle();
 }
 
 // Verify that a PSS with multiple disabled datatypes can be created and
@@ -195,4 +225,7 @@ TEST_F(ProfileSyncServiceFactoryTest, CreatePSSDisableMultiple) {
   syncer::ModelTypeSet types = pss->GetRegisteredDataTypes();
   EXPECT_EQ(DefaultDatatypesCount() - disabled_types.Size(), types.Size());
   CheckDefaultDatatypesInSetExcept(types, disabled_types);
+
+  pss->Shutdown();
+  RunUntilIdle();
 }

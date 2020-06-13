@@ -39,6 +39,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationObserver {
   virtual void OnConfigurationRemoved(const std::string& service_path,
                                       const std::string& guid);
 
+  // Called just before the object is destroyed so that observers
+  // can safely stop observing.
+  virtual void OnShuttingDown();
+
  protected:
   virtual ~NetworkConfigurationObserver();
 

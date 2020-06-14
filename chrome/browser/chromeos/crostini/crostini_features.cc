@@ -89,6 +89,7 @@ using CanChangeAdbSideloadingCallback =
 void CanChangeAdbSideloadingOnManagedDevice(
     CanChangeAdbSideloadingCallback callback,
     bool is_profile_enterprise_managed,
+    bool is_affiliated_user,
     crostini::CrostiniArcAdbSideloadingUserAllowanceMode user_policy) {
   // Wrap |callback| in a RepeatingCallback. This is necessary to cater to the
   // somewhat awkward PrepareTrustedValues interface, which for some return
@@ -100,7 +101,7 @@ void CanChangeAdbSideloadingOnManagedDevice(
   auto* const cros_settings = chromeos::CrosSettings::Get();
   auto status = cros_settings->PrepareTrustedValues(base::BindOnce(
       &CanChangeAdbSideloadingOnManagedDevice, repeating_callback,
-      is_profile_enterprise_managed, user_policy));
+      is_profile_enterprise_managed, is_affiliated_user, user_policy));
 
   if (status != chromeos::CrosSettingsProvider::TRUSTED) {
     return;
@@ -137,8 +138,12 @@ void CanChangeAdbSideloadingOnManagedDevice(
 
   if (is_adb_sideloading_allowed_by_device_policy) {
     if (is_profile_enterprise_managed) {
-      // TODO(https://crbug.com/1081811, janagrill): Add check for affiliated
-      // user
+      if (!is_affiliated_user) {
+        DVLOG(1) << "adb sideloading not allowed because user is not "
+                    "affiliated with the device";
+        repeating_callback.Run(false);
+        return;
+      }
       repeating_callback.Run(
           IsArcManagedAdbSideloadingAllowedByUserPolicy(user_policy));
       return;
@@ -157,6 +162,7 @@ void CanChangeManagedAdbSideloading(
     bool is_device_enterprise_managed,
     bool is_profile_enterprise_managed,
     bool is_owner_profile,
+    bool is_affiliated_user,
     crostini::CrostiniArcAdbSideloadingUserAllowanceMode user_policy,
     CanChangeAdbSideloadingCallback callback) {
   DCHECK(is_device_enterprise_managed || is_profile_enterprise_managed);
@@ -169,8 +175,9 @@ void CanChangeManagedAdbSideloading(
   }
 
   if (is_device_enterprise_managed) {
-    CanChangeAdbSideloadingOnManagedDevice(
-        std::move(callback), is_profile_enterprise_managed, user_policy);
+    CanChangeAdbSideloadingOnManagedDevice(std::move(callback),
+                                           is_profile_enterprise_managed,
+                                           is_affiliated_user, user_policy);
     return;
   }
 
@@ -286,9 +293,13 @@ void CrostiniFeatures::CanChangeAdbSideloading(
             profile->GetPrefs()->GetInteger(
                 crostini::prefs::kCrostiniArcAdbSideloadingUserPref));
 
+    const auto* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+    bool is_affiliated_user = user && user->IsAffiliated();
+
     CanChangeManagedAdbSideloading(
         is_device_enterprise_managed, is_profile_enterprise_managed,
-        is_owner_profile, user_policy, std::move(callback));
+        is_owner_profile, is_affiliated_user, user_policy, std::move(callback));
     return;
   }
 

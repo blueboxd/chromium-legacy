@@ -86,9 +86,8 @@ class DefaultServiceProcessHost : public ServiceProcessHost {
 #else
     // TODO(https://crbug.com/781334): Support sandboxing.
     CHECK_EQ(sandbox_type, SandboxType::kNoSandbox);
-    return launcher_
-        .Start(identity, SandboxType::kNoSandbox, std::move(callback))
-        .PassInterface();
+    return launcher_.Start(identity, SandboxType::kNoSandbox,
+                           std::move(callback));
 #endif  // defined(OS_IOS)
   }
 

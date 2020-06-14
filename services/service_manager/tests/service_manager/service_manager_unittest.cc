@@ -268,14 +268,13 @@ class ServiceManagerTest : public testing::Test,
     channel.PrepareToPassRemoteEndpoint(&options, &child_command_line);
 
     mojo::OutgoingInvitation invitation;
-    service_manager::mojom::ServicePtr client =
-        ServiceProcessLauncher::PassServiceRequestOnCommandLine(
-            &invitation, &child_command_line);
+    auto client = ServiceProcessLauncher::PassServiceRequestOnCommandLine(
+        &invitation, &child_command_line);
     mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
     connector()->RegisterServiceInstance(
         service_manager::Identity(kTestTargetName, kSystemInstanceGroup,
                                   base::Token{}, base::Token::CreateRandom()),
-        client.PassInterface(), metadata.BindNewPipeAndPassReceiver());
+        std::move(client), metadata.BindNewPipeAndPassReceiver());
 
     target_ = base::LaunchProcess(child_command_line, options);
     DCHECK(target_.IsValid());

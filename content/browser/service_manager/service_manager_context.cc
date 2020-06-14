@@ -151,10 +151,8 @@ class ServiceExecutableProcessHost
       const base::string16& display_name,
       LaunchCallback callback) override {
     // TODO(https://crbug.com/781334): Support sandboxing.
-    return launcher_
-        .Start(identity, service_manager::SandboxType::kNoSandbox,
-               std::move(callback))
-        .PassInterface();
+    return launcher_.Start(identity, service_manager::SandboxType::kNoSandbox,
+                           std::move(callback));
   }
 
  private:

@@ -121,6 +121,13 @@ class CrostiniFeaturesAdbSideloadingTest : public testing::Test {
     user_manager_->SetOwnerId(account_id);
   }
 
+  void AddUserWithAffiliation(bool is_affiliated) {
+    AccountId account_id =
+        AccountId::FromUserEmail(profile_.GetProfileUserName());
+    user_manager_->AddUserWithAffiliation(account_id, is_affiliated);
+    user_manager_->LoginUser(account_id);
+  }
+
   void SetManagedUser(bool is_managed) {
     profile_.GetProfilePolicyConnector()->OverrideIsManagedForTesting(
         is_managed);
@@ -215,24 +222,38 @@ TEST_F(CrostiniFeaturesAdbSideloadingTest,
 }
 
 TEST_F(CrostiniFeaturesAdbSideloadingTest,
+       TestCanChangeAdbSideloadingManagedUnaffiliatedUser) {
+  SetFeatureFlag(true);
+  SetDeviceToEnterpriseManaged();
+  SetManagedUser(true);
+
+  AllowAdbSideloadingByDevicePolicy();
+  AddUserWithAffiliation(false);
+
+  AssertCanChangeAdbSideloading(false);
+}
+
+TEST_F(CrostiniFeaturesAdbSideloadingTest,
        TestCanChangeAdbSideloadingManagedDisallowedUserPolicy) {
   SetFeatureFlag(true);
   SetDeviceToEnterpriseManaged();
   SetManagedUser(true);
 
   AllowAdbSideloadingByDevicePolicy();
+  AddUserWithAffiliation(true);
   DisallowAdbSideloadingByUserPolicy();
 
   AssertCanChangeAdbSideloading(false);
 }
 
 TEST_F(CrostiniFeaturesAdbSideloadingTest,
-       TestCanChangeAdbSideloadingManagedAllowedAllowedUserPolicy) {
+       TestCanChangeAdbSideloadingManagedAllowedUserPolicy) {
   SetFeatureFlag(true);
   SetDeviceToEnterpriseManaged();
   SetManagedUser(true);
 
   AllowAdbSideloadingByDevicePolicy();
+  AddUserWithAffiliation(true);
   AllowAdbSideloadingByUserPolicy();
 
   AssertCanChangeAdbSideloading(true);

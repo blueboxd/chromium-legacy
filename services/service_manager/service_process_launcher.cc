@@ -93,9 +93,10 @@ ServiceProcessLauncher::~ServiceProcessLauncher() {
       FROM_HERE, base::BindOnce(&ProcessState::StopInBackground, state_));
 }
 
-mojom::ServicePtr ServiceProcessLauncher::Start(const Identity& target,
-                                                SandboxType sandbox_type,
-                                                ProcessReadyCallback callback) {
+mojo::PendingRemote<mojom::Service> ServiceProcessLauncher::Start(
+    const Identity& target,
+    SandboxType sandbox_type,
+    ProcessReadyCallback callback) {
   DCHECK(!state_);
 
   const base::CommandLine& parent_command_line =
@@ -139,7 +140,7 @@ mojom::ServicePtr ServiceProcessLauncher::Start(const Identity& target,
   channel.PrepareToPassRemoteEndpoint(&handle_passing_info,
                                       child_command_line.get());
   mojo::OutgoingInvitation invitation;
-  mojom::ServicePtr client =
+  auto client =
       PassServiceRequestOnCommandLine(&invitation, child_command_line.get());
 
   if (delegate_) {
@@ -160,14 +161,15 @@ mojom::ServicePtr ServiceProcessLauncher::Start(const Identity& target,
 }
 
 // static
-mojom::ServicePtr ServiceProcessLauncher::PassServiceRequestOnCommandLine(
+mojo::PendingRemote<mojom::Service>
+ServiceProcessLauncher::PassServiceRequestOnCommandLine(
     mojo::OutgoingInvitation* invitation,
     base::CommandLine* command_line) {
   const auto attachment_name = base::NumberToString(base::RandUint64());
   command_line->AppendSwitchASCII(switches::kServiceRequestAttachmentName,
                                   attachment_name);
-  return mojom::ServicePtr{
-      mojom::ServicePtrInfo{invitation->AttachMessagePipe(attachment_name), 0}};
+  return mojo::PendingRemote<mojom::Service>(
+      invitation->AttachMessagePipe(attachment_name), 0);
 }
 
 base::ProcessId ServiceProcessLauncher::ProcessState::LaunchInBackground(

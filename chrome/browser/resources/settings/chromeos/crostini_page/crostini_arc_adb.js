@@ -98,7 +98,11 @@ Polymer({
    */
   getPolicyIndicatorType_() {
     if (this.isEnterpriseManaged_) {
-      return CrPolicyIndicatorType.DEVICE_POLICY;
+      if (this.canChangeAdbSideloading_) {
+        return CrPolicyIndicatorType.NONE;
+      } else {
+        return CrPolicyIndicatorType.DEVICE_POLICY;
+      }
     } else if (!this.isOwnerProfile_) {
       return CrPolicyIndicatorType.OWNER;
     } else {

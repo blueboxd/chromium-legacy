@@ -33,7 +33,8 @@
         </div>
       </div>
       <cr-policy-indicator indicator-type="[[getPolicyIndicatorType_(
-          isOwnerProfile_, isEnterpriseManaged_)]]"></cr-policy-indicator>
+          isOwnerProfile_, isEnterpriseManaged_, canChangeAdbSideloading_)]]">
+      </cr-policy-indicator>
       <cr-toggle id="arcAdbEnabledButton" aria-labelledby="enableArcAdbLabel"
           checked$="[[arcAdbEnabled_]]"
           disabled="[[shouldDisable_(canChangeAdbSideloading_,

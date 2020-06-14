@@ -13,7 +13,7 @@ import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserv
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsVisibilityManager;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -48,7 +48,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
     private final VrModeObserver mVrModeObserver;
 
     /** A listener for browser controls offset changes. */
-    private final ChromeFullscreenManager.FullscreenListener mFullscreenListener;
+    private final FullscreenManager.Observer mFullscreenObserver;
 
     /** A listener for browser controls offset changes. */
     private final BrowserControlsVisibilityManager.Observer mBrowserControlsObserver;
@@ -63,7 +63,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
     private BrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
 
     /** A fullscreen manager for listening to fullscreen events. */
-    private ChromeFullscreenManager mFullscreenManager;
+    private FullscreenManager mFullscreenManager;
 
     /** A token for suppressing app modal dialogs. */
     private int mAppModalToken = TokenHolder.INVALID_TOKEN;
@@ -108,15 +108,16 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
     private int mPersistentControlsToken;
 
     public BottomSheetManager(BottomSheetControllerInternal controller,
-            ActivityTabProvider tabProvider, ChromeFullscreenManager fullscreenManager,
-            Supplier<ModalDialogManager> dialogManager,
+            ActivityTabProvider tabProvider,
+            BrowserControlsVisibilityManager controlsVisibilityManager,
+            FullscreenManager fullscreenManager, Supplier<ModalDialogManager> dialogManager,
             Supplier<SnackbarManager> snackbarManagerSupplier,
             TabObscuringHandler obscuringDelegate,
             ObservableSupplier<Boolean> omniboxFocusStateSupplier,
             Supplier<OverlayPanelManager> overlayManager) {
         mSheetController = controller;
         mTabProvider = tabProvider;
-        mBrowserControlsVisibilityManager = fullscreenManager;
+        mBrowserControlsVisibilityManager = controlsVisibilityManager;
         mFullscreenManager = fullscreenManager;
         mDialogManager = dialogManager;
         mSnackbarManager = snackbarManagerSupplier;
@@ -204,7 +205,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
         };
         mBrowserControlsVisibilityManager.addObserver(mBrowserControlsObserver);
 
-        mFullscreenListener = new ChromeFullscreenManager.FullscreenListener() {
+        mFullscreenObserver = new FullscreenManager.Observer() {
             /** A token held while this object is suppressing the bottom sheet. */
             private int mToken;
 
@@ -229,7 +230,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
                 controller.unsuppressSheet(mToken);
             }
         };
-        mFullscreenManager.addListener(mFullscreenListener);
+        mFullscreenManager.addObserver(mFullscreenObserver);
 
         mOmniboxFocusObserver = new Callback<Boolean>() {
             /** A token held while this object is suppressing the bottom sheet. */
@@ -341,7 +342,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
         if (mLastActivityTab != null) mLastActivityTab.removeObserver(mTabObserver);
         mTabProvider.removeObserver(mActivityTabObserver);
         mSheetController.removeObserver(this);
-        mFullscreenManager.removeListener(mFullscreenListener);
+        mFullscreenManager.removeObserver(mFullscreenObserver);
         mBrowserControlsVisibilityManager.removeObserver(mBrowserControlsObserver);
         mOmniboxFocusStateSupplier.removeObserver(mOmniboxFocusObserver);
         VrModuleProvider.unregisterVrModeObserver(mVrModeObserver);

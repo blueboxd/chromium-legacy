@@ -37,7 +37,7 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KeyboardExtensionState;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.StateProperty;
@@ -123,12 +123,13 @@ class ManualFillingMediator extends EmptyTabObserver
         }
     };
 
-    private final FullscreenListener mFullscreenListener = new FullscreenListener() {
-        @Override
-        public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
-            pause();
-        }
-    };
+    private final FullscreenManager.Observer mFullscreenObserver =
+            new FullscreenManager.Observer() {
+                @Override
+                public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
+                    pause();
+                }
+            };
 
     private final BottomSheetObserver mBottomSheetObserver = new EmptyBottomSheetObserver() {
         @Override
@@ -175,7 +176,7 @@ class ManualFillingMediator extends EmptyTabObserver
                 mStateCache.destroyStateFor(tab);
             }
         };
-        mActivity.getFullscreenManager().addListener(mFullscreenListener);
+        mActivity.getFullscreenManager().addObserver(mFullscreenObserver);
         mActivity.getBottomSheetController().addObserver(mBottomSheetObserver);
         ensureObserverRegistered(getActiveBrowserTab());
         refreshTabs();
@@ -259,7 +260,7 @@ class ManualFillingMediator extends EmptyTabObserver
         mObservedTabs.clear();
         LayoutManager manager = getLayoutManager();
         if (manager != null) manager.removeSceneChangeObserver(mTabSwitcherObserver);
-        mActivity.getFullscreenManager().removeListener(mFullscreenListener);
+        mActivity.getFullscreenManager().removeObserver(mFullscreenObserver);
         mActivity.getBottomSheetController().removeObserver(mBottomSheetObserver);
         mWindowAndroid = null;
         mActivity = null;

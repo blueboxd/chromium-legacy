@@ -20,7 +20,7 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsUtils;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsVisibilityManager;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAttributeKeys;
@@ -44,7 +44,7 @@ public class ChromeTabModalPresenter
     /** The activity displaying the dialogs. */
     private final ChromeActivity mChromeActivity;
     private final Supplier<TabObscuringHandler> mTabObscuringHandlerSupplier;
-    private final ChromeFullscreenManager mChromeFullscreenManager;
+    private final FullscreenManager mFullscreenManager;
     private final BrowserControlsVisibilityManager mBrowserControlsVisibilityManager;
     private final TabModalBrowserControlsVisibilityDelegate mVisibilityDelegate;
 
@@ -86,8 +86,8 @@ public class ChromeTabModalPresenter
         super(chromeActivity);
         mChromeActivity = chromeActivity;
         mTabObscuringHandlerSupplier = tabObscuringHandler;
-        mChromeFullscreenManager = mChromeActivity.getFullscreenManager();
-        mBrowserControlsVisibilityManager = mChromeFullscreenManager;
+        mFullscreenManager = mChromeActivity.getFullscreenManager();
+        mBrowserControlsVisibilityManager = mChromeActivity.getFullscreenManager();
         mBrowserControlsVisibilityManager.addObserver(this);
         mVisibilityDelegate = new TabModalBrowserControlsVisibilityDelegate();
         mTabObscuringToken = TokenHolder.INVALID_TOKEN;
@@ -293,7 +293,7 @@ public class ChromeTabModalPresenter
         mVisibilityDelegate.updateConstraintsForTab(mActiveTab);
 
         // Make sure to exit fullscreen mode before showing the tab modal dialog view.
-        mChromeFullscreenManager.onExitFullscreen(mActiveTab);
+        mFullscreenManager.onExitFullscreen(mActiveTab);
 
         // Also need to update browser control state after dismissal to refresh the constraints.
         if (isShowing && areRendererInputEventsIgnored()) {

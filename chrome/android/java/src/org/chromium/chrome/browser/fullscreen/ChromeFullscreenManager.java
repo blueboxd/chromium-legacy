@@ -61,10 +61,10 @@ import java.util.ArrayList;
 /**
  * A class that manages control and content views to create the fullscreen mode.
  */
-public class ChromeFullscreenManager implements ActivityStateListener, WindowFocusChangedListener,
-                                                ViewGroup.OnHierarchyChangeListener,
-                                                View.OnSystemUiVisibilityChangeListener,
-                                                VrModeObserver, BrowserControlsSizer {
+public class ChromeFullscreenManager
+        implements ActivityStateListener, WindowFocusChangedListener,
+                   ViewGroup.OnHierarchyChangeListener, View.OnSystemUiVisibilityChangeListener,
+                   VrModeObserver, BrowserControlsSizer, FullscreenManager {
     // The amount of time to delay the control show request after returning to a once visible
     // activity.  This delay is meant to allow Android to run its Activity focusing animation and
     // have the controls scroll back in smoothly once that has finished.
@@ -115,7 +115,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
     // in the current Tab.
     private ContentView mContentView;
 
-    private final ArrayList<FullscreenListener> mListeners = new ArrayList<>();
+    private final ArrayList<FullscreenManager.Observer> mFullscreenObservers = new ArrayList<>();
     private final ObserverList<BrowserControlsStateProvider.Observer> mControlsObservers =
             new ObserverList<>();
     private Runnable mViewportSizeDelegate;
@@ -139,24 +139,6 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         int TOP = 0;
         /** Controls are not present, eg NoTouchActivity. */
         int NONE = 1;
-    }
-
-    /**
-     * A listener that gets notified of changes to the fullscreen state.
-     */
-    public interface FullscreenListener {
-        /**
-         * Called when entering fullscreen mode.
-         * @param tab The tab whose content is entering fullscreen mode.
-         * @param options Options to adjust fullscreen mode.
-         */
-        default void onEnterFullscreen(Tab tab, FullscreenOptions options) {}
-
-        /**
-         * Called when exiting fullscreen mode.
-         * @param tab The tab whose content is exiting fullscreen mode.
-         */
-        default void onExitFullscreen(Tab tab) {}
     }
 
     private final Runnable mUpdateVisibilityRunnable = new Runnable() {
@@ -362,17 +344,18 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
             setEnterFullscreenRunnable(tab, r);
         }
 
-        for (FullscreenListener listener : mListeners) listener.onEnterFullscreen(tab, options);
+        for (FullscreenManager.Observer observer : mFullscreenObservers) {
+            observer.onEnterFullscreen(tab, options);
+        }
     }
 
-    /**
-     * Exit fullscreen.
-     * @param tab {@link Tab} that goes out of fullscreen.
-     */
+    @Override
     public void onExitFullscreen(Tab tab) {
         setEnterFullscreenRunnable(tab, null);
         if (tab == getTab()) exitPersistentFullscreenMode();
-        for (FullscreenListener listener : mListeners) listener.onExitFullscreen(tab);
+        for (FullscreenManager.Observer observer : mFullscreenObservers) {
+            observer.onExitFullscreen(tab);
+        }
     }
 
     /**
@@ -384,10 +367,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         updateMultiTouchZoomSupport(false);
     }
 
-    /**
-     * Exits persistent fullscreen mode.  In this mode, the browser controls will be
-     * permanently hidden until this mode is exited.
-     */
+    @Override
     public void exitPersistentFullscreenMode() {
         mHtmlApiHandler.exitPersistentFullscreenMode();
         updateMultiTouchZoomSupport(true);
@@ -406,10 +386,7 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
         }
     }
 
-    /**
-     * @return Whether the application is in persistent fullscreen mode.
-     * @see #setPersistentFullscreenMode(boolean)
-     */
+    @Override
     public boolean getPersistentFullscreenMode() {
         return mHtmlApiHandler.getPersistentFullscreenMode();
     }
@@ -613,28 +590,23 @@ public class ChromeFullscreenManager implements ActivityStateListener, WindowFoc
     }
 
     @Override
-    public void addObserver(Observer obs) {
+    public void addObserver(BrowserControlsStateProvider.Observer obs) {
         mControlsObservers.addObserver(obs);
     }
 
     @Override
-    public void removeObserver(Observer obs) {
+    public void removeObserver(BrowserControlsStateProvider.Observer obs) {
         mControlsObservers.removeObserver(obs);
     }
 
-    /**
-     * @param listener The {@link FullscreenListener} to be notified of fullscreen changes.
-     */
-    public void addListener(FullscreenListener listener) {
-        if (!mListeners.contains(listener)) mListeners.add(listener);
+    @Override
+    public void addObserver(FullscreenManager.Observer observer) {
+        if (!mFullscreenObservers.contains(observer)) mFullscreenObservers.add(observer);
     }
 
-    /**
-     * @param listener The {@link FullscreenListener} to no longer be notified of fullscreen
-     *                 changes.
-     */
-    public void removeListener(FullscreenListener listener) {
-        mListeners.remove(listener);
+    @Override
+    public void removeObserver(FullscreenManager.Observer observer) {
+        mFullscreenObservers.remove(observer);
     }
 
     /**

@@ -34,7 +34,7 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStat
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchSelectionController.SelectionType;
 import org.chromium.chrome.browser.contextualsearch.ResolvedSearchTerm.CardTag;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
@@ -131,7 +131,7 @@ public class ContextualSearchManager
     private final ChromeActivity mActivity;
     private final ContextualSearchTabPromotionDelegate mTabPromotionDelegate;
     private final ViewTreeObserver.OnGlobalFocusChangeListener mOnFocusChangeListener;
-    private final FullscreenListener mFullscreenListener;
+    private final FullscreenManager.Observer mFullscreenObserver;
 
     /**
      * The {@link ContextualSearchInteractionRecorder} to use to record user interactions and apply
@@ -244,7 +244,7 @@ public class ContextualSearchManager
             }
         };
 
-        mFullscreenListener = new FullscreenListener() {
+        mFullscreenObserver = new FullscreenManager.Observer() {
             @Override
             public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
                 hideContextualSearch(StateChangeReason.UNKNOWN);
@@ -256,7 +256,7 @@ public class ContextualSearchManager
             }
         };
 
-        mActivity.getFullscreenManager().addListener(mFullscreenListener);
+        mActivity.getFullscreenManager().addObserver(mFullscreenObserver);
         mSelectionController = new ContextualSearchSelectionController(activity, this);
         mNetworkCommunicator = this;
         mPolicy = new ContextualSearchPolicy(mSelectionController, mNetworkCommunicator);
@@ -302,7 +302,7 @@ public class ContextualSearchManager
         if (!mIsInitialized) return;
 
         hideContextualSearch(StateChangeReason.UNKNOWN);
-        mActivity.getFullscreenManager().removeListener(mFullscreenListener);
+        mActivity.getFullscreenManager().removeObserver(mFullscreenObserver);
         mParentView.getViewTreeObserver().removeOnGlobalFocusChangeListener(mOnFocusChangeListener);
         ContextualSearchManagerJni.get().destroy(mNativeContextualSearchManagerPtr, this);
         stopListeningForHideNotifications();

@@ -502,13 +502,14 @@ public class RootUiCoordinator
             mButtonDataProviders = Arrays.asList(mIdentityDiscController, shareButtonController);
             mActionModeControllerCallback = new ToolbarActionModeCallback();
             mToolbarManager = new ToolbarManager(mActivity, mActivity.getFullscreenManager(),
-                    toolbarContainer, mActivity.getCompositorViewHolder().getInvalidator(),
-                    urlFocusChangedCallback, mTabThemeColorProvider, mTabObscuringHandler,
-                    mShareDelegateSupplier, bottomToolbarVisibilitySupplier,
-                    mIdentityDiscController, mButtonDataProviders, mActivityTabProvider,
-                    mScrimCoordinator, mActionModeControllerCallback, mFindToolbarManager,
-                    mProfileSupplier, mBookmarkBridgeSupplier, mCanAnimateBrowserControls,
-                    mOverviewModeBehaviorSupplier, mAppMenuSupplier, shouldShowMenuUpdateBadge());
+                    mActivity.getFullscreenManager(), toolbarContainer,
+                    mActivity.getCompositorViewHolder().getInvalidator(), urlFocusChangedCallback,
+                    mTabThemeColorProvider, mTabObscuringHandler, mShareDelegateSupplier,
+                    bottomToolbarVisibilitySupplier, mIdentityDiscController, mButtonDataProviders,
+                    mActivityTabProvider, mScrimCoordinator, mActionModeControllerCallback,
+                    mFindToolbarManager, mProfileSupplier, mBookmarkBridgeSupplier,
+                    mCanAnimateBrowserControls, mOverviewModeBehaviorSupplier, mAppMenuSupplier,
+                    shouldShowMenuUpdateBadge());
             if (!mActivity.supportsAppMenu()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }
@@ -639,9 +640,9 @@ public class RootUiCoordinator
                 () -> mActivity.findViewById(R.id.coordinator));
 
         mBottomSheetManager = new BottomSheetManager(mBottomSheetController, mActivityTabProvider,
-                mActivity.getFullscreenManager(), mActivity::getModalDialogManager,
-                this::getBottomSheetSnackbarManager, mTabObscuringHandler,
-                mOmniboxFocusStateSupplier, panelManagerSupplier);
+                mActivity.getFullscreenManager(), mActivity.getFullscreenManager(),
+                mActivity::getModalDialogManager, this::getBottomSheetSnackbarManager,
+                mTabObscuringHandler, mOmniboxFocusStateSupplier, panelManagerSupplier);
     }
 
     /**

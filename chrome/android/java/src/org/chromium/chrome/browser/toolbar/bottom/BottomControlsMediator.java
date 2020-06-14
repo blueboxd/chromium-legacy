@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsSizer;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -30,7 +30,7 @@ class BottomControlsMediator implements BrowserControlsStateProvider.Observer,
     private final PropertyModel mModel;
 
     /** The fullscreen manager to observe fullscreen events. */
-    private final ChromeFullscreenManager mFullscreenManager;
+    private final FullscreenManager mFullscreenManager;
 
     /** The browser controls sizer/manager to observe browser controls events. */
     private final BrowserControlsSizer mBrowserControlsSizer;
@@ -59,16 +59,17 @@ class BottomControlsMediator implements BrowserControlsStateProvider.Observer,
      * Build a new mediator that handles events from outside the bottom controls component.
      * @param model The {@link BottomControlsProperties} that holds all the view state for the
      *         bottom controls component.
-     * @param fullscreenManager A {@link ChromeFullscreenManager} for events related to the browser
+     @param controlsSizer The {@link BrowserControlsSizer} to manipulate browser controls.
+     * @param fullscreenManager A {@link FullscreenManager} for events related to the browser
      *                          controls.
      * @param bottomControlsHeight The height of the bottom bar in pixels.
      */
-    BottomControlsMediator(PropertyModel model, ChromeFullscreenManager fullscreenManager,
-            int bottomControlsHeight) {
+    BottomControlsMediator(PropertyModel model, BrowserControlsSizer controlsSizer,
+            FullscreenManager fullscreenManager, int bottomControlsHeight) {
         mModel = model;
 
         mFullscreenManager = fullscreenManager;
-        mBrowserControlsSizer = fullscreenManager;
+        mBrowserControlsSizer = controlsSizer;
         mBrowserControlsSizer.addObserver(this);
 
         mBottomControlsHeight = bottomControlsHeight;
@@ -159,7 +160,7 @@ class BottomControlsMediator implements BrowserControlsStateProvider.Observer,
      * The composited view is the composited version of the Android View. It is used to be able to
      * scroll the bottom controls off-screen synchronously. Since the bottom controls live below
      * the webcontents we re-size the webcontents through
-     * {@link ChromeFullscreenManager#setBottomControlsHeight(int,int)} whenever the composited view
+     * {@link BrowserControlsSizer#setBottomControlsHeight(int,int)} whenever the composited view
      * visibility changes.
      */
     private void updateCompositedViewVisibility() {
@@ -175,7 +176,7 @@ class BottomControlsMediator implements BrowserControlsStateProvider.Observer,
      * The Android View is the interactive view. The composited view should always be behind the
      * Android view which means we hide the Android view whenever the composited view is hidden.
      * We also hide the Android view as we are scrolling the bottom controls off screen this is
-     * done by checking if {@link ChromeFullscreenManager#getBottomControlOffset()} is
+     * done by checking if {@link BrowserControlsSizer#getBottomControlOffset()} is
      * non-zero.
      */
     private void updateAndroidViewVisibility() {

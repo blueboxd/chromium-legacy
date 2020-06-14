@@ -21,7 +21,7 @@ _ATTACH_RETRY_SECONDS = 120
 
 # Amount of time to wait for Amber to complete package installation, as a
 # mitigation against hangs due to amber/network-related failures.
-_INSTALL_TIMEOUT_SECS = 5 * 60
+_INSTALL_TIMEOUT_SECS = 10 * 60
 
 
 def _GetPackageUri(package_name):

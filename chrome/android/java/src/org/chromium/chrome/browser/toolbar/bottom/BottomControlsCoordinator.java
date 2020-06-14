@@ -22,7 +22,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsSizer;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tasks.tab_management.TabGroupUi;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
@@ -62,8 +63,9 @@ public class BottomControlsCoordinator {
 
     /**
      * Build the coordinator that manages the bottom controls.
-     * @param fullscreenManager A {@link ChromeFullscreenManager} to update the bottom controls
+     * @param controlsSizer A {@link BrowserControlsSizer} to update the bottom controls
      *                          height for the renderer.
+     * @param fullscreenManager A {@link FullscreenManager} to listen for fullscreen changes.
      * @param stub The bottom controls {@link ViewStub} to inflate.
      * @param tabProvider
      * @param tabSwitcherLongclickListener
@@ -79,9 +81,9 @@ public class BottomControlsCoordinator {
      * @param scrimCoordinator The {@link ScrimCoordinator} to control scrim view.
      */
     @SuppressLint("CutPasteId") // Not actually cut and paste since it's View vs ViewGroup.
-    public BottomControlsCoordinator(ChromeFullscreenManager fullscreenManager, ViewStub stub,
-            ActivityTabProvider tabProvider, OnLongClickListener tabSwitcherLongclickListener,
-            ThemeColorProvider themeColorProvider,
+    public BottomControlsCoordinator(BrowserControlsSizer controlsSizer,
+            FullscreenManager fullscreenManager, ViewStub stub, ActivityTabProvider tabProvider,
+            OnLongClickListener tabSwitcherLongclickListener, ThemeColorProvider themeColorProvider,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             Supplier<Boolean> showStartSurfaceCallable, Runnable openHomepageAction,
             Callback<Integer> setUrlBarFocusAction,
@@ -106,7 +108,7 @@ public class BottomControlsCoordinator {
         View toolbar = root.findViewById(R.id.bottom_container_slot);
         ViewGroup.LayoutParams params = toolbar.getLayoutParams();
         params.height = root.getResources().getDimensionPixelOffset(bottomToolbarHeightId);
-        mMediator = new BottomControlsMediator(model, fullscreenManager,
+        mMediator = new BottomControlsMediator(model, controlsSizer, fullscreenManager,
                 root.getResources().getDimensionPixelOffset(bottomToolbarHeightId));
 
         if ((TabUiFeatureUtilities.isTabGroupsAndroidEnabled()

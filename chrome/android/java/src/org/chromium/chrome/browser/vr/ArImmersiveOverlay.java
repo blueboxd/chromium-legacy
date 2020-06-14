@@ -26,7 +26,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.CompositorView;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.ScreenOrientationDelegate;
 import org.chromium.content_public.browser.ScreenOrientationProvider;
@@ -161,7 +161,7 @@ public class ArImmersiveOverlay
     private class SurfaceUiCompositor implements SurfaceUiWrapper {
         private SurfaceView mSurfaceView;
         private CompositorView mCompositorView;
-        private FullscreenListener mFullscreenListener;
+        private FullscreenManager.Observer mFullscreenListener;
 
         public SurfaceUiCompositor() {
             mSurfaceView = new SurfaceView(mActivity);
@@ -186,7 +186,7 @@ public class ArImmersiveOverlay
             if (DEBUG_LOGS) Log.i(TAG, "calling mCompositorView.setOverlayImmersiveArMode(true)");
             mCompositorView.setOverlayImmersiveArMode(true);
 
-            mFullscreenListener = new FullscreenListener() {
+            mFullscreenListener = new FullscreenManager.Observer() {
                 @Override
                 public void onExitFullscreen(Tab tab) {
                     if (DEBUG_LOGS) Log.i(TAG, "onExitFullscreenMode");
@@ -195,7 +195,7 @@ public class ArImmersiveOverlay
             };
 
             // Watch for fullscreen exit triggered from JS, this needs to end the session.
-            mActivity.getFullscreenManager().addListener(mFullscreenListener);
+            mActivity.getFullscreenManager().addObserver(mFullscreenListener);
         }
 
         @Override // SurfaceUiWrapper
@@ -209,7 +209,7 @@ public class ArImmersiveOverlay
 
         @Override // SurfaceUiWrapper
         public void destroy() {
-            mActivity.getFullscreenManager().removeListener(mFullscreenListener);
+            mActivity.getFullscreenManager().removeObserver(mFullscreenListener);
             View content = mActivity.getWindow().findViewById(android.R.id.content);
             ViewGroup group = (ViewGroup) content.getParent();
             group.removeView(mSurfaceView);

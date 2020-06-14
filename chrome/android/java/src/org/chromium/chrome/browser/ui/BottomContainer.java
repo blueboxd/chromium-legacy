@@ -10,7 +10,6 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 
@@ -43,16 +42,16 @@ public class BottomContainer
     /**
      * Initializes this container.
      */
-    public void initialize(ChromeFullscreenManager fullscreenManager,
+    public void initialize(BrowserControlsStateProvider browserControlsStateProvider,
             ApplicationViewportInsetSupplier viewportInsetSupplier) {
-        mBrowserControlsStateProvider = fullscreenManager;
+        mBrowserControlsStateProvider = browserControlsStateProvider;
         mBrowserControlsStateProvider.addObserver(this);
         mViewportInsetSupplier = viewportInsetSupplier;
         mViewportInsetSupplier.addObserver(mViewportInsetObserver);
         setTranslationY(mBaseYOffset);
     }
 
-    // FullscreenListener methods
+    // BrowserControlsStateProvidder.Observer methods
     @Override
     public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
             int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {

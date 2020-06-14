@@ -35,7 +35,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
@@ -74,7 +74,7 @@ public class StatusIndicatorTest {
     private StatusIndicatorSceneLayer mStatusIndicatorSceneLayer;
     private View mStatusIndicatorContainer;
     private ViewGroup.MarginLayoutParams mControlContainerLayoutParams;
-    private ChromeFullscreenManager mFullscreenManager;
+    private BrowserControlsStateProvider mBrowserControlsStateProvider;
 
     @Before
     public void setUp() throws InterruptedException {
@@ -90,7 +90,7 @@ public class StatusIndicatorTest {
                 mActivityTestRule.getActivity().findViewById(R.id.control_container);
         mControlContainerLayoutParams =
                 (ViewGroup.MarginLayoutParams) controlContainer.getLayoutParams();
-        mFullscreenManager = mActivityTestRule.getActivity().getFullscreenManager();
+        mBrowserControlsStateProvider = mActivityTestRule.getActivity().getFullscreenManager();
     }
 
     @After
@@ -101,7 +101,7 @@ public class StatusIndicatorTest {
     @Test
     @MediumTest
     public void testShowAndHide() {
-        final ChromeFullscreenManager fullscreenManager =
+        final BrowserControlsStateProvider browserControlsStateProvider =
                 mActivityTestRule.getActivity().getFullscreenManager();
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 
@@ -121,7 +121,7 @@ public class StatusIndicatorTest {
 
         // Wait until the status indicator finishes animating, or becomes fully visible.
         CriteriaHelper.pollUiThread(Criteria.equals(mStatusIndicatorContainer.getHeight(),
-                fullscreenManager::getTopControlsMinHeightOffset));
+                browserControlsStateProvider::getTopControlsMinHeightOffset));
 
         // Now, the Android view should be visible.
         Assert.assertEquals("Wrong Android view visibility.", View.VISIBLE,
@@ -144,7 +144,7 @@ public class StatusIndicatorTest {
 
         // Wait until the status indicator finishes animating, or becomes fully hidden.
         CriteriaHelper.pollUiThread(
-                Criteria.equals(0, fullscreenManager::getTopControlsMinHeightOffset));
+                Criteria.equals(0, browserControlsStateProvider::getTopControlsMinHeightOffset));
 
         // The Android view visibility should be {@link View.GONE} after #hide().
         Assert.assertEquals("Wrong Android view visibility.", View.GONE,
@@ -177,7 +177,8 @@ public class StatusIndicatorTest {
         onView(withId(R.id.control_container))
                 .check(matches(withTopMargin(mStatusIndicatorContainer.getHeight())));
         onView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view))
-                .check(matches(withTopMargin(mFullscreenManager.getTopControlsHeight())));
+                .check(matches(
+                        withTopMargin(mBrowserControlsStateProvider.getTopControlsHeight())));
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mStatusIndicatorCoordinator.updateContent("Exit status", null,
@@ -188,14 +189,16 @@ public class StatusIndicatorTest {
         onView(withId(R.id.control_container))
                 .check(matches(withTopMargin(mStatusIndicatorContainer.getHeight())));
         onView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view))
-                .check(matches(withTopMargin(mFullscreenManager.getTopControlsHeight())));
+                .check(matches(
+                        withTopMargin(mBrowserControlsStateProvider.getTopControlsHeight())));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> mStatusIndicatorCoordinator.hide());
 
         onView(withId(R.id.status_indicator)).check(matches(withEffectiveVisibility(GONE)));
         onView(withId(R.id.control_container)).check(matches(withTopMargin(0)));
         onView(withId(org.chromium.chrome.start_surface.R.id.secondary_tasks_surface_view))
-                .check(matches(withTopMargin(mFullscreenManager.getTopControlsHeight())));
+                .check(matches(
+                        withTopMargin(mBrowserControlsStateProvider.getTopControlsHeight())));
     }
 
     @Test

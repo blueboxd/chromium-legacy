@@ -16,6 +16,10 @@ class SetAuthenticationDetailsResponse;
 class ShutDownResponse;
 }  // namespace system_proxy
 
+class PrefService;
+class PrefChangeRegistrar;
+class Profile;
+
 namespace policy {
 
 // This class observes the device setting |SystemProxySettings|, and controls
@@ -26,7 +30,8 @@ namespace policy {
 // processes.
 class SystemProxyManager {
  public:
-  explicit SystemProxyManager(chromeos::CrosSettings* cros_settings);
+  SystemProxyManager(chromeos::CrosSettings* cros_settings,
+                     PrefService* local_state);
   SystemProxyManager(const SystemProxyManager&) = delete;
 
   SystemProxyManager& operator=(const SystemProxyManager&) = delete;
@@ -38,6 +43,8 @@ class SystemProxyManager {
   //     PROXY localhost:3128
   // otherwise it returns an empty string.
   std::string SystemServicesProxyPacString() const;
+  void StartObservingPrimaryProfilePrefs(Profile* profile);
+  void StopObservingPrimaryProfilePrefs();
 
   void SetSystemServicesProxyUrlForTest(const std::string& local_proxy_url);
 
@@ -45,6 +52,11 @@ class SystemProxyManager {
   void OnSetAuthenticationDetails(
       const system_proxy::SetAuthenticationDetailsResponse& response);
   void OnDaemonShutDown(const system_proxy::ShutDownResponse& response);
+
+  void OnKerberosEnabledChanged();
+  void OnKerberosAccountChanged();
+
+  void SendKerberosAuthenticationDetails();
 
   // Once a trusted set of policies is established, this function calls
   // the System-proxy dbus client to start/shutdown the daemon and, if
@@ -62,6 +74,16 @@ class SystemProxyManager {
   // The authority URI in the format host:port of the local proxy worker for
   // system services.
   std::string system_services_address_;
+
+  // Local state prefs, not owned.
+  PrefService* local_state_ = nullptr;
+
+  // Primary profile, not owned.
+  Profile* primary_profile_ = nullptr;
+
+  // Observer for Kerberos-related prefs.
+  std::unique_ptr<PrefChangeRegistrar> local_state_pref_change_registrar_;
+  std::unique_ptr<PrefChangeRegistrar> profile_pref_change_registrar_;
 
   base::WeakPtrFactory<SystemProxyManager> weak_factory_{this};
 };

@@ -983,6 +983,7 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
   DCHECK(parsed_properties_.IsEmpty());
 
   bool use_observer = observer_ && (rule_type == StyleRule::kStyle ||
+                                    rule_type == StyleRule::kProperty ||
                                     rule_type == StyleRule::kKeyframe);
   if (use_observer) {
     observer_->StartRuleBody(stream.Offset());

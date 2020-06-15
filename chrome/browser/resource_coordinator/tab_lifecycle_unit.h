@@ -80,24 +80,9 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // "recently audible" state of the tab changes.
   void SetRecentlyAudible(bool recently_audible);
 
-  // Set the initial state of this lifecycle unit with some data coming from the
-  // performance_manager Graph.
-  void SetInitialStateFromPageNodeData(
-      performance_manager::mojom::InterventionPolicy origin_trial_policy,
-      bool is_holding_weblock,
-      bool is_holding_indexeddb_lock);
-
   // Updates the tab's lifecycle state when changed outside the tab
   // lifecycle unit.
   void UpdateLifecycleState(performance_manager::mojom::LifecycleState state);
-
-  // Updates the tab's origin trial freeze policy.
-  void UpdateOriginTrialFreezePolicy(
-      performance_manager::mojom::InterventionPolicy policy);
-
-  // Setters for the WebLock and IndexedDB lock usage properties.
-  void SetIsHoldingWebLock(bool is_holding_weblock);
-  void SetIsHoldingIndexedDBLock(bool is_holding_indexeddb_lock);
 
   // LifecycleUnit:
   TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() override;
@@ -109,12 +94,9 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   LifecycleUnitLoadingState GetLoadingState() const override;
   bool Load() override;
   int GetEstimatedMemoryFreedOnDiscardKB() const override;
-  bool CanFreeze(DecisionDetails* decision_details) const override;
   bool CanDiscard(LifecycleUnitDiscardReason reason,
                   DecisionDetails* decision_details) const override;
   LifecycleUnitDiscardReason GetDiscardReason() const override;
-  bool Freeze() override;
-  bool Unfreeze() override;
   bool Discard(LifecycleUnitDiscardReason discard_reason) override;
   ukm::SourceId GetUkmSourceId() const override;
 
@@ -122,8 +104,6 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // actually called by an instance of TabLifecycleUnitExternalImpl.
   bool IsAutoDiscardable() const;
   void SetAutoDiscardable(bool auto_discardable);
-
-  bool IsHoldingWebLockForTesting() { return is_holding_weblock_; }
 
  protected:
   friend class TabManagerTest;
@@ -138,10 +118,6 @@ class TabLifecycleUnitSource::TabLifecycleUnit
 
   // Updates |decision_details| based on media usage by the tab.
   void CheckMediaUsage(DecisionDetails* decision_details) const;
-
-  // For non-urgent discarding, sends a request for freezing to occur prior to
-  // discarding the tab.
-  void RequestFreezeForDiscard(LifecycleUnitDiscardReason reason);
 
   // Finishes a tab discard, invoked by Discard().
   void FinishDiscard(LifecycleUnitDiscardReason discard_reason);
@@ -161,15 +137,6 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // Updates |decision_details| based on device usage by the tab (USB or
   // Bluetooth).
   void CheckDeviceUsage(DecisionDetails* decision_details) const;
-
-  // Updates |decision_details| based on freezing origin trial opt-in/opt-out
-  // for the tab.
-  void CheckFreezingOriginTrial(DecisionDetails* decision_details) const;
-
-  // Updates |decision_details| based on the global intervention policy database
-  // freezing data for the tab.
-  void CheckFreezingInterventionPolicyDatabase(
-      DecisionDetails* decision_details) const;
 
   // List of observers to notify when the discarded state or the auto-
   // discardable state of this tab changes.
@@ -191,11 +158,6 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // When this is false, CanDiscard() always returns false.
   bool auto_discardable_ = true;
 
-  // The freeze policy set via origin trial. Initial value is kDefault to avoid
-  // affecting CanFreeze() before the policy is set for the first time.
-  performance_manager::mojom::InterventionPolicy origin_trial_freeze_policy_ =
-      performance_manager::mojom::InterventionPolicy::kDefault;
-
   // Maintains the most recent LifecycleUnitDiscardReason that was passed into
   // Discard().
   LifecycleUnitDiscardReason discard_reason_ =
@@ -205,14 +167,6 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // TimeTicks() if the tab was never "recently audible", last time at which the
   // tab was "recently audible" otherwise.
   base::TimeTicks recently_audible_time_;
-
-  // Indicates if at least one of the frames of this tab is currently holding
-  // at least one WebLock.
-  bool is_holding_weblock_ = false;
-
-  // Indicates if at least one of the frames of this tab is currently holding
-  // at least one IndexedDB Lock.
-  bool is_holding_indexeddb_lock_ = false;
 
   std::unique_ptr<TabLifecycleUnitExternalImpl> external_impl_;
 

@@ -66,7 +66,8 @@ TEST_F(DevicePolicyDecoderChromeOSTest,
   base::Optional<base::Value> decoded_json = DecodeJsonStringAndNormalize(
       kInvalidJson, key::kDeviceWallpaperImage, &error);
   EXPECT_FALSE(decoded_json.has_value());
-  EXPECT_EQ("Invalid JSON string: Line: 1, column: 14, Syntax error.", error);
+  EXPECT_NE(std::string::npos,
+            error.find("Invalid JSON string: Line: 1, column: 14"));
 }
 
 #if GTEST_HAS_DEATH_TEST

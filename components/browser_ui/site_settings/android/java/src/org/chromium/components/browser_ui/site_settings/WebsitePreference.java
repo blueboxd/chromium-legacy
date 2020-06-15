@@ -86,8 +86,18 @@ class WebsitePreference extends ChromeImageViewPreference {
     private void refresh() {
         setTitle(mSite.getTitle());
 
-        if (mSite.getEmbedder() == null) return;
-
+        if (mSite.getEmbedder() == null) {
+            @PermissionInfo.Type
+            Integer permissionInfoType =
+                    PermissionInfo.getPermissionInfoType(mCategory.getContentSettingsType());
+            PermissionInfo permissionInfo = null;
+            if (permissionInfoType != null
+                    && (permissionInfo = mSite.getPermissionInfo(permissionInfoType)) != null
+                    && permissionInfo.isEmbargoed()) {
+                setSummary(getContext().getString(R.string.automatically_blocked));
+            }
+            return;
+        }
         String subtitleText;
         if (mSite.representsThirdPartiesOnSite()) {
             subtitleText = getContext().getString(

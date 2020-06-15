@@ -32,9 +32,10 @@ struct CodecConfig {
   media::VideoCodecProfile profile;
 };
 
-constexpr std::array<CodecConfig, 6> kCodecConfigs = {{
+constexpr std::array<CodecConfig, 7> kCodecConfigs = {{
     {media::kCodecVP8, media::VP8PROFILE_ANY},
     {media::kCodecVP9, media::VP9PROFILE_PROFILE0},
+    {media::kCodecVP9, media::VP9PROFILE_PROFILE1},
     {media::kCodecVP9, media::VP9PROFILE_PROFILE2},
     {media::kCodecH264, media::H264PROFILE_BASELINE},
     {media::kCodecH264, media::H264PROFILE_MAIN},
@@ -53,6 +54,9 @@ base::Optional<webrtc::SdpVideoFormat> VdcToWebRtcFormat(
       switch (config.profile()) {
         case media::VP9PROFILE_PROFILE0:
           vp9_profile = webrtc::VP9Profile::kProfile0;
+          break;
+        case media::VP9PROFILE_PROFILE1:
+          vp9_profile = webrtc::VP9Profile::kProfile1;
           break;
         case media::VP9PROFILE_PROFILE2:
           vp9_profile = webrtc::VP9Profile::kProfile2;

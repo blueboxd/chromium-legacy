@@ -111,10 +111,24 @@ inline void SetupFragmentBuilderForFragmentation(const NGConstraintSpace&,
                                                  const NGInlineBreakToken*,
                                                  NGLineBoxFragmentBuilder*) {}
 
+// Return true if the node is fully grown at its current size.
+// |current_total_block_size| is the total block-size of the node, as if all
+// fragments were stitched together.
+bool IsNodeFullyGrown(NGBlockNode,
+                      const NGConstraintSpace&,
+                      LayoutUnit current_total_block_size,
+                      const NGBoxStrut& border_padding,
+                      LayoutUnit inline_size);
+
 // Write fragmentation information to the fragment builder after layout.
-void FinishFragmentation(const NGConstraintSpace&,
+// |fragments_total_block_size| is the calculated block-size of the child,
+// including the accumulated block-size of all previous fragments generated for
+// this node - as if they were all stitched together.
+void FinishFragmentation(NGBlockNode node,
+                         const NGConstraintSpace&,
                          const NGBlockBreakToken* previous_break_token,
-                         LayoutUnit block_size,
+                         const NGBoxStrut& border_padding,
+                         LayoutUnit fragments_total_block_size,
                          LayoutUnit intrinsic_block_size,
                          LayoutUnit space_left,
                          NGBoxFragmentBuilder*);

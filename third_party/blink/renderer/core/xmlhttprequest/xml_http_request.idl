@@ -37,6 +37,9 @@ enum XMLHttpRequestResponseType {
     "text",
 };
 
+// This is in fetch.idl in the standard, but for simplicity we define it here.
+typedef (Blob or BufferSource or FormData or URLSearchParams or USVString) XMLHttpRequestBodyInit;
+
 [
     ActiveScriptWrappable,
     Exposed=(Window,DedicatedWorker,SharedWorker)
@@ -61,9 +64,7 @@ enum XMLHttpRequestResponseType {
     [RaisesException=Setter] attribute unsigned long timeout;
     [RaisesException=Setter] attribute boolean withCredentials;
     readonly attribute XMLHttpRequestUpload upload;
-    // TODO(foolip): The data argument should be of type
-    // (Document or BodyInit)?
-    [RaisesException] void send(optional (ArrayBuffer or ArrayBufferView or Blob or Document or DOMString or FormData or URLSearchParams)? body = null);
+    [RaisesException] void send(optional (Document or XMLHttpRequestBodyInit)? body = null);
     void abort();
 
     // response

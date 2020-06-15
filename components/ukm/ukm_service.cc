@@ -153,6 +153,9 @@ void PurgeExtensionDataFromUnsentLogStore(
 
     std::string reserialized_log_data;
     report.SerializeToString(&reserialized_log_data);
+    // This allows catching errors with bad UKM serialization we've seen before
+    // that would otherwise only be noticed on the server.
+    DCHECK(UkmService::LogCanBeParsed(reserialized_log_data));
 
     // Replace the compressed log in the store by its filtered version.
     const std::string old_compressed_log_data =
@@ -170,6 +173,18 @@ void PurgeExtensionDataFromUnsentLogStore(
 // static
 const base::Feature UkmService::kReportUserNoisedUserBirthYearAndGender = {
     "UkmReportNoisedUserBirthYearAndGender", base::FEATURE_ENABLED_BY_DEFAULT};
+
+bool UkmService::LogCanBeParsed(const std::string& serialized_data) {
+  Report report;
+  bool report_parse_successful = report.ParseFromString(serialized_data);
+  if (!report_parse_successful)
+    return false;
+  // Make sure the reserialzed log from this |report| matches the input
+  // |serialized_data|.
+  std::string reserialized_from_report;
+  report.SerializeToString(&reserialized_from_report);
+  return reserialized_from_report == serialized_data;
+}
 
 UkmService::UkmService(PrefService* pref_service,
                        metrics::MetricsServiceClient* client,
@@ -396,6 +411,9 @@ void UkmService::BuildAndStoreLog() {
 
   std::string serialized_log;
   report.SerializeToString(&serialized_log);
+  // This allows catching errors with bad UKM serialization we've seen before
+  // that would otherwise only be noticed on the server.
+  DCHECK(LogCanBeParsed(serialized_log));
   reporting_service_.ukm_log_store()->StoreLog(serialized_log, base::nullopt);
 }
 

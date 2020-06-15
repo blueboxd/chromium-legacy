@@ -442,8 +442,8 @@ public class SigninManager
                 mIdentityManager.findExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
                         mSignInState.mAccount.name);
 
-        // CoreAccountInfo must be set and valid to progress
-        assert mSignInState.mCoreAccountInfo != null;
+        assert mSignInState.mCoreAccountInfo
+                != null : "CoreAccountInfo must be set and valid to progress.";
 
         Log.d(TAG, "Checking if account has policy management enabled");
         fetchAndApplyCloudPolicy(

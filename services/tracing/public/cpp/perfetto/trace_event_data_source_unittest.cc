@@ -63,6 +63,7 @@ constexpr uint32_t kClockIdIncremental = 65;
 class TraceEventDataSourceTest : public testing::Test {
  public:
   void SetUp() override {
+    TraceEventDataSource::GetInstance()->RegisterStartupHooks();
     // TODO(eseckler): Initialize the entire perfetto client library instead.
     perfetto::internal::TrackRegistry::InitializeInstance();
 

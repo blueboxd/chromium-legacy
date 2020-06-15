@@ -32,8 +32,11 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSystemProxyClient
   // SystemProxyClient::TestInterface implementation.
   int GetSetAuthenticationDetailsCallCount() const override;
   int GetShutDownCallCount() const override;
+  system_proxy::SetAuthenticationDetailsRequest
+  GetLastAuthenticationDetailsRequest() const override;
 
  private:
+  system_proxy::SetAuthenticationDetailsRequest last_set_auth_details_request_;
   int set_credentials_call_count_ = 0;
   int shut_down_call_count_ = 0;
 };

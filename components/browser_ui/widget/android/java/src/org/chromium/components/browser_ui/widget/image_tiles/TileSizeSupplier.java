@@ -7,6 +7,7 @@ package org.chromium.components.browser_ui.widget.image_tiles;
 import android.content.Context;
 import android.content.res.Resources;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.components.browser_ui.widget.R;
 import org.chromium.components.browser_ui.widget.image_tiles.TileSizeSupplier.TileSize;
@@ -53,10 +54,12 @@ class TileSizeSupplier implements Supplier<TileSize> {
     public void recompute() {
         double idealSpanCount = (double) (getAvailableWidth() + mInterTilePadding)
                 / (mIdealTileWidth + mInterTilePadding);
-        double adjustedSpanCount = Math.floor(idealSpanCount);
+        double delta = idealSpanCount - Math.floor(idealSpanCount);
 
-        // For carousel, we need to have the last cell peeking out of the screen.
-        adjustedSpanCount += 0.5f;
+        // For carousel, we need to have the last cell peeking out of the screen. So clamp the last
+        // cell between 30% and 70%.
+        delta = Math.max(0.3, Math.min(0.7, delta));
+        double adjustedSpanCount = Math.floor(idealSpanCount) + delta;
 
         double tileWidthToUse =
                 (getAvailableWidth() - mInterTilePadding * Math.floor(adjustedSpanCount))
@@ -64,6 +67,12 @@ class TileSizeSupplier implements Supplier<TileSize> {
 
         mComputedTileSize.interTilePadding = mInterTilePadding;
         mComputedTileSize.width = (int) tileWidthToUse;
+
+        int tileWidthToUseInDp = (int) (tileWidthToUse / mResources.getDisplayMetrics().density);
+        RecordHistogram.recordLinearCountHistogram(
+                "Search.QueryTiles.TileWidth", tileWidthToUseInDp, 50, 150, 101);
+        RecordHistogram.recordLinearCountHistogram(
+                "Search.QueryTiles.TilesFitPerRow", (int) adjustedSpanCount, 0, 20, 21);
     }
 
     private int getAvailableWidth() {

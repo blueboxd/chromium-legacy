@@ -23,10 +23,6 @@ namespace features {
 const base::Feature kCustomizedTabLoadTimeout{
     "CustomizedTabLoadTimeout", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables tab freezing.
-const base::Feature kTabFreeze{resource_coordinator::kTabFreezeFeatureName,
-                               base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables delaying the navigation of background tabs in order to improve
 // foreground tab's user experience.
 const base::Feature kStaggeredBackgroundTabOpening{
@@ -46,59 +42,6 @@ const base::Feature kTabRanker{"TabRanker", base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 
 namespace resource_coordinator {
-
-const char kTabFreezeFeatureName[] = "TabFreeze";
-const char kTabFreeze_ShouldPeriodicallyUnfreezeParam[] =
-    "ShouldPeriodicallyUnfreeze";
-const char kTabFreeze_FreezingProtectMediaOnlyParam[] =
-    "FreezingProtectMediaOnly";
-
-constexpr base::FeatureParam<bool> TabFreezeParams::kShouldPeriodicallyUnfreeze;
-constexpr base::FeatureParam<int> TabFreezeParams::kFreezeTimeout;
-constexpr base::FeatureParam<int> TabFreezeParams::kUnfreezeTimeout;
-constexpr base::FeatureParam<int> TabFreezeParams::kRefreezeTimeout;
-constexpr base::FeatureParam<bool> TabFreezeParams::kFreezingProtectMediaOnly;
-
-TabFreezeParams::TabFreezeParams() = default;
-TabFreezeParams::TabFreezeParams(const TabFreezeParams& rhs) = default;
-
-TabFreezeParams GetTabFreezeParams() {
-  // TimeDelta::Max() should be used to express infinite timeouts. A large
-  // timeout that is not TimeDelta::Max() causes MessageLoop to output a
-  // warning.
-  constexpr base::TimeDelta kLargeTimeout = base::TimeDelta::FromDays(14);
-
-  TabFreezeParams params = {};
-
-  params.should_periodically_unfreeze =
-      TabFreezeParams::kShouldPeriodicallyUnfreeze.Get();
-
-  params.freeze_timeout =
-      base::TimeDelta::FromSeconds(TabFreezeParams::kFreezeTimeout.Get());
-  DCHECK_LT(params.freeze_timeout, kLargeTimeout);
-
-  params.unfreeze_timeout =
-      base::TimeDelta::FromSeconds(TabFreezeParams::kUnfreezeTimeout.Get());
-  DCHECK_LT(params.unfreeze_timeout, kLargeTimeout);
-
-  params.refreeze_timeout =
-      base::TimeDelta::FromSeconds(TabFreezeParams::kRefreezeTimeout.Get());
-  DCHECK_LT(params.refreeze_timeout, kLargeTimeout);
-
-  params.freezing_protect_media_only =
-      TabFreezeParams::kFreezingProtectMediaOnly.Get();
-
-  return params;
-}
-
-const TabFreezeParams& GetStaticTabFreezeParams() {
-  static base::NoDestructor<TabFreezeParams> params(GetTabFreezeParams());
-  return *params;
-}
-
-TabFreezeParams* GetMutableStaticTabFreezeParamsForTesting() {
-  return const_cast<TabFreezeParams*>(&GetStaticTabFreezeParams());
-}
 
 base::TimeDelta GetTabLoadTimeout(const base::TimeDelta& default_timeout) {
   int timeout_in_ms = base::GetFieldTrialParamByFeatureAsInt(

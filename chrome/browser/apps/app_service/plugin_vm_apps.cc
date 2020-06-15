@@ -71,6 +71,18 @@ void SetShowInAppManagement(apps::mojom::App* app, bool installed) {
                                       : apps::mojom::OptionalBool::kFalse;
 }
 
+void PopulatePermissions(apps::mojom::App* app, Profile* profile) {
+  for (const PermissionInfo& info : permission_infos) {
+    auto permission = apps::mojom::Permission::New();
+    permission->permission_id = static_cast<uint32_t>(info.permission);
+    permission->value_type = apps::mojom::PermissionValueType::kBool;
+    permission->value =
+        static_cast<uint32_t>(profile->GetPrefs()->GetBoolean(info.pref_name));
+    permission->is_managed = false;
+    app->permissions.push_back(std::move(permission));
+  }
+}
+
 apps::mojom::AppPtr GetPluginVmApp(Profile* profile, bool allowed) {
   apps::mojom::AppPtr app = apps::PublisherBase::MakeApp(
       apps::mojom::AppType::kPluginVm, plugin_vm::kPluginVmAppId,
@@ -84,17 +96,7 @@ apps::mojom::AppPtr GetPluginVmApp(Profile* profile, bool allowed) {
       IDR_LOGO_PLUGIN_VM_DEFAULT_192, apps::IconEffects::kNone);
 
   SetShowInAppManagement(app.get(), plugin_vm::IsPluginVmConfigured(profile));
-
-  for (const PermissionInfo& info : permission_infos) {
-    auto permission = apps::mojom::Permission::New();
-    permission->permission_id = static_cast<uint32_t>(info.permission);
-    permission->value_type = apps::mojom::PermissionValueType::kBool;
-    permission->value =
-        static_cast<uint32_t>(profile->GetPrefs()->GetBoolean(info.pref_name));
-    permission->is_managed = false;
-    app->permissions.push_back(std::move(permission));
-  }
-
+  PopulatePermissions(app.get(), profile);
   SetAppAllowed(app.get(), allowed);
 
   return app;
@@ -182,6 +184,12 @@ void PluginVmApps::SetPermission(const std::string& app_id,
   }
 
   profile_->GetPrefs()->SetBoolean(pref_name, permission_ptr->value);
+
+  apps::mojom::AppPtr app = apps::mojom::App::New();
+  app->app_type = apps::mojom::AppType::kPluginVm;
+  app->app_id = plugin_vm::kPluginVmAppId;
+  PopulatePermissions(app.get(), profile_);
+  Publish(std::move(app), subscribers_);
 }
 
 void PluginVmApps::Uninstall(const std::string& app_id,

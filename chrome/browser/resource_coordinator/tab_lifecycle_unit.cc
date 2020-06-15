@@ -52,10 +52,6 @@ namespace {
 
 using StateChangeReason = LifecycleUnitStateChangeReason;
 
-bool IsFrozenOrPendingFreeze(LifecycleUnitState state) {
-  return state == LifecycleUnitState::FROZEN ||
-         state == LifecycleUnitState::PENDING_FREEZE;
-}
 
 // Returns true if it is valid to transition from |from| to |to| for |reason|.
 bool IsValidStateChange(LifecycleUnitState from,
@@ -64,9 +60,6 @@ bool IsValidStateChange(LifecycleUnitState from,
   switch (from) {
     case LifecycleUnitState::ACTIVE: {
       switch (to) {
-        // Freeze() is called.
-        case LifecycleUnitState::PENDING_FREEZE:
-          return reason == StateChangeReason::BROWSER_INITIATED;
         // Discard(URGENT|EXTERNAL) is called.
         case LifecycleUnitState::DISCARDED: {
           return reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE ||
@@ -84,22 +77,6 @@ bool IsValidStateChange(LifecycleUnitState from,
     case LifecycleUnitState::THROTTLED: {
       return false;
     }
-    case LifecycleUnitState::PENDING_FREEZE: {
-      switch (to) {
-        // Discard(URGENT|EXTERNAL) is called.
-        case LifecycleUnitState::DISCARDED:
-          return reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE ||
-                 reason == StateChangeReason::EXTENSION_INITIATED;
-        // The renderer notifies the browser that the page has been frozen.
-        case LifecycleUnitState::FROZEN:
-          return reason == StateChangeReason::RENDERER_INITIATED;
-        // Unfreeze() is called.
-        case LifecycleUnitState::PENDING_UNFREEZE:
-          return reason == StateChangeReason::BROWSER_INITIATED;
-        default:
-          return false;
-      }
-    }
     case LifecycleUnitState::FROZEN: {
       switch (to) {
         // The renderer notifies the browser that the page was unfrozen after
@@ -112,10 +89,6 @@ bool IsValidStateChange(LifecycleUnitState from,
           return reason == StateChangeReason::BROWSER_INITIATED ||
                  reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE ||
                  reason == StateChangeReason::EXTENSION_INITIATED;
-        }
-        // Unfreeze() is called.
-        case LifecycleUnitState::PENDING_UNFREEZE: {
-          return reason == StateChangeReason::BROWSER_INITIATED;
         }
         default:
           return false;
@@ -130,23 +103,6 @@ bool IsValidStateChange(LifecycleUnitState from,
           return false;
       }
     }
-    case LifecycleUnitState::PENDING_UNFREEZE: {
-      switch (to) {
-        // The renderer notifies the browser that the page was unfrozen after
-        // Unfreeze() was called in the browser.
-        case LifecycleUnitState::ACTIVE: {
-          return reason == StateChangeReason::RENDERER_INITIATED;
-        }
-        // Discard(URGENT|EXTERNAL) is called.
-        case LifecycleUnitState::DISCARDED: {
-          return reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE ||
-                 reason == StateChangeReason::EXTENSION_INITIATED;
-        }
-        default: {
-          return false;
-        }
-      }
-    }
   }
 }
 
@@ -157,77 +113,6 @@ StateChangeReason DiscardReasonToStateChangeReason(
       return StateChangeReason::EXTENSION_INITIATED;
     case LifecycleUnitDiscardReason::URGENT:
       return StateChangeReason::SYSTEM_MEMORY_PRESSURE;
-  }
-}
-
-struct FeatureUsageEntry {
-  performance_manager::SiteFeatureUsage usage;
-  DecisionFailureReason failure_reason;
-};
-
-void CheckFeatureUsage(const SiteCharacteristicsDataReader* reader,
-                       DecisionDetails* details) {
-  const FeatureUsageEntry features[] = {
-      {reader->UsesAudioInBackground(), DecisionFailureReason::HEURISTIC_AUDIO},
-      {reader->UpdatesFaviconInBackground(),
-       DecisionFailureReason::HEURISTIC_FAVICON},
-      {reader->UpdatesTitleInBackground(),
-       DecisionFailureReason::HEURISTIC_TITLE}};
-
-  // Avoid adding 'insufficient observation' reason multiple times.
-  bool insufficient_observation = false;
-
-  const auto* last = features + base::size(features);
-  for (const auto* f = features; f != last; f++) {
-    if (f->usage == performance_manager::SiteFeatureUsage::kSiteFeatureInUse) {
-      details->AddReason(f->failure_reason);
-    } else if (f->usage == performance_manager::SiteFeatureUsage::
-                               kSiteFeatureUsageUnknown) {
-      insufficient_observation = true;
-    }
-  }
-
-  if (insufficient_observation) {
-    details->AddReason(
-        DecisionFailureReason::HEURISTIC_INSUFFICIENT_OBSERVATION);
-  }
-}
-
-void CheckIfTabCanCommunicateWithUserWhileInBackground(
-    content::WebContents* web_contents,
-    DecisionDetails* details) {
-  DCHECK(details);
-
-  if (!web_contents->GetLastCommittedURL().is_valid() ||
-      web_contents->GetLastCommittedURL().is_empty()) {
-    return;
-  }
-
-  if (!URLShouldBeStoredInLocalDatabase(web_contents->GetLastCommittedURL()))
-    return;
-
-  auto* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  SiteCharacteristicsDataStore* data_store =
-      LocalSiteCharacteristicsDataStoreFactory::GetForProfile(profile);
-  if (!data_store)
-    return;
-
-  auto reader = data_store->GetReaderForOrigin(
-      url::Origin::Create(web_contents->GetLastCommittedURL()));
-
-  // TODO(sebmarchand): Add a failure reason for when the data isn't ready yet.
-
-  CheckFeatureUsage(reader.get(), details);
-
-  auto notif_permission =
-      PermissionManagerFactory::GetForProfile(profile)->GetPermissionStatus(
-          ContentSettingsType::NOTIFICATIONS,
-          web_contents->GetLastCommittedURL(),
-          web_contents->GetLastCommittedURL());
-  if (notif_permission.content_setting == CONTENT_SETTING_ALLOW) {
-    details->AddReason(
-        DecisionFailureReason::LIVE_STATE_HAS_NOTIFICATIONS_PERMISSION);
   }
 }
 
@@ -263,10 +148,6 @@ class TabLifecycleUnitExternalImpl : public TabLifecycleUnitExternal {
 
   int GetDiscardCount() const override {
     return tab_lifecycle_unit_->GetDiscardCount();
-  }
-
-  bool IsFrozen() const override {
-    return IsFrozenOrPendingFreeze(tab_lifecycle_unit_->GetState());
   }
 
  private:
@@ -348,33 +229,12 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetRecentlyAudible(
     recently_audible_time_ = NowTicks();
 }
 
-void TabLifecycleUnitSource::TabLifecycleUnit::SetInitialStateFromPageNodeData(
-    performance_manager::mojom::InterventionPolicy origin_trial_policy,
-    bool is_holding_weblock,
-    bool is_holding_indexeddb_lock) {
-  origin_trial_freeze_policy_ = origin_trial_policy;
-  is_holding_weblock_ = is_holding_weblock;
-  is_holding_indexeddb_lock_ = is_holding_indexeddb_lock;
-}
-
 void TabLifecycleUnitSource::TabLifecycleUnit::UpdateLifecycleState(
     performance_manager::mojom::LifecycleState state) {
   switch (state) {
     case performance_manager::mojom::LifecycleState::kFrozen: {
-      switch (GetState()) {
-        case LifecycleUnitState::PENDING_UNFREEZE: {
-          // By the time the kFrozen state message arrive the tab might have
-          // been reloaded by the user (by right-clicking on the tab) and might
-          // have been switched to the PENDING_UNFREEZE state. It's safe to just
-          // ignore this message here as an unfreeze signal has been sent to the
-          // tab and so a |kRunning| transition will follow this one.
-          break;
-        }
-        default: {
-          SetState(LifecycleUnitState::FROZEN,
-                   StateChangeReason::RENDERER_INITIATED);
-        }
-      }
+      SetState(LifecycleUnitState::FROZEN,
+               StateChangeReason::RENDERER_INITIATED);
       break;
     }
 
@@ -389,38 +249,6 @@ void TabLifecycleUnitSource::TabLifecycleUnit::UpdateLifecycleState(
       break;
     }
   }
-}
-
-void TabLifecycleUnitSource::TabLifecycleUnit::UpdateOriginTrialFreezePolicy(
-    performance_manager::mojom::InterventionPolicy policy) {
-  // The origin trial policy should only be updated when its value changes.
-  DCHECK_NE(policy, origin_trial_freeze_policy_);
-  // Unfreeze the tab if needed. This can happen if the tab gets frozen
-  // before all its frames are loaded and if one of these frames
-  // causes the tab to be opted out.
-  if (policy == performance_manager::mojom::InterventionPolicy::kOptOut &&
-      IsFrozenOrPendingFreeze(GetState())) {
-    Unfreeze();
-  }
-
-  origin_trial_freeze_policy_ = policy;
-}
-
-void TabLifecycleUnitSource::TabLifecycleUnit::SetIsHoldingWebLock(
-    bool is_holding_weblock) {
-  // Unfreeze the tab if it receive a lock while being frozen.
-  if (is_holding_weblock && IsFrozenOrPendingFreeze(GetState()))
-    Unfreeze();
-
-  is_holding_weblock_ = is_holding_weblock;
-}
-
-void TabLifecycleUnitSource::TabLifecycleUnit::SetIsHoldingIndexedDBLock(
-    bool is_holding_indexeddb_lock) {
-  // Unfreeze the tab if it receive a lock while being frozen.
-  if (is_holding_indexeddb_lock && IsFrozenOrPendingFreeze(GetState()))
-    Unfreeze();
-  is_holding_indexeddb_lock_ = is_holding_indexeddb_lock;
 }
 
 TabLifecycleUnitExternal*
@@ -485,97 +313,6 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Load() {
 int TabLifecycleUnitSource::TabLifecycleUnit::
     GetEstimatedMemoryFreedOnDiscardKB() const {
   return GetPrivateMemoryKB(GetProcessHandle());
-}
-
-bool TabLifecycleUnitSource::TabLifecycleUnit::CanFreeze(
-    DecisionDetails* decision_details) const {
-  DCHECK(decision_details->reasons().empty());
-
-  // Leave the |decision_details| empty and return immediately for "trivial"
-  // rejection reasons. These aren't worth reporting about, as they have nothing
-  // to do with the content itself.
-
-  if (!IsValidStateChange(GetState(), LifecycleUnitState::PENDING_FREEZE,
-                          StateChangeReason::BROWSER_INITIATED)) {
-    return false;
-  }
-
-  // Allow a page to load fully before freezing it.
-  if (TabLoadTracker::Get()->GetLoadingState(web_contents()) !=
-      TabLoadTracker::LoadingState::LOADED) {
-    return false;
-  }
-
-  // IMPORTANT: Only the first reason added to |decision_details| determines
-  // whether the tab can be frozen. Additional reasons can be added for
-  // reporting purposes, but do not affect whether the tab can be frozen.
-
-  if (web_contents()->GetVisibility() == content::Visibility::VISIBLE)
-    decision_details->AddReason(DecisionFailureReason::LIVE_STATE_VISIBLE);
-
-  // Check the freezing intervention policy database. Tabs that have opted-in
-  // will be marked as freezable regardless of the other heuristics.
-  CheckFreezingInterventionPolicyDatabase(decision_details);
-
-  // Do not freeze tabs using media, irrespective of any opt-in, as this usually
-  // breaks functionality.
-  CheckMediaUsage(decision_details);
-
-  if (!GetStaticTabFreezeParams().freezing_protect_media_only) {
-    // Do not freeze tabs if disallowed by enterprise policy.
-    if (!GetTabSource()->tab_lifecycles_enterprise_policy()) {
-      decision_details->AddReason(
-          DecisionFailureReason::LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT);
-    }
-
-    // Respect opt-in/out requested by the page.
-    CheckFreezingOriginTrial(decision_details);
-
-    // Consult the local database to see if this tab could try to communicate
-    // with the user while in background.
-    CheckIfTabCanCommunicateWithUserWhileInBackground(web_contents(),
-                                                      decision_details);
-
-    // Don't freeze tabs sharing a browsing instance, as other tabs may not
-    // work properly if the work they request from this tab does not run.
-    if (web_contents()->GetSiteInstance()->GetRelatedActiveContentsCount() >
-        1U) {
-      decision_details->AddReason(
-          DecisionFailureReason::LIVE_STATE_SHARING_BROWSING_INSTANCE);
-    }
-
-    // Do not freeze tabs using device APIs, as this usually breaks
-    // functionality.
-    CheckDeviceUsage(decision_details);
-
-    // Do not freeze tabs holding Web Locks to avoid hangs in other tabs from
-    // the same origin that try to acquire the same Web Lock.
-    if (is_holding_weblock_) {
-      decision_details->AddReason(
-          DecisionFailureReason::LIVE_STATE_USING_WEBLOCK);
-    }
-
-    // Do not freeze tabs holding IndexedDB connections to avoid hangs in other
-    // tabs from the same origin that also use IndexedDB.
-    if (is_holding_indexeddb_lock_) {
-      decision_details->AddReason(
-          DecisionFailureReason::LIVE_STATE_USING_INDEXEDDB_LOCK);
-    }
-
-    // Do not freeze tabs that are currently using DevTools, as developers could
-    // be surprised that injected scripts don't run.
-    if (DevToolsWindow::GetInstanceForInspectedWebContents(web_contents())) {
-      decision_details->AddReason(
-          DecisionFailureReason::LIVE_STATE_DEVTOOLS_OPEN);
-    }
-  }
-
-  if (decision_details->reasons().empty()) {
-    decision_details->AddReason(
-        DecisionSuccessReason::HEURISTIC_OBSERVED_TO_BE_SAFE);
-  }
-
-  return decision_details->IsPositive();
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
@@ -692,38 +429,6 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
     DCHECK(decision_details->IsPositive());
   }
   return decision_details->IsPositive();
-}
-
-bool TabLifecycleUnitSource::TabLifecycleUnit::Freeze() {
-  if (!IsValidStateChange(GetState(), LifecycleUnitState::PENDING_FREEZE,
-                          StateChangeReason::BROWSER_INITIATED)) {
-    return false;
-  }
-
-  // WebContents::SetPageFrozen() DCHECKs if the page is visible.
-  if (web_contents()->GetVisibility() == content::Visibility::VISIBLE)
-    return false;
-
-  SetState(LifecycleUnitState::PENDING_FREEZE,
-           StateChangeReason::BROWSER_INITIATED);
-  web_contents()->SetPageFrozen(true);
-  return true;
-}
-
-bool TabLifecycleUnitSource::TabLifecycleUnit::Unfreeze() {
-  if (!IsValidStateChange(GetState(), LifecycleUnitState::PENDING_UNFREEZE,
-                          StateChangeReason::BROWSER_INITIATED)) {
-    return false;
-  }
-
-  // WebContents::SetPageFrozen() DCHECKs if the page is visible.
-  if (web_contents()->GetVisibility() == content::Visibility::VISIBLE)
-    return false;
-
-  SetState(LifecycleUnitState::PENDING_UNFREEZE,
-           StateChangeReason::BROWSER_INITIATED);
-  web_contents()->SetPageFrozen(false);
-  return true;
 }
 
 ukm::SourceId TabLifecycleUnitSource::TabLifecycleUnit::GetUkmSourceId() const {
@@ -921,14 +626,6 @@ void TabLifecycleUnitSource::TabLifecycleUnit::OnLifecycleUnitStateChanged(
                                       is_discarded);
     }
   }
-
-  // Invoke OnFrozenStateChange() if necessary.
-  const bool was_frozen = IsFrozenOrPendingFreeze(last_state);
-  const bool is_frozen = IsFrozenOrPendingFreeze(GetState());
-  if (was_frozen != is_frozen) {
-    for (auto& observer : *observers_)
-      observer.OnFrozenStateChange(web_contents(), is_frozen);
-  }
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::DidStartLoading() {
@@ -936,10 +633,6 @@ void TabLifecycleUnitSource::TabLifecycleUnit::DidStartLoading() {
     // This happens when a discarded tab is explicitly reloaded without being
     // focused first (right-click > Reload).
     SetState(LifecycleUnitState::ACTIVE, StateChangeReason::USER_INITIATED);
-  } else if (IsFrozenOrPendingFreeze(GetState())) {
-    // This happens when a frozen tab is explicitly reloaded without being
-    // focused first (right-click > Reload).
-    Unfreeze();
   }
 }
 
@@ -971,41 +664,6 @@ void TabLifecycleUnitSource::TabLifecycleUnit::CheckDeviceUsage(
   if (web_contents()->IsConnectedToBluetoothDevice()) {
     decision_details->AddReason(
         DecisionFailureReason::LIVE_STATE_USING_BLUETOOTH);
-  }
-}
-
-void TabLifecycleUnitSource::TabLifecycleUnit::CheckFreezingOriginTrial(
-    DecisionDetails* decision_details) const {
-  switch (origin_trial_freeze_policy_) {
-    case performance_manager::mojom::InterventionPolicy::kOptOut:
-      decision_details->AddReason(DecisionFailureReason::ORIGIN_TRIAL_OPT_OUT);
-      break;
-    case performance_manager::mojom::InterventionPolicy::kOptIn:
-      decision_details->AddReason(DecisionSuccessReason::ORIGIN_TRIAL_OPT_IN);
-      break;
-    case performance_manager::mojom::InterventionPolicy::kDefault:
-      // Let other heuristics determine whether the tab can be frozen.
-      break;
-  }
-}
-
-void TabLifecycleUnitSource::TabLifecycleUnit::
-    CheckFreezingInterventionPolicyDatabase(
-        DecisionDetails* decision_details) const {
-  // Apply intervention database opt-in/opt-out (policy is per origin).
-  auto intervention_policy =
-      GetTabSource()->intervention_policy_database()->GetFreezingPolicy(
-          url::Origin::Create(web_contents()->GetLastCommittedURL()));
-
-  switch (intervention_policy) {
-    case OriginInterventions::OPT_IN:
-      decision_details->AddReason(DecisionSuccessReason::GLOBAL_WHITELIST);
-      break;
-    case OriginInterventions::OPT_OUT:
-      decision_details->AddReason(DecisionFailureReason::GLOBAL_BLACKLIST);
-      break;
-    case OriginInterventions::DEFAULT:
-      break;
   }
 }
 

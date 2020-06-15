@@ -113,6 +113,9 @@ class UkmService : public UkmRecorderImpl {
   // components/metrics/demographic_metrics_provider.h.
   static const base::Feature kReportUserNoisedUserBirthYearAndGender;
 
+  // Makes sure that the serialized ukm report can be parsed.
+  static bool LogCanBeParsed(const std::string& serialized_data);
+
  private:
   friend ::metrics::UkmBrowserTestBase;
   friend ::ukm::UkmTestHelper;

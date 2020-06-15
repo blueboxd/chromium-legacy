@@ -19,6 +19,7 @@ namespace {
 
 const double kTolerance = 1e-6;
 
+const double kTimeToleranceMilliseconds = 0.1;
 }
 
 namespace blink {
@@ -255,7 +256,8 @@ class CSSAnimationsCompositorSyncTest : public CSSAnimationsTest {
 
   void VerifyCompositorIterationTime(double expected_value) {
     base::TimeDelta iteration_time = CompositorIterationTime();
-    EXPECT_NEAR(expected_value, iteration_time.InMillisecondsF(), kTolerance);
+    EXPECT_NEAR(expected_value, iteration_time.InMillisecondsF(),
+                kTimeToleranceMilliseconds);
   }
 
   void VerifyCompositorOpacity(double expected_value) {
@@ -352,7 +354,8 @@ TEST_F(CSSAnimationsCompositorSyncTest, SetStartTime) {
   UpdateAllLifecyclePhasesForTest();
 
   // Verify blink updates.
-  EXPECT_NEAR(250, animation->currentTime().value(), kTolerance);
+  EXPECT_NEAR(250, animation->currentTime().value(),
+              kTimeToleranceMilliseconds);
   EXPECT_NEAR(0.75, element_->GetComputedStyle()->Opacity(), kTolerance);
 
   // Compositor animation needs to restart and will have a new compositor group.
@@ -387,7 +390,8 @@ TEST_F(CSSAnimationsCompositorSyncTest, SetCurrentTime) {
   UpdateAllLifecyclePhasesForTest();
 
   // Verify blink updates.
-  EXPECT_NEAR(750, animation->currentTime().value(), kTolerance);
+  EXPECT_NEAR(750, animation->currentTime().value(),
+              kTimeToleranceMilliseconds);
   EXPECT_NEAR(0.25, element_->GetComputedStyle()->Opacity(), kTolerance);
 
   // Compositor animation needs to restart and will have a new compositor group.

@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/system_proxy_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -174,9 +175,15 @@ void BrowserProcessPlatformPart::InitializePrimaryProfileServices(
           ->Subscribe(base::Bind(
               &BrowserProcessPlatformPart::ShutdownPrimaryProfileServices,
               base::Unretained(this)));
+  browser_policy_connector_chromeos()
+      ->GetSystemProxyManager()
+      ->StartObservingPrimaryProfilePrefs(primary_profile);
 }
 
 void BrowserProcessPlatformPart::ShutdownPrimaryProfileServices() {
+  browser_policy_connector_chromeos()
+      ->GetSystemProxyManager()
+      ->StopObservingPrimaryProfilePrefs();
   in_session_password_change_manager_.reset();
 }
 

@@ -28,18 +28,12 @@
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/list_marker.h"
 #include "third_party/blink/renderer/core/layout/list_marker_text.h"
 #include "third_party/blink/renderer/core/paint/list_marker_painter.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 
 namespace blink {
-
-const int kCMarkerPaddingPx = 7;
-
-// TODO(glebl): Move to core/html/resources/html.css after
-// Blink starts to support ::marker crbug.com/457718
-// Recommended UA margin for list markers.
-const int kCUAMarkerMarginEm = 1;
 
 LayoutListMarker::LayoutListMarker(Element* element) : LayoutBox(element) {
   DCHECK(ListItem());
@@ -183,24 +177,24 @@ void LayoutListMarker::UpdateContent() {
     return;
 
   switch (GetListStyleCategory()) {
-    case ListStyleCategory::kNone:
+    case ListMarker::ListStyleCategory::kNone:
       break;
-    case ListStyleCategory::kSymbol:
+    case ListMarker::ListStyleCategory::kSymbol:
       text_ = list_marker_text::GetText(StyleRef().ListStyleType(),
                                         0);  // value is ignored for these types
       break;
-    case ListStyleCategory::kLanguage:
+    case ListMarker::ListStyleCategory::kLanguage:
       text_ = list_marker_text::GetText(StyleRef().ListStyleType(),
                                         ListItem()->Value());
       break;
-    case ListStyleCategory::kStaticString:
+    case ListMarker::ListStyleCategory::kStaticString:
       text_ = StyleRef().ListStyleStringValue();
       break;
   }
 }
 
 String LayoutListMarker::TextAlternative() const {
-  if (GetListStyleCategory() == ListStyleCategory::kStaticString)
+  if (GetListStyleCategory() == ListMarker::ListStyleCategory::kStaticString)
     return text_;
   UChar suffix =
       list_marker_text::Suffix(StyleRef().ListStyleType(), ListItem()->Value());
@@ -208,13 +202,14 @@ String LayoutListMarker::TextAlternative() const {
   return text_ + suffix + ' ';
 }
 
-LayoutUnit LayoutListMarker::GetWidthOfText(ListStyleCategory category) const {
+LayoutUnit LayoutListMarker::GetWidthOfText(
+    ListMarker::ListStyleCategory category) const {
   // TODO(crbug.com/1012289): this code doesn't support bidi algorithm.
   if (text_.IsEmpty())
     return LayoutUnit();
   const Font& font = StyleRef().GetFont();
   LayoutUnit item_width = LayoutUnit(font.Width(TextRun(text_)));
-  if (category == ListStyleCategory::kStaticString) {
+  if (category == ListMarker::ListStyleCategory::kStaticString) {
     // Don't add a suffix.
     return item_width;
   }
@@ -239,15 +234,15 @@ MinMaxSizes LayoutListMarker::ComputeIntrinsicLogicalWidths() const {
     sizes = StyleRef().IsHorizontalWritingMode() ? image_size.Width()
                                                  : image_size.Height();
   } else {
-    ListStyleCategory category = GetListStyleCategory();
+    ListMarker::ListStyleCategory category = GetListStyleCategory();
     switch (category) {
-      case ListStyleCategory::kNone:
+      case ListMarker::ListStyleCategory::kNone:
         break;
-      case ListStyleCategory::kSymbol:
-        sizes = WidthOfSymbol(StyleRef());
+      case ListMarker::ListStyleCategory::kSymbol:
+        sizes = ListMarker::WidthOfSymbol(StyleRef());
         break;
-      case ListStyleCategory::kLanguage:
-      case ListStyleCategory::kStaticString:
+      case ListMarker::ListStyleCategory::kLanguage:
+      case ListMarker::ListStyleCategory::kStaticString:
         sizes = GetWidthOfText(category);
         break;
     }
@@ -261,80 +256,20 @@ MinMaxSizes LayoutListMarker::PreferredLogicalWidths() const {
   return IntrinsicLogicalWidths();
 }
 
-LayoutUnit LayoutListMarker::WidthOfSymbol(const ComputedStyle& style) {
-  const Font& font = style.GetFont();
-  const SimpleFontData* font_data = font.PrimaryFont();
-  DCHECK(font_data);
-  if (!font_data)
-    return LayoutUnit();
-  return LayoutUnit((font_data->GetFontMetrics().Ascent() * 2 / 3 + 1) / 2 + 2);
-}
-
 void LayoutListMarker::UpdateMargins(LayoutUnit marker_inline_size) {
   LayoutUnit margin_start;
   LayoutUnit margin_end;
   const ComputedStyle& style = StyleRef();
   if (IsInsideListMarker()) {
     std::tie(margin_start, margin_end) =
-        InlineMarginsForInside(style, IsImage());
+        ListMarker::InlineMarginsForInside(style, IsImage());
   } else {
-    std::tie(margin_start, margin_end) =
-        InlineMarginsForOutside(style, IsImage(), marker_inline_size);
+    std::tie(margin_start, margin_end) = ListMarker::InlineMarginsForOutside(
+        style, IsImage(), marker_inline_size);
   }
 
   SetMarginStart(margin_start);
   SetMarginEnd(margin_end);
-}
-
-std::pair<LayoutUnit, LayoutUnit> LayoutListMarker::InlineMarginsForInside(
-    const ComputedStyle& style,
-    bool is_image) {
-  if (!style.ContentBehavesAsNormal())
-    return {};
-  if (is_image)
-    return {LayoutUnit(), LayoutUnit(kCMarkerPaddingPx)};
-  switch (GetListStyleCategory(style.ListStyleType())) {
-    case ListStyleCategory::kSymbol:
-      return {LayoutUnit(-1),
-              LayoutUnit(kCUAMarkerMarginEm * style.ComputedFontSize())};
-    default:
-      break;
-  }
-  return {};
-}
-
-std::pair<LayoutUnit, LayoutUnit> LayoutListMarker::InlineMarginsForOutside(
-    const ComputedStyle& style,
-    bool is_image,
-    LayoutUnit marker_inline_size) {
-  LayoutUnit margin_start;
-  LayoutUnit margin_end;
-  if (!style.ContentBehavesAsNormal()) {
-    margin_start = -marker_inline_size;
-  } else if (is_image) {
-    margin_start = -marker_inline_size - kCMarkerPaddingPx;
-    margin_end = LayoutUnit(kCMarkerPaddingPx);
-  } else {
-    switch (GetListStyleCategory(style.ListStyleType())) {
-      case ListStyleCategory::kNone:
-        break;
-      case ListStyleCategory::kSymbol: {
-        const SimpleFontData* font_data = style.GetFont().PrimaryFont();
-        DCHECK(font_data);
-        if (!font_data)
-          return {};
-        const FontMetrics& font_metrics = font_data->GetFontMetrics();
-        int offset = font_metrics.Ascent() * 2 / 3;
-        margin_start = LayoutUnit(-offset - kCMarkerPaddingPx - 1);
-        margin_end = offset + kCMarkerPaddingPx + 1 - marker_inline_size;
-        break;
-      }
-      default:
-        margin_start = -marker_inline_size;
-    }
-  }
-  DCHECK_EQ(margin_start + margin_end, -marker_inline_size);
-  return {margin_start, margin_end};
 }
 
 LayoutUnit LayoutListMarker::LineHeight(
@@ -360,79 +295,8 @@ LayoutUnit LayoutListMarker::BaselinePosition(
                                      line_position_mode);
 }
 
-LayoutListMarker::ListStyleCategory LayoutListMarker::GetListStyleCategory()
-    const {
-  return GetListStyleCategory(StyleRef().ListStyleType());
-}
-
-LayoutListMarker::ListStyleCategory LayoutListMarker::GetListStyleCategory(
-    EListStyleType type) {
-  switch (type) {
-    case EListStyleType::kNone:
-      return ListStyleCategory::kNone;
-    case EListStyleType::kString:
-      return ListStyleCategory::kStaticString;
-    case EListStyleType::kDisc:
-    case EListStyleType::kCircle:
-    case EListStyleType::kSquare:
-      return ListStyleCategory::kSymbol;
-    case EListStyleType::kArabicIndic:
-    case EListStyleType::kArmenian:
-    case EListStyleType::kBengali:
-    case EListStyleType::kCambodian:
-    case EListStyleType::kCjkIdeographic:
-    case EListStyleType::kCjkEarthlyBranch:
-    case EListStyleType::kCjkHeavenlyStem:
-    case EListStyleType::kDecimalLeadingZero:
-    case EListStyleType::kDecimal:
-    case EListStyleType::kDevanagari:
-    case EListStyleType::kEthiopicHalehame:
-    case EListStyleType::kEthiopicHalehameAm:
-    case EListStyleType::kEthiopicHalehameTiEr:
-    case EListStyleType::kEthiopicHalehameTiEt:
-    case EListStyleType::kGeorgian:
-    case EListStyleType::kGujarati:
-    case EListStyleType::kGurmukhi:
-    case EListStyleType::kHangul:
-    case EListStyleType::kHangulConsonant:
-    case EListStyleType::kHebrew:
-    case EListStyleType::kHiragana:
-    case EListStyleType::kHiraganaIroha:
-    case EListStyleType::kKannada:
-    case EListStyleType::kKatakana:
-    case EListStyleType::kKatakanaIroha:
-    case EListStyleType::kKhmer:
-    case EListStyleType::kKoreanHangulFormal:
-    case EListStyleType::kKoreanHanjaFormal:
-    case EListStyleType::kKoreanHanjaInformal:
-    case EListStyleType::kLao:
-    case EListStyleType::kLowerAlpha:
-    case EListStyleType::kLowerArmenian:
-    case EListStyleType::kLowerGreek:
-    case EListStyleType::kLowerLatin:
-    case EListStyleType::kLowerRoman:
-    case EListStyleType::kMalayalam:
-    case EListStyleType::kMongolian:
-    case EListStyleType::kMyanmar:
-    case EListStyleType::kOriya:
-    case EListStyleType::kPersian:
-    case EListStyleType::kSimpChineseFormal:
-    case EListStyleType::kSimpChineseInformal:
-    case EListStyleType::kTelugu:
-    case EListStyleType::kThai:
-    case EListStyleType::kTibetan:
-    case EListStyleType::kTradChineseFormal:
-    case EListStyleType::kTradChineseInformal:
-    case EListStyleType::kUpperAlpha:
-    case EListStyleType::kUpperArmenian:
-    case EListStyleType::kUpperLatin:
-    case EListStyleType::kUpperRoman:
-    case EListStyleType::kUrdu:
-      return ListStyleCategory::kLanguage;
-    default:
-      NOTREACHED();
-      return ListStyleCategory::kLanguage;
-  }
+ListMarker::ListStyleCategory LayoutListMarker::GetListStyleCategory() const {
+  return ListMarker::GetListStyleCategory(StyleRef().ListStyleType());
 }
 
 LayoutRect LayoutListMarker::GetRelativeMarkerRect() const {
@@ -440,14 +304,14 @@ LayoutRect LayoutListMarker::GetRelativeMarkerRect() const {
     return LayoutRect(LayoutPoint(), ImageBulletSize());
 
   LayoutRect relative_rect;
-  ListStyleCategory category = GetListStyleCategory();
+  ListMarker::ListStyleCategory category = GetListStyleCategory();
   switch (category) {
-    case ListStyleCategory::kNone:
+    case ListMarker::ListStyleCategory::kNone:
       return LayoutRect();
-    case ListStyleCategory::kSymbol:
-      return RelativeSymbolMarkerRect(StyleRef(), Size().Width());
-    case ListStyleCategory::kLanguage:
-    case ListStyleCategory::kStaticString: {
+    case ListMarker::ListStyleCategory::kSymbol:
+      return ListMarker::RelativeSymbolMarkerRect(StyleRef(), Size().Width());
+    case ListMarker::ListStyleCategory::kLanguage:
+    case ListMarker::ListStyleCategory::kStaticString: {
       const SimpleFontData* font_data = StyleRef().GetFont().PrimaryFont();
       DCHECK(font_data);
       if (!font_data)
@@ -463,29 +327,6 @@ LayoutRect LayoutListMarker::GetRelativeMarkerRect() const {
     relative_rect = relative_rect.TransposedRect();
     relative_rect.SetX(Size().Width() - relative_rect.X() -
                        relative_rect.Width());
-  }
-  return relative_rect;
-}
-
-LayoutRect LayoutListMarker::RelativeSymbolMarkerRect(
-    const ComputedStyle& style,
-    LayoutUnit width) {
-  LayoutRect relative_rect;
-  const SimpleFontData* font_data = style.GetFont().PrimaryFont();
-  DCHECK(font_data);
-  if (!font_data)
-    return LayoutRect();
-
-  // TODO(wkorman): Review and clean up/document the calculations below.
-  // http://crbug.com/543193
-  const FontMetrics& font_metrics = font_data->GetFontMetrics();
-  int ascent = font_metrics.Ascent();
-  int bullet_width = (ascent * 2 / 3 + 1) / 2;
-  relative_rect = LayoutRect(1, 3 * (ascent - ascent * 2 / 3) / 2, bullet_width,
-                             bullet_width);
-  if (!style.IsHorizontalWritingMode()) {
-    relative_rect = relative_rect.TransposedRect();
-    relative_rect.SetX(width - relative_rect.X() - relative_rect.Width());
   }
   return relative_rect;
 }

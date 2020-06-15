@@ -7,9 +7,11 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
-#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 
 namespace blink {
+
+class LayoutNGListItem;
+class LayoutText;
 
 // This class holds code shared among LayoutNG classes for list markers.
 // TODO(obrufau): support legacy markers too.
@@ -42,6 +44,26 @@ class CORE_EXPORT ListMarker {
   void OrdinalValueChanged(LayoutObject&);
 
   LayoutObject* SymbolMarkerLayoutText(const LayoutObject&) const;
+
+  // Compute inline margins for 'list-style-position: inside' and 'outside'.
+  static std::pair<LayoutUnit, LayoutUnit> InlineMarginsForInside(
+      const ComputedStyle&,
+      bool is_image);
+  static std::pair<LayoutUnit, LayoutUnit> InlineMarginsForOutside(
+      const ComputedStyle&,
+      bool is_image,
+      LayoutUnit marker_inline_size);
+
+  static LayoutRect RelativeSymbolMarkerRect(const ComputedStyle&, LayoutUnit);
+  static LayoutUnit WidthOfSymbol(const ComputedStyle&);
+
+  // A reduced set of list style categories allowing for more concise expression
+  // of list style specific logic.
+  enum class ListStyleCategory { kNone, kSymbol, kLanguage, kStaticString };
+
+  // Returns the list's style as one of a reduced high level categorical set of
+  // styles.
+  static ListStyleCategory GetListStyleCategory(EListStyleType);
 
  private:
   enum MarkerTextFormat { kWithSuffix, kWithoutSuffix };

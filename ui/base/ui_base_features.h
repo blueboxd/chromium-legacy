@@ -107,6 +107,21 @@ extern const base::Feature kSynchronousPageFlipTesting;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 bool IsSynchronousPageFlipTestingEnabled();
 
+#if defined(USE_X11) || defined(USE_OZONE)
+// Indicates whether the OzonePlatform feature is used on Linux. Although, it is
+// available for all Ozone platforms, this always resolves to true for
+// non-desktop Linux builds. The reason why it is needed for all Ozone builds is
+// that we have many places in the code that Ozone takes independently of the
+// platform, and it's highly important that when USE_X11 && USE_OZONE are true
+// and the OzonePlatform feature is not enabled, the Ozone path is never taken.
+// This will be removed as soon as Ozone/Linux is default and USE_X11 is
+// removed.  More info at
+// https://docs.google.com/document/d/1PvKquOHWySbvbe4bgduAcpW0Pda4BBhXI7xphtyDtPQ
+COMPONENT_EXPORT(UI_BASE_FEATURES) extern const base::Feature kUseOzonePlatform;
+
+COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsUsingOzonePlatform();
+#endif
+
 }  // namespace features
 
 #endif  // UI_BASE_UI_BASE_FEATURES_H_

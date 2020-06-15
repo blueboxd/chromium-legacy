@@ -8,6 +8,7 @@
 
 #include "third_party/blink/renderer/core/css/parser/css_parser_observer.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -153,7 +154,7 @@ TEST(CSSParserImplTest, AtPageOffsets) {
 }
 
 TEST(CSSParserImplTest, AtPropertyOffsets) {
-  RuntimeEnabledFeatures::SetCSSVariables2AtPropertyEnabled(true);
+  ScopedCSSVariables2AtPropertyForTest scoped_feature(true);
 
   String sheet_text = "@property --test { }";
   auto* context = MakeGarbageCollected<CSSParserContext>(
@@ -167,8 +168,8 @@ TEST(CSSParserImplTest, AtPropertyOffsets) {
             StyleRule::RuleType::kProperty);
   EXPECT_EQ(test_css_parser_observer.rule_header_start_, 10u);
   EXPECT_EQ(test_css_parser_observer.rule_header_end_, 17u);
-  EXPECT_EQ(test_css_parser_observer.rule_body_start_, 0u);
-  EXPECT_EQ(test_css_parser_observer.rule_body_end_, 0u);
+  EXPECT_EQ(test_css_parser_observer.rule_body_start_, 18u);
+  EXPECT_EQ(test_css_parser_observer.rule_body_end_, 19u);
 }
 
 }  // namespace blink

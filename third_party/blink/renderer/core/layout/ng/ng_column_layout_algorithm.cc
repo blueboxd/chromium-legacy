@@ -138,7 +138,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     return RelayoutAndBreakEarlier();
   } else if (break_status == NGBreakStatus::kBrokeBefore) {
     // If we want to break before, make sure that we're actually at the start.
-    DCHECK(!BreakToken());
+    DCHECK(!IsResumingLayout(BreakToken()));
 
     return container_builder_.Abort(NGLayoutResult::kOutOfFragmentainerSpace);
   }
@@ -165,8 +165,11 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   if (is_constrained_by_outer_fragmentation_context_) {
     // In addition to establishing one, we're nested inside another
     // fragmentation context.
+    LayoutUnit all_fragments_block_size =
+        previously_consumed_block_size + block_size;
     FinishFragmentation(
-        ConstraintSpace(), BreakToken(), block_size, intrinsic_block_size_,
+        Node(), ConstraintSpace(), BreakToken(), border_padding_,
+        all_fragments_block_size, intrinsic_block_size_,
         FragmentainerSpaceAtBfcStart(ConstraintSpace()), &container_builder_);
   } else {
     container_builder_.SetBlockSize(block_size);
@@ -295,7 +298,12 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutChildren() {
 
     if (!result) {
       // Not enough outer fragmentainer space to produce any columns at all.
-      container_builder_.SetDidBreak();
+
+      // TODO(mstensho): Explicitly marking that we broke shouldn't be necessary
+      // here, ideally. But the fragmentation machinery needs this hint in some
+      // cases. There's probably a break token missing.
+      container_builder_.SetDidBreakSelf();
+
       if (intrinsic_block_size_) {
         // We have preceding initial border/padding, or a column spanner
         // (possibly preceded by other spanners or even column content). So we
@@ -526,7 +534,6 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
         if (zero_outer_space_left)
           return nullptr;
 
-        container_builder_.SetDidBreak();
         container_builder_.SetBreakAppeal(kBreakAppealPerfect);
         break;
       }
@@ -535,7 +542,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
     } while (column_break_token);
 
     // TODO(mstensho): Nested column balancing.
-    if (container_builder_.DidBreak())
+    if (container_builder_.DidBreakSelf())
       break;
 
     if (!balance_columns && result->ColumnSpanner()) {

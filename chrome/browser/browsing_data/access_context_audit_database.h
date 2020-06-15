@@ -17,7 +17,8 @@
 // requires storing information associating individual client-side storage API
 // accesses (e.g. cookies, indexedDBs, etc.) with the top level frame origins
 // at the time of their access.
-class AccessContextAuditDatabase {
+class AccessContextAuditDatabase
+    : public base::RefCountedThreadSafe<AccessContextAuditDatabase> {
  public:
   // All client-side storage API types supported by the database.
   enum class StorageAPIType : int {
@@ -64,22 +65,31 @@ class AccessContextAuditDatabase {
       const base::FilePath& path_to_database_dir);
 
   // Initialises internal database. Must be called prior to any other usage.
-  bool Init();
+  void Init();
 
   // Persists the provided list of |records| in the database.
-  bool AddRecords(const std::vector<AccessRecord>& records);
+  void AddRecords(const std::vector<AccessRecord>& records);
 
   // Returns all entries in the database. No ordering is enforced.
   std::vector<AccessRecord> GetAllRecords();
 
   // Removes a record from the database and from future calls to GetAllRecords.
-  bool RemoveRecord(const AccessRecord& record);
+  void RemoveRecord(const AccessRecord& record);
+
+  // Removes all records that match the provided cookie details.
+  void RemoveAllRecordsForCookie(const std::string& name,
+                                 const std::string& domain,
+                                 const std::string& path);
+
+ protected:
+  virtual ~AccessContextAuditDatabase() = default;
 
  private:
+  friend class base::RefCountedThreadSafe<AccessContextAuditDatabase>;
   bool InitializeSchema();
 
   sql::Database db_;
   base::FilePath db_file_path_;
 };
 
-#endif
+#endif  // CHROME_BROWSER_BROWSING_DATA_ACCESS_CONTEXT_AUDIT_DATABASE_H_

@@ -20,7 +20,7 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class PermissionInfo implements Serializable {
     @IntDef({Type.AUGMENTED_REALITY, Type.CAMERA, Type.CLIPBOARD, Type.GEOLOCATION, Type.MICROPHONE,
-            Type.MIDI, Type.NOTIFICATION, Type.PROTECTED_MEDIA_IDENTIFIER, Type.SENSORS,
+            Type.MIDI, Type.NFC, Type.NOTIFICATION, Type.PROTECTED_MEDIA_IDENTIFIER, Type.SENSORS,
             Type.VIRTUAL_REALITY})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
@@ -214,6 +214,38 @@ public class PermissionInfo implements Serializable {
             default:
                 assert false;
                 return ContentSettingsType.DEFAULT;
+        }
+    }
+
+    /**
+     * If conversion is not possible, method returns null.
+     */
+    public static @Type Integer getPermissionInfoType(@ContentSettingsType int type) {
+        switch (type) {
+            case ContentSettingsType.AR:
+                return Type.AUGMENTED_REALITY;
+            case ContentSettingsType.MEDIASTREAM_CAMERA:
+                return Type.CAMERA;
+            case ContentSettingsType.CLIPBOARD_READ_WRITE:
+                return Type.CLIPBOARD;
+            case ContentSettingsType.GEOLOCATION:
+                return Type.GEOLOCATION;
+            case ContentSettingsType.MEDIASTREAM_MIC:
+                return Type.MICROPHONE;
+            case ContentSettingsType.MIDI_SYSEX:
+                return Type.MIDI;
+            case ContentSettingsType.NFC:
+                return Type.NFC;
+            case ContentSettingsType.NOTIFICATIONS:
+                return Type.NOTIFICATION;
+            case ContentSettingsType.PROTECTED_MEDIA_IDENTIFIER:
+                return Type.PROTECTED_MEDIA_IDENTIFIER;
+            case ContentSettingsType.SENSORS:
+                return Type.SENSORS;
+            case ContentSettingsType.VR:
+                return Type.VIRTUAL_REALITY;
+            default:
+                return null;
         }
     }
 }

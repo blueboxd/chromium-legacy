@@ -919,6 +919,7 @@ public class LocationBarLayout extends FrameLayout
     public void setOmniboxEditingText(String text) {
         mUrlCoordinator.setUrlBarData(UrlBarData.forNonUrlText(text), UrlBar.ScrollType.NO_SCROLL,
                 UrlBarCoordinator.SelectionState.SELECT_END);
+        updateButtonVisibility();
     }
 
     @Override

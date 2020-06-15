@@ -3582,6 +3582,7 @@ test("unit_tests") {
   if (!is_android) {
     sources += [
       "../browser/browsing_data/access_context_audit_database_unittest.cc",
+      "../browser/browsing_data/access_context_audit_service_unittest.cc",
       "../browser/component_updater/soda_component_installer_unittest.cc",
       "../browser/content_settings/generated_cookie_prefs_unittest.cc",
       "../browser/device_identity/device_oauth2_token_service_unittest.cc",
@@ -4053,7 +4054,6 @@ test("unit_tests") {
       "../browser/resource_coordinator/tab_lifecycle_unit_source_unittest.cc",
       "../browser/resource_coordinator/tab_lifecycle_unit_unittest.cc",
       "../browser/resource_coordinator/tab_manager_delegate_chromeos_unittest.cc",
-      "../browser/resource_coordinator/tab_manager_features_unittest.cc",
       "../browser/resource_coordinator/tab_manager_stats_collector_unittest.cc",
       "../browser/resource_coordinator/tab_manager_unittest.cc",
       "../browser/resource_coordinator/tab_manager_web_contents_data_unittest.cc",
@@ -4063,7 +4063,6 @@ test("unit_tests") {
       "../browser/resource_coordinator/tab_ranker/tab_score_predictor_unittest.cc",
       "../browser/resource_coordinator/test_lifecycle_unit.cc",
       "../browser/resource_coordinator/test_lifecycle_unit.h",
-      "../browser/resource_coordinator/tracing_lifecycle_unit_observer_unittest.cc",
       "../browser/resource_coordinator/usage_clock_unittest.cc",
 
       # The site data database isn't supported on Android.

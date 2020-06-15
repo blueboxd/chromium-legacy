@@ -91,6 +91,7 @@ void IOSChromeLocalSessionEventRouter::WebStateReplacedAt(
     web::WebState* new_web_state,
     int index) {
   OnWebStateChange(old_web_state);
+  old_web_state->RemoveObserver(this);
   DCHECK(new_web_state);
   new_web_state->AddObserver(this);
 }
@@ -100,6 +101,7 @@ void IOSChromeLocalSessionEventRouter::WebStateDetachedAt(
     web::WebState* web_state,
     int index) {
   OnWebStateChange(web_state);
+  web_state->RemoveObserver(this);
 }
 
 void IOSChromeLocalSessionEventRouter::TitleWasSet(web::WebState* web_state) {

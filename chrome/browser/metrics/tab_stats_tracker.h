@@ -66,7 +66,6 @@ class TabStatsTracker : public TabStripModelObserver,
   const TabStatsDataStore::TabsStats& tab_stats() const;
 
  protected:
-  FRIEND_TEST_ALL_PREFIXES(TabStatsTrackerBrowserTest, FrozenTabPercentage);
   FRIEND_TEST_ALL_PREFIXES(TabStatsTrackerBrowserTest,
                            TabDeletionGetsHandledProperly);
 #if defined(OS_WIN)
@@ -262,13 +261,6 @@ class TabStatsTracker::UmaStatsReportingDelegate {
   static const char kTabCountHistogramName[];
   static const char kWindowCountHistogramName[];
 
-  // The name of the histogram that records the percentage of hidden tabs that
-  // are frozen. Separated into buckets based on the number of hidden tabs.
-  static const char kFrozenTabPercentageHistogramNameBase[];
-  static const char kFrozenTabPercentage1To5HiddenTabsHistogramName[];
-  static const char kFrozenTabPercentage6To20HiddenTabsHistogramName[];
-  static const char kFrozenTabPercentageMoreThan20HiddenTabsHistogramName[];
-
   UmaStatsReportingDelegate() {}
   virtual ~UmaStatsReportingDelegate() {}
 
@@ -304,9 +296,6 @@ class TabStatsTracker::UmaStatsReportingDelegate {
   virtual bool IsChromeBackgroundedWithoutWindows();
 
  private:
-  // Report the percentage of hidden tabs that are frozen.
-  void ReportFrozenTabPercentage();
-
   DISALLOW_COPY_AND_ASSIGN(UmaStatsReportingDelegate);
 };
 

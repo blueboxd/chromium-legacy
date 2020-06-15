@@ -99,6 +99,9 @@ class CannedCookieHelper : public CookieHelper {
   // Returns the number of stored cookies.
   size_t GetCookieCount() const;
 
+  // Directly returns stored cookies.
+  net::CookieList GetCookieList();
+
   // Returns the map that contains the cookie lists for all frame urls.
   const OriginCookieSetMap& origin_cookie_set_map() {
     return origin_cookie_set_map_;

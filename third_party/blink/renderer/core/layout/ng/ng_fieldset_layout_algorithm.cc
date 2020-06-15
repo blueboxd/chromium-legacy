@@ -93,14 +93,16 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
 
   // TODO(almaher): end border and padding may overflow the parent
   // fragmentainer, and we should avoid that.
-  LayoutUnit block_size = border_box_size_.block_size - consumed_block_size_;
+  LayoutUnit all_fragments_block_size = border_box_size_.block_size;
 
   container_builder_.SetIsFieldsetContainer();
   if (ConstraintSpace().HasKnownFragmentainerBlockSize()) {
     FinishFragmentation(
-        ConstraintSpace(), BreakToken(), block_size, intrinsic_block_size_,
+        Node(), ConstraintSpace(), BreakToken(), border_padding_,
+        all_fragments_block_size, intrinsic_block_size_,
         FragmentainerSpaceAtBfcStart(ConstraintSpace()), &container_builder_);
   } else {
+    LayoutUnit block_size = all_fragments_block_size - consumed_block_size_;
     container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
     container_builder_.SetBlockSize(block_size);
   }

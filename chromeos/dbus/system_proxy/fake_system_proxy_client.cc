@@ -18,6 +18,7 @@ void FakeSystemProxyClient::SetAuthenticationDetails(
     const system_proxy::SetAuthenticationDetailsRequest& request,
     SetAuthenticationDetailsCallback callback) {
   ++set_credentials_call_count_;
+  last_set_auth_details_request_ = request;
   system_proxy::SetAuthenticationDetailsResponse response;
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), response));
@@ -47,6 +48,11 @@ int FakeSystemProxyClient::GetSetAuthenticationDetailsCallCount() const {
 
 int FakeSystemProxyClient::GetShutDownCallCount() const {
   return shut_down_call_count_;
+}
+
+system_proxy::SetAuthenticationDetailsRequest
+FakeSystemProxyClient::GetLastAuthenticationDetailsRequest() const {
+  return last_set_auth_details_request_;
 }
 
 }  // namespace chromeos

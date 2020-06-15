@@ -408,7 +408,8 @@ TEST_P(DynamicModuleResolverTest, ResolveWithReferrerScriptInfoBaseURL) {
   KURL correct_base_url("https://example.com/correct/baz.js");
   resolver->ResolveDynamically(
       "./dependency.js", wrong_base_url,
-      ReferrerScriptInfo(correct_base_url, ScriptFetchOptions()),
+      ReferrerScriptInfo(correct_base_url, ScriptFetchOptions(),
+                         ReferrerScriptInfo::BaseUrlSource::kOther),
       promise_resolver);
 
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());

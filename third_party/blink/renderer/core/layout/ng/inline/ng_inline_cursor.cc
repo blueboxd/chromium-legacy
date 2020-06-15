@@ -692,15 +692,15 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineFormattingContext(
                             PhysicalSize(LayoutUnit(1), LayoutUnit(1)))
           .block_offset;
 
-  // Stores the closest line box child above |point| in the block direction.
-  // Used if we can't find any child |point| falls in to resolve the position.
-  NGInlineCursorPosition closest_line_before;
-  LayoutUnit closest_line_before_block_offset = LayoutUnit::Min();
-
-  // Stores the closest line box child below |point| in the block direction.
+  // Stores the closest line box child after |point| in the block direction.
   // Used if we can't find any child |point| falls in to resolve the position.
   NGInlineCursorPosition closest_line_after;
-  LayoutUnit closest_line_after_block_offset = LayoutUnit::Max();
+  LayoutUnit closest_line_after_block_offset = LayoutUnit::Min();
+
+  // Stores the closest line box child before |point| in the block direction.
+  // Used if we can't find any child |point| falls in to resolve the position.
+  NGInlineCursorPosition closest_line_before;
+  LayoutUnit closest_line_before_block_offset = LayoutUnit::Max();
 
   while (*this) {
     const NGFragmentItem* child_item = CurrentItem();
@@ -719,9 +719,9 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineFormattingContext(
                                 child_item->Size())
               .block_offset;
       if (point_block_offset < child_block_offset) {
-        if (child_block_offset < closest_line_after_block_offset) {
-          closest_line_after_block_offset = child_block_offset;
-          closest_line_after = Current();
+        if (child_block_offset < closest_line_before_block_offset) {
+          closest_line_before_block_offset = child_block_offset;
+          closest_line_before = Current();
         }
         MoveToNextItemSkippingChildren();
         continue;
@@ -732,9 +732,9 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineFormattingContext(
           child_block_offset +
           child_item->Size().ConvertToLogical(writing_mode).block_size;
       if (point_block_offset >= child_block_end_offset) {
-        if (child_block_end_offset > closest_line_before_block_offset) {
-          closest_line_before_block_offset = child_block_end_offset;
-          closest_line_before = Current();
+        if (child_block_end_offset > closest_line_after_block_offset) {
+          closest_line_after_block_offset = child_block_end_offset;
+          closest_line_after = Current();
         }
         MoveToNextItemSkippingChildren();
         continue;
@@ -754,8 +754,8 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineFormattingContext(
   //   |closest_line_before|
   //   |point|
   //   |closest_line_after|
-  if (closest_line_after) {
-    MoveTo(closest_line_after);
+  if (closest_line_before) {
+    MoveTo(closest_line_before);
     // Note: |move_caret_to_boundary| is true for Mac and Unix.
     const bool move_caret_to_boundary =
         To<LayoutBlockFlow>(Current().GetLayoutObject())
@@ -772,8 +772,8 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineFormattingContext(
       return child_position;
   }
 
-  if (closest_line_before) {
-    MoveTo(closest_line_before);
+  if (closest_line_after) {
+    MoveTo(closest_line_after);
     // Note: |move_caret_to_boundary| is true for Mac and Unix.
     const bool move_caret_to_boundary =
         To<LayoutBlockFlow>(Current().GetLayoutObject())

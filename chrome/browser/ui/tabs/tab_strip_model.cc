@@ -1827,8 +1827,6 @@ TabStripSelectionChange TabStripModel::SetSelection(
                 !input_event_timestamp.is_null() ? input_event_timestamp : now,
                 resource_coordinator::ResourceCoordinatorTabHelper::IsLoaded(
                     selection.new_contents),
-                resource_coordinator::ResourceCoordinatorTabHelper::IsFrozen(
-                    selection.new_contents),
                 /*show_reason_tab_switching=*/true,
                 /*show_reason_unoccluded=*/false,
                 /*show_reason_bfcache_restore=*/false);

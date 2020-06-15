@@ -36,8 +36,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
                                    space,
                                    writing_direction),
         box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
-        is_inline_formatting_context_(node.IsInline()),
-        did_break_(false) {}
+        is_inline_formatting_context_(node.IsInline()) {}
 
   // Build a fragment for LayoutObject without NGLayoutInputNode. LayoutInline
   // has NGInlineItem but does not have corresponding NGLayoutInputNode.
@@ -49,8 +48,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
                                    /* space */ nullptr,
                                    writing_direction),
         box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
-        is_inline_formatting_context_(true),
-        did_break_(false) {
+        is_inline_formatting_context_(true) {
     layout_object_ = layout_object;
   }
 
@@ -105,6 +103,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // descendants, propagating fragmentainer breaks, and more.
   void AddResult(const NGLayoutResult&, const LogicalOffset);
 
+  // Manually add a break token to the builder. Note that we're assuming that
+  // this break token is for content in the same flow as this parent.
   void AddBreakToken(scoped_refptr<const NGBreakToken>);
 
   void AddOutOfFlowLegacyCandidate(NGBlockNode,
@@ -123,10 +123,31 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     sequence_number_ = sequence_number;
   }
 
-  // Specify that we broke.
-  //
-  // This will result in a fragment which has an unfinished break token.
-  void SetDidBreak() { did_break_ = true; }
+  // Return true if we broke inside this node on our own initiative (typically
+  // not because of a child break, but rather due to the size of this node).
+  bool DidBreakSelf() const { return did_break_self_; }
+  void SetDidBreakSelf() { did_break_self_ = true; }
+
+  // Return true if we need to break before or inside any child, doesn't matter
+  // if it's in-flow or not. As long as there are only breaks in parallel flows,
+  // we may continue layout, but when we're done, we'll need to create a break
+  // token for this fragment nevertheless, so that we re-enter, descend and
+  // resume at the broken children in the next fragmentainer.
+  bool HasChildBreakInside() const {
+    if (!child_break_tokens_.IsEmpty())
+      return true;
+    // Inline nodes produce a "finished" trailing break token even if we don't
+    // need to block-fragment.
+    return !inline_break_tokens_.IsEmpty() &&
+           !inline_break_tokens_.back()->IsFinished();
+  }
+
+  // Return true if we need to break before or inside any in-flow child that
+  // doesn't establish a parallel flow. When this happens, we want to finish our
+  // fragment, create a break token, and resume in the next fragmentainer.
+  bool HasInflowChildBreakInside() const {
+    return has_inflow_child_break_inside_;
+  }
 
   // Report space shortage, i.e. how much more space would have been sufficient
   // to prevent some piece of content from breaking. This information may be
@@ -196,6 +217,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // left to discover.
   void SetHasSeenAllChildren() { has_seen_all_children_ = true; }
   bool HasSeenAllChildren() { return has_seen_all_children_; }
+
+  void SetIsAtBlockEnd() { is_at_block_end_ = true; }
 
   void SetColumnSpanner(NGBlockNode spanner) { column_spanner_ = spanner; }
   bool FoundColumnSpanner() const { return !!column_spanner_; }
@@ -271,8 +294,6 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     mathml_paint_info_->operator_ascent = operator_ascent;
     mathml_paint_info_->operator_descent = operator_descent;
   }
-
-  bool DidBreak() const { return did_break_; }
 
   void SetBorderEdges(NGBorderEdges border_edges) {
     border_edges_ = border_edges;
@@ -364,12 +385,14 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   bool is_initial_block_size_indefinite_ = false;
   bool is_inline_formatting_context_;
   bool is_first_for_node_ = true;
-  bool did_break_;
+  bool did_break_self_ = false;
+  bool has_inflow_child_break_inside_ = false;
   bool has_forced_break_ = false;
   bool is_new_fc_ = false;
   bool subtree_modified_margin_strut_ = false;
   bool has_seen_all_children_ = false;
   bool is_math_fraction_ = false;
+  bool is_at_block_end_ = false;
   LayoutUnit consumed_block_size_;
   unsigned sequence_number_ = 0;
 

@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
+#include "third_party/blink/renderer/core/layout/list_marker.h"
 
 namespace blink {
 
@@ -43,29 +44,11 @@ class CORE_EXPORT LayoutListMarker : public LayoutBox {
   // Marker text with suffix, e.g. "1. ", for use in accessibility.
   String TextAlternative() const;
 
-  // A reduced set of list style categories allowing for more concise expression
-  // of list style specific logic.
-  enum class ListStyleCategory { kNone, kSymbol, kLanguage, kStaticString };
-
-  // Returns the list's style as one of a reduced high level categorical set of
-  // styles.
-  ListStyleCategory GetListStyleCategory() const;
-  static ListStyleCategory GetListStyleCategory(EListStyleType);
+  ListMarker::ListStyleCategory GetListStyleCategory() const;
 
   void UpdateMarginsAndContent();
 
-  // Compute inline margins for 'list-style-position: inside' and 'outside'.
-  static std::pair<LayoutUnit, LayoutUnit> InlineMarginsForInside(
-      const ComputedStyle&,
-      bool is_image);
-  static std::pair<LayoutUnit, LayoutUnit> InlineMarginsForOutside(
-      const ComputedStyle&,
-      bool is_image,
-      LayoutUnit marker_inline_size);
-
   LayoutRect GetRelativeMarkerRect() const;
-  static LayoutRect RelativeSymbolMarkerRect(const ComputedStyle&, LayoutUnit);
-  static LayoutUnit WidthOfSymbol(const ComputedStyle&);
 
   bool IsImage() const override;
   const StyleImage* GetImage() const { return image_.Get(); }
@@ -101,7 +84,7 @@ class CORE_EXPORT LayoutListMarker : public LayoutBox {
 
   bool IsText() const { return !IsImage(); }
 
-  LayoutUnit GetWidthOfText(ListStyleCategory) const;
+  LayoutUnit GetWidthOfText(ListMarker::ListStyleCategory) const;
   void UpdateMargins(LayoutUnit marker_inline_size);
   void UpdateContent();
 

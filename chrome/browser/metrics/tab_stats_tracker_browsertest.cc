@@ -30,34 +30,6 @@ namespace {
 using TabsStats = TabStatsDataStore::TabsStats;
 using TabLifecycleObserver = resource_coordinator::TabLifecycleObserver;
 
-class FreezeWaiter : public TabLifecycleObserver {
- public:
-  explicit FreezeWaiter(content::WebContents* web_contents)
-      : web_contents_(web_contents) {
-    resource_coordinator::TabLifecycleUnitExternal::AddTabLifecycleObserver(
-        this);
-  }
-
-  ~FreezeWaiter() override {
-    resource_coordinator::TabLifecycleUnitExternal::RemoveTabLifecycleObserver(
-        this);
-  }
-
-  void Wait() { run_loop_.Run(); }
-
- private:
-  void OnFrozenStateChange(content::WebContents* contents,
-                           bool is_frozen) override {
-    if (web_contents_ != contents || !is_frozen)
-      return;
-
-    run_loop_.Quit();
-  }
-
-  content::WebContents* web_contents_;
-  base::RunLoop run_loop_;
-};
-
 void EnsureTabStatsMatchExpectations(const TabsStats& expected,
                                      const TabsStats& actual) {
   EXPECT_EQ(expected.total_tab_count, actual.total_tab_count);
@@ -65,12 +37,6 @@ void EnsureTabStatsMatchExpectations(const TabsStats& expected,
   EXPECT_EQ(expected.max_tab_per_window, actual.max_tab_per_window);
   EXPECT_EQ(expected.window_count, actual.window_count);
   EXPECT_EQ(expected.window_count_max, actual.window_count_max);
-}
-
-void FreezeWebContents(content::WebContents* web_contents) {
-  FreezeWaiter freeze_waiter(web_contents);
-  web_contents->SetPageFrozen(true);
-  freeze_waiter.Wait();
 }
 
 }  // namespace
@@ -119,62 +85,6 @@ class TabStatsTrackerBrowserTest : public InProcessBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(TabStatsTrackerBrowserTest);
 };
-
-IN_PROC_BROWSER_TEST_F(TabStatsTrackerBrowserTest, FrozenTabPercentage) {
-  std::vector<Browser*> browsers;
-
-  // Create 3 windows.
-  browsers.push_back(browser());
-  browsers.push_back(CreateBrowser(ProfileManager::GetActiveUserProfile()));
-  browsers.push_back(CreateBrowser(ProfileManager::GetActiveUserProfile()));
-
-  // Ensure there are 3 tabs per window.
-  for (Browser* browser : browsers) {
-    ui_test_utils::NavigateToURL(browser, GURL("about:blank"));
-    AddTabAtIndexToBrowser(browser, 1, GURL("about:blank"),
-                           ui::PAGE_TRANSITION_TYPED, true);
-    AddTabAtIndexToBrowser(browser, 2, GURL("about:blank"),
-                           ui::PAGE_TRANSITION_TYPED, true);
-  }
-
-  // Verify that there are 6 hidden tabs, none of which are frozen.
-  tab_stats_tracker_->OnHeartbeatEvent();
-  histogram_tester_.ExpectTotalCount("Tabs.FrozenTabPercentage.6To20HiddenTabs",
-                                     1);
-  histogram_tester_.ExpectTotalCount("Tabs.FrozenTabPercentage.1To5HiddenTabs",
-                                     0);
-  EXPECT_THAT(histogram_tester_.GetAllSamples(
-                  "Tabs.FrozenTabPercentage.6To20HiddenTabs"),
-              testing::ElementsAre(base::Bucket(0, 1)));
-
-  // Freeze 2 of the hidden tabs.
-  FreezeWebContents(browsers[0]->tab_strip_model()->GetWebContentsAt(0));
-  FreezeWebContents(browsers[1]->tab_strip_model()->GetWebContentsAt(0));
-
-  // Verify that 2/6 hidden tabs are frozen.
-  tab_stats_tracker_->OnHeartbeatEvent();
-  histogram_tester_.ExpectTotalCount("Tabs.FrozenTabPercentage.6To20HiddenTabs",
-                                     2);
-  histogram_tester_.ExpectTotalCount("Tabs.FrozenTabPercentage.1To5HiddenTabs",
-                                     0);
-  EXPECT_THAT(histogram_tester_.GetAllSamples(
-                  "Tabs.FrozenTabPercentage.6To20HiddenTabs"),
-              testing::ElementsAre(base::Bucket(0, 1), base::Bucket(33, 1)));
-
-  // Close one of the frozen, hidden tabs.
-  browsers[0]->tab_strip_model()->CloseWebContentsAt(
-      0, TabStripModel::CloseTypes::CLOSE_NONE);
-
-  // Verify that 1/5 hidden tabs are frozen.
-  tab_stats_tracker_->OnHeartbeatEvent();
-  histogram_tester_.ExpectTotalCount("Tabs.FrozenTabPercentage.6To20HiddenTabs",
-                                     2);
-  histogram_tester_.ExpectTotalCount("Tabs.FrozenTabPercentage.1To5HiddenTabs",
-                                     1);
-  EXPECT_THAT(histogram_tester_.GetAllSamples(
-                  "Tabs.FrozenTabPercentage.1To5HiddenTabs"),
-              testing::ElementsAre(base::Bucket(20, 1)));
-}
 
 IN_PROC_BROWSER_TEST_F(TabStatsTrackerBrowserTest,
                        TabsAndWindowsAreCountedAccurately) {

@@ -499,6 +499,9 @@ def shorten_union_name(union_type):
         # modules/canvas/offscreencanvas/offscreen_canvas_module.idl
         'OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext':
         'OffscreenRenderingContext',
+        # core/xmlhttprequest/xml_http_request.idl
+        'DocumentOrBlobOrArrayBufferOrArrayBufferViewOrFormDataOrURLSearchParamsOrUSVString':
+        'DocumentOrXMLHttpRequestBodyInit',
     }
 
     idl_type = union_type

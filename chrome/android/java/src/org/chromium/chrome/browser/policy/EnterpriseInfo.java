@@ -8,8 +8,6 @@ import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.os.SystemClock;
 import android.util.Pair;
 
@@ -31,14 +29,13 @@ public final class EnterpriseInfo {
         try {
             new AsyncTask<Pair<Boolean, Boolean>>() {
                 private Pair<Boolean, Boolean> calculateIsRunningOnManagedProfile(Context context) {
-                    if (VERSION.SDK_INT < VERSION_CODES.M) return null;
-
                     long startTime = SystemClock.elapsedRealtime();
                     boolean hasProfileOwnerApp = false;
                     boolean hasDeviceOwnerApp = false;
                     PackageManager packageManager = context.getPackageManager();
                     DevicePolicyManager devicePolicyManager =
-                            context.getSystemService(DevicePolicyManager.class);
+                            (DevicePolicyManager) context.getSystemService(
+                                    Context.DEVICE_POLICY_SERVICE);
 
                     for (PackageInfo pkg : packageManager.getInstalledPackages(/* flags= */ 0)) {
                         assert devicePolicyManager != null;
@@ -68,7 +65,7 @@ public final class EnterpriseInfo {
 
                 @Override
                 protected void onPostExecute(Pair<Boolean, Boolean> isManagedDevice) {
-                    if (isManagedDevice == null) return;
+                    assert isManagedDevice != null;
 
                     RecordHistogram.recordBooleanHistogram(
                             "EnterpriseCheck.IsManaged", isManagedDevice.first);

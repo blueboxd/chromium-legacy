@@ -2554,7 +2554,8 @@ class KioskVirtualKeyboardTest : public KioskTest,
 
 // Verifies that chrome.virtualKeyboard.restrictFeatures and related private
 // APIs work.
-IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, RestrictFeatures) {
+// TODO(https://crbug.com/1094809): Flaky in debug builds.
+IN_PROC_BROWSER_TEST_F(KioskVirtualKeyboardTest, DISABLED_RestrictFeatures) {
   set_test_app_id(kTestVirtualKeyboardKioskApp);
   set_test_app_version("0.1");
   set_test_crx_file(test_app_id() + ".crx");

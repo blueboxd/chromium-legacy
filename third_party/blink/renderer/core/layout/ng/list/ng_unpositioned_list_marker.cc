@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 
-#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
@@ -36,7 +35,7 @@ bool NGUnpositionedListMarker::IsImage() const {
 LayoutUnit NGUnpositionedListMarker::InlineOffset(
     const LayoutUnit marker_inline_size) const {
   DCHECK(marker_layout_object_);
-  auto margins = LayoutListMarker::InlineMarginsForOutside(
+  auto margins = ListMarker::InlineMarginsForOutside(
       marker_layout_object_->StyleRef(), IsImage(), marker_inline_size);
   return margins.first;
 }

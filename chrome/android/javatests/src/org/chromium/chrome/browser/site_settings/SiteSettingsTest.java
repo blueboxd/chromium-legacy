@@ -45,6 +45,7 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
+import org.chromium.components.browser_ui.settings.ExpandablePreferenceGroup;
 import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference;
 import org.chromium.components.browser_ui.site_settings.FourStateCookieSettingsPreference.CookieSettingsState;
 import org.chromium.components.browser_ui.site_settings.R;
@@ -55,6 +56,7 @@ import org.chromium.components.browser_ui.site_settings.TriStateSiteSettingsPref
 import org.chromium.components.browser_ui.site_settings.Website;
 import org.chromium.components.browser_ui.site_settings.WebsiteAddress;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
+import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsFeatureList;
 import org.chromium.components.content_settings.ContentSettingsType;
@@ -70,6 +72,7 @@ import org.chromium.policy.test.annotations.Policies;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tests for everything under Settings > Site Settings.
@@ -127,6 +130,15 @@ public class SiteSettingsTest {
                             getBrowserContextHandle()));
             settingsActivity.finish();
         });
+    }
+
+    private void triggerEmbargoForOrigin(String url) throws TimeoutException {
+        // Ignore notification request 4 times to enter embargo. 5th one ensures that notifications
+        // are blocked by actually causing a deny-by-embargo.
+        for (int i = 0; i < 5; i++) {
+            mPermissionRule.loadUrl(url);
+            mPermissionRule.runJavaScriptCodeInCurrentTab("requestPermissionAndRespond()");
+        }
     }
 
     /**
@@ -1208,12 +1220,7 @@ public class SiteSettingsTest {
         final String url = mPermissionRule.getURLWithHostName(
                 "example.com", "/chrome/test/data/notifications/notification_tester.html");
 
-        // Ignore notification request 4 times to enter embargo. 5th one ensures that notifications
-        // are blocked by actually causing a deny-by-embargo.
-        for (int i = 0; i < 5; i++) {
-            mPermissionRule.loadUrl(url);
-            mPermissionRule.runJavaScriptCodeInCurrentTab("requestPermissionAndRespond()");
-        }
+        triggerEmbargoForOrigin(url);
 
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
         Context context = InstrumentationRegistry.getTargetContext();
@@ -1243,6 +1250,60 @@ public class SiteSettingsTest {
                             Origin.createOrThrow(url).toString()));
         });
 
+        settingsActivity.finish();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testEmbargoedNotificationCategorySiteSettings() throws Exception {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
+        final String urlToEmbargo = mPermissionRule.getURLWithHostName(
+                "example.com", "/chrome/test/data/notifications/notification_tester.html");
+
+        triggerEmbargoForOrigin(urlToEmbargo);
+
+        final String urlToBlock = mPermissionRule.getURLWithHostName(
+                "exampleToBlock.com", "/chrome/test/data/notifications/notification_tester.html");
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            WebsitePreferenceBridgeJni.get().setNotificationSettingForOrigin(
+                    getBrowserContextHandle(), urlToBlock, ContentSettingValues.BLOCK);
+        });
+
+        final SettingsActivity settingsActivity = SiteSettingsTestUtils.startSiteSettingsCategory(
+                SiteSettingsCategory.Type.NOTIFICATIONS);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            boolean blockedByEmbargo =
+                    WebsitePreferenceBridgeJni.get().isNotificationEmbargoedForOrigin(
+                            getBrowserContextHandle(), urlToEmbargo);
+            Assert.assertTrue(blockedByEmbargo);
+
+            final String blockedGroupKey = "blocked_group";
+            // Click on Blocked group in Category Settings. By default Blocked is closed, to be able
+            // to find any origins inside, Blocked should be opened.
+            SingleCategorySettings websitePreferences =
+                    (SingleCategorySettings) settingsActivity.getMainFragment();
+            websitePreferences.findPreference(blockedGroupKey).performClick();
+
+            // After triggering onClick on Blocked group, all UI will be discarded and reinitialized
+            // from scratch. Init all variables again, otherwise it will use stale information.
+            websitePreferences = (SingleCategorySettings) settingsActivity.getMainFragment();
+            ExpandablePreferenceGroup blockedGroup =
+                    (ExpandablePreferenceGroup) websitePreferences.findPreference(blockedGroupKey);
+
+            Assert.assertTrue(blockedGroup.isExpanded());
+            // Only |url| has been added under embargo.
+            Assert.assertEquals(2, blockedGroup.getPreferenceCount());
+
+            Assert.assertEquals(InstrumentationRegistry.getTargetContext().getString(
+                                        R.string.automatically_blocked),
+                    blockedGroup.getPreference(0).getSummary());
+
+            // Blocked origin should has no summary.
+            Assert.assertNull(blockedGroup.getPreference(1).getSummary());
+        });
         settingsActivity.finish();
     }
 }

@@ -159,7 +159,10 @@ void NGBoxFragmentBuilder::AddBreakBeforeChild(
   }
 
   DCHECK(has_block_fragmentation_);
-  SetDidBreak();
+
+  if (!has_inflow_child_break_inside_)
+    has_inflow_child_break_inside_ = !child.IsFloatingOrOutOfFlowPositioned();
+
   if (auto* child_inline_node = DynamicTo<NGInlineNode>(child)) {
     if (inline_break_tokens_.IsEmpty()) {
       // In some cases we may want to break before the first line, as a last
@@ -197,6 +200,7 @@ void NGBoxFragmentBuilder::AddBreakToken(
     scoped_refptr<const NGBreakToken> token) {
   DCHECK(token.get());
   child_break_tokens_.push_back(std::move(token));
+  has_inflow_child_break_inside_ = true;
 }
 
 void NGBoxFragmentBuilder::AddOutOfFlowLegacyCandidate(
@@ -245,9 +249,20 @@ void NGBoxFragmentBuilder::PropagateBreak(
     const NGLayoutResult& child_layout_result) {
   if (LIKELY(!has_block_fragmentation_))
     return;
-  if (!did_break_) {
-    const auto* token = child_layout_result.PhysicalFragment().BreakToken();
-    did_break_ = token && !token->IsFinished();
+  if (!has_inflow_child_break_inside_) {
+    // Figure out if this child break is in the same flow as this parent. If
+    // it's an out-of-flow positioned box, it's not. If it's in a parallel flow,
+    // it's also not.
+    const auto& child_fragment =
+        To<NGPhysicalBoxFragment>(child_layout_result.PhysicalFragment());
+    if (!child_fragment.IsFloatingOrOutOfFlowPositioned()) {
+      if (const auto* token = child_fragment.BreakToken()) {
+        if (!token->IsFinished() &&
+            (!token->IsBlockType() ||
+             !To<NGBlockBreakToken>(token)->IsAtBlockEnd()))
+          has_inflow_child_break_inside_ = true;
+      }
+    }
   }
   if (child_layout_result.HasForcedBreak()) {
     SetHasForcedBreak();
@@ -280,10 +295,10 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::ToBoxFragment(
           child_break_tokens_.push_back(std::move(token));
       }
     }
-    if (did_break_) {
+    if (DidBreakSelf() || HasChildBreakInside()) {
       break_token_ = NGBlockBreakToken::Create(
           node_, consumed_block_size_, sequence_number_, child_break_tokens_,
-          break_appeal_, has_seen_all_children_);
+          break_appeal_, has_seen_all_children_, is_at_block_end_);
     }
   }
 
@@ -470,7 +485,9 @@ void NGBoxFragmentBuilder::SetLastBaselineToBlockEndMarginEdgeIfNeeded() {
 #if DCHECK_IS_ON()
 
 void NGBoxFragmentBuilder::CheckNoBlockFragmentation() const {
-  DCHECK(!did_break_);
+  DCHECK(!HasChildBreakInside());
+  DCHECK(!HasInflowChildBreakInside());
+  DCHECK(!DidBreakSelf());
   DCHECK(!has_forced_break_);
   DCHECK_EQ(consumed_block_size_, LayoutUnit());
   DCHECK_EQ(minimal_space_shortage_, LayoutUnit::Max());

@@ -30,7 +30,8 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
       unsigned sequence_number,
       const NGBreakTokenVector& child_break_tokens,
       NGBreakAppeal break_appeal,
-      bool has_seen_all_children) {
+      bool has_seen_all_children,
+      bool is_at_block_end) {
     // We store the children list inline in the break token as a flexible
     // array. Therefore, we need to make sure to allocate enough space for
     // that array here, which requires a manual allocation + placement new.
@@ -38,9 +39,10 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
         sizeof(NGBlockBreakToken) +
             child_break_tokens.size() * sizeof(NGBreakToken*),
         ::WTF::GetStringWithTypeName<NGBlockBreakToken>());
-    new (data) NGBlockBreakToken(PassKey(), node, consumed_block_size,
-                                 sequence_number, child_break_tokens,
-                                 break_appeal, has_seen_all_children);
+    new (data)
+        NGBlockBreakToken(PassKey(), node, consumed_block_size, sequence_number,
+                          child_break_tokens, break_appeal,
+                          has_seen_all_children, is_at_block_end);
     return base::AdoptRef(static_cast<NGBlockBreakToken*>(data));
   }
 
@@ -95,6 +97,30 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   // have one (since all children are either finished, or have a break token).
   bool HasSeenAllChildren() const { return has_seen_all_children_; }
 
+  // Return true if layout was past the block-end border edge of the node when
+  // it fragmented. This typically means that something is overflowing the node,
+  // and that establishes a parallel flow [1]. Subsequent content may be put
+  // into the same fragmentainer as a fragment whose break token is in this
+  // state, as long as it fits.
+  //
+  // [1] https://www.w3.org/TR/css-break-3/#parallel-flows
+  //
+  // <div style="columns:2; column-fill:auto; height:100px;">
+  //   <div id="a" style="height:100px;">
+  //     <div id="inner" style="height:200px;"></div>
+  //   </div>
+  //   <div id="b" style="margin-top:-30px; height:30px;"></div>
+  // </div>
+  //
+  // #a and #b will be in the first column, while #inner will be in both the
+  // first and second one. The important detail here is that we're at the end of
+  // #a exactly at the bottom of the first column - even if #a broke inside
+  // because of #child. This means that we have no space left as such, but we're
+  // not ready to proceed to the next column. Anything that can fit at the
+  // bottom of a column (either because it actually has 0 height, or e.g. a
+  // negative top margin) will be put into that column, not the next.
+  bool IsAtBlockEnd() const { return is_at_block_end_; }
+
   // The break tokens for children of the layout node.
   //
   // Each child we have visited previously in the block-flow layout algorithm
@@ -125,7 +151,8 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
                     unsigned sequence_number,
                     const NGBreakTokenVector& child_break_tokens,
                     NGBreakAppeal break_appeal,
-                    bool has_seen_all_children);
+                    bool has_seen_all_children,
+                    bool is_at_block_end);
 
   explicit NGBlockBreakToken(PassKey, NGLayoutInputNode node);
 

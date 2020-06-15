@@ -45,7 +45,7 @@ const char kSetKeyPrefixDictAttr[] = "_setkey_";
 const char kConstValuePrefix[] = "_const_";
 const char kNULLValue[] = "_const_NULL";
 
-NSArray* PropNodeToIntArray(const PropertyNode& propnode) {
+NSArray* PropertyNodeToIntArray(const PropertyNode& propnode) {
   if (propnode.parameters.size() != 1) {
     LOG(ERROR) << "Failed to parse " << propnode.original_property
                << " to IntArray: single argument is expected";
@@ -115,6 +115,31 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
   void AddProperties(const BrowserAccessibilityCocoa* node,
                      const LineIndexesMap& line_indexes_map,
                      base::Value* dict);
+
+  // Helper class used to compute a parameter for a parameterized attribute
+  // call. Can be either id or error. Similar to base::Optional, but allows nil
+  // id as a valid value.
+  class IdOrError {
+   public:
+    IdOrError() : value(nil), error(false) {}
+
+    IdOrError& operator=(id other_value) {
+      error = !other_value;
+      value = other_value;
+      return *this;
+    }
+
+    bool IsError() const { return error; }
+    bool IsNotNil() const { return !!value; }
+    constexpr const id& operator*() const& { return value; }
+
+   private:
+    id value;
+    bool error;
+  };
+
+  IdOrError ParamByPropertyNode(const PropertyNode&) const;
+
   base::Value PopulateSize(const BrowserAccessibilityCocoa*) const;
   base::Value PopulatePosition(const BrowserAccessibilityCocoa*) const;
   base::Value PopulateRange(NSRange) const;
@@ -265,21 +290,18 @@ void AccessibilityTreeFormatterMac::AddProperties(
   // Parameterized attributes
   for (NSString* supportedAttribute in
        [cocoa_node accessibilityParameterizedAttributeNames]) {
-    id param = nil;
     auto propnode = GetMatchingPropertyNode(
         line_index, SysNSStringToUTF16(supportedAttribute));
-    if (propnode.name_or_value == base::ASCIIToUTF16("AXCellForColumnAndRow")) {
-      param = PropNodeToIntArray(propnode);
-      if (param == nil) {
-        dict->SetPath(base::UTF16ToUTF8(propnode.original_property),
-                      base::Value("ERROR:FAILED_TO_PARSE_ARGS"));
-        continue;
-      }
+    IdOrError param = ParamByPropertyNode(propnode);
+    if (param.IsError()) {
+      dict->SetPath(base::UTF16ToUTF8(propnode.original_property),
+                    base::Value("ERROR:FAILED_TO_PARSE_ARGS"));
+      continue;
     }
 
-    if (param != nil) {
+    if (param.IsNotNil()) {
       id value = [cocoa_node accessibilityAttributeValue:supportedAttribute
-                                            forParameter:param];
+                                            forParameter:*param];
       dict->SetPath(base::UTF16ToUTF8(propnode.original_property),
                     PopulateObject(value, line_indexes_map));
     }
@@ -288,6 +310,17 @@ void AccessibilityTreeFormatterMac::AddProperties(
   // Position and size
   dict->SetPath(kPositionDictAttr, PopulatePosition(cocoa_node));
   dict->SetPath(kSizeDictAttr, PopulateSize(cocoa_node));
+}
+
+AccessibilityTreeFormatterMac::IdOrError
+AccessibilityTreeFormatterMac::ParamByPropertyNode(
+    const PropertyNode& property_node) const {
+  IdOrError param;
+  std::string property_name = base::UTF16ToASCII(property_node.name_or_value);
+  if (property_name == "AXCellForColumnAndRow") {
+    param = PropertyNodeToIntArray(property_node);
+  }
+  return param;
 }
 
 base::Value AccessibilityTreeFormatterMac::PopulateSize(

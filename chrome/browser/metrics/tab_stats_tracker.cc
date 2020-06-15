@@ -104,16 +104,6 @@ const char
     TabStatsTracker::UmaStatsReportingDelegate::kWindowCountHistogramName[] =
         "Tabs.WindowCount";
 
-const char TabStatsTracker::UmaStatsReportingDelegate::
-    kFrozenTabPercentageHistogramNameBase[] = "Tabs.FrozenTabPercentage";
-const char TabStatsTracker::UmaStatsReportingDelegate::
-    kFrozenTabPercentage1To5HiddenTabsHistogramName[] = "1To5HiddenTabs";
-const char TabStatsTracker::UmaStatsReportingDelegate::
-    kFrozenTabPercentage6To20HiddenTabsHistogramName[] = "6To20HiddenTabs";
-const char TabStatsTracker::UmaStatsReportingDelegate::
-    kFrozenTabPercentageMoreThan20HiddenTabsHistogramName[] =
-        "MoreThan20HiddenTabs";
-
 // Tab discard and reload histogram names in the same order as in discard reason
 // enum.
 const char* kTabDiscardCountHistogramNames[] = {
@@ -438,59 +428,6 @@ void TabStatsTracker::UmaStatsReportingDelegate::ReportHeartbeatMetrics(
 
   UMA_HISTOGRAM_COUNTS_10000(kTabCountHistogramName, tab_stats.total_tab_count);
   UMA_HISTOGRAM_COUNTS_10000(kWindowCountHistogramName, tab_stats.window_count);
-  ReportFrozenTabPercentage();
-}
-
-void TabStatsTracker::UmaStatsReportingDelegate::ReportFrozenTabPercentage() {
-  int frozen_tab_count = 0;
-  int hidden_tab_count = 0;
-
-  BrowserList* browser_list = BrowserList::GetInstance();
-  for (Browser* browser : *browser_list) {
-    for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
-      content::WebContents* web_contents =
-          browser->tab_strip_model()->GetWebContentsAt(i);
-      auto* tab_lifecycle_unit_external =
-          resource_coordinator::TabLifecycleUnitExternal::FromWebContents(
-              web_contents);
-
-      if (!tab_lifecycle_unit_external)
-        continue;
-
-      if (tab_lifecycle_unit_external->IsFrozen())
-        ++frozen_tab_count;
-
-      if (web_contents->GetVisibility() == content::Visibility::HIDDEN)
-        ++hidden_tab_count;
-    }
-  }
-
-  if (!hidden_tab_count)
-    return;
-
-  int frozen_tab_percentage = (100 * frozen_tab_count) / hidden_tab_count;
-
-  std::string frozen_tab_percentage_histogram_suffix;
-  if (hidden_tab_count > 20) {
-    UMA_HISTOGRAM_PERCENTAGE(
-        base::JoinString(
-            {kFrozenTabPercentageHistogramNameBase,
-             kFrozenTabPercentageMoreThan20HiddenTabsHistogramName},
-            "."),
-        frozen_tab_percentage);
-  } else if (hidden_tab_count > 5) {
-    UMA_HISTOGRAM_PERCENTAGE(
-        base::JoinString({kFrozenTabPercentageHistogramNameBase,
-                          kFrozenTabPercentage6To20HiddenTabsHistogramName},
-                         "."),
-        frozen_tab_percentage);
-  } else {
-    UMA_HISTOGRAM_PERCENTAGE(
-        base::JoinString({kFrozenTabPercentageHistogramNameBase,
-                          kFrozenTabPercentage1To5HiddenTabsHistogramName},
-                         "."),
-        frozen_tab_percentage);
-  }
 }
 
 void TabStatsTracker::UmaStatsReportingDelegate::ReportUsageDuringInterval(

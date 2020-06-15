@@ -13,20 +13,32 @@
     navigator.permissions.query({ name: "microphone" }),
     navigator.permissions.query({ name: "camera" }),
     navigator.permissions.query({ name: "camera", panTiltZoom: true }),
-  ]);
+  ]).then((permissionStatuses) => {
+    [
+      microphonePermissionStatus,
+      cameraPermissionStatus,
+      panTiltZoomPermissionStatus,
+    ] = permissionStatuses;
+  });
 
-  function runGetUserMedia(constraints) {
-    queryPermissions
-      .then((permissionStatuses) => {
-        [
-          microphonePermissionStatus,
-          cameraPermissionStatus,
-          panTiltZoomPermissionStatus,
-        ] = permissionStatuses;
-        return navigator.mediaDevices.getUserMedia(constraints);
-      })
-      .then(() => returnToTest("runGetUserMedia-success"))
-      .catch(() => returnToTest("runGetUserMedia-failure"));
+  async function runGetUserMedia(constraints) {
+    try {
+      await queryPermissions;
+      await navigator.mediaDevices.getUserMedia(constraints);
+      returnToTest("runGetUserMedia-success");
+    } catch (error) {
+      returnToTest("runGetUserMedia-failure");
+    }
+  }
+
+  async function runRequestPanTiltZoom() {
+    try {
+      await queryPermissions;
+      await navigator.permissions.request({ name: "camera", panTiltZoom: true });
+      returnToTest("runRequestPanTiltZoom-success");
+    } catch (error) {
+      returnToTest("runRequestPanTiltZoom-failure");
+    }
   }
 
   function getMicrophonePermission() {

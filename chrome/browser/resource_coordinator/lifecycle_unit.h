@@ -125,13 +125,6 @@ class LifecycleUnit {
   // than for individual LifecycleUnits. https://crbug.com/775644
   virtual int GetEstimatedMemoryFreedOnDiscardKB() const = 0;
 
-  // Returns true if this LifecycleUnit can be frozen. Full details regarding
-  // the policy decision are recorded in |decision_details|, for logging.
-  // Returning false but with an empty |decision_details| means the transition
-  // is not possible for a trivial reason that doesn't need to be reported (ie,
-  // the page is already frozen).
-  virtual bool CanFreeze(DecisionDetails* decision_details) const = 0;
-
   // Returns true if this LifecycleUnit can be discarded. Full details regarding
   // the policy decision are recorded in the |decision_details|, for logging.
   // Returning false but with an empty |decision_details| means the transition
@@ -139,13 +132,6 @@ class LifecycleUnit {
   // (ie, the page is already discarded).
   virtual bool CanDiscard(LifecycleUnitDiscardReason reason,
                           DecisionDetails* decision_details) const = 0;
-
-  // Request that the LifecycleUnit be frozen, return true if the request is
-  // successfully sent.
-  virtual bool Freeze() = 0;
-
-  // Unfreezes this LifecycleUnit. Returns true on success.
-  virtual bool Unfreeze() = 0;
 
   // Discards this LifecycleUnit.
   //

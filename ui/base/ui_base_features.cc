@@ -212,4 +212,30 @@ bool IsSynchronousPageFlipTestingEnabled() {
   return base::FeatureList::IsEnabled(kSynchronousPageFlipTesting);
 }
 
+#if defined(USE_X11) || defined(USE_OZONE)
+const base::Feature kUseOzonePlatform {
+  "UseOzonePlatform",
+#if defined(USE_X11)
+      base::FEATURE_DISABLED_BY_DEFAULT
+};
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+};
+#endif
+
+bool IsUsingOzonePlatform() {
+  // Only allow enabling and disabling the OzonePlatform on USE_X11 && USE_OZONE
+  // builds.
+#if defined(USE_X11) && defined(USE_OZONE)
+  return base::FeatureList::IsEnabled(kUseOzonePlatform);
+#elif defined(USE_X11) && !defined(USE_ZONE)
+  // This shouldn't be switchable for pure X11 builds.
+  return false;
+#else
+    // All the other platforms must use Ozone by default and can't disable that.
+    return true;
+#endif
+}
+#endif  // defined(USE_X11) || defined(USE_OZONE)
+
 }  // namespace features

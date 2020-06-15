@@ -1564,6 +1564,21 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT" desc="Header text with link for the view in Settings for managing saved passwords. [Length: unlimited] [iOS only]">
         View and manage saved passwords at <ph name="BEGIN_LINK">BEGIN_LINK</ph>passwords.google.com<ph name="END_LINK">END_LINK</ph>
       </message>
+      <message name="IDS_IOS_CHECK_PASSWORDS" desc="Title for the item in Settings for Password Check feature" meaning="Label tells the user about status of Password Check [CHAR_LIMIT=25] [iOS only]">
+        Check Passwords
+      </message>
+      <message name="IDS_IOS_CHECK_PASSWORDS_DESCRIPTION" desc="Description for the Password Check item in Settings" meaning="Label is shown to explain purpose of Password Check feature. This string is shown only if user didn't run Password Check before or check finished due to error without any results.  [iOS only]">
+        Keep your passwords safe from security issues
+      </message>
+      <message name="IDS_IOS_CHECK_PASSWORDS_SAFE_STATE" desc="Description for the Password Check item in Settings" meaning="Label is shown when no issues were found during password check. [iOS only]">
+        No passwords compromised
+      </message>
+      <message name="IDS_IOS_CHECK_PASSWORDS_UNSAFE_STATE" desc="Description for the Password Check item in Settings" meaning="Label is shown when compromised credentials were found during password check. [iOS only]">
+        Passwords compromised
+      </message>
+      <message name="IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON" desc="Label of a button which starts Password Check [Length: 22em] [iOS only]" meaning="By clicking this button user will start checking all passwords for security issues.">
+        Check Now
+      </message>
       <message name="IDS_IOS_SEARCH_COPIED" desc="The message displayed when the search is copied via long press (contextual search) [Length: 10em] [iOS only]">
         Copied
       </message>

@@ -49,6 +49,10 @@ void ValidateDatabaseRecords(
   }
 }
 
+constexpr char kManyContextsCookieName[] = "multiple contexts cookie";
+constexpr char kManyContextsCookieDomain[] = "multi-contexts.com";
+constexpr char kManyContextsCookiePath[] = "/";
+
 }  // namespace
 
 class AccessContextAuditDatabaseTest : public testing::Test {
@@ -59,9 +63,9 @@ class AccessContextAuditDatabaseTest : public testing::Test {
 
   void OpenDatabase() {
     database_.reset();
-    database_ =
-        std::make_unique<AccessContextAuditDatabase>(temp_directory_.GetPath());
-    EXPECT_TRUE(database_->Init());
+    database_ = base::MakeRefCounted<AccessContextAuditDatabase>(
+        temp_directory_.GetPath());
+    database_->Init();
   }
 
   void CloseDatabase() { database_.reset(); }
@@ -92,7 +96,13 @@ class AccessContextAuditDatabaseTest : public testing::Test {
             base::Time::FromDeltaSinceWindowsEpoch(
                 base::TimeDelta::FromHours(3))),
         AccessContextAuditDatabase::AccessRecord(
-            GURL("https://test2.com"), "cookie2", "test.com", "/",
+            GURL("https://test2.com"), kManyContextsCookieName,
+            kManyContextsCookieDomain, kManyContextsCookiePath,
+            base::Time::FromDeltaSinceWindowsEpoch(
+                base::TimeDelta::FromHours(4))),
+        AccessContextAuditDatabase::AccessRecord(
+            GURL("https://test3.com"), kManyContextsCookieName,
+            kManyContextsCookieDomain, kManyContextsCookiePath,
             base::Time::FromDeltaSinceWindowsEpoch(
                 base::TimeDelta::FromHours(4))),
     };
@@ -100,7 +110,7 @@ class AccessContextAuditDatabaseTest : public testing::Test {
 
  private:
   base::ScopedTempDir temp_directory_;
-  std::unique_ptr<AccessContextAuditDatabase> database_;
+  scoped_refptr<AccessContextAuditDatabase> database_;
 };
 
 TEST_F(AccessContextAuditDatabaseTest, DatabaseInitialization) {
@@ -182,6 +192,32 @@ TEST_F(AccessContextAuditDatabaseTest, RemoveRecord) {
 
   EXPECT_EQ(0u, cookie_rows);
   EXPECT_EQ(0u, storage_api_rows);
+}
+
+TEST_F(AccessContextAuditDatabaseTest, RemoveAllCookieRecords) {
+  // Check that all matching cookie records are removed from the database.
+  auto test_records = GetTestRecords();
+  OpenDatabase();
+  database()->AddRecords(test_records);
+  ValidateDatabaseRecords(database(), test_records);
+
+  database()->RemoveAllRecordsForCookie(kManyContextsCookieName,
+                                        kManyContextsCookieDomain,
+                                        kManyContextsCookiePath);
+
+  test_records.erase(
+      std::remove_if(
+          test_records.begin(), test_records.end(),
+          [=](const AccessContextAuditDatabase::AccessRecord& record) {
+            return (record.type ==
+                        AccessContextAuditDatabase::StorageAPIType::kCookie &&
+                    record.name == kManyContextsCookieName &&
+                    record.domain == kManyContextsCookieDomain &&
+                    record.path == kManyContextsCookiePath);
+          }),
+      test_records.end());
+
+  ValidateDatabaseRecords(database(), test_records);
 }
 
 TEST_F(AccessContextAuditDatabaseTest, RepeatedAccesses) {

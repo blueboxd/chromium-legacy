@@ -37,8 +37,8 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_document_or_string_or_form_data_or_url_search_params.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/document_or_xml_http_request_body_init.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/document_parser.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -761,13 +761,23 @@ bool XMLHttpRequest::InitSend(ExceptionState& exception_state) {
 }
 
 void XMLHttpRequest::send(
-    const ArrayBufferOrArrayBufferViewOrBlobOrDocumentOrStringOrFormDataOrURLSearchParams&
+    const DocumentOrBlobOrArrayBufferOrArrayBufferViewOrFormDataOrURLSearchParamsOrUSVString&
         body,
     ExceptionState& exception_state) {
   probe::WillSendXMLHttpOrFetchNetworkRequest(GetExecutionContext(), Url());
 
   if (body.IsNull()) {
     send(String(), exception_state);
+    return;
+  }
+
+  if (body.IsDocument()) {
+    send(body.GetAsDocument(), exception_state);
+    return;
+  }
+
+  if (body.IsBlob()) {
+    send(body.GetAsBlob(), exception_state);
     return;
   }
 
@@ -781,16 +791,6 @@ void XMLHttpRequest::send(
     return;
   }
 
-  if (body.IsBlob()) {
-    send(body.GetAsBlob(), exception_state);
-    return;
-  }
-
-  if (body.IsDocument()) {
-    send(body.GetAsDocument(), exception_state);
-    return;
-  }
-
   if (body.IsFormData()) {
     send(body.GetAsFormData(), exception_state);
     return;
@@ -801,8 +801,8 @@ void XMLHttpRequest::send(
     return;
   }
 
-  DCHECK(body.IsString());
-  send(body.GetAsString(), exception_state);
+  DCHECK(body.IsUSVString());
+  send(body.GetAsUSVString(), exception_state);
 }
 
 bool XMLHttpRequest::AreMethodAndURLValidForSend() {

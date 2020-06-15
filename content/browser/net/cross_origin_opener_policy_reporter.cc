@@ -55,6 +55,8 @@ RenderFrameHostImpl* GetSourceRfhForCoopReporting(
 
   // If this is a fresh popup we would consider the source RFH to be
   // our opener.
+  // TODO(arthursonzogni): There seems to be no guarantee that opener() is
+  // always set, do we need to be more cautious here?
   if (!current_rfh->has_committed_any_navigation())
     return current_rfh->frame_tree_node()->opener()->current_frame_host();
 
@@ -77,8 +79,7 @@ CrossOriginOpenerPolicyReporter::CrossOriginOpenerPolicyReporter(
   DCHECK(storage_partition_);
   RenderFrameHostImpl* source_rfh = GetSourceRfhForCoopReporting(current_rfh);
   source_url_ = source_rfh->GetLastCommittedURL();
-  source_routing_id_.child_id = source_rfh->GetProcess()->GetID();
-  source_routing_id_.frame_routing_id = source_rfh->GetRoutingID();
+  source_routing_id_ = source_rfh->GetGlobalFrameRoutingId();
 }
 
 CrossOriginOpenerPolicyReporter::CrossOriginOpenerPolicyReporter(
@@ -179,11 +180,8 @@ GURL CrossOriginOpenerPolicyReporter::GetNextDocumentUrlForReporting(
 
   // If the current document is the initiator of the navigation, then it's the
   // initial navigation URL.
-  if ((source_routing_id_.frame_routing_id ==
-       initiator_routing_id.frame_routing_id) &&
-      (source_routing_id_.child_id == initiator_routing_id.child_id)) {
+  if (source_routing_id_ == initiator_routing_id)
     return redirect_chain[0];
-  }
 
   // Otherwise, it's the empty URL.
   return GURL();

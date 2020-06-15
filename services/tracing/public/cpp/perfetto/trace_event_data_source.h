@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_config.h"
+#include "base/trace_event/typed_macros.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/track_event_thread_local_event_sink.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_metadata.pbzero.h"
@@ -35,7 +36,6 @@ struct TraceEventHandle;
 
 namespace perfetto {
 class TraceWriter;
-class EventContext;
 }
 
 namespace tracing {
@@ -180,24 +180,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
 
   bool IsEnabled();
 
-  static TrackEventThreadLocalEventSink* GetOrPrepareEventSink(
-      bool thread_will_flush);
-
-  template <
-      typename TrackEventArgumentFunction = void (*)(perfetto::EventContext)>
-  static void OnAddTraceEvent(base::trace_event::TraceEvent* trace_event,
-                              bool thread_will_flush,
-                              base::trace_event::TraceEventHandle* handle,
-                              const perfetto::Track& track,
-                              TrackEventArgumentFunction func) {
-    auto* thread_local_event_sink = GetOrPrepareEventSink(thread_will_flush);
-    if (thread_local_event_sink) {
-      AutoThreadLocalBoolean thread_is_in_trace_event(
-          GetThreadIsInTraceEventTLS());
-      thread_local_event_sink->AddTraceEvent(trace_event, handle, track, func);
-    }
-  }
-
   // Registered with base::StatisticsRecorder to receive a callback on every
   // histogram sample which gets added.
   static void OnMetricsSampleCallback(const char* histogram_name,
@@ -226,13 +208,17 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   void OnStopTracingDone();
 
   std::unique_ptr<perfetto::TraceWriter> CreateTraceWriterLocked();
-  TrackEventThreadLocalEventSink* CreateThreadLocalEventSink(
-      bool thread_will_flush);
+  TrackEventThreadLocalEventSink* CreateThreadLocalEventSink();
 
-  // Callback from TraceLog, can be called from any thread.
-  static void OnAddTraceEvent(base::trace_event::TraceEvent* trace_event,
-                              bool thread_will_flush,
-                              base::trace_event::TraceEventHandle* handle);
+  static TrackEventThreadLocalEventSink* GetOrPrepareEventSink();
+
+  // Callback from TraceLog / typed macros, can be called from any thread.
+  static void OnAddLegacyTraceEvent(
+      base::trace_event::TraceEvent* trace_event,
+      bool thread_will_flush,
+      base::trace_event::TraceEventHandle* handle);
+  static base::trace_event::TrackEventHandle OnAddTypedTraceEvent(
+      base::trace_event::TraceEvent* trace_event);
   static void OnUpdateDuration(
       const unsigned char* category_group_enabled,
       const char* name,

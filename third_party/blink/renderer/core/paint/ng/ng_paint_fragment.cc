@@ -903,15 +903,15 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineFormattingContext(
       PhysicalSize(LayoutUnit(1), LayoutUnit(1)));
   const LayoutUnit block_point = logical_point.block_offset;
 
-  // Stores the closest line box child above |point| in the block direction.
-  // Used if we can't find any child |point| falls in to resolve the position.
-  const NGPaintFragment* closest_line_before = nullptr;
-  LayoutUnit closest_line_before_block_offset = LayoutUnit::Min();
-
   // Stores the closest line box child below |point| in the block direction.
   // Used if we can't find any child |point| falls in to resolve the position.
-  const NGPaintFragment* closest_line_after = nullptr;
-  LayoutUnit closest_line_after_block_offset = LayoutUnit::Max();
+  const NGPaintFragment* closest_line_below = nullptr;
+  LayoutUnit closest_line_below_block_offset = LayoutUnit::Min();
+
+  // Stores the closest line box child above |point| in the block direction.
+  // Used if we can't find any child |point| falls in to resolve the position.
+  const NGPaintFragment* closest_line_above = nullptr;
+  LayoutUnit closest_line_above_block_offset = LayoutUnit::Max();
 
   for (const NGPaintFragment* child : Children()) {
     if (!child->PhysicalFragment().IsLineBox())
@@ -937,16 +937,16 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineFormattingContext(
     }
 
     if (block_point < line_min) {
-      if (line_min < closest_line_after_block_offset) {
-        closest_line_after = child;
-        closest_line_after_block_offset = line_min;
+      if (line_min < closest_line_above_block_offset) {
+        closest_line_above = child;
+        closest_line_above_block_offset = line_min;
       }
     }
 
     if (block_point >= line_max) {
-      if (line_max > closest_line_before_block_offset) {
-        closest_line_before = child;
-        closest_line_before_block_offset = line_max;
+      if (line_max > closest_line_below_block_offset) {
+        closest_line_below = child;
+        closest_line_below_block_offset = line_max;
       }
     }
   }
@@ -957,37 +957,37 @@ PositionWithAffinity NGPaintFragment::PositionForPointInInlineFormattingContext(
           ->ShouldMoveCaretToHorizontalBoundaryWhenPastTopOrBottom();
 
   // At here, |point| is not inside any line in |this|:
-  //   |closest_line_before|
+  //   |closest_line_above|
   //   |point|
-  //   |closest_line_after|
-  if (closest_line_after) {
+  //   |closest_line_below|
+  if (closest_line_above) {
     if (move_caret_to_boundary) {
       // Tests[1-3] reach here.
       // [1] editing/selection/click-in-margins-inside-editable-div.html
       // [2] fast/writing-mode/flipped-blocks-hit-test-line-edges.html
       // [3] All/LayoutViewHitTestTest.HitTestHorizontal/4
       NGInlineCursor line_box(*this);
-      line_box.MoveTo(*closest_line_after);
+      line_box.MoveTo(*closest_line_above);
       if (auto first_position = line_box.PositionForStartOfLine())
         return PositionWithAffinity(first_position.GetPosition());
     } else if (auto child_position =
-                   PositionForPointInChild(*closest_line_after, point)) {
+                   PositionForPointInChild(*closest_line_above, point)) {
       return child_position.value();
     }
   }
 
-  if (closest_line_before) {
+  if (closest_line_below) {
     if (move_caret_to_boundary) {
       // Tests[1-3] reach here.
       // [1] editing/selection/click-in-margins-inside-editable-div.html
       // [2] fast/writing-mode/flipped-blocks-hit-test-line-edges.html
       // [3] All/LayoutViewHitTestTest.HitTestHorizontal/4
       NGInlineCursor line_box(*this);
-      line_box.MoveTo(*closest_line_before);
+      line_box.MoveTo(*closest_line_below);
       if (auto last_position = line_box.PositionForEndOfLine())
         return PositionWithAffinity(last_position.GetPosition());
     } else if (auto child_position =
-                   PositionForPointInChild(*closest_line_before, point)) {
+                   PositionForPointInChild(*closest_line_below, point)) {
       return child_position.value();
     }
   }

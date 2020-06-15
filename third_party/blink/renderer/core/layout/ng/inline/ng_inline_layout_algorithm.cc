@@ -422,12 +422,21 @@ void NGInlineLayoutAlgorithm::CreateLine(
     annotation_metrics = ComputeAnnotationOverflow(
         line_box_metrics, LayoutUnit(), line_info->LineStyle());
   }
+  LayoutUnit annotation_block_start;
+  LayoutUnit annotation_block_end;
+  if (!IsFlippedLinesWritingMode(line_info->LineStyle().GetWritingMode())) {
+    annotation_block_start = annotation_metrics.ascent;
+    annotation_block_end = annotation_metrics.descent;
+  } else {
+    annotation_block_start = annotation_metrics.descent;
+    annotation_block_end = annotation_metrics.ascent;
+  }
   // Borrow the bottom space of the previous line.
-  if (annotation_metrics.ascent > LayoutUnit() &&
+  if (annotation_block_start > LayoutUnit() &&
       ConstraintSpace().BlockStartAnnotationSpace() > LayoutUnit()) {
-    annotation_metrics.ascent = (annotation_metrics.ascent -
-                                 ConstraintSpace().BlockStartAnnotationSpace())
-                                    .ClampNegativeToZero();
+    annotation_block_start =
+        (annotation_block_start - ConstraintSpace().BlockStartAnnotationSpace())
+            .ClampNegativeToZero();
   }
 
   if (line_info->UseFirstLineStyle())
@@ -437,11 +446,11 @@ void NGInlineLayoutAlgorithm::CreateLine(
   container_builder_.SetMetrics(line_box_metrics);
   container_builder_.SetBfcBlockOffset(
       line_info->BfcOffset().block_offset +
-      annotation_metrics.ascent.ClampNegativeToZero());
-  if (annotation_metrics.descent > LayoutUnit())
-    container_builder_.SetAnnotationOverflow(annotation_metrics.descent);
-  else if (annotation_metrics.descent < LayoutUnit())
-    container_builder_.SetBlockEndAnnotationSpace(-annotation_metrics.descent);
+      annotation_block_start.ClampNegativeToZero());
+  if (annotation_block_end > LayoutUnit())
+    container_builder_.SetAnnotationOverflow(annotation_block_end);
+  else if (annotation_block_end < LayoutUnit())
+    container_builder_.SetBlockEndAnnotationSpace(-annotation_block_end);
 }
 
 // Return value:
@@ -481,7 +490,9 @@ NGLineHeightMetrics NGInlineLayoutAlgorithm::ComputeAnnotationOverflow(
     const NGLayoutResult* layout_result = item.layout_result.get();
     if (!layout_result)
       continue;
-    const LayoutUnit overflow = layout_result->AnnotationOverflow();
+    LayoutUnit overflow = layout_result->AnnotationOverflow();
+    if (IsFlippedLinesWritingMode(line_style.GetWritingMode()))
+      overflow = -overflow;
     if (overflow < LayoutUnit()) {
       annotation_block_start = std::min(
           annotation_block_start, item.rect.offset.block_offset + overflow);

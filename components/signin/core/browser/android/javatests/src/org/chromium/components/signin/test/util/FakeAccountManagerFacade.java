@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.Intent;
 
 import androidx.annotation.GuardedBy;
+import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
@@ -35,6 +36,8 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     @GuardedBy("mLock")
     private final Set<AccountHolder> mAccountHolders = new LinkedHashSet<>();
 
+    private final List<AccountsChangeObserver> mObservers = new ArrayList<>();
+
     private final @Nullable FakeProfileDataSource mFakeProfileDataSource;
 
     /**
@@ -54,11 +57,19 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     @Override
     public void waitForPendingUpdates(Runnable callback) {}
 
+    @MainThread
     @Override
-    public void addObserver(AccountsChangeObserver observer) {}
+    public void addObserver(AccountsChangeObserver observer) {
+        ThreadUtils.assertOnUiThread();
+        mObservers.add(observer);
+    }
 
+    @MainThread
     @Override
-    public void removeObserver(AccountsChangeObserver observer) {}
+    public void removeObserver(AccountsChangeObserver observer) {
+        ThreadUtils.assertOnUiThread();
+        mObservers.remove(observer);
+    }
 
     @Override
     public void runAfterCacheIsPopulated(Runnable runnable) {
@@ -94,7 +105,9 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
         synchronized (mLock) {
             AccountHolder accountHolder = getAccountHolder(account);
             if (accountHolder.getAuthToken(scope) == null) {
-                accountHolder.withAuthToken(scope, UUID.randomUUID().toString());
+                mAccountHolders.remove(accountHolder);
+                mAccountHolders.add(
+                        accountHolder.withAuthToken(scope, UUID.randomUUID().toString()));
             }
             return accountHolder.getAuthToken(scope);
         }
@@ -141,6 +154,7 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
         synchronized (mLock) {
             mAccountHolders.add(accountHolder);
         }
+        ThreadUtils.runOnUiThreadBlocking(this::fireOnAccountsChangedNotification);
     }
 
     /**
@@ -161,5 +175,12 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
             }
         }
         throw new IllegalArgumentException("Cannot find account:" + account);
+    }
+
+    @MainThread
+    private void fireOnAccountsChangedNotification() {
+        for (AccountsChangeObserver observer : mObservers) {
+            observer.onAccountsChanged();
+        }
     }
 }

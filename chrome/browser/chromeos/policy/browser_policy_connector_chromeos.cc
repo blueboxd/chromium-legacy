@@ -280,8 +280,8 @@ void BrowserPolicyConnectorChromeOS::Init(
             policy::DeviceWilcoDtcConfigurationExternalDataHandler>(
             GetPolicyService()));
   }
-  system_proxy_manager_ =
-      std::make_unique<SystemProxyManager>(chromeos::CrosSettings::Get());
+  system_proxy_manager_ = std::make_unique<SystemProxyManager>(
+      chromeos::CrosSettings::Get(), local_state);
 }
 
 void BrowserPolicyConnectorChromeOS::PreShutdown() {
@@ -295,6 +295,7 @@ void BrowserPolicyConnectorChromeOS::PreShutdown() {
 
 void BrowserPolicyConnectorChromeOS::Shutdown() {
   device_cert_provisioning_scheduler_.reset();
+  system_proxy_manager_.reset();
 
   // NetworkCertLoader may be not initialized in tests.
   if (chromeos::NetworkCertLoader::IsInitialized()) {

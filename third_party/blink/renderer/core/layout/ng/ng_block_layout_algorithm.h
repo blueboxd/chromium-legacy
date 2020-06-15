@@ -217,14 +217,11 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // for the node being laid out by this algorithm.
   LayoutUnit FragmentainerSpaceAvailable() const;
 
-  // Return true if the node being laid out by this fragmentainer has used all
-  // the available space in the current fragmentainer.
-  // |block_offset| is the border-edge relative block offset we want to check
-  // whether fits within the fragmentainer or not.
-  bool IsFragmentainerOutOfSpace(LayoutUnit block_offset) const;
-
-  // Signal that we've reached the end of the fragmentainer.
-  void SetFragmentainerOutOfSpace(NGPreviousInflowPosition*);
+  // Consume all remaining fragmentainer space. This happens when we decide to
+  // break before a child.
+  //
+  // https://www.w3.org/TR/css-break-3/#box-splitting
+  void ConsumeRemainingFragmentainerSpace(NGPreviousInflowPosition*);
 
   // Final adjustments before fragment creation. We need to prevent the fragment
   // from crossing fragmentainer boundaries, and rather create a break token if
@@ -387,8 +384,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // in-flow child of a container. It is used to check if we're at a valid class
   // A or B breakpoint (between block-level siblings or line box siblings).
   bool has_processed_first_child_ = false;
-
-  bool did_break_before_child_ = false;
 
   NGExclusionSpace exclusion_space_;
 

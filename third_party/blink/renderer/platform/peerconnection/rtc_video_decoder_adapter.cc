@@ -99,6 +99,8 @@ media::VideoCodecProfile GuessVideoCodecProfile(
       switch (vp9_profile) {
         case webrtc::VP9Profile::kProfile2:
           return media::VP9PROFILE_PROFILE2;
+        case webrtc::VP9Profile::kProfile1:
+          return media::VP9PROFILE_PROFILE1;
         case webrtc::VP9Profile::kProfile0:
         default:
           return media::VP9PROFILE_PROFILE0;

@@ -620,29 +620,4 @@ TEST_F(TabManagerStatsCollectorTest,
   EXPECT_EQ(0ul, test_ukm_recorder_.entries_count());
 }
 
-TEST_F(TabManagerStatsCollectorTest, PeriodicSamplingWorks) {
-  using UkmEntry = ukm::builders::TabManager_LifecycleStateChange;
-
-  // Create a window, browser and a tab strip. The tabs need to be added to a
-  // tab strip in order to be tracked by the TabManager.
-  auto window = std::make_unique<TestBrowserWindow>();
-  Browser::CreateParams params(profile(), true);
-  params.type = Browser::TYPE_NORMAL;
-  params.window = window.get();
-  auto browser = std::make_unique<Browser>(params);
-  TabStripModel* tab_strip = browser->tab_strip_model();
-  tab_strip->AppendWebContents(CreateDiscardableWebContents(1),
-                               true /* foreground */);
-  tab_strip->AppendWebContents(CreateDiscardableWebContents(2), false);
-  tab_strip->AppendWebContents(CreateDiscardableWebContents(3), false);
-
-  tab_manager_stats_collector()->PerformPeriodicSample();
-
-  // Expect one entry per tab (freezing decision).
-  EXPECT_EQ(3u,
-            test_ukm_recorder_.GetEntriesByName(UkmEntry::kEntryName).size());
-
-  tab_strip->CloseAllTabs();
-}
-
 }  // namespace resource_coordinator

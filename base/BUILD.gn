@@ -367,8 +367,6 @@ jumbo_component("base") {
     "memory/weak_ptr.h",
     "memory/writable_shared_memory_region.cc",
     "memory/writable_shared_memory_region.h",
-    "message_loop/message_loop.cc",
-    "message_loop/message_loop.h",
     "message_loop/message_loop_current.cc",
     "message_loop/message_loop_current.h",
     "message_loop/message_pump.cc",
@@ -2127,7 +2125,17 @@ jumbo_component("base") {
       "trace_event/traced_value.h",
       "trace_event/tracing_agent.cc",
       "trace_event/tracing_agent.h",
+      "trace_event/typed_macros.h",
+      "trace_event/typed_macros_embedder_support.h",
+      "trace_event/typed_macros_internal.cc",
+      "trace_event/typed_macros_internal.h",
     ]
+
+    public_deps += [ "//third_party/perfetto:libperfetto" ]
+
+    deps += [ "//third_party/perfetto/include/perfetto/protozero" ]
+
+    all_dependent_configs += [ "//third_party/perfetto/gn:public_config" ]
 
     if (is_win) {
       sources += [
@@ -2700,7 +2708,6 @@ test("base_unittests") {
     "memory/shared_memory_region_unittest.cc",
     "memory/singleton_unittest.cc",
     "memory/weak_ptr_unittest.cc",
-    "message_loop/message_loop_unittest.cc",
     "message_loop/message_pump_glib_unittest.cc",
     "message_loop/message_pump_unittest.cc",
     "message_loop/work_id_provider_unittest.cc",
@@ -3277,6 +3284,7 @@ test("base_unittests") {
       "trace_event/trace_event_filter_test_utils.h",
       "trace_event/trace_event_unittest.cc",
       "trace_event/traced_value_unittest.cc",
+      "trace_event/typed_macros_unittest.cc",
     ]
 
     if (is_android) {

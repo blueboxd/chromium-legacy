@@ -313,6 +313,8 @@ TEST_F(UkmServiceTest, PurgeExtensionDataFromUnsentLogStore) {
   // Save the Report to the store.
   std::string serialized_log;
   report.SerializeToString(&serialized_log);
+  // Makes sure that the serialized ukm report can be parsed.
+  ASSERT_TRUE(UkmService::LogCanBeParsed(serialized_log));
   unsent_log_store->StoreLog(serialized_log, base::nullopt);
 
   // Do extension purging.

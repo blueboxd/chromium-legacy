@@ -11,8 +11,8 @@
 #include "third_party/blink/renderer/core/editing/markers/text_match_marker.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
-#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_ruby_run.h"
+#include "third_party/blink/renderer/core/layout/list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
@@ -485,7 +485,7 @@ void NGTextFragmentPainter<Cursor>::PaintSymbol(
     const PaintInfo& paint_info,
     const PhysicalOffset& paint_offset) {
   PhysicalRect marker_rect(
-      LayoutListMarker::RelativeSymbolMarkerRect(style, box_size.width));
+      ListMarker::RelativeSymbolMarkerRect(style, box_size.width));
   marker_rect.Move(paint_offset);
   IntRect rect = PixelSnappedIntRect(marker_rect);
 

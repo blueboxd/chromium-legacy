@@ -2475,11 +2475,6 @@
     "expiry_milestone": 75
   },
   {
-    "name": "enterprise-reporting-in-browser",
-    "owners": [ "pastarmovj", "zmin" ],
-    "expiry_milestone": 83
-  },
-  {
     "name": "enterprise-reporting-in-chromeos",
     "owners": [ "anqing" ],
     "expiry_milestone": 83

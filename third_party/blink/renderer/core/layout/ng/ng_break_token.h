@@ -78,6 +78,7 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
         flags_(0),
         is_break_before_(false),
         is_forced_break_(false),
+        is_at_block_end_(false),
         break_appeal_(kBreakAppealPerfect),
         has_seen_all_children_(false) {
     DCHECK_EQ(type, static_cast<NGBreakTokenType>(node.Type()));
@@ -103,6 +104,11 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
   unsigned is_break_before_ : 1;
 
   unsigned is_forced_break_ : 1;
+
+  // Set when layout is past the block-end border edge. If we break when we're
+  // in this state, it means that something is overflowing, and thus establishes
+  // a parallel flow.
+  unsigned is_at_block_end_ : 1;
 
   // If the break is unforced, this is the appeal of the break. Higher is
   // better. Violating breaking rules decreases appeal. Forced breaks always

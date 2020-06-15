@@ -38,6 +38,12 @@ class CameraPanTiltZoomPermissionContext
       bool user_gesture,
       permissions::BrowserPermissionCallback callback) override;
 #endif
+  void RequestPermission(
+      content::WebContents* web_contents,
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_frame_origin,
+      bool user_gesture,
+      permissions::BrowserPermissionCallback callback) override;
   bool IsRestrictedToSecureOrigins() const override;
 
   // content_settings::Observer
@@ -45,6 +51,10 @@ class CameraPanTiltZoomPermissionContext
                                const ContentSettingsPattern& secondary_pattern,
                                ContentSettingsType content_type,
                                const std::string& resource_identifier) override;
+
+  // Returns true if at least one video capture device has PTZ capabilities.
+  // Otherwise returns false.
+  bool HasAvailableCameraPtzDevices() const;
 
   HostContentSettingsMap* host_content_settings_map_;
 

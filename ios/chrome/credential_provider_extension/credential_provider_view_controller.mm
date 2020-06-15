@@ -11,18 +11,22 @@
 #import "ios/chrome/common/credential_provider/archivable_credential_store.h"
 #import "ios/chrome/common/credential_provider/constants.h"
 #import "ios/chrome/common/credential_provider/credential.h"
+#import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
+#import "ios/chrome/credential_provider_extension/account_verification_provider.h"
 #import "ios/chrome/credential_provider_extension/metrics_util.h"
 #import "ios/chrome/credential_provider_extension/password_util.h"
 #import "ios/chrome/credential_provider_extension/reauthentication_handler.h"
 #import "ios/chrome/credential_provider_extension/ui/consent_coordinator.h"
 #import "ios/chrome/credential_provider_extension/ui/credential_list_coordinator.h"
+#import "ios/chrome/credential_provider_extension/ui/stale_credentials_view_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface CredentialProviderViewController () <SuccessfulReauthTimeAccessor>
+@interface CredentialProviderViewController () <ConfirmationAlertActionHandler,
+                                                SuccessfulReauthTimeAccessor>
 
 // Interface for the persistent credential store.
 @property(nonatomic, strong) id<CredentialStore> credentialStore;
@@ -44,6 +48,9 @@
 // hardware for authentication is available.
 @property(nonatomic, strong) ReauthenticationHandler* reauthenticationHandler;
 
+// Interface for verified that accounts are still valid.
+@property(nonatomic, strong) AccountVerificationProvider* accountVerificator;
+
 @end
 
 @implementation CredentialProviderViewController
@@ -52,59 +59,56 @@
 
 - (void)prepareCredentialListForServiceIdentifiers:
     (NSArray<ASCredentialServiceIdentifier*>*)serviceIdentifiers {
-  [self reauthenticateIfNeededWithCompletionHandler:^(
-            ReauthenticationResult result) {
-    if (result != ReauthenticationResult::kFailure) {
-      self.listCoordinator = [[CredentialListCoordinator alloc]
-          initWithBaseViewController:self
-                     credentialStore:self.credentialStore
-                             context:self.extensionContext
-                  serviceIdentifiers:serviceIdentifiers
-             reauthenticationHandler:self.reauthenticationHandler];
-      [self.listCoordinator start];
-      UpdateUMACountForKey(app_group::kCredentialExtensionDisplayCount);
-    } else {
-      [self.extensionContext
-          cancelRequestWithError:
-              [[NSError alloc] initWithDomain:ASExtensionErrorDomain
-                                         code:ASExtensionErrorCode::
-                                                  ASExtensionErrorCodeFailed
-                                     userInfo:nil]];
+  __weak __typeof__(self) weakSelf = self;
+  [self validateUserWithCompletion:^(BOOL userIsValid) {
+    if (!userIsValid) {
+      [weakSelf showStaleCredentials];
+      return;
     }
+    [weakSelf reauthenticateIfNeededWithCompletionHandler:^(
+                  ReauthenticationResult result) {
+      if (result != ReauthenticationResult::kFailure) {
+        [weakSelf showCredentialListForServiceIdentifiers:serviceIdentifiers];
+      } else {
+        [weakSelf exitWithErrorCode:ASExtensionErrorCodeFailed];
+      }
+    }];
   }];
 }
 
 - (void)provideCredentialWithoutUserInteractionForIdentity:
     (ASPasswordCredentialIdentity*)credentialIdentity {
-  // reauthenticationModule can't attempt reauth when no password is set. This
-  // means a password shouldn't be retrieved.
-  if (!self.reauthenticationModule.canAttemptReauth) {
-    NSError* error = [[NSError alloc]
-        initWithDomain:ASExtensionErrorDomain
-                  code:ASExtensionErrorCodeUserInteractionRequired
-              userInfo:nil];
-    [self.extensionContext cancelRequestWithError:error];
-    return;
-  }
-  // iOS already gates the password with device auth for
-  // -provideCredentialWithoutUserInteractionForIdentity:. Not using
-  // reauthenticationModule here to avoid a double authentication request.
-  [self provideCredentialForIdentity:credentialIdentity];
+  __weak __typeof__(self) weakSelf = self;
+  [self validateUserWithCompletion:^(BOOL userIsValid) {
+    // reauthenticationModule can't attempt reauth when no password is set. This
+    // means a password shouldn't be retrieved.
+    if (!weakSelf.reauthenticationModule.canAttemptReauth || !userIsValid) {
+      [weakSelf exitWithErrorCode:ASExtensionErrorCodeUserInteractionRequired];
+      return;
+    }
+    // iOS already gates the password with device auth for
+    // -provideCredentialWithoutUserInteractionForIdentity:. Not using
+    // reauthenticationModule here to avoid a double authentication request.
+    [weakSelf provideCredentialForIdentity:credentialIdentity];
+  }];
 }
 
 - (void)prepareInterfaceToProvideCredentialForIdentity:
     (ASPasswordCredentialIdentity*)credentialIdentity {
-  [self reauthenticateIfNeededWithCompletionHandler:^(
-            ReauthenticationResult result) {
-    if (result != ReauthenticationResult::kFailure) {
-      [self provideCredentialForIdentity:credentialIdentity];
-    } else {
-      NSError* error =
-          [[NSError alloc] initWithDomain:ASExtensionErrorDomain
-                                     code:ASExtensionErrorCodeUserCanceled
-                                 userInfo:nil];
-      [self.extensionContext cancelRequestWithError:error];
+  __weak __typeof__(self) weakSelf = self;
+  [self validateUserWithCompletion:^(BOOL userIsValid) {
+    if (!userIsValid) {
+      [weakSelf showStaleCredentials];
+      return;
     }
+    [weakSelf reauthenticateIfNeededWithCompletionHandler:^(
+                  ReauthenticationResult result) {
+      if (result != ReauthenticationResult::kFailure) {
+        [weakSelf provideCredentialForIdentity:credentialIdentity];
+      } else {
+        [weakSelf exitWithErrorCode:ASExtensionErrorCodeUserCanceled];
+      }
+    }];
   }];
 }
 
@@ -147,6 +151,13 @@
   return _reauthenticationModule;
 }
 
+- (AccountVerificationProvider*)accountVerificator {
+  if (!_accountVerificator) {
+    _accountVerificator = [[AccountVerificationProvider alloc] init];
+  }
+  return _accountVerificator;
+}
+
 #pragma mark - Private
 
 - (void)reauthenticateIfNeededWithCompletionHandler:
@@ -177,8 +188,62 @@
       return;
     }
   }
+  [self exitWithErrorCode:ASExtensionErrorCodeCredentialIdentityNotFound];
+}
+
+// Verifies that the user is still signed in.
+// Return NO in the completion when the user is no longer valid. YES otherwise.
+- (void)validateUserWithCompletion:(void (^)(BOOL))completion {
+  auto handler = ^(BOOL isValid) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      if (completion) {
+        completion(isValid);
+      }
+    });
+  };
+
+  NSString* validationID = [app_group::GetGroupUserDefaults()
+      stringForKey:kUserDefaultsCredentialProviderManagedUserID];
+  if (validationID) {
+    [self.accountVerificator
+        validateValidationID:validationID
+           completionHandler:^(BOOL isValid, NSError* error) {
+             handler(!error && isValid);
+           }];
+  } else {
+    handler(YES);
+  }
+}
+
+// Presents the stale credentials view controller.
+- (void)showStaleCredentials {
+  StaleCredentialsViewController* staleCredentialsViewController =
+      [[StaleCredentialsViewController alloc] init];
+  staleCredentialsViewController.modalPresentationStyle =
+      UIModalPresentationOverCurrentContext;
+  staleCredentialsViewController.actionHandler = self;
+  [self presentViewController:staleCredentialsViewController
+                     animated:YES
+                   completion:nil];
+}
+
+// Starts the credential list feature.
+- (void)showCredentialListForServiceIdentifiers:
+    (NSArray<ASCredentialServiceIdentifier*>*)serviceIdentifiers {
+  self.listCoordinator = [[CredentialListCoordinator alloc]
+      initWithBaseViewController:self
+                 credentialStore:self.credentialStore
+                         context:self.extensionContext
+              serviceIdentifiers:serviceIdentifiers
+         reauthenticationHandler:self.reauthenticationHandler];
+  [self.listCoordinator start];
+  UpdateUMACountForKey(app_group::kCredentialExtensionDisplayCount);
+}
+
+// Convenience wrapper for -cancelRequestWithError.
+- (void)exitWithErrorCode:(ASExtensionErrorCode)errorCode {
   NSError* error = [[NSError alloc] initWithDomain:ASExtensionErrorDomain
-                                              code:ASExtensionErrorCodeFailed
+                                              code:errorCode
                                           userInfo:nil];
   [self.extensionContext cancelRequestWithError:error];
 }
@@ -188,6 +253,22 @@
 - (void)updateSuccessfulReauthTime {
   self.lastSuccessfulReauthTime = [[NSDate alloc] init];
   UpdateUMACountForKey(app_group::kCredentialExtensionReauthCount);
+}
+
+#pragma mark - ConfirmationAlertActionHandler
+
+- (void)confirmationAlertDone {
+  // Finish the extension. There is no recovery from the stale credentials
+  // state.
+  [self exitWithErrorCode:ASExtensionErrorCodeFailed];
+}
+
+- (void)confirmationAlertPrimaryAction {
+  // No-op.
+}
+
+- (void)confirmationAlertLearnMoreAction {
+  // No-op.
 }
 
 @end

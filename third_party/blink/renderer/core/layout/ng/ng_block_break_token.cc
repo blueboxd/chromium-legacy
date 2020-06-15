@@ -27,13 +27,15 @@ NGBlockBreakToken::NGBlockBreakToken(
     unsigned sequence_number,
     const NGBreakTokenVector& child_break_tokens,
     NGBreakAppeal break_appeal,
-    bool has_seen_all_children)
+    bool has_seen_all_children,
+    bool is_at_block_end)
     : NGBreakToken(kBlockBreakToken, kUnfinished, node),
       consumed_block_size_(consumed_block_size),
       sequence_number_(sequence_number),
       num_children_(child_break_tokens.size()) {
   break_appeal_ = break_appeal;
   has_seen_all_children_ = has_seen_all_children;
+  is_at_block_end_ = is_at_block_end;
   for (wtf_size_t i = 0; i < child_break_tokens.size(); ++i) {
     child_break_tokens_[i] = child_break_tokens[i].get();
     child_break_tokens_[i]->AddRef();

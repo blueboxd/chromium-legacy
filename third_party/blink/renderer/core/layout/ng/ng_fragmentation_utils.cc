@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
@@ -209,9 +210,25 @@ void SetupFragmentBuilderForFragmentation(
   builder->SetSequenceNumber(sequence_number);
 }
 
-void FinishFragmentation(const NGConstraintSpace& space,
+bool IsNodeFullyGrown(NGBlockNode node,
+                      const NGConstraintSpace& space,
+                      LayoutUnit current_total_block_size,
+                      const NGBoxStrut& border_padding,
+                      LayoutUnit inline_size) {
+  // Pass an "infinite" intrinsic size to see how the block-size is
+  // constrained. If it doesn't affect the block size, it means that the node
+  // cannot grow any further.
+  LayoutUnit max_block_size = ComputeBlockSizeForFragment(
+      space, node.Style(), border_padding, LayoutUnit::Max(), inline_size);
+  DCHECK_GE(max_block_size, current_total_block_size);
+  return max_block_size == current_total_block_size;
+}
+
+void FinishFragmentation(NGBlockNode node,
+                         const NGConstraintSpace& space,
                          const NGBlockBreakToken* previous_break_token,
-                         LayoutUnit block_size,
+                         const NGBoxStrut& border_padding,
+                         LayoutUnit fragments_total_block_size,
                          LayoutUnit intrinsic_block_size,
                          LayoutUnit space_left,
                          NGBoxFragmentBuilder* builder) {
@@ -219,20 +236,61 @@ void FinishFragmentation(const NGConstraintSpace& space,
   if (previous_break_token && !previous_break_token->IsBreakBefore())
     previously_consumed_block_size = previous_break_token->ConsumedBlockSize();
 
-  if (builder->DidBreak()) {
-    // One of our children broke. Even if we fit within the remaining space, we
-    // need to prepare a break token.
+  LayoutUnit block_size =
+      fragments_total_block_size - previously_consumed_block_size;
+  DCHECK_GE(block_size, LayoutUnit());
+
+  if (builder->HasChildBreakInside()) {
+    // We broke before or inside one of our children. Even if we fit within the
+    // remaining space, and even if the child involved in the break were to be
+    // in a parallel flow, we still need to prepare a break token for this node,
+    // so that we can resume layout of its broken or unstarted children in the
+    // next fragmentainer.
     builder->SetConsumedBlockSize(std::min(space_left, block_size) +
                                   previously_consumed_block_size);
     builder->SetBlockSize(std::min(space_left, block_size));
     builder->SetIntrinsicBlockSize(space_left);
+
+    // If we're at the end of the node, we need to mark the outgoing break token
+    // as such. This is a way for the parent algorithm to determine whether we
+    // need to insert a break there, or whether we may continue with any sibling
+    // content. If we are allowed to continue, while there's still child content
+    // left to be laid out, said content ends up in a parallel flow.
+    // https://www.w3.org/TR/css-break-3/#parallel-flows
+    //
+    // TODO(mstensho): The spec actually says that we enter a parallel flow once
+    // we're past the block-end *content edge*, but here we're checking against
+    // the *border edge* instead. Does it matter?
+    if (previous_break_token && previous_break_token->IsAtBlockEnd()) {
+      builder->SetIsAtBlockEnd();
+      // We entered layout already at the end of the block (but with overflowing
+      // children). So we should take up no more space on our own.
+      DCHECK_EQ(block_size, LayoutUnit());
+    } else if (block_size <= space_left) {
+      // We have room for the calculated block-size in the current fragmentainer
+      // (and we're not a building the fragmentainer itself; those never reach
+      // the end, until we're past all content, in-flow or not), but we need to
+      // figure out whether this node is going to produce more non-zero
+      // block-size fragments or not.
+      //
+      // If the block-size is constrained / fixed (in which case
+      // IsNodeFullyGrown() will return true now), we know that we're at the
+      // end. If block-size is unconstrained (or at least allowed to grow a bit
+      // more), we're only at the end if no in-flow content inside broke.
+      if (!builder->HasInflowChildBreakInside() ||
+          IsNodeFullyGrown(node, space, fragments_total_block_size,
+                           border_padding,
+                           builder->InitialBorderBoxSize().inline_size))
+        builder->SetIsAtBlockEnd();
+    }
     return;
   }
 
   if (block_size > space_left) {
-    // Need a break inside this block.
+    // No child inside broke, but we need a break inside this block anyway, due
+    // to its size.
     builder->SetConsumedBlockSize(space_left + previously_consumed_block_size);
-    builder->SetDidBreak();
+    builder->SetDidBreakSelf();
     NGBreakAppeal break_appeal = kBreakAppealPerfect;
     if (!previously_consumed_block_size) {
       // This is the first fragment generated for the node. Avoid breaking
@@ -258,6 +316,7 @@ void FinishFragmentation(const NGConstraintSpace& space,
   builder->SetConsumedBlockSize(previously_consumed_block_size + block_size);
   builder->SetBlockSize(block_size);
   builder->SetIntrinsicBlockSize(intrinsic_block_size);
+  builder->SetIsAtBlockEnd();
 }
 
 NGBreakStatus BreakBeforeChildIfNeeded(const NGConstraintSpace& space,

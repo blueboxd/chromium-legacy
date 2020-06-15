@@ -37,7 +37,7 @@ export function compareTabDiscardsInfos(sortKey, a, b) {
   }
 
   // Compares boolean fields.
-  if (['canFreeze', 'isAutoDiscardable'].includes(sortKey)) {
+  if (['isAutoDiscardable'].includes(sortKey)) {
     if (val1 === val2) {
       return 0;
     }
@@ -219,10 +219,6 @@ Polymer({
         return pageLifecycleStateFromVisibilityAndFocus();
       case mojom.LifecycleUnitState.THROTTLED:
         return pageLifecycleStateFromVisibilityAndFocus() + ' (throttled)';
-      case mojom.LifecycleUnitState.PENDING_FREEZE:
-        return pageLifecycleStateFromVisibilityAndFocus() + ' (pending frozen)';
-      case mojom.LifecycleUnitState.FROZEN:
-        return 'frozen';
       case mojom.LifecycleUnitState.DISCARDED:
         return 'discarded (' + this.discardReasonToString_(reason) + ')' +
             ((reason === mojom.LifecycleUnitDiscardReason.URGENT) ? ' at ' +
@@ -231,8 +227,6 @@ Polymer({
                      (new Date(stateChangeTime.microseconds / 1000))
                          .toLocaleString() :
                                                                     '');
-      case mojom.LifecycleUnitState.PENDING_UNFREEZE:
-        return 'frozen (pending unfreeze)';
     }
     assertNotReached('Unknown lifecycle state: ' + state);
   },
@@ -331,16 +325,6 @@ Polymer({
   },
 
   /**
-   * Tests whether an item has reasons why it cannot be frozen.
-   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
-   * @return {boolean} true iff there are reasons why the item cannot be
-   *     frozen.
-   * @private
-   */
-  hasCannotFreezeReasons_(item) {
-    return item.cannotFreezeReasons.length !== 0;
-  },
-  /**
    * Tests whether an item has reasons why it cannot be discarded.
    * @param {discards.mojom.TabDiscardsInfo} item The item in question.
    * @return {boolean} true iff there are reasons why the item cannot be
@@ -359,27 +343,6 @@ Polymer({
    */
   canLoad_(item) {
     return item.loadingState === mojom.LifecycleUnitLoadingState.UNLOADED;
-  },
-
-  /**
-   * Tests whether an item can be frozen.
-   * @param {discards.mojom.TabDiscardsInfo} item The item in question.
-   * @return {boolean} true iff the item can be frozen.
-   * @private
-   */
-  canFreeze_(item) {
-    if (item.visibility === discards.mojom.LifecycleUnitVisibility.HIDDEN ||
-        item.visibility === discards.mojom.LifecycleUnitVisibility.OCCLUDED) {
-      // Only tabs that aren't visible can be frozen for now.
-      switch (item.state) {
-        case mojom.LifecycleUnitState.DISCARDED:
-        case mojom.LifecycleUnitState.FROZEN:
-        case mojom.LifecycleUnitState.PENDING_FREEZE:
-          return false;
-      }
-      return true;
-    }
-    return false;
   },
 
   /**
@@ -420,15 +383,6 @@ Polymer({
    */
   loadTab_(e) {
     this.discardsDetailsProvider_.loadById(e.model.item.id);
-  },
-
-  /**
-   * Event handler that freezes a tab.
-   * @param {Event} e The event.
-   * @private
-   */
-  freezeTab_(e) {
-    this.discardsDetailsProvider_.freezeById(e.model.item.id);
   },
 
   /**

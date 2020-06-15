@@ -176,7 +176,8 @@ class AndroidPlayerMediaTest : public MediaTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_P(AndroidPlayerMediaTest, VideoBearMp4) {
+// TODO(crbug.com/1094571): Flaky.
+IN_PROC_BROWSER_TEST_P(AndroidPlayerMediaTest, DISABLED_VideoBearMp4) {
   PlayVideo("bear.mp4", GetParam());
 }
 

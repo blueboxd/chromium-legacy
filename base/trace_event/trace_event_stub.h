@@ -60,6 +60,18 @@ struct IgnoredValue {
 
 #define TRACE_EVENT_API_CURRENT_THREAD_ID 0
 
+// Typed macros. For these, we have to erase the extra args entirely, as they
+// may include a lambda that refers to protozero message types (which aren't
+// available in the stub). This may trigger "unused variable" errors at the
+// callsite, which have to be addressed at the callsite (e.g. via
+// ignore_result()).
+#define TRACE_EVENT_BEGIN(category, name, ...) \
+  INTERNAL_TRACE_IGNORE(category, name)
+#define TRACE_EVENT_END(category, ...) INTERNAL_TRACE_IGNORE(category)
+#define TRACE_EVENT(category, name, ...) INTERNAL_TRACE_IGNORE(category, name)
+#define TRACE_EVENT_INSTANT(category, name, scope, ...) \
+  INTERNAL_TRACE_IGNORE(category, name, scope)
+
 namespace base {
 namespace trace_event {
 

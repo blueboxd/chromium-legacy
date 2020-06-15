@@ -36,6 +36,10 @@ class COMPONENT_EXPORT(SYSTEM_PROXY) SystemProxyClient {
     virtual int GetSetAuthenticationDetailsCallCount() const = 0;
     // Returns how many times |ShutDownDaemon| was called.
     virtual int GetShutDownCallCount() const = 0;
+    // Returns the content of the last request sent to the System-proxy service
+    // to set authentication details.
+    virtual system_proxy::SetAuthenticationDetailsRequest
+    GetLastAuthenticationDetailsRequest() const = 0;
 
    protected:
     virtual ~TestInterface() {}

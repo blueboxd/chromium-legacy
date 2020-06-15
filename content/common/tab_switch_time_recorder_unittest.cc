@@ -19,10 +19,6 @@ constexpr char kDurationWithSavedFramesHistogram[] =
     "Browser.Tabs.TotalSwitchDuration.WithSavedFrames";
 constexpr char kDurationNoSavedFramesHistogram[] =
     "Browser.Tabs.TotalSwitchDuration.NoSavedFrames_Loaded";
-constexpr char kDurationNoSavedFramesNotFrozenHistogram[] =
-    "Browser.Tabs.TotalSwitchDuration.NoSavedFrames_Loaded_NotFrozen";
-constexpr char kDurationNoSavedFramesFrozenHistogram[] =
-    "Browser.Tabs.TotalSwitchDuration.NoSavedFrames_Loaded_Frozen";
 constexpr char kDurationNoSavedFramesUnloadedHistogram[] =
     "Browser.Tabs.TotalSwitchDuration.NoSavedFrames_NotLoaded";
 
@@ -30,10 +26,6 @@ constexpr char kIncompleteDurationWithSavedFramesHistogram[] =
     "Browser.Tabs.TotalIncompleteSwitchDuration.WithSavedFrames";
 constexpr char kIncompleteDurationNoSavedFramesHistogram[] =
     "Browser.Tabs.TotalIncompleteSwitchDuration.NoSavedFrames_Loaded";
-constexpr char kIncompleteDurationNoSavedFramesNotFrozenHistogram[] =
-    "Browser.Tabs.TotalIncompleteSwitchDuration.NoSavedFrames_Loaded_NotFrozen";
-constexpr char kIncompleteDurationNoSavedFramesFrozenHistogram[] =
-    "Browser.Tabs.TotalIncompleteSwitchDuration.NoSavedFrames_Loaded_Frozen";
 constexpr char kIncompleteDurationNoSavedFramesUnloadedHistogram[] =
     "Browser.Tabs.TotalIncompleteSwitchDuration.NoSavedFrames_NotLoaded";
 
@@ -41,10 +33,6 @@ constexpr char kResultWithSavedFramesHistogram[] =
     "Browser.Tabs.TabSwitchResult.WithSavedFrames";
 constexpr char kResultNoSavedFramesHistogram[] =
     "Browser.Tabs.TabSwitchResult.NoSavedFrames_Loaded";
-constexpr char kResultNoSavedFramesNotFrozenHistogram[] =
-    "Browser.Tabs.TabSwitchResult.NoSavedFrames_Loaded_NotFrozen";
-constexpr char kResultNoSavedFramesFrozenHistogram[] =
-    "Browser.Tabs.TabSwitchResult.NoSavedFrames_Loaded_Frozen";
 constexpr char kResultNoSavedFramesUnloadedHistogram[] =
     "Browser.Tabs.TabSwitchResult.NoSavedFrames_NotLoaded";
 constexpr char kWebContentsUnOccludedHistogram[] =
@@ -68,18 +56,12 @@ class ContentToVisibleTimeReporterTest : public testing::Test {
     constexpr const char* kAllHistograms[] = {
         kDurationWithSavedFramesHistogram,
         kDurationNoSavedFramesHistogram,
-        kDurationNoSavedFramesNotFrozenHistogram,
-        kDurationNoSavedFramesFrozenHistogram,
         kDurationNoSavedFramesUnloadedHistogram,
         kIncompleteDurationWithSavedFramesHistogram,
         kIncompleteDurationNoSavedFramesHistogram,
-        kIncompleteDurationNoSavedFramesNotFrozenHistogram,
-        kIncompleteDurationNoSavedFramesFrozenHistogram,
         kIncompleteDurationNoSavedFramesUnloadedHistogram,
         kResultWithSavedFramesHistogram,
         kResultNoSavedFramesHistogram,
-        kResultNoSavedFramesNotFrozenHistogram,
-        kResultNoSavedFramesFrozenHistogram,
         kResultNoSavedFramesUnloadedHistogram,
         kWebContentsUnOccludedHistogram};
     for (const char* histogram : kAllHistograms) {
@@ -122,7 +104,7 @@ TEST_F(ContentToVisibleTimeReporterTest, TimeIsRecordedWithSavedFrames) {
   auto callback = tab_switch_time_recorder_.TabWasShown(
       true /* has_saved_frames */,
       {start, /* destination_is_loaded */ true,
-       /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
+       /* show_reason_tab_switching */ true,
        /* show_reason_unoccluded */ false,
        /* show_reason_bfcache_restore */ false},
       start);
@@ -147,49 +129,12 @@ TEST_F(ContentToVisibleTimeReporterTest, TimeIsRecordedWithSavedFrames) {
 
 // Time is properly recorded to histogram when we have no saved frame and if we
 // have a proper matching TabWasShown and callback execution.
-TEST_F(ContentToVisibleTimeReporterTest, TimeIsRecordedNoSavedFrameNotFrozen) {
+TEST_F(ContentToVisibleTimeReporterTest, TimeIsRecordedNoSavedFrame) {
   const auto start = base::TimeTicks::Now();
   auto callback = tab_switch_time_recorder_.TabWasShown(
       false /* has_saved_frames */,
       {start, /* destination_is_loaded */ true,
-       /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
-      start);
-  const auto end = start + kDuration;
-  auto presentation_feedback = gfx::PresentationFeedback(
-      end, end - start, gfx::PresentationFeedback::Flags::kHWCompletion);
-  std::move(callback).Run(presentation_feedback);
-
-  ExpectHistogramsEmptyExcept({kDurationNoSavedFramesHistogram,
-                               kDurationNoSavedFramesNotFrozenHistogram,
-                               kResultNoSavedFramesHistogram,
-                               kResultNoSavedFramesNotFrozenHistogram});
-
-  // Duration.
-  ExpectTotalSamples(kDurationNoSavedFramesHistogram, 1);
-  ExpectTimeBucketCount(kDurationNoSavedFramesHistogram, kDuration, 1);
-  ExpectTotalSamples(kDurationNoSavedFramesNotFrozenHistogram, 1);
-  ExpectTimeBucketCount(kDurationNoSavedFramesNotFrozenHistogram, kDuration, 1);
-
-  // Result.
-  ExpectTotalSamples(kResultNoSavedFramesHistogram, 1);
-  ExpectResultBucketCount(
-      kResultNoSavedFramesHistogram,
-      ContentToVisibleTimeReporter::TabSwitchResult::kSuccess, 1);
-  ExpectTotalSamples(kResultNoSavedFramesNotFrozenHistogram, 1);
-  ExpectResultBucketCount(
-      kResultNoSavedFramesNotFrozenHistogram,
-      ContentToVisibleTimeReporter::TabSwitchResult::kSuccess, 1);
-}
-
-// Same as TimeIsRecordedNoSavedFrame but with the destination frame frozen.
-TEST_F(ContentToVisibleTimeReporterTest, TimeIsRecordedNoSavedFrameFrozen) {
-  const auto start = base::TimeTicks::Now();
-  auto callback = tab_switch_time_recorder_.TabWasShown(
-      false /* has_saved_frames */,
-      {start, /* destination_is_loaded */ true,
-       /* destination_is_frozen */ true, /* show_reason_tab_switching */ true,
+       /* show_reason_tab_switching */ true,
        /* show_reason_unoccluded */ false,
        /* show_reason_bfcache_restore */ false},
       start);
@@ -199,23 +144,16 @@ TEST_F(ContentToVisibleTimeReporterTest, TimeIsRecordedNoSavedFrameFrozen) {
   std::move(callback).Run(presentation_feedback);
 
   ExpectHistogramsEmptyExcept(
-      {kDurationNoSavedFramesHistogram, kDurationNoSavedFramesFrozenHistogram,
-       kResultNoSavedFramesHistogram, kResultNoSavedFramesFrozenHistogram});
+      {kDurationNoSavedFramesHistogram, kResultNoSavedFramesHistogram});
 
   // Duration.
   ExpectTotalSamples(kDurationNoSavedFramesHistogram, 1);
   ExpectTimeBucketCount(kDurationNoSavedFramesHistogram, kDuration, 1);
-  ExpectTotalSamples(kDurationNoSavedFramesFrozenHistogram, 1);
-  ExpectTimeBucketCount(kDurationNoSavedFramesFrozenHistogram, kDuration, 1);
 
   // Result.
   ExpectTotalSamples(kResultNoSavedFramesHistogram, 1);
   ExpectResultBucketCount(
       kResultNoSavedFramesHistogram,
-      ContentToVisibleTimeReporter::TabSwitchResult::kSuccess, 1);
-  ExpectTotalSamples(kResultNoSavedFramesFrozenHistogram, 1);
-  ExpectResultBucketCount(
-      kResultNoSavedFramesFrozenHistogram,
       ContentToVisibleTimeReporter::TabSwitchResult::kSuccess, 1);
 }
 
@@ -225,7 +163,7 @@ TEST_F(ContentToVisibleTimeReporterTest, TimeIsRecordedNoSavedFrameUnloaded) {
   auto callback = tab_switch_time_recorder_.TabWasShown(
       false /* has_saved_frames */,
       {start, /* destination_is_loaded */ false,
-       /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
+       /* show_reason_tab_switching */ true,
        /* show_reason_unoccluded */ false,
        /* show_reason_bfcache_restore */ false},
       start);
@@ -255,7 +193,7 @@ TEST_F(ContentToVisibleTimeReporterTest, PresentationFailureWithSavedFrames) {
   auto callback = tab_switch_time_recorder_.TabWasShown(
       true /* has_saved_frames */,
       {start, /* destination_is_loaded */ true,
-       /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
+       /* show_reason_tab_switching */ true,
        /* show_reason_unoccluded */ false,
        /* show_reason_bfcache_restore */ false},
       start);
@@ -277,23 +215,16 @@ TEST_F(ContentToVisibleTimeReporterTest, PresentationFailureNoSavedFrames) {
   auto callback = tab_switch_time_recorder_.TabWasShown(
       false /* has_saved_frames */,
       {start, /* destination_is_loaded */ true,
-       /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
+       /* show_reason_tab_switching */ true,
        /* show_reason_unoccluded */ false,
        /* show_reason_bfcache_restore */ false},
       start);
   std::move(callback).Run(gfx::PresentationFeedback::Failure());
 
-  ExpectHistogramsEmptyExcept(
-      {kResultNoSavedFramesHistogram, kResultNoSavedFramesNotFrozenHistogram});
-
   // Result (no duration is recorded on presentation failure).
   ExpectTotalSamples(kResultNoSavedFramesHistogram, 1);
   ExpectResultBucketCount(
       kResultNoSavedFramesHistogram,
-      ContentToVisibleTimeReporter::TabSwitchResult::kPresentationFailure, 1);
-  ExpectTotalSamples(kResultNoSavedFramesNotFrozenHistogram, 1);
-  ExpectResultBucketCount(
-      kResultNoSavedFramesNotFrozenHistogram,
       ContentToVisibleTimeReporter::TabSwitchResult::kPresentationFailure, 1);
 }
 
@@ -305,7 +236,7 @@ TEST_F(ContentToVisibleTimeReporterTest,
   auto callback1 = tab_switch_time_recorder_.TabWasShown(
       true /* has_saved_frames */,
       {start1, /* destination_is_loaded */ true,
-       /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
+       /* show_reason_tab_switching */ true,
        /* show_reason_unoccluded */ false,
        /* show_reason_bfcache_restore */ false},
       start1);
@@ -331,7 +262,7 @@ TEST_F(ContentToVisibleTimeReporterTest,
   auto callback2 = tab_switch_time_recorder_.TabWasShown(
       true /* has_saved_frames */,
       {start2, /* destination_is_loaded */ true,
-       /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
+       /* show_reason_tab_switching */ true,
        /* show_reason_unoccluded */ false,
        /* show_reason_bfcache_restore */ false},
       start2);
@@ -366,7 +297,7 @@ TEST_F(ContentToVisibleTimeReporterTest, HideBeforePresentFrameNoSavedFrames) {
   auto callback1 = tab_switch_time_recorder_.TabWasShown(
       false /* has_saved_frames */,
       {start1, /* destination_is_loaded */ true,
-       /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
+       /* show_reason_tab_switching */ true,
        /* show_reason_unoccluded */ false,
        /* show_reason_bfcache_restore */ false},
       start1);
@@ -374,34 +305,22 @@ TEST_F(ContentToVisibleTimeReporterTest, HideBeforePresentFrameNoSavedFrames) {
   task_environment_.FastForwardBy(kDuration);
   tab_switch_time_recorder_.TabWasHidden();
 
-  ExpectHistogramsEmptyExcept(
-      {kIncompleteDurationNoSavedFramesHistogram,
-       kIncompleteDurationNoSavedFramesNotFrozenHistogram,
-       kResultNoSavedFramesHistogram, kResultNoSavedFramesNotFrozenHistogram});
-
   // Duration.
   ExpectTotalSamples(kIncompleteDurationNoSavedFramesHistogram, 1);
   ExpectTimeBucketCount(kIncompleteDurationNoSavedFramesHistogram, kDuration,
                         1);
-  ExpectTotalSamples(kIncompleteDurationNoSavedFramesNotFrozenHistogram, 1);
-  ExpectTimeBucketCount(kIncompleteDurationNoSavedFramesNotFrozenHistogram,
-                        kDuration, 1);
 
   // Result.
   ExpectTotalSamples(kResultNoSavedFramesHistogram, 1);
   ExpectResultBucketCount(
       kResultNoSavedFramesHistogram,
       ContentToVisibleTimeReporter::TabSwitchResult::kIncomplete, 1);
-  ExpectTotalSamples(kResultNoSavedFramesNotFrozenHistogram, 1);
-  ExpectResultBucketCount(
-      kResultNoSavedFramesNotFrozenHistogram,
-      ContentToVisibleTimeReporter::TabSwitchResult::kIncomplete, 1);
 
   const auto start2 = base::TimeTicks::Now();
   auto callback2 = tab_switch_time_recorder_.TabWasShown(
       false /* has_saved_frames */,
       {start2, /* destination_is_loaded */ true,
-       /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
+       /* show_reason_tab_switching */ true,
        /* show_reason_unoccluded */ false,
        /* show_reason_bfcache_restore */ false},
       start2);
@@ -411,26 +330,17 @@ TEST_F(ContentToVisibleTimeReporterTest, HideBeforePresentFrameNoSavedFrames) {
       end2, end2 - start2, gfx::PresentationFeedback::Flags::kHWCompletion);
   std::move(callback2).Run(presentation_feedback);
 
-  ExpectHistogramsEmptyExcept(
-      {kIncompleteDurationNoSavedFramesHistogram,
-       kIncompleteDurationNoSavedFramesNotFrozenHistogram,
-       kDurationNoSavedFramesHistogram,
-       kDurationNoSavedFramesNotFrozenHistogram, kResultNoSavedFramesHistogram,
-       kResultNoSavedFramesNotFrozenHistogram});
+  ExpectHistogramsEmptyExcept({kIncompleteDurationNoSavedFramesHistogram,
+                               kDurationNoSavedFramesHistogram,
+                               kResultNoSavedFramesHistogram});
 
   // Duration.
   ExpectTotalSamples(kIncompleteDurationNoSavedFramesHistogram, 1);
   ExpectTimeBucketCount(kIncompleteDurationNoSavedFramesHistogram, kDuration,
                         1);
-  ExpectTotalSamples(kIncompleteDurationNoSavedFramesNotFrozenHistogram, 1);
-  ExpectTimeBucketCount(kIncompleteDurationNoSavedFramesNotFrozenHistogram,
-                        kDuration, 1);
 
   ExpectTotalSamples(kDurationNoSavedFramesHistogram, 1);
   ExpectTimeBucketCount(kDurationNoSavedFramesHistogram, kOtherDuration, 1);
-  ExpectTotalSamples(kDurationNoSavedFramesNotFrozenHistogram, 1);
-  ExpectTimeBucketCount(kDurationNoSavedFramesNotFrozenHistogram,
-                        kOtherDuration, 1);
 
   // Result.
   ExpectTotalSamples(kResultNoSavedFramesHistogram, 2);
@@ -440,13 +350,6 @@ TEST_F(ContentToVisibleTimeReporterTest, HideBeforePresentFrameNoSavedFrames) {
   ExpectResultBucketCount(
       kResultNoSavedFramesHistogram,
       ContentToVisibleTimeReporter::TabSwitchResult::kSuccess, 1);
-  ExpectTotalSamples(kResultNoSavedFramesNotFrozenHistogram, 2);
-  ExpectResultBucketCount(
-      kResultNoSavedFramesNotFrozenHistogram,
-      ContentToVisibleTimeReporter::TabSwitchResult::kIncomplete, 1);
-  ExpectResultBucketCount(
-      kResultNoSavedFramesNotFrozenHistogram,
-      ContentToVisibleTimeReporter::TabSwitchResult::kSuccess, 1);
 }
 
 // Time is properly recorded to histogram when we have unoccluded event.
@@ -455,7 +358,6 @@ TEST_F(ContentToVisibleTimeReporterTest, UnoccludedTimeIsRecorded) {
   auto callback = tab_switch_time_recorder_.TabWasShown(
       true /* has_saved_frames */,
       {start, base::Optional<bool>() /* destination_is_loaded */,
-       base::Optional<bool>() /* destination_is_frozen */,
        /* show_reason_tab_switching */ false,
        /* show_reason_unoccluded */ true,
        /* show_reason_bfcache_restore */ false},
@@ -480,7 +382,7 @@ TEST_F(ContentToVisibleTimeReporterTest,
   auto callback = tab_switch_time_recorder_.TabWasShown(
       true /* has_saved_frames */,
       {start, /* destination_is_loaded */ true,
-       /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
+       /* show_reason_tab_switching */ true,
        /* show_reason_unoccluded */ true,
        /* show_reason_bfcache_restore */ false},
       start);
@@ -514,7 +416,6 @@ TEST_F(ContentToVisibleTimeReporterTest, BfcacheRestoreTimeIsRecorded) {
   auto callback = tab_switch_time_recorder_.TabWasShown(
       false /* has_saved_frames */,
       {start, base::Optional<bool>() /* destination_is_loaded */,
-       base::Optional<bool>() /* destination_is_frozen */,
        /* show_reason_tab_switching */ false,
        /* show_reason_unoccluded */ false,
        /* show_reason_bfcache_restore */ true},
@@ -540,7 +441,6 @@ class RecordContentToVisibleTimeRequestTest : public testing::Test {
                    const std::string& msg) const {
     EXPECT_EQ(left.event_start_time, right.event_start_time) << msg;
     EXPECT_EQ(left.destination_is_loaded, right.destination_is_loaded);
-    EXPECT_EQ(left.destination_is_frozen, right.destination_is_frozen);
     EXPECT_EQ(left.show_reason_tab_switching, right.show_reason_tab_switching);
     EXPECT_EQ(left.show_reason_unoccluded, right.show_reason_unoccluded);
     EXPECT_EQ(left.show_reason_bfcache_restore,
@@ -565,8 +465,6 @@ class RecordContentToVisibleTimeRequest_MergeRequestTest
                                                     bool,
                                                     bool,
                                                     bool,
-                                                    bool,
-                                                    bool,
                                                     bool>> {
  protected:
   RecordContentToVisibleTimeRequest GetRequest1() const {
@@ -576,27 +474,21 @@ class RecordContentToVisibleTimeRequest_MergeRequestTest
         std::get<0>(GetParam())
             ? base::Optional<bool>(true)
             : base::Optional<bool>() /* destination_is_loaded */,
-        std::get<1>(GetParam())
-            ? base::Optional<bool>(true)
-            : base::Optional<bool>() /* destination_is_frozen */,
-        std::get<2>(GetParam()) /* show_reason_tab_switching */,
-        std::get<3>(GetParam()) /* show_reason_unoccluded */,
-        std::get<4>(GetParam()) /* show_reason_bfcache_restore */);
+        std::get<1>(GetParam()) /* show_reason_tab_switching */,
+        std::get<2>(GetParam()) /* show_reason_unoccluded */,
+        std::get<3>(GetParam()) /* show_reason_bfcache_restore */);
   }
 
   RecordContentToVisibleTimeRequest GetRequest2() const {
     const base::TimeTicks timestamp = RandomRequestTimeTicks();
     return RecordContentToVisibleTimeRequest(
         timestamp,
-        std::get<5>(GetParam())
+        std::get<4>(GetParam())
             ? base::Optional<bool>(true)
             : base::Optional<bool>() /* destination_is_loaded */,
-        std::get<6>(GetParam())
-            ? base::Optional<bool>(true)
-            : base::Optional<bool>() /* destination_is_frozen */,
-        std::get<7>(GetParam()) /* show_reason_tab_switching */,
-        std::get<8>(GetParam()) /* show_reason_unoccluded */,
-        std::get<9>(GetParam()) /* show_reason_bfcache_restore */);
+        std::get<5>(GetParam()) /* show_reason_tab_switching */,
+        std::get<6>(GetParam()) /* show_reason_unoccluded */,
+        std::get<7>(GetParam()) /* show_reason_bfcache_restore */);
   }
 
   bool isOptionalBoolTrue(const base::Optional<bool>& data) {
@@ -633,11 +525,6 @@ TEST_P(RecordContentToVisibleTimeRequest_MergeRequestTest, DoMerge) {
           ? isOptionalBoolTrue(request1.destination_is_loaded) ||
                 isOptionalBoolTrue(request2.destination_is_loaded)
           : base::Optional<bool>(),
-      (request1.destination_is_frozen.has_value() ||
-       request2.destination_is_frozen.has_value())
-          ? isOptionalBoolTrue(request1.destination_is_frozen) ||
-                isOptionalBoolTrue(request2.destination_is_frozen)
-          : base::Optional<bool>(),
       request1.show_reason_tab_switching || request2.show_reason_tab_switching,
       request1.show_reason_unoccluded || request2.show_reason_unoccluded,
       request1.show_reason_bfcache_restore ||
@@ -649,8 +536,6 @@ TEST_P(RecordContentToVisibleTimeRequest_MergeRequestTest, DoMerge) {
 INSTANTIATE_TEST_SUITE_P(All,
                          RecordContentToVisibleTimeRequest_MergeRequestTest,
                          testing::Combine(testing::Bool(),
-                                          testing::Bool(),
-                                          testing::Bool(),
                                           testing::Bool(),
                                           testing::Bool(),
                                           testing::Bool(),

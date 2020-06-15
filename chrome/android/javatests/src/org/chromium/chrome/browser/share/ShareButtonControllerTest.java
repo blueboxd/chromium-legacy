@@ -22,6 +22,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
@@ -36,7 +37,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
@@ -50,14 +51,21 @@ import org.chromium.ui.test.util.UiRestriction;
         "enable-features=" + ChromeFeatureList.START_SURFACE_ANDROID + "<Study",
         "force-fieldtrials=Study/Group"})
 public final class ShareButtonControllerTest {
+    private final ChromeTabbedActivityTestRule mActivityTestRule =
+            new ChromeTabbedActivityTestRule();
+
+    private final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
+
+    // Mock sign-in environment needs to be destroyed after ChromeActivity in case there are
+    // observers registered in the AccountManagerFacade mock.
     @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    public final RuleChain mRuleChain =
+            RuleChain.outerRule(mAccountManagerTestRule).around(mActivityTestRule);
 
     private boolean mButtonExpected;
 
     @Before
     public void setUp() {
-        SigninTestUtil.setUpAuthForTesting();
         mActivityTestRule.startMainActivityOnBlankPage();
 
         int minimumWidthDp = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
@@ -71,10 +79,7 @@ public final class ShareButtonControllerTest {
 
     @After
     public void tearDown() throws Exception {
-        // The activity should be destroyed before the test signin environment's teardown
-        // This will be changed to a rule chain once SigninTestUtil is refactored to rule
         ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
-        SigninTestUtil.tearDownAuthForTesting();
     }
 
     @Test
@@ -123,7 +128,7 @@ public final class ShareButtonControllerTest {
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testShareButtonInToolbarNotAffectedByOverview() {
         // Sign in.
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addAndSignInTestAccount();
 
         TestThreadUtils.runOnUiThreadBlocking(
                 ()

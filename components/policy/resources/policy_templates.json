@@ -17065,7 +17065,7 @@
 
       Setting the policy to False prevents <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from showing product information as full-tab content.
 
-      Setting the policy controls the presentation of the welcome pages that help users sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, sets <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as users' default browser, or otherwise informs them of product features.'''
+      Setting the policy controls the presentation of the welcome pages that help users sign in to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, set <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> as users' default browser, or otherwise inform them of product features.'''
     },
     {
       'name': 'SafeSitesFilterBehavior',
@@ -17552,8 +17552,7 @@
         'per_profile': True,
         'cloud_only': True,
       },
-      'supported_on': ['chrome.*:83-', 'chrome_os:83-'],
-      'future': True,
+      'supported_on': ['chrome.*:85-', 'chrome_os:85-'],
       'caption': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extension installation requests''',
       'example_value': True,
       'desc': '''This policy controls <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extension installation requests which allows users to send the requests to the Google Admin console for approval.
@@ -21822,7 +21821,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceDockMacAddressSource': 'device_dock_mac_address_source.source',
     'DeviceUsbPowerShareEnabled': 'device_usb_power_share.enabled',
     'DeviceAdvancedBatteryChargeModeEnabled': 'device_advanced_battery_charge_mode.enabled',
-    'DeviceAdvancedBatteryChargeModeDayConfig': 'device_advanced_battery_charge_mode.day_config',
+    'DeviceAdvancedBatteryChargeModeDayConfig': 'device_advanced_battery_charge_mode.day_configs',
     'DeviceBatteryChargeMode': 'device_battery_charge_mode.battery_charge_mode',
     'DeviceBatteryChargeCustomStartCharging': 'device_battery_charge_mode.custom_charge_start',
     'DeviceBatteryChargeCustomStopCharging': 'device_battery_charge_mode.custom_charge_stop',

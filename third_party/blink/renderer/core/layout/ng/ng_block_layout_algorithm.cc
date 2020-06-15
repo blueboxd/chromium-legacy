@@ -731,7 +731,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
         }
         container_builder_.AddBreakBeforeChild(child, kBreakAppealPerfect,
                                                /* is_forced_break */ false);
-        SetFragmentainerOutOfSpace(&previous_inflow_position);
+        ConsumeRemainingFragmentainerSpace(&previous_inflow_position);
         break;
       }
 
@@ -758,10 +758,13 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
         return container_builder_.Abort(status);
       }
       if (ConstraintSpace().HasBlockFragmentation()) {
-        if (container_builder_.DidBreak() &&
-            IsFragmentainerOutOfSpace(
-                previous_inflow_position.logical_block_offset))
+        // A child break in a parallel flow doesn't affect whether we should
+        // break here or not.
+        if (container_builder_.HasInflowChildBreakInside()) {
+          // But if the break happened in the same flow, we'll now just finish
+          // layout of the fragment. No more siblings should be processed.
           break;
+        }
 
         // We need to propagate the initial break-before value up our container
         // chain, until we reach a container that's not a first child. If we get
@@ -1912,7 +1915,10 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
   if (UNLIKELY(ConstraintSpace().IsInColumnBfc())) {
     if (NGBlockNode spanner_node = layout_result->ColumnSpanner()) {
       container_builder_.SetColumnSpanner(spanner_node);
-      if (!container_builder_.DidBreak()) {
+      // TODO(mstensho): DidBreakSelf() is always false here, so this check is
+      // wrong. Still, no failing tests! Please investigate.
+      // HasInflowChildBreakInside() ought to be a better choice.
+      if (!container_builder_.DidBreakSelf()) {
         // If we still haven't found a descendant at which to resume column
         // layout after the spanner, look for one now.
         if (NGLayoutInputNode next = child.NextSibling()) {
@@ -2126,21 +2132,8 @@ LayoutUnit NGBlockLayoutAlgorithm::FragmentainerSpaceAvailable() const {
          *container_builder_.BfcBlockOffset();
 }
 
-bool NGBlockLayoutAlgorithm::IsFragmentainerOutOfSpace(
-    LayoutUnit block_offset) const {
-  if (did_break_before_child_)
-    return true;
-  if (!ConstraintSpace().HasKnownFragmentainerBlockSize())
-    return false;
-  if (!container_builder_.BfcBlockOffset().has_value())
-    return false;
-  return block_offset >= FragmentainerSpaceAvailable();
-}
-
-void NGBlockLayoutAlgorithm::SetFragmentainerOutOfSpace(
+void NGBlockLayoutAlgorithm::ConsumeRemainingFragmentainerSpace(
     NGPreviousInflowPosition* previous_inflow_position) {
-  did_break_before_child_ = true;
-
   if (ConstraintSpace().HasKnownFragmentainerBlockSize()) {
     // The remaining part of the fragmentainer (the unusable space for child
     // content, due to the break) should still be occupied by this container.
@@ -2151,7 +2144,8 @@ void NGBlockLayoutAlgorithm::SetFragmentainerOutOfSpace(
 
 bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   if (Node().IsInlineFormattingContextRoot() && !early_break_) {
-    if (container_builder_.DidBreak() || first_overflowing_line_) {
+    if (container_builder_.HasInflowChildBreakInside() ||
+        first_overflowing_line_) {
       if (first_overflowing_line_ &&
           first_overflowing_line_ < container_builder_.LineCount()) {
         int line_number;
@@ -2199,30 +2193,25 @@ bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
 
   LayoutUnit consumed_block_size =
       BreakToken() ? BreakToken()->ConsumedBlockSize() : LayoutUnit();
-  LayoutUnit block_size;
   if (container_builder_.IsFragmentainerBoxType()) {
     // We're building fragmentainers, and we know their block-size. Just use
     // that. Calculating the size the regular way would cause some problems with
     // overflow. For one, we don't want to produce a break token if there's no
     // child content that requires it.
-    block_size = ConstraintSpace().FragmentainerBlockSize();
+    LayoutUnit block_size = ConstraintSpace().FragmentainerBlockSize();
     container_builder_.SetBlockSize(block_size);
     container_builder_.SetConsumedBlockSize(consumed_block_size + block_size);
     return true;
   }
 
-  block_size = ComputeBlockSizeForFragment(
+  LayoutUnit fragments_total_block_size = ComputeBlockSizeForFragment(
       ConstraintSpace(), Style(), border_padding_,
       consumed_block_size + intrinsic_block_size_,
       container_builder_.InitialBorderBoxSize().inline_size);
 
-  block_size -= consumed_block_size;
-  DCHECK_GE(block_size, LayoutUnit())
-      << "Adding and subtracting the consumed_block_size shouldn't leave the "
-         "block_size for this fragment smaller than zero.";
-
-  FinishFragmentation(ConstraintSpace(), BreakToken(), block_size,
-                      intrinsic_block_size_, space_left, &container_builder_);
+  FinishFragmentation(Node(), ConstraintSpace(), BreakToken(), border_padding_,
+                      fragments_total_block_size, intrinsic_block_size_,
+                      space_left, &container_builder_);
 
   return true;
 }
@@ -2255,7 +2244,7 @@ NGBreakStatus NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
       BreakBeforeChild(ConstraintSpace(), child, layout_result,
                        fragmentainer_block_offset, kBreakAppealPerfect,
                        /* is_forced_break */ true, &container_builder_);
-      SetFragmentainerOutOfSpace(previous_inflow_position);
+      ConsumeRemainingFragmentainerSpace(previous_inflow_position);
       return NGBreakStatus::kBrokeBefore;
     }
   }
@@ -2345,7 +2334,7 @@ NGBreakStatus NGBlockLayoutAlgorithm::BreakBeforeChildIfNeeded(
                         &container_builder_))
     return NGBreakStatus::kNeedsEarlierBreak;
 
-  SetFragmentainerOutOfSpace(previous_inflow_position);
+  ConsumeRemainingFragmentainerSpace(previous_inflow_position);
   return NGBreakStatus::kBrokeBefore;
 }
 
@@ -2353,8 +2342,9 @@ void NGBlockLayoutAlgorithm::UpdateEarlyBreakBetweenLines() {
   // We shouldn't be here if we already know where to break.
   DCHECK(!early_break_);
 
-  // If the child already broke, it's a little too late to look for breakpoints.
-  DCHECK(!container_builder_.DidBreak());
+  // If something in this flow already broke, it's a little too late to look for
+  // breakpoints.
+  DCHECK(!container_builder_.HasInflowChildBreakInside());
 
   int line_count = container_builder_.LineCount();
   if (line_count < 2)

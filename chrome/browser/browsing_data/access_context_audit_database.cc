@@ -81,7 +81,7 @@ AccessContextAuditDatabase::AccessContextAuditDatabase(
     const base::FilePath& path_to_database_dir)
     : db_file_path_(path_to_database_dir.Append(kDatabaseName)) {}
 
-bool AccessContextAuditDatabase::Init() {
+void AccessContextAuditDatabase::Init() {
   db_.set_histogram_tag("Access Context Audit");
 
   db_.set_error_callback(
@@ -97,7 +97,8 @@ bool AccessContextAuditDatabase::Init() {
 
   db_.set_exclusive_locking();
 
-  return db_.Open(db_file_path_) && InitializeSchema();
+  if (db_.Open(db_file_path_))
+    InitializeSchema();
 }
 
 bool AccessContextAuditDatabase::InitializeSchema() {
@@ -128,11 +129,11 @@ bool AccessContextAuditDatabase::InitializeSchema() {
   return db_.Execute(create_table.c_str());
 }
 
-bool AccessContextAuditDatabase::AddRecords(
+void AccessContextAuditDatabase::AddRecords(
     const std::vector<AccessContextAuditDatabase::AccessRecord>& records) {
   sql::Transaction transaction(&db_);
   if (!transaction.Begin())
-    return false;
+    return;
 
   // Create both insert statements ahead of iterating over records. These are
   // highly likely to both be used, and should be in the statement cache.
@@ -165,7 +166,7 @@ bool AccessContextAuditDatabase::AddRecords(
           record.last_access_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
 
       if (!insert_cookie.Run())
-        return false;
+        return;
 
       insert_cookie.Reset(true);
     } else {
@@ -178,16 +179,16 @@ bool AccessContextAuditDatabase::AddRecords(
           record.last_access_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
 
       if (!insert_storage_api.Run())
-        return false;
+        return;
 
       insert_storage_api.Reset(true);
     }
   }
 
-  return transaction.Commit();
+  transaction.Commit();
 }
 
-bool AccessContextAuditDatabase::RemoveRecord(const AccessRecord& record) {
+void AccessContextAuditDatabase::RemoveRecord(const AccessRecord& record) {
   sql::Statement remove_statement;
 
   std::string remove;
@@ -211,7 +212,23 @@ bool AccessContextAuditDatabase::RemoveRecord(const AccessRecord& record) {
     remove_statement.BindInt(1, static_cast<int>(record.type));
     remove_statement.BindString(2, record.origin.GetOrigin().spec());
   }
-  return remove_statement.Run();
+  remove_statement.Run();
+}
+
+void AccessContextAuditDatabase::RemoveAllRecordsForCookie(
+    const std::string& name,
+    const std::string& domain,
+    const std::string& path) {
+  std::string remove;
+  remove.append("DELETE FROM ");
+  remove.append(kCookieTableName);
+  remove.append(" WHERE name = ? AND domain = ? AND path = ?");
+  sql::Statement remove_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, remove.c_str()));
+  remove_statement.BindString(0, name);
+  remove_statement.BindString(1, domain);
+  remove_statement.BindString(2, path);
+  remove_statement.Run();
 }
 
 std::vector<AccessContextAuditDatabase::AccessRecord>

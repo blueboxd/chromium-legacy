@@ -896,6 +896,8 @@ crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-b
 crbug.com/1028595 virtual/layout_ng_block_frag/external/wpt/css/css-break/fieldset-001.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/floats-and-text-narrow-and-short-dynamic.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/line-after-unbreakable-float-after-padding.html [ Failure ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflowed-block-with-no-room-after-001.html [ Pass ]
+crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/overflowed-block-with-no-room-after-000.html [ Pass ]
 crbug.com/1066380 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-002.html [ Failure ]
 crbug.com/1066380 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-004.html [ Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/composited-under-clip-under-multicol.html [ Failure Crash ]
@@ -3548,6 +3550,8 @@ crbug.com/829028 external/wpt/css/css-break/break-between-avoid-000.html [ Failu
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-001.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-003.html [ Failure ]
 crbug.com/829028 external/wpt/css/css-break/break-between-avoid-004.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/overflowed-block-with-no-room-after-001.html [ Failure ]
+crbug.com/829028 external/wpt/css/css-break/overflowed-block-with-no-room-after-000.html [ Failure ]
 crbug.com/967329 external/wpt/css/css-multicol/columnfill-auto-max-height-001.html [ Failure ]
 crbug.com/967329 external/wpt/css/css-multicol/columnfill-auto-max-height-002.html [ Failure ]
 crbug.com/990240 external/wpt/css/css-multicol/multicol-breaking-000.html [ Failure ]
@@ -4764,7 +4768,6 @@ crbug.com/930297 external/wpt/html/infrastructure/urls/resolving-urls/query-enco
 
 # RubyNG TODOs
 crbug.com/1069817 fast/ruby/float-overhang-from-ruby-text.html [ Failure ]
-crbug.com/1069817 fast/ruby/position-after.html [ Failure ]
 
 crbug.com/676229 plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
 crbug.com/742670 plugins/iframe-plugin-bgcolor.html [ Failure Pass ]

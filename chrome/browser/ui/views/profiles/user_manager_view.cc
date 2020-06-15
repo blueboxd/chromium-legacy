@@ -10,6 +10,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_util.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -28,9 +31,11 @@
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_user_data.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
@@ -75,7 +80,20 @@ UserManagerProfileDialogDelegate::UserManagerProfileDialogDelegate(
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   web_view_->GetWebContents()->SetDelegate(this);
+
+  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
+      web_view_->GetWebContents(),
+      autofill::ChromeAutofillClient::FromWebContents(
+          web_view_->GetWebContents()));
+
+  web_modal::WebContentsModalDialogManager::CreateForWebContents(
+      web_view_->GetWebContents());
+  web_modal::WebContentsModalDialogManager::FromWebContents(
+      web_view_->GetWebContents())
+      ->SetDelegate(this);
+
   web_view_->LoadInitialURL(url);
+
   chrome::RecordDialogCreation(chrome::DialogIdentifier::USER_MANAGER_PROFILE);
 }
 
@@ -89,6 +107,32 @@ gfx::Size UserManagerProfileDialogDelegate::CalculatePreferredSize() const {
 void UserManagerProfileDialogDelegate::DisplayErrorMessage() {
   web_view_->LoadInitialURL(GURL(chrome::kChromeUISigninErrorURL));
 }
+
+web_modal::WebContentsModalDialogHost*
+UserManagerProfileDialogDelegate::GetWebContentsModalDialogHost() {
+  return this;
+}
+
+gfx::NativeView UserManagerProfileDialogDelegate::GetHostView() const {
+  return GetWidget()->GetNativeView();
+}
+
+gfx::Point UserManagerProfileDialogDelegate::GetDialogPosition(
+    const gfx::Size& size) {
+  gfx::Size widget_size = GetWidget()->GetWindowBoundsInScreen().size();
+  return gfx::Point(std::max(0, (widget_size.width() - size.width()) / 2),
+                    std::max(0, (widget_size.height() - size.height()) / 2));
+}
+
+gfx::Size UserManagerProfileDialogDelegate::GetMaximumDialogSize() {
+  return GetWidget()->GetWindowBoundsInScreen().size();
+}
+
+void UserManagerProfileDialogDelegate::AddObserver(
+    web_modal::ModalDialogHostObserver* observer) {}
+
+void UserManagerProfileDialogDelegate::RemoveObserver(
+    web_modal::ModalDialogHostObserver* observer) {}
 
 ui::ModalType UserManagerProfileDialogDelegate::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;

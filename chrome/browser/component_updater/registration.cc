@@ -45,7 +45,6 @@
 #endif  // defined(OS_WIN)
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/component_updater/intervention_policy_database_component_installer.h"
 #include "chrome/browser/component_updater/soda_component_installer.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #endif
@@ -163,11 +162,6 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
   RegisterThirdPartyModuleListComponent(cus);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_WIN)
-
-#if !defined(OS_ANDROID)
-  RegisterInterventionPolicyDatabaseComponent(
-      cus, g_browser_process->GetTabManager()->intervention_policy_database());
-#endif
 
 #if BUILDFLAG(ENABLE_VR)
   if (component_updater::ShouldRegisterVrAssetsComponentOnStartup()) {

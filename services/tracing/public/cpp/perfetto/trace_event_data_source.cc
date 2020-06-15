@@ -458,11 +458,13 @@ TraceEventDataSource::~TraceEventDataSource() = default;
 
 void TraceEventDataSource::RegisterStartupHooks() {
   RegisterTracedValueProtoWriter();
+  base::trace_event::EnableTypedTraceEvents(
+      &TraceEventDataSource::OnAddTypedTraceEvent);
 }
 
 void TraceEventDataSource::RegisterWithTraceLog() {
   TraceLog::GetInstance()->SetAddTraceEventOverrides(
-      &TraceEventDataSource::OnAddTraceEvent,
+      &TraceEventDataSource::OnAddLegacyTraceEvent,
       &TraceEventDataSource::FlushCurrentThread,
       &TraceEventDataSource::OnUpdateDuration);
   base::AutoLock l(lock_);
@@ -498,8 +500,7 @@ void TraceEventDataSource::OnStopTracingDone() {
 }
 
 // static
-TrackEventThreadLocalEventSink* TraceEventDataSource::GetOrPrepareEventSink(
-    bool thread_will_flush) {
+TrackEventThreadLocalEventSink* TraceEventDataSource::GetOrPrepareEventSink() {
   // Avoid re-entrancy, which can happen during PostTasks (the taskqueue can
   // emit trace events). We discard the events in this case, as any PostTasking
   // to deal with these events later would break the event ordering that the
@@ -536,8 +537,7 @@ TrackEventThreadLocalEventSink* TraceEventDataSource::GetOrPrepareEventSink(
   }
 
   if (!thread_local_event_sink) {
-    thread_local_event_sink =
-        GetInstance()->CreateThreadLocalEventSink(thread_will_flush);
+    thread_local_event_sink = GetInstance()->CreateThreadLocalEventSink();
     ThreadLocalEventSinkSlot()->Set(thread_local_event_sink);
   }
 
@@ -929,7 +929,7 @@ TraceEventDataSource::CreateTraceWriterLocked() {
 }
 
 TrackEventThreadLocalEventSink*
-TraceEventDataSource::CreateThreadLocalEventSink(bool thread_will_flush) {
+TraceEventDataSource::CreateThreadLocalEventSink() {
   AutoLockWithDeferredTaskPosting lock(lock_);
   uint32_t session_id =
       session_flags_.load(std::memory_order_relaxed).session_id;
@@ -945,12 +945,27 @@ TraceEventDataSource::CreateThreadLocalEventSink(bool thread_will_flush) {
 }
 
 // static
-void TraceEventDataSource::OnAddTraceEvent(
+void TraceEventDataSource::OnAddLegacyTraceEvent(
     TraceEvent* trace_event,
     bool thread_will_flush,
     base::trace_event::TraceEventHandle* handle) {
-  OnAddTraceEvent(trace_event, thread_will_flush, handle, perfetto::Track(),
-                  [](perfetto::EventContext) {});
+  auto* thread_local_event_sink = GetOrPrepareEventSink();
+  if (thread_local_event_sink) {
+    AutoThreadLocalBoolean thread_is_in_trace_event(
+        GetThreadIsInTraceEventTLS());
+    thread_local_event_sink->AddLegacyTraceEvent(trace_event, handle);
+  }
+}
+
+// static
+base::trace_event::TrackEventHandle TraceEventDataSource::OnAddTypedTraceEvent(
+    base::trace_event::TraceEvent* trace_event) {
+  auto* thread_local_event_sink = GetOrPrepareEventSink();
+  if (thread_local_event_sink) {
+    // GetThreadIsInTraceEventTLS() is handled by the sink for typed events.
+    return thread_local_event_sink->AddTypedTraceEvent(trace_event);
+  }
+  return base::trace_event::TrackEventHandle();
 }
 
 // static

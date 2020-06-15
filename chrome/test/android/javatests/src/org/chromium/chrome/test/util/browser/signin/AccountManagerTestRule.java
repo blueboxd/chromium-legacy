@@ -95,6 +95,7 @@ public class AccountManagerTestRule implements TestRule {
     public Account addAndSignInTestAccount() {
         assert !mIsSignedIn : "An account is already signed in!";
         Account account = addAccount(TEST_ACCOUNT_EMAIL);
+        SigninTestUtil.seedAccounts();
         SigninTestUtil.signIn(account);
         mIsSignedIn = true;
         return account;

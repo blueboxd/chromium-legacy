@@ -4449,21 +4449,6 @@ void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
   SyncSelectionIfRequired();
 }
 
-bool RenderFrameImpl::HandleCurrentKeyboardEvent() {
-  bool did_execute_command = false;
-  for (const auto& command : GetLocalRootRenderWidget()->edit_commands()) {
-    // In gtk and cocoa, it's possible to bind multiple edit commands to one
-    // key (but it's the exception). Once one edit command is not executed, it
-    // seems safest to not execute the rest.
-    if (!frame_->ExecuteCommand(blink::WebString::FromUTF8(command->name),
-                                blink::WebString::FromUTF8(command->value)))
-      break;
-    did_execute_command = true;
-  }
-
-  return did_execute_command;
-}
-
 void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
   UntrustworthyContextMenuParams params = ContextMenuParamsBuilder::Build(data);
   if (GetLocalRootRenderWidget()->has_host_context_menu_location()) {

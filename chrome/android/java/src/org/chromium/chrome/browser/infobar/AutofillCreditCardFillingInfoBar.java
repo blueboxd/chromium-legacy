@@ -9,8 +9,8 @@ import android.graphics.Bitmap;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarControlLayout;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
+import org.chromium.components.infobars.InfoBarControlLayout;
+import org.chromium.components.infobars.InfoBarLayout;
 
 import java.util.ArrayList;
 import java.util.List;

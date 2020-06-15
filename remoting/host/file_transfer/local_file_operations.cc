@@ -361,8 +361,8 @@ void LocalFileWriter::Cancel() {
   // And finally, queue deletion of the temp file.
   if (!temp_filepath_.empty()) {
     file_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                  temp_filepath_, false /* recursive */));
+        FROM_HERE,
+        base::BindOnce(base::GetDeleteFileCallback(), temp_filepath_));
   }
   SetState(FileOperations::kFailed);
 }

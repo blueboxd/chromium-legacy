@@ -6,10 +6,17 @@
 
 #include "base/barrier_closure.h"
 #include "base/bind.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_tab_helper.h"
+#include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/content_constants.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "net/base/load_flags.h"
 
 IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
-    IsolatedPrerenderProxyingURLLoaderFactory* factory,
+    IsolatedPrerenderProxyingURLLoaderFactory* parent_factory,
+    network::mojom::URLLoaderFactory* target_factory,
     ResourceLoadSuccessfulCallback on_resource_load_successful,
     mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
     int32_t routing_id,
@@ -18,7 +25,7 @@ IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
     const network::ResourceRequest& request,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
-    : factory_(factory),
+    : parent_factory_(parent_factory),
       on_resource_load_successful_(on_resource_load_successful),
       target_client_(std::move(client)),
       loader_receiver_(this, std::move(loader_receiver)) {
@@ -27,7 +34,7 @@ IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
   mojo::PendingRemote<network::mojom::URLLoaderClient> proxy_client =
       client_receiver_.BindNewPipeAndPassRemote();
 
-  factory_->target_factory_->CreateLoaderAndStart(
+  target_factory->CreateLoaderAndStart(
       target_loader_.BindNewPipeAndPassReceiver(), routing_id, request_id,
       options, request, std::move(proxy_client), traffic_annotation);
 
@@ -118,7 +125,7 @@ void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::OnComplete(
 void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::
     OnBindingsClosed() {
   // Destroys |this|.
-  factory_->RemoveRequest(this);
+  parent_factory_->RemoveRequest(this);
 }
 
 void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::
@@ -149,14 +156,22 @@ IsolatedPrerenderProxyingURLLoaderFactory::
     IsolatedPrerenderProxyingURLLoaderFactory(
         int frame_tree_node_id,
         mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
-        mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
+        mojo::PendingRemote<network::mojom::URLLoaderFactory>
+            network_process_factory,
+        mojo::PendingRemote<network::mojom::URLLoaderFactory> isolated_factory,
         DisconnectCallback on_disconnect,
         ResourceLoadSuccessfulCallback on_resource_load_successful)
-    : on_resource_load_successful_(std::move(on_resource_load_successful)),
+    : frame_tree_node_id_(frame_tree_node_id),
+      on_resource_load_successful_(std::move(on_resource_load_successful)),
       on_disconnect_(std::move(on_disconnect)) {
-  target_factory_.Bind(std::move(target_factory));
-  target_factory_.set_disconnect_handler(base::BindOnce(
-      &IsolatedPrerenderProxyingURLLoaderFactory::OnTargetFactoryError,
+  network_process_factory_.Bind(std::move(network_process_factory));
+  network_process_factory_.set_disconnect_handler(base::BindOnce(
+      &IsolatedPrerenderProxyingURLLoaderFactory::OnNetworkProcessFactoryError,
+      base::Unretained(this)));
+
+  isolated_factory_.Bind(std::move(isolated_factory));
+  isolated_factory_.set_disconnect_handler(base::BindOnce(
+      &IsolatedPrerenderProxyingURLLoaderFactory::OnIsolatedFactoryError,
       base::Unretained(this)));
 
   proxy_receivers_.Add(this, std::move(loader_receiver));
@@ -176,10 +191,61 @@ void IsolatedPrerenderProxyingURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  // We must check if the request can be cached and set the appropriate load
+  // flag if so.
+  content::WebContents* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
+  if (!web_contents) {
+    return;
+  }
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  IsolatedPrerenderTabHelper::CheckEligibilityOfURL(
+      profile, request.url,
+      base::BindOnce(
+          &IsolatedPrerenderProxyingURLLoaderFactory::OnEligibilityResult,
+          weak_factory_.GetWeakPtr(), std::move(loader_receiver), routing_id,
+          request_id, options, request, std::move(client), traffic_annotation));
+}
+
+void IsolatedPrerenderProxyingURLLoaderFactory::OnEligibilityResult(
+    mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
+    int32_t routing_id,
+    int32_t request_id,
+    uint32_t options,
+    const network::ResourceRequest& request,
+    mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+    const GURL& url,
+    bool eligible,
+    base::Optional<IsolatedPrerenderTabHelper::PrefetchStatus> not_used) {
+  DCHECK_EQ(request.url, url);
+  DCHECK(request.cors_exempt_headers.HasHeader(
+      content::kCorsExemptPurposeHeaderName));
+  DCHECK(!request.trusted_params.has_value());
+
+  network::ResourceRequest isolated_request = request;
+
+  // Ensures that the U-A string is set to the Isolated Network Context's
+  // default.
+  isolated_request.headers.RemoveHeader("User-Agent");
+
+  // Ensures that the Accept-Language string is set to the Isolated Network
+  // Context's default.
+  isolated_request.headers.RemoveHeader("Accept-Language");
+
+  // If this subresource is eligible for prefetching then it can be cached. If
+  // not, it must still be put on the wire to avoid privacy attacks but should
+  // not be cached.
+  if (!eligible) {
+    isolated_request.load_flags |= net::LOAD_DISABLE_CACHE;
+  }
+
   requests_.insert(std::make_unique<InProgressRequest>(
-      this, on_resource_load_successful_, std::move(loader_receiver),
-      routing_id, request_id, options, request, std::move(client),
-      traffic_annotation));
+      this, isolated_factory_.get(), on_resource_load_successful_,
+      std::move(loader_receiver), routing_id, request_id, options,
+      isolated_request, std::move(client), traffic_annotation));
 }
 
 void IsolatedPrerenderProxyingURLLoaderFactory::Clone(
@@ -187,17 +253,28 @@ void IsolatedPrerenderProxyingURLLoaderFactory::Clone(
   proxy_receivers_.Add(this, std::move(loader_receiver));
 }
 
-void IsolatedPrerenderProxyingURLLoaderFactory::OnTargetFactoryError() {
-  // Stop calls to CreateLoaderAndStart() when |target_factory_| is invalid.
-  target_factory_.reset();
+void IsolatedPrerenderProxyingURLLoaderFactory::OnNetworkProcessFactoryError() {
+  // Stop calls to CreateLoaderAndStart() when |network_process_factory_| is
+  // invalid.
+  network_process_factory_.reset();
+  proxy_receivers_.Clear();
+
+  MaybeDestroySelf();
+}
+
+void IsolatedPrerenderProxyingURLLoaderFactory::OnIsolatedFactoryError() {
+  // Stop calls to CreateLoaderAndStart() when |isolated_factory_| is
+  // invalid.
+  isolated_factory_.reset();
   proxy_receivers_.Clear();
 
   MaybeDestroySelf();
 }
 
 void IsolatedPrerenderProxyingURLLoaderFactory::OnProxyBindingError() {
-  if (proxy_receivers_.empty())
-    target_factory_.reset();
+  if (proxy_receivers_.empty()) {
+    network_process_factory_.reset();
+  }
 
   MaybeDestroySelf();
 }
@@ -214,8 +291,10 @@ void IsolatedPrerenderProxyingURLLoaderFactory::RemoveRequest(
 void IsolatedPrerenderProxyingURLLoaderFactory::MaybeDestroySelf() {
   // Even if all URLLoaderFactory pipes connected to this object have been
   // closed it has to stay alive until all active requests have completed.
-  if (target_factory_.is_bound() || !requests_.empty())
+  if (network_process_factory_.is_bound() || isolated_factory_.is_bound() ||
+      !requests_.empty()) {
     return;
+  }
 
   // Deletes |this|.
   std::move(on_disconnect_).Run(this);

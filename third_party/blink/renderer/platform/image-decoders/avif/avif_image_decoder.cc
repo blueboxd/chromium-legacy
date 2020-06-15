@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/ranges.h"
+#include "base/optional.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "media/base/video_color_space.h"
@@ -82,6 +83,64 @@ gfx::ColorSpace GetColorSpace(const avifImage* image) {
   if (image->yuvRange == AVIF_RANGE_FULL)
     return gfx::ColorSpace::CreateJpeg();
   return gfx::ColorSpace::CreateREC709();
+}
+
+// Returns the SkYUVColorSpace that matches |image|->matrixCoefficients and
+// |image|->yuvRange.
+base::Optional<SkYUVColorSpace> GetSkYUVColorSpace(const avifImage* image) {
+  const auto matrix =
+      image->matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_UNSPECIFIED
+          ? AVIF_MATRIX_COEFFICIENTS_BT709
+          : image->matrixCoefficients;
+  if (image->yuvRange == AVIF_RANGE_FULL) {
+    if (matrix == AVIF_MATRIX_COEFFICIENTS_BT470BG ||
+        matrix == AVIF_MATRIX_COEFFICIENTS_BT601) {
+      return kJPEG_SkYUVColorSpace;
+    }
+    return base::nullopt;
+  }
+
+  if (matrix == AVIF_MATRIX_COEFFICIENTS_BT470BG ||
+      matrix == AVIF_MATRIX_COEFFICIENTS_BT601) {
+    return kRec601_SkYUVColorSpace;
+  }
+  if (matrix == AVIF_MATRIX_COEFFICIENTS_BT709) {
+    return kRec709_SkYUVColorSpace;
+  }
+  if (matrix == AVIF_MATRIX_COEFFICIENTS_BT2020_NCL) {
+    return kBT2020_SkYUVColorSpace;
+  }
+  return base::nullopt;
+}
+
+// Returns whether media::PaintCanvasVideoRenderer (PCVR) can convert the YUV
+// color space of |image| to RGB.
+// media::PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels() uses libyuv
+// for the YUV-to-RGB conversion.
+//
+// NOTE: Ideally, this function should be a static method of
+// media::PaintCanvasVideoRenderer. We did not do that because
+// media::PaintCanvasVideoRenderer uses the JPEG matrix coefficients for all
+// full-range YUV color spaces, but we want to use the JPEG matrix coefficients
+// only for full-range BT.601 YUV.
+bool IsColorSpaceSupportedByPCVR(const avifImage* image,
+                                 bool premultiply_alpha) {
+  base::Optional<SkYUVColorSpace> yuv_color_space = GetSkYUVColorSpace(image);
+  if (!yuv_color_space)
+    return false;
+  if (!image->alphaPlane)
+    return true;
+  // libyuv supports the alpha channel only with the I420 pixel format, which is
+  // 8-bit YUV 4:2:0 with kRec601_SkYUVColorSpace. libavif reports monochrome
+  // 4:0:0 as AVIF_PIXEL_FORMAT_YUV420 with null U and V planes, so we need to
+  // check for genuine YUV 4:2:0, not monochrome 4:0:0. Since
+  // media::PaintCanvasVideoRenderer calls libyuv::I420AlphaToARGB() with
+  // attenuate=1 to enable RGB premultiplication by alpha, we need to check
+  // premultiply_alpha.
+  const bool is_mono = !image->yuvPlanes[AVIF_CHAN_U];
+  return image->depth == 8 && image->yuvFormat == AVIF_PIXEL_FORMAT_YUV420 &&
+         !is_mono && *yuv_color_space == kRec601_SkYUVColorSpace &&
+         image->alphaRange == AVIF_RANGE_FULL && premultiply_alpha;
 }
 
 media::VideoPixelFormat AvifToVideoPixelFormat(avifPixelFormat fmt, int depth) {
@@ -499,21 +558,9 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image, ImageFrame* buffer) {
   }
 
   uint32_t* rgba_8888 = buffer->GetAddr(0, 0);
-  // libyuv supports the alpha channel only with the I420 pixel format. libavif
-  // reports monochrome 4:0:0 as AVIF_PIXEL_FORMAT_YUV420 with null U and V
-  // planes, so we need to check for genuine YUV 4:2:0, not monochrome 4:0:0.
-  bool is_i420 = image->depth == 8 &&
-                 image->yuvFormat == AVIF_PIXEL_FORMAT_YUV420 && !is_mono;
-  // Call media::PaintCanvasVideoRenderer if the color space is supported by
-  // libyuv. Since media::PaintCanvasVideoRenderer calls
-  // libyuv::I420AlphaToARGB() with attenuate=1 to enable RGB premultiplication
-  // by alpha, we need to check both is_i420 and premultiply_alpha.
-  // TODO(wtc): Figure out a way to check frame_cs == ~BT.2020 too since
-  // ConvertVideoFrameToRGBPixels() can handle that too.
-  if ((frame_cs == gfx::ColorSpace::CreateREC709() ||
-       frame_cs == gfx::ColorSpace::CreateREC601() ||
-       frame_cs == gfx::ColorSpace::CreateJpeg()) &&
-      (!image->alphaPlane || (is_i420 && premultiply_alpha))) {
+  // Call media::PaintCanvasVideoRenderer (PCVR) if the color space is
+  // supported.
+  if (IsColorSpaceSupportedByPCVR(image, premultiply_alpha)) {
     // Create temporary frame wrapping the YUVA planes.
     scoped_refptr<media::VideoFrame> frame;
     auto pixel_format = AvifToVideoPixelFormat(image->yuvFormat, image->depth);
@@ -521,10 +568,8 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image, ImageFrame* buffer) {
       return false;
     auto size = gfx::Size(image->width, image->height);
     if (image->alphaPlane) {
-      if (is_i420) {
-        DCHECK_EQ(pixel_format, media::PIXEL_FORMAT_I420);
-        pixel_format = media::PIXEL_FORMAT_I420A;
-      }
+      DCHECK_EQ(pixel_format, media::PIXEL_FORMAT_I420);
+      pixel_format = media::PIXEL_FORMAT_I420A;
       frame = media::VideoFrame::WrapExternalYuvaData(
           pixel_format, size, gfx::Rect(size), size, image->yuvRowBytes[0],
           image->yuvRowBytes[1], image->yuvRowBytes[2], image->alphaRowBytes,

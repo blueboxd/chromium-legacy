@@ -409,7 +409,7 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
 
   if (!video_frame->data(VideoFrame::kUPlane) &&
       !video_frame->data(VideoFrame::kVPlane)) {
-    DCHECK_EQ(video_frame->format(), PIXEL_FORMAT_I420);
+    DCHECK_EQ(format, PIXEL_FORMAT_I420);
     auto func = (color_space == kJPEG_SkYUVColorSpace) ? LIBYUV_J400_TO_ARGB
                                                        : LIBYUV_I400_TO_ARGB;
     func(plane_meta[VideoFrame::kYPlane].data,
@@ -440,7 +440,7 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
         rows);
   };
 
-  switch (video_frame->format()) {
+  switch (format) {
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I420:
       switch (color_space) {
@@ -545,7 +545,7 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
           NOTREACHED();
       }
       break;
-    case PIXEL_FORMAT_UYVY:
+
     case PIXEL_FORMAT_YUV420P9:
     case PIXEL_FORMAT_YUV422P9:
     case PIXEL_FORMAT_YUV444P9:
@@ -554,7 +554,8 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
     case PIXEL_FORMAT_YUV422P12:
     case PIXEL_FORMAT_YUV444P12:
     case PIXEL_FORMAT_Y16:
-      NOTREACHED() << "These cases should be handled above";
+      NOTREACHED()
+          << "These cases should be handled in ConvertVideoFrameToRGBPixels";
       break;
 
     case PIXEL_FORMAT_NV12:
@@ -565,6 +566,7 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
                           row_bytes, width, rows);
       break;
 
+    case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_NV21:
     case PIXEL_FORMAT_YUY2:
     case PIXEL_FORMAT_ARGB:
@@ -579,7 +581,7 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
     case PIXEL_FORMAT_XB30:
     case PIXEL_FORMAT_UNKNOWN:
       NOTREACHED() << "Only YUV formats and Y16 are supported, got: "
-                   << media::VideoPixelFormatToString(video_frame->format());
+                   << media::VideoPixelFormatToString(format);
   }
   done->Run();
 }

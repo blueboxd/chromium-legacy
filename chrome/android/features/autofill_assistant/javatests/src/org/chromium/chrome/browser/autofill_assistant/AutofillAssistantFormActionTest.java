@@ -45,10 +45,10 @@ import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.widget.RadioButton;
 
 import androidx.test.espresso.intent.Intents;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

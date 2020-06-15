@@ -91,7 +91,6 @@ class WaylandEventSource : public PlatformEventSource,
   void OnPointerCreated(WaylandPointer* pointer) override;
   void OnPointerDestroyed(WaylandPointer* pointer) override;
   void OnPointerFocusChanged(WaylandWindow* window,
-                             bool focused,
                              const gfx::PointF& location) override;
   void OnPointerButtonEvent(EventType evtype, int changed_button) override;
   void OnPointerMotionEvent(const gfx::PointF& location) override;
@@ -121,7 +120,7 @@ class WaylandEventSource : public PlatformEventSource,
 
   void UpdateKeyboardModifiers(int modifier, bool down);
   void HandleKeyboardFocusChange(WaylandWindow* window, bool focused);
-  void HandlePointerFocusChange(WaylandWindow* window, bool focused);
+  void HandlePointerFocusChange(WaylandWindow* window);
   void HandleTouchFocusChange(WaylandWindow* window,
                               bool focused,
                               base::Optional<PointerId> id = base::nullopt);

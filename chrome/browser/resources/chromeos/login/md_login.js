@@ -33,7 +33,6 @@
 // <include src="screen_encryption_migration.js">
 // <include src="screen_update_required.js">
 // <include src="screen_sync_consent.js">
-// <include src="screen_fingerprint_setup.js">
 // <include src="screen_app_downloading.js">
 // <include src="screen_discover.js">
 // <include src="screen_multidevice_setup.js">
@@ -64,7 +63,6 @@ cr.define('cr.ui.Oobe', function() {
       login.AutolaunchScreen.register();
       login.ErrorMessageScreen.register();
       login.SyncConsentScreen.register();
-      login.FingerprintSetupScreen.register();
       login.ArcTermsOfServiceScreen.register();
       login.AppDownloadingScreen.register();
       login.AppLaunchSplashScreen.register();

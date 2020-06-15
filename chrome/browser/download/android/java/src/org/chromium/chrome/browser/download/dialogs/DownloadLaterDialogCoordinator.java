@@ -8,13 +8,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 
-import androidx.annotation.NonNull;
-
 import org.chromium.chrome.browser.download.R;
-import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
-import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -23,35 +19,23 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 /**
  * Coordinator to construct the download later dialog.
  */
-public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Controller {
-    private PropertyModel mDownloadLaterDialogModel;
-    private DownloadLaterDialogView mCustomView;
-    private ModalDialogManager mModalDialogManager;
-    private PropertyModel mDialogModel;
-    private PropertyModelChangeProcessor<PropertyModel, DownloadLaterDialogView, PropertyKey>
+public class DownloadLaterDialogCoordinator {
+    private final PropertyModel mDownloadLaterDialogModel;
+    private final DownloadLaterDialogView mCustomView;
+    private final ModalDialogManager mModalDialogManager;
+    private final PropertyModel mDialogModel;
+    private final PropertyModelChangeProcessor<PropertyModel, DownloadLaterDialogView, PropertyKey>
             mPropertyModelChangeProcessor;
 
-    private DownloadLaterDialogController mController;
-
     /**
-     * Initializes the download location dialog.
-     * @param controller Receives events from download location dialog.
+     * The coordinator that bridges the download later diaog view logic to multiple data models.
+     * @param activity The activity mainly to provide the {@link ModalDialogManager}.
+     * @param modalDialogManager Provides functionalities to access the dialog.
+     * @param model The data model for the download later dialog.
+     * @param modalDialogController The data model for modal dialog.
      */
-    public void initialize(@NonNull DownloadLaterDialogController controller) {
-        mController = controller;
-    }
-
-    /**
-     * Shows the download later dialog.
-     */
-    public void showDialog(WindowAndroid windowAndroid, PropertyModel model) {
-        Activity activity = windowAndroid.getActivity().get();
-        // If the activity has gone away, just clean up the native pointer.
-        if (activity == null) {
-            onDismiss(null, DialogDismissalCause.ACTIVITY_DESTROYED);
-            return;
-        }
-
+    public DownloadLaterDialogCoordinator(Activity activity, ModalDialogManager modalDialogManager,
+            PropertyModel model, ModalDialogProperties.Controller modalDialogController) {
         // Set up the download later UI MVC.
         mDownloadLaterDialogModel = model;
         mCustomView = (DownloadLaterDialogView) LayoutInflater.from(activity).inflate(
@@ -62,9 +46,14 @@ public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Con
                         DownloadLaterDialogView.Binder::bind, true /*performInitialBind*/);
 
         // Set up the modal dialog.
-        mModalDialogManager = ((ModalDialogManagerHolder) (activity)).getModalDialogManager();
-        mDialogModel = getModalDialogModel(activity, this);
+        mModalDialogManager = modalDialogManager;
+        mDialogModel = getModalDialogModel(activity, modalDialogController);
+    }
 
+    /**
+     * Shows the download later dialog.
+     */
+    public void showDialog() {
         mModalDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.APP);
     }
 
@@ -80,13 +69,7 @@ public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Con
      * Destroy the download later dialog.
      */
     public void destroy() {
-        if (mPropertyModelChangeProcessor != null) {
-            mPropertyModelChangeProcessor.destroy();
-        }
-        if (mModalDialogManager != null) {
-            mModalDialogManager.dismissDialog(
-                    mDialogModel, DialogDismissalCause.DISMISSED_BY_NATIVE);
-        }
+        mPropertyModelChangeProcessor.destroy();
     }
 
     private PropertyModel getModalDialogModel(
@@ -100,36 +83,5 @@ public class DownloadLaterDialogCoordinator implements ModalDialogProperties.Con
                 .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, context.getResources(),
                         R.string.cancel)
                 .build();
-    }
-
-    // ModalDialogProperties.Controller implementation.
-    @Override
-    public void onClick(PropertyModel model, int buttonType) {
-        switch (buttonType) {
-            case ModalDialogProperties.ButtonType.POSITIVE:
-                mModalDialogManager.dismissDialog(
-                        model, DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
-                break;
-            case ModalDialogProperties.ButtonType.NEGATIVE:
-                mModalDialogManager.dismissDialog(
-                        model, DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
-                break;
-            default:
-        }
-    }
-
-    @Override
-    public void onDismiss(PropertyModel model, @DialogDismissalCause int dismissalCause) {
-        if (dismissalCause == DialogDismissalCause.POSITIVE_BUTTON_CLICKED) {
-            @DownloadLaterDialogChoice
-            int choice = (mCustomView == null) ? DownloadLaterDialogChoice.DOWNLOAD_NOW
-                                               : mCustomView.getChoice();
-            assert mController != null;
-            mController.onDownloadLaterDialogComplete(choice);
-            return;
-        }
-
-        assert mController != null;
-        mController.onDownloadLaterDialogCanceled();
     }
 }

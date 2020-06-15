@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">Sinhalų klaviatūra</translation>
 <translation id="240770291734945588">Pasiekiama: <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="2425665904502185219">Bendras failų dydis</translation>
+<translation id="2428749644083375155">Tiek elementų kopijuojama į aplanką „<ph name="FOLDER_NAME" />“: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="2448312741937722512">Tipas</translation>
 <translation id="2453576648990281505">Failas jau yra</translation>
 <translation id="2464079411014186876">Ledai</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346">„<ph name="ENTRY_NAME" />“ įtraukta į pasirinkimo sritį.</translation>
 <translation id="4582497162516204941">Diegimas sistemoje „Linux“ (beta vers.)</translation>
 <translation id="4594543368593301662">Rodomi rezultatai pagal užklausą „<ph name="SEARCH_TERM" />“.</translation>
+<translation id="4603392156942865207">Failas „<ph name="FILE_NAME" />“ kopijuojamas į aplanką „<ph name="FOLDER_NAME" />“</translation>
 <translation id="4631887759990505102">Atlikėjas</translation>
 <translation id="4656293982926141856">Šis kompiuteris</translation>
 <translation id="4669606053856530811">„<ph name="SOURCE_NAME" />“ nariai praras prieigą, nebent šie elementai bus bendrinami su jais.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">Kontrastas</translation>
 <translation id="5068919226082848014">Pica</translation>
 <translation id="5081517858322016911">Bus ištrinta <ph name="TOTAL_FILE_SIZE" /> failų</translation>
+<translation id="508423945471810158">Tiek elementų perkeliama į aplanką „<ph name="FOLDER_NAME" />“: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="509429900233858213">Įvyko klaida.</translation>
 <translation id="5098629044894065541">Hebrajų</translation>
 <translation id="5123433949759960244">Krepšinis</translation>
@@ -455,6 +458,7 @@
 <translation id="6054173164583630569">Prancūziška klaviatūra</translation>
 <translation id="6074825444536523002">„Google“ forma</translation>
 <translation id="6096979789310008754">Paieškos tekstas išvalytas, rodomi visi failai ir aplankai.</translation>
+<translation id="610101264611565198">Failas „<ph name="FILE_NAME" />“ perkeliamas į aplanką „<ph name="FOLDER_NAME" />“</translation>
 <translation id="6111770213269631447">Transliteracija (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Tarpas</translation>
 <translation id="6133173853026656527">Perkeliamas failas „<ph name="FILE_NAME" />“...</translation>
@@ -538,6 +542,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Nepavyko įdiegti.</translation>
 <translation id="7040138676081995583">Atidaryti naudojant...</translation>
+<translation id="7059566040011178088">Mažiau nei <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">Pasirinkta elementų: <ph name="COUNT" /></translation>
 <translation id="7106346894903675391">Įsigyti daugiau atminties...</translation>
 <translation id="7126604456862387217">&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; – &lt;em&gt;ieškoti Diske&lt;/em&gt;</translation>
@@ -648,6 +653,7 @@
 <translation id="8193175696669055101">Įrenginio modelis</translation>
 <translation id="8208580316430297579">Meno kūrinys</translation>
 <translation id="8223479393428528563">Jei norite išsaugoti šiuos failus ir naudoti juos be interneto ryšio, vėl prisijunkite prie interneto, spustelėkite failus dešiniuoju pelės klavišu ir pasirinkite parinktį „<ph name="OFFLINE_CHECKBOX_NAME" />“.</translation>
+<translation id="8231972167769262174">Apie <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Nutraukti</translation>
 <translation id="8261506727792406068">Ištrinti</translation>
 <translation id="8269755669432358899">Sutraukti failų atsiliepimų skydelius</translation>

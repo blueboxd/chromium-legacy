@@ -29,6 +29,8 @@ source_set("passwords") {
     "js_credential_manager.mm",
     "notify_auto_signin_view_controller.h",
     "notify_auto_signin_view_controller.mm",
+    "password_check_observer_bridge.h",
+    "password_check_observer_bridge.mm",
     "password_controller.h",
     "password_controller.mm",
     "password_form_filler.h",

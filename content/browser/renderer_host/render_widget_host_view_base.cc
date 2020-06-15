@@ -764,18 +764,21 @@ RenderWidgetHostViewBase::GetTouchSelectionControllerClientManager() {
 void RenderWidgetHostViewBase::SetRecordContentToVisibleTimeRequest(
     base::TimeTicks start_time,
     base::Optional<bool> destination_is_loaded,
+    base::Optional<bool> destination_is_frozen,
     bool show_reason_tab_switching,
     bool show_reason_unoccluded,
     bool show_reason_bfcache_restore) {
   if (last_record_tab_switch_time_request_.has_value()) {
     last_record_tab_switch_time_request_.value().UpdateRequest(
         RecordContentToVisibleTimeRequest(
-            start_time, destination_is_loaded, show_reason_tab_switching,
-            show_reason_unoccluded, show_reason_bfcache_restore));
+            start_time, destination_is_loaded, destination_is_frozen,
+            show_reason_tab_switching, show_reason_unoccluded,
+            show_reason_bfcache_restore));
   } else {
     last_record_tab_switch_time_request_.emplace(
-        start_time, destination_is_loaded, show_reason_tab_switching,
-        show_reason_unoccluded, show_reason_bfcache_restore);
+        start_time, destination_is_loaded, destination_is_frozen,
+        show_reason_tab_switching, show_reason_unoccluded,
+        show_reason_bfcache_restore);
   }
 }
 

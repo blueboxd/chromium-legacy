@@ -1376,8 +1376,7 @@ void SAMLPolicyTest::SetSAMLOfflineSigninTimeLimitPolicy(int limit) {
   policy::PolicyMap user_policy;
   user_policy.Set(policy::key::kSAMLOfflineSigninTimeLimit,
                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                  policy::POLICY_SOURCE_CLOUD,
-                  std::make_unique<base::Value>(limit), nullptr);
+                  policy::POLICY_SOURCE_CLOUD, base::Value(limit), nullptr);
   provider_.UpdateChromePolicy(user_policy);
   base::RunLoop().RunUntilIdle();
 }
@@ -1777,12 +1776,10 @@ class SAMLPasswordAttributesTest : public SAMLPolicyTest,
 
 void SAMLPasswordAttributesTest::SetUpOnMainThread() {
   policy::PolicyMap user_policy;
-  user_policy.Set(
-      policy::key::kSamlInSessionPasswordChangeEnabled,
-      policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-      policy::POLICY_SOURCE_CLOUD,
-      std::make_unique<base::Value>(in_session_pw_change_policy_enabled()),
-      nullptr);
+  user_policy.Set(policy::key::kSamlInSessionPasswordChangeEnabled,
+                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                  policy::POLICY_SOURCE_CLOUD,
+                  base::Value(in_session_pw_change_policy_enabled()), nullptr);
   provider_.UpdateChromePolicy(user_policy);
   base::RunLoop().RunUntilIdle();
 

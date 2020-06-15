@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabModelSelectorMetadata;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.TabModelMetaDataInfo;
@@ -110,14 +111,14 @@ public class TabPersistentStoreTest {
                             getTabCreatorManager().getTabCreator(false),
                             getTabCreatorManager().getTabCreator(true), null,
                             mTabModelOrderController, null, mTabPersistentStore,
-                            TestTabModelSelector.this, true);
+                            () -> NextTabPolicy.HIERARCHICAL, TestTabModelSelector.this, true);
                 }
             };
             TabModelImpl regularTabModel = TestThreadUtils.runOnUiThreadBlocking(callable);
-            TabModel incognitoTabModel = new IncognitoTabModel(
-                    new IncognitoTabModelImplCreator(getTabCreatorManager().getTabCreator(false),
-                            getTabCreatorManager().getTabCreator(true), null,
-                            mTabModelOrderController, null, mTabPersistentStore, this));
+            TabModel incognitoTabModel = new IncognitoTabModel(new IncognitoTabModelImplCreator(
+                    getTabCreatorManager().getTabCreator(false),
+                    getTabCreatorManager().getTabCreator(true), null, mTabModelOrderController,
+                    null, mTabPersistentStore, () -> NextTabPolicy.HIERARCHICAL, this));
             initialize(regularTabModel, incognitoTabModel);
         }
 
@@ -132,11 +133,6 @@ public class TabPersistentStoreTest {
                 model.closeTab(tabToClose, false, false, true);
             }
             return true;
-        }
-
-        @Override
-        public boolean isInOverviewMode() {
-            return false;
         }
 
         @Override
@@ -194,7 +190,8 @@ public class TabPersistentStoreTest {
             new TabWindowManager.TabModelSelectorFactory() {
                 @Override
                 public TabModelSelector buildSelector(Activity activity,
-                        TabCreatorManager tabCreatorManager, int selectorIndex) {
+                        TabCreatorManager tabCreatorManager,
+                        NextTabPolicySupplier nextTabPolicySupplier, int selectorIndex) {
                     try {
                         return new TestTabModelSelector();
                     } catch (Exception e) {
@@ -616,7 +613,7 @@ public class TabPersistentStoreTest {
                         tabWindowManager.onActivityStateChange(
                                 mChromeActivity, ActivityState.DESTROYED);
                         return (TestTabModelSelector) tabWindowManager.requestSelector(
-                                mChromeActivity, mChromeActivity, 0);
+                                mChromeActivity, mChromeActivity, null, 0);
                     }
                 });
 

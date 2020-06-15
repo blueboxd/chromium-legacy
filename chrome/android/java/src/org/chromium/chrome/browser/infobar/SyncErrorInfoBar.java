@@ -27,7 +27,7 @@ import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
 import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
+import org.chromium.components.infobars.InfoBarLayout;
 import org.chromium.content_public.browser.WebContents;
 
 import java.lang.annotation.Retention;

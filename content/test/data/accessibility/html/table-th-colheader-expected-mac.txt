@@ -1,21 +1,21 @@
 AXWebArea
 ++AXTable AXColumnHeaderUIElements=[:4, :6] AXHeader=:23
-++++AXRow AXIndex='0'
+++++AXRow AXIndex=0
 ++++++AXCell AXColumnIndexRange={len: 1, loc: 0} AXRowIndexRange={len: 1, loc: 0}
 ++++++++AXStaticText AXValue='Firstname'
 ++++++AXCell AXColumnIndexRange={len: 1, loc: 1} AXRowIndexRange={len: 1, loc: 0}
 ++++++++AXStaticText AXValue='Lastname'
-++++AXRow AXIndex='1'
+++++AXRow AXIndex=1
 ++++++AXCell AXColumnHeaderUIElements=[:4] AXColumnIndexRange={len: 1, loc: 0} AXRowIndexRange={len: 1, loc: 1}
 ++++++++AXStaticText AXValue='Jill'
 ++++++AXCell AXColumnHeaderUIElements=[:6] AXColumnIndexRange={len: 1, loc: 1} AXRowIndexRange={len: 1, loc: 1}
 ++++++++AXStaticText AXValue='Smith'
-++++AXColumn AXHeader=:4 AXIndex='0'
+++++AXColumn AXHeader=:4 AXIndex=0
 ++++++AXCell AXColumnIndexRange={len: 1, loc: 0} AXRowIndexRange={len: 1, loc: 0}
 ++++++++AXStaticText AXValue='Firstname'
 ++++++AXCell AXColumnHeaderUIElements=[:4] AXColumnIndexRange={len: 1, loc: 0} AXRowIndexRange={len: 1, loc: 1}
 ++++++++AXStaticText AXValue='Jill'
-++++AXColumn AXHeader=:6 AXIndex='1'
+++++AXColumn AXHeader=:6 AXIndex=1
 ++++++AXCell AXColumnIndexRange={len: 1, loc: 1} AXRowIndexRange={len: 1, loc: 0}
 ++++++++AXStaticText AXValue='Lastname'
 ++++++AXCell AXColumnHeaderUIElements=[:6] AXColumnIndexRange={len: 1, loc: 1} AXRowIndexRange={len: 1, loc: 1}

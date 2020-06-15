@@ -266,6 +266,9 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   std::unique_ptr<WebContentSettingsClient> CreateWorkerContentSettingsClient()
       override;
 
+  std::unique_ptr<media::SpeechRecognitionClient>
+  CreateSpeechRecognitionClient() override;
+
   void SetMouseCapture(bool capture) override;
 
   bool UsePrintingLayout() const override;

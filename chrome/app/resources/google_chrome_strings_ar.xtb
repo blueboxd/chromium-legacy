@@ -33,7 +33,7 @@
 <translation id="174539241580958092">‏تعذر على Google Chrome مزامنة البيانات نظرًا لوجود خطأ في تسجيل الدخول.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1812689907177901597">‏من خلال إيقاف هذا الإعداد، يمكنك تسجيل الدخول إلى "مواقع Google" مثل Gmail بدون الحاجة إلى تسجيل الدخول إلى Chrome</translation>
-<translation id="1860536484129686729">‏يحتاج Chrome إلى إذن للوصول إلى الكاميرا من أجل موقع الويب هذا.</translation>
+<translation id="1860536484129686729">‏يحتاج Chrome إلى إذن للوصول إلى الكاميرا من أجل الموقع الإلكتروني هذا.</translation>
 <translation id="1873233029667955273">‏Google Chrome ليس متصفحك التلقائي.</translation>
 <translation id="1874309113135274312">‏الإصدار التجريبي من Google Chrome‏ (mDNS-In)</translation>
 <translation id="1877026089748256423">‏إصدار Chrome قديم</translation>
@@ -47,7 +47,7 @@
 <translation id="2290014774651636340">‏مفاتيح واجهة برمجة تطبيقات Google مفقودة. وسيترتب على ذلك توقف بعض وظائف Google Chrome عن العمل.</translation>
 <translation id="2290095356545025170">‏هل تريد فعلًا إزالة Google Chrome؟</translation>
 <translation id="2309047409763057870">‏هذا تثبيت ثانوي من Google Chrome، ولا يمكن جعله متصفحك التلقائي.</translation>
-<translation id="2348335408836342058">‏يحتاج Chrome إلى إذن للوصول إلى الكاميرا والميكروفون من أجل موقع الويب هذا.</translation>
+<translation id="2348335408836342058">‏يحتاج Chrome إلى إذن للوصول إلى الكاميرا والميكروفون من أجل الموقع الإلكتروني هذا.</translation>
 <translation id="234869673307233423">‏يتعذّر على Chrome التحقّق من كلمات المرور. يُرجى إعادة المحاولة.</translation>
 <translation id="2429317896000329049">‏تعذر على Google Chrome مزامنة البيانات نظرًا لأن المزامنة غير متاحة في نطاقك.</translation>
 <translation id="2467438592969358367">‏يرغب Google Chrome في تصدير كلمات مرورك، لذا يُرجى كتابة كلمة مرور Windows للسماح بذلك.</translation>
@@ -61,7 +61,7 @@
 <translation id="2652691236519827073">‏فتح الرابط في علامة تبويب جديدة في Chrome</translation>
 <translation id="2665296953892887393">‏يمكنك المساعدة في تحسين Google Chrome عن طريق إرسال تقارير الأعطال و<ph name="UMA_LINK" /> إلى Google</translation>
 <translation id="2689103672227170538">‏غيّرت هذه الإضافة الصفحة التي تظهر عند بدء تشغيل Chrome.</translation>
-<translation id="2765403129283291972">‏يحتاج Chrome إلى إذن للوصول إلى الميكروفون من أجل موقع الويب هذا.</translation>
+<translation id="2765403129283291972">‏يحتاج Chrome إلى إذن للوصول إلى الميكروفون من أجل الموقع الإلكتروني هذا.</translation>
 <translation id="2770231113462710648">تغيير المتصفح التلقائي إلى:</translation>
 <translation id="2775140325783767197">‏يتعذّر على Chrome التحقّق من كلمات المرور. يُرجى التحقّق من اتصال الإنترنت.</translation>
 <translation id="2799223571221894425">إعادة تشغيل</translation>
@@ -87,7 +87,7 @@
 <translation id="3451115285585441894">‏جارٍ الإضافة إلى Chrome...</translation>
 <translation id="345171907106878721">‏إضافة نفسك إلى Chrome</translation>
 <translation id="34857402635545079">‏محو البيانات من Chrome أيضًا (<ph name="URL" />)</translation>
-<translation id="3503306920980160878">‏يحتاج Chrome للوصول إلى موقعك الجغرافي لمشاركته مع موقع الويب هذا.</translation>
+<translation id="3503306920980160878">‏يحتاج Chrome للوصول إلى موقعك الجغرافي لمشاركته مع الموقع الإلكتروني هذا.</translation>
 <translation id="3533694711092285624">‏ما مِن كلمات مرور محفوظة. لا يستطيع متصفّح Chrome التحقّق من كلمات المرور إلا عند حفظها.</translation>
 <translation id="3541482654983822893">‏يتعذّر على Chrome التحقُّق من كلمات المرور. يُرجى إعادة المحاولة بعد 24 ساعة.</translation>
 <translation id="3576528680708590453">‏ضَبَط مشرف النظام Google Chrome لفتح متصفِّح بديل للوصول إلى <ph name="TARGET_URL_HOSTNAME" />.</translation>
@@ -112,6 +112,7 @@
 <translation id="4251615635259297716">‏هل ترغب في ربط بياناتك في Chrome بهذا الحساب؟</translation>
 <translation id="4281844954008187215">بنود الخدمة</translation>
 <translation id="4293420128516039005">‏يمكنك تسجيل الدخول لمزامنة Chrome وتخصيصه على جميع أجهزتك.</translation>
+<translation id="4325083532956419387">‏إصدار "نظام التشغيل Chrome"</translation>
 <translation id="4328355335528187361">‏إصدار مطوّري البرامج من Google Chrome ‏(mDNS-In)</translation>
 <translation id="4331809312908958774">‏نظام تشغيل Chrome</translation>
 <translation id="4335235004908507846">‏يستطيع Chrome مساعدتك في الحفاظ على أمان معلوماتك من عمليات اختراق البيانات والإضافات الضارة وغيرها من المشاكل.</translation>

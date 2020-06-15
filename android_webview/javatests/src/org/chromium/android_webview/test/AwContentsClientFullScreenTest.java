@@ -7,10 +7,11 @@ package org.chromium.android_webview.test;
 import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_MS;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

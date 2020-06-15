@@ -509,7 +509,6 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="7068360136237591149">Hap skedarët</translation>
 <translation id="7076293881109082629">Po identifikohesh</translation>
 <translation id="7088960765736518739">Qasja me çelës</translation>
-<translation id="7092922358121866860">Shfaq cilësimet e "Dritës së natës"</translation>
 <translation id="7098389117866926363">Pajisja USB-C (porta majtas, prapa)</translation>
 <translation id="7131634465328662194">Do të dalësh automatikisht</translation>
 <translation id="7143207342074048698">Po lidhet</translation>
@@ -661,7 +660,6 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="8877788021141246043">Cakto një alarm rikujtues</translation>
 <translation id="8878886163241303700">Ekran i zgjeruar</translation>
 <translation id="890616557918890486">Ndrysho burimin</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> nuk e mbështet <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Rezolucioni ndryshoi në <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Kliko "Konfirmo" për të ruajtur ndryshimet. Cilësimet e mëparshme do të restaurohen për <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Bateria është në <ph name="PERCENTAGE" /> për qind.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">"Asistenti i Google" nuk e flet këtë gjuhë.</translation>

@@ -510,7 +510,6 @@
 <translation id="7068360136237591149">ফাইল খুলুন</translation>
 <translation id="7076293881109082629">প্রবেশ করুন হচ্ছে</translation>
 <translation id="7088960765736518739">অ্যাক্সেস পাল্টান</translation>
-<translation id="7092922358121866860">নাইট লাইট সেটিংস দেখান</translation>
 <translation id="7098389117866926363">USB-C ডিভাইস (পিছনের বাঁ পোর্ট)</translation>
 <translation id="7131634465328662194">আপনি নিজে থেকেই সাইন-আউট হয়ে যাবেন।</translation>
 <translation id="7143207342074048698">সংযুক্ত হচ্ছে</translation>
@@ -662,7 +661,6 @@
 <translation id="8877788021141246043">রিমাইন্ডার সেট করুন</translation>
 <translation id="8878886163241303700">স্ক্রিন সম্প্রসারণ করা হচ্ছে</translation>
 <translation id="890616557918890486">সোর্স পরিবর্তন করুন</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" />-এ <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> হার্জ) কাজ করে না। রেজোলিউশন পরিবর্তন করে <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) করা হয়েছে। পরিবর্তিত সেটিংস রেখে দিতে 'কনফার্ম করুন' বিকল্পে ক্লিক করুন। <ph name="TIMEOUT_SECONDS" />-এর মধ্যে পুরনো সেটিংসে ফিরিয়ে নিয়ে যাওয়া হবে।</translation>
 <translation id="8909138438987180327">ব্যাটারিতে <ph name="PERCENTAGE" /> শতাংশ চার্জ আছে।</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google অ্যাসিস্ট্যান্ট এই ভাষায় কথা বলে না।</translation>

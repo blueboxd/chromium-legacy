@@ -82,9 +82,9 @@ base::Value NetLogParamsWithInt(base::StringPiece name, int value) {
 }
 
 base::Value NetLogParamsWithInt64(base::StringPiece name, int64_t value) {
-  base::DictionaryValue event_params;
-  event_params.SetKey(name, NetLogNumberValue(value));
-  return std::move(event_params);
+  base::Value params(base::Value::Type::DICTIONARY);
+  params.SetKey(name, NetLogNumberValue(value));
+  return params;
 }
 
 base::Value NetLogParamsWithBool(base::StringPiece name, bool value) {

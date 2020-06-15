@@ -93,9 +93,8 @@ class PasswordsPrivateDelegate : public KeyedService {
   // Moves a password currently stored on the device to being stored in the
   // signed-in, non-syncing Google Account. The result is a no-op if any of
   // these is true: |id| is invalid; |id| corresponds to a password already
-  // stored in the account; the user is not in Passwords Account Storage mode
-  // (kEnablePasswordsAccountStorage enabled, signed-in, not syncing and
-  // opted-in to the feature).
+  // stored in the account; or the user is not using the account-scoped password
+  // storage.
   virtual void MovePasswordToAccount(int id,
                                      content::WebContents* web_contents) = 0;
 

@@ -14,12 +14,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Rule;
 import org.junit.Test;

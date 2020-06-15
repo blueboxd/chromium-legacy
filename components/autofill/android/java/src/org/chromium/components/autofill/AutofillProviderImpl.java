@@ -19,12 +19,17 @@ import android.view.autofill.AutofillValue;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.annotations.DoNotInline;
+import org.chromium.base.annotations.VerifiesOnO;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.components.version_info.VersionConstants;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsAccessibility;
+import org.chromium.ui.DropdownItem;
+import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 
@@ -38,9 +43,9 @@ import org.chromium.ui.display.DisplayAndroid;
  * AutofillProviderAndroid is owned by the embedder-specific C++ WebContents
  * wrapper (e.g., native AwContents in //android_webview).
  *
- * DoNotInline since it causes class verification errors, see crbug.com/991851.
+ * VerifiesOnO since it causes class verification errors, see crbug.com/991851.
  */
-@DoNotInline
+@VerifiesOnO
 @TargetApi(Build.VERSION_CODES.O)
 public class AutofillProviderImpl extends AutofillProvider {
     private static final String TAG = "AutofillProviderImpl";
@@ -246,6 +251,10 @@ public class AutofillProviderImpl extends AutofillProvider {
     private AutofillProviderUMA mAutofillUMA;
     private AutofillManagerWrapper.InputUIObserver mInputUIObserver;
     private long mAutofillTriggeredTimeMillis;
+    private Context mContext;
+    private AutofillPopup mDatalistPopup;
+    private WebContentsAccessibility mWebContentsAccessibility;
+    private View mAnchorView;
 
     public AutofillProviderImpl(Context context, ViewGroup containerView, String providerName) {
         this(containerView, new AutofillManagerWrapper(context), context, providerName);
@@ -272,6 +281,7 @@ public class AutofillProviderImpl extends AutofillProvider {
                 }
             };
             mAutofillManager.addInputUIObserver(mInputUIObserver);
+            mContext = context;
         }
     }
 
@@ -448,7 +458,15 @@ public class AutofillProviderImpl extends AutofillProvider {
     }
 
     @Override
-    protected void hidePopup() {}
+    protected void hidePopup() {
+        if (mDatalistPopup != null) {
+            mDatalistPopup.dismiss();
+            mDatalistPopup = null;
+        }
+        if (mWebContentsAccessibility != null) {
+            mWebContentsAccessibility.onAutofillPopupDismissed();
+        }
+    }
 
     private void notifyViewExitBeforeDestroyRequest() {
         if (mRequest == null) return;
@@ -494,6 +512,86 @@ public class AutofillProviderImpl extends AutofillProvider {
     }
 
     @Override
+    protected void showDatalistPopup(
+            String[] datalistValues, String[] datalistLabels, boolean isRtl) {
+        if (mRequest == null) return;
+        FocusField focusField = mRequest.getFocusField();
+        if (focusField != null) {
+            showDatalistPopup(datalistValues, datalistLabels,
+                    mRequest.getField(focusField.fieldIndex).getBounds(), isRtl);
+        }
+    }
+
+    /**
+     * Display the simplest popup for the datalist. This is same as WebView's datalist popup in
+     * Android pre-o. No suggestion from the autofill service will be presented, No advance
+     * features of AutofillPopup are used.
+     */
+    private void showDatalistPopup(
+            String[] datalistValues, String[] datalistLabels, RectF bounds, boolean isRtl) {
+        final AutofillSuggestion[] suggestions = new AutofillSuggestion[datalistValues.length];
+        for (int i = 0; i < suggestions.length; i++) {
+            suggestions[i] = new AutofillSuggestion(datalistValues[i], datalistLabels[i],
+                    DropdownItem.NO_ICON, false /* isIconAtLeft */, i, false /* isDeletable */,
+                    false /* isMultilineLabel */, false /* isBoldLabel */);
+        }
+        if (mWebContentsAccessibility == null) {
+            mWebContentsAccessibility = WebContentsAccessibility.fromWebContents(mWebContents);
+        }
+        if (mDatalistPopup == null) {
+            if (ContextUtils.activityFromContext(mContext) == null) return;
+            ViewAndroidDelegate delegate = mWebContents.getViewAndroidDelegate();
+            if (mAnchorView == null) mAnchorView = delegate.acquireView();
+            setAnchorViewRect(bounds);
+            try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+                mDatalistPopup = new AutofillPopup(mContext, mAnchorView, new AutofillDelegate() {
+                    @Override
+                    public void dismissed() {
+                        onDatalistPopupDismissed();
+                    }
+
+                    @Override
+                    public void suggestionSelected(int listIndex) {
+                        onSuggestionSelected(suggestions[listIndex].getLabel());
+                    }
+
+                    @Override
+                    public void deleteSuggestion(int listIndex) {}
+
+                    @Override
+                    public void accessibilityFocusCleared() {
+                        mWebContentsAccessibility.onAutofillPopupAccessibilityFocusCleared();
+                    }
+                });
+            } catch (RuntimeException e) {
+                // Deliberately swallowing exception because bad framework implementation can
+                // throw exceptions in ListPopupWindow constructor.
+                onDatalistPopupDismissed();
+                return;
+            }
+        }
+        mDatalistPopup.filterAndShow(suggestions, isRtl, false);
+        if (mWebContentsAccessibility != null) {
+            mWebContentsAccessibility.onAutofillPopupDisplayed(mDatalistPopup.getListView());
+        }
+    }
+
+    private void onDatalistPopupDismissed() {
+        ViewAndroidDelegate delegate = mWebContents.getViewAndroidDelegate();
+        delegate.removeView(mAnchorView);
+        mAnchorView = null;
+    }
+
+    private void onSuggestionSelected(String value) {
+        acceptDataListSuggestion(mNativeAutofillProvider, value);
+        hidePopup();
+    }
+
+    private void setAnchorViewRect(RectF rect) {
+        setAnchorViewRect(mNativeAutofillProvider, mAnchorView, rect);
+    }
+
+    @Override
     protected void reset() {
         // We don't need to reset anything here, it should be safe to cancel
         // current autofill session when new one starts in
@@ -535,6 +633,11 @@ public class AutofillProviderImpl extends AutofillProvider {
         for (int i = 0; i < mRequest.getFieldCount(); ++i) {
             notifyVirtualValueChanged(i, /* forceNotify = */ true);
         }
+    }
+
+    @VisibleForTesting
+    public AutofillPopup getDatalistPopupForTesting() {
+        return mDatalistPopup;
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)

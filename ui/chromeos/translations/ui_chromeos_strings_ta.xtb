@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">சிங்கள விசைப்பலகை</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> உள்ளது</translation>
 <translation id="2425665904502185219">மொத்தக் கோப்பின் அளவு</translation>
+<translation id="2428749644083375155"><ph name="NUMBER_OF_ITEMS" /> கோப்புகள்/கோப்புறைகளை <ph name="FOLDER_NAME" />க்கு நகலெடுக்கிறது</translation>
 <translation id="2448312741937722512">வகை</translation>
 <translation id="2453576648990281505">கோப்பு ஏற்கனவே உள்ளது</translation>
 <translation id="2464079411014186876">ஐஸ்கிரீம்</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346">தேர்வுக்கு <ph name="ENTRY_NAME" /> சேர்க்கப்பட்டது.</translation>
 <translation id="4582497162516204941">Linux (பீட்டா) மூலம் நிறுவு</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> என்பதற்கான தேடல் முடிவுகளைக் காட்டுகிறது.</translation>
+<translation id="4603392156942865207"><ph name="FILE_NAME" /> ஐ <ph name="FOLDER_NAME" />க்கு நகலெடுக்கிறது</translation>
 <translation id="4631887759990505102">கலைஞர்</translation>
 <translation id="4656293982926141856">இந்தக் கம்ப்யூட்டர்</translation>
 <translation id="4669606053856530811">இந்தக் கோப்புகளை '<ph name="SOURCE_NAME" />' இன் உறுப்பினர்களுடன் பகிரவில்லை எனில், அவர்கள் அவற்றுக்கான அணுகலை இழப்பார்கள்.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">ஒளி மாறுபாடு</translation>
 <translation id="5068919226082848014">பீட்சா</translation>
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> அளவுள்ள கோப்புகள் நீக்கப்படும்</translation>
+<translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> கோப்புகள்/கோப்புறைகளை <ph name="FOLDER_NAME" />க்கு நகர்த்துகிறது</translation>
 <translation id="509429900233858213">பிழை ஏற்பட்டது.</translation>
 <translation id="5098629044894065541">ஹீப்ரு</translation>
 <translation id="5123433949759960244">கூடைப்பந்து</translation>
@@ -455,6 +458,7 @@
 <translation id="6054173164583630569">ஃபிரெஞ்ச் விசைப்பலகை</translation>
 <translation id="6074825444536523002">Google படிவம்</translation>
 <translation id="6096979789310008754">தேடல் உரை அழிக்கப்பட்டது, அனைத்துக் கோப்புகளையும் கோப்புறைகளையும் காட்டுகிறது.</translation>
+<translation id="610101264611565198"><ph name="FILE_NAME" /> ஐ <ph name="FOLDER_NAME" />க்கு நகர்த்துகிறது</translation>
 <translation id="6111770213269631447">ஒலிபெயர்ப்பு (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">இடைவெளி</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> ஐ நகர்த்துகிறது...</translation>
@@ -538,6 +542,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">நிறுவல் தோல்வியடைந்தது.</translation>
 <translation id="7040138676081995583">இதனுடன் திற...</translation>
+<translation id="7059566040011178088"><ph name="REMAINING_TIME" />க்கும் குறைவு</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> உருப்படிகள் தேர்ந்தெடுக்கப்பட்டுள்ளன.</translation>
 <translation id="7106346894903675391">கூடுதல் சேமிப்பிடத்தை வாங்கு...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;இயக்ககத்தில் தேடு&lt;/em&gt;</translation>
@@ -648,6 +653,7 @@
 <translation id="8193175696669055101">சாதனத்தின் மாடல்</translation>
 <translation id="8208580316430297579">கலைப்பணி</translation>
 <translation id="8223479393428528563">இந்தக் கோப்புகளை ஆஃப்லைனில் பயன்படுத்துவதற்காகச் சேமிக்க, ஆன்லைனிற்கு சென்று, கோப்புகளில் வலது-கிளிக் செய்து, <ph name="OFFLINE_CHECKBOX_NAME" /> விருப்பத்தைத் தேர்தெடுக்கவும்.</translation>
+<translation id="8231972167769262174"><ph name="REMAINING_TIME" /> பற்றி</translation>
 <translation id="8249296373107784235">கைவிடு</translation>
 <translation id="8261506727792406068">நீக்கு</translation>
 <translation id="8269755669432358899">கோப்புகள் காட்டப்படும் பேனல்களைச் சுருக்கும்</translation>

@@ -11,8 +11,9 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.util.Base64;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

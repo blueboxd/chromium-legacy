@@ -2440,6 +2440,8 @@ extern const char kNaclDescription[];
 #if BUILDFLAG(ENABLE_PAINT_PREVIEW) && defined(OS_ANDROID)
 extern const char kPaintPreviewDemoName[];
 extern const char kPaintPreviewDemoDescription[];
+extern const char kPaintPreviewStartupName[];
+extern const char kPaintPreviewStartupDescription[];
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_PLUGINS)

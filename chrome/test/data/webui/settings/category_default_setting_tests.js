@@ -314,4 +314,39 @@ suite('CategoryDefaultSetting', function() {
         prefsCookiesSessionOnly, ContentSettingsTypes.COOKIES,
         ContentSetting.SESSION_ONLY, '#subOptionCookiesToggle');
   });
+
+  test('test popups content setting default value', function() {
+    testElement.category = ContentSettingsTypes.POPUPS;
+    return browserProxy.getDefaultValueForContentType(testElement.category)
+        .then((defaultValue) => {
+          assertEquals(ContentSetting.BLOCK, defaultValue.setting);
+          browserProxy.resetResolver('getDefaultValueForContentType');
+        });
+  });
+
+  test('test popups content setting in BLOCKED state', function() {
+    const prefs = createSiteSettingsPrefs(
+        [createContentSettingTypeToValuePair(
+            ContentSettingsTypes.POPUPS, createDefaultContentSetting({
+              setting: ContentSetting.BLOCK,
+            }))],
+        []);
+
+    return testCategoryEnabled(
+        testElement, ContentSettingsTypes.POPUPS, prefs, false,
+        ContentSetting.ALLOW);
+  });
+
+  test('test popups content setting in ALLOWED state', function() {
+    const prefs = createSiteSettingsPrefs(
+        [createContentSettingTypeToValuePair(
+            ContentSettingsTypes.POPUPS, createDefaultContentSetting({
+              setting: ContentSetting.ALLOW,
+            }))],
+        []);
+
+    return testCategoryEnabled(
+        testElement, ContentSettingsTypes.POPUPS, prefs, true,
+        ContentSetting.ALLOW);
+  });
 });

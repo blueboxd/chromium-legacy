@@ -57,12 +57,10 @@ class OmniboxViewIOS : public OmniboxView,
                  size_t selected_line,
                  base::TimeTicks match_selection_timestamp) override;
   base::string16 GetText() const override;
-  void SetWindowTextAndCaretPos(
-      const base::string16& text,
-      size_t caret_pos,
-      bool update_popup,
-      bool notify_text_changed,
-      const base::string16& additional_text = base::string16()) override;
+  void SetWindowTextAndCaretPos(const base::string16& text,
+                                size_t caret_pos,
+                                bool update_popup,
+                                bool notify_text_changed) override;
   void SetCaretPos(size_t caret_pos) override;
   void RevertAll() override;
   void UpdatePopup() override;
@@ -70,11 +68,9 @@ class OmniboxViewIOS : public OmniboxView,
                                    const AutocompleteMatch& match,
                                    bool save_original_selection,
                                    bool notify_text_changed) override;
-  void OnInlineAutocompleteTextMaybeChanged(
-      const base::string16& display_text,
-      size_t user_text_length,
-      size_t user_text_start = 0,
-      const base::string16& additional_text = base::string16()) override;
+  void OnInlineAutocompleteTextMaybeChanged(const base::string16& display_text,
+                                            size_t user_text_start,
+                                            size_t user_text_length) override;
   void OnBeforePossibleChange() override;
   bool OnAfterPossibleChange(bool allow_keyword_ui_change) override;
   bool IsImeComposing() const override;
@@ -82,6 +78,7 @@ class OmniboxViewIOS : public OmniboxView,
 
   // OmniboxView stubs.
   void Update() override {}
+  void SetAdditionalText(const base::string16& text) override {}
   void EnterKeywordModeForDefaultSearchProvider() override {}
   bool IsSelectAll() const override;
   void GetSelectionBounds(base::string16::size_type* start,

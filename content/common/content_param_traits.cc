@@ -433,6 +433,7 @@ void ParamTraits<content::RecordContentToVisibleTimeRequest>::Write(
     const param_type& p) {
   WriteParam(m, p.event_start_time);
   WriteParam(m, p.destination_is_loaded);
+  WriteParam(m, p.destination_is_frozen);
   WriteParam(m, p.show_reason_tab_switching);
   WriteParam(m, p.show_reason_unoccluded);
   WriteParam(m, p.show_reason_bfcache_restore);
@@ -444,6 +445,7 @@ bool ParamTraits<content::RecordContentToVisibleTimeRequest>::Read(
     param_type* r) {
   if (!ReadParam(m, iter, &r->event_start_time) ||
       !ReadParam(m, iter, &r->destination_is_loaded) ||
+      !ReadParam(m, iter, &r->destination_is_frozen) ||
       !ReadParam(m, iter, &r->show_reason_tab_switching) ||
       !ReadParam(m, iter, &r->show_reason_unoccluded) ||
       !ReadParam(m, iter, &r->show_reason_bfcache_restore)) {

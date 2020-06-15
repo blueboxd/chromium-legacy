@@ -55,8 +55,9 @@ class NET_EXPORT CookieInclusionStatus {
     NUM_EXCLUSION_REASONS
   };
 
-  // Reason to warn about a cookie. If you add one, please update
-  // GetDebugString().
+  // Reason to warn about a cookie. Any information contained in WarningReason
+  // of an included cookie may be passed to an untrusted renderer.
+  // If you add one, please update GetDebugString().
   enum WarningReason {
     // Of the following 3 SameSite warnings, there will be, at most, a single
     // active one.

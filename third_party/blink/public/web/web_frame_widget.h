@@ -172,6 +172,14 @@ class WebFrameWidget : public WebWidget {
   // widget.
   virtual void SetMainFrameOverlayColor(SkColor) = 0;
 
+  // Add an edit command to be processed as the default action if the next
+  // keyboard event is unhandled.
+  virtual void AddEditCommandForNextKeyEvent(const WebString& name,
+                                             const WebString& value) = 0;
+
+  // Clear any active edit commands that are pending.
+  virtual void ClearEditCommands() = 0;
+
  private:
   // This private constructor and the class/friend declaration ensures that
   // WebFrameWidgetBase is the only concrete subclass that implements

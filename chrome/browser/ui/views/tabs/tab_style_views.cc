@@ -955,11 +955,15 @@ std::unique_ptr<TabStyleViews> TabStyleViews::CreateForTab(Tab* tab) {
 
 // static
 int TabStyleViews::GetMinimumActiveWidth() {
+  if (base::FeatureList::IsEnabled(features::kScrollableTabStrip))
+    return 72;
   return TabCloseButton::GetWidth() + GetContentsHorizontalInsetSize() * 2;
 }
 
 // static
 int TabStyleViews::GetMinimumInactiveWidth() {
+  if (base::FeatureList::IsEnabled(features::kScrollableTabStrip))
+    return 72;
   // Allow tabs to shrink until they appear to be 16 DIP wide excluding
   // outer corners.
   constexpr int kInteriorWidth = 16;

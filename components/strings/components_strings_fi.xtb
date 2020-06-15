@@ -232,6 +232,7 @@
 <translation id="1898423065542865115">Suodatus</translation>
 <translation id="1901443836186977402">{1,plural, =1{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne vanheni viimeisen päivän aikana. Tämä voi johtua määritysvirheestä tai yhteytesi siepanneesta hyökkääjästä. Tietokoneesi aika on tällä hetkellä <ph name="CURRENT_DATE" />. Onko se oikein? Jos ei, korjaa järjestelmän aika ja päivitä sivu.}other{Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />; sen suojausvarmenne on vanhentunut # päivää sitten. Tämä voi johtua määritysvirheestä tai yhteytesi siepanneesta hyökkääjästä. Tietokoneesi aika on tällä hetkellä <ph name="CURRENT_DATE" />. Onko se oikein? Jos ei, päivitä sivu.}}</translation>
 <translation id="1902576642799138955">Voimassaoloaika</translation>
+<translation id="1908217026282415406">Kameran käyttö ja liike</translation>
 <translation id="191374271204266022">Kopioi JSON-tiedostona</translation>
 <translation id="1914326953223720820">Purkupalvelu</translation>
 <translation id="1915697529809968049">Käytetäänkö Touch ID:tä CVC:n sijaan?</translation>
@@ -731,7 +732,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="4101413244023615925">Teksti ja grafiikka</translation>
 <translation id="4103249731201008433">Laitteen sarjanumero on virheellinen</translation>
 <translation id="4103763322291513355">Voit lukea listan kielletyistä URL-osoitteista ja muut järjestelmänvalvojasi määräämät käytännöt osoitteessa &lt;strong&gt;chrome://policy&lt;/strong&gt;.</translation>
-<translation id="4108231218301530806">Vahvista kortti seuraavan kerran sormenjäljellä.</translation>
 <translation id="4110652170750985508">Tarkasta maksu</translation>
 <translation id="4112140312785995938">Kelaa taaksepäin</translation>
 <translation id="4116663294526079822">Salli aina tässä sivustossa</translation>
@@ -1129,6 +1129,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="569000877158168851">DnsOverHttpsTemplates-arvo ei ole olennainen, eikä sitä käytetä, ellei DnsOverHttpsMode-käytännön arvoksi määritetä <ph name="SECURE_DNS_MODE_AUTOMATIC" /> tai <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Keskitä</translation>
 <translation id="570530837424789914">Hallinnoi…</translation>
+<translation id="5705882733397021510">Takaisin</translation>
 <translation id="57094364128775171">Ehdota vahvaa salasanaa…</translation>
 <translation id="5710435578057952990">Tämän sivuston identiteettiä ei ole vahvistettu.</translation>
 <translation id="5720705177508910913">Nykyinen käyttäjä</translation>
@@ -1136,6 +1137,7 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="5730040223043577876">Chrome suosittelee salasanan vaihtamista, jos olet käyttänyt sitä myös muilla sivustoilla.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Tallenna kortti Google-tilillesi}other{Tallenna kortit Google-tilillesi}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Käytä tämän kortin kanssa virtuaalinumeroa}other{Valitse kortti}}</translation>
+<translation id="5759751709240058861">käyttää ja liikuttaa kameraasi</translation>
 <translation id="5763042198335101085">Anna voimassa oleva sähköpostiosoite.</translation>
 <translation id="5765072501007116331">Valitse osoite, niin näet toimitustavat ja vaatimukset.</translation>
 <translation id="5776313857861697733">Tärkeät</translation>
@@ -1344,7 +1346,6 @@ Muussa tapauksessa tämä estetään tietosuoja-asetuksilla. Jos sallit tämän,
 <translation id="6631202559048444592">Käytännölle on useita lähteitä, mutta arvot ovat samat.</translation>
 <translation id="663260587451432563">JIS B4 (257 mm x 364 mm)</translation>
 <translation id="6643016212128521049">Tyhjennä</translation>
-<translation id="6644283850729428850">Tämä käytäntö on vanhentunut.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Ei mitään}=1{1 sivustolta (sinua ei kirjata ulos Google-tililtäsi)}other{# sivustolta (sinua ei kirjata ulos Google-tililtäsi)}}</translation>
 <translation id="6652101503459149953">Käytä Windows Hellota</translation>
 <translation id="6657585470893396449">Salasana</translation>

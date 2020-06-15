@@ -9,8 +9,9 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 import android.app.Dialog;
 import android.os.StrictMode;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.LargeTest;
 import android.view.View;
+
+import androidx.test.filters.LargeTest;
 
 import org.json.JSONObject;
 import org.junit.After;

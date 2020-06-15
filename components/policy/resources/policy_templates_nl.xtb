@@ -181,12 +181,6 @@
       onveilige beginpunten zouden moeten gelden.</translation>
 <translation id="1312799700549720683">Beheert weergave-instellingen.</translation>
 <translation id="131353325527891113">Gebruikersnamen weergeven in het aanmeldscherm</translation>
-<translation id="1327351219049180837">Met dit beleid wordt bepaald of beleidsgegevens en het tijdstip van de beleidsfetch worden gerapporteerd.
-
-      Als dit beleid niet is ingesteld of is ingesteld op True, worden beleidsgegevens en het tijdstip van de beleidsfetch verzameld.
-      Als dit beleid is ingesteld op False, worden beleidsgegevens en het tijdstip van de beleidsfetch niet verzameld.
-
-      Dit beleid is alleen effectief als de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1327466551276625742">Prompt voor netwerkconfiguratie inschakelen als je offline bent</translation>
 <translation id="1330145147221172764">Schermtoetsenbord inschakelen</translation>
 <translation id="13356285923490863">Naam van beleid</translation>
@@ -950,12 +944,6 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 
           In Windows is dit beleid alleen beschikbaar op instanties die zijn gekoppeld aan een <ph name="MS_AD_NAME" />-domein of op Windows 10 Pro- of Enterprise-instanties die zijn ingeschreven voor apparaatbeheer.</translation>
 <translation id="247658312644322296">De bestemming 'Opslaan als pdf'</translation>
-<translation id="2478649170422995190">Met dit beleid wordt bepaald of er versiegegevens moeten worden gerapporteerd, zoals OS-versie, OS-platform, OS-architectuur, <ph name="PRODUCT_NAME" />-versie en <ph name="PRODUCT_NAME" />-kanaal.
-
-      Als dit beleid niet is ingesteld of is ingesteld op True, worden er versiegegevens verzameld.
-      Als dit beleid is ingesteld op False, worden er geen versiegegevens verzameld.
-
-      Dit beleid is alleen effectief als de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2480971699591919564">De functie 'Klik om te bellen' inschakelen, waarmee gebruikers telefoonnummers van Chrome-desktops naar een Android-apparaat kunnen sturen als de gebruiker is ingelogd. Bekijk het volgende Helpcentrum-artikel voor meer informatie: https://support.google.com/chrome/answer/9430554?hl=nl.
 
       Als dit beleid is ingeschakeld, wordt de mogelijkheid om telefoonnummers naar Android-apparaten te sturen ingeschakeld voor de Chrome-gebruiker.
@@ -1443,7 +1431,7 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
       Dit beleid is alleen beschikbaar op Windows-instanties die gekoppeld zijn aan een <ph name="MS_AD_NAME" />-domein of op instanties van Windows 10 Pro of Enterprise die ingeschreven zijn voor apparaatbeheer.</translation>
 <translation id="3119125876909100625">Uploads van bestanden met wachtwoordbeveiliging toestaan</translation>
 <translation id="3122082892722698079">Gebruik van niet-beveiligde contentuitzonderingen beheren</translation>
-<translation id="3148152738273574834">Als je het beleid instelt, wordt een lijst met websites gespecificeerd die op de achtergrond worden geïnstalleerd zonder interactie van de gebruiker en die niet kunnen worden verwijderd of uitgeschakeld door gebruikers.
+<translation id="3148152738273574834">Als je het beleid instelt, wordt een lijst met websites gespecificeerd die op de achtergrond worden geïnstalleerd zonder interactie met de gebruiker en die niet kunnen worden verwijderd of uitgeschakeld door gebruikers.
 
       Elk lijstitem van het beleid is een object met een verplicht lid: <ph name="URL_LABEL" /> (de URL van de web-app die moet worden geïnstalleerd) en twee optionele leden: <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (voor hoe de web-app wordt geopend, een nieuw tabblad is de standaardinstelling) en <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> ('True' als <ph name="LINUX_OS_NAME" />- en Windows®-snelkoppelingen worden gemaakt).
 
@@ -2806,9 +2794,9 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Bekijk voor meer informatie het volgende artikel: https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types.</translation>
 <translation id="5249453807420671499">Gebruikers kunnen Kerberos-accounts toevoegen</translation>
-<translation id="5252995168844634755">Als je het beleid instelt op 'True', wordt 'Samengestelde desktop' ingeschakeld, waarmee apps kunnen worden weergegeven over meerdere schermen. Gebruikers kunnen 'Samengestelde desktop' uitschakelen voor afzonderlijke schermen.
+<translation id="5252995168844634755">Als je het beleid instelt op 'True', wordt 'Geïntegreerde desktop' ingeschakeld, waarmee apps kunnen worden weergegeven over meerdere schermen. Gebruikers kunnen 'Geïntegreerde desktop' uitschakelen voor afzonderlijke schermen.
 
-      Als je het beleid instelt op 'False' of niet instelt, wordt 'Samengestelde desktop' uitgeschakeld. Gebruikers kunnen deze functie niet inschakelen.</translation>
+      Als je het beleid instelt op 'False' of niet instelt, wordt 'Geïntegreerde desktop' uitgeschakeld. Gebruikers kunnen deze functie niet inschakelen.</translation>
 <translation id="5255162913209987122">Kan worden aanbevolen</translation>
 <translation id="527237119693897329">Hiermee kun je opgeven welke hosts voor systeemeigen berichten niet moeten worden geladen.
 
@@ -3596,12 +3584,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
           Zie ook het beleid 'CookiesAllowedForUrls' en 'CookiesSessionOnlyForUrls'. Houd er rekening mee dat er geen conflicterende URL-patronen tussen deze drie beleidsregels mogen bestaan. Er is niet aangeven welk beleid voorrang krijgt.
 
           Ga naar https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns voor gedetailleerde informatie over geldige URL-patronen.</translation>
-<translation id="6399242659768117666">Met dit beleid wordt bepaald of informatie over extensies en plug-ins wordt gerapporteerd.
-
-      Als dit beleid niet is ingesteld of is ingesteld op True, worden er gegevens verzameld over de extensies en plug-ins.
-      Als dit beleid is ingesteld op False, worden er geen gegevens verzameld over extensies en plug-ins.
-
-      Dit beleid is alleen effectief als <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6401669939808766804">De gebruiker uitloggen</translation>
 <translation id="6406448383934634215">Als 'Een lijst met URL's openen' voor het opstarten is geselecteerd, kun je hier de lijst met URL's specificeren die worden geopend. Als je dit niet selecteert, worden er geen URL's geopend na het starten.
 
@@ -3624,7 +3606,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
           Als je ervoor kiest de proxyserver automatisch te detecteren, ontvangen de Android-apps de script-URL http://wpad/wpad.dat. Er wordt geen enkel ander onderdeel van het protocol voor de automatische detectie van de proxy gebruikt.
 
           Als je het PAC-script voor de proxy kiest, ontvangen de Android-apps de script-URL.</translation>
-<translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6438972408080276697">Als het beleid wordt ingesteld op True, worden rapporten over belangrijke, op basis van beleid geactiveerde installatiegebeurtenissen voor Android-apps naar Google gestuurd. Er worden geen gebeurtenissen geregistreerd als het beleid is ingesteld op False.</translation>
 <translation id="6440051664870270040">Toestaan dat sites tegelijkertijd kunnen navigeren en pop-ups kunnen openen</translation>
 <translation id="6447948611083700881">Back-up maken en terugzetten uitgeschakeld</translation>
@@ -3688,7 +3669,7 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
        * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONDISABLED" />: Automatische tijdzonedetectie blijft uitgeschakeld.
        * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TTIMEZONEAUTOMATICDETECTIONIPONLY" />: Automatische tijdzonedetectie blijft ingeschakeld, via de methode die gebaseerd is op IP-adressen.
        * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDWIFIACCESSPOINTS" />: Automatische tijdzonedetectie blijft ingeschakeld. De lijst met zichtbare wifi-toegangspunten wordt voortdurend naar de Geolocation API-server gestuurd voor gedetailleerdere tijdzonedetectie.
-       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDALLLOCATIONINFO" />: Automatische tijdzonedetectie blijft ingeschakeld. Locatiegegevens (zoals wifi-toegangspunten, bereikbare zendmasten, gps) worden voortdurend naar een server gestuurd voor de meeste gedetailleerde tijdzonedetectie.
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDALLLOCATIONINFO" />: Automatische tijdzonedetectie blijft ingeschakeld. Locatiegegevens (zoals wifi-toegangspunten, bereikbare zendmasten, gps) worden voortdurend naar een server gestuurd voor de meest gedetailleerde tijdzonedetectie.
 
       Als je het beleid niet instelt, 'Gebruikers laten bepalen' instelt of het beleid instelt op 'None', bepalen gebruikers de automatische tijdzonedetectie via de normale opties in chrome://settings.</translation>
 <translation id="6532769014584932288">Wake locks toestaan</translation>
@@ -3702,12 +3683,6 @@ Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de pagina 'N
 
       Dit beleid kan worden ingesteld op een pad naar een uitvoerbaar bestand of op <ph name="PRODUCT_NAME_PLACEHOLDER" /> om de installatielocatie van Chrome automatisch te detecteren.</translation>
 <translation id="6536600139108165863">Automatisch opnieuw opstarten wanneer apparaat wordt afgesloten</translation>
-<translation id="6537062468544950724">Met dit beleid wordt bepaald of er informatie moet worden gerapporteerd die kan worden gebruikt om machines te identificeren, zoals de machinenaam en netwerkadressen.
-
-      Als dit beleid niet is ingesteld of is ingesteld op True, worden er gegevens verzameld die kunnen worden gebruikt om machines te identificeren.
-      Als dit beleid is ingesteld op False, worden er geen gegevens verzameld die kunnen worden gebruik om machines te identificeren.
-
-      Dit beleid is alleen effectief als de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6539246272469751178">Dit beleid is niet van invloed op Android-apps. Android-apps gebruiken altijd de standaardmap voor downloads en hebben geen toegang tot bestanden die door <ph name="PRODUCT_OS_NAME" /> zijn gedownload naar een niet-standaard downloadmap.</translation>
 <translation id="654303922206238013">Migratiestrategie voor eCryptfs</translation>
 <translation id="6544897973797372144">Als dit beleid is ingesteld op 'True' en het beleid ChromeOsReleaseChannel niet is ingesteld, mogen gebruikers van het registrerende domein het releasekanaal van het apparaat wijzigen. Als dit beleid is ingesteld op 'False', wordt het apparaat vergrendeld op het laatst ingestelde kanaal.
@@ -3973,12 +3948,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als het beleid wordt ingesteld op <ph name="BR_UNDER_USER_CONTROL" />, zien gebruikers prompts om de back-up- en herstelfunctie te gebruiken. Als een gebruiker de back-up- en herstelfunctie inschakelt, worden gegevens van Android-apps geüpload naar Android-back-upservers. De gegevens worden hersteld als geschikte apps opnieuw worden geïnstalleerd.
 
       Na de eerste configuratie kunnen gebruikers de back-up- en herstelfunctie uitschakelen.</translation>
-<translation id="6991078864332103177">Met dit beleid wordt bepaald of informatie moet worden gerapporteerd die kan worden gebruikt om gebruikers te identificeren, zoals de OS-inloggegevens, de inloggegevens voor het <ph name="PRODUCT_NAME" />-profiel, de profielnaam voor <ph name="PRODUCT_NAME" />, het profielpad voor <ph name="PRODUCT_NAME" /> en het uitvoerbare pad voor <ph name="PRODUCT_NAME" />.
-
-      Als dit beleid niet is ingesteld of is ingesteld op True, worden er gegevens verzameld die kunnen worden gebruikt om gebruikers te identificeren.
-      Als dit beleid is ingesteld op False, worden er geen gegevens verzameld die kunnen worden gebruikt om gebruikers te identificeren.
-
-      Dit beleid is alleen effectief als de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6994082778848658360">Geeft aan hoe de ingebouwde Secure Element-hardware kan worden gebruikt voor authenticatie met meerdere factoren, indien de hardware geschikt is voor deze functie. De aan/uit-knop van de machine wordt gebruikt om de fysieke aanwezigheid van de gebruiker te detecteren.
 
       Als Uitgeschakeld is geselecteerd, wordt er geen tweede factor verstrekt.
@@ -4401,14 +4370,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Wanneer dit beleid niet wordt ingesteld, of wordt ingesteld op '0', wordt de URL onmiddellijk in een alternatieve browser geopend als je naar de URL navigeert.
 
       Wanneer dit beleid is ingesteld op een getal, toont Chrome gedurende dat aantal milliseconden een melding en wordt vervolgens de alternatieve browser geopend.</translation>
-<translation id="7583419926951418342">Dit beleid beheert cloudrapportage voor <ph name="PRODUCT_NAME" /> waarmee informatie over de browseractiviteit naar de Google-beheerdersconsole wordt geüpload.
-
-      Als dit beleid niet is ingesteld of als het is ingesteld op 'False', worden er geen gegevens verzameld of geüpload.
-      Als dit beleid is ingesteld op 'True', worden de gegevens verzameld en geüpload naar de Google-beheerdersconsole.
-      Als je wilt beheren welke gegevens worden geüpload, gebruik je beleid in de groep 'Chrome Reporting Extension'.
-
-      Voor <ph name="PRODUCT_NAME" /> is dit beleid alleen van kracht als het apparaat is ingeschreven bij <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />.
-      Voor <ph name="PRODUCT_OS_NAME" /> is dit beleid altijd van kracht.</translation>
 <translation id="7586477707097444774">Cookies die zijn ingesteld voor domeinen die met deze patronen overeenkomen, worden teruggezet naar het verouderde gedrag van <ph name="ATTRIBUTE_SAMESITE_NAME" />. Als je het verouderde gedrag terugzet, worden cookies waarin geen <ph name="ATTRIBUTE_SAMESITE_NAME" />-kenmerk is opgegeven, als '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' behandeld en wordt de vereiste weggenomen dat cookies van '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' het kenmerk '<ph name="ATTRIBUTE_SECURE_NAME" />' bevatten. Zie https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies voor een volledige beschrijving.
 
           Voor cookies op domeinen die niet overeenkomen met de hier genoemde patronen, of voor alle cookies als dit beleid niet is ingesteld, wordt de algemene standaardinstelling gebruikt op basis van het <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" />-beleid (als dit is ingesteld), of anders op basis van de configuratie van de gebruiker.
@@ -4529,19 +4490,10 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Als deze instelling is uitgeschakeld of niet is ingesteld, wordt authenticatie in twee stappen niet ingeschakeld en wordt het standaardgedrag van een door de gebruiker gedefinieerde pincode gebruikt.</translation>
 <translation id="7750991880413385988">Pagina 'Nieuw tabblad' openen</translation>
 <translation id="7754704193130578113">Voorafgaand aan een download vragen waar een bestand moet worden opgeslagen</translation>
-<translation id="7755495228644343508">Aan Chrome Reporting Extension gerelateerde beleidsregels configureren.
-
-      Dit beleid is alleen effectief als de <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Ambient-verificatie inschakelen voor profieltypen.</translation>
 <translation id="7763614521440615342">Contentsuggesties weergeven op de nieuwe tabbladpagina</translation>
 <translation id="7765879851993224640">Toestaan dat Smart Lock Signin wordt gebruikt</translation>
 <translation id="7774768074957326919">Proxyinstellingen van het systeem gebruiken</translation>
-<translation id="7775902646576367944">Met dit beleid wordt bepaald of informatie over Safe Browsing moet worden gerapporteerd, waaronder het aantal Safe Browsing-waarschuwingen en het aantal doorklikken van Safe Browsing-waarschuwingen.
-
-      Als dit beleid niet is ingesteld of is ingesteld op True, worden gegevens over Safe Browsing verzameld.
-      Als dit beleid is ingesteld op False, worden er geen gegevens over Safe Browsing verzameld.
-
-      Dit beleid is alleen effectief als <ph name="CHROME_REPORTING_EXTENSION_NAME" /> is ingeschakeld en de machine is ingeschreven met <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="777734450201217641">Schakel snelkoppelingen voor toegankelijkheidsfuncties in op het inlogscherm.
 
           Als dit beleid is ingesteld op True, zijn snelkoppelingen voor toegankelijkheidsfuncties altijd ingeschakeld op het inlogscherm.
@@ -4599,15 +4551,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="793473937901685727">Certificaatbeschikbaarheid instellen voor ARC-apps</translation>
 <translation id="7937491150792971922">Lijstbeleidsregels voor installatie van extensies van meerdere bronnen samenvoegen</translation>
 <translation id="7937766917976512374">Het opnemen van video's toestaan of weigeren</translation>
-<translation id="7937944288846766530">Met dit beleid worden installatieverzoeken voor <ph name="PRODUCT_NAME" />-extensies beheerd waarmee gebruikers de verzoeken ter goedkeuring naar de Google Beheerdersconsole kunnen sturen.
-
-      Als het beleid CloudReportingEnabled niet is ingesteld of is uitgeschakeld, wordt dit beleid genegeerd. Er worden in dit geval geen installatieverzoeken voor extensies gemaakt of geüpload.
-      Als dit beleid niet is ingesteld of is uitgeschakeld, worden er geen installatieverzoeken voor extensies gemaakt of geüpload.
-      Als dit beleid is ingeschakeld, worden installatieverzoeken voor extensies gemaakt en geüpload naar de Google Beheerdersconsole.
-
-      Er worden installatieverzoeken voor extensies gemaakt als gebruikers proberen een extensie te installeren die niet op de witte lijst van <ph name="EXTENSION_INSTALL_WHITELIST" /> of <ph name="EXTENSION_SETTINGS" /> staat.
-
-      Dit beleid is alleen effectief als de machine is ingeschreven bij <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> en <ph name="CLOUD_REPORTING_ENABLED" /> is ingeschakeld.</translation>
 <translation id="7941975817681987555">Geen netwerkacties voorspellen voor een netwerkverbinding</translation>
 <translation id="7951605113561734721">Specificeert clientcertificaten voor het hele apparaat die moeten worden ingeschreven via het protocol voor apparaatbeheer.</translation>
 <translation id="7952007677054834789">Hiermee wordt geconfigureerd welke pagina's worden geladen bij het opstarten, wat de standaard homepage is en welke pagina standaard wordt gebruikt voor nieuwe tabbladen in <ph name="PRODUCT_NAME" />. Ook verhinder je hiermee dat gebruikers deze pagina's kunnen wijzigen.

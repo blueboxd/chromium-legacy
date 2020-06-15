@@ -117,6 +117,7 @@
 <translation id="114721135501989771">Интеллектуальные функции Google в Chrome</translation>
 <translation id="1147991416141538220">Чтобы запросить доступ, обратитесь к администратору устройства.</translation>
 <translation id="1149401351239820326">Месяц окончания срока действия</translation>
+<translation id="1149725087019908252">Сканирование файла "<ph name="FILE_NAME" />"</translation>
 <translation id="1150565364351027703">Солнцезащитные очки</translation>
 <translation id="1151917987301063366">Всегда разрешать сайту <ph name="HOST" /> использовать датчики</translation>
 <translation id="1153356358378277386">Сопряженные устройства</translation>
@@ -278,6 +279,7 @@
 <translation id="1347975661240122359">Обновление начнется, когда заряд батареи достигнет <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="NETWORK_NAME" /> (<ph name="PROVIDER_NAME" />)</translation>
 <translation id="1353980523955420967">Не удается найти файл PPD. Убедитесь, что устройство Chromebook подключено к Интернету, и повторите попытку.</translation>
+<translation id="1354045473509304750">Разрешить сайту <ph name="HOST" /> и дальше использовать вашу камеру и перемещать ее</translation>
 <translation id="1355466263109342573">Плагин "<ph name="PLUGIN_NAME" />" заблокирован</translation>
 <translation id="1358741672408003399">Правописание и грамматика</translation>
 <translation id="1359923111303110318">Ваше устройство можно разблокировать с помощью Smart Lock. Для этого нажмите Ввод.</translation>
@@ -1172,6 +1174,7 @@
 <translation id="247051149076336810">URL общей папки</translation>
 <translation id="2470702053775288986">Неподдерживаемые расширения отключены</translation>
 <translation id="2473195200299095979">Перевести эту страницу</translation>
+<translation id="2474848500897222119">В принтере "<ph name="PRINTER_NAME" />" закончились чернила.</translation>
 <translation id="2475982808118771221">Произошел сбой.</translation>
 <translation id="2476578072172137802">Настройки сайта</translation>
 <translation id="2478176599153288112"><ph name="EXTENSION" />: доступ к медиафайлам</translation>
@@ -1472,6 +1475,7 @@
 <translation id="2824942875887026017">В <ph name="IDS_SHORT_PRODUCT_NAME" /> используются настройки прокси-сервера, установленные администратором.</translation>
 <translation id="2825758591930162672">Открытый ключ субъекта</translation>
 <translation id="2828650939514476812">Подключитесь к сети Wi-Fi</translation>
+<translation id="28291580771888953">Очередь печати на принтере "<ph name="PRINTER_NAME" />" полностью заполнена.</translation>
 <translation id="2835547721736623118">Сервис распознавания речи</translation>
 <translation id="2836269494620652131">Сбой</translation>
 <translation id="2836635946302913370">Вход с этим именем пользователя запрещен администратором.</translation>
@@ -2074,6 +2078,7 @@
 <translation id="3613422051106148727">&amp;Открыть в новой вкладке</translation>
 <translation id="3614974189435417452">Резервная копия сохранена</translation>
 <translation id="3615073365085224194">Приложите палец к сканеру отпечатков пальцев.</translation>
+<translation id="3615579745882581859"><ph name="FILE_NAME" />: проверка…</translation>
 <translation id="3616741288025931835">Очистить данные просмотров...</translation>
 <translation id="3617891479562106823">Фоновые изображения недоступны. Повторите попытку позже.</translation>
 <translation id="3619115746895587757">Капучино</translation>
@@ -2122,7 +2127,6 @@
 <translation id="3670113805793654926">Устройства от любого поставщика</translation>
 <translation id="3670229581627177274">Включить Bluetooth</translation>
 <translation id="3672681487849735243">Обнаружен производственный брак</translation>
-<translation id="3675913744032077012">Настройки языков и ввода</translation>
 <translation id="367645871420407123">оставьте пустым, чтобы установить значение тестового изображения по умолчанию в качестве пароля суперпользователя</translation>
 <translation id="3677106374019847299">Введите название поставщика услуг</translation>
 <translation id="3677657024345889897">Минимальная громкость</translation>
@@ -2640,10 +2644,8 @@
 <translation id="4314815835985389558">Настройки синхронизации</translation>
 <translation id="4316850752623536204">Сайт разработчика</translation>
 <translation id="4320177379694898372">Нет подключения к Интернету</translation>
-<translation id="4321442524549817090">П&amp;оказать URL</translation>
 <translation id="4322394346347055525">Закрыть другие вкладки</translation>
 <translation id="4324577459193912240">Файл скачан не полностью</translation>
-<translation id="4325083532956419387">Версия Chrome OS</translation>
 <translation id="4325237902968425115">Удаление приложения "<ph name="LINUX_APP_NAME" />"…</translation>
 <translation id="4330191372652740264">Вода со льдом</translation>
 <translation id="4330387663455830245">Никогда не переводить <ph name="LANGUAGE" /></translation>
@@ -2743,6 +2745,7 @@
 <translation id="4453946976636652378">Введите поисковый запрос в <ph name="SEARCH_ENGINE_NAME" /> или укажите URL</translation>
 <translation id="4459169140545916303">Последние действия: <ph name="DEVICE_LAST_ACTIVATED_TIME" /> дн. назад</translation>
 <translation id="4460014764210899310">Отменить создание группы</translation>
+<translation id="4460343359907016103">Не удалось подключиться к принтеру "<ph name="PRINTER_NAME" />".</translation>
 <translation id="4462159676511157176">Другие серверы имен</translation>
 <translation id="4465236939126352372">Для приложения "<ph name="APP_NAME" />" установлен лимит <ph name="TIME" />.</translation>
 <translation id="4465725236958772856">Сеть <ph name="NETWORK_INDEX" /> из <ph name="NETWORK_COUNT" />, название – "<ph name="NETWORK_NAME" />", под управлением администратора, подключение</translation>
@@ -3032,6 +3035,7 @@
 <translation id="4864369630010738180">Вход в систему...</translation>
 <translation id="4864805589453749318">Выбери, кто из родителей разрешает добавить учебный аккаунт.</translation>
 <translation id="486635084936119914">Автоматически открывать некоторые типы файлов после скачивания</translation>
+<translation id="4869213010169296107">У принтера "<ph name="PRINTER_NAME" />" нет лотка для бумаги.</translation>
 <translation id="4869289251183233431">На устройстве осталось мало места. Чтобы использовать <ph name="APP_NAME" />, нужно как минимум <ph name="MINIMUM_SPACE" /> свободного пространства (рекомендуется более <ph name="RECOMMENDED_SPACE" />). Удалите с устройства файлы, которые больше не нужны.</translation>
 <translation id="48704129375571883">Добавить ещё функции</translation>
 <translation id="4870758487381879312">Чтобы просмотреть сведения о конфигурации, введите пароль, полученный от администратора</translation>
@@ -3087,6 +3091,7 @@
 <translation id="4918221908152712722">Установить приложение "<ph name="APP_NAME" />" (скачивание не требуется)</translation>
 <translation id="4920887663447894854">Вы запретили передачу ваших геоданных следующим сайтам:</translation>
 <translation id="4921290200821452703">Учебный аккаунт: информация для родителей</translation>
+<translation id="4921348630401250116">Озвучивание текста</translation>
 <translation id="49226369361073053">{0,plural, =0{Перезагрузите устройство прямо сейчас}=1{Перезагрузите устройство в течение 1 секунды}one{Перезагрузите устройство в течение # секунды}few{Перезагрузите устройство в течение # секунд}many{Перезагрузите устройство в течение # секунд}other{Перезагрузите устройство в течение # секунды}}</translation>
 <translation id="492299503953721473">Удалить приложения для Android</translation>
 <translation id="492363500327720082">Удаление <ph name="APP_NAME" />…</translation>
@@ -3141,7 +3146,6 @@
 <translation id="4997086284911172121">Нет подключения к Интернету.</translation>
 <translation id="4998430619171209993">Включено</translation>
 <translation id="5000922062037820727">Заблокировано (рекомендуется)</translation>
-<translation id="5003821244905342830">Если вы продолжите, Google будет синхронизировать данные из аккаунта <ph name="EMAIL" /> на этом устройстве.</translation>
 <translation id="5005498671520578047">Для копирования пароля</translation>
 <translation id="5006218871145547804">Инструмент adb для Android-приложений в Crostini</translation>
 <translation id="5007392906805964215">Посмотреть</translation>
@@ -3172,6 +3176,7 @@
 <translation id="504561833207953641">Окно или вкладка откроются в текущем сеансе браузера.</translation>
 <translation id="5047421709274785093">Запретить сайтам использовать датчики движения и освещенности</translation>
 <translation id="5050042263972837708">Название группы</translation>
+<translation id="5050330054928994520">Синтез речи</translation>
 <translation id="5051836348807686060">Проверка правописания не поддерживается для выбранных языков.</translation>
 <translation id="5052499409147950210">Изменение сайта</translation>
 <translation id="5053604404986157245">Отсутствует сгенерированный пароль доверенного платформенного модуля (в результате применения процесса Powerwash).</translation>
@@ -3431,6 +3436,7 @@
 <translation id="5390100381392048184">Разрешить сайтам воспроизводить звуки</translation>
 <translation id="5390677308841849479">Темно-красный с оранжевым</translation>
 <translation id="5390743329570580756">Отправка</translation>
+<translation id="5395869306561378615">Работа принтера "<ph name="PRINTER_NAME" />" приостановлена.</translation>
 <translation id="5397794290049113714">Вы</translation>
 <translation id="5398572795982417028">Размер страницы больше максимально допустимого (лимит ‒ <ph name="MAXIMUM_PAGE" />)</translation>
 <translation id="5398772614898833570">Реклама заблокирована</translation>
@@ -3444,6 +3450,7 @@
 <translation id="5417312524372586921">Темы браузера</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">Определяет резкость текста и изображений.</translation>
+<translation id="5421498071721257877">На принтере "<ph name="PRINTER_NAME" />" зарегистрирована ошибка устройства.</translation>
 <translation id="5422221874247253874">Точка доступа</translation>
 <translation id="5422781158178868512">Не удалось распознать внешнее запоминающее устройство.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3517,6 +3524,7 @@
 <translation id="5499313591153584299">Этот файл может быть опасен для вашего компьютера.</translation>
 <translation id="5500709606820808700">Проверка безопасности выполнена сегодня.</translation>
 <translation id="5502500733115278303">Импортированные из Firefox</translation>
+<translation id="5503982651688210506">Разрешить сайту <ph name="HOST" /> и дальше использовать и перемещать вашу камеру, а также использовать микрофон</translation>
 <translation id="5505264765875738116">Сайты не могут запрашивать разрешения на отправку уведомлений</translation>
 <translation id="5505307013568720083">Закончились чернила</translation>
 <translation id="5507756662695126555">Без отказа</translation>
@@ -3543,7 +3551,7 @@
 <translation id="5527474464531963247">Можно выбрать другую сеть.</translation>
 <translation id="5530766185686772672">Закрыть вкладки инкогнито</translation>
 <translation id="5532223876348815659">Глобально</translation>
-<translation id="5533001281916885985">Сайт <ph name="SITE_NAME" /> запрашивает разрешение на:</translation>
+<translation id="5533001281916885985"><ph name="SITE_NAME" /> запрашивает разрешение на:</translation>
 <translation id="5534304873398226603">Удалить фото или видео</translation>
 <translation id="5535941515421698170">Удалить данные с этого устройства</translation>
 <translation id="5539221284352502426">Сервер отклонил введенный пароль. Помните, что пароль должен отличаться от предыдущих паролей и содержать необходимое количество цифр и символов.</translation>
@@ -3711,7 +3719,6 @@
 <translation id="5734362860645681824">Оборудование</translation>
 <translation id="5734697361979786483">Добавить общую папку</translation>
 <translation id="5736796278325406685">Введите действительное имя пользователя</translation>
-<translation id="573759479754913123">О Chrome OS</translation>
 <translation id="5739017626473506901">Войдите в систему, чтобы помочь пользователю <ph name="USER_NAME" /> добавить учебный аккаунт.</translation>
 <translation id="5739235828260127894">Требуется подтверждение. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Очень крупный</translation>
@@ -3793,6 +3800,7 @@
 <translation id="5852137567692933493">Перезапуск и Powerwash</translation>
 <translation id="5854912040170951372">Пицца</translation>
 <translation id="5855267860608268405">Известные сети Wi-Fi</translation>
+<translation id="5855310969323666289">На принтере "<ph name="PRINTER_NAME" />" открыта крышка.</translation>
 <translation id="5855643921295613558">0,6 секунды</translation>
 <translation id="5856721540245522153">Включение функций отладки</translation>
 <translation id="5857090052475505287">Новая папка</translation>
@@ -3822,6 +3830,7 @@
 <translation id="5877064549588274448">Канал изменен. Чтобы изменения вступили в силу, перезапустите устройство.</translation>
 <translation id="5877584842898320529">Этот принтер недоступен или настроен неправильно.<ph name="BR" />Проверьте его или выберите другой.</translation>
 <translation id="5882919346125742463">Сохраненные сети</translation>
+<translation id="5883716097305842571">Выходной лоток принтера "<ph name="PRINTER_NAME" />" почти заполнен.</translation>
 <translation id="5884474295213649357">Эта вкладка подключена к USB-устройству</translation>
 <translation id="5886009770935151472">1-й палец</translation>
 <translation id="5889282057229379085">Максимальное количество промежуточных ЦС: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -3866,6 +3875,7 @@
 <translation id="5935656526031444304">Настроить Безопасный просмотр</translation>
 <translation id="5938002010494270685">Доступно обновление системы безопасности</translation>
 <translation id="5939518447894949180">Сбросить</translation>
+<translation id="594108735267876762">Обновите устройство в течение <ph name="COUNT" /> дн.</translation>
 <translation id="5941153596444580863">Добавить пользователя</translation>
 <translation id="5941343993301164315"><ph name="TOKEN_NAME" />: необходимо войти.</translation>
 <translation id="5941711191222866238">Свернуть</translation>
@@ -4100,6 +4110,7 @@
 <translation id="6239558157302047471">Перезагрузить &amp;фрейм</translation>
 <translation id="6241530762627360640">Доступ к информации об устройствах Bluetooth, связанных с вашей системой, и обнаружение устройств Bluetooth рядом с вами.</translation>
 <translation id="6241844896329831164">Расширения, которым не требуется доступ</translation>
+<translation id="6242574558232861452">Проверка файла на соответствие правилам безопасности вашей организации…</translation>
 <translation id="6242589501614145408">Сбросьте настройки электронного ключа</translation>
 <translation id="6242852299490624841">Переключиться на эту вкладку</translation>
 <translation id="6243280677745499710">Установлено как обои</translation>
@@ -4140,7 +4151,6 @@
 <translation id="628352644014831790">4 секунды</translation>
 <translation id="6285120108426285413">Файл <ph name="FILE_NAME" /> скачивают редко. Возможно, он вредоносный.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Новый принтер в сети}one{Новые принтеры в сети}few{Новые принтеры в сети}many{Новые принтеры в сети}other{Новые принтеры в сети}}</translation>
-<translation id="6286708577777130801">Данные сохраненного пароля</translation>
 <translation id="6291163159361301370">Для запуска Linux организация <ph name="ORGANIZATION_NAME" /> требует выполнить резервное копирование данных и сбросить настройки устройства Chromebook до заводских.</translation>
 <translation id="6291949900244949761">Запрашивать мое разрешение на доступ сайтов к USB-устройствам (рекомендуется)</translation>
 <translation id="6291953229176937411">Показать в Finder</translation>
@@ -4214,6 +4224,7 @@
 <translation id="6390799748543157332">Страницы, открытые в гостевом режиме, не сохранятся в истории браузера и не оставят на компьютере следов, таких как файлы cookie. После того как вы их закроете, будут сохранены только скачанные вами файлы.</translation>
 <translation id="6393156038355142111">Сгенерировать надежный пароль</translation>
 <translation id="6395423953133416962">Отправлять <ph name="BEGIN_LINK1" />сведения о системе<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />значения показателей<ph name="END_LINK2" /></translation>
+<translation id="6396179879191282798">Сегодня последний день для обновления устройства</translation>
 <translation id="6396988158856674517">Запретить сайтам использовать датчики движения</translation>
 <translation id="6398715114293939307">Удалить Google Play Маркет</translation>
 <translation id="6398765197997659313">Обычный режим</translation>
@@ -4357,7 +4368,6 @@
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" />: доступ к содержимому рабочего стола открыт</translation>
 <translation id="6580203076670148210">Скорость сканирования</translation>
 <translation id="6582080224869403177">Чтобы обновить систему безопасности, перезагрузите устройство <ph name="DEVICE_TYPE" />.</translation>
-<translation id="6584793698691679400">Версия устройства</translation>
 <translation id="6584878029876017575">Бессрочная подписка Microsoft</translation>
 <translation id="6586099239452884121">Гостевой режим</translation>
 <translation id="6586451623538375658">Поменять местами кнопки мыши</translation>
@@ -4379,6 +4389,7 @@
 <translation id="6611972847767394631">Здесь находятся ваши вкладки</translation>
 <translation id="6612358246767739896">Защищенный контент</translation>
 <translation id="6615455863669487791">Показать</translation>
+<translation id="6617034477946102682">Принтер "<ph name="PRINTER_NAME" />" недоступен.</translation>
 <translation id="6618097958368085618">Все равно сохранить</translation>
 <translation id="6618744767048954150">Выполняется</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4622,6 +4633,7 @@
 <translation id="6930321203306643451">Обновление завершено</translation>
 <translation id="6935286146439255109">Отсутствует лоток для бумаги</translation>
 <translation id="693807610556624488">При записи данных на устройстве <ph name="DEVICE_NAME" /> превышена максимальная длина атрибута.</translation>
+<translation id="6938381444925658529">Организация с доменом <ph name="DOMAIN" /> просит вас скачать обновление до истечения срока. Оно скачается автоматически при подключении к Интернету.</translation>
 <translation id="6938386202199793006">У вас 1 сохраненный принтер.</translation>
 <translation id="6938789263968032501">Пользователи</translation>
 <translation id="6941937518557314510">Войдите в <ph name="TOKEN_NAME" />, чтобы авторизоваться на <ph name="HOST_NAME" /> при помощи своего сертификата.</translation>
@@ -4785,6 +4797,7 @@
 <translation id="7128151990937044829">Показывать значок блокировки в адресной строке при блокировке уведомлений</translation>
 <translation id="7131040479572660648">Просмотр данных на сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">Добавить &amp;страницу</translation>
+<translation id="7131379856697962078">Выходной лоток принтера "<ph name="PRINTER_NAME" />" полностью заполнен.</translation>
 <translation id="7133578150266914903">Администратор возвращает ваше устройство к прежней версии системы. Выполнено <ph name="PROGRESS_PERCENT" />.</translation>
 <translation id="7134098520442464001">Уменьшить размер текста</translation>
 <translation id="7135729336746831607">Включить Bluetooth?</translation>
@@ -4803,6 +4816,7 @@
 <translation id="7152478047064750137">Расширению не требуются особые разрешения</translation>
 <translation id="7154130902455071009">Смена стартовой страницы на <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">Фото с камеры или из галереи</translation>
+<translation id="715657691234357425">В принтере "<ph name="PRINTER_NAME" />" заканчивается бумага.</translation>
 <translation id="7165320105431587207">Не удалось настроить сеть</translation>
 <translation id="716640248772308851">Расширению "<ph name="EXTENSION" />" будет предоставлен доступ для чтения к изображениям, видео- и аудиофайлам в отмеченных папках.</translation>
 <translation id="7167486101654761064">&amp;Всегда открывать файлы этого типа</translation>
@@ -5131,6 +5145,7 @@
 <translation id="7598466960084663009">Перезагрузить компьютер</translation>
 <translation id="7599527631045201165">Слишком длинное название устройства. Выберите другое название и повторите попытку.</translation>
 <translation id="7600965453749440009">Никогда не переводить <ph name="LANGUAGE" /></translation>
+<translation id="7601297144931396972">В принтере "<ph name="PRINTER_NAME" />" застряла бумага.</translation>
 <translation id="760197030861754408">Чтобы подключиться, перейдите на страницу <ph name="LANDING_PAGE" />.</translation>
 <translation id="7602079150116086782">Нет вкладок с других устройств</translation>
 <translation id="7602173054665172958">Управление печатью</translation>
@@ -5466,7 +5481,7 @@
 <translation id="7987814697832569482">Всегда использовать эту VPN-сеть</translation>
 <translation id="7988355189918024273">Включить функции для людей с ограниченными возможностями</translation>
 <translation id="7991296728590311172">Настройки функции Switch Access</translation>
-<translation id="7993750787380199093">Пароли, сохраненные в аккаунте Google, будут доступны на всех ваших устройствах</translation>
+<translation id="7993750787380199093">Сохраняйте все пароли в аккаунте Google, и они будут доступны на всех ваших устройствах</translation>
 <translation id="7994702968232966508">Метод EAP</translation>
 <translation id="7997826902155442747">Приоритет процессов</translation>
 <translation id="7999229196265990314">Созданы следующие файлы:
@@ -5577,6 +5592,7 @@
 <translation id="8123590694679414600">Данные зашифрованы с помощью кодовой фразы <ph name="TIME" />. Шифрование не применяется к способам оплаты и адресам из Google Pay.</translation>
 <translation id="81238879832906896">Цветок (желтый с белым)</translation>
 <translation id="8124313775439841391">Управляемый ONC</translation>
+<translation id="8127535217699822294">В принтере "<ph name="PRINTER_NAME" />" закончилась бумага.</translation>
 <translation id="813082847718468539">Сведения о сайте</translation>
 <translation id="8131740175452115882">Подтвердить</translation>
 <translation id="8133676275609324831">Показать в папке</translation>
@@ -5675,6 +5691,7 @@
 <translation id="8254954272268479918">Завершить работу Linux (бета)</translation>
 <translation id="8255451560461371599">Без фона</translation>
 <translation id="8256319818471787266">Дружок</translation>
+<translation id="8256417822772703842">В принтере "<ph name="PRINTER_NAME" />" заканчиваются чернила.</translation>
 <translation id="8257950718085972371">Всегда блокировать доступ к камере</translation>
 <translation id="8259239505248583312">Начать</translation>
 <translation id="8260126382462817229">Снова войдите в аккаунт</translation>
@@ -5851,6 +5868,7 @@
 <translation id="8487678622945914333">Увеличить</translation>
 <translation id="8490896350101740396">Были обновлены следующие киоск-приложения: <ph name="UPDATED_APPS" />. Чтобы завершить установку обновлений, перезагрузите устройство.</translation>
 <translation id="8493236660459102203">Микрофон:</translation>
+<translation id="8495940850609851342">Работа принтера "<ph name="PRINTER_NAME" />" остановлена.</translation>
 <translation id="8496717697661868878">Запустить подключаемый модуль</translation>
 <translation id="8497219075884839166">Утилиты Windows</translation>
 <translation id="8498214519255567734">Этот режим помогает снизить напряжение глаз при тусклом свете</translation>
@@ -5866,7 +5884,6 @@
 <translation id="851263357009351303">Всегда показывать изображения с сайта <ph name="HOST" /></translation>
 <translation id="8513108775083588393">Автоповорот</translation>
 <translation id="8514746246728959655">Попробуйте применить другой электронный ключ</translation>
-<translation id="851960115758509829">Приложения и настройки будут синхронизироваться на всех устройствах Chrome OS, на которых вы вошли в аккаунт Google.</translation>
 <translation id="8521475323816527629">Быстрый переход к приложениям</translation>
 <translation id="8523493869875972733">Закрыть</translation>
 <translation id="8523849605371521713">Добавлено по правилу</translation>
@@ -5907,7 +5924,6 @@
 <translation id="8569682776816196752">Места назначения не найдены</translation>
 <translation id="8571213806525832805">Последние 4 недели</translation>
 <translation id="8571687764447439720">Добавить билет Kerberos</translation>
-<translation id="8573403125070227391">Это объявление удалено, так как оно использовало слишком много системных ресурсов.</translation>
 <translation id="8574990355410201600">Всегда включать звук на сайте <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Чтобы выйти, нажмите и удерживайте клавишу <ph name="KEY_EQUIVALENT" />.</translation>
 <translation id="8578639784464423491">В слове должно быть не больше 99 букв.</translation>

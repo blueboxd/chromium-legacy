@@ -28,7 +28,6 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
   void DidStartNavigation(
       const GURL& url,
       base::Optional<blink::WebNavigationType> navigation_type) override;
-  void DidFinishLoad() override;
   void DidCreateScriptContext(v8::Local<v8::Context> context,
                               int32_t world_id) override;
 
@@ -42,10 +41,6 @@ class DistillerJsRenderFrameObserver : public content::RenderFrameObserver {
 
   // Track if the current page is distilled. This is needed for testing.
   bool is_distiller_page_;
-
-  // True if a load is in progress and we are currently able to bind requests
-  // for mojom::DistillerPageNotifierService.
-  bool load_active_ = false;
 
   // Handle to "distiller" JavaScript object functionality.
   std::unique_ptr<DistillerNativeJavaScript> native_javascript_handle_;

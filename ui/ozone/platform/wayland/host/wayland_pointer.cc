@@ -45,10 +45,10 @@ void WaylandPointer::Enter(void* data,
                            wl_fixed_t surface_y) {
   DCHECK(data);
   WaylandPointer* pointer = static_cast<WaylandPointer*>(data);
-  gfx::PointF location(wl_fixed_to_double(surface_x),
-                       wl_fixed_to_double(surface_y));
-  pointer->delegate_->OnPointerFocusChanged(WaylandWindow::FromSurface(surface),
-                                            /*focused=*/true, location);
+  WaylandWindow* window = WaylandWindow::FromSurface(surface);
+  gfx::PointF location{wl_fixed_to_double(surface_x),
+                       wl_fixed_to_double(surface_y)};
+  pointer->delegate_->OnPointerFocusChanged(window, location);
 }
 
 // static
@@ -58,8 +58,7 @@ void WaylandPointer::Leave(void* data,
                            wl_surface* surface) {
   DCHECK(data);
   WaylandPointer* pointer = static_cast<WaylandPointer*>(data);
-  pointer->delegate_->OnPointerFocusChanged(WaylandWindow::FromSurface(surface),
-                                            /*focused=*/false, {});
+  pointer->delegate_->OnPointerFocusChanged(nullptr, {});
 }
 
 // static

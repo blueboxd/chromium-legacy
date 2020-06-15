@@ -126,6 +126,7 @@ content
 contentVisibility
 counterIncrement
 counterReset
+counterSet
 cssFloat
 cssText
 cursor

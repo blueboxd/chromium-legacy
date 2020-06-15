@@ -2080,6 +2080,7 @@
 <translation id="3613422051106148727">&amp;Відкрити в новій вкладці</translation>
 <translation id="3614974189435417452">Резервне копіювання завершено</translation>
 <translation id="3615073365085224194">Торкніться пальцем сканера відбитків</translation>
+<translation id="3615579745882581859">Сканується файл "<ph name="FILE_NAME" />".</translation>
 <translation id="3616741288025931835">&amp;Очистити дані веб-перегляду...</translation>
 <translation id="3617891479562106823">Фони недоступні. Повторіть спробу пізніше.</translation>
 <translation id="3619115746895587757">Капучино</translation>
@@ -2128,7 +2129,6 @@
 <translation id="3670113805793654926">Пристрої від усіх постачальників</translation>
 <translation id="3670229581627177274">Увімкніть Bluetooth</translation>
 <translation id="3672681487849735243">Виявлено заводську помилку</translation>
-<translation id="3675913744032077012">Налаштування мови та введення</translation>
 <translation id="367645871420407123">залиште поле порожнім, якщо потрібно налаштувати кореневий пароль для значення тестового зображення за умовчанням</translation>
 <translation id="3677106374019847299">Введіть назву свого постачальника послуг</translation>
 <translation id="3677657024345889897">Найтихіше</translation>
@@ -2646,10 +2646,8 @@
 <translation id="4314815835985389558">Керування синхронізацією</translation>
 <translation id="4316850752623536204">Веб-сайт розробника</translation>
 <translation id="4320177379694898372">Немає з’єднання з Інтернетом</translation>
-<translation id="4321442524549817090">П&amp;оказати URL-адресу</translation>
 <translation id="4322394346347055525">Закрити інші вкладки</translation>
 <translation id="4324577459193912240">Файл неповний</translation>
-<translation id="4325083532956419387">Версія ОС Chrome</translation>
 <translation id="4325237902968425115">Видаляється <ph name="LINUX_APP_NAME" />…</translation>
 <translation id="4330191372652740264">Крижана вода</translation>
 <translation id="4330387663455830245">Ніколи не перекладати з такої мови: <ph name="LANGUAGE" /></translation>
@@ -3150,7 +3148,6 @@
 <translation id="4997086284911172121">Немає з’єднання з Інтернетом.</translation>
 <translation id="4998430619171209993">Увімкнено</translation>
 <translation id="5000922062037820727">Заблоковано (рекомендується)</translation>
-<translation id="5003821244905342830">Якщо ви продовжите, Google синхронізує дані облікового запису <ph name="EMAIL" /> з цим пристроєм.</translation>
 <translation id="5005498671520578047">Копіювати пароль</translation>
 <translation id="5006218871145547804">ADB в додатках для Android у Crostini</translation>
 <translation id="5007392906805964215">Переглянути</translation>
@@ -3724,7 +3721,6 @@
 <translation id="5734362860645681824">Зв’язок</translation>
 <translation id="5734697361979786483">Додати файлообмінник</translation>
 <translation id="5736796278325406685">Введіть дійсне ім’я користувача</translation>
-<translation id="573759479754913123">Про ОС Chrome</translation>
 <translation id="5739017626473506901">Увійдіть, і тоді <ph name="USER_NAME" /> зможе додати обліковий запис закладу освіти</translation>
 <translation id="5739235828260127894">Очікується підтвердження. <ph name="LINK_BEGIN" />Докладніше<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Дуже великий</translation>
@@ -4157,7 +4153,6 @@
 <translation id="628352644014831790">4 секунди</translation>
 <translation id="6285120108426285413">Файл <ph name="FILE_NAME" /> рідко завантажують. Він може бути небезпечним.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Новий принтер у вашій мережі}one{Нові принтери у вашій мережі}few{Нові принтери у вашій мережі}many{Нові принтери у вашій мережі}other{Нові принтери у вашій мережі}}</translation>
-<translation id="6286708577777130801">Інформація про збережені паролі</translation>
 <translation id="6291163159361301370">Для запуску Linux <ph name="ORGANIZATION_NAME" /> вимагає створити резервні копії даних і скинути цей комп'ютер Chromebook до заводських налаштувань.</translation>
 <translation id="6291949900244949761">Запитувати, коли сайт хоче отримати доступ до пристроїв USB (рекомендовано)</translation>
 <translation id="6291953229176937411">&amp;Показати в програмі Finder</translation>
@@ -4375,7 +4370,6 @@
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> – надано доступ до вмісту на робочому столі</translation>
 <translation id="6580203076670148210">Швидкість сканування</translation>
 <translation id="6582080224869403177">Щоб оновити систему безпеки, скиньте налаштування пристрою <ph name="DEVICE_TYPE" />.</translation>
-<translation id="6584793698691679400">Версія пристрою</translation>
 <translation id="6584878029876017575">Безстроковий підпис Microsoft</translation>
 <translation id="6586099239452884121">Гостьовий режим</translation>
 <translation id="6586451623538375658">Змінити основну кнопку миші</translation>
@@ -4483,7 +4477,6 @@
 <translation id="672609503628871915">Докладніше про нові функції</translation>
 <translation id="67269783048918309">Надсилати дані про використання й діагностику. Цей пристрій наразі автоматично надсилає в Google дані про діагностику та використання пристрою і додатків. Ця інформація не використовуватиметься для встановлення особи вашої дитини, а допоможе покращити стабільність системи, додатків тощо. Деякі зведені дані також корисні для додатків і партнерів Google, як-от розробників Android. Це <ph name="BEGIN_LINK1" />налаштування<ph name="END_LINK1" /> застосовує власник. Якщо ввімкнено додаткову Історію додатків і веб-пошуку, ці дані зберігаються в обліковому записі Google дитини. <ph name="BEGIN_LINK2" />Докладніше<ph name="END_LINK2" /></translation>
 <translation id="6727969043791803658">Під'єднано, акумулятор заряджено на <ph name="BATTERY_PERCENTAGE" />%</translation>
-<translation id="6728682313168670518">Щоб отримати доступ до сховища паролів, на кожному пристрої потрібно пройти одноразову автентифікацію. Потім цю функцію можна вимкнути в розділі "Паролі" в налаштуваннях.</translation>
 <translation id="6732801395666424405">Сертифікати не завантажено</translation>
 <translation id="6732900235521116609">Неможливо видалити ярлик</translation>
 <translation id="6734468588183300211">В анонімному режимі сайти не можуть використовувати файли cookie для перегляду ваших дій у веб-переглядачі, зокрема, щоб персоналізувати рекламу. Функції на деяких сайтах можуть не працювати.</translation>
@@ -5894,7 +5887,6 @@
 <translation id="851263357009351303">Завжди дозволяти хосту <ph name="HOST" /> показувати зображення</translation>
 <translation id="8513108775083588393">Автообертання</translation>
 <translation id="8514746246728959655">Спробуйте інший ключ безпеки</translation>
-<translation id="851960115758509829">Додатки, налаштування й інші параметри синхронізуватимуться між усіма пристроями з ОС Chrome, на яких ви ввійшли в обліковий запис Google.</translation>
 <translation id="8521475323816527629">Швидкий доступ до додатків</translation>
 <translation id="8523493869875972733">Залишити зміни</translation>
 <translation id="8523849605371521713">Додано політикою</translation>
@@ -5935,7 +5927,6 @@
 <translation id="8569682776816196752">Не знайдено жодного місця призначення</translation>
 <translation id="8571213806525832805">Останні 4 тижні</translation>
 <translation id="8571687764447439720">Додати квиток Kerberos</translation>
-<translation id="8573403125070227391">Це оголошення використовує забагато ресурсів пристрою, тож веб-переглядач Chrome вилучив його.</translation>
 <translation id="8574990355410201600">Завжди дозволяти звук на сторінці <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Утримуйте <ph name="KEY_EQUIVALENT" />, щоб вийти</translation>
 <translation id="8578639784464423491">Не може перевищувати 99 літер</translation>

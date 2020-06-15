@@ -12,8 +12,6 @@ blink_core_sources("display_lock") {
     "display_lock_document_state.h",
     "display_lock_utilities.cc",
     "display_lock_utilities.h",
-    "render_subtree_activation_event.cc",
-    "render_subtree_activation_event.h",
   ]
 
   public_deps = [

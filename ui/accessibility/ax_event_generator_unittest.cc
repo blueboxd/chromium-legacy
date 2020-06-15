@@ -673,6 +673,120 @@ TEST(AXEventGeneratorTest, ScrollVerticalPositionChanged) {
           AXEventGenerator::Event::SCROLL_VERTICAL_POSITION_CHANGED, 1)));
 }
 
+TEST(AXEventGeneratorTest, TextAttributeChanged) {
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(17);
+  initial_state.nodes[0].id = 1;
+  initial_state.nodes[0].child_ids.push_back(2);
+  initial_state.nodes[0].child_ids.push_back(3);
+  initial_state.nodes[0].child_ids.push_back(4);
+  initial_state.nodes[0].child_ids.push_back(5);
+  initial_state.nodes[0].child_ids.push_back(6);
+  initial_state.nodes[0].child_ids.push_back(7);
+  initial_state.nodes[0].child_ids.push_back(8);
+  initial_state.nodes[0].child_ids.push_back(9);
+  initial_state.nodes[0].child_ids.push_back(10);
+  initial_state.nodes[0].child_ids.push_back(11);
+  initial_state.nodes[0].child_ids.push_back(12);
+  initial_state.nodes[0].child_ids.push_back(13);
+  initial_state.nodes[0].child_ids.push_back(14);
+  initial_state.nodes[0].child_ids.push_back(15);
+  initial_state.nodes[0].child_ids.push_back(16);
+  initial_state.nodes[0].child_ids.push_back(17);
+  initial_state.nodes[1].id = 2;
+  initial_state.nodes[2].id = 3;
+  initial_state.nodes[3].id = 4;
+  initial_state.nodes[4].id = 5;
+  initial_state.nodes[5].id = 6;
+  initial_state.nodes[6].id = 7;
+  initial_state.nodes[7].id = 8;
+  initial_state.nodes[8].id = 9;
+  initial_state.nodes[9].id = 10;
+  initial_state.nodes[10].id = 11;
+  initial_state.nodes[11].id = 12;
+  initial_state.nodes[12].id = 13;
+  initial_state.nodes[13].id = 14;
+  initial_state.nodes[14].id = 15;
+  initial_state.nodes[15].id = 16;
+  initial_state.nodes[16].id = 17;
+
+  // To test changing the start and end of existing markers.
+  initial_state.nodes[11].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kMarkerTypes,
+      {static_cast<int32_t>(ax::mojom::MarkerType::kTextMatch)});
+  initial_state.nodes[11].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kMarkerStarts, {5});
+  initial_state.nodes[11].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kMarkerEnds, {10});
+
+  AXTree tree(initial_state);
+
+  AXEventGenerator event_generator(&tree);
+  AXTreeUpdate update = initial_state;
+  update.nodes[1].AddIntAttribute(ax::mojom::IntAttribute::kColor, 0);
+  update.nodes[2].AddIntAttribute(ax::mojom::IntAttribute::kBackgroundColor, 0);
+  update.nodes[3].AddIntAttribute(
+      ax::mojom::IntAttribute::kTextDirection,
+      static_cast<int32_t>(ax::mojom::TextDirection::kRtl));
+  update.nodes[4].AddIntAttribute(
+      ax::mojom::IntAttribute::kTextPosition,
+      static_cast<int32_t>(ax::mojom::TextPosition::kSuperscript));
+  update.nodes[5].AddIntAttribute(
+      ax::mojom::IntAttribute::kTextStyle,
+      static_cast<int32_t>(ax::mojom::TextStyle::kBold));
+  update.nodes[6].AddIntAttribute(
+      ax::mojom::IntAttribute::kTextOverlineStyle,
+      static_cast<int32_t>(ax::mojom::TextDecorationStyle::kSolid));
+  update.nodes[7].AddIntAttribute(
+      ax::mojom::IntAttribute::kTextStrikethroughStyle,
+      static_cast<int32_t>(ax::mojom::TextDecorationStyle::kWavy));
+  update.nodes[8].AddIntAttribute(
+      ax::mojom::IntAttribute::kTextUnderlineStyle,
+      static_cast<int32_t>(ax::mojom::TextDecorationStyle::kDotted));
+  update.nodes[9].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kMarkerTypes,
+      {static_cast<int32_t>(ax::mojom::MarkerType::kSpelling)});
+  update.nodes[10].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kMarkerTypes,
+      {static_cast<int32_t>(ax::mojom::MarkerType::kGrammar)});
+  update.nodes[11].AddIntListAttribute(ax::mojom::IntListAttribute::kMarkerEnds,
+                                       {11});
+  update.nodes[12].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kMarkerTypes,
+      {static_cast<int32_t>(ax::mojom::MarkerType::kActiveSuggestion)});
+  update.nodes[13].AddIntListAttribute(
+      ax::mojom::IntListAttribute::kMarkerTypes,
+      {static_cast<int32_t>(ax::mojom::MarkerType::kSuggestion)});
+  update.nodes[14].AddFloatAttribute(ax::mojom::FloatAttribute::kFontSize,
+                                     12.0f);
+  update.nodes[15].AddFloatAttribute(ax::mojom::FloatAttribute::kFontWeight,
+                                     600.0f);
+  update.nodes[16].AddStringAttribute(ax::mojom::StringAttribute::kFontFamily,
+                                      "sans");
+
+  ASSERT_TRUE(tree.Unserialize(update));
+  EXPECT_THAT(
+      event_generator,
+      UnorderedElementsAre(
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 2),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 3),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 4),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 5),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 6),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 7),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 8),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 9),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 10),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 11),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 12),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 13),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 14),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 15),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 16),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 17)));
+}
+
 TEST(AXEventGeneratorTest, OtherAttributeChanged) {
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
@@ -709,7 +823,7 @@ TEST(AXEventGeneratorTest, OtherAttributeChanged) {
           HasEventAtNode(AXEventGenerator::Event::CONTROLS_CHANGED, 6),
           HasEventAtNode(AXEventGenerator::Event::LANGUAGE_CHANGED, 2),
           HasEventAtNode(AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED, 3),
-          HasEventAtNode(AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED, 4),
+          HasEventAtNode(AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED, 4),
           HasEventAtNode(AXEventGenerator::Event::OTHER_ATTRIBUTE_CHANGED, 5),
           HasEventAtNode(AXEventGenerator::Event::RELATED_NODE_CHANGED, 6)));
 }

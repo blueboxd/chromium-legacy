@@ -172,12 +172,6 @@
 <translation id="1307454923744766368">不適用不安全來源相關限制的來源或主機名稱模式</translation>
 <translation id="1312799700549720683">控管顯示設定。</translation>
 <translation id="131353325527891113">在登入畫面中顯示使用者名稱</translation>
-<translation id="1327351219049180837">這項政策可控管系統是否要回報政策資料和擷取政策的時間。
-
-      如果不設定這項政策或設為 True，系統會收集政策資料和擷取政策的時間。
-      如果將這項政策設為 False，系統將不會收集政策資料和擷取政策的時間。
-
-      只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="1327466551276625742">離線時啟用網路設定提示</translation>
 <translation id="1330145147221172764">啟用螢幕小鍵盤</translation>
 <translation id="13356285923490863">政策名稱</translation>
@@ -923,12 +917,6 @@
 
           在 Windows 上，這項政策僅適用於已加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體，或是已註冊裝置管理服務的 Windows 10 專業版或企業版執行個體。</translation>
 <translation id="247658312644322296">「另存為 PDF」目的地</translation>
-<translation id="2478649170422995190">這項政策可控管系統是否要回報版本資訊，例如作業系統版本、作業系統平台、作業系統架構、<ph name="PRODUCT_NAME" /> 版本和 <ph name="PRODUCT_NAME" /> 發布版本。
-
-      如果不設定這項政策或設為 True，系統會收集版本資訊。
-      如果將這項政策設為 False，則系統不會收集版本資訊。
-
-      只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="2480971699591919564">啟用「點選通話」功能，讓登入 Google 帳戶的使用者可以將電話號碼從 Chrome 桌面傳送到 Android 裝置。詳情請參閱說明中心文章：https://support.google.com/chrome/answer/9430554?hl=zh-TW。
 
       如果將這項政策設為啟用，Chrome 使用者便可以將電話號碼傳送到 Android 裝置。
@@ -1120,7 +1108,7 @@
 <translation id="267596348720209223">指定搜尋引擎支援的字元編碼。編碼就是 UTF-8、GB2312 和 ISO-8859-1 等字碼頁名稱。系統會以提供的順序來測試。這項政策是選擇性的，如果未設定，預設會使用的是 UTF-8。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="2678503605767349615">必須提供裝置通用用戶端憑證</translation>
 <translation id="268577405881275241">啟用資料壓縮 Proxy 功能</translation>
-<translation id="2691668238491124549">如果將這項政策設為僅限建議，系統會將受管理工作階段的建議語言代碼移至清單頂端，並按照政策中顯示的順序排列。系統會預先選取第一個建議語言代碼。
+<translation id="2691668238491124549">如果設定了這項政策 (只能設為「建議」)，系統會將受管理工作階段的建議語言代碼移至清單頂端，並按照政策中顯示的順序排列。系統會預先選取第一個建議語言代碼。
       如果未設定，系統會預先選取目前的 UI 語言代碼。
 
       如有多個建議語言代碼，系統會假設使用者將從中擇一使用。使用者必須在啟動受管理工作階段時選取語言代碼和鍵盤配置。否則，系統會假設大多數使用者將採用預先選取的語言代碼。使用者不一定要在啟動受管理工作階段時選取語言代碼和鍵盤配置。
@@ -3500,12 +3488,6 @@
           另請參閱「CookiesAllowedForUrls」和「CookiesSessionOnlyForUrls」政策。請注意，這三項政策的網址模式不可發生衝突，否則系統將無法判斷應優先採用哪項政策。
 
           如果想進一步瞭解有效的網址模式，請參閱 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
-<translation id="6399242659768117666">這項政策可控管系統是否要回報擴充功能和外掛程式資訊。
-
-      如果不設定這項政策或設為 True，系統會收集擴充功能和外掛程式資料。
-      如果將這項政策設為 False，系統將不會收集擴充功能和外掛程式資料。
-
-      只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="6401669939808766804">登出使用者</translation>
 <translation id="6406448383934634215">如果選取 [開啟網址清單] 做為啟動動作，你就能指定要開啟的網址清單。如果沒有設定這項政策，啟動時就不會開啟任何網址。
 
@@ -3528,7 +3510,6 @@
           如果選擇自動偵測 Proxy 伺服器，系統會提供指令碼網址「http://wpad/wpad.dat」給 Android 應用程式 (不會使用 Proxy 自動偵測通訊協定的其他部分)。
 
           如果選擇 .pac Proxy 指令碼，系統會提供該指令碼網址給 Android 應用程式。</translation>
-<translation id="6430366557948788869">Chrome 資訊回報擴充功能</translation>
 <translation id="6438972408080276697">如果將這項政策設為 True，系統會將政策觸發的主要 Android 應用程式安裝事件報告傳送給 Google。如果將這項政策設為 False，則系統不會擷取任何事件。</translation>
 <translation id="6440051664870270040">允許同時在多個網站中進行瀏覽及開啟彈出式視窗</translation>
 <translation id="6447948611083700881">備份與還原功能已停用</translation>
@@ -3605,12 +3586,6 @@
 
       你可以將這項政策設為執行檔路徑，或是設為 <ph name="PRODUCT_NAME_PLACEHOLDER" />，讓系統自動偵測 Chrome 的安裝位置。</translation>
 <translation id="6536600139108165863">裝置關機時自動重新啟動</translation>
-<translation id="6537062468544950724">這項政策可控管系統是否要回報能用於辨識電腦的資訊，例如電腦名稱和網路位址。
-
-      如果不設定這項政策或設為 True，系統會收集可用於辨識電腦的資訊。
-      如果將這項政策設為 False，系統將不會收集可用於辨識電腦的資訊。
-
-      只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="6539246272469751178">這項政策對 Android 應用程式沒有影響。Android 應用程式會一律使用預設的下載目錄，無法存取任何由 <ph name="PRODUCT_OS_NAME" />下載到非預設下載目錄的檔案。</translation>
 <translation id="654303922206238013">eCryptfs 遷移策略</translation>
 <translation id="6544897973797372144">如果你將這項政策設為「True」，且並未指定 ChromeOsReleaseChannel 政策，則註冊網域的使用者將可變更裝置的發布頻道。如果你將這項政策設為「False」，則系統會將裝置鎖定為先前設定的任何頻道。
@@ -3874,12 +3849,6 @@
       如果將這項政策設為 <ph name="BR_UNDER_USER_CONTROL" />，系統會提示使用者使用備份與還原功能。如果使用者啟用這項功能，系統會將 Android 應用程式資料上傳至 Android 備份伺服器，並在使用者重新安裝相容的應用程式時還原資料。
 
       完成初始設定後，使用者可以啟用或停用備份與還原功能。</translation>
-<translation id="6991078864332103177">這項政策可控管系統是否要回報能用於辨識使用者身分的資訊，例如作業系統登入資訊、<ph name="PRODUCT_NAME" /> 設定檔登入資訊、<ph name="PRODUCT_NAME" /> 設定檔名稱、<ph name="PRODUCT_NAME" /> 設定檔路徑和 <ph name="PRODUCT_NAME" /> 執行檔路徑。
-
-      如果不設定這項政策或設為 True，系統會收集可用於辨識使用者身分的資訊。
-      如果將這項政策設為 False，系統將不會收集可用於辨識使用者身分的資訊。
-
-      只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="6994082778848658360">如果你安裝的安全元素硬體和雙重驗證功能相容，就可以使用這項政策來指定如何使用該硬體提供雙重驗證功能。裝置的電源鍵會用來偵測使用者是否真實存在。
 
       如果選取 [已停用]，系統就不會提供雙重驗證功能。
@@ -4290,14 +4259,6 @@
       如果不設定這項政策或設為 0，當使用者前往指定網址時，系統會立即在替代瀏覽器中開啟該網址。
 
       如果將這項政策設為零以外的數值，Chrome 在開啟替代瀏覽器前會先顯示一則等待訊息，並依據該數值 (以毫秒為單位) 來設定這則訊息要顯示多久的時間。</translation>
-<translation id="7583419926951418342">這項政策可控管 <ph name="PRODUCT_NAME" /> 雲端報告功能，該功能會將瀏覽器運作資訊上傳到 Google 管理控制台。
-
-      如果不設定這項政策或設為 False，系統不會收集或上傳資料。
-      如果將這項政策設為 True，系統會收集資料並上傳到 Google 管理控制台。
-      如要控管上傳的資料類型，請使用「Chrome 資訊回報擴充功能」群組中的政策。
-
-      如果是 <ph name="PRODUCT_NAME" />，只有在電腦已註冊使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 的情況下，這項政策才會生效。
-      如果是 <ph name="PRODUCT_OS_NAME" />，這項政策會一律生效。</translation>
 <translation id="7586477707097444774">針對符合這些模式的網域所設定的 Cookie 會還原成舊版的 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行為。還原成舊版的行為會導致系統將未指定 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 屬性的 Cookie 視為「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」，並移除「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」Cookie 必須帶有「<ph name="ATTRIBUTE_SECURE_NAME" />」屬性的要求。如需完整說明，請參閱 https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies。
 
           未設定這項政策或網域不符合這些模式時，系統會對 Cookie 套用 <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> 政策 (如已設定) 或個人配置中的全域預設值。
@@ -4412,19 +4373,10 @@
           如果你停用這項設定或並未進行設置，系統就不會啟用雙重驗證機制，而預設行為則會改採用輸入使用者定義的 PIN。</translation>
 <translation id="7750991880413385988">開啟新分頁</translation>
 <translation id="7754704193130578113">下載每個檔案前先詢問儲存位置</translation>
-<translation id="7755495228644343508">設定 Chrome 資訊回報擴充功能相關政策。
-
-      只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="7758378441185523981">為設定檔類型啟用背景驗證。</translation>
 <translation id="7763614521440615342">在新分頁顯示內容建議</translation>
 <translation id="7765879851993224640">允許使用 Smart Lock 登入功能。</translation>
 <translation id="7774768074957326919">使用系統 Proxy 設定</translation>
-<translation id="7775902646576367944">這項政策可控管系統是否要回報安全瀏覽資訊，包含安全瀏覽警告訊息數以及安全瀏覽警告訊息點閱數。
-
-      如果不設定這項政策或設為 True，系統會收集安全瀏覽資料。
-      如果將這項政策設為 False，系統將不會收集安全瀏覽資料。
-
-      只有在已啟用 <ph name="CHROME_REPORTING_EXTENSION_NAME" />且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="777734450201217641">在登入畫面上啟用無障礙功能快速鍵。
 
           如果將這項政策設為 True，系統將一律在登入畫面上啟用無障礙功能快速鍵。
@@ -4482,15 +4434,6 @@
 <translation id="793473937901685727">設定 ARC 應用程式的憑證可用性</translation>
 <translation id="7937491150792971922">合併多個來源的擴充功能安裝清單政策</translation>
 <translation id="7937766917976512374">允許或拒絕擷取視訊</translation>
-<translation id="7937944288846766530">這項政策用於控管 <ph name="PRODUCT_NAME" /> 擴充功能安裝要求，使用者可傳送要求至 Google 管理控制台以取得核准。
-
-      如果不設定 CloudReportingEnabled 政策或設為停用，系統將忽略這項政策，且不會建立或上傳擴充功能安裝要求。
-      如果不設定這項政策或設為停用，系統不會建立或上傳擴充功能安裝要求。
-      如果將這項政策設為啟用，系統會建立擴充功能安裝要求，並上傳至 Google 管理控制台。
-
-      當使用者嘗試安裝並未透過 <ph name="EXTENSION_INSTALL_WHITELIST" /> 或 <ph name="EXTENSION_SETTINGS" /> 加入許可清單的擴充功能時，系統會建立擴充功能安裝要求。
-
-      只有在已啟用 <ph name="CLOUD_REPORTING_ENABLED" /> 且已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊電腦的情況下，這項政策才會生效。</translation>
 <translation id="7941975817681987555">無論使用任何網路連線，皆不預測網路動作</translation>
 <translation id="7951605113561734721">指定應使用裝置管理通訊協定註冊的裝置通用用戶端憑證。</translation>
 <translation id="7952007677054834789">設定 <ph name="PRODUCT_NAME" /> 的起始載入頁面、預設首頁和預設新分頁，並禁止使用者變更這些設定。
@@ -5282,7 +5225,7 @@
           支援 <ph name="PRODUCT_OS_NAME" /> 75 以上版本。如果用戶端版本較舊，則這個值代表復原功能已停用。</translation>
 <translation id="9155375380628728544">你可以透過這項政策，限定使用者只能將政策中列出的其中一種語言新增至慣用語言清單。
 
-      如果未設定或設為空白清單，使用者可以視需要指定任何語言。
+      如果未設定或設為空白清單，使用者可以自行指定任何語言。
 
       如果設為包含無效值的清單，系統會忽略這些無效值。如果使用者將這項政策不允許的語言新增至慣用語言清單，系統會移除這些語言。如果使用者以這項政策不允許的語言顯示 <ph name="PRODUCT_OS_NAME" />，系統會在使用者下次登入時，將顯示語言切換為允許的 UI 語言。除此之外，如果這項政策只包含無效項目，<ph name="PRODUCT_OS_NAME" />會切換為政策指定的第一個有效值或預設的語言代碼 (例如 en-US)。</translation>
 <translation id="9156175786579877198">將下載內容儲存至本機儲存空間之前，須檢查內容是否違反機密資料保護規則的網址模式清單。只有在 <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 設為啟用的情況下，系統才會使用這項政策。

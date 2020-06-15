@@ -97,8 +97,7 @@ void FeedbackReport::LoadReportsAndQueue(const base::FilePath& user_dir,
 
 void FeedbackReport::DeleteReportOnDisk() {
   reports_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&base::DeleteFile), file_, false));
+      FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), file_));
 }
 
 FeedbackReport::~FeedbackReport() {}

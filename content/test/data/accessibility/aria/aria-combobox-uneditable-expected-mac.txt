@@ -1,4 +1,4 @@
-AXWebArea AXFocused='1'
+AXWebArea AXFocused=1
 ++AXGroup
 ++++AXStaticText AXValue='Choose a fruit, with text content'
 ++AXPopUpButton AXLinkedUIElements=[:6] AXTitle='Choose a fruit, with text content' AXValue='Apple'

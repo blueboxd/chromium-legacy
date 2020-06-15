@@ -11,6 +11,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/aura/aura_window_properties.h"
+#include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_id.h"
@@ -87,6 +88,15 @@ AXWindowObjWrapper::AXWindowObjWrapper(AXAuraObjCache* aura_obj_cache,
 }
 
 AXWindowObjWrapper::~AXWindowObjWrapper() = default;
+
+bool AXWindowObjWrapper::HandleAccessibleAction(
+    const ui::AXActionData& action) {
+  if (action.action == ax::mojom::Action::kFocus) {
+    window_->Focus();
+    return true;
+  }
+  return false;
+}
 
 bool AXWindowObjWrapper::IsIgnored() {
   return false;

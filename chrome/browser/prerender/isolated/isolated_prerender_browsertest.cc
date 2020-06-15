@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
@@ -435,7 +436,12 @@ class IsolatedPrerenderBrowserTest
     return origin_server_request_count_;
   }
 
-  const std::vector<GURL>& origin_server_requests() const {
+  const std::vector<net::test_server::HttpRequest>& proxy_server_requests()
+      const {
+    return proxy_server_requests_;
+  }
+  const std::vector<net::test_server::HttpRequest>& origin_server_requests()
+      const {
     return origin_server_requests_;
   }
 
@@ -452,10 +458,6 @@ class IsolatedPrerenderBrowserTest
   GURL GetOriginServerURLWithBadProbe(const std::string& path) const {
     return origin_server_->GetURL("badprobe.testorigin.com", path);
   }
-
- protected:
-  base::OnceClosure on_proxy_request_closure_;
-  base::OnceClosure on_proxy_tunnel_done_closure_;
 
  private:
   std::unique_ptr<net::test_server::HttpResponse> HandleOriginRequest(
@@ -503,10 +505,10 @@ class IsolatedPrerenderBrowserTest
     return nullptr;
   }
 
-  void OnProxyTunnelDone() {
-    proxy_tunnel_.reset();
-    if (on_proxy_tunnel_done_closure_) {
-      std::move(on_proxy_tunnel_done_closure_).Run();
+  void OnProxyTunnelDone(TestProxyTunnelConnection* tunnel) {
+    auto iter = tunnels_.find(tunnel);
+    if (iter != tunnels_.end()) {
+      tunnels_.erase(iter);
     }
   }
 
@@ -546,13 +548,14 @@ class IsolatedPrerenderBrowserTest
     }
     EXPECT_TRUE(found_chrome_proxy_header);
 
-    proxy_tunnel_ = std::make_unique<TestProxyTunnelConnection>();
-    proxy_tunnel_->SetOnDoneCallback(
+    auto new_tunnel = std::make_unique<TestProxyTunnelConnection>();
+    new_tunnel->SetOnDoneCallback(
         base::BindOnce(&IsolatedPrerenderBrowserTest::OnProxyTunnelDone,
-                       base::Unretained(this)));
-
-    EXPECT_TRUE(proxy_tunnel_->ConnectToPeerOnLocalhost(
+                       base::Unretained(this), new_tunnel.get()));
+    EXPECT_TRUE(new_tunnel->ConnectToPeerOnLocalhost(
         request_origin.EffectiveIntPort()));
+
+    tunnels_.insert(std::move(new_tunnel));
 
     // This method is called on embedded test server thread. Post the
     // information on UI thread.
@@ -570,17 +573,14 @@ class IsolatedPrerenderBrowserTest
   void MonitorProxyResourceRequestOnUIThread(
       const net::test_server::HttpRequest& request) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-    if (on_proxy_request_closure_) {
-      std::move(on_proxy_request_closure_).Run();
-    }
+    proxy_server_requests_.push_back(request);
   }
 
   void MonitorOriginResourceRequestOnUIThread(
       const net::test_server::HttpRequest& request) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     origin_server_request_count_++;
-    origin_server_requests_.push_back(request.GetURL());
+    origin_server_requests_.push_back(request);
 
     EXPECT_TRUE(request.headers.find("Accept-Language") !=
                 request.headers.end());
@@ -628,14 +628,14 @@ class IsolatedPrerenderBrowserTest
   }
   void OnResponseCompletedSuccessfully(
       std::unique_ptr<net::StreamSocket> socket) override {
-    if (proxy_tunnel_) {
-      // PostTask starting the proxy so that we are more confident that the
-      // prefetch has had ample time to process the response from the embedded
-      // test server.
-      base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&TestProxyTunnelConnection::StartProxy,
-                         proxy_tunnel_->GetWeakPtr(), std::move(socket)));
+    DCHECK(socket->IsConnected());
+
+    // Find a tunnel that isn't being used already.
+    for (const auto& tunnel : tunnels_) {
+      if (tunnel->IsReadyForIncomingSocket()) {
+        tunnel->StartProxy(std::move(socket));
+        return;
+      }
     }
   }
 
@@ -646,10 +646,13 @@ class IsolatedPrerenderBrowserTest
   std::unique_ptr<net::EmbeddedTestServer> config_server_;
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
 
-  std::vector<GURL> origin_server_requests_;
+  std::vector<net::test_server::HttpRequest> origin_server_requests_;
+  std::vector<net::test_server::HttpRequest> proxy_server_requests_;
 
-  // Lives on |proxy_server_|'s IO Thread.
-  std::unique_ptr<TestProxyTunnelConnection> proxy_tunnel_;
+  // These all live on |proxy_server_|'s IO Thread.
+  std::set<std::unique_ptr<TestProxyTunnelConnection>,
+           base::UniquePtrComparator>
+      tunnels_;
 
   size_t origin_server_request_count_ = 0;
 };
@@ -1465,19 +1468,31 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
   // successfully done and processed.
   prefetch_run_loop.Run();
 
-  std::vector<GURL> origin_requests_before_prerender = origin_server_requests();
+  std::vector<net::test_server::HttpRequest> origin_requests_before_prerender =
+      origin_server_requests();
+  std::vector<net::test_server::HttpRequest> proxy_requests_before_prerender =
+      proxy_server_requests();
 
   // This run loop will quit when a NSP finishes.
   nsp_run_loop.Run();
 
-  std::vector<GURL> origin_requests_after_prerender = origin_server_requests();
+  std::vector<net::test_server::HttpRequest> origin_requests_after_prerender =
+      origin_server_requests();
+  std::vector<net::test_server::HttpRequest> proxy_requests_after_prerender =
+      proxy_server_requests();
+
+  EXPECT_GT(proxy_requests_after_prerender.size(),
+            proxy_requests_before_prerender.size());
 
   // Check that the page's Javascript was NSP'd, but not the mainframe.
   bool found_nsp_javascript = false;
   bool found_nsp_mainframe = false;
   for (size_t i = origin_requests_before_prerender.size();
        i < origin_requests_after_prerender.size(); ++i) {
-    GURL nsp_url = origin_requests_after_prerender[i];
+    net::test_server::HttpRequest request = origin_requests_after_prerender[i];
+    EXPECT_TRUE(request.headers.find("Cookie") == request.headers.end());
+
+    GURL nsp_url = request.GetURL();
     found_nsp_javascript |= nsp_url.path() == "/prerender/isolated/prefetch.js";
     found_nsp_mainframe |= nsp_url.path() == eligible_link.path();
   }

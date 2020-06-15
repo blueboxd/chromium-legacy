@@ -813,9 +813,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
                         ->ScheduleDistributionNotifications(URLLoaderFactory,
                                                             is_first_run);
 
-                    const int64_t install_date =
+                    const base::Time install_date = base::Time::FromTimeT(
                         GetApplicationContext()->GetLocalState()->GetInt64(
-                            metrics::prefs::kInstallDate);
+                            metrics::prefs::kInstallDate));
+
                     ios::GetChromeBrowserProvider()
                         ->GetAppDistributionProvider()
                         ->InitializeFirebase(install_date, is_first_run);

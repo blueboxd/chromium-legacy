@@ -228,6 +228,7 @@
 <translation id="1898423065542865115">フィルタ</translation>
 <translation id="1901443836186977402">{1,plural, =1{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の期限が昨日で切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" /> に設定されています。この時刻が正しくない場合は、システムの時計を修正して、このページを更新してください。}other{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の期限が # 日前に切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" /> に設定されています。この時刻が正しくない場合は、システムの時計を修正して、このページを更新してください。}}</translation>
 <translation id="1902576642799138955">有効期間</translation>
+<translation id="1908217026282415406">カメラの使用と移動</translation>
 <translation id="191374271204266022">JSON 形式でコピー</translation>
 <translation id="1914326953223720820">解凍サービス</translation>
 <translation id="1915697529809968049">CVC の代わりに Touch ID を使用しますか？</translation>
@@ -723,7 +724,6 @@
 <translation id="4101413244023615925">テキストとグラフィック</translation>
 <translation id="4103249731201008433">デバイスのシリアル番号が無効です</translation>
 <translation id="4103763322291513355">&lt;strong&gt;chrome://policy&lt;/strong&gt; にアクセスして、ブラックリストに登録されている URL とシステム管理者が設定した他のポリシーを確認できます。</translation>
-<translation id="4108231218301530806">今後は指紋を使ってこのカードを確認する。</translation>
 <translation id="4110652170750985508">お支払いの確認</translation>
 <translation id="4112140312785995938">後方に移動</translation>
 <translation id="4116663294526079822">このサイトでは常に許可</translation>
@@ -1117,6 +1117,7 @@
 <translation id="569000877158168851">DnsOverHttpsTemplates の値は関連するものでないため、使用されません。ただし、DnsOverHttpsMode ポリシーが「<ph name="SECURE_DNS_MODE_AUTOMATIC" />」または「<ph name="SECURE_DNS_MODE_SECURE" />」に設定されている場合は除きます。</translation>
 <translation id="5701381305118179107">中央揃え</translation>
 <translation id="570530837424789914">管理...</translation>
+<translation id="5705882733397021510">戻る</translation>
 <translation id="57094364128775171">安全なパスワードを自動生成…</translation>
 <translation id="5710435578057952990">このウェブサイトの ID は確認されていません。</translation>
 <translation id="5720705177508910913">現在のユーザー</translation>
@@ -1124,6 +1125,7 @@
 <translation id="5730040223043577876">パスワードを他のサイトで再使用した場合、Chrome ではパスワードの再設定を促すメッセージが表示されます。</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Google アカウントにカードを保存}other{Google アカウントにカードを保存}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{このカードの仮想番号を使用}other{カードを選択してください}}</translation>
+<translation id="5759751709240058861">カメラの使用と移動</translation>
 <translation id="5763042198335101085">有効なメールアドレスを入力してください</translation>
 <translation id="5765072501007116331">配達方法と要件を確認するには、住所を選択してください</translation>
 <translation id="5776313857861697733">優先度</translation>
@@ -1332,7 +1334,6 @@
 <translation id="6631202559048444592">ポリシーに複数のソースがありますが、値は同一です。</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">削除</translation>
-<translation id="6644283850729428850">このポリシーは廃止されました。</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{なし}=1{1 件のサイト（Google アカウントへのログイン状態は維持されます）}other{# 件のサイト（Google アカウントへのログイン状態は維持されます）}}</translation>
 <translation id="6652101503459149953">Windows Hello を使用</translation>
 <translation id="6657585470893396449">パスワード</translation>

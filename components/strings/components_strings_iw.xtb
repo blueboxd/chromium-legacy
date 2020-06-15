@@ -384,6 +384,7 @@
 <translation id="2544644783021658368">מסמך יחיד</translation>
 <translation id="254947805923345898">ערך המדיניות לא חוקי.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> שלח תגובה לא חוקית.</translation>
+<translation id="2552295903035773204">אני רוצה להשתמש בנעילת מסך כדי לאשר כרטיסים מעכשיו ואילך</translation>
 <translation id="2553853292994445426">‏יש לבדוק את הגדרות ה-DNS המאובטח. ייתכן שהגדרת שרת DNS מאובטח שההתחברות אליו נכשלת.</translation>
 <translation id="2556876185419854533">&amp;ביטול עריכה</translation>
 <translation id="257674075312929031">קבוצה</translation>
@@ -731,7 +732,6 @@
 <translation id="4101413244023615925">טקסט וגרפיקה</translation>
 <translation id="4103249731201008433">המספר הסידורי של המכשיר אינו חוקי</translation>
 <translation id="4103763322291513355">‏היכנס לכתובת &lt;strong&gt;chrome://policy&lt;/strong&gt; כדי לראות רשימה של כתובות אתרים שנמנעה אליהם הגישה, כמו גם תקנונים אחרים שנאכפו על ידי מנהל המערכת שלך.</translation>
-<translation id="4108231218301530806">בפעם הבאה יש להשתמש בטביעת אצבע לאימות הכרטיס הזה.</translation>
 <translation id="4110652170750985508">בדיקת התשלום</translation>
 <translation id="4112140312785995938">הרצה לאחור</translation>
 <translation id="4116663294526079822">אפשר תמיד באתר זה</translation>
@@ -1132,6 +1132,7 @@ Del</translation>
 <translation id="569000877158168851">‏ערך DnsOverHttpsTemplates אינו רלוונטי ולא ייעשה בו שימוש, אלא אם מדיניות DnsOverHttpsMode תוגדר עם הערך <ph name="SECURE_DNS_MODE_AUTOMATIC" /> או <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">מרכז</translation>
 <translation id="570530837424789914">ניהול...</translation>
+<translation id="5705882733397021510">חזרה</translation>
 <translation id="57094364128775171">הצעת סיסמה חזקה…</translation>
 <translation id="5710435578057952990">הזהות של אתר זה לא אומתה.</translation>
 <translation id="5720705177508910913">משתמש נוכחי:</translation>
@@ -1348,7 +1349,6 @@ Del</translation>
 <translation id="6631202559048444592">במדיניות הזו קיים יותר ממקור אחד, אבל הערכים זהים.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">ניקוי</translation>
-<translation id="6644283850729428850">מדיניות זו אינה בתוקף.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{ללא}=1{‏מאתר אחד (לא תבוצע יציאה מחשבון Google שלך.)}two{‏מ-# אתרים (לא תבוצע יציאה מחשבון Google שלך.)}many{‏מ-# אתרים (לא תבוצע יציאה מחשבון Google שלך.)}other{‏מ-# אתרים (לא תבוצע יציאה מחשבון Google שלך.)}}</translation>
 <translation id="6652101503459149953">‏שימוש ב-Windows Hello</translation>
 <translation id="6657585470893396449">סיסמה</translation>

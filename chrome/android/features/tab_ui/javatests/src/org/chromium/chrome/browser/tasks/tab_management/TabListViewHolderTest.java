@@ -14,7 +14,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -22,6 +21,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Test;

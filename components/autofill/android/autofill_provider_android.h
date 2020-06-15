@@ -75,6 +75,14 @@ class AutofillProviderAndroid : public AutofillProvider {
   void OnAutofillAvailable(JNIEnv* env, jobject jcaller, jobject form_data);
   void OnAcceptDataListSuggestion(JNIEnv* env, jobject jcaller, jstring value);
 
+  void SetAnchorViewRect(JNIEnv* env,
+                         jobject jcaller,
+                         jobject anchor_view,
+                         jfloat x,
+                         jfloat y,
+                         jfloat width,
+                         jfloat height);
+
  private:
   void FireSuccessfulSubmission(mojom::SubmissionSource source);
   void OnFocusChanged(bool focus_on_form,

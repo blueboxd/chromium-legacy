@@ -5,32 +5,23 @@
 package org.chromium.chrome.browser.download;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
-import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogChoice;
-import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogCoordinator;
 import org.chromium.chrome.browser.download.dialogs.DownloadLocationDialogCoordinator;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -40,20 +31,15 @@ import org.chromium.ui.base.WindowAndroid;
 @Config(manifest = Config.NONE)
 public class DownloadDialogBridgeUnitTest {
     private static final int FAKE_NATIVE_HODLER = 1;
-    private static final long INVALID_START_TIME = -1;
     private static final long TOTAL_BYTES = 100;
     private static final @DownloadLocationDialogType int LOCATION_DIALOG_TYPE =
             org.chromium.chrome.browser.download.DownloadLocationDialogType.DEFAULT;
     private static final String SUGGESTED_PATH = "sdcard/download.txt";
-    private static final String NEW_SUGGESTED_PATH = "sdcard/new_download.txt";
 
     private DownloadDialogBridge mBridge;
 
     @Rule
     public JniMocker mJniMocker = new JniMocker();
-
-    @Rule
-    public TestRule mFeaturesProcessor = new Features.JUnitProcessor();
 
     @Mock
     private DownloadDialogBridge.Natives mNativeMock;
@@ -64,16 +50,11 @@ public class DownloadDialogBridgeUnitTest {
     @Mock
     DownloadLocationDialogCoordinator mLocationDialog;
 
-    @Mock
-    DownloadLaterDialogCoordinator mDownloadLaterDialog;
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        ShadowLog.stream = System.out;
         mJniMocker.mock(DownloadDialogBridgeJni.TEST_HOOKS, mNativeMock);
-        mBridge =
-                new DownloadDialogBridge(FAKE_NATIVE_HODLER, mDownloadLaterDialog, mLocationDialog);
+        mBridge = new DownloadDialogBridge(FAKE_NATIVE_HODLER, mLocationDialog);
     }
 
     @After
@@ -82,23 +63,11 @@ public class DownloadDialogBridgeUnitTest {
     }
 
     @Test
-    @Features.DisableFeatures({ChromeFeatureList.DOWNLOAD_LATER})
-    public void testShowDialog_disableDownloadLater() {
-        doAnswer(invocation -> {
-            mBridge.onDownloadLocationDialogComplete(NEW_SUGGESTED_PATH);
-            return null;
-        })
-                .when(mLocationDialog)
-                .showDialog(eq(mWindowAndroid), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
-                        eq(SUGGESTED_PATH));
-
+    public void testShowDialog() {
         mBridge.showDialog(mWindowAndroid, TOTAL_BYTES, LOCATION_DIALOG_TYPE, SUGGESTED_PATH);
         verify(mLocationDialog)
                 .showDialog(eq(mWindowAndroid), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
                         eq(SUGGESTED_PATH));
-        verify(mNativeMock)
-                .onComplete(anyLong(), any(), eq(NEW_SUGGESTED_PATH), eq(false),
-                        eq(INVALID_START_TIME));
     }
 
     @Test
@@ -108,89 +77,15 @@ public class DownloadDialogBridgeUnitTest {
     }
 
     @Test
-    @Features.DisableFeatures({ChromeFeatureList.DOWNLOAD_LATER})
-    public void testLocationDialogCanceled_disableDownloadLater() {
-        doAnswer(invocation -> {
-            mBridge.onDownloadLocationDialogCanceled();
-            return null;
-        })
-                .when(mLocationDialog)
-                .showDialog(eq(mWindowAndroid), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
-                        eq(SUGGESTED_PATH));
-
-        mBridge.showDialog(mWindowAndroid, TOTAL_BYTES, LOCATION_DIALOG_TYPE, SUGGESTED_PATH);
-        verify(mNativeMock).onCanceled(anyLong(), any());
+    public void testLocationDialogComplete() {
+        mBridge.onComplete(SUGGESTED_PATH);
+        verify(mNativeMock).onComplete(anyLong(), any(), eq(SUGGESTED_PATH), eq(false), eq(-1L));
     }
 
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.DOWNLOAD_LATER})
-    public void testDownloadLaterComplete_downloadNow() {
-        doAnswer(invocation -> {
-            mBridge.onDownloadLaterDialogComplete(DownloadLaterDialogChoice.DOWNLOAD_NOW);
-            return null;
-        })
-                .when(mDownloadLaterDialog)
-                .showDialog(any(), any());
-        doAnswer(invocation -> {
-            mBridge.onDownloadLocationDialogComplete(NEW_SUGGESTED_PATH);
-            return null;
-        })
-                .when(mLocationDialog)
-                .showDialog(eq(mWindowAndroid), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
-                        eq(SUGGESTED_PATH));
-
-        mBridge.showDialog(mWindowAndroid, TOTAL_BYTES, LOCATION_DIALOG_TYPE, SUGGESTED_PATH);
-        verify(mDownloadLaterDialog).showDialog(eq(mWindowAndroid), any());
-        verify(mLocationDialog)
-                .showDialog(eq(mWindowAndroid), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
-                        eq(SUGGESTED_PATH));
-
-        verify(mNativeMock)
-                .onComplete(anyLong(), any(), eq(NEW_SUGGESTED_PATH), eq(false),
-                        eq(INVALID_START_TIME));
-    }
-
-    @Test
-    @Features.EnableFeatures({ChromeFeatureList.DOWNLOAD_LATER})
-    public void testDownloadLaterComplete_downloadOnWifi() {
-        doAnswer(invocation -> {
-            mBridge.onDownloadLaterDialogComplete(DownloadLaterDialogChoice.ON_WIFI);
-            return null;
-        })
-                .when(mDownloadLaterDialog)
-                .showDialog(any(), any());
-        doAnswer(invocation -> {
-            mBridge.onDownloadLocationDialogComplete(NEW_SUGGESTED_PATH);
-            return null;
-        })
-                .when(mLocationDialog)
-                .showDialog(eq(mWindowAndroid), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
-                        eq(SUGGESTED_PATH));
-
-        mBridge.showDialog(mWindowAndroid, TOTAL_BYTES, LOCATION_DIALOG_TYPE, SUGGESTED_PATH);
-        verify(mDownloadLaterDialog).showDialog(eq(mWindowAndroid), any());
-        verify(mLocationDialog)
-                .showDialog(eq(mWindowAndroid), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
-                        eq(SUGGESTED_PATH));
-
-        verify(mNativeMock)
-                .onComplete(
-                        anyLong(), any(), eq(NEW_SUGGESTED_PATH), eq(true), eq(INVALID_START_TIME));
-    }
-
-    @Test
-    @Features.EnableFeatures({ChromeFeatureList.DOWNLOAD_LATER})
-    public void testDownloadLaterCancel() {
-        doAnswer(invocation -> {
-            mBridge.onDownloadLaterDialogCanceled();
-            return null;
-        })
-                .when(mDownloadLaterDialog)
-                .showDialog(any(), any());
-
-        mBridge.showDialog(mWindowAndroid, TOTAL_BYTES, LOCATION_DIALOG_TYPE, SUGGESTED_PATH);
-        verify(mDownloadLaterDialog).showDialog(eq(mWindowAndroid), any());
-        verify(mLocationDialog, times(0)).showDialog(any(), anyLong(), anyInt(), anyString());
+    public void testLocationDialogCanceled() {
+        Assert.assertNotNull(mBridge);
+        mBridge.onCancel();
         verify(mNativeMock).onCanceled(anyLong(), any());
     }
 }

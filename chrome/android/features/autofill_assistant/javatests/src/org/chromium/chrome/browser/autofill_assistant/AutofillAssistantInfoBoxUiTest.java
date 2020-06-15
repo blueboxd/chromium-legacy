@@ -20,8 +20,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.widget.TextView;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

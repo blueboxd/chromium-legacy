@@ -43,6 +43,9 @@ class IsolatedPrerenderServiceWorkersObserver
   void CallOnHasUsageInfoForTesting(
       const std::vector<content::StorageUsageInfo>& usage_info);
 
+  // Publicly exposes |OnRegistrationCompleted| for testing only.
+  void CallOnRegistrationCompletedForTesting(const GURL& scope);
+
  private:
   // content::ServiceWorkerContextObserver:
   void OnRegistrationCompleted(const GURL& scope) override;

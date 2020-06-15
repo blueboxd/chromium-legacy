@@ -6,54 +6,32 @@ package org.chromium.chrome.browser.download;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogChoice;
-import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogController;
-import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogCoordinator;
-import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogProperties;
 import org.chromium.chrome.browser.download.dialogs.DownloadLocationDialogController;
 import org.chromium.chrome.browser.download.dialogs.DownloadLocationDialogCoordinator;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.ui.base.WindowAndroid;
-import org.chromium.ui.modaldialog.DialogDismissalCause;
-import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Glues download dialogs UI code and handles the communication to download native backend.
  */
-public class DownloadDialogBridge
-        implements DownloadLocationDialogController, DownloadLaterDialogController {
+public class DownloadDialogBridge implements DownloadLocationDialogController {
     private static final long INVALID_START_TIME = -1;
     private long mNativeDownloadDialogBridge;
 
     private final DownloadLocationDialogCoordinator mLocationDialog;
-    private final DownloadLaterDialogCoordinator mDownloadLaterDialog;
 
-    WindowAndroid mWindowAndroid;
-    long mTotalBytes;
-    @DownloadLocationDialogType
-    int mLocationDialogType;
-    String mSuggestedPath;
-
-    @DownloadLaterDialogChoice
-    int mDownloadLaterChoice = DownloadLaterDialogChoice.DOWNLOAD_NOW;
-
-    public DownloadDialogBridge(long nativeDownloadDialogBridge,
-            DownloadLaterDialogCoordinator downloadLaterDialog,
-            DownloadLocationDialogCoordinator locationDialog) {
+    public DownloadDialogBridge(
+            long nativeDownloadDialogBridge, DownloadLocationDialogCoordinator locationDialog) {
         mNativeDownloadDialogBridge = nativeDownloadDialogBridge;
-        mDownloadLaterDialog = downloadLaterDialog;
         mLocationDialog = locationDialog;
     }
 
     @CalledByNative
     private static DownloadDialogBridge create(long nativeDownloadDialogBridge) {
         DownloadLocationDialogCoordinator locationDialog = new DownloadLocationDialogCoordinator();
-        DownloadLaterDialogCoordinator downloadLaterDialog = new DownloadLaterDialogCoordinator();
-        DownloadDialogBridge bridge = new DownloadDialogBridge(
-                nativeDownloadDialogBridge, downloadLaterDialog, locationDialog);
-        downloadLaterDialog.initialize(bridge);
+        DownloadDialogBridge bridge =
+                new DownloadDialogBridge(nativeDownloadDialogBridge, locationDialog);
         locationDialog.initialize(bridge);
         return bridge;
     }
@@ -61,73 +39,32 @@ public class DownloadDialogBridge
     @CalledByNative
     void destroy() {
         mNativeDownloadDialogBridge = 0;
-        mDownloadLaterDialog.destroy();
         mLocationDialog.destroy();
     }
 
     @CalledByNative
     void showDialog(WindowAndroid windowAndroid, long totalBytes,
             @DownloadLocationDialogType int dialogType, String suggestedPath) {
-        mWindowAndroid = windowAndroid;
-        mTotalBytes = totalBytes;
-        mLocationDialogType = dialogType;
-        mSuggestedPath = suggestedPath;
-
-        // Download later dialogs flow.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_LATER)) {
-            PropertyModel model =
-                    new PropertyModel.Builder(DownloadLaterDialogProperties.ALL_KEYS)
-                            .with(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION,
-                                    DownloadLaterDialogChoice.DOWNLOAD_NOW)
-                            .build();
-            mDownloadLaterDialog.showDialog(windowAndroid, model);
-            return;
-        }
-
-        // Download location dialog flow.
         mLocationDialog.showDialog(windowAndroid, totalBytes, dialogType, suggestedPath);
-    }
-
-    private void onComplete(String returnedPath, boolean onlyOnWifi, long startTime) {
-        if (mNativeDownloadDialogBridge == 0) return;
-        DownloadDialogBridgeJni.get().onComplete(mNativeDownloadDialogBridge,
-                DownloadDialogBridge.this, returnedPath, onlyOnWifi, startTime);
-    }
-
-    private void onCancel() {
-        if (mNativeDownloadDialogBridge == 0) return;
-        DownloadDialogBridgeJni.get().onCanceled(
-                mNativeDownloadDialogBridge, DownloadDialogBridge.this);
-    }
-
-    // DownloadLaterDialogController implementation.
-    @Override
-    public void onDownloadLaterDialogComplete(@DownloadLaterDialogChoice int choice) {
-        // Cache the result from download later dialog.
-        mDownloadLaterChoice = choice;
-        mDownloadLaterDialog.dismissDialog(DialogDismissalCause.POSITIVE_BUTTON_CLICKED);
-
-        // Show the next dialog.
-        mLocationDialog.showDialog(
-                mWindowAndroid, mTotalBytes, mLocationDialogType, mSuggestedPath);
-    }
-
-    @Override
-    public void onDownloadLaterDialogCanceled() {
-        onCancel();
     }
 
     // DownloadLocationDialogController implementation.
     @Override
-    public void onDownloadLocationDialogComplete(String returnedPath) {
-        boolean onlyOnWifi = false;
-        if (mDownloadLaterChoice == DownloadLaterDialogChoice.ON_WIFI) onlyOnWifi = true;
-        onComplete(returnedPath, onlyOnWifi, INVALID_START_TIME);
+    public void onComplete(String returnedPath) {
+        if (mNativeDownloadDialogBridge == 0) return;
+
+        DownloadDialogBridgeJni.get().onComplete(mNativeDownloadDialogBridge,
+                DownloadDialogBridge.this, returnedPath, false /*onWifi*/, INVALID_START_TIME);
     }
 
     @Override
-    public void onDownloadLocationDialogCanceled() {
-        onCancel();
+    public void onCancel() {
+        if (mNativeDownloadDialogBridge == 0) return;
+
+        if (mNativeDownloadDialogBridge != 0) {
+            DownloadDialogBridgeJni.get().onCanceled(
+                    mNativeDownloadDialogBridge, DownloadDialogBridge.this);
+        }
     }
 
     /**

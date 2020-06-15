@@ -2079,6 +2079,7 @@
 <translation id="3613422051106148727">&amp;নতুন ট্যাবে খুলুন</translation>
 <translation id="3614974189435417452">ব্যাক-আপ সম্পূর্ণ হয়ে গেছে</translation>
 <translation id="3615073365085224194">আঙ্গুলের ছাপের সেন্সরটিকে আপনার আঙ্গুল দিয়ে টাচ করুন</translation>
+<translation id="3615579745882581859">এই <ph name="FILE_NAME" /> স্ক্যান করা হচ্ছে।</translation>
 <translation id="3616741288025931835">ব্রাউজ করা ডেটা সাফ করুন...</translation>
 <translation id="3617891479562106823">ব্যাকগ্রাউন্ডগুলি উপলভ্য নয়। পরে আবার চেষ্টা করুন।</translation>
 <translation id="3619115746895587757">ক্যাপুচিনো</translation>
@@ -2127,7 +2128,6 @@
 <translation id="3670113805793654926">যেকোনও ভেন্ডর থেকে ডিভাইস</translation>
 <translation id="3670229581627177274">ব্লুটুথ চালু করুন</translation>
 <translation id="3672681487849735243">একটি ফ্যাক্টরি ত্রুটি শনাক্ত করা হয়েছে</translation>
-<translation id="3675913744032077012">ভাষা ও ইনপুট সেটিংস</translation>
 <translation id="367645871420407123">যদি আপনি ডিফল্ট টেস্ট ছবি মানে রুট পাসওয়ার্ড সেট করতে চান তবে খালি ছাড়ুন</translation>
 <translation id="3677106374019847299">কাস্টম প্রদানকারীর নাম লিখুন</translation>
 <translation id="3677657024345889897">অত্যন্ত কম আওয়াজ</translation>
@@ -2644,10 +2644,8 @@
 <translation id="4314815835985389558">সিঙ্ক ম্যানেজ করুন</translation>
 <translation id="4316850752623536204">ডেভেলপার ওয়েবসাইট</translation>
 <translation id="4320177379694898372">কোনো ইন্টারনেট সংযোগ নেই</translation>
-<translation id="4321442524549817090">ই&amp;উআরএল দেখুন</translation>
 <translation id="4322394346347055525">অন্যান্য ট্যাব বন্ধ করুন</translation>
 <translation id="4324577459193912240">ফাইলটি অসম্পূর্ণ</translation>
-<translation id="4325083532956419387">Chrome OS ভার্সন</translation>
 <translation id="4325237902968425115"><ph name="LINUX_APP_NAME" /> আনইনস্টল করা হচ্ছে…</translation>
 <translation id="4330191372652740264">বরফ জল</translation>
 <translation id="4330387663455830245">কখনও <ph name="LANGUAGE" /> অনুবাদ করবেন না</translation>
@@ -3148,7 +3146,6 @@
 <translation id="4997086284911172121">কোনও ইন্টারনেট সংযোগ নেই।</translation>
 <translation id="4998430619171209993">চালু করা আছে</translation>
 <translation id="5000922062037820727">অবরুদ্ধ (প্রস্তাবিত)</translation>
-<translation id="5003821244905342830">যখন প্রথমবার লগ-ইন করবেন, তখন Google এই ডিভাইসের মাধ্যমে <ph name="EMAIL" />-এর থেকে ডেটা সিঙ্ক করবে।</translation>
 <translation id="5005498671520578047">পাসওয়ার্ড কপি করুন</translation>
 <translation id="5006218871145547804">Crostini Android অ্যাপ ADB</translation>
 <translation id="5007392906805964215">পর্যালোচনা করুন</translation>
@@ -3723,7 +3720,6 @@
 <translation id="5734362860645681824">যোগাযোগগুলি</translation>
 <translation id="5734697361979786483">'ফাইল শেয়ার' যোগ করুন</translation>
 <translation id="5736796278325406685">অনুগ্রহ করে একটি সঠিক ইউজারনেম লিখুন</translation>
-<translation id="573759479754913123">Chrome OS সম্পর্কে </translation>
 <translation id="5739017626473506901">একটি স্কুল অ্যাকাউন্ট যোগ করার জন্য <ph name="USER_NAME" />-কে সাহায্য করতে সাইন-ইন করুন</translation>
 <translation id="5739235828260127894">যাচাইকরণের জন্য অপেক্ষা করা হচ্ছে। <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">খুব বড়</translation>
@@ -4157,7 +4153,6 @@
 <translation id="628352644014831790">৪ সেকেন্ড</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> সাধারণভাবে ডাউনলোড করা হয় না এবং এটি বিপজ্জনক হতে পারে।</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{আপনার নেটওয়ার্কে নতুন প্রিন্টারটি}one{আপনার নেটওয়ার্কে নতুন প্রিন্টারগুলি}other{আপনার নেটওয়ার্কে নতুন প্রিন্টারগুলি}}</translation>
-<translation id="6286708577777130801">সংরক্ষিত পাসওয়ার্ডের বিশদ বিবরণ</translation>
 <translation id="6291163159361301370">Linux চালু করার আগে, <ph name="ORGANIZATION_NAME" /> আপনাকে ডেটা ব্যাক-আপ নিতে ও এই Chromebook ফ্যাক্টরি সেটিংসে রিসেট করতে বলছে।</translation>
 <translation id="6291949900244949761">কোনও সাইট ইউএসবি ডিভাইস অ্যাক্সেস করতে চাইলে আমাকে জিজ্ঞাসা করুন (প্রস্তাবিত)</translation>
 <translation id="6291953229176937411">ফাইন্ডারে &amp;দেখান</translation>
@@ -4375,7 +4370,6 @@
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> - ডেস্কটপ কন্টেন্ট শেয়ার করেছে</translation>
 <translation id="6580203076670148210">স্ক্যানিং স্পিড</translation>
 <translation id="6582080224869403177">আপনার নিরাপত্তা আপগ্রেড করতে <ph name="DEVICE_TYPE" /> রিসেট করুন।</translation>
-<translation id="6584793698691679400">ডিভাইসের ভার্সন</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="6586099239452884121">গেস্ট ব্রাউজিং</translation>
 <translation id="6586451623538375658">প্রাথমিক মাউস বোতাম অদল-বদল করুন</translation>
@@ -4483,7 +4477,6 @@
 <translation id="672609503628871915">নতুন কী আছে দেখুন</translation>
 <translation id="67269783048918309">ব্যবহার এবং ডায়াগনস্টিক ডেটা পাঠান। এখন এই ডিভাইসটি নিজে থেকেই Google-এ ডায়াগনিস্টিক, ডিভাইস এবং অ্যাপ ব্যবহারের ডেটা পাঠাচ্ছে। এটি আপনার সন্তানকে শনাক্ত করতে ব্যবহার করা হবে না এবং সিস্টেম ও অ্যাপের স্থিতিশীলতা এবং অন্যান্য উন্নতিতে সাহায্য করবে। ব্যবহারকারীদের কিছু সম্মিলিত ডেটা Google অ্যাপ এবং Android ডেভেলপারদের মতো পার্টনারদের কাজে লাগবে। এই <ph name="BEGIN_LINK1" />সেটিং<ph name="END_LINK1" /> মালিকের নিয়ন্ত্রণে রয়েছে। অতিরিক্ত ওয়েব ও অ্যাপ অ্যাক্টিভিটি সেটিংটি আপনার সন্তানের ডিভাইসের জন্য চালু করা থাকলে, এই ডেটা তাদের Google অ্যাকাউন্টে সেভ করা হতে পারে। <ph name="BEGIN_LINK2" />আরও জানুন<ph name="END_LINK2" /></translation>
 <translation id="6727969043791803658">কানেক্ট করা আছে, ব্যাটারিতে <ph name="BATTERY_PERCENTAGE" />% চার্জ আছে</translation>
-<translation id="6728682313168670518">পাসওয়ার্ড স্টোরেজ অ্যাক্সেস করতে, এককালীন, ডিভাইস প্রতি যাচাইকরণ প্রয়োজন। সেটিংসে "পাসওয়ার্ড" বিভাগ থেকে এই ফিচারটি পরে বন্ধ করা যেতে পারে।</translation>
 <translation id="6732801395666424405">শংসাপত্র লোড হয়নি</translation>
 <translation id="6732900235521116609">শর্টকাট সরানো যাচ্ছে না</translation>
 <translation id="6734468588183300211">ছদ্মবেশী মোড চালু থাকলে, কোনও সাইট আপনাকে পছন্দের বিজ্ঞাপন দেখানোর মতো কোনও উদ্দেশ্যে বিভিন্ন ওয়েবসাইট জুড়ে আপনার ব্রাউজিং অ্যাক্টিভিটি দেখার জন্য আপনার কুকি ব্যবহার করতে পারবে না। কিছু কিছু সাইটের ফিচার কাজ নাও করতে পারে।</translation>
@@ -5489,7 +5482,7 @@
 <translation id="7987814697832569482">সবসময় এই ভিপিএনের মাধ্যমে কানেক্ট করুন</translation>
 <translation id="7988355189918024273">ব্যবহারযোগ্যতার বৈশিষ্ট্যগুলি চালু করুন</translation>
 <translation id="7991296728590311172">সুইচ অ্যাক্সেস সেটিংস</translation>
-<translation id="7993750787380199093">সব পাসওয়ার্ড আপনার Google অ্যাকাউন্টে সেভ করুন, যাতে সব ডিভাইসে সেগুলি ব্যবহার করতে পারেন</translation>
+<translation id="7993750787380199093">সব পাসওয়ার্ড আপনার Google অ্যাকাউন্টে সেভ করুন, যাতে সমস্ত ডিভাইস জুড়ে সেগুলি ব্যবহার করতে পারেন</translation>
 <translation id="7994702968232966508">EAP পদ্ধতি</translation>
 <translation id="7997826902155442747">প্রক্রিয়ার অগ্রাধিকার</translation>
 <translation id="7999229196265990314">নিম্নোক্ত ফাইলগুলি তৈরি হয়েছে:
@@ -5892,7 +5885,6 @@
 <translation id="851263357009351303">ছবিগুলি দেখানোর জন্য সর্বদা <ph name="HOST" />-কে অনুমতি দিন </translation>
 <translation id="8513108775083588393">নিজে থেকে ঘুরবে</translation>
 <translation id="8514746246728959655">অন্য একটি নিরাপত্তা কী ব্যবহার করে দেখুন</translation>
-<translation id="851960115758509829">আপনার Google অ্যাকাউন্ট দিয়ে সাইন-ইন করা সব Chrome OS ডিভাইসে আপনার অ্যাপ, সেটিংস এবং অন্যান্য কাস্টমাইজেশন সিঙ্ক হয়ে যাবে।</translation>
 <translation id="8521475323816527629">আপনার অ্যাপগুলি দ্রুত চালু করুন</translation>
 <translation id="8523493869875972733">পরিবর্তনগুলি সেভ করুন</translation>
 <translation id="8523849605371521713">নীতির মাধ্যমে যোগ করা হয়েছে</translation>
@@ -5933,7 +5925,6 @@
 <translation id="8569682776816196752">কোনো গন্তব্যস্থল পাওয়া যায়নি</translation>
 <translation id="8571213806525832805">গত ৪ সপ্তাহ</translation>
 <translation id="8571687764447439720">Kerberos টিকিট যোগ করুন</translation>
-<translation id="8573403125070227391">এই বিজ্ঞাপন আপনার ডিভাইসের অতিরিক্ত রিসোর্স ব্যবহার করে, তাই Chrome সেটি মুছে দিয়েছে।</translation>
 <translation id="8574990355410201600"><ph name="HOST" /> এ সবসময় সাউন্ড চালু রাখুন</translation>
 <translation id="8575286410928791436">ছেড়ে যাওয়ার জন্য <ph name="KEY_EQUIVALENT" /> ধরে থাকুন</translation>
 <translation id="8578639784464423491">৯৯টি অক্ষরের বেশি রাখা যাবে না</translation>

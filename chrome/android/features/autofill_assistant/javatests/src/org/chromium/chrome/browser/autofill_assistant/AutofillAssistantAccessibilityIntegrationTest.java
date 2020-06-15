@@ -29,9 +29,9 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 
 import androidx.test.espresso.matcher.ViewMatchers.Visibility;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Before;

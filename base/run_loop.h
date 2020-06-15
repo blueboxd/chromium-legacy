@@ -282,8 +282,7 @@ class BASE_EXPORT RunLoop {
   };
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SingleThreadTaskExecutorTypedTest,
-                           RunLoopQuitOrderAfter);
+  FRIEND_TEST_ALL_PREFIXES(MessageLoopTypedTest, RunLoopQuitOrderAfter);
 
 #if defined(OS_ANDROID)
   // Android doesn't support the blocking RunLoop::Run, so it calls

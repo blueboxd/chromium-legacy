@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 """Utilities for setting up and tear down WPR and TsProxy service."""
 
-import py_utils
-from py_utils import binary_manager
 from py_utils import ts_proxy_server
 from py_utils import webpagereplay_go_server
 
@@ -18,12 +16,6 @@ DEFAULT_DEVICE_PORT = 1080
 DEFAULT_ROUND_TRIP_LATENCY_MS = 100
 DEFAULT_DOWNLOAD_BANDWIDTH_KBPS = 72000
 DEFAULT_UPLOAD_BANDWIDTH_KBPS = 72000
-
-
-def GetWPRArchiveFromConfig(test_name, config):
-  """Downloads the wpr archive from given config and test name."""
-  return binary_manager.BinaryManager(config).FetchPath(
-      test_name, py_utils.GetHostOsName(), py_utils.GetHostArchName())
 
 
 class WPRServer(object):
@@ -69,6 +61,11 @@ class WPRServer(object):
     self._server = None
     self._host_http_port = 0
     self._host_https_port = 0
+
+  @staticmethod
+  def SetServerBinaryPath(go_binary_path):
+    """Sets the go_binary_path for webpagereplay_go_server.ReplayServer."""
+    webpagereplay_go_server.ReplayServer.SetGoBinaryPath(go_binary_path)
 
   @property
   def record_mode(self):
@@ -132,8 +129,13 @@ class ChromeProxySession(object):
                        (PROXY_SERVER, self._device_proxy_port))
     return extra_flags
 
+  @staticmethod
+  def SetWPRServerBinary(go_binary_path):
+    """Sets the WPR server go_binary_path."""
+    WPRServer.SetServerBinaryPath(go_binary_path)
+
   def Start(self, device, wpr_archive_path):
-    """Start the wpr_server as well as the ts_proxy server and setups env.
+    """Starts the wpr_server as well as the ts_proxy server and setups env.
 
     Args:
       device: A DeviceUtils instance.

@@ -228,6 +228,7 @@
 <translation id="1898423065542865115">การกรอง</translation>
 <translation id="1901443836186977402">{1,plural, =1{เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> ใบรับรองความปลอดภัยของเซิร์ฟเวอร์หมดอายุไปแล้วในวันสุดท้าย สาเหตุอาจเกิดจากการกำหนดค่าผิดหรือผู้โจมตีขัดขวางการเชื่อมต่อของคุณ ขณะนี้นาฬิกาคอมพิวเตอร์ของคุณตั้งค่าเป็น<ph name="CURRENT_DATE" /> การตั้งค่านี้ถูกต้องไหม หากไม่ถูกต้อง คุณควรแก้ไขนาฬิกาของระบบและรีเฟรชหน้านี้}other{เซิร์ฟเวอร์นี้พิสูจน์ไม่ได้ว่าเป็น <ph name="DOMAIN" /> ใบรับรองความปลอดภัยของเซิร์ฟเวอร์หมดอายุไปแล้วเมื่อ # วันที่ผ่านมา สาเหตุอาจเกิดจากการกำหนดค่าผิดหรือผู้โจมตีขัดขวางการเชื่อมต่อของคุณ ขณะนี้นาฬิกาคอมพิวเตอร์ของคุณตั้งค่าเป็น<ph name="CURRENT_DATE" /> หากไม่ถูกต้อง คุณควรแก้ไขนาฬิกาของระบบและรีเฟรชหน้านี้}}</translation>
 <translation id="1902576642799138955">ระยะเวลาที่มีผลบังคับใช้</translation>
+<translation id="1908217026282415406">การใช้และเคลื่อนย้ายกล้อง</translation>
 <translation id="191374271204266022">คัดลอกเป็น JSON</translation>
 <translation id="1914326953223720820">บริการแตกไฟล์</translation>
 <translation id="1915697529809968049">ใช้ Touch ID แทน CVC ไหม</translation>
@@ -722,7 +723,6 @@
 <translation id="4101413244023615925">ข้อความและกราฟิก</translation>
 <translation id="4103249731201008433">หมายเลขซีเรียลของอุปกรณ์ไม่ถูกต้อง</translation>
 <translation id="4103763322291513355">ไปที่ &lt;strong&gt;chrome://policy&lt;/strong&gt; เพื่อดูรายการของ URL ที่ไม่ได้รับอนุญาต และนโยบายอื่นๆ ที่ผู้ดูแลระบบของคุณบังคับใช้</translation>
-<translation id="4108231218301530806">ครั้งต่อไปใช้ลายนิ้วมือเพื่อยืนยันบัตรนี้</translation>
 <translation id="4110652170750985508">ตรวจสอบการชำระเงิน</translation>
 <translation id="4112140312785995938">ย้อนกลับ</translation>
 <translation id="4116663294526079822">อนุญาตบนไซต์นี้เสมอ</translation>
@@ -1116,6 +1116,7 @@
 <translation id="569000877158168851">ค่า DnsOverHttpsTemplates ไม่เกี่ยวข้องและจะไม่มีการนำไปใช้ นอกเสียจากจะมีการตั้งค่านโยบาย DnsOverHttpsMode เป็น <ph name="SECURE_DNS_MODE_AUTOMATIC" /> หรือ <ph name="SECURE_DNS_MODE_SECURE" /></translation>
 <translation id="5701381305118179107">กึ่งกลาง</translation>
 <translation id="570530837424789914">จัดการ...</translation>
+<translation id="5705882733397021510">ย้อนกลับ</translation>
 <translation id="57094364128775171">แนะนำรหัสผ่านที่รัดกุม…</translation>
 <translation id="5710435578057952990">ข้อมูลประจำตัวของเว็บไซต์นี้ยังไม่ได้รับการยืนยัน</translation>
 <translation id="5720705177508910913">ผู้ใช้ปัจจุบัน</translation>
@@ -1123,6 +1124,7 @@
 <translation id="5730040223043577876">Chrome ขอแนะนำให้รีเซ็ตรหัสผ่านหากคุณใช้รหัสผ่านนี้ซ้ำในเว็บไซต์อื่น</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{บันทึกบัตรลงในบัญชี Google ของคุณ}other{บันทึกบัตรลงในบัญชี Google ของคุณ}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{ใช้หมายเลขเสมือนสำหรับบัตรนี้}other{เลือกบัตร}}</translation>
+<translation id="5759751709240058861">ใช้และเคลื่อนย้ายกล้องของคุณ</translation>
 <translation id="5763042198335101085">ป้อนที่อยู่อีเมลที่ถูกต้อง</translation>
 <translation id="5765072501007116331">หากต้องการดูวิธีการนำส่งสินค้าและข้อกำหนด โปรดเลือกที่อยู่</translation>
 <translation id="5776313857861697733">ลำดับความสำคัญ</translation>
@@ -1331,7 +1333,6 @@
 <translation id="6631202559048444592">นโยบายนี้มีแหล่งที่มามากกว่า 1 แห่งแต่มีค่าต่างๆ เหมือนกัน</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">ล้าง</translation>
-<translation id="6644283850729428850">นโยบายนี้ถูกยกเลิกแล้ว</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{ไม่มี}=1{จาก 1 เว็บไซต์ (คุณจะไม่ออกจากระบบบัญชี Google)}other{จาก # เว็บไซต์ (คุณจะไม่ออกจากระบบบัญชี Google)}}</translation>
 <translation id="6652101503459149953">ใช้ Windows Hello</translation>
 <translation id="6657585470893396449">รหัสผ่าน</translation>

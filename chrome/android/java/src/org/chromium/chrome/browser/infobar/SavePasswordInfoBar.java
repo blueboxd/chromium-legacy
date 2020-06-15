@@ -10,8 +10,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarControlLayout;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
+import org.chromium.components.infobars.InfoBarControlLayout;
+import org.chromium.components.infobars.InfoBarLayout;
 
 /**
  * The Save Password infobar asks the user whether they want to save the password for the site.

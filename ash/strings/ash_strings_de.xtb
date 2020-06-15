@@ -509,7 +509,6 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="7068360136237591149">Dateien öffnen</translation>
 <translation id="7076293881109082629">Anmeldung</translation>
 <translation id="7088960765736518739">Schalterzugriff</translation>
-<translation id="7092922358121866860">Nachtlichteinstellungen anzeigen</translation>
 <translation id="7098389117866926363">USB-C-Gerät (linker Port hinten)</translation>
 <translation id="7131634465328662194">Sie werden automatisch abgemeldet.</translation>
 <translation id="7143207342074048698">Verbindung wird hergestellt.</translation>
@@ -661,7 +660,6 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="8877788021141246043">Erinnerungen einrichten</translation>
 <translation id="8878886163241303700">Bildschirmerweiterung</translation>
 <translation id="890616557918890486">Quelle ändern</translation>
-<translation id="8908312332415978740">"<ph name="DISPLAY_NAME" />" unterstützt <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) nicht. Die Auflösung wurde zu <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) geändert. Klicken Sie auf "Bestätigen", um die Änderungen beizubehalten. Die vorherigen Einstellungen werden in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
 <translation id="8909138438987180327">Akkustand: <ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant spricht diese Sprache nicht.</translation>

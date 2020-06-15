@@ -170,6 +170,7 @@ Pieskarieties jebkuram vārdam, lai to meklētu. Ja vēlaties precizēt meklēš
 <translation id="2387895666653383613">Teksta mērogošana</translation>
 <translation id="2394602618534698961">Šeit tiek rādīti jūsu lejupielādētie faili</translation>
 <translation id="2407481962792080328">Kad pierakstāties savā Google kontā, šī funkcija ir ieslēgta.</translation>
+<translation id="2407674018644220013">Vai vēlaties iestatīt lietotni <ph name="APP_NAME" /> kā noklusējumu?</translation>
 <translation id="2410754283952462441">Konta izvēle</translation>
 <translation id="2414886740292270097">Tumšs</translation>
 <translation id="2426805022920575512">Izvēlēties citu kontu</translation>
@@ -179,6 +180,7 @@ Pieskarieties jebkuram vārdam, lai to meklētu. Ja vēlaties precizēt meklēš
 
 Nospiediet un turiet jebkuru vārdu, lai to meklētu. Lai precizētu meklēšanu, atlasiet mazāk vai vairāk vārdu. Ja vēlaties rediģēt meklēšanas vaicājumu, atveriet paneli, pieskarieties ikonai, lai atvērtu meklēšanas vaicājumu jaunā cilnē, un veiciet izmaiņas meklēšanas lodziņā.</translation>
 <translation id="246532703174860178">Kopīgot</translation>
+<translation id="2479148705183875116">Atvērt iestatījumus</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
 <translation id="2494974097748878569">Google asistents pārlūkprogrammā Chrome</translation>
 <translation id="2496180316473517155">Pārlūkošanas vēsture</translation>
@@ -617,6 +619,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="6140912465461743537">Valsts/reģions</translation>
 <translation id="614940544461990577">Veiciet tālāk norādītās darbības.</translation>
 <translation id="6154478581116148741">Lai eksportētu paroles no šīs ierīces, sadaļā “Iestatījumi” ieslēdziet ekrāna bloķēšanu.</translation>
+<translation id="6157392216611456285">Izvēlēties <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">Datu lietojuma samazinājums: <ph name="PERCENT" /></translation>
 <translation id="6192333916571137726">Lejupielāde fails</translation>
 <translation id="6201345951596836663">Saite nokopēta</translation>
@@ -641,6 +644,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6341580099087024258">Vaicāt, kur saglabāt failus</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}zero{<ph name="SHIPPING_ADDRESS_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">Vai noņemt ieteikumu no vēstures?</translation>
+<translation id="6366047038980456022"><ph name="APP_NAME" /> nodrošina jums nepieciešamās viedās tehnoloģijas un ātrumu drošam darbam, radošai darbībai un izpētei tiešsaistē</translation>
 <translation id="6369229450655021117">Šeit varat veikt meklēšanu tīmeklī, kopīgot saturu ar draugiem un skatīt atvērtās lapas.</translation>
 <translation id="6378173571450987352">Detalizēta informācija: kārtota pēc izmantoto datu apjoma</translation>
 <translation id="6379829913050047669">Lietotne <ph name="APP_NAME" /> tiks atvērta pārlūkprogrammā Chrome. Turpinot jūs piekrītat <ph name="BEGIN_LINK1" />Google pakalpojumu sniegšanas noteikumiem<ph name="END_LINK1" /> un <ph name="BEGIN_LINK2" />Google Chrome un Chrome OS pakalpojumu sniegšanas papildu noteikumiem<ph name="END_LINK2" />.</translation>
@@ -692,6 +696,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6671495933530132209">Kopēt attēlu</translation>
 <translation id="6676840375528380067">Vai dzēst jūsu Chrome datus no šīs ierīces?</translation>
 <translation id="6689172468748959065">Profila fotoattēli</translation>
+<translation id="6691888250440401212">1. Atlasiet <ph name="APP_NAME" />.\n2. Pieskarieties pogai “Iest. kā noklusējumu”.</translation>
 <translation id="6697492270171225480">Ja lapu neizdotas atrast, rāda ieteikumus par līdzīgām lapām</translation>
 <translation id="6698801883190606802">Pārvaldīt sinhronizētos datus</translation>
 <translation id="6699370405921460408">Google serveri optimizēs jūsu apmeklētās lapas.</translation>
@@ -895,6 +900,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8364299278605033898">Skatīt populāras vietnes</translation>
 <translation id="8368027906805972958">Nezināma vai neatbalstīta ierīce (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">Sūtīt ziņojumu</translation>
+<translation id="8407396331882458341">1. Atlasiet <ph name="APP_NAME" />.\n2. Pieskarieties vienumam “Vienmēr”.</translation>
 <translation id="8413126021676339697">Rādīt pilnu vēsturi</translation>
 <translation id="8425213833346101688">Mainīt</translation>
 <translation id="8427875596167638501">Priekšskatījuma cilne ir daļēji atvērta</translation>
@@ -921,6 +927,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8555836665334561807">Wi-Fi tīklā</translation>
 <translation id="8558485628462305855">Lai skatītu papildinātās realitātes saturu, atjauniniet ARCore</translation>
 <translation id="8559990750235505898">Piedāvāt tulkot lapas citās valodās</translation>
+<translation id="8561196567344536112">1. Pārejiet uz sadaļu Iestatījumi.\n2. Pieskarieties sadaļai “Pārlūka lietotne”.\n3. Izvēlieties <ph name="APP_NAME" />.</translation>
 <translation id="8562452229998620586">Šeit tiks parādītas saglabātās paroles.</translation>
 <translation id="8569404424186215731">kopš šāda datuma: <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Pēdējās 4 nedēļas</translation>

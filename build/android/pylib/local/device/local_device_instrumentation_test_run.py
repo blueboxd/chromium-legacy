@@ -56,6 +56,10 @@ _JINJA_TEMPLATE_DIR = os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'pylib', 'instrumentation')
 _JINJA_TEMPLATE_FILENAME = 'render_test.html.jinja'
 
+_WPR_GO_LINUX_X86_64_PATH = os.path.join(host_paths.DIR_SOURCE_ROOT,
+                                         'third_party', 'webpagereplay', 'bin',
+                                         'linux', 'x86_64', 'wpr')
+
 _TAG = 'test_runner_py'
 
 TIMEOUT_ANNOTATIONS = [
@@ -87,7 +91,7 @@ _EXTRA_PACKAGE_UNDER_TEST = ('org.chromium.chrome.test.pagecontroller.rules.'
 
 FEATURE_ANNOTATION = 'Feature'
 RENDER_TEST_FEATURE_ANNOTATION = 'RenderTest'
-WPR_ARCHIVE_FILE_PATH_ANNOTATION = 'WPRArchiveConfigFilePath'
+WPR_ARCHIVE_FILE_PATH_ANNOTATION = 'WPRArchiveDirectory'
 WPR_RECORD_REPLAY_TEST_FEATURE_ANNOTATION = 'WPRRecordReplayTest'
 
 # This needs to be kept in sync with formatting in |RenderUtils.imageName|
@@ -579,23 +583,27 @@ class LocalDeviceInstrumentationTestRun(
                           self._render_tests_device_output_dir)
 
     if _IsWPRRecordReplayTest(test):
-      wpr_archive_config_relative_path = _GetWPRArchiveConfig(test)
-      if not wpr_archive_config_relative_path:
-        raise RuntimeError('Could not find the WPR archive config file path '
+      wpr_archive_relative_path = _GetWPRArchivePath(test)
+      if not wpr_archive_relative_path:
+        raise RuntimeError('Could not find the WPR archive file path '
                            'from annotation.')
-      wpr_archive_config_path = os.path.join(host_paths.DIR_SOURCE_ROOT,
-                                             wpr_archive_config_relative_path)
-      if self._test_instance.wpr_replay_mode:
-        # In replay mode, gets archive file from wpr_archive_config_path
-        archive_path = chrome_proxy_utils.GetWPRArchiveFromConfig(
-            self._GetUniqueTestName(test), [wpr_archive_config_path])
-      else:
-        # In record mode, uses test unique name as file name.
-        # The file will be marked as untracked file and need to be
-        # 'git add' later by the user.
-        archive_path = os.path.join(os.path.dirname(wpr_archive_config_path),
-                                    self._GetUniqueTestName(test) + '.wprgo')
+      wpr_archive_path = os.path.join(host_paths.DIR_SOURCE_ROOT,
+                                      wpr_archive_relative_path)
+      if not os.path.isdir(wpr_archive_path):
+        raise RuntimeError('WPRArchiveDirectory annotation should point'
+                           'to a directory only.')
 
+      archive_path = os.path.join(wpr_archive_path,
+                                  self._GetUniqueTestName(test) + '.wprgo')
+
+      if not os.path.exists(_WPR_GO_LINUX_X86_64_PATH):
+        # If we got to this stage, then we should have
+        # checkout_android set.
+        raise RuntimeError(
+            'WPR Go binary not found at {}'.format(_WPR_GO_LINUX_X86_64_PATH))
+      # Tells the server to use the binaries retrieved from CIPD.
+      chrome_proxy_utils.ChromeProxySession.SetWPRServerBinary(
+          _WPR_GO_LINUX_X86_64_PATH)
       self._chrome_proxy = chrome_proxy_utils.ChromeProxySession()
       self._chrome_proxy.wpr_record_mode = self._test_instance.wpr_record_mode
       self._chrome_proxy.Start(device, archive_path)
@@ -694,9 +702,9 @@ class LocalDeviceInstrumentationTestRun(
         # Removes the port forwarding
         if self._chrome_proxy:
           self._chrome_proxy.Stop(device)
-          if self._chrome_proxy.wpr_replay_mode:
-            # Remove the wpr archive file if it previously ran in replay mode
-            os.remove(self._chrome_proxy.wpr_archive_path)
+          if not self._chrome_proxy.wpr_replay_mode:
+            logging.info('WPR Record test generated archive file %s',
+                         self._chrome_proxy.wpr_archive_path)
           self._chrome_proxy = None
 
 
@@ -1200,8 +1208,8 @@ def _IsWPRRecordReplayTest(test):
   ])
 
 
-def _GetWPRArchiveConfig(test):
-  """Retrieves the config from the WPRArchiveConfigFilePath annotation."""
+def _GetWPRArchivePath(test):
+  """Retrieves the archive path from the WPRArchiveDirectory annotation."""
   return test['annotations'].get(WPR_ARCHIVE_FILE_PATH_ANNOTATION,
                                  {}).get('value', ())
 

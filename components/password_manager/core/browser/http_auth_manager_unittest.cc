@@ -27,6 +27,7 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -55,6 +56,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                void(const autofill::PasswordForm&,
                     const PasswordFormManagerForUI*));
   MOCK_CONST_METHOD0(GetProfilePasswordStore, PasswordStore*());
+  MOCK_CONST_METHOD0(GetAccountPasswordStore, PasswordStore*());
   MOCK_METHOD0(PromptUserToSaveOrUpdatePasswordPtr, void());
 
   // Workaround for std::unique_ptr<> lacking a copy constructor.
@@ -97,10 +99,27 @@ class HttpAuthManagerTest : public testing::Test {
  protected:
   void SetUp() override {
     store_ = new testing::StrictMock<MockPasswordStore>;
-    ASSERT_TRUE(store_->Init(nullptr));
+    ASSERT_TRUE(store_->Init(/*prefs=*/nullptr));
+
+    if (base::FeatureList::IsEnabled(
+            features::kEnablePasswordsAccountStorage)) {
+      account_store_ = new testing::NiceMock<MockPasswordStore>;
+      ASSERT_TRUE(account_store_->Init(/*prefs=*/nullptr));
+
+      // Most tests don't really need the account store, but it'll still get
+      // queried by MultiStoreFormFetcher, so it needs to return something to
+      // its consumers. Let the account store return empty results by default,
+      // so that not every test has to set this up individually. Individual
+      // tests that do cover the account store can still override this.
+      ON_CALL(*account_store_, GetLogins(_, _))
+          .WillByDefault(WithArg<1>(InvokeEmptyConsumerWithForms()));
+    }
 
     ON_CALL(client_, GetProfilePasswordStore())
         .WillByDefault(Return(store_.get()));
+    ON_CALL(client_, GetAccountPasswordStore())
+        .WillByDefault(Return(account_store_.get()));
+
     EXPECT_CALL(*store_, GetSiteStatsImpl(_)).Times(AnyNumber());
 
     httpauth_manager_ = std::make_unique<HttpAuthManagerImpl>(&client_);
@@ -113,6 +132,10 @@ class HttpAuthManagerTest : public testing::Test {
   }
 
   void TearDown() override {
+    if (account_store_) {
+      account_store_->ShutdownOnUIThread();
+      account_store_ = nullptr;
+    }
     store_->ShutdownOnUIThread();
     store_ = nullptr;
   }
@@ -121,6 +144,7 @@ class HttpAuthManagerTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
   scoped_refptr<MockPasswordStore> store_;
+  scoped_refptr<MockPasswordStore> account_store_;
   testing::NiceMock<MockPasswordManagerClient> client_;
   std::unique_ptr<HttpAuthManagerImpl> httpauth_manager_;
 };

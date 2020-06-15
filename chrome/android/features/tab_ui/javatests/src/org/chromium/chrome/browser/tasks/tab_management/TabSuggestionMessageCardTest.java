@@ -17,7 +17,7 @@ import static org.hamcrest.core.AllOf.allOf;
 
 import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

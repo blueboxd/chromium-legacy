@@ -26,10 +26,12 @@ crash_reporter::internal::CrashKeyStringCombinedImpl::crashpad_key_
 crash_reporter::internal::CrashKeyStringImpl::index_array_
 crash_reporter::internal::CrashKeyStringImpl::index_array_
 flags_ui::FeatureEntry::FeatureVariation::params
+gfx::VectorIcon::reps
 gfx::VectorIconRep::path
 safe_browsing::(anonymous namespace)::(anonymous struct)::feature
 tracing::MessageInfo::accepted_field_ids
 tracing::MessageInfo::sub_messages
+ui::(anonymous namespace)::I18nTestParam::test
 
 # Populated manually - double implicit-cast required.
 PaintManager::instance_
@@ -118,6 +120,9 @@ disk_cache::MappedFile::buffer_
 # (not sure why it wasn't caught by the rewriter when populating the list below).
 ui::AXPlatformNodeAuraLinux::document_parent_
 ui::AXPlatformNodeAuraLinux::atk_object_
+
+# Populated manually - these pointers can cause runtime crashes.
+(anonymous namespace)::TlsVectorEntry::data  # can be an invalid pointer with top bits set
 
 # Populated by the rewriter, based on in-out-arg usage:
 AccountFetcherService::token_service_

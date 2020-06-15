@@ -722,7 +722,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="4101413244023615925">Text und Grafik</translation>
 <translation id="4103249731201008433">Seriennummer des Geräts ist ungültig.</translation>
 <translation id="4103763322291513355">Unter &lt;strong&gt;chrome://policy&lt;/strong&gt; finden Sie eine Liste der blockierten URLs und andere Richtlinien, die durch Ihren Systemadministrator erzwungen werden.</translation>
-<translation id="4108231218301530806">Diese Karte das nächste Mal per Fingerabdruck bestätigen.</translation>
 <translation id="4110652170750985508">Zahlung überprüfen</translation>
 <translation id="4112140312785995938">Zurück springen</translation>
 <translation id="4116663294526079822">Auf dieser Website immer zulassen</translation>
@@ -1116,6 +1115,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="569000877158168851">Der Wert von "DnsOverHttpsTemplates" ist nicht relevant und wird nicht verwendet, es sei denn, die Richtlinie "DnsOverHttpsMode" ist auf <ph name="SECURE_DNS_MODE_AUTOMATIC" /> oder <ph name="SECURE_DNS_MODE_SECURE" /> gesetzt.</translation>
 <translation id="5701381305118179107">Zentrieren</translation>
 <translation id="570530837424789914">Verwalten…</translation>
+<translation id="5705882733397021510">Zurück</translation>
 <translation id="57094364128775171">Starkes Passwort vorschlagen…</translation>
 <translation id="5710435578057952990">Die Identität dieser Website wurde nicht verifiziert.</translation>
 <translation id="5720705177508910913">Aktueller Nutzer</translation>
@@ -1332,7 +1332,6 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="6631202559048444592">Für die Richtlinie sind mehrere Quellen vorhanden, aber die Werte sind gleich.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Löschen</translation>
-<translation id="6644283850729428850">Diese Richtlinie ist veraltet.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Keine}=1{1 Website (Anmeldung in Google-Konto bleibt erhalten)}other{# Websites (Anmeldung in Google-Konto bleibt erhalten)}}</translation>
 <translation id="6652101503459149953">Windows Hello verwenden</translation>
 <translation id="6657585470893396449">Passwort</translation>

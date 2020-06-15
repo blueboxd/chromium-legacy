@@ -103,7 +103,6 @@ class WebPlugin {
   }
 
   virtual bool SupportsKeyboardFocus() const { return false; }
-  virtual bool SupportsEditCommands() const { return false; }
   // Returns true if this plugin supports input method, which implements
   // setComposition(), commitText() and finishComposingText() below.
   virtual bool SupportsInputMethod() const { return false; }

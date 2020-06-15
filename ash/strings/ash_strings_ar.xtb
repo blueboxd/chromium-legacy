@@ -428,7 +428,7 @@
 <translation id="612734058257491180">‏لا يتوفر "مساعد Google" في جلسة ضيف.</translation>
 <translation id="615957422585914272">إظهار لوحة مفاتيح على الشاشة</translation>
 <translation id="6164005077879661055">سيتم حذف جميع الملفات والبيانات المحلية المقترنة بالمستخدم الذي يخضع للإشراف نهائيًا بمجرد 
-إزالة هذا المستخدم الذي يخضع للإشراف. وقد تظل مواقع الويب التي تم الانتقال إليها والإعدادات التابعة للمستخدم الذي يخضع للإشراف مرئية للمدير على <ph name="MANAGEMENT_URL" />.</translation>
+إزالة هذا المستخدم الذي يخضع للإشراف. وقد تظل المواقع الإلكترونية التي تم الانتقال إليها والإعدادات التابعة للمستخدم الذي يخضع للإشراف مرئية للمدير على <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="622484624075952240">Down</translation>
 <translation id="6236290670123303279">إدارة الإعدادات</translation>
@@ -471,7 +471,7 @@
 <translation id="6637729079642709226">تغيير الوقت</translation>
 <translation id="6650933572246256093">يريد جهاز بلوتوث "<ph name="DEVICE_NAME" />" الحصول على إذن للإقران. يُرجى إدخال مفتاح المرور هذا في هذا الجهاز: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">كلمة المرور</translation>
-<translation id="6665545700722362599">منح مواقع الويب والتطبيقات والإضافات الإذن لاستخدام خدمات الموقع الجغرافي أو كاميرا وميكروفون الجهاز أو الميزات الأخرى</translation>
+<translation id="6665545700722362599">منح المواقع الإلكترونية والتطبيقات والإضافات الإذن لاستخدام خدمات الموقع الجغرافي أو كاميرا وميكروفون الجهاز أو الميزات الأخرى</translation>
 <translation id="6669268301501499730">مفعّل</translation>
 <translation id="6670153871843998651">مكتب 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
@@ -510,7 +510,6 @@
 <translation id="7068360136237591149">فتح الملفات</translation>
 <translation id="7076293881109082629">تسجيل الدخول</translation>
 <translation id="7088960765736518739">الوصول عبر مفتاح التحويل</translation>
-<translation id="7092922358121866860">عرض إعدادات "الإضاءة الليلية"</translation>
 <translation id="7098389117866926363">‏جهاز USB-C (المنفذ الأيسر في الخلف)</translation>
 <translation id="7131634465328662194">سيتم تسجيل خروجك تلقائيًا.</translation>
 <translation id="7143207342074048698">اتصال</translation>
@@ -662,7 +661,6 @@
 <translation id="8877788021141246043">ضبط تذكير</translation>
 <translation id="8878886163241303700">توسيع الشاشة</translation>
 <translation id="890616557918890486">تغيير المصدر</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> غير متوافق مع <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> هرتز). وتم تغيير درجة الدقة إلى <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). يُرجى النقر على "تأكيد" لحفظ التغييرات. وستتم استعادة الإعدادات السابقة خلال <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">مستوى طاقة البطارية عند <ph name="PERCENTAGE" /> في المئة.</translation>
 <translation id="8921554779039049422">H+‎</translation>
 <translation id="8921624153894383499">‏لا يتحدث مساعد Google هذه اللغة.</translation>

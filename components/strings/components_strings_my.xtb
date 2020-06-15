@@ -730,7 +730,6 @@
 <translation id="4101413244023615925">စာသားနှင့် ဂရပ်ဖစ်</translation>
 <translation id="4103249731201008433">စက်ပစ္စည်း၏ နံပါတ်စဉ် မမှန်ကန်ပါ။</translation>
 <translation id="4103763322291513355">နာမည်ပျက် စာရင်းထဲက URL များ နှင့် သင်၏ စီမံအုပ်ချုပ်သူက ချမှတ်ထားသည့် အခြား မူဝါဒများကို ကြည့်ရန် &lt;strong&gt;chrome://policy&lt;/strong&gt; ကို ဝင်ကြည့်ပါ။</translation>
-<translation id="4108231218301530806">ဤကတ်ကို နောက်တစ်ကြိမ် အတည်ပြုရန် လက်ဗွေအသုံးပြုပါ။</translation>
 <translation id="4110652170750985508">သင်၏ ငွေပေးချေမှုကို ပြန်စစ်ကြည့်ပါ</translation>
 <translation id="4112140312785995938">နောက်သို့ ပြန်ရစ်ရန်</translation>
 <translation id="4116663294526079822">ဒီဆိုက် ပေါ်မှာ အမြဲတမ်း ခွင့်ပြုရန်</translation>
@@ -1129,6 +1128,7 @@
 <translation id="569000877158168851">DnsOverHttpsMode မူဝါဒကို <ph name="SECURE_DNS_MODE_AUTOMATIC" /> သို့မဟုတ် <ph name="SECURE_DNS_MODE_SECURE" /> တစ်ခုခုသို့ သတ်မှတ်မထားပါက DnsOverHttpsTemplates တန်ဖိုး သက်ဆိုင်မှုမရှိသဖြင့် အသုံးပြုမည်မဟုတ်ပါ။</translation>
 <translation id="5701381305118179107">အလယ်</translation>
 <translation id="570530837424789914">စီမံရန်...</translation>
+<translation id="5705882733397021510">နောက်ပြန်သွားရန်</translation>
 <translation id="57094364128775171">ခိုင်မာသည့် စကားဝှက် အကြံပြုရန်…</translation>
 <translation id="5710435578057952990">ဒီဝက်ဘ်ဆိုက်၏ အထောက်အထားကို မစိစစ်ရသေးပါ။</translation>
 <translation id="5720705177508910913">လက်ရှိ အသုံးပြုသူ</translation>
@@ -1344,7 +1344,6 @@
 <translation id="6631202559048444592">မူဝါဒအတွက် ရင်းမြစ် တစ်ခုမကရှိသော်လည်း တန်ဖိုးများ အတူတူဖြစ်သည်။</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">ရှင်းရန်</translation>
-<translation id="6644283850729428850">ဒီမူဝါဒမှာ ပြစ်တင်ခံခဲ့ရသည်။</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{တစ်ခုမျှမရှိပါ}=1{ဝဘ်ဆိုက် ၁ ခုမှ (သင်၏ Google အကောင့်မှနေ၍ ထွက်သွားမည်မဟုတ်ပါ)}other{ဝဘ်ဆိုက် # ခုမှ (သင်၏ Google အကောင့်မှနေ၍ ထွက်သွားမည်မဟုတ်ပါ)}}</translation>
 <translation id="6652101503459149953">'Windows ဟယ်လို' သုံးရန်</translation>
 <translation id="6657585470893396449">စကားဝှက်</translation>

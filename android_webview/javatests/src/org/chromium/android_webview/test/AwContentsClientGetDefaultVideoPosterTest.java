@@ -8,8 +8,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.util.Log;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

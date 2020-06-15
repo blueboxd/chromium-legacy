@@ -30,10 +30,10 @@ import android.content.Intent;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 
 import androidx.test.espresso.intent.matcher.IntentMatchers;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assume;

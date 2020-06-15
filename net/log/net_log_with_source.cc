@@ -25,11 +25,11 @@ namespace {
 base::Value BytesTransferredParams(int byte_count,
                                    const char* bytes,
                                    NetLogCaptureMode capture_mode) {
-  base::DictionaryValue dict;
-  dict.SetInteger("byte_count", byte_count);
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("byte_count", byte_count);
   if (NetLogCaptureIncludesSocketBytes(capture_mode) && byte_count > 0)
     dict.SetKey("bytes", NetLogBinaryValue(bytes, byte_count));
-  return std::move(dict);
+  return dict;
 }
 
 }  // namespace

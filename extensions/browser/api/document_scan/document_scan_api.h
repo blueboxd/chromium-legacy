@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "extensions/browser/api/document_scan/document_scan_interface.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/document_scan.h"
@@ -21,6 +20,8 @@ class DocumentScanScanFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("documentScan.scan", DOCUMENT_SCAN_SCAN)
   DocumentScanScanFunction();
+  DocumentScanScanFunction(const DocumentScanScanFunction&) = delete;
+  DocumentScanScanFunction& operator=(const DocumentScanScanFunction&) = delete;
 
  protected:
   ~DocumentScanScanFunction() override;
@@ -41,8 +42,6 @@ class DocumentScanScanFunction : public ExtensionFunction {
 
   std::unique_ptr<document_scan::Scan::Params> params_;
   std::unique_ptr<DocumentScanInterface> document_scan_interface_;
-
-  DISALLOW_COPY_AND_ASSIGN(DocumentScanScanFunction);
 };
 
 }  // namespace api

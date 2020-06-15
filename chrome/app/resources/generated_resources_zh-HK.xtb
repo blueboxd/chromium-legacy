@@ -117,6 +117,7 @@
 <translation id="114721135501989771">在 Chrome 中體驗 Google 的智能功能</translation>
 <translation id="1147991416141538220">如要求存取權，請聯絡此裝置的管理員。</translation>
 <translation id="1149401351239820326">到期月份</translation>
+<translation id="1149725087019908252">正在掃瞄 <ph name="FILE_NAME" /></translation>
 <translation id="1150565364351027703">太陽眼鏡</translation>
 <translation id="1151917987301063366">永遠允許 <ph name="HOST" /> 存取感應器</translation>
 <translation id="1153356358378277386">已配對的裝置</translation>
@@ -278,6 +279,7 @@
 <translation id="1347975661240122359">在電量達到 <ph name="BATTERY_LEVEL" />% 後便會開始更新。</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />：<ph name="NETWORK_NAME" /></translation>
 <translation id="1353980523955420967">找不到 PPD。請確認 Chromebook 已連線，然後再試一次。</translation>
+<translation id="1354045473509304750">繼續允許 <ph name="HOST" /> 使用和移動相機</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> 已遭封鎖</translation>
 <translation id="1358741672408003399">拼字與文法</translation>
 <translation id="1359923111303110318">你可以用 Smart Lock 解鎖裝置。㩒 Enter 掣就可以解鎖。</translation>
@@ -1173,6 +1175,7 @@
 <translation id="247051149076336810">檔案共用網址</translation>
 <translation id="2470702053775288986">已停用不支援的擴充功能</translation>
 <translation id="2473195200299095979">翻譯這個網頁</translation>
+<translation id="2474848500897222119">「<ph name="PRINTER_NAME" />」的墨水已用完</translation>
 <translation id="2475982808118771221">發生錯誤</translation>
 <translation id="2476578072172137802">網站設定</translation>
 <translation id="2478176599153288112">「<ph name="EXTENSION" />」的媒體檔案權限</translation>
@@ -1473,6 +1476,7 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> 正在使用管理員的 Proxy 設定</translation>
 <translation id="2825758591930162672">主體的公開金鑰</translation>
 <translation id="2828650939514476812">連線至 Wi-Fi 網絡</translation>
+<translation id="28291580771888953">「<ph name="PRINTER_NAME" />」的序列已滿</translation>
 <translation id="2835547721736623118">語音識別服務</translation>
 <translation id="2836269494620652131">當機</translation>
 <translation id="2836635946302913370">管理員已禁止使用這個使用者名稱登入。</translation>
@@ -2075,6 +2079,7 @@
 <translation id="3613422051106148727">在新分頁中開啟(&amp;O)</translation>
 <translation id="3614974189435417452">備份已完成</translation>
 <translation id="3615073365085224194">請以手指輕觸指紋感應器</translation>
+<translation id="3615579745882581859">正在掃瞄「<ph name="FILE_NAME" />」。</translation>
 <translation id="3616741288025931835">清除瀏覽數據(&amp;C)…</translation>
 <translation id="3617891479562106823">無法自訂背景，請稍候再試。</translation>
 <translation id="3619115746895587757">泡沫咖啡</translation>
@@ -2123,7 +2128,6 @@
 <translation id="3670113805793654926">來自任何供應商的裝置</translation>
 <translation id="3670229581627177274">開啟藍牙功能</translation>
 <translation id="3672681487849735243">系統偵測到原廠錯誤</translation>
-<translation id="3675913744032077012">「語言與輸入法」設定</translation>
 <translation id="367645871420407123">如果您想為預設測試影像值設定 Root 密碼，請留空</translation>
 <translation id="3677106374019847299">輸入自訂的供應商</translation>
 <translation id="3677657024345889897">最小聲</translation>
@@ -2592,7 +2596,7 @@
 <translation id="4249248555939881673">正在等待網絡連線…</translation>
 <translation id="4249373718504745892">系統已封鎖這個網頁存取您的相機和麥克風。</translation>
 <translation id="424963718355121712">應用程式的安裝來源必須與受影響的主機相同</translation>
-<translation id="4250229828105606438">螢幕擷圖</translation>
+<translation id="4250229828105606438">螢幕截圖</translation>
 <translation id="4250680216510889253">否</translation>
 <translation id="4252035718262427477">單一檔案網頁 (網絡組合)</translation>
 <translation id="4252852543720145436">允許使用識別碼存取受保護的內容</translation>
@@ -2641,10 +2645,8 @@
 <translation id="4314815835985389558">管理同步資料</translation>
 <translation id="4316850752623536204">開發人員網站</translation>
 <translation id="4320177379694898372">沒有互聯網連線</translation>
-<translation id="4321442524549817090">顯示網址 (S&amp;)</translation>
 <translation id="4322394346347055525">關閉其他分頁</translation>
 <translation id="4324577459193912240">檔案未完成下載</translation>
-<translation id="4325083532956419387">Chrome 作業系統版本</translation>
 <translation id="4325237902968425115">正在解除安裝 <ph name="LINUX_APP_NAME" />…</translation>
 <translation id="4330191372652740264">冰水</translation>
 <translation id="4330387663455830245">永不翻譯<ph name="LANGUAGE" />內容</translation>
@@ -2744,6 +2746,7 @@
 <translation id="4453946976636652378">搜尋 <ph name="SEARCH_ENGINE_NAME" /> 或輸入網址</translation>
 <translation id="4459169140545916303">曾於 <ph name="DEVICE_LAST_ACTIVATED_TIME" /> 天前在線</translation>
 <translation id="4460014764210899310">未分組</translation>
+<translation id="4460343359907016103">連接「<ph name="PRINTER_NAME" />」時發生錯誤</translation>
 <translation id="4462159676511157176">自訂名稱伺服器</translation>
 <translation id="4465236939126352372">已為「<ph name="APP_NAME" />」設定 <ph name="TIME" />的時間限制</translation>
 <translation id="4465725236958772856">第 <ph name="NETWORK_INDEX" /> 個網絡，一共有 <ph name="NETWORK_COUNT" /> 個網絡，<ph name="NETWORK_NAME" />，由管理員管理，連接</translation>
@@ -3033,6 +3036,7 @@
 <translation id="4864369630010738180">正在登入…</translation>
 <translation id="4864805589453749318">請選取要授予新增學校帳戶權限的家長。</translation>
 <translation id="486635084936119914">下載特定類型的檔案後自動開啟</translation>
+<translation id="4869213010169296107">「<ph name="PRINTER_NAME" />」沒有紙匣</translation>
 <translation id="4869289251183233431">裝置的儲存空間即將用盡。<ph name="APP_NAME" /> 需要至少 <ph name="MINIMUM_SPACE" /> 的可用空間，因此建議保留 <ph name="RECOMMENDED_SPACE" /> 以上的可用空間。如要增加可用空間，請刪除裝置內的檔案。</translation>
 <translation id="48704129375571883">新增其他功能</translation>
 <translation id="4870758487381879312">輸入管理員提供的密碼，即可取得設定資料</translation>
@@ -3088,6 +3092,7 @@
 <translation id="4918221908152712722">安裝「<ph name="APP_NAME" />」(無需下載)</translation>
 <translation id="4920887663447894854">下列網站已被封鎖，無法在您瀏覽這個網頁時追蹤您的位置：</translation>
 <translation id="4921290200821452703">家長專用的學校帳戶資料</translation>
+<translation id="4921348630401250116">文字轉語音</translation>
 <translation id="49226369361073053">{0,plural, =0{立即更新裝置}=1{請在 1 秒內更新裝置}other{請在 # 秒內更新裝置}}</translation>
 <translation id="492299503953721473">移除 Android 應用程式</translation>
 <translation id="492363500327720082">正在解除安裝 <ph name="APP_NAME" />…</translation>
@@ -3142,7 +3147,6 @@
 <translation id="4997086284911172121">沒有互聯網連線。</translation>
 <translation id="4998430619171209993">開啟</translation>
 <translation id="5000922062037820727">封鎖 (建議)</translation>
-<translation id="5003821244905342830">如果繼續操作，Google 會將 <ph name="EMAIL" /> 的資料與此裝置同步。</translation>
 <translation id="5005498671520578047">複製密碼</translation>
 <translation id="5006218871145547804">Crostini 的 Android 應用程式 ADB</translation>
 <translation id="5007392906805964215">查看</translation>
@@ -3173,6 +3177,7 @@
 <translation id="504561833207953641">正在現有的瀏覽器工作階段中開啟。</translation>
 <translation id="5047421709274785093">禁止網站使用動態和光線感應器</translation>
 <translation id="5050042263972837708">群組名稱</translation>
+<translation id="5050330054928994520">TTS</translation>
 <translation id="5051836348807686060">您所選取的語言不支援拼字檢查功能</translation>
 <translation id="5052499409147950210">編輯網站</translation>
 <translation id="5053604404986157245">無法使用隨機產生的 TPM 密碼。在執行 Powerwash 後，這是正常情況。</translation>
@@ -3432,6 +3437,7 @@
 <translation id="5390100381392048184">允許網站播放音效</translation>
 <translation id="5390677308841849479">深紅色和橙色</translation>
 <translation id="5390743329570580756">傳送類型</translation>
+<translation id="5395869306561378615">「<ph name="PRINTER_NAME" />」已暫停運作</translation>
 <translation id="5397794290049113714">您</translation>
 <translation id="5398572795982417028">參照的網頁超出範圍限制 (<ph name="MAXIMUM_PAGE" />)</translation>
 <translation id="5398772614898833570">已封鎖廣告</translation>
@@ -3445,6 +3451,7 @@
 <translation id="5417312524372586921">瀏覽器主題背景</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">決定文字和圖片的銳利度</translation>
+<translation id="5421498071721257877">「<ph name="PRINTER_NAME" />」發生裝置錯誤</translation>
 <translation id="5422221874247253874">接入點</translation>
 <translation id="5422781158178868512">很抱歉，系統無法識別您的外部儲存裝置。</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3518,6 +3525,7 @@
 <translation id="5499313591153584299">這個檔案可能對您的電腦有害。</translation>
 <translation id="5500709606820808700">今天已執行安全檢查</translation>
 <translation id="5502500733115278303">從 Firefox 匯入的書籤</translation>
+<translation id="5503982651688210506">繼續允許 <ph name="HOST" /> 使用和移動相機，以及使用麥克風</translation>
 <translation id="5505264765875738116">網站將無法要求向您傳送通知</translation>
 <translation id="5505307013568720083">墨水用完</translation>
 <translation id="5507756662695126555">不可否認性</translation>
@@ -3712,7 +3720,6 @@
 <translation id="5734362860645681824">通訊工具</translation>
 <translation id="5734697361979786483">新增檔案共用</translation>
 <translation id="5736796278325406685">請輸入有效的使用者名稱</translation>
-<translation id="573759479754913123">關於 Chrome 作業系統</translation>
 <translation id="5739017626473506901">需要登入才能為 <ph name="USER_NAME" /> 新增學校帳戶</translation>
 <translation id="5739235828260127894">正在等待驗證。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">非常大</translation>
@@ -3794,6 +3801,7 @@
 <translation id="5852137567692933493">重新啟動並執行 Powerwash</translation>
 <translation id="5854912040170951372">薄餅</translation>
 <translation id="5855267860608268405">已知的 Wi-Fi 網絡</translation>
+<translation id="5855310969323666289">「<ph name="PRINTER_NAME" />」的機蓋目前打開</translation>
 <translation id="5855643921295613558">0.6 秒</translation>
 <translation id="5856721540245522153">啟用偵錯功能</translation>
 <translation id="5857090052475505287">新資料夾</translation>
@@ -3823,6 +3831,7 @@
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="5877584842898320529">所選打印機無法使用或尚未正確安裝。<ph name="BR" />請檢查打印機，或嘗試選取其他打印機。</translation>
 <translation id="5882919346125742463">已知網絡</translation>
+<translation id="5883716097305842571">「<ph name="PRINTER_NAME" />」的輸出紙匣將滿</translation>
 <translation id="5884474295213649357">此分頁已連接至 USB 裝置。</translation>
 <translation id="5886009770935151472">手指 1</translation>
 <translation id="5889282057229379085">中繼 CA 數目上限：<ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -3867,6 +3876,7 @@
 <translation id="5935656526031444304">管理「安全瀏覽」功能</translation>
 <translation id="5938002010494270685">有可用的安全性升級</translation>
 <translation id="5939518447894949180">重設</translation>
+<translation id="594108735267876762">請在 <ph name="COUNT" /> 天內更新裝置</translation>
 <translation id="5941153596444580863">新增使用者…</translation>
 <translation id="5941343993301164315">請登入 <ph name="TOKEN_NAME" />。</translation>
 <translation id="5941711191222866238">最小化</translation>
@@ -4101,6 +4111,7 @@
 <translation id="6239558157302047471">重新載入頁框(&amp;F)</translation>
 <translation id="6241530762627360640">存取與系統配對的藍牙裝置資料，並搜尋附近的藍牙裝置。</translation>
 <translation id="6241844896329831164">無需存取權</translation>
+<translation id="6242574558232861452">正在檢查是否符合您機構的安全性政策。</translation>
 <translation id="6242589501614145408">重設安全密鑰</translation>
 <translation id="6242852299490624841">將焦點移至此分頁</translation>
 <translation id="6243280677745499710">目前設定的桌布</translation>
@@ -4141,7 +4152,6 @@
 <translation id="628352644014831790">4 秒</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> 不常下載，代表此檔案可能不安全。</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{您網絡上的新打印機}other{您網絡上的新打印機}}</translation>
-<translation id="6286708577777130801">已儲存密碼的詳細資訊</translation>
 <translation id="6291163159361301370">「<ph name="ORGANIZATION_NAME" />」要求您備份資料並將此 Chromebook 回復原廠設定，才能啟動 Linux。</translation>
 <translation id="6291949900244949761">在網站要存取 USB 裝置時詢問您 (建議)</translation>
 <translation id="6291953229176937411">在 Finder 中顯示(&amp;S)</translation>
@@ -4215,6 +4225,7 @@
 <translation id="6390799748543157332">您在這個視窗瀏覽的網頁不會顯示在瀏覽器記錄中，並且在您關閉所有開啟的訪客視窗後，電腦也不會留下 Cookie 等其他記錄。不過，系統將會保留您下載的所有檔案。</translation>
 <translation id="6393156038355142111">建議安全性強的密碼</translation>
 <translation id="6395423953133416962">傳送<ph name="BEGIN_LINK1" />系統資料<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />指標<ph name="END_LINK2" /></translation>
+<translation id="6396179879191282798">今天是更新裝置的最後一天</translation>
 <translation id="6396988158856674517">禁止網站使用動作感應器</translation>
 <translation id="6398715114293939307">移除 Google Play 商店</translation>
 <translation id="6398765197997659313">退出全螢幕模式</translation>
@@ -4358,7 +4369,6 @@
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> - 已共用桌面內容</translation>
 <translation id="6580203076670148210">掃瞄速度</translation>
 <translation id="6582080224869403177">重設您的 <ph name="DEVICE_TYPE" />，以進行安全性升級。</translation>
-<translation id="6584793698691679400">裝置版本</translation>
 <translation id="6584878029876017575">Microsoft 永久簽署</translation>
 <translation id="6586099239452884121">訪客瀏覽</translation>
 <translation id="6586451623538375658">調換滑鼠主按鈕</translation>
@@ -4380,6 +4390,7 @@
 <translation id="6611972847767394631">您的分頁會在這裡顯示</translation>
 <translation id="6612358246767739896">受保護內容</translation>
 <translation id="6615455863669487791">顯示</translation>
+<translation id="6617034477946102682">無法連接「<ph name="PRINTER_NAME" />」</translation>
 <translation id="6618097958368085618">仍要保留</translation>
 <translation id="6618744767048954150">正在執行</translation>
 <translation id="6619058681307408113">Line Printer Daemon (LPD)</translation>
@@ -4623,6 +4634,7 @@
 <translation id="6930321203306643451">升級完成</translation>
 <translation id="6935286146439255109">找不到紙匣</translation>
 <translation id="693807610556624488">寫入操作長度超過「<ph name="DEVICE_NAME" />」屬性的上限。</translation>
+<translation id="6938381444925658529"><ph name="DOMAIN" /> 要求您在期限前下載更新。系統將在您連接互聯網時自動下載更新。</translation>
 <translation id="6938386202199793006">你有 1 部儲存咗嘅打印機。</translation>
 <translation id="6938789263968032501">使用者</translation>
 <translation id="6941937518557314510">登入 <ph name="TOKEN_NAME" /> 即可使用您的憑證為 <ph name="HOST_NAME" /> 進行驗證。</translation>
@@ -4786,6 +4798,7 @@
 <translation id="7128151990937044829">封鎖通知時，在網址列上顯示圖示</translation>
 <translation id="7131040479572660648">讀取您在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 上的資料</translation>
 <translation id="713122686776214250">新增網頁(&amp;G)…</translation>
+<translation id="7131379856697962078">「<ph name="PRINTER_NAME" />」的輸出紙匣已滿</translation>
 <translation id="7133578150266914903">您的管理員正在回復裝置 (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">縮小文字</translation>
 <translation id="7135729336746831607">要開啟藍牙嗎？</translation>
@@ -4804,6 +4817,7 @@
 <translation id="7152478047064750137">這個擴充程式不需要任何特殊權限</translation>
 <translation id="7154130902455071009">將您的起始網頁變更為：<ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">相機或檔案中的現有照片</translation>
+<translation id="715657691234357425">「<ph name="PRINTER_NAME" />」的紙張即將用完</translation>
 <translation id="7165320105431587207">無法設定網絡</translation>
 <translation id="716640248772308851">「<ph name="EXTENSION" />」對於勾選位置中的圖片、影片和音效檔案具有讀取權限。</translation>
 <translation id="7167486101654761064">保持開啟這類檔案(&amp;A)</translation>
@@ -5132,6 +5146,7 @@
 <translation id="7598466960084663009">重新啟動電腦</translation>
 <translation id="7599527631045201165">裝置名稱太長。請輸入較短的名稱並再試一次。</translation>
 <translation id="7600965453749440009">永遠不要翻譯<ph name="LANGUAGE" /></translation>
+<translation id="7601297144931396972">「<ph name="PRINTER_NAME" />」發生卡紙</translation>
 <translation id="760197030861754408">前往 <ph name="LANDING_PAGE" /> 以連接裝置。</translation>
 <translation id="7602079150116086782">沒有其他裝置的分頁</translation>
 <translation id="7602173054665172958">列印管理</translation>
@@ -5578,6 +5593,7 @@
 <translation id="8123590694679414600">系統已於 <ph name="TIME" />使用您的同步密碼短語加密資料。Google Pay 的付款方法和地址不會包括在內。</translation>
 <translation id="81238879832906896">黃色和白色的花</translation>
 <translation id="8124313775439841391">管理 ONC</translation>
+<translation id="8127535217699822294">「<ph name="PRINTER_NAME" />」的紙張已用完</translation>
 <translation id="813082847718468539">檢視網站資料</translation>
 <translation id="8131740175452115882">確定</translation>
 <translation id="8133676275609324831">在資料夾中顯示(&amp;S)</translation>
@@ -5676,6 +5692,7 @@
 <translation id="8254954272268479918">關閉 Linux (Beta 版本)</translation>
 <translation id="8255451560461371599">無背景圖片</translation>
 <translation id="8256319818471787266">小黃</translation>
+<translation id="8256417822772703842">「<ph name="PRINTER_NAME" />」的墨水即將用完</translation>
 <translation id="8257950718085972371">繼續封鎖存取相機</translation>
 <translation id="8259239505248583312">開始使用</translation>
 <translation id="8260126382462817229">請嘗試再次登入</translation>
@@ -5852,6 +5869,7 @@
 <translation id="8487678622945914333">放大</translation>
 <translation id="8490896350101740396">下列 Kiosk 應用程式 (<ph name="UPDATED_APPS" />) 已更新。請重新啟動裝置以完成更新程序。</translation>
 <translation id="8493236660459102203">麥克風：</translation>
+<translation id="8495940850609851342">「<ph name="PRINTER_NAME" />」已停止運作</translation>
 <translation id="8496717697661868878">執行這個外掛程式</translation>
 <translation id="8497219075884839166">Windows 公用處理程序</translation>
 <translation id="8498214519255567734">讓您在光線昏暗的環境下輕易觀看螢幕內容或閱讀</translation>
@@ -5867,7 +5885,6 @@
 <translation id="851263357009351303">永遠允許 <ph name="HOST" /> 顯示圖片</translation>
 <translation id="8513108775083588393">自動旋轉</translation>
 <translation id="8514746246728959655">請改用其他安全密鑰</translation>
-<translation id="851960115758509829">您的應用程式、設定和其他自訂設定將會同步至所有您使用 Google 帳戶登入的 Chrome 作業系統裝置。</translation>
 <translation id="8521475323816527629">更快存取應用程式</translation>
 <translation id="8523493869875972733">保留變更</translation>
 <translation id="8523849605371521713">由政策新增</translation>
@@ -5908,7 +5925,6 @@
 <translation id="8569682776816196752">找不到目的地</translation>
 <translation id="8571213806525832805">過去 4 週</translation>
 <translation id="8571687764447439720">新增 Kerberos 票證</translation>
-<translation id="8573403125070227391">此廣告使用太多裝置資源，因此已被 Chrome 移除。</translation>
 <translation id="8574990355410201600">一律允許 <ph name="HOST" /> 播放聲音</translation>
 <translation id="8575286410928791436">按住 <ph name="KEY_EQUIVALENT" /> 即可離開</translation>
 <translation id="8578639784464423491">不可超過 99 個字母</translation>

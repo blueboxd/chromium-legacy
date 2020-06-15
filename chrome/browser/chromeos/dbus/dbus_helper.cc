@@ -15,6 +15,7 @@
 #include "chromeos/dbus/audio/cras_audio_client.h"
 #include "chromeos/dbus/authpolicy/authpolicy_client.h"
 #include "chromeos/dbus/biod/biod_client.h"
+#include "chromeos/dbus/cdm_factory_daemon/cdm_factory_daemon_client.h"
 #include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/cups_proxy/cups_proxy_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -63,6 +64,7 @@ void InitializeDBus() {
   InitializeDBusClient<ArcCameraClient>(bus);
   InitializeDBusClient<AuthPolicyClient>(bus);
   InitializeDBusClient<BiodClient>(bus);  // For device::Fingerprint.
+  InitializeDBusClient<CdmFactoryDaemonClient>(bus);
   InitializeDBusClient<CrasAudioClient>(bus);
   InitializeDBusClient<CrosHealthdClient>(bus);
   InitializeDBusClient<CryptohomeClient>(bus);
@@ -114,6 +116,7 @@ void ShutdownDBus() {
   CryptohomeClient::Shutdown();
   CrosHealthdClient::Shutdown();
   CrasAudioClient::Shutdown();
+  CdmFactoryDaemonClient::Shutdown();
   BiodClient::Shutdown();
   AuthPolicyClient::Shutdown();
   ArcCameraClient::Shutdown();

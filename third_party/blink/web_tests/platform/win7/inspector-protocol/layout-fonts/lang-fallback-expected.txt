@@ -72,19 +72,19 @@
 
 我
 #zh-CN:
-"SimSun" : 1
+"Microsoft YaHei" : 1
 
 我
 #zh-HK:
-"PMingLiU" : 1
+"Microsoft JhengHei" : 1
 
 我
 #zh-Hans:
-"SimSun" : 1
+"Microsoft YaHei" : 1
 
 我
 #zh-Hant:
-"PMingLiU" : 1
+"Microsoft JhengHei" : 1
 
 我
 #ja:

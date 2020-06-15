@@ -48,7 +48,6 @@ import android.app.Instrumentation;
 import android.content.Intent;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject;
 import android.support.test.uiautomator.UiSelector;
@@ -63,6 +62,7 @@ import androidx.test.espresso.action.Press;
 import androidx.test.espresso.action.Tap;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.espresso.web.webdriver.Locator;
+import androidx.test.filters.SmallTest;
 
 import junit.framework.AssertionFailedError;
 

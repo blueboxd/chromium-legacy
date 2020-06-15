@@ -98,9 +98,7 @@ class MockAppInstallEventLoggerDelegate
   DISALLOW_COPY_AND_ASSIGN(MockAppInstallEventLoggerDelegate);
 };
 
-void SetPolicy(policy::PolicyMap* map,
-               const char* name,
-               std::unique_ptr<base::Value> value) {
+void SetPolicy(policy::PolicyMap* map, const char* name, base::Value value) {
   map->Set(name, policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
            policy::POLICY_SOURCE_CLOUD, std::move(value), nullptr);
 }
@@ -397,10 +395,8 @@ TEST_F(AppInstallEventLoggerTest, UpdatePolicy) {
 
   std::string arc_policy_string;
   base::JSONWriter::Write(arc_policy, &arc_policy_string);
-  SetPolicy(&new_policy_map, key::kArcEnabled,
-            std::make_unique<base::Value>(true));
-  SetPolicy(&new_policy_map, key::kArcPolicy,
-            std::make_unique<base::Value>(arc_policy_string));
+  SetPolicy(&new_policy_map, key::kArcEnabled, base::Value(true));
+  SetPolicy(&new_policy_map, key::kArcPolicy, base::Value(arc_policy_string));
 
   // Expected CANCELED with empty package set
   event_.set_event_type(em::AppInstallReportLogEvent::CANCELED);

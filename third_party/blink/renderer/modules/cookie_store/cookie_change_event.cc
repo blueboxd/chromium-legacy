@@ -67,6 +67,8 @@ String ToCookieListItemSameSite(network::mojom::CookieSameSite same_site) {
 }  // namespace
 
 // static
+// TODO(crbug.com/1092695): Update to take in CookieWithAccessResult so
+// CookieListItem can use EffectiveSameSite for SameSite.
 CookieListItem* CookieChangeEvent::ToCookieListItem(
     const CanonicalCookie& canonical_cookie,
     bool is_deleted) {

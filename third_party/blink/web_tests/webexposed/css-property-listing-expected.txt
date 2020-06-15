@@ -153,6 +153,7 @@ All changes to this list should go through Blink's feature review process: http:
     content-visibility
     counter-increment
     counter-reset
+    counter-set
     cursor
     cx
     cy

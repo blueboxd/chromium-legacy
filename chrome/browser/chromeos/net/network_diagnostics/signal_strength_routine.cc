@@ -49,7 +49,7 @@ bool SignalStrengthRoutine::CanRun() {
   return true;
 }
 
-void SignalStrengthRoutine::RunTest(SignalStrengthRoutineCallback callback) {
+void SignalStrengthRoutine::RunRoutine(SignalStrengthRoutineCallback callback) {
   if (!CanRun()) {
     std::move(callback).Run(verdict(), std::move(problems_));
     return;

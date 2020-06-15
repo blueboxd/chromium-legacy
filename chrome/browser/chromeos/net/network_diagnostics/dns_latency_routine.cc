@@ -93,7 +93,7 @@ DnsLatencyRoutine::DnsLatencyRoutine()
 
 DnsLatencyRoutine::~DnsLatencyRoutine() = default;
 
-void DnsLatencyRoutine::RunTest(DnsLatencyRoutineCallback callback) {
+void DnsLatencyRoutine::RunRoutine(DnsLatencyRoutineCallback callback) {
   if (!CanRun()) {
     std::move(callback).Run(verdict(), std::move(problems_));
     return;

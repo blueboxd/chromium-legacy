@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.xsurface.ProcessScope;
 import org.chromium.chrome.browser.xsurface.SurfaceActionsHandler;
 import org.chromium.chrome.browser.xsurface.SurfaceDependencyProvider;
 import org.chromium.chrome.browser.xsurface.SurfaceScope;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.feed.proto.FeedUiProto.SharedState;
 import org.chromium.components.feed.proto.FeedUiProto.Slice;
 import org.chromium.components.feed.proto.FeedUiProto.Slice.SliceDataCase;
@@ -78,6 +79,7 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     private final NativePageNavigationDelegate mPageNavigationDelegate;
 
     private int mHeaderCount;
+    private BottomSheetContent mBottomSheetContent;
 
     private static ProcessScope sXSurfaceProcessScope;
 
@@ -357,6 +359,23 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     @Override
     public void navigateNewTab(String url) {
         openUrl(url, /*inNewTab=*/true);
+    }
+
+    @Override
+    public void showBottomSheet(View view) {
+        dismissBottomSheet();
+
+        // Make a sheetContent with the view.
+        mBottomSheetContent = new CardMenuBottomSheetContent(view);
+        mBottomSheetController.requestShowContent(mBottomSheetContent, true);
+    }
+
+    @Override
+    public void dismissBottomSheet() {
+        if (mBottomSheetContent != null) {
+            mBottomSheetController.hideContent(mBottomSheetContent, true);
+        }
+        mBottomSheetContent = null;
     }
 
     @Override

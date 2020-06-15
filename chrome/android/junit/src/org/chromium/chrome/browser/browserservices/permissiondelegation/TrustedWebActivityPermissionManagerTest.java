@@ -19,6 +19,7 @@ import static org.robolectric.Shadows.shadowOf;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -30,6 +31,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowPackageManager;
+import org.robolectric.util.ReflectionHelpers;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
@@ -117,6 +119,31 @@ public class TrustedWebActivityPermissionManagerTest {
         setClientLocationPermission(false);
         setStoredLocationPermission(null);
 
+        assertEquals(ContentSettingValues.ASK,
+                mPermissionManager.getPermission(ContentSettingsType.GEOLOCATION, ORIGIN));
+        verifyPermissionNotUpdated();
+    }
+
+    @Test
+    @Feature("TrustedWebActivities")
+    public void locationPermissionAsk_whenNoPermissionOnAndroidR() {
+        ReflectionHelpers.setStaticField(
+                Build.VERSION.class, "SDK_INT", 30 /*Build.VERSION_CODES.R*/);
+
+        setStoredLocationPermission(null);
+        setClientLocationPermission(false);
+        assertEquals(ContentSettingValues.ASK,
+                mPermissionManager.getPermission(ContentSettingsType.GEOLOCATION, ORIGIN));
+        verifyPermissionNotUpdated();
+
+        setStoredLocationPermission(true);
+        setClientLocationPermission(false);
+        assertEquals(ContentSettingValues.ASK,
+                mPermissionManager.getPermission(ContentSettingsType.GEOLOCATION, ORIGIN));
+        verifyPermissionNotUpdated();
+
+        setStoredLocationPermission(false);
+        setClientLocationPermission(false);
         assertEquals(ContentSettingValues.ASK,
                 mPermissionManager.getPermission(ContentSettingsType.GEOLOCATION, ORIGIN));
         verifyPermissionNotUpdated();

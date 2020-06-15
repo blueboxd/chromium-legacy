@@ -384,6 +384,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="2544644783021658368">Egyetlen dokumentum</translation>
 <translation id="254947805923345898">A házirend értéke nem érvényes.</translation>
 <translation id="255002559098805027">A(z) <ph name="HOST_NAME" /> érvénytelen választ küldött.</translation>
+<translation id="2552295903035773204">Mostantól a képernyőzár használata a kártyák megerősítéséhez</translation>
 <translation id="2553853292994445426">Ellenőrizze a biztonságos DNS beállításait. Lehet, hogy olyan biztonságos DNS-szervert állított be, amelyhez nem lehet kapcsolódni.</translation>
 <translation id="2556876185419854533">&amp;Szerkesztés visszavonása</translation>
 <translation id="257674075312929031">Csoport</translation>
@@ -727,7 +728,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="4101413244023615925">Szöveg és grafika</translation>
 <translation id="4103249731201008433">Az eszköz sorozatszáma érvénytelen</translation>
 <translation id="4103763322291513355">Látogasson el a &lt;strong&gt;chrome://policy&lt;/strong&gt; oldalra a feketelistán lévő URL-ek és egyéb, a rendszergazda által előírt szabályok megtekintéséhez.</translation>
-<translation id="4108231218301530806">Ujjlenyomat használata ennek a kártyának az igazolására a következő alkalommal.</translation>
 <translation id="4110652170750985508">Befizetés áttekintése</translation>
 <translation id="4112140312785995938">Ugrás visszafelé</translation>
 <translation id="4116663294526079822">Mindig engedélyezze ezen az oldalon</translation>
@@ -1125,6 +1125,7 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="569000877158168851">A DnsOverHttpsTemplates érték nem releváns, és a rendszer nem fogja használni, kivéve ha a DnsOverHttpsMode házirend <ph name="SECURE_DNS_MODE_AUTOMATIC" /> vagy <ph name="SECURE_DNS_MODE_SECURE" /> értékre van állítva.</translation>
 <translation id="5701381305118179107">Középre</translation>
 <translation id="570530837424789914">Kezelés…</translation>
+<translation id="5705882733397021510">Visszalépés</translation>
 <translation id="57094364128775171">Erős jelszó ajánlása…</translation>
 <translation id="5710435578057952990">A webhely valódiságát nem ellenőriztük.</translation>
 <translation id="5720705177508910913">Jelenlegi felhasználó</translation>
@@ -1341,7 +1342,6 @@ Ezt egyéb esetben letiltják az adatvédelmi beállításai. Az engedélyezéss
 <translation id="6631202559048444592">Egynél több forrás van megadva a házirendnél, de az értékeik ugyanazok.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Törlés</translation>
-<translation id="6644283850729428850">Ez a házirend már elavult.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Nincs}=1{1 webhelyről (a böngésző nem jelentkezteti ki Google-fiókjából)}other{# webhelyről (a böngésző nem jelentkezteti ki Google-fiókjából)}}</translation>
 <translation id="6652101503459149953">Windows Hello használata</translation>
 <translation id="6657585470893396449">Jelszó</translation>

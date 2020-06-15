@@ -1624,7 +1624,7 @@ if (enable_java_templates) {
         } else if (_use_unprocessed_jars) {
           args += [ "--input-zips=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)" ]
         } else {
-          args += [ "--input-zips=@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)" ]
+          args += [ "--input-zips=@FileArg($_rebased_build_config:deps_info:device_classpath)" ]
         }
       }
       _excludes = []
@@ -2139,8 +2139,7 @@ if (enable_java_templates) {
   template("android_apk_or_module") {
     forward_variables_from(invoker, [ "testonly" ])
     assert(defined(invoker.android_manifest))
-    _out_dir = "$target_out_dir/$target_name"
-    _base_path = "$_out_dir/$target_name"
+    _base_path = "$target_out_dir/$target_name/$target_name"
     _build_config = "$target_gen_dir/$target_name.build_config"
     _build_config_target = "$target_name$build_config_target_suffix"
 
@@ -2153,9 +2152,6 @@ if (enable_java_templates) {
       _target_sdk_version = invoker.target_sdk_version
     }
 
-    # JUnit tests use resource zip files. These must not be put in gen/
-    # directory or they will not be available to tester bots.
-    _jar_path = "$_base_path.jar"
     _template_name = target_name
 
     _is_bundle_module =
@@ -2352,8 +2348,7 @@ if (enable_java_templates) {
     _is_static_library_provider =
         defined(invoker.static_library_dependent_targets) && _proguard_enabled
     if (_is_static_library_provider) {
-      _static_library_sync_dex_path =
-          "$_out_dir/static_library_synchronized_proguard.r8dex.jar"
+      _static_library_sync_dex_path = "$_base_path.synchronized.r8dex.jar"
       _resource_ids_provider_deps = []
       foreach(_target, invoker.static_library_dependent_targets) {
         if (_target.is_resource_ids_provider) {
@@ -2800,7 +2795,6 @@ if (enable_java_templates) {
       supports_android = true
       requires_android = true
       srcjar_deps = _srcjar_deps
-      final_jar_path = _jar_path
       if (defined(_final_dex_path)) {
         final_dex_path = _final_dex_path
       }
@@ -2932,7 +2926,8 @@ if (enable_java_templates) {
             main_dex_list_input_classes_filearg = "@FileArg(${_rebased_build_config}:deps_info:java_runtime_classpath_extended)"
           }
         } else {
-          input_classes_filearg = "@FileArg($_rebased_build_config:deps_info:java_runtime_classpath)"
+          input_classes_filearg =
+              "@FileArg($_rebased_build_config:deps_info:device_classpath)"
         }
 
         if (_is_static_library_provider) {

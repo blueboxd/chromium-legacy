@@ -117,6 +117,7 @@
 <translation id="114721135501989771">Chrome-ൽ Google സ്‌മാർട്‌സ് നേടുക</translation>
 <translation id="1147991416141538220">ആക്സസ് ആവശ്യപ്പെടാൻ, ഈ ഉപകരണത്തിന്റെ അഡ്‌മിനെ ബന്ധപ്പെടുക.</translation>
 <translation id="1149401351239820326">കാലാവധി കഴിയുന്ന മാസം</translation>
+<translation id="1149725087019908252"><ph name="FILE_NAME" /> സ്‌കാൻ ചെയ്യുന്നു</translation>
 <translation id="1150565364351027703">സൺഗ്ലാസുകൾ</translation>
 <translation id="1151917987301063366">സെൻസറുകൾ ആക്‌സസ് ചെയ്യാൻ എപ്പോഴും <ph name="HOST" />-നെ അനുവദിക്കുക</translation>
 <translation id="1153356358378277386">ജോടിയാക്കിയ ഉപകരണങ്ങൾ</translation>
@@ -278,6 +279,7 @@
 <translation id="1347975661240122359">ബാറ്ററി ചാർജ് <ph name="BATTERY_LEVEL" /> ശതമാനമാകുമ്പോൾ അപ്‌ഡേറ്റ് ആരംഭിക്കും.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
 <translation id="1353980523955420967">PPD കണ്ടെത്താനാവുന്നില്ല. നിങ്ങളുടെ Chromebook ഓൺലൈനിലാണോ എന്നുറപ്പാക്കുക, വീണ്ടും ശ്രമിക്കുക.</translation>
+<translation id="1354045473509304750">നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കാനും ചലിപ്പിക്കാനും <ph name="HOST" /> -നെ, തുടർന്നും അനുവദിക്കുക</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> പ്ലഗിൻ ബ്ലോക്കുചെയ്‌തു</translation>
 <translation id="1358741672408003399">സ്‌പെല്ലിംഗും വ്യാകരണവും</translation>
 <translation id="1359923111303110318">Smart Lock ഉപയോഗിച്ച് നിങ്ങളുടെ ഉപകരണം അൺലോക്ക് ചെയ്യാനാവും. അൺലോക്ക് ചെയ്യാൻ 'Enter' അമർത്തുക.</translation>
@@ -1171,6 +1173,7 @@
 <translation id="247051149076336810">ഫയൽ പങ്കിടൽ URL</translation>
 <translation id="2470702053775288986">പിന്തുണയ്ക്കാത്ത വിപുലീകരണങ്ങൾ പ്രവർത്തനരഹിതമായി</translation>
 <translation id="2473195200299095979">ഈ പേജ് വിവർത്തനം ചെയ്യുക</translation>
+<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> പ്രിന്ററിൽ മഷിയില്ല</translation>
 <translation id="2475982808118771221">ഒരു പിശക് സംഭവിച്ചു</translation>
 <translation id="2476578072172137802">സൈറ്റ് ക്രമീകരണങ്ങൾ</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" എന്നതിനായുള്ള മീഡിയ-ഫയൽ അനുമതികൾ</translation>
@@ -1471,6 +1474,7 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> നിങ്ങളുടെ അഡ്‌മിനിൽ നിന്നുള്ള പ്രോക്‌സി ക്രമീകരണം ഉപയോഗിക്കുന്നു</translation>
 <translation id="2825758591930162672">സബ്‌ജക്റ്റിന്‍റെ പൊതു കീ</translation>
 <translation id="2828650939514476812">Wi-Fi നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റ് ചെയ്യുക</translation>
+<translation id="28291580771888953"><ph name="PRINTER_NAME" /> പ്രിന്ററിലെ ക്യൂ നിറഞ്ഞിരിക്കുന്നു</translation>
 <translation id="2835547721736623118">സംഭാഷണം തിരിച്ചറിയൽ സേവനം</translation>
 <translation id="2836269494620652131">ക്രാഷ്</translation>
 <translation id="2836635946302913370">ഈ ഉപയോക്തൃനാമം ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യുന്നത് നിങ്ങളുടെ അഡ്മിൻ പ്രവർത്തനരഹിതമാക്കി.</translation>
@@ -2073,6 +2077,7 @@
 <translation id="3613422051106148727">പുതിയ ടാബിൽ &amp;തുറക്കുക</translation>
 <translation id="3614974189435417452">ബാക്കപ്പ് ചെയ്യൽ പൂർത്തിയായി</translation>
 <translation id="3615073365085224194">വിരലടയാള സെൻസറിൽ സ്‌പർശിക്കുക</translation>
+<translation id="3615579745882581859"><ph name="FILE_NAME" /> സ്‌കാൻ ചെയ്യുകയാണ്.</translation>
 <translation id="3616741288025931835">&amp;ബ്രൌസിംഗ് ഡാറ്റ ഇല്ലാതാക്കുക...</translation>
 <translation id="3617891479562106823">പശ്ചാത്തലങ്ങൾ ലഭ്യമല്ല. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="3619115746895587757">കാപ്പുചീനോ</translation>
@@ -2121,7 +2126,6 @@
 <translation id="3670113805793654926">ഏത് വെൻഡറിൽ നിന്നുമുള്ള ഉപകരണങ്ങൾ</translation>
 <translation id="3670229581627177274">Bluetooth ഓണാക്കുക</translation>
 <translation id="3672681487849735243">ഒരു ഫാക്‌ടറി പിശക് കണ്ടെത്തി</translation>
-<translation id="3675913744032077012">ഭാഷകളും ഇൻപുട്ട് ക്രമീകരണവും</translation>
 <translation id="367645871420407123">പരീക്ഷണ ചിത്ര മൂല്യത്തിലേക്ക് ഡീഫോൾട്ട് റൂട്ട് പാസ്‌വേഡ് സജ്ജീകരിക്കണമെങ്കിൽ ശൂന്യമായിടുക</translation>
 <translation id="3677106374019847299">ഇഷ്ടാനുസൃത ദാതാവിനെ നൽകുക</translation>
 <translation id="3677657024345889897">തീരെ ശബ്ജം കുറഞ്ഞ</translation>
@@ -2638,10 +2642,8 @@
 <translation id="4314815835985389558">സമന്വയിപ്പിക്കൽ മാനേജ് ചെയ്യുക</translation>
 <translation id="4316850752623536204">ഡെവലപ്പർ വെബ്‌സൈറ്റ്</translation>
 <translation id="4320177379694898372">ഇന്റർനെറ്റ് കണക്ഷനൊന്നുമില്ല</translation>
-<translation id="4321442524549817090">URL കാ&amp;ണിക്കുക</translation>
 <translation id="4322394346347055525">മറ്റ് ടാബുകള്‍ അടയ്‌ക്കുക</translation>
 <translation id="4324577459193912240">ഫയൽ ‌പൂർണ്ണമല്ല</translation>
-<translation id="4325083532956419387">Chrome OS പതിപ്പ്</translation>
 <translation id="4325237902968425115"><ph name="LINUX_APP_NAME" /> അണ്‍‌ ഇന്‍സ്‌റ്റാള്‍ ചെയ്യുന്നു...</translation>
 <translation id="4330191372652740264">ഐസ്‌വാട്ടർ</translation>
 <translation id="4330387663455830245"><ph name="LANGUAGE" /> ഒരിക്കലും വിവര്‍‌ത്തനം ചെയ്യരുത്</translation>
@@ -2741,6 +2743,7 @@
 <translation id="4453946976636652378"><ph name="SEARCH_ENGINE_NAME" /> തിരയുക അല്ലെങ്കിൽ ഒരു URL ടൈപ്പ് ചെയ്യുക</translation>
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> ദിവസം മുമ്പ് സജീവമായിരുന്നു</translation>
 <translation id="4460014764210899310">ഗ്രൂപ്പ് അല്ലാതാക്കി മാറ്റുക</translation>
+<translation id="4460343359907016103"><ph name="PRINTER_NAME" /> പ്രിന്ററിലേക്ക് കണക്‌റ്റ് ചെയ്യുന്നതിൽ പിശക്</translation>
 <translation id="4462159676511157176">ഇഷ്‌ടാനുസൃത നാമ സെർവറുകൾ</translation>
 <translation id="4465236939126352372"><ph name="APP_NAME" />-നായി <ph name="TIME" /> സമയ പരിധി സജ്ജീകരിച്ചു</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്, കണക്‌റ്റ് ചെയ്യുക</translation>
@@ -3030,6 +3033,7 @@
 <translation id="4864369630010738180">സൈൻ ഇൻ ചെയ്യുന്നു...</translation>
 <translation id="4864805589453749318">സ്‌കൂൾ അക്കൗണ്ട് ചേർക്കാനുള്ള അനുമതി നൽകുന്ന രക്ഷിതാവിനെ തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="486635084936119914">ചില ഫയൽ തരങ്ങളെ ഡൗൺലോഡ് ചെയ്‌ത ശേഷം സ്വയം തുറക്കുക</translation>
+<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> പ്രിന്ററിലെ ഒരു ട്രേ കാണുന്നില്ല</translation>
 <translation id="4869289251183233431">നിങ്ങളുടെ ഉപകരണത്തിൽ സ്‌റ്റോറേജ് സ്‌പെയ്‌സ് കുറവാണ്. <ph name="APP_NAME" /> ഉപയോഗിക്കാൻ കുറഞ്ഞത് <ph name="MINIMUM_SPACE" /> ഇടം ആവശ്യമാണ്, കൂടാതെ <ph name="RECOMMENDED_SPACE" />-യിൽ കൂടുതൽ ഇടമാണ് ശുപാർശ ചെയ്യുന്നത്. ഇടമുണ്ടാക്കാൻ, ഉപകരണത്തിൽ നിന്ന് ഫയലുകൾ ഇല്ലാതാക്കുക.</translation>
 <translation id="48704129375571883">കൂടുതൽ ഫീച്ചറുകൾ ചേർക്കുക</translation>
 <translation id="4870758487381879312">കോൺഫിഗറേഷൻ വിവരം ലഭിക്കാൻ അഡ്‌മിൻ നൽകിയ പാസ്‌വേഡ് നൽകുക</translation>
@@ -3085,6 +3089,7 @@
 <translation id="4918221908152712722"><ph name="APP_NAME" /> ഇൻസ്റ്റാൾ ചെയ്യുക (ഡൗൺലോഡ് ചെയ്യേണ്ടതില്ല)</translation>
 <translation id="4920887663447894854">ഈ പേജിലെ നിങ്ങളുടെ സ്ഥാനം ട്രാക്കുചെയ്യുന്നതില്‍‌ നിന്നും ഇനിപ്പറയുന്ന സൈറ്റുകളെ തടഞ്ഞു:</translation>
 <translation id="4921290200821452703">രക്ഷിതാക്കൾക്ക് വേണ്ടിയുള്ള സ്‌കൂൾ അക്കൗണ്ട് വിവരങ്ങൾ</translation>
+<translation id="4921348630401250116">ടെക്‌സ്‌റ്റ് ടു സ്‌പീച്ച്</translation>
 <translation id="49226369361073053">{0,plural, =0{ഉപകരണം ഇപ്പോൾ അപ്‌ഡേറ്റ് ചെയ്യുക}=1{ഒരു സെക്കൻഡിനുള്ളിൽ ഉപകരണം അപ്‌ഡേറ്റ് ചെയ്യുക}other{# സെക്കൻഡിനുള്ളിൽ ഉപകരണം അപ്‌ഡേറ്റ് ചെയ്യുക}}</translation>
 <translation id="492299503953721473">Android ആപ്പുകൾ നീക്കംചെയ്യുക</translation>
 <translation id="492363500327720082"><ph name="APP_NAME" /> അണ്‍‌ഇന്‍സ്‌റ്റാള്‍ ചെയ്യുന്നു...</translation>
@@ -3139,7 +3144,6 @@
 <translation id="4997086284911172121">ഇന്റർനെറ്റ് കണക്ഷൻ ഇല്ല.</translation>
 <translation id="4998430619171209993">ഓണാണ്</translation>
 <translation id="5000922062037820727">തടഞ്ഞിരിക്കുന്നു (ശുപാർശചെയ്‌തത്)</translation>
-<translation id="5003821244905342830">തുടരുന്നതിലൂടെ, <ph name="EMAIL" />-ൽ നിന്നുള്ള ഡാറ്റ ഈ ഉപകരണവുമായി Google സമന്വയിപ്പിക്കും.</translation>
 <translation id="5005498671520578047">പാസ്‌വേഡ് പകർത്തുക</translation>
 <translation id="5006218871145547804">Crostini Android ആപ്പ് ADB</translation>
 <translation id="5007392906805964215">അവലോകനം ചെയ്യുക</translation>
@@ -3170,6 +3174,7 @@
 <translation id="504561833207953641">നിലവിലുള്ള ബ്രൗസര്‍ സെഷനില്‍ തുറക്കുന്നു.</translation>
 <translation id="5047421709274785093">ചലന സെൻസറുകളും വെളിച്ച സെൻസറുകളും ഉപയോഗിക്കുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="5050042263972837708">ഗ്രൂപ്പിന്‍റെ പേര്</translation>
+<translation id="5050330054928994520">TTS</translation>
 <translation id="5051836348807686060">നിങ്ങൾ തിരഞ്ഞെടുത്ത ഭാഷകൾക്ക് അക്ഷരപ്പിശക് പരിശോധന പിന്തുണയ്‌ക്കുന്നില്ല</translation>
 <translation id="5052499409147950210">സൈറ്റ് എഡിറ്റ് ചെയ്യുക</translation>
 <translation id="5053604404986157245">ക്രമരഹിതമായി സൃഷ്‌ടിച്ച TPM പാസ്‌വേഡ് ലഭ്യമല്ല. പവർവാഷിന് ശേഷം ഇത് സാധാരണമാണ്.</translation>
@@ -3429,6 +3434,7 @@
 <translation id="5390100381392048184">ശബ്‌ദം പ്ലേ ചെയ്യാൻ സൈറ്റുകളെ അനുവദിക്കുക</translation>
 <translation id="5390677308841849479">ഇരുണ്ട ചുവപ്പും ഓറഞ്ചും</translation>
 <translation id="5390743329570580756">ഇതിനുവേണ്ടി അയയ്‌ക്കുക</translation>
+<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> താൽക്കാലികമായി നിർത്തിയിരിക്കുന്നു</translation>
 <translation id="5397794290049113714">നിങ്ങള്‍</translation>
 <translation id="5398572795982417028">പേജ് റഫറൻസ് പരിധി കവിഞ്ഞു, <ph name="MAXIMUM_PAGE" /> പേജാണ് വേണ്ട പരിധി</translation>
 <translation id="5398772614898833570">പരസ്യങ്ങൾ ബ്ലോക്കുചെയ്‌തു</translation>
@@ -3442,6 +3448,7 @@
 <translation id="5417312524372586921">ബ്രൗസർ തീമുകൾ</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">ടെക്‌സ്‌റ്റിന്റെയും ചിത്രങ്ങളുടെയും ഷാർപ്പ്‌നെസ്സ് നിർണ്ണയിക്കുന്നു</translation>
+<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> പ്രിന്ററിൽ ഉപകരണ പിശക്</translation>
 <translation id="5422221874247253874">ആക്‌സസ് പോയിന്‍റ്</translation>
 <translation id="5422781158178868512">ക്ഷമിക്കണം, നിങ്ങളുടെ എക്‌സ്‌റ്റേണൽ സ്‌റ്റോറേജ് ഉപകരണം അംഗീകരിക്കാൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3515,6 +3522,7 @@
 <translation id="5499313591153584299">ഈ ഫയൽ നിങ്ങളുടെ കമ്പ്യൂട്ടറിന് ഹാനികരമായേക്കാം.</translation>
 <translation id="5500709606820808700">സുരക്ഷാ പരിശോധന ഇന്ന് നടത്തി</translation>
 <translation id="5502500733115278303">Firefoxല്‍ നിന്ന് ഇറക്കുമതി ചെയ്തവ</translation>
+<translation id="5503982651688210506">നിങ്ങളുടെ ക്യാമറ ഉപയോഗിക്കാനും ചലിപ്പിക്കാനും, മൈക്രോഫോൺ ഉപയോഗിക്കാനും <ph name="HOST" /> -നെ, തുടർന്നും അനുവദിക്കുക</translation>
 <translation id="5505264765875738116">അറിയിപ്പുകൾ അയയ്ക്കാൻ സൈറ്റുകൾക്ക് അനുവാദം ചോദിക്കാനാവില്ല</translation>
 <translation id="5505307013568720083">മഷിയില്ല</translation>
 <translation id="5507756662695126555">നിരസിക്കാത്തത്</translation>
@@ -3710,7 +3718,6 @@
 <translation id="5734362860645681824">കമ്മ്യൂണിക്കേഷനുകൾ</translation>
 <translation id="5734697361979786483">ഫയൽ പങ്കിടൽ ചേർക്കുക</translation>
 <translation id="5736796278325406685">ശരിയായ ഉപയോക്തൃനാമം നൽകുക</translation>
-<translation id="573759479754913123">Chrome OS-നെക്കുറിച്ച്</translation>
 <translation id="5739017626473506901">സ്‌കൂൾ അക്കൗണ്ട് ചേർക്കുന്നതിന് <ph name="USER_NAME" /> എന്നയാളെ സഹായിക്കാൻ സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="5739235828260127894">പരിശോധിച്ചുറപ്പിക്കാൻ കാത്തിരിക്കുന്നു. <ph name="LINK_BEGIN" />കൂടുതലറിയുക<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">വളരെ വലുത്</translation>
@@ -3792,6 +3799,7 @@
 <translation id="5852137567692933493">പുനരാരംഭിച്ച് പവർവാഷ് ചെയ്യുക</translation>
 <translation id="5854912040170951372">ഛേദം</translation>
 <translation id="5855267860608268405">അറിയപ്പെടുന്ന വെെഫെെ നെറ്റ്‌വർക്കുകൾ</translation>
+<translation id="5855310969323666289"><ph name="PRINTER_NAME" /> പ്രിന്ററിന്റെ വാതിൽ തുറന്നിരിക്കുന്നു</translation>
 <translation id="5855643921295613558">0.6 സെക്കൻഡ്</translation>
 <translation id="5856721540245522153">ഡീബഗ് ചെയ്യൽ ഫീച്ചറുകൾ പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="5857090052475505287">പുതിയ ഫോള്‍ഡര്‍</translation>
@@ -3821,6 +3829,7 @@
 <translation id="5877064549588274448">ചാനൽ മാറ്റി. മാറ്റങ്ങൾ ബാധകമാകാൻ നിങ്ങളുടെ ഉപകരണം പുനരാരംഭിക്കുക.</translation>
 <translation id="5877584842898320529">തിരഞ്ഞെടുത്ത പ്രിന്റര്‍ ലഭ്യമല്ല, അല്ലെങ്കിൽ ശരിയായി ഇന്‌സ്‌റ്റാൾ ചെയ്‌തിട്ടില്ല. <ph name="BR" /> നിങ്ങളുടെ പ്രിന്റര്‍ പരിശോധിക്കുക അല്ലെങ്കില്‍ മറ്റൊരു പ്രിന്റര്‍ തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="5882919346125742463">അറിയാവുന്ന നെറ്റ്‌വർക്കുകൾ</translation>
+<translation id="5883716097305842571"><ph name="PRINTER_NAME" /> പ്രിന്ററിന്റെ ഔട്ട്പുട്ട് ഏരിയ ഏകദേശം നിറഞ്ഞിരിക്കുന്നു</translation>
 <translation id="5884474295213649357">ഈ ടാബ് USB ഉപകരണവുമായി കണക്‌റ്റ് ചെയ്‌തിരിക്കുന്നു.</translation>
 <translation id="5886009770935151472">വിരൽ 1</translation>
 <translation id="5889282057229379085">ഇന്‍റര്‍‌മീഡിയറ്റ് CAകളുടെ പരമാവധി എണ്ണം: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -3865,6 +3874,7 @@
 <translation id="5935656526031444304">സുരക്ഷിത ബ്രൗസിംഗ് മാനേജ് ചെയ്യുക</translation>
 <translation id="5938002010494270685">സുരക്ഷാ അപ്ഗ്രേഡ് ലഭ്യമാണ്</translation>
 <translation id="5939518447894949180">റീസെറ്റ് ചെയ്യുക</translation>
+<translation id="594108735267876762"><ph name="COUNT" /> ദിവസത്തിനുള്ളിൽ ഉപകരണം അപ്‌ഡേറ്റ് ചെയ്യുക</translation>
 <translation id="5941153596444580863">ഉപയോക്താവിനെ ചേർക്കുക...</translation>
 <translation id="5941343993301164315"><ph name="TOKEN_NAME" /> എന്നതിലേക്ക് ദയവായി പ്രവേശിക്കുക.</translation>
 <translation id="5941711191222866238">ചെറുതാക്കുക‍</translation>
@@ -4100,6 +4110,7 @@
 <translation id="6239558157302047471">റീലോഡും ഫ്രെയിമും</translation>
 <translation id="6241530762627360640">നിങ്ങളുടെ സിസ്റ്റവുമായി ജോടിയാക്കിയ Bluetooth ഉപകരണങ്ങളെക്കുറിച്ചുള്ള വിവരങ്ങൾ ആക്‌സസ് ചെയ്ത് സമീപമുള്ള Bluetooth ഉപകരണങ്ങൾ കണ്ടെത്തുക.</translation>
 <translation id="6241844896329831164">ആക്‌സസ് ആവശ്യമില്ല</translation>
+<translation id="6242574558232861452">നിങ്ങളുടെ സ്ഥാപനത്തിന്റെ സുരക്ഷാ നയങ്ങൾ പാലിക്കുന്നുണ്ടോയെന്ന് പരിശോധിക്കുന്നു.</translation>
 <translation id="6242589501614145408">നിങ്ങളുടെ സുരക്ഷാ കീ പുനഃക്രമീകരിക്കുക</translation>
 <translation id="6242852299490624841">ഈ ടാബ് ഫോക്കസ് ചെയ്യുക</translation>
 <translation id="6243280677745499710">നിലവിൽ സജ്ജീകരിച്ചിരിക്കുന്നത്</translation>
@@ -4136,11 +4147,10 @@
 <translation id="6279183038361895380">നിങ്ങളുടെ കഴ്‌സർ കാണിക്കാൻ |<ph name="ACCELERATOR" />| അമർത്തുക</translation>
 <translation id="6280215091796946657">മറ്റൊരു അക്കൗണ്ട് ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്യുക</translation>
 <translation id="6280912520669706465">ARC</translation>
-<translation id="6282180787514676874">{COUNT,plural, =1{ഒരു പേപ്പർ ഷീറ്റ് എന്ന പരിധി കവിഞ്ഞു}other{{COUNT} പേപ്പർ ഷീറ്റുകൾ എന്ന പരിധി കവിഞ്ഞു}}</translation>
+<translation id="6282180787514676874">{COUNT,plural, =1{ഒരു ഷീറ്റ് പേപ്പർ എന്ന പരിധി കവിഞ്ഞു}other{{COUNT} ഷീറ്റ് പേപ്പർ എന്ന പരിധി കവിഞ്ഞു}}</translation>
 <translation id="628352644014831790">4 സെക്കൻഡ്</translation>
 <translation id="6285120108426285413">സാധാരണ <ph name="FILE_NAME" /> ഡൗൺലോഡ് ചെയ്യാറില്ല, അത് അപകടകരമാകാനും ഇടയുണ്ട്.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{നിങ്ങളുടെ നെറ്റ്‌വർക്കിലെ പുതിയ പ്രിന്റർ}other{നിങ്ങളുടെ നെറ്റ്‌വർക്കിലെ പുതിയ പ്രിന്ററുകൾ}}</translation>
-<translation id="6286708577777130801">സംരക്ഷിച്ച പാസ്‌വേഡ് വിശദാംശങ്ങൾ</translation>
 <translation id="6291163159361301370">Linux ആരംഭിക്കാൻ, നിങ്ങളുടെ ഡാറ്റ ബാക്കപ്പ് ചെയ്‌ത് ഫാക്‌ടറി ക്രമീകരണത്തിലേക്ക് ഈ Chromebook റീസെറ്റ് ചെയ്യാൻ <ph name="ORGANIZATION_NAME" /> ആവശ്യപ്പെടുന്നു.</translation>
 <translation id="6291949900244949761">USB ഉപകരണങ്ങൾ ആക്‌സസ് ചെയ്യാൻ ഒരു സൈറ്റ് താൽപ്പര്യപ്പെടുമ്പോൾ ചോദിക്കുക (ശുപാർശ ചെയ്‌തത്)</translation>
 <translation id="6291953229176937411">&amp;ഫൈന്‍‌ഡറില്‍ കാണിക്കുക</translation>
@@ -4214,6 +4224,7 @@
 <translation id="6390799748543157332">തുറന്നിരിക്കുന്ന എല്ലാ അതിഥി വിൻഡോകളും അടച്ചുകഴിഞ്ഞാൽ, ഈ വിൻഡോയിൽ നിങ്ങൾ കാണുന്ന പേജുകൾ നിങ്ങളുടെ ബ്രൗസർ ചരിത്രത്തിൽ ദൃശ്യമാകില്ല, അവ കുക്കികൾ പോലുള്ള മറ്റ് തെളിവുകൾ നിങ്ങളുടെ കമ്പ്യൂട്ടറിൽ അവശേഷിപ്പിക്കുകയുമില്ല. എന്നിരുന്നാലും, നിങ്ങൾ ഡൗൺലോഡ് ചെയ്യുന്ന എല്ലാ ഫയലുകളും സൂക്ഷിക്കും.</translation>
 <translation id="6393156038355142111">ശക്തമായ പാസ്‌വേഡ് നിർദ്ദേശിക്കുക</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />സിസ്റ്റം വിവരങ്ങളും<ph name="END_LINK1" /> <ph name="BEGIN_LINK2" />മെട്രിക്‌സും<ph name="END_LINK2" /> അയയ്‌ക്കുക</translation>
+<translation id="6396179879191282798">ഉപകരണം അപ്‌ഡേറ്റ് ചെയ്യാനുള്ള അവസാന ദിവസം</translation>
 <translation id="6396988158856674517">ചലന സെൻസറുകൾ ഉപയോഗിക്കുന്നതിൽ നിന്ന് സൈറ്റുകളെ ബ്ലോക്ക് ചെയ്യുക</translation>
 <translation id="6398715114293939307">Google Play സ്‌റ്റോർ നീക്കംചെയ്യുക</translation>
 <translation id="6398765197997659313">പൂര്‍ണ്ണ സ്ക്രീനില്‍ നിന്ന് പുറത്തുകടക്കുക</translation>
@@ -4357,7 +4368,6 @@
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> - ഡെസ്‌ക്‌ടോപ്പ് ഉള്ളടക്കം പങ്കിട്ടു</translation>
 <translation id="6580203076670148210">സ്‌കാനിംഗ് വേഗത</translation>
 <translation id="6582080224869403177">സുരക്ഷ അപ്‌ഗ്രേഡ് ചെയ്യാനായി നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> പുനഃക്രമീകരിക്കുക.</translation>
-<translation id="6584793698691679400">ഉപകരണത്തിന്റെ പതിപ്പ്</translation>
 <translation id="6584878029876017575">Microsoft Lifetime Signing</translation>
 <translation id="6586099239452884121">അതിഥി ബ്രൗസിംഗ്</translation>
 <translation id="6586451623538375658">പ്രാഥമിക മൗസ് ബട്ടൺ സ്വാപ്പ് ചെയ്യുക</translation>
@@ -4379,6 +4389,7 @@
 <translation id="6611972847767394631">നിങ്ങളുടെ ടാബുകൾ ഇവിടെ കണ്ടെത്തുക</translation>
 <translation id="6612358246767739896">പരിരക്ഷിത ഉള്ളടക്കം</translation>
 <translation id="6615455863669487791">എന്നെ കാണിക്കുക</translation>
+<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> ലഭ്യമല്ല</translation>
 <translation id="6618097958368085618">എന്തായാലും സൂക്ഷിക്കുക</translation>
 <translation id="6618744767048954150">റൺ ചെയ്യുന്നു</translation>
 <translation id="6619058681307408113">ലൈൻ പ്രിന്റർ ഡെമൺ (LPD)</translation>
@@ -4622,6 +4633,7 @@
 <translation id="6930321203306643451">അപ്ഗ്രേഡ് പൂർത്തിയായി</translation>
 <translation id="6935286146439255109">പേപ്പർ ട്രേ കാണുന്നില്ല</translation>
 <translation id="693807610556624488">എഴുതൽ പ്രവർത്തനം ഇനി പറയുന്നതിലേക്കുള്ള ആട്രിബ്യൂട്ടിന്‍റെ പരമാവധി ദൈർഘ്യം കവിയുന്നു : "<ph name="DEVICE_NAME" />".</translation>
+<translation id="6938381444925658529">സമയപരിധി അവസാനിക്കുന്നതിന് മുമ്പ് അപ്ഡേറ്റ് ഡൗൺലോഡ് ചെയ്യാൻ <ph name="DOMAIN" /> ആവശ്യപ്പെടുന്നു. നിങ്ങൾ ഇന്റർനെറ്റിൽ കണക്റ്റ് ചെയ്യുമ്പോൾ അപ്ഡേറ്റ് സ്വയമേവ ഡൗൺലോഡാകും.</translation>
 <translation id="6938386202199793006">നിങ്ങൾക്ക് സംരക്ഷിച്ചിരിക്കുന്ന ഒരു പ്രിന്റർ ഉണ്ട്.</translation>
 <translation id="6938789263968032501">ആളുകൾ</translation>
 <translation id="6941937518557314510">നിങ്ങളുടെ സര്‍ട്ടിഫിക്കറ്റ് ഉപയോഗിച്ച് <ph name="HOST_NAME" /> എന്നതിലേക്ക് പ്രാമാണീകരിക്കുന്നതിന് ദയവായി <ph name="TOKEN_NAME" /> എന്നതില്‍ പ്രവേശിക്കുക.</translation>
@@ -4785,6 +4797,7 @@
 <translation id="7128151990937044829">അറിയിപ്പുകൾ ബ്ലോക്ക് ചെയ്‌തിരിക്കുമ്പോൾ വിലാസ ബാറിൽ ഇൻഡിക്കേറ്റർ കാണിക്കുക</translation>
 <translation id="7131040479572660648"><ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> എന്നിവയിലെ നിങ്ങളുടെ വിവരം വായിക്കുക</translation>
 <translation id="713122686776214250">പേ&amp;ജ് ചേർക്കുക...</translation>
+<translation id="7131379856697962078"><ph name="PRINTER_NAME" /> പ്രിന്ററിന്റെ ഔട്ട്പുട്ട് ഏരിയ നിറഞ്ഞിരിക്കുന്നു</translation>
 <translation id="7133578150266914903">നിങ്ങളുടെ അഡ്‌മിൻ ഈ ഉപകരണം (<ph name="PROGRESS_PERCENT" />) മുമ്പത്തെ അവസ്ഥയിലേക്ക് പുനഃസ്ഥാപിക്കുകയാണ്</translation>
 <translation id="7134098520442464001">പാഠത്തെ ചെറുതാക്കുക</translation>
 <translation id="7135729336746831607">Bluetooth ഓണാക്കണോ?</translation>
@@ -4803,6 +4816,7 @@
 <translation id="7152478047064750137">ഈ വിപുലീകരണത്തിന് പ്രത്യേക അനുമതികളൊന്നും ആവശ്യമില്ല</translation>
 <translation id="7154130902455071009">നിങ്ങളുടെ ആരംഭ പേജ് ഇതായി മാറ്റുക: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">ക്യാമറയിൽ നിന്നോ ഫയലിൽ നിന്നോ ഉള്ള നിലവിലെ ഫോട്ടോ</translation>
+<translation id="715657691234357425"><ph name="PRINTER_NAME" /> പ്രിന്ററിൽ പേപ്പർ കുറവാണ്</translation>
 <translation id="7165320105431587207">നെറ്റ്‌വർക്ക് കോൺഫിഗർ ചെയ്യുന്നതിൽ പരാജയപ്പെട്ടു</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" എന്നതിന് ചെക്ക് ചെയ്‌ത ലൊക്കേഷനുകളിൽ ചിത്രങ്ങളും വീഡിയോകളും ശബ്‌ദ ഫയലുകളും റീഡ് ചെയ്യാനാകും.</translation>
 <translation id="7167486101654761064">&amp;എപ്പോഴും ഈ തരത്തിലുള്ള ഫയലുകള്‍ തുറക്കുക</translation>
@@ -5133,6 +5147,7 @@
 <translation id="7598466960084663009">കമ്പ്യൂട്ടർ റീസ്‌റ്റാർട്ട് ചെയ്യുക</translation>
 <translation id="7599527631045201165">ഉപകരണ നാമത്തിന് നീളം കൂടുതലാണ്. വീണ്ടും ശ്രമിക്കാൻ നീളം കുറഞ്ഞൊരു പേര് നൽകുക.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> ഒരിക്കലും വിവര്‍‌ത്തനം ചെയ്യരുത്</translation>
+<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> പ്രിന്ററിലെ പേപ്പർ ജാമായിരിക്കുന്നു</translation>
 <translation id="760197030861754408">കണക്റ്റുചെയ്യാൻ <ph name="LANDING_PAGE" /> പേജിൽ പോകുക.</translation>
 <translation id="7602079150116086782">മറ്റുപകരണങ്ങളിൽ നിന്നുള്ള ടാബുകളൊന്നും ഇല്ല</translation>
 <translation id="7602173054665172958">പ്രിന്റ് മാനേജ്മെന്റ്</translation>
@@ -5527,7 +5542,7 @@
 <translation id="8059417245945632445">&amp;ഉപകരണങ്ങൾ പരിശോധിക്കുക</translation>
 <translation id="8059456211585183827">സംരക്ഷിക്കുന്നതിന് പ്രിന്ററുകളൊന്നും ലഭ്യമല്ല.</translation>
 <translation id="8061091456562007989">പഴയതിലേക്ക് മാറ്റുക</translation>
-<translation id="8062844841289846053">{COUNT,plural, =1{ഒരു ഷീറ്റ് പേപ്പർ}other{{COUNT} ഷീറ്റുകളുള്ള പേപ്പർ}}</translation>
+<translation id="8062844841289846053">{COUNT,plural, =1{ഒരു ഷീറ്റ് പേപ്പർ}other{{COUNT} ഷീറ്റ് പേപ്പർ}}</translation>
 <translation id="8063235345342641131">ഡിഫോൾട്ടായ പച്ച അവതാർ</translation>
 <translation id="8063535366119089408">ഫയൽ കാണുക</translation>
 <translation id="8068253693380742035">സൈൻ ഇൻ ചെയ്യാൻ സ്‌പർശിക്കുക</translation>
@@ -5580,6 +5595,7 @@
           Google Pay-ൽ നിന്നുള്ള പേയ്മെന്‍റ് രീതികളും വിലാസങ്ങളും അടങ്ങുന്നില്ല.</translation>
 <translation id="81238879832906896">മഞ്ഞയും വെളുപ്പും നിറത്തിലുള്ള പൂവ്</translation>
 <translation id="8124313775439841391">നിയന്ത്രിത ONC</translation>
+<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> പ്രിന്ററിൽ പേപ്പറില്ല</translation>
 <translation id="813082847718468539">സൈറ്റ് വിവരങ്ങള്‍ കാണുക</translation>
 <translation id="8131740175452115882">സ്ഥിരീകരിക്കുക</translation>
 <translation id="8133676275609324831">&amp;ഫോള്‍ഡറില്‍ കാണിക്കുക</translation>
@@ -5678,6 +5694,7 @@
 <translation id="8254954272268479918">Linux (ബീറ്റ) ഷട്ട് ഡൗൺ ചെയ്യുക</translation>
 <translation id="8255451560461371599">പശ്ചാത്തലം ഇല്ലാത്തത്</translation>
 <translation id="8256319818471787266">സ്‌പാർക്കി</translation>
+<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> പ്രിന്ററിൽ മഷി കുറവാണ്</translation>
 <translation id="8257950718085972371">ക്യാമറ ആക്‌സസ് തടയുന്നത് തുടരുക</translation>
 <translation id="8259239505248583312">നമുക്ക് ആരംഭിക്കാം</translation>
 <translation id="8260126382462817229">വീണ്ടും സൈൻ ഇൻ ചെയ്യാൻ ശ്രമിക്കുക</translation>
@@ -5854,6 +5871,7 @@
 <translation id="8487678622945914333">സൂം ഇന്‍ ചെയ്യുക</translation>
 <translation id="8490896350101740396">ഇനിപ്പറയുന്ന കിയോ‌സ്‌ക് ആപ്പുകൾ "<ph name="UPDATED_APPS" />" അപ്‌ഡേറ്റ് ചെയ്‌തു. അപ്‌ഡേറ്റ് ചെയ്യൽ പ്രോസസ് പൂർത്തിയാക്കുന്നതിന് ഉപകരണം റീബൂട്ട് ചെയ്യുക.</translation>
 <translation id="8493236660459102203">മൈക്രോഫോണ്‍:</translation>
+<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> നിർത്തി</translation>
 <translation id="8496717697661868878">ഈ പ്ലഗിന്‍ പ്രവര്‍ത്തിപ്പിക്കുക</translation>
 <translation id="8497219075884839166">Windows യൂട്ടിലിറ്റികൾ</translation>
 <translation id="8498214519255567734">മങ്ങിയ വെളിച്ചത്തിൽ സ്‌ക്രീൻ നോക്കുന്നതോ വായിക്കുന്നതോ എളുപ്പമാക്കുക</translation>
@@ -5869,7 +5887,6 @@
 <translation id="851263357009351303">ചിത്രങ്ങൾ‌ കാണിക്കുന്നതിന്<ph name="HOST" /> നെ എല്ലായ്‌പ്പോഴും അനുവദിക്കുക</translation>
 <translation id="8513108775083588393">സ്വയം തിരിയുക</translation>
 <translation id="8514746246728959655">മറ്റൊരു സുരക്ഷാ കീ പരീക്ഷിക്കൂ</translation>
-<translation id="851960115758509829">നിങ്ങളുടെ Google അക്കൗണ്ട് ഉപയോഗിച്ച് സൈൻ ഇൻ ചെയ്‌തിട്ടുള്ള എല്ലാ Chrome OS ഉപകരണങ്ങളിലുമുടനീളം നിങ്ങളുടെ ആപ്പുകളും ക്രമീകരണവും മറ്റ് ഇഷ്ടാനുസൃതമാക്കലുകളും സമന്വയിപ്പിക്കും.</translation>
 <translation id="8521475323816527629">നിങ്ങളുടെ ആപ്പുകൾ വേഗത്തിൽ സ്വന്തമാക്കുക</translation>
 <translation id="8523493869875972733">മാറ്റങ്ങൾ നിലനിർത്തുക</translation>
 <translation id="8523849605371521713">നയം ചേർത്ത വിപൂലീകരണം</translation>
@@ -5910,7 +5927,6 @@
 <translation id="8569682776816196752">ലക്ഷ്യസ്ഥാനങ്ങൾ ഒന്നും കണ്ടെത്തിയില്ല</translation>
 <translation id="8571213806525832805">കഴിഞ്ഞ 4 ആഴ്ച</translation>
 <translation id="8571687764447439720">Kerberos ടിക്കറ്റ് ചേർക്കുക</translation>
-<translation id="8573403125070227391">ഈ പരസ്യം നിങ്ങളുടെ ഉപകരണത്തിനായി വളരെയധികം ഉറവിടങ്ങൾ ഉപയോഗിക്കുന്നതിനാൽ Chrome അത് നീക്കം ചെയ്‌തു.</translation>
 <translation id="8574990355410201600">എല്ലായ്‌പ്പോഴും <ph name="HOST" /> എന്നതിൽ ‌ശബ്ദം അനുവദിക്കുക</translation>
 <translation id="8575286410928791436">പുറത്തുകടക്കുന്നതിന് <ph name="KEY_EQUIVALENT" /> അമര്‍ത്തിപ്പിടിക്കുക</translation>
 <translation id="8578639784464423491">99 അക്ഷരങ്ങളേക്കാൾ അധികമാവരുത്</translation>

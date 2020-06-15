@@ -91,6 +91,7 @@ void WebKioskController::OnCancelAppLaunch() {
 }
 
 void WebKioskController::OnNetworkConfigRequested() {
+  network_ui_state_ = NetworkUIState::NEED_TO_SHOW;
   switch (app_state_) {
     case AppState::CREATING_PROFILE:
     case AppState::INIT_NETWORK:
@@ -123,7 +124,6 @@ void WebKioskController::MaybeShowNetworkConfigureUI() {
     return;
 
   if (app_state_ == AppState::CREATING_PROFILE) {
-    network_ui_state_ = NetworkUIState::NEED_TO_SHOW;
     web_kiosk_splash_screen_view_->UpdateAppLaunchState(
         AppLaunchSplashScreenView::
             APP_LAUNCH_STATE_SHOWING_NETWORK_CONFIGURE_UI);
@@ -152,8 +152,7 @@ void WebKioskController::OnNetworkStateChanged(bool online) {
 
   if (app_state_ == AppState::INSTALLING) {
     if (!online) {
-      app_launcher_->CancelCurrentInstallation();
-      app_state_ = AppState::INIT_NETWORK;
+      app_launcher_->RestartLauncher();
       ShowNetworkConfigureUI();
     }
   }
@@ -217,8 +216,8 @@ void WebKioskController::OnProfileLoaded(Profile* profile) {
 
   // Can be not null in tests.
   if (!app_launcher_)
-    app_launcher_.reset(new WebKioskAppLauncher(profile, this));
-  app_launcher_->Initialize(account_id_);
+    app_launcher_.reset(new WebKioskAppLauncher(profile, this, account_id_));
+  app_launcher_->Initialize();
   if (network_ui_state_ == NetworkUIState::NEED_TO_SHOW)
     ShowNetworkConfigureUI();
 }

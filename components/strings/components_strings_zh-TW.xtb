@@ -228,6 +228,7 @@
 <translation id="1898423065542865115">篩選</translation>
 <translation id="1901443836186977402">{1,plural, =1{伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證已在昨天到期。這可能是因為設定錯誤，或是有攻擊者攔截你的連線。這台電腦的時鐘目前設為 <ph name="CURRENT_DATE" />，這是正確的時間嗎？如果不是的話，請更新系統時鐘，然後重新整理這個網頁。}other{伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證已在 # 天前到期。這可能是因為設定錯誤，或有攻擊者攔截你的連線。這台電腦的時鐘目前設為 <ph name="CURRENT_DATE" />，這是正確的時間嗎？如果不是的話，請更新系統時鐘，然後重新整理這個網頁。}}</translation>
 <translation id="1902576642799138955">有效期間</translation>
+<translation id="1908217026282415406">使用及調整攝影機</translation>
 <translation id="191374271204266022">複製為 JSON 格式</translation>
 <translation id="1914326953223720820">解壓縮服務</translation>
 <translation id="1915697529809968049">要使用 Touch ID 取代信用卡安全碼嗎？</translation>
@@ -723,7 +724,6 @@
 <translation id="4101413244023615925">文字和圖片</translation>
 <translation id="4103249731201008433">裝置序號無效</translation>
 <translation id="4103763322291513355">請前往 &lt;strong&gt;chrome://policy&lt;/strong&gt; 查看列入黑名單的網址清單，以及其他系統管理員強制執行的政策。</translation>
-<translation id="4108231218301530806">下次使用指紋驗證這張卡片。</translation>
 <translation id="4110652170750985508">查看您的付款</translation>
 <translation id="4112140312785995938">倒轉</translation>
 <translation id="4116663294526079822">永遠允許在這個網站執行</translation>
@@ -1117,6 +1117,7 @@
 <translation id="569000877158168851">除非 DnsOverHttpsMode 政策設為 <ph name="SECURE_DNS_MODE_AUTOMATIC" /> 或 <ph name="SECURE_DNS_MODE_SECURE" />，否則 DnsOverHttpsTemplates 的值不具關聯性，系統也不會使用該值。</translation>
 <translation id="5701381305118179107">置中</translation>
 <translation id="570530837424789914">管理...</translation>
+<translation id="5705882733397021510">返回</translation>
 <translation id="57094364128775171">建議高強度密碼…</translation>
 <translation id="5710435578057952990">此網頁的身分未經驗證。</translation>
 <translation id="5720705177508910913">目前使用者</translation>
@@ -1124,6 +1125,7 @@
 <translation id="5730040223043577876">如果你在其他網站上重複使用過你的密碼，Chrome 會建議你重設密碼。</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{將卡片儲存到你的 Google 帳戶}other{將卡片儲存到你的 Google 帳戶}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{使用這張卡片的虛擬卡號}other{請選取卡片}}</translation>
+<translation id="5759751709240058861">使用及調整攝影機</translation>
 <translation id="5763042198335101085">請輸入有效的電子郵件地址</translation>
 <translation id="5765072501007116331">如要查看快遞方式和相關規定，請選取一個地址</translation>
 <translation id="5776313857861697733">優先順序</translation>
@@ -1332,7 +1334,6 @@
 <translation id="6631202559048444592">這項政策有多個來源，但來源的值都相同。</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">清除</translation>
-<translation id="6644283850729428850">這項政策已遭取代。</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{無}=1{1 個網站 (你不會因此登出 Google 帳戶)}other{# 個網站 (你不會因此登出 Google 帳戶)}}</translation>
 <translation id="6652101503459149953">使用 Windows Hello</translation>
 <translation id="6657585470893396449">密碼</translation>

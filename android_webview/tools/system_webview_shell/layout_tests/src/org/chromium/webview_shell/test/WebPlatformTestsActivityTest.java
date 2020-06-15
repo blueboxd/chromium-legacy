@@ -8,9 +8,10 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.os.Handler;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.support.test.rule.ActivityTestRule;
 import android.webkit.WebView;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

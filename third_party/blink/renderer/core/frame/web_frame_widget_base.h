@@ -88,6 +88,8 @@ class CORE_EXPORT WebFrameWidgetBase
   // Notifies RenderWidgetHostImpl that the frame widget has painted something.
   void DidMeaningfulLayout(WebMeaningfulLayout layout_type);
 
+  bool HandleCurrentKeyboardEvent();
+
   // Creates or returns cached mutator dispatcher. This usually requires a
   // round trip to the compositor. The returned WeakPtr must only be
   // dereferenced on the output |mutator_task_runner|.
@@ -164,6 +166,9 @@ class CORE_EXPORT WebFrameWidgetBase
   void SetTextZoomFactor(float text_zoom_factor) override;
   float TextZoomFactor() override;
   void SetMainFrameOverlayColor(SkColor) override;
+  void AddEditCommandForNextKeyEvent(const WebString& name,
+                                     const WebString& value) override;
+  void ClearEditCommands() override;
 
   // Called when a drag-n-drop operation should begin.
   void StartDragging(network::mojom::ReferrerPolicy,
@@ -440,6 +445,8 @@ class CORE_EXPORT WebFrameWidgetBase
   // Different consumers in the browser process makes different assumptions, so
   // must always send the first IPC regardless of value.
   base::Optional<bool> has_touch_handlers_;
+
+  Vector<mojom::blink::EditCommandPtr> edit_commands_;
 
   friend class WebViewImpl;
   friend class ReportTimeSwapPromise;

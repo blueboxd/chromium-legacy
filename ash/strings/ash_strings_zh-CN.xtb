@@ -509,7 +509,6 @@
 <translation id="7068360136237591149">打开文件</translation>
 <translation id="7076293881109082629">正在登录</translation>
 <translation id="7088960765736518739">开关控制</translation>
-<translation id="7092922358121866860">显示“护眼模式”设置</translation>
 <translation id="7098389117866926363">USB-C 设备（背面左侧端口）</translation>
 <translation id="7131634465328662194">您将会自动退出会话。</translation>
 <translation id="7143207342074048698">正在连接</translation>
@@ -661,7 +660,6 @@
 <translation id="8877788021141246043">设置提醒</translation>
 <translation id="8878886163241303700">正在扩展屏幕</translation>
 <translation id="890616557918890486">更改来源</translation>
-<translation id="8908312332415978740">“<ph name="DISPLAY_NAME" />”不支持 <ph name="SPECIFIED_RESOLUTION" />（<ph name="SPECIFIED_REFRESH_RATE" /> 赫兹）。分辨率已改为 <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />)。点击“确认”即可保留更改。将在 <ph name="TIMEOUT_SECONDS" />后恢复以前的设置。</translation>
 <translation id="8909138438987180327">剩余的电池电量为 <ph name="PERCENTAGE" />%。</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google 助理不支持此语言。</translation>

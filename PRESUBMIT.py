@@ -3101,8 +3101,8 @@ def _GetFilesUsingSecurityCriticalFunctions(input_api):
   # Map of function pretty name (displayed in an error) to the pattern to
   # match it with.
   _PATTERNS_TO_CHECK = {
-      'content::ServiceProcessHost::LaunchOptions::WithSandboxType':
-          'WithSandboxType\\('
+      'content::GetServiceSandboxType<>()':
+          'GetServiceSandboxType\\<'
   }
   _PATTERNS_TO_CHECK = {
       k: input_api.re.compile(v)

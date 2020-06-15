@@ -9,7 +9,7 @@ import static org.hamcrest.Matchers.empty;
 
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

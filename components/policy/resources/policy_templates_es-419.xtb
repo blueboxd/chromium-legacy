@@ -180,12 +180,6 @@
       restricciones en los orígenes no seguros</translation>
 <translation id="1312799700549720683">Controla la configuración de visualización.</translation>
 <translation id="131353325527891113">Mostrar los nombres de usuario en la pantalla de inicio de sesión</translation>
-<translation id="1327351219049180837">Esta política controla el informe de los datos y la hora de obtención de la política.
-
-      Si se establece esta política como verdadera, o no se establece, se recopilarán los datos y la hora de obtención de la política.
-      Si se configura como falsa, no se recopilarán estos datos.
-
-      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1327466551276625742">Habilitar mensaje de configuración de red si no hay conexión</translation>
 <translation id="1330145147221172764">Habilitar el teclado en pantalla</translation>
 <translation id="13356285923490863">Nombre de la política</translation>
@@ -942,12 +936,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
           En Windows, esta política solo está disponible en instancias vinculadas a un dominio <ph name="MS_AD_NAME" /> o instancias de Windows 10 Pro o Enterprise habilitadas para la administración de dispositivos.</translation>
 <translation id="247658312644322296">El destino "Guardar como PDF"</translation>
-<translation id="2478649170422995190">Esta política controla el envío de los datos de la versión, como la arquitectura, la plataforma y la versión del SO, y la versión de <ph name="PRODUCT_NAME" /> y el canal de <ph name="PRODUCT_NAME" />.
-
-      Si se establece esta política como verdadera, o no se establece, se recopilarán los datos de la versión.
-      Si se configura como falsa, no se recopilarán estos datos.
-
-      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2480971699591919564">Habilita la función Llamar con un clic, que permite que los usuarios envíen números de teléfono desde computadoras de escritorio con Chrome hacia dispositivos Android donde el usuario accedió a su cuenta. Para obtener más información, consulta el artículo del Centro de ayuda: https://support.google.com/chrome/answer/9430554?hl=en.
 
       Si se habilita esta política, el usuario de Chrome podrá enviar números de teléfono a dispositivos Android.
@@ -1138,11 +1126,11 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="267596348720209223">Especifica la codificación de caracteres admitida por el proveedor de búsqueda. Las codificaciones son nombres de páginas de códigos, como UTF-8, GB2312 e ISO-8859-1. Se prueban en el orden dado. Esta política es opcional. Si no se configura, se usará el valor predeterminado, que es UTF-8. Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="2678503605767349615">Certificados de cliente obligatorios en todo el dispositivo</translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
-<translation id="2691668238491124549">Si estableces la política (como solo recomendadas), se moverán al principio de la lista las configuraciones regionales recomendadas para una sesión administrada, en el orden en el que aparecen en la política. De forma predeterminada, estará seleccionada la primera configuración regional recomendada.
+<translation id="2691668238491124549">Si estableces esta política (solo recomendadas), se moverán al principio de la lista las configuraciones regionales recomendadas para una sesión administrada, en el orden en el que aparecen en la política. De forma predeterminada, estará seleccionada la primera configuración regional recomendada.
 
       Si no estableces la política, se seleccionará de forma predeterminada la configuración regional actual de la IU.
 
-      Si se determinan más de una configuración regional recomendada, se asumirá que los usuarios desean elegir una de las recomendadas. En el inicio de una sesión administrada, se destacará más la selección de la configuración regional y la disposición del teclado. De lo contrario, se asumirá que la mayoría de los usuarios desean elegir la configuración regional predeterminada. En el inicio de una sesión administrada, se destacará menos la selección de la configuración regional y la disposición del teclado.
+      Si hay más de una configuración regional recomendada, se asume que los usuarios desean elegir entre una de ellas. En el inicio de una sesión administrada, es importante seleccionar la configuración regional y la disposición del teclado. De lo contrario, se asumirá que la mayoría de los usuarios desean elegir la configuración regional predeterminada. En el inicio de una sesión administrada, no es tan importante seleccionar la configuración regional y la disposición del teclado.
 
       Si estableces la política y activas el acceso automático (consulta las políticas <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" /> y <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_DELAY_POLICY_NAME" />), la sesión administrada utilizará la primera configuración regional recomendada y la disposición del teclado más utilizada para esa configuración.
 
@@ -1503,7 +1491,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="3307971460556020865">Bloquear cargas y descargas de archivos grandes</translation>
 <translation id="3308724602356134956">Si estableces la política, <ph name="PRODUCT_OS_NAME" />
 
-      descargará y utilizará la imagen de fondo de pantalla que establezcas para la pantalla de acceso y el escritorio del usuario. Los usuarios no podrán cambiar esta configuración. Especifica la URL (que se pueda acceder sin autenticación) desde la cual <ph name="PRODUCT_OS_NAME" />
+      descargará y utilizará la imagen de fondo de pantalla que establezcas para la pantalla de acceso y el escritorio del usuario. Los usuarios no podrán cambiar esta configuración. Especifica la URL (accesible sin autenticación) desde la cual <ph name="PRODUCT_OS_NAME" />
 
       podrá descargar la imagen de fondo de pantalla y un hash criptográfico (en formato JPEG con un tamaño de archivo de hasta 16 MB) para verificar su integridad.
 
@@ -3556,12 +3544,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
           Consulta también las políticas "CookiesAllowedForUrls" y "CookiesSessionOnlyForUrls". Ten en cuenta que no debe haber patrones de URL en conflicto entre estas tres políticas. No se especifica qué política prevalece en esa situación.
 
           Para obtener información detallada sobre los patrones de URL válidos, consulta: https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="6399242659768117666">Esta política controla si se envía información de las extensiones y los complementos.
-
-      Si no se establece esta política o se establece como verdadera, se recopilarán datos de las extensiones y los complementos.
-      Si se establece como falsa, no se recopilará información de las extensiones ni de los complementos.
-
-      Esta política solo es válida si se habilita la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6401669939808766804">Salir de la cuenta de usuario</translation>
 <translation id="6406448383934634215">Si se selecciona "Abrir una lista de URL" como acción de inicio, esto te permitirá especificar la lista de URL que se abren. Si no se establece, no se abrirá ninguna URL en el inicio.
 
@@ -3584,7 +3566,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
           Si eliges detectar el servidor proxy de forma automática, las apps de Android reciben la URL "http://wpad/wpad.dat" de la secuencia de comandos. No se usa ninguna otra parte del protocolo de autodetección del proxy.
 
           Si eliges una secuencia de comandos .pac de proxy, las apps de Android reciben la URL de la secuencia de comandos.</translation>
-<translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6438972408080276697">Si estableces el valor "True" para la política, se enviarán a Google los informes sobre los eventos clave de instalación de apps para Android que activa la política. Si estableces el valor "False", no se capturará ningún evento.</translation>
 <translation id="6440051664870270040">Permitir la navegación y las ventanas emergentes en los sitios al mismo tiempo</translation>
 <translation id="6447948611083700881">Se inhabilitó la funcionalidad de copia de seguridad y restablecimiento</translation>
@@ -3662,12 +3643,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Esta política se puede configurar como una ruta de un archivo ejecutable o <ph name="PRODUCT_NAME_PLACEHOLDER" /> para detectar de forma automática la ubicación donde está instalado Chrome.</translation>
 <translation id="6536600139108165863">Reinicio automático cuando se apaga el dispositivo</translation>
-<translation id="6537062468544950724">Esta política controla el envío de datos que se pueden usar para identificar las máquinas, como su nombre y las direcciones de red.
-
-      Si se establece esta política como verdadera, o no se establece, se recopilará la información que permite identificar las máquinas.
-      Si se establece como falsa, no se recopilará esta información.
-
-      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6539246272469751178">Esta política no tiene efecto en las apps de Android. Estas apps siempre usan el directorio de descargas predeterminado y no pueden acceder a ningún archivo que haya descargado <ph name="PRODUCT_OS_NAME" /> en un directorio de descargas no predeterminado.</translation>
 <translation id="654303922206238013">Estrategia de migración para eCryptfs</translation>
 <translation id="6544897973797372144">Si esta política se establece en Verdadera y la política ChromeOsReleaseChannel no se especifica, los usuarios del dominio de inscripción podrán cambiar el canal de versiones del dispositivo. Si esta política se establece en Falsa, el dispositivo se bloqueará en cualquier canal que se haya establecido anteriormente.
@@ -3934,12 +3909,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si la estableces como <ph name="BR_UNDER_USER_CONTROL" />, los usuarios recibirán mensajes para usar la Copia de seguridad y restablecimiento. Si activan este servicio, se subirán los datos de las apps para Android a los servidores de copia de seguridad de Android. Estos datos se restablecerán cuando se reinstalen apps compatibles.
 
       Después de la configuración inicial, los usuarios podrán activar o desactivar la Copia de seguridad y restablecimiento.</translation>
-<translation id="6991078864332103177">Esta política controla el envío de los datos que permiten identificar a los usuarios, como el acceso al SO, el acceso al perfil de <ph name="PRODUCT_NAME" />, el nombre de perfil de <ph name="PRODUCT_NAME" />, la ruta de acceso al perfil de <ph name="PRODUCT_NAME" /> y la ruta ejecutable de <ph name="PRODUCT_NAME" />.
-
-      Si se establece esta política como verdadera, o no se establece, se recopilará la información que permite identificar a los usuarios.
-      Si se configura como falsa, no se recopilará esta información.
-
-      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6994082778848658360">Especifica la forma en que los elementos de hardware de seguridad integrados se usan para la autenticación de dos factores, si son compatibles con esta función. El botón de encendido de la máquina se usa para detectar la presencia física del usuario.
 
 Si se selecciona "Inhabilitada", no se proporciona un segundo factor.
@@ -4351,14 +4320,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si no se establece esta política, o se configura en 0, la navegación a una URL designada la abrirá de inmediato en otro navegador.
 
       Si se establece esta política como un número, Chrome mostrará un mensaje durante esa cantidad de milisegundos y, luego, abrirá el otro navegador.</translation>
-<translation id="7583419926951418342">Esta política controla los informes en la nube de <ph name="PRODUCT_NAME" />, que suben información sobre el funcionamiento del navegador a la consola del Administrador de Google.
-
-      Cuando no se establece esta política o se establece como falsa, no se recopilan ni se suben datos.
-      Cuando se establece como verdadera, se recopilan y se suben los datos a la consola del Administrador de Google.
-      Para controlar los datos que se suben, usa las políticas en el grupo Chrome Reporting Extension.
-
-      Para <ph name="PRODUCT_NAME" />, esta política solo es válida si la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />.
-      Para <ph name="PRODUCT_OS_NAME" />, esta política es válida siempre.</translation>
 <translation id="7586477707097444774">Se revertirá conforme al atributo heredado <ph name="ATTRIBUTE_SAMESITE_NAME" /> el comportamiento de las cookies establecidas para los dominios que coincidan con estos patrones. Si se revierte el comportamiento conforme al atributo heredado, las cookies que no tengan un atributo <ph name="ATTRIBUTE_SAMESITE_NAME" /> especificado se tratarán según el atributo "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />". Además, las cookies con el atributo "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" ya no necesitarán el atributo "<ph name="ATTRIBUTE_SECURE_NAME" />". Para obtener la descripción completa, consulta https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
 
           Para las cookies de dominios que no se incluyan en los patrones especificados aquí, o para todas las cookies si no se establece esta política, se usará el valor predeterminado global de la política <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" />, si se la establece, o de la configuración personal del usuario.
@@ -4479,19 +4440,10 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
           Si esta configuración está inhabilitada o no está establecida, no se habilitarán los dos factores y se utilizará el comportamiento predeterminado de un PIN definido por el usuario.</translation>
 <translation id="7750991880413385988">Abrir la página Nueva pestaña</translation>
 <translation id="7754704193130578113">Preguntar ubicación antes de descargar</translation>
-<translation id="7755495228644343508">Configura las políticas relacionadas con Chrome Reporting Extension.
-
-      Esta política solo es válida si se habilita <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Permite la autenticación ambiental para tipos de perfiles.</translation>
 <translation id="7763614521440615342">Mostrar sugerencias de contenido en la página Nueva pestaña</translation>
 <translation id="7765879851993224640">Permitir el acceso mediante Smart Lock</translation>
 <translation id="7774768074957326919">Usar la configuración del proxy del sistema</translation>
-<translation id="7775902646576367944">Esta política controla si se envía información de "Navegación segura", lo que incluye la cantidad de advertencias de "Navegación segura" y la cantidad de veces que se hace clic en ellas.
-
-      Si no se establece esta política o se establece como verdadera, se recopilarán los datos de "Navegación segura".
-      Si se establece como falsa, no se recopilarán los datos de "Navegación segura".
-
-      Esta política solo es válida si se habilita la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" />, y la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="777734450201217641">Habilita las combinaciones de teclas para las funciones de accesibilidad en la pantalla de acceso.
 
           Si se configura como verdadera esta política, las combinaciones de teclas para las funciones de accesibilidad estarán siempre habilitadas en la pantalla de acceso.
@@ -4549,15 +4501,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="793473937901685727">Establecer la disponibilidad de certificados para apps de ARC</translation>
 <translation id="7937491150792971922">Combinar políticas de listas de instalación para extensiones de diferentes fuentes</translation>
 <translation id="7937766917976512374">Permitir o rechazar la captura de video</translation>
-<translation id="7937944288846766530">Esta política controla las solicitudes de instalación de extensiones de <ph name="PRODUCT_NAME" />, lo que permite que los usuarios envíen las solicitudes a la Consola del administrador de Google para obtener su aprobación.
-
-      Si no se establece la política CloudReportingEnabled o se inhabilita, se ignora y no se crean ni cargan las solicitudes de instalación de extensiones.
-      Si no se establece esta política o se inhabilita, no se crean ni cargan las solicitudes de instalación de extensiones.
-      Si se habilita, se crean las solicitudes de instalación de extensiones y se cargan a la Consola del administrador de Google.
-
-      Si los usuarios intentan instalar una extensión que <ph name="EXTENSION_INSTALL_WHITELIST" /> y <ph name="EXTENSION_SETTINGS" /> no incluyeron en sus listas blancas, se crearán las solicitudes de instalación de extensiones.
-
-      Esta política solo es válida si la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />, y se habilita <ph name="CLOUD_REPORTING_ENABLED" />.</translation>
 <translation id="7941975817681987555">No predecir acciones de la red en ninguna conexión de red</translation>
 <translation id="7951605113561734721">Especifica los Certificados de cliente de todo el dispositivo que deben inscribirse con el protocolo de administración de dispositivos.</translation>
 <translation id="7952007677054834789">Configura las páginas que deben cargarse en el inicio, la página principal y la página Nueva pestaña predeterminadas en <ph name="PRODUCT_NAME" />, y evita que los usuarios las cambien.
@@ -5191,7 +5134,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
           Si la estableces, los usuarios no podrán cambiarla ni anularla.
 
           Si no la estableces, inicialmente la función estará inhabilitada en la pantalla de acceso, pero el usuario podrá habilitarla en cualquier momento.</translation>
-<translation id="8873089107816226072">Si estableces la política, se especificará la zona horaria del dispositivo y se desactivarán los ajustes automáticos basados en la ubicación. Además, se anulará la política <ph name="SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_POLICY_NAME" />. Los usuarios no podrán cambiar la zona horaria.
+<translation id="8873089107816226072">Si estableces la política, se especificará la zona horaria del dispositivo y se desactivarán los ajustes automáticos de zona horaria basados en la ubicación. Además, se anulará la política <ph name="SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_POLICY_NAME" />. Los usuarios no podrán cambiar la zona horaria.
 
       Los dispositivos nuevos tienen configurada la zona horaria "EE.UU./Pacífico". El formato del valor sigue los nombres de las zonas horarias de la "Base de datos de zona horaria de IANA" (https://en.wikipedia.org/wiki/Tz_database). Si ingresas un valor no válido, se establecerá la política con el formato GMT.
 
@@ -5282,7 +5225,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
       Esta política no debe habilitarse cuando se habilita la política <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />, dado que la función comparte la misma funcionalidad en el lado del cliente. En este caso, la sincronización alojada por Google se inhabilita por completo.</translation>
 <translation id="8955719471735800169">Volver al principio</translation>
-<translation id="8956310900055843601">Si estableces la política como verdadera o no la estableces, la pantalla de acceso del dispositivo tendrá el formato de reloj de 24 horas. Las sesiones de usuario tendrán este formato como predeterminado, pero los usuarios podrán cambiarlo.
+<translation id="8956310900055843601">Si estableces la política como verdadera o no la estableces, la pantalla de acceso del dispositivo tendrá el formato de reloj de 24 horas. Las sesiones de usuario también tendrán este formato como predeterminado, pero los usuarios podrán cambiarlo.
 
       Si estableces la política como falsa, el dispositivo tendrá el formato de reloj de 12 horas.</translation>
 <translation id="8959992920425111821">Configuración predeterminada</translation>

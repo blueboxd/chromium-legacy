@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Saytga kirish</translation>
 <translation id="1509960214886564027">Aksariyat saytlardagi funksiyalar ishalamay qolishi mumkin</translation>
 <translation id="152234381334907219">Parollar saqlanmaydigan saytlar</translation>
+<translation id="1535268707340844072">Joriy sozlama bilan ayrim saytlar ishlamay qolishi mumkin. Barcha saytlar uchun cookie fayllarni boshqarish uchun <ph name="BEGIN_LINK" />Cookie sozlamalari<ph name="END_LINK" /> sahifasini oching.</translation>
 <translation id="1540800554400757039">Manzil, 1-qator</translation>
 <translation id="1545749641540134597">QR kodni skanerlash</translation>
 <translation id="1552525382687785070">Sinxronizatsiyani administrator faolsizlantirgan</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212"><ph name="DAYS" /> kun oldin onlayn edi</translation>
 <translation id="2074131957428911366">Nimani sinxronlashni istalgan vaqtda <ph name="BEGIN_LINK" />sozlamalar<ph name="END_LINK" /> orqali tanlash mumkin.</translation>
 <translation id="2079545284768500474">Bekor qilish</translation>
+<translation id="2081417079511601293">Inkognito rejimida tashqi cookie fayllar bloklansin</translation>
 <translation id="209018056901015185">To‘liq versiya</translation>
 <translation id="2103075008456228677">history.google.com sahifasini ochish</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ta xatcho‘p ko‘chirildi</translation>
@@ -100,7 +102,6 @@
 <translation id="2139867232736819575">Nusxalangan matnni qidirish</translation>
 <translation id="2149973817440762519">Xatcho‘p tahriri</translation>
 <translation id="2175927920773552910">QR kod</translation>
-<translation id="2179182049312275900">Sinxronizatsiyani istalgan vaqtda sozlamalar menyusidan yoqishingiz mumkin.</translation>
 <translation id="2198757192731523470">Qidiruv, rekama va boshqa xizmatlarni sizga moslashtirish uchun Google tarix maʼlumotlaringizdan foydalanishi mumkin.</translation>
 <translation id="2218443599109088993">Uzoqlashtirish</translation>
 <translation id="2230173723195178503">Veb-sahifa yuklandi</translation>
@@ -177,6 +178,7 @@
 <translation id="2989805286512600854">Yangi varaqda ochish</translation>
 <translation id="3037605927509011580">Ana xolos!</translation>
 <translation id="3112556859945124369">Belgilash…</translation>
+<translation id="3131206671572504478">Hammasini bloklash</translation>
 <translation id="3153862085237805241">Bildirgini saqlash</translation>
 <translation id="3157684681743766797">Hammasini belgilash…</translation>
 <translation id="3161291298470460782">Bu hisobingizdan chiqarib, sinxronizatsiyani faolsizlantiradi va bu qurilmadagi barcha Chrome maʼlumotlaringizni tozalab tashlaydi. Google hisobingizga sinxronlangan maʼlumotlaringiz joyida qoladi.</translation>
@@ -249,7 +251,6 @@
 <translation id="4038354071007134711">Bu faylni ochadigan ilova yo‘q.</translation>
 <translation id="4042870976416480368">Sahifa ichidan qidirish</translation>
 <translation id="4049507953662678203">Internet yoniqligini tekshiring va qayta urinib ko‘ring.</translation>
-<translation id="4071530748369333746">Sinxronizatsiya bekor qilinsinmi?</translation>
 <translation id="4082688844002261427">Moslashtirilgan qidiruv, reklama va boshqa tashriflar tarixi parametrlarini tanlang</translation>
 <translation id="408404951701638773">Qidiruv paneli endi yanada qulay joyda</translation>
 <translation id="411254640334432676">Yuklab olishda xatolik yuz berdi.</translation>
@@ -274,6 +275,7 @@
 <translation id="4389019817280890563">Tilni almashtirish uchun bosing.</translation>
 <translation id="441868831736628555">Maxfiylik eslatmasi</translation>
 <translation id="4454246407045105932">Til kiritish</translation>
+<translation id="4469418912670346607">Sozlashda davom etish</translation>
 <translation id="4476574785019001431">Sozlamalar</translation>
 <translation id="4496373720959965247">Varaqlar qo‘shing va sahifadan sahifaga o‘ting</translation>
 <translation id="4508750114462689118">Kirish reklamasini yopish</translation>
@@ -302,6 +304,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="4805759445554688327">Karta raqami xato kiritildi</translation>
 <translation id="4818522717893377262">Til kiritish...</translation>
 <translation id="481968316161811770">Cookie, sayt ma’lumotlari</translation>
+<translation id="4826218269716039351">Tashqi cookie fayllarni bloklash</translation>
 <translation id="4833786495304741580">Foydalanish statistikasi va ishdan chiqish hisobotlari avtomatik tarzda Google serverlariga yuborilsin.</translation>
 <translation id="4840495572919996524">Bukmarklar, tarix, parollar va boshqa sozlamalaringiz va Google hisobingiz sinxronizatsiyasi uziladi</translation>
 <translation id="4854345657858711387">Maxfiy kod o‘rnating</translation>
@@ -347,6 +350,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="54401264925851789">Sahifa xavfsizligi haqida ma’lumot</translation>
 <translation id="5443952882982198570">Bank kartalari</translation>
 <translation id="5457907402803865181">Parollar sinxronlanmadi</translation>
+<translation id="5489208564673669003">Barcha saytlar uchun cookie fayllarni boshqarish uchun <ph name="BEGIN_LINK" />Cookie sozlamalari<ph name="END_LINK" /> sahifasini oching.</translation>
 <translation id="5508435575041083207">Hisobdan chiqish va bu qurilmadagi maʼlumotlarni tozalash</translation>
 <translation id="5525269841082836315">Kodli ibora yaratish</translation>
 <translation id="5548760955356983418">Handoff funksiyasi veb-saytni bir qurilmada ochib, boshqasida davom etish imkoniyatini beradi. Ochilgan sayt Mac kompyuteringizning Dock panelida paydo bo‘ladi.
@@ -434,6 +438,7 @@ Ma’lumotlaringiz <ph name="TIME" /> sanasida kodli ibora bilan shifrlangan. Si
 <translation id="6418346271604475326">PDF tayyorlanmoqda</translation>
 <translation id="6426067060178468363">Cookie fayllar uchun ruxsat</translation>
 <translation id="6434591244308415567">Xatolik yuz berdi. Keyinroq urining.</translation>
+<translation id="6439338047467462846">Hammasiga ruxsat berish</translation>
 <translation id="6445051938772793705">Mamlakat</translation>
 <translation id="6445981559479772097">Xabar yuborildi.</translation>
 <translation id="6447842834002726250">Cookie fayllari</translation>
@@ -441,6 +446,7 @@ Ma’lumotlaringiz <ph name="TIME" /> sanasida kodli ibora bilan shifrlangan. Si
 <translation id="6476800141292307438">Sahifa <ph name="LANGUAGE" /> tiliga tarjima qilinmoqda. Parametrlar ekranning pastiga yaqin joyda joylashgan.</translation>
 <translation id="648164694371393720">Autentifikatsiya xatosi</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ta xatcho‘p o‘chirildi</translation>
+<translation id="651505212789431520">Sinxronizatsiya bekor qilinsinmi? Sinxronizatsiyani istalgan vaqtda Sozlamalardan yoqish mumkin.</translation>
 <translation id="6561262006871132942">Yaqinlashtirish</translation>
 <translation id="6610002944194042868">Tarjima parametrlari</translation>
 <translation id="6628106477656132239">Amal qilish muddati xato kiritildi</translation>

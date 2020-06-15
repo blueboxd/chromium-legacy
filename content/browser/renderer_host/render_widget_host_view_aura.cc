@@ -578,6 +578,7 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
     SetRecordContentToVisibleTimeRequest(
         base::TimeTicks::Now(),
         base::Optional<bool>() /* destination_is_loaded */,
+        base::Optional<bool>() /* destination_is_frozen */,
         false /* show_reason_tab_switching */,
         true /* show_reason_unoccluded */,
         false /* show_reason_bfcache_restore */);

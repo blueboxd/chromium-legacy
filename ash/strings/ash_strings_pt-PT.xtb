@@ -83,6 +83,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta traseira)</translation>
 <translation id="1882897271359938046">A espelhar para <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Desbloquear com impressão digital</translation>
+<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> não suporta <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). A resolução foi alterada para <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Clique em confirmar para manter as alterações. As definições anteriores serão restauradas dentro de <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1919743966458266018">O atalho para abrir o Gestor de tarefas foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Cliques automáticos</translation>
 <translation id="1928739107511554905">Para obter a atualização, utilize o ecrã tátil para reiniciar o Chromebook com o teclado ligado.</translation>
@@ -509,7 +510,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="7068360136237591149">Abrir ficheiros</translation>
 <translation id="7076293881109082629">Iniciar sessão</translation>
 <translation id="7088960765736518739">Acesso por comutador</translation>
-<translation id="7092922358121866860">Mostrar definições de Luz noturna</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta traseira esquerda)</translation>
 <translation id="7131634465328662194">A sessão será terminada automaticamente.</translation>
 <translation id="7143207342074048698">A ligar</translation>
@@ -661,7 +661,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="8877788021141246043">Definir um lembrete</translation>
 <translation id="8878886163241303700">Ecrã alargado</translation>
 <translation id="890616557918890486">Alterar origem</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> não suporta <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). A resolução foi alterada para <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Clique em confirmar para manter as alterações. As definições anteriores serão restauradas dentro de <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">A bateria está a <ph name="PERCENTAGE" /> por cento.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">O Assistente Google não fala este idioma.</translation>

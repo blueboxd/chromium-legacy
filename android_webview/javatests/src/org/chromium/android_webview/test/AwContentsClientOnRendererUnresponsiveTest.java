@@ -6,9 +6,10 @@ package org.chromium.android_webview.test;
 
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.MULTI_PROCESS;
 
-import android.support.test.filters.LargeTest;
 import android.view.KeyEvent;
 import android.webkit.JavascriptInterface;
+
+import androidx.test.filters.LargeTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

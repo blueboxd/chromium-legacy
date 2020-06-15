@@ -14,10 +14,16 @@ namespace ui {
 // MojoWebUIController is intended for WebUI pages that use Mojo. It is
 // expected that subclasses will:
 // . Add all Mojo Bindings Resources via AddResourcePath(), eg:
-//     source-> AddResourcePath("chrome/browser/ui/webui/omnibox/omnibox.mojom",
+//     source->AddResourcePath("chrome/browser/ui/webui/omnibox/omnibox.mojom",
 //                              IDR_OMNIBOX_MOJO_JS);
 // . Overload void BindInterface(mojo::PendingReceiver<InterfaceName>) for all
 //   Mojo Interfaces it wishes to handle.
+// . Use WEB_UI_CONTROLLER_TYPE_DECL macro in .h file and
+//   WEB_UI_CONTROLLER_TYPE_IMPL macro in .cc file.
+// . Register all Mojo Interfaces it wishes to handle in the appropriate
+//   BinderMap:
+//     - chrome/browser/chrome_browser_interface_binders.cc for chrome/ WebUIs;
+//     - content/browser/browser_interface_binders.cc for content/ WebUIs.
 class MojoWebUIController : public content::WebUIController {
  public:
   // By default MojoWebUIControllers do not have normal WebUI bindings. Pass

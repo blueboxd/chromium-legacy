@@ -509,7 +509,6 @@
 <translation id="7068360136237591149">फाइल उघडा</translation>
 <translation id="7076293881109082629">साइन इन करीत आहे</translation>
 <translation id="7088960765736518739">स्विच ॲक्सेस</translation>
-<translation id="7092922358121866860">रात्रीचा प्रकाश सेटिंग्ज दाखवा</translation>
 <translation id="7098389117866926363">USB-C डिव्‍हाइस (मागील बाजूचे डावे पोर्ट)</translation>
 <translation id="7131634465328662194">तुम्हाला आपोआप साइन आउट केले जाईल.</translation>
 <translation id="7143207342074048698">कनेक्ट करीत आहे</translation>
@@ -661,7 +660,6 @@
 <translation id="8877788021141246043">रिमाइंडर सेट करा</translation>
 <translation id="8878886163241303700">स्क्रीन विस्तृत करत आहे</translation>
 <translation id="890616557918890486">स्रोत बदला</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) ला सपोर्ट करत नाही. रिझोल्युशन बदलून <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) केले गेले. बदल राखण्यासाठी निश्चित करा वर क्लिक करा. मागील सेटिंग्ज <ph name="TIMEOUT_SECONDS" /> मध्ये रिस्टोअर केली जातील.</translation>
 <translation id="8909138438987180327">बॅटरी <ph name="PERCENTAGE" /> टक्के आहे.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google साहाय्यक ही भाषा बोलत नाही.</translation>

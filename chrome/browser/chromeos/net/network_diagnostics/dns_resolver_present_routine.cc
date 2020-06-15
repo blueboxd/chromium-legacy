@@ -52,7 +52,7 @@ bool DnsResolverPresentRoutine::CanRun() {
   return true;
 }
 
-void DnsResolverPresentRoutine::RunTest(
+void DnsResolverPresentRoutine::RunRoutine(
     mojom::NetworkDiagnosticsRoutines::DnsResolverPresentCallback callback) {
   if (!CanRun()) {
     std::move(callback).Run(verdict(), std::move(problems_));

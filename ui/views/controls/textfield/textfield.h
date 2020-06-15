@@ -377,6 +377,9 @@ class VIEWS_EXPORT Textfield : public View,
   ukm::SourceId GetClientSourceForMetrics() const override;
   bool ShouldDoLearning() override;
 
+  // Set whether the text should be used to improve typing suggestions.
+  void SetShouldDoLearning(bool value) { should_do_learning_ = value; }
+
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
   bool SetCompositionFromExistingText(
       const gfx::Range& range,
@@ -650,6 +653,9 @@ class VIEWS_EXPORT Textfield : public View,
 
   // True if this textfield should use a focus ring to indicate focus.
   bool use_focus_ring_ = true;
+
+  // Whether the text should be used to improve typing suggestions.
+  base::Optional<bool> should_do_learning_;
 
   // Context menu related members.
   std::unique_ptr<ui::SimpleMenuModel> context_menu_contents_;

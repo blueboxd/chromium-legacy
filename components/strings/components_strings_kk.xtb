@@ -232,6 +232,7 @@
 <translation id="1898423065542865115">Сүзгі қолдану</translation>
 <translation id="1901443836186977402">{1,plural, =1{Бұл сервер өзінің <ph name="DOMAIN" /> екенін дәлелдей алмады, оның қауіпсіздік сертификатының мерзімі кеше аяқталған. Бұған қате конфигурация немесе шабуылдаушының қосылымыңызға кедергі келтіруі себеп болуы мүмкін. Компьютер сағаты <ph name="CURRENT_DATE" /> күніне орнатылған. Ол дұрыс болмаса, жүйенің сағатын түзетіп, осы бетті жаңартыңыз.}other{Бұл сервер өзінің <ph name="DOMAIN" /> екенін дәлелдей алмады; оның қауіпсіздік сертификатының мерзімі # күн бұрын аяқталған. Бұған қате конфигурация немесе шабуылдаушының қосылымыңызға кедергі келтіруі себеп болуы мүмкін. Компьютер сағаты <ph name="CURRENT_DATE" /> күніне орнатылған. Ол дұрыс болмаса, жүйенің сағатын түзетіп, бетті жаңартыңыз.}}</translation>
 <translation id="1902576642799138955">Жарамдылық мерзімі</translation>
+<translation id="1908217026282415406">Камераны пайдалану және жылжыту</translation>
 <translation id="191374271204266022">JSON етіп көшіру</translation>
 <translation id="1914326953223720820">Мұрағаттан шығару қызметі</translation>
 <translation id="1915697529809968049">CVC орнына Touch ID қолданасыз ба?</translation>
@@ -729,7 +730,6 @@
 <translation id="4101413244023615925">Мәтін және графика</translation>
 <translation id="4103249731201008433">Құрылғы сериялық нөмірі жарамсыз болып табылады</translation>
 <translation id="4103763322291513355">Қара тізімге енгізілген URL мекенжайлары және жүйе әкімшісі енгізген басқа саясаттар тізімін қарау үшін &lt;strong&gt;chrome://policy&lt;/strong&gt; кіріңіз.</translation>
-<translation id="4108231218301530806">Келесіде осы картаны растау үшін саусақ ізін пайдаланыңыз.</translation>
 <translation id="4110652170750985508">Төлеміңізді тексеріңіз</translation>
 <translation id="4112140312785995938">Артқа</translation>
 <translation id="4116663294526079822">Бұл сайтта әрдайым рұқсат беру</translation>
@@ -1127,6 +1127,7 @@
 <translation id="569000877158168851">DnsOverHttpsTemplates мәні сәйкес емес және DnsOverHttpsMode саясаты <ph name="SECURE_DNS_MODE_AUTOMATIC" /> немесе <ph name="SECURE_DNS_MODE_SECURE" /> мәніне орнатылмайынша, ол пайдаланылмайды.</translation>
 <translation id="5701381305118179107">Ортаға</translation>
 <translation id="570530837424789914">Басқару…</translation>
+<translation id="5705882733397021510">Артқа</translation>
 <translation id="57094364128775171">Күрделі құпия сөз жасау…</translation>
 <translation id="5710435578057952990">Бұл веб-сайттың идентификациясы расталған.</translation>
 <translation id="5720705177508910913">Ағымдағы пайдаланушы</translation>
@@ -1134,6 +1135,7 @@
 <translation id="5730040223043577876">Chrome басқа сайттарда пайдаланылған құпия сөзіңізді қайта орнатуды ұсынады.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Картаны Google есептік жазбасында сақтау}other{Карталарды Google есептік жазбасында сақтау}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Осы карта үшін виртуалды нөмірді пайдаланыңыз}other{Картаны таңдаңыз}}</translation>
+<translation id="5759751709240058861">Камераны пайдалану және жылжыту</translation>
 <translation id="5763042198335101085">Дұрыс электрондық пошта мекенжайын енгізіңіз</translation>
 <translation id="5765072501007116331">Жеткізу әдістері мен талаптарын көру үшін мекенжайды таңдаңыз</translation>
 <translation id="5776313857861697733">Басымдық</translation>
@@ -1342,7 +1344,6 @@
 <translation id="6631202559048444592">Саясат үшін бірнеше дереккөз бар, бірақ олардың мәндері бірдей.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Тазалау</translation>
-<translation id="6644283850729428850">Бұл саясат ескірген.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Жоқ}=1{1 сайттан (Google есептік жазбаңыздан шықпайсыз)}other{# сайттан (Google есептік жазбаңыздан шықпайсыз)}}</translation>
 <translation id="6652101503459149953">Windows Hello қолдану</translation>
 <translation id="6657585470893396449">Құпия сөз</translation>

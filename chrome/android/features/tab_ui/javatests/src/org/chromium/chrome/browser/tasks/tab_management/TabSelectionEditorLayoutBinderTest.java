@@ -10,8 +10,6 @@ import static junit.framework.Assert.assertTrue;
 
 import android.graphics.Rect;
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
@@ -20,6 +18,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Test;

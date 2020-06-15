@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.tab.TabBuilder;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
+import org.chromium.chrome.browser.tabmodel.NextTabPolicy;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterFactory;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
@@ -73,7 +74,7 @@ public class CustomTabActivityTabFactory {
     /** Creates a {@link TabModelSelector} for the custom tab. */
     public TabModelSelectorImpl createTabModelSelector() {
         mTabModelSelector = new TabModelSelectorImpl(mActivity, mActivity, mPersistencePolicy,
-                mTabModelFilterFactory, false, false, false);
+                mTabModelFilterFactory, () -> NextTabPolicy.LOCATIONAL, false, false, false);
         return mTabModelSelector;
     }
 

@@ -19,7 +19,7 @@ TEST_F(AccessibilityTest, CommonAncestorContainerOfRange) {
 
   const AXObject* root = GetAXRootObject();
   ASSERT_NE(nullptr, root);
-  const AXObject* body = root->FirstChildIncludingIgnored();
+  const AXObject* body = GetAXBodyObject();
   ASSERT_NE(nullptr, body);
   const AXObject* input = GetAXObjectByElementId("input");
   ASSERT_NE(nullptr, input);

@@ -74,7 +74,8 @@ bugs on the public mailing list.
   work on it full-time (as best you can) during those calendar days, during your
   ordinary working hours.
 
+* Google Calendar [google.com_52n2p39ad82hah9v7j26vek830@group.calendar.google.com](https://calendar.google.com/calendar/embed?src=google.com_52n2p39ad82hah9v7j26vek830%40group.calendar.google.com&ctz=America%2FLos_Angeles)
+
 * Owners for the network bug triage rotation can find instructions on
 generating and modifying shifts
 [here (internal-only)](https://goto.google.com/pflvb).
-

@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/frame/layout_subtree_root_list.h"
 #include "third_party/blink/renderer/core/frame/overlay_interstitial_ad_detector.h"
 #include "third_party/blink/renderer/core/frame/sticky_ad_detector.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/layout/depth_ordered_layout_object_list.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/layout_object_counter.h"
@@ -693,6 +694,14 @@ class CORE_EXPORT LocalFrameView final
     return std::move(start_of_lifecycle_tasks_);
   }
 
+  // Called when the "dominant visible" status has changed for a
+  // HTMLVideoElement in the page. "dominant visible" means the element is
+  // mostly filling the viewport.
+  void NotifyVideoIsDominantVisibleStatus(HTMLVideoElement* element,
+                                          bool is_dominant);
+
+  bool HasDominantVideoElement() const;
+
  protected:
   void FrameRectsChanged(const IntRect&) override;
   void SelfVisibleChanged() override;
@@ -996,6 +1005,8 @@ class CORE_EXPORT LocalFrameView final
   Member<PaintTimingDetector> paint_timing_detector_;
 
   HeapHashSet<WeakMember<LifecycleNotificationObserver>> lifecycle_observers_;
+
+  HeapHashSet<WeakMember<HTMLVideoElement>> fullscreen_video_elements_;
 
   // If set, this indicates that the rendering throttling status for the local
   // root frame has changed. In this scenario, if we have become unthrottled,

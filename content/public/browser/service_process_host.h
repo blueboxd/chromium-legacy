@@ -60,11 +60,6 @@ class CONTENT_EXPORT ServiceProcessHost {
 
     Options(Options&&);
 
-    // Specifies the sandbox type with which to launch the service process.
-    // Defaults to a generic, restrictive utility process sandbox.
-    // TODO(1065087) Deprecate.
-    Options& WithSandboxType(SandboxType type);
-
     // Specifies the display name of the service process. This should generally
     // be a human readable and meaningful application or service name and will
     // appear in places like the system task viewer.
@@ -126,9 +121,7 @@ class CONTENT_EXPORT ServiceProcessHost {
   template <typename Interface>
   static void Launch(mojo::PendingReceiver<Interface> receiver,
                      Options options = {}) {
-    // TODO(1065087) remove this test once all services are migrated.
-    if (options.sandbox_type == SandboxType::kUtility)
-      options.sandbox_type = content::GetServiceSandboxType<Interface>();
+    options.sandbox_type = content::GetServiceSandboxType<Interface>();
     Launch(mojo::GenericPendingReceiver(std::move(receiver)),
            std::move(options));
   }
@@ -139,9 +132,7 @@ class CONTENT_EXPORT ServiceProcessHost {
   // May be called from any thread.
   template <typename Interface>
   static mojo::Remote<Interface> Launch(Options options = {}) {
-    // TODO(1065087) remove this test once all services are migrated.
-    if (options.sandbox_type == SandboxType::kUtility)
-      options.sandbox_type = content::GetServiceSandboxType<Interface>();
+    options.sandbox_type = content::GetServiceSandboxType<Interface>();
     mojo::Remote<Interface> remote;
     Launch(remote.BindNewPipeAndPassReceiver(), std::move(options));
     return remote;

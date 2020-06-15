@@ -102,7 +102,6 @@ class EasyUnlockServiceSignin
   bool IsEnabled() const override;
   bool IsChromeOSLoginEnabled() const override;
   void OnSuspendDoneInternal() override;
-  void OnBluetoothAdapterPresentChanged() override;
 
   // proximity_auth::ScreenlockBridge::Observer implementation:
   void OnScreenDidLock(proximity_auth::ScreenlockBridge::LockHandler::ScreenType

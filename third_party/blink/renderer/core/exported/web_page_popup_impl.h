@@ -129,7 +129,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
       const cc::OverscrollBehavior& overscroll_behavior,
       bool event_processed) override;
   bool SupportsBufferedTouchEvents() override { return true; }
-  void DidHandleKeyEvent() override;
   void QueueSyntheticEvent(
       std::unique_ptr<blink::WebCoalescedInputEvent>) override;
   void GetWidgetInputHandler(

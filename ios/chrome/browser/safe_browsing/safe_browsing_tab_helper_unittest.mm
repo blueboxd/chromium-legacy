@@ -8,11 +8,11 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "components/safe_browsing/core/features.h"
+#import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #import "ios/chrome/browser/safe_browsing/fake_safe_browsing_service.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_error.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"

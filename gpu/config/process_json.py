@@ -387,55 +387,56 @@ def write_os_type(os_type, data_file):
 
 
 def write_multi_gpu_category(multi_gpu_category, data_file):
-  map = {
+  suffix_for_category = {
     'primary': 'Primary',
     'secondary': 'Secondary',
     'active': 'Active',
     'any': 'Any',
     '': 'None',
   }
-  assert multi_gpu_category in map
+  assert multi_gpu_category in suffix_for_category
   data_file.write(
     'GpuControlList::kMultiGpuCategory%s,  // multi_gpu_category\n' %
-    map[multi_gpu_category])
+    suffix_for_category[multi_gpu_category])
 
 
 def write_multi_gpu_style(multi_gpu_style, data_file):
-  map = {
+  suffix_for_style = {
     'optimus': 'Optimus',
     'amd_switchable': 'AMDSwitchable',
     'amd_switchable_discrete': 'AMDSwitchableDiscrete',
     'amd_switchable_integrated': 'AMDSwitchableIntegrated',
     '': 'None',
   }
-  assert multi_gpu_style in map
+  assert multi_gpu_style in suffix_for_style
   data_file.write(
     'GpuControlList::kMultiGpuStyle%s,  // multi_gpu_style\n' %
-    map[multi_gpu_style])
+    suffix_for_style[multi_gpu_style])
 
 
 def write_gl_type(gl_type, data_file):
-  map = {
+  suffix_for_type = {
     'gl': 'GL',
     'gles': 'GLES',
     'angle': 'ANGLE',
     '': 'None',
   }
-  assert gl_type in map
-  data_file.write('GpuControlList::kGLType%s,  // gl_type\n' % map[gl_type])
+  assert gl_type in suffix_for_type
+  data_file.write('GpuControlList::kGLType%s,  // gl_type\n' %
+                  suffix_for_type[gl_type])
 
 
 def write_supported_or_not(feature_value, feature_name, data_file):
   if feature_value is None:
     feature_value = 'dont_care'
-  map = {
+  suffix_for_value = {
     'supported': 'Supported',
     'unsupported': 'Unsupported',
     'dont_care': 'DontCare',
   }
-  assert feature_value in map
+  assert feature_value in suffix_for_value
   data_file.write('GpuControlList::k%s,  // %s\n' %
-                  (map[feature_value], feature_name))
+                  (suffix_for_value[feature_value], feature_name))
 
 
 def write_conditions(entry_id, is_exception, exception_id, entry,
@@ -780,13 +781,13 @@ def format_files(generated_files):
     call([formatter, "-i", "-style=chromium", filename])
 
 
-def write_header_file_guard(file, filename, path, begin):
+def write_header_file_guard(out_file, filename, path, begin):
   token = (path.upper().replace('/', '_') + '_' +
            filename.upper().replace('.', '_') + '_')
   if begin:
-    file.write('#ifndef %s\n#define %s\n\n' % (token, token))
+    out_file.write('#ifndef %s\n#define %s\n\n' % (token, token))
   else:
-    file.write('\n#endif  // %s\n' % token)
+    out_file.write('\n#endif  // %s\n' % token)
 
 
 def process_json_file(json_filepath, list_tag,

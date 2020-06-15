@@ -5,11 +5,11 @@
 package org.chromium.android_webview.test;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
 import android.util.Pair;
 
 import androidx.annotation.IntDef;
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import com.google.common.util.concurrent.SettableFuture;
 

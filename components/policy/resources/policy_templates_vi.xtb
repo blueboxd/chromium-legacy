@@ -183,12 +183,6 @@
       nguồn gốc không an toàn không được áp dụng</translation>
 <translation id="1312799700549720683">Kiểm soát các tùy chọn cài đặt hiển thị.</translation>
 <translation id="131353325527891113">Hiển thị tên người dùng trên màn hình đăng nhập</translation>
-<translation id="1327351219049180837">Chính sách này kiểm soát xem có báo cáo dữ liệu chính sách và thời gian tìm nạp chính sách hay không.
-
-      Khi bạn không đặt hoặc đặt chính sách này thành True, thì dữ liệu chính sách và thời gian tìm nạp chính sách sẽ được thu thập.
-      Khi bạn đặt chính sách này thành False, thì dữ liệu chính sách và thời gian tìm nạp chính sách sẽ không được thu thập.
-
-      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1327466551276625742">Bật lời nhắc về cấu hình mạng khi ngoại tuyến</translation>
 <translation id="1330145147221172764">Bật bàn phím ảo</translation>
 <translation id="13356285923490863">Tên chính sách</translation>
@@ -963,12 +957,6 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
 
           Trên Windows, chính sách này chỉ có trên các phiên bản liên kết với một miền <ph name="MS_AD_NAME" /> hoặc các phiên bản Windows 10 Pro hoặc Enterprise đã đăng ký quản lý thiết bị.</translation>
 <translation id="247658312644322296">Đích 'Lưu dưới dạng PDF'</translation>
-<translation id="2478649170422995190">Chính sách này kiểm soát xem có báo cáo thông tin phiên bản, chẳng hạn như phiên bản hệ điều hành, nền tảng hệ điều hành, cấu trúc hệ điều hành, phiên bản <ph name="PRODUCT_NAME" /> và kênh <ph name="PRODUCT_NAME" /> hay không.
-
-      Khi bạn không đặt hoặc đặt chính sách này thành True, thì thông tin phiên bản sẽ được thu thập.
-      Khi bạn đặt chính sách này thành False, thì thông tin phiên bản sẽ không được thu thập.
-
-      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2480971699591919564">Bật tính năng Nhấp để gọi. Tính năng này cho phép người dùng gửi số điện thoại từ Máy tính đang mở Chrome sang thiết bị Android khi người dùng đã đăng nhập. Để biết thêm thông tin, hãy xem bài viết trong trung tâm trợ giúp: https://support.google.com/chrome/answer/9430554?hl=vi.
 
       Nếu bạn đặt chính sách này thành bật, thì người dùng Chrome có thể gửi số điện thoại tới thiết bị Android.
@@ -1171,7 +1159,7 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
 <translation id="268577405881275241">Bật tính năng proxy nén dữ liệu</translation>
 <translation id="2691668238491124549">Nếu bạn đặt chính sách này (chỉ khi được khuyên dùng), thì các ngôn ngữ đề xuất cho phiên được quản lý sẽ chuyển lên đầu danh sách, theo thứ tự xuất hiện trong chính sách. Ngôn ngữ đề xuất đầu tiên sẽ được chọn trước.
 
-      Nếu bạn không đặt chính sách này, thì hệ thống sẽ chọn trước ngôn ngữ hiện áp dụng cho giao diện người dùng.
+      Nếu bạn không đặt chính sách này, thì ngôn ngữ hiện áp dụng cho giao diện người dùng là ngôn ngữ được chọn trước.
 
       Nếu có nhiều ngôn ngữ đề xuất, thì hệ thống sẽ giả định rằng người dùng muốn chọn trong số những ngôn ngữ này. Mục lựa chọn bố cục bàn phím và ngôn ngữ sẽ hiển thị nổi bật khi bắt đầu một phiên được quản lý. Nếu không, hệ thống sẽ giả định rằng hầu hết người dùng đều muốn sử dụng ngôn ngữ đã chọn trước. Khi đó, mục lựa chọn bố cục bàn phím và ngôn ngữ sẽ hiển thị ít nổi bật hơn khi bắt đầu một phiên được quản lý.
 
@@ -1405,9 +1393,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu không thiết lập chính sách này, 'AllowJavaScript' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="3038323923255997294">Tiếp tục chạy các ứng dụng dưới nền khi <ph name="PRODUCT_NAME" /> bị đóng</translation>
-<translation id="3041887182529293512">Nếu bạn không đặt hoặc đặt chính sách này thành True, thì các đề xuất nội dung được tạo tự động sẽ hiển thị trên trang Thẻ mới, dựa trên lịch sử duyệt web, mối quan tâm hoặc vị trí của người dùng.
+<translation id="3041887182529293512">Nếu bạn không đặt hoặc đặt chính sách này thành True, thì các nội dung đề xuất được tạo tự động sẽ hiển thị trên trang Thẻ mới, dựa trên lịch sử duyệt web, mối quan tâm hoặc vị trí của người dùng.
 
-      Nếu bạn đặt chính sách này thành False, thì các đề xuất nội dung được tạo tự động sẽ không xuất hiện trên trang Thẻ mới.</translation>
+      Nếu bạn đặt chính sách này thành False, thì các nội dung đề xuất được tạo tự động sẽ không xuất hiện trên trang Thẻ mới.</translation>
 <translation id="3046192273793919231">Gửi gói mạng tới máy chủ quản lý để theo dõi trạng thái trực tuyến</translation>
 <translation id="3047732214002457234">Kiểm soát cách tính năng Làm sạch Chrome báo cáo dữ liệu cho Google</translation>
 <translation id="3048744057455266684">Nếu chính sách này được đặt và URL tìm kiếm được đề xuất từ thanh địa chỉ có chứa tham số này trong chuỗi truy vấn hoặc trong số nhận dạng phân đoạn, thì đề xuất sẽ hiển thị cụm từ tìm kiếm và nhà cung cấp dịch vụ tìm kiếm thay vì URL tìm kiếm thô.
@@ -1458,11 +1446,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3122082892722698079">Kiểm soát việc sử dụng trường hợp ngoại lệ cho nội dung không an toàn</translation>
 <translation id="3148152738273574834">Việc đặt chính sách này sẽ chỉ định danh sách các trang web được cài đặt tự động mà không cần sự can thiệp của người dùng và các trang web mà người dùng không thể gỡ cài đặt hay tắt đi.
 
-      Mỗi mục trong danh sách của chính sách này là một đối tượng chứa một thành phần bắt buộc: <ph name="URL_LABEL" /> (URL của ứng dụng web sẽ cài đặt) và 2 thành phần không bắt buộc: <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (khi mở ứng dụng web, thẻ mới sẽ mở ra theo mặc định) và <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> (là True nếu tạo lối tắt trên màn hình <ph name="LINUX_OS_NAME" /> và Windows®).
+      Mỗi mục trong danh sách của chính sách này là một đối tượng chứa một thành phần bắt buộc: <ph name="URL_LABEL" /> (URL của ứng dụng web sẽ cài đặt) và 2 thành phần không bắt buộc: <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (về cách mở ứng dụng web – mặc định là một thẻ mới) và <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> (là True nếu tạo lối tắt trên màn hình <ph name="LINUX_OS_NAME" /> và Windows®).
 
       Người dùng có thể thay đổi việc ứng dụng mở trong vùng chứa nào và bỏ qua lối tắt trên màn hình.
 
-      Xem <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> về việc ghim ứng dụng vào kệ <ph name="PRODUCT_OS_NAME" />.</translation>
+      Xem <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> để biết cách ghim ứng dụng vào kệ <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3152425128389603870">Cho phép Màn hình hợp nhất và chính sách này bật theo mặc định.</translation>
 <translation id="3159375329008977062">Người dùng được phép xuất/nhập các vùng chứa Crostini qua giao diện người dùng</translation>
 <translation id="3165808775394012744">Những chính sách này được đưa vào đây để dễ xóa.</translation>
@@ -1545,7 +1533,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       sẽ tải xuống và sử dụng hình nền mà bạn đặt cho màn hình đăng nhập và máy tính của người dùng. Người dùng không thể thay đổi hình nền này. Chỉ định URL (có thể truy cập mà không cần xác thực) mà <ph name="PRODUCT_OS_NAME" />
 
-      có thể tải hình nền xuống, cũng như hàm băm mật mã (ở định dạng JPEG, có kích thước tệp tối đa là 16 MB) để xác minh tính toàn vẹn.
+      có thể tải hình nền xuống, cũng như hàm băm mật mã (ở định dạng JPEG, kích thước tệp tối đa là 16 MB) để xác minh tính toàn vẹn.
 
       Nếu bạn không đặt chính sách này, thì người dùng sẽ được chọn hình nền cho màn hình đăng nhập và máy tính.</translation>
 <translation id="3312206664202507568">Cho phép một trang tại chrome://password-change cho phép người dùng SAML đổi mật khẩu SAML ngay trong phiên đăng nhập. Điều này đảm bảo rằng mật khẩu SAML và mật khẩu màn hình khóa của thiết bị luôn đồng bộ.
@@ -3645,12 +3633,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Hãy xem thêm chính sách "CookiesAllowedForUrls" và "CookiesSessionOnlyForUrls". Lưu ý rằng không được có các mẫu URL xung đột giữa 3 chính sách này. Chưa chính sách nào được chỉ định là chính sách ưu tiên.
 
           Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="6399242659768117666">Chính sách này kiểm soát xem có báo cáo thông tin về tiện ích và plugin hay không.
-
-      Khi bạn không đặt hoặc đặt chính sách này thành True, thì dữ liệu về tiện ích và plugin sẽ được thu thập.
-      Khi bạn đặt chính sách này thành False, thì dữ liệu về tiện ích và plugin sẽ không được thu thập.
-
-      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6401669939808766804">Đăng xuất người dùng</translation>
 <translation id="6406448383934634215">Nếu chọn 'Mở một danh sách URL' làm thao tác khởi động, thì bạn có thể chỉ định danh sách URL sẽ được mở. Nếu bạn không đặt chính sách, thì sẽ không có URL nào mở khi khởi động.
 
@@ -3673,7 +3655,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Nếu bạn chọn tự động phát hiện máy chủ proxy, URL tập lệnh "http://wpad/wpad.dat" được cung cấp cho ứng dụng Android. Không sử dụng phần khác của giao thức tự động phát hiện proxy.
 
           Nếu bạn chọn sử dụng tập lệnh proxy .pac, URL tập lệnh được cung cấp cho ứng dụng Android.</translation>
-<translation id="6430366557948788869">Tiện ích báo cáo của Chrome</translation>
 <translation id="6438972408080276697">Nếu bạn đặt chính sách này thành True, thì các báo cáo về sự kiện cài đặt ứng dụng Android chính do chính sách kích hoạt sẽ được gửi tới Google. Nếu bạn đặt chính sách này thành False, thì sẽ không có sự kiện nào được ghi lại.</translation>
 <translation id="6440051664870270040">Cho phép các trang web chuyển tới và mở các cửa sổ bật lên cùng một lúc</translation>
 <translation id="6447948611083700881">Đã tắt tính năng sao lưu và khôi phục</translation>
@@ -3735,9 +3716,9 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Nếu bạn đặt chính sách này thành:
        * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONDISABLED" />, thì tính năng tự động phát hiện múi giờ sẽ luôn tắt.
-       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TTIMEZONEAUTOMATICDETECTIONIPONLY" />, thì tính năng tự động phát hiện múi giờ sẽ luôn bật và sử dụng phương pháp chỉ IP.
-       * Nếu bạn đặt chính sách này thành <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDWIFIACCESSPOINTS" />, thì tính năng tự động phát hiện múi giờ sẽ luôn bật. Danh sách các điểm truy cập Wi-Fi hiển thị sẽ liên tục được gửi tới máy chủ API vị trí địa lý để phát hiện múi giờ chi tiết hơn.
-       * Nếu bạn đặt chính sách này thành <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDALLLOCATIONINFO" />, thì tính năng tự động phát hiện múi giờ sẽ luôn bật. Thông tin vị trí (như điểm truy cập Wi-Fi, trạm phát sóng có thể truy cập, GPS) sẽ liên tục được gửi tới máy chủ để phát hiện múi giờ chi tiết nhất.
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TTIMEZONEAUTOMATICDETECTIONIPONLY" />, thì tính năng tự động phát hiện múi giờ sẽ luôn bật và sử dụng phương pháp chỉ dùng IP.
+       * Nếu bạn đặt chính sách này thành <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDWIFIACCESSPOINTS" />, thì tính năng tự động phát hiện múi giờ sẽ luôn bật. Danh sách các điểm truy cập Wi-Fi hiển thị sẽ liên tục được gửi tới máy chủ API vị trí địa lý để phát hiện múi giờ một cách chi tiết hơn.
+       * Nếu bạn đặt chính sách này thành <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDALLLOCATIONINFO" />, thì tính năng tự động phát hiện múi giờ sẽ luôn bật. Thông tin vị trí (như điểm truy cập Wi-Fi, trạm phát sóng có thể truy cập, GPS) sẽ liên tục được gửi tới máy chủ để phát hiện múi giờ một cách chi tiết.
 
       Nếu bạn không đặt chính sách, đặt thành Để người dùng quyết định hoặc thành Không, thì người dùng có thể kiểm soát tính năng tự động phát hiện múi giờ bằng các tùy chọn kiểm soát thông thường trong chrome://settings.</translation>
 <translation id="6532769014584932288">Cho phép khóa chế độ thức</translation>
@@ -3751,12 +3732,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Bạn có thể đặt chính sách này thành một đường dẫn tệp thực thi hoặc <ph name="PRODUCT_NAME_PLACEHOLDER" /> để tự động phát hiện vị trí cài đặt của Chrome.</translation>
 <translation id="6536600139108165863">Tự động khởi động lại khi tắt thiết bị</translation>
-<translation id="6537062468544950724">Chính sách này kiểm soát xem có báo cáo thông tin dùng để nhận dạng máy, chẳng hạn như tên máy và địa chỉ mạng, hay không.
-
-      Khi bạn không đặt hoặc đặt chính sách này thành True, thì thông tin dùng để nhận dạng máy sẽ được thu thập.
-      Khi bạn đặt chính sách này thành False, thì thông tin dùng để nhận dạng máy sẽ không được thu thập.
-
-      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6539246272469751178">Chính sách này không ảnh hưởng đến ứng dụng Android. Ứng dụng Android luôn sử dụng thư mục nội dung tải xuống mặc định và không thể truy cập bất kỳ tệp nào do <ph name="PRODUCT_OS_NAME" /> tải xuống thư mục nội dung tải xuống không phải mặc định.</translation>
 <translation id="654303922206238013">Chiến lược di chuyển cho ecryptfs</translation>
 <translation id="6544897973797372144">Nếu chính sách này được đặt thành Đúng và chính sách ChromeOsReleaseChannel không được chỉ định thì người dùng của miền đăng ký sẽ được phép thay đổi kênh phát hành của thiết bị. Nếu chính sách này được đặt thành sai, thiết bị sẽ bị khóa bất kể kênh mà thiết bị được đặt lần cuối.
@@ -4026,12 +4001,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Nếu bạn đặt chính sách này thành <ph name="BR_UNDER_USER_CONTROL" />, thì người dùng sẽ nhìn thấy lời nhắc sử dụng dịch vụ sao lưu và khôi phục. Nếu người dùng bật dịch vụ sao lưu vào khôi phục, thì dữ liệu ứng dụng Android sẽ được tải lên các máy chủ sao lưu của Android và được khôi phục trong những lần cài đặt lại các ứng dụng tương thích.
 
       Sau lần thiết lập ban đầu, người dùng có thể bật hoặc tắt dịch vụ sao lưu và khôi phục.</translation>
-<translation id="6991078864332103177">Chính sách này kiểm soát xem có báo cáo thông tin dùng để nhận dạng người dùng, chẳng hạn như thông tin đăng nhập trên hệ điều hành, thông tin đăng nhập hồ sơ trên <ph name="PRODUCT_NAME" />, tên hồ sơ trên <ph name="PRODUCT_NAME" />, đường dẫn hồ sơ trên <ph name="PRODUCT_NAME" /> và đường dẫn thực thi trên <ph name="PRODUCT_NAME" /> hay không.
-
-      Khi bạn không đặt hoặc đặt chính sách này thành True, thì thông tin có thể dùng để nhận dạng người dùng sẽ được thu thập.
-      Khi bạn đặt chính sách này thành False, thì thông tin có thể dùng để nhận dạng người dùng sẽ không được thu thập.
-
-      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6994082778848658360">Chỉ định cách bạn có thể sử dụng phần cứng tích hợp phần tử bảo mật để cung cấp xác thực hai yếu tố nếu tương thích với tính năng này. Nút nguồn của máy dùng để phát hiện sự hiện diện của người dùng.
 
       Nếu bạn chọn 'Đã tắt' thì sẽ không nhận được hai yếu tố.
@@ -4453,14 +4422,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
       Khi bạn không đặt chính sách này hoặc đặt chính sách này là 0, thì URL đã chỉ định sẽ mở trong trình duyệt thay thế ngay khi người dùng truy cập URL đó.
 
       Khi bạn đặt chính sách này là một số, thì Chrome sẽ hiển thị một thông báo trong khoảng thời gian mili giây đó rồi mới mở trình duyệt thay thế.</translation>
-<translation id="7583419926951418342">Chính sách này kiểm soát hoạt động báo cáo của <ph name="PRODUCT_NAME" /> trong đám mây, tức là có cho phép tải thông tin về hoạt động của trình duyệt lên Bảng điều khiển dành cho quản trị viên của Google hay không.
-
-      Khi bạn không đặt hoặc đặt chính sách này thành False, thì dữ liệu sẽ không được thu thập hoặc tải lên.
-      Khi bạn đặt chính sách này thành True, thì dữ liệu sẽ được thu thập và tải lên Bảng điều khiển dành cho quản trị viên của Google.
-      Để kiểm soát loại dữ liệu được tải lên, vui lòng sử dụng các chính sách trong Tiện ích báo cáo của Chrome dành cho nhóm.
-
-      Đối với <ph name="PRODUCT_NAME" />, chính sách này chỉ có hiệu lực khi máy được đăng ký bằng <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />.
-      Đối với <ph name="PRODUCT_OS_NAME" />, chính sách này luôn có hiệu lực.</translation>
 <translation id="7586477707097444774">Những cookie đã đặt cho miền khớp với các mẫu này sẽ quay lại về hành vi <ph name="ATTRIBUTE_SAMESITE_NAME" /> cũ. Việc quay lại về hành vi cũ sẽ khiến những cookie không chỉ định thuộc tính <ph name="ATTRIBUTE_SAMESITE_NAME" /> sẽ được xử lý như thể là "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" và loại bỏ yêu cầu cookie "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" phải mang thuộc tính "<ph name="ATTRIBUTE_SECURE_NAME" />". Để xem thông tin chi tiết, vui lòng truy cập https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
 
           Đối với những cookie trên miền không khớp với các mẫu nêu ở đây hoặc đối với tất cả các cookie nếu bạn chưa đặt chính sách này, thì giá trị mặc định chung từ chính sách <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> sẽ được sử dụng, nếu bạn đã đặt chính sách này, hoặc từ cấu hình cá nhân của người dùng.
@@ -4579,19 +4540,10 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
           Nếu cài đặt này bị tắt hoặc không được đặt thì tính năng xác thực hai bước sẽ không được bật và hành vi mặc định là có mã PIN do người dùng xác định sẽ được sử dụng.</translation>
 <translation id="7750991880413385988">Mở trang Tab mới</translation>
 <translation id="7754704193130578113">Hỏi vị trí lưu từng tệp trước khi tải xuống</translation>
-<translation id="7755495228644343508">Định cấu hình các chính sách liên quan đến Chrome Reporting Extension (Tiện ích báo cáo của Chrome).
-
-      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Bật quy trình Xác thực môi trường xung quanh cho các loại hồ sơ.</translation>
 <translation id="7763614521440615342">Hiển thị các đề xuất nội dung trên trang Tab mới</translation>
 <translation id="7765879851993224640">Cho phép sử dụng tính năng Đăng nhập bằng Smart Lock.</translation>
 <translation id="7774768074957326919">Sử dụng cài đặt proxy hệ thống</translation>
-<translation id="7775902646576367944">Chính sách này kiểm soát xem có báo cáo thông tin Duyệt web an toàn, bao gồm cả số lần cảnh báo Duyệt web an toàn và số lần nhấp qua cảnh báo duyệt web an toàn, hay không.
-
-      Khi bạn không đặt hoặc đặt chính sách này thành True, thì dữ liệu Duyệt web an toàn sẽ được thu thập.
-      Khi bạn đặt chính sách này thành False thì dữ liệu Duyệt web an toàn sẽ không được thu thập.
-
-      Chính sách này chỉ có hiệu lực khi bật <ph name="CHROME_REPORTING_EXTENSION_NAME" /> và đăng ký máy với <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="777734450201217641">Bật phím tắt của tính năng hỗ trợ tiếp cận trên màn hình đăng nhập.
 
           Nếu đặt chính sách này thành true, thì phím tắt của tính năng hỗ trợ tiếp cận sẽ luôn bật trong màn hình đăng nhập.
@@ -4649,15 +4601,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="793473937901685727">Đặt mức độ khả dụng của chứng chỉ cho ứng dụng ARC</translation>
 <translation id="7937491150792971922">Các chính sách hợp nhất danh sách cài đặt tiện ích từ nhiều nguồn</translation>
 <translation id="7937766917976512374">Cho phép hoặc từ chối quay video</translation>
-<translation id="7937944288846766530">Chính sách này kiểm soát việc người dùng có thể gửi yêu cầu cài đặt tiện ích của <ph name="PRODUCT_NAME" /> đến Bảng điều khiển dành cho quản trị viên của Google để xin phê duyệt hay không.
-
-      Khi bạn không đặt hoặc đặt chính sách CloudReportingEnabled thành tắt, thì chính sách này sẽ bị bỏ qua, và các yêu cầu cài đặt tiện ích sẽ không được tạo hoặc tải lên.
-      Khi bạn không đặt hoặc đặt chính sách này thành tắt, thì các yêu cầu cài đặt tiện ích sẽ không được tạo hoặc tải lên.
-      Khi bạn đặt chính sách này thành bật, thì các yêu cầu cài đặt tiện ích sẽ được tạo và tải lên Bảng điều khiển dành cho quản trị viên của Google.
-
-      Các yêu cầu cài đặt tiện ích sẽ được tạo khi người dùng cố gắng cài đặt một tiện ích mà <ph name="EXTENSION_INSTALL_WHITELIST" /> hoặc <ph name="EXTENSION_SETTINGS" /> không đưa vào danh sách cho phép.
-
-      Chính sách này chỉ có hiệu lực khi <ph name="CLOUD_REPORTING_ENABLED" /> ở trạng thái bật và máy được đăng ký bằng <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />.</translation>
 <translation id="7941975817681987555">Không dự đoán tác vụ mạng trên kết nối mạng bất kỳ</translation>
 <translation id="7951605113561734721">Chỉ định chứng chỉ ứng dụng cần được đăng ký bằng giao thức quản lý thiết bị cho toàn thiết bị.</translation>
 <translation id="7952007677054834789">Định cấu hình các trang sẽ tải khi khởi động, trang chủ mặc định và trang tab mới mặc định trong <ph name="PRODUCT_NAME" />, đồng thời không cho phép người dùng thay đổi các tùy chọn đó.

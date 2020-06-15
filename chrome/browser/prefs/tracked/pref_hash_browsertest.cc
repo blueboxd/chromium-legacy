@@ -84,6 +84,20 @@ base::string16 GetRegistryPathForTestProfile() {
   base::FilePath profile_dir;
   EXPECT_TRUE(base::PathService::Get(chrome::DIR_USER_DATA, &profile_dir));
 
+  // |DIR_USER_DATA| usually has format %TMP%\12345_6789012345\user_data
+  // (unless running with --single-process-tests, where the format is
+  // %TMP%\scoped_dir12345_6789012345). Use the parent directory name instead of
+  // the leaf directory name "user_data" to avoid conflicts in parallel tests,
+  // which would try to modify the same registry key otherwise.
+  if (profile_dir.BaseName().value() == L"user_data") {
+    profile_dir = profile_dir.DirName();
+  }
+  // Try to detect regressions when |DIR_USER_DATA| test location changes, which
+  // could cause this test to become flaky. See http://crbug/1091409 for more
+  // details.
+  DCHECK(profile_dir.BaseName().value().find_first_of(L"0123456789") !=
+         std::string::npos);
+
   // Use a location under the real PreferenceMACs path so that the backup
   // cleanup logic in ChromeTestLauncherDelegate::PreSharding() for interrupted
   // tests covers this test key as well.

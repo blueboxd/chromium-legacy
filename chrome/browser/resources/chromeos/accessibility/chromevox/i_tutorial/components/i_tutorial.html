@@ -1,0 +1,111 @@
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<style>
+	
+#tutorialContainer {
+	background: linear-gradient(to bottom,rgba(255, 255, 255, 1) 40%,
+    	rgba(215, 215, 215, 1) 100%);
+	bottom: 0;
+	left: 0;
+	position: fixed;
+	right: 0;
+	top: 0;
+}
+
+#routingPageContainer {
+	margin: auto;
+	text-align: center;
+	width: 50%;
+}
+
+#mainMenuContainer {
+	margin: auto;
+	text-align: center;
+	width: 50%;
+}
+
+#lessonContainer {
+	margin: auto;
+	text-align: center;
+	width: 50%;
+}
+
+#navigationContainer {
+	margin: auto;
+	text-align: center;
+	width: 50%;
+}
+
+</style>
+
+<div id="tutorialContainer">
+
+<div id="routingPageContainer"
+		hidden$="[[ shouldHideRoutingContainer_(activeContainer) ]]">
+	<h1 id="welcomeRoutingPage" tabindex="-1">[[ routingPageWelcome ]]</h1>
+	<h2>[[ chooseYourExperience ]]</h2>
+	<cr-button id="newUserButton" on-click="chooseCurriculum_">
+		[[ newUser ]]
+	</cr-button>
+	<cr-button id="experiencedUserButton" on-click="chooseCurriculum_">
+		[[ experiencedUser ]]
+	</cr-button>
+	<cr-button id="developerButton" on-click="chooseCurriculum_">
+		[[ developer ]]
+	</cr-button>
+</div>
+
+<div id="mainMenuContainer"
+		hidden$="[[ shouldHideMainMenuContainer_(activeContainer) ]]">
+	<h1 id="welcomeMainMenu"
+			tabindex="-1">[[ computeMainMenuHeader_(curriculum, medium) ]]</h1>
+	<div id="lessonShortcuts"></div>
+</div>
+
+<div id="lessonContainer"
+		hidden$="[[ shouldHideLessonContainer_(activeContainer) ]]">
+
+	<!-- Use lessonData object to create all lessons -->
+	<template is="dom-repeat" items="[[ lessonData ]]" as="lesson" 
+			index-as="index">
+		<tutorial-lesson
+		lesson-num="[[ index ]]"
+		title="[[ lesson.title ]]"
+		content="[[ lesson.content ]]"
+		medium="[[ lesson.medium ]]"
+		curriculums="[[ lesson.curriculums ]]"
+		test-area-title="[[ lesson.testAreaTitle ]]"
+		test-area-instructions="[[ lesson.testAreaInstructions ]]"
+		test-area-file="[[ lesson.testAreaFile ]]"
+		test-area-state="[[ lesson.testAreaState ]]"
+		hints="[[ lesson.hints ]]"
+		events="[[ lesson.events ]]"
+		active-lesson-num="[[ activeLessonNum ]]">
+		</tutorial-lesson>
+	</template>
+</div>
+
+<div id="navigationContainer">
+	<cr-button id="previousLesson" on-click="previousLesson_"
+		hidden$="[[
+		shouldHidePreviousLessonButton_(activeLessonIndex, activeContainer) ]]">
+		[[ previousLesson ]]
+	</cr-button>
+	<cr-button id="nextLesson" on-click="nextLesson_"
+		hidden$="[[
+		shouldHideNextLessonButton_(activeLessonIndex, activeContainer) ]]">
+		[[ nextLesson ]]
+	</cr-button>
+	<cr-button id="showRoutingPage" on-click="showRoutingContainer_"
+			hidden$="[[ !shouldHideRoutingContainer_(activeContainer) ]]">
+		[[ showRoutingPage ]]
+	</cr-button>
+	<cr-button id="showMainMenu" on-click="showMainMenuContainer_"
+			hidden$="[[ !shouldHideMainMenuContainer_(activeContainer) ]]">
+		[[ showMainMenu ]]
+	</cr-button>
+	<cr-button id="quit" on-click="quit_">[[ quitTutorial ]]</cr-button>
+</div>
+
+</div>

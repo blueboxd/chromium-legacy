@@ -509,7 +509,6 @@
 <translation id="7068360136237591149">បើក​ឯកសារ</translation>
 <translation id="7076293881109082629">កំពុងចូល</translation>
 <translation id="7088960765736518739">ប្រើប៊ូតុងចុច</translation>
-<translation id="7092922358121866860">បង្ហាញការកំណត់​​ពន្លឺ​ពេលយប់</translation>
 <translation id="7098389117866926363">ឧបករណ៍ USB-C (រន្ធឆ្វេងផ្នែកខាងក្រោយ)</translation>
 <translation id="7131634465328662194">អ្នក​នឹង​ចាកចេញ​ពី​គណនី​ដោយ​ស្វ័យ​ប្រវត្តិ។</translation>
 <translation id="7143207342074048698">កំពុងភ្ជាប់...</translation>
@@ -661,7 +660,6 @@
 <translation id="8877788021141246043">កំណត់​ការរំលឹក</translation>
 <translation id="8878886163241303700">អេក្រង់ពង្រីក</translation>
 <translation id="890616557918890486">ប្ដូរប្រភព</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> មិនអាចប្រើ <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) បានទេ។ កម្រិតច្បាស់ត្រូវបានប្ដូរទៅ <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />)។ សូមចុច "បញ្ជាក់" ដើម្បីរក្សាការផ្លាស់ប្ដូរ។ ការកំណត់​មុននឹងត្រូវបានរក្សាទុក​ក្នុងរយៈពេល <ph name="TIMEOUT_SECONDS" />។</translation>
 <translation id="8909138438987180327">ថ្ម​មានកម្រិត <ph name="PERCENTAGE" /> ភាគរយ។</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google ជំនួយការមិននិយាយភាសានេះទេ។</translation>

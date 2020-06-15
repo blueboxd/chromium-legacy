@@ -80,7 +80,6 @@
     attribute EventHandler onplaying;
     attribute EventHandler onprogress;
     attribute EventHandler onratechange;
-    [RuntimeEnabled=CSSContentVisibilityActivationEvent] attribute EventHandler onrendersubtreeactivation;
     attribute EventHandler onreset;
     attribute EventHandler onresize;
     attribute EventHandler onscroll;

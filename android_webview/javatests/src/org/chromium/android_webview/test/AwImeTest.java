@@ -9,7 +9,6 @@ import static org.hamcrest.Matchers.greaterThan;
 
 import android.content.Context;
 import android.graphics.Rect;
-import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputConnection;
@@ -18,6 +17,8 @@ import android.webkit.JavascriptInterface;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

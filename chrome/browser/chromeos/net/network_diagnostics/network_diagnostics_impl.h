@@ -16,6 +16,8 @@ namespace network_diagnostics {
 class NetworkDiagnosticsImpl : public mojom::NetworkDiagnosticsRoutines {
  public:
   NetworkDiagnosticsImpl();
+  NetworkDiagnosticsImpl(const NetworkDiagnosticsImpl&) = delete;
+  NetworkDiagnosticsImpl& operator=(const NetworkDiagnosticsImpl&) = delete;
   ~NetworkDiagnosticsImpl() override;
 
   // Binds this instance, an implementation of
@@ -37,8 +39,6 @@ class NetworkDiagnosticsImpl : public mojom::NetworkDiagnosticsRoutines {
  private:
   mojo::ReceiverSet<mojom::NetworkDiagnosticsRoutines> receivers_;
   base::WeakPtrFactory<NetworkDiagnosticsImpl> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkDiagnosticsImpl);
 };
 
 }  // namespace network_diagnostics

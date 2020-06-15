@@ -38,6 +38,9 @@ class LocalFrame;
 // count it as an overlay pop-up; otherwise, we skip that candidate because it
 // could be a parallax/scroller ad.
 //
+// Besides, we explicitly prevent mid-roll ads (during a video play) from being
+// categorized as pop-ups.
+//
 // We could potentially miss some true positive cases: the user could click at
 // an empty space which activates the user gesture, and coincidentally the
 // pop-up automatically shows up; the user could make some scrolling
@@ -49,9 +52,10 @@ class CORE_EXPORT OverlayInterstitialAdDetector {
   ~OverlayInterstitialAdDetector() = default;
 
   void MaybeFireDetection(LocalFrame* main_frame);
-  void OnPopupAdDetected(LocalFrame* main_frame);
 
  private:
+  void OnPopupAdDetected(LocalFrame* main_frame);
+
   bool started_detection_ = false;
   bool main_content_has_loaded_ = false;
 

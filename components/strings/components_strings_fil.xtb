@@ -232,6 +232,7 @@
 <translation id="1898423065542865115">Pagfi-filter</translation>
 <translation id="1901443836186977402">{1,plural, =1{Hindi mapatunayan ng server na ito na <ph name="DOMAIN" /> ito; nag-expire ang panseguridad na certificate nito noong nakaraang araw. Posibleng sanhi ito ng maling pag-configure o ng panghihimasok ng isang nang-aatake sa iyong koneksyon. Kasalukuyang nakatakda ang orasan ng iyong computer sa <ph name="CURRENT_DATE" />. Mukha bang tama ito? Kung hindi, dapat mong itama ang orasan ng iyong system at pagkatapos ay i-refresh ang page na ito.}one{Hindi mapatunayan ng server na ito na <ph name="DOMAIN" /> ito; nag-expire ang panseguridad na certificate nito # araw na ang nakalipas. Posibleng sanhi ito ng maling pag-configure o ng panghihimasok ng isang nang-aatake sa iyong koneksyon. Kasalukuyang nakatakda ang orasan ng iyong computer sa <ph name="CURRENT_DATE" />. Mukha bang tama ito? Kung hindi, dapat mong itama ang orasan ng iyong system at pagkatapos ay i-refresh ang page na ito.}other{Hindi mapatunayan ng server na ito na <ph name="DOMAIN" /> ito; nag-expire ang panseguridad na certificate nito # araw na ang nakalipas. Posibleng sanhi ito ng maling pag-configure o ng panghihimasok ng isang nang-aatake sa iyong koneksyon. Kasalukuyang nakatakda ang orasan ng iyong computer sa <ph name="CURRENT_DATE" />. Mukha bang tama ito? Kung hindi, dapat mong itama ang orasan ng iyong system at pagkatapos ay i-refresh ang page na ito.}}</translation>
 <translation id="1902576642799138955">Takdang Petsa ng Pagkakabisa</translation>
+<translation id="1908217026282415406">Paggamit at paggalaw ng camera</translation>
 <translation id="191374271204266022">Kopyahin bilang JSON</translation>
 <translation id="1914326953223720820">I-unzip ang Serbisyo</translation>
 <translation id="1915697529809968049">Gamitin ang Touch ID sa halip na CVC?</translation>
@@ -730,7 +731,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="4101413244023615925">Text at graphic</translation>
 <translation id="4103249731201008433">Di-wasto ang serial number ng device</translation>
 <translation id="4103763322291513355">Bisitahin ang &lt;strong&gt;chrome://policy&lt;/strong&gt; upang makita ang listahan ng mga naka-blacklist na URL at iba pang mga patakaran na ipinapatupad ng iyong system administrator.</translation>
-<translation id="4108231218301530806">Gamitin ang fingerprint para i-verify ang card na ito sa susunod.</translation>
 <translation id="4110652170750985508">Suriin ang iyong pagbabayad</translation>
 <translation id="4112140312785995938">Mag-seek Pabalik</translation>
 <translation id="4116663294526079822">Palaging payagan sa site na ito</translation>
@@ -1128,6 +1128,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="569000877158168851">Walang kaugnayan ang value ng DnsOverHttpsTemplates, at hindi ito gagamitin, maliban na lang kung itatakda ang patakarang DnsOverHttpsMode sa <ph name="SECURE_DNS_MODE_AUTOMATIC" /> o <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Gitna</translation>
 <translation id="570530837424789914">Pamahalaan...</translation>
+<translation id="5705882733397021510">Bumalik</translation>
 <translation id="57094364128775171">Magmungkahi ng malakas na password...</translation>
 <translation id="5710435578057952990">Ang pagkilala ng website na ito ay hindi natukoy.</translation>
 <translation id="5720705177508910913">Kasalukuyang user</translation>
@@ -1135,6 +1136,7 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="5730040223043577876">Inirerekomenda ng Chrome na i-reset ang iyong password kung ginamit mo ito sa iba pang site.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{I-save ang card sa iyong Google Account}one{I-save ang mga card sa iyong Google Account}other{I-save ang mga card sa iyong Google Account}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Gumamit ng virtual na numero para sa card na ito}one{Pumili ng card}other{Pumili ng card}}</translation>
+<translation id="5759751709240058861">Gamitin at galawin ang iyong camera</translation>
 <translation id="5763042198335101085">Maglagay ng wastong email address</translation>
 <translation id="5765072501007116331">Upang makita ang mga pamamaraan at kinakailangan sa paghahatid, pumili ng address</translation>
 <translation id="5776313857861697733">Priyoridad</translation>
@@ -1343,7 +1345,6 @@ Kung ayaw mo, iba-block ito ng iyong mga setting ng privacy. Papayagan nito ang 
 <translation id="6631202559048444592">Mayroong higit sa isang pinagmulan para sa patakaran, pero pareho ang mga value.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">I-clear</translation>
-<translation id="6644283850729428850">Hindi na ginagamit ang patakarang ito.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Wala}=1{Mula sa 1 site (hindi ka masa-sign out sa iyong Google Account)}one{Mula sa # site (hindi ka masa-sign out sa iyong Google Account)}other{Mula sa # na site (hindi ka masa-sign out sa iyong Google Account)}}</translation>
 <translation id="6652101503459149953">Gamitin ang Windows Hello</translation>
 <translation id="6657585470893396449">Password</translation>

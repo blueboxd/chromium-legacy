@@ -509,7 +509,6 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="7068360136237591149">Mở tệp</translation>
 <translation id="7076293881109082629">Đăng nhập</translation>
 <translation id="7088960765736518739">Tiếp cận bằng công tắc</translation>
-<translation id="7092922358121866860">Hiển thị các tùy chọn cài đặt Ánh sáng đêm</translation>
 <translation id="7098389117866926363">Thiết bị USB-C (cổng bên trái ở phía sau)</translation>
 <translation id="7131634465328662194">Bạn sẽ tự động bị đăng xuất.</translation>
 <translation id="7143207342074048698">Đang kết nối</translation>
@@ -661,7 +660,6 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="8877788021141246043">Đặt lời nhắc</translation>
 <translation id="8878886163241303700">Mở rộng màn hình</translation>
 <translation id="890616557918890486">Thay đổi nguồn</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> không hỗ trợ<ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Độ phân giải đã được đổi thành <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Hãy nhấp vào xác nhận để lưu các thay đổi. Các tùy chọn cài đặt trước sẽ được khôi phục sau <ph name="TIMEOUT_SECONDS" /> nữa.</translation>
 <translation id="8909138438987180327">Pin ở mức <ph name="PERCENTAGE" />%.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Trợ lý Google không hỗ trợ ngôn ngữ này.</translation>

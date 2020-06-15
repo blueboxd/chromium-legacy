@@ -11,7 +11,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.SmallTest;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -23,6 +22,7 @@ import android.widget.FrameLayout;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;

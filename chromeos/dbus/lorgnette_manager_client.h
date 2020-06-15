@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
@@ -29,6 +28,8 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) LorgnetteManagerClient
     int resolution_dpi = 0;
   };
 
+  LorgnetteManagerClient(const LorgnetteManagerClient&) = delete;
+  LorgnetteManagerClient& operator=(const LorgnetteManagerClient&) = delete;
   ~LorgnetteManagerClient() override;
 
   // Gets a list of scanners from the lorgnette manager.
@@ -49,9 +50,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) LorgnetteManagerClient
  protected:
   // Create() should be used instead.
   LorgnetteManagerClient();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LorgnetteManagerClient);
 };
 
 }  // namespace chromeos

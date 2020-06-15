@@ -31,6 +31,7 @@
 #include "components/omnibox/browser/test_location_bar_model.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -721,21 +722,21 @@ TEST_F(OmniboxViewViewsTest, SetWindowTextAndCaretPos) {
 TEST_F(OmniboxViewViewsTest, OnInlineAutocompleteTextMaybeChanged) {
   // No selection, google.com|
   omnibox_view()->OnInlineAutocompleteTextMaybeChanged(
-      base::UTF8ToUTF16("google.com"), 10);
+      base::UTF8ToUTF16("google.com"), 0, 10);
   EXPECT_EQ(base::ASCIIToUTF16("google.com"), omnibox_view()->GetText());
   EXPECT_EQ(omnibox_view()->GetRenderText()->GetAllSelections(),
             (std::vector<Range>{{10, 10}}));
 
   // Single selection, gmai[l.com]
   omnibox_view()->OnInlineAutocompleteTextMaybeChanged(
-      base::UTF8ToUTF16("gmail.com"), 4);
+      base::UTF8ToUTF16("gmail.com"), 0, 4);
   EXPECT_EQ(base::ASCIIToUTF16("gmail.com"), omnibox_view()->GetText());
   EXPECT_EQ(omnibox_view()->GetRenderText()->GetAllSelections(),
             (std::vector<Range>{{9, 4}}));
 
   // Multiselection, [go]ogl[e.com]
   omnibox_view()->OnInlineAutocompleteTextMaybeChanged(
-      base::UTF8ToUTF16("google.com"), 3, 2);
+      base::UTF8ToUTF16("google.com"), 2, 3);
   EXPECT_EQ(base::ASCIIToUTF16("google.com"), omnibox_view()->GetText());
   EXPECT_EQ(omnibox_view()->GetRenderText()->GetAllSelections(),
             (std::vector<Range>{{10, 5}, {0, 2}}));
@@ -1298,30 +1299,31 @@ TEST_F(OmniboxViewViewsTest, RevealOnHover) {
   // Now advance through the fade-in and check the color. We assume that the
   // fade-in takes less than 1 second.
   fade_in_as_element->Step(base::TimeTicks() + base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(GetOmniboxColor(omnibox_view()->GetThemeProvider(),
-                            OmniboxPart::LOCATION_BAR_TEXT_DIMMED),
-            fade_in->GetCurrentColor());
+  SkColor dimmed_text_color =
+      GetOmniboxColor(omnibox_view()->GetThemeProvider(),
+                      OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
+  EXPECT_EQ(dimmed_text_color, fade_in->GetCurrentColor());
 
   // Now exit the mouse. At this point the fade-in animation should be stopped
   // and the fade-out animation should run.
   omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_EXITED, {0, 0}));
+  OmniboxViewViews::PathFadeAnimation* path_fade_out_after_hover_animation =
+      omnibox_view()->GetPathFadeOutAfterHoverAnimationForTesting();
   EXPECT_FALSE(
       omnibox_view()->GetPathFadeInAnimationForTesting()->IsAnimating());
-  EXPECT_TRUE(
-      omnibox_view()->GetPathFadeOutFastAnimationForTesting()->IsAnimating());
+  EXPECT_TRUE(path_fade_out_after_hover_animation->IsAnimating());
+  EXPECT_EQ(dimmed_text_color,
+            path_fade_out_after_hover_animation->GetCurrentColor());
 
   gfx::AnimationContainerElement* fade_out_as_element =
       static_cast<gfx::AnimationContainerElement*>(
-          omnibox_view()
-              ->GetPathFadeOutFastAnimationForTesting()
-              ->GetAnimationForTesting());
+          path_fade_out_after_hover_animation->GetAnimationForTesting());
   fade_out_as_element->SetStartTime(base::TimeTicks());
   // We assume that the fade-out takes less than 1 second.
   fade_out_as_element->Step(base::TimeTicks() +
                             base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(SK_ColorTRANSPARENT, omnibox_view()
-                                     ->GetPathFadeOutFastAnimationForTesting()
-                                     ->GetCurrentColor());
+  EXPECT_EQ(SK_ColorTRANSPARENT,
+            path_fade_out_after_hover_animation->GetCurrentColor());
 }
 
 // Tests the field trial variation that hides the path when the user interacts
@@ -1342,11 +1344,15 @@ TEST_F(OmniboxViewViewsTest, HideOnInteractionAndRevealOnHover) {
   // Call OnThemeChanged() to create the animations.
   omnibox_view()->OnThemeChanged();
 
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(false);
+  omnibox_view()->DidFinishNavigation(&navigation);
+
   // Simulate a user interaction and check that the fade-out animation runs.
   omnibox_view()->DidGetUserInteraction(
       blink::WebInputEvent::Type::kGestureScrollBegin);
   OmniboxViewViews::PathFadeAnimation* fade_out =
-      omnibox_view()->GetPathFadeOutFastAnimationForTesting();
+      omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
   EXPECT_TRUE(fade_out->IsAnimating());
   EXPECT_EQ(GetOmniboxColor(omnibox_view()->GetThemeProvider(),
                             OmniboxPart::LOCATION_BAR_TEXT_DIMMED),
@@ -1357,12 +1363,19 @@ TEST_F(OmniboxViewViewsTest, HideOnInteractionAndRevealOnHover) {
   gfx::AnimationContainerElement* fade_out_as_element =
       static_cast<gfx::AnimationContainerElement*>(
           omnibox_view()
-              ->GetPathFadeOutFastAnimationForTesting()
+              ->GetPathFadeOutAfterInteractionAnimationForTesting()
               ->GetAnimationForTesting());
   fade_out_as_element->SetStartTime(base::TimeTicks());
   fade_out_as_element->Step(base::TimeTicks() +
                             base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(SK_ColorTRANSPARENT, fade_out->GetCurrentColor());
+
+  // A second user interaction should not run the animation again.
+  omnibox_view()->DidGetUserInteraction(
+      blink::WebInputEvent::Type::kGestureScrollBegin);
+  EXPECT_FALSE(omnibox_view()
+                   ->GetPathFadeOutAfterInteractionAnimationForTesting()
+                   ->IsAnimating());
 
   // The path should come back on hover.
   omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
@@ -1382,6 +1395,82 @@ TEST_F(OmniboxViewViewsTest, HideOnInteractionAndRevealOnHover) {
             fade_in->GetCurrentColor());
 }
 
+// Tests that in the hide-on-interaction field trial variation, the path is
+// faded out after omnibox focus and blur.
+TEST_F(OmniboxViewViewsTest, HideOnInteractionAfterFocusAndBlur) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {omnibox::kHideSteadyStateUrlPathQueryAndRef,
+       omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
+       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover},
+      {});
+  location_bar_model()->set_url(GURL("https://example.test/foo"));
+  location_bar_model()->set_url_for_display(
+      base::ASCIIToUTF16("example.test/foo"));
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+
+  // Call OnThemeChanged() to create the animations.
+  omnibox_view()->OnThemeChanged();
+
+  content::MockNavigationHandle navigation;
+  navigation.set_is_same_document(false);
+  omnibox_view()->DidFinishNavigation(&navigation);
+
+  // Simulate a user interaction to fade out the path.
+  omnibox_view()->DidGetUserInteraction(
+      blink::WebInputEvent::Type::kGestureScrollBegin);
+  OmniboxViewViews::PathFadeAnimation* fade_out =
+      omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
+  gfx::AnimationContainerElement* fade_out_as_element =
+      static_cast<gfx::AnimationContainerElement*>(
+          omnibox_view()
+              ->GetPathFadeOutAfterInteractionAnimationForTesting()
+              ->GetAnimationForTesting());
+  fade_out_as_element->SetStartTime(base::TimeTicks());
+  fade_out_as_element->Step(base::TimeTicks() +
+                            base::TimeDelta::FromSeconds(1));
+  EXPECT_EQ(SK_ColorTRANSPARENT, fade_out->GetCurrentColor());
+
+  // Now focus and blur the omnibox. After blur, the path should fade out again
+  // after another user interaction.
+  omnibox_view()->OnFocus();
+  omnibox_view()->OnBlur();
+  omnibox_view()->DidGetUserInteraction(
+      blink::WebInputEvent::Type::kGestureScrollBegin);
+  fade_out =
+      omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
+  EXPECT_TRUE(fade_out->IsAnimating());
+}
+
+// Tests that in the reveal-on-hover field trial variation (without
+// hide-on-interaction), the path is faded back in after focus, then blur, then
+// hover.
+TEST_F(OmniboxViewViewsTest, RevealOnHoverAfterBlur) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {omnibox::kHideSteadyStateUrlPathQueryAndRef,
+       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover},
+      {omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction});
+  location_bar_model()->set_url(GURL("https://example.test/foo"));
+  location_bar_model()->set_url_for_display(
+      base::ASCIIToUTF16("example.test/foo"));
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+
+  // Call OnThemeChanged() to create the animations.
+  omnibox_view()->OnThemeChanged();
+
+  // Focus and blur the omnibox, then hover over it. The path should fade in.
+  omnibox_view()->OnFocus();
+  omnibox_view()->OnBlur();
+  omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  OmniboxViewViews::PathFadeAnimation* fade_in =
+      omnibox_view()->GetPathFadeInAnimationForTesting();
+  ASSERT_TRUE(fade_in);
+  EXPECT_TRUE(fade_in->IsAnimating());
+}
+
 // TODO (manukh) move up to where the other OmniboxViewViewsTest tests are.
 TEST_F(OmniboxViewViewsTest, OverflowingAutocompleteText) {
   // Make the Omnibox narrow so it can't fit the entire string (~650px), but
@@ -1394,7 +1483,7 @@ TEST_F(OmniboxViewViewsTest, OverflowingAutocompleteText) {
   omnibox_view()->OnInlineAutocompleteTextMaybeChanged(
       base::ASCIIToUTF16("user text. Followed by very long autocompleted text "
                          "that is unlikely to fit in |kOmniboxWidth|"),
-      10);
+      0, 10);
 
   // NOTE: Technically (depending on the font), this expectation could fail if
   // 'user text' doesn't fit in 100px or the entire string fits in 100px.

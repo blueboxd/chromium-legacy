@@ -509,7 +509,6 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="7068360136237591149">Öppna filer</translation>
 <translation id="7076293881109082629">Logga in</translation>
 <translation id="7088960765736518739">Brytarstyrning</translation>
-<translation id="7092922358121866860">Visa inställningar för Nattljus</translation>
 <translation id="7098389117866926363">USB-C-enhet (vänstra porten på baksidan)</translation>
 <translation id="7131634465328662194">Du loggas ut automatiskt.</translation>
 <translation id="7143207342074048698">Ansluter</translation>
@@ -661,7 +660,6 @@ Det här är några saker du kan testa för att komma igång.</translation>
 <translation id="8877788021141246043">Ställ in en påminnelse</translation>
 <translation id="8878886163241303700">Utökad skärm</translation>
 <translation id="890616557918890486">Ändra källa</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> har inte stöd för <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Upplösningen har ändrats till <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Klicka på bekräfta om du vill behålla ändringarna. De gamla inställningarna återställs om <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Batterinivån är på <ph name="PERCENTAGE" /> procent.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistent talar inte det här språket.</translation>

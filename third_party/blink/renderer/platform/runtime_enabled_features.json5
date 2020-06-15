@@ -409,12 +409,6 @@
       status: "stable",
     },
     {
-      // The content-visibility activation event which will be replaced by
-      // the beforematch event. When beforematch is available, this feaure
-      // will be removed.
-      name: "CSSContentVisibilityActivationEvent"
-    },
-    {
       // The content-visibility: hidden-matchable feature. This is a planned
       // follow-up to the main CSSContentVisibility feature, thus it is gated
       // by a different flag.

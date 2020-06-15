@@ -243,7 +243,7 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
   bool blocked = !cookie_settings_->IsCookieAccessAllowed(
       url, site_for_cookies.RepresentativeUrl(), top_frame_origin);
 
-  std::vector<net::CanonicalCookie> result;
+  std::vector<net::CookieWithAccessResult> result;
   std::vector<net::CookieWithStatus> result_with_status;
 
   // TODO(https://crbug.com/977040): Remove once samesite tightening up is
@@ -282,7 +282,7 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
       status.AddExclusionReason(
           net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     } else {
-      result.push_back(cookie);
+      result.push_back(cookie_item);
     }
     result_with_status.push_back({cookie, status});
   }
@@ -476,7 +476,7 @@ void RestrictedCookieManager::GetCookiesString(
                std::move(match_options),
                base::BindOnce(
                    [](GetCookiesStringCallback user_callback,
-                      const std::vector<net::CanonicalCookie>& cookies) {
+                      const std::vector<net::CookieWithAccessResult>& cookies) {
                      std::move(user_callback)
                          .Run(net::CanonicalCookie::BuildCookieLine(cookies));
                    },

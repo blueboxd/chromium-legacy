@@ -39,10 +39,10 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.widget.DatePicker;
 
 import androidx.test.espresso.matcher.ViewMatchers;
+import androidx.test.filters.MediumTest;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;

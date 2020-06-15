@@ -8,7 +8,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
+import org.chromium.components.infobars.InfoBarLayout;
 
 /**
  * An InfoBar that lets the user know that a Preview page has been loaded, and gives the user

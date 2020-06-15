@@ -69,8 +69,7 @@ void ScopedFile::Reset() {
 
   if (scope_out_policy_ == DELETE_ON_SCOPE_OUT) {
     file_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(base::IgnoreResult(&base::DeleteFile), path_,
-                                  false /* recursive */));
+        FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), path_));
   }
 
   // Clear all fields.

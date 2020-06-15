@@ -262,6 +262,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     bool Advance(uint32_t count, leveldb::Status*);
     bool FirstSeek(leveldb::Status*);
 
+    // Clone may return a nullptr if cloning fails for any reason.
     virtual std::unique_ptr<Cursor> Clone() const = 0;
     virtual const blink::IndexedDBKey& primary_key() const;
     virtual IndexedDBValue* value() = 0;
@@ -272,7 +273,12 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     Cursor(base::WeakPtr<Transaction> transaction,
            int64_t database_id,
            const CursorOptions& cursor_options);
-    explicit Cursor(const IndexedDBBackingStore::Cursor* other);
+    explicit Cursor(const IndexedDBBackingStore::Cursor* other,
+                    std::unique_ptr<TransactionalLevelDBIterator> iterator);
+
+    // May return nullptr.
+    static std::unique_ptr<TransactionalLevelDBIterator> CloneIterator(
+        const IndexedDBBackingStore::Cursor* other);
 
     virtual std::string EncodeKey(const blink::IndexedDBKey& key) = 0;
     virtual std::string EncodeKey(const blink::IndexedDBKey& key,

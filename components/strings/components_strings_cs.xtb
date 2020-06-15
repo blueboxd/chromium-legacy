@@ -228,6 +228,7 @@
 <translation id="1898423065542865115">Filtrování</translation>
 <translation id="1901443836186977402">{1,plural, =1{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu včera vypršela. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste hodiny systému nastavit správně a poté tuto stránku načíst znovu.}few{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dny. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste hodiny systému nastavit správně a poté tuto stránku načíst znovu.}many{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dne. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste hodiny systému nastavit správně a poté tuto stránku načíst znovu.}other{Server nedokázal prokázat, že patří doméně <ph name="DOMAIN" />. Platnost jeho bezpečnostního certifikátu vypršela před # dny. Může to být způsobeno nesprávnou konfigurací nebo tím, že vaše připojení zachytává útočník. Hodiny ve vašem počítači jsou aktuálně nastaveny na <ph name="CURRENT_DATE" />. Je to správně? Pokud ne, měli byste hodiny systému nastavit správně a poté tuto stránku načíst znovu.}}</translation>
 <translation id="1902576642799138955">Doba platnosti</translation>
+<translation id="1908217026282415406">Používání a natáčení kamery</translation>
 <translation id="191374271204266022">Kopírovat jako JSON</translation>
 <translation id="1914326953223720820">Služba rozbalování souborů ZIP</translation>
 <translation id="1915697529809968049">Použít Touch ID namísto CVC?</translation>
@@ -719,7 +720,6 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="4101413244023615925">Text a obrázek</translation>
 <translation id="4103249731201008433">Sériové číslo zařízení je neplatné</translation>
 <translation id="4103763322291513355">Na stránce &lt;strong&gt;chrome://policy&lt;/strong&gt; naleznete seznam zakázaných adres URL a další zásady vynucené vaším správcem systému.</translation>
-<translation id="4108231218301530806">Příště tuto kartu ověřit otiskem prstu.</translation>
 <translation id="4110652170750985508">Kontrola platby</translation>
 <translation id="4112140312785995938">Přetočit dozadu</translation>
 <translation id="4116663294526079822">Povolit vždy na tomto webu</translation>
@@ -1113,6 +1113,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="569000877158168851">Hodnota DnsOverHttpsTemplates je relevantní a použije se pouze v případě, že je zásada DnsOverHttpsMode nastavená na hodnotu <ph name="SECURE_DNS_MODE_AUTOMATIC" /> nebo <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Na střed</translation>
 <translation id="570530837424789914">Spravovat...</translation>
+<translation id="5705882733397021510">Zpět</translation>
 <translation id="57094364128775171">Navrhnout silné heslo…</translation>
 <translation id="5710435578057952990">Identita těchto webových stránek nebyla ověřena.</translation>
 <translation id="5720705177508910913">Aktuální uživatel</translation>
@@ -1120,6 +1121,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5730040223043577876">Pokud jste heslo použili na jiném webu, doporučujeme vám ho resetovat.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Uložit kartu do účtu Google}few{Uložit karty do účtu Google}many{Uložit karty do účtu Google}other{Uložit karty do účtu Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Použijte pro tuto kartu virtuální číslo}few{Vyberte kartu}many{Vyberte kartu}other{Vyberte kartu}}</translation>
+<translation id="5759751709240058861">Používání a natáčení kamery</translation>
 <translation id="5763042198335101085">Zadejte platnou e-mailovou adresu</translation>
 <translation id="5765072501007116331">Chcete-li zobrazit způsoby doručení a požadavky, vyberte adresu</translation>
 <translation id="5776313857861697733">Priorita</translation>
@@ -1327,7 +1329,6 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6631202559048444592">Pro zásadu je k dispozici několik zdrojů, ale hodnoty jsou stejné.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Vymazat</translation>
-<translation id="6644283850729428850">Tato zásada se již nepoužívá.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Žádné}=1{Z 1 webu (nebudete odhlášeni z účtu Google)}few{Ze # webů (nebudete odhlášeni z účtu Google)}many{Z # webu (nebudete odhlášeni z účtu Google)}other{Z # webů (nebudete odhlášeni z účtu Google)}}</translation>
 <translation id="6652101503459149953">Použít Windows Hello</translation>
 <translation id="6657585470893396449">Heslo</translation>

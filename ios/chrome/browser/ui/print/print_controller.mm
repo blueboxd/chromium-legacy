@@ -13,14 +13,22 @@
 #error "This file requires ARC support."
 #endif
 
+@interface PrintController () <UIPrintInteractionControllerDelegate>
+@end
+
 @implementation PrintController
 
 #pragma mark - Public Methods
 
 - (void)printView:(UIView*)view withTitle:(NSString*)title {
+  DCHECK(self.baseViewController)
+      << "Set the print controller's base view controller before calling "
+      << "-printView:withTitle:";
   base::RecordAction(base::UserMetricsAction("MobilePrintMenuAirPrint"));
   UIPrintInteractionController* printInteractionController =
       [UIPrintInteractionController sharedPrintController];
+  printInteractionController.delegate = self;
+
   UIPrintInfo* printInfo = [UIPrintInfo printInfo];
   printInfo.outputType = UIPrintInfoOutputGeneral;
   printInfo.jobName = title;
@@ -51,6 +59,12 @@
 - (void)printWebState:(web::WebState*)webState {
   [self printView:webState->GetView()
         withTitle:tab_util::GetTabTitle(webState)];
+}
+
+#pragma mark - UIPrintInteractionControllerDelegate
+- (UIViewController*)printInteractionControllerParentViewController:
+    (UIPrintInteractionController*)printInteractionController {
+  return self.baseViewController;
 }
 
 @end

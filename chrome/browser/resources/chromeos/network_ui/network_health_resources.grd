@@ -15,13 +15,11 @@
       <include name="IDR_NETWORK_HEALTH_MOJOM_HTML"
           file="${mojom_root}/chrome/browser/chromeos/net/network_health/public/mojom/network_health.mojom.html"
           use_base_dir="false"
-          type="BINDATA"
-          compress="gzip" />
+          type="BINDATA" />
       <include name="IDR_NETWORK_HEALTH_MOJOM_LITE_JS"
           file="${mojom_root}/chrome/browser/chromeos/net/network_health/public/mojom/network_health.mojom-lite.js"
           use_base_dir="false"
-          type="BINDATA"
-          compress="gzip" />
+          type="BINDATA" />
     </includes>
   </release>
 </grit>

@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.components.external_intents.InterceptNavigationDelegateImpl;
@@ -55,6 +56,7 @@ public class TabModelImpl extends TabModelJniBridge {
     private final TabPersistentStore mTabSaver;
     private final TabModelDelegate mModelDelegate;
     private final ObserverList<TabModelObserver> mObservers;
+    private final NextTabPolicySupplier mNextTabPolicySupplier;
     private RecentlyClosedBridge mRecentlyClosedBridge;
 
     // Undo State Tracking -------------------------------------------------------------------------
@@ -80,7 +82,8 @@ public class TabModelImpl extends TabModelJniBridge {
     public TabModelImpl(boolean incognito, boolean isTabbedActivity, TabCreator regularTabCreator,
             TabCreator incognitoTabCreator, TabModelSelectorUma uma,
             TabModelOrderController orderController, TabContentManager tabContentManager,
-            TabPersistentStore tabSaver, TabModelDelegate modelDelegate, boolean supportUndo) {
+            TabPersistentStore tabSaver, NextTabPolicySupplier nextTabPolicySupplier,
+            TabModelDelegate modelDelegate, boolean supportUndo) {
         super(incognito, isTabbedActivity);
         mRegularTabCreator = regularTabCreator;
         mIncognitoTabCreator = incognitoTabCreator;
@@ -88,6 +91,7 @@ public class TabModelImpl extends TabModelJniBridge {
         mOrderController = orderController;
         mTabContentManager = tabContentManager;
         mTabSaver = tabSaver;
+        mNextTabPolicySupplier = nextTabPolicySupplier;
         mModelDelegate = modelDelegate;
         mIsUndoSupported = supportUndo;
         mObservers = new ObserverList<TabModelObserver>();
@@ -272,7 +276,7 @@ public class TabModelImpl extends TabModelJniBridge {
         } else if (tabToClose != currentTab && currentTab != null && !currentTab.isClosing()) {
             nextTab = currentTab;
         } else if (parentTab != null && !parentTab.isClosing()
-                && !mModelDelegate.isInOverviewMode()) {
+                && mNextTabPolicySupplier.get() == NextTabPolicy.HIERARCHICAL) {
             nextTab = parentTab;
         } else if (adjacentTab != null && !adjacentTab.isClosing()) {
             nextTab = adjacentTab;

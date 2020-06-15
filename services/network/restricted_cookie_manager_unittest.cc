@@ -105,9 +105,9 @@ class RestrictedCookieManagerSync {
         url, net::SiteForCookies::FromUrl(site_for_cookies), top_frame_origin,
         std::move(options),
         base::BindLambdaForTesting(
-            [&run_loop,
-             &result](const std::vector<net::CanonicalCookie>& backend_result) {
-              result = backend_result;
+            [&run_loop, &result](const std::vector<net::CookieWithAccessResult>&
+                                     backend_result) {
+              result = net::cookie_util::StripAccessResults(backend_result);
               run_loop.Quit();
             }));
     run_loop.Run();

@@ -14,7 +14,7 @@ import sys
 import tempfile
 import zipfile
 
-from filter_zip import CreatePathTransform
+import filter_zip
 from util import build_utils
 
 
@@ -117,8 +117,8 @@ def main(args):
         build_utils.AddToZipHermetic(
             z, 'AndroidManifest.xml', src_path=options.android_manifest)
 
-        path_transform = CreatePathTransform(options.jar_excluded_globs,
-                                             options.jar_included_globs, [])
+        path_transform = filter_zip.CreatePathTransform(
+            options.jar_excluded_globs, options.jar_included_globs, [])
         with tempfile.NamedTemporaryFile() as jar_file:
           build_utils.MergeZips(
               jar_file.name, options.jars, path_transform=path_transform)

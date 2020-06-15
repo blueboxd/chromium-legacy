@@ -28,7 +28,7 @@ import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
@@ -51,20 +51,21 @@ public class ClearBrowsingDataFragmentBasicTest {
             mSettingsActivityTestRule =
                     new SettingsActivityTestRule<>(ClearBrowsingDataFragmentBasic.class);
 
+    @Rule
+    public final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
+
     private static final String GOOGLE_ACCOUNT = "Google Account";
     private static final String OTHER_ACTIVITY = "other forms of browsing history";
     private static final String SIGNED_IN_DEVICES = "signed-in devices";
 
     @Before
     public void setUp() throws InterruptedException {
-        SigninTestUtil.setUpAuthForTesting();
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     @After
     public void tearDown() {
         TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
-        SigninTestUtil.tearDownAuthForTesting();
     }
 
     private static class StubProfileSyncService extends ProfileSyncService {
@@ -134,7 +135,7 @@ public class ClearBrowsingDataFragmentBasicTest {
     @Test
     @SmallTest
     public void testCheckBoxTextSigned() {
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addAndSignInTestAccount();
         setSyncable(false);
 
         mSettingsActivityTestRule.startSettingsActivity();
@@ -163,7 +164,7 @@ public class ClearBrowsingDataFragmentBasicTest {
     @Test
     @SmallTest
     public void testCheckBoxTextSignedAndSynced() {
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addAndSignInTestAccount();
         setSyncable(true);
 
         mSettingsActivityTestRule.startSettingsActivity();

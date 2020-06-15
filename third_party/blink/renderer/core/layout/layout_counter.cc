@@ -152,7 +152,7 @@ LayoutObject* NextInPreOrder(const LayoutObject& object,
 
 bool PlanCounter(LayoutObject& object,
                  const AtomicString& identifier,
-                 bool& is_reset,
+                 unsigned& type_mask,
                  int& value) {
   // Real text nodes don't have their own style so they can't have counters.
   // We can't even look at their styles or we'll see extra resets and
@@ -180,10 +180,13 @@ bool PlanCounter(LayoutObject& object,
       return false;  // Counters are forbidden from all other pseudo elements.
   }
 
+  type_mask = 0;
   const CounterDirectives directives = style.GetCounterDirectives(identifier);
   if (directives.IsDefined()) {
     value = directives.CombinedValue();
-    is_reset = directives.IsReset();
+    type_mask |= directives.IsIncrement() ? CounterNode::kIncrementType : 0;
+    type_mask |= directives.IsReset() ? CounterNode::kResetType : 0;
+    type_mask |= directives.IsSet() ? CounterNode::kSetType : 0;
     return true;
   }
 
@@ -192,22 +195,22 @@ bool PlanCounter(LayoutObject& object,
       if (ListItemOrdinal* ordinal = ListItemOrdinal::Get(*e)) {
         if (const auto& explicit_value = ordinal->ExplicitValue()) {
           value = explicit_value.value();
-          is_reset = true;
+          type_mask = CounterNode::kResetType;
           return true;
         }
         value = 1;
-        is_reset = false;
+        type_mask = CounterNode::kIncrementType;
         return true;
       }
       if (auto* olist = DynamicTo<HTMLOListElement>(*e)) {
         value = olist->StartConsideringItemCount();
-        is_reset = true;
+        type_mask = CounterNode::kResetType;
         return true;
       }
       if (IsA<HTMLUListElement>(*e) || IsA<HTMLMenuElement>(*e) ||
           IsA<HTMLDirectoryElement>(*e)) {
         value = 0;
-        is_reset = true;
+        type_mask = CounterNode::kResetType;
         return true;
       }
     }
@@ -391,18 +394,18 @@ CounterNode* MakeCounterNodeIfNeeded(LayoutObject& object,
     }
   }
 
-  bool is_reset = false;
+  unsigned type_mask = 0;
   int value = 0;
-  if (!PlanCounter(object, identifier, is_reset, value) &&
+  if (!PlanCounter(object, identifier, type_mask, value) &&
       !always_create_counter)
     return nullptr;
 
   scoped_refptr<CounterNode> new_parent = nullptr;
   scoped_refptr<CounterNode> new_previous_sibling = nullptr;
   scoped_refptr<CounterNode> new_node =
-      CounterNode::Create(object, is_reset, value);
+      CounterNode::Create(object, type_mask, value);
 
-  if (is_reset) {
+  if (type_mask & CounterNode::kResetType) {
     // Find the place where we would've inserted the new node if it was a
     // non-reset node. We have to move every non-reset sibling after the
     // insertion point to a child of the new node.
@@ -420,7 +423,8 @@ CounterNode* MakeCounterNodeIfNeeded(LayoutObject& object,
     }
   }
 
-  if (FindPlaceForCounter(object, identifier, is_reset, new_parent,
+  if (FindPlaceForCounter(object, identifier,
+                          type_mask & CounterNode::kResetType, new_parent,
                           new_previous_sibling))
     new_parent->InsertAfter(new_node.get(), new_previous_sibling.get(),
                             identifier);

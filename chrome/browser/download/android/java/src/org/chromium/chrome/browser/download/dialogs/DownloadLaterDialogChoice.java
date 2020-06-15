@@ -11,7 +11,7 @@ import androidx.annotation.IntDef;
  */
 @IntDef({DownloadLaterDialogChoice.DOWNLOAD_NOW, DownloadLaterDialogChoice.ON_WIFI,
         DownloadLaterDialogChoice.DOWNLOAD_LATER})
-public @interface DownloadLaterDialogChoice {
+@interface DownloadLaterDialogChoice {
     /**
      * Download will be started right away.
      */

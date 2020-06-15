@@ -45,13 +45,16 @@ using indexed_db::PutVarInt;
 namespace {
 
 std::unique_ptr<TransactionalLevelDBIterator> CreateIterator(
-    TransactionalLevelDBDatabase* database) {
-  return database->CreateIterator(database->DefaultReadOptions());
+    TransactionalLevelDBDatabase& database,
+    Status& status) {
+  status = Status();
+  return database.CreateIterator(database.DefaultReadOptions());
 }
 
 std::unique_ptr<TransactionalLevelDBIterator> CreateIterator(
-    TransactionalLevelDBTransaction* transaction) {
-  return transaction->CreateIterator();
+    TransactionalLevelDBTransaction& transaction,
+    Status& status) {
+  return transaction.CreateIterator(status);
 }
 
 // Reads all indexes for the given database and object store in |indexes|.
@@ -71,9 +74,14 @@ Status ReadIndexes(DatabaseOrTransaction* db_or_transaction,
 
   DCHECK(indexes->empty());
 
+  Status s;
   std::unique_ptr<TransactionalLevelDBIterator> it =
-      CreateIterator(db_or_transaction);
-  Status s = it->Seek(start_key);
+      CreateIterator(*db_or_transaction, s);
+  if (!s.ok()) {
+    INTERNAL_WRITE_ERROR_UNTESTED(CREATE_ITERATOR);
+    return s;
+  }
+  s = it->Seek(start_key);
   while (s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0) {
     IndexMetaDataKey meta_data_key;
     {
@@ -174,9 +182,14 @@ Status ReadObjectStores(
 
   DCHECK(object_stores->empty());
 
+  Status s;
   std::unique_ptr<TransactionalLevelDBIterator> it =
-      CreateIterator(db_or_transaction);
-  Status s = it->Seek(start_key);
+      CreateIterator(*db_or_transaction, s);
+  if (!s.ok()) {
+    INTERNAL_WRITE_ERROR_UNTESTED(CREATE_ITERATOR);
+    return s;
+  }
+  s = it->Seek(start_key);
   while (s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0) {
     ObjectStoreMetaDataKey meta_data_key;
     {
@@ -344,9 +357,13 @@ Status ReadDatabaseNamesAndVersionsInternal(
       DatabaseNameKey::EncodeStopKeyForOrigin(origin_identifier);
 
   DCHECK(names_and_versions->empty());
-  std::unique_ptr<TransactionalLevelDBIterator> it =
-      CreateIterator(db_or_transaction);
   Status s;
+  std::unique_ptr<TransactionalLevelDBIterator> it =
+      CreateIterator(*db_or_transaction, s);
+  if (!s.ok()) {
+    INTERNAL_WRITE_ERROR_UNTESTED(CREATE_ITERATOR);
+    return s;
+  }
   for (s = it->Seek(start_key);
        s.ok() && it->IsValid() && CompareKeys(it->Key(), stop_key) < 0;
        s = it->Next()) {

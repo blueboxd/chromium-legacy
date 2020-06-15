@@ -1,0 +1,39 @@
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+<style>
+
+#lessonTitle {
+	font-family: 'Roboto', sans-serif;
+	font-size: 30pt;
+	font-weight: bold;
+}
+
+#lessonContent {
+	display: block;
+	font-family: 'Roboto', sans-serif;
+	font-size: 16pt;
+	line-height: 150%;
+}
+
+</style>
+
+<div id="lessonContainer" hidden>
+	<h1 id="lessonTitle" tabindex="-1">[[title]]</h1>
+	<div id="lessonContent">
+		<template is="dom-repeat" items="[[ content ]]" as="text">
+			<p>[[ text ]]</p>
+		</template>
+	</div>
+	<cr-dialog id="testAreaContainer" close-text="Exit test area" 
+			on-close="closeTestArea" show-close-button>
+		<div id="testAreaTitle" class="title" 
+			slot="title">[[testAreaTitle]]</div>
+		<div class="body" slot="body">
+			<p id="testAreaInstructions">[[testAreaInstructions]]</p>
+			<div id="testArea"></div>
+		</div>
+	</cr-dialog>
+	<cr-button id="showTestArea" on-click="showTestArea" 
+		hidden$="[[ shouldHideTestAreaButton_() ]]">Show test area</cr-button>
+</div>

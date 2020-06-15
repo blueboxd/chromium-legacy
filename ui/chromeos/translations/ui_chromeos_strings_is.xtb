@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">Sinhala-lyklaborð</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> tiltæk</translation>
 <translation id="2425665904502185219">Heildarstærð skráar</translation>
+<translation id="2428749644083375155">Afritar <ph name="NUMBER_OF_ITEMS" /> atriði í <ph name="FOLDER_NAME" /></translation>
 <translation id="2448312741937722512">Gerð</translation>
 <translation id="2453576648990281505">Skráin er þegar til</translation>
 <translation id="2464079411014186876">Ís</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346">Bætti <ph name="ENTRY_NAME" /> við val.</translation>
 <translation id="4582497162516204941">Setja upp með Linux (tilraunaútgáfa)</translation>
 <translation id="4594543368593301662">Sýnir niðurstöður fyrir <ph name="SEARCH_TERM" />.</translation>
+<translation id="4603392156942865207">Afritar <ph name="FILE_NAME" /> í <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Flytjandi</translation>
 <translation id="4656293982926141856">Þessi tölva</translation>
 <translation id="4669606053856530811">Meðlimir „<ph name="SOURCE_NAME" />“ munu missa aðgang nema þessum atriðum sé deilt með þeim.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">Birtuskil</translation>
 <translation id="5068919226082848014">Pítsa</translation>
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> af skrám verður eytt</translation>
+<translation id="508423945471810158">Færir <ph name="NUMBER_OF_ITEMS" /> atriði í <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Villa kom upp.</translation>
 <translation id="5098629044894065541">Hebreskt</translation>
 <translation id="5123433949759960244">Körfubolti</translation>
@@ -454,6 +457,7 @@
 <translation id="6054173164583630569">Franskt lyklaborð</translation>
 <translation id="6074825444536523002">Google eyðublað</translation>
 <translation id="6096979789310008754">Leitartexti hreinsaður, sýnir allar skrár og möppur.</translation>
+<translation id="610101264611565198">Færir <ph name="FILE_NAME" /> í <ph name="FOLDER_NAME" /></translation>
 <translation id="6111770213269631447">Umritun (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Bil</translation>
 <translation id="6133173853026656527">Færir <ph name="FILE_NAME" />...</translation>
@@ -537,6 +541,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Uppsetningin mistókst.</translation>
 <translation id="7040138676081995583">Opna með...</translation>
+<translation id="7059566040011178088">Minna en <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> atriði valin</translation>
 <translation id="7106346894903675391">Kaupa meira geymslurými...</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;“ – &lt;em&gt;leita í Drive&lt;/em&gt;</translation>
@@ -647,6 +652,7 @@
 <translation id="8193175696669055101">Gerð tækis</translation>
 <translation id="8208580316430297579">Listaverk</translation>
 <translation id="8223479393428528563">Til að vista þessar skrár fyrir notkun án nettengingar skaltu tengjast netinu aftur, hægrismella á skrárnar og velja kostinn <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8231972167769262174">Um <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Hætta</translation>
 <translation id="8261506727792406068">Eyða</translation>
 <translation id="8269755669432358899">Draga saman svæði með ábendingum fyrir skrár</translation>

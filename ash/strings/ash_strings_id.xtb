@@ -509,7 +509,6 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="7068360136237591149">Buka file</translation>
 <translation id="7076293881109082629">Sedang masuk</translation>
 <translation id="7088960765736518739">Tombol Akses</translation>
-<translation id="7092922358121866860">Tampilkan setelan Cahaya Malam</translation>
 <translation id="7098389117866926363">Perangkat USB-C (port belakang sebelah kiri)</translation>
 <translation id="7131634465328662194">Anda akan logout otomatis.</translation>
 <translation id="7143207342074048698">Menyambungkan</translation>
@@ -661,7 +660,6 @@ Berikut ini beberapa hal yang dapat Anda coba untuk memulai.</translation>
 <translation id="8877788021141246043">Setel pengingat</translation>
 <translation id="8878886163241303700">Memperluas layar</translation>
 <translation id="890616557918890486">Ubah sumber</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> tidak mendukung <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Resolusi diubah ke <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Klik konfirmasi untuk menyimpan perubahan. Setelan sebelumnya akan dipulihkan dalam <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Baterai <ph name="PERCENTAGE" /> persen.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Asisten Google tidak berbicara dalam bahasa ini.</translation>

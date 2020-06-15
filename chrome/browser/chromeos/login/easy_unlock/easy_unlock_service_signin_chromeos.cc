@@ -342,16 +342,6 @@ void EasyUnlockServiceSignin::OnSuspendDoneInternal() {
   // Ignored.
 }
 
-void EasyUnlockServiceSignin::OnBluetoothAdapterPresentChanged() {
-  // Because the BluetoothAdapter state change may change whether EasyUnlock is
-  // allowed, we want to treat the user pod as though it were focused for the
-  // first time. This allows the correct flow (loading cryptohome keys,
-  // initializing ProximityAuthSystem, etc.) to take place.
-  AccountId current_account_id = account_id_;
-  account_id_ = AccountId();
-  OnFocusedUserChanged(current_account_id);
-}
-
 void EasyUnlockServiceSignin::OnScreenDidLock(
     proximity_auth::ScreenlockBridge::LockHandler::ScreenType screen_type) {
   // In production code, the screen type should always be the signin screen; but

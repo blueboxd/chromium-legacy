@@ -15,14 +15,18 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.view.ViewCompat;
 
 import com.google.android.material.appbar.AppBarLayout;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.coordinator.CoordinatorLayoutForPointer;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.ntp.IncognitoDescriptionView;
 import org.chromium.chrome.browser.ntp.search.SearchBoxCoordinator;
@@ -75,6 +79,7 @@ class TasksView extends CoordinatorLayoutForPointer {
                 (AppBarLayout.LayoutParams) mSearchBoxCoordinator.getView().getLayoutParams();
         layoutParams.setScrollFlags(SCROLL_FLAG_SCROLL);
         adjustOmniboxScrollMode(layoutParams);
+        setTabCarouselTitleStyle();
     }
 
     private void adjustOmniboxScrollMode(AppBarLayout.LayoutParams layoutParams) {
@@ -96,6 +101,31 @@ class TasksView extends CoordinatorLayoutForPointer {
         }
         // This is only needed when the scroll mode is not "top".
         layoutParams.bottomMargin = ViewUtils.dpToPx(getContext(), OMNIBOX_BOTTOM_PADDING_DP);
+    }
+
+    private void setTabCarouselTitleStyle() {
+        // Match the tab carousel title style with the feed header.
+        // TODO(crbug.com/1016952): Migrate ChromeFeatureList.isEnabled to using cached flags for
+        // instant start. There are many places checking REPORT_FEED_USER_ACTIONS, like in
+        // ExploreSurfaceCoordinator.
+        TextView titleDescription = (TextView) findViewById(R.id.tab_switcher_title_description);
+        TextView moreTabs = (TextView) findViewById(R.id.more_tabs);
+        if (!CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
+            ApiCompatibilityUtils.setTextAppearance(
+                    titleDescription, R.style.TextAppearance_TextSmall_Secondary);
+            ApiCompatibilityUtils.setTextAppearance(
+                    moreTabs, R.style.TextAppearance_TextSmall_Blue);
+            ViewCompat.setPaddingRelative(titleDescription,
+                    mContext.getResources().getDimensionPixelSize(R.dimen.card_padding),
+                    titleDescription.getPaddingTop(), titleDescription.getPaddingEnd(),
+                    titleDescription.getPaddingBottom());
+        } else {
+            ApiCompatibilityUtils.setTextAppearance(
+                    titleDescription, R.style.TextAppearance_TextMediumThick_Primary);
+            ApiCompatibilityUtils.setTextAppearance(
+                    moreTabs, R.style.TextAppearance_TextMedium_Blue);
+        }
     }
 
     ViewGroup getCarouselTabSwitcherContainer() {

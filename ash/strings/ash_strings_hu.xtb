@@ -83,6 +83,7 @@
 <translation id="1864454756846565995">C típusú USB-vel kompatibilis eszköz (hátsó port)</translation>
 <translation id="1882897271359938046">Tükrözés: <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Feloldás ujjlenyomattal</translation>
+<translation id="1888656773939766144">A(z) <ph name="DISPLAY_NAME" /> nem támogatja a következő felbontást: <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). A felbontás erre módosult: <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). A módosítás megtartásához kattintson a Megerősítés gombra. A beállítás <ph name="TIMEOUT_SECONDS" /> múlva visszaáll a korábbi értékre.</translation>
 <translation id="1919743966458266018">Megváltozott a feladatkezelő megnyitásának billentyűkódja. A <ph name="OLD_SHORTCUT" /> helyett használja a következőt: <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatikus kattintások</translation>
 <translation id="1928739107511554905">A frissítés alkalmazásához és a csatlakoztatott billentyűzet használatához indítsa újra a Chromebookot az érintőképernyő segítségével.</translation>
@@ -510,7 +511,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="7068360136237591149">Fájlok megnyitása</translation>
 <translation id="7076293881109082629">Bejelentkezés</translation>
 <translation id="7088960765736518739">Kapcsolóalapú hozzáférés</translation>
-<translation id="7092922358121866860">Az Éjszakai fényhez tartozó beállítások megjelenítése</translation>
 <translation id="7098389117866926363">C típusú USB-vel kompatibilis eszköz (bal hátsó port)</translation>
 <translation id="7131634465328662194">A rendszer automatikusan kijelentkezteti.</translation>
 <translation id="7143207342074048698">Csatlakozás</translation>
@@ -662,7 +662,6 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8877788021141246043">Emlékeztető beállítása</translation>
 <translation id="8878886163241303700">Kibővített képernyő</translation>
 <translation id="890616557918890486">Forrás módosítása</translation>
-<translation id="8908312332415978740">A(z) <ph name="DISPLAY_NAME" /> nem támogatja a következő felbontást: <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). A felbontás erre módosult: <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). A módosítás megtartásához kattintson a Megerősítés gombra. A beállítás <ph name="TIMEOUT_SECONDS" /> múlva visszaáll a korábbi értékre.</translation>
 <translation id="8909138438987180327">Az akkumulátor töltöttsége <ph name="PERCENTAGE" /> százalék.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">A Google Segéd nem beszél ezen a nyelven.</translation>

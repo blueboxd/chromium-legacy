@@ -785,24 +785,26 @@ bool DisplayConfigurator::SetGammaCorrection(
 
 bool DisplayConfigurator::IsPrivacyScreenSupportedOnInternalDisplay() const {
   return current_internal_display_ &&
-         current_internal_display_->privacy_screen_state() != kNotSupported;
+         current_internal_display_->privacy_screen_state() != kNotSupported &&
+         current_internal_display_->current_mode();
 }
 
 bool DisplayConfigurator::SetPrivacyScreenOnInternalDisplay(bool enabled) {
+  if (IsPrivacyScreenSupportedOnInternalDisplay()) {
+    native_display_delegate_->SetPrivacyScreen(
+        current_internal_display_->display_id(), enabled);
+    return true;
+  }
+
   if (!current_internal_display_) {
     LOG(ERROR) << "This device does not have an internal display.";
-    return false;
-  }
-
-  if (!IsPrivacyScreenSupportedOnInternalDisplay()) {
+  } else if (current_internal_display_->privacy_screen_state() ==
+             kNotSupported) {
     LOG(ERROR) << "The internal display of this device does not support "
-                  "privacy screeny.";
-    return false;
+                  "privacy screen.";
   }
 
-  native_display_delegate_->SetPrivacyScreen(
-      current_internal_display_->display_id(), enabled);
-  return true;
+  return false;
 }
 
 chromeos::DisplayPowerState DisplayConfigurator::GetRequestedPowerState()

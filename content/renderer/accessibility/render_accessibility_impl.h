@@ -37,6 +37,10 @@ class AXActionTarget;
 struct AXEvent;
 }
 
+namespace ukm {
+class MojoUkmRecorder;
+}
+
 namespace content {
 
 class AXImageAnnotator;
@@ -281,6 +285,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
 
   // The specified page language, or empty if unknown.
   std::string page_language_;
+
+  std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder_;
 
   // So we can queue up tasks to be executed later.
   base::WeakPtrFactory<RenderAccessibilityImpl>

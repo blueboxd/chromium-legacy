@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/core/layout/counter_node.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -2082,7 +2083,8 @@ const CSSValue* CounterIncrement::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForCounterDirectives(style, true);
+  return ComputedStyleUtils::ValueForCounterDirectives(
+      style, CounterNode::kIncrementType);
 }
 
 const int kCounterResetDefaultValue = 0;
@@ -2100,7 +2102,27 @@ const CSSValue* CounterReset::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForCounterDirectives(style, false);
+  return ComputedStyleUtils::ValueForCounterDirectives(style,
+                                                       CounterNode::kResetType);
+}
+
+const int kCounterSetDefaultValue = 0;
+
+const CSSValue* CounterSet::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  return css_parsing_utils::ConsumeCounter(range, context,
+                                           kCounterSetDefaultValue);
+}
+
+const CSSValue* CounterSet::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return ComputedStyleUtils::ValueForCounterDirectives(style,
+                                                       CounterNode::kSetType);
 }
 
 const CSSValue* Cursor::ParseSingleValue(CSSParserTokenRange& range,

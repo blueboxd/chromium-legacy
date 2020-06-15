@@ -13,10 +13,11 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.a
 
 import android.graphics.drawable.ColorDrawable;
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.BeforeClass;
 import org.junit.Rule;

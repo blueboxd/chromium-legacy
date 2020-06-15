@@ -32,12 +32,12 @@ void NetworkDiagnosticsImpl::BindReceiver(
 
 void NetworkDiagnosticsImpl::LanConnectivity(LanConnectivityCallback callback) {
   LanConnectivityRoutine lan_connectivity_routine;
-  lan_connectivity_routine.RunTest(std::move(callback));
+  lan_connectivity_routine.RunRoutine(std::move(callback));
 }
 
 void NetworkDiagnosticsImpl::SignalStrength(SignalStrengthCallback callback) {
   SignalStrengthRoutine signal_strength_routine;
-  signal_strength_routine.RunTest(std::move(callback));
+  signal_strength_routine.RunRoutine(std::move(callback));
 }
 
 void NetworkDiagnosticsImpl::GatewayCanBePinged(
@@ -45,29 +45,29 @@ void NetworkDiagnosticsImpl::GatewayCanBePinged(
   chromeos::DebugDaemonClient* client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
   GatewayCanBePingedRoutine gateway_can_be_pinged_routine(client);
-  gateway_can_be_pinged_routine.RunTest(std::move(callback));
+  gateway_can_be_pinged_routine.RunRoutine(std::move(callback));
 }
 
 void NetworkDiagnosticsImpl::HasSecureWiFiConnection(
     HasSecureWiFiConnectionCallback callback) {
   HasSecureWiFiConnectionRoutine has_secure_wifi_connection_routine;
-  has_secure_wifi_connection_routine.RunTest(std::move(callback));
+  has_secure_wifi_connection_routine.RunRoutine(std::move(callback));
 }
 
 void NetworkDiagnosticsImpl::DnsResolverPresent(
     DnsResolverPresentCallback callback) {
   DnsResolverPresentRoutine dns_resolver_present_routine;
-  dns_resolver_present_routine.RunTest(std::move(callback));
+  dns_resolver_present_routine.RunRoutine(std::move(callback));
 }
 
 void NetworkDiagnosticsImpl::DnsLatency(DnsLatencyCallback callback) {
   DnsLatencyRoutine dns_latency_routine;
-  dns_latency_routine.RunTest(std::move(callback));
+  dns_latency_routine.RunRoutine(std::move(callback));
 }
 
 void NetworkDiagnosticsImpl::DnsResolution(DnsResolutionCallback callback) {
   DnsResolutionRoutine dns_resolution_routine;
-  dns_resolution_routine.RunTest(std::move(callback));
+  dns_resolution_routine.RunRoutine(std::move(callback));
 }
 
 }  // namespace network_diagnostics

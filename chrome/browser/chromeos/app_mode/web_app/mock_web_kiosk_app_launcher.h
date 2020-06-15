@@ -16,10 +16,10 @@ class MockWebKioskAppLauncher : public WebKioskAppLauncher {
   MockWebKioskAppLauncher();
   ~MockWebKioskAppLauncher() override;
 
-  MOCK_METHOD1(Initialize, void(const AccountId&));
+  MOCK_METHOD0(Initialize, void());
   MOCK_METHOD0(ContinueWithNetworkReady, void());
   MOCK_METHOD0(LaunchApp, void());
-  MOCK_METHOD0(CancelCurrentInstallation, void());
+  MOCK_METHOD0(RestartLauncher, void());
 };
 
 }  // namespace chromeos

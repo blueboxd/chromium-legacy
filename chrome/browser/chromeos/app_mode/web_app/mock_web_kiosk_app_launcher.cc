@@ -7,7 +7,7 @@
 namespace chromeos {
 
 MockWebKioskAppLauncher::MockWebKioskAppLauncher()
-    : WebKioskAppLauncher(nullptr, nullptr) {}
+    : WebKioskAppLauncher(nullptr, nullptr, EmptyAccountId()) {}
 
 MockWebKioskAppLauncher::~MockWebKioskAppLauncher() = default;
 

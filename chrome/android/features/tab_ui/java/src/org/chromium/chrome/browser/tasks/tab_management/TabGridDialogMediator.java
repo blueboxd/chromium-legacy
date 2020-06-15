@@ -215,6 +215,7 @@ public class TabGridDialogMediator {
             hideDialog(true);
             RecordUserAction.record("TabGridDialog.Exit");
         };
+        mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
     }
 
     public void initWithNative(@Nullable TabSelectionEditorCoordinator

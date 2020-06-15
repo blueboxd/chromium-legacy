@@ -467,7 +467,12 @@ bool FindGreatestKeyLessThanOrEqual(
     std::string* found_key,
     Status* s) {
   std::unique_ptr<TransactionalLevelDBIterator> it =
-      transaction->CreateIterator();
+      transaction->CreateIterator(*s);
+  if (!s->ok()) {
+    INTERNAL_WRITE_ERROR_UNTESTED(CREATE_ITERATOR);
+    return false;
+  }
+
   *s = it->Seek(target);
   if (!s->ok())
     return false;

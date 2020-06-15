@@ -179,9 +179,6 @@ class EasyUnlockService : public KeyedService {
   // Called when the local device resumes after a suspend.
   virtual void OnSuspendDoneInternal() = 0;
 
-  // Called when the state of the Bluetooth adapter changes.
-  virtual void OnBluetoothAdapterPresentChanged();
-
   // Called when the user enters password before easy unlock succeeds or fails
   // definitively.
   virtual void OnUserEnteredPassword();
@@ -243,9 +240,6 @@ class EasyUnlockService : public KeyedService {
   // signins/unlocks from password-based unlocks for metrics.
   bool will_authenticate_using_easy_unlock_ = false;
 
-  // A class to detect whether a bluetooth adapter is present.
-  class BluetoothDetector;
-
   // Gets |screenlock_state_handler_|. Returns NULL if Easy Unlock is not
   // allowed. Otherwise, if |screenlock_state_handler_| is not set, an instance
   // is created. Do not cache the returned value, as it may go away if Easy
@@ -278,9 +272,6 @@ class EasyUnlockService : public KeyedService {
   // The handler for the current auth attempt. Set iff an auth attempt is in
   // progress.
   std::unique_ptr<EasyUnlockAuthAttempt> auth_attempt_;
-
-  // Detects when the system Bluetooth adapter status changes.
-  std::unique_ptr<BluetoothDetector> bluetooth_detector_;
 
   // Handles connecting, authenticating, and updating the UI on the lock/sign-in
   // screen. After a |RemoteDeviceRef| instance is provided, this object will

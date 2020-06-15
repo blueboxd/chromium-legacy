@@ -24,7 +24,7 @@ import org.chromium.components.signin.test.util.FakeProfileDataSource;
  * a simple AccountManagerFacade mock.
  */
 public class AccountManagerTestRule implements TestRule {
-    private static final String TEST_ACCOUNT_EMAIL = "test@gmail.com";
+    public static final String TEST_ACCOUNT_EMAIL = "test@gmail.com";
 
     private final FakeAccountManagerFacade mFakeAccountManagerFacade;
     private boolean mIsSignedIn = false;
@@ -99,6 +99,15 @@ public class AccountManagerTestRule implements TestRule {
         SigninTestUtil.signIn(account);
         mIsSignedIn = true;
         return account;
+    }
+
+    /**
+     * Returns the currently signed in account.
+     *
+     * This method invokes native code. It shouldn't be called in a Robolectric test.
+     */
+    public Account getCurrentSignedInAccount() {
+        return SigninTestUtil.getCurrentAccount();
     }
 
     /**

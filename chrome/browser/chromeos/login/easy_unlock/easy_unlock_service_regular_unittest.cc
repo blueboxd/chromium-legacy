@@ -112,11 +112,11 @@ class EasyUnlockServiceRegularTest : public testing::Test {
   void SetUp() override {
     PowerManagerClient::InitializeFake();
 
+    // Note: this is necessary because objects owned by EasyUnlockService
+    // depend on the BluetoothAdapter -- fetching the real one causes tests
+    // to fail.
     mock_adapter_ = new testing::NiceMock<MockBluetoothAdapter>();
     device::BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter_);
-    EXPECT_CALL(*mock_adapter_, IsPresent())
-        .WillRepeatedly(testing::Invoke(
-            this, &EasyUnlockServiceRegularTest::is_bluetooth_adapter_present));
 
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_pref_service_);
     RegisterLocalState(local_pref_service_.registry());
@@ -208,14 +208,6 @@ class EasyUnlockServiceRegularTest : public testing::Test {
         prefs::kEasyUnlockAllowed, std::make_unique<base::Value>(allowed));
   }
 
-  void set_is_bluetooth_adapter_present(bool is_present) {
-    is_bluetooth_adapter_present_ = is_present;
-  }
-
-  bool is_bluetooth_adapter_present() const {
-    return is_bluetooth_adapter_present_;
-  }
-
   void SetScreenLockState(bool is_locked) {
     if (is_locked)
       proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(account_id_);
@@ -261,7 +253,6 @@ class EasyUnlockServiceRegularTest : public testing::Test {
 
   std::string profile_gaia_id_;
 
-  bool is_bluetooth_adapter_present_ = true;
   scoped_refptr<testing::NiceMock<MockBluetoothAdapter>> mock_adapter_;
 
   testing::StrictMock<MockEasyUnlockNotificationController>*
@@ -281,13 +272,6 @@ class EasyUnlockServiceRegularTest : public testing::Test {
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockServiceRegularTest);
 };
-
-TEST_F(EasyUnlockServiceRegularTest, NoBluetoothNoService) {
-  InitializeService(true /* should_initialize_all_dependencies */);
-
-  set_is_bluetooth_adapter_present(false);
-  EXPECT_FALSE(easy_unlock_service_regular_->IsAllowed());
-}
 
 TEST_F(EasyUnlockServiceRegularTest, NotAllowedWhenProhibited) {
   InitializeService(true /* should_initialize_all_dependencies */);

@@ -85,5 +85,34 @@ TEST_F(AssistiveWindowControllerTest,
   EXPECT_EQ(current_bounds, suggestion_view->GetAnchorRect());
 }
 
+TEST_F(AssistiveWindowControllerTest,
+       SuggestionViewBoundIsResetAfterHideSuggestionThenShowAgain) {
+  // Sets up suggestion_view with confirmed_length = 1.
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->ShowSuggestion(suggestion_,
+                                                                    1, false);
+  EXPECT_EQ(
+      1u,
+      ui::IMEBridge::Get()->GetAssistiveWindowHandler()->GetConfirmedLength());
+
+  gfx::Rect current_bounds =
+      controller_->GetSuggestionWindowViewForTesting()->GetAnchorRect();
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->HideSuggestion();
+
+  // Create new suggestion window.
+  AssistiveWindowProperties properties;
+  properties.type = ui::ime::AssistiveWindowType::kEmojiSuggestion;
+  properties.visible = true;
+  properties.candidates =
+      std::vector<base::string16>({base::UTF8ToUTF16("candidate")});
+  ui::IMEBridge::Get()
+      ->GetAssistiveWindowHandler()
+      ->SetAssistiveWindowProperties(properties);
+
+  gfx::Rect new_bounds(current_bounds.width() + 1, current_bounds.height());
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->SetBounds(new_bounds);
+  EXPECT_EQ(new_bounds,
+            controller_->GetSuggestionWindowViewForTesting()->GetAnchorRect());
+}
+
 }  // namespace input_method
 }  // namespace chromeos

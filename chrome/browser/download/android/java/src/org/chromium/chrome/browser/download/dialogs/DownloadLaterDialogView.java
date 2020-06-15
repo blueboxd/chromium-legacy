@@ -26,8 +26,7 @@ public class DownloadLaterDialogView
     private RadioButtonWithDescription mDownloadLater;
     private RadioGroup mRadioGroup;
 
-    // The item that the user selected in the download later dialog UI.
-    private @DownloadLaterDialogChoice int mChoice = DownloadLaterDialogChoice.DOWNLOAD_NOW;
+    private DownloadLaterDialogController mController;
 
     /**
      * The view binder to propagate events from model to view.
@@ -38,6 +37,8 @@ public class DownloadLaterDialogView
             if (propertyKey == DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION) {
                 view.setChoice(
                         model.get(DownloadLaterDialogProperties.DOWNLOAD_TIME_INITIAL_SELECTION));
+            } else if (propertyKey == DownloadLaterDialogProperties.CONTROLLER) {
+                view.setController(model.get(DownloadLaterDialogProperties.CONTROLLER));
             }
         }
     }
@@ -69,12 +70,10 @@ public class DownloadLaterDialogView
                 mDownloadLater.setChecked(true);
                 break;
         }
-
-        mChoice = choice;
     }
 
-    public @DownloadLaterDialogChoice int getChoice() {
-        return mChoice;
+    void setController(DownloadLaterDialogController controller) {
+        mController = controller;
     }
 
     // RadioGroup.OnCheckedChangeListener overrides.
@@ -89,6 +88,7 @@ public class DownloadLaterDialogView
         } else if (mDownloadLater.isChecked()) {
             choice = DownloadLaterDialogChoice.DOWNLOAD_LATER;
         }
-        mChoice = choice;
+
+        if (mController != null) mController.onChoiceChanged(choice);
     }
 }

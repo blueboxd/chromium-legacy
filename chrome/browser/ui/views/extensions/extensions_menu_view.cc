@@ -456,7 +456,8 @@ void ExtensionsMenuView::OnToolbarVisibleCountChanged() {
 }
 
 void ExtensionsMenuView::OnToolbarHighlightModeChanged(bool is_highlighting) {
-  // TODO(pbos): Handle highlighting - somehow.
+  NOTREACHED()
+      << "Action highlighting is not supported with the extensions menu";
 }
 
 void ExtensionsMenuView::OnToolbarModelInitialized() {

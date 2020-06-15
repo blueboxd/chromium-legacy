@@ -167,12 +167,6 @@
 <translation id="1307454923744766368">针对不安全来源的安全性限制不适用于哪些来源或主机名模式</translation>
 <translation id="1312799700549720683">控制显示设置。</translation>
 <translation id="131353325527891113">在登录屏幕上显示用户名</translation>
-<translation id="1327351219049180837">此政策旨在控制是否报告政策数据和政策提取时间。
-
-      当此政策设为 True 或未设置时，系统会收集政策数据和政策提取时间。
-      当此政策设为 False 时，系统不会收集政策数据和政策提取时间。
-
-      仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="1327466551276625742">离线时，弹出网络配置提示</translation>
 <translation id="1330145147221172764">启用屏幕键盘</translation>
 <translation id="13356285923490863">政策名称</translation>
@@ -914,12 +908,6 @@
 
           在 Windows 上，此政策仅适用于已加入 <ph name="MS_AD_NAME" /> 网域的实例，或者已注册设备管理服务的 Windows 10 Pro 或 Enterprise 实例。</translation>
 <translation id="247658312644322296">“另存为 PDF”目的地</translation>
-<translation id="2478649170422995190">此政策旨在控制是否报告版本信息，例如操作系统版本、操作系统平台、操作系统架构、<ph name="PRODUCT_NAME" /> 版本号和 <ph name="PRODUCT_NAME" /> 版本类型。
-
-      当此政策设为 True 或未设置时，系统会收集版本信息。
-      当此政策设为 False 时，系统不会收集版本信息。
-
-      仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="2480971699591919564">启用“点击通话”功能，以允许已登录的 Chrome 用户从桌面设备向 Android 设备发送电话号码。若想了解详情，请参阅这篇帮助中心文章：https://support.google.com/chrome/answer/9430554?hl=zh-CN。
 
       如果启用了此政策，即意味着允许 Chrome 用户向 Android 设备发送电话号码。
@@ -1297,13 +1285,13 @@
 
         警告：实验性政策不受支持，而且在未来版本的浏览器中可能会被更改或移除，恕不另行通知！
 
-        实验性政策可能尚未制定完毕，或者仍有已知或未知的缺陷。它可能会被更改甚至移除，而不显示任何通知。启用实验性政策可能会致使您丢失浏览器数据，或者致使您的安全或隐私受到威胁。
+        实验性政策可能尚未制定完毕，或者仍有已知或未知的缺陷。此类政策可能会被更改甚至移除，而不显示任何通知。启用实验性政策可能会致使您丢失浏览器数据，或者致使您的安全或隐私受到威胁。
 
-        如果所选政策不在列表中且未正式发布，那么在 Beta 版和稳定版中，系统会忽略其值。
+        如果某项政策不在列表中且未正式发布，那么在 Beta 版和稳定版中，系统会忽略该政策的值。
 
-        如果所选政策在列表中且未正式发布，系统会应用其值。
+        如果某项政策在列表中且未正式发布，系统会应用该政策的值。
 
-        此政策对已发布的政策没有任何影响。</translation>
+        此政策不会影响已发布的政策。</translation>
 <translation id="3016255526521614822">允许在 <ph name="PRODUCT_OS_NAME" />锁定屏幕启用加入白名单的备注应用</translation>
 <translation id="3020064401262077616">控制仅应用于未成年人帐号的家长监督政策。</translation>
 <translation id="3020953534071988875">通过配置此政策，您可以允许/禁止对 <ph name="PRODUCT_NAME" /> 中的无痕模式和访客个人资料进行静默身份验证。
@@ -1401,7 +1389,7 @@
 
       用户可以更改用于打开应用的容器，并跳过创建桌面快捷方式的步骤。
 
-      若要了解如何将应用固定到 <ph name="PRODUCT_OS_NAME" />工具栏中，请参阅 <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" />。</translation>
+      如需了解如何将应用固定到 <ph name="PRODUCT_OS_NAME" />工具栏中，请参阅 <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" />。</translation>
 <translation id="3152425128389603870">使“统一桌面”功能可供用户使用，并使其在默认情况下处于启用状态</translation>
 <translation id="3159375329008977062">允许用户通过界面导出/导入 Crostini 容器</translation>
 <translation id="3165808775394012744">将这些政策列于此处是为了方便您移除它们。</translation>
@@ -2718,7 +2706,7 @@
 
       另请访问 https://wiki.samba.org/index.php/Samba_4.6_Features_added/changed#Kerberos_client_encryption_types。</translation>
 <translation id="5249453807420671499">用户可以添加 Kerberos 帐号</translation>
-<translation id="5252995168844634755">如果此政策设为 True，系统会开启“统一桌面”功能，以使应用能够跨多个显示屏进行显示。用户可为单个显示屏关闭“统一桌面”功能。
+<translation id="5252995168844634755">如果此政策设为 True，系统会开启“统一桌面”功能，使应用能够跨多个显示屏进行显示。用户可为单个显示屏关闭“统一桌面”功能。
 
       如果此政策设为 False 或未设置，系统将关闭“统一桌面”，而且用户无法开启该功能。</translation>
 <translation id="5255162913209987122">可推荐</translation>
@@ -3484,12 +3472,6 @@
           另请参阅“CookiesAllowedForUrls”和“CookiesSessionOnlyForUrls”政策。请注意，这三项政策中的网址格式不得互相冲突，因为如果存在冲突，系统将无法判断应以哪项政策为准。
 
           要详细了解有效网址格式，请访问 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns。</translation>
-<translation id="6399242659768117666">此政策旨在控制是否报告扩展程序和插件信息。
-
-      如果此政策设为 True 或未设置，系统会收集扩展程序和插件数据。
-      如果此政策设为 False，系统不会收集扩展程序和插件数据。
-
-      仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="6401669939808766804">使用户退出</translation>
 <translation id="6406448383934634215">如果选择“打开网址列表”作为启动时的操作，您就可以指定要打开的网址的列表。如果此政策未设置，启动时将不会打开任何网址。
 
@@ -3512,7 +3494,6 @@
           如果您选择自动检测代理服务器，则系统会向 Android 应用提供脚本网址“http://wpad/wpad.dat”，但不会使用代理自动检测协议的任何其他部分。
 
           如果您选择使用 .pac 代理脚本，则系统会向 Android 应用提供相应的脚本网址。</translation>
-<translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6438972408080276697">如果您将此政策设为 True，系统便会向 Google 报告由政策触发的主要 Android 应用安装事件。将此政策设为 False 意味着系统不会记录任何事件。</translation>
 <translation id="6440051664870270040">允许网站在导航的同时打开弹出式窗口</translation>
 <translation id="6447948611083700881">已停用备份和恢复服务</translation>
@@ -3590,12 +3571,6 @@
 
       此政策可设为一个可执行文件路径，也可设为 <ph name="PRODUCT_NAME_PLACEHOLDER" /> 以自动检测 Chrome 的安装位置。</translation>
 <translation id="6536600139108165863">设备关机后自动重新启动</translation>
-<translation id="6537062468544950724">此政策旨在控制是否报告可用于识别设备的信息，例如设备名称和网络地址。
-
-      当此政策设为 True 或未设置时，系统会收集可用于识别设备的信息。
-      当此政策设为 False 时，系统不会收集可用于识别设备的信息。
-
-      仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="6539246272469751178">此政策对 Android 应用没有任何影响。Android 应用始终都会使用默认下载目录，并且无法访问由 <ph name="PRODUCT_OS_NAME" />下载到非默认下载目录中的任何文件。</translation>
 <translation id="654303922206238013">ecryptfs 迁移策略</translation>
 <translation id="6544897973797372144">如果该策略设置为 True，且未指定 ChromeOsReleaseChannel 策略，那么注册域的用户将可以更改设备的发布版。如果该策略设置为 False，那么设备就会锁定最后设置的任何版本。
@@ -3860,12 +3835,6 @@
       将此政策设为 <ph name="BR_UNDER_USER_CONTROL" /> 意味着系统会提示用户使用备份和恢复服务。如果用户开启了该服务，系统就会将 Android 应用数据上传到 Android 备份服务器，并会在用户重新安装兼容的应用期间恢复这些数据。
 
       完成初始设置后，用户可以开启或关闭备份和恢复服务。</translation>
-<translation id="6991078864332103177">此政策旨在控制是否报告可用于识别用户身份的信息，例如操作系统登录、<ph name="PRODUCT_NAME" /> 个人资料登录、<ph name="PRODUCT_NAME" /> 个人资料名称、<ph name="PRODUCT_NAME" /> 个人资料路径和 <ph name="PRODUCT_NAME" /> 可执行文件路径。
-
-      当此政策设为 True 或未设置时，系统会收集可用于识别用户身份的信息。
-      当此政策设为 False 时，系统不会收集可用于识别用户身份的信息。
-
-      仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="6994082778848658360">指定如何使用板载安全元件硬件提供双重身份验证（如果该硬件与此功能兼容的话）。使用机器电源按钮检测用户是否真实存在。
 
       如果选择“停用”，系统将不会提供任何双重身份验证。
@@ -4277,14 +4246,6 @@
       如果此政策未设置或设置为 0，则转到指定网址时会立即在替代浏览器中打开相应网页。
 
       如果将此政策设置为某个数字，则 Chrome 会显示一条消息，并在显示时长达到与该数字对应的毫秒数后打开替代浏览器。</translation>
-<translation id="7583419926951418342">此政策用于控制 <ph name="PRODUCT_NAME" /> 云报告，后者可将与浏览器操作相关的信息上传到 Google 管理控制台。
-
-      如果此政策未设置或设为 False，系统将不会收集或上传任何数据。
-      如果此政策设为 True，系统会收集数据并将其上传至 Google 管理控制台。
-      要控制上传的数据，请使用 Chrome Reporting Extension 组中的政策。
-
-      对于 <ph name="PRODUCT_NAME" />，仅当已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 注册相应设备后，此政策才有效。
-      对于 <ph name="PRODUCT_OS_NAME" />，此政策一直有效。</translation>
 <translation id="7586477707097444774">为与这些格式匹配的网域设置的 Cookie 将恢复为旧版 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 行为。恢复为旧版行为会导致未指定 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 属性的 Cookie 被当作“<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />”Cookie 来处理，并会撤消“<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />”Cookie 必须附带“<ph name="ATTRIBUTE_SECURE_NAME" />”属性的要求。要查看完整说明，请参阅 https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies。
 
           对于与此处所列格式不匹配的网域上的 Cookie 以及未设置此政策时的所有 Cookie：倘若已设置 <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> 政策，系统便会采用该政策中的全局默认值；否则，就会采用用户个人配置中的全局默认值。
@@ -4405,19 +4366,10 @@
           如果停用或不设置该设置，那么系统将不启用双重身份验证，并采用由用户定义 PIN 这一默认行为。</translation>
 <translation id="7750991880413385988">打开新标签页</translation>
 <translation id="7754704193130578113">下载前询问每个文件的保存位置</translation>
-<translation id="7755495228644343508">配置与 Chrome Reporting Extension 相关的政策。
-
-      仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="7758378441185523981">为个人资料类型启用静默身份验证。</translation>
 <translation id="7763614521440615342">在“打开新的标签页”页面上显示内容建议</translation>
 <translation id="7765879851993224640">允许使用 Smart Lock 登录功能。</translation>
 <translation id="7774768074957326919">使用系统代理设置</translation>
-<translation id="7775902646576367944">此政策旨在控制是否报告安全浏览信息，包括安全浏览警告次数和安全浏览警告点击次数。
-
-      如果此政策设为 True 或未设置，系统会收集安全浏览数据。
-      如果此政策设为 False，系统不会收集安全浏览数据。
-
-      仅当已启用 <ph name="CHROME_REPORTING_EXTENSION_NAME" /> 且已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> 注册相应设备后，此政策才有效。</translation>
 <translation id="777734450201217641">在登录屏幕上启用无障碍功能快捷方式。
 
           如果此政策设为 true，无障碍功能快捷方式在登录屏幕上将始终处于启用状态。
@@ -4475,15 +4427,6 @@
 <translation id="793473937901685727">为 ARC 应用设置证书可用性</translation>
 <translation id="7937491150792971922">合并来自多个来源的扩展程序安装列表政策</translation>
 <translation id="7937766917976512374">是否允许视频捕获</translation>
-<translation id="7937944288846766530">此政策用于控制 <ph name="PRODUCT_NAME" /> 扩展程序安装请求；根据此政策，用户可将请求发送到 Google 管理控制台以寻求批准。
-
-      如果 CloudReportingEnabled 政策未设置或已停用，系统将忽略此政策，并且不会创建或上传扩展程序安装请求。
-      如果此政策未设置或已停用，系统将不会创建或上传扩展程序安装请求。
-      如果此政策已启用，系统将会创建扩展程序安装请求并将其上传到 Google 管理控制台。
-
-      当用户尝试安装未被 <ph name="EXTENSION_INSTALL_WHITELIST" /> 或 <ph name="EXTENSION_SETTINGS" /> 列入白名单的扩展程序时，系统将会创建扩展程序安装请求。
-
-      仅当已使用 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 注册相应设备且已启用 <ph name="CLOUD_REPORTING_ENABLED" /> 后，此政策才有效。</translation>
 <translation id="7941975817681987555">采用任何网络连接时，均不预测网络操作</translation>
 <translation id="7951605113561734721">指定应使用设备管理协议注册的设备级客户端证书。</translation>
 <translation id="7952007677054834789">在 <ph name="PRODUCT_NAME" /> 中配置启动时加载的页面、默认主页和默认新标签页，并禁止用户更改它们。
@@ -5259,7 +5202,7 @@
 <translation id="9152473318295429890">允许根据上下文建议相关的网页</translation>
 <translation id="9153446010242995516">如果操作系统版本比目标版本新，则回滚到目标版本，并一直使用此版本。如果可能，会尝试通过回滚过程保留设备级配置（包括网络凭据），但即使无法恢复数据（因为目标版本不支持恢复数据，或因为发生了无法向后兼容的更改），也会通过执行完整的 Powerwash 操作进行回滚。
           <ph name="PRODUCT_OS_NAME" /> 75 及更高版本均支持。对于旧版客户端，此值意味着禁用回滚。</translation>
-<translation id="9155375380628728544">如果您设置了此政策，用户只能将此政策所列语言之一添加到首选语言列表内。
+<translation id="9155375380628728544">如果您设置了此政策，用户只能将此政策所列出的语言之一添加到首选语言列表内。
 
       如果此政策设为一个空列表或未设置，用户可将任何语言指定为首选语言。
 

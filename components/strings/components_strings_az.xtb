@@ -232,6 +232,7 @@
 <translation id="1898423065542865115">Təmizləmə</translation>
 <translation id="1901443836186977402">{1,plural, =1{Bu server <ph name="DOMAIN" /> domenini təsdiqləyə bilmədi; onun güvənlik sertifikatının vaxtı dünən bitib. Buna səbəb yanlış konfiqurasiya və ya hücum edən tərəfindən bağlantınızın ələ keçirilməsi ola bilər. Kompüterinizin saatı hazırda <ph name="CURRENT_DATE" />. Düzgündür? Deyilsə, sistem saatını düzəldib daha sonra səhifəni təzələməlisiniz.}other{Bu server <ph name="DOMAIN" /> domenini təsdiqləyə bilmədi; onun güvənlik sertifikatının vaxtı # gün öncə bitib. Buna səbəb yanlış konfiqurasiya və ya hücum edən tərəfindən bağlantınızın ələ keçirilməsi ola bilər. Kompüterinizin saatı hazırda <ph name="CURRENT_DATE" />. Düzgündür? Deyilsə, sistem saatını düzəldib daha sonra səhifəni təzələməlisiniz.}}</translation>
 <translation id="1902576642799138955">Doğrulama müddəti</translation>
+<translation id="1908217026282415406">Kameranın istifadəsi və hərəkət etdirilməsi</translation>
 <translation id="191374271204266022">JSON olaraq kopyalayın</translation>
 <translation id="1914326953223720820">Faylların Açılması</translation>
 <translation id="1915697529809968049">CVC əvəzinə Toxunuş ID-i istifadə edilsin?</translation>
@@ -726,7 +727,6 @@
 <translation id="4101413244023615925">Mətn və qrafik</translation>
 <translation id="4103249731201008433">Cihazın seriya nömrəsi yanlışdır</translation>
 <translation id="4103763322291513355">Qara siyahıya alınmış URL-ləri görmək üçün buraya keçin: &lt;strong&gt;chrome://policy&lt;/strong&gt;</translation>
-<translation id="4108231218301530806">Növbəti dəfə kartı doğrulamaq üçün barmaq izindən istifadə edin.</translation>
 <translation id="4110652170750985508">Ödənişi nəzərdən keçirin</translation>
 <translation id="4112140312785995938">Geri çəkin</translation>
 <translation id="4116663294526079822">Həmişə bu saytda icazə verin</translation>
@@ -1123,6 +1123,7 @@
 <translation id="569000877158168851">DnsOverHttpsTemplates dəyəri uyğun deyil və DnsOverHttpsMode siyasəti <ph name="SECURE_DNS_MODE_AUTOMATIC" /> və ya <ph name="SECURE_DNS_MODE_SECURE" /> kimi ayarlanana qədər istifadə edilməyəcək.</translation>
 <translation id="5701381305118179107">Mərkəzi edin</translation>
 <translation id="570530837424789914">İdarə edin...</translation>
+<translation id="5705882733397021510">Geri qayıdın</translation>
 <translation id="57094364128775171">Güclü parol təklif edin…</translation>
 <translation id="5710435578057952990">Bu veb saytın identifikasiyası doğrulanmamışdır.</translation>
 <translation id="5720705177508910913">Cari istifadəçi</translation>
@@ -1130,6 +1131,7 @@
 <translation id="5730040223043577876">Parolunuzdan digər saytlarda təkrar istifadə etmisinizsə, Chrome onu sıfırlamağınızı tövsiyə edir.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Kartı Google Hesabında yadda saxlayın}other{Kartları Google Hesabında yadda saxlayın}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Bu kart üçün virtual nömrə istifadə edin}other{Kart seçin}}</translation>
+<translation id="5759751709240058861">Kameranızın istifadəsi və hərəkət etdirilməsi</translation>
 <translation id="5763042198335101085">Düzgün e-poçt ünvanı daxil edin</translation>
 <translation id="5765072501007116331">Çatdırılma üsulları və tələblərinə baxın, ünvan seçin</translation>
 <translation id="5776313857861697733">Prioritet</translation>
@@ -1338,7 +1340,6 @@
 <translation id="6631202559048444592">Siyasət üçün birdən çox mənbə var, lakin dəyərlər eynidir.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Silin</translation>
-<translation id="6644283850729428850">Bu siyasətdən imtina olunmuşdur.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Yoxdur}=1{1 saytdan (Google Hesabınızdan çıxmayacaqsınız)}other{ # saytdan (Google Hesabınızdan çıxmayacaqsınız)}}</translation>
 <translation id="6652101503459149953">Windows Hello işlədin</translation>
 <translation id="6657585470893396449">Parol</translation>

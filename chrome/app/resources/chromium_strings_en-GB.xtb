@@ -127,6 +127,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Network sign-in</translation>
 <translation id="5987687638152509985">Update Chromium to start sync</translation>
 <translation id="6013050204643758987">Chromium OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS" />open source software<ph name="END_LINK_CROS_OSS" />, as is <ph name="BEGIN_LINK_LINUX_OSS" />Linux (Beta)<ph name="END_LINK_LINUX_OSS" />.</translation>
+<translation id="6039377483953237732">Chromium OS version</translation>
 <translation id="6055895534982063517">There's a new version of Google Chrome available and it's faster than ever.</translation>
 <translation id="6063093106622310249">&amp;Open in Chromium</translation>
 <translation id="6072279588547424923"><ph name="EXTENSION_NAME" /> has been added to Chromium</translation>

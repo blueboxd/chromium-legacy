@@ -170,6 +170,7 @@
 <translation id="2387895666653383613">පෙළ පරිමාණය</translation>
 <translation id="2394602618534698961">ඔබ බාගන්නා ගොනු මෙහි දිස් වෙති</translation>
 <translation id="2407481962792080328">ඔබ ඔබේ Google ගිණුමට පුරන විට, මෙම විශේෂාංගය සක්‍රීය කෙරේ</translation>
+<translation id="2407674018644220013"><ph name="APP_NAME" /> ඔබේ පෙරනිමි ලෙස සකසන්නේද?</translation>
 <translation id="2410754283952462441">ගිණුමක් තෝරා ගන්න</translation>
 <translation id="2414886740292270097">අඳුරු</translation>
 <translation id="2426805022920575512">වෙනත් ගිණුමක් තෝරා ගන්න</translation>
@@ -179,6 +180,7 @@
 
 සෙවීමට ඕනෑම වචනයක් ස්පර්ශ කර අල්ල සිටින්න. ඔබේ සෙවීම ප්‍රතිසාදන කිරීමට, වචන වැඩියෙන් හෝ අඩුවෙන් තෝරන්න. ඔබේ සෙවුම සංස්කරණ කිරීමට, පැනලය විවෘත කර, නව පටිත්තක් තුළ විවෘත කිරීමට නිරූපකයට තට්ටු කර, සෙවුම් කොටුව තුළ ඔබේ වෙනස්කම් කරන්න.</translation>
 <translation id="246532703174860178">බෙදා ගන්න</translation>
+<translation id="2479148705183875116">සැකසීම් වෙත යන්න</translation>
 <translation id="2482878487686419369">දැනුම්දීම්</translation>
 <translation id="2494974097748878569">Chrome හි Google සහායක</translation>
 <translation id="2496180316473517155">බ්‍රවුස් ඉතිහාසය</translation>
@@ -617,6 +619,7 @@
 <translation id="6140912465461743537">රට/කලාපය:</translation>
 <translation id="614940544461990577">උත්සාහ කරන්න:</translation>
 <translation id="6154478581116148741">මෙම උපාංගයෙන් ඔබේ මුරපද නිර්යාත කිරීමට සැකසීම් තුළ තිර අගුල ක්‍රියාත්මක කරන්න</translation>
+<translation id="6157392216611456285"><ph name="APP_NAME" /> තෝරන්න</translation>
 <translation id="6159335304067198720">දත්ත සුරැකීම <ph name="PERCENT" /></translation>
 <translation id="6192333916571137726">ගොනුව බාගන්න</translation>
 <translation id="6201345951596836663">සබැඳිය පිටපත් කළා</translation>
@@ -641,6 +644,7 @@
 <translation id="6341580099087024258">ගොනු සුරකින තැනක් අසන්න</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />... සහ තවත් <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />... සහ තවත් <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />... සහ තවත් <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">යෝජනාව ඉතිහාසය වෙතින් ඉවත් කරන්නද?</translation>
+<translation id="6366047038980456022"><ph name="APP_NAME" /> හි ඔබට අන්තර්ජාලයේ ආරක්‍ෂිතව ක්‍රියා කිරීමට, සෑදීමට, සහ ගවේෂණ කිරීමට අවශ්‍ය හපන්කම සහ වේගය ඇත</translation>
 <translation id="6369229450655021117">මෙතැනින්, ඔබට වෙබය සෙවීමට, මිතුරන් සමඟ බෙදා ගැනීමට සහ විවෘත පිටු බැලීමට හැක</translation>
 <translation id="6378173571450987352">විස්තර: භාවිතා කරන දත්ත ප්ය‍රමාණය අනුව අනුපිළිවෙළට සකසා ඇත</translation>
 <translation id="6379829913050047669"><ph name="APP_NAME" /> Chrome තුළ විවෘත වෙයි. ඉදිරයට යාමෙන්, ඔබ <ph name="BEGIN_LINK1" />Google සේවා නියමවලට<ph name="END_LINK1" />, සහ <ph name="BEGIN_LINK2" />Google Chrome සහ Chrome OS අතිරේක සේවා නියමවලට<ph name="END_LINK2" /> එකඟ වෙයි.</translation>
@@ -692,6 +696,7 @@
 <translation id="6671495933530132209">රූපය පිටපත් කරන්න</translation>
 <translation id="6676840375528380067">මෙම උපාංගයෙන් ඔබේ Chrome දත්ත හිස් කරන්න ද?</translation>
 <translation id="6689172468748959065">පැතිකඩ ඡායාරූප</translation>
+<translation id="6691888250440401212">1. <ph name="APP_NAME" /> තෝරන්න\n2. “පෙරනිමි ලෙස සකසන්න” තට්ටු කරන්න</translation>
 <translation id="6697492270171225480">පිටුවක් සොයා ගැනීමට නොහැකි විට සමාන පිටු සඳහා යෝජනා පෙන්වන්න</translation>
 <translation id="6698801883190606802">සමමුහුර්ත කළ දත්ත කළමනාකරණය කරන්න</translation>
 <translation id="6699370405921460408">Google සේවාදායක ඔබ පැමිණෙන පිටු ප්‍රශස්ත කරයි.</translation>
@@ -895,6 +900,7 @@
 <translation id="8364299278605033898">ජනප්‍රිය වෙබ් අඩවි බලන්න</translation>
 <translation id="8368027906805972958">නොදන්නා හෝ සහය නොදැක්වෙන උපාංගය (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">පණිවිඩය යවන්න</translation>
+<translation id="8407396331882458341">1. <ph name="APP_NAME" /> තෝරන්න\n2. “සැම විටම” තට්ටු කරන්න</translation>
 <translation id="8413126021676339697">සම්පූර්ණ ඉතිහාසය පෙන්වන්න</translation>
 <translation id="8425213833346101688">වෙනස් කරන්න</translation>
 <translation id="8427875596167638501">පෙරදසුන් පටිත්ත අඩක් විවෘතයි</translation>
@@ -921,6 +927,7 @@
 <translation id="8555836665334561807">Wi-Fi මත</translation>
 <translation id="8558485628462305855">වැඩි දියුණු කළ යතාර්ථ අන්තර්ගතය බැලීමට, ARCore යාවත්කාලීන කරන්න</translation>
 <translation id="8559990750235505898">වෙනත් භාෂාවල පිටු පරිවර්තනයට පිරිනමන්න</translation>
+<translation id="8561196567344536112">1. සැකසීම් වෙත යන්න\n2. “බ්‍රවුසර යෙදුම” තට්ටු කරන්න\n3. <ph name="APP_NAME" /> තෝරන්න</translation>
 <translation id="8562452229998620586">සුරැකි මුරපද මෙහි පෙන්වෙනු ඇත.</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> සිට</translation>
 <translation id="8571213806525832805">පසුගිය සති 4</translation>

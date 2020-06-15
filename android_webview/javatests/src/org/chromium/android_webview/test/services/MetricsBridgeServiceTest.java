@@ -9,7 +9,8 @@ import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PRO
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;

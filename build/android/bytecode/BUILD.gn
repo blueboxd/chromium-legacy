@@ -17,5 +17,4 @@ java_binary("bytecode_processor") {
   ]
   wrapper_script_name = "helper/bytecode_processor"
   enable_bytecode_checks = false
-  enable_desugar = false
 }

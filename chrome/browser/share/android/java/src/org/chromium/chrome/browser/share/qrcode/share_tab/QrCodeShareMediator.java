@@ -7,28 +7,24 @@ package org.chromium.chrome.browser.share.qrcode.share_tab;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.net.Uri;
 import android.text.DynamicLayout;
 import android.text.Layout.Alignment;
 import android.text.TextPaint;
 import android.text.TextUtils.TruncateAt;
 import android.view.View;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.share.SaveImageNotificationManager;
+import org.chromium.chrome.browser.share.BitmapDownloadRequest;
 import org.chromium.chrome.browser.share.qrcode.QRCodeGenerationRequest;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.browser_ui.share.ShareImageFileUtils;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.widget.Toast;
 
 /**
  * QrCodeShareMediator is in charge of calculating and setting values for QrCodeShareViewProperties.
  */
-class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
+class QrCodeShareMediator {
     private final Context mContext;
     private final PropertyModel mPropertyModel;
 
@@ -83,9 +79,7 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
             String fileName = mContext.getString(
                     R.string.qr_code_filename_prefix, String.valueOf(System.currentTimeMillis()));
             mIsDownloadInProgress = true;
-            mDownloadStartTime = System.currentTimeMillis();
-            ShareImageFileUtils.saveBitmapToExternalStorage(
-                    mContext, fileName, addUrlToBitmap(qrcodeBitmap, mUrl), this);
+            BitmapDownloadRequest.downloadBitmap(fileName, addUrlToBitmap(qrcodeBitmap, mUrl));
         }
         logDownload();
     }
@@ -98,39 +92,6 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
             RecordUserAction.record("SharingQRCode.DownloadQRCodeMultipleAttempts");
         }
         mNumDownloads++;
-    }
-
-    // ShareImageFileUtils.OnImageSaveListener implementation.
-    @Override
-    public void onImageSaved(Uri uri, String displayName) {
-        RecordUserAction.record("SharingQRCode.DownloadQRCode.Succeeded");
-
-        mIsDownloadInProgress = false;
-        long delta = System.currentTimeMillis() - mDownloadStartTime;
-        RecordHistogram.recordMediumTimesHistogram("Sharing.DownloadQRCode.Succeeded.Time", delta);
-
-        // Notify success.
-        Toast.makeText(mContext,
-                     mContext.getResources().getString(R.string.qr_code_successful_download_title),
-                     Toast.LENGTH_LONG)
-                .show();
-        SaveImageNotificationManager.showSuccessNotification(mContext, uri);
-    }
-
-    @Override
-    public void onImageSaveError(String displayName) {
-        RecordUserAction.record("SharingQRCode.DownloadQRCode.Failed");
-
-        mIsDownloadInProgress = false;
-        long delta = System.currentTimeMillis() - mDownloadStartTime;
-        RecordHistogram.recordMediumTimesHistogram("Sharing.DownloadQRCode.Failed.Time", delta);
-
-        // Notify failure.
-        Toast.makeText(mContext,
-                     mContext.getResources().getString(R.string.qr_code_failed_download_title),
-                     Toast.LENGTH_LONG)
-                .show();
-        SaveImageNotificationManager.showFailureNotification(mContext, null);
     }
 
     private Bitmap addUrlToBitmap(Bitmap bitmap, String url) {

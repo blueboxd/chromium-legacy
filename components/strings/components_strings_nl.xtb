@@ -721,7 +721,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="4101413244023615925">Tekst en graphics</translation>
 <translation id="4103249731201008433">Serienummer van apparaat is ongeldig</translation>
 <translation id="4103763322291513355">Ga naar &lt;strong&gt;chrome://policy&lt;/strong&gt; om de lijst met URL's op de zwarte lijst en andere beleidsregels te bekijken die worden afgedwongen door je systeembeheerder.</translation>
-<translation id="4108231218301530806">Gebruik de volgende keer je vingerafdruk om deze kaart te verifiëren.</translation>
 <translation id="4110652170750985508">Je betaling controleren</translation>
 <translation id="4112140312785995938">Achteruit zoeken</translation>
 <translation id="4116663294526079822">Altijd toestaan op deze site</translation>
@@ -1119,6 +1118,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="569000877158168851">De waarde voor DnsOverHttpsTemplates is niet relevant en wordt niet gebruikt, tenzij het beleid DnsOverHttpsMode is ingesteld op <ph name="SECURE_DNS_MODE_AUTOMATIC" /> of <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Centreren</translation>
 <translation id="570530837424789914">Beheren...</translation>
+<translation id="5705882733397021510">Terug</translation>
 <translation id="57094364128775171">Sterk wachtwoord voorstellen…</translation>
 <translation id="5710435578057952990">De identiteit van deze website is niet geverifieerd.</translation>
 <translation id="5720705177508910913">Huidige gebruiker</translation>
@@ -1334,7 +1334,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="6631202559048444592">Er zijn meerdere bronnen aanwezig voor het beleid, maar de waarden zijn gelijk.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Wissen</translation>
-<translation id="6644283850729428850">Dit beleid is verouderd.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Geen}=1{Van 1 site (je wordt niet uitgelogd bij je Google-account)}other{Van # sites (je wordt niet uitgelogd bij je Google-account)}}</translation>
 <translation id="6652101503459149953">Windows Hello gebruiken</translation>
 <translation id="6657585470893396449">Wachtwoord</translation>

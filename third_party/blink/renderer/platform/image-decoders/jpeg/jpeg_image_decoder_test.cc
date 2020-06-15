@@ -51,11 +51,11 @@ namespace {
 
 std::unique_ptr<JPEGImageDecoder> CreateJPEGDecoder(
     size_t max_decoded_bytes,
-    ImageDecoder::OverrideAllowDecodeToYuv decodeToYUV =
+    ImageDecoder::OverrideAllowDecodeToYuv allow_decode_to_yuv =
         ImageDecoder::OverrideAllowDecodeToYuv::kDeny) {
   return std::make_unique<JPEGImageDecoder>(
       ImageDecoder::kAlphaNotPremultiplied, ColorBehavior::TransformToSRGB(),
-      max_decoded_bytes, decodeToYUV);
+      max_decoded_bytes, allow_decode_to_yuv);
 }
 
 std::unique_ptr<ImageDecoder> CreateJPEGDecoder() {

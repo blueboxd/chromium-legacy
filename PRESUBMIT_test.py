@@ -2161,17 +2161,21 @@ class SecurityChangeTest(unittest.TestCase):
     input_api.canned_checks.GetCodereviewOwnerAndReviewers = \
         __MockOwnerAndReviewers
 
-  def testDiffWithSandboxType(self):
+  def testDiffGetServiceSandboxType(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
         MockAffectedFile(
           'services/goat/teleporter_host.cc',
           [
-            'content::ServiceProcessHost::Launch<mojom::GoatTeleporter>(',
-            '    content::ServiceProcessHost::LaunchOptions()',
-            '        .WithSandboxType(content::SandboxType::kGoaty)',
-            '        .WithDisplayName("goat_teleporter")',
-            '        .Build())'
+            'template <>',
+            'inline content::SandboxType',
+            'content::GetServiceSandboxType<chrome::mojom::GoatTeleporter>() {',
+            '#if defined(OS_WIN)',
+            '  return SandboxType::kGoaty;',
+            '#else',
+            '  return SandboxType::kNoSandbox;',
+            '#endif  // !defined(OS_WIN)',
+            '}'
           ]
         ),
     ]
@@ -2179,7 +2183,7 @@ class SecurityChangeTest(unittest.TestCase):
         mock_input_api)
     self.assertEqual({
         'services/goat/teleporter_host.cc': set([
-            'content::ServiceProcessHost::LaunchOptions::WithSandboxType'
+            'content::GetServiceSandboxType<>()'
         ])},
         files_to_functions)
 
@@ -2189,18 +2193,18 @@ class SecurityChangeTest(unittest.TestCase):
     mock_file._scm_diff = """--- old 2020-05-04 14:08:25.000000000 -0400
 +++ new 2020-05-04 14:08:32.000000000 -0400
 @@ -1,5 +1,4 @@
- content::ServiceProcessHost::Launch<mojom::GoatTeleporter>(
-     content::ServiceProcessHost::LaunchOptions()
--        .WithSandboxType(content::SandboxType::kGoaty)
-         .WithDisplayName("goat_teleporter")
-         .Build())
+ template <>
+ inline content::SandboxType
+-content::GetServiceSandboxType<chrome::mojom::GoatTeleporter>() {
+ #if defined(OS_WIN)
+   return SandboxType::kGoaty;
 """
     mock_input_api.files = [mock_file]
     files_to_functions = PRESUBMIT._GetFilesUsingSecurityCriticalFunctions(
         mock_input_api)
     self.assertEqual({
         'services/goat/teleporter_host.cc': set([
-            'content::ServiceProcessHost::LaunchOptions::WithSandboxType'
+            'content::GetServiceSandboxType<>()'
         ])},
         files_to_functions)
 
@@ -2209,7 +2213,7 @@ class SecurityChangeTest(unittest.TestCase):
     mock_input_api.owners_db = self._MockOwnersDB()
     mock_input_api.is_committing = False
     mock_input_api.files = [
-        MockAffectedFile('file.cc', ['WithSandboxType(Sandbox)'])
+        MockAffectedFile('file.cc', ['GetServiceSandboxType<Goat>(Sandbox)'])
     ]
     mock_output_api = MockOutputApi()
     self._mockChangeOwnerAndReviewers(
@@ -2221,14 +2225,14 @@ class SecurityChangeTest(unittest.TestCase):
         'The following files change calls to security-sensive functions\n' \
         'that need to be reviewed by ipc/SECURITY_OWNERS.\n'
         '  file.cc\n'
-        '    content::ServiceProcessHost::LaunchOptions::WithSandboxType\n\n')
+        '    content::GetServiceSandboxType<>()\n\n')
 
   def testChangeOwnersMissingAtCommit(self):
     mock_input_api = MockInputApi()
     mock_input_api.owners_db = self._MockOwnersDB()
     mock_input_api.is_committing = True
     mock_input_api.files = [
-        MockAffectedFile('file.cc', ['WithSandboxType(Sandbox)'])
+        MockAffectedFile('file.cc', ['GetServiceSandboxType<mojom::Goat>()'])
     ]
     mock_output_api = MockOutputApi()
     self._mockChangeOwnerAndReviewers(
@@ -2240,7 +2244,7 @@ class SecurityChangeTest(unittest.TestCase):
         'The following files change calls to security-sensive functions\n' \
         'that need to be reviewed by ipc/SECURITY_OWNERS.\n'
         '  file.cc\n'
-        '    content::ServiceProcessHost::LaunchOptions::WithSandboxType\n\n')
+        '    content::GetServiceSandboxType<>()\n\n')
 
   def testChangeOwnersPresent(self):
     mock_input_api = MockInputApi()
@@ -2259,7 +2263,7 @@ class SecurityChangeTest(unittest.TestCase):
     mock_input_api = MockInputApi()
     mock_input_api.owners_db = self._MockOwnersDB()
     mock_input_api.files = [
-        MockAffectedFile('file.cc', ['WithSandboxType(Sandbox)'])
+        MockAffectedFile('file.cc', ['GetServiceSandboxType<T>(Sandbox)'])
     ]
     mock_output_api = MockOutputApi()
     self._mockChangeOwnerAndReviewers(

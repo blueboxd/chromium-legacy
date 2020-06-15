@@ -40,7 +40,6 @@ public interface TabModelDelegate {
     // TODO(aurimas): clean these methods up.
     TabModel getCurrentModel();
     TabModel getModel(boolean incognito);
-    boolean isInOverviewMode();
     boolean isSessionRestoreInProgress();
     void selectModel(boolean incognito);
 }

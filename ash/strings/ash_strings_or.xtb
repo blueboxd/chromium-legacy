@@ -509,7 +509,6 @@
 <translation id="7068360136237591149">ଫାଇଲ୍‌ଗୁଡ଼ିକ ଖୋଲନ୍ତୁ</translation>
 <translation id="7076293881109082629">ସାଇନ୍ ଇନ୍ କରୁଛି</translation>
 <translation id="7088960765736518739">ଆକ୍ସେସ୍ ସ୍ୱିଚ୍ କରନ୍ତୁ</translation>
-<translation id="7092922358121866860">ରାତି ଆଲୋକର ସେଟିଂସ୍ ଦେଖାନ୍ତୁ</translation>
 <translation id="7098389117866926363">USB-C ଡିଭାଇସ୍‌ (ବାମପଟ ପଛ ପୋର୍ଟ )</translation>
 <translation id="7131634465328662194">ଆପଣ ସ୍ଵଚାଳିତ ଭାବେ ସାଇନ୍ ଆଉଟ୍ ହୋଇଯିବେ।</translation>
 <translation id="7143207342074048698">ସଂଯୋଗ କରୁଛି</translation>
@@ -661,7 +660,6 @@
 <translation id="8877788021141246043">ଗୋଟିଏ ରିମାଇଣ୍ଡର୍‌କୁ ସେଟ୍ କରନ୍ତୁ</translation>
 <translation id="8878886163241303700">ସ୍କ୍ରିନ୍‍ର ବିସ୍ତାର କରନ୍ତୁ</translation>
 <translation id="890616557918890486">ଉତ୍ସ ପରିବର୍ତ୍ତନ କରନ୍ତୁ</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz)କୁ ସମର୍ଥନ କରେ ନାହିଁ। ରିଜୋଲ୍ୟୁସନ୍ <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />)କୁ ପରିବର୍ତ୍ତନ କରାଯାଇଥିଲା। ପରିବର୍ତ୍ତନଗୁଡ଼ିକ ରଖିବାକୁ "ସୁନିଶ୍ଚିତ"ରେ କ୍ଲିକ୍ କରନ୍ତୁ। ପୂର୍ବବର୍ତ୍ତୀ ସେଟିଂସ୍ <ph name="TIMEOUT_SECONDS" />ରେ ରିଷ୍ଟୋର୍ କରାଯିବ।</translation>
 <translation id="8909138438987180327"><ph name="PERCENTAGE" /> ଶତକଡା ବ୍ୟାଟେରୀ ଅଛି।</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google ଆସିଷ୍ଟାଣ୍ଟ ଏହି ଭାଷା କହେ ନାହିଁ।</translation>

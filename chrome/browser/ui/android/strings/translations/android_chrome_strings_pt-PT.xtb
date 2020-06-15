@@ -170,6 +170,7 @@ Toque em qualquer palavra para pesquisar. Para refinar a sua pesquisa, tocar sem
 <translation id="2387895666653383613">Escala do texto</translation>
 <translation id="2394602618534698961">Os ficheiros que transferir aparecem aqui.</translation>
 <translation id="2407481962792080328">Quando inicia sessão na sua Conta Google, esta funcionalidade está ativada.</translation>
+<translation id="2407674018644220013">Pretende definir o <ph name="APP_NAME" /> como o seu navegador predefinido?</translation>
 <translation id="2410754283952462441">Selecione uma conta</translation>
 <translation id="2414886740292270097">Escuro</translation>
 <translation id="2426805022920575512">Selecionar outra conta</translation>
@@ -179,6 +180,7 @@ Toque em qualquer palavra para pesquisar. Para refinar a sua pesquisa, tocar sem
 
 Toque sem soltar em qualquer palavra para pesquisar. Para refinar a sua pesquisa, selecione mais ou menos palavras. Para editar a sua pesquisa, abra o painel, toque no ícone para abrir num novo separador e efetue as suas alterações na caixa de pesquisa.</translation>
 <translation id="246532703174860178">Partilhar</translation>
+<translation id="2479148705183875116">Aceder às Definições</translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="2494974097748878569">Assistente Google no Chrome</translation>
 <translation id="2496180316473517155">Histórico de navegação</translation>
@@ -617,6 +619,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="6140912465461743537">País/região</translation>
 <translation id="614940544461990577">Experimente:</translation>
 <translation id="6154478581116148741">Ative o bloqueio de ecrã nas Definições para exportar as suas palavras-passe a partir deste dispositivo.</translation>
+<translation id="6157392216611456285">Escolher <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de poupança de dados</translation>
 <translation id="6192333916571137726">Transferir ficheiro</translation>
 <translation id="6201345951596836663">Link copiado</translation>
@@ -641,6 +644,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6341580099087024258">Perguntar onde guardar os ficheiros</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">Remover a sugestão do histórico?</translation>
+<translation id="6366047038980456022">A app <ph name="APP_NAME" /> tem as funcionalidades inteligentes e a rapidez de que necessita para realizar tarefas, criar e explorar online em segurança.</translation>
 <translation id="6369229450655021117">A partir daqui, pode pesquisar na Web, partilhar com amigos e ver as páginas abertas.</translation>
 <translation id="6378173571450987352">Detalhes: ordenado por quantidade de dados utilizados</translation>
 <translation id="6379829913050047669">A app <ph name="APP_NAME" /> vai abrir no Chrome. Ao continuar, aceita os <ph name="BEGIN_LINK1" />Termos de Utilização do Google<ph name="END_LINK1" /> e os <ph name="BEGIN_LINK2" />Termos de Utilização Adicionais do Google Chrome e Chrome OS<ph name="END_LINK2" />.</translation>
@@ -692,6 +696,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6671495933530132209">Copiar imagem</translation>
 <translation id="6676840375528380067">Pretende limpar os dados do Chrome deste dispositivo?</translation>
 <translation id="6689172468748959065">Fotos do perfil</translation>
+<translation id="6691888250440401212">1. Escolha o <ph name="APP_NAME" />.\n2. Toque em "Definir como predef.".</translation>
 <translation id="6697492270171225480">Mostrar sugestões de páginas semelhantes se não for possível encontrar uma página</translation>
 <translation id="6698801883190606802">Gerir dados sincronizados</translation>
 <translation id="6699370405921460408">Os servidores da Google vão otimizar as páginas que visitar.</translation>
@@ -895,6 +900,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8364299278605033898">Veja Websites populares</translation>
 <translation id="8368027906805972958">Dispositivo desconhecido ou não suportado (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">Enviar mensagem</translation>
+<translation id="8407396331882458341">1. Escolha o <ph name="APP_NAME" />.\n2. Toque em "Sempre".</translation>
 <translation id="8413126021676339697">Mostrar histórico completo</translation>
 <translation id="8425213833346101688">Alterar</translation>
 <translation id="8427875596167638501">O separador Pré-visualização está aberto até meio.</translation>
@@ -921,6 +927,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8555836665334561807">Através de Wi-Fi</translation>
 <translation id="8558485628462305855">Para ver conteúdo de realidade aumentada, atualize o ARCore.</translation>
 <translation id="8559990750235505898">Propor a tradução de páginas noutros idiomas</translation>
+<translation id="8561196567344536112">1. Aceda a Definições.\n2. Toque em "App de navegador".\n3. Escolha o <ph name="APP_NAME" />.</translation>
 <translation id="8562452229998620586">As palavras-passe guardadas aparecem aqui.</translation>
 <translation id="8569404424186215731">desde <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Últimas 4 semanas</translation>

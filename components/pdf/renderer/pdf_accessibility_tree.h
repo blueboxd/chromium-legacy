@@ -118,48 +118,11 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource {
       uint32_t page_index,
       const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-      const ppapi::PdfAccessibilityPageObjects& page_objects);
-  void AddRemainingAnnotations(
-      ui::AXNodeData* page_node,
-      const gfx::RectF& page_bounds,
-      uint32_t page_index,
-      base::span<const ppapi::PdfAccessibilityLinkInfo> links,
-      base::span<const ppapi::PdfAccessibilityImageInfo> images,
-      base::span<const ppapi::PdfAccessibilityTextFieldInfo> text_fields,
-      ui::AXNodeData* para_node);
+      const ppapi::PdfAccessibilityPageObjects& page_objects,
+      content::RenderAccessibility* render_accessibility);
 
-  ui::AXNodeData* CreateNode(ax::mojom::Role role,
-                             ax::mojom::Restriction restriction);
-  ui::AXNodeData* CreateParagraphNode(float font_size,
-                                      float heading_font_size_threshold);
-  ui::AXNodeData* CreateStaticTextNode(
-      const PP_PdfPageCharacterIndex& page_char_index);
-  ui::AXNodeData* CreateInlineTextBoxNode(
-      const ppapi::PdfAccessibilityTextRunInfo& text_run,
-      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-      const PP_PdfPageCharacterIndex& page_char_index,
-      const gfx::RectF& page_bounds);
-  ui::AXNodeData* CreateLinkNode(const ppapi::PdfAccessibilityLinkInfo& link,
-                                 uint32_t page_index);
-  ui::AXNodeData* CreateImageNode(
-      const ppapi::PdfAccessibilityImageInfo& image);
-  ui::AXNodeData* CreateHighlightNode(
-      const ppapi::PdfAccessibilityHighlightInfo& highlight);
-  ui::AXNodeData* CreateTextFieldNode(
-      const ppapi::PdfAccessibilityTextFieldInfo& text_field);
-  void AddTextToAXNode(
-      uint32_t start_text_run_index,
-      uint32_t end_text_run_index,
-      const std::vector<ppapi::PdfAccessibilityTextRunInfo>& text_runs,
-      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
-      const gfx::RectF& page_bounds,
-      uint32_t page_index,
-      const std::vector<uint32_t>& text_run_start_indices,
-      ui::AXNodeData* ax_node,
-      ui::AXNodeData** previous_on_line_node);
   content::RenderAccessibility* GetRenderAccessibility();
   std::unique_ptr<gfx::Transform> MakeTransformFromViewInfo() const;
-  void AddWordStartsAndEnds(ui::AXNodeData* inline_text_box);
 
   ui::AXTreeData tree_data_;
   ui::AXTree tree_;

@@ -54,6 +54,7 @@ class FullscreenNotificationObserver : public FullscreenObserver {
 
 // Test fixture with convenience functions for fullscreen, keyboard lock, and
 // mouse lock.
+// TODO(mustaq): Fix the class name, it's misleading to call it "fullscreen*".
 class FullscreenControllerTest : public InProcessBrowserTest {
  protected:
   FullscreenControllerTest();
@@ -94,6 +95,8 @@ class FullscreenControllerTest : public InProcessBrowserTest {
   void SetEscRepeatThresholdReachedCallback(base::OnceClosure callback);
 
   void SetEscRepeatTestTickClock(const base::TickClock* tick_clock_for_test);
+
+  void SetUserEscapeTimestampForTest(const base::TimeTicks timestamp);
 
   int InitialBubbleDelayMs() const;
 

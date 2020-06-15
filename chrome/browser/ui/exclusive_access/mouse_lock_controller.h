@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_hide_callback.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_controller_base.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -44,31 +45,13 @@ class MouseLockController : public ExclusiveAccessControllerBase {
 
   void UnlockMouse();
 
-  // If true, does not call into the WebContents to lock the mouse. Just assumes
-  // that it works. This may be necessary when calling
-  // Browser::RequestToLockMouse in tests, because the proper signal will not
-  // have been passed to the RenderViewHost.
-  void set_fake_mouse_lock_for_test(bool value) {
-    fake_mouse_lock_for_test_ = value;
-  }
-
-  void set_web_contents_granted_silent_mouse_lock_permission_for_test(
-      content::WebContents* web_contents) {
-    web_contents_granted_silent_mouse_lock_permission_ = web_contents;
-  }
-
-  // If set, |bubble_hide_callback_for_test_| will be called during
-  // |OnBubbleHidden()|.
-  void set_bubble_hide_callback_for_test_(
-      ExclusiveAccessBubbleHideCallbackForTest callback_for_test) {
-    bubble_hide_callback_for_test_ = std::move(callback_for_test);
-  }
-
   void set_lock_state_callback_for_test(base::OnceClosure callback) {
     lock_state_callback_for_test_ = std::move(callback);
   }
 
  private:
+  friend class FullscreenControllerTest;
+
   enum MouseLockState {
     MOUSELOCK_UNLOCKED,
     // Mouse has been locked.
@@ -92,11 +75,21 @@ class MouseLockController : public ExclusiveAccessControllerBase {
   content::WebContents* web_contents_granted_silent_mouse_lock_permission_ =
       nullptr;
 
+  // If true, does not call into the WebContents to lock the mouse. Just assumes
+  // that it works. This may be necessary when calling
+  // Browser::RequestToLockMouse in tests, because the proper signal will not
+  // have been passed to the RenderViewHost.
   bool fake_mouse_lock_for_test_;
+
+  // If set, |bubble_hide_callback_for_test_| will be called during
+  // |OnBubbleHidden()|.
   ExclusiveAccessBubbleHideCallbackForTest bubble_hide_callback_for_test_;
 
   // Called when the page requests (successfully or not) or loses mouse lock.
   base::OnceClosure lock_state_callback_for_test_;
+
+  // Timestamp when the user last successfully escaped from a lock request.
+  base::TimeTicks last_user_escape_time_;
 
   base::WeakPtrFactory<MouseLockController> weak_ptr_factory_{this};
 

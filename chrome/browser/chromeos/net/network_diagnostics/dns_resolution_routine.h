@@ -34,6 +34,8 @@ class DnsResolutionRoutine : public NetworkDiagnosticsRoutine,
       mojom::NetworkDiagnosticsRoutines::DnsResolutionCallback;
 
   DnsResolutionRoutine();
+  DnsResolutionRoutine(const DnsResolutionRoutine&) = delete;
+  DnsResolutionRoutine& operator=(const DnsResolutionRoutine&) = delete;
   ~DnsResolutionRoutine() override;
 
   // NetworkDiagnosticsRoutine:
@@ -48,7 +50,7 @@ class DnsResolutionRoutine : public NetworkDiagnosticsRoutine,
   // Run the core logic of this routine. Set |callback| to
   // |routine_completed_callback_|, which is to be executed in
   // AnalyzeResultsAndExecuteCallback().
-  void RunTest(DnsResolutionRoutineCallback callback);
+  void RunRoutine(DnsResolutionRoutineCallback callback);
 
   void set_network_context_for_testing(
       network::mojom::NetworkContext* network_context) {
@@ -76,8 +78,6 @@ class DnsResolutionRoutine : public NetworkDiagnosticsRoutine,
   mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
   mojo::Remote<network::mojom::HostResolver> host_resolver_;
   DnsResolutionRoutineCallback routine_completed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(DnsResolutionRoutine);
 };
 
 }  // namespace network_diagnostics

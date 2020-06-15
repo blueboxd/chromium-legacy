@@ -112,11 +112,13 @@ class DnsResolutionRoutineTest : public ::testing::Test {
     session_manager::SessionManager::Get()->SetSessionState(
         session_manager::SessionState::LOGIN_PRIMARY);
   }
+  DnsResolutionRoutineTest(const DnsResolutionRoutineTest&) = delete;
+  DnsResolutionRoutineTest& operator=(const DnsResolutionRoutineTest&) = delete;
 
-  void RunTest(
+  void RunRoutine(
       mojom::RoutineVerdict expected_routine_verdict,
       const std::vector<mojom::DnsResolutionProblem>& expected_problems) {
-    dns_resolution_routine_->RunTest(base::BindOnce(
+    dns_resolution_routine_->RunRoutine(base::BindOnce(
         &DnsResolutionRoutineTest::CompareVerdict, weak_factory_.GetWeakPtr(),
         expected_routine_verdict, expected_problems));
     run_loop_.Run();
@@ -156,13 +158,13 @@ class DnsResolutionRoutineTest : public ::testing::Test {
   // resolutions. |expected_routine_verdict|: Represents the expected verdict
   // reported by this test. |expected_problems|: Represents the expected problem
   // reported by this test.
-  void SetUpAndRunTest(
+  void SetUpAndRunRoutine(
       std::deque<FakeHostResolver::DnsResult*> fake_dns_results,
       mojom::RoutineVerdict expected_routine_verdict,
       const std::vector<mojom::DnsResolutionProblem>& expected_problems) {
     SetUpFakeProperties(std::move(fake_dns_results));
     SetUpDnsResolutionRoutine();
-    RunTest(expected_routine_verdict, expected_problems);
+    RunRoutine(expected_routine_verdict, expected_problems);
   }
 
  private:
@@ -175,8 +177,6 @@ class DnsResolutionRoutineTest : public ::testing::Test {
   TestingProfileManager profile_manager_;
   std::unique_ptr<DnsResolutionRoutine> dns_resolution_routine_;
   base::WeakPtrFactory<DnsResolutionRoutineTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DnsResolutionRoutineTest);
 };
 
 // A passing routine requires an error code of net::OK and a non-empty
@@ -187,8 +187,8 @@ TEST_F(DnsResolutionRoutineTest, TestSuccessfulResolution) {
       net::OK, net::ResolveErrorInfo(net::OK),
       net::AddressList(FakeIPAddress()));
   fake_dns_results.push_back(successful_resolution.get());
-  SetUpAndRunTest(std::move(fake_dns_results),
-                  mojom::RoutineVerdict::kNoProblem, {});
+  SetUpAndRunRoutine(std::move(fake_dns_results),
+                     mojom::RoutineVerdict::kNoProblem, {});
 }
 
 // Set up the |fake_dns_results| to return a DnsResult with an error code
@@ -199,8 +199,9 @@ TEST_F(DnsResolutionRoutineTest, TestResolutionFailure) {
       net::ERR_NAME_NOT_RESOLVED,
       net::ResolveErrorInfo(net::ERR_NAME_NOT_RESOLVED), net::AddressList());
   fake_dns_results.push_back(failed_resolution.get());
-  SetUpAndRunTest(std::move(fake_dns_results), mojom::RoutineVerdict::kProblem,
-                  {mojom::DnsResolutionProblem::kFailedToResolveHost});
+  SetUpAndRunRoutine(std::move(fake_dns_results),
+                     mojom::RoutineVerdict::kProblem,
+                     {mojom::DnsResolutionProblem::kFailedToResolveHost});
 }
 
 // Set up the |fake_dns_results| to first return a DnsResult with an error code
@@ -218,8 +219,8 @@ TEST_F(DnsResolutionRoutineTest, TestSuccessOnRetry) {
   fake_dns_results.push_back(successful_resolution.get());
 
   fake_dns_results.push_back(successful_resolution.get());
-  SetUpAndRunTest(std::move(fake_dns_results),
-                  mojom::RoutineVerdict::kNoProblem, {});
+  SetUpAndRunRoutine(std::move(fake_dns_results),
+                     mojom::RoutineVerdict::kNoProblem, {});
 }
 
 }  // namespace network_diagnostics

@@ -518,9 +518,12 @@ class AXPosition {
         // We assume that white space, including but not limited to hard line
         // breaks, might be used to separate lines. For example, an inline text
         // box with just a single space character inside it can be used to
-        // represent a soft line break. if an inline text box containing white
+        // represent a soft line break. If an inline text box containing white
         // space separates two lines, it should always be connected to the first
-        // line via "kPreviousOnLineId". This is guaranteed by the renderer.
+        // line via "kPreviousOnLineId". This is guaranteed by the renderer. If
+        // there are multiple line breaks separating the two lines, then only
+        // the first line break is connected to the first line via
+        // "kPreviousOnLineId".
         //
         // Sometimes there might be an inline text box with a single space in it
         // at the end of a text field. We should not mark positions that are at
@@ -530,11 +533,11 @@ class AXPosition {
         // all cases, the parent of an inline text box is a static text object,
         // whose end signifies the end of the text span. One exception is line
         // breaks.
-        if (!text_position->AtEndOfTextSpan() &&
+        if (text_position->AtEndOfAnchor() &&
+            !text_position->AtEndOfTextSpan() &&
             text_position->IsInWhiteSpace() &&
             GetNextOnLineID(text_position->anchor_id_) ==
-                AXNode::kInvalidAXID &&
-            text_position->AtEndOfAnchor()) {
+                AXNode::kInvalidAXID) {
           return true;
         }
 
@@ -573,10 +576,12 @@ class AXPosition {
         // In other cases, we assume that white space, including but not limited
         // to hard line breaks, might be used to separate lines. For example, an
         // inline text box with just a single space character inside it can be
-        // used to represent a soft line break. if an inline text box containing
+        // used to represent a soft line break. If an inline text box containing
         // white space separates two lines, it should always be connected to the
         // first line via "kPreviousOnLineId". This is guaranteed by the
-        // renderer.
+        // renderer. If there are multiple line breaks separating the two lines,
+        // then only the first line break is connected to the first line via
+        // "kPreviousOnLineId".
         //
         // We don't treat a position that is at the start of white space that is
         // on a line by itself as being at the end of the line. This is in order

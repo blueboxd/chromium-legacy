@@ -252,7 +252,7 @@
 
 # Never inline classes or methods with this annotation, but allow shrinking and
 # obfuscation.
--keep,allowobfuscation,allowoptimization @org.chromium.base.annotations.DoNotInline class ** {
+-keepclassmembers,allowobfuscation,allowoptimization @org.chromium.base.annotations.DoNotInline class ** {
   <methods>;
 }
 -keepclassmembers,allowobfuscation,allowoptimization class ** {
@@ -794,35 +794,35 @@
 ################################################################################
 # THIS LINE WAS OMITTED
 -keep @interface org.chromium.base.annotations.VerifiesOnNMR1
--keep,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnNMR1 class ** {
+-keepclassmembers,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnNMR1 class ** {
   <methods>;
 }
 -keepclassmembers,allowobfuscation,allowoptimization class ** {
   @org.chromium.base.annotations.VerifiesOnNMR1 <methods>;
 }
 -keep @interface org.chromium.base.annotations.VerifiesOnO
--keep,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnO class ** {
+-keepclassmembers,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnO class ** {
   <methods>;
 }
 -keepclassmembers,allowobfuscation,allowoptimization class ** {
   @org.chromium.base.annotations.VerifiesOnO <methods>;
 }
 -keep @interface org.chromium.base.annotations.VerifiesOnOMR1
--keep,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnOMR1 class ** {
+-keepclassmembers,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnOMR1 class ** {
   <methods>;
 }
 -keepclassmembers,allowobfuscation,allowoptimization class ** {
   @org.chromium.base.annotations.VerifiesOnOMR1 <methods>;
 }
 -keep @interface org.chromium.base.annotations.VerifiesOnP
--keep,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnP class ** {
+-keepclassmembers,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnP class ** {
   <methods>;
 }
 -keepclassmembers,allowobfuscation,allowoptimization class ** {
   @org.chromium.base.annotations.VerifiesOnP <methods>;
 }
 -keep @interface org.chromium.base.annotations.VerifiesOnQ
--keep,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnQ class ** {
+-keepclassmembers,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnQ class ** {
   <methods>;
 }
 -keepclassmembers,allowobfuscation,allowoptimization class ** {

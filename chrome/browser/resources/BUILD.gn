@@ -307,6 +307,32 @@ if (is_chromeos) {
     ]
     output_dir = "$root_gen_dir/chrome"
   }
+
+  grit("bluetooth_pairing_dialog_resources") {
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
+    if (optimize_webui) {
+      source = "chromeos/bluetooth_pairing_dialog/bluetooth_pairing_dialog_resources_vulcanized.grd"
+
+      deps = [
+        "//chrome/browser/resources/chromeos/bluetooth_pairing_dialog:build",
+      ]
+    } else {
+      source = "chromeos/bluetooth_pairing_dialog/bluetooth_pairing_dialog_resources.grd"
+    }
+
+    defines = chrome_grit_defines
+    outputs = [
+      "grit/bluetooth_pairing_dialog_resources.h",
+      "grit/bluetooth_pairing_dialog_resources_map.cc",
+      "grit/bluetooth_pairing_dialog_resources_map.h",
+      "bluetooth_pairing_dialog_resources.pak",
+    ]
+    output_dir = "$root_gen_dir/chrome"
+  }
 }
 
 if (!is_android && !is_chromeos) {

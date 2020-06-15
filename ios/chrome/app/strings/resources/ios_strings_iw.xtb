@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">כניסה לאתר</translation>
 <translation id="1509960214886564027">ייתכן שהתכונות של חלק גדול מהאתרים לא יפעלו כראוי</translation>
 <translation id="152234381334907219">פריטים שאף פעם לא נשמרו</translation>
+<translation id="1535268707340844072">‏ההגדרה הנוכחית עלולה לגרום לתקלות באתרים מסוימים. הסבר על ניהול קובצי ה-cookie עבור כל האתרים זמין במאמר <ph name="BEGIN_LINK" />הגדרות קובצי cookie<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">כתובת, שורה 1</translation>
 <translation id="1545749641540134597">‏סריקת קוד QR</translation>
 <translation id="1552525382687785070">מנהל המערכת השבית את הסנכרון</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">פעילות אחרונה: לפני <ph name="DAYS" /> ימים</translation>
 <translation id="2074131957428911366">אפשר לבחור מה לסנכרן בכל שלב דרך <ph name="BEGIN_LINK" />ההגדרות<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">ביטול הפעולה</translation>
+<translation id="2081417079511601293">חסימת צדדים שלישיים במצב אנונימי</translation>
 <translation id="209018056901015185">טען גירסת מחשב שולחני</translation>
 <translation id="2103075008456228677">‏פתח את history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים הועברו</translation>
@@ -100,7 +102,6 @@
 <translation id="2139867232736819575">חיפוש טקסט שהעתקת</translation>
 <translation id="2149973817440762519">ערוך סימניות</translation>
 <translation id="2175927920773552910">‏קוד QR</translation>
-<translation id="2179182049312275900">אפשר להפעיל את הסנכרון בכל זמן דרך ההגדרות.</translation>
 <translation id="2198757192731523470">‏Google תוכל להשתמש בהיסטוריית הגלישה שלך לצורך התאמה אישית של החיפוש, מודעות ושירותי Google אחרים.</translation>
 <translation id="2218443599109088993">התרחקות</translation>
 <translation id="2230173723195178503">דף האינטרנט נטען</translation>
@@ -177,6 +178,7 @@
 <translation id="2989805286512600854">פתיחה בכרטיסייה חדשה</translation>
 <translation id="3037605927509011580">אוי, לא!</translation>
 <translation id="3112556859945124369">סמן…</translation>
+<translation id="3131206671572504478">‏חסימת כל קובצי ה-cookie</translation>
 <translation id="3153862085237805241">שמור כרטיס</translation>
 <translation id="3157684681743766797">סמן הכול…</translation>
 <translation id="3161291298470460782">‏הפעולה הזו תוציא אותך מהחשבון, תשבית את הסנכרון ותנקה את כל נתוני Chrome מהמכשיר הזה. הנתונים המסונכרנים יישארו בחשבון Google שלך.</translation>
@@ -249,7 +251,6 @@
 <translation id="4038354071007134711">אין במכשיר זה אף אפליקציה שניתן לפתוח באמצעותה את הקובץ.</translation>
 <translation id="4042870976416480368">מצא בדף</translation>
 <translation id="4049507953662678203">ודא שאתה מחובר לרשת ונסה שוב.</translation>
-<translation id="4071530748369333746">לבטל את הסנכרון?</translation>
 <translation id="4082688844002261427">שליטה באופן שבו היסטוריית הגלישה משמשת להתאמה אישית של החיפוש, המודעות ועוד</translation>
 <translation id="408404951701638773">עכשיו קל יותר להגיע אל סרגל החיפוש</translation>
 <translation id="411254640334432676">ההורדה נכשלה.</translation>
@@ -274,6 +275,7 @@
 <translation id="4389019817280890563">צריך להקיש לשינוי שפה</translation>
 <translation id="441868831736628555">הודעת פרטיות</translation>
 <translation id="4454246407045105932">הוספת שפה</translation>
+<translation id="4469418912670346607">להמשך ההגדרה</translation>
 <translation id="4476574785019001431">הגדרות</translation>
 <translation id="4496373720959965247">אפשר להוסיף כרטיסיות ולעבור בין דפים</translation>
 <translation id="4508750114462689118">סגירת קידום הכניסה</translation>
@@ -302,6 +304,7 @@
 <translation id="4805759445554688327">מספר כרטיס לא חוקי</translation>
 <translation id="4818522717893377262">הוספת שפה…</translation>
 <translation id="481968316161811770">‏קובצי cookie, נתוני אתרים</translation>
+<translation id="4826218269716039351">חסימת צדדים שלישיים</translation>
 <translation id="4833786495304741580">‏שליחת דוחות קריסה וסטטיסטיקות שימוש אל Google באופן אוטומטי.</translation>
 <translation id="4840495572919996524">‏הסימניות, ההיסטוריה, הסיסמאות ונתונים אחרים שלך כבר לא יסונכרנו עם חשבון Google.</translation>
 <translation id="4854345657858711387">עליך להגדיר קוד גישה</translation>
@@ -347,6 +350,7 @@
 <translation id="54401264925851789">פרטי אבטחת דף</translation>
 <translation id="5443952882982198570">כרטיסי אשראי</translation>
 <translation id="5457907402803865181">אירעה שגיאה בסנכרון הסיסמאות.</translation>
+<translation id="5489208564673669003">‏הסבר על ניהול קובצי ה-cookie עבור כל האתרים זמין במאמר <ph name="BEGIN_LINK" />הגדרות קובצי cookie<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">יציאה וניקוי נתונים מהמכשיר הזה</translation>
 <translation id="5525269841082836315">צור סיסמה</translation>
 <translation id="5548760955356983418">‏Handoff מאפשר לך להתחיל לגלוש באתר מסוים במכשיר הזה ולאחר מכן להמשיך בקלות ב-Mac. האתר הפתוח הנוכחי יופיע ב-Dock של ה-Mac שלך.
@@ -434,6 +438,7 @@
 <translation id="6418346271604475326">‏מכין PDF</translation>
 <translation id="6426067060178468363">‏אישור קובצי cookie</translation>
 <translation id="6434591244308415567">אירעה שגיאה. יש לנסות שוב מאוחר יותר.</translation>
+<translation id="6439338047467462846">‏מתן הרשאה לכל קובצי ה-cookie</translation>
 <translation id="6445051938772793705">ארץ</translation>
 <translation id="6445981559479772097">ההודעה נשלחה.</translation>
 <translation id="6447842834002726250">‏קובצי Cookie</translation>
@@ -441,6 +446,7 @@
 <translation id="6476800141292307438">הדפדפן מתרגם את הדף ל<ph name="LANGUAGE" />. האפשרויות מוצגות בחלק התחתון של המסך.</translation>
 <translation id="648164694371393720">שגיאת אימות</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> פריטים נמחקו</translation>
+<translation id="651505212789431520">לבטל את הסנכרון? אפשר להפעיל את הסנכרון בכל זמן דרך 'הגדרות'.</translation>
 <translation id="6561262006871132942">התקרבות</translation>
 <translation id="6610002944194042868">אפשרויות תרגום</translation>
 <translation id="6628106477656132239">תאריך התפוגה אינו חוקי</translation>

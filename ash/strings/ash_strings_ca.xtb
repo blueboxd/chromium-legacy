@@ -83,6 +83,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1864454756846565995">Dispositiu USB-C (port posterior)</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Desbloqueja amb l'empremta digital</translation>
+<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> no admet la resolució <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). La resolució ha canviat a <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Fes clic a Confirma per conservar els canvis. La configuració anterior es restaurarà d'aquí a <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1919743966458266018">La drecera per obrir el gestor de tasques ha canviat. Utilitzeu <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clics automàtics</translation>
 <translation id="1928739107511554905">Per obtenir l'actualització, utilitza la pantalla tàctil per reiniciar Chromebook amb el teclat connectat.</translation>
@@ -413,7 +414,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="5980301590375426705">Surt de la sessió de convidat</translation>
 <translation id="598882571027504733">Per obtenir l'actualització, reinicia Chromebook amb el teclat connectat.</translation>
 <translation id="5992218262414051481">El mode d'alt contrast està activat. Torna a prémer Ctrl+Cerca+H per desactivar-lo.</translation>
-<translation id="6018164090099858612">S'està sortint del mode de rèplica</translation>
+<translation id="6018164090099858612">S'està sortint del mode de projecció</translation>
 <translation id="602001110135236999">Desplaça't cap a l'esquerra</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" /> d'intensitat del senyal, gestionada per l'administrador</translation>
 <translation id="6030495522958826102">El menú s'ha mogut a l'extrem inferior esquerre de la pantalla.</translation>
@@ -486,7 +487,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="6752912906630585008">L'escriptori <ph name="REMOVED_DESK" /> s'ha suprimit i s'ha fusionat amb l'escriptori <ph name="RECEIVE_DESK" /></translation>
 <translation id="6777216307882431711">S'estan alimentant els dispositius USB-C connectats</translation>
 <translation id="6790428901817661496">Reprodueix</translation>
-<translation id="6803622936009808957">No s'ha pogut fer la rèplica de les pantalles, perquè no s'ha trobat cap resolució compatible. S'està entrant al mode d'escriptori ampliat.</translation>
+<translation id="6803622936009808957">No s'han pogut projectar les pantalles, perquè no s'ha trobat cap resolució compatible. S'ha entrat al mode d'escriptori ampliat.</translation>
 <translation id="6818242057446442178">Enrere per paraula</translation>
 <translation id="6820676911989879663">Fes una pausa</translation>
 <translation id="6857811139397017780">Activa <ph name="NETWORKSERVICE" /></translation>
@@ -509,7 +510,6 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="7068360136237591149">Obre fitxers</translation>
 <translation id="7076293881109082629">Inicia la sessió</translation>
 <translation id="7088960765736518739">Accés amb interruptors</translation>
-<translation id="7092922358121866860">Mostra la configuració de Llum nocturna</translation>
 <translation id="7098389117866926363">Dispositiu USB-C (port posterior esquerre)</translation>
 <translation id="7131634465328662194">La sessió es tancarà automàticament.</translation>
 <translation id="7143207342074048698">S'està connectant</translation>
@@ -661,7 +661,6 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="8877788021141246043">Estableix un recordatori</translation>
 <translation id="8878886163241303700">Ampliació de la pantalla</translation>
 <translation id="890616557918890486">Canvia la font</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> no admet la resolució <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). La resolució ha canviat a <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Fes clic a Confirma per conservar els canvis. La configuració anterior es restaurarà d'aquí a <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">La bateria està a un <ph name="PERCENTAGE" />%.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">L'Assistent de Google no parla aquest idioma.</translation>

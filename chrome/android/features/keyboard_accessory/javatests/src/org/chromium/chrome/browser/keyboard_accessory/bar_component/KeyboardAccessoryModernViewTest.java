@@ -32,12 +32,12 @@ import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.content.pm.ActivityInfo;
 import android.graphics.Rect;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewStub;
 
 import androidx.annotation.Nullable;
 import androidx.test.espresso.matcher.RootMatchers;
+import androidx.test.filters.MediumTest;
 
 import com.google.android.material.tabs.TabLayout;
 

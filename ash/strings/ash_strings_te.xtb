@@ -510,7 +510,6 @@
 <translation id="7068360136237591149">ఫైల్‌లు తెరువు</translation>
 <translation id="7076293881109082629">సైన్ ఇన్ చేస్తోంది</translation>
 <translation id="7088960765736518739">స్విచ్ యాక్సెస్</translation>
-<translation id="7092922358121866860">రాత్రి కాంతి సెట్టింగ్‌లను చూపుతుంది</translation>
 <translation id="7098389117866926363">USB-C పరికరం (వెనుక భాగంలో ఎడమ పోర్ట్)</translation>
 <translation id="7131634465328662194">మీరు ఆటోమేటిక్‌గా సైన్ అవుట్ చేయబడతారు.</translation>
 <translation id="7143207342074048698">కనెక్ట్ అవుతోంది</translation>
@@ -662,7 +661,6 @@
 <translation id="8877788021141246043">రిమైండర్‌ సెట్ చేయి</translation>
 <translation id="8878886163241303700">స్క్రీన్ విస్తరించబడుతోంది</translation>
 <translation id="890616557918890486">మూలాధారాన్ని మార్చు</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz)ను సపోర్ట్ చేయదు. రిజల్యూషన్ <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />)కు మార్చబడింది. మార్పులను అలాగే ఉంచడానికి 'నిర్ధారించు'ను క్లిక్ చేయండి. మునుపటి సెట్టింగ్‌లు <ph name="TIMEOUT_SECONDS" />లో రీస్టోర్ చేయబడతాయి.</translation>
 <translation id="8909138438987180327">బ్యాటరీ ఛార్జ్ <ph name="PERCENTAGE" /> శాతం ఉంది.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google సహాయకం ఈ భాషను మాట్లాడదు.</translation>

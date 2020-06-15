@@ -27,7 +27,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.RecyclerView.ViewHolder;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,7 +50,7 @@ import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemViewHolder;
@@ -76,8 +75,11 @@ import java.util.concurrent.TimeUnit;
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class HistoryActivityTest {
     @Rule
-    public IntentsTestRule<HistoryActivity> mActivityTestRule =
+    public final IntentsTestRule<HistoryActivity> mActivityTestRule =
             new IntentsTestRule<>(HistoryActivity.class, false, false);
+
+    @Rule
+    public final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
     private StubbedHistoryProvider mHistoryProvider;
     private HistoryAdapter mAdapter;
@@ -91,10 +93,10 @@ public class HistoryActivityTest {
 
     @Before
     public void setUp() throws Exception {
-        // Account not signed in by default. The clear browsing data header, one date view, and two
+        // Account not signed in by default with AccountManagerTestRule.
+        // The clear browsing data header, one date view, and two
         // history item views should be shown, but the info header should not. We enforce a default
         // state because the number of headers shown depends on the signed-in state.
-        SigninTestUtil.setUpAuthForTesting();
 
         mHistoryProvider = new StubbedHistoryProvider();
 
@@ -113,11 +115,6 @@ public class HistoryActivityTest {
         Assert.assertEquals(4, mAdapter.getItemCount());
     }
 
-    @After
-    public void tearDown() {
-        SigninTestUtil.tearDownAuthForTesting();
-    }
-
     private void launchHistoryActivity() {
         HistoryActivity activity = mActivityTestRule.launchActivity(null);
         mHistoryManager = activity.getHistoryManagerForTests();
@@ -125,7 +122,7 @@ public class HistoryActivityTest {
         mTestObserver = new TestObserver();
         mHistoryManager.getSelectionDelegateForTests().addObserver(mTestObserver);
         mAdapter.registerAdapterDataObserver(mTestObserver);
-        mRecyclerView = ((RecyclerView) activity.findViewById(R.id.recycler_view));
+        mRecyclerView = activity.findViewById(R.id.recycler_view);
     }
 
     @Test
@@ -181,7 +178,7 @@ public class HistoryActivityTest {
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedIn() {
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addAndSignInTestAccount();
 
         setHasOtherFormsOfBrowsingData(false);
 
@@ -191,7 +188,7 @@ public class HistoryActivityTest {
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedInSynced() {
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addAndSignInTestAccount();
 
         setHasOtherFormsOfBrowsingData(false);
 
@@ -201,7 +198,7 @@ public class HistoryActivityTest {
     @Test
     @SmallTest
     public void testPrivacyDisclaimers_SignedInSyncedAndOtherForms() {
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addAndSignInTestAccount();
 
         setHasOtherFormsOfBrowsingData(true);
 
@@ -388,7 +385,7 @@ public class HistoryActivityTest {
         Assert.assertEquals(1, headerGroup.size());
 
         // Signed in but not synced and history has items. The info button should be hidden.
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addAndSignInTestAccount();
         setHasOtherFormsOfBrowsingData(false);
         TestThreadUtils.runOnUiThreadBlocking(() -> toolbar.onSignInStateChange());
         Assert.assertFalse(infoMenuItem.isVisible());
@@ -445,7 +442,7 @@ public class HistoryActivityTest {
 
         // Sign in and set has other forms of browsing data to true.
         int callCount = mTestObserver.onSelectionCallback.getCallCount();
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addAndSignInTestAccount();
         setHasOtherFormsOfBrowsingData(true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             toolbar.onSignInStateChange();
@@ -566,7 +563,8 @@ public class HistoryActivityTest {
 
         // Sign in to account. Note that if supervised user is set before sign in, the supervised
         // user setting will be reset.
-        final Account account = SigninTestUtil.addTestAccount();
+        final Account account =
+                mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             IdentityServicesProvider.get().getSigninManager().onFirstRunCheckDone();
             IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(mTestObserver);
@@ -576,7 +574,7 @@ public class HistoryActivityTest {
 
         mTestObserver.onSigninStateChangedCallback.waitForCallback(
                 0, 1, SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        Assert.assertEquals(account, SigninTestUtil.getCurrentAccount());
+        Assert.assertEquals(account, mAccountManagerTestRule.getCurrentSignedInAccount());
 
         // Wait for recycler view changes after sign in.
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -629,7 +627,7 @@ public class HistoryActivityTest {
                         -> IdentityServicesProvider.get().getSigninManager().signOut(
                                 SignoutReason.SIGNOUT_TEST));
         mTestObserver.onSigninStateChangedCallback.waitForCallback(currentCallCount, 1);
-        Assert.assertNull(SigninTestUtil.getCurrentAccount());
+        Assert.assertNull(mAccountManagerTestRule.getCurrentSignedInAccount());
 
         // Remove observer
         TestThreadUtils.runOnUiThreadBlocking(

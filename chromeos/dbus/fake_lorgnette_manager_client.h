@@ -9,7 +9,6 @@
 #include <string>
 #include <tuple>
 
-#include "base/macros.h"
 #include "chromeos/dbus/lorgnette/lorgnette_service.pb.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 
@@ -21,6 +20,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeLorgnetteManagerClient
     : public LorgnetteManagerClient {
  public:
   FakeLorgnetteManagerClient();
+  FakeLorgnetteManagerClient(const FakeLorgnetteManagerClient&) = delete;
+  FakeLorgnetteManagerClient& operator=(const FakeLorgnetteManagerClient&) =
+      delete;
   ~FakeLorgnetteManagerClient() override;
 
   void Init(dbus::Bus* bus) override;
@@ -49,8 +51,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeLorgnetteManagerClient
                                  std::string /* ScanProperties.mode */,
                                  int /* Scanproperties.resolution_dpi */>;
   std::map<ScanDataKey, std::string /* data */> scan_data_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeLorgnetteManagerClient);
 };
 
 }  // namespace chromeos

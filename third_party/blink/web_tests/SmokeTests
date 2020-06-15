@@ -398,7 +398,6 @@ fast/box-sizing/css-table-collapse.html
 fast/box-sizing/table-no-collapse.html
 fast/canvas/alpha.html
 fast/canvas/canvas-set-font-with-updated-style.html
-fast/canvas/bug535171.html
 fast/canvas/canvas-hides-fallback.html
 fast/canvas/color-space/imageData-colorSpace.html
 fast/canvas/feimage-with-foreignobject-taint-canvas-2.html

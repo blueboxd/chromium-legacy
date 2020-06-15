@@ -10,7 +10,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -18,6 +17,7 @@ import android.widget.TextView;
 
 import androidx.annotation.IdRes;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Before;

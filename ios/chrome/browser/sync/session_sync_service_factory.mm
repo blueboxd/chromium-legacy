@@ -9,6 +9,7 @@
 #include "base/no_destructor.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "components/dom_distiller/core/url_constants.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
@@ -47,7 +48,8 @@ bool ShouldSyncURLImpl(const GURL& url) {
     return true;
   }
   return url.is_valid() && !url.SchemeIs(kChromeUIScheme) &&
-         !url.SchemeIsFile();
+         !url.SchemeIsFile() &&
+         !url.SchemeIs(dom_distiller::kDomDistillerScheme);
 }
 
 // iOS implementation of SyncSessionsClient. Needs to be in a separate class

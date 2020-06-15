@@ -23,9 +23,10 @@ import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHe
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHelper.whenDisplayed;
 import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabTestHelper.isKeyboardAccessoryTabLayout;
 
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
 import android.widget.TextView;
+
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;

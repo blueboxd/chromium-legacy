@@ -13,20 +13,20 @@
   <release seq="1">
     <includes>
       <!-- Privileged app host contents. -->
-      <include name="IDR_PRINT_MANAGEMENT_INDEX_HTML" file="index.html" type="BINDATA" compress="gzip" />
-      <include name="IDR_PRINT_MANAGEMENT_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/print_management.js" use_base_dir="false" compress="gzip" type="BINDATA"/>
-      <include name="IDR_PRINT_MANAGEMENT_PRINT_JOB_ENTRY_HTML" file="print_job_entry.html" compress="gzip" type="BINDATA"/>
-      <include name="IDR_PRINT_MANAGEMENT_PRINT_JOB_ENTRY_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/print_job_entry.js" use_base_dir="false" compress="gzip" type="BINDATA"/>
-      <include name="IDR_PRINT_MANAGEMENT_SHARED_CSS_HTML" file="print_management_shared_css.html" compress="gzip" type="BINDATA"/>
-      <include name="IDR_PRINT_MANAGEMENT_SHARED_CSS_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/print_management_shared_css.js" use_base_dir="false" compress="gzip" type="BINDATA"/>
-      <include name="IDR_PRINT_MANAGEMENT_PRINT_JOB_CLEAR_HISTORY_DIALOG_HTML" file="print_job_clear_history_dialog.html" compress="gzip" type="BINDATA"/>
-      <include name="IDR_PRINT_MANAGEMENT_PRINT_JOB_CLEAR_HISTORY_DIALOG_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/print_job_clear_history_dialog.js" use_base_dir="false" compress="gzip" type="BINDATA"/>
+      <include name="IDR_PRINT_MANAGEMENT_INDEX_HTML" file="index.html" type="BINDATA" />
+      <include name="IDR_PRINT_MANAGEMENT_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/print_management.js" use_base_dir="false" type="BINDATA"/>
+      <include name="IDR_PRINT_MANAGEMENT_PRINT_JOB_ENTRY_HTML" file="print_job_entry.html" type="BINDATA"/>
+      <include name="IDR_PRINT_MANAGEMENT_PRINT_JOB_ENTRY_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/print_job_entry.js" use_base_dir="false" type="BINDATA"/>
+      <include name="IDR_PRINT_MANAGEMENT_SHARED_CSS_HTML" file="print_management_shared_css.html" type="BINDATA"/>
+      <include name="IDR_PRINT_MANAGEMENT_SHARED_CSS_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/print_management_shared_css.js" use_base_dir="false" type="BINDATA"/>
+      <include name="IDR_PRINT_MANAGEMENT_PRINT_JOB_CLEAR_HISTORY_DIALOG_HTML" file="print_job_clear_history_dialog.html" type="BINDATA"/>
+      <include name="IDR_PRINT_MANAGEMENT_PRINT_JOB_CLEAR_HISTORY_DIALOG_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/print_job_clear_history_dialog.js" use_base_dir="false" type="BINDATA"/>
       <include name="IDR_PRINT_MANAGEMENT_MANIFEST" file="manifest.json" type="BINDATA" compress="gzip" />
       <include name="IDR_PRINT_MANAGEMENT_ICON" file="app_icon_192.png" type="BINDATA" compress="gzip" />
-      <include name="IDR_PRINTING_MANAGER_MOJO_LITE_JS" file="${root_gen_dir}/chromeos/components/print_management/mojom/printing_manager.mojom-lite.js" compress="gzip" use_base_dir="false" type="BINDATA" />
-      <include name="IDR_PRINT_MANAGEMENT_PWA_HTML" file="pwa.html" type="BINDATA" compress="gzip" />
-      <include name="IDR_SCANNING_HTML" file="scanning.html" type="BINDATA" compress="gzip" />
-      <include name="IDR_SCANNING_PAGE_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/scanning_page.js" use_base_dir="false" compress="gzip" type="BINDATA"/>
+      <include name="IDR_PRINTING_MANAGER_MOJO_LITE_JS" file="${root_gen_dir}/chromeos/components/print_management/mojom/printing_manager.mojom-lite.js" use_base_dir="false" type="BINDATA" />
+      <include name="IDR_PRINT_MANAGEMENT_PWA_HTML" file="pwa.html" type="BINDATA" />
+      <include name="IDR_SCANNING_HTML" file="scanning.html" type="BINDATA" />
+      <include name="IDR_SCANNING_PAGE_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/scanning_page.js" use_base_dir="false" type="BINDATA"/>
     </includes>
 
     <structures>

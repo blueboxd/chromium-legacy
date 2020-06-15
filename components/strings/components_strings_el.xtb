@@ -731,7 +731,6 @@
 <translation id="4101413244023615925">Κείμενο και γραφικά</translation>
 <translation id="4103249731201008433">Ο σειριακός αριθμός της συσκευής δεν είναι έγκυρος</translation>
 <translation id="4103763322291513355">Επισκεφτείτε την &lt;strong&gt;chrome://policy&lt;/strong&gt; για να δείτε τη λίστα των ανεπιθύμητων διευθύνσεων URL και άλλες πολιτικές που έχουν τεθεί σε εφαρμογή από το διαχειριστή του συστήματός σας.</translation>
-<translation id="4108231218301530806">Την επόμενη φορά να χρησιμοποιηθεί μοναδικό χαρακτηριστικό για την επαλήθευση αυτής της κάρτας.</translation>
 <translation id="4110652170750985508">Έλεγχος πληρωμής</translation>
 <translation id="4112140312785995938">Αναζήτηση προς τα πίσω</translation>
 <translation id="4116663294526079822">Να επιτρέπεται πάντα σε αυτόν τον ιστότοπο</translation>
@@ -1130,6 +1129,7 @@
 <translation id="569000877158168851">Η τιμή DnsOverHttpsTemplates δεν είναι σχετική και δεν θα χρησιμοποιηθεί, εκτός αν η πολιτική DnsOverHttpsMode οριστεί είτε σε <ph name="SECURE_DNS_MODE_AUTOMATIC" /> είτε σε <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Κέντρο</translation>
 <translation id="570530837424789914">Διαχείριση…</translation>
+<translation id="5705882733397021510">Επιστροφή</translation>
 <translation id="57094364128775171">Πρόταση για ισχυρό κωδικό πρόσβασης…</translation>
 <translation id="5710435578057952990">Η ταυτότητα αυτού του ιστότοπου δεν έχει επαληθευτεί.</translation>
 <translation id="5720705177508910913">Τρέχων χρήστης</translation>
@@ -1346,7 +1346,6 @@
 <translation id="6631202559048444592">Υπάρχουν πάνω από μία πηγές για την πολιτική, αλλά οι τιμές είναι ίδιες.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Διαγραφή</translation>
-<translation id="6644283850729428850">Αυτή η πολιτική έχει αποσυρθεί.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Κανένας}=1{Από 1 ιστότοπο (δεν θα αποσυνδεθείτε από τον Λογαριασμό σας Google)}other{Από # ιστοτόπους (δεν θα αποσυνδεθείτε από τον Λογαριασμό σας Google)}}</translation>
 <translation id="6652101503459149953">Χρήση Windows Hello</translation>
 <translation id="6657585470893396449">Κωδικός πρόσβασης</translation>

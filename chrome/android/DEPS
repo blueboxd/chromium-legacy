@@ -24,6 +24,7 @@ include_rules = [
   "+components/external_intents/android",
   "+components/favicon_base",
   "+components/find_in_page/android",
+  "+components/infobars/android",
   "+components/invalidation",
   "+components/javascript_dialogs/android",
   "+components/page_info/android/java",

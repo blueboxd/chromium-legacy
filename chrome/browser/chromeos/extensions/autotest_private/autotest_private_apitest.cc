@@ -241,8 +241,7 @@ class AutotestPrivateWithPolicyApiTest : public AutotestPrivateApiTest {
     policy::PolicyMap policy;
     policy.Set(policy::key::kAllowDinosaurEasterEgg,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(true),
-               nullptr);
+               policy::POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
     provider_.UpdateChromePolicy(policy);
     base::RunLoop().RunUntilIdle();
   }

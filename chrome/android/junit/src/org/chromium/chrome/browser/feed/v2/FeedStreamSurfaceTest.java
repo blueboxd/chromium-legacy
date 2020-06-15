@@ -6,11 +6,13 @@ package org.chromium.chrome.browser.feed.v2;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyBoolean;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
 import android.support.test.filters.SmallTest;
 import android.view.View;
+import android.widget.TextView;
 
 import com.google.protobuf.ByteString;
 
@@ -26,6 +28,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.xsurface.FeedActionsHandler;
 import org.chromium.components.feed.proto.FeedUiProto.Slice;
 import org.chromium.components.feed.proto.FeedUiProto.StreamUpdate;
@@ -46,6 +49,8 @@ public class FeedStreamSurfaceTest {
     private SnackbarManager mSnackbarManager;
     @Mock
     private FeedActionsHandler.SnackbarController mSnackbarController;
+    @Mock
+    private BottomSheetController mBottomSheetController;
 
     @Rule
     public JniMocker mocker = new JniMocker();
@@ -58,7 +63,8 @@ public class FeedStreamSurfaceTest {
         MockitoAnnotations.initMocks(this);
         mActivity = Robolectric.buildActivity(Activity.class).get();
         mocker.mock(FeedStreamSurfaceJni.TEST_HOOKS, mFeedStreamSurfaceJniMock);
-        mFeedStreamSurface = new FeedStreamSurface(mActivity, mSnackbarManager, null, null);
+        mFeedStreamSurface =
+                new FeedStreamSurface(mActivity, mSnackbarManager, null, mBottomSheetController);
     }
 
     @Test
@@ -358,6 +364,21 @@ public class FeedStreamSurfaceTest {
         mFeedStreamSurface.showSnackbar(
                 "message", "Undo", FeedActionsHandler.SnackbarDuration.SHORT, mSnackbarController);
         verify(mSnackbarManager).showSnackbar(any());
+    }
+
+    @Test
+    @SmallTest
+    public void testShowBottomSheet() {
+        mFeedStreamSurface.showBottomSheet(new TextView(mActivity));
+        verify(mBottomSheetController).requestShowContent(any(), anyBoolean());
+    }
+
+    @Test
+    @SmallTest
+    public void testDismissBottomSheet() {
+        mFeedStreamSurface.showBottomSheet(new TextView(mActivity));
+        mFeedStreamSurface.dismissBottomSheet();
+        verify(mBottomSheetController).hideContent(any(), anyBoolean());
     }
 
     @Test

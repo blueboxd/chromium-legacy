@@ -384,6 +384,7 @@ I motsatt fall blir dette blokkert av personverninnstillingene. Dette gjør at i
 <translation id="2544644783021658368">Enkeltdokument</translation>
 <translation id="254947805923345898">Regelverdien er ikke gyldig.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> sendte et ugyldig svar.</translation>
+<translation id="2552295903035773204">Bruk skjermlås til å bekrefte kort fra nå av</translation>
 <translation id="2553853292994445426">Kontrollér innstillingene for sikker DNS. Det er mulig du har konfigurert en sikker DNS-tjener som vi ikke klarer å koble til.</translation>
 <translation id="2556876185419854533">&amp;Angre endringen</translation>
 <translation id="257674075312929031">Gruppe</translation>
@@ -731,7 +732,6 @@ brukere av denne nettleseren.</translation>
 <translation id="4101413244023615925">Tekst og grafikk</translation>
 <translation id="4103249731201008433">Enhetens serienummer er ugyldig</translation>
 <translation id="4103763322291513355">Gå til &lt;strong&gt;chrome://policy&lt;/strong&gt; for å se listen over sperrede nettadresser og andre innstillinger aktivert av systemadministratoren din.</translation>
-<translation id="4108231218301530806">Bruk fingeravtrykk til å bekrefte dette kortet neste gang.</translation>
 <translation id="4110652170750985508">Gjennomgå betalingen</translation>
 <translation id="4112140312785995938">Spol bakover</translation>
 <translation id="4116663294526079822">Tillat alltid på dette nettstedet</translation>
@@ -1129,6 +1129,7 @@ brukere av denne nettleseren.</translation>
 <translation id="569000877158168851">Verdien for DnsOverHttpsTemplates er irrelevant og blir ikke brukt med mindre DnsOverHttpsMode-regelen er satt til enten <ph name="SECURE_DNS_MODE_AUTOMATIC" /> eller <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Midtstill</translation>
 <translation id="570530837424789914">Administrer…</translation>
+<translation id="5705882733397021510">Tilbake</translation>
 <translation id="57094364128775171">Foreslå et sterkt passord…</translation>
 <translation id="5710435578057952990">Identiteten til dette nettstedet er ikke verifisert.</translation>
 <translation id="5720705177508910913">Gjeldende bruker</translation>
@@ -1345,7 +1346,6 @@ brukere av denne nettleseren.</translation>
 <translation id="6631202559048444592">Regelen har mer enn én kilde, men verdiene er like.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Tøm</translation>
-<translation id="6644283850729428850">Denne retningslinjen er foreldet.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Ingen}=1{Fra 1 nettsted (du blir ikke logget av Google-kontoen din)}other{Fra # nettsteder (du blir ikke logget av Google-kontoen din)}}</translation>
 <translation id="6652101503459149953">Bruk Windows Hello</translation>
 <translation id="6657585470893396449">Passord</translation>

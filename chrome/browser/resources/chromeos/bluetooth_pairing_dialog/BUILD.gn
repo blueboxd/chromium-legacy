@@ -2,18 +2,50 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/common/features.gni")
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/grit/grit_rule.gni")
+import("//tools/polymer/html_to_js.gni")
 import("../../optimize_webui.gni")
 
-optimize_webui("build") {
-  host = "bluetooth_pairing_dialog"
-  html_in_files = [ "bluetooth_pairing_dialog.html" ]
-  html_out_files = [ "vulcanized.html" ]
+if (optimize_webui) {
+  bluetooth_dialog_pak_file = "bluetooth_pairing_dialog_resources.pak"
+  unpak_folder = "bluetooth_pairing_dialog_resources.unpak"
 
-  input = rebase_path(".", root_build_dir)
-  js_out_files = [ "crisper.js" ]
+  optimize_webui("build") {
+    host = "bluetooth_pairing_dialog"
+    html_in_files = [ "bluetooth_pairing_dialog_container.html" ]
+    html_out_files = [ "vulcanized.html" ]
 
-  deps = []
+    input = rebase_path(".", root_build_dir)
+    js_out_files = [ "crisper.js" ]
+
+    deps = [ ":unpak" ]
+  }
+
+  unpak("unpak") {
+    pak_file = bluetooth_dialog_pak_file
+    out_folder = unpak_folder
+
+    deps = [ ":flattened_resources" ]
+  }
+
+  grit("flattened_resources") {
+    source = "bluetooth_pairing_dialog_resources.grd"
+
+    defines = chrome_grit_defines
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+    outputs = [
+      "grit/bluetooth_pairing_dialog_resources.h",
+      "grit/bluetooth_pairing_dialog_resources_map.cc",
+      "grit/bluetooth_pairing_dialog_resources_map.h",
+      bluetooth_dialog_pak_file,
+    ]
+    output_dir = "$root_gen_dir/chrome/browser/resources/chromeos/bluetooth_pairing_dialog"
+  }
 }
 
 js_type_check("closure_compile") {

@@ -427,7 +427,8 @@ ScriptPromise CookieStore::DoRead(
 // static
 void CookieStore::GetAllForUrlToGetAllResult(
     ScriptPromiseResolver* resolver,
-    const Vector<CanonicalCookie>& backend_cookies) {
+    const Vector<network::mojom::blink::CookieWithAccessResultPtr>
+        backend_cookies) {
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state->ContextIsValid())
     return;
@@ -437,7 +438,7 @@ void CookieStore::GetAllForUrlToGetAllResult(
   cookies.ReserveInitialCapacity(backend_cookies.size());
   for (const auto& backend_cookie : backend_cookies) {
     cookies.push_back(CookieChangeEvent::ToCookieListItem(
-        backend_cookie, false /* is_deleted */));
+        backend_cookie->cookie, false /* is_deleted */));
   }
 
   resolver->Resolve(std::move(cookies));
@@ -446,7 +447,8 @@ void CookieStore::GetAllForUrlToGetAllResult(
 // static
 void CookieStore::GetAllForUrlToGetResult(
     ScriptPromiseResolver* resolver,
-    const Vector<CanonicalCookie>& backend_cookies) {
+    const Vector<network::mojom::blink::CookieWithAccessResultPtr>
+        backend_cookies) {
   ScriptState* script_state = resolver->GetScriptState();
   if (!script_state->ContextIsValid())
     return;
@@ -459,7 +461,7 @@ void CookieStore::GetAllForUrlToGetResult(
 
   const auto& backend_cookie = backend_cookies.front();
   CookieListItem* cookie = CookieChangeEvent::ToCookieListItem(
-      backend_cookie, false /* is_deleted */);
+      backend_cookie->cookie, false /* is_deleted */);
   resolver->Resolve(cookie);
 }
 

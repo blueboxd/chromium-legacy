@@ -8,10 +8,9 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.instanceOf;
 
-import android.support.test.filters.MediumTest;
-
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.contrib.RecyclerViewActions;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,7 +27,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
-import org.chromium.chrome.test.util.browser.WPRArchiveConfigFilePath;
+import org.chromium.chrome.test.util.browser.WPRArchiveDirectory;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 
@@ -57,8 +56,8 @@ public final class FeedNewTabPageCardInstrumentationTest {
     @Test
     @MediumTest
     @Feature({"FeedNewTabPage", "WPRRecordReplayTest", "RenderTest"})
-    @WPRArchiveConfigFilePath("chrome/android/feed/core/javatests/src/org/chromium/chrome/"
-            + "browser/feed/network_fetch/test_data.json")
+    @WPRArchiveDirectory("chrome/android/feed/core/javatests/src/org/chromium/chrome/"
+            + "browser/feed/wpr_tests")
     public void
     launchNTP_withMultipleFeedCardsRendered() throws IOException, InterruptedException {
         mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);

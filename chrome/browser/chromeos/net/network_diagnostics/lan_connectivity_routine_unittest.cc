@@ -19,6 +19,10 @@ class LanConnectivityRoutineTest : public ::testing::Test {
     lan_connectivity_routine_ = std::make_unique<LanConnectivityRoutine>();
   }
 
+  LanConnectivityRoutineTest(const LanConnectivityRoutineTest&) = delete;
+  LanConnectivityRoutineTest& operator=(const LanConnectivityRoutineTest&) =
+      delete;
+
   void CompareVerdict(mojom::RoutineVerdict expected,
                       mojom::RoutineVerdict actual) {
     EXPECT_EQ(expected, actual);
@@ -76,14 +80,12 @@ class LanConnectivityRoutineTest : public ::testing::Test {
   std::string ethernet_path_;
   std::string wifi_path_;
   base::WeakPtrFactory<LanConnectivityRoutineTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LanConnectivityRoutineTest);
 };
 
 TEST_F(LanConnectivityRoutineTest, TestConnectedLan) {
   SetUpEthernet();
   SetUpWiFi(shill::kStateOnline);
-  lan_connectivity_routine()->RunTest(
+  lan_connectivity_routine()->RunRoutine(
       base::BindOnce(&LanConnectivityRoutineTest::CompareVerdict, weak_ptr(),
                      mojom::RoutineVerdict::kNoProblem));
   base::RunLoop().RunUntilIdle();
@@ -91,7 +93,7 @@ TEST_F(LanConnectivityRoutineTest, TestConnectedLan) {
 
 TEST_F(LanConnectivityRoutineTest, TestDisconnectedLan) {
   SetUpWiFi(shill::kStateOffline);
-  lan_connectivity_routine()->RunTest(
+  lan_connectivity_routine()->RunRoutine(
       base::BindOnce(&LanConnectivityRoutineTest::CompareVerdict, weak_ptr(),
                      mojom::RoutineVerdict::kProblem));
   base::RunLoop().RunUntilIdle();

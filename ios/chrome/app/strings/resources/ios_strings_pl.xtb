@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Zaloguj się w witrynie</translation>
 <translation id="1509960214886564027">Funkcje wielu stron mogą nie działać prawidłowo</translation>
 <translation id="152234381334907219">Nigdy nie zapisane</translation>
+<translation id="1535268707340844072">Twoje obecne ustawienie może powodować problemy w niektórych witrynach. Aby zarządzać plikami cookie we wszystkich witrynach, sprawdź <ph name="BEGIN_LINK" />Ustawienia plików cookie<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Adres 1</translation>
 <translation id="1545749641540134597">Zeskanuj kod QR</translation>
 <translation id="1552525382687785070">Administrator wyłączył synchronizację</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Aktywność <ph name="DAYS" /> dni temu</translation>
 <translation id="2074131957428911366">W <ph name="BEGIN_LINK" />ustawieniach<ph name="END_LINK" /> możesz wybrać, co chcesz synchronizować.</translation>
 <translation id="2079545284768500474">Cofnij</translation>
+<translation id="2081417079511601293">Blokuj pliki cookie innych firm w trybie incognito</translation>
 <translation id="209018056901015185">Wersja na komputer</translation>
 <translation id="2103075008456228677">Otwórz history.google.com</translation>
 <translation id="2116625576999540962">Przeniesione elementy: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -100,7 +102,6 @@
 <translation id="2139867232736819575">Wyszukaj skopiowany tekst</translation>
 <translation id="2149973817440762519">Edytuj zakładkę</translation>
 <translation id="2175927920773552910">Kod QR</translation>
-<translation id="2179182049312275900">W każdej chwili możesz włączyć synchronizację w ustawieniach.</translation>
 <translation id="2198757192731523470">Google może korzystać z Twojej historii, by personalizować wyniki wyszukiwania, reklamy i działanie innych usług.</translation>
 <translation id="2218443599109088993">Pomniejsz</translation>
 <translation id="2230173723195178503">Wczytano stronę internetową</translation>
@@ -177,6 +178,7 @@
 <translation id="2989805286512600854">Otwórz w nowej karcie</translation>
 <translation id="3037605927509011580">Kurza twarz!</translation>
 <translation id="3112556859945124369">Oznacz…</translation>
+<translation id="3131206671572504478">Zablokuj wszystkie</translation>
 <translation id="3153862085237805241">Zapisz kartę</translation>
 <translation id="3157684681743766797">Oznacz wszystko…</translation>
 <translation id="3161291298470460782">Spowoduje to wylogowanie Cię, wyłączenie synchronizacji i usunięcie wszystkich danych Chrome z tego urządzenia. Zsynchronizowane dane pozostaną na Twoim koncie Google.</translation>
@@ -249,7 +251,6 @@
 <translation id="4038354071007134711">Nie masz aplikacji, która może otworzyć ten plik.</translation>
 <translation id="4042870976416480368">Znajdź na stronie</translation>
 <translation id="4049507953662678203">Upewnij się, że masz połączenie z siecią, i spróbuj ponownie.</translation>
-<translation id="4071530748369333746">Anulować synchronizację?</translation>
 <translation id="4082688844002261427">Zarządzaj personalizacją wyszukiwarki, reklam i innych usług na podstawie historii przeglądania</translation>
 <translation id="408404951701638773">Pasek wyszukiwania jest teraz łatwiej dostępny</translation>
 <translation id="411254640334432676">Błąd pobierania.</translation>
@@ -274,6 +275,7 @@
 <translation id="4389019817280890563">Kliknij, by zmienić język.</translation>
 <translation id="441868831736628555">Informacje na temat ochrony prywatności</translation>
 <translation id="4454246407045105932">Dodaj język</translation>
+<translation id="4469418912670346607">Kontynuuj konfigurowanie</translation>
 <translation id="4476574785019001431">Ustawienia</translation>
 <translation id="4496373720959965247">Dodaj karty i przełączaj się między stronami</translation>
 <translation id="4508750114462689118">Zamknij okno zachęcające do logowania</translation>
@@ -302,6 +304,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="4805759445554688327">Nieprawidłowy numer karty</translation>
 <translation id="4818522717893377262">Dodaj język...</translation>
 <translation id="481968316161811770">Cookie i dane stron</translation>
+<translation id="4826218269716039351">Blokowanie plików cookie innych firm</translation>
 <translation id="4833786495304741580">Automatycznie przesyła do Google statystyki użytkowania i raporty o awariach.</translation>
 <translation id="4840495572919996524">Twoje zakładki, historia, hasła i inne ustawienia przestaną być synchronizowane z Twoim kontem Google.</translation>
 <translation id="4854345657858711387">Ustaw kod dostępu</translation>
@@ -347,6 +350,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="54401264925851789">Informacje o bezpieczeństwie strony</translation>
 <translation id="5443952882982198570">Karty kredytowe</translation>
 <translation id="5457907402803865181">Błąd synchronizowania haseł.</translation>
+<translation id="5489208564673669003">Aby zarządzać plikami cookie we wszystkich witrynach, sprawdź <ph name="BEGIN_LINK" />Ustawienia plików cookie<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Wyloguj i usuń dane z tego urządzenia</translation>
 <translation id="5525269841082836315">Utwórz hasło</translation>
 <translation id="5548760955356983418">Dzięki funkcji Handoff możesz rozpocząć przeglądanie strony na tym urządzeniu, a następnie płynnie kontynuować na Macu. Aktualnie otwarta strona internetowa wyświetli się w Docku na Macu.
@@ -434,6 +438,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6418346271604475326">Przygotowuję PDF</translation>
 <translation id="6426067060178468363">Zezwalaj na pliki cookie</translation>
 <translation id="6434591244308415567">Wystąpił błąd. Spróbuj ponownie później.</translation>
+<translation id="6439338047467462846">Zezwalaj na wszystkie</translation>
 <translation id="6445051938772793705">Kraj</translation>
 <translation id="6445981559479772097">Wiadomość została wysłana.</translation>
 <translation id="6447842834002726250">Pliki cookie</translation>
@@ -441,6 +446,7 @@ Twoje dane zostały zaszyfrowane z użyciem hasła synchronizacji w dniu <ph n
 <translation id="6476800141292307438">Tłumaczę stronę na <ph name="LANGUAGE" />. Opcje znajdują się na dole ekranu.</translation>
 <translation id="648164694371393720">Błąd uwierzytelniania</translation>
 <translation id="6482629121755362506">Usunięte elementy: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="651505212789431520">Anulować synchronizację? W każdej chwili możesz włączyć synchronizację w Ustawieniach.</translation>
 <translation id="6561262006871132942">Powiększ</translation>
 <translation id="6610002944194042868">Opcje tłumaczenia</translation>
 <translation id="6628106477656132239">Nieprawidłowa data ważności</translation>

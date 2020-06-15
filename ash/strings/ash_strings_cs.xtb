@@ -509,7 +509,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="7068360136237591149">Otevřít soubory</translation>
 <translation id="7076293881109082629">Přihlášení</translation>
 <translation id="7088960765736518739">Přístup pomocí přepínačů</translation>
-<translation id="7092922358121866860">Zobrazit nastavení nočního režimu</translation>
 <translation id="7098389117866926363">Zařízení USB Type-C (levý zadní port)</translation>
 <translation id="7131634465328662194">Budete automaticky odhlášeni.</translation>
 <translation id="7143207342074048698">Připojování</translation>
@@ -661,7 +660,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="8877788021141246043">Nastavit připomenutí</translation>
 <translation id="8878886163241303700">Rozšíření obrazovky</translation>
 <translation id="890616557918890486">Změnit zdroj</translation>
-<translation id="8908312332415978740">Monitor <ph name="DISPLAY_NAME" /> rozlišení <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) nepodporuje. Rozlišení bylo změněno na <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Změny potvrdíte kliknutím. Předchozí nastavení bude obnoveno za <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Baterie je nabitá na <ph name="PERCENTAGE" /> %.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Tímto jazykem Asistent Google nehovoří.</translation>

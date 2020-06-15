@@ -595,6 +595,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
     @SuppressLint("RtlHardcoded")
     private boolean layoutLocationBar(int containerWidth) {
+        TraceEvent.begin("ToolbarPhone.layoutLocationBar");
         // Note that Toolbar's direction depends on system layout direction while
         // LocationBar's direction depends on its text inside.
         FrameLayout.LayoutParams locationBarLayoutParams =
@@ -638,6 +639,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
         if (changed) updateLocationBarLayoutForExpansionAnimation();
 
+        TraceEvent.end("ToolbarPhone.layoutLocationBar");
         return changed;
     }
 
@@ -969,6 +971,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
      * New Tab Page.
      */
     private void updateLocationBarLayoutForExpansionAnimation() {
+        TraceEvent.begin("ToolbarPhone.updateLocationBarLayoutForExpansionAnimation");
         FrameLayout.LayoutParams locationBarLayoutParams = getFrameLayoutParams(mLocationBar);
         int currentLeftMargin = locationBarLayoutParams.leftMargin;
         int currentWidth = locationBarLayoutParams.width;
@@ -1076,6 +1079,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // bar text as a result of the URL action container translations.
         mLocationBar.invalidate();
         invalidate();
+        TraceEvent.end("ToolbarPhone.updateLocationBarLayoutForExpansionAnimation");
     }
 
     /**
@@ -1439,6 +1443,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     }
 
     private boolean drawLocationBar(Canvas canvas, long drawingTime) {
+        TraceEvent.begin("ToolbarPhone.drawLocationBar");
         boolean clipped = false;
         if (shouldDrawLocationBar()) {
             canvas.save();
@@ -1518,6 +1523,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         boolean retVal = super.drawChild(canvas, mLocationBar, drawingTime);
 
         if (clipped) canvas.restore();
+        TraceEvent.end("ToolbarPhone.drawLocationBar");
         return retVal;
     }
 
@@ -2018,6 +2024,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     }
 
     private void populateUrlFocusingAnimatorSet(List<Animator> animators) {
+        TraceEvent.begin("ToolbarPhone.populateUrlFocusingAnimatorSet");
         Animator animator = ObjectAnimator.ofFloat(this, mUrlFocusChangePercentProperty, 1f);
         animator.setDuration(URL_FOCUS_CHANGE_ANIMATION_DURATION_MS);
         animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
@@ -2077,6 +2084,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
             animators.add(animator);
         }
+        TraceEvent.end("ToolbarPhone.populateUrlFocusingAnimatorSet");
     }
 
     private void populateUrlClearFocusingAnimatorSet(List<Animator> animators) {
@@ -2159,6 +2167,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     }
 
     private void triggerUrlFocusAnimation(final boolean hasFocus) {
+        TraceEvent.begin("ToolbarPhone.triggerUrlFocusAnimation");
         if (mUrlFocusLayoutAnimator != null && mUrlFocusLayoutAnimator.isRunning()) {
             mUrlFocusLayoutAnimator.cancel();
             mUrlFocusLayoutAnimator = null;
@@ -2209,6 +2218,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             }
         });
         mUrlFocusLayoutAnimator.start();
+        TraceEvent.end("ToolbarPhone.triggerUrlFocusAnimation");
     }
 
     @Override
@@ -2451,6 +2461,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     }
 
     private void updateVisualsForLocationBarState() {
+        TraceEvent.begin("ToolbarPhone.updateVisualsForLocationBarState");
         // These are used to skip setting state unnecessarily while in the tab switcher.
         boolean inOrEnteringStaticTab =
                 mTabSwitcherState == STATIC_TAB || mTabSwitcherState == EXITING_TAB_SWITCHER;
@@ -2465,6 +2476,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // do not match then cancel the animation below.
         if (mBrandColorTransitionActive && isVisualStateValidForBrandColorTransition(mVisualState)
                 && isVisualStateValidForBrandColorTransition(newVisualState)) {
+            TraceEvent.end("ToolbarPhone.updateVisualsForLocationBarState");
             return;
         } else if (mBrandColorTransitionAnimation != null
                 && mBrandColorTransitionAnimation.isRunning()) {
@@ -2518,6 +2530,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             } else {
                 resetNtpAnimationValues();
             }
+            TraceEvent.end("ToolbarPhone.updateVisualsForLocationBarState");
             return;
         }
 
@@ -2554,6 +2567,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 isIncognito() ? Color.WHITE
                               : ApiCompatibilityUtils.getColor(
                                       getResources(), R.color.toolbar_text_box_background));
+        TraceEvent.end("ToolbarPhone.updateVisualsForLocationBarState");
     }
 
     @Override

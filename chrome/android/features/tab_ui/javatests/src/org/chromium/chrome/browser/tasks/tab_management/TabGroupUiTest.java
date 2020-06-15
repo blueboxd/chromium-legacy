@@ -23,10 +23,10 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.e
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.mergeAllNormalTabsToAGroup;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
 
-import android.support.test.filters.MediumTest;
 import android.view.ViewGroup;
 
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

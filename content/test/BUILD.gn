@@ -1991,6 +1991,7 @@ test("content_unittests") {
     "../common/state_transitions_unittest.cc",
     "../common/tab_switch_time_recorder_unittest.cc",
     "../common/unique_name_helper_unittest.cc",
+    "../common/user_agent_unittest.cc",
     "../common/webplugininfo_unittest.cc",
     "../public/browser/site_isolation_policy_unittest.cc",
 

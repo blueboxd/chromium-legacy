@@ -7,11 +7,12 @@ package org.chromium.webview_shell.test;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.content.Intent;
-import android.support.test.filters.SmallTest;
 import android.support.test.rule.ActivityTestRule;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.WebStorage;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;

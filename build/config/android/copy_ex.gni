@@ -28,6 +28,7 @@ template("copy_ex") {
                            [
                              "data",
                              "deps",
+                             "public_deps",
                              "testonly",
                              "visibility",
                            ])

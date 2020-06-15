@@ -38,7 +38,6 @@ import static org.chromium.chrome.browser.autofill_assistant.proto.ConfigureBott
 
 import android.graphics.Rect;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.ViewAction;
@@ -46,6 +45,7 @@ import androidx.test.espresso.action.GeneralLocation;
 import androidx.test.espresso.action.GeneralSwipeAction;
 import androidx.test.espresso.action.Press;
 import androidx.test.espresso.action.Swipe;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

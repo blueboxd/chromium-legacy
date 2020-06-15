@@ -83,6 +83,7 @@
 <translation id="1864454756846565995">USB-C устройство (задният порт)</translation>
 <translation id="1882897271359938046">Дублира се на „<ph name="DISPLAY_NAME" />“</translation>
 <translation id="1885785240814121742">Отключване с отпечатък</translation>
+<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> не поддържа <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Хц). Разделителната способност бе променена на <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Кликнете върху бутона за потвърждаване, за да запазите промените. Предишните настройки ще бъдат възстановени след <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1919743966458266018">Комбинацията за отваряне на диспечера на задачите е променена. Моля, използвайте „<ph name="NEW_SHORTCUT" />“ вместо „<ph name="OLD_SHORTCUT" />“.</translation>
 <translation id="1923539912171292317">Автоматични кликвания</translation>
 <translation id="1928739107511554905">За да инсталирате актуализацията, използвайте сензорния екран да рестартирате своя Chromebook, докато клавиатурата е прикачена.</translation>
@@ -509,7 +510,6 @@
 <translation id="7068360136237591149">„Open files“ („Отвори файлове“)</translation>
 <translation id="7076293881109082629">Влизате</translation>
 <translation id="7088960765736518739">Достъп с превключване</translation>
-<translation id="7092922358121866860">Показване на настройките за Нощно осветление</translation>
 <translation id="7098389117866926363">Устройство с USB-C (левият порт на гърба)</translation>
 <translation id="7131634465328662194">Ще излезете автоматично.</translation>
 <translation id="7143207342074048698">Свързва се</translation>
@@ -661,7 +661,6 @@
 <translation id="8877788021141246043">„Set a reminder“ („Задай напомняне“)</translation>
 <translation id="8878886163241303700">Разгъване на екрана</translation>
 <translation id="890616557918890486">Промяна на източника</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> не поддържа <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Хц). Разделителната способност бе променена на <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Кликнете върху бутона за потвърждаване, за да запазите промените. Предишните настройки ще бъдат възстановени след <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Батерията е на <ph name="PERCENTAGE" /> процента.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Асистент не поддържа този език.</translation>

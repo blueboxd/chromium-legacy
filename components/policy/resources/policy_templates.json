@@ -1273,15 +1273,9 @@
       'id': 5,
       'caption': '''Enable alternate error pages''',
       'tags': [],
-      'desc': '''Enables the use of alternate error pages that are built into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> (such as 'page not found') and prevents users from changing this setting.
+      'desc': '''Setting the policy to True means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> uses alternate error pages built into (such as "page not found"). Setting the policy to False means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> never uses alternate error pages.
 
-      If you enable this setting, alternate error pages are used.
-
-      If you disable this setting, alternate error pages are never used.
-
-      If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-
-      If this policy is left not set, this will be enabled but the user will be able to change it.''',
+      If you set the policy, users can't change it. If not set, the policy is on, but users can change this setting.''',
     },
     {
       'name': 'SearchSuggestEnabled',
@@ -3147,11 +3141,9 @@
       'id': 392,
       'caption': '''Enable AutoFill for credit cards''',
       'tags': [],
-      'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s AutoFill feature and allows users to auto complete credit card information in web forms using previously stored information.
+      'desc': '''Setting the policy to True or leaving it unset means users can control autofill suggestions for credit cards in the UI.
 
-      If this setting is disabled, Autofill will never suggest, or fill credit card information, nor will it save additional credit card information that the user might submit while browsing the web.
-
-      If this setting is enabled or has no value, the user will be able to control Autofill for credit cards in the UI.''',
+      Setting the policy to False means autofill never suggests or fills credit card information, nor will it save additional credit card information that users might submit while browsing the web.''',
     },
     {
       'name': 'DisabledPlugins',
@@ -3262,9 +3254,9 @@
       'id': 347,
       'caption': '''Always Open PDF files externally''',
       'tags': [],
-      'desc': '''Disables the internal PDF viewer in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. Instead it treats it as download and allows the user to open PDF files with the default application.
+      'desc': '''Setting the policy to True turns the internal PDF viewer off in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, treats PDF files as a download, and lets users open PDFs with the default application.
 
-      If this policy is left not set or disabled the PDF plugin will be used to open PDF files unless the user disables it.''',
+      Setting the policy to False or leaving it unset means that unless users turns off the PDF plugin, it will open PDF files.''',
     },
     {
       'name': 'DisablePluginFinder',
@@ -5787,11 +5779,19 @@
       'id': 102,
       'caption': '''Automatically select client certificates for these sites''',
       'tags': ['website-sharing'],
-      'desc': '''Allows you to specify a list of url patterns that specify sites for which <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> should automatically select a client certificate, if the site requests a certificate.
+      'desc': '''Setting the policy lets you make a list of URL patterns that specify sites for which Chrome can automatically select a client certificate. The value is an array of stringified JSON dictionaries, each with the form <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE">{ "pattern": "$URL_PATTERN", "filter" : $FILTER }</ph>, where <ph name="URL_PATTERN_PLACEHOLDER">$URL_PATTERN</ph> is a content setting pattern. <ph name="FILTER_PLACEHOLDER">$FILTER</ph> restricts the client certificates the browser automatically selects from. Independent of the filter, only certificates that match the server's certificate request are selected.
 
-          The value must be an array of stringified JSON dictionaries. Each dictionary must have the form <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE">{ "pattern": "$URL_PATTERN", "filter" : $FILTER }</ph>, where <ph name="URL_PATTERN_PLACEHOLDER">$URL_PATTERN</ph> is a content setting pattern. <ph name="FILTER_PLACEHOLDER">$FILTER</ph> restricts from which client certificates the browser will automatically select. Independent of the filter, only certificates will be selected that match the server's certificate request. For example, if <ph name="FILTER_PLACEHOLDER">$FILTER</ph> has the form <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE">{ "ISSUER": { "CN": "$ISSUER_CN" } }</ph>, additionally only client certificates are selected that are issued by a certificate with the CommonName <ph name="ISSUER_CN_PLACEHOLDER">$ISSUER_CN</ph>. If <ph name="FILTER_PLACEHOLDER">$FILTER</ph> contains an <ph name="ISSUER_STRING_VALUE">"ISSUER"</ph> and a <ph name="SUBJECT_STRING_VALUE">"SUBJECT"</ph> section, a client certificate must satisfy both conditions to be selected. If <ph name="FILTER_PLACEHOLDER">$FILTER</ph> specifies an organization ("O"), a certificate must have at least one organization which matches the specified value to be selected. If <ph name="FILTER_PLACEHOLDER">$FILTER</ph> specifies an organization unit ("OU"), a certificate must have at least one organization unit which matches the specified value to be selected. If <ph name="FILTER_PLACEHOLDER">$FILTER</ph> is the empty dictionary <ph name="EMPTY_DICTIONARY">{}</ph>, the selection of client certificates is not additionally restricted.
+      For example, if <ph name="FILTER_PLACEHOLDER">$FILTER</ph> has:
 
-          If this policy is left not set, no auto-selection will be done for any site.''',
+      * <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE">{ "ISSUER": { "CN": "$ISSUER_CN" } }</ph>, only client certificates issued by a certificate with the CommonName <ph name="ISSUER_CN_PLACEHOLDER">$ISSUER_CN</ph>are selected.
+
+      * <ph name="ISSUER_STRING_VALUE">"ISSUER"</ph> and <ph name="SUBJECT_STRING_VALUE">"SUBJECT"</ph> sections, only matching client certificates are selected.
+
+      * ("O"), a certificate needs at least one organization matching the specified value to be selected. * ("OU"), a certificate needs at least one organizational unit matching the specified value to be selected.
+
+      * <ph name="EMPTY_DICTIONARY">{}</ph>, the selection of client certificates is not additionally restricted.
+
+      Leaving the policy unset means there's no autoselection for any site.''',
     },
     {
       'name': 'DeviceLoginScreenAutoSelectCertificateForUrls',
@@ -12523,7 +12523,7 @@
       'tags': [],
       'desc': '''Setting the policy sets up a list of bookmarks where each one is a dictionary with the keys "<ph name="NAME">name</ph>" and "<ph name="URL_LABEL">url</ph>". These keys hold the bookmark's name and target. Admins can set up a subfolder by defining a bookmark without a "<ph name="URL_LABEL">url</ph>" key, but with an additional "<ph name="CHILDREN">children</ph>" key. This key also has a list of bookmarks, some of which can also be folders. Chrome amends incomplete URLs as if they were submitted through the address bar. For example, "<ph name="GOOGLE_COM">google.com</ph>" becomes "<ph name="HTTPS_GOOGLE_COM">https://google.com/</ph>".
 
-      Users can't change the folders the bookmarks are placed in (though they can hide it from the bookmark bar). The folder name is "Managed bookmarks," but they can add it to the list of bookmarks a dictionary with the key "<ph name="TOPLEVEL_NAME">toplevel_name</ph>" with the desired folder name as the value. Managed bookmarks are not synced to the user account and extensions can't modify them.''',
+      Users can't change the folders the bookmarks are placed in (though they can hide it from the bookmark bar). The default folder name for managed bookmarks is "Managed bookmarks" but it can be changed by adding a new sub-dictionary to the policy with a single key named "<ph name="TOPLEVEL_NAME">toplevel_name</ph>" with the desired folder name as its value. Managed bookmarks are not synced to the user account and extensions can't modify them.''',
     },
     {
       'name': 'DataCompressionProxyEnabled',
@@ -15885,12 +15885,9 @@
       'id': 409,
       'caption': '''Ads setting for sites with intrusive ads''',
       'tags': [],
-      'desc': '''Allows you to set whether ads should be blocked on sites with intrusive ads.
+      'desc': '''Unless <ph name="SAFE_BROWSING_ENABLED_POLICY_NAME">SafeBrowsingEnabled</ph> is set to False, then setting <ph name="ADS_SETTINGS_FOR_INTRUSIVE_ADS_SITES_POLICY_NAME">AdsSettingForIntrusiveAdsSites</ph> to 1 or leaving it unset allows ads on all sites.
 
-      If this policy is set to 2, ads will be blocked on sites with intrusive ads.
-      However this behavior will not trigger if SafeBrowsingEnabled policy is set to False.
-      If this policy is set to 1, ads will not be blocked on sites with intrusive ads.
-      If this policy is left not set, 2 will be used.''',
+      Setting the policy to 2 blocks ads on sites with intrusive ads.''',
     },
     {
       'name': 'RestrictAccountsToPatterns',
@@ -16448,14 +16445,11 @@
       'id': 430,
       'caption': '''Allow media autoplay''',
       'tags': [],
-      'desc': '''Allows you to control if videos can play automatically (without user consent) with audio content in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
+      'desc': '''Setting the policy to True lets <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> autoplay media. Setting the policy to False stops <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from autoplaying media.
 
-      If the policy is set to True, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is allowed to autoplay media.
-      If the policy is set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is not allowed to autoplay media. The AutoplayWhitelist policy can be used to override this for certain URL patterns.
-      By default, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is not allowed to autoplay media. The AutoplayWhitelist policy can be used to override this for certain URL patterns.
+       By default, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> doesn't autoplay media. But, for certain URL patterns, you can use the <ph name="AUTOPLAY_WHITELIST_POLICY_NAME">AutoplayWhitelist</ph> policy to change this setting.
 
-      Note that if <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running and this policy changes, it will be applied only to new opened tabs. Therefore some tabs might still observe the previous behavior.
-      ''',
+      If this policy changes while <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running, it only applies to newly opened tabs.''',
     },
     {
       'name': 'AutoplayWhitelist',
@@ -16474,15 +16468,7 @@
       'id': 431,
       'caption': '''Allow media autoplay on a whitelist of URL patterns''',
       'tags': [],
-      'desc': '''Controls the whitelist of URL patterns that autoplay will always be enabled on.
-
-      If autoplay is enabled then videos can play automatically (without user consent) with audio content in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
-
-      If the AutoplayAllowed policy is set to True then this policy will have no effect.
-
-      If the AutoplayAllowed policy is set to False then any URL patterns set in this policy will still be allowed to play.
-
-      Note that if <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running and this policy changes, it will be applied only to new opened tabs. Therefore some tabs might still observe the previous behavior.
+      'desc': '''Setting the policy lets videos play automatically (without user consent) with audio content in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>. If <ph name="AUTOPLAY_ALLOWED_POLICY_NAME">AutoplayAllowed</ph> policy is set to True, then this policy has no effect. If <ph name="AUTOPLAY_ALLOWED_POLICY_NAME">AutoplayAllowed</ph> is set to False, then any URL patterns set in this policy can still play. If this policy changes while <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running, it only applies to newly opened tabs.
 
       For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
@@ -18504,15 +18490,9 @@
       'id': 533,
       'caption': '''Allows a page to show popups during its unloading''',
       'tags': [],
-      'desc': '''This policy allows an admin to specify that a page may show popups during its unloading.
+      'desc': '''Setting the policy to True allows pages to show pop-ups while the pages unload.
 
-      When the policy is set to enabled, pages are allowed to show popups while they are being unloaded.
-
-      When the policy is set to disabled or not set, pages are not allowed to show popups while they are being unloaded, as per the spec (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
-
-      This policy will be removed in Chrome 88.
-
-      See https://www.chromestatus.com/feature/5989473649164288 .''',
+      Setting the policy to False or leaving it unset prevents pages from showing pop-ups while the pages unload.''',
     },
     {
       'name': 'DeviceWilcoDtcConfiguration',

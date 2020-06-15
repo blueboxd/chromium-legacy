@@ -4129,8 +4129,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
     InitializeGLDebugLogging(true, GLDebugMessageCallback, &logger_);
   }
 
-  if (feature_info_->feature_flags().chromium_texture_filtering_hint &&
-      feature_info_->feature_flags().is_swiftshader) {
+  if (feature_info_->feature_flags().chromium_texture_filtering_hint) {
     api()->glHintFn(GL_TEXTURE_FILTERING_HINT_CHROMIUM, GL_NICEST);
   }
 

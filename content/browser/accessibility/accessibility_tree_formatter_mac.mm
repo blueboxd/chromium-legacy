@@ -373,6 +373,11 @@ base::Value AccessibilityTreeFormatterMac::PopulateObject(
     return PopulateArray((NSArray*)value, line_indexes_map);
   }
 
+  // NSNumber
+  if ([value isKindOfClass:[NSNumber class]]) {
+    return base::Value([value intValue]);
+  }
+
   // NSRange
   if ([value isKindOfClass:[NSValue class]] &&
       0 == strcmp([value objCType], @encode(NSRange))) {

@@ -1315,7 +1315,7 @@ void OmniboxEditModel::OnPopupDataChanged(const base::string16& text,
     view_->SetWindowTextAndCaretPos(user_text, 0, false, true);
   } else
     view_->OnInlineAutocompleteTextMaybeChanged(
-        user_text + inline_autocomplete_text_, user_text.length());
+        user_text + inline_autocomplete_text_, 0, user_text.length());
 
   // We need to invoke OnChanged in case the destination url changed (as could
   // happen when control is toggled).

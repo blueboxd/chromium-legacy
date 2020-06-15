@@ -73,6 +73,9 @@ def _Spawn(args):
         'kvm=1',
         '-d',
         'gpu=none',
+    ]
+  if args.arch != 'detect':
+    trigger_args += [
         '-d',
         'cpu=' + args.arch,
     ]
@@ -208,7 +211,7 @@ def main():
     args.target_name = os.path.splitext(args.target_name)[0]
 
   # Determine the CPU architecture of the test binary, if not specified.
-  if args.arch == 'detect' and args.target_os == 'fuchsia':
+  if args.arch == 'detect' and args.target_os not in ('android', 'mac', 'win'):
     executable_info = subprocess.check_output(
         ['file', os.path.join(args.out_dir, args.target_name)])
     if 'ARM aarch64' in executable_info:

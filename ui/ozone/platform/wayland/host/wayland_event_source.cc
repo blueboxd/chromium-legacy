@@ -133,15 +133,13 @@ void WaylandEventSource::OnPointerDestroyed(WaylandPointer* pointer) {
   DCHECK_EQ(pointer_, pointer);
 
   // Clear focused window, if any.
-  if (auto* focused_window = window_manager_->GetCurrentFocusedWindow())
-    HandlePointerFocusChange(focused_window, false);
+  HandlePointerFocusChange(nullptr);
 
   ResetPointerFlags();
   pointer_ = nullptr;
 }
 
 void WaylandEventSource::OnPointerFocusChanged(WaylandWindow* window,
-                                               bool focused,
                                                const gfx::PointF& location) {
   if (!pointer_)
     return;
@@ -149,8 +147,9 @@ void WaylandEventSource::OnPointerFocusChanged(WaylandWindow* window,
   // Save new pointer location.
   pointer_location_ = location;
 
+  bool focused = !!window;
   if (focused)
-    HandlePointerFocusChange(window, focused);
+    HandlePointerFocusChange(window);
 
   EventType type = focused ? ET_MOUSE_ENTERED : ET_MOUSE_EXITED;
   MouseEvent event(type, location, location, EventTimeForNow(), pointer_flags_,
@@ -158,7 +157,7 @@ void WaylandEventSource::OnPointerFocusChanged(WaylandWindow* window,
   DispatchEvent(&event);
 
   if (!focused)
-    HandlePointerFocusChange(window, focused);
+    HandlePointerFocusChange(nullptr);
 }
 
 void WaylandEventSource::OnPointerButtonEvent(EventType type,
@@ -323,20 +322,16 @@ void WaylandEventSource::HandleKeyboardFocusChange(WaylandWindow* window,
   window->set_keyboard_focus(focused);
 }
 
-void WaylandEventSource::HandlePointerFocusChange(WaylandWindow* window,
-                                                  bool focused) {
-  // window can be null on wl_pointer::leave events, for example.
-  if (window)
-    window->SetPointerFocus(focused);
-
-  if (focused) {
-    DCHECK(window);
+void WaylandEventSource::HandlePointerFocusChange(WaylandWindow* window) {
+  if (window) {
+    DCHECK(!window_with_pointer_focus_);
     window_with_pointer_focus_ = window;
+    window_with_pointer_focus_->SetPointerFocus(true);
   } else {
     // Focused window might have been destroyed at this point (eg: context
-    // menus), in this case, |window| is null, otherwise it must be equal to
-    // |window_with_pointer_focus_|. In both cases, they must be equal.
-    DCHECK_EQ(window_with_pointer_focus_, window);
+    // menus), in this case, |window| is null.
+    if (window_with_pointer_focus_)
+      window_with_pointer_focus_->SetPointerFocus(false);
     window_with_pointer_focus_ = nullptr;
   }
 }

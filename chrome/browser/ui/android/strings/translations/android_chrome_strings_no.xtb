@@ -170,6 +170,7 @@ Trykk på et ord for å søke. For å finstemme søket, trykk og hold inne for �
 <translation id="2387895666653383613">Tekstskalering</translation>
 <translation id="2394602618534698961">Filer du laster ned, vises her</translation>
 <translation id="2407481962792080328">Når du logger på Google-kontoen din, blir denne funksjonen slått på</translation>
+<translation id="2407674018644220013">Vil du angi <ph name="APP_NAME" /> som standardnettleser?</translation>
 <translation id="2410754283952462441">Velg en konto</translation>
 <translation id="2414886740292270097">Mørk</translation>
 <translation id="2426805022920575512">Velg en annen konto</translation>
@@ -179,6 +180,7 @@ Trykk på et ord for å søke. For å finstemme søket, trykk og hold inne for �
 
 Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere eller færre ord. For å redigere søket, åpne panelet, trykk på ikonet for å åpne i en ny fane, og gjør endringer i søkefeltet.</translation>
 <translation id="246532703174860178">Del</translation>
+<translation id="2479148705183875116">Gå til Innstillinger</translation>
 <translation id="2482878487686419369">Varsler</translation>
 <translation id="2494974097748878569">Google-assistenten i Chrome</translation>
 <translation id="2496180316473517155">Nettleserlogg</translation>
@@ -617,6 +619,7 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="6140912465461743537">Land/område</translation>
 <translation id="614940544461990577">Prøv dette:</translation>
 <translation id="6154478581116148741">Slå på skjermlåsen i Innstillinger for å eksportere passordene dine fra denne enheten</translation>
+<translation id="6157392216611456285">Velg <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> datasparing</translation>
 <translation id="6192333916571137726">Last ned filen</translation>
 <translation id="6201345951596836663">Linken er kopiert</translation>
@@ -641,6 +644,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6341580099087024258">Spør hvor filer skal lagres</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> til}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> til}}</translation>
 <translation id="6364438453358674297">Vil du fjerne forslaget fra loggen?</translation>
+<translation id="6366047038980456022"><ph name="APP_NAME" /> har funksjonene og hastigheten du trenger for å utforske og utfolde deg på nettet på en trygg måte</translation>
 <translation id="6369229450655021117">Her kan du søke på nettet, dele ting med venner og se åpne sider.</translation>
 <translation id="6378173571450987352">Informasjon: Sortert etter mengden data som er brukt</translation>
 <translation id="6379829913050047669"><ph name="APP_NAME" /> åpnes i Chrome. Ved å fortsette samtykker du i <ph name="BEGIN_LINK1" />Googles vilkår for bruk<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />tilleggsvilkårene for bruk av Google Chrome og Chrome OS<ph name="END_LINK2" />.</translation>
@@ -692,6 +696,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6671495933530132209">Kopiér bildet</translation>
 <translation id="6676840375528380067">Vil du fjerne Chrome-dataene dine fra denne enheten?</translation>
 <translation id="6689172468748959065">Profilbilder</translation>
+<translation id="6691888250440401212">1. Velg <ph name="APP_NAME" />\n2. Trykk på «Angi som standard»</translation>
 <translation id="6697492270171225480">Viser forslag for lignende sider når en side ikke kan finnes</translation>
 <translation id="6698801883190606802">Administrer synkroniserte data</translation>
 <translation id="6699370405921460408">Google-tjenere optimaliserer sidene du besøker.</translation>
@@ -895,6 +900,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8364299278605033898">Se populære nettsteder</translation>
 <translation id="8368027906805972958">Ukjent eller ikke-støttet enhet (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">Send melding</translation>
+<translation id="8407396331882458341">1. Velg <ph name="APP_NAME" />\n2. Trykk på «Alltid»</translation>
 <translation id="8413126021676339697">Vis fullstendig logg</translation>
 <translation id="8425213833346101688">Endre</translation>
 <translation id="8427875596167638501">Fanen for forhåndsvisning er halvveis åpnet</translation>
@@ -921,6 +927,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8555836665334561807">Via Wi-Fi</translation>
 <translation id="8558485628462305855">Du må oppdatere ARCore for å se innhold med utvidet virkelighet</translation>
 <translation id="8559990750235505898">Tilby å oversette sider på andre språk</translation>
+<translation id="8561196567344536112">1. Gå til Innstillinger\n2. Trykk på «Nettleserapp»\n3. Velg <ph name="APP_NAME" /></translation>
 <translation id="8562452229998620586">Lagrede passord listes opp her.</translation>
 <translation id="8569404424186215731">siden <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Siste 4 uker</translation>

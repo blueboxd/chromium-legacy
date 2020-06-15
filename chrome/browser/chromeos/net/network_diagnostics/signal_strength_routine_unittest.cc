@@ -25,6 +25,10 @@ class SignalStrengthRoutineTest : public ::testing::Test {
     signal_strength_routine_ = std::make_unique<SignalStrengthRoutine>();
   }
 
+  SignalStrengthRoutineTest(const SignalStrengthRoutineTest&) = delete;
+  SignalStrengthRoutineTest& operator=(const SignalStrengthRoutineTest&) =
+      delete;
+
   void CompareVerdict(
       mojom::RoutineVerdict expected_verdict,
       const std::vector<mojom::SignalStrengthProblem>& expected_problems,
@@ -75,14 +79,12 @@ class SignalStrengthRoutineTest : public ::testing::Test {
   std::unique_ptr<SignalStrengthRoutine> signal_strength_routine_;
   std::string wifi_path_;
   base::WeakPtrFactory<SignalStrengthRoutineTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(SignalStrengthRoutineTest);
 };
 
 TEST_F(SignalStrengthRoutineTest, TestGoodWiFiSignal) {
   SetUpWiFi(shill::kStateOnline, kGoodWiFiSignal);
   std::vector<mojom::SignalStrengthProblem> expected_problems = {};
-  signal_strength_routine()->RunTest(
+  signal_strength_routine()->RunRoutine(
       base::BindOnce(&SignalStrengthRoutineTest::CompareVerdict, weak_ptr(),
                      mojom::RoutineVerdict::kNoProblem, expected_problems));
   base::RunLoop().RunUntilIdle();
@@ -92,7 +94,7 @@ TEST_F(SignalStrengthRoutineTest, TestBadWiFiSignal) {
   SetUpWiFi(shill::kStateOnline, kBadWiFiSignal);
   std::vector<mojom::SignalStrengthProblem> expected_problems = {
       mojom::SignalStrengthProblem::kWeakSignal};
-  signal_strength_routine()->RunTest(
+  signal_strength_routine()->RunRoutine(
       base::BindOnce(&SignalStrengthRoutineTest::CompareVerdict, weak_ptr(),
                      mojom::RoutineVerdict::kProblem, expected_problems));
   base::RunLoop().RunUntilIdle();
@@ -102,7 +104,7 @@ TEST_F(SignalStrengthRoutineTest, TestUnknownSignal) {
   SetUpWiFi(shill::kStateOffline, kGoodWiFiSignal);
   std::vector<mojom::SignalStrengthProblem> expected_problems = {
       mojom::SignalStrengthProblem::kSignalNotFound};
-  signal_strength_routine()->RunTest(
+  signal_strength_routine()->RunRoutine(
       base::BindOnce(&SignalStrengthRoutineTest::CompareVerdict, weak_ptr(),
                      mojom::RoutineVerdict::kNotRun, expected_problems));
   base::RunLoop().RunUntilIdle();

@@ -130,6 +130,7 @@ source_set("chromeos") {
     "//chromeos/dbus/authpolicy",
     "//chromeos/dbus/authpolicy:authpolicy_proto",
     "//chromeos/dbus/biod",
+    "//chromeos/dbus/cdm_factory_daemon",
     "//chromeos/dbus/constants",
     "//chromeos/dbus/cros_healthd",
     "//chromeos/dbus/cryptohome",

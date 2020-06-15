@@ -11,7 +11,7 @@ import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PRO
 import static org.chromium.android_webview.test.common.crash.CrashInfoEqualityMatcher.equalsTo;
 import static org.chromium.android_webview.test.common.crash.CrashInfoTest.createCrashInfo;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Test;

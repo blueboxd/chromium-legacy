@@ -71,6 +71,11 @@ using LoadingState = TabLoadTracker::LoadingState;
 
 constexpr char kTestUrl[] = "http://www.example.com";
 
+// Default parameters for testing tab freezing.
+constexpr base::TimeDelta kFreezeTimeout = base::TimeDelta::FromMinutes(10);
+constexpr base::TimeDelta kUnfreezeTimeout = base::TimeDelta::FromMinutes(10);
+constexpr base::TimeDelta kRefreezeTimeout = base::TimeDelta::FromSeconds(5);
+
 class NonResumingBackgroundTabNavigationThrottle
     : public BackgroundTabNavigationThrottle {
  public:
@@ -231,6 +236,22 @@ class TabManagerTest : public testing::ChromeTestHarnessWithLocalDB {
     return GetTabLifecycleUnitSource()->GetTabLifecycleUnit(content);
   }
 
+  bool IsTabFrozen(content::WebContents* content) {
+    const LifecycleUnitState state = GetTabLifecycleUnit(content)->GetState();
+    return state == LifecycleUnitState::PENDING_FREEZE ||
+           state == LifecycleUnitState::FROZEN;
+  }
+
+  void SimulateFreezeCompletion(content::WebContents* content) {
+    GetTabLifecycleUnit(content)->UpdateLifecycleState(
+        performance_manager::mojom::LifecycleState::kFrozen);
+  }
+
+  void SimulateUnfreezeCompletion(content::WebContents* content) {
+    GetTabLifecycleUnit(content)->UpdateLifecycleState(
+        performance_manager::mojom::LifecycleState::kRunning);
+  }
+
   virtual void CheckThrottleResults(
       NavigationThrottle::ThrottleCheckResult result1,
       NavigationThrottle::ThrottleCheckResult result2,
@@ -299,6 +320,30 @@ class TabManagerWithExperimentDisabledTest : public TabManagerTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+class TabManagerWithTabFreezeEnabledTest : public TabManagerTest {
+ public:
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kTabFreeze);
+
+    TabManagerTest::SetUp();
+
+    // Use test constants for tab freezing parameters.
+    tab_manager_->freeze_params_ = GetTestTabFreezeParams();
+  }
+
+  TabFreezeParams GetTestTabFreezeParams() {
+    // Return a TabFreezeParams struct with default test parameters.
+    TabFreezeParams params = {};
+    params.should_periodically_unfreeze = true;
+    params.freeze_timeout = kFreezeTimeout;
+    params.unfreeze_timeout = kUnfreezeTimeout;
+    params.refreeze_timeout = kRefreezeTimeout;
+    return params;
+  }
+
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -937,6 +982,272 @@ TEST_F(TabManagerTest, GetSortedLifecycleUnits) {
     EXPECT_TRUE(lifecycle_units[i]->GetSortKey() <
                 lifecycle_units[i + 1]->GetSortKey());
   }
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerWithTabFreezeEnabledTest, FreezeBackgroundTabs) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_NORMAL;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Create 3 tabs.
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
+  tab_strip->GetWebContentsAt(0)->WasShown();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(0), TabLoadTracker::LoadingState::LOADED);
+
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  tab_strip->GetWebContentsAt(1)->WasHidden();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(1), TabLoadTracker::LoadingState::LOADED);
+
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  tab_strip->GetWebContentsAt(2)->WasHidden();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(2), TabLoadTracker::LoadingState::LOADED);
+
+  // Run tasks to let state transitions happen.
+  task_runner_->RunUntilIdle();
+
+  // No tab should be frozen initially.
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+
+  // Make the 2nd tab visible and the 2nd tab hidden after half the freeze
+  // timeout. No tab should be frozen.
+  task_runner_->FastForwardBy(kFreezeTimeout / 2);
+  tab_strip->GetWebContentsAt(0)->WasHidden();
+  tab_strip->GetWebContentsAt(1)->WasShown();
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+
+  // After the full freeze timeout, the 3rd tab should be frozen.
+  task_runner_->FastForwardBy(kFreezeTimeout / 2);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+  EXPECT_FALSE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(2)));
+
+  // After half the freeze timeout, the 1st tab should be frozen.
+  task_runner_->FastForwardBy(kFreezeTimeout / 2);
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+  EXPECT_TRUE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(
+      ResourceCoordinatorTabHelper::IsFrozen(tab_strip->GetWebContentsAt(2)));
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerWithTabFreezeEnabledTest, FreezeOnceLoaded) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_NORMAL;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Create a hidden tab in the LOADING state.
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
+  content::WebContents* web_contents = tab_strip->GetWebContentsAt(0);
+  web_contents->WasHidden();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      web_contents, TabLoadTracker::LoadingState::LOADING);
+
+  // After the freeze timeout, the tab should not be frozen because it is still
+  // LOADING.
+  task_runner_->FastForwardBy(kFreezeTimeout + base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(IsTabFrozen(web_contents));
+
+  // Once loaded, the tab should be frozen.
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      web_contents, TabLoadTracker::LoadingState::LOADED);
+  task_runner_->RunUntilIdle();
+  EXPECT_TRUE(IsTabFrozen(web_contents));
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerWithTabFreezeEnabledTest, FreezeUnfreezeRefreeze) {
+  constexpr base::TimeDelta kShortTimeout = base::TimeDelta::FromSeconds(1);
+
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_NORMAL;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Create 3 tabs.
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
+  tab_strip->GetWebContentsAt(0)->WasShown();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(0), TabLoadTracker::LoadingState::LOADED);
+
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  tab_strip->GetWebContentsAt(1)->WasHidden();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(1), TabLoadTracker::LoadingState::LOADED);
+
+  task_runner_->FastForwardBy(kShortTimeout);
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  tab_strip->GetWebContentsAt(2)->WasHidden();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(2), TabLoadTracker::LoadingState::LOADED);
+
+  // No tab should be frozen initially.
+  task_runner_->RunUntilIdle();
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+
+  // After the freeze timeout, the first background tab should be frozen.
+  task_runner_->FastForwardBy(kFreezeTimeout - kShortTimeout);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+  SimulateFreezeCompletion(tab_strip->GetWebContentsAt(1));
+
+  // After the short delay, the second background tab should be frozen.
+  task_runner_->FastForwardBy(kShortTimeout);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+  SimulateFreezeCompletion(tab_strip->GetWebContentsAt(2));
+
+  // After the unfreeze timeout, the first background tab should be unfrozen.
+  task_runner_->FastForwardBy(kUnfreezeTimeout - kShortTimeout);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+  SimulateUnfreezeCompletion(tab_strip->GetWebContentsAt(1));
+
+  // The second background tab shouldn't be unfrozen before the first background
+  // tab is refrozen.
+  task_runner_->FastForwardBy(kShortTimeout * 2);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+
+  // After the refreeze timeout, the first background tab should be re-frozen
+  // and the second background tab should be unfrozen.
+  task_runner_->FastForwardBy(kRefreezeTimeout - kShortTimeout * 2);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+  SimulateFreezeCompletion(tab_strip->GetWebContentsAt(1));
+  SimulateUnfreezeCompletion(tab_strip->GetWebContentsAt(2));
+
+  // After the refreeze timeout, both background tabs should be frozen.
+  task_runner_->FastForwardBy(kRefreezeTimeout);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+  SimulateFreezeCompletion(tab_strip->GetWebContentsAt(2));
+
+  // Once the freeze timeout has expired since the first background tab was
+  // refrozen, it should be unfrozen again.
+  task_runner_->FastForwardBy(kUnfreezeTimeout - kRefreezeTimeout);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+  SimulateUnfreezeCompletion(tab_strip->GetWebContentsAt(1));
+
+  // After the refreeze timeout has expired, the first background tab should be
+  // frozen and the second background tab should be unfrozen.
+  task_runner_->FastForwardBy(kRefreezeTimeout);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+  SimulateFreezeCompletion(tab_strip->GetWebContentsAt(1));
+  SimulateUnfreezeCompletion(tab_strip->GetWebContentsAt(2));
+
+  // Finally, after the refreeze timeout has expired, both background tabs
+  // should be frozen.
+  task_runner_->FastForwardBy(kRefreezeTimeout);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(2)));
+  SimulateFreezeCompletion(tab_strip->GetWebContentsAt(2));
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerWithTabFreezeEnabledTest,
+       NoUnfreezeWhenUnfreezingVariationParamDisabled) {
+  tab_manager_->freeze_params_.should_periodically_unfreeze = false;
+
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_NORMAL;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  // Create 2 tabs.
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
+  tab_strip->GetWebContentsAt(0)->WasShown();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(0), TabLoadTracker::LoadingState::LOADED);
+
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  tab_strip->GetWebContentsAt(1)->WasHidden();
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(1), TabLoadTracker::LoadingState::LOADED);
+
+  // No tab should be frozen initially.
+  task_runner_->RunUntilIdle();
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+
+  // After the freeze timeout, the background tab should be frozen.
+  task_runner_->FastForwardBy(kFreezeTimeout);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+  SimulateFreezeCompletion(tab_strip->GetWebContentsAt(1));
+
+  // After the unfreeze timeout, the background tab should still be frozen as
+  // the unfreeze feature is disabled..
+  task_runner_->FastForwardBy(kUnfreezeTimeout);
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
+
+  tab_strip->CloseAllTabs();
+}
+
+TEST_F(TabManagerTest, NoFreezingWhenFeatureDisabled) {
+  auto window = std::make_unique<TestBrowserWindow>();
+  Browser::CreateParams params(profile(), true);
+  params.type = Browser::TYPE_NORMAL;
+  params.window = window.get();
+  auto browser = std::make_unique<Browser>(params);
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/true);
+  tab_strip->AppendWebContents(CreateWebContents(), /*foreground=*/false);
+  TabLoadTracker::Get()->TransitionStateForTesting(
+      tab_strip->GetWebContentsAt(1), TabLoadTracker::LoadingState::LOADED);
+  tab_strip->GetWebContentsAt(1)->WasShown();
+  tab_strip->GetWebContentsAt(1)->WasHidden();
+
+  task_runner_->FastForwardBy(kFreezeTimeout);
+
+  EXPECT_FALSE(IsTabFrozen(tab_strip->GetWebContentsAt(1)));
 
   tab_strip->CloseAllTabs();
 }

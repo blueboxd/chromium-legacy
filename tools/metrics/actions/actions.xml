@@ -20041,6 +20041,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SharingQRCode.DownloadQRCode.Failed">
+  <obsolete>Removed 06/2020. Never launched.</obsolete>
   <owner>tgupta@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <description>
@@ -20049,6 +20050,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SharingQRCode.DownloadQRCode.Succeeded">
+  <obsolete>Removed 06/2020. Never launched.</obsolete>
   <owner>tgupta@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <description>

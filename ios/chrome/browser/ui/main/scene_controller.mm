@@ -290,9 +290,13 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
   if (level == SceneActivationLevelForegroundActive) {
     [self presentSignInAccountsViewControllerIfNecessary];
-    [ContentSuggestionsSchedulerNotifications
-        notifyForeground:self.mainInterface.browserState];
-
+    // Mitigation for crbug.com/1092326, where a nil browser state is passed
+    // (presumably because mainInterface is nil as well).
+    // TODO(crbug.com/1094916): Handle this more cleanly.
+    if (self.mainInterface.browserState) {
+      [ContentSuggestionsSchedulerNotifications
+          notifyForeground:self.mainInterface.browserState];
+    }
     if (IsSceneStartupSupported()) {
       if (@available(iOS 13, *)) {
         // Handle URL opening from

@@ -11,12 +11,13 @@ import android.content.ContextWrapper;
 import android.os.Build;
 import android.os.ResultReceiver;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.SmallTest;
 import android.util.Pair;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
+
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;

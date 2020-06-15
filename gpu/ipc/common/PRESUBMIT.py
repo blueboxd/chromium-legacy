@@ -26,8 +26,8 @@ def CommonChecks(input_api, output_api):
 
   if generated_files and not generating_files:
     long_text = 'Changed files:\n'
-    for file in generated_files:
-      long_text += file.LocalPath() + '\n'
+    for generated_file in generated_files:
+      long_text += generated_file.LocalPath() + '\n'
       long_text += '\n'
       messages.append(output_api.PresubmitError(
           'Vulkan types generated files changed but the generator '

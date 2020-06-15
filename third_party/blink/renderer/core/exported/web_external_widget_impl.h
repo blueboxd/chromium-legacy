@@ -75,7 +75,6 @@ class WebExternalWidgetImpl : public WebExternalWidget,
       const cc::OverscrollBehavior& overscroll_behavior,
       bool event_processed) override;
   bool SupportsBufferedTouchEvents() override;
-  void DidHandleKeyEvent() override;
   void QueueSyntheticEvent(
       std::unique_ptr<blink::WebCoalescedInputEvent>) override;
   void GetWidgetInputHandler(

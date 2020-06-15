@@ -72,9 +72,12 @@ by the border's insets.
 A View's **layout manager** defines how the View's child views should be laid
 out within the View's content bounds. There are a few layout managers supplied
 with Views. The simplest is [FillLayout], which lays out all a View's children
-occupying the View's entire content bounds. Other commonly-used layouts managers
-are [BoxLayout], which lays out all child views along an axis, and [GridLayout],
-which provides a flexible row-and-column system.
+occupying the View's entire content bounds. [FlexLayout] provides a CSS-like
+layout for horizontal and vertical arrangements of views.
+
+Other commonly-used layouts managers are [BoxLayout], a predecessor of
+FlexLayout, and [GridLayout], which provides a flexible row-and-column
+system.
 
 ### Painting
 

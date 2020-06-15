@@ -6,6 +6,7 @@
 
 #import <XCTest/XCTest.h>
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #import "base/ios/crb_protocol_observers.h"
 #include "base/strings/sys_string_conversions.h"
@@ -24,6 +25,24 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(AppLaunchManagerAppInterface)
 
 #if defined(CHROME_EARL_GREY_2)  // avoid unused function warning in EG1
 namespace {
+// Returns the list of extra app launch args from test command line args.
+NSArray<NSString*>* ExtraAppArgsFromTestSwitch() {
+  if (!base::CommandLine::InitializedForCurrentProcess()) {
+    return [NSArray array];
+  }
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  // Multiple extra app launch arguments can be passed through this switch. The
+  // args should be in raw format, separated by commas if more than one.
+  const char kExtraAppArgsSwitch[] = "extra-app-args";
+  if (!command_line->HasSwitch(kExtraAppArgsSwitch)) {
+    return [NSArray array];
+  }
+
+  return [base::SysUTF8ToNSString(command_line->GetSwitchValueASCII(
+      kExtraAppArgsSwitch)) componentsSeparatedByString:@","];
+}
+
 // Checks if two pairs of launch arguments are equivalent.
 bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
                              NSArray<NSString*>* args2) {
@@ -121,6 +140,10 @@ bool LaunchArgumentsAreEqual(NSArray<NSString*>* args1,
       appIsRunning = NO;
     }
   }
+
+  // Extend extra app launch args from test switch to arguments.
+  arguments =
+      [arguments arrayByAddingObjectsFromArray:ExtraAppArgsFromTestSwitch()];
 
   bool appNeedsLaunching =
       forceRestart || !appIsRunning || appPIDChanged ||

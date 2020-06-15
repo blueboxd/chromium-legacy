@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">ወደ የድር ጣቢያ በመለያ ይግቡ</translation>
 <translation id="1509960214886564027">በበርካታ ጣቢያዎች ላይ ያሉ ባሕሪያት ሊሰበሩ ይችላሉ</translation>
 <translation id="152234381334907219">በጭራሽ አልተቀመጠም</translation>
+<translation id="1535268707340844072">የአሁኑ የእርስዎ ቅንብር አንዳንድ ጣቢያዎች እንዲሰባበሩ ሊያደርግ ይችላል። ለሁሉም ጣቢያዎች ኩኪዎችን ለማቀናበር፣ <ph name="BEGIN_LINK" />የኩኪ ቅንብሮችን<ph name="END_LINK" /> ይመልከቱ።</translation>
 <translation id="1540800554400757039">አድራሻ 1</translation>
 <translation id="1545749641540134597">የኪውአር ኮድ ይቃኙ</translation>
 <translation id="1552525382687785070">ስምረት በእርስዎ አስተዳዳሪ ተሰናክሏል</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">ገባሪ ከ<ph name="DAYS" /> ቀናት በፊት</translation>
 <translation id="2074131957428911366">በማንኛውም ጊዜ ምን እንደሚያሳምሩ በ<ph name="BEGIN_LINK" />ቅንብሮች<ph name="END_LINK" /> ውስጥ መምረጥ ይችላሉ።</translation>
 <translation id="2079545284768500474">ቀልብስ</translation>
+<translation id="2081417079511601293">የሦስተኛ ወገን ማንነትን በማያሳውቅ ውስጥ አግድ</translation>
 <translation id="209018056901015185">የዴስክቶፕ ጣቢያን ጠይቅ</translation>
 <translation id="2103075008456228677">history.google.comን ክፈት</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ንጥሎች ተንቀሳቅሰዋል</translation>
@@ -100,7 +102,6 @@
 <translation id="2139867232736819575">የቀዱትን ጽሑፍ ይፈልጉ</translation>
 <translation id="2149973817440762519">እልባት አርትዕ</translation>
 <translation id="2175927920773552910">የQR ኮድ</translation>
-<translation id="2179182049312275900">ስምረትን በማንኛውም ጊዜ በቅንብሮች ውስጥ ማብራት ይችላሉ።</translation>
 <translation id="2198757192731523470">Google ፍለጋን፣ ማስታወቂያዎችን እና ሌሎች የGoogle አገልግሎቶችን ግላዊነት ለማላበስ ሲል ታሪክዎን ሊጠቀም ይችላል።</translation>
 <translation id="2218443599109088993">አሳንስ</translation>
 <translation id="2230173723195178503">ድረ-ገጽ ተጭኗል</translation>
@@ -177,6 +178,7 @@
 <translation id="2989805286512600854">በአዲስ ትር ክፈት</translation>
 <translation id="3037605927509011580">ውይ፣ ተሰናከለ!</translation>
 <translation id="3112556859945124369">ምልክት አድርግበት…</translation>
+<translation id="3131206671572504478">ሁሉንም አግድ</translation>
 <translation id="3153862085237805241">ካርድ አስቀምጥ</translation>
 <translation id="3157684681743766797">ሁሉንም ምልክት አድርግባቸው…</translation>
 <translation id="3161291298470460782">ይህ እርስዎን ዘግቶ ያስወጣዎታል፣ ስምረትን ያጠፋል እና እንዲሁም ሁሉንም የChrome ውሂብ ያጸዳል። የእርስዎ የሰመረ ውሂብ በእርስዎ የGoogle መለያ ውስጥ ይቆያል።</translation>
@@ -249,7 +251,6 @@
 <translation id="4038354071007134711">ፋይሉን መክፈት የሚችል መተግበሪያ በዚህ መሣሪያ ላይ የለም።</translation>
 <translation id="4042870976416480368">በዚህ ገጽ ውስጥ አግኝ</translation>
 <translation id="4049507953662678203">የአውታረ መረብ ግንኙነት እንዳለዎት ያረጋግጡና እንደገና ይሞክሩ።</translation>
-<translation id="4071530748369333746">ስምረት ይሰረዝ?</translation>
 <translation id="4082688844002261427">ፍለጋን፣ ማስታወቂያዎችን እና ተጨማሪ ነገሮችን ግላዊነት ለማላበስ የእርስዎ የአሰሳ ታሪክ እንዴት ጥቅም ላይ እንደሚውል ይቆጣጠሩ</translation>
 <translation id="408404951701638773">የፍለጋ አሞሌ አሁን ለማግኘት ይበልጥ ይቀልላል</translation>
 <translation id="411254640334432676">ማውረድ አልተሳካም።</translation>
@@ -274,6 +275,7 @@
 <translation id="4389019817280890563">ቋንቋን ለመለወጥ መታ ያድርጉ።</translation>
 <translation id="441868831736628555">የግላዊነት ማሳወቂያ</translation>
 <translation id="4454246407045105932">ቋንቋን ያክሉ</translation>
+<translation id="4469418912670346607">ማዋቀርን ቀጥል</translation>
 <translation id="4476574785019001431">ቅንብሮች</translation>
 <translation id="4496373720959965247">ትሮችን ያክሉ እና በገጾች መካከል ይቀያይሩ</translation>
 <translation id="4508750114462689118">የመግቢያ ማስተዋወቂያን ዝጋ</translation>
@@ -302,6 +304,7 @@
 <translation id="4805759445554688327">ልክ ያልሆነ የካርድ ቁጥር</translation>
 <translation id="4818522717893377262">ቋንቋን አክል...</translation>
 <translation id="481968316161811770">ኩኪዎች፣ የጣቢያ ውሂብ</translation>
+<translation id="4826218269716039351">ሦስተኛ ወገን አግድ</translation>
 <translation id="4833786495304741580">የአጠቃቀም ስታቲስቲክስስን እና የስንክል ሪፖርቶችን በራስ-ሰር ወደ Google ይልካል።</translation>
 <translation id="4840495572919996524">የእርስዎ እልባቶች፣ ታሪክ፣ የይለፍ ቃላት እና ተጨማሪ ነገሮች ከእንግዲህ ከGoogle መለያዎ ጋር አይሰምሩም።</translation>
 <translation id="4854345657858711387">የይለፍ ኮድ ያዘጋጁ</translation>
@@ -347,6 +350,7 @@
 <translation id="54401264925851789">የገጽ ደህንነት መረጃ</translation>
 <translation id="5443952882982198570">ክሬዲት ካርዶች</translation>
 <translation id="5457907402803865181">የይለፍ ቃሎችን ማስመር ላይ ስሕተት።</translation>
+<translation id="5489208564673669003">ለሁሉም ጣቢያዎች ኩኪዎችን ለማቀናበር፣ <ph name="BEGIN_LINK" />የኩኪ ቅንብሮችን<ph name="END_LINK" /> ይመልከቱ።</translation>
 <translation id="5508435575041083207">ዘግተህ ውጣ እና ከዚህ መሣሪያ ላይ ሁሉንም ውሂብ አጽዳ</translation>
 <translation id="5525269841082836315">የይለፍ ሐረግ ፍጠር</translation>
 <translation id="5548760955356983418">Handoff በዚህ መሣሪያ ላይ አንድ ድር ጣቢያ ማሰስ እንዲጀምሩና በቀላሉ በእርስዎ Mac ላይ እንዲቀጥሉ ያስችልዎታል። አሁን ክፍት የሆነው ድር ጣቢያ በእርስዎ Mac ላይ ባለው Dock ላይ ይታያል።
@@ -434,6 +438,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6418346271604475326">ፒዲኤፍ በመዘጋጀት ላይ</translation>
 <translation id="6426067060178468363">ኩኪዎችን ፍቀድ</translation>
 <translation id="6434591244308415567">አንድ ስህተት አጋጥሟል። ቆይተው እንደገና ይሞክሩ።</translation>
+<translation id="6439338047467462846">ሁሉንም ይፍቀዱ</translation>
 <translation id="6445051938772793705">አገር</translation>
 <translation id="6445981559479772097">መልዕክት ተልኳል።</translation>
 <translation id="6447842834002726250">ኩኪዎች</translation>
@@ -441,6 +446,7 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6476800141292307438">ገጹን ወደ <ph name="LANGUAGE" /> በመተርጎም ላይ። አማራጮች ከማያ ገጹ ግርጌ አጠገብ ይገኛሉ።</translation>
 <translation id="648164694371393720">የማረጋገጥ ስህተት</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ንጥሎች ተሰርዘዋል</translation>
+<translation id="651505212789431520">ስምረት ይሰረዝ? ስምረትን በማንኛውም ጊዜ በቅንብሮች ውስጥ ማብራት ይችላሉ።</translation>
 <translation id="6561262006871132942">አጉላ</translation>
 <translation id="6610002944194042868">የትርጉም አማራጮች</translation>
 <translation id="6628106477656132239">ልክ ያልሆነ የአገልግሎት ማብቂያ ቀን</translation>

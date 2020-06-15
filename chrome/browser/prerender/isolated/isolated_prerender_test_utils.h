@@ -60,6 +60,10 @@ class TestProxyTunnelConnection {
 
   base::WeakPtr<TestProxyTunnelConnection> GetWeakPtr();
 
+  // Returns true if |ConnectToPeerOnLocalhost| has already been completed
+  // successfully but |StartProxy| hasn't been called yet.
+  bool IsReadyForIncomingSocket() const;
+
   // This should be called when a new proxy connection should be opened to
   // |port|. Returns true on success.
   bool ConnectToPeerOnLocalhost(int port);

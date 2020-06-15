@@ -16,6 +16,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/android/window_android.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 using base::android::AttachCurrentThread;
@@ -24,6 +25,7 @@ using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
+using base::android::ToJavaArrayOfStrings;
 using content::BrowserThread;
 using content::WebContents;
 using gfx::RectF;
@@ -86,6 +88,21 @@ void AutofillProviderAndroid::OnQueryFormFieldAutofill(
   // ignored if the form is same.
   if (ShouldStartNewSession(handler, form))
     StartNewSession(handler, form, field, bounding_box);
+
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  if (!field.datalist_values.empty()) {
+    ScopedJavaLocalRef<jobjectArray> jdatalist_values =
+        ToJavaArrayOfStrings(env, field.datalist_values);
+    ScopedJavaLocalRef<jobjectArray> jdatalist_labels =
+        ToJavaArrayOfStrings(env, field.datalist_labels);
+    Java_AutofillProvider_showDatalistPopup(
+        env, obj, jdatalist_values, jdatalist_labels,
+        field.text_direction == base::i18n::RIGHT_TO_LEFT);
+  }
 }
 
 bool AutofillProviderAndroid::ShouldStartNewSession(
@@ -150,6 +167,21 @@ void AutofillProviderAndroid::OnAcceptDataListSuggestion(JNIEnv* env,
     RendererShouldAcceptDataListSuggestion(
         handler, ConvertJavaStringToUTF16(env, value));
   }
+}
+
+void AutofillProviderAndroid::SetAnchorViewRect(JNIEnv* env,
+                                                jobject jcaller,
+                                                jobject anchor_view,
+                                                jfloat x,
+                                                jfloat y,
+                                                jfloat width,
+                                                jfloat height) {
+  ui::ViewAndroid* view_android = web_contents_->GetNativeView();
+  if (!view_android)
+    return;
+
+  view_android->SetAnchorRect(ScopedJavaLocalRef<jobject>(env, anchor_view),
+                              gfx::RectF(x, y, width, height));
 }
 
 void AutofillProviderAndroid::OnTextFieldDidChange(

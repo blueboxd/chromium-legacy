@@ -10,8 +10,9 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.webkit.JavascriptInterface;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;

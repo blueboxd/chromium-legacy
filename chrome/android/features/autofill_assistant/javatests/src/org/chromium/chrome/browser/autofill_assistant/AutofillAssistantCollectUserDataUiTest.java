@@ -37,12 +37,12 @@ import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTes
 import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.COLLECT_USER_DATA_TERMS_REQUIRE_REVIEW;
 import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.VERTICAL_EXPANDER_CHEVRON;
 
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.TextView;
 
 import androidx.test.espresso.matcher.ViewMatchers.Visibility;
+import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matcher;
 import org.junit.Before;

@@ -22,6 +22,8 @@ class SignalStrengthRoutine : public NetworkDiagnosticsRoutine {
       mojom::NetworkDiagnosticsRoutines::SignalStrengthCallback;
 
   SignalStrengthRoutine();
+  SignalStrengthRoutine(const SignalStrengthRoutine&) = delete;
+  SignalStrengthRoutine& operator=(const SignalStrengthRoutine&) = delete;
   ~SignalStrengthRoutine() override;
 
   // NetworkDiagnosticRoutine:
@@ -31,7 +33,7 @@ class SignalStrengthRoutine : public NetworkDiagnosticsRoutine {
   // Run the core logic of this routine. Set |callback| to
   // |routine_completed_callback_|, which is to be executed in
   // AnalyzeResultsAndExecuteCallback().
-  void RunTest(SignalStrengthRoutineCallback callback);
+  void RunRoutine(SignalStrengthRoutineCallback callback);
 
  private:
   void FetchActiveWirelessNetworks();
@@ -46,8 +48,6 @@ class SignalStrengthRoutine : public NetworkDiagnosticsRoutine {
   int signal_strength_ = kUnknownSignalStrength;
   std::vector<mojom::SignalStrengthProblem> problems_;
   SignalStrengthRoutineCallback routine_completed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SignalStrengthRoutine);
 };
 
 }  // namespace network_diagnostics

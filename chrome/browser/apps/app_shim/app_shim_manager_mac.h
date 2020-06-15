@@ -181,6 +181,11 @@ class AppShimManager : public AppShimHostBootstrap::Client,
   virtual void LoadProfileAsync(const base::FilePath& path,
                                 base::OnceCallback<void(Profile*)> callback);
 
+  // Wait for |profile|'s WebAppProvider registry to be started.
+  virtual void WaitForAppRegistryReadyAsync(
+      Profile* profile,
+      base::OnceCallback<void()> callback);
+
   // Return true if the specified path is for a valid profile that is also
   // locked.
   virtual bool IsProfileLockedForPath(const base::FilePath& path);
@@ -273,6 +278,9 @@ class AppShimManager : public AppShimHostBootstrap::Client,
                        const web_app::AppId& app_id,
                        LoadProfileAppCallback callback,
                        Profile* profile);
+  void OnProfileAppRegistryReady(const base::FilePath& profile_path,
+                                 const web_app::AppId& app_id,
+                                 LoadProfileAppCallback callback);
   void OnAppEnabled(const base::FilePath& profile_path,
                     const web_app::AppId& app_id,
                     LoadProfileAppCallback callback);

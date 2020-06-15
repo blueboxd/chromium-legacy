@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import org.chromium.base.ObserverList;
-import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabLaunchType;
@@ -255,9 +254,6 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
     public boolean isTabStateInitialized() {
         return mTabStateInitialized;
     }
-
-    @Override
-    public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {}
 
     @Override
     public void mergeState() {}

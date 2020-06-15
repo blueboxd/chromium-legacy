@@ -170,6 +170,7 @@
 <translation id="2387895666653383613">Textastærð</translation>
 <translation id="2394602618534698961">Skrár sem þú sækir birtast hér</translation>
 <translation id="2407481962792080328">Kveikt er á þessum eiginleika þegar þú skráir þig inn á Google reikninginn þinn</translation>
+<translation id="2407674018644220013">Viltu velja <ph name="APP_NAME" /> sem sjálfgefið?</translation>
 <translation id="2410754283952462441">Veldu reikning</translation>
 <translation id="2414886740292270097">Dökkt</translation>
 <translation id="2426805022920575512">Velja annan reikning</translation>
@@ -179,6 +180,7 @@
 
 Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða færri orð til að fínstilla leitina. Þú getur breytt leitinni með því að opna svæðið, ýta á táknið til að opna í nýjum flipa og gera breytingar í leitarreitnum.</translation>
 <translation id="246532703174860178">Deila</translation>
+<translation id="2479148705183875116">Farðu í stillingar</translation>
 <translation id="2482878487686419369">Tilkynningar</translation>
 <translation id="2494974097748878569">Google hjálpari í Chrome</translation>
 <translation id="2496180316473517155">Vafraferill</translation>
@@ -617,6 +619,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="6140912465461743537">Land/svæði</translation>
 <translation id="614940544461990577">Prófaðu að:</translation>
 <translation id="6154478581116148741">Kveiktu á skjálás í stillingunum til að flytja aðgangsorðin þín út úr þessu tæki</translation>
+<translation id="6157392216611456285">Velja <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> gagnasparnaður</translation>
 <translation id="6192333916571137726">Sækja skrá</translation>
 <translation id="6201345951596836663">Tengill afritaður</translation>
@@ -641,6 +644,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6341580099087024258">Spyja hvar á að vista skrár</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> í viðbót}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> í viðbót}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> í viðbót}}</translation>
 <translation id="6364438453358674297">Fjarlægja tillögu úr ferlinum?</translation>
+<translation id="6366047038980456022"><ph name="APP_NAME" /> býr yfir því hugviti og þeim hraða sem þú þarft að hafa þegar þú vafrar, skapar og skoðar á netinu</translation>
 <translation id="6369229450655021117">Leitaðu á vefnum, deildu með vinum og skoðaðu opnar síður héðan</translation>
 <translation id="6378173571450987352">Upplýsingar: Raðað eftir gagnanotkun</translation>
 <translation id="6379829913050047669"><ph name="APP_NAME" /> mun opnast í Chrome. Með því að halda áfram samþykkir þú <ph name="BEGIN_LINK1" />þjónustuskilmála Google<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />viðbótarskilmála Google Chrome og Chrome OS<ph name="END_LINK2" />.</translation>
@@ -692,6 +696,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6671495933530132209">Afrita mynd</translation>
 <translation id="6676840375528380067">Viltu hreinsa Chrome gögnin úr þessu tæki?</translation>
 <translation id="6689172468748959065">Prófílmyndir</translation>
+<translation id="6691888250440401212">1. Veldu <ph name="APP_NAME" />\n2. Ýttu á „Velja sem sjálfgefið“</translation>
 <translation id="6697492270171225480">Birta tillögur að svipuðum síðum þegar síða finnst ekki</translation>
 <translation id="6698801883190606802">Stjórna samstilltum gögnum</translation>
 <translation id="6699370405921460408">Vefþjónar Google munu sérsníða síðurnar sem þú heimsækir.</translation>
@@ -895,6 +900,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="8364299278605033898">Sjáðu vinsæl vefsvæði</translation>
 <translation id="8368027906805972958">Óþekkt eða óstutt tæki (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">Senda skilaboð</translation>
+<translation id="8407396331882458341">1. Veldu <ph name="APP_NAME" />\n2. Ýttu á „Alltaf“</translation>
 <translation id="8413126021676339697">Sýna allan feril</translation>
 <translation id="8425213833346101688">Breyta</translation>
 <translation id="8427875596167638501">Forskoðunarflipinn er hálfopinn</translation>
@@ -921,6 +927,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="8555836665334561807">Með Wi-Fi</translation>
 <translation id="8558485628462305855">Til að skoða efni aukins veruleika skaltu uppfæra ARCore</translation>
 <translation id="8559990750235505898">Bjóðast til að þýða síður á önnur tungumál</translation>
+<translation id="8561196567344536112">1. Opnaðu stillingar\n2. Ýttu á „Vafraforrit“\n3. Veldu <ph name="APP_NAME" /></translation>
 <translation id="8562452229998620586">Vistuð aðgangsorð munu birtast hér.</translation>
 <translation id="8569404424186215731">síðan <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Síðastliðnar fjórar vikur</translation>

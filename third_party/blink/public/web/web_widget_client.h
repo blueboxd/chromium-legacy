@@ -273,9 +273,6 @@ class WebWidgetClient {
       const cc::OverscrollBehavior& overscroll_behavior,
       bool event_processed) {}
 
-  // Called after a key event has been processed.
-  virtual void DidHandleKeyEvent() {}
-
   // Requests the virtual keyboard be displayed.
   virtual void ShowVirtualKeyboard() {}
 

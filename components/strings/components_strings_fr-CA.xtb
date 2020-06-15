@@ -228,6 +228,7 @@
 <translation id="1898423065542865115">Filtrage</translation>
 <translation id="1901443836186977402">{1,plural, =1{Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" /> : son certificat de sécurité a expiré au cours des dernières 24 heures. Cela peut être dû à une mauvaise configuration ou à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement <ph name="CURRENT_DATE" />. Cela est-il correct? Si cela ne l'est pas, réglez l'horloge de votre système, puis actualisez cette page.}one{Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" /> : son certificat de sécurité a expiré il y a # jour. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement <ph name="CURRENT_DATE" />. Cela est-il correct? Si cela ne l'est pas, réglez l'horloge de votre système, puis actualisez cette page.}other{Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" /> : son certificat de sécurité a expiré il y a # jours. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement <ph name="CURRENT_DATE" />. Cela est-il correct? Si cela ne l'est pas, réglez l'horloge de votre système, puis actualisez cette page.}}</translation>
 <translation id="1902576642799138955">Période de validité</translation>
+<translation id="1908217026282415406">Utilisation et mouvement de la caméra</translation>
 <translation id="191374271204266022">Copier au format JSON</translation>
 <translation id="1914326953223720820">Service de décompression</translation>
 <translation id="1915697529809968049">Utiliser Touch ID au lieu du code CVC?</translation>
@@ -723,7 +724,6 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="4101413244023615925">Texte et images</translation>
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide</translation>
 <translation id="4103763322291513355">Consultez &lt;strong&gt;chrome://policy&lt;/strong&gt; pour voir les adresses URL mises sur la liste noire et des politiques mises en œuvre par votre administrateur système.</translation>
-<translation id="4108231218301530806">La prochaine fois, utiliser une empreinte digitale pour vérifier cette carte.</translation>
 <translation id="4110652170750985508">Examiner votre paiement</translation>
 <translation id="4112140312785995938">Rechercher vers l'arrière</translation>
 <translation id="4116663294526079822">Toujours autoriser pour ce site</translation>
@@ -1117,6 +1117,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="569000877158168851">La valeur DnsOverHttpsTemplates n'est pas pertinente et ne sera pas utilisée, à moins que la politique DnsOverHttpsMode soit définie à <ph name="SECURE_DNS_MODE_AUTOMATIC" /> ou à <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Centrer</translation>
 <translation id="570530837424789914">Gérer...</translation>
+<translation id="5705882733397021510">Revenir en arrière</translation>
 <translation id="57094364128775171">Suggérer un mot de passe fort…</translation>
 <translation id="5710435578057952990">L'identité de ce site Web n'a pas été vérifiée.</translation>
 <translation id="5720705177508910913">Utilisateur actuel</translation>
@@ -1124,6 +1125,7 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="5730040223043577876">Chrome recommande de réinitialiser votre mot de passe si vous l'avez réutilisé sur d'autres sites.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Enregistrer la carte dans votre compte Google}one{Enregistrer la carte dans votre compte Google}other{Enregistrer les cartes dans votre compte Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Utiliser un numéro virtuel pour cette carte}one{Sélectionner une carte}other{Sélectionner des cartes}}</translation>
+<translation id="5759751709240058861">Utiliser et déplacer la caméra de votre appareil</translation>
 <translation id="5763042198335101085">Entrez une adresse de courriel valide</translation>
 <translation id="5765072501007116331">Pour voir les exigences et les modes de livraison, sélectionnez une adresse</translation>
 <translation id="5776313857861697733">Priorité</translation>
@@ -1332,7 +1334,6 @@ Souhaitez-vous autoriser <ph name="EMBEDDED_URL" /> à utiliser les témoins et 
 <translation id="6631202559048444592">Il existe plusieurs sources pour cette politique, mais les valeurs sont identiques.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Effacer</translation>
-<translation id="6644283850729428850">Cette règle est obsolète.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Aucun}=1{De 1 site (vous ne serez pas déconnecté de votre compte Google)}one{De # site (vous ne serez pas déconnecté de votre compte Google)}other{De # sites (vous ne serez pas déconnecté de votre compte Google)}}</translation>
 <translation id="6652101503459149953">Utiliser Windows Hello</translation>
 <translation id="6657585470893396449">Mot de passe</translation>

@@ -488,7 +488,7 @@ TEST_F(OmniboxEditModelTest, KeywordModePreservesInlineAutocompleteText) {
   // Set the edit model into an inline autocompletion state.
   view()->SetUserText(base::UTF8ToUTF16("user"));
   view()->OnInlineAutocompleteTextMaybeChanged(base::UTF8ToUTF16("user text"),
-                                               4);
+                                               0, 4);
 
   // Entering keyword search mode should preserve the full display text as the
   // user text, and select all.
@@ -533,7 +533,8 @@ TEST_F(OmniboxEditModelTest, CtrlEnterNavigatesToDesiredTLD) {
   // Set the edit model into an inline autocomplete state.
   view()->SetUserText(base::UTF8ToUTF16("foo"));
   model()->StartAutocomplete(false, false);
-  view()->OnInlineAutocompleteTextMaybeChanged(base::UTF8ToUTF16("foobar"), 3);
+  view()->OnInlineAutocompleteTextMaybeChanged(base::UTF8ToUTF16("foobar"), 0,
+                                               3);
 
   model()->OnControlKeyChanged(true);
   model()->AcceptInput(WindowOpenDisposition::UNKNOWN);

@@ -20,8 +20,7 @@ namespace policy {
 
 class ReferrerPolicyPolicyHandlerTest : public testing::Test {
  protected:
-  void SetPolicyValue(const std::string& policy,
-                      std::unique_ptr<base::Value> value) {
+  void SetPolicyValue(const std::string& policy, base::Value value) {
     policies_.Set(policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                   POLICY_SOURCE_PLATFORM, std::move(value), nullptr);
   }
@@ -57,8 +56,7 @@ TEST_F(ReferrerPolicyPolicyHandlerTest, NotSet) {
 // Sanity check tests to ensure the policy errors have the correct name.
 TEST_F(ReferrerPolicyPolicyHandlerTest, WrongType) {
   // Do anything that causes a policy error.
-  SetPolicyValue(key::kForceLegacyDefaultReferrerPolicy,
-                 std::make_unique<base::Value>(1));
+  SetPolicyValue(key::kForceLegacyDefaultReferrerPolicy, base::Value(1));
 
   CheckAndApplyPolicySettings();
 
@@ -68,16 +66,14 @@ TEST_F(ReferrerPolicyPolicyHandlerTest, WrongType) {
 }
 
 TEST_F(ReferrerPolicyPolicyHandlerTest, ValueTrue) {
-  SetPolicyValue(key::kForceLegacyDefaultReferrerPolicy,
-                 std::make_unique<base::Value>(true));
+  SetPolicyValue(key::kForceLegacyDefaultReferrerPolicy, base::Value(true));
 
   CheckAndApplyPolicySettings();
   EXPECT_TRUE(content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());
 }
 
 TEST_F(ReferrerPolicyPolicyHandlerTest, ValueFalse) {
-  SetPolicyValue(key::kForceLegacyDefaultReferrerPolicy,
-                 std::make_unique<base::Value>(false));
+  SetPolicyValue(key::kForceLegacyDefaultReferrerPolicy, base::Value(false));
 
   CheckAndApplyPolicySettings();
   EXPECT_FALSE(content::Referrer::ShouldForceLegacyDefaultReferrerPolicy());

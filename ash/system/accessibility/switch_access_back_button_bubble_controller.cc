@@ -45,6 +45,7 @@ void SwitchAccessBackButtonBubbleController::ShowBackButton(
     init_params.preferred_width = back_button_view_->size().width();
 
     bubble_view_ = new TrayBubbleView(init_params);
+    bubble_view_->SetArrow(views::BubbleBorder::BOTTOM_RIGHT);
     bubble_view_->AddChildView(back_button_view_);
     bubble_view_->set_color(SK_ColorTRANSPARENT);
     bubble_view_->layer()->SetFillsBoundsOpaquely(false);

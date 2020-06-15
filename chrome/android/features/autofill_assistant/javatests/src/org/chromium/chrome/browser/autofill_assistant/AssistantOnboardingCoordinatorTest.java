@@ -23,11 +23,11 @@ import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

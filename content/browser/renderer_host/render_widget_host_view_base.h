@@ -123,6 +123,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   void SetRecordContentToVisibleTimeRequest(
       base::TimeTicks start_time,
       base::Optional<bool> destination_is_loaded,
+      base::Optional<bool> destination_is_frozen,
       bool show_reason_tab_switching,
       bool show_reason_unoccluded,
       bool show_reason_bfcache_restore) final;

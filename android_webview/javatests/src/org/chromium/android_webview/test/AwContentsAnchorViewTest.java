@@ -4,10 +4,11 @@
 
 package org.chromium.android_webview.test;
 
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

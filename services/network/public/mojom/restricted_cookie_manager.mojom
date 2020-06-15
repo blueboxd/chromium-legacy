@@ -62,11 +62,16 @@ interface RestrictedCookieManager {
   // level frame or the script url for service workers. |site_for_cookies| is
   // used to determine if a cookie is accessed in a third-party context.
   // |top_frame_origin| is used to check for content settings.
-  // |options| filters the returned list of cookies.
+  // |options| filters the returned list of cookies. The returned cookies
+  // include CookieAccessResult information of the cookie.
+  // Any information contained in the CookieInclusionStatus::WarningReasons
+  // as part of CookieAccessResult in the included cookies may be passed to an
+  // untrusted renderer.
   GetAllForUrl(
       url.mojom.Url url, SiteForCookies site_for_cookies,
       url.mojom.Origin top_frame_origin,
-      CookieManagerGetOptions options) => (array<CanonicalCookie> cookies);
+      CookieManagerGetOptions options) => (
+      array<CookieWithAccessResult> cookies);
 
   SetCanonicalCookie(CanonicalCookie cookie,
                      url.mojom.Url url,

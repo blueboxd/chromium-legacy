@@ -45,13 +45,13 @@ import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAU
 
 import android.graphics.Typeface;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.view.Gravity;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.RadioButton;
 
 import androidx.test.espresso.Espresso;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

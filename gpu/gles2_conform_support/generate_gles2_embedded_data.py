@@ -59,14 +59,14 @@ class GenerateEmbeddedFiles(object):
 
   def AddFiles(self, scan_dir):
     """Scan a folder and embed the contents of files."""
-    files = os.listdir(scan_dir)
+    files_to_embed = os.listdir(scan_dir)
     sub_dirs = []
-    for file in files:
-      full_path = os.path.join(scan_dir, file)
-      ext = os.path.splitext(file)[1]
+    for file_to_embed in files_to_embed:
+      full_path = os.path.join(scan_dir, file_to_embed)
+      ext = os.path.splitext(file_to_embed)[1]
       base_path = full_path[len(self.scan_dir) + 1:]
       if os.path.isdir(full_path):
-        if not file in GenerateEmbeddedFiles.paths_to_ignore:
+        if not file_to_embed in GenerateEmbeddedFiles.paths_to_ignore:
           sub_dirs.append(full_path)
       elif ext in GenerateEmbeddedFiles.extensions_to_include:
         if self.base_dir == None:

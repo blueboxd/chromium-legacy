@@ -359,8 +359,10 @@ To<Longhand>(resolved_property).{{apply_call}};
     map.insert(identifier, CounterDirectives()).stored_value->value;
         {% if action == 'Reset' %}
     directives.SetResetValue(counter_value);
-        {% else %}
+        {% elif action == 'Increment' %}
     directives.AddIncrementValue(counter_value);
+        {% else %}
+    directives.SetSetValue(counter_value);
         {% endif %}
   }
   DCHECK(!map.IsEmpty());

@@ -27,6 +27,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.components.infobars.InfoBarInteractionHandler;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.widget.ChromeImageButton;
 

@@ -178,12 +178,6 @@ Bei verwalteten Geräten sind standardmäßig keine Modi für das schnelle Entsp
       unsichere Quellen nicht gelten sollen</translation>
 <translation id="1312799700549720683">Legt die Displayeinstellungen fest.</translation>
 <translation id="131353325527891113">Nutzernamen auf Anmeldeseite zeigen</translation>
-<translation id="1327351219049180837">Mit dieser Richtlinie wird festgelegt, ob Richtliniendaten und die Abrufzeit der Richtlinie erhoben werden.
-
-      Wenn die Richtlinie auf "true" gestellt oder gar nicht konfiguriert ist, werden Richtliniendaten und die Abrufzeit der Richtlinie erhoben.
-      Ist die Richtlinie auf "false" gestellt, werden Richtliniendaten und die Abrufzeit der Richtlinie nicht erhoben.
-
-      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="1327466551276625742">Eingabeaufforderung zur Netzwerkkonfiguration im Offlinemodus aktivieren</translation>
 <translation id="1330145147221172764">Bildschirmtastatur aktivieren</translation>
 <translation id="13356285923490863">Richtlinienname</translation>
@@ -943,12 +937,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 
           Unter Windows steht diese Richtlinie nur bei Instanzen zur Verfügung, die Teil einer "<ph name="MS_AD_NAME" />"-Domain sind, oder bei Windows 10 Pro- oder Windows 10 Enterprise-Instanzen, für die eine Geräteverwaltung eingerichtet ist.</translation>
 <translation id="247658312644322296">Das Ziel "Als PDF speichern"</translation>
-<translation id="2478649170422995190">Mit dieser Richtlinie wird festgelegt, ob Versionsinformationen wie die Betriebssystemversion, das Betriebssystem, die Architektur des Betriebssystems, die <ph name="PRODUCT_NAME" />-Version und der <ph name="PRODUCT_NAME" />-Kanal erhoben werden.
-
-      Wenn die Richtlinie auf "true" gestellt oder gar nicht konfiguriert ist, werden Versionsinformationen erhoben.
-      Ist die Richtlinie auf "false" gestellt, werden keine Versionsinformationen erhoben.
-
-      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="2480971699591919564">Hiermit wird die Funktion "Zum Anrufen klicken" aktiviert. Mit ihr können Telefonnummern von Chrome-Computern an Android-Geräte gesendet werden, wenn der Nutzer angemeldet ist. Weitere Informationen finden Sie in diesem Hilfeartikel: https://support.google.com/chrome/answer/9430554?.
 
       Wenn diese Richtlinie aktiviert ist, können Chrome-Nutzer Telefonnummern an Android-Geräte senden.
@@ -1325,9 +1313,9 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Ist diese Richtlinie festgelegt, dann kann der Nutzer sie weder ändern noch überschreiben.</translation>
 <translation id="3001285126226650303">Gestattet <ph name="PRODUCT_NAME" /> das Laden experimenteller Richtlinien.
 
-        WARNUNG: Experimentelle Richtlinien werden nicht unterstützt und können ohne vorherige Ankündigung in künftigen Versionen des Browsers geändert oder entfernt werden!
+        WARNUNG: Experimentelle Richtlinien werden nicht unterstützt und können ohne vorherige Bekanntgabe in künftigen Versionen des Browsers geändert oder entfernt werden!
 
-        Die Entwicklung einer experimentellen Richtlinie ist möglicherweise noch nicht abgeschlossen. Auch kann sie bekannte oder unbekannte Mängel aufweisen. Sie kann unangekündigt geändert oder entfernt werden. Wenn Sie experimentelle Richtlinien aktivieren, besteht die Gefahr, Browserdaten zu verlieren oder Ihre Sicherheit und Privatsphäre zu gefährden.
+        Die Entwicklung einer experimentellen Richtlinie ist möglicherweise noch nicht abgeschlossen. Auch kann sie bekannte oder unbekannte Mängel haben. Sie kann unangekündigt geändert oder entfernt werden. Wenn Sie experimentelle Richtlinien aktivieren, besteht die Gefahr, Browserdaten zu verlieren oder Ihre Sicherheit und Privatsphäre zu gefährden.
 
         Steht eine Richtlinie nicht auf der Liste und wurde sie nicht offiziell veröffentlicht, dann wird ihr Wert in Beta- und stabilen Versionen ignoriert.
 
@@ -1373,9 +1361,9 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="3034580675120919256">Ermöglicht Ihnen festzulegen, ob Websites JavaScript ausführen dürfen. Das Ausführen von JavaScript kann entweder allen Websites gestattet oder für alle unterbunden werden. Wenn diese Richtlinie nicht konfiguriert ist, so kommt "AllowJavaScript" zum Einsatz, wobei der Nutzer dies ändern kann.</translation>
 <translation id="3038323923255997294">Apps weiter im Hintergrund ausführen, wenn <ph name="PRODUCT_NAME" /> geschlossen ist</translation>
-<translation id="3041887182529293512">Wenn die Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, werden auf der "Neuer Tab"-Seite automatisch generierte Inhaltsvorschläge auf Basis des Browserverlaufs, der Interessen oder des Standorts des Nutzers angezeigt.
+<translation id="3041887182529293512">Wenn die Richtlinie auf "True" gesetzt oder nicht konfiguriert ist, werden auf der Seite "Neuer Tab" automatisch generierte Inhaltsvorschläge auf Basis des Browserverlaufs, der Interessen oder des Standorts des Nutzers angezeigt.
 
-      Ist sie auf "False" gesetzt, werden auf der "Neuer Tab"-Seite keine automatisch generierten Inhaltsvorschläge angezeigt.</translation>
+      Ist sie auf "False" gesetzt, werden auf der Seite "Neuer Tab" keine automatisch generierten Inhaltsvorschläge angezeigt.</translation>
 <translation id="3046192273793919231">Netzwerkpakete zur Überwachung des Onlinestatus an den Verwaltungsserver senden</translation>
 <translation id="3047732214002457234">Festlegen, wie Daten vom Chrome Cleanup Tool an Google gesendet werden</translation>
 <translation id="3048744057455266684">Falls diese Richtlinie festgelegt ist und eine Such-URL-Vervollständigung aus der Omnibox diesen Parameter im Abfragestring oder in der Fragment-ID enthält, werden die Suchbegriffe und Suchanbieter anstelle der Such-URL angezeigt.
@@ -3540,12 +3528,6 @@ Durch Festlegen dieser Richtlinie bestimmen Sie, ob sich ein Nutzer in <ph name=
           Sehen Sie sich auch die Richtlinien "CookiesAllowedForUrls" und "CookiesSessionOnlyForUrls" an. Es darf keine widersprüchlichen URL-Muster zwischen diesen drei Richtlinien geben. Es ist nicht festgelegt, welche Richtlinie Vorrang hat.
 
           Genaue Informationen zu gültigen URL-Mustern finden Sie unter https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="6399242659768117666">Mit dieser Richtlinie wird festgelegt, ob Daten von Erweiterungen und Plug-ins erhoben werden.
-
-      Wenn die Richtlinie auf "true" gestellt oder gar nicht konfiguriert ist, werden Daten von Erweiterungen und Plug-ins erhoben.
-      Ist die Richtlinie auf "false" gestellt, werden Daten von Erweiterungen und Plug-ins nicht erhoben.
-
-      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät bei "<ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />" registriert ist.</translation>
 <translation id="6401669939808766804">Nutzer abmelden</translation>
 <translation id="6406448383934634215">Ist "URL-Liste öffnen" als Startaktion ausgewählt, können Sie die Liste der URLs angeben, die geöffnet werden. Ist die Richtlinie nicht konfiguriert, wird keine URL beim Start geöffnet.
 
@@ -3569,7 +3551,6 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
           Wenn Sie "Proxyserver automatisch erkennen" wählen, erhalten Android-Apps die Skript-URL "http://wpad/wpad.dat". Kein anderer Teil des Protokolls zur automatischen Proxyerkennung wird verwendet.
 
           Wenn Sie ein PAC-Proxyskript wählen, erhalten Android-Apps die Skript-URL.</translation>
-<translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6438972408080276697">Wenn diese Richtlinie auf "True" gesetzt ist, werden Informationen über wichtige richtlinienbasierte Android-App-Installationsereignisse an Google gesendet. Wenn die Richtlinie auf "False" gesetzt ist, werden keine Ereignisse erfasst.</translation>
 <translation id="6440051664870270040">Websites erlauben, gleichzeitig auf andere Websites weiterzuleiten und Pop-ups zu öffnen</translation>
 <translation id="6447948611083700881">"Sicherung und Wiederherstellung" deaktiviert</translation>
@@ -3647,12 +3628,6 @@ Wenn diese Richtlinie nicht konfiguriert ist, können die Nutzer selbst wählen,
 
       Diese Richtlinie kann mit einem Pfad zur ausführbaren Datei oder <ph name="PRODUCT_NAME_PLACEHOLDER" /> konfiguriert werden, damit das Installationsverzeichnis von Chrome automatisch erkannt wird.</translation>
 <translation id="6536600139108165863">Automatischer Neustart nach Herunterfahren des Geräts</translation>
-<translation id="6537062468544950724">Mit dieser Richtlinie wird festgelegt, ob Daten erhoben werden, mit denen Geräte identifiziert werden können, etwa Gerätenamen und Netzwerkadressen.
-
-      Wenn die Richtlinie auf "true" gestellt oder gar nicht konfiguriert ist, werden Daten, mit denen Geräte identifiziert werden können, erhoben.
-      Ist die Richtlinie auf "false" gestellt, werden keine Daten erhoben, mit denen Geräte identifiziert werden können.
-
-      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="6539246272469751178">Diese Richtlinie hat keine Auswirkung auf Android-Apps. Android-Apps verwenden immer das Standardverzeichnis für Downloads und haben keinen Zugriff auf Dateien, die von <ph name="PRODUCT_OS_NAME" /> in ein anderes Verzeichnis als das Standardverzeichnis für Downloads heruntergeladen werden.</translation>
 <translation id="654303922206238013">Migrationsstrategie für eCryptfs</translation>
 <translation id="6544897973797372144">Wenn diese Richtlinie auf "True" gesetzt ist und die Richtlinie "ChromeOsReleaseChannel" nicht angegeben ist, können Nutzer der Anmelde-Domain den Release-Kanal des Geräts ändern. Ist diese Richtlinie auf "False" gesetzt, wird auf dem Gerät der zuletzt eingestellte Kanal verwendet und dieser kann nicht geändert werden.
@@ -3919,12 +3894,6 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
       Wenn die Richtlinie auf "<ph name="BR_UNDER_USER_CONTROL" />" festgelegt ist, erhalten Nutzer eine Aufforderung, in der sie wählen können, ob sie die Android-Funktion "Sichern und wiederherstellen" nutzen möchten. Aktivieren sie die Funktion, werden App-Daten von Android auf die Android Backup-Server hochgeladen und bei der Neuinstallation von kompatiblen Apps wiederhergestellt.
 
       Nach der Ersteinrichtung können Nutzer selbst entscheiden, ob sie "Sichern und wiederherstellen" nutzen möchten oder nicht.</translation>
-<translation id="6991078864332103177">Mit dieser Richtlinie wird festgelegt, ob personenbezogene Daten erhoben werden, zum Beispiel die Anmeldedaten für das Betriebssystem oder das <ph name="PRODUCT_NAME" />-Profil, der <ph name="PRODUCT_NAME" />-Profilname, der <ph name="PRODUCT_NAME" />-Profilpfad und der ausführbare Pfad für <ph name="PRODUCT_NAME" />.
-
-      Wenn die Richtlinie auf "true" gestellt oder gar nicht konfiguriert ist, werden personenbezogene Daten erhoben.
-      Ist die Richtlinie auf "false" gestellt, werden keine personenbezogenen Daten erhoben.
-
-      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="6994082778848658360">Hiermit wird angegeben, wie die integrierte Secure Element-Hardware zur Zwei-Faktor-Authentifizierung verwendet werden kann, wenn sie mit dieser Funktion kompatibel ist. Mithilfe der Ein-/Aus-Taste des Geräts wird die Anwesenheit des Nutzers ermittelt.
 
       Wenn "Deaktiviert" ausgewählt ist, steht kein zweiter Authentifizierungsfaktor zur Verfügung.
@@ -4335,14 +4304,6 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
       Ist die Richtlinie nicht konfiguriert oder auf 0 gesetzt, wird eine bestimmte aufgerufene URL sofort in einem alternativen Browser geöffnet.
 
       Wenn die Richtlinie auf eine Zahl gesetzt ist, zeigt Chrome für genau diese Anzahl von Millisekunden eine Nachricht an und öffnet dann den alternativen Browser.</translation>
-<translation id="7583419926951418342">Mit dieser Richtlinie legen Sie fest, ob Cloud-Berichte für <ph name="PRODUCT_NAME" /> erstellt werden. Dabei werden Daten zum Betrieb des Browsers an die Google Admin-Konsole gesendet.
-
-      Wenn die Richtlinie auf "false" gesetzt oder gar nicht festgelegt ist, werden keine Daten erhoben oder hochgeladen.
-      Wenn die Richtlinie auf "true" gesetzt ist, werden die Daten erhoben und in die Google Admin-Konsole hochgeladen.
-      Über die Richtlinien für die Chrome Reporting Extension können Sie steuern, welche Daten hochgeladen werden.
-
-      Die Richtlinie wird für <ph name="PRODUCT_NAME" /> nur angewendet, wenn das Gerät mit "<ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />" registriert ist.
-      Für <ph name="PRODUCT_OS_NAME" /> ist diese Richtlinie immer aktiviert.</translation>
 <translation id="7586477707097444774">Für Cookies, die in Domains festgelegt sind, die diesen Mustern entsprechen, wird das alte Verhalten von "<ph name="ATTRIBUTE_SAMESITE_NAME" />" wiederhergestellt. Wird es wiederhergestellt, werden Cookies, für die kein "<ph name="ATTRIBUTE_SAMESITE_NAME" />"-Attribut angegeben ist, so behandelt, als würden sie "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" enthalten. Außerdem wird nicht mehr vorausgesetzt, dass Cookies mit dem Attribut "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" auch das Attribut "<ph name="ATTRIBUTE_SECURE_NAME" />" enthalten müssen. Eine vollständige Beschreibung steht unter https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies zur Verfügung.
 
           Für Cookies, die in Domains festgelegt sind, die diesen Mustern nicht entsprechen, oder für alle Cookies, falls diese Richtlinie nicht konfiguriert ist, kommt entweder der globale Standardwert der Richtlinie "<ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" />", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.
@@ -4463,19 +4424,10 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
           Ist diese Einstellung deaktiviert oder nicht festgelegt, wird die Zwei-Faktor-Authentifizierung nicht aktiviert und das Standardverfahren zur Eingabe einer nutzerdefinierten PIN wird verwendet.</translation>
 <translation id="7750991880413385988">"Neuer Tab"-Seite öffnen</translation>
 <translation id="7754704193130578113">Vor dem Download von Dateien nach dem Speicherort fragen</translation>
-<translation id="7755495228644343508">Richtlinien für die Chrome Reporting Extension konfigurieren.
-
-      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="7758378441185523981">Aktiviert die passive Authentifizierung für Profiltypen.</translation>
 <translation id="7763614521440615342">Inhaltsvorschläge auf der "Neuer Tab"-Seite anzeigen</translation>
 <translation id="7765879851993224640">Verwendung von Smart Lock zur Anmeldung erlauben.</translation>
 <translation id="7774768074957326919">System-Proxy-Einstellungen verwenden</translation>
-<translation id="7775902646576367944">Mit dieser Richtlinie wird festgelegt, ob Safe Browsing-Daten erhoben werden, etwa die Anzahl der Safe Browsing-Warnungen und die Anzahl der Klicks auf Safe Browsing-Warnungen.
-
-      Wenn die Richtlinie auf "true" gestellt oder gar nicht konfiguriert ist, werden Safe Browsing-Daten erhoben.
-      Ist die Richtlinie auf "false" gestellt, werden keine Safe Browsing-Daten erhoben.
-
-      Die Richtlinie wird nur angewendet, wenn die <ph name="CHROME_REPORTING_EXTENSION_NAME" /> aktiviert und das Gerät bei <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> registriert ist.</translation>
 <translation id="777734450201217641">Mit dieser Richtlinie aktivieren Sie auf dem Anmeldebildschirm die Tastenkombinationen für Bedienungshilfen.
 
           Wenn diese Richtlinie auf "true" gesetzt ist, werden die Tastenkombinationen für Bedienungshilfen auf dem Anmeldebildschirm immer aktiviert.
@@ -4533,15 +4485,6 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 <translation id="793473937901685727">Verfügbarkeit von Zertifikaten für ARC-Apps festlegen</translation>
 <translation id="7937491150792971922">Richtlinien für Listen zur Installation von Erweiterungen aus mehreren Quellen zusammenführen</translation>
 <translation id="7937766917976512374">Videoaufzeichnung gestatten oder ablehnen</translation>
-<translation id="7937944288846766530">Mit dieser Richtlinie legen Sie fest, ob Nutzer Anfragen zur Installation von Erweiterungen für <ph name="PRODUCT_NAME" /> zur Bestätigung an die Google Admin-Konsole senden dürfen.
-
-      Wenn die Richtlinie "CloudReportingEnabled" deaktiviert oder nicht konfiguriert ist, wird diese Richtlinie ignoriert. Anfragen zur Installation von Erweiterungen können weder erstellt noch hochgeladen werden.
-      Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist, können Anfragen zur Installation von Erweiterungen weder erstellt noch hochgeladen werden.
-      Wenn diese Richtlinie aktiviert ist, können Anfragen zur Installation von Erweiterungen erstellt und in der Google Admin-Konsole hochgeladen werden.
-
-      Anfragen zur Installation von Erweiterungen werden erstellt, wenn Nutzer versuchen, eine Erweiterung zu installieren, die weder von <ph name="EXTENSION_INSTALL_WHITELIST" /> noch von <ph name="EXTENSION_SETTINGS" /> auf die weiße Liste gesetzt wurde.
-
-      Die Richtlinie wird nur angewendet, wenn das Gerät mit <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> registriert ist und <ph name="CLOUD_REPORTING_ENABLED" /> aktiviert ist.</translation>
 <translation id="7941975817681987555">Netzwerkaktionen nicht über Netzwerkverbindungen vervollständigen</translation>
 <translation id="7951605113561734721">Diese Richtlinie gibt geräteübergreifende Clientzertifikate an, die über das Geräteverwaltungsprotokoll registriert werden sollen.</translation>
 <translation id="7952007677054834789">Hiermit werden die Seiten konfiguriert, die beim Start geladen werden: die standardmäßige Startseite und die Standardseite "Neuer Tab" in <ph name="PRODUCT_NAME" />. Außerdem wird verhindert, dass Nutzer diese Einstellungen ändern.
@@ -4857,7 +4800,7 @@ Unter Windows ist es empfehlenswert, Richtlinien über Gruppenrichtlinienobjekte
 <translation id="8424255554404582727">Standarddrehung des Bildschirms festlegen, die bei jedem Neustart erneut angewendet wird</translation>
 <translation id="8426231401662877819">Bildschirm um 90 Grad im Uhrzeigersinn drehen</translation>
 <translation id="8433186206711564395">Netzwerkeinstellungen</translation>
-<translation id="843609873781525167">Wenn die Richtlinie auf "True" gesetzt ist, prüft <ph name="PRODUCT_NAME" /> beim Start immer, ob es der Standardbrowser ist. Nach Möglichkeit registriert sich die Anwendung dann automatisch. Ist die Richtlinie auf "False" gesetzt, prüft <ph name="PRODUCT_NAME" /> nie, ob es der Standardbrowser ist. Außerdem werden alle Nutzersteuerelemente zum Einstellen dieser Option deaktiviert.
+<translation id="843609873781525167">Wenn die Richtlinie auf "True" gesetzt ist, prüft <ph name="PRODUCT_NAME" /> beim Start immer, ob es der Standardbrowser ist. Nach Möglichkeit legt sich die Anwendung dann automatisch als Standard fest. Ist die Richtlinie auf "False" gesetzt, prüft <ph name="PRODUCT_NAME" /> nie, ob es der Standardbrowser ist. Außerdem werden alle Nutzersteuerelemente zum Einstellen dieser Option deaktiviert.
 
       Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer festlegen, ob <ph name="PRODUCT_NAME" /> der Standardbrowser ist und ob (falls nicht) entsprechende Benachrichtigungen angezeigt werden sollen.
 

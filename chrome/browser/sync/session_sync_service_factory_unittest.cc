@@ -29,6 +29,8 @@ TEST(SessionSyncServiceFactoryTest, ShouldSyncURL) {
       GURL(chrome::kChromeUIVersionURL)));
   EXPECT_FALSE(SessionSyncServiceFactory::ShouldSyncURLForTesting(
       GURL("chrome-native://anything")));
+  EXPECT_FALSE(SessionSyncServiceFactory::ShouldSyncURLForTesting(
+      GURL("chrome-distiller://anything")));
 
   EXPECT_TRUE(SessionSyncServiceFactory::ShouldSyncURLForTesting(
       GURL(chrome::kChromeUIHistoryURL)));

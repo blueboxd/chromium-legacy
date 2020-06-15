@@ -8,8 +8,8 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
+#import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
 
 // Storage object that holds a copy of an UnsafeResource while its allow list
 // decision is pending.  Once the pending decision for a resource is committed

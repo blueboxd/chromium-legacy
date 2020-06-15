@@ -2052,6 +2052,21 @@ void TabStrip::Layout() {
     return;
   }
 
+  if (base::FeatureList::IsEnabled(features::kScrollableTabStrip)) {
+    // With tab scrolling, the tabstrip is solely responsible for its own
+    // width.
+    // It should never be larger than its preferred width.
+    const int max_width =
+        layout_helper_->CalculatePreferredWidth() + GetRightSideReservedWidth();
+    // It should never be smaller than its minimum width.
+    const int min_width = GetMinimumSize().width();
+    // If it can, it should fit within the tab strip region.
+    const int available_width = available_width_callback_.Run();
+    // It should be as wide as possible subject to the above constraints.
+    const int width = std::min(max_width, std::max(min_width, available_width));
+    SetBounds(0, 0, width, height());
+  }
+
   // Only do a layout if our size changed.
   if (last_layout_size_ == size() && last_available_width_ != 0)
     return;
@@ -2204,7 +2219,13 @@ gfx::Size TabStrip::GetMinimumSize() const {
           ? GetStackableTabWidth() + (2 * kStackedPadding * kMaxStackedCount)
           : layout_helper_->CalculateMinimumWidth();
 
-  return gfx::Size(minimum_tab_area_width + GetRightSideReservedWidth(),
+  // Cap the tabstrip minimum width to a reasonable value so browser windows
+  // aren't forced to grow arbitrarily wide.
+  const int max_min_width = 520;
+  const int capped_minimum_width =
+      std::min(minimum_tab_area_width, max_min_width);
+
+  return gfx::Size(capped_minimum_width + GetRightSideReservedWidth(),
                    GetLayoutConstant(TAB_HEIGHT));
 }
 

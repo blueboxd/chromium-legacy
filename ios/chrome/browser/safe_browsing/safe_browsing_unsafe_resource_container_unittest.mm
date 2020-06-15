@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
 
 #include "base/bind.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
+#import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"

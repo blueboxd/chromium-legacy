@@ -332,15 +332,14 @@ TEST_F(ArcPolicyBridgeTest, DISABLED_ArcPolicyTest) {
   policy_map().Set(
       policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      std::make_unique<base::Value>(
-          "{\"applications\":"
-          "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
-          "\"installType\":\"REQUIRED\","
-          "\"lockTaskAllowed\":false,"
-          "\"permissionGrants\":[]"
-          "}],"
-          "\"defaultPermissionPolicy\":\"GRANT\""
-          "}"),
+      base::Value("{\"applications\":"
+                  "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
+                  "\"installType\":\"REQUIRED\","
+                  "\"lockTaskAllowed\":false,"
+                  "\"permissionGrants\":[]"
+                  "}],"
+                  "\"defaultPermissionPolicy\":\"GRANT\""
+                  "}"),
       nullptr);
   GetPoliciesAndVerifyResult(
       "{\"applications\":"
@@ -357,18 +356,17 @@ TEST_F(ArcPolicyBridgeTest, DISABLED_ArcPolicyTest) {
 TEST_F(ArcPolicyBridgeTest, HompageLocationTest) {
   // This policy will not be passed on, result should be empty except for the
   // instance GUID.
-  policy_map().Set(
-      policy::key::kHomepageLocation, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      std::make_unique<base::Value>("http://chromium.org"), nullptr);
+  policy_map().Set(policy::key::kHomepageLocation,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
+                   base::Value("http://chromium.org"), nullptr);
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() + "\"}");
 }
 
 TEST_F(ArcPolicyBridgeTest, DisableScreenshotsTest) {
   policy_map().Set(policy::key::kDisableScreenshots,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(true), nullptr);
+                   policy::POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() +
                              "\",\"screenCaptureDisabled\":true}");
 }
@@ -376,8 +374,7 @@ TEST_F(ArcPolicyBridgeTest, DisableScreenshotsTest) {
 TEST_F(ArcPolicyBridgeTest, DisablePrintingTest) {
   policy_map().Set(policy::key::kPrintingEnabled,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(false), nullptr);
+                   policy::POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() +
                              "\",\"printingDisabled\":true}");
 }
@@ -385,8 +382,7 @@ TEST_F(ArcPolicyBridgeTest, DisablePrintingTest) {
 TEST_F(ArcPolicyBridgeTest, VideoCaptureAllowedTest) {
   policy_map().Set(policy::key::kVideoCaptureAllowed,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(false), nullptr);
+                   policy::POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   GetPoliciesAndVerifyResult("{\"cameraDisabled\":true,\"guid\":\"" +
                              instance_guid() + "\"}");
 }
@@ -394,8 +390,7 @@ TEST_F(ArcPolicyBridgeTest, VideoCaptureAllowedTest) {
 TEST_F(ArcPolicyBridgeTest, AudioCaptureAllowedTest) {
   policy_map().Set(policy::key::kAudioCaptureAllowed,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(false), nullptr);
+                   policy::POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() +
                              "\",\"unmuteMicrophoneDisabled\":true}");
 }
@@ -403,20 +398,17 @@ TEST_F(ArcPolicyBridgeTest, AudioCaptureAllowedTest) {
 TEST_F(ArcPolicyBridgeTest, DefaultGeolocationSettingTest) {
   policy_map().Set(policy::key::kDefaultGeolocationSetting,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(1), nullptr);
+                   policy::POLICY_SOURCE_CLOUD, base::Value(1), nullptr);
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() +
                              "\",\"shareLocationDisabled\":false}");
   policy_map().Set(policy::key::kDefaultGeolocationSetting,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(2), nullptr);
+                   policy::POLICY_SOURCE_CLOUD, base::Value(2), nullptr);
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() +
                              "\",\"shareLocationDisabled\":true}");
   policy_map().Set(policy::key::kDefaultGeolocationSetting,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(3), nullptr);
+                   policy::POLICY_SOURCE_CLOUD, base::Value(3), nullptr);
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() +
                              "\",\"shareLocationDisabled\":false}");
 }
@@ -424,8 +416,7 @@ TEST_F(ArcPolicyBridgeTest, DefaultGeolocationSettingTest) {
 TEST_F(ArcPolicyBridgeTest, ExternalStorageDisabledTest) {
   policy_map().Set(policy::key::kExternalStorageDisabled,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(true), nullptr);
+                   policy::POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() +
                              "\",\"mountPhysicalMediaDisabled\":true}");
 }
@@ -436,7 +427,7 @@ TEST_F(ArcPolicyBridgeTest, WallpaperImageSetTest) {
   dict.SetString("hash", "somehash");
   policy_map().Set(policy::key::kWallpaperImage, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   dict.CreateDeepCopy(), nullptr);
+                   dict.Clone(), nullptr);
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() +
                              "\",\"setWallpaperDisabled\":true}");
 }
@@ -447,20 +438,19 @@ TEST_F(ArcPolicyBridgeTest, WallpaperImageSet_NotCompletePolicyTest) {
   // "hash" attribute is missing, so the policy shouldn't be set
   policy_map().Set(policy::key::kWallpaperImage, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   dict.CreateDeepCopy(), nullptr);
+                   dict.Clone(), nullptr);
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() + "\"}");
 }
 
 TEST_F(ArcPolicyBridgeTest, CaCertificateTest) {
   // Enable CA certificates sync.
-  policy_map().Set(
-      policy::key::kArcCertificatesSyncMode, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      std::make_unique<base::Value>(ArcCertsSyncMode::COPY_CA_CERTS), nullptr);
-  policy_map().Set(policy::key::kOpenNetworkConfiguration,
+  policy_map().Set(policy::key::kArcCertificatesSyncMode,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                    policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(kFakeONC), nullptr);
+                   base::Value(ArcCertsSyncMode::COPY_CA_CERTS), nullptr);
+  policy_map().Set(policy::key::kOpenNetworkConfiguration,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD, base::Value(kFakeONC), nullptr);
   GetPoliciesAndVerifyResult(
       "{\"caCerts\":"
       "[{\"X509\":\"TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24"
@@ -475,10 +465,10 @@ TEST_F(ArcPolicyBridgeTest, CaCertificateTest) {
       instance_guid() + "\"}");
 
   // Disable CA certificates sync.
-  policy_map().Set(
-      policy::key::kArcCertificatesSyncMode, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      std::make_unique<base::Value>(ArcCertsSyncMode::SYNC_DISABLED), nullptr);
+  policy_map().Set(policy::key::kArcCertificatesSyncMode,
+                   policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                   policy::POLICY_SOURCE_CLOUD,
+                   base::Value(ArcCertsSyncMode::SYNC_DISABLED), nullptr);
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() + "\"}");
 }
 
@@ -517,14 +507,13 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
   policy_map().Set(
       policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
       policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      std::make_unique<base::Value>(
-          "{\"applications\":"
-          "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
-          "\"installType\":\"REQUIRED\","
-          "\"lockTaskAllowed\":false,"
-          "\"permissionGrants\":[]"
-          "}],"
-          "\"defaultPermissionPolicy\":\"GRANT\"}"),
+      base::Value("{\"applications\":"
+                  "[{\"packageName\":\"com.google.android.apps.youtube.kids\","
+                  "\"installType\":\"REQUIRED\","
+                  "\"lockTaskAllowed\":false,"
+                  "\"permissionGrants\":[]"
+                  "}],"
+                  "\"defaultPermissionPolicy\":\"GRANT\"}"),
       nullptr);
   policy_map().Set(
       policy::key::kHomepageLocation, policy::POLICY_LEVEL_MANDATORY,
@@ -532,8 +521,7 @@ TEST_F(ArcPolicyBridgeTest, MultiplePoliciesTest) {
       std::make_unique<base::Value>("http://chromium.org"), nullptr);
   policy_map().Set(policy::key::kVideoCaptureAllowed,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(false), nullptr);
+                   policy::POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   GetPoliciesAndVerifyResult(
       "{\"applications\":"
       "[{\"installType\":\"REQUIRED\","
@@ -598,8 +586,7 @@ TEST_F(ArcPolicyBridgeTest, PolicyInstanceManagedTest) {
 TEST_F(ArcPolicyBridgeTest, VpnConfigAllowedTest) {
   policy_map().Set(policy::key::kVpnConfigAllowed,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(false), nullptr);
+                   policy::POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   GetPoliciesAndVerifyResult("{\"guid\":\"" + instance_guid() +
                              "\",\"vpnConfigDisabled\":true}");
 }
@@ -609,8 +596,7 @@ TEST_P(ArcPolicyBridgeAffiliatedTest, DISABLED_ApkCacheEnabledTest) {
       "{\"apkCacheEnabled\":true,\"guid\":\"" + instance_guid() + "\"}");
   policy_map().Set(policy::key::kArcPolicy, policy::POLICY_LEVEL_MANDATORY,
                    policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-                   std::make_unique<base::Value>(apk_cache_enabled_policy),
-                   nullptr);
+                   base::Value(apk_cache_enabled_policy), nullptr);
   if (is_affiliated_) {
     GetPoliciesAndVerifyResult(apk_cache_enabled_policy);
   } else {

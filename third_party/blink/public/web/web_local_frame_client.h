@@ -37,6 +37,7 @@
 #include "base/i18n/rtl.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "media/base/speech_recognition_client.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
@@ -152,6 +153,12 @@ class BLINK_EXPORT WebLocalFrameClient {
   // May return null.
   virtual std::unique_ptr<WebContentSettingsClient>
   CreateWorkerContentSettingsClient() {
+    return nullptr;
+  }
+
+  // May return null.
+  virtual std::unique_ptr<media::SpeechRecognitionClient>
+  CreateSpeechRecognitionClient() {
     return nullptr;
   }
 
@@ -420,15 +427,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // operations.
   virtual void DidChangeSelection(bool is_selection_empty) {}
   virtual void DidChangeContents() {}
-
-  // This method is called in response to handleInputEvent() when the
-  // default action for the current keyboard event is not suppressed by the
-  // page, to give the embedder a chance to handle the keyboard event
-  // specially.
-  //
-  // Returns true if the keyboard event was handled by the embedder,
-  // indicating that the default action should be suppressed.
-  virtual bool HandleCurrentKeyboardEvent() { return false; }
 
   // UI ------------------------------------------------------------------
 

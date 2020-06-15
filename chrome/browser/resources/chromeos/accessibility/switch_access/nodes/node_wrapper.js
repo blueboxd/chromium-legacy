@@ -351,6 +351,12 @@ class RootNodeWrapper extends SARootNode {
    * @return {!RootNodeWrapper}
    */
   static buildTree(rootNode) {
+    if (rootNode.role === chrome.automation.RoleType.WINDOW ||
+        (rootNode.role === chrome.automation.RoleType.CLIENT &&
+         rootNode.parent.role === chrome.automation.RoleType.WINDOW)) {
+      return WindowRootNode.buildTree(rootNode);
+    }
+
     const root = new RootNodeWrapper(rootNode);
     const childConstructor = (node) => NodeWrapper.create(node, root);
 

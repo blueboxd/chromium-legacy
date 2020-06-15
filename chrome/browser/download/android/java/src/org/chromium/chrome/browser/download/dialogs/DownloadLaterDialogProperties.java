@@ -15,6 +15,11 @@ public class DownloadLaterDialogProperties {
     public static final PropertyModel.ReadableIntPropertyKey DOWNLOAD_TIME_INITIAL_SELECTION =
             new PropertyModel.ReadableIntPropertyKey();
 
+    /** The controller that receives events from the UI view layer. */
+    public static final PropertyModel
+            .ReadableObjectPropertyKey<DownloadLaterDialogController> CONTROLLER =
+            new PropertyModel.ReadableObjectPropertyKey();
+
     public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {DOWNLOAD_TIME_INITIAL_SELECTION};
+            new PropertyKey[] {DOWNLOAD_TIME_INITIAL_SELECTION, CONTROLLER};
 }

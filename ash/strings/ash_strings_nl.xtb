@@ -509,7 +509,6 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="7068360136237591149">Open bestanden</translation>
 <translation id="7076293881109082629">Inloggen</translation>
 <translation id="7088960765736518739">Toegang via schakelaar</translation>
-<translation id="7092922358121866860">Instellingen voor Nachtverlichting weergeven</translation>
 <translation id="7098389117866926363">USB-C-apparaat (poort links aan de achterkant)</translation>
 <translation id="7131634465328662194">Je wordt automatisch uitgelogd.</translation>
 <translation id="7143207342074048698">Verbinding maken</translation>
@@ -661,7 +660,6 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="8877788021141246043">Stel een herinnering in</translation>
 <translation id="8878886163241303700">Uitgebreid scherm</translation>
 <translation id="890616557918890486">Bron wijzigen</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> ondersteunt geen <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). De resolutie is gewijzigd in <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Klik om te bevestigen en de wijzigingen op te slaan. De vorige instellingen worden over <ph name="TIMEOUT_SECONDS" /> hersteld.</translation>
 <translation id="8909138438987180327">Batterij op <ph name="PERCENTAGE" /> procent.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">De Google Assistent spreekt deze taal niet.</translation>

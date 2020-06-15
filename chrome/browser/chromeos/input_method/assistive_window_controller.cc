@@ -129,6 +129,7 @@ void AssistiveWindowController::AcceptSuggestion(
 
 void AssistiveWindowController::HideSuggestion() {
   suggestion_text_ = base::EmptyString16();
+  confirmed_length_ = 0;
   if (suggestion_window_view_)
     suggestion_window_view_->GetWidget()->Close();
 }

@@ -117,6 +117,7 @@
 <translation id="114721135501989771">ទទួលបាន​មុខងារ​ឆ្លាតវៃ​របស់ Google នៅក្នុង Chrome</translation>
 <translation id="1147991416141538220">ដើម្បី​ស្នើសុំ​សិទ្ធិចូល​ប្រើប្រាស់ សូម​ទាក់ទង​អ្នកគ្រប់គ្រង​ឧបករណ៍​នេះ​។</translation>
 <translation id="1149401351239820326">ខែផុតកំណត់</translation>
+<translation id="1149725087019908252">កំពុងស្កេន <ph name="FILE_NAME" /></translation>
 <translation id="1150565364351027703">វ៉ែនតា​ការពារពន្លឺព្រះអាទិត្យ</translation>
 <translation id="1151917987301063366">អនុញ្ញាត <ph name="HOST" /> ឱ្យ​ចូលប្រើ​ឧបករណ៍​ចាប់សញ្ញា​ជានិច្ច</translation>
 <translation id="1153356358378277386">ឧបករណ៍​ដែល​បាន​ផ្គូផ្គង</translation>
@@ -278,6 +279,7 @@
 <translation id="1347975661240122359">ការដំឡើងកំណែនឹងចាប់ផ្តើម នៅពេលដែលថ្មឈានដល់ <ph name="BATTERY_LEVEL" />% ។</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />៖ <ph name="NETWORK_NAME" /></translation>
 <translation id="1353980523955420967">រក​មិន​ឃើញ PPD ទេ។ សូម​ប្រាកដ​ថា Chromebook របស់អ្នក​មាន​អ៊ីនធឺណិត រួច​ព្យាយាម​ម្ដងទៀត។</translation>
+<translation id="1354045473509304750">បន្តអនុញ្ញាត <ph name="HOST" /> ឱ្យប្រើ​ និងផ្លាស់ទីកាមេរ៉ារបស់អ្នក</translation>
 <translation id="1355466263109342573"><ph name="PLUGIN_NAME" /> ត្រូវបានរារាំង</translation>
 <translation id="1358741672408003399">ការប្រកប និងវេយ្យាករណ៍</translation>
 <translation id="1359923111303110318">អាច​ដោះសោ​ឧបករណ៍​របស់អ្នក​ដោយប្រើ Smart Lock​។ ចុច Enter ដើម្បី​ដោះសោ។</translation>
@@ -1174,6 +1176,7 @@
 <translation id="247051149076336810">URL សម្រាប់​ចែក​រំលែក​ឯកសារ</translation>
 <translation id="2470702053775288986">កម្មវិធីបន្ថែមដែលមិនគាំទ្រត្រូវបានបិទដំណើរការ</translation>
 <translation id="2473195200299095979">បកប្រែទំព័រនេះ</translation>
+<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> អស់ទឹកថ្នាំហើយ</translation>
 <translation id="2475982808118771221">កំហុសឆ្គងមួយបានកើតឡើង</translation>
 <translation id="2476578072172137802">ការកំណត់គេហទំព័រ</translation>
 <translation id="2478176599153288112">ការអនុញ្ញាតឯកសារកំសាន្តសម្រាប់ "<ph name="EXTENSION" />"</translation>
@@ -1474,6 +1477,7 @@
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> កំពុងប្រើ​ការកំណត់ប្រូកស៊ី​ពី​កម្មវិធី​គ្រប់គ្រង​របស់អ្នក</translation>
 <translation id="2825758591930162672">សោសាធារណៈរបស់ភាគីវិញ្ញាបនប័ត្រ</translation>
 <translation id="2828650939514476812">ភ្ជាប់បណ្តាញ Wi-Fi</translation>
+<translation id="28291580771888953">ជួររបស់ <ph name="PRINTER_NAME" /> ពេញហើយ</translation>
 <translation id="2835547721736623118">សេវាកម្ម​សម្គាល់ការនិយាយ</translation>
 <translation id="2836269494620652131">គាំង</translation>
 <translation id="2836635946302913370">ការចូលដោយជាមួយឈ្មោះអ្នកប្រើនេះត្រូវបាន</translation>
@@ -2076,6 +2080,7 @@
 <translation id="3613422051106148727">បើកនៅក្នុងផ្ទាំងថ្មី</translation>
 <translation id="3614974189435417452">បាន​បញ្ចប់​ការបម្រុងទុក​​ហើយ</translation>
 <translation id="3615073365085224194">ប៉ះ​ឧបករណ៍​ចាប់ស្នាមម្រាមដៃដោយប្រើម្រាម​ដៃរបស់អ្នក</translation>
+<translation id="3615579745882581859">កំពុង​ស្កេន <ph name="FILE_NAME" /> ។</translation>
 <translation id="3616741288025931835">ជម្រះទិន្នន័យរុករក...</translation>
 <translation id="3617891479562106823">មិនមាន​ផ្ទៃ​ខាងក្រោយ​ទេ។ សូម​ព្យាយាម​ម្ដងទៀត​នៅពេល​ក្រោយ។</translation>
 <translation id="3619115746895587757">កាពូឈីណូ</translation>
@@ -2124,7 +2129,6 @@
 <translation id="3670113805793654926">ឧបករណ៍​ពីអ្នកលក់</translation>
 <translation id="3670229581627177274">បើកប៊្លូធូស</translation>
 <translation id="3672681487849735243">កំហុសឆ្គងចេញពីប្រភពដើមត្រូវបានរកឃើញ</translation>
-<translation id="3675913744032077012">ការកំណត់​ភាសា និងការបញ្ចូល</translation>
 <translation id="367645871420407123">ទុកវាចោល ប្រសិនបើអ្នកចង់កំណត់ពាក្យសម្ងាត់រូតទៅតម្លៃរូបភាពសាកល្បងលំនាំដើម</translation>
 <translation id="3677106374019847299">បញ្ចូល​ក្រុមហ៊ុន​ផ្ដល់សេវា​ផ្ទាល់ខ្លួន</translation>
 <translation id="3677657024345889897">ស្ងាត់​បំផុត</translation>
@@ -2642,10 +2646,8 @@
 <translation id="4314815835985389558">គ្រប់គ្រង​សមកាលកម្ម</translation>
 <translation id="4316850752623536204">គេហទំព័រអ្នកអភិវឌ្ឍន៍</translation>
 <translation id="4320177379694898372">គ្មានការភ្ជាប់អ៊ីនធឺណិតទេ</translation>
-<translation id="4321442524549817090">&amp;បង្ហាញ URL</translation>
 <translation id="4322394346347055525">បិទផ្ទាំងផ្សេងទៀត</translation>
 <translation id="4324577459193912240">ឯកសារមិនពេញលេញ</translation>
-<translation id="4325083532956419387">កំណែ Chrome OS</translation>
 <translation id="4325237902968425115">កំពុងលុប <ph name="LINUX_APP_NAME" />...</translation>
 <translation id="4330191372652740264">ទឹកកក</translation>
 <translation id="4330387663455830245">កុំបកប្រែភាសា <ph name="LANGUAGE" /> ឲ្យសោះ</translation>
@@ -2745,6 +2747,7 @@
 <translation id="4453946976636652378">ស្វែងរក​តាមរយៈ <ph name="SEARCH_ENGINE_NAME" /> ឬវាយបញ្ចូល​ URL ណាមួយ</translation>
 <translation id="4459169140545916303">ដំណើរការ <ph name="DEVICE_LAST_ACTIVATED_TIME" /> ថ្ងៃ​មុន</translation>
 <translation id="4460014764210899310">បំបែក​ក្រុម</translation>
+<translation id="4460343359907016103">មានបញ្ហាក្នុងការភ្ជាប់ជាមួយ <ph name="PRINTER_NAME" /></translation>
 <translation id="4462159676511157176">ម៉ាស៊ីនមេឈ្មោះផ្ទាល់ខ្លូន</translation>
 <translation id="4465236939126352372">បានកំណត់រយៈពេលកំណត់ <ph name="TIME" /> សម្រាប់ <ph name="APP_NAME" /></translation>
 <translation id="4465725236958772856">បណ្ដាញ <ph name="NETWORK_INDEX" /> នៃ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, គ្រប់គ្រងដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក, ភ្ជាប់</translation>
@@ -3034,6 +3037,7 @@
 <translation id="4864369630010738180">កំពុង​ចូល...</translation>
 <translation id="4864805589453749318">ជ្រើសរើស​មាតាបិតា​ដែលកំពុងផ្ដល់​ការអនុញ្ញាតឱ្យ​បញ្ចូល​គណនី​សាលារៀន។</translation>
 <translation id="486635084936119914">បើក​ប្រភេទឯកសារជាក់លាក់ដោយស្វ័យប្រវត្តិ បន្ទាប់ពីទាញយករួចហើយ</translation>
+<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> បានបាត់ថាសដាក់ក្រដាស</translation>
 <translation id="4869289251183233431">ឧបករណ៍​របស់អ្នក​ជិតអស់​ទំហំផ្ទុក​ហើយ។ តម្រូវឱ្យ​មានទំហំផ្ទុក​ទំនេរ​យ៉ាងហោចណាស់ <ph name="MINIMUM_SPACE" /> ដើម្បី​ប្រើ <ph name="APP_NAME" /> និងណែនាំឱ្យមានទំហំផ្ទុក​ទំនេរលើសពី <ph name="RECOMMENDED_SPACE" />។ ដើម្បីបង្កើនទំហំផ្ទុក សូមលុបឯកសារចេញពីឧបករណ៍។</translation>
 <translation id="48704129375571883">បន្ថែមលក្ខណៈពិសេសបន្ថែម</translation>
 <translation id="4870758487381879312">បញ្ចូល​ពាក្យសម្ងាត់ដែលផ្ដល់ដោយ​អ្នក​គ្រប់គ្រង ដើម្បី​ទទួលបានព័ត៌មាន​អំពីការ​កំណត់រចនាសម្ព័ន្ធ</translation>
@@ -3089,6 +3093,7 @@
 <translation id="4918221908152712722">ដំឡើង <ph name="APP_NAME" /> (មិនតម្រូវ​ឱ្យទាញយកទេ)</translation>
 <translation id="4920887663447894854">គេហទំព័រខាងក្រោមត្រូវបានរារាំងពីការតាមដានទីតាំងរបស់អ្នកនៅលើទំព័រនេះ៖</translation>
 <translation id="4921290200821452703">ព័ត៌មាន​គណនីសាលារៀន​សម្រាប់មាតាបិតា</translation>
+<translation id="4921348630401250116">ការបំប្លែង​អត្ថបទ​ទៅជា​ការនិយាយ</translation>
 <translation id="49226369361073053">{0,plural, =0{ដំឡើងកំណែ​ឧបករណ៍​ឥឡូវនេះ}=1{ដំឡើងកំណែ​ឧបករណ៍​ក្នុងរយៈពេល 1 វិនាទី​ទៀត}other{ដំឡើងកំណែ​ឧបករណ៍​ក្នុងរយៈពេល # វិនាទី​ទៀត}}</translation>
 <translation id="492299503953721473">យកកម្មវិធី Android ចេញ</translation>
 <translation id="492363500327720082">កំពុងលុប <ph name="APP_NAME" />...</translation>
@@ -3143,7 +3148,6 @@
 <translation id="4997086284911172121">មិនមាន​ការតភ្ជាប់​អ៊ីនធឺណិត​ទេ។</translation>
 <translation id="4998430619171209993">បើក</translation>
 <translation id="5000922062037820727">បានរារាំង (បានណែនាំ)</translation>
-<translation id="5003821244905342830">ប្រសិនបើបន្ត មានន័យថា Google នឹងធ្វើសមកាលកម្មទិន្នន័យពី <ph name="EMAIL" /> ជាមួយឧបករណ៍នេះ។</translation>
 <translation id="5005498671520578047">ថតចម្លងពាក្យសម្ងាត់</translation>
 <translation id="5006218871145547804">ADB សម្រាប់កម្មវិធី Android នៅក្នុង Crostini</translation>
 <translation id="5007392906805964215">ពិនិត្យមើល</translation>
@@ -3174,6 +3178,7 @@
 <translation id="504561833207953641">កំពុង​បើក​នៅក្នុង​រយៈពេលចូលប្រើកម្មវិធីរុករកដែលមានស្រាប់។</translation>
 <translation id="5047421709274785093">ទប់ស្កាត់​ទំព័រ​មិនឱ្យប្រើ​ឧបករណ៍​ចាប់សញ្ញាពន្លឺ​ និងចលនា</translation>
 <translation id="5050042263972837708">ឈ្មោះ​ក្រុម</translation>
+<translation id="5050330054928994520">TTS</translation>
 <translation id="5051836348807686060">មិនស្គាល់​ការពិនិត្យ​អក្ខរាវិរុទ្ធសម្រាប់​ភាសា​ដែលអ្នក​បានជ្រើសរើស​ទេ</translation>
 <translation id="5052499409147950210">កែ​សម្រួល​ទំព័រ</translation>
 <translation id="5053604404986157245">ពាក្យសម្ងាត់ TPM ដែលបានបង្កើតដោយចៃដន្យមិនមានទេ។ វាជារឿងធម្មតាបន្ទាប់ពី Powerwash។</translation>
@@ -3433,6 +3438,7 @@
 <translation id="5390100381392048184">អនុញ្ញាតឱ្យទំព័រចាក់សំឡេង</translation>
 <translation id="5390677308841849479">ក្រហមចាស់ និងទឹកក្រូច</translation>
 <translation id="5390743329570580756">ផ្ញើសម្រាប់</translation>
+<translation id="5395869306561378615"><ph name="PRINTER_NAME" /> ត្រូវបានផ្អាក</translation>
 <translation id="5397794290049113714">អ្នក</translation>
 <translation id="5398572795982417028">លើសដែនកំណត់ទំព័រ ដែនកំណត់គឺ <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">បាន​ទប់ស្កាត់​ការផ្សាយពាណិជ្ជកម្ម</translation>
@@ -3446,6 +3452,7 @@
 <translation id="5417312524372586921">រចនាប័ទ្មកម្មវិធីរុករកតាមអ៊ីនធឺណិត</translation>
 <translation id="5419405654816502573">Voice Match</translation>
 <translation id="5420438158931847627">កំណត់​ភាពច្បាស់មុត​នៃអត្ថបទ និង​រូបភាព</translation>
+<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> មានបញ្ហាឧបករណ៍</translation>
 <translation id="5422221874247253874">ចំណុចចូលប្រើ</translation>
 <translation id="5422781158178868512">សូមទោស ឧបករណ៍ផ្ទុកទិន្នន័យខាងក្រៅរបស់អ្នកមិនត្រូវបានសម្គាល់ទេ។</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3519,6 +3526,7 @@
 <translation id="5499313591153584299">ឯកសារនេះអាចបង្កគ្រោះថ្នាក់ដល់កុំព្យូទ័ររបស់អ្នក។</translation>
 <translation id="5500709606820808700">ការពិនិត្យ​សុវត្ថិភាព​បានដំណើរការនៅថ្ងៃនេះ</translation>
 <translation id="5502500733115278303">បាននាំចូលពី Firefox</translation>
+<translation id="5503982651688210506">បន្តអនុញ្ញាត <ph name="HOST" /> ឱ្យប្រើ និងផ្លាស់ទីកាមេរ៉ារបស់អ្នក និងប្រើមីក្រូហ្វូនរបស់អ្នក</translation>
 <translation id="5505264765875738116">គេហទំព័រ​មិនអាច​ស្នើសុំ​ការអនុញ្ញាត​ដើម្បី​ផ្ញើ​ការជូន​ដំណឹង​បានទេ</translation>
 <translation id="5505307013568720083">អស់ទឹកថ្នាំ</translation>
 <translation id="5507756662695126555">ការមិនបដិសេធ</translation>
@@ -3714,7 +3722,6 @@
 <translation id="5734362860645681824">ការប្រាស្រ័យទាក់ទង</translation>
 <translation id="5734697361979786483">បញ្ចូលឧបករណ៍​ចែករំលែក​ឯកសារ</translation>
 <translation id="5736796278325406685">សូម​បញ្ចូលឈ្មោះ​អ្នកប្រើប្រាស់​ដែលត្រឹមត្រូវ</translation>
-<translation id="573759479754913123">អំពី Chrome OS</translation>
 <translation id="5739017626473506901">ចូល​គណនី ដើម្បី​ជួយ <ph name="USER_NAME" /> ក្នុងការ​បញ្ចូល​គណនី​សាលារៀន</translation>
 <translation id="5739235828260127894">កំពុង​រង់ចាំធ្វើ​ការផ្ទៀងផ្ទាត់។ <ph name="LINK_BEGIN" />ស្វែងយល់​បន្ថែម<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">ធំខ្លាំង</translation>
@@ -3796,6 +3803,7 @@
 <translation id="5852137567692933493">ចាប់ផ្តើមឡើងវិញ និង Powerwash</translation>
 <translation id="5854912040170951372">ចំណិត</translation>
 <translation id="5855267860608268405">បណ្ដាញ Wi-Fi ដែលស្គាល់</translation>
+<translation id="5855310969323666289">ទ្វាររបស់ <ph name="PRINTER_NAME" /> ចំហ</translation>
 <translation id="5855643921295613558">0.6 វិនាទី</translation>
 <translation id="5856721540245522153">បើកដំណើរការលក្ខណៈពិសេសកម្ចាត់កំហុស</translation>
 <translation id="5857090052475505287">ថតឯកសារថ្មី</translation>
@@ -3825,6 +3833,7 @@
 <translation id="5877064549588274448">បានប្តូរបណ្តាញ។ ចាប់ផ្តើមឧបករណ៍របស់អ្នកឡើងវិញដើម្បីអនុវត្តការប្តូរ។</translation>
 <translation id="5877584842898320529">មិនមានម៉ាស៊ីនបោះពុម្ពដែលបានជ្រើសរើស ឬវាមិនត្រូវបានដំឡើងដោយត្រឹមត្រូវទេ។ <ph name="BR" />សូមពិនិត្យមើលម៉ាស៊ីនបោះពុម្ពរបស់អ្នក ឬសាកល្បងជ្រើសរើសម៉ាស៊ីនបោះពុម្ពផ្សេងទៀត។</translation>
 <translation id="5882919346125742463">បណ្តាញដែលស្គាល់</translation>
+<translation id="5883716097305842571">កន្លែងបញ្ចេញក្រដាសរបស់ <ph name="PRINTER_NAME" /> ជិតពេញហើយ</translation>
 <translation id="5884474295213649357">ផ្ទាំងនេះត្រូវបានភ្ជាប់ទៅឧបករណ៍ USB</translation>
 <translation id="5886009770935151472">ម្រាមដៃទី 1</translation>
 <translation id="5889282057229379085">ចំនួនអតិបរមានៃ CAs អន្តរការី៖ <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -3869,6 +3878,7 @@
 <translation id="5935656526031444304">គ្រប់គ្រង​ការរុករក​ដោយសុវត្ថិភាព</translation>
 <translation id="5938002010494270685">អាចដំឡើងកំណែ​សោសុវត្ថិភាព​បានហើយ</translation>
 <translation id="5939518447894949180">កំណត់ឡើងវិញ</translation>
+<translation id="594108735267876762">សូមដំឡើងកំណែ​ឧបករណ៍​ក្នុងរយៈពេល <ph name="COUNT" /> ថ្ងៃ​</translation>
 <translation id="5941153596444580863">បន្ថែមបុគ្គល...</translation>
 <translation id="5941343993301164315">សូមចូលទៅ <ph name="TOKEN_NAME" />។</translation>
 <translation id="5941711191222866238">បង្រួម</translation>
@@ -4103,6 +4113,7 @@
 <translation id="6239558157302047471">ដំណើរការហ្វ្រេមឡើងវិញ</translation>
 <translation id="6241530762627360640">ចូលប្រើព័ត៌មានអំពីឧបករណ៍ប៊្លូធូសដែលបានភ្ជាប់ជាមួយប្រព័ន្ធរបស់អ្នក និងស្វែងរកឧបករណ៍ប៊្លូធូសដែលនៅក្បែរ។</translation>
 <translation id="6241844896329831164">មិន​តម្រូវឱ្យមានការចូលប្រើទេ</translation>
+<translation id="6242574558232861452">កំពុងពិនិត្យមើលគោលការណ៍សុវត្ថិភាពរបស់ស្ថាប័នអ្នក។</translation>
 <translation id="6242589501614145408">កំណត់​សោសុវត្ថិភាព​របស់អ្នក​ឡើងវិញ</translation>
 <translation id="6242852299490624841">ផ្ដោត​ផ្ទាំងនេះ</translation>
 <translation id="6243280677745499710">ឥឡូវនេះ​បានកំណត់​ហើយ</translation>
@@ -4143,7 +4154,6 @@
 <translation id="628352644014831790">4 វិនាទី</translation>
 <translation id="6285120108426285413">ជាទូទៅ <ph name="FILE_NAME" /> មិនត្រូវបានទាញយកទេ ហើយវាអាចបង្កគ្រោះថ្នាក់។</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{ម៉ាស៊ីនបោះពុម្ពថ្មីនៅលើបណ្តាញរបស់អ្នក}other{ម៉ាស៊ីនបោះពុម្ពថ្មីនៅលើបណ្តាញរបស់អ្នក}}</translation>
-<translation id="6286708577777130801">ព័ត៌មានលម្អិតពាក្យសម្ងាត់ដែលបានរក្សាទុក</translation>
 <translation id="6291163159361301370">ដើម្បីចាប់ផ្ដើម Linux, <ph name="ORGANIZATION_NAME" /> តម្រូវឱ្យអ្នកបម្រុងទុក​ទិន្នន័យរបស់អ្នក និងកំណត់​ Chromebook នេះទៅការកំណត់​​ដូច​ចេញ​ពី​រោងចក្រឡើងវិញ។</translation>
 <translation id="6291949900244949761">សួរ​នៅពេល​ដែល​ទំព័រ​ចង់ចូលប្រើ​ឧបករណ៍ USB (បាន​ណែនាំ)</translation>
 <translation id="6291953229176937411">បង្ហាញនៅក្នុងប្រអប់ស្វែងរក</translation>
@@ -4217,6 +4227,7 @@
 <translation id="6390799748543157332">ទំព័រដែលអ្នកមើលនៅក្នុងផ្ទាំងនេះនឹងមិនលេចឡើងនៅក្នុងប្រវត្តិរុករកទេ ហើយពួកវានឹងមិនរក្សាដានដល់អ្នកផ្សេង ដូចជាខុកឃី នៅលើកុំព្យូទ័រនេះ បន្ទាប់ពីអ្នកបិទផ្ទាំងជារបៀបភ្ញៀវទាំងអស់នោះ។ ទោះបីជាយ៉ាងណាក៏ដោយ ឯកសារដែលអ្នកបានទាញយកនឹងត្រូវបានរក្សាទុក។</translation>
 <translation id="6393156038355142111">ណែនាំ​ពាក្យ​សម្ងាត់​ខ្លាំង</translation>
 <translation id="6395423953133416962">ផ្ញើ <ph name="BEGIN_LINK1" />ព័ត៌មានប្រព័ន្ធ<ph name="END_LINK1" /> និង <ph name="BEGIN_LINK2" />ម៉ាទ្រិក<ph name="END_LINK2" /></translation>
+<translation id="6396179879191282798">ថ្ងៃចុងក្រោយដែលត្រូវដំឡើងកំណែឧបករណ៍</translation>
 <translation id="6396988158856674517">ទប់ស្កាត់​គេហទំព័រ​មិនឱ្យប្រើឧបករណ៍​ចាប់ចលនា</translation>
 <translation id="6398715114293939307">លុប Google Play Store</translation>
 <translation id="6398765197997659313">ចាកចេញពីអេក្រង់ពេញ</translation>
@@ -4360,7 +4371,6 @@
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> - បាន​ចែក​រំលែក​ខ្លឹមសារ​លើអេក្រង់ដើម</translation>
 <translation id="6580203076670148210">ល្បឿន​ស្កេន</translation>
 <translation id="6582080224869403177">កំណត់ <ph name="DEVICE_TYPE" /> ឡើងវិញ ដើម្បី​ដំឡើងកំណែ​សោសុវត្ថិភាព​របស់អ្នក។</translation>
-<translation id="6584793698691679400">កំណែ​ឧបករណ៍</translation>
 <translation id="6584878029876017575">ការចុះហត្ថលេខា Microsoft Lifetime</translation>
 <translation id="6586099239452884121">ការរុករក​ជាភ្ញៀវ</translation>
 <translation id="6586451623538375658">អូសប៊ូតុងកណ្តុរបឋម</translation>
@@ -4382,6 +4392,7 @@
 <translation id="6611972847767394631">ស្វែងរកផ្ទាំងរបស់អ្នកនៅទីនេះ</translation>
 <translation id="6612358246767739896">មាតិកាដែលបានការពារ</translation>
 <translation id="6615455863669487791">បង្ហាញខ្ញុំ</translation>
+<translation id="6617034477946102682"><ph name="PRINTER_NAME" /> មិនអាចភ្ជាប់បានទេ</translation>
 <translation id="6618097958368085618">មិនអី​ទេ​រក្សាទុក​ចុះ</translation>
 <translation id="6618744767048954150">កំពុងដំណើរការ</translation>
 <translation id="6619058681307408113">ប្រូតូកូលបោះពុម្ពក្នុងបណ្តាញ (LPD)</translation>
@@ -4625,6 +4636,7 @@
 <translation id="6930321203306643451">ការដំឡើងកំណែ​បានបញ្ចប់ហើយ</translation>
 <translation id="6935286146439255109">​បានបាត់ថាសក្រដាស</translation>
 <translation id="693807610556624488">ប្រតិបត្តិការសរសេរបានឈានដល់ប្រវែងអតិបរមានៃគុណលក្ខណៈចំពោះ៖ "<ph name="DEVICE_NAME" />"</translation>
+<translation id="6938381444925658529"><ph name="DOMAIN" /> តម្រូវឱ្យអ្នកទាញយកកំណែថ្មី មុនថ្ងៃផុតកំណត់។ កំណែថ្មីនឹងទាញយក​ដោយស្វ័យប្រវត្តិ នៅពេលអ្នក​ភ្ជាប់អ៊ីនធឺណិត។</translation>
 <translation id="6938386202199793006">អ្នក​មាន​ម៉ាស៊ីន​បោះពុម្ព​ដែលបាន​រក្សាទុក 1។</translation>
 <translation id="6938789263968032501">មនុស្ស</translation>
 <translation id="6941937518557314510">សូមចូលទៅ <ph name="TOKEN_NAME" /> ដើម្បីសម្គាល់អត្តសញ្ញាណទៅ <ph name="HOST_NAME" /> ជាមួយវិញ្ញាបនប័ត្ររបស់អ្នក។</translation>
@@ -4788,6 +4800,7 @@
 <translation id="7128151990937044829">បង្ហាញសូចនាករ​នៅក្នុងរបារ​អាសយដ្ឋាន នៅពេល​ទប់ស្កាត់​ការជូនដំណឹង</translation>
 <translation id="7131040479572660648">អានទិន្នន័យរបស់អ្នកនៅលើ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, និង <ph name="WEBSITE_3" /></translation>
 <translation id="713122686776214250">បន្ថែមទំព័រ...</translation>
+<translation id="7131379856697962078">កន្លែងបញ្ចេញក្រដាសរបស់ <ph name="PRINTER_NAME" /> ពេញហើយ</translation>
 <translation id="7133578150266914903">អ្នកគ្រប់គ្រង​របស់អ្នកកំពុងស្ដារ​ឧបករណ៍​របស់អ្នក (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">ធ្វើឲ្យអត្ថបទតូចជាងមុន</translation>
 <translation id="7135729336746831607">បើកប៊្លូធូស?</translation>
@@ -4806,6 +4819,7 @@
 <translation id="7152478047064750137">កម្មវិធី​បន្ថែម​នេះ​មិន​តម្រូវ​ឱ្យ​មាន​ការអនុញ្ញាត​ពិសេសទេ</translation>
 <translation id="7154130902455071009">ប្តូរទំព័រចាប់ផ្តើមរបស់អ្នកទៅ៖ <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">រូបភាពពីកាមេរ៉ា និងឯកសារដែលមានស្រាប់</translation>
+<translation id="715657691234357425"><ph name="PRINTER_NAME" /> ជិតអស់ក្រដាសហើយ</translation>
 <translation id="7165320105431587207">បានបរាជ័យក្នុងការកំណត់បណ្តាាញ</translation>
 <translation id="716640248772308851">"<ph name="EXTENSION" />" មិនអាចអានឯកសាររូបភាព វីដេអូ និងសម្លេងនៅក្នុងទីតាំងដែលបានពិនិត្យទេ។</translation>
 <translation id="7167486101654761064">បើកឯកសារប្រភេទនេះជានិច្ច</translation>
@@ -5134,6 +5148,7 @@
 <translation id="7598466960084663009">ចាប់ផ្តើមកុំព្យូទ័រឡើងវិញ</translation>
 <translation id="7599527631045201165">ឈ្មោះ​ឧបករណ៍​វែង​ពេកហើយ។ សូម​បញ្ចូល​ឈ្មោះខ្លីជាងនេះ ដើម្បីព្យាយាមម្ដងទៀត។</translation>
 <translation id="7600965453749440009">មិនបកប្រែភាសា <ph name="LANGUAGE" /> ទៀតឡើយ</translation>
+<translation id="7601297144931396972">ក្រដាសរបស់ <ph name="PRINTER_NAME" /> ជាប់គាំង</translation>
 <translation id="760197030861754408">ចូលទៅកាន់ <ph name="LANDING_PAGE" /> ដើម្បីភ្ជាប់</translation>
 <translation id="7602079150116086782">គ្មានផ្ទាំងពីឧបករណ៍ដ៏ទៃទេ</translation>
 <translation id="7602173054665172958">ការគ្រប់គ្រង​ការបោះពុម្ព</translation>
@@ -5580,6 +5595,7 @@
           <ph name="TIME" />។ ការ​អ៊ីនគ្រីបនេះមិន​រួមបញ្ចូល​អាសយដ្ឋាន និងវិធីបង់ប្រាក់​ពី Google Pay ទេ។</translation>
 <translation id="81238879832906896">ផ្កាពណ៌លឿង និងពណ៌ស</translation>
 <translation id="8124313775439841391">ONC គ្រប់គ្រង</translation>
+<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> អស់ក្រដាសហើយ</translation>
 <translation id="813082847718468539">មើលព័ត៌មានគេហទំព័រ</translation>
 <translation id="8131740175452115882">អះអាង</translation>
 <translation id="8133676275609324831">បង្ហាញនៅក្នុងថតឯកសារ</translation>
@@ -5678,6 +5694,7 @@
 <translation id="8254954272268479918">បិទ Linux (បេតា)</translation>
 <translation id="8255451560461371599">គ្មាន​ផ្ទៃខាងក្រោយ</translation>
 <translation id="8256319818471787266">ស្ពាកគី</translation>
+<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> ជិតអស់ទឹកថ្នាំហើយ</translation>
 <translation id="8257950718085972371">បន្តរារាំងការចូលប្រើកាមេរ៉ា</translation>
 <translation id="8259239505248583312">ចាប់ផ្ដើម</translation>
 <translation id="8260126382462817229">សាកល្បងចូលគណនីម្តងទៀត</translation>
@@ -5854,6 +5871,7 @@
 <translation id="8487678622945914333">ពង្រីក</translation>
 <translation id="8490896350101740396">កម្មវិធីបញ្ជរខាងក្រោម "<ph name="UPDATED_APPS" />" ត្រូវបានធ្វើបច្ចុប្បន្នភាព។ សូមចាប់ផ្តើមឧបករណ៍ឡើងវិញដើម្បីបញ្ចប់ដំណើរការធ្វើបច្ចុប្បន្នភាព។</translation>
 <translation id="8493236660459102203">ម៉ៃក្រូហ្វូន៖</translation>
+<translation id="8495940850609851342"><ph name="PRINTER_NAME" /> បានឈប់</translation>
 <translation id="8496717697661868878">ដំណើរការកម្មវិធីជំនួយនេះ</translation>
 <translation id="8497219075884839166">ការប្រើប្រាស់​វិនដូ</translation>
 <translation id="8498214519255567734">វាធ្វើ​ឲ្យមាន​ភាពងាយស្រួល​ជាងមុន​ក្នុងការ​មើលអេក្រង់​របស់អ្នក ឬ​អាននៅ​កន្លែងដែល​មាន​ពន្លឺតិច</translation>
@@ -5869,7 +5887,6 @@
 <translation id="851263357009351303">អនុញ្ញាតឲ្យ <ph name="HOST" /> បង្ហាញរូបភាពជានិច្ច</translation>
 <translation id="8513108775083588393">បង្វិល​ស្វ័យ​ប្រវត្តិ</translation>
 <translation id="8514746246728959655">សាកល្បងប្រើ​សោសុវត្ថិភាពផ្សេង</translation>
-<translation id="851960115758509829">កម្មវិធី​ ការកំណត់ និង​ការប្ដូរ​តាម​បំណងផ្សេងទៀត​របស់អ្នក​នឹងធ្វើសមកាលកម្ម​នៅលើឧបករណ៍ Chrome OS ទាំងអស់ ដែលចូល​ដោយប្រើ​គណនី Google របស់អ្នក។</translation>
 <translation id="8521475323816527629">ចូលទៅកាន់កម្មវិធីរបស់អ្នកបានរហ័ស</translation>
 <translation id="8523493869875972733">រក្សាការផ្លាស់ប្តូរ</translation>
 <translation id="8523849605371521713">បានបន្ថែមដោយគោលការណ៍</translation>
@@ -5910,7 +5927,6 @@
 <translation id="8569682776816196752">គ្មានគោលដៅត្រូវបានរកឃើញទេ</translation>
 <translation id="8571213806525832805">4 សប្តាហ៍មុន</translation>
 <translation id="8571687764447439720">បញ្ចូល​សំបុត្រ Kerberos</translation>
-<translation id="8573403125070227391">ការផ្សាយពាណិជ្ជកម្មនេះ​ប្រើធនធានច្រើនពេកសម្រាប់​ឧបករណ៍របស់អ្នក ដូច្នេះ Chrome បានលុប​ការផ្សាយពាណិជ្ជកម្មនេះ​ចេញ។</translation>
 <translation id="8574990355410201600">អនុញ្ញាតឱ្យ​បើក​សំឡេង​នៅលើ <ph name="HOST" /> ជានិច្ច</translation>
 <translation id="8575286410928791436">ចុច <ph name="KEY_EQUIVALENT" /> ឱ្យជាប់ដើម្បីចាកចេញ</translation>
 <translation id="8578639784464423491">មិន​អាច​លើស​ពី​ 99 តួ​អក្សរបាន​ទេ</translation>

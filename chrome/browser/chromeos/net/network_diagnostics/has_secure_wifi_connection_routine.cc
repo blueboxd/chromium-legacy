@@ -63,7 +63,7 @@ bool HasSecureWiFiConnectionRoutine::CanRun() {
   return true;
 }
 
-void HasSecureWiFiConnectionRoutine::RunTest(
+void HasSecureWiFiConnectionRoutine::RunRoutine(
     HasSecureWiFiConnectionRoutineCallback callback) {
   if (!CanRun()) {
     std::move(callback).Run(verdict(), std::move(problems_));

@@ -11,9 +11,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.SmallTest;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

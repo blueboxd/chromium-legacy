@@ -491,10 +491,10 @@ class TestAuxUnwinder : public Unwinder {
 // macOS ASAN is not yet supported - crbug.com/718628.
 // Android is not supported since Chrome unwind tables don't support dynamic
 // frames.
-#if !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX)) && !defined(OS_ANDROID)
-#define MAYBE_Alloca Alloca
-#else
+#if (defined(ADDRESS_SANITIZER) && defined(OS_MACOSX)) || defined(OS_ANDROID)
 #define MAYBE_Alloca DISABLED_Alloca
+#else
+#define MAYBE_Alloca Alloca
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
   UnwindScenario scenario(BindRepeating(&CallWithAlloca));
@@ -509,10 +509,13 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
 // Checks that a stack that runs through another library produces a stack with
 // the expected functions.
 // macOS ASAN is not yet supported - crbug.com/718628.
-#if !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
-#define MAYBE_OtherLibrary OtherLibrary
-#else
+// Android is not supported when EXCLUDE_UNWIND_TABLES |other_library| doesn't
+// have unwind tables.
+#if (defined(ADDRESS_SANITIZER) && defined(OS_MACOSX)) || \
+    (defined(OS_ANDROID) && BUILDFLAG(EXCLUDE_UNWIND_TABLES))
 #define MAYBE_OtherLibrary DISABLED_OtherLibrary
+#else
+#define MAYBE_OtherLibrary OtherLibrary
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
   ScopedNativeLibrary other_library(LoadOtherLibrary());
@@ -529,10 +532,13 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
 // Checks that a stack that runs through a library that is unloading produces a
 // stack, and doesn't crash.
 // Unloading is synchronous on the Mac, so this test is inapplicable.
-#if !defined(OS_MACOSX)
-#define MAYBE_UnloadingLibrary UnloadingLibrary
-#else
+// Android is not supported when EXCLUDE_UNWIND_TABLES |other_library| doesn't
+// have unwind tables.
+#if defined(OS_MACOSX) || \
+    (defined(OS_ANDROID) && BUILDFLAG(EXCLUDE_UNWIND_TABLES))
 #define MAYBE_UnloadingLibrary DISABLED_UnloadingLibrary
+#else
+#define MAYBE_UnloadingLibrary UnloadingLibrary
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_UnloadingLibrary) {
   TestLibraryUnload(false, module_cache());
@@ -542,10 +548,10 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_UnloadingLibrary) {
 // produces a stack, and doesn't crash.
 // macOS ASAN is not yet supported - crbug.com/718628.
 // Android is not supported since modules are found before unwinding.
-#if !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX)) && !defined(OS_ANDROID)
-#define MAYBE_UnloadedLibrary UnloadedLibrary
-#else
+#if (defined(ADDRESS_SANITIZER) && defined(OS_MACOSX)) || defined(OS_ANDROID)
 #define MAYBE_UnloadedLibrary DISABLED_UnloadedLibrary
+#else
+#define MAYBE_UnloadedLibrary UnloadedLibrary
 #endif
 PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_UnloadedLibrary) {
   TestLibraryUnload(true, module_cache());

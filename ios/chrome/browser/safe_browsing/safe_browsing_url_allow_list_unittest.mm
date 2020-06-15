@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
+#import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/web_state_observer.h"

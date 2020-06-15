@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">Klawiatura syngaleska</translation>
 <translation id="240770291734945588">Dostępne <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="2425665904502185219">Łączny rozmiar plików</translation>
+<translation id="2428749644083375155">Kopiuję elementy (<ph name="NUMBER_OF_ITEMS" />) do folderu <ph name="FOLDER_NAME" /></translation>
 <translation id="2448312741937722512">Typ</translation>
 <translation id="2453576648990281505">Plik już istnieje.</translation>
 <translation id="2464079411014186876">Lody</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346">Do zaznaczenia dodano element <ph name="ENTRY_NAME" />.</translation>
 <translation id="4582497162516204941">Zainstaluj za pomocą Linuksa (Beta)</translation>
 <translation id="4594543368593301662">Wyświetlam wyniki dla: <ph name="SEARCH_TERM" />.</translation>
+<translation id="4603392156942865207">Kopiuję plik <ph name="FILE_NAME" /> do folderu <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Wykonawca</translation>
 <translation id="4656293982926141856">Ten komputer</translation>
 <translation id="4669606053856530811">Osoby z uprawnieniami do: „<ph name="SOURCE_NAME" />” utracą dostęp do tych elementów, chyba że zostaną one im udostępnione.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5081517858322016911">Usunięte zostaną pliki o łącznym rozmiarze <ph name="TOTAL_FILE_SIZE" /></translation>
+<translation id="508423945471810158">Przenoszę elementy (<ph name="NUMBER_OF_ITEMS" />) do folderu <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Wystąpił błąd.</translation>
 <translation id="5098629044894065541">Hebrajski</translation>
 <translation id="5123433949759960244">Piłka do koszykówki</translation>
@@ -455,6 +458,7 @@
 <translation id="6054173164583630569">Klawiatura francuska</translation>
 <translation id="6074825444536523002">Formularz Google</translation>
 <translation id="6096979789310008754">Wyszukiwany tekst został wyczyszczony. Wyświetlam wszystkie pliki i foldery.</translation>
+<translation id="610101264611565198">Przenoszę plik <ph name="FILE_NAME" /> do folderu <ph name="FOLDER_NAME" /></translation>
 <translation id="6111770213269631447">Transliteracja (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Spacja</translation>
 <translation id="6133173853026656527">Przenoszę <ph name="FILE_NAME" />...</translation>
@@ -538,6 +542,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Instalacja nie powiodła się.</translation>
 <translation id="7040138676081995583">Otwórz za pomocą...</translation>
+<translation id="7059566040011178088">Mniej niż <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">Wybrane elementy: <ph name="COUNT" /></translation>
 <translation id="7106346894903675391">Kup więcej miejsca...</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;” – &lt;em&gt;wyszukaj na Dysku&lt;/em&gt;</translation>
@@ -648,6 +653,7 @@
 <translation id="8193175696669055101">Model urządzenia</translation>
 <translation id="8208580316430297579">Dzieła sztuki</translation>
 <translation id="8223479393428528563">Aby zapisać te pliki i używać ich offline, przejdź do trybu online, kliknij pliki prawym przyciskiem myszy i wybierz opcję <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8231972167769262174">Około <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Przerwij</translation>
 <translation id="8261506727792406068">Usuń</translation>
 <translation id="8269755669432358899">Zwiń panele informacji zwrotnej o plikach</translation>

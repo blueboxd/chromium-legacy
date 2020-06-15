@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">מקלדת סינהלה</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> זמין</translation>
 <translation id="2425665904502185219">גודל הקובץ הכולל</translation>
+<translation id="2428749644083375155">מעתיק <ph name="NUMBER_OF_ITEMS" /> פריטים אל <ph name="FOLDER_NAME" /></translation>
 <translation id="2448312741937722512">סוג</translation>
 <translation id="2453576648990281505">הקובץ כבר קיים</translation>
 <translation id="2464079411014186876">גלידה</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346">הוספת את <ph name="ENTRY_NAME" /> לבחירה</translation>
 <translation id="4582497162516204941">‏התקנה באמצעות Linux (בטא)</translation>
 <translation id="4594543368593301662">מוצגות תוצאות עבור <ph name="SEARCH_TERM" />.</translation>
+<translation id="4603392156942865207">מעתיק את <ph name="FILE_NAME" /> אל <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">אמן</translation>
 <translation id="4656293982926141856">במחשב הזה</translation>
 <translation id="4669606053856530811">אם הפריטים האלה לא ישותפו עם החברים באחסון השיתופי '<ph name="SOURCE_NAME" />', הם יאבדו את הגישה אליהם.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">ניגודיות</translation>
 <translation id="5068919226082848014">פיצה</translation>
 <translation id="5081517858322016911">קבצים בנפח כולל של <ph name="TOTAL_FILE_SIZE" /> יימחקו</translation>
+<translation id="508423945471810158">מעביר <ph name="NUMBER_OF_ITEMS" /> פריטים אל <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">אירעה שגיאה.</translation>
 <translation id="5098629044894065541">עברית</translation>
 <translation id="5123433949759960244">כדורסל</translation>
@@ -456,6 +459,7 @@
 <translation id="6054173164583630569">מקלדת צרפתית</translation>
 <translation id="6074825444536523002">Google Forms</translation>
 <translation id="6096979789310008754">טקסט החיפוש נוקה, מוצגים עכשיו כל הקבצים והתיקיות.</translation>
+<translation id="610101264611565198">מעביר את <ph name="FILE_NAME" /> אל <ph name="FOLDER_NAME" /></translation>
 <translation id="6111770213269631447">‏תעתוק (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">רווח</translation>
 <translation id="6133173853026656527">מעביר את <ph name="FILE_NAME" />...</translation>
@@ -539,6 +543,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">ההתקנה נכשלה.</translation>
 <translation id="7040138676081995583">פתח באמצעות...</translation>
+<translation id="7059566040011178088">פחות מ-<ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">נבחרו <ph name="COUNT" /> פריטים</translation>
 <translation id="7106346894903675391">קנה שטח אחסון נוסף...</translation>
 <translation id="7126604456862387217">‏'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;חפש בכונן&lt;/em&gt;</translation>
@@ -649,6 +654,7 @@
 <translation id="8193175696669055101">דגם מכשיר</translation>
 <translation id="8208580316430297579">עטיפת האלבום</translation>
 <translation id="8223479393428528563">כדי לשמור קבצים אלה לשימוש לא מקוון, חזור למצב מקוון, לחץ לחיצה ימנית על הקבצים ובחר את האפשרות <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8231972167769262174">בערך <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">בטל</translation>
 <translation id="8261506727792406068">מחיקה</translation>
 <translation id="8269755669432358899">כיווץ חלוניות המשוב של הקבצים</translation>

@@ -232,7 +232,7 @@
 <translation id="1898423065542865115">Filtriranje</translation>
 <translation id="1901443836186977402">{1,plural, =1{Ovaj server ne može dokazati da pripada domeni <ph name="DOMAIN" />; njegova potvrda sigurnosti je istekla jučer. Uzrok tome može biti pogrešna konfiguracija ili napadač koji je prekinuo vašu vezu. Sat na vašem računaru je trenutno postavljen na <ph name="CURRENT_DATE" />. Je li to uredu? Ako nije, trebate podesiti sistemski sat i zatim osvježiti stranicu.}one{Ovaj server ne može dokazati da pripada domeni <ph name="DOMAIN" />; njegova potvrda sigurnosti je istekla prije # dan. Uzrok tome može biti pogrešna konfiguracija ili napadač koji je prekinuo vašu vezu. Sat na vašem računaru je trenutno postavljen na <ph name="CURRENT_DATE" />. Je li to uredu? Ako nije, trebate podesiti sistemski sat i zatim osvježiti stranicu.}few{Ovaj server ne može dokazati da pripada domeni <ph name="DOMAIN" />; njegova potvrda sigurnosti je istekla prije # dana. Uzrok tome može biti pogrešna konfiguracija ili napadač koji je prekinuo vašu vezu. Sat na vašem računaru je trenutno postavljen na <ph name="CURRENT_DATE" />. Je li to uredu? Ako nije, trebate podesiti sistemski sat i zatim osvježiti stranicu.}other{Ovaj server ne može dokazati da pripada domeni <ph name="DOMAIN" />; njegova potvrda sigurnosti je istekla prije # dana. Uzrok tome može biti pogrešna konfiguracija ili napadač koji je prekinuo vašu vezu. Sat na vašem računaru je trenutno postavljen na <ph name="CURRENT_DATE" />. Je li to uredu? Ako nije, trebate podesiti sistemski sat i zatim osvježiti stranicu.}}</translation>
 <translation id="1902576642799138955">Rok valjanosti</translation>
-<translation id="1908217026282415406">Upotreba i pomicanje kamere</translation>
+<translation id="1908217026282415406">Korištenje kamere i pomjeranje</translation>
 <translation id="191374271204266022">Kopiraj kao JSON fajl</translation>
 <translation id="1914326953223720820">Usluga za otvaranje zip fajlova</translation>
 <translation id="1915697529809968049">Koristiti Touch ID umjesto CVC-a?</translation>
@@ -384,6 +384,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="2544644783021658368">Jedan dokument</translation>
 <translation id="254947805923345898">Vrijednost pravila nije važeća.</translation>
 <translation id="255002559098805027">Host računar <ph name="HOST_NAME" /> je poslao nevažeći odgovor.</translation>
+<translation id="2552295903035773204">Odsad koristi zaključavanje zaslona za potvrđivanje kartica</translation>
 <translation id="2553853292994445426">Provjerite postavke sigurnosnog DNS-a. Moguće je da ste konfigurirali sigurnosni DNS server s kojim povezivanje ne uspijeva.</translation>
 <translation id="2556876185419854533">&amp;Poništi uređivanje</translation>
 <translation id="257674075312929031">Grupa</translation>
@@ -731,7 +732,6 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="4101413244023615925">Tekst i grafika</translation>
 <translation id="4103249731201008433">Serijski broj uređaja nije važeći</translation>
 <translation id="4103763322291513355">Posjetite &lt;strong&gt;chrome://policy&lt;/strong&gt; da vidite listu zabranjenih URL-ova i druga pravila koja je nametnuo vaš administrator sistema.</translation>
-<translation id="4108231218301530806">Da potvrdite ovu karticu, sljedeći put koristite otisak prsta.</translation>
 <translation id="4110652170750985508">Pregledajte svoje plaćanje</translation>
 <translation id="4112140312785995938">Pomakni unazad</translation>
 <translation id="4116663294526079822">Uvijek dozvoli na ovoj web lokaciji</translation>
@@ -1129,6 +1129,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="569000877158168851">Vrijednost DnsOverHttpsTemplates nije relevantna i neće se koristiti osim ako se pravilo DnsOverHttpsMode ne postavi na <ph name="SECURE_DNS_MODE_AUTOMATIC" /> ili <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Sredina</translation>
 <translation id="570530837424789914">Upravljajte…</translation>
+<translation id="5705882733397021510">Natrag</translation>
 <translation id="57094364128775171">Predloži jaku lozinku…</translation>
 <translation id="5710435578057952990">Identitet ove web lokacije još uvijek nije potvrđen.</translation>
 <translation id="5720705177508910913">Trenutni korisnik</translation>
@@ -1136,7 +1137,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="5730040223043577876">Chrome preporučuje da ponovo postavite lozinku ako ste je koristili više puta na drugim web lokacijama.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Sačuvajte karticu na Google računu}one{Sačuvajte kartice na Google računu}few{Sačuvajte kartice na Google računu}other{Sačuvajte kartice na Google računu}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Koristite virtuelni broj za ovu karticu}one{Odaberite karticu}few{Odaberite karticu}other{Odaberite karticu}}</translation>
-<translation id="5759751709240058861">koristiti i pomicati vašu kameru</translation>
+<translation id="5759751709240058861">koristi i pomjera kameru</translation>
 <translation id="5763042198335101085">Upišite važeću adresu e-pošte</translation>
 <translation id="5765072501007116331">Za prikaz načina i uslova isporuke, izaberite adresu</translation>
 <translation id="5776313857861697733">Prioritet</translation>
@@ -1345,7 +1346,6 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="6631202559048444592">Za ovo pravilo postoji više izvora, ali su vrijednosti iste.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Obriši</translation>
-<translation id="6644283850729428850">Ovo pravilo je zastarjelo.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Ništa}=1{S jedne web lokacije (nećete se odjaviti sa svog Google računa)}one{S # web lokacije (nećete se odjaviti sa svog Google računa)}few{S # web lokacije (nećete se odjaviti sa svog Google računa)}other{S # web lokacija (nećete se odjaviti sa svog Google računa)}}</translation>
 <translation id="6652101503459149953">Koristi Windows Hello</translation>
 <translation id="6657585470893396449">Lozinka</translation>

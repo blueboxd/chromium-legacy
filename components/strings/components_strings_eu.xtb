@@ -228,6 +228,7 @@
 <translation id="1898423065542865115">Iragazkiak</translation>
 <translation id="1901443836186977402">{1,plural, =1{Zerbitzariak ezin izan du egiaztatu <ph name="DOMAIN" /> denik haren segurtasun-ziurtagiria iraungi egin delako azken egunean. Baliteke oker konfiguratuta dagoelako edo erasotzaile batek zure konexioa atzeman duelako izatea. Ordenagailuko erlojuak duen data <ph name="CURRENT_DATE" /> da. Zuzena al da? Hala ez bada, zuzendu sistemako erlojua eta freskatu orria.}other{Zerbitzariak ezin izan du egiaztatu <ph name="DOMAIN" /> denik haren segurtasun-ziurtagiria iraungi egin zelako duela # egun. Baliteke oker konfiguratuta dagoelako edo erasotzaile batek zure konexioa atzeman duelako izatea. Ordenagailuko erlojuak duen data <ph name="CURRENT_DATE" /> da. Zuzena al da? Hala ez bada, zuzendu sistemako erlojua eta freskatu orria.}}</translation>
 <translation id="1902576642799138955">Balio-aldia</translation>
+<translation id="1908217026282415406">Kamera erabili eta mugitu</translation>
 <translation id="191374271204266022">Kopiatu JSON gisa</translation>
 <translation id="1914326953223720820">Deskonprimatze-zerbitzua</translation>
 <translation id="1915697529809968049">Touch ID erabili nahi duzu CVC kodearen ordez?</translation>
@@ -719,7 +720,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="4101413244023615925">Testua eta grafikoa</translation>
 <translation id="4103249731201008433">Gailuaren serie-zenbakiak ez du balio</translation>
 <translation id="4103763322291513355">Joan &lt;strong&gt;chrome://policy&lt;/strong&gt; orrira sistema-administratzaileak zerrenda beltzean ezarritako URLen zerrenda eta aplikatutako gidalerroak ikusteko.</translation>
-<translation id="4108231218301530806">Hurrengoan, erabili erreferentzia-gako digitala txartel hau egiaztatzeko.</translation>
 <translation id="4110652170750985508">Berrikusi ordainketa</translation>
 <translation id="4112140312785995938">Atzeratu</translation>
 <translation id="4116663294526079822">Eman beti webgune honetan erabiltzeko baimena</translation>
@@ -1113,6 +1113,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="569000877158168851">DnsOverHttpsTemplates aukerako balioa ez da egokia, eta ez da erabiliko DnsOverHttpsMode gidalerroan <ph name="SECURE_DNS_MODE_AUTOMATIC" /> edo <ph name="SECURE_DNS_MODE_SECURE" /> ezarri ezean.</translation>
 <translation id="5701381305118179107">Erdiratu</translation>
 <translation id="570530837424789914">Kudeatu…</translation>
+<translation id="5705882733397021510">Egin atzera</translation>
 <translation id="57094364128775171">Iradoki pasahitz seguru bat…</translation>
 <translation id="5710435578057952990">Ez da egiaztatu webgune honen identitatea.</translation>
 <translation id="5720705177508910913">Uneko erabiltzailea</translation>
@@ -1120,6 +1121,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="5730040223043577876">Pasahitza beste webgune batzuetan ere erabili baduzu, hura berrezartzea gomendatzen du Chrome-k.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Gorde txartela Google-ko kontuan}other{Gorde txartelak Google-ko kontuan}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Erabili zenbaki birtual bat txartel honetarako}other{Hautatu txartel bat}}</translation>
+<translation id="5759751709240058861">Kamera erabili eta mugitu</translation>
 <translation id="5763042198335101085">Idatzi balio duen helbide elektroniko bat</translation>
 <translation id="5765072501007116331">Entrega-metodoak eta -eskakizunak ikusteko, hautatu helbide bat</translation>
 <translation id="5776313857861697733">Lehentasuna</translation>
@@ -1327,7 +1329,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="6631202559048444592">Gidalerroak iturburu bat baino gehiago ditu, baina balio berberekin.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Garbitu</translation>
-<translation id="6644283850729428850">Gidalerroa zaharkituta dago.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Bat ere ez}=1{1 gune (ez da amaituko Google-ko kontuko saioa)}other{# gune (ez da amaituko Google-ko kontuko saioa)}}</translation>
 <translation id="6652101503459149953">Erabili Windows Hello</translation>
 <translation id="6657585470893396449">Pasahitza</translation>

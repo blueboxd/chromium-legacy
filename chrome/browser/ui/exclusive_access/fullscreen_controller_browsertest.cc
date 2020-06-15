@@ -518,6 +518,35 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, SlowMouseLockUnlockRelock) {
                   ->IsMouseLockedSilently());
 }
 
+IN_PROC_BROWSER_TEST_F(FullscreenControllerTest,
+                       RepeatedMouseLockAfterEscapeKey) {
+  RequestToLockMouse(true, false);
+  EXPECT_TRUE(
+      GetExclusiveAccessManager()->mouse_lock_controller()->IsMouseLocked());
+  SendEscapeToFullscreenController();
+  EXPECT_FALSE(
+      GetExclusiveAccessManager()->mouse_lock_controller()->IsMouseLocked());
+
+  // A lock request is ignored right after user-escape.
+  RequestToLockMouse(true, false);
+  EXPECT_FALSE(
+      GetExclusiveAccessManager()->mouse_lock_controller()->IsMouseLocked());
+
+  // A lock request is ignored if we mimic the user-escape happened 1sec ago.
+  SetUserEscapeTimestampForTest(base::TimeTicks::Now() -
+                                base::TimeDelta::FromSeconds(1));
+  RequestToLockMouse(true, false);
+  EXPECT_FALSE(
+      GetExclusiveAccessManager()->mouse_lock_controller()->IsMouseLocked());
+
+  // A lock request goes through if we mimic the user-escape happened 5secs ago.
+  SetUserEscapeTimestampForTest(base::TimeTicks::Now() -
+                                base::TimeDelta::FromSeconds(5));
+  RequestToLockMouse(true, false);
+  EXPECT_TRUE(
+      GetExclusiveAccessManager()->mouse_lock_controller()->IsMouseLocked());
+}
+
 IN_PROC_BROWSER_TEST_F(FullscreenControllerTest, MouseLockAfterKeyboardLock) {
   EnterActiveTabFullscreen();
   ASSERT_TRUE(RequestKeyboardLock(/*esc_key_locked=*/false));

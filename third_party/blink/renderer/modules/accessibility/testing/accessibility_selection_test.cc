@@ -346,6 +346,11 @@ AccessibilitySelectionTest::AccessibilitySelectionTest(
     LocalFrameClient* local_frame_client)
     : AccessibilityTest(local_frame_client) {}
 
+void AccessibilitySelectionTest::SetUp() {
+  AccessibilityTest::SetUp();
+  RuntimeEnabledFeatures::SetAccessibilityExposeHTMLElementEnabled(false);
+}
+
 std::string AccessibilitySelectionTest::GetCurrentSelectionText() const {
   const SelectionInDOMTree selection =
       GetFrame().Selection().GetSelectionInDOMTree();

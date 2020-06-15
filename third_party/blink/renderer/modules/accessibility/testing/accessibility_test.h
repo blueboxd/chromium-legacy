@@ -37,6 +37,8 @@ class AccessibilityTest : public RenderingTest {
 
   AXObject* GetAXRootObject() const;
 
+  AXObject* GetAXBodyObject() const;
+
   // Returns the object with the accessibility focus.
   AXObject* GetAXFocusedObject() const;
 

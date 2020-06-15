@@ -960,6 +960,8 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_DiscoverMediaFeed) {
       EXPECT_TRUE(feeds[0]->logos.empty());
       EXPECT_TRUE(feeds[0]->display_name.empty());
       EXPECT_TRUE(feeds[0]->user_identifier.is_null());
+      EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kUnknown,
+                feeds[0]->safe_search_result);
 
       EXPECT_EQ(2, feeds[1]->id);
       EXPECT_EQ(url_b, feeds[1]->url);
@@ -1714,8 +1716,11 @@ TEST_P(MediaHistoryStoreFeedsTest,
 #define MAYBE_SafeSearchCheck SafeSearchCheck
 #endif
 TEST_P(MediaHistoryStoreFeedsTest, MAYBE_SafeSearchCheck) {
-  DiscoverMediaFeed(GURL("https://www.google.com/feed"));
-  DiscoverMediaFeed(GURL("https://www.google.co.uk/feed"));
+  const GURL feed_url_a("https://www.google.com/feed");
+  const GURL feed_url_b("https://www.google.co.uk/feed");
+
+  DiscoverMediaFeed(feed_url_a);
+  DiscoverMediaFeed(feed_url_b);
   WaitForDB();
 
   // If we are read only we should use -1 as a placeholder feed id because the
@@ -1738,8 +1743,12 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_SafeSearchCheck) {
   service()->StoreMediaFeedFetchResult(std::move(result_b), base::DoNothing());
   WaitForDB();
 
-  std::map<int64_t, media_feeds::mojom::SafeSearchResult> found_ids;
-  std::map<int64_t, media_feeds::mojom::SafeSearchResult> found_ids_unsafe;
+  std::map<media_history::MediaHistoryKeyedService::SafeSearchID,
+           media_feeds::mojom::SafeSearchResult>
+      found_ids;
+  std::map<media_history::MediaHistoryKeyedService::SafeSearchID,
+           media_feeds::mojom::SafeSearchResult>
+      found_ids_unsafe;
 
   {
     // Media items from all feeds should be in the pending items list.
@@ -1752,11 +1761,11 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_SafeSearchCheck) {
       EXPECT_TRUE(feeds.empty());
     } else {
       ASSERT_EQ(2u, feeds.size());
-      EXPECT_EQ(2u, pending_items.size());
+      EXPECT_EQ(4u, pending_items.size());
 
       std::set<GURL> found_urls;
       for (auto& item : pending_items) {
-        EXPECT_NE(0, item->id);
+        EXPECT_NE(0, item->id.second);
         found_ids.emplace(item->id,
                           media_feeds::mojom::SafeSearchResult::kSafe);
         found_ids_unsafe.emplace(item->id,
@@ -1771,6 +1780,8 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_SafeSearchCheck) {
       expected_urls.insert(GURL("https://www.example.com/action"));
       expected_urls.insert(GURL("https://www.example.com/next"));
       expected_urls.insert(GURL("https://www.example.com/action-alt"));
+      expected_urls.insert(feed_url_a);
+      expected_urls.insert(feed_url_b);
       EXPECT_EQ(expected_urls, found_urls);
 
       EXPECT_EQ(1, feeds[0]->last_fetch_safe_item_count);
@@ -1796,9 +1807,13 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_SafeSearchCheck) {
 
       EXPECT_EQ(feed_id_a, feeds[0]->id);
       EXPECT_EQ(2, feeds[0]->last_fetch_safe_item_count);
+      EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kSafe,
+                feeds[0]->safe_search_result);
 
       EXPECT_EQ(feed_id_b, feeds[1]->id);
       EXPECT_EQ(1, feeds[1]->last_fetch_safe_item_count);
+      EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kSafe,
+                feeds[1]->safe_search_result);
     }
   }
 
@@ -1816,9 +1831,13 @@ TEST_P(MediaHistoryStoreFeedsTest, MAYBE_SafeSearchCheck) {
 
       EXPECT_EQ(feed_id_a, feeds[0]->id);
       EXPECT_EQ(1, feeds[0]->last_fetch_safe_item_count);
+      EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kUnsafe,
+                feeds[0]->safe_search_result);
 
       EXPECT_EQ(feed_id_b, feeds[1]->id);
       EXPECT_EQ(0, feeds[1]->last_fetch_safe_item_count);
+      EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kUnsafe,
+                feeds[1]->safe_search_result);
     }
   }
 }

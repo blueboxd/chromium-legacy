@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Pierakstieties tīmekļa vietnē</translation>
 <translation id="1509960214886564027">Daudzās vietnēs funkcijas var nedarboties</translation>
 <translation id="152234381334907219">Jaunākie saglabātie</translation>
+<translation id="1535268707340844072">Pašreizējais iestatījums var radīt traucējumus noteiktās vietnēs. Lai pārvaldītu visu vietņu sīkfailus, skatiet sadaļu <ph name="BEGIN_LINK" />Sīkfailu iestatījumi<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">1. adrese</translation>
 <translation id="1545749641540134597">Skenējiet QR kodu</translation>
 <translation id="1552525382687785070">Administrators ir atspējojis sinhronizēšanu</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Aktīvs pirms <ph name="DAYS" /> dienām</translation>
 <translation id="2074131957428911366">Jūs jebkurā laikā <ph name="BEGIN_LINK" />iestatījumos<ph name="END_LINK" /> varat izvēlēties, ko sinhronizēt.</translation>
 <translation id="2079545284768500474">Atsaukt</translation>
+<translation id="2081417079511601293">Bloķēt trešo pušu sīkfailus inkognito režīmā</translation>
 <translation id="209018056901015185">Pieprasīt datora vietni</translation>
 <translation id="2103075008456228677">Atvērt history.google.com</translation>
 <translation id="2116625576999540962">Pārvietoti vienumi: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -100,7 +102,6 @@
 <translation id="2139867232736819575">Meklēt kopēto tekstu</translation>
 <translation id="2149973817440762519">Rediģēt grāmatzīmes</translation>
 <translation id="2175927920773552910">QR kods</translation>
-<translation id="2179182049312275900">Jebkurā brīdī iestatījumos varat ieslēgt sinhronizēšanu.</translation>
 <translation id="2198757192731523470">Google var izmantot jūsu vēsturi, lai personalizētu Meklēšanu, reklāmas un citus Google pakalpojumus.</translation>
 <translation id="2218443599109088993">Tālināt</translation>
 <translation id="2230173723195178503">Tīmekļa lapa ielādēta</translation>
@@ -177,6 +178,7 @@
 <translation id="2989805286512600854">Atvērt jaunā cilnē</translation>
 <translation id="3037605927509011580">Cilnes avārija.</translation>
 <translation id="3112556859945124369">Atzīmēt…</translation>
+<translation id="3131206671572504478">Bloķēt visus</translation>
 <translation id="3153862085237805241">Saglabāt karti</translation>
 <translation id="3157684681743766797">Atzīmēt visus…</translation>
 <translation id="3161291298470460782">Tādējādi jūs tiksiet izrakstīts, tiks izslēgta sinhronizācija un no šīs ierīces tiks dzēsti visi Chrome dati. Jūsu sinhronizētie dati joprojām būs pieejami jūsu Google kontā.</translation>
@@ -249,7 +251,6 @@
 <translation id="4038354071007134711">Šajā ierīcē nav lietotņu, ar ko atvērt šo failu.</translation>
 <translation id="4042870976416480368">Atrast lapā</translation>
 <translation id="4049507953662678203">Pārbaudiet, vai ir izveidots tīkla savienojums, un mēģiniet vēlreiz.</translation>
-<translation id="4071530748369333746">Vai atcelt sinhronizēšanu?</translation>
 <translation id="4082688844002261427">Kontrolējiet, kā jūsu pārlūkošanas vēsture tiek izmantota, lai personalizētu meklēšanu, reklāmas un citu saturu</translation>
 <translation id="408404951701638773">Tagad meklēšanas josla ir ērtāk sasniedzama</translation>
 <translation id="411254640334432676">Lejupielāde neizdevās.</translation>
@@ -274,6 +275,7 @@
 <translation id="4389019817280890563">Pieskarieties, lai mainītu valodu.</translation>
 <translation id="441868831736628555">Konfidencialitātes paziņojums</translation>
 <translation id="4454246407045105932">Valodas pievienošana</translation>
+<translation id="4469418912670346607">Turpināt iestatīšanu</translation>
 <translation id="4476574785019001431">Iestatījumi</translation>
 <translation id="4496373720959965247">Pievienojiet cilnes un pārslēdzieties starp lapām</translation>
 <translation id="4508750114462689118">Aizvērt pierakstīšanās piedāvājumu</translation>
@@ -302,6 +304,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="4805759445554688327">Nederīgs kartes numurs</translation>
 <translation id="4818522717893377262">Pievienot valodu...</translation>
 <translation id="481968316161811770">Sīkfaili, vietņu dati</translation>
+<translation id="4826218269716039351">Bloķēt trešo pušu sīkfailus</translation>
 <translation id="4833786495304741580">Automātiski sūtīt lietojuma statistiku un avāriju pārskatus Google serveriem.</translation>
 <translation id="4840495572919996524">Jūsu grāmatzīmes, vēsture, paroles un citi iestatījumi vairs netiks sinhronizēti ar jūsu Google kontu.</translation>
 <translation id="4854345657858711387">Piekļuves koda iestatīšana</translation>
@@ -347,6 +350,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="54401264925851789">Lapas drošības informācija</translation>
 <translation id="5443952882982198570">Kredītkartes</translation>
 <translation id="5457907402803865181">Sinhronizējot paroles, radās kļūda.</translation>
+<translation id="5489208564673669003">Lai pārvaldītu visu vietņu sīkfailus, skatiet sadaļu <ph name="BEGIN_LINK" />Sīkfailu iestatījumi<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Izrakstīties un dzēst datus no šīs ierīces</translation>
 <translation id="5525269841082836315">Ieejas frāz. izveide</translation>
 <translation id="5548760955356983418">Izmantojot funkciju Handoff, varat pārlūkot vietni šajā ierīcē un pēc tam turpināt pārlūkošanu Mac datorā. Atvērtā vietne būs redzama Mac datora ikonjoslā Dock.
@@ -434,6 +438,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="6418346271604475326">PDF sagatave</translation>
 <translation id="6426067060178468363">Atļaut sīkfailus</translation>
 <translation id="6434591244308415567">Radās kļūda. Vēlāk mēģiniet vēlreiz.</translation>
+<translation id="6439338047467462846">Atļaut visus</translation>
 <translation id="6445051938772793705">Valsts</translation>
 <translation id="6445981559479772097">Īsziņa ir nosūtīta.</translation>
 <translation id="6447842834002726250">Sīkfaili</translation>
@@ -441,6 +446,7 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="6476800141292307438">Lapa tiek tulkota <ph name="LANGUAGE" /> valodā. Pieejamās opcijas redzamas ekrāna apakšdaļā.</translation>
 <translation id="648164694371393720">Autentifikācijas kļūda</translation>
 <translation id="6482629121755362506">Dzēsti vienumi: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="651505212789431520">Vai atcelt sinhronizēšanu? Jebkurā brīdī iestatījumos varat ieslēgt sinhronizēšanu.</translation>
 <translation id="6561262006871132942">Tuvināt</translation>
 <translation id="6610002944194042868">Tulkošanas opcijas</translation>
 <translation id="6628106477656132239">Nederīgs derīguma termiņš</translation>

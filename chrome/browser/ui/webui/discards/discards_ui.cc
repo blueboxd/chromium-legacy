@@ -133,6 +133,9 @@ class DiscardsDetailsProviderImpl : public discards::mojom::DetailsProvider {
           GetLifecycleUnitVisibility(lifecycle_unit->GetVisibility());
       info->loading_state = lifecycle_unit->GetLoadingState();
       info->state = lifecycle_unit->GetState();
+      resource_coordinator::DecisionDetails freeze_details;
+      info->can_freeze = lifecycle_unit->CanFreeze(&freeze_details);
+      info->cannot_freeze_reasons = freeze_details.GetFailureReasonStrings();
       resource_coordinator::DecisionDetails discard_details;
       info->cannot_discard_reasons = discard_details.GetFailureReasonStrings();
       info->discard_reason = lifecycle_unit->GetDiscardReason();
@@ -188,6 +191,12 @@ class DiscardsDetailsProviderImpl : public discards::mojom::DetailsProvider {
     if (lifecycle_unit)
       lifecycle_unit->Discard(mojom::LifecycleUnitDiscardReason::URGENT);
     std::move(callback).Run();
+  }
+
+  void FreezeById(int32_t id) override {
+    auto* lifecycle_unit = GetLifecycleUnitById(id);
+    if (lifecycle_unit)
+      lifecycle_unit->Freeze();
   }
 
   void LoadById(int32_t id) override {

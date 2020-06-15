@@ -509,7 +509,6 @@
 <translation id="7068360136237591149">ファイルを開いて</translation>
 <translation id="7076293881109082629">ログイン中</translation>
 <translation id="7088960765736518739">スイッチ アクセス</translation>
-<translation id="7092922358121866860">夜間モードの設定を表示</translation>
 <translation id="7098389117866926363">USB-C デバイス（背面左のポート）</translation>
 <translation id="7131634465328662194">制限時間になると自動的にログアウトします。</translation>
 <translation id="7143207342074048698">接続中</translation>
@@ -662,7 +661,6 @@
 <translation id="8877788021141246043">リマインダーを設定して</translation>
 <translation id="8878886163241303700">画面を拡張しています</translation>
 <translation id="890616557918890486">ソースを変更</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> は <ph name="SPECIFIED_RESOLUTION" />（<ph name="SPECIFIED_REFRESH_RATE" /> Hz）に対応していません。解像度を <ph name="FALLBACK_RESOLUTION" />（<ph name="SPECIFIED_REFRESH_RATE" />）に変更しました。変更を保存するには確定してください。<ph name="TIMEOUT_SECONDS" /> 秒後に以前の設定に戻ります。</translation>
 <translation id="8909138438987180327">電池残量は <ph name="PERCENTAGE" />% です。</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google アシスタントはこの言語に対応していません。</translation>

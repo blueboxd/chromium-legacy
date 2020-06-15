@@ -12,6 +12,10 @@
 // Interface for printing.
 @interface PrintController : NSObject <WebStatePrinter>
 
+// The view controller the system print dialog should be presented from.
+// Set this before calling any print methods.
+@property(nonatomic, weak) UIViewController* baseViewController;
+
 // Shows print UI for |view| with |title|.
 - (void)printView:(UIView*)view withTitle:(NSString*)title;
 

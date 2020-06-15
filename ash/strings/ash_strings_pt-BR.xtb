@@ -510,7 +510,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7068360136237591149">Abrir arquivos</translation>
 <translation id="7076293881109082629">Como fazer login</translation>
 <translation id="7088960765736518739">Acesso com interruptor</translation>
-<translation id="7092922358121866860">Mostrar configurações de Modo noturno</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta traseira da esquerda)</translation>
 <translation id="7131634465328662194">Você será automaticamente desconectado.</translation>
 <translation id="7143207342074048698">Conectando</translation>
@@ -662,7 +661,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="8877788021141246043">Definir um lembrete</translation>
 <translation id="8878886163241303700">Tela ampla</translation>
 <translation id="890616557918890486">Alterar origem</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> não é compatível com <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). A resolução foi mudada para <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Clique em "Confirmar" para manter as mudanças. As configurações anteriores serão restauradas em <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Bateria em <ph name="PERCENTAGE" /> por cento.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">O Google Assistente não fala esse idioma.</translation>

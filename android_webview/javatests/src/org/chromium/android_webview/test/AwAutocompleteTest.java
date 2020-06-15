@@ -6,8 +6,9 @@ package org.chromium.android_webview.test;
 
 import static org.junit.Assert.assertEquals;
 
-import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Before;

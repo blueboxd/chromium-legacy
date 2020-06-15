@@ -239,7 +239,6 @@
     "removesourcebuffer",
     "removestream",
     "removetrack",
-    "rendersubtreeactivation",
     "repeatEvent",
     "reset",
     "resetpose",

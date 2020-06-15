@@ -1370,6 +1370,135 @@ TEST_F(AXPositionTest, AtEndOfBlankLine) {
   EXPECT_TRUE(text_position->AtEndOfLine());
 }
 
+TEST_F(AXPositionTest, AtStartAndEndOfLineWhenAtEndOfTextSpan) {
+  // This test ensures that the "AtStartOfLine" and the "AtEndOfLine" methods
+  // return false and true respectively when we are at the end of a text span.
+  //
+  // A text span is defined by a series of inline text boxes that make up a
+  // single static text object. Lines always end at the end of static text
+  // objects, so there would never arise a situation when a position at the end
+  // of a text span would be at start of line. It should always be at end of
+  // line. On the contrary, if a position is at the end of an inline text box
+  // and the equivalent parent position is in the middle of a static text
+  // object, then the position would sometimes be at start of line, i.e., when
+  // the inline text box contains only white space that is used to separate
+  // lines in the case of lines being wrapped by a soft line break.
+  //
+  // Example accessibility tree:
+  // 0:kRootWebArea
+  // ++1:kStaticText "Hello testing "
+  // ++++2:kInlineTextBox "Hello" kNextOnLine=2
+  // ++++3:kInlineTextBox " " kPreviousOnLine=2
+  // ++++4:kInlineTextBox "testing" kNextOnLine=5
+  // ++++5:kInlineTextBox " " kPreviousOnLine=4
+  // ++6:kStaticText "here."
+  // ++++7:kInlineTextBox "here."
+  //
+  // Resulting text representation:
+  // "Hello<soft_line_break>testing <hard_line_break>here."
+  // Notice the extra space after the word "testing". This is not a line break.
+  // The hard line break is caused by the presence of the second static text
+  // object.
+  //
+  // A position at the end of inline text box 3 should be at start of line,
+  // whilst a position at the end of inline text box 5 should not.
+
+  AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+  // "kIsLineBreakingObject" is not strictly necessary but is added for
+  // completeness.
+  root_data.AddBoolAttribute(ax::mojom::BoolAttribute::kIsLineBreakingObject,
+                             true);
+
+  AXNodeData static_text_data_1;
+  static_text_data_1.id = 2;
+  static_text_data_1.role = ax::mojom::Role::kStaticText;
+  static_text_data_1.SetName("Hello testing ");
+
+  AXNodeData inline_box_data_1;
+  inline_box_data_1.id = 3;
+  inline_box_data_1.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_data_1.SetName("hello");
+
+  AXNodeData inline_box_data_2;
+  inline_box_data_2.id = 4;
+  inline_box_data_2.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_data_1.AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                                    inline_box_data_2.id);
+  inline_box_data_2.AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                                    inline_box_data_1.id);
+  // The name is a space character that we assume it turns into a soft line
+  // break by the layout engine.
+  inline_box_data_2.SetName(" ");
+
+  AXNodeData inline_box_data_3;
+  inline_box_data_3.id = 5;
+  inline_box_data_3.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_data_3.SetName("testing");
+
+  AXNodeData inline_box_data_4;
+  inline_box_data_4.id = 6;
+  inline_box_data_4.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_data_3.AddIntAttribute(ax::mojom::IntAttribute::kNextOnLineId,
+                                    inline_box_data_4.id);
+  inline_box_data_4.AddIntAttribute(ax::mojom::IntAttribute::kPreviousOnLineId,
+                                    inline_box_data_3.id);
+  inline_box_data_4.SetName(" ");  // Just a space character - not a line break.
+
+  AXNodeData static_text_data_2;
+  static_text_data_2.id = 7;
+  static_text_data_2.role = ax::mojom::Role::kStaticText;
+  static_text_data_2.SetName("here.");
+
+  AXNodeData inline_box_data_5;
+  inline_box_data_5.id = 8;
+  inline_box_data_5.role = ax::mojom::Role::kInlineTextBox;
+  inline_box_data_5.SetName("here.");
+
+  static_text_data_1.child_ids = {inline_box_data_1.id, inline_box_data_2.id,
+                                  inline_box_data_3.id, inline_box_data_4.id};
+  static_text_data_2.child_ids = {inline_box_data_5.id};
+  root_data.child_ids = {static_text_data_1.id, static_text_data_2.id};
+
+  SetTree(CreateAXTree({root_data, static_text_data_1, inline_box_data_1,
+                        inline_box_data_2, inline_box_data_3, inline_box_data_4,
+                        static_text_data_2, inline_box_data_5}));
+
+  // An "after text" tree position - after the soft line break.
+  TestPositionType tree_position = AXNodePosition::CreateTreePosition(
+      GetTreeID(), inline_box_data_2.id, 0 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  ASSERT_TRUE(tree_position->IsTreePosition());
+  EXPECT_TRUE(tree_position->AtStartOfLine());
+  EXPECT_FALSE(tree_position->AtEndOfLine());
+
+  // An "after text" tree position - after the space character and before the
+  // hard line break caused by the second static text object.
+  tree_position = AXNodePosition::CreateTreePosition(
+      GetTreeID(), inline_box_data_4.id, 0 /* child_index */);
+  ASSERT_NE(nullptr, tree_position);
+  ASSERT_TRUE(tree_position->IsTreePosition());
+  EXPECT_FALSE(tree_position->AtStartOfLine());
+  EXPECT_TRUE(tree_position->AtEndOfLine());
+
+  TestPositionType text_position = AXNodePosition::CreateTextPosition(
+      GetTreeID(), inline_box_data_2.id, 1 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  EXPECT_TRUE(text_position->AtStartOfLine());
+  EXPECT_FALSE(text_position->AtEndOfLine());
+
+  text_position = AXNodePosition::CreateTextPosition(
+      GetTreeID(), inline_box_data_4.id, 1 /* text_offset */,
+      ax::mojom::TextAffinity::kDownstream);
+  ASSERT_NE(nullptr, text_position);
+  ASSERT_TRUE(text_position->IsTextPosition());
+  EXPECT_FALSE(text_position->AtStartOfLine());
+  EXPECT_TRUE(text_position->AtEndOfLine());
+}
+
 TEST_F(AXPositionTest, AtStartAndEndOfLineInsideTextField) {
   // This test ensures that "AtStart/EndOfLine" methods work properly when at
   // the start or end of a text field.

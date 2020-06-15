@@ -509,7 +509,6 @@
 <translation id="7068360136237591149">ဖိုင်များ ဖွင့်ပါ</translation>
 <translation id="7076293881109082629">အကောင့်ထံဝင်ရောက်နေသည်</translation>
 <translation id="7088960765736518739">ခလုတ်ဖြင့် အသုံးပြုခြင်း</translation>
-<translation id="7092922358121866860">'ညအလင်းရောင်' ဆက်တင်များကို ပြရန်</translation>
 <translation id="7098389117866926363">USB-C ကိရိယာ (ကျောဘက် ဘယ် ပို့တ်)</translation>
 <translation id="7131634465328662194">သင့်ကို အလိုအလျောက် ထွက်လိုက်ပါမည်။</translation>
 <translation id="7143207342074048698">ချိတ်ဆက်နေသည်</translation>
@@ -661,7 +660,6 @@
 <translation id="8877788021141246043">သတိပေးချက် သတ်မှတ်ပါ</translation>
 <translation id="8878886163241303700">မျက်နှာပြင်ကို တိုးချဲ့နေ</translation>
 <translation id="890616557918890486">အရင်းအမြစ် ပြောင်းရန်</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> က <ph name="SPECIFIED_RESOLUTION" /> ကို မပံ့ပိုးပါ (<ph name="SPECIFIED_REFRESH_RATE" /> Hz)။ ပုံရိပ်ပြတ်သားကိန်းကို <ph name="FALLBACK_RESOLUTION" /> သို့ ပြောင်းထားသည် (<ph name="SPECIFIED_REFRESH_RATE" />)။ အပြောင်းအလဲများ သိမ်းရန် 'အတည်ပြုရန်' ကို နှိပ်ပါ။ ယခင်ဆက်တင်များကို <ph name="TIMEOUT_SECONDS" /> အကြာတွင် ပြန်ထားရှိပါမည်။</translation>
 <translation id="8909138438987180327">ဘက်ထရီ <ph name="PERCENTAGE" /> ရာခိုင်နှုန်း ရှိပါသည်။</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant သည် ဤဘာသာစကားကို မသိပါ။</translation>

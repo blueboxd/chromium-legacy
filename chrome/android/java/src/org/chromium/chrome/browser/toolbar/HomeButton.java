@@ -18,6 +18,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.content.ContextCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
@@ -177,6 +178,20 @@ public class HomeButton extends ChromeImageButton
                 updateButtonEnabledState(tab);
             }
         };
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        try (TraceEvent e = TraceEvent.scoped("HomeButton.onMeasure")) {
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        }
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        try (TraceEvent e = TraceEvent.scoped("HomeButton.onLayout")) {
+            super.onLayout(changed, left, top, right, bottom);
+        }
     }
 
     /**

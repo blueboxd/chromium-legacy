@@ -89,10 +89,10 @@ class LocalDeviceInstrumentationTestRunTest(unittest.TestCase):
     self.assertFalse(
         local_device_instrumentation_test_run._IsWPRRecordReplayTest(test))
 
-  def testGetWPRArchiveConfig_matchedWithKey(self):
+  def testGetWPRArchivePath_matchedWithKey(self):
     test = {
         'annotations': {
-            'WPRArchiveConfigFilePath': {
+            'WPRArchiveDirectory': {
                 'value': 'abc'
             }
         },
@@ -101,9 +101,9 @@ class LocalDeviceInstrumentationTestRunTest(unittest.TestCase):
         'is_junit4': True,
     }
     self.assertEqual(
-        local_device_instrumentation_test_run._GetWPRArchiveConfig(test), 'abc')
+        local_device_instrumentation_test_run._GetWPRArchivePath(test), 'abc')
 
-  def testGetWPRArchiveConfig_noMatchedWithKey(self):
+  def testGetWPRArchivePath_noMatchedWithKey(self):
     test = {
         'annotations': {
             'Feature': {
@@ -115,7 +115,7 @@ class LocalDeviceInstrumentationTestRunTest(unittest.TestCase):
         'is_junit4': True,
     }
     self.assertFalse(
-        local_device_instrumentation_test_run._GetWPRArchiveConfig(test))
+        local_device_instrumentation_test_run._GetWPRArchivePath(test))
 
   def testIsRenderTest_matchedWithKey(self):
     test = {

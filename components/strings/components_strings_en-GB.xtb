@@ -383,6 +383,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="2544644783021658368">Single document</translation>
 <translation id="254947805923345898">Policy value is not valid.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> sent an invalid response.</translation>
+<translation id="2552295903035773204">Use screen lock to confirm cards from now on</translation>
 <translation id="2553853292994445426">Check your secure DNS settings. You may have configured a secure DNS server to which connections are failing.</translation>
 <translation id="2556876185419854533">&amp;Undo Edit</translation>
 <translation id="257674075312929031">Group</translation>
@@ -730,7 +731,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="4101413244023615925">Text and graphic</translation>
 <translation id="4103249731201008433">Device serial number is invalid</translation>
 <translation id="4103763322291513355">Visit &lt;strong&gt;chrome://policy&lt;/strong&gt; to see the list of blacklisted URLs and other policies enforced by your system administrator.</translation>
-<translation id="4108231218301530806">Use fingerprint to verify this card next time.</translation>
 <translation id="4110652170750985508">Review your payment</translation>
 <translation id="4112140312785995938">Seek backwards</translation>
 <translation id="4116663294526079822">Always allow on this site</translation>
@@ -1128,6 +1128,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="569000877158168851">The DnsOverHttpsTemplates value is not relevant, and will not be used, unless the DnsOverHttpsMode policy is set to either <ph name="SECURE_DNS_MODE_AUTOMATIC" /> or <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Centre</translation>
 <translation id="570530837424789914">Manage...</translation>
+<translation id="5705882733397021510">Go back</translation>
 <translation id="57094364128775171">Suggest strong password…</translation>
 <translation id="5710435578057952990">The identity of this website has not been verified.</translation>
 <translation id="5720705177508910913">Current user</translation>
@@ -1344,7 +1345,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6631202559048444592">More than one source is present for the policy, but the values are the same.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Clear</translation>
-<translation id="6644283850729428850">This policy has been deprecated.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{None}=1{From 1 site (you won't be signed out of your Google Account)}other{From # sites (you won't be signed out of your Google Account)}}</translation>
 <translation id="6652101503459149953">Use Windows Hello</translation>
 <translation id="6657585470893396449">Password</translation>

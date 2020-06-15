@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Skrá inn á vefsvæði</translation>
 <translation id="1509960214886564027">Eiginleikar gætu bilað á mörgum vefsvæðum</translation>
 <translation id="152234381334907219">Aldrei vistað</translation>
+<translation id="1535268707340844072">Núverandi stilling kann að valda því að sum vefsvæði frjósa. Upplýsingar um stjórnun fótspora fyrir öll vefsvæði eru í <ph name="BEGIN_LINK" />Fótsporastillingar<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Heimilisfang 1</translation>
 <translation id="1545749641540134597">Skanna QR-kóða</translation>
 <translation id="1552525382687785070">Kerfisstjóri hefur gert samstillingu óvirka</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Virkt fyrir <ph name="DAYS" /> dögum</translation>
 <translation id="2074131957428911366">Þú getur alltaf valið hvað á að samstilla í <ph name="BEGIN_LINK" />stillingunum<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Afturkalla</translation>
+<translation id="2081417079511601293">Loka á þriðju aðila í huliðsstillingu</translation>
 <translation id="209018056901015185">Biðja um tölvuvefsvæði</translation>
 <translation id="2103075008456228677">Opna history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> atriði færð</translation>
@@ -100,7 +102,6 @@
 <translation id="2139867232736819575">Leita að texta sem þú afritaðir</translation>
 <translation id="2149973817440762519">Breyta bókamerki</translation>
 <translation id="2175927920773552910">QR-kóði</translation>
-<translation id="2179182049312275900">Hægt er að kveikja á samstillingu hvenær sem er í stillingunum.</translation>
 <translation id="2198757192731523470">Google notar hugsanlega ferilinn þinn til að sérsníða leitina, auglýsingar og aðra þjónustu Google.</translation>
 <translation id="2218443599109088993">Minnka aðdrátt</translation>
 <translation id="2230173723195178503">Vefsíða sótt</translation>
@@ -177,6 +178,7 @@
 <translation id="2989805286512600854">Opna í nýjum flipa</translation>
 <translation id="3037605927509011580">Rækallinn!</translation>
 <translation id="3112556859945124369">Merkja…</translation>
+<translation id="3131206671572504478">Útiloka öll</translation>
 <translation id="3153862085237805241">Vista kort</translation>
 <translation id="3157684681743766797">Merkja allt…</translation>
 <translation id="3161291298470460782">Þetta skráir þig út, slekkur á samstillingu og hreinsar öll Chrome gögn úr þessu tæki. Samstillt gögn verða áfram á Google reikningnum.</translation>
@@ -249,7 +251,6 @@
 <translation id="4038354071007134711">Ekkert forrit í þessu tæki getur opnað skrána.</translation>
 <translation id="4042870976416480368">Finna á síðu</translation>
 <translation id="4049507953662678203">Gakktu úr skugga um að þú sért tengd(ur) netinu og reyndu svo aftur.</translation>
-<translation id="4071530748369333746">Hætta við samstillingu?</translation>
 <translation id="4082688844002261427">Stjórnaðu því hvernig vafraferillinn þinn er notaður til að sérsníða leit, auglýsingar og fleira</translation>
 <translation id="408404951701638773">Nú er auðveldara að nálgast leitarstikuna</translation>
 <translation id="411254640334432676">Niðurhal mistókst.</translation>
@@ -274,6 +275,7 @@
 <translation id="4389019817280890563">Ýttu til að skipta um tungumál.</translation>
 <translation id="441868831736628555">Persónuverndartilkynning</translation>
 <translation id="4454246407045105932">Bæta við tungumáli</translation>
+<translation id="4469418912670346607">Halda uppsetningu áfram</translation>
 <translation id="4476574785019001431">Stillingar</translation>
 <translation id="4496373720959965247">Bæta við flipum og skipta á milli síðna</translation>
 <translation id="4508750114462689118">Loka innskráningarkynningu</translation>
@@ -302,6 +304,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="4805759445554688327">Ógilt kortanúmer</translation>
 <translation id="4818522717893377262">Bæta við tungumáli...</translation>
 <translation id="481968316161811770">Fótspor, gögn vefsvæða</translation>
+<translation id="4826218269716039351">Loka á þriðju aðila</translation>
 <translation id="4833786495304741580">Sendir sjálfkrafa talnagögn um notkun og tilkynningar um hrun til Google.</translation>
 <translation id="4840495572919996524">Bókamerkin þín, ferillinn, aðgangsorðin og fleira verða ekki lengur samstillt við Google reikninginn þinn.</translation>
 <translation id="4854345657858711387">Veldu aðgangskóða</translation>
@@ -347,6 +350,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="54401264925851789">Öryggisupplýsingar síðu</translation>
 <translation id="5443952882982198570">Kreditkort</translation>
 <translation id="5457907402803865181">Villa við að samstilla aðgangsorð.</translation>
+<translation id="5489208564673669003">Upplýsingar um stjórnun fótspora fyrir öll vefsvæði eru í <ph name="BEGIN_LINK" />Fótsporastillingar<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Skrá út og hreinsa gögn úr þessu tæki</translation>
 <translation id="5525269841082836315">Búa til aðgangsorð</translation>
 <translation id="5548760955356983418">Handoff gerir þér kleift að byrja að skoða vefsvæði í þessu tæki og halda því síðan áfram á einfaldan hátt í Mac-tölvunni. Vefsvæðið sem er opið birtist í kvínni í Mac-tölvunni.
@@ -434,6 +438,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="6418346271604475326">Undirbýr PDF</translation>
 <translation id="6426067060178468363">Leyfa fótspor</translation>
 <translation id="6434591244308415567">Villa kom upp. Reyndu aftur síðar.</translation>
+<translation id="6439338047467462846">Leyfa allt</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">Skilaboð send.</translation>
 <translation id="6447842834002726250">Fótspor</translation>
@@ -441,6 +446,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="6476800141292307438">Þýðir síðuna á <ph name="LANGUAGE" />. Valkostir eru í boði neðarlega á skjánum.</translation>
 <translation id="648164694371393720">Auðkenningarvilla</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> atriðum eytt</translation>
+<translation id="651505212789431520">Hætta við samstillingu? Hægt er að kveikja á samstillingu hvenær sem er í stillingunum.</translation>
 <translation id="6561262006871132942">Auka aðdrátt</translation>
 <translation id="6610002944194042868">Valkostir þýðinga</translation>
 <translation id="6628106477656132239">Ógildur gildistími</translation>

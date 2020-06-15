@@ -231,6 +231,7 @@
 <translation id="1898423065542865115">Filtrimi</translation>
 <translation id="1901443836186977402">{1,plural, =1{Ky server nuk mund të vërtetonte se është <ph name="DOMAIN" />; certifikata e tij e sigurisë ka skaduar një ditë më parë. Kjo mund të jetë shkaktuar nga një konfigurim i gabuar ose nga ndërhyrja e një sulmuesi në lidhjen tënde. Ora e kompjuterit tënd është caktuar aktualisht në <ph name="CURRENT_DATE" />. A është e saktë kjo? Nëse jo, duhet të korrigjosh orën e sistemit tënd dhe më pas ta rifreskosh këtë faqe.}other{Ky server nuk mund të vërtetonte se është <ph name="DOMAIN" />; certifikata e tij e sigurisë ka skaduar # ditë më parë. Kjo mund të jetë shkaktuar nga një konfigurim i gabuar ose nga ndërhyrja e një sulmuesi në lidhjen tënde. Ora e kompjuterit tënd është caktuar aktualisht në <ph name="CURRENT_DATE" />. A është e saktë kjo? Nëse jo, duhet të korrigjosh orën e sistemit tënd dhe më pas ta rifreskosh këtë faqe.}}</translation>
 <translation id="1902576642799138955">Periudha e vlefshmërisë</translation>
+<translation id="1908217026282415406">Përdorimi dhe lëvizja e kamerës</translation>
 <translation id="191374271204266022">Kopjo si JSON</translation>
 <translation id="1914326953223720820">Shërbimi i shpaketimit</translation>
 <translation id="1915697529809968049">Të përdoret Touch ID në vend të CVC?</translation>
@@ -727,7 +728,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="4101413244023615925">Teksti dhe grafika</translation>
 <translation id="4103249731201008433">Numri i serisë së pajisjes është i pavlefshëm</translation>
 <translation id="4103763322291513355">Vizito &lt;strong&gt;chrome://policy&lt;/strong&gt; për të parë listën e URL-ve të vendosura në listën e zezë dhe politika të tjera të detyruara nga administratori i sistemit tënd.</translation>
-<translation id="4108231218301530806">Përdor gjurmën e gishtit për të verifikuar këtë kartë herën tjetër.</translation>
 <translation id="4110652170750985508">Rishiko pagesën tënde</translation>
 <translation id="4112140312785995938">Kërko prapa</translation>
 <translation id="4116663294526079822">Lejoje gjithmonë në këtë faqe</translation>
@@ -1123,6 +1123,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="569000877158168851">Vlera e DnsOverHttpsTemplates nuk është e përshtatshme dhe nuk do të përdoret, përveçse nëse politika DnsOverHttpsMode është caktuar te <ph name="SECURE_DNS_MODE_AUTOMATIC" /> ose <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Qendër</translation>
 <translation id="570530837424789914">Menaxho...</translation>
+<translation id="5705882733397021510">Kthehu prapa</translation>
 <translation id="57094364128775171">Sugjero fjalëkalim të fortë…</translation>
 <translation id="5710435578057952990">Identiteti i këtij sajti uebi nuk është verifikuar.</translation>
 <translation id="5720705177508910913">Përdoruesi aktual</translation>
@@ -1130,6 +1131,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="5730040223043577876">Chrome rekomandon rivendosjen e fjalëkalimit tënd nëse e ke ripërdorur në sajte të tjera.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Ruaje kartën në "Llogarinë tënde të Google"}other{Ruaji kartat në "Llogarinë tënde të Google"}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Përdor një numër virtual për këtë kartë}other{Zgjidh një kartë}}</translation>
+<translation id="5759751709240058861">Të përdorë dhe të lëvizë kamerën tënde</translation>
 <translation id="5763042198335101085">Fut një adresë të vlefshme email-i</translation>
 <translation id="5765072501007116331">Për të parë mënyrat dhe kërkesat e dorëzimit, zgjidh një adresë</translation>
 <translation id="5776313857861697733">Përparësia</translation>
@@ -1337,7 +1339,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6631202559048444592">Është i pranishëm më shumë se një burim për politikën, por vlerat janë të njëjta.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Pastro</translation>
-<translation id="6644283850729428850">Kjo politikë është kundërshtuar.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Asnjë}=1{Nga 1 sajt (nuk do të dalësh nga llogaria jote e Google)}other{Nga # sajte (nuk do të dalësh nga llogaria jote e Google)}}</translation>
 <translation id="6652101503459149953">Përdor Windows Hello</translation>
 <translation id="6657585470893396449">Fjalëkalimi</translation>

@@ -123,6 +123,8 @@ FindBarView::FindBarView(FindBarHost* host) : find_bar_host_(host) {
   find_text->set_controller(this);
   find_text->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
   find_text->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
+  find_text->SetShouldDoLearning(
+      !host->browser_view()->GetProfile()->IsOffTheRecord());
   find_text_ = AddChildView(std::move(find_text));
 
   auto match_count_text = std::make_unique<MatchCountLabel>();

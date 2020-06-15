@@ -78,6 +78,11 @@ void BrowserAccessibilityManagerAuraLinux::FireLoadingEvent(
     g_signal_emit_by_name(obj, "load_complete");
 }
 
+void BrowserAccessibilityManagerAuraLinux::FireEnabledChangedEvent(
+    BrowserAccessibility* node) {
+  ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnEnabledChanged();
+}
+
 void BrowserAccessibilityManagerAuraLinux::FireExpandedEvent(
     BrowserAccessibility* node,
     bool is_expanded) {
@@ -120,6 +125,11 @@ void BrowserAccessibilityManagerAuraLinux::FireSortDirectionChangedEvent(
   ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnSortDirectionChanged();
 }
 
+void BrowserAccessibilityManagerAuraLinux::FireTextAttributesChangedEvent(
+    BrowserAccessibility* node) {
+  ToBrowserAccessibilityAuraLinux(node)->GetNode()->OnTextAttributesChanged();
+}
+
 void BrowserAccessibilityManagerAuraLinux::FireSubtreeCreatedEvent(
     BrowserAccessibility* node) {
   // Sending events during a load would create a lot of spam, don't do that.
@@ -155,6 +165,9 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::DOCUMENT_TITLE_CHANGED:
       FireEvent(node, ax::mojom::Event::kDocumentTitleChanged);
       break;
+    case ui::AXEventGenerator::Event::ENABLED_CHANGED:
+      FireEnabledChangedEvent(node);
+      break;
     case ui::AXEventGenerator::Event::EXPANDED:
       FireExpandedEvent(node, true);
       break;
@@ -189,6 +202,9 @@ void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::INVALID_STATUS_CHANGED:
       FireEvent(node, ax::mojom::Event::kInvalidStatusChanged);
+      break;
+    case ui::AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED:
+      FireTextAttributesChangedEvent(node);
       break;
     default:
       // Need to implement.

@@ -181,12 +181,6 @@
       またはホスト名パターン</translation>
 <translation id="1312799700549720683">ディスプレイの設定を制御します。</translation>
 <translation id="131353325527891113">ログイン画面でユーザー名を表示する</translation>
-<translation id="1327351219049180837">このポリシーでは、ポリシーデータとポリシーの取得日時について、レポートを作成するかどうかを管理します。
-
-      このポリシーが未設定または True に設定されている場合、ポリシーデータとポリシーの取得日時が収集されます。
-      このポリシーが False に設定されている場合、ポリシーデータとポリシーの取得日時は収集されません。
-
-      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="1327466551276625742">オフライン時のネットワーク設定メッセージの表示を有効にする</translation>
 <translation id="1330145147221172764">画面キーボードを有効にする</translation>
 <translation id="13356285923490863">ポリシー名</translation>
@@ -932,12 +926,6 @@
 
           Windows の場合、このポリシーは <ph name="MS_AD_NAME" /> ドメインに追加したインスタンス、またはデバイスの管理対象として登録した Windows 10 Pro あるいは Enterprise インスタンスでのみ使用できます。</translation>
 <translation id="247658312644322296">「PDF に保存」の送信先</translation>
-<translation id="2478649170422995190">このポリシーでは、バージョン情報（OS バージョン、OS プラットフォーム、OS アーキテクチャ、<ph name="PRODUCT_NAME" /> のバージョン、<ph name="PRODUCT_NAME" /> のチャンネルなど）について、レポートを作成するかどうかを管理します。
-
-      このポリシーが未設定または True に設定されている場合、バージョン情報が収集されます。
-      このポリシーが False に設定されている場合、バージョン情報は収集されません。
-
-      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="2480971699591919564">Click-to-Call 機能を有効にします。この機能により、ログインしているユーザーは Chrome デスクトップから Android デバイスに電話番号を送信できます。詳しくは、ヘルプセンター記事 https://support.google.com/chrome/answer/9430554?hl=ja をご覧ください。
 
       このポリシーを有効に設定した場合は、該当の Chrome ユーザーに対して、Android デバイスへの電話番号の送信機能が有効になります。
@@ -3512,12 +3500,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           「CookiesAllowedForUrls」ポリシーと「CookiesSessionOnlyForUrls」ポリシーも参照してください。これら 3 つのポリシーの URL パターンが競合しないようにする必要があります。競合する場合にどのポリシーが優先されるかは決まっていません。
 
           有効な URL パターンについて詳しくは、https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns をご覧ください。</translation>
-<translation id="6399242659768117666">このポリシーでは、拡張機能とプラグインの情報について、レポートを作成するかどうかを管理します。
-
-      このポリシーが未設定または True に設定されている場合、拡張機能とプラグインのデータが収集されます。
-      このポリシーが False に設定されている場合、拡張機能とプラグインのデータは収集されません。
-
-      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="6401669939808766804">ユーザーをログアウトする</translation>
 <translation id="6406448383934634215">起動時の動作として [URL のリストを開く] が選択されている場合に、開かれる URL のリストを指定できます。このポリシーを未設定のままにした場合、起動時に URL は開かれません。
 
@@ -3540,7 +3522,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           [プロキシ サーバーを自動検出する] を選択した場合は、スクリプト URL 「http://wpad/wpad.dat」が Android アプリに通知されます。プロキシ自動検出プロトコルの他の部分は使用されません。
 
           [.pac プロキシ スクリプトを使用する] を選択した場合は、スクリプト URL が Android アプリに通知されます。</translation>
-<translation id="6430366557948788869">Chrome レポート拡張機能</translation>
 <translation id="6438972408080276697">このポリシーを True に設定した場合、ポリシーによってトリガーされた主要な Android アプリ インストールのイベントのレポートが Google に送信されます。このポリシーを False に設定した場合、イベントはキャプチャされません</translation>
 <translation id="6440051664870270040">移動と同時にポップアップを表示することをサイトに許可する</translation>
 <translation id="6447948611083700881">バックアップと復元が無効</translation>
@@ -3597,7 +3578,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       Flash の実行を許可するウェブサイトを指定する方法については、「DefaultPluginsSetting」、「PluginsAllowedForUrls」、「PluginsBlockedForUrls」の各ポリシーをご覧ください。
 
       この設定が無効に設定されているか未設定の場合、他のソースからの Flash コンテンツや小さなコンテンツはブロックされる可能性があります。</translation>
-<translation id="6532026122543921610">このポリシーでは、<ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> ポリシーでタイムゾーンの自動検出がオフになっていない場合に適用する、タイムゾーンの自動検出方法を指定します。ユーザーはこの設定を変更することはできません。
+<translation id="6532026122543921610"><ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> ポリシーによってタイムゾーンの自動検出がオフになっている場合を除き、このポリシーを設定するとタイムゾーンの自動検出方法を指定できます。ユーザーはこの設定を変更することはできません。
 
       次のいずれかを設定します。
        * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONDISABLED" />: タイムゾーンの自動検出をオフの状態に維持します。
@@ -3617,12 +3598,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       このポリシーは、実行ファイルのパスに設定するか、Chrome のインストール場所を自動検出するには <ph name="PRODUCT_NAME_PLACEHOLDER" /> に設定できます。</translation>
 <translation id="6536600139108165863">デバイスのシャットダウン時に自動的に再起動する</translation>
-<translation id="6537062468544950724">このポリシーでは、マシンを識別できる情報（マシン名、ネットワーク アドレスなど）について、レポートを作成するかどうかを管理します。
-
-      このポリシーが未設定または True に設定されている場合、マシンを識別できる情報が収集されます。
-      このポリシーが False に設定されている場合、マシンを識別できる情報は収集されません。
-
-      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="6539246272469751178">このポリシーは Android アプリには適用されません。Android アプリは、常にデフォルトのダウンロード ディレクトリを使用し、<ph name="PRODUCT_OS_NAME" /> によってデフォルト以外のダウンロード ディレクトリにダウンロードされたファイルにはアクセスできません。</translation>
 <translation id="654303922206238013">ecryptfs の移行方法</translation>
 <translation id="6544897973797372144">このポリシーを true に設定し、ChromeOsReleaseChannel ポリシーを指定していない場合、登録したドメインのユーザーに、デバイスのリリース チャンネルの変更を許可します。このポリシーを false に設定すると、デバイスは、最後に設定されたチャンネルに固定されます。
@@ -3883,12 +3858,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーを <ph name="BR_UNDER_USER_CONTROL" /> に設定した場合、バックアップと復元を使用するよう促すメッセージがユーザーに表示されます。ユーザーがバックアップと復元をオンにした場合は、Android アプリのデータが Android のバックアップ サーバーにアップロードされ、対応するアプリの再インストール時にデータが復元されます。
 
       初期設定が完了した後、ユーザーはバックアップと復元のオンとオフを切り替えることができます。</translation>
-<translation id="6991078864332103177">このポリシーでは、ユーザーを識別できる情報（OS のログイン、<ph name="PRODUCT_NAME" /> プロフィールのログイン、<ph name="PRODUCT_NAME" /> プロフィール名、<ph name="PRODUCT_NAME" /> プロフィールのパス、<ph name="PRODUCT_NAME" /> 実行ファイルのパスなど）について、レポートを作成するかどうかを管理します。
-
-      このポリシーが未設定または True に設定されている場合、ユーザーを識別できる情報が収集されます。
-      このポリシーが False に設定されている場合、ユーザーを識別できる情報は収集されません。
-
-      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="6994082778848658360">搭載されているセキュア エレメント ハードウェアが 2 段階認証プロセスに対応している場合に、このプロセスを適用するためにハードウェアをどのように使用できるかを指定します。ユーザーの所在地を検出するには本体の電源ボタンを使用します。
 
       [無効にする] を選択した場合、2 段階認証プロセスは適用されません。
@@ -4295,14 +4264,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーを設定しないか、0 に設定した場合、指定された URL にアクセスすると、すぐに代替ブラウザが開きます。
 
       このポリシーに数字を設定した場合、その数字のミリ秒間メッセージが表示され、その後で代替ブラウザが開きます。</translation>
-<translation id="7583419926951418342">このポリシーでは、<ph name="PRODUCT_NAME" /> のクラウド レポートを管理します。クラウド レポートでは、ブラウザの操作に関する情報が Google 管理コンソールにアップロードされます。
-
-      このポリシーを未設定のままにするか、False に設定した場合、データの収集やアップロードは行われません。
-      このポリシーを True に設定した場合は、データが収集され、Google 管理コンソールにアップロードされます。
-      アップロードされるデータの種類を管理するには、Chrome レポート拡張機能グループのポリシーを使用してください。
-
-      <ph name="PRODUCT_NAME" /> に対しては、このポリシーは <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> で登録されたパソコンでのみ有効です。
-      <ph name="PRODUCT_OS_NAME" /> に対しては、このポリシーは常に有効です。</translation>
 <translation id="7586477707097444774">ここで指定したパターンに一致するドメインに設定されている Cookie を、以前の <ph name="ATTRIBUTE_SAMESITE_NAME" /> 動作に戻します。以前の動作に戻すと、<ph name="ATTRIBUTE_SAMESITE_NAME" /> 属性のない Cookie は「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」が指定されたものとして扱われます。また、「<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />」の Cookie に「<ph name="ATTRIBUTE_SECURE_NAME" />」属性は必須ではなくなります。詳細については https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies をご覧ください。
 
           ここで指定したパターンに一致しないドメインの Cookie（またはこのポリシーが未設定の場合はすべての Cookie）には、グローバルなデフォルト値（<ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> ポリシーで値が設定されている場合はその値、設定されていない場合はユーザーの個人設定の値）が使用されます。
@@ -4416,19 +4377,10 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           この設定を無効にするか、未設定にする場合、2 段階認証プロセスは無効で、デフォルトのユーザー定義 PIN の機能が使用されます。</translation>
 <translation id="7750991880413385988">新しいタブ ページを開く</translation>
 <translation id="7754704193130578113">ダウンロード前に各ファイルの保存場所を確認する</translation>
-<translation id="7755495228644343508">Chrome レポート拡張機能に関するポリシーを設定します。
-
-      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="7758378441185523981">アンビエント認証をプロフィールのタイプ別に有効にします。</translation>
 <translation id="7763614521440615342">[新しいタブ] ページにおすすめのコンテンツを表示します</translation>
 <translation id="7765879851993224640">Smart Lock Signin の使用を許可する</translation>
 <translation id="7774768074957326919">システムのプロキシ設定を使用する</translation>
-<translation id="7775902646576367944">このポリシーでは、セーフ ブラウジングの警告数、セーフ ブラウジングの警告のクリック数といったセーフ ブラウジングに関する情報について、レポートを作成するかどうかを管理します。
-
-      このポリシーが未設定または True に設定されている場合、セーフ ブラウジング データが収集されます。
-      このポリシーが False に設定されている場合、セーフ ブラウジング データは収集されません。
-
-      このポリシーは、<ph name="CHROME_REPORTING_EXTENSION_NAME" /> が有効で、マシンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" /> を使用して登録されている場合にのみ適用されます。</translation>
 <translation id="777734450201217641">ログイン画面でユーザー補助機能のショートカットを有効にします。
 
           このポリシーを true に設定した場合は、ログイン画面でユーザー補助機能のショートカットが常に有効になります。
@@ -4486,15 +4438,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="793473937901685727">ARC アプリで証明書を使用できるかどうかを設定します</translation>
 <translation id="7937491150792971922">複数のソースの拡張機能インストール リスト ポリシーを統合する</translation>
 <translation id="7937766917976512374">動画キャプチャを許可または拒否する</translation>
-<translation id="7937944288846766530">このポリシーでは、ユーザーが Google 管理コンソールに <ph name="PRODUCT_NAME" /> 拡張機能のインストールの承認リクエストを送信できるようにするかどうかを管理します。
-
-      CloudReportingEnabled ポリシーを未設定のままにするか、無効に設定した場合、このポリシーは無視され、拡張機能のインストールのリクエストは作成およびアップロードされません。
-      このポリシーを未設定のままにするか、無効に設定した場合、拡張機能のインストールのリクエストは作成およびアップロードされません。
-      このポリシーを有効に設定した場合、拡張機能のインストールのリクエストが作成され、Google 管理コンソールにアップロードされます。
-
-      拡張機能のインストールのリクエストは、<ph name="EXTENSION_INSTALL_WHITELIST" /> または <ph name="EXTENSION_SETTINGS" /> でホワイトリストに登録されていない拡張機能をユーザーがインストールしようとしたときに作成されます。
-
-      このポリシーは、パソコンが <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> で登録され、<ph name="CLOUD_REPORTING_ENABLED" /> が有効になっている場合のみ適用されます。</translation>
 <translation id="7941975817681987555">ネットワーク接続でネットワーク動作を予測しない</translation>
 <translation id="7951605113561734721">デバイス管理プロトコルを使用した登録が必要なデバイス共通のクライアント証明書を指定します。</translation>
 <translation id="7952007677054834789"><ph name="PRODUCT_NAME" /> の起動時に読み込むページ、デフォルトのホームページ、デフォルトの新しいタブページを設定し、ユーザーがこの設定を変更できないようにします。
@@ -5097,9 +5040,9 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
           このポリシーを設定した場合、ユーザーが設定を変更またはオーバーライドすることはできません。
 
           このポリシーを設定しない場合、ログイン画面において自動クリックは初期設定で無効になりますが、ユーザーはいつでも設定を有効にできます。</translation>
-<translation id="8873089107816226072">このポリシーでは、<ph name="SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_POLICY_NAME" /> ポリシーのオーバーライド時に、デバイスのタイムゾーンを指定し、場所に基づくタイムゾーンの自動調整をオフにします。ユーザーはタイムゾーンを変更することはできません。
+<translation id="8873089107816226072">このポリシーを設定した場合、デバイスのタイムゾーンを指定でき、場所に基づくタイムゾーンの自動調整はオフになります（<ph name="SYSTEM_TIMEZONE_AUTOMATIC_DETECTION_POLICY_NAME" /> ポリシーはオーバーライドされます）。ユーザーはタイムゾーンを変更することはできません。
 
-      新しいデバイスの起動時のタイムゾーンは、「アメリカ太平洋標準時」に設定されます。値の形式は IANA Time Zone Database（https://en.wikipedia.org/wiki/Tz_database）の名称に準拠します。無効な値を入力した場合、ポリシーは有効になりますが「GMT」が使用されます。
+      新しいデバイスの起動時のタイムゾーンは、「アメリカ太平洋時間」に設定されます。値の形式は IANA Time Zone Database（https://en.wikipedia.org/wiki/Tz_database）の名称に準拠します。無効な値を入力した場合、ポリシーは有効になりますが「GMT」が使用されます。
 
       このポリシーを設定しないか空の文字列を入力した場合、デバイスでは現在有効になっているタイムゾーンが使用されますが、ユーザーはこれを変更できます。</translation>
 <translation id="8876188741456358123">デフォルトの両面印刷モードをオーバーライドします。このモードを使用できない場合、このポリシーは無視されます。</translation>

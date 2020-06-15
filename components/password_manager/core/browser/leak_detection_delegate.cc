@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/leak_detection_delegate.h"
 
+#include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
@@ -75,16 +77,20 @@ void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
     logger.LogBoolean(Logger::STRING_LEAK_DETECTION_FINISHED, is_leaked);
   }
 
-  if (is_leaked) {
-      // Otherwise query the helper to asynchronously determine the
-      // |CredentialLeakType|.
-      helper_ = std::make_unique<LeakDetectionDelegateHelper>(
-          client_->GetProfilePasswordStore(),
-          base::BindOnce(
-              &LeakDetectionDelegate::OnShowLeakDetectionNotification,
-              base::Unretained(this)));
-      helper_->ProcessLeakedPassword(std::move(url), std::move(username),
-                                     std::move(password));
+  bool force_dialog_for_testing = base::GetFieldTrialParamByFeatureAsBool(
+      password_manager::features::kPasswordChange,
+      password_manager::features::
+          kPasswordChangeWithForcedDialogAfterEverySuccessfulSubmission,
+      false);
+  if (is_leaked || force_dialog_for_testing) {
+    // Otherwise query the helper to asynchronously determine the
+    // |CredentialLeakType|.
+    helper_ = std::make_unique<LeakDetectionDelegateHelper>(
+        client_->GetProfilePasswordStore(),
+        base::BindOnce(&LeakDetectionDelegate::OnShowLeakDetectionNotification,
+                       base::Unretained(this)));
+    helper_->ProcessLeakedPassword(std::move(url), std::move(username),
+                                   std::move(password));
   }
 }
 
@@ -93,6 +99,22 @@ void LeakDetectionDelegate::OnShowLeakDetectionNotification(
     IsReused is_reused,
     GURL url,
     base::string16 username) {
+  bool force_dialog_for_testing = base::GetFieldTrialParamByFeatureAsBool(
+      password_manager::features::kPasswordChange,
+      password_manager::features::
+          kPasswordChangeWithForcedDialogAfterEverySuccessfulSubmission,
+      false);
+  if (force_dialog_for_testing) {
+    helper_.reset();
+    // Correct leak_type to offer change password.
+    CredentialLeakType leak_type =
+        CreateLeakType(is_saved, IsReused(false),
+                       IsSyncing(client_->GetPasswordSyncState() ==
+                                 SYNCING_NORMAL_ENCRYPTION));
+    client_->NotifyUserCredentialsWereLeaked(leak_type, url, username);
+    return;
+  }
+
   DCHECK(is_leaked_timer_);
   base::UmaHistogramTimes("PasswordManager.LeakDetection.NotifyIsLeakedTime",
                           std::exchange(is_leaked_timer_, nullptr)->Elapsed());

@@ -510,7 +510,6 @@
 <translation id="7068360136237591149">फ़ाइल खोलो</translation>
 <translation id="7076293881109082629">प्रवेश किया जा रहा है...</translation>
 <translation id="7088960765736518739">ऐक्सेस करने का तरीका बदलने की सुविधा</translation>
-<translation id="7092922358121866860">नाइट लाइट की सेटिंग दिखाएं</translation>
 <translation id="7098389117866926363">USB-C डिवाइस (पीछे बायां पोर्ट)</translation>
 <translation id="7131634465328662194">आप अपने आप साइन आउट कर जाएंगे.</translation>
 <translation id="7143207342074048698">कनेक्‍ट हो रहा है</translation>
@@ -662,7 +661,6 @@
 <translation id="8877788021141246043">रिमाइंडर लगाओ</translation>
 <translation id="8878886163241303700">स्क्रीन का विस्तार करना</translation>
 <translation id="890616557918890486">स्रोत बदलें</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> हर्ट्ज़) के साथ काम नहीं करता है. इस रिज़ॉल्यूशन को <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) में बदला गया. बदलावों को बनाए रखने के लिए 'पुष्टि करें' पर क्लिक करें. सेटिंग को <ph name="TIMEOUT_SECONDS" /> में पहले जैसा किया जाएगा.</translation>
 <translation id="8909138438987180327"><ph name="PERCENTAGE" /> बैटरी बची है.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant सेवा इस भाषा में उपलब्ध नहीं है.</translation>

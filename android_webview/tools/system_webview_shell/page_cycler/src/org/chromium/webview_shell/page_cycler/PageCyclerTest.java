@@ -5,11 +5,12 @@
 package org.chromium.webview_shell.page_cycler;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import androidx.test.filters.LargeTest;
 
 import org.junit.Assert;
 import org.junit.Before;

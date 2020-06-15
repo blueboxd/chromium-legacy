@@ -10,14 +10,15 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;

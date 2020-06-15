@@ -84,8 +84,9 @@ class WPTExpectationsUpdater(object):
         # for renamed tests.
         self.cleanup_test_expectations_files()
 
-        # Use try job results to update expectations and baselines
-        self.update_expectations()
+        if not self.options.cleanup_test_expectations_only:
+            # Use try job results to update expectations and baselines
+            self.update_expectations()
 
         return 0
 
@@ -105,6 +106,10 @@ class WPTExpectationsUpdater(object):
             help='Only cleanup expectations deleted or renamed in current CL. '
                  'If flag is not used then a full cleanup of deleted or '
                  'renamed tests will be done in expectations.')
+        parser.add_argument(
+            '--cleanup-test-expectations-only',
+            action='store_true',
+            help='Cleanup test expectations files and then exit script.')
         # TODO(rmhasan): Move this argument to the
         # AndroidWPTExpectationsUpdater add_arguments implementation.
         # Also look into using sub parsers to separate android and
@@ -717,9 +722,6 @@ class WPTExpectationsUpdater(object):
             if not line.test or line.is_glob:
                 continue
             root_test_file = self._get_root_file(line.test)
-            if root_test_file in deleted_files:
-                self._test_expectations.remove_expectations(
-                    path, [line])
 
             if root_test_file in renamed_files:
                 self._test_expectations.remove_expectations(path, [line])
@@ -736,6 +738,9 @@ class WPTExpectationsUpdater(object):
                     line.test = new_file_name
                 self._test_expectations.add_expectations(
                     path, [line], lineno=line.lineno)
+            elif root_test_file in deleted_files:
+                self._test_expectations.remove_expectations(
+                    path, [line])
 
     @memoized
     def _get_root_file(self, test_name):
@@ -774,16 +779,17 @@ class WPTExpectationsUpdater(object):
         paths = set(self.git.run(
             ['diff', 'origin/master', '-M100%', '--diff-filter=D',
              '--name-only']).splitlines())
-        if not self.options.clean_up_affected_tests_only:
-            # Remove expectations for all test which have files that
-            # were deleted.
-            paths.update(self._deleted_test_files_in_expectations())
-
         deleted_tests = set()
         for path in paths:
             test = self._relative_to_web_test_dir(path)
             if test:
                 deleted_tests.add(test)
+
+        if not self.options.clean_up_affected_tests_only:
+            # Remove expectations for all test which have files that
+            # were deleted. Paths are already relative to the web_tests
+            # directory
+            deleted_tests.update(self._deleted_test_files_in_expectations())
         return deleted_tests
 
     def _list_renamed_test_files(self):

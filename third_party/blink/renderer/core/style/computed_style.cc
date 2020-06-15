@@ -1542,6 +1542,15 @@ void ComputedStyle::ClearResetDirectives() {
     it->value.ClearReset();
 }
 
+void ComputedStyle::ClearSetDirectives() {
+  if (!GetCounterDirectives())
+    return;
+
+  auto& map = AccessCounterDirectives();
+  for (auto& value_pair : map)
+    value_pair.value.ClearSet();
+}
+
 AtomicString ComputedStyle::LocaleForLineBreakIterator() const {
   LineBreakIteratorMode mode = LineBreakIteratorMode::kDefault;
   switch (GetLineBreak()) {

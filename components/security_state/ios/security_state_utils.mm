@@ -6,9 +6,9 @@
 
 #include <memory>
 
+#import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/security_state/core/security_state.h"
 #include "components/security_state/ios/ssl_status_input_event_data.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
 #include "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/security_style.h"

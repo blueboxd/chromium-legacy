@@ -75,7 +75,7 @@ class TestResultSink(object):
         self._sink_ctx = sink_ctx
         self._artifacts_directory = artifacts_directory
         self._sink_url = (
-            'http://%s/prpc/luci.resultdb.sink.v1.Sink/ReportTestResults' %
+            'http://%s/prpc/luci.resultsink.v1.Sink/ReportTestResults' %
             self._sink_ctx['address'])
 
     def _send(self, data):

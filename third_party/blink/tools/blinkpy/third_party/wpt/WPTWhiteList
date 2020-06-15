@@ -1,5 +1,6 @@
 ./.gitignore
 ./CONTRIBUTING.md
+./docs/commands.json
 ./LICENSE.md
 ./serve.py
 ./tools/__init__.py

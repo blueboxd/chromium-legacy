@@ -182,12 +182,6 @@
       applicables aux origines non sécurisées</translation>
 <translation id="1312799700549720683">Contrôle les paramètres d'affichage.</translation>
 <translation id="131353325527891113">Afficher les noms d'utilisateur sur l'écran de connexion</translation>
-<translation id="1327351219049180837">Cette règle détermine si les données de la règle et l'heure de récupération de la règle doivent être enregistrées.
-
-      Si cette règle n'est pas définie, ou si elle est définie sur "True", ses données et son heure de récupération sont collectées.
-      Si cette règle est définie sur "False", ses données et son heure de récupération ne sont pas collectées.
-
-      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1327466551276625742">Activer l'invite de configuration réseau lorsque l'utilisateur n'est pas connecté</translation>
 <translation id="1330145147221172764">Activer le clavier à l'écran</translation>
 <translation id="13356285923490863">Nom de stratégie</translation>
@@ -973,12 +967,6 @@ Si elle n'est pas définie, l'écran de confidentialité est désactivé initial
 
           Sur Windows, cette règle est uniquement disponible sur les instances associées à un domaine <ph name="MS_AD_NAME" /> ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="247658312644322296">Destination "Enregistrer au format PDF"</translation>
-<translation id="2478649170422995190">Cette règle détermine si les informations de version doivent être enregistrées. Cela concerne, par exemple, la version, la plate-forme et l'architecture du système d'exploitation, la version de <ph name="PRODUCT_NAME" /> et le canal de <ph name="PRODUCT_NAME" />.
-
-      Si cette règle n'est pas définie, ou si elle est définie sur "True", les informations de version sont collectées.
-      Si cette règle est définie sur "False", les informations de version ne sont pas collectées.
-
-      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2480971699591919564">Cette règle active la fonctionnalité Click to Call, qui autorise les utilisateurs à envoyer des numéros de téléphone depuis leur ordinateur équipé de Chrome vers un appareil Android lorsqu'ils sont connectés. Pour plus d'informations, consultez cet article du centre d'aide : https://support.google.com/chrome/answer/9430554?hl=fr.
 
       Si cette règle est activée, la fonctionnalité permettant d'envoyer des numéros de téléphone vers des appareils Android sera activée pour l'utilisateur Chrome.
@@ -1179,11 +1167,11 @@ Cette règle est facultative. Si elle n'est pas configurée, la valeur par défa
 Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
 <translation id="2678503605767349615">Certificats clients requis au niveau de l'appareil</translation>
 <translation id="268577405881275241">Activer la fonctionnalité de proxy pour la compression de données</translation>
-<translation id="2691668238491124549">Cette règle (recommandée uniquement) permet de placer les langues recommandées pour une session gérée en haut de la liste, conformément à leur ordre d'affichage dans la règle. La première langue recommandée est présélectionnée.
+<translation id="2691668238491124549">Cette règle (recommandation uniquement) permet de placer les langues recommandées pour une session gérée en haut de la liste, conformément à leur ordre d'affichage dans la règle. La première langue recommandée est présélectionnée.
 
       Si cette règle n'est pas configurée, la langue actuelle de l'interface utilisateur est présélectionnée.
 
-      Si plusieurs langues sont recommandées, nous partons du principe que les utilisateurs choisiront l'une d'elles. (Les options de sélection de langue et de disposition du clavier sont mises en avant au démarrage d'une session gérée.) Dans le cas contraire, nous partons du principe que la plupart des utilisateurs choisiront la langue présélectionnée. (Les options de sélection de langue et de disposition du clavier sont moins mises en avant au démarrage d'une session gérée.)
+      Si plusieurs langues sont recommandées, nous partons du principe que les utilisateurs choisiront l'une d'elles. Les options de sélection de langue et de disposition du clavier sont mises en avant au démarrage d'une session gérée. Dans le cas contraire, nous partons du principe que la plupart des utilisateurs choisiront la langue présélectionnée. Les options de sélection de langue et de disposition du clavier sont moins mises en avant au démarrage d'une session gérée.
 
       Si vous configurez cette règle et activez la connexion automatique (voir les règles <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" /> et <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_DELAY_POLICY_NAME" />), la première langue recommandée et la disposition de clavier correspondante la plus populaire sont utilisées pour la session gérée.
 
@@ -1467,9 +1455,9 @@ Si cette règle n'est pas configurée, le paramètre "AllowJavaScript" est utili
       Cette règle n'est disponible que sur les instances Windows qui sont associées à un domaine <ph name="MS_AD_NAME" />, ou sur les instances Windows 10 Pro ou Windows Enterprise qui sont enregistrées pour bénéficier de la gestion des appareils.</translation>
 <translation id="3119125876909100625">Autoriser l'importation de fichiers protégés par un mot de passe</translation>
 <translation id="3122082892722698079">Contrôler l'utilisation des exceptions liées au contenu non sécurisé</translation>
-<translation id="3148152738273574834">Permet d'établir une liste des applications Web qui s'installent de manière autonome (sans intervention de l'utilisateur) et de spécifier les utilisateurs qui ne peuvent pas les désinstaller ou les désactiver.
+<translation id="3148152738273574834">Permet d'établir une liste des applications Web qui s'installent de manière autonome (sans intervention de l'utilisateur) et de spécifier les utilisateurs qui ne peuvent pas les désinstaller ni les désactiver.
 
-      Chaque élément de la liste de cette règle est un objet constitué d'un membre obligatoire tel que <ph name="URL_LABEL" /> (qui correspond à l'URL de l'application Web à installer) et de deux membres facultatifs tels que <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (qui indique où s'ouvre l'application Web ; par défaut, elle s'ouvre dans un nouvel onglet) et <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> ("True", si création de raccourcis sur le bureau <ph name="LINUX_OS_NAME" /> ou Windows®).
+      Chaque élément de la liste de cette règle est un objet constitué d'un membre obligatoire tel que <ph name="URL_LABEL" /> (qui correspond à l'URL de l'application Web à installer) et de deux membres facultatifs tels que <ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" /> (qui indique où s'ouvre l'application Web ; par défaut, elle s'ouvre dans un nouvel onglet) et <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> ("True", en cas de création de raccourcis sur le bureau <ph name="LINUX_OS_NAME" /> ou Windows®).
 
       Les utilisateurs peuvent modifier le conteneur dans lequel l'application s'ouvre et ignorer les raccourcis sur le bureau.
 
@@ -3638,12 +3626,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
           Consultez également les règles "CookiesAllowedForUrls" et "CookiesSessionOnlyForUrls". Notez que les formats d'URL définis dans ces trois règles ne doivent pas entrer en conflit. Il n'est pas précisé quelle règle prévaut en cas de conflit.
 
           Pour en savoir plus sur les formats d'URL valides, consultez cette page : https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="6399242659768117666">Cette règle détermine si les informations des extensions et des plug-ins doivent être enregistrées.
-
-      Si cette règle n'est pas définie, ou si elle est définie sur "True", les données des extensions et des plug-ins sont collectées.
-      Si cette règle est définie sur "False", les données des extensions et des plug-ins ne sont pas collectées.
-
-      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6401669939808766804">Déconnecter l'utilisateur</translation>
 <translation id="6406448383934634215">Si l'option "Ouvrir une liste d'URL" est sélectionnée comme action de démarrage, vous pouvez spécifier la liste des URL qui sont ouvertes. Si cette règle n'est pas configurée, aucune URL ne sera ouverte au démarrage.
 
@@ -3666,7 +3648,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
           Si vous choisissez de détecter automatiquement le serveur proxy, l'URL de script "http://wpad/wpad.dat" est transmise aux applications Android. Aucune autre partie du protocole d'auto-détection du proxy n'est utilisée.
 
           Si vous sélectionnez le script de proxy .pac, l'URL de script est fournie aux applications Android.</translation>
-<translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6438972408080276697">Si la règle est définie sur "True", des rapports sur les événements critiques d'installation d'applications Android déclenchée par des règles sont transmis à Google. Si elle est définie sur "False", aucun événement n'est enregistré.</translation>
 <translation id="6440051664870270040">Autoriser les sites à parcourir et à ouvrir des pop-up simultanément</translation>
 <translation id="6447948611083700881">Service de sauvegarde et de restauration désactivé</translation>
@@ -3744,12 +3725,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 
       Cette règle peut être définie sur le chemin d'accès à un fichier exécutable ou sur <ph name="PRODUCT_NAME_PLACEHOLDER" /> pour détecter automatiquement l'emplacement d'installation de Chrome.</translation>
 <translation id="6536600139108165863">Redémarrer automatiquement à l'arrêt de l'appareil</translation>
-<translation id="6537062468544950724">Cette règle détermine si les informations pouvant être utilisées pour identifier les ordinateurs, telles que le nom de l'ordinateur et les adresses réseau doivent être enregistrées.
-
-      Si cette règle n'est pas définie, ou si elle est définie sur "True", les informations pouvant être utilisées pour identifier les ordinateurs sont collectées.
-      Si cette règle est définie sur "False", les informations pouvant être utilisées pour identifier les ordinateurs ne sont pas collectées.
-
-      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6539246272469751178">Cette règle n'a aucun effet sur les applications Android. Celles-ci se servent toujours du répertoire de téléchargements par défaut. Elles ne peuvent pas accéder aux fichiers téléchargés par <ph name="PRODUCT_OS_NAME" /> dans un autre répertoire de téléchargements.</translation>
 <translation id="654303922206238013">Stratégie de migration pour eCryptfs</translation>
 <translation id="6544897973797372144">Si cette règle est définie sur "True", et si la règle ChromeOsReleaseChannel n'est pas spécifiée, les utilisateurs du domaine correspondant sont autorisés à modifier la version de l'appareil. Si elle est définie sur "False", l'appareil est verrouillé sur la dernière version configurée.
@@ -4013,12 +3988,6 @@ Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnable
       Si elle est définie sur "<ph name="BR_UNDER_USER_CONTROL" />", les utilisateurs sont invités à utiliser le service de sauvegarde et restauration. S'ils activent ce service, les données des applications Android sont importées sur les serveurs de sauvegarde Android, puis restaurées lors de la réinstallation des applications compatibles.
 
       Les utilisateurs peuvent activer ou désactiver le service de sauvegarde et de restauration, après la configuration initiale.</translation>
-<translation id="6991078864332103177">Cette règle détermine si les informations pouvant être utilisées pour identifier les utilisateurs, telles que la connexion au système d'exploitation, la connexion au profil <ph name="PRODUCT_NAME" />, le nom du profil <ph name="PRODUCT_NAME" />, le chemin d'accès au profil <ph name="PRODUCT_NAME" /> et le chemin d'accès exécutable <ph name="PRODUCT_NAME" /> doivent être enregistrées.
-
-       Si cette règle n'est pas définie, ou si elle est définie sur "True", les informations pouvant être utilisées pour identifier les utilisateurs sont collectées.
-      Si cette règle est définie sur "False", les informations pouvant être utilisées pour identifier les utilisateurs ne sont pas collectées.
-
-      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6994082778848658360">Indique comment le matériel sécurisé intégré peut être utilisé pour l'authentification à deux facteurs, s'il est compatible avec cette fonctionnalité. Le bouton Marche/Arrêt de l'appareil est utilisé pour détecter la présence de l'utilisateur.
 
       Si vous sélectionnez "Désactivé" ou si vous ne définissez pas cette règle, aucun deuxième facteur n'est fourni.
@@ -4440,14 +4409,6 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
       Si cette règle n'est pas définie ou est définie sur 0, tout clic sur une URL entraîne son ouverture automatique dans un navigateur secondaire.
 
       Si cette règle est définie sur un nombre, Chrome affiche un message pendant le nombre de millisecondes défini, puis ouvre le navigateur secondaire.</translation>
-<translation id="7583419926951418342">Permet de contrôler l'importation d'informations cloud concernant le fonctionnement du navigateur <ph name="PRODUCT_NAME" /> dans la Console d'administration Google.
-
-      Si cette règle est définie sur "False" ou si elle n'est pas configurée, aucune donnée n'est recueillie ni importée.
-      Si cette règle est définie sur "True", les données sont recueillies et importées dans la Console d'administration Google.
-      Pour déterminer quelles données sont importées, veuillez utiliser les règles disponibles dans le groupe Chrome Reporting Extension.
-
-      Concernant <ph name="PRODUCT_NAME" />, cette règle n'est appliquée que si l'ordinateur est enregistré avec <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />.
-      Cette règle est toujours appliquée pour <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7586477707097444774">Permet de rétablir l'ancien comportement <ph name="ATTRIBUTE_SAMESITE_NAME" /> pour les cookies définis sur les domaines correspondant à ces formats. Si vous rétablissez l'ancien comportement, les cookies dont la valeur de l'attribut <ph name="ATTRIBUTE_SAMESITE_NAME" /> n'est pas spécifiée sont traités comme si la valeur <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" /> était définie. De plus, ceux dont l'attribut a pour valeur <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" /> n'exigent plus que la valeur de l'attribut <ph name="ATTRIBUTE_SECURE_NAME" /> soit spécifiée. Pour obtenir une description complète, consultez la page https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
 
           Pour les cookies sur des domaines autres que ceux représentés par les formats spécifiés ici, ou pour tous les cookies si cette règle n'est pas configurée, la valeur par défaut globale est utilisée à partir de la règle <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> si celle-ci est définie ou, à défaut, à partir de la configuration personnelle de l'utilisateur.
@@ -4570,19 +4531,10 @@ au maximum si un utilisateur se sert de l'appareil.
           En cas de désactivation ou de non-configuration de ce paramètre, l'authentification forte n'est pas activée. Un code d'accès défini par l'utilisateur est alors demandé.</translation>
 <translation id="7750991880413385988">Ouvrir la page Nouvel onglet</translation>
 <translation id="7754704193130578113">Toujours demander où enregistrer les fichiers</translation>
-<translation id="7755495228644343508">Configurez les règles liées à Chrome Reporting Extension.
-
-      Ces règles ne sont effectives que lorsque la règle <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Activer l'authentification ambiante en fonction du type de profil.</translation>
 <translation id="7763614521440615342">Afficher des recommandations de contenus sur la page "Nouvel onglet"</translation>
 <translation id="7765879851993224640">Autorise la connexion avec Smart Lock.</translation>
 <translation id="7774768074957326919">Utiliser les paramètres proxy du système</translation>
-<translation id="7775902646576367944">Cette règle détermine si les informations de navigation sécurisée, y compris le nombre d'avertissements de navigation sécurisée et le nombre de clics sur les avertissements de navigation sécurisée, doivent être enregistrées.
-
-      Si cette règle n'est pas définie, ou si elle est définie sur "True", les données de navigation sécurisée sont collectées.
-      Si cette règle est définie sur "False", les données de navigation sécurisée ne sont pas collectées.
-
-      Cette règle n'est effective que lorsque <ph name="CHROME_REPORTING_EXTENSION_NAME" /> est activée et que l'ordinateur est inscrit à <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="777734450201217641">Activer les raccourcis des fonctionnalités d'accessibilité sur l'écran de connexion.
 
           Si cette règle est définie sur "True", les raccourcis des fonctionnalités d'accessibilité sont toujours activés sur l'écran de connexion.
@@ -4640,15 +4592,6 @@ au maximum si un utilisateur se sert de l'appareil.
 <translation id="793473937901685727">Définir la disponibilité des certificats pour les applications ARC</translation>
 <translation id="7937491150792971922">Fusionner les règles relatives aux listes d'installation d'extensions à partir de différentes sources</translation>
 <translation id="7937766917976512374">Autoriser ou interdire la capture vidéo</translation>
-<translation id="7937944288846766530">Permet de contrôler les demandes d'installation d'extension de <ph name="PRODUCT_NAME" /> et d'offrir ainsi la possibilité aux utilisateurs d'envoyer leurs demandes pour approbation dans la Console d'administration Google.
-
-      Cette règle est ignorée et les demandes d'installation d'extension ne sont pas créées ni importées si la règle CloudReportingEnabled n'est pas configurée ou si elle est désactivée.
-      Si cette règle n'est pas définie ou si elle est désactivée, les demandes d'installation d'extension ne sont ni créées, ni importées.
-      Si cette règle est activée, les demandes d'installation d'extension sont créées et importées dans la Console d'administration Google.
-
-      Les demandes d'installation d'extension sont créées lorsque les utilisateurs tentent d'installer une extension qui ne figure pas sur la liste blanche <ph name="EXTENSION_INSTALL_WHITELIST" /> ou <ph name="EXTENSION_SETTINGS" />.
-
-      Cette règle n'est appliquée que si l'ordinateur est enregistré auprès de <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> et si la règle <ph name="CLOUD_REPORTING_ENABLED" /> est activée.</translation>
 <translation id="7941975817681987555">Ne pas prédire d'actions réseau lors d'une connexion au réseau</translation>
 <translation id="7951605113561734721">Indique les certificats clients qui doivent être enregistrés au niveau de l'appareil à l'aide du protocole de gestion des appareils.</translation>
 <translation id="7952007677054834789">Permet de configurer les pages à charger au démarrage, la page d'accueil par défaut et la page Nouvel onglet par défaut dans <ph name="PRODUCT_NAME" />, tout en empêchant les utilisateurs de les modifier.

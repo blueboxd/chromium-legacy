@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Prisijungti prie svetainės</translation>
 <translation id="1509960214886564027">Funkcijos gali neveikti daugybėje svetainių.</translation>
 <translation id="152234381334907219">Niekada neišsaugota</translation>
+<translation id="1535268707340844072">Dėl esamo nustatymo kai kurios svetainės gali neveikti tinkamai. Jei norite tvarkyti visų svetainių slapukus, žr. <ph name="BEGIN_LINK" />„Slapukų nustatymai“<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">1 adreso eil.</translation>
 <translation id="1545749641540134597">Nuskaitykite QR kodą</translation>
 <translation id="1552525382687785070">Sinchronizavimą išjungė jūsų administratorius</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Aktyvus prieš <ph name="DAYS" /> d.</translation>
 <translation id="2074131957428911366">Bet kada galite pasirinkti, ką norite sinchronizuoti, skiltyje <ph name="BEGIN_LINK" />„Nustatymai“<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Anuliuoti</translation>
+<translation id="2081417079511601293">Blokuoti trečiųjų šalių slapukus naudojant inkognito režimą</translation>
 <translation id="209018056901015185">Užkl. dėl svet. v. komp.</translation>
 <translation id="2103075008456228677">Atidaryti history.google.com</translation>
 <translation id="2116625576999540962">Perkelta elementų: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -100,7 +102,6 @@
 <translation id="2139867232736819575">Ieškoti nukopijuoto teksto</translation>
 <translation id="2149973817440762519">Redaguoti žymes</translation>
 <translation id="2175927920773552910">QR kodas</translation>
-<translation id="2179182049312275900">Galite bet kada įjungti sinchronizavimą nustatymuose.</translation>
 <translation id="2198757192731523470">„Google“ gali naudoti jūsų istoriją, kad suasmenintų Paiešką, skelbimus ir kitas „Google“ paslaugas.</translation>
 <translation id="2218443599109088993">Tolinti</translation>
 <translation id="2230173723195178503">TInklalapis įkeltas</translation>
@@ -177,6 +178,7 @@
 <translation id="2989805286512600854">Atidaryti naujame skirtuke</translation>
 <translation id="3037605927509011580">Oi!</translation>
 <translation id="3112556859945124369">Pažymėti…</translation>
+<translation id="3131206671572504478">Blokuoti viską</translation>
 <translation id="3153862085237805241">Kortelės išsaugojimas</translation>
 <translation id="3157684681743766797">Pažymėti visus...</translation>
 <translation id="3161291298470460782">Būsite atjungti, bus išjungtas sinchronizavimas ir išvalyti visi „Chrome“ duomenys iš šio įrenginio. Sinchronizuojami duomenys liks „Google“ paskyroje.</translation>
@@ -249,7 +251,6 @@
 <translation id="4038354071007134711">Šiame įreng. nėra progr., gal. atidaryti failą.</translation>
 <translation id="4042870976416480368">Rasti puslapyje</translation>
 <translation id="4049507953662678203">Įsitikinkite, kad yra tinklo ryšys ir bandykite dar kartą.</translation>
-<translation id="4071530748369333746">Atšaukti sinchronizavimą?</translation>
 <translation id="4082688844002261427">Naršymo istorijos naudojimo paieškai, skelbimams ir kitoms funkcijoms suasmeninti valdymas</translation>
 <translation id="408404951701638773">Dabar paieškos juostą pasiekti lengviau</translation>
 <translation id="411254640334432676">Nepavyko atsisiųsti.</translation>
@@ -274,6 +275,7 @@
 <translation id="4389019817280890563">Palieskite, kad pakeistumėte kalbą.</translation>
 <translation id="441868831736628555">Privatumo pranešimas</translation>
 <translation id="4454246407045105932">Pridėti kalbą</translation>
+<translation id="4469418912670346607">Tęsti sąranką</translation>
 <translation id="4476574785019001431">Nustatymai</translation>
 <translation id="4496373720959965247">Pridėkite skirtukų ir perjunkite puslapius</translation>
 <translation id="4508750114462689118">Uždaryti prisijungimo reklamą</translation>
@@ -302,6 +304,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="4805759445554688327">Netinkamas kortelės numeris</translation>
 <translation id="4818522717893377262">Pridėti kalbą...</translation>
 <translation id="481968316161811770">Slapuk., svet. duom.</translation>
+<translation id="4826218269716039351">Blokuoti trečiosios šalies slapukus</translation>
 <translation id="4833786495304741580">Automatiškai siunčia naudojimo statistiką ir strigčių ataskaitas „Google“.</translation>
 <translation id="4840495572919996524">Žymės, istorija, slaptažodžiai ir kiti duomenys nebebus sinchronizuojami su „Google“ paskyra.</translation>
 <translation id="4854345657858711387">Slaptažodžio nustatymas</translation>
@@ -347,6 +350,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="54401264925851789">Puslapio saugos informacija</translation>
 <translation id="5443952882982198570">Kredito kortelės</translation>
 <translation id="5457907402803865181">Sinchronizuojant slaptažodžius įvyko klaida.</translation>
+<translation id="5489208564673669003">Jei norite tvarkyti visų svetainių slapukus, žr. <ph name="BEGIN_LINK" />„Slapukų nustatymai“<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Atsijungimas ir duomenų išvalymas iš šio įrenginio</translation>
 <translation id="5525269841082836315">Kurti slaptafrazę</translation>
 <translation id="5548760955356983418">Naudodami „Handoff“ galite pradėti naršyti svetainę šiame įrenginyje ir lengvai tęsti darbą „Mac“ įrenginiu. Dabartinė atidaryta svetainė bus rodoma „Mac“ įrenginio doke.
@@ -434,6 +438,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6418346271604475326">Ruošiamas PDF</translation>
 <translation id="6426067060178468363">Leisti slapukus</translation>
 <translation id="6434591244308415567">Įvyko klaida. Vėliau bandykite dar kartą.</translation>
+<translation id="6439338047467462846">Leisti viską</translation>
 <translation id="6445051938772793705">Šalis</translation>
 <translation id="6445981559479772097">Pran. išsiųstas.</translation>
 <translation id="6447842834002726250">Slapukai</translation>
@@ -441,6 +446,7 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6476800141292307438">Puslapis verčiamas į <ph name="LANGUAGE" />. Parinktys pasiekiamos netoli ekrano apačios.</translation>
 <translation id="648164694371393720">Autentifikavimo klaida</translation>
 <translation id="6482629121755362506">Ištrinta elementų: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="651505212789431520">Atšaukti sinchronizavimą? Galite bet kada įjungti sinchronizavimą skiltyje „Nustatymai“.</translation>
 <translation id="6561262006871132942">Artinti</translation>
 <translation id="6610002944194042868">Vertimo parinktys</translation>
 <translation id="6628106477656132239">Netinkama galiojimo laiko pabaigos data</translation>

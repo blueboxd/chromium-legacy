@@ -50,8 +50,6 @@ jumbo_source_set("browser_sources") {
     "audio_service_info.cc",
     "audio_service_info.h",
     "authenticator_environment.h",
-    "authenticator_request_client_delegate.cc",
-    "authenticator_request_client_delegate.h",
     "ax_event_notification_details.cc",
     "ax_event_notification_details.h",
     "back_forward_cache.h",
@@ -508,6 +506,8 @@ jumbo_source_set("browser_sources") {
 
   if (!is_android) {
     sources += [
+      "authenticator_request_client_delegate.cc",
+      "authenticator_request_client_delegate.h",
       "host_zoom_map.h",
       "zoom_level_delegate.h",
     ]

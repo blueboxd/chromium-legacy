@@ -93,12 +93,19 @@ bool IsolatedPrerenderSubresourceManager::MaybeProxyURLLoaderFactory(
   }
 
   auto proxied_receiver = std::move(*factory_receiver);
-  mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote;
-  *factory_receiver = target_factory_remote.InitWithNewPipeAndPassReceiver();
+  mojo::PendingRemote<network::mojom::URLLoaderFactory>
+      network_process_factory_remote;
+  *factory_receiver =
+      network_process_factory_remote.InitWithNewPipeAndPassReceiver();
+
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> isolated_factory_remote;
+  isolated_loader_factory_->Clone(
+      isolated_factory_remote.InitWithNewPipeAndPassReceiver());
 
   auto proxy = std::make_unique<IsolatedPrerenderProxyingURLLoaderFactory>(
       frame_tree_node_id, std::move(proxied_receiver),
-      std::move(target_factory_remote),
+      std::move(network_process_factory_remote),
+      std::move(isolated_factory_remote),
       base::BindOnce(
           &IsolatedPrerenderSubresourceManager::RemoveProxiedURLLoaderFactory,
           weak_factory_.GetWeakPtr()),

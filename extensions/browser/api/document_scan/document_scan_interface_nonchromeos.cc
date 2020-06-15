@@ -4,7 +4,6 @@
 
 #include <utility>
 
-#include "base/macros.h"
 #include "extensions/browser/api/document_scan/document_scan_interface.h"
 
 namespace {
@@ -18,8 +17,12 @@ namespace api {
 
 class DocumentScanInterfaceImpl : public DocumentScanInterface {
  public:
-  DocumentScanInterfaceImpl() {}
-  ~DocumentScanInterfaceImpl() override {}
+  DocumentScanInterfaceImpl() = default;
+  ~DocumentScanInterfaceImpl() override = default;
+
+  DocumentScanInterfaceImpl(const DocumentScanInterfaceImpl&) = delete;
+  DocumentScanInterfaceImpl& operator=(const DocumentScanInterfaceImpl&) =
+      delete;
 
   void ListScanners(ListScannersResultsCallback callback) override {
     std::move(callback).Run(std::vector<ScannerDescription>(), "");
@@ -30,9 +33,6 @@ class DocumentScanInterfaceImpl : public DocumentScanInterface {
             ScanResultsCallback callback) override {
     std::move(callback).Run("", "", kScanFunctionNotImplementedError);
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DocumentScanInterfaceImpl);
 };
 
 // static

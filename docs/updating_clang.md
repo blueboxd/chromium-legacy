@@ -25,6 +25,22 @@ An archive of all packages built so far is at https://is.gd/chromeclang
 1.  The bots will now pull the prebuilt binary, and goma will have a matching
     binary, too.
 
+## Performance regressions
+
+After doing a clang roll, you may get a performance bug assigned to you
+([example](https://crbug.com/1094671)). Some performance noise is expected
+while doing a clang roll.
+
+You can check all performance data for a clang roll via
+`https://chromeperf.appspot.com/group_report?rev=XXXXXX`, where `XXXXXX` is the
+revision number, e.g. `778090` for the example bug (look in the first message
+of the performance bug to find this). Click the checkboxes to display graphs.
+Hover over points in the graph to see the value and error.
+
+Serious regressions require bisecting upstream commits (TODO: how to repro?).
+If the regressions look insignificant and there is green as well as red, you
+can close the bug as "WontFix" with an explanation.
+
 ## Adding files to the clang package
 
 The clang package is downloaded unconditionally by all bots and devs. It's

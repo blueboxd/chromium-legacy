@@ -232,6 +232,7 @@
 <translation id="1898423065542865115">Filtrarea</translation>
 <translation id="1901443836186977402">{1,plural, =1{Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate a expirat în ultima zi. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}few{Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate a expirat acum # zile. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}other{Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate a expirat acum # de zile. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}}</translation>
 <translation id="1902576642799138955">Perioadă de validitate</translation>
+<translation id="1908217026282415406">Folosirea și mișcarea camerei</translation>
 <translation id="191374271204266022">Copiază ca JSON</translation>
 <translation id="1914326953223720820">Serviciu de dezarhivare</translation>
 <translation id="1915697529809968049">Folosești Touch ID în loc de CVC?</translation>
@@ -383,6 +384,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="2544644783021658368">Un document</translation>
 <translation id="254947805923345898">Valoarea politicii nu este validă.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> a trimis un răspuns nevalid.</translation>
+<translation id="2552295903035773204">Folosește blocarea ecranului ca să confirmi cardurile de acum înainte</translation>
 <translation id="2553853292994445426">Verifică setările pentru DNS securizat. Este posibil să fi configurat un server DNS securizat ale cărui conexiuni au probleme.</translation>
 <translation id="2556876185419854533">&amp;Anulați editarea</translation>
 <translation id="257674075312929031">Grup</translation>
@@ -728,7 +730,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="4101413244023615925">Text și elemente grafice</translation>
 <translation id="4103249731201008433">Numărul de serie al gadgetului este nevalid</translation>
 <translation id="4103763322291513355">Accesați &lt;strong&gt;chrome://policy&lt;/strong&gt; pentru a vedea adresele URL introduse pe lista neagră și alte politici impuse de către administratorul de sistem.</translation>
-<translation id="4108231218301530806">Folosește amprenta pentru a confirma cardul data viitoare.</translation>
 <translation id="4110652170750985508">Examinează plata</translation>
 <translation id="4112140312785995938">Derulează înapoi</translation>
 <translation id="4116663294526079822">Permiteți întotdeauna pe acest site</translation>
@@ -1126,6 +1127,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="569000877158168851">Valoarea DnsOverHttpsTemplates nu este relevantă și nu va fi folosită decât dacă politica DnsOverHttpsMode este setată la <ph name="SECURE_DNS_MODE_AUTOMATIC" /> sau la <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Pe centru</translation>
 <translation id="570530837424789914">Gestionează...</translation>
+<translation id="5705882733397021510">Înapoi</translation>
 <translation id="57094364128775171">Sugerează o parolă puternică…</translation>
 <translation id="5710435578057952990">Identitatea acestui site nu a fost confirmată.</translation>
 <translation id="5720705177508910913">Utilizator curent</translation>
@@ -1133,6 +1135,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="5730040223043577876">Chrome îți recomandă să resetezi parola dacă ai folosit-o și pe alte site-uri.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Salvează cardul în Contul Google}few{Salvează cardurile în Contul Google}other{Salvează cardurile în Contul Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Folosește un număr virtual pentru acest card}few{Selectează un card}other{Selectează un card}}</translation>
+<translation id="5759751709240058861">Mișcă și folosește camera</translation>
 <translation id="5763042198335101085">Introdu o adresă de e-mail validă</translation>
 <translation id="5765072501007116331">Pentru a vedea metodele de livrare și cerințele, selectează o adresă</translation>
 <translation id="5776313857861697733">Prioritară</translation>
@@ -1341,7 +1344,6 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="6631202559048444592">Este prezentă mai mult de o sursă pentru politică, dar valorile sunt identice.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Șterge</translation>
-<translation id="6644283850729428850">Această politică este învechită.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Niciunul}=1{De pe un site (nu te va deconecta de la Contul Google)}few{De pe # site-uri (nu te va deconecta de la Contul Google)}other{De pe # de site-uri (nu te va deconecta de la Contul Google)}}</translation>
 <translation id="6652101503459149953">Folosește Windows Hello</translation>
 <translation id="6657585470893396449">Parolă</translation>

@@ -54,7 +54,7 @@ bool GatewayCanBePingedRoutine::CanRun() {
   return true;
 }
 
-void GatewayCanBePingedRoutine::RunTest(
+void GatewayCanBePingedRoutine::RunRoutine(
     GatewayCanBePingedRoutineCallback callback) {
   if (!CanRun()) {
     std::move(callback).Run(verdict(), std::move(problems_));

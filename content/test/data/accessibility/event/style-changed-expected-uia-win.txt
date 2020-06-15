@@ -1,0 +1,11 @@
+Text_TextChanged on role=description, name=Eight
+Text_TextChanged on role=description, name=Four
+Text_TextChanged on role=description, name=Nine
+Text_TextChanged on role=description, name=Three
+Text_TextChanged on role=document
+Text_TextChanged on role=document
+Text_TextChanged on role=document
+Text_TextChanged on role=document
+Text_TextChanged on role=document
+Text_TextChanged on role=document
+Text_TextChanged on role=document

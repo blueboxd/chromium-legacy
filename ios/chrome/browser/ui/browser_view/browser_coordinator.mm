@@ -381,6 +381,7 @@
                    forProtocol:@protocol(PasswordBreachCommands)];
 
   self.printController = [[PrintController alloc] init];
+  self.printController.baseViewController = self.viewController;
 
   self.qrScannerCoordinator = [[QRScannerLegacyCoordinator alloc]
       initWithBaseViewController:self.viewController
@@ -542,8 +543,7 @@
   DCHECK(self.printController);
   web::WebState* webState =
       self.browser->GetWebStateList()->GetActiveWebState();
-  [self.printController printView:webState->GetView()
-                        withTitle:tab_util::GetTabTitle(webState)];
+  [self.printController printWebState:webState];
 }
 
 - (void)showReadingList {

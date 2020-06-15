@@ -103,8 +103,6 @@ class GlobalEventHandlers {
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(pointerup, kPointerup)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(progress, kProgress)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(ratechange, kRatechange)
-  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(rendersubtreeactivation,
-                                         kRendersubtreeactivation)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(reset, kReset)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(resize, kResize)
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(scroll, kScroll)

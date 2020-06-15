@@ -52,7 +52,7 @@ DnsResolutionRoutine::DnsResolutionRoutine() {
 
 DnsResolutionRoutine::~DnsResolutionRoutine() = default;
 
-void DnsResolutionRoutine::RunTest(DnsResolutionRoutineCallback callback) {
+void DnsResolutionRoutine::RunRoutine(DnsResolutionRoutineCallback callback) {
   if (!CanRun()) {
     std::move(callback).Run(verdict(), std::move(problems_));
     return;

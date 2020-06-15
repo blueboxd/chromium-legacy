@@ -1195,8 +1195,8 @@ suite('PasswordsSection', function() {
     // only visible when there is at least one device password, and that it has
     // the appropriate text.
     test('verifyDevicePasswordsButtonVisibility', function() {
-      // Set up user eligible to passwords account storage, not opted in and
-      // with no device passwords. Button should be hidden.
+      // Set up user eligible to the account-scoped password storage, not
+      // opted in and with no device passwords. Button should be hidden.
       loadTimeData.overrideValues({enableAccountStorage: true});
       const passwordList =
           [createPasswordEntry({fromAccountStore: true, id: 10})];

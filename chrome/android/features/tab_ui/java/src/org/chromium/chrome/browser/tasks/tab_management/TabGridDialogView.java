@@ -652,7 +652,7 @@ public class TabGridDialogView extends FrameLayout
             mCurrentDialogAnimator.end();
         }
         mCurrentDialogAnimator = mHideDialogAnimation;
-        assert mScrimCoordinator != null && mScrimPropertyModel != null;
+        if (mScrimCoordinator == null || mScrimPropertyModel == null) return;
         mScrimCoordinator.hideScrim(true);
         mHideDialogAnimation.start();
     }

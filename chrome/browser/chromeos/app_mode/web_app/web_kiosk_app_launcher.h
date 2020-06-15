@@ -49,17 +49,19 @@ class WebKioskAppLauncher {
     virtual ~Delegate() {}
   };
 
-  WebKioskAppLauncher(Profile* profile, Delegate* delegate);
+  WebKioskAppLauncher(Profile* profile,
+                      Delegate* delegate,
+                      const AccountId& account_id);
   virtual ~WebKioskAppLauncher();
 
   // Prepares the environment for an app launch.
-  virtual void Initialize(const AccountId& account_id);
+  virtual void Initialize();
   // Continues the installation when the network is ready.
   virtual void ContinueWithNetworkReady();
   // Launches the app after the app is prepared.
   virtual void LaunchApp();
-  // Stops current installation.
-  virtual void CancelCurrentInstallation();
+  // Restarts the installation process.
+  virtual void RestartLauncher();
 
   // Replaces data retriever used for new WebAppInstallTask in tests.
   void SetDataRetrieverFactoryForTesting(
@@ -79,9 +81,9 @@ class WebKioskAppLauncher {
   const WebKioskAppData* GetCurrentApp() const;
 
   bool is_installed_ = false;  // Whether the installation was completed.
-  AccountId account_id_;
   Profile* const profile_;
   Delegate* const delegate_;  // Not owned. Owns us.
+  const AccountId account_id_;
 
   Browser* browser_ = nullptr;  // Browser instance that runs the web kiosk app.
 

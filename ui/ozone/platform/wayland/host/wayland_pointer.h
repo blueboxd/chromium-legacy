@@ -73,7 +73,6 @@ class WaylandPointer::Delegate {
   virtual void OnPointerCreated(WaylandPointer* pointer) = 0;
   virtual void OnPointerDestroyed(WaylandPointer* pointer) = 0;
   virtual void OnPointerFocusChanged(WaylandWindow* window,
-                                     bool focused,
                                      const gfx::PointF& location) = 0;
   virtual void OnPointerButtonEvent(EventType evtype, int changed_button) = 0;
   virtual void OnPointerMotionEvent(const gfx::PointF& location) = 0;

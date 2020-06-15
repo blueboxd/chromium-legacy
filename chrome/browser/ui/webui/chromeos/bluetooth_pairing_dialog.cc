@@ -8,7 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/grit/browser_resources.h"
+#include "chrome/grit/bluetooth_pairing_dialog_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
@@ -109,7 +109,9 @@ BluetoothPairingDialogUI::BluetoothPairingDialogUI(content::WebUI* web_ui)
   source->AddResourcePath("crisper.js",
                           IDR_BLUETOOTH_PAIRING_DIALOG_CRISPER_JS);
 #else
-  source->SetDefaultResource(IDR_BLUETOOTH_PAIRING_DIALOG_HTML);
+  source->SetDefaultResource(IDR_BLUETOOTH_PAIRING_DIALOG_CONTAINER_HTML);
+  source->AddResourcePath("bluetooth_pairing_dialog.html",
+                          IDR_BLUETOOTH_PAIRING_DIALOG_HTML);
   source->AddResourcePath("bluetooth_pairing_dialog.js",
                           IDR_BLUETOOTH_PAIRING_DIALOG_JS);
 #endif

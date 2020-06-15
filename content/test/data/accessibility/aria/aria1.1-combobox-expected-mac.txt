@@ -5,7 +5,7 @@ AXWebArea
 ++++AXTextField AXLinkedUIElements=[:6]
 ++AXList
 ++++AXStaticText AXValue='Alabama'
-++++AXStaticText AXFocused='1' AXValue='Alaska'
+++++AXStaticText AXFocused=1 AXValue='Alaska'
 ++AXGroup AXTitle='State'
 ++++AXTextField AXLinkedUIElements=[:11]
 ++AXList

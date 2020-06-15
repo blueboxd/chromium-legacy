@@ -305,6 +305,7 @@ void LocalFrameView::Trace(Visitor* visitor) const {
   visitor->Trace(layout_shift_tracker_);
   visitor->Trace(paint_timing_detector_);
   visitor->Trace(lifecycle_observers_);
+  visitor->Trace(fullscreen_video_elements_);
 }
 
 template <typename Function>
@@ -4508,6 +4509,21 @@ void LocalFrameView::UnregisterFromLifecycleNotifications(
 
 void LocalFrameView::EnqueueStartOfLifecycleTask(base::OnceClosure closure) {
   start_of_lifecycle_tasks_.push_back(std::move(closure));
+}
+
+void LocalFrameView::NotifyVideoIsDominantVisibleStatus(
+    HTMLVideoElement* element,
+    bool is_dominant) {
+  if (is_dominant) {
+    fullscreen_video_elements_.insert(element);
+    return;
+  }
+
+  fullscreen_video_elements_.erase(element);
+}
+
+bool LocalFrameView::HasDominantVideoElement() const {
+  return !fullscreen_video_elements_.IsEmpty();
 }
 
 #if DCHECK_IS_ON()

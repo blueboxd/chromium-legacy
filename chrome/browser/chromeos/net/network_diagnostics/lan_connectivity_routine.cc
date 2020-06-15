@@ -45,7 +45,8 @@ bool LanConnectivityRoutine::CanRun() {
   return true;
 }
 
-void LanConnectivityRoutine::RunTest(LanConnectivityRoutineCallback callback) {
+void LanConnectivityRoutine::RunRoutine(
+    LanConnectivityRoutineCallback callback) {
   if (!CanRun()) {
     std::move(callback).Run(verdict());
     return;

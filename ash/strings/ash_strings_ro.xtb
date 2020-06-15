@@ -83,6 +83,7 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="1864454756846565995">Dispozitiv USB-C (portul din spate)</translation>
 <translation id="1882897271359938046">Se oglindește pe <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Deblochează cu amprenta</translation>
+<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> nu acceptă <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Rezoluția a fost modificată la <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Dă clic pe Confirmă pentru a păstra modificările. Setările anterioare vor fi restabilite în <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1919743966458266018">Comanda rapidă pentru a deschide managerul de activități a fost modificată. Folosește <ph name="NEW_SHORTCUT" /> în loc de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clicuri automate</translation>
 <translation id="1928739107511554905">Pentru a obține actualizarea, folosește ecranul tactil ca să repornești Chromebookul cu tastatura atașată.</translation>
@@ -509,7 +510,6 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="7068360136237591149">Deschide fișierele</translation>
 <translation id="7076293881109082629">Conectare</translation>
 <translation id="7088960765736518739">Acces prin comutare</translation>
-<translation id="7092922358121866860">Afișează setările pentru Lumină de noapte</translation>
 <translation id="7098389117866926363">Dispozitiv USB-C (portul din stânga în spate)</translation>
 <translation id="7131634465328662194">Vei fi deconectat(ă) automat.</translation>
 <translation id="7143207342074048698">Se conectează</translation>
@@ -661,7 +661,6 @@ Iată câteva lucruri pe care le poți încerca pentru început.</translation>
 <translation id="8877788021141246043">Setează un memento</translation>
 <translation id="8878886163241303700">Ecran extins</translation>
 <translation id="890616557918890486">Schimbă sursa</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> nu acceptă <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Rezoluția a fost modificată la <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Dă clic pe Confirmă pentru a păstra modificările. Setările anterioare vor fi restabilite în <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Nivelul bateriei este <ph name="PERCENTAGE" /> %.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Asistentul Google nu vorbește în această limbă.</translation>

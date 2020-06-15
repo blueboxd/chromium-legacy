@@ -18,9 +18,10 @@ import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingTestHe
 import static org.chromium.chrome.browser.keyboard_accessory.tab_layout_component.KeyboardAccessoryTabTestHelper.isKeyboardAccessoryTabLayout;
 
 import android.app.Activity;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
 import android.view.View;
+
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Rule;
 import org.junit.Test;

@@ -53,8 +53,11 @@ class FocusRingManager {
       this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [];
       this.updateFocusRings_();
 
-      this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [group.location];
-      this.updateFocusRings_();
+      // The dashed focus ring should not be shown around the menu when exiting.
+      if (!MenuManager.isMenuOpen()) {
+        this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [group.location];
+        this.updateFocusRings_();
+      }
       return;
     }
 

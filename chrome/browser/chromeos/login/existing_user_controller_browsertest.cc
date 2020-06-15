@@ -837,8 +837,7 @@ class ExistingUserControllerActiveDirectoryTest
     policies.Set(policy::key::kDisableAuthNegotiateCnameLookup,
                  policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                  policy::POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(!enable_dns_cname_lookup),
-                 nullptr);
+                 base::Value(!enable_dns_cname_lookup), nullptr);
     base::RunLoop run_loop;
     GetKerberosFilesHandler()->SetFilesChangedForTesting(
         run_loop.QuitClosure());

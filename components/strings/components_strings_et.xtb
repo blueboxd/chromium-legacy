@@ -231,6 +231,7 @@
 <translation id="1898423065542865115">Filtreerimine</translation>
 <translation id="1901443836186977402">{1,plural, =1{See server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />. Selle turvasertifikaat aegus viimase 24 tunni jooksul. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. Teie arvuti kell on praegu seatud kuupäevale <ph name="CURRENT_DATE" />. Kas see on õige? Kui ei, seadke süsteemi kell õigeks ja värskendage seda lehte.}other{See server ei suutnud tõestada, et tegemist on domeeniga <ph name="DOMAIN" />. Selle turvasertifikaat aegus # päeva tagasi. Selle põhjuseks võib olla vale seadistus või teie ühendust segav ründaja. Teie arvuti kell on praegu seatud kuupäevale <ph name="CURRENT_DATE" />. Kas see on õige? Kui ei, seadke süsteemi kell õigeks ja värskendage seda lehte.}}</translation>
 <translation id="1902576642799138955">Kehtivusperiood</translation>
+<translation id="1908217026282415406">Kaamera kasutamine ja liigutamine</translation>
 <translation id="191374271204266022">Kopeeri JSON-failina</translation>
 <translation id="1914326953223720820">Lahtipakkimisteenus</translation>
 <translation id="1915697529809968049">Kas kasutada CVC asemel Touch ID-d?</translation>
@@ -729,7 +730,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="4101413244023615925">Tekst ja graafika</translation>
 <translation id="4103249731201008433">Seadme seerianumber on kehtetu</translation>
 <translation id="4103763322291513355">Külastage saiti &lt;strong&gt;chrome://policy&lt;/strong&gt;, et näha mustas nimekirjas olevate URL-ide loendit ja teisi reegleid, mille on jõustanud teie süsteemiadministraator.</translation>
-<translation id="4108231218301530806">Kasuta järgmisel korral selle kaardi kinnitamiseks sõrmejälge.</translation>
 <translation id="4110652170750985508">Vaadake makse üle</translation>
 <translation id="4112140312785995938">Keri tagasi</translation>
 <translation id="4116663294526079822">Luba sellel saidil alati</translation>
@@ -1127,6 +1127,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="569000877158168851">Reegli DnsOverHttpsTemplates väärtus pole asjakohane ja seda ei kasutata, kui reegli DnsOverHttpsMode väärtuseks pole määratud <ph name="SECURE_DNS_MODE_AUTOMATIC" /> või <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Keskel</translation>
 <translation id="570530837424789914">Halda …</translation>
+<translation id="5705882733397021510">Mine tagasi</translation>
 <translation id="57094364128775171">Soovita tugevat parooli …</translation>
 <translation id="5710435578057952990">Selle veebisaidi identiteeti pole kinnitanud.</translation>
 <translation id="5720705177508910913">Praegune kasutaja</translation>
@@ -1134,6 +1135,7 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="5730040223043577876">Chrome soovitab teil parooli lähtestada, kui kasutasite seda ka muudel saitidel.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Salvestage kaart oma Google'i kontole}other{Salvestage kaardid oma Google'i kontole}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Kasutage selle kaardi puhul virtuaalset numbrit}other{Valige kaart}}</translation>
+<translation id="5759751709240058861">Kaamera kasutamine ja liigutamine</translation>
 <translation id="5763042198335101085">Sisestage kehtiv e-posti aadress</translation>
 <translation id="5765072501007116331">Kohaletoimetamisviiside ja nõuete nägemiseks valige aadress</translation>
 <translation id="5776313857861697733">Prioriteet</translation>
@@ -1342,7 +1344,6 @@ Vastasel korral blokeeritakse see teie privaatsusseadetes. See võimaldab teie k
 <translation id="6631202559048444592">Reeglil on rohkem kui üks allikas, aga väärtused on kõik samad.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Tühjenda</translation>
-<translation id="6644283850729428850">See reegel on aegunud.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Mitte ükski}=1{1 saidilt (teid ei logita Google'i kontolt välja)}other{# saidilt (teid ei logita Google'i kontolt välja)}}</translation>
 <translation id="6652101503459149953">Kasuta Windows Hello autentimist</translation>
 <translation id="6657585470893396449">Parool</translation>

@@ -509,7 +509,6 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="7068360136237591149">Odpri datoteke</translation>
 <translation id="7076293881109082629">Prijava</translation>
 <translation id="7088960765736518739">Dostop s stikalom</translation>
-<translation id="7092922358121866860">Prikaz nastavitev nočne svetlobe</translation>
 <translation id="7098389117866926363">Naprava USB-C (vrata levo zadaj)</translation>
 <translation id="7131634465328662194">Samodejno boste odjavljeni.</translation>
 <translation id="7143207342074048698">Vzpostavljanje povezave</translation>
@@ -661,7 +660,6 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="8877788021141246043">Nastavi opomnik</translation>
 <translation id="8878886163241303700">Razširjanje zaslona</translation>
 <translation id="890616557918890486">Spremeni vir</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> ne podpira <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Ločljivost je bila spremenjena na <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Kliknite »Potrdi«, če želite ohraniti spremembe. Prejšnja nastavitev bo obnovljena čez <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Akumulator je <ph name="PERCENTAGE" />-odstotno napolnjen.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Pomočnik Google ne podpira tega jezika.</translation>

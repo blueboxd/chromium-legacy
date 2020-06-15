@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Prijava na web lokaciju</translation>
 <translation id="1509960214886564027">Moguće je da će funkcije na mnogim web lokacijama prestati s radom</translation>
 <translation id="152234381334907219">Nikada nije sačuvano</translation>
+<translation id="1535268707340844072">Vaša trenutačna postavka može onemogućiti funkcioniranje nekih web-lokacija. Da biste upravljali kolačićima za sve web-lokacije, idite na <ph name="BEGIN_LINK" />Postavke kolačića<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Adresa 1</translation>
 <translation id="1545749641540134597">Skeniraj QR kôd</translation>
 <translation id="1552525382687785070">Vaš administrator je onemogućio sinhronizaciju</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Aktivan prije <ph name="DAYS" /> dana</translation>
 <translation id="2074131957428911366">U <ph name="BEGIN_LINK" />postavkama<ph name="END_LINK" /> uvijek možete odabrati šta želite sinhronizirati.</translation>
 <translation id="2079545284768500474">Vrati</translation>
+<translation id="2081417079511601293">Blokiraj treće strane u anonimnom načinu</translation>
 <translation id="209018056901015185">Zatraži verziju web lokacije za računar</translation>
 <translation id="2103075008456228677">Otvori history.google.com</translation>
 <translation id="2116625576999540962">Broj premještenih stavki: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -100,7 +102,6 @@
 <translation id="2139867232736819575">Pretraži kopirani tekst</translation>
 <translation id="2149973817440762519">Uredi oznaku</translation>
 <translation id="2175927920773552910">QR kôd</translation>
-<translation id="2179182049312275900">Sinhronizaciju uvijek možete uključiti u postavkama.</translation>
 <translation id="2198757192731523470">Google može koristiti vašu historiju za personalizaciju Pretraživanja, oglasa i drugih Googleovih usluga.</translation>
 <translation id="2218443599109088993">Umanji</translation>
 <translation id="2230173723195178503">Web lokacija je učitana</translation>
@@ -177,6 +178,7 @@
 <translation id="2989805286512600854">Otvori u novoj kartici</translation>
 <translation id="3037605927509011580">Oh, ne!</translation>
 <translation id="3112556859945124369">Označi…</translation>
+<translation id="3131206671572504478">Blokiraj sve</translation>
 <translation id="3153862085237805241">Sačuvajte karticu</translation>
 <translation id="3157684681743766797">Označi sve…</translation>
 <translation id="3161291298470460782">Ovim ćete se odjaviti, isključiti sinhronizaciju i obrisati Chrome podatke s ovog uređaja. Vaši sinhronizirani podaci će ostati na vašem Google računu.</translation>
@@ -249,7 +251,6 @@
 <translation id="4038354071007134711">Nijedna aplikacija na ovom uređaju ne može otvoriti ovaj fajl.</translation>
 <translation id="4042870976416480368">Pronađi na ovoj stranici</translation>
 <translation id="4049507953662678203">Provjerite imate li mrežnu vezu i pokušajte ponovo.</translation>
-<translation id="4071530748369333746">Otkazati sinkronizaciju?</translation>
 <translation id="4082688844002261427">Kontrolirajte način na koji se historija pregledanja koristi za personalizaciju Pretraživanja, oglasa i još mnogo toga</translation>
 <translation id="408404951701638773">Sada je lakše prići traci za pretraživanje</translation>
 <translation id="411254640334432676">Preuzimanje nije uspjelo.</translation>
@@ -274,6 +275,7 @@
 <translation id="4389019817280890563">Dodirnite da promijenite jezik.</translation>
 <translation id="441868831736628555">Obavještenje o privatnosti</translation>
 <translation id="4454246407045105932">Dodavanje jezika</translation>
+<translation id="4469418912670346607">Nastavi postavljanje</translation>
 <translation id="4476574785019001431">Postavke</translation>
 <translation id="4496373720959965247">Dodajte kartice i mijenjajte stranice</translation>
 <translation id="4508750114462689118">Zatvaranje promocije za prijavu</translation>
@@ -302,6 +304,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="4805759445554688327">Nevažeći broj kartice</translation>
 <translation id="4818522717893377262">Dodaj jezik…</translation>
 <translation id="481968316161811770">Kolačići, podaci o web lokacijama</translation>
+<translation id="4826218269716039351">Blokiraj treće strane</translation>
 <translation id="4833786495304741580">Automatski šalje Googleu statistiku korištenja i izvještaje o padovima aplikacije.</translation>
 <translation id="4840495572919996524">Vaše oznake, historija, lozinke i drugi podaci neće se više sinhronizirati s vašim Google računom.</translation>
 <translation id="4854345657858711387">Postavite šifru</translation>
@@ -347,6 +350,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="54401264925851789">Informacije o sigurnosti stranice</translation>
 <translation id="5443952882982198570">Kreditne kartice</translation>
 <translation id="5457907402803865181">Greška prilikom sinhroniziranja lozinki.</translation>
+<translation id="5489208564673669003">Da biste upravljali kolačićima za sve web-lokacije, idite na <ph name="BEGIN_LINK" />Postavke kolačića<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Odjavite se i obrišite podatke s uređaja</translation>
 <translation id="5525269841082836315">Kreirajte pristupni izraz</translation>
 <translation id="5548760955356983418">Handoff vam omogućava da počnete pregledati web lokaciju na ovom uređaju i jednostavno nastavite na Macu. Trenutno otvorena web lokacija će se pojaviti na priključnoj stranici na Macu.
@@ -434,6 +438,7 @@ Vaši podaci su šifrirani sinhroniziranim pristupnim izrazom <ph name="TIME" />
 <translation id="6418346271604475326">Pripremanje PDF-a</translation>
 <translation id="6426067060178468363">Dozvoli kolačiće</translation>
 <translation id="6434591244308415567">Došlo je do greške. Pokušajte ponovo kasnije.</translation>
+<translation id="6439338047467462846">Dopusti sve</translation>
 <translation id="6445051938772793705">Država</translation>
 <translation id="6445981559479772097">Poruka je poslana.</translation>
 <translation id="6447842834002726250">Kolačići</translation>
@@ -441,6 +446,7 @@ Vaši podaci su šifrirani sinhroniziranim pristupnim izrazom <ph name="TIME" />
 <translation id="6476800141292307438">Prevođenje stranice na <ph name="LANGUAGE" /> jezik. Opcije su dostupne pri dnu ekrana.</translation>
 <translation id="648164694371393720">Greška pri autentifikaciji</translation>
 <translation id="6482629121755362506">Broj izbrisanih stavki je <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="651505212789431520">Otkazati sinkronizaciju? Sinkronizaciju možete uvijek uključiti u Postavkama.</translation>
 <translation id="6561262006871132942">Uvećaj</translation>
 <translation id="6610002944194042868">Opcije za prevođenje</translation>
 <translation id="6628106477656132239">Nevažeći datum isteka</translation>

@@ -724,7 +724,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="4101413244023615925">Texto e gráficos</translation>
 <translation id="4103249731201008433">O número de série do dispositivo é inválido</translation>
 <translation id="4103763322291513355">Visite &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver a lista de URLs adicionados à lista de proibições e outras políticas aplicadas pelo administrador do seu sistema.</translation>
-<translation id="4108231218301530806">Usar impressão digital para verificar o cartão na próxima vez.</translation>
 <translation id="4110652170750985508">Analisar seu pagamento</translation>
 <translation id="4112140312785995938">Retroceder</translation>
 <translation id="4116663294526079822">Sempre permitir neste site</translation>
@@ -1118,6 +1117,7 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="569000877158168851">O valor da DnsOverHttpsTemplates não é relevante e não será usado, a menos que a política DnsOverHttpsMode esteja configurada como <ph name="SECURE_DNS_MODE_AUTOMATIC" /> ou <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Centralizar</translation>
 <translation id="570530837424789914">Gerenciar…</translation>
+<translation id="5705882733397021510">Voltar</translation>
 <translation id="57094364128775171">Sugerir senha forte…</translation>
 <translation id="5710435578057952990">A identidade deste site não foi confirmada.</translation>
 <translation id="5720705177508910913">Usuário atual</translation>
@@ -1334,7 +1334,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="6631202559048444592">Há mais de uma fonte para esta política, mas os valores são os mesmos.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Limpar</translation>
-<translation id="6644283850729428850">Esta política foi encerrada.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Nenhum}=1{De 1 site (você não será desconectado da sua Conta do Google)}one{De # site (você não será desconectado da sua Conta do Google)}other{De # sites (você não será desconectado da sua Conta do Google)}}</translation>
 <translation id="6652101503459149953">Usar Windows Hello</translation>
 <translation id="6657585470893396449">Senha</translation>

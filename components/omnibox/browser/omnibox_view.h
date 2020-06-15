@@ -106,16 +106,17 @@ class OmniboxView {
   // if the model should be notified of the change. If rich autocompletion is
   // enabled, |additional_text| is displayed in a non-editable views::Label
   // adjacent to the omnibox.
-  virtual void SetWindowTextAndCaretPos(
-      const base::string16& text,
-      size_t caret_pos,
-      bool update_popup,
-      bool notify_text_changed,
-      const base::string16& additional_text = base::string16()) = 0;
+  virtual void SetWindowTextAndCaretPos(const base::string16& text,
+                                        size_t caret_pos,
+                                        bool update_popup,
+                                        bool notify_text_changed) = 0;
 
   // Sets the caret position. Removes any selection. Clamps the requested caret
   // position to the length of the current text.
   virtual void SetCaretPos(size_t caret_pos) = 0;
+
+  // Sets the omnibox adjacent additional text label in the location bar view.
+  virtual void SetAdditionalText(const base::string16& text) = 0;
 
   // Transitions the user into keyword mode with their default search provider,
   // preserving and selecting the user's text if they already typed in a query.
@@ -178,16 +179,14 @@ class OmniboxView {
 
   // Called when the inline autocomplete text in the model may have changed.
   // |display_text| is the new text to show. |user_text_start| and
-  // |user_text_length| are the start position and length of the user input
-  // portion of the text (not including the inline autocompletion or prefix
-  // inline autocompletion). If rich autocompletion is enabled,
-  // |additional_text| is displayed in a non-editable views::Label adjacent to
-  // the omnibox.
+  // |user_text_length| are the start and length of the user input portion of
+  // the text (not including the inline autocompletion or prefix inline
+  // autocompletion). If rich autocompletion is enabled, |additional_text| is
+  // displayed in a non-editable views::Label adjacent to the omnibox.
   virtual void OnInlineAutocompleteTextMaybeChanged(
       const base::string16& display_text,
-      size_t user_text_length,
-      size_t user_text_start = 0,
-      const base::string16& additional_text = base::string16()) = 0;
+      size_t user_text_start,
+      size_t user_text_length) = 0;
 
   // Called when the inline autocomplete text in the model has been cleared.
   virtual void OnInlineAutocompleteTextCleared() = 0;

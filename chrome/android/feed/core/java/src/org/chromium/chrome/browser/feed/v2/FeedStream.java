@@ -11,6 +11,10 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.feed.shared.stream.Header;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
@@ -28,6 +32,8 @@ import java.util.List;
  */
 public class FeedStream implements Stream {
     private static final String TAG = "FeedStream";
+    private static final String SCROLL_POSITION = "scroll_pos";
+    private static final String SCROLL_OFFSET = "scroll_off";
 
     private final Activity mActivity;
     private final FeedStreamSurface mFeedStreamSurface;
@@ -52,7 +58,9 @@ public class FeedStream implements Stream {
     @Override
     public void onCreate(@Nullable String savedInstanceState) {
         setupRecyclerView();
-        // TODO(jianli): Restore scroll state.
+        if (savedInstanceState != null && !savedInstanceState.isEmpty()) {
+            restoreScrollState(savedInstanceState);
+        }
     }
 
     @Override
@@ -68,8 +76,28 @@ public class FeedStream implements Stream {
 
     @Override
     public String getSavedInstanceStateString() {
-        // TODO(jianli): Return saved scroll state as serializedf string;
-        return "";
+        LinearLayoutManager layoutManager = (LinearLayoutManager) mRecyclerView.getLayoutManager();
+        if (layoutManager == null) {
+            return "";
+        }
+        int firstItemPosition = layoutManager.findFirstVisibleItemPosition();
+        if (firstItemPosition == RecyclerView.NO_POSITION) {
+            return "";
+        }
+        View firstVisibleView = layoutManager.findViewByPosition(firstItemPosition);
+        if (firstVisibleView == null) {
+            return "";
+        }
+        int firstVisibleTop = firstVisibleView.getTop();
+
+        JSONObject jsonSavedState = new JSONObject();
+        try {
+            jsonSavedState.put(SCROLL_POSITION, firstItemPosition);
+            jsonSavedState.put(SCROLL_OFFSET, firstVisibleTop);
+        } catch (JSONException e) {
+            Log.d(TAG, "Unable to write to a JSONObject.");
+        }
+        return jsonSavedState.toString();
     }
 
     @Override
@@ -183,5 +211,19 @@ public class FeedStream implements Stream {
                 }
             }
         });
+    }
+
+    private void restoreScrollState(String savedInstanceState) {
+        try {
+            JSONObject jsonSavedState = new JSONObject(savedInstanceState);
+            LinearLayoutManager layoutManager =
+                    (LinearLayoutManager) mRecyclerView.getLayoutManager();
+            if (layoutManager != null) {
+                layoutManager.scrollToPositionWithOffset(jsonSavedState.getInt(SCROLL_POSITION),
+                        jsonSavedState.getInt(SCROLL_OFFSET));
+            }
+        } catch (JSONException e) {
+            Log.d(TAG, "Unable to parse a JSONObject from a string.");
+        }
     }
 }

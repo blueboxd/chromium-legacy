@@ -1850,8 +1850,10 @@ void EventSender::KeyDown(const std::string& code_str,
   // the keyboard event, and stored in RenderWidget. We just simulate the same
   // behavior here.
   std::string edit_command;
-  if (GetEditCommand(event_down, &edit_command))
-    web_widget_test_proxy_->SetEditCommandForNextKeyEvent(edit_command, "");
+  if (GetEditCommand(event_down, &edit_command)) {
+    web_widget_test_proxy_->GetWebFrameWidget()->AddEditCommandForNextKeyEvent(
+        WebString::FromLatin1(edit_command), "");
+  }
 
   HandleInputEventOnViewOrPopup(event_down);
 
@@ -1866,7 +1868,7 @@ void EventSender::KeyDown(const std::string& code_str,
     FinishDragAndDrop(event, blink::kWebDragOperationNone);
   }
 
-  web_widget_test_proxy_->ClearEditCommands();
+  web_widget_test_proxy_->GetWebFrameWidget()->ClearEditCommands();
 
   if (generate_char) {
     WebKeyboardEvent event_char = event_up;

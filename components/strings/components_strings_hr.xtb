@@ -384,6 +384,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="2544644783021658368">Jedan dokument</translation>
 <translation id="254947805923345898">Vrijednost pravila nije važeća.</translation>
 <translation id="255002559098805027">Host <ph name="HOST_NAME" /> poslao je nevažeći odgovor.</translation>
+<translation id="2552295903035773204">Odsad koristi zaključavanje zaslona za potvrđivanje kartica</translation>
 <translation id="2553853292994445426">Provjerite postavke sigurnog DNS-a. Možda ste konfigurirali sigurni DNS poslužitelj s kojim se ne uspijevate povezati.</translation>
 <translation id="2556876185419854533">&amp;Poništi uređivanje</translation>
 <translation id="257674075312929031">Grupa</translation>
@@ -730,7 +731,6 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="4101413244023615925">Tekst i grafika</translation>
 <translation id="4103249731201008433">Serijski broj uređaja nije važeći</translation>
 <translation id="4103763322291513355">Posjetite &lt;strong&gt;chrome://policy&lt;/strong&gt; da biste vidjeli popis nedopuštenih URL-ova i druga pravila koja je nametnuo vaš administrator sustava.</translation>
-<translation id="4108231218301530806">Sljedeći put ovu karticu potvrdite otiskom prsta.</translation>
 <translation id="4110652170750985508">Pregledajte uplatu</translation>
 <translation id="4112140312785995938">Traži unatrag</translation>
 <translation id="4116663294526079822">Uvijek dopusti na ovoj web-lokaciji</translation>
@@ -1129,6 +1129,7 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="569000877158168851">Vrijednost DnsOverHttpsTemplates nije relevantna i neće se koristiti, osim ako se pravilo DnsOverHttpsMode postavi na <ph name="SECURE_DNS_MODE_AUTOMATIC" /> ili <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Centriraj</translation>
 <translation id="570530837424789914">Upravljajte...</translation>
+<translation id="5705882733397021510">Natrag</translation>
 <translation id="57094364128775171">Predloži snažnu zaporku…</translation>
 <translation id="5710435578057952990">Identitet ove web lokacije nije ovjeren.</translation>
 <translation id="5720705177508910913">Trenutačni korisnik:</translation>
@@ -1345,7 +1346,6 @@ To će u suprotnom biti onemogućeno na temelju vaših postavki privatnosti. To 
 <translation id="6631202559048444592">Za to je pravilo prisutno više izvora, ali vrijednosti su iste.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Izbriši</translation>
-<translation id="6644283850729428850">Ovo je pravilo zastarjelo.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Nijedna}=1{S jedne web-lokacije (nećete se odjaviti s Google računa)}one{S # web-lokacije (nećete se odjaviti s Google računa)}few{S # web-lokacije (nećete se odjaviti s Google računa)}other{S # web-lokacija (nećete se odjaviti s Google računa)}}</translation>
 <translation id="6652101503459149953">Koristi Windows Hello</translation>
 <translation id="6657585470893396449">Zaporka</translation>

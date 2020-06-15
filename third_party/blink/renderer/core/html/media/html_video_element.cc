@@ -736,6 +736,10 @@ void HTMLVideoElement::SetIsDominantVisibleContent(bool is_dominant) {
     auto* player = GetWebMediaPlayer();
     if (player)
       player->BecameDominantVisibleContent(mostly_filling_viewport_);
+
+    auto* local_frame_view = GetDocument().View();
+    if (local_frame_view)
+      local_frame_view->NotifyVideoIsDominantVisibleStatus(this, is_dominant);
   }
 }
 

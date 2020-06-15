@@ -19,7 +19,7 @@ const base::Feature kExtensionSettingsOverriddenDialogs{
 
 // Enables an extension menu in the toolbar. See https://crbug.com/943702
 const base::Feature kExtensionsToolbarMenu{"ExtensionsToolbarMenu",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables tabs from different browser types (NORMAL vs APP) and different apps
 // to mix via dragging.

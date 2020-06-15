@@ -385,6 +385,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="2544644783021658368">Stakt skjal</translation>
 <translation id="254947805923345898">Gildi reglunnar er ógilt.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> sendi ógilt svar.</translation>
+<translation id="2552295903035773204">Nota skjálás til að staðfesta spjöld héðan í frá</translation>
 <translation id="2553853292994445426">Athugaðu stillingar fyrir öruggan DNS-þjón. Þú gætir hafa stillt öruggan DNS-netþjón sem ekki tekst að tengjast.</translation>
 <translation id="2556876185419854533">Aft&amp;urkalla breytingu</translation>
 <translation id="257674075312929031">Hópur</translation>
@@ -732,7 +733,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="4101413244023615925">Texti og grafík</translation>
 <translation id="4103249731201008433">Raðnúmer tækisins er ógilt</translation>
 <translation id="4103763322291513355">Farðu á &lt;strong&gt;chrome://policy&lt;/strong&gt; til að sjá vefslóðir á bannlista og aðrar reglur sem kerfisstjórinn þinn stjórnar.</translation>
-<translation id="4108231218301530806">Nota fingrafar til að staðfesta þetta kort í næsta skipti.</translation>
 <translation id="4110652170750985508">Farðu yfir greiðsluna</translation>
 <translation id="4112140312785995938">Spóla til baka</translation>
 <translation id="4116663294526079822">Leyfa alltaf á þessu vefsvæði</translation>
@@ -1130,6 +1130,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="569000877158168851">Gildið DnsOverHttpsTemplates á ekki við og verður ekki notað nema reglan DnsOverHttpsMode sé stillt á annaðhvort <ph name="SECURE_DNS_MODE_AUTOMATIC" /> eða <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Miðjujafna</translation>
 <translation id="570530837424789914">Stjórna...</translation>
+<translation id="5705882733397021510">Til baka</translation>
 <translation id="57094364128775171">Tillaga að traustu aðgangsorði…</translation>
 <translation id="5710435578057952990">Auðkenni þessa vefsvæðis hefur ekki verið staðfest.</translation>
 <translation id="5720705177508910913">Núverandi notandi</translation>
@@ -1346,7 +1347,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="6631202559048444592">Fleiri en einn uppruni eru til staðar fyrir regluna en gildin eru þau sömu.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Hreinsa</translation>
-<translation id="6644283850729428850">Þessi regla er úrelt.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Ekkert}=1{Frá einu vefsvæði (þú verður ekki skráð(ur) út af Google reikningnum þínum)}one{Frá # vefsvæði (þú verður ekki skráð(ur) út af Google reikningnum þínum)}other{Frá # vefsvæðum (þú verður ekki skráð(ur) út af Google reikningnum þínum)}}</translation>
 <translation id="6652101503459149953">Nota Windows Hello</translation>
 <translation id="6657585470893396449">Aðgangsorð</translation>

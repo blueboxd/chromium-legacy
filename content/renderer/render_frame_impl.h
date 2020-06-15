@@ -617,7 +617,7 @@ class CONTENT_EXPORT RenderFrameImpl
   CreateWorkerContentSettingsClient() override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<media::SpeechRecognitionClient>
-  CreateSpeechRecognitionClient();
+  CreateSpeechRecognitionClient() override;
 #endif
   scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext()
       override;
@@ -692,7 +692,6 @@ class CONTENT_EXPORT RenderFrameImpl
   base::UnguessableToken GetDevToolsFrameToken() override;
   void AbortClientNavigation() override;
   void DidChangeSelection(bool is_empty_selection) override;
-  bool HandleCurrentKeyboardEvent() override;
   void ShowContextMenu(const blink::WebContextMenuData& data) override;
   void FrameRectsChanged(const blink::WebRect& frame_rect) override;
   void FocusedElementChanged(const blink::WebElement& element) override;

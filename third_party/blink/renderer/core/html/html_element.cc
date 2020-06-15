@@ -502,8 +502,6 @@ AttributeTriggers* HTMLElement::TriggersForAttributeName(
        nullptr},
       {html_names::kOnratechangeAttr, kNoWebFeature,
        event_type_names::kRatechange, nullptr},
-      {html_names::kOnrendersubtreeactivationAttr, kNoWebFeature,
-       event_type_names::kRendersubtreeactivation, nullptr},
       {html_names::kOnresetAttr, kNoWebFeature, event_type_names::kReset,
        nullptr},
       {html_names::kOnresizeAttr, kNoWebFeature, event_type_names::kResize,

@@ -35,7 +35,8 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
     kBadLogo = 3,
     kBadUserIdentifier = 4,
     kBadResetReason = 5,
-    kMaxValue = kBadResetReason,
+    kBadSafeSearchResult = 6,
+    kMaxValue = kBadSafeSearchResult,
   };
 
  private:
@@ -100,6 +101,14 @@ class MediaHistoryFeedsTable : public MediaHistoryTableBase {
 
   // Gets the feed for |origin|.
   base::Optional<int64_t> GetFeedForOrigin(const url::Origin& origin);
+
+  // Returns all the media feeds that have an unknown safe search result.
+  MediaHistoryKeyedService::PendingSafeSearchCheckList
+  GetPendingSafeSearchCheckItems();
+
+  // Stores the safe search result for |feed_id| and returns true if successful.
+  bool StoreSafeSearchResult(int64_t feed_id,
+                             media_feeds::mojom::SafeSearchResult result);
 };
 
 }  // namespace media_history

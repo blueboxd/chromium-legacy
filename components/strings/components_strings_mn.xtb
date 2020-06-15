@@ -152,7 +152,7 @@
 
       &lt;p&gt;Та &lt;strong&gt;Settings&lt;/strong&gt; апп-ын &lt;strong&gt;General&lt;/strong&gt; хэсэгт огноо, цагийг өөрчлөнө үү.&lt;/p&gt;</translation>
 <translation id="1569487616857761740">Дуусах огноог оруулна уу</translation>
-<translation id="1581080074034554886">КБК</translation>
+<translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">Энэхүү вэб хуудсыг харуулахад ямар нэгэн алдаа гарлаа.</translation>
 <translation id="1586541204584340881">Таны ямар өргөтгөл суулгасан болох</translation>
 <translation id="1588438908519853928">Хэвийн</translation>
@@ -232,6 +232,7 @@
 <translation id="1898423065542865115">Шүүлтүүр</translation>
 <translation id="1901443836186977402">{1,plural, =1{Энэ сервер нь <ph name="DOMAIN" /> болохоо баталж чадсангүй; аюулгүй байдлын гэрчилгээнийх нь хугацаа сүүлийн 24 цагийн дотор дууссан байна. Энэ нь тохиргоог буруу хийснээс эсвэл халдагч этгээд таны холболтод саад учруулснаас шалтгаалж болзошгүй. Таны компьютерын цагийг <ph name="CURRENT_DATE" /> гэж тохируулсан байна. Зөв үү? Хэрэв буруу байвал системийнхээ цагийг тохируулаад, энэ хуудсыг сэргээгээрэй.}other{Энэ сервер нь <ph name="DOMAIN" /> болохоо баталж чадсангүй; аюулгүй байдлын гэрчилгээнийх нь хугацаа # өдрийн өмнө дууссан байна. Энэ нь тохиргоог буруу хийснээс эсвэл халдагч этгээд таны холболтод саад учруулснаас шалтгаалж болзошгүй. Таны компьютерын цагийг <ph name="CURRENT_DATE" /> гэж тохируулсан байна. Зөв үү? Хэрэв буруу байвал системийнхээ цагийг тохируулаад, энэ хуудсыг сэргээгээрэй.}}</translation>
 <translation id="1902576642799138955">Хүчинтэй хугацаа</translation>
+<translation id="1908217026282415406">Камерын ашиглалт болон хөдөлгөөн</translation>
 <translation id="191374271204266022">JSON форматаар хуулах</translation>
 <translation id="1914326953223720820">Багц задлах үйлчилгээ</translation>
 <translation id="1915697529809968049">Карт баталгаажуулалтын кодын оронд Touch ID-г ашиглах уу?</translation>
@@ -731,7 +732,6 @@
 <translation id="4101413244023615925">Текст болон график</translation>
 <translation id="4103249731201008433">Төхөөрөмжийн сериал дугаар буруу байна</translation>
 <translation id="4103763322291513355">Системийн админаас тодорхойлсон хар жагсаалтанд орсон холбоосууд болон бусад бодлогуудыг харахаар бол  &lt;strong&gt; chrome://policy&lt;/strong&gt; руу орно уу.</translation>
-<translation id="4108231218301530806">Энэ картыг дараагийн удаа баталгаажуулахын тулд хурууны хээ ашиглах.</translation>
 <translation id="4110652170750985508">Төлбөрөө хянах</translation>
 <translation id="4112140312785995938">Ухраах</translation>
 <translation id="4116663294526079822">Үргэлж энэ сайтад зөвшөөр</translation>
@@ -1129,6 +1129,7 @@
 <translation id="569000877158168851">DnsOverHttpsTemplates-н утга нь хамааралгүй байгаа бөгөөд DnsOverHttpsMode удирдамжийг <ph name="SECURE_DNS_MODE_AUTOMATIC" /> эсвэл <ph name="SECURE_DNS_MODE_SECURE" /> болгож тохируулахгүй бол түүнийг ашиглахгүй.</translation>
 <translation id="5701381305118179107">Төв</translation>
 <translation id="570530837424789914">Удирдах...</translation>
+<translation id="5705882733397021510">Буцах</translation>
 <translation id="57094364128775171">Хүчтэй нууц үг санал болгох...</translation>
 <translation id="5710435578057952990">Энэ вэб сайтын тодорхойлолт баталгаажаагүй байна.</translation>
 <translation id="5720705177508910913">Одоогийн хэрэглэгч</translation>
@@ -1136,6 +1137,7 @@
 <translation id="5730040223043577876">Хэрэв та нууц үгээ бусад сайтад дахин ашигласан бол Chrome-с үүнийг шинэчлэхийг зөвлөж байна.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Google Бүртгэлдээ карт хадгалах}other{Google Бүртгэлдээ карт хадгалах}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Энэ картад зориулан виртуал дугаарыг ашиглах}other{Картыг сонгоно уу}}</translation>
+<translation id="5759751709240058861">Таны камерыг ашиглах, хөдөлгөх</translation>
 <translation id="5763042198335101085">Зөв имэйл хаяг оруулна уу</translation>
 <translation id="5765072501007116331">Хүргэлтийн арга болон шаардлагыг харахын тулд хаяг сонгоно уу</translation>
 <translation id="5776313857861697733">Ач холбогдол</translation>
@@ -1343,7 +1345,6 @@
 <translation id="6631202559048444592">Удирдамжид нэгээс олон эх сурвалж байгаа хэдий ч утгууд нь ижил байна.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Цэвэрлэх</translation>
-<translation id="6644283850729428850">Энэ бодлогыг эсэргүүцсэн байна.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Байхгүй}=1{1 сайтаас (таныг Google Бүртгэлээс тань гаргахгүй)}other{# сайтаас (таныг Google Бүртгэлээс тань гаргахгүй)}}</translation>
 <translation id="6652101503459149953">Windows Hello-г ашиглах</translation>
 <translation id="6657585470893396449">Нууц үг</translation>

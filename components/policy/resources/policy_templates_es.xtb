@@ -179,12 +179,6 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
       aplicar restricciones de orígenes inseguros</translation>
 <translation id="1312799700549720683">Controla los ajustes de la pantalla.</translation>
 <translation id="131353325527891113">Mostrar los nombres de usuario en la pantalla de inicio de sesión</translation>
-<translation id="1327351219049180837">Esta política determina si se recogen datos de políticas y la hora de su obtención.
-
-      Si se le asigna el valor "True" o no se le asigna ninguno, se recogen datos de políticas y la hora de su obtención.
-      Si se le asigna el valor "False", no se recogen datos de políticas ni la hora de su obtención.
-
-      Esta política solo es efectiva si la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está habilitada y el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1327466551276625742">Habilitar mensaje de configuración de red si no hay conexión</translation>
 <translation id="1330145147221172764">Habilitar teclado en pantalla</translation>
 <translation id="13356285923490863">Nombre de la política</translation>
@@ -965,12 +959,6 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 
           En Windows, esta política solo está disponible en instancias que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> y en instancias de Windows 10 Pro o Enterprise que se hayan registrado en la gestión de dispositivos.</translation>
 <translation id="247658312644322296">Destino Guardar como PDF</translation>
-<translation id="2478649170422995190">Esta política determina si se recoge información de versiones, como la versión, plataforma o arquitectura del SO, la versión de <ph name="PRODUCT_NAME" /> y el canal de <ph name="PRODUCT_NAME" />.
-
-      Si se le asigna el valor "True" o no se le asigna ninguno, se recoge información de versiones.
-      Si se le asigna el valor "False", no se recoge dicha información.
-
-      Esta política solo es efectiva si la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está habilitada y el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2480971699591919564">Habilita la función Clic de llamada, que permite a los usuarios enviar números de teléfono desde Chrome para ordenador a un dispositivo Android si el usuario ha iniciado sesión. Puedes consultar más información en este artículo del Centro de Ayuda: https://support.google.com/chrome/answer/9430554?hl=es
 
       Si se habilita esta política, el usuario de Chrome podrá enviar números de teléfono a dispositivos Android.
@@ -1178,7 +1166,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 
       Si no se le asigna ningún valor, se preseleccionará la configuración regional actual de la interfaz del usuario.
 
-      Si hay más de una configuración regional recomendada, se entiende que el usuario querrá elegir entre ellas. Antes de iniciar una sesión administrada, es importante elegir una configuración regional y un diseño de teclado. De lo contrario, se asume que la mayoría de los usuarios quieren usar la configuración regional preseleccionada. Antes de iniciar una sesión administrada, no es tan importante elegir una configuración regional y un diseño de teclado.
+      Si hay más de una configuración regional recomendada, se entiende que el usuario querrá elegir entre ellas. Antes de iniciar una sesión administrada, es importante elegir una configuración regional y un diseño de teclado. De lo contrario, se asume que la mayoría de los usuarios quieren usar la configuración regional preseleccionada. Al iniciar una sesión administrada, no es tan importante elegir una configuración regional y un diseño de teclado.
 
       Si se le asigna un valor a esta política y se activa el inicio de sesión automático (consulta las políticas <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_ID_POLICY_NAME" /> y <ph name="DEVICE_LOCAL_ACCOUNT_AUTO_LOGIN_DELAY_POLICY_NAME" />), la sesión administrada usará la primera configuración regional recomendada y el diseño de teclado correspondiente más usado.
 
@@ -1464,7 +1452,7 @@ Si no se le asigna ningún valor, la pantalla de privacidad se inhabilitará ini
 <translation id="3122082892722698079">Permite controlar el uso de las excepciones de contenido no seguro</translation>
 <translation id="3148152738273574834">Si se asigna un valor a esta política, se especificará una lista de sitios web que se instalan de forma silenciosa, sin intervención del usuario, y que el usuario no puede desinstalar ni inhabilitar.
 
-      Cada elemento de la lista es un objeto con un miembro obligatorio (<ph name="URL_LABEL" />, la URL de la aplicación web que se va a instalar) y dos miembros opcionales (<ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" />, que define cómo se abrirá la aplicación web, siendo una nueva pestaña la opción predeterminada) y <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> (True si se crean accesos directos del escritorio para <ph name="LINUX_OS_NAME" /> y Windows®).
+      Cada elemento de la lista es un objeto con un miembro obligatorio (<ph name="URL_LABEL" />, la URL de la aplicación web que se va a instalar) y dos miembros opcionales (<ph name="DEFAULT_LAUNCH_CONTAINER_LABEL" />, que define cómo se abrirá la aplicación web, siendo en una nueva pestaña la opción predeterminada) y <ph name="CREATE_DESKTOP_SHORTCUT_LABEL" /> (True si se crean accesos directos del escritorio para <ph name="LINUX_OS_NAME" /> y Windows®).
 
       Los usuarios pueden cambiar en qué contenedor desean que se abra la aplicación y omitir los accesos directos del escritorio.
 
@@ -3650,12 +3638,6 @@ Si la política está establecida en False, no se informará sobre los usuarios.
           Consulta también las políticas CookiesAllowedForUrls y CookiesSessionOnlyForUrls. Ten en cuenta que no puede haber patrones de URL en conflicto entre estas políticas, ya que no se especifica qué política prevalece.
 
           Para obtener información detallada sobre los patrones de URL válidos, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="6399242659768117666">Esta política controla si se recogen datos sobre extensiones y complementos.
-
-      Si se le asigna el valor "True" o no se le asigna ninguno, se recogen datos de extensiones y complementos.
-      Si se le asigna el valor "False", no se recogen dichos datos.
-
-      Esta política solo es efectiva cuando la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está habilitada y el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6401669939808766804">Cerrar la sesión del usuario</translation>
 <translation id="6406448383934634215">Si la acción seleccionada al iniciar el navegador es Abrir una lista de URLs, esta política permitirá especificar la lista de las URL que se deben abrir. Si no se define ningún valor, no se abrirá ninguna URL al iniciar el navegador.
 
@@ -3678,7 +3660,6 @@ Si la política está establecida en False, no se informará sobre los usuarios.
           Si quieres que se detecte automáticamente el servidor proxy, se proporcionará la URL del script "http://wpad/wpad.dat" a las aplicaciones de Android. No se utilizará ninguna otra parte del protocolo de detección automática del proxy.
 
           Si decides usar un script del proxy .pac, se proporcionará la URL del script a las aplicaciones de Android.</translation>
-<translation id="6430366557948788869">Chrome Reporting Extension</translation>
 <translation id="6438972408080276697">Si se asigna el valor "true" a esta política, se enviarán a Google informes de los principales eventos de instalación de aplicaciones de Android activados por la política. Si se le asigna el valor "false", no se enviará información de ninguno de estos eventos.</translation>
 <translation id="6440051664870270040">Permitir que los sitios web abran ventanas emergentes y naveguen de forma simultánea</translation>
 <translation id="6447948611083700881">La función de copia de seguridad y restauración está inhabilitada</translation>
@@ -3736,15 +3717,15 @@ Si la política está establecida en False, no se informará sobre los usuarios.
       Para controlar los sitios web que permiten contenido Flash, consulta las políticas "DefaultPluginsSetting", "PluginsAllowedForUrls" y "PluginsBlockedForUrls".
 
       Si esta opción está inhabilitada o no se le asigna ningún valor, es posible que se bloquee el contenido poco importante o el contenido Flash de otros orígenes.</translation>
-<translation id="6532026122543921610">A menos que la política <ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> desactive la detección automática de la zona horaria, cuando se le asigne un valor a esta política, se destacará el método de detección automática de la zona horaria y los usuarios no lo podrán cambiar.
+<translation id="6532026122543921610">A menos que la política <ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> desactive la detección automática de la zona horaria, asignar un valor a esta política define el método de detección automática de la zona horaria, el cual los usuarios no pueden cambiar.
 
       Si se asignan los siguientes valores:
-       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONDISABLED" /> desactivará la detección automática de la zona horaria.
-       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TTIMEZONEAUTOMATICDETECTIONIPONLY" /> activará la detección automática de la zona horaria usando solo la IP.
-       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDWIFIACCESSPOINTS" /> tendrá la detección automática de la zona horaria siempre activada y enviará constantemente la lista de puntos de acceso Wi‑Fi visibles al servidor API de geolocalización para detectar la zona horaria de forma más precisa.
-       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDALLLOCATIONINFO" /> mantendrá la detección automática de la zona horaria siempre activada, enviando continuamente información sobre la ubicación (como puntos de acceso Wi‑Fi, torres de telefonía móvil disponibles, GPS) a un servidor para detectar la zona horaria de forma más precisa.
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONDISABLED" />: se mantendrá desactivada la detección automática de la zona horaria.
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TTIMEZONEAUTOMATICDETECTIONIPONLY" />: se mantendrá activada la detección automática de la zona horaria usando solo la IP.
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDWIFIACCESSPOINTS" />: se mantendrá la detección automática de la zona horaria siempre activada y se enviará constantemente la lista de puntos de acceso Wi‑Fi visibles al servidor de APIs de geolocalización para detectar la zona horaria de forma más precisa.
+       * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONSENDALLLOCATIONINFO" />: se mantendrá la detección automática de la zona horaria siempre activada, enviando continuamente información sobre la ubicación (como puntos de acceso Wi‑Fi, torres de telefonía móvil disponibles, GPS) a un servidor para detectar la zona horaria de forma más precisa.
 
-      Si no se le asigna ningún valor o se le asigna Dejar que los usuarios decidan o Ninguno, los usuarios controlarán la detección automática de la zona horaria con controles normales de chrome://settings.</translation>
+      Si no se le asigna ningún valor o se le asigna Dejar que los usuarios decidan o Ninguno, los usuarios controlarán la detección automática de la zona horaria con los controles normales de chrome://settings.</translation>
 <translation id="6532769014584932288">Permitir wake locks</translation>
 <translation id="653645667373317432">Esta política controla el comando que se utilizará para abrir las URL al cambiar de Internet Explorer a <ph name="PRODUCT_NAME" />.
 
@@ -3756,12 +3737,6 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 
       A esta política se le puede asignar la ruta de un archivo ejecutable. También se le puede asignar <ph name="PRODUCT_NAME_PLACEHOLDER" /> para detectar automáticamente la ruta de instalación de Chrome.</translation>
 <translation id="6536600139108165863">Reinicio automático al cerrar el dispositivo</translation>
-<translation id="6537062468544950724">Esta política determina si se recoge información que sirva para identificar equipos, como sus nombres o direcciones de red.
-
-      Si se le asigna el valor "True" o no se le asigna ninguno, se recoge información que sirve para identificar equipos.
-      Si se le asigna el valor "False", no se recoge dicha información.
-
-      Esta política solo es efectiva si la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está habilitada y el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6539246272469751178">Esta política no afecta a las aplicaciones para Android. Siempre utilizan el directorio de descargas predeterminado y no pueden acceder a ningún archivo que <ph name="PRODUCT_OS_NAME" /> haya descargado en un directorio de descargas que no sea el predeterminado.</translation>
 <translation id="654303922206238013">Estrategia de migración para eCryptfs</translation>
 <translation id="6544897973797372144">Si el valor correspondiente a esta política se establece en True y no se especifica la política ChromeOsReleaseChannel, los usuarios del dominio pertinente podrán cambiar el canal de versiones del dispositivo. Si el valor de esta política se establece en False, el dispositivo se bloqueará en el último canal configurado.
@@ -4030,12 +4005,6 @@ Si la política está establecida en False, no se informará sobre los usuarios.
       Si se le asigna el valor <ph name="BR_UNDER_USER_CONTROL" />, se muestran mensajes a los usuarios para preguntarles si quieren utilizar el servicio de copia de seguridad y restauración. Si los usuarios activan el servicio de copia de seguridad y restauración, los datos de la aplicación Android se subirán a los servidores de copia de seguridad de Android y se restaurarán cuando se vuelvan a instalar las aplicaciones compatibles.
 
       Los usuarios podrán activar o desactivar el servicio de copia de seguridad y restauración después de la configuración inicial.</translation>
-<translation id="6991078864332103177">Esta política determina si se recoge información que sirva para identificar a los usuarios, como el inicio de sesión en el SO, el inicio de sesión en el perfil de <ph name="PRODUCT_NAME" />, el nombre de perfil de <ph name="PRODUCT_NAME" />, la ruta del perfil de <ph name="PRODUCT_NAME" /> y la ruta del archivo ejecutable de <ph name="PRODUCT_NAME" />.
-
-      Si se le asigna el valor "True" o no se le asigna ninguno, se recoge información que sirve para identificar a los usuarios.
-      Si se le asigna el valor "False", no se recoge dicha información.
-
-      Esta política solo es efectiva si la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está habilitada y el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6994082778848658360">Especifica cómo se puede utilizar el hardware del elemento seguro integrado para proporcionar una autenticación de dos factores si es compatible con esta función. El botón de encendido del ordenador se utiliza para detectar la presencia física del usuario.
 
       Si se inhabilita esta opción, no se proporciona ninguna autenticación de dos factores.
@@ -4458,14 +4427,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Si no se le asigna ningún valor o el valor es 0, al ir a una URL designada se abrirá inmediatamente en un navegador alternativo.
 
       Si a esta política se le asigna un número como valor, Chrome mostrará un mensaje durante ese número de milisegundos y después abrirá un navegador alternativo.</translation>
-<translation id="7583419926951418342">Esta política controla los informes de datos en la nube de <ph name="PRODUCT_NAME" />, que sube información sobre el funcionamiento del navegador a la consola de administración de Google.
-
-      Si no se asigna ningún valor a esta política o se le asigna el valor "false", no se recoge ni se sube ningún dato.
-      Si se le asigna el valor "true", se recogen los datos y se suben a la consola de administración de Google.
-      Para controlar qué datos se suben, debes utilizar las políticas del grupo Chrome Reporting Extension.
-
-      Para <ph name="PRODUCT_NAME" />, esta política solo es efectiva si el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />.
-      Para <ph name="PRODUCT_OS_NAME" />, esta política siempre es efectiva.</translation>
 <translation id="7586477707097444774">Las cookies establecidas para los dominios que coincidan con estos patrones recuperarán la antigua configuración de comportamiento de <ph name="ATTRIBUTE_SAMESITE_NAME" />. Si restableces la configuración de comportamiento antigua, las cookies que no especifiquen ningún atributo <ph name="ATTRIBUTE_SAMESITE_NAME" /> se tratarán como si tuvieran "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" y las cookies "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" no necesitarán tener el atributo "<ph name="ATTRIBUTE_SECURE_NAME" />". Para ver la descripción completa, consulta https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies
 
           Para las cookies de dominios que no coincidan con los patrones indicados, o para todas las cookies si no se define esta política, se usará el valor global predeterminado de la política <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" />, si se ha definido, y si no, la configuración personal del usuario.
@@ -4587,19 +4548,10 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
           Si se inhabilita o no se configura esta opción, no se habilitará la autenticación de dos factores y se utilizará la autenticación predeterminada a través de un PIN definido por el usuario.</translation>
 <translation id="7750991880413385988">Abrir página Nueva pestaña</translation>
 <translation id="7754704193130578113">Preguntar dónde se guardará cada archivo antes de descargarlo</translation>
-<translation id="7755495228644343508">Configurar las políticas asociadas a Chrome Reporting Extension.
-
-      Esta política solo es efectiva si la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está habilitada y el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Habilita la autenticación pasiva para tipos de perfil.</translation>
 <translation id="7763614521440615342">Mostrar sugerencias de contenido en la página Nueva pestaña</translation>
 <translation id="7765879851993224640">Permitir que se use el inicio de sesión con Smart Lock</translation>
 <translation id="7774768074957326919">Utilizar configuración de proxy del sistema</translation>
-<translation id="7775902646576367944">Esta política determina si se recoge información de Navegación Segura, incluyendo el número de advertencias de esta función y el número de clics de destino después de las advertencias.
-
-      Si se le asigna el valor "True" o no se le asigna ninguno, se recogen datos de Navegación Segura.
-      Si se le asigna el valor "False", no se recogen datos de Navegación Segura.
-
-      Esta política solo es efectiva cuando la extensión <ph name="CHROME_REPORTING_EXTENSION_NAME" /> está habilitada y el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="777734450201217641">Esta política habilita las combinaciones de teclas para las funciones de accesibilidad en la pantalla de inicio de sesión.
 
           Si se asigna el valor "true" a esta política, las combinaciones de teclas para las funciones de accesibilidad estarán siempre habilitadas en la pantalla de inicio de sesión.
@@ -4657,15 +4609,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="793473937901685727">Establecer la disponibilidad del certificado para las aplicaciones ARC</translation>
 <translation id="7937491150792971922">Combina políticas de lista de instalación de extensiones de varias fuentes</translation>
 <translation id="7937766917976512374">Permitir o denegar captura de vídeo</translation>
-<translation id="7937944288846766530">Esta política controla las solicitudes de instalación de extensiones de <ph name="PRODUCT_NAME" /> que permiten a los usuarios enviar las solicitudes a la consola de administración de Google para su aprobación.
-
-      Si no se establece ningún valor para la política CloudReportingEnabled o se inhabilita, esta política se ignorará y las solicitudes de instalación de extensiones no se crearán ni se subirán.
-      Si no se le asigna ningún valor o se inhabilita, las solicitudes de instalación de extensiones no se crearán ni se subirán.
-      Si se habilita, la solicitudes de instalación de extensiones se crearán y se subirán a la consola de administración de Google.
-
-      Las solicitudes de instalación de extensiones se crean cuando los usuarios intentan instalar una extensión que no está incluida en la lista blanca de <ph name="EXTENSION_INSTALL_WHITELIST" /> o <ph name="EXTENSION_SETTINGS" />.
-
-      Esta política solo es efectiva cuando el equipo está registrado en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> y <ph name="CLOUD_REPORTING_ENABLED" /> está habilitado.</translation>
 <translation id="7941975817681987555">No predecir las acciones de red en ninguna conexión de red</translation>
 <translation id="7951605113561734721">Especifica los certificados de cliente de todo el dispositivo que deberían registrarse usando el protocolo de gestión de dispositivos.</translation>
 <translation id="7952007677054834789">Permite configurar las páginas que se cargan al abrir el navegador, la página principal predeterminada y la página Nueva pestaña predeterminada en <ph name="PRODUCT_NAME" /> e impide que los usuarios las cambien.
@@ -5376,7 +5319,7 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 
       Esta política no se debe habilitar si la política <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" /> está habilitada, ya que esta función comparte la misma funcionalidad del cliente. En este caso, la sincronización alojada por Google está completamente inhabilitada.</translation>
 <translation id="8955719471735800169">Volver al principio</translation>
-<translation id="8956310900055843601">Si se le asigna el valor True a la política o no se le asigna ningún valor, en la pantalla de inicio de sesión del dispositivo aparecerá un reloj con formato de 24 horas. Las sesiones de usuario se inician con este formato, pero el usuario puede cambiar el formato del reloj de una cuenta si lo desea.
+<translation id="8956310900055843601">Si se le asigna el valor True a la política o no se le asigna ningún valor, en la pantalla de inicio de sesión del dispositivo aparecerá un reloj con formato de 24 horas. Las sesiones de usuario también se inician con este formato de forma predeterminada, pero el usuario puede cambiar el formato del reloj de una cuenta si lo desea.
 
       Si se le asigna el valor False, el dispositivo utilizará el formato de reloj de 12 horas.</translation>
 <translation id="8959992920425111821">Configuración predeterminada</translation>
@@ -5493,7 +5436,7 @@ Los controladores de protocolos registrados por la política se combinan con los
 
       Si no se le asigna ningún valor o se le asigna una lista vacía, los usuarios podrán especificar los idiomas que deseen.
 
-      Si una lista incluye valores no válidos, se ignorarán. Si los usuarios añaden idiomas no permitidos por esta política a la lista de idiomas preferidos, se eliminarán. Si se usaba <ph name="PRODUCT_OS_NAME" /> en un idioma no permitido por esta política, la próxima vez que inicien sesión, el idioma de visualización cambiará a un idioma compatible. De lo contrario, si ninguna de las entradas de esta política es válida, <ph name="PRODUCT_OS_NAME" /> cambiará al primer valor válido especificado por esta política o una configuración regional alternativa (por ejemplo, en-US).</translation>
+      Si una lista incluye valores no válidos, se ignorarán. Si los usuarios añaden idiomas no permitidos por esta política a la lista de idiomas preferidos, se eliminarán. Si se usaba <ph name="PRODUCT_OS_NAME" /> en un idioma no permitido por esta política, la próxima vez que inicien sesión, el idioma de visualización cambiará a un idioma compatible. De lo contrario, si ninguna de las entradas de esta política es válida, <ph name="PRODUCT_OS_NAME" /> cambiará al primer valor válido especificado por esta política o a una configuración regional alternativa (por ejemplo, en-US).</translation>
 <translation id="9156175786579877198">Indica la lista de patrones de URL en los que deberá comprobarse si el contenido descargado infringe las normas de protección de datos sensibles antes de guardarse en el almacenamiento local.  Esta política solo se utilizará si se ha habilitado la política <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" />.
 
       Si no se define esta política o se le asigna una lista de patrones de URL vacía, no se comprobará si el contenido descargado infringe las normas de protección de datos sensibles.

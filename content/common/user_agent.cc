@@ -156,9 +156,13 @@ std::string GetOSVersion(IncludeAndroidBuildNumber include_android_build_number,
 std::string BuildOSCpuInfo(
     IncludeAndroidBuildNumber include_android_build_number,
     IncludeAndroidModel include_android_model) {
-  std::string cputype = BuildCpuInfo();
-  std::string os_version =
-      GetOSVersion(include_android_build_number, include_android_model);
+  return BuildOSCpuInfoFromOSVersionAndCpuType(
+      GetOSVersion(include_android_build_number, include_android_model),
+      BuildCpuInfo());
+}
+
+std::string BuildOSCpuInfoFromOSVersionAndCpuType(const std::string& os_version,
+                                                  const std::string& cpu_type) {
   std::string os_cpu;
 
 #if !defined(OS_ANDROID) && defined(OS_POSIX) && !defined(OS_MACOSX)
@@ -167,15 +171,20 @@ std::string BuildOSCpuInfo(
   uname(&unixinfo);
 #endif
 
-  base::StringAppendF(&os_cpu,
 #if defined(OS_WIN)
-                      "Windows NT %s; %s", os_version.c_str(), cputype.c_str()
-#elif defined(OS_MACOSX)
-                      "%s Mac OS X %s", cputype.c_str(), os_version.c_str()
+  if (!cpu_type.empty())
+    base::StringAppendF(&os_cpu, "Windows NT %s; %s", os_version.c_str(),
+                        cpu_type.c_str());
+  else
+    base::StringAppendF(&os_cpu, "Windows NT %s", os_version.c_str());
+#else
+  base::StringAppendF(&os_cpu,
+#if defined(OS_MACOSX)
+                      "%s Mac OS X %s", cpu_type.c_str(), os_version.c_str()
 #elif defined(OS_CHROMEOS)
                       "CrOS "
                       "%s %s",
-                      cputype.c_str(),  // e.g. i686
+                      cpu_type.c_str(),  // e.g. i686
                       os_version.c_str()
 #elif defined(OS_ANDROID)
                       "Android %s", os_version.c_str()
@@ -184,9 +193,10 @@ std::string BuildOSCpuInfo(
 #elif defined(OS_POSIX)
                       "%s %s",
                       unixinfo.sysname,  // e.g. Linux
-                      cputype.c_str()    // e.g. i686
+                      cpu_type.c_str()   // e.g. i686
 #endif
   );
+#endif
 
   return os_cpu;
 }

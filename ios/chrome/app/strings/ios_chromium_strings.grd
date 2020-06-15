@@ -250,8 +250,17 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_PRODUCT_NAME" desc="The Chrome application name">
         Chromium
       </message>
+      <message name="IDS_IOS_RECENT_TABS_OTHER_DEVICES_EMPTY_MESSAGE" desc="To use the Other Devices section of the Recent Tabs view, a user must be signed in and activate Tabs synchronization on multiple devices. This message is shown in this section when the user is signed in and has activated Tabs synchronization only on this device.">
+          To see your tabs from wherever you use Chromium, sign in on all your devices
+      </message>
+      <message name="IDS_IOS_RECENT_TABS_OTHER_DEVICES_SIGNED_OUT_MESSAGE" desc="To use the Other Devices section of the Recent Tabs view, a user must be signed in and activate Tabs synchronization on multiple devices. This message is shown in this section when the user is not signed in.">
+          To see your tabs from wherever you use Chromium, sign in and turn on sync
+      </message>
+      <message name="IDS_IOS_RECENT_TABS_OTHER_DEVICES_SYNC_IS_OFF_MESSAGE" desc="To use the Other Devices section of the Recent Tabs view, a user must be signed in and activate Tabs synchronization on multiple devices. This message is shown in this section when the user is signed in, but Tabs synchronization is turned off.">
+          To see your tabs from wherever you use Chromium, turn on sync
+      </message>
       <message name="IDS_IOS_REMOVE_ACCOUNT_CONFIRMATION_MESSAGE" desc="Dialog message to emphasize the effects of removing an account.">
-      This account and any unsaved data will be removed from Chromium.
+        This account and any unsaved data will be removed from Chromium.
       </message>
       <message name="IDS_IOS_SAFE_MODE_NAMED_TWEAKS_FOUND" desc="The message indicating a 3rd party tweak has been found that is known to crash Chromium.  After the ':', we will list the names of the libraries. [Length: 140em]">
         Some add-ons cause Chromium to crash. Please uninstall:

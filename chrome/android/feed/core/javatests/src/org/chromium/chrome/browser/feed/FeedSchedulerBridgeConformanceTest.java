@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.feed;
 
-import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Before;

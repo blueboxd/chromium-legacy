@@ -27,7 +27,9 @@ void DrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                       const gfx::Rect& rect,
                       const gfx::Rect& visible_rect,
                       bool needs_blending) {
-  DCHECK(rect.Contains(visible_rect))
+  // TODO(boliu): Temporarily making this a release check to catch
+  // crbug.com/1072407.
+  CHECK(rect.Contains(visible_rect))
       << "rect: " << rect.ToString()
       << " visible_rect: " << visible_rect.ToString();
 

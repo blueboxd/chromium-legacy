@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Log masuk ke tapak web</translation>
 <translation id="1509960214886564027">Ciri pada banyak tapak mungkin rosak</translation>
 <translation id="152234381334907219">Tidak Pernah Disimpan</translation>
+<translation id="1535268707340844072">Tetapan semasa anda mungkin menyebabkan sesetengah tapak rosak. Untuk mengurus kuki bagi semua tapak, lihat <ph name="BEGIN_LINK" />Tetapan Kuki<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Alamat 1</translation>
 <translation id="1545749641540134597">Imbas Kod QR</translation>
 <translation id="1552525382687785070">Penyegerakan Dilumpuhkan oleh Pentadbir Anda</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Aktif <ph name="DAYS" /> Hari Yang Lalu</translation>
 <translation id="2074131957428911366">Anda boleh memilih item yang hendak disegerakkan dalam <ph name="BEGIN_LINK" />tetapan<ph name="END_LINK" /> pada bila-bila masa.</translation>
 <translation id="2079545284768500474">Buat asal</translation>
+<translation id="2081417079511601293">Sekat Pihak Ketiga dalam Inkognito</translation>
 <translation id="209018056901015185">Minta Tapak Desktop</translation>
 <translation id="2103075008456228677">Buka history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dialihkan</translation>
@@ -100,7 +102,6 @@
 <translation id="2139867232736819575">Cari Teks yang Anda Salin</translation>
 <translation id="2149973817440762519">Edit Penanda Halaman</translation>
 <translation id="2175927920773552910">Kod QR</translation>
-<translation id="2179182049312275900">Anda boleh menghidupkan penyegerakan pada bila-bila masa dalam tetapan.</translation>
 <translation id="2198757192731523470">Google boleh menggunakan sejarah anda untuk memperibadikan Carian, iklan dan perkhidmatan Google yang lain.</translation>
 <translation id="2218443599109088993">Zum Keluar</translation>
 <translation id="2230173723195178503">Halaman web dimuatkan</translation>
@@ -177,6 +178,7 @@
 <translation id="2989805286512600854">Buka dalam Tab Baharu</translation>
 <translation id="3037605927509011580">Oh, Tidak!</translation>
 <translation id="3112556859945124369">Tandakan...</translation>
+<translation id="3131206671572504478">Sekat Semua</translation>
 <translation id="3153862085237805241">Simpan Kad</translation>
 <translation id="3157684681743766797">Tandakan Semua...</translation>
 <translation id="3161291298470460782">Tindakan ini akan membuatkan anda dilog keluar, mematikan penyegerakan dan mengosongkan semua data Chrome daripada peranti ini. Data anda yang disegerakkan akan kekal disimpan dalam Akaun Google anda.</translation>
@@ -249,7 +251,6 @@
 <translation id="4038354071007134711">Tiada aplikasi pada peranti ini yang dapat membuka fail itu.</translation>
 <translation id="4042870976416480368">Cari dalam Halaman</translation>
 <translation id="4049507953662678203">Pastikan anda mempunyai sambungan rangkaian dan cuba lagi.</translation>
-<translation id="4071530748369333746">Batalkan Penyegerakan?</translation>
 <translation id="4082688844002261427">Kawal cara sejarah penyemakan imbas anda digunakan untuk memperibadikan Carian, iklan dan pelbagai lagi</translation>
 <translation id="408404951701638773">Kini bar Carian lebih mudah dicapai</translation>
 <translation id="411254640334432676">Muat turun gagal.</translation>
@@ -274,6 +275,7 @@
 <translation id="4389019817280890563">Ketik untuk menukar bahasa.</translation>
 <translation id="441868831736628555">Notis Privasi</translation>
 <translation id="4454246407045105932">Tambahkan Bahasa</translation>
+<translation id="4469418912670346607">Teruskan Persediaan</translation>
 <translation id="4476574785019001431">Tetapan</translation>
 <translation id="4496373720959965247">Tambahkan tab dan beralih antara halaman</translation>
 <translation id="4508750114462689118">Tutup promosi log masuk</translation>
@@ -302,6 +304,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="4805759445554688327">Nombor Kad Tidak Sah</translation>
 <translation id="4818522717893377262">Tambahkan Bahasa...</translation>
 <translation id="481968316161811770">Kuki, Data Tapak</translation>
+<translation id="4826218269716039351">Sekat Pihak Ketiga</translation>
 <translation id="4833786495304741580">Menghantar perangkaan penggunaan dan laporan ranap sistem secara automatik kepada Google.</translation>
 <translation id="4840495572919996524">Penanda halaman, sejarah, kata laluan dan pelbagai lagi tidak akan disegerakkan ke Akaun Google anda.</translation>
 <translation id="4854345657858711387">Tetapkan Kod Laluan</translation>
@@ -347,6 +350,7 @@ Untuk menukar tetapan ini, <ph name="BEGIN_LINK" />tetapkan semula penyegerakan<
 <translation id="54401264925851789">Maklumat Halaman Keselamatan</translation>
 <translation id="5443952882982198570">Kad Kredit</translation>
 <translation id="5457907402803865181">Ralat semasa menyegerakkan kata laluan.</translation>
+<translation id="5489208564673669003">Untuk mengurus kuki bagi semua tapak, lihat <ph name="BEGIN_LINK" />Tetapan Kuki<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Log Keluar dan Kosongkan Data daripada Peranti ini</translation>
 <translation id="5525269841082836315">Buat Frasa Laluan</translation>
 <translation id="5548760955356983418">Ciri Serah membolehkan anda mula menyemak imbas tapak web pada peranti ini, kemudian meneruskannya pada Mac anda dengan mudah. Tapak web yang dibuka pada masa ini akan muncul dalam Dock Mac anda.
@@ -434,6 +438,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="6418346271604475326">Menyediakan PDF</translation>
 <translation id="6426067060178468363">Benarkan Kuki</translation>
 <translation id="6434591244308415567">Ralat telah berlaku. Cuba sebentar lagi.</translation>
+<translation id="6439338047467462846">Benarkan Semua</translation>
 <translation id="6445051938772793705">Negara</translation>
 <translation id="6445981559479772097">Mesej dihantar.</translation>
 <translation id="6447842834002726250">Kuki</translation>
@@ -441,6 +446,7 @@ Data anda disulitkan dengan ungkapan laluan segerak anda pada <ph name="TIME" />
 <translation id="6476800141292307438">Menterjemah halaman ini kepada <ph name="LANGUAGE" />. Pilihan tersedia berhampiran bahagian bawah skrin.</translation>
 <translation id="648164694371393720">Ralat Pengesahan</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> item dipadamkan</translation>
+<translation id="651505212789431520">Batalkan Penyegerakan? Anda boleh menghidupkan penyegerakan pada bila-bila masa dalam Tetapan.</translation>
 <translation id="6561262006871132942">Zum Masuk</translation>
 <translation id="6610002944194042868">Pilihan Terjemahan</translation>
 <translation id="6628106477656132239">Tarikh Tamat Tempoh Tidak Sah</translation>

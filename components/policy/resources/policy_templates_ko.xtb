@@ -182,12 +182,6 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       출처 또는 호스트 이름 패턴</translation>
 <translation id="1312799700549720683">디스플레이 설정을 제어합니다.</translation>
 <translation id="131353325527891113">로그인 화면에 사용자 이름 표시</translation>
-<translation id="1327351219049180837">이 정책은 정책 데이터 및 정책 가져오기 시기의 보고 여부를 제어합니다.
-
-      이 정책이 설정되어 있지 않거나 True로 설정되어 있으면 정책 데이터 및 정책 가져오기 시기에 관한 정보가 수집됩니다.
-      이 정책이 False로 설정되어 있으면 정책 데이터 및 정책 가져오기 시기에 관한 정보가 수집되지 않습니다.
-
-      이 정책은 <ph name="CHROME_REPORTING_EXTENSION_NAME" />이(가) 사용 설정되어 있고 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />에 등록된 경우에만 적용됩니다.</translation>
 <translation id="1327466551276625742">오프라인일 때 네트워크 설정 프롬프트를 사용하도록 설정</translation>
 <translation id="1330145147221172764">터치 키보드 사용</translation>
 <translation id="13356285923490863">정책 이름</translation>
@@ -961,12 +955,6 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
 
           Windows의 경우 이 정책은 <ph name="MS_AD_NAME" /> 도메인에 참여하는 Windows 인스턴스 또는 기기 관리에 등록된 Windows 10 Pro/Enterprise 인스턴스에서만 사용할 수 있습니다.</translation>
 <translation id="247658312644322296">'PDF로 저장' 목적지</translation>
-<translation id="2478649170422995190">이 정책은 OS 버전, OS 플랫폼, OS 아키텍처, <ph name="PRODUCT_NAME" /> 버전, <ph name="PRODUCT_NAME" /> 채널과 같은 버전 정보의 보고 여부를 제어합니다.
-
-      이 정책이 설정되어 있지 않거나 True로 설정되어 있으면 버전 정보가 수집됩니다.
-      이 정책이 False로 설정되어 있으면 버전 정보가 수집되지 않습니다.
-
-      이 정책은 <ph name="CHROME_REPORTING_EXTENSION_NAME" />이(가) 사용 설정되어 있고 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />에 등록된 경우에만 적용됩니다.</translation>
 <translation id="2480971699591919564">사용자가 로그인되어 있으면 Chrome 데스크톱에서 Android 기기로 전화번호를 전송하도록 허용하는 클릭 투 콜 기능을 사용 설정합니다. 자세한 내용은 고객센터 도움말을 참고하세요. https://support.google.com/chrome/answer/9430554?hl=ko
 
       이 정책이 사용 설정된 경우 Chrome 사용자가 Android 기기로 전화번호를 전송할 수 있습니다.
@@ -3640,12 +3628,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           'CookiesAllowedForUrls' 및 'CookiesSessionOnlyForUrls' 정책도 참조하세요. 이 세 정책 간에 충돌하는 URL 패턴이 없어야 합니다. 어떤 정책이 우선 적용되는지는 지정되어 있지 않습니다.
 
           올바른 URL 패턴을 자세히 알아보려면 https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns를 참조하세요.</translation>
-<translation id="6399242659768117666">확장 프로그램 및 플러그인 정보 보고 여부를 제어하는 정책입니다.
-
-      이 정책이 설정되어 있지 않거나 True로 설정되어 있으면 확장 프로그램 및 플러그인 데이터가 수집됩니다.
-      이 정책이 False로 설정되어 있으면 확장 프로그램 및 플러그인 데이터가 수집되지 않습니다.
-
-      이 정책은 <ph name="CHROME_REPORTING_EXTENSION_NAME" />이(가) 사용 설정되어 있고 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />에 등록되어 있을 때만 적용됩니다.</translation>
 <translation id="6401669939808766804">사용자 로그아웃</translation>
 <translation id="6406448383934634215">시작 시 액션으로 'URL 목록 열기'를 선택하면 열릴 URL 목록을 지정할 수 있습니다. 이 정책이 설정되지 않으면 시작 시 어떤 URL도 열리지 않습니다.
 
@@ -3668,7 +3650,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           프록시 서버를 자동 감지하도록 선택한 경우 Android 앱에 스크립트 URL 'http://wpad/wpad.dat'가 제공됩니다. 프록시 자동 감지 프로토콜의 다른 부분은 사용되지 않습니다.
 
           .pac 프록시 스크립트를 사용하도록 선택한 경우 Android 앱에 스크립트 URL이 제공됩니다.</translation>
-<translation id="6430366557948788869">Chrome 보고 확장 프로그램</translation>
 <translation id="6438972408080276697">정책을 True로 설정하면 키 보고서와 정책에 의해 실행된 Android 앱 설치 이벤트가 Google로 전송됩니다. False로 설정하면 이벤트가 캡처되지 않습니다.</translation>
 <translation id="6440051664870270040">사이트에서 동시에 팝업을 탐색하고 열도록 허용</translation>
 <translation id="6447948611083700881">백업 및 복원이 사용 중지됨</translation>
@@ -3746,12 +3727,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       이 정책은 실행 파일 경로로 설정하거나 <ph name="PRODUCT_NAME_PLACEHOLDER" />(으)로 설정하여 Chrome의 설치 위치를 자동으로 감지하게 할 수 있습니다.</translation>
 <translation id="6536600139108165863">기기 종료 시 자동 재부팅</translation>
-<translation id="6537062468544950724">이 정책은 기기 이름, 네트워크 주소 등 기기를 식별하는 데 사용할 수 있는 정보의 보고 여부를 제어합니다.
-
-      이 정책이 설정되어 있지 않거나 True로 설정되어 있으면 기기 식별에 사용될 수 있는 정보가 수집됩니다. 
-      이 정책이 False로 설정되어 있으면 기기 식별에 사용될 수 있는 정보가 수집되지 않습니다. 
-
-      이 정책은 <ph name="CHROME_REPORTING_EXTENSION_NAME" />이(가) 사용 설정되어 있고 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />에 등록된 경우에만 적용됩니다.</translation>
 <translation id="6539246272469751178">이 정책은 Android 앱에 아무런 영향도 미치지 않습니다. Android 앱은 언제나 기본 다운로드 디렉터리를 사용하며 <ph name="PRODUCT_OS_NAME" />에 의해 기본 다운로드 디렉터리가 아닌 디렉터리로 다운로드된 파일에 액세스할 수 없습니다.</translation>
 <translation id="654303922206238013">ecryptfs 관련 이전 전략</translation>
 <translation id="6544897973797372144">정책이 True로 설정되어 있고 ChromeOsReleaseChannel 정책이 지정되지 않은 경우 등록된 도메인의 사용자가 기기의 배포 채널을 변경할 수 있도록 허용됩니다. 정책이 false로 설정되어 있으면 마지막에 설정한 채널을 기기가 사용합니다.
@@ -4022,12 +3997,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       <ph name="BR_UNDER_USER_CONTROL" />(으)로 설정하면 사용자에게 백업 및 복원을 사용하라는 메시지가 표시됩니다. 사용자가 백업 및 복원을 사용 설정하면 Android 앱 데이터가 Android 백업 서버에 업로드되고 호환 앱 재설치 중에 복원됩니다.
 
       초기 설정 후 사용자가 백업 및 복원을 사용 설정 또는 중지할 수 있습니다.</translation>
-<translation id="6991078864332103177">이 정책은 OS 로그인 정보, <ph name="PRODUCT_NAME" /> 프로필 로그인 정보, <ph name="PRODUCT_NAME" /> 프로필 이름, <ph name="PRODUCT_NAME" /> 프로필 경로, <ph name="PRODUCT_NAME" /> 실행 경로와 같이 사용자를 식별하는 데 사용할 수 있는 정보의 보고 여부를 제어합니다.
-
-      이 정책이 설정되어 있지 않거나 True로 설정되어 있으면 사용자 식별에 사용될 수 있는 정보가 수집됩니다.
-      이 정책이 False로 설정되어 있으면 사용자를 식별하는 데 사용할 수 있는 정보가 수집되지 않습니다.
-
-      이 정책은 <ph name="CHROME_REPORTING_EXTENSION_NAME" />이(가) 사용 설정되어 있고 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />에 등록된 경우에만 적용됩니다.</translation>
 <translation id="6994082778848658360">내장된 보안 요소 하드웨어가 2단계 인증과 호환될 경우, 2단계 인증을 제공하는 데 어떻게 사용할지 지정합니다. 기기 전원 버튼은 사용자가 실제로 있는지 감지하는 데 사용됩니다.
 
       '사용 안함'을 선택하면 2차 요소가 제공되지 않습니다.
@@ -4450,14 +4419,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 정책을 설정하지 않고 두거나 0으로 설정할 경우 지정된 URL로 이동하면 즉시 대체 브라우저가 실행됩니다.
 
       이 정책을 숫자로 설정하면 Chrome에서 이 숫자만큼의 밀리초 동안 메시지가 표시된 후 대체 브라우저가 실행됩니다.</translation>
-<translation id="7583419926951418342">이 정책은 Google 관리 콘솔에 브라우저 작동 정보를 업로드하는 <ph name="PRODUCT_NAME" /> 클라우드 보고 기능을 관리합니다.
-
-      정책이 설정되지 않거나 false로 설정되면 데이터가 수집되거나 업로드되지 않습니다.
-      true로 설정되면 데이터가 수집되어 Google 관리 콘솔에 업로드됩니다.
-      업로드되는 데이터를 관리하려면 Chrome Reporting Extension 그룹의 정책을 사용하세요.
-
-      <ph name="PRODUCT_NAME" />의 경우 이 정책은 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />에 등록되어 있는 경우에만 적용됩니다.
-      <ph name="PRODUCT_OS_NAME" />의 경우 정책이 항상 적용됩니다.</translation>
 <translation id="7586477707097444774">다음 패턴과 일치하는 도메인에 설정된 쿠키는 레거시 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 동작으로 되돌아갑니다. 레거시 동작으로 되돌리면 <ph name="ATTRIBUTE_SAMESITE_NAME" /> 속성을 지정하지 않는 쿠키가 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />'인 것처럼 처리되고 '<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />' 쿠키가 '<ph name="ATTRIBUTE_SECURE_NAME" />' 속성을 수반하지 않아도 됩니다. https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies에서 전체 설명을 확인하세요.
 
           여기 명시된 패턴에 해당하지 않는 도메인의 쿠키 또는 이 정책을 설정하지 않은 경우의 모든 쿠키에 대해 <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" /> 정책(설정된 경우) 또는 사용자 개인 설정의 전체 기본값이 사용됩니다.
@@ -4579,19 +4540,10 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
           이 설정을 사용 중지하거나 설정하지 않으면 2단계 인증이 사용되지 않으며 사용자 지정 PIN의 기본 동작이 사용됩니다.</translation>
 <translation id="7750991880413385988">새 탭 페이지 열기</translation>
 <translation id="7754704193130578113">다운로드 전에 각 파일의 저장 위치 확인</translation>
-<translation id="7755495228644343508">Chrome 보고 확장 프로그램 관련 정책을 구성합니다.
-
-      이 정책은 <ph name="CHROME_REPORTING_EXTENSION_NAME" />이(가) 사용 설정되어 있고 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />에 등록된 경우에만 적용됩니다.</translation>
 <translation id="7758378441185523981">프로필 유형에 수동 인증을 사용 설정합니다.</translation>
 <translation id="7763614521440615342">새 탭 페이지에 콘텐츠 추천 표시</translation>
 <translation id="7765879851993224640">Smart Lock을 사용하도록 허용합니다.</translation>
 <translation id="7774768074957326919">시스템 프록시 설정 사용</translation>
-<translation id="7775902646576367944">세이프 브라우징 경고 수 및 세이프 브라우징 경고 클릭연결 수를 포함한 세이프 브라우징 정보 보고 여부를 제어하는 정책입니다.
-
-      이 정책이 설정되어 있지 않거나 True로 설정되어 있으면 세이프 브라우징 데이터가 수집됩니다.
-      이 정책이 False로 설정되어 있으면 세이프 브라우징 데이터가 수집되지 않습니다.
-
-      이 정책은 <ph name="CHROME_REPORTING_EXTENSION_NAME" />이(가) 사용 설정되어 있고 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />에 등록된 경우에만 적용됩니다.</translation>
 <translation id="777734450201217641">로그인 화면에서 접근성 기능 단축키를 사용 설정합니다.
 
           정책이 true로 설정되면 접근성 기능 단축키가 로그인 화면에서 항상 사용 설정됩니다.
@@ -4649,15 +4601,6 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="793473937901685727">ARC 앱에 인증서 사용 가능 여부 설정</translation>
 <translation id="7937491150792971922">여러 출처의 확장 프로그램 설치 목록 정책 병합</translation>
 <translation id="7937766917976512374">동영상 캡처 허용 또는 거부</translation>
-<translation id="7937944288846766530">이 정책은 사용자가 Google 관리 콘솔에 승인 요청을 보낼 수 있도록 허용하는 <ph name="PRODUCT_NAME" /> 확장 프로그램 설치 요청을 제어합니다.
-
-      CloudReportingEnabled 정책이 설정되지 않거나 사용 중지되면 정책은 무시되며 확장 프로그램 설치 요청은 생성 또는 업로드되지 않습니다.
-      정책이 설정되지 않거나 사용 중지되면 확장 프로그램 설치 요청은 생성 또는 업로드되지 않습니다.
-      정책이 사용 설정되면 확장 프로그램 설치 요청이 생성되고 Google 관리 콘솔에 업로드됩니다.
-
-      사용자가 <ph name="EXTENSION_INSTALL_WHITELIST" /> 또는 <ph name="EXTENSION_SETTINGS" />에서 허용되지 않은 확장 프로그램을 설치하려고 하면 확장 프로그램 설치 요청이 생성됩니다.
-
-      이 정책은 기기가 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />에 등록되어 있고 <ph name="CLOUD_REPORTING_ENABLED" />가 사용 설정된 경우에만 적용됩니다.</translation>
 <translation id="7941975817681987555">모든 네트워크 연결의 네트워크 활동 예측 안함</translation>
 <translation id="7951605113561734721">기기 관리 프로토콜을 사용하여 등록해야 하는 기기 수준 클라이언트 인증서를 지정합니다.</translation>
 <translation id="7952007677054834789"><ph name="PRODUCT_NAME" />에서 시작 시 로드될 페이지, 기본 홈페이지, 기본 새 탭 페이지를 구성하고 사용자가 변경하지 못하게 합니다.

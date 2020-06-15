@@ -509,7 +509,6 @@
 <translation id="7068360136237591149">ഫയലുകൾ തുറക്കുക</translation>
 <translation id="7076293881109082629">സൈൻ ഇൻ ചെയ്യുന്നു</translation>
 <translation id="7088960765736518739">ആക്‌സസ് മാറുക</translation>
-<translation id="7092922358121866860">നൈറ്റ് ‌ലൈറ്റ് ക്രമീകരണം കാണിക്കുക</translation>
 <translation id="7098389117866926363">USB-C ഉപകരണം (പുറകിൽ ഇടതുവശത്തെ പോർട്ട്)</translation>
 <translation id="7131634465328662194">നിങ്ങൾ സ്വമേധയാ സൈൻ ഔട്ടാകും.</translation>
 <translation id="7143207342074048698">കണക്റ്റുചെയ്യുന്നു</translation>
@@ -661,7 +660,6 @@
 <translation id="8877788021141246043">ഒരു റിമൈൻഡർ സജ്ജീകരിക്കുക</translation>
 <translation id="8878886163241303700">സ്‌ക്രീൻ വിപുലീകരിക്കുന്നു</translation>
 <translation id="890616557918890486">ഉറവിടം മാറ്റുക</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" />, <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) എന്ന റെസല്യൂഷൻ പിന്തുണയ്‌ക്കുന്നില്ല. <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) എന്നതിലേക്ക് റെസല്യൂഷൻ മാറ്റി. മാറ്റങ്ങൾ നിലനിർത്താൻ 'സ്ഥിരീകരിക്കുക' ക്ലിക്ക് ചെയ്യുക. മുമ്പത്തെ ക്രമീകരണം <ph name="TIMEOUT_SECONDS" /> പുനഃസ്ഥാപിക്കും.</translation>
 <translation id="8909138438987180327">ബാറ്ററി <ph name="PERCENTAGE" /> ശതമാനം ഉണ്ട്..</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google അസിസ്‌റ്റന്‍റ് ഈ ഭാഷ സംസാരിക്കില്ല.</translation>

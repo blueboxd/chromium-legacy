@@ -12,8 +12,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
+import org.chromium.components.infobars.InfoBarLayout;
 
 /**
  * An infobar to disclose to the user that the default search engine has geolocation access by

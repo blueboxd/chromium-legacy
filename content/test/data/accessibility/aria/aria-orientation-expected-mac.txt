@@ -14,12 +14,12 @@ AXWebArea
 ++AXRadioGroup
 ++AXRadioGroup AXOrientation='AXHorizontalOrientation'
 ++AXRadioGroup AXOrientation='AXVerticalOrientation'
-++AXScrollBar AXOrientation='AXVerticalOrientation' AXValue='50'
-++AXScrollBar AXOrientation='AXHorizontalOrientation' AXValue='50'
-++AXScrollBar AXOrientation='AXVerticalOrientation' AXValue='50'
-++AXSlider AXOrientation='AXHorizontalOrientation' AXValue='50'
-++AXSlider AXOrientation='AXHorizontalOrientation' AXValue='50'
-++AXSlider AXOrientation='AXVerticalOrientation' AXValue='50'
+++AXScrollBar AXOrientation='AXVerticalOrientation' AXValue=50
+++AXScrollBar AXOrientation='AXHorizontalOrientation' AXValue=50
+++AXScrollBar AXOrientation='AXVerticalOrientation' AXValue=50
+++AXSlider AXOrientation='AXHorizontalOrientation' AXValue=50
+++AXSlider AXOrientation='AXHorizontalOrientation' AXValue=50
+++AXSlider AXOrientation='AXVerticalOrientation' AXValue=50
 ++AXSplitter AXOrientation='AXHorizontalOrientation'
 ++AXSplitter AXOrientation='AXHorizontalOrientation'
 ++AXSplitter AXOrientation='AXVerticalOrientation'

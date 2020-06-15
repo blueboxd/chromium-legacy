@@ -91,6 +91,7 @@ using indexed_db::PutVarInt;
 using indexed_db::ReportOpenStatus;
 
 namespace {
+
 FilePath GetBlobDirectoryName(const FilePath& path_base, int64_t database_id) {
   return path_base.AppendASCII(base::StringPrintf("%" PRIx64, database_id));
 }
@@ -426,9 +427,14 @@ Status DeleteBlobsInRange(IndexedDBBackingStore::Transaction* transaction,
                           const std::string& start_key,
                           const std::string& end_key,
                           bool upper_open) {
+  Status s;
   std::unique_ptr<TransactionalLevelDBIterator> it =
-      transaction->transaction()->CreateIterator();
-  Status s = it->Seek(start_key);
+      transaction->transaction()->CreateIterator(s);
+  if (!s.ok()) {
+    INTERNAL_WRITE_ERROR_UNTESTED(CREATE_ITERATOR);
+    return s;
+  }
+  s = it->Seek(start_key);
   for (; s.ok() && it->IsValid() &&
          (upper_open ? CompareKeys(it->Key(), end_key) < 0
                      : CompareKeys(it->Key(), end_key) <= 0);
@@ -1468,7 +1474,11 @@ Status IndexedDBBackingStore::GetKeyGeneratorCurrentNumber(
       ObjectStoreDataKey::Encode(database_id, object_store_id, MaxIDBKey());
 
   std::unique_ptr<TransactionalLevelDBIterator> it =
-      leveldb_transaction->CreateIterator();
+      leveldb_transaction->CreateIterator(s);
+  if (!s.ok()) {
+    INTERNAL_READ_ERROR_UNTESTED(GET_KEY_GENERATOR_CURRENT_NUMBER);
+    return s;
+  }
   int64_t max_numeric_key = 0;
 
   for (s = it->Seek(start_key);
@@ -1925,9 +1935,14 @@ Status IndexedDBBackingStore::FindKeyInIndex(
       transaction->transaction();
   const std::string leveldb_key =
       IndexDataKey::Encode(database_id, object_store_id, index_id, key);
+  Status s;
   std::unique_ptr<TransactionalLevelDBIterator> it =
-      leveldb_transaction->CreateIterator();
-  Status s = it->Seek(leveldb_key);
+      leveldb_transaction->CreateIterator(s);
+  if (!s.ok()) {
+    INTERNAL_WRITE_ERROR_UNTESTED(CREATE_ITERATOR);
+    return s;
+  }
+  s = it->Seek(leveldb_key);
   if (!s.ok()) {
     INTERNAL_READ_ERROR_UNTESTED(FIND_KEY_IN_INDEX);
     return s;
@@ -2043,21 +2058,15 @@ Status IndexedDBBackingStore::KeyExistsInIndex(
 }
 
 IndexedDBBackingStore::Cursor::Cursor(
-    const IndexedDBBackingStore::Cursor* other)
+    const IndexedDBBackingStore::Cursor* other,
+    std::unique_ptr<TransactionalLevelDBIterator> iterator)
     : transaction_(other->transaction_),
       database_id_(other->database_id_),
       cursor_options_(other->cursor_options_),
+      iterator_(std::move(iterator)),
       current_key_(std::make_unique<IndexedDBKey>(*other->current_key_)) {
   DCHECK(transaction_);
-  if (other->iterator_) {
-    iterator_ = transaction_->transaction()->CreateIterator();
-
-    if (other->iterator_->IsValid()) {
-      Status s = iterator_->Seek(other->iterator_->Key());
-      // TODO(cmumford): Handle this error (crbug.com/363397)
-      DCHECK(iterator_->IsValid());
-    }
-  }
+  DCHECK(iterator_);
 }
 
 IndexedDBBackingStore::Cursor::Cursor(base::WeakPtr<Transaction> transaction,
@@ -2068,12 +2077,43 @@ IndexedDBBackingStore::Cursor::Cursor(base::WeakPtr<Transaction> transaction,
       cursor_options_(cursor_options) {
   DCHECK(transaction_);
 }
+
 IndexedDBBackingStore::Cursor::~Cursor() {}
+
+std::unique_ptr<TransactionalLevelDBIterator>
+IndexedDBBackingStore::Cursor::CloneIterator(
+    const IndexedDBBackingStore::Cursor* other) {
+  if (!other)
+    return nullptr;
+  if (!other->iterator_)
+    return nullptr;
+
+  Status s;
+  auto iter = other->transaction_->transaction()->CreateIterator(s);
+  if (!s.ok()) {
+    INTERNAL_WRITE_ERROR_UNTESTED(CREATE_ITERATOR);
+    return nullptr;
+  }
+
+  if (other->iterator_->IsValid()) {
+    s = iter->Seek(other->iterator_->Key());
+    // TODO(cmumford): Handle this error (crbug.com/363397)
+    DCHECK(iter->IsValid());
+  }
+
+  return iter;
+}
 
 bool IndexedDBBackingStore::Cursor::FirstSeek(Status* s) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
   DCHECK(transaction_);
-  iterator_ = transaction_->transaction()->CreateIterator();
+  DCHECK(s);
+  iterator_ = transaction_->transaction()->CreateIterator(*s);
+  if (!s->ok()) {
+    INTERNAL_WRITE_ERROR_UNTESTED(CREATE_ITERATOR);
+    return false;
+  }
+
   {
     IDB_TRACE("IndexedDBBackingStore::Cursor::FirstSeek::Seek");
     if (cursor_options_.forward)
@@ -2339,7 +2379,11 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
 
   std::unique_ptr<Cursor> Clone() const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
-    return base::WrapUnique(new ObjectStoreKeyCursorImpl(this));
+    auto iter = CloneIterator(this);
+    if (!iter)
+      return nullptr;
+    return base::WrapUnique(
+        new ObjectStoreKeyCursorImpl(this, std::move(iter)));
   }
 
   // IndexedDBBackingStore::Cursor
@@ -2362,8 +2406,10 @@ class ObjectStoreKeyCursorImpl : public IndexedDBBackingStore::Cursor {
   }
 
  private:
-  explicit ObjectStoreKeyCursorImpl(const ObjectStoreKeyCursorImpl* other)
-      : IndexedDBBackingStore::Cursor(other) {}
+  explicit ObjectStoreKeyCursorImpl(
+      const ObjectStoreKeyCursorImpl* other,
+      std::unique_ptr<TransactionalLevelDBIterator> iterator)
+      : IndexedDBBackingStore::Cursor(other, std::move(iterator)) {}
 
   DISALLOW_COPY_AND_ASSIGN(ObjectStoreKeyCursorImpl);
 };
@@ -2418,7 +2464,10 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
 
   std::unique_ptr<Cursor> Clone() const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
-    return base::WrapUnique(new ObjectStoreCursorImpl(this));
+    auto iter = CloneIterator(this);
+    if (!iter)
+      return nullptr;
+    return base::WrapUnique(new ObjectStoreCursorImpl(this, std::move(iter)));
   }
 
   // IndexedDBBackingStore::Cursor
@@ -2441,9 +2490,10 @@ class ObjectStoreCursorImpl : public IndexedDBBackingStore::Cursor {
   }
 
  private:
-  explicit ObjectStoreCursorImpl(const ObjectStoreCursorImpl* other)
-      : IndexedDBBackingStore::Cursor(other),
-        current_value_(other->current_value_) {}
+  explicit ObjectStoreCursorImpl(
+      const ObjectStoreCursorImpl* other,
+      std::unique_ptr<TransactionalLevelDBIterator> iterator)
+      : IndexedDBBackingStore::Cursor(other, std::move(iterator)) {}
 
   IndexedDBValue current_value_;
 
@@ -2497,7 +2547,10 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
 
   std::unique_ptr<Cursor> Clone() const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
-    return base::WrapUnique(new IndexKeyCursorImpl(this));
+    auto iter = CloneIterator(this);
+    if (!iter)
+      return nullptr;
+    return base::WrapUnique(new IndexKeyCursorImpl(this, std::move(iter)));
   }
 
   // IndexedDBBackingStore::Cursor
@@ -2532,8 +2585,10 @@ class IndexKeyCursorImpl : public IndexedDBBackingStore::Cursor {
   }
 
  private:
-  explicit IndexKeyCursorImpl(const IndexKeyCursorImpl* other)
-      : IndexedDBBackingStore::Cursor(other),
+  explicit IndexKeyCursorImpl(
+      const IndexKeyCursorImpl* other,
+      std::unique_ptr<TransactionalLevelDBIterator> iterator)
+      : IndexedDBBackingStore::Cursor(other, std::move(iterator)),
         primary_key_(std::make_unique<IndexedDBKey>(*other->primary_key_)) {}
 
   std::unique_ptr<IndexedDBKey> primary_key_;
@@ -2621,7 +2676,10 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
 
   std::unique_ptr<Cursor> Clone() const override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(idb_sequence_checker_);
-    return base::WrapUnique(new IndexCursorImpl(this));
+    auto iter = CloneIterator(this);
+    if (!iter)
+      return nullptr;
+    return base::WrapUnique(new IndexCursorImpl(this, std::move(iter)));
   }
 
   // IndexedDBBackingStore::Cursor
@@ -2656,8 +2714,10 @@ class IndexCursorImpl : public IndexedDBBackingStore::Cursor {
   }
 
  private:
-  explicit IndexCursorImpl(const IndexCursorImpl* other)
-      : IndexedDBBackingStore::Cursor(other),
+  explicit IndexCursorImpl(
+      const IndexCursorImpl* other,
+      std::unique_ptr<TransactionalLevelDBIterator> iterator)
+      : IndexedDBBackingStore::Cursor(other, std::move(iterator)),
         primary_key_(std::make_unique<IndexedDBKey>(*other->primary_key_)),
         current_value_(other->current_value_),
         primary_leveldb_key_(other->primary_leveldb_key_) {}

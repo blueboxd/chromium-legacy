@@ -457,6 +457,37 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'fingerprint-setup',
       kind: ScreenKind.NORMAL,
+      defaultState: 'default',
+      handledSteps: 'progress',
+      states: [
+        {
+          id: 'progress-0',
+          trigger: (screen) => {
+            screen.onEnrollScanDone(0 /* success */, false, 0);
+            screen.onEnrollScanDone(0 /* success */, false, 0);
+          }
+        },
+        {
+          id: 'error-immobile',
+          trigger: (screen) => {
+            screen.onEnrollScanDone(0 /* success */, false, 0);
+            screen.onEnrollScanDone(6, false, 30);
+          }
+        },
+        {
+          id: 'progress-60',
+          trigger: (screen) => {
+            screen.onEnrollScanDone(0 /* success */, false, 0);
+            screen.onEnrollScanDone(0 /* success */, false, 60);
+          }
+        },
+        {
+          id: 'progress-100',
+          trigger: (screen) => {
+            screen.onEnrollScanDone(0 /* success */, true, 100);
+          }
+        },
+      ],
     },
     {
       id: 'discover',

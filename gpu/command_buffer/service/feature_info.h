@@ -90,7 +90,6 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool ext_discard_framebuffer = false;
     bool angle_depth_texture = false;
     bool is_swiftshader_for_webgl = false;
-    bool is_swiftshader = false;
     bool chromium_texture_filtering_hint = false;
     bool angle_texture_usage = false;
     bool ext_texture_storage = false;

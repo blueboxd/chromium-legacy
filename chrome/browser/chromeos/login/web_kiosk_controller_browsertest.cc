@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest, RegularFlow) {
   controller()->StartWebKiosk(EmptyAccountId());
   ExpectState(AppState::CREATING_PROFILE, NetworkUIState::NOT_SHOWING);
 
-  EXPECT_CALL(*launcher(), Initialize(_)).Times(1);
+  EXPECT_CALL(*launcher(), Initialize()).Times(1);
   profile_controls()->OnProfileLoaded(profile());
 
   launch_controls()->InitializeNetwork();
@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest, AlreadyInstalled) {
   controller()->StartWebKiosk(EmptyAccountId());
   ExpectState(AppState::CREATING_PROFILE, NetworkUIState::NOT_SHOWING);
 
-  EXPECT_CALL(*launcher(), Initialize(_)).Times(1);
+  EXPECT_CALL(*launcher(), Initialize()).Times(1);
   profile_controls()->OnProfileLoaded(profile());
 
   launch_controls()->OnAppPrepared();
@@ -128,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest, ConfigureNetworkBeforeProfile) {
   view_controls()->OnNetworkConfigRequested();
   ExpectState(AppState::CREATING_PROFILE, NetworkUIState::NEED_TO_SHOW);
 
-  EXPECT_CALL(*launcher(), Initialize(_)).Times(1);
+  EXPECT_CALL(*launcher(), Initialize()).Times(1);
   profile_controls()->OnProfileLoaded(profile());
   // WebKioskAppLauncher::Initialize call is synchronous, we have to call the
   // response now.
@@ -154,7 +154,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest,
   controller()->StartWebKiosk(EmptyAccountId());
   ExpectState(AppState::CREATING_PROFILE, NetworkUIState::NOT_SHOWING);
 
-  EXPECT_CALL(*launcher(), Initialize(_)).Times(1);
+  EXPECT_CALL(*launcher(), Initialize()).Times(1);
   profile_controls()->OnProfileLoaded(profile());
 
   launch_controls()->InitializeNetwork();
@@ -165,8 +165,10 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest,
   launch_controls()->OnAppStartedInstalling();
 
   // User presses the hotkey, current installation is canceled.
-  EXPECT_CALL(*launcher(), CancelCurrentInstallation()).Times(1);
+  EXPECT_CALL(*launcher(), RestartLauncher()).Times(1);
   view_controls()->OnNetworkConfigRequested();
+  // Launcher restart causes network to be requested again.
+  launch_controls()->InitializeNetwork();
   ExpectState(AppState::INIT_NETWORK, NetworkUIState::SHOWING);
 
   EXPECT_CALL(*launcher(), ContinueWithNetworkReady()).Times(1);
@@ -191,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest,
   controller()->StartWebKiosk(EmptyAccountId());
   ExpectState(AppState::CREATING_PROFILE, NetworkUIState::NOT_SHOWING);
 
-  EXPECT_CALL(*launcher(), Initialize(_)).Times(1);
+  EXPECT_CALL(*launcher(), Initialize()).Times(1);
   profile_controls()->OnProfileLoaded(profile());
 
   launch_controls()->InitializeNetwork();
@@ -200,9 +202,11 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest,
   SetOnline(true);
 
   launch_controls()->OnAppStartedInstalling();
+  ExpectState(AppState::INSTALLING, NetworkUIState::NOT_SHOWING);
 
-  EXPECT_CALL(*launcher(), CancelCurrentInstallation()).Times(1);
+  EXPECT_CALL(*launcher(), RestartLauncher()).Times(1);
   SetOnline(false);
+  launch_controls()->InitializeNetwork();
   ExpectState(AppState::INIT_NETWORK, NetworkUIState::SHOWING);
 
   EXPECT_CALL(*launcher(), ContinueWithNetworkReady()).Times(1);

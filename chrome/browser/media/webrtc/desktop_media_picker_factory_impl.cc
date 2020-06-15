@@ -52,9 +52,16 @@ DesktopMediaPickerFactoryImpl::CreateMediaList(
         screen_list = std::make_unique<DesktopMediaListAsh>(
             content::DesktopMediaID::TYPE_SCREEN);
 #else   // !defined(OS_CHROMEOS)
+        // If screen capture is not supported on the platform, then we should
+        // not attempt to create an instance of NativeDesktopMediaList. Doing so
+        // will hit a DCHECK.
+        std::unique_ptr<webrtc::DesktopCapturer> capturer =
+            content::desktop_capture::CreateScreenCapturer();
+        if (!capturer)
+          continue;
+
         screen_list = std::make_unique<NativeDesktopMediaList>(
-            content::DesktopMediaID::TYPE_SCREEN,
-            content::desktop_capture::CreateScreenCapturer());
+            content::DesktopMediaID::TYPE_SCREEN, std::move(capturer));
 #endif  // !defined(OS_CHROMEOS)
         have_screen_list = true;
         source_lists.push_back(std::move(screen_list));
@@ -68,9 +75,15 @@ DesktopMediaPickerFactoryImpl::CreateMediaList(
         window_list = std::make_unique<DesktopMediaListAsh>(
             content::DesktopMediaID::TYPE_WINDOW);
 #else   // !defined(OS_CHROMEOS)
+        // If window capture is not supported on the platform, then we should
+        // not attempt to create an instance of NativeDesktopMediaList. Doing so
+        // will hit a DCHECK.
+        std::unique_ptr<webrtc::DesktopCapturer> capturer =
+            content::desktop_capture::CreateWindowCapturer();
+        if (!capturer)
+          continue;
         window_list = std::make_unique<NativeDesktopMediaList>(
-            content::DesktopMediaID::TYPE_WINDOW,
-            content::desktop_capture::CreateWindowCapturer());
+            content::DesktopMediaID::TYPE_WINDOW, std::move(capturer));
 #endif  // !defined(OS_CHROMEOS)
         have_window_list = true;
         source_lists.push_back(std::move(window_list));

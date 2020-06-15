@@ -106,6 +106,9 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   const Element* RootAXEditableElement(const Node*) override;
 
+  // Called when aspects of the style (e.g. color, alignment) change.
+  void StyleChanged(LayoutObject*) override;
+
   // Called by a node when text or a text equivalent (e.g. alt) attribute is
   // changed.
   void TextChanged(LayoutObject*) override;

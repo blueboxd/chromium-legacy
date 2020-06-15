@@ -1568,8 +1568,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // destroyed before the RenderFrame goes out of scope. The embedder may choose
   // to return nullptr to indicate that the request cannot be serviced right
   // now.
+#if !defined(OS_ANDROID)
   virtual std::unique_ptr<AuthenticatorRequestClientDelegate>
   GetWebAuthenticationRequestDelegate(RenderFrameHost* render_frame_host);
+#endif
 
   // Get platform ClientCertStore. May return nullptr. Called on the UI thread.
   virtual std::unique_ptr<net::ClientCertStore> CreateClientCertStore(

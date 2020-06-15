@@ -71,6 +71,7 @@ run_jsbundler("switch_access_copied_files") {
     "nodes/slider_node.js",
     "nodes/switch_access_node.js",
     "nodes/tab_node.js",
+    "nodes/window_node.js",
     "preferences.js",
     "rect_helper.js",
     "switch_access.js",
@@ -155,6 +156,7 @@ js_type_check("closure_compile") {
     ":switch_access_predicate",
     ":tab_node",
     ":text_navigation_manager",
+    ":window_node",
     "../common:automation_predicate",
     "../common:closure_shim",
     "../common:constants",
@@ -421,4 +423,14 @@ js_library("text_navigation_manager") {
     "$externs_path/automation.js",
     "$externs_path/clipboard.js",
   ]
+}
+
+js_library("window_node") {
+  sources = [ "nodes/window_node.js" ]
+  deps = [
+    ":node_wrapper",
+    ":switch_access_constants",
+    ":switch_access_node",
+  ]
+  externs_list = [ "$externs_path/automation.js" ]
 }

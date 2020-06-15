@@ -83,6 +83,7 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="1864454756846565995">USB-C qurilma (orqa port)</translation>
 <translation id="1882897271359938046">Nusxa tasvir <ph name="DISPLAY_NAME" /> ekraniga uzatilmoqda</translation>
 <translation id="1885785240814121742">Barmoq izi orqali qulfdan chiqarish</translation>
+<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) tiniqlikda ishlamaydi. Tasvir <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />) tiniqligiga qaytarildi. Tasdiqlash uchun bosing. Eski sozlamalar <ph name="TIMEOUT_SECONDS" /> dan keyin tiklanadi.</translation>
 <translation id="1919743966458266018">Vazifalar menejerini ishga tushirish uchun tugmalar birikmasi o‘zgardi. Endi “<ph name="OLD_SHORTCUT" />” o‘rniga “<ph name="NEW_SHORTCUT" />” birikmasidan foydalaning.</translation>
 <translation id="1923539912171292317">Avtomatik bosishlar</translation>
 <translation id="1928739107511554905">Yangilanishni o‘rnatish uchun Chromebook qurilmangizni klaviaturani uzmasdan sensor paneli orqali o‘chirib yoqing.</translation>
@@ -509,7 +510,6 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="7068360136237591149">Ochiq fayllar</translation>
 <translation id="7076293881109082629">Kirish</translation>
 <translation id="7088960765736518739">Switch Access</translation>
-<translation id="7092922358121866860">Tungi rejim sozlamalarini ochish</translation>
 <translation id="7098389117866926363">USB-C qurilma (orqa tomondagi chap port)</translation>
 <translation id="7131634465328662194">Seansingiz avtomatik yakunlanadi.</translation>
 <translation id="7143207342074048698">Ulanmoqda</translation>
@@ -661,7 +661,6 @@ Quyidagi narsalardan boshlashingiz mumkin.</translation>
 <translation id="8877788021141246043">Eslatma belgilash</translation>
 <translation id="8878886163241303700">Yoyilgan ekran</translation>
 <translation id="890616557918890486">Manbani almashtirish</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) tiniqlikda ishlamaydi. Tasvir <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) tiniqligiga qaytarildi. Tasdiqlash uchun bosing. Eski sozlamalar <ph name="TIMEOUT_SECONDS" /> dan keyin tiklanadi.</translation>
 <translation id="8909138438987180327">Batareya quvvati: <ph name="PERCENTAGE" />%.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistent hozircha bu tilda gapirmaydi.</translation>

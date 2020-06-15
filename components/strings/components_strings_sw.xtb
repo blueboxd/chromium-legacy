@@ -730,7 +730,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="4101413244023615925">Maandishi na picha</translation>
 <translation id="4103249731201008433">Namabari tambulishi ya kifaa ni batili</translation>
 <translation id="4103763322291513355">Tembelea &lt;strong&gt;chrome://policy&lt;/strong&gt; ili kuona orodha ya URL zilizoondolewa idhini na sera zingine zinazosimamiwa na msimamizi wako wa mfumo.</translation>
-<translation id="4108231218301530806">Tumia alama ya kidole kuthibitisha kadi hii wakati ujao.</translation>
 <translation id="4110652170750985508">Kagua malipo yako</translation>
 <translation id="4112140312785995938">Sogeza Nyuma</translation>
 <translation id="4116663294526079822">Ruhusu mara kwa mara kwenye tovuti hii</translation>
@@ -1128,6 +1127,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="569000877158168851">Thamani ya DnsOverHttpsTemplates haifai na haitatumika, isipokuwa sera ya DnsOverHttpsMode iwekwe kuwa <ph name="SECURE_DNS_MODE_AUTOMATIC" /> au <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Katikati</translation>
 <translation id="570530837424789914">Dhibiti...</translation>
+<translation id="5705882733397021510">Rudi Nyuma</translation>
 <translation id="57094364128775171">Pendekeza nenosiri thabiti…</translation>
 <translation id="5710435578057952990">Utambulisho wa tovuti hii haujathibitishwa.</translation>
 <translation id="5720705177508910913">Mtumiaji wa sasa</translation>
@@ -1344,7 +1344,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="6631202559048444592">Sera hii ina zaidi ya chanzo kimoja, lakini thamani zinafanana.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Futa</translation>
-<translation id="6644283850729428850">Sera hii imepingwa.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Hamna}=1{Kutoka tovuti 1 (hutaondolewa kwenye Akaunti ya Google)}other{Kutoka tovuti # (hutaondolewa kwenye Akaunti ya Google)}}</translation>
 <translation id="6652101503459149953">Tumia Windows Hello</translation>
 <translation id="6657585470893396449">Nenosiri</translation>

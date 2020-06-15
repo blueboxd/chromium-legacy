@@ -720,7 +720,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="4101413244023615925">Text a grafika</translation>
 <translation id="4103249731201008433">Sériové číslo zariadenia je neplatné</translation>
 <translation id="4103763322291513355">Na stránke &lt;strong&gt;chrome://policy&lt;/strong&gt; nájdete zoznam zakázaných webových adries a ďalšie pravidlá vynútené vaším správcom systému.</translation>
-<translation id="4108231218301530806">Pri ďalšom overení tejto karty použiť odtlačok prsta</translation>
 <translation id="4110652170750985508">Kontrola platby</translation>
 <translation id="4112140312785995938">Pretočiť dozadu</translation>
 <translation id="4116663294526079822">Vždy povoliť na tomto webe</translation>
@@ -1114,6 +1113,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="569000877158168851">Hodnota DnsOverHttpsTemplates nie je relevantná a použije sa iba vtedy, keď pravidlo DnsOverHttpsMode nastavíte na <ph name="SECURE_DNS_MODE_AUTOMATIC" /> alebo <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Na stred</translation>
 <translation id="570530837424789914">Spravovať...</translation>
+<translation id="5705882733397021510">Prejsť späť</translation>
 <translation id="57094364128775171">Navrhnúť silné heslo…</translation>
 <translation id="5710435578057952990">Identita tejto webovej stránky nebola overená.</translation>
 <translation id="5720705177508910913">Aktuálny používateľ</translation>
@@ -1329,7 +1329,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="6631202559048444592">V rámci tohto pravidla je k dispozícii viacero zdrojov, ale ich hodnoty sú rovnaké.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Vymazať</translation>
-<translation id="6644283850729428850">Toto pravidlo bolo označené ako zastarané.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Žiadne}=1{Z 1 webu (neodhlásime vás z účtu Google)}few{Z # webov (neodhlásime vás z účtu Google)}many{From # sites (you won't be signed out of your Google Account)}other{Z # webov (neodhlásime vás z účtu Google)}}</translation>
 <translation id="6652101503459149953">Použiť Windows Hello</translation>
 <translation id="6657585470893396449">Heslo</translation>

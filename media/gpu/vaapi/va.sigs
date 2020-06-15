@@ -39,7 +39,6 @@ VAStatus vaQueryImageFormats(VADisplay dpy, VAImageFormat *format_list, int *num
 VAStatus vaQuerySurfaceAttributes(VADisplay dpy, VAConfigID config, VASurfaceAttrib *attrib_list, unsigned int *num_attribs);
 const char* vaQueryVendorString(VADisplay dpy);
 VAStatus vaRenderPicture(VADisplay dpy, VAContextID context, VABufferID *buffers, int num_buffers);
-VAStatus vaSetDisplayAttributes(VADisplay dpy, VADisplayAttribute *attr_list, int num_attributes);
 VAStatus vaSyncSurface(VADisplay dpy, VASurfaceID render_target);
 VAStatus vaTerminate(VADisplay dpy);
 VAStatus vaUnmapBuffer(VADisplay dpy, VABufferID buf_id);

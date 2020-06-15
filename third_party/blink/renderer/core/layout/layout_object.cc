@@ -2394,10 +2394,15 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
       }
     }
 
-    if (diff.TextDecorationOrColorChanged() ||
-        style_->InsideLink() != new_style.InsideLink()) {
+    bool background_color_changed =
+        style_->VisitedDependentColor(GetCSSPropertyBackgroundColor()) !=
+        new_style.VisitedDependentColor(GetCSSPropertyBackgroundColor());
+
+    if (diff.TextDecorationOrColorChanged() || background_color_changed ||
+        style_->InsideLink() != new_style.InsideLink() ||
+        style_->VerticalAlign() != new_style.VerticalAlign()) {
       if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-        cache->TextChanged(this);
+        cache->StyleChanged(this);
     }
 
     if (diff.TransformChanged()) {

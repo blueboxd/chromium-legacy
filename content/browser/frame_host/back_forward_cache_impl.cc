@@ -255,6 +255,7 @@ void RequestRecordTimeToVisible(RenderFrameHostImpl* rfh,
   if (rfh->delegate()->GetVisibility() != Visibility::HIDDEN) {
     rfh->GetView()->SetRecordContentToVisibleTimeRequest(
         navigation_start, base::Optional<bool>() /* destination_is_loaded */,
+        base::Optional<bool>() /* destination_is_frozen */,
         false /* show_reason_tab_switching */,
         false /* show_reason_unoccluded */,
         true /* show_reason_bfcache_restore */);

@@ -169,17 +169,13 @@ void LogInAsRegularUser() {
 
 void RunFingerprintScreenChecks() {
   test::OobeJS().ExpectVisible("fingerprint-setup");
-  test::OobeJS().ExpectVisible("fingerprint-setup-impl");
-  test::OobeJS().ExpectVisiblePath(
-      {"fingerprint-setup-impl", "setupFingerprint"});
-  test::OobeJS().TapOnPath(
-      {"fingerprint-setup-impl", "showSensorLocationButton"});
-  test::OobeJS().ExpectHiddenPath(
-      {"fingerprint-setup-impl", "setupFingerprint"});
+  test::OobeJS().ExpectVisiblePath({"fingerprint-setup", "setupFingerprint"});
+  test::OobeJS().TapOnPath({"fingerprint-setup", "next"});
+  test::OobeJS().ExpectHiddenPath({"fingerprint-setup", "setupFingerprint"});
   LOG(INFO) << "OobeInteractiveUITest: Waiting for fingerprint setup "
                "to switch to placeFinger.";
   test::OobeJS()
-      .CreateVisibilityWaiter(true, {"fingerprint-setup-impl", "placeFinger"})
+      .CreateVisibilityWaiter(true, {"fingerprint-setup", "placeFinger"})
       ->Wait();
 
   EXPECT_FALSE(ash::LoginScreenTestApi::IsShutdownButtonShown());

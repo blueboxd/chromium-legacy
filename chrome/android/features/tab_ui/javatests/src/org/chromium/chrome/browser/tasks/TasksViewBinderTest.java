@@ -30,16 +30,18 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEA
 import android.content.res.Resources;
 import android.graphics.drawable.ColorDrawable;
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.SmallTest;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.IncognitoCookieControlsManager;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -49,6 +51,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.test.util.DummyUiActivityTestCase;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /** Tests for {@link TasksViewBinder}. */
@@ -65,6 +69,10 @@ public class TasksViewBinderTest extends DummyUiActivityTestCase {
     public void setUpTest() throws Exception {
         super.setUpTest();
         MockitoAnnotations.initMocks(this);
+
+        Map<String, Boolean> testFeatures =
+                Collections.singletonMap(ChromeFeatureList.REPORT_FEED_USER_ACTIONS, true);
+        ChromeFeatureList.setTestFeatures(testFeatures);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTasksView = (TasksView) getActivity().getLayoutInflater().inflate(

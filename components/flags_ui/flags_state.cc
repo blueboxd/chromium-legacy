@@ -124,34 +124,25 @@ bool IsValidFeatureEntry(const FeatureEntry& e) {
     case FeatureEntry::SINGLE_VALUE:
     case FeatureEntry::SINGLE_DISABLE_VALUE:
     case FeatureEntry::ORIGIN_LIST_VALUE:
-      DCHECK_EQ(0, e.num_options);
-      DCHECK(!e.choices);
       return true;
     case FeatureEntry::MULTI_VALUE:
-      DCHECK_GT(e.num_options, 0);
-      DCHECK(e.choices);
+      DCHECK_GT(e.choices.size(), 0u);
       DCHECK(e.ChoiceForOption(0).command_line_switch);
       DCHECK_EQ('\0', e.ChoiceForOption(0).command_line_switch[0]);
       return true;
     case FeatureEntry::ENABLE_DISABLE_VALUE:
-      DCHECK_EQ(3, e.num_options);
-      DCHECK(!e.choices);
-      DCHECK(e.command_line_switch);
-      DCHECK(e.command_line_value);
-      DCHECK(e.disable_command_line_switch);
-      DCHECK(e.disable_command_line_value);
+      DCHECK(e.switches.command_line_switch);
+      DCHECK(e.switches.command_line_value);
+      DCHECK(e.switches.disable_command_line_switch);
+      DCHECK(e.switches.disable_command_line_value);
       return true;
     case FeatureEntry::FEATURE_VALUE:
-      DCHECK_EQ(3, e.num_options);
-      DCHECK(!e.choices);
-      DCHECK(e.feature);
+      DCHECK(e.feature.feature);
       return true;
     case FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
-      DCHECK_GT(e.num_options, 2);
-      DCHECK(!e.choices);
-      DCHECK(e.feature);
-      DCHECK(e.feature_variations);
-      DCHECK(e.feature_trial_name);
+      DCHECK(e.feature.feature);
+      DCHECK(e.feature.feature_variations.size());
+      DCHECK(e.feature.feature_trial_name);
       return true;
   }
   NOTREACHED();
@@ -170,7 +161,7 @@ bool IsDefaultValue(const FeatureEntry& entry,
     case FeatureEntry::ENABLE_DISABLE_VALUE:
     case FeatureEntry::FEATURE_VALUE:
     case FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
-      for (int i = 0; i < entry.num_options; ++i) {
+      for (int i = 0; i < entry.NumOptions(); ++i) {
         if (enabled_entries.count(entry.NameForOption(i)) > 0)
           return false;
       }
@@ -189,7 +180,7 @@ std::unique_ptr<base::Value> CreateOptionsData(
          entry.type == FeatureEntry::FEATURE_VALUE ||
          entry.type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE);
   auto result = std::make_unique<base::ListValue>();
-  for (int i = 0; i < entry.num_options; ++i) {
+  for (int i = 0; i < entry.NumOptions(); ++i) {
     auto value = std::make_unique<base::DictionaryValue>();
     const std::string name = entry.NameForOption(i);
     value->SetString("internal_name", name);
@@ -305,7 +296,7 @@ std::string GetCombinedOriginListValue(const FlagsStorage& flags_storage,
 void DidModifyOriginListFlag(const FlagsStorage& flags_storage,
                              const FeatureEntry& entry) {
   const std::string new_value = GetCombinedOriginListValue(
-      flags_storage, entry.internal_name, entry.command_line_switch);
+      flags_storage, entry.internal_name, entry.switches.command_line_switch);
 
   // Remove the switch if it exists.
   base::CommandLine* current_cl = base::CommandLine::ForCurrentProcess();
@@ -314,7 +305,7 @@ void DidModifyOriginListFlag(const FlagsStorage& flags_storage,
   for (const auto& it : switches) {
     const auto& switch_name = it.first;
     const auto& switch_value = it.second;
-    if (switch_name != entry.command_line_switch) {
+    if (switch_name != entry.switches.command_line_switch) {
       if (switch_value.empty()) {
         new_cl.AppendSwitch(switch_name);
       } else {
@@ -326,7 +317,7 @@ void DidModifyOriginListFlag(const FlagsStorage& flags_storage,
 
   const std::string sanitized =
       CombineAndSanitizeOriginLists(std::string(), new_value);
-  current_cl->AppendSwitchASCII(entry.command_line_switch, sanitized);
+  current_cl->AppendSwitchASCII(entry.switches.command_line_switch, sanitized);
 }
 #endif
 
@@ -460,7 +451,7 @@ void FlagsState::SetFeatureEntryEnabled(FlagsStorage* flags_storage,
       needs_restart_ |= enabled_entries.insert(e->NameForOption(0)).second;
     } else {
       // Find the currently enabled choice and disable it.
-      for (int i = 0; i < e->num_options; ++i) {
+      for (int i = 0; i < e->NumOptions(); ++i) {
         std::string choice_name = e->NameForOption(i);
         if (enabled_entries.find(choice_name) != enabled_entries.end()) {
           needs_restart_ = true;
@@ -564,13 +555,13 @@ std::vector<std::string> FlagsState::RegisterAllFeatureVariationParameters(
   // First collect all the data for each trial.
   for (const FeatureEntry& entry : feature_entries_) {
     if (entry.type == FeatureEntry::FEATURE_WITH_PARAMS_VALUE) {
-      for (int j = 0; j < entry.num_options; ++j) {
+      for (int j = 0; j < entry.NumOptions(); ++j) {
         if (entry.StateForOption(j) == FeatureEntry::FeatureState::ENABLED &&
             enabled_entries.count(entry.NameForOption(j))) {
-          std::string trial_name = entry.feature_trial_name;
+          std::string trial_name = entry.feature.feature_trial_name;
           // The user has chosen to enable the feature by this option.
           enabled_features_by_trial_name[trial_name].insert(
-              entry.feature->name);
+              entry.feature.feature->name);
 
           const FeatureEntry::FeatureVariation* variation =
               entry.VariationForOption(j);
@@ -658,7 +649,7 @@ void FlagsState::GetFlagFeatureEntries(
         data->SetString(
             "origin_list_value",
             GetCombinedOriginListValue(*flags_storage, entry.internal_name,
-                                       entry.command_line_switch));
+                                       entry.switches.command_line_switch));
         break;
       case FeatureEntry::MULTI_VALUE:
       case FeatureEntry::ENABLE_DISABLE_VALUE:
@@ -884,8 +875,9 @@ void FlagsState::GenerateFlagsToSwitchesMapping(
     switch (entry.type) {
       case FeatureEntry::SINGLE_VALUE:
       case FeatureEntry::SINGLE_DISABLE_VALUE:
-        AddSwitchMapping(entry.internal_name, entry.command_line_switch,
-                         entry.command_line_value, name_to_switch_map);
+        AddSwitchMapping(entry.internal_name,
+                         entry.switches.command_line_switch,
+                         entry.switches.command_line_value, name_to_switch_map);
         break;
 
       case FeatureEntry::ORIGIN_LIST_VALUE: {
@@ -893,15 +885,17 @@ void FlagsState::GenerateFlagsToSwitchesMapping(
         // This is done to retain the existing list from the command line when
         // the browser is restarted. Otherwise, the user provided list would
         // overwrite the list provided from the command line.
-        const std::string origin_list_value = GetCombinedOriginListValue(
-            *flags_storage, entry.internal_name, entry.command_line_switch);
-        AddSwitchMapping(entry.internal_name, entry.command_line_switch,
-                         origin_list_value, name_to_switch_map);
+        const std::string origin_list_value =
+            GetCombinedOriginListValue(*flags_storage, entry.internal_name,
+                                       entry.switches.command_line_switch);
+        AddSwitchMapping(entry.internal_name,
+                         entry.switches.command_line_switch, origin_list_value,
+                         name_to_switch_map);
         break;
       }
 
       case FeatureEntry::MULTI_VALUE:
-        for (int j = 0; j < entry.num_options; ++j) {
+        for (int j = 0; j < entry.NumOptions(); ++j) {
           AddSwitchMapping(entry.NameForOption(j),
                            entry.ChoiceForOption(j).command_line_switch,
                            entry.ChoiceForOption(j).command_line_value,
@@ -912,22 +906,24 @@ void FlagsState::GenerateFlagsToSwitchesMapping(
       case FeatureEntry::ENABLE_DISABLE_VALUE:
         AddSwitchMapping(entry.NameForOption(0), std::string(), std::string(),
                          name_to_switch_map);
-        AddSwitchMapping(entry.NameForOption(1), entry.command_line_switch,
-                         entry.command_line_value, name_to_switch_map);
-        AddSwitchMapping(entry.NameForOption(2),
-                         entry.disable_command_line_switch,
-                         entry.disable_command_line_value, name_to_switch_map);
+        AddSwitchMapping(entry.NameForOption(1),
+                         entry.switches.command_line_switch,
+                         entry.switches.command_line_value, name_to_switch_map);
+        AddSwitchMapping(
+            entry.NameForOption(2), entry.switches.disable_command_line_switch,
+            entry.switches.disable_command_line_value, name_to_switch_map);
         break;
 
       case FeatureEntry::FEATURE_VALUE:
       case FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
-        for (int j = 0; j < entry.num_options; ++j) {
+        for (int j = 0; j < entry.NumOptions(); ++j) {
           FeatureEntry::FeatureState state = entry.StateForOption(j);
           if (state == FeatureEntry::FeatureState::DEFAULT) {
             AddFeatureMapping(entry.NameForOption(j), std::string(), false,
                               name_to_switch_map);
           } else {
-            AddFeatureMapping(entry.NameForOption(j), entry.feature->name,
+            AddFeatureMapping(entry.NameForOption(j),
+                              entry.feature.feature->name,
                               state == FeatureEntry::FeatureState::ENABLED,
                               name_to_switch_map);
           }

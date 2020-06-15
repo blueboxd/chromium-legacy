@@ -233,6 +233,7 @@
 <translation id="1898423065542865115">فلٹرنگ</translation>
 <translation id="1901443836186977402">{1,plural, =1{یہ سرور ثابت نہیں کر سکا کہ یہ <ph name="DOMAIN" /> ہے؛ اس کے سیکیورٹی سرٹیفیکیٹ کی میعاد گزشتہ دن میں ختم ہو چکی ہے۔ یہ غلط کنفیگریشن یا آپ کے کنکشن کو قطع کرنے والے کسی حملہ آور کی وجہ سے ہو سکتا ہے۔ آپ کے کمپیوٹر کی گھڑی فی الحال <ph name="CURRENT_DATE" /> پر سیٹ ہے۔ کیا یہ صحیح نظر آ رہی ہے؟ اگر نہیں تو آپ کو اپنے سسٹم کی گھڑی کو درست کرنا اور پھر اس صفحہ کو ریفریش کرنا چاہیے۔}other{یہ سرور یہ ثابت نہیں کر سکا کہ یہ <ph name="DOMAIN" /> ہے؛ اس کے سیکیورٹی سرٹیفکیٹ کی میعاد # دن پہلے ختم ہو چکی ہے۔ یہ غلط کنفیگریشن یا آپ کے کنکشن کو قطع کرنے والے کسی حملہ آور کی وجہ سے ہو سکتا ہے۔ آپ کے کمپیوٹر کی گھڑی فی الحال <ph name="CURRENT_DATE" /> پر سیٹ ہے۔ کیا یہ صحیح نظر آ رہی ہے؟ اگر نہیں تو آپ کو اپنے سسٹم کی گھڑی کو درست کرنا اور پھر اس صفحہ کو ریفریش کرنا چاہیے۔}}</translation>
 <translation id="1902576642799138955">درستگی کا وقفہ</translation>
+<translation id="1908217026282415406">کیمرے کا استعمال اور حرکت</translation>
 <translation id="191374271204266022">‏بطور JSON کاپی کریں</translation>
 <translation id="1914326953223720820">اَن زِپ کرنے کی سروس</translation>
 <translation id="1915697529809968049">‏CVC کے بجائے Touch ID کا استعمال کریں؟</translation>
@@ -733,7 +734,6 @@
 <translation id="4101413244023615925">ٹیکسٹ اور گرافک</translation>
 <translation id="4103249731201008433">آلہ کا سیریل نمبر غلط ہے</translation>
 <translation id="4103763322291513355">‏بلیک لسٹ کردہ URLs کی فہرست اور اپنے سسٹم کے منتظم کے ذریعے نافذ کردہ دیگر پالیسیاں دیکھنے کیلئے &lt;strong&gt;chrome://policy&lt;/strong&gt; ملاحظہ کریں۔</translation>
-<translation id="4108231218301530806">اگلی بار اس کارڈ کی توثیق کرنے کیلئے فنگر پرنٹ استعمال کریں۔</translation>
 <translation id="4110652170750985508">اپنی ادائیگی کا جائزہ لیں</translation>
 <translation id="4112140312785995938">پیچھے کریں</translation>
 <translation id="4116663294526079822">ہمیشہ اس سائٹ پر اجازت دیں</translation>
@@ -1131,6 +1131,7 @@
 <translation id="569000877158168851">‏DnsOverHttpsTemplates قدر متعلقہ نہیں ہے اور استعمال نہیں کی جائے گی الاؐ DnsOverHttpsMode پالیسی یا تو <ph name="SECURE_DNS_MODE_AUTOMATIC" /> یا <ph name="SECURE_DNS_MODE_SECURE" /> پر سیٹ ہو۔</translation>
 <translation id="5701381305118179107">مرکز</translation>
 <translation id="570530837424789914">نظم کریں…</translation>
+<translation id="5705882733397021510">واپس جائیں</translation>
 <translation id="57094364128775171">مضبوط پاس ورڈ تجویز کریں…</translation>
 <translation id="5710435578057952990">اس ویب سائٹ کی شناخت کی توثیق نہیں ہوئی ہے۔</translation>
 <translation id="5720705177508910913">حالیہ صارف</translation>
@@ -1138,6 +1139,7 @@
 <translation id="5730040223043577876">‏اگر آپ نے اپنا پاس ورڈ دیگر سائٹس پر دوبارہ استعمال کیا ہے تو Chrome آپ کو اپنا پاس ورڈ ری سیٹ کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{‏اپنے Google اکاؤنٹ میں کارڈ کو محفوظ کریں}other{‏اپنے Google اکاؤنٹ میں کارڈز کو محفوظ کریں}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{اس کارڈ کے لیے ایک ورچوئل نمبر استعمال کریں}other{کارڈ منتخب کریں}}</translation>
+<translation id="5759751709240058861">اپنا کیمرا استعمال کریں اور منتقل کریں</translation>
 <translation id="5763042198335101085">ایک درست ای میل پتہ درج کریں</translation>
 <translation id="5765072501007116331">ڈیلیوری کے طریقے اور ضروریات دیکھنے کیلئے، ایک پتہ منتخب کریں</translation>
 <translation id="5776313857861697733">ترجیح</translation>
@@ -1347,7 +1349,6 @@
 <translation id="6631202559048444592">اس پالیسی کیلئے ایک سے زیادہ سورسز موجود ہیں، لیکن قدریں ایک جیسی ہیں۔</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">صاف کریں</translation>
-<translation id="6644283850729428850">یہ پالیسی فرسودہ ہو گئی ہے۔</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{کوئی سائٹ نہیں}=1{‏1 سائٹ سے (آپ اپنے Google اکاؤنٹ سے سائن آؤٹ نہیں ہوں گے)}other{‏# سائٹس سے (آپ اپنے Google اکاؤنٹ سے سائن آؤٹ نہیں ہوں گے)}}</translation>
 <translation id="6652101503459149953">‏Windows Hello کا استعمال کریں</translation>
 <translation id="6657585470893396449">پاس ورڈ</translation>

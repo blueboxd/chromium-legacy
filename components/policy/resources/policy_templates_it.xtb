@@ -168,12 +168,6 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 <translation id="1307454923744766368">Origini o schemi di nomi host a cui non dovrebbero essere applicate limitazioni previste per le origini non sicure.</translation>
 <translation id="1312799700549720683">Consente di gestire le impostazioni di visualizzazione.</translation>
 <translation id="131353325527891113">Mostra nomi utente nella schermata di accesso</translation>
-<translation id="1327351219049180837">Questo criterio consente di stabilire se segnalare o meno i dati dei criteri e data/ora del recupero dei criteri.
-
-      Se questo criterio non viene impostato o viene impostato su True, i dati dei criteri e data/ora del recupero dei criteri vengono raccolti.
-      Se questo criterio viene impostato su False, i dati dei criteri e data/ora del recupero dei criteri non vengono raccolti.
-
-      Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="1327466551276625742">Attivazione richiesta di configurazione della rete offline</translation>
 <translation id="1330145147221172764">Attiva tastiera sullo schermo</translation>
 <translation id="13356285923490863">Nome criterio</translation>
@@ -918,12 +912,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
 
           Su Windows, questo criterio è disponibile solo per le istanze che fanno parte di un dominio <ph name="MS_AD_NAME" /> così come per le istanze di Windows 10 Pro o Enterprise registrate per la gestione dei dispositivi.</translation>
 <translation id="247658312644322296">La destinazione "Salva come PDF"</translation>
-<translation id="2478649170422995190">Questo criterio consente di stabilire se segnalare o meno informazioni sulla versione, ad esempio la versione del sistema operativo, la piattaforma e l'architettura del sistema operativo, la versione di <ph name="PRODUCT_NAME" /> e il canale di <ph name="PRODUCT_NAME" />.
-
-      Se questo criterio non viene impostato o viene impostato su True, le informazioni sulla versione vengono raccolte.
-      Se questo criterio viene impostato su False, le informazioni sulla versione non vengono raccolte.
-
-      Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="2480971699591919564">Consente di attivare la funzionalità Click-to-call che permette agli utenti di inviare numeri di telefono dai computer desktop Chrome ai dispositivi Android se eseguono l'accesso. Per ulteriori informazioni, leggi l'articolo del Centro assistenza all'indirizzo https://support.google.com/chrome/answer/9430554?hl=it.
 
       Se questo criterio viene attivato, la funzionalità di invio di numeri di telefono ai dispositivi Android verrà attivata per gli utenti di Chrome.
@@ -1406,7 +1394,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
       Gli utenti possono cambiare il contenitore in cui aprire l'app e ignorare i collegamenti sul desktop.
 
-      Vedi il criterio <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> per bloccare app sulla shelf di <ph name="PRODUCT_OS_NAME" />.</translation>
+      Vedi il criterio <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> per bloccare app sullo shelf di <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3152425128389603870">Rendi disponibile la modalità Desktop unificato e attivala per impostazione predefinita</translation>
 <translation id="3159375329008977062">L'utente è abilitato a importare/esportare contenitori Crostini tramite l'interfaccia</translation>
 <translation id="3165808775394012744">Queste norme sono incluse qui in modo che sia più facile rimuoverle.</translation>
@@ -3525,12 +3513,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Vedi anche i criteri "CookiesAllowedForUrls" e "CookiesSessionOnlyForUrls". Tieni presente che non ci deve essere conflitto di pattern URL tra questi tre criteri. Non viene specificato quale criterio debba avere la precedenza.
 
           Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
-<translation id="6399242659768117666">Questo criterio consente di stabilire se segnalare o meno i dati delle estensioni e dei plug-in.
-
-      Se questo criterio non viene impostato o viene impostato su True, i dati delle estensioni e dei plug-in vengono raccolti.
-      Se questo criterio viene impostato su False, i dati delle estensioni e dei plug-in non vengono raccolti.
-
-      Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6401669939808766804">Disconnetti l'utente</translation>
 <translation id="6406448383934634215">Se come azione all'avvio è stato impostato "Apri un elenco di URL", puoi specificare l'elenco degli URL che vengono aperti. Se questa norma non viene impostata, all'avvio non verrà aperto alcun URL.
 
@@ -3553,7 +3535,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Se si decide di rilevare automaticamente il server proxy, alle app Android viene fornito l'URL script "http://wpad/wpad.dat". Non viene utilizzata nessun'altra parte del protocollo di rilevamento automatico del server proxy.
 
           Se si decide di utilizzare uno script proxy .pac, alle app Android viene fornito l'URL script.</translation>
-<translation id="6430366557948788869">Estensione Chrome Reporting Extension</translation>
 <translation id="6438972408080276697">Se il criterio è impostato su True, vengono inviati rapporti degli eventi principali di installazione delle app Android attivati dal criterio. Se il criterio è impostato su False, non viene acquisito alcun evento.</translation>
 <translation id="6440051664870270040">Consenti ai siti di navigare e aprire popup contemporaneamente</translation>
 <translation id="6447948611083700881">Backup e ripristino disabilitati</translation>
@@ -3611,7 +3592,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Per stabilire quali siti web possono eseguire i contenuti Flash, fai riferimento alle norme "DefaultPluginsSetting", "PluginsAllowedForUrls" e "PluginsBlockedForUrls".
 
       Se questa impostazione viene disattivata o non viene impostata, i contenuti Flash di altre origini o i contenuti ridotti potrebbero essere bloccati.</translation>
-<translation id="6532026122543921610">Se il criterio <ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> non è impostato per disattivare il rilevamento automatico del fuso orario, questo criterio consente di definire il metodo di rilevamento automatico del fuso orario, che non può essere cambiato dagli utenti.
+<translation id="6532026122543921610">Se il criterio <ph name="SYSTEM_TIMEZONE_POLICY_NAME" /> non disattiva il rilevamento automatico del fuso orario, questo criterio consente di definire il metodo di rilevamento automatico del fuso orario, che non può essere cambiato dagli utenti.
 
       Se il criterio viene impostato su:
        * <ph name="POLICY_ENUM_SYSTEMTIMEZONEAUTOMATICDETECTION_TIMEZONEAUTOMATICDETECTIONDISABLED" />, il rilevamento automatico del fuso orario è sempre disattivato.
@@ -3631,12 +3612,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Questo criterio può essere impostato su un percorso file eseguibile oppure su <ph name="PRODUCT_NAME_PLACEHOLDER" /> per rilevare automaticamente il percorso di installazione di Chrome.</translation>
 <translation id="6536600139108165863">Riavvia automaticamente allo spegnimento del dispositivo</translation>
-<translation id="6537062468544950724">Questo criterio consente di stabilire se segnalare o meno informazioni che possono essere usate per identificare i computer, ad esempio il nome del computer e gli indirizzi di rete.
-
-      Se questo criterio non viene impostato o viene impostato su True, vengono raccolte informazioni che possono essere usate per identificare i computer.
-      Se questo criterio viene impostato su False, non vengono raccolte informazioni che possono essere usate per identificare i computer.
-
-      Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6539246272469751178">Questa norma non influisce sulle app Android, che utilizzano sempre la directory per i download predefinita e non possono accedere ai file scaricati da <ph name="PRODUCT_OS_NAME" /> in una directory per i download non predefinita.</translation>
 <translation id="654303922206238013">Strategia di migrazione per ecryptfs</translation>
 <translation id="6544897973797372144">Se questa norma è impostata su True e non è specificata la norma ChromeOsReleaseChannel, gli utenti del dominio di registrazione avranno la facoltà di modificare il canale della versione del dispositivo. Se questa norma è impostata su False, il dispositivo risulterà bloccato in qualunque canale in cui è stato impostato per ultimo.
@@ -3904,12 +3879,6 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       Se il criterio è impostato su <ph name="BR_UNDER_USER_CONTROL" />, agli utenti viene chiesto di utilizzare il backup e ripristino. Se gli utenti attivano il backup e ripristino, i dati delle app Android vengono caricati sui server di backup di Android e ripristinati durante la reinstallazione delle app.
 
       Dopo la configurazione iniziale, gli utenti possono attivare o disattivare il backup e ripristino.</translation>
-<translation id="6991078864332103177">Questo criterio consente di stabilire se segnalare o meno informazioni che possono essere usate per identificare gli utenti, ad esempio i dati di accesso al sistema operativo, i dati di accesso del profilo <ph name="PRODUCT_NAME" />, il nome del profilo <ph name="PRODUCT_NAME" />, il percorso del profilo <ph name="PRODUCT_NAME" /> e il percorso eseguibile di <ph name="PRODUCT_NAME" />.
-
-      Se questo criterio non viene impostato o viene impostato su True, vengono raccolte informazioni che possono essere usate per identificare gli utenti.
-      Se questo criterio viene impostato su False, non vengono raccolte informazioni che possono essere usate per identificare gli utenti.
-
-      Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="6994082778848658360">Consente di specificare in che modo è possibile usare l'hardware degli elementi di sicurezza su scheda per fornire l'autenticazione a due fattori, se compatibile con questa funzione. Il tasto di accensione del computer viene usato per rilevare la presenza fisica dell'utente.
 
        Se selezioni l'opzione "Disabilitata", non viene fornita l'autenticazione a due fattori.
@@ -4320,14 +4289,6 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
       Se la norma non è impostata o viene impostata su 0, navigare a un URL designato ne comporta subito l'apertura in un browser alternativo.
 
       Se la norma viene impostata su un numero, Chrome mostra un messaggio per quel numero di millisecondi, quindi apre il browser alternativo.</translation>
-<translation id="7583419926951418342">Questo criterio consente di controllare i rapporti cloud di <ph name="PRODUCT_NAME" />, che consentono di caricare informazioni sul funzionamento del browser nella Console di amministrazione Google.
-
-      Se questo criterio non viene impostato o viene impostato su False, i dati non vengono raccolti o caricati.
-      Se questo criterio viene impostato su True, i dati vengono raccolti e caricati nella Console di amministrazione Google.
-      Per stabilire quali dati vengono caricati, usa i criteri del gruppo Estensione Chrome Reporting Extension.
-
-      Per <ph name="PRODUCT_NAME" />, questo criterio viene applicato soltanto se il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />.
-      Per <ph name="PRODUCT_OS_NAME" />, questo criterio viene applicato sempre.</translation>
 <translation id="7586477707097444774">Per i cookie impostati per i domini corrispondenti a questi pattern verrà ripristinato il comportamento <ph name="ATTRIBUTE_SAMESITE_NAME" /> precedente. Se ripristini il comportamento precedente, i cookie per cui non è specificato un attributo <ph name="ATTRIBUTE_SAMESITE_NAME" /> vengono considerati come se avessero il valore "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />"; viene inoltre rimosso il requisito che richiede che i cookie "<ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />" abbiano l'attributo "<ph name="ATTRIBUTE_SECURE_NAME" />". Per una descrizione completa, visita la pagina https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
 
           Per i cookie sui domini non previsti dai pattern specificati qui oppure per tutti i cookie se questo criterio non viene impostato, verrà utilizzato il valore predefinito globale del criterio <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_POLICY_NAME" />, se è impostato, oppure verrà utilizzata la configurazione personale dell'utente.
@@ -4450,19 +4411,10 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
           Se questa impostazione è disabilitata o non è impostata, l'autenticazione a due fattori non sarà attiva e verrà utilizzato il comportamento predefinito che prevede l'uso di un PIN definito dall'utente.</translation>
 <translation id="7750991880413385988">Apri pagina Nuova scheda</translation>
 <translation id="7754704193130578113">Chiedi dove salvare il file prima di scaricarlo</translation>
-<translation id="7755495228644343508">Consente di configurare i criteri relativi all'estensione Chrome Reporting Extension.
-
-      Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="7758378441185523981">Attiva l'autenticazione ambientale in base ai tipi di profilo.</translation>
 <translation id="7763614521440615342">Mostra suggerimenti di contenuti nella pagina Nuova scheda</translation>
 <translation id="7765879851993224640">Consenti l'uso dell'accesso tramite Smart Lock.</translation>
 <translation id="7774768074957326919">Utilizza le impostazioni proxy di sistema</translation>
-<translation id="7775902646576367944">Questo criterio consente di stabilire se segnalare o meno dati di Navigazione sicura, incluso il numero dell'avviso di Navigazione sicura e il numero del relativo click-through.
-
-      Se questo criterio non viene impostato o viene impostato su True, i dati di Navigazione sicura vengono raccolti.
-      Se questo criterio viene impostato su False, i dati di Navigazione sicura non vengono raccolti.
-
-      Questo criterio viene applicato soltanto se viene attivata l'estensione <ph name="CHROME_REPORTING_EXTENSION_NAME" /> e il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN_POLICY_NAME" />.</translation>
 <translation id="777734450201217641">Consente di attivare le scorciatoie delle funzioni di accessibilità nella schermata di accesso.
 
           Se questo criterio viene impostato su true, le scorciatoie delle funzioni di accessibilità saranno sempre attive nella schermata di accesso.
@@ -4520,15 +4472,6 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
 <translation id="793473937901685727">Imposta la disponibilità dei certificati per le app ARC</translation>
 <translation id="7937491150792971922">Unisci norme di più fonti relative all'elenco di installazione delle estensioni</translation>
 <translation id="7937766917976512374">Consenti o nega acquisizione video</translation>
-<translation id="7937944288846766530">Questo criterio controlla le richieste di installazione delle estensioni di <ph name="PRODUCT_NAME" /> consentendo agli utenti di inviare alla Console di amministrazione Google le richieste per l'approvazione.
-
-      Se il criterio CloudReportingEnabled non è impostato o è disattivato, questo criterio verrà ignorato e le richieste di installazione delle estensioni non verranno create né caricate.
-      Se il criterio non è impostato o è disattivato, le richieste di installazione delle estensioni non vengono create né caricate.
-      Se il criterio è attivato, le richieste di installazione delle estensioni vengono create e caricate sulla Console di amministrazione Google.
-
-      Le richieste di installazione delle estensioni vengono create quando gli utenti tentano di installare un'estensione non autorizzata da <ph name="EXTENSION_INSTALL_WHITELIST" /> o <ph name="EXTENSION_SETTINGS" />.
-
-      Questo criterio viene applicato soltanto se il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> e <ph name="CLOUD_REPORTING_ENABLED" /> è attivato.</translation>
 <translation id="7941975817681987555">Non prevedere le azioni di rete su qualsiasi connessione di rete</translation>
 <translation id="7951605113561734721">Consente di specificare i certificati client a livello di dispositivo che dovrebbero essere registrati usando il protocollo di gestione del dispositivo.</translation>
 <translation id="7952007677054834789">Consente di configurare le pagine da caricare all'avvio, la pagina iniziale predefinita e la pagina Nuova scheda predefinita in <ph name="PRODUCT_NAME" />; inoltre, impedisce agli utenti di modificare queste impostazioni.

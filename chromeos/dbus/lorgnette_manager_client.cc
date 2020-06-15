@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/files/scoped_file.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
@@ -40,6 +39,9 @@ constexpr base::TimeDelta kScanImageDBusTimeout =
 class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
  public:
   LorgnetteManagerClientImpl() = default;
+  LorgnetteManagerClientImpl(const LorgnetteManagerClientImpl&) = delete;
+  LorgnetteManagerClientImpl& operator=(const LorgnetteManagerClientImpl&) =
+      delete;
   ~LorgnetteManagerClientImpl() override = default;
 
   void ListScanners(
@@ -212,8 +214,6 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
 
   dbus::ObjectProxy* lorgnette_daemon_proxy_ = nullptr;
   base::WeakPtrFactory<LorgnetteManagerClientImpl> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(LorgnetteManagerClientImpl);
 };
 
 LorgnetteManagerClient::LorgnetteManagerClient() = default;

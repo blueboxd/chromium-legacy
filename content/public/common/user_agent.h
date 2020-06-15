@@ -52,6 +52,12 @@ CONTENT_EXPORT std::string GetLowEntropyCpuArchitecture();
 CONTENT_EXPORT std::string BuildOSCpuInfo(
     IncludeAndroidBuildNumber include_android_build_number,
     IncludeAndroidModel include_android_model);
+// We may also build the same User-agent compatible string describing OS and CPU
+// type by providing our own |os_version| and |cpu_type|. This is primarily
+// useful in testing.
+CONTENT_EXPORT std::string BuildOSCpuInfoFromOSVersionAndCpuType(
+    const std::string& os_version,
+    const std::string& cpu_type);
 
 // Returns the OS version.
 // On Android, the string will only include the build number and model if

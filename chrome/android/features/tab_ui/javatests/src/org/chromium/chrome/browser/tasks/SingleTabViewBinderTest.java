@@ -19,10 +19,11 @@ import static org.chromium.chrome.browser.tasks.SingleTabViewProperties.TITLE;
 
 import android.graphics.drawable.BitmapDrawable;
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

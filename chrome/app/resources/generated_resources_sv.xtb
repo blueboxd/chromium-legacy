@@ -2080,6 +2080,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3613422051106148727">&amp;Öppna i ny flik</translation>
 <translation id="3614974189435417452">Säkerhetskopieringen är klar</translation>
 <translation id="3615073365085224194">Tryck på fingeravtryckssensorn med fingret.</translation>
+<translation id="3615579745882581859"><ph name="FILE_NAME" /> genomsöks.</translation>
 <translation id="3616741288025931835">&amp;Rensa webbinformation...</translation>
 <translation id="3617891479562106823">Inga bakgrunder är tillgängliga. Försök igen senare.</translation>
 <translation id="3619115746895587757">Cappuccino</translation>
@@ -2128,7 +2129,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3670113805793654926">Enheter från alla leverantörer</translation>
 <translation id="3670229581627177274">Aktivera Bluetooth</translation>
 <translation id="3672681487849735243">Ett fabriksfel har upptäckts</translation>
-<translation id="3675913744032077012">Språk- och inmatningsinställningar</translation>
 <translation id="367645871420407123">lämna tomt om du vill ange rotlösenordet som värde för standardtestbilden</translation>
 <translation id="3677106374019847299">Ange annan leverantör</translation>
 <translation id="3677657024345889897">Lägst</translation>
@@ -2646,10 +2646,8 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4314815835985389558">Hantera synkronisering</translation>
 <translation id="4316850752623536204">Webbplats för utvecklare</translation>
 <translation id="4320177379694898372">Ingen internetanslutning</translation>
-<translation id="4321442524549817090">V&amp;isa webbadress</translation>
 <translation id="4322394346347055525">Stäng andra flikar</translation>
 <translation id="4324577459193912240">Filen är inte fullständig</translation>
-<translation id="4325083532956419387">Chrome OS-version</translation>
 <translation id="4325237902968425115">Avinstallerar <ph name="LINUX_APP_NAME" /> ...</translation>
 <translation id="4330191372652740264">Isvatten</translation>
 <translation id="4330387663455830245">Översätt aldrig från <ph name="LANGUAGE" /></translation>
@@ -3150,7 +3148,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4997086284911172121">Ingen internetanslutning</translation>
 <translation id="4998430619171209993">På</translation>
 <translation id="5000922062037820727">Blockeras (rekommenderas)</translation>
-<translation id="5003821244905342830">När du fortsätter synkroniserar Google data från <ph name="EMAIL" /> med den här enheten.</translation>
 <translation id="5005498671520578047">Kopiera lösenord</translation>
 <translation id="5006218871145547804">ADB för Android-appar i Crostini</translation>
 <translation id="5007392906805964215">Granska</translation>
@@ -3724,7 +3721,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5734362860645681824">Kommunikation</translation>
 <translation id="5734697361979786483">Lägg till filresurs</translation>
 <translation id="5736796278325406685">Ange ett giltigt användarnamn</translation>
-<translation id="573759479754913123">Om Chrome OS</translation>
 <translation id="5739017626473506901">Logga in för att hjälpa <ph name="USER_NAME" /> att lägga till ett skolkonto</translation>
 <translation id="5739235828260127894">Väntar på verifiering. <ph name="LINK_BEGIN" />Läs mer<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Mycket stor</translation>
@@ -4116,7 +4112,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6239558157302047471">Läs in &amp;ram igen</translation>
 <translation id="6241530762627360640">Få åtkomst till information om Bluetooth-enheter som är kopplade till ditt system och upptäck Bluetooth-enheter i närheten.</translation>
 <translation id="6241844896329831164">Ingen åtkomst krävs</translation>
-<translation id="6242574558232861452">Kontrollerar utifrån organisationens säkerhetspolicy …</translation>
+<translation id="6242574558232861452">Kontrollerar utifrån organisationens säkerhetspolicy.</translation>
 <translation id="6242589501614145408">Återställ säkerhetsnyckeln</translation>
 <translation id="6242852299490624841">Fokusera på den här fliken</translation>
 <translation id="6243280677745499710">Nuvarande</translation>
@@ -4157,7 +4153,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="628352644014831790">4 sekunder</translation>
 <translation id="6285120108426285413"><ph name="FILE_NAME" /> brukar inte laddas ned och kan vara skadlig.</translation>
 <translation id="6285120908535925801">{NUM_PRINTER,plural, =1{Ny skrivare i nätverket}other{Nya skrivare i nätverket}}</translation>
-<translation id="6286708577777130801">Sparad lösenordsinformation</translation>
 <translation id="6291163159361301370">För att kunna starta Linux kräver <ph name="ORGANIZATION_NAME" /> att du säkerhetskopierar din data och återställer Chromebook-enheten till standardinställningarna.</translation>
 <translation id="6291949900244949761">Fråga när en webbplats försöker få åtkomst till USB-enheter (rekommenderas)</translation>
 <translation id="6291953229176937411">&amp;Visa i Finder</translation>
@@ -4375,7 +4370,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> – skrivbordet delas</translation>
 <translation id="6580203076670148210">Genomsökningshastighet</translation>
 <translation id="6582080224869403177">Du måste återställa <ph name="DEVICE_TYPE" /> för att uppgradera säkerheten.</translation>
-<translation id="6584793698691679400">Enhetsversion</translation>
 <translation id="6584878029876017575">Microsofts Livstids signering</translation>
 <translation id="6586099239452884121">Gästsession</translation>
 <translation id="6586451623538375658">Byt primär musknapp</translation>
@@ -4483,7 +4477,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="672609503628871915">Kolla nyheterna</translation>
 <translation id="67269783048918309">Skicka diagnostik- och användningsdata. Den här enheten skickar för närvarande diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera och inte till att identifiera ditt barn. Viss samlad data används även till att förbättra appar från Google och partner, till exempel Android-utvecklare. Ägaren har gjort denna <ph name="BEGIN_LINK1" />inställning<ph name="END_LINK1" /> obligatorisk. Om ytterligare webb- och appaktivitet har aktiverats för ditt barn kan denna data sparas i Google-kontot. <ph name="BEGIN_LINK2" />Läs mer<ph name="END_LINK2" /></translation>
 <translation id="6727969043791803658">Ansluten, <ph name="BATTERY_PERCENTAGE" /> % batterinivå</translation>
-<translation id="6728682313168670518">Engångsautentisering krävs för varje enhet för att komma åt lagrade lösenord. Du kan inaktivera funktionen senare i avsnittet Lösenord i inställningarna.</translation>
 <translation id="6732801395666424405">Certifikaten har inte lästs in</translation>
 <translation id="6732900235521116609">Det gick inte att ta bort genvägen</translation>
 <translation id="6734468588183300211">I inkognitoläget får inte webbplatser se din webbaktivitet på olika webbplatser med hjälp av cookies och till exempel anpassa annonser. Funktioner på vissa webbplatser kan sluta fungera.</translation>
@@ -5894,7 +5887,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="851263357009351303">Tillåt alltid att <ph name="HOST" /> visar bilder</translation>
 <translation id="8513108775083588393">Rotera automatiskt</translation>
 <translation id="8514746246728959655">Testa med en annan säkerhetsnyckel</translation>
-<translation id="851960115758509829">Appar, inställningar och andra anpassningar synkroniseras på alla Chrome OS-enheter där du är inloggad på ditt Google-konto.</translation>
 <translation id="8521475323816527629">Öppna appar snabbt</translation>
 <translation id="8523493869875972733">Behåll ändringarna</translation>
 <translation id="8523849605371521713">Har lagts till av en policy</translation>
@@ -5935,7 +5927,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8569682776816196752">Det gick inte att hitta några platser</translation>
 <translation id="8571213806525832805">Senaste fyra veckorna</translation>
 <translation id="8571687764447439720">Lägg till Kerberos-biljett</translation>
-<translation id="8573403125070227391">Den här annonsen använder för många resurser för enheten, så den togs bort i Chrome.</translation>
 <translation id="8574990355410201600">Tillåt alltid ljud på <ph name="HOST" /></translation>
 <translation id="8575286410928791436">Håll nere <ph name="KEY_EQUIVALENT" /> för att avsluta</translation>
 <translation id="8578639784464423491">Får inte vara längre än 99 tecken</translation>

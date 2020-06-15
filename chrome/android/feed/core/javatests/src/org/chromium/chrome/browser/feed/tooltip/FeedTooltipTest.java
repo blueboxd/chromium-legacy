@@ -16,11 +16,10 @@ import static org.hamcrest.Matchers.not;
 
 import static org.chromium.chrome.browser.feed.library.basicstream.internal.viewholders.ViewHolderType.TYPE_CARD;
 
-import android.support.test.filters.MediumTest;
-
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.matcher.RootMatchers;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;

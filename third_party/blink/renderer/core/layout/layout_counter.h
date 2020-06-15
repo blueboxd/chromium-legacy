@@ -99,8 +99,7 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutCounter, IsCounter());
 
 #if DCHECK_IS_ON()
 // Outside the blink namespace for ease of invocation from gdb.
-void showCounterLayoutTree(const blink::LayoutObject*,
-                           const char* counterName = nullptr);
+void showCounterLayoutTree(const blink::LayoutObject*, const char* counterName);
 #endif
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_COUNTER_H_

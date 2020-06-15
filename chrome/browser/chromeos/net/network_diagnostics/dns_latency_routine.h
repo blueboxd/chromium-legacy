@@ -33,6 +33,8 @@ class DnsLatencyRoutine : public NetworkDiagnosticsRoutine,
       mojom::NetworkDiagnosticsRoutines::DnsLatencyCallback;
 
   DnsLatencyRoutine();
+  DnsLatencyRoutine(const DnsLatencyRoutine&) = delete;
+  DnsLatencyRoutine& operator=(const DnsLatencyRoutine&) = delete;
   ~DnsLatencyRoutine() override;
 
   // NetworkDiagnosticsRoutine:
@@ -47,7 +49,7 @@ class DnsLatencyRoutine : public NetworkDiagnosticsRoutine,
   // Run the core logic of this routine. Set |callback| to
   // |routine_completed_callback_|, which is to be executed in
   // AnalyzeResultsAndExecuteCallback().
-  void RunTest(DnsLatencyRoutineCallback callback);
+  void RunRoutine(DnsLatencyRoutineCallback callback);
 
   void set_network_context_for_testing(
       network::mojom::NetworkContext* network_context) {
@@ -85,8 +87,6 @@ class DnsLatencyRoutine : public NetworkDiagnosticsRoutine,
   mojo::Remote<network::mojom::HostResolver> host_resolver_;
   mojo::Receiver<network::mojom::ResolveHostClient> receiver_{this};
   DnsLatencyRoutineCallback routine_completed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(DnsLatencyRoutine);
 };
 
 }  // namespace network_diagnostics

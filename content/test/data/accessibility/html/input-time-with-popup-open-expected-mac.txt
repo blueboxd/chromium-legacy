@@ -3,19 +3,19 @@ AXWebArea AXRoleDescription='HTML content'
 ++++AXTimeField AXRoleDescription='time field' AXValue='13:50:02.922'
 ++++++AXGroup AXRoleDescription='group'
 ++++++++AXGroup AXRoleDescription='group'
-++++++++++AXIncrementor AXDescription='Hours' AXRoleDescription='stepper' AXValue='1'
+++++++++++AXIncrementor AXDescription='Hours' AXRoleDescription='stepper' AXValue=1
 ++++++++++++AXStaticText AXRoleDescription='text' AXValue='01'
 ++++++++++AXStaticText AXRoleDescription='text' AXValue=':'
-++++++++++AXIncrementor AXDescription='Minutes' AXRoleDescription='stepper' AXValue='50'
+++++++++++AXIncrementor AXDescription='Minutes' AXRoleDescription='stepper' AXValue=50
 ++++++++++++AXStaticText AXRoleDescription='text' AXValue='50'
 ++++++++++AXStaticText AXRoleDescription='text' AXValue=':'
-++++++++++AXIncrementor AXDescription='Seconds' AXRoleDescription='stepper' AXValue='2'
+++++++++++AXIncrementor AXDescription='Seconds' AXRoleDescription='stepper' AXValue=2
 ++++++++++++AXStaticText AXRoleDescription='text' AXValue='02'
 ++++++++++AXStaticText AXRoleDescription='text' AXValue='.'
-++++++++++AXIncrementor AXDescription='Milliseconds' AXRoleDescription='stepper' AXValue='922'
+++++++++++AXIncrementor AXDescription='Milliseconds' AXRoleDescription='stepper' AXValue=922
 ++++++++++++AXStaticText AXRoleDescription='text' AXValue='922'
 ++++++++++AXStaticText AXRoleDescription='text' AXValue=' '
-++++++++++AXIncrementor AXDescription='AM/PM' AXRoleDescription='stepper' AXValue='2'
+++++++++++AXIncrementor AXDescription='AM/PM' AXRoleDescription='stepper' AXValue=2
 ++++++++++++AXStaticText AXRoleDescription='text' AXValue='PM'
 ++++++AXPopUpButton AXDescription='Show time picker' AXRoleDescription='pop up button'
 ++++++AXWebArea AXRoleDescription='HTML content'

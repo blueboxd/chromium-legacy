@@ -38,12 +38,12 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.v
 import android.content.Context;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.ListView;
 
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.contrib.RecyclerViewActions;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

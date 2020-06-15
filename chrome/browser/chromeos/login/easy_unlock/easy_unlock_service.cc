@@ -47,8 +47,6 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
 #include "components/version_info/version_info.h"
-#include "device/bluetooth/bluetooth_adapter.h"
-#include "device/bluetooth/bluetooth_adapter_factory.h"
 
 using proximity_auth::ScreenlockState;
 
@@ -84,48 +82,6 @@ EasyUnlockService* EasyUnlockService::GetForUser(
     return NULL;
   return EasyUnlockService::Get(profile);
 }
-
-class EasyUnlockService::BluetoothDetector
-    : public device::BluetoothAdapter::Observer {
- public:
-  explicit BluetoothDetector(EasyUnlockService* service) : service_(service) {}
-
-  ~BluetoothDetector() override {
-    if (adapter_.get())
-      adapter_->RemoveObserver(this);
-  }
-
-  void Initialize() {
-    if (!device::BluetoothAdapterFactory::IsBluetoothSupported())
-      return;
-
-    device::BluetoothAdapterFactory::Get()->GetAdapter(
-        base::BindOnce(&BluetoothDetector::OnAdapterInitialized,
-                       weak_ptr_factory_.GetWeakPtr()));
-  }
-
-  bool IsPresent() const { return adapter_.get() && adapter_->IsPresent(); }
-
-  // device::BluetoothAdapter::Observer:
-  void AdapterPresentChanged(device::BluetoothAdapter* adapter,
-                             bool present) override {
-    service_->OnBluetoothAdapterPresentChanged();
-  }
-
- private:
-  void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter) {
-    adapter_ = adapter;
-    adapter_->AddObserver(this);
-    service_->OnBluetoothAdapterPresentChanged();
-  }
-
-  // Owner of this class and should out-live this class.
-  EasyUnlockService* service_;
-  scoped_refptr<device::BluetoothAdapter> adapter_;
-  base::WeakPtrFactory<BluetoothDetector> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BluetoothDetector);
-};
 
 class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
  public:
@@ -187,7 +143,6 @@ EasyUnlockService::EasyUnlockService(
     : profile_(profile),
       secure_channel_client_(secure_channel_client),
       proximity_auth_client_(profile),
-      bluetooth_detector_(new BluetoothDetector(this)),
       shut_down_(false),
       tpm_key_checked_(false) {}
 
@@ -223,8 +178,6 @@ void EasyUnlockService::ResetLocalStateForUser(const AccountId& account_id) {
 
 void EasyUnlockService::Initialize() {
   InitializeInternal();
-
-  bluetooth_detector_->Initialize();
 }
 
 proximity_auth::ProximityAuthPrefManager*
@@ -238,9 +191,6 @@ bool EasyUnlockService::IsAllowed() const {
     return false;
 
   if (!IsAllowedInternal())
-    return false;
-
-  if (!bluetooth_detector_->IsPresent())
     return false;
 
   return true;
@@ -481,7 +431,6 @@ void EasyUnlockService::Shutdown() {
   ShutdownInternal();
 
   ResetScreenlockState();
-  bluetooth_detector_.reset();
   proximity_auth_system_.reset();
   power_monitor_.reset();
 
@@ -497,21 +446,6 @@ void EasyUnlockService::UpdateAppState() {
 
     if (!power_monitor_)
       power_monitor_.reset(new PowerMonitor(this));
-  } else {
-    bool bluetooth_waking_up = false;
-
-    // If the service is not allowed due to bluetooth not being detected just
-    // after system suspend is done, give bluetooth more time to be detected
-    // before resetting screenlock state.
-    bluetooth_waking_up = power_monitor_.get() && power_monitor_->waking_up() &&
-                          !bluetooth_detector_->IsPresent();
-
-    if (!bluetooth_waking_up) {
-      if (proximity_auth_system_)
-        proximity_auth_system_->Stop();
-
-      power_monitor_.reset();
-    }
   }
 }
 
@@ -528,10 +462,6 @@ void EasyUnlockService::SetScreenlockHardlockedState(
   }
   if (state != EasyUnlockScreenlockStateHandler::NO_HARDLOCK)
     auth_attempt_.reset();
-}
-
-void EasyUnlockService::OnBluetoothAdapterPresentChanged() {
-  UpdateAppState();
 }
 
 void EasyUnlockService::SetHardlockStateForUser(

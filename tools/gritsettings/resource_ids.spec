@@ -208,47 +208,54 @@
   "chrome/browser/resources/bluetooth_internals/resources.grd": {
     "includes": [2020],
   },
-  "chrome/browser/resources/gaia_auth_host/gaia_auth_host_resources.grd": {
+    "chrome/browser/resources/chromeos/bluetooth_pairing_dialog/bluetooth_pairing_dialog_resources.grd": {
     "includes": [2030],
+    "structures": [2050],
   },
-  "chrome/browser/resources/invalidations/invalidations_resources.grd": {
-    "includes": [2040],
+  "chrome/browser/resources/chromeos/bluetooth_pairing_dialog/bluetooth_pairing_dialog_resources_vulcanized.grd": {
+    "includes": [2070],
   },
-  "chrome/browser/resources/media/webrtc_logs_resources.grd": {
-    "includes": [2060],
-  },
-  "chrome/browser/resources/net_internals/net_internals_resources.grd": {
+  "chrome/browser/resources/gaia_auth_host/gaia_auth_host_resources.grd": {
     "includes": [2080],
   },
-  "chrome/browser/resources/omnibox/resources.grd": {
+  "chrome/browser/resources/invalidations/invalidations_resources.grd": {
+    "includes": [2090],
+  },
+  "chrome/browser/resources/media/webrtc_logs_resources.grd": {
     "includes": [2100],
   },
-  "chrome/browser/resources/quota_internals/quota_internals_resources.grd": {
+  "chrome/browser/resources/net_internals/net_internals_resources.grd": {
     "includes": [2120],
   },
-  "chrome/browser/resources/sync_file_system_internals/sync_file_system_internals_resources.grd": {
+  "chrome/browser/resources/omnibox/resources.grd": {
     "includes": [2140],
   },
-  "chrome/browser/resources/usb_internals/resources.grd": {
+  "chrome/browser/resources/quota_internals/quota_internals_resources.grd": {
     "includes": [2160],
   },
-  "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
+  "chrome/browser/resources/sync_file_system_internals/sync_file_system_internals_resources.grd": {
     "includes": [2180],
   },
-  "components/sync/driver/resources.grd": {
+  "chrome/browser/resources/usb_internals/resources.grd": {
     "includes": [2200],
   },
-  "components/resources/dev_ui_components_resources.grd": {
-    "includes": [2210],
-  },
-  "content/browser/resources/media/media_internals_resources.grd": {
+  "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
     "includes": [2220],
   },
-  "content/browser/webrtc/resources/resources.grd": {
+  "components/sync/driver/resources.grd": {
     "includes": [2240],
   },
+  "components/resources/dev_ui_components_resources.grd": {
+    "includes": [2260],
+  },
+  "content/browser/resources/media/media_internals_resources.grd": {
+    "includes": [2270],
+  },
+  "content/browser/webrtc/resources/resources.grd": {
+    "includes": [2280],
+  },
   "content/dev_ui_content_resources.grd": {
-    "includes": [2250],
+    "includes": [2300],
   },
   # END chrome/ WebUI resources section
 

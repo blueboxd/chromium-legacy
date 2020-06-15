@@ -110,11 +110,6 @@ if (android_64bit_target_cpu) {
   }
 }
 
-android_resource_sizes_test("resource_sizes_system_webview_apk") {
-  apk_name = "SystemWebView"
-  data_deps = [ ":system_webview_apk" ]
-}
-
 # Trichrome WebView APK.
 template("trichrome_webview_tmpl") {
   system_webview_apk_or_module_tmpl(target_name) {

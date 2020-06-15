@@ -72,7 +72,7 @@
 
 我
 #zh-CN:
-"SimSun" : 1
+"Microsoft YaHei" : 1
 
 我
 #zh-HK:
@@ -80,7 +80,7 @@
 
 我
 #zh-Hans:
-"SimSun" : 1
+"Microsoft YaHei" : 1
 
 我
 #zh-Hant:

@@ -126,6 +126,11 @@ class TestingAppShimManager : public AppShimManager {
                         base::OnceCallback<void(Profile*)> callback) override {
     CaptureLoadProfileCallback(path, std::move(callback));
   }
+  void WaitForAppRegistryReadyAsync(
+      Profile* profile,
+      base::OnceCallback<void()> callback) override {
+    std::move(callback).Run();
+  }
   MOCK_METHOD1(IsProfileLockedForPath, bool(const base::FilePath&));
   void SetHostForCreate(std::unique_ptr<AppShimHost> host_for_create) {
     host_for_create_ = std::move(host_for_create);

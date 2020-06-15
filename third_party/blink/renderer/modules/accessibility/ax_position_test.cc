@@ -326,7 +326,7 @@ TEST_F(AccessibilityTest, AXPositionComparisonOperators) {
   SetBodyInnerHTML(R"HTML(<input id="input" type="text" value="value">
                    <p id="paragraph">hello<br>there</p>)HTML");
 
-  const AXObject* body = GetAXRootObject()->FirstChildIncludingIgnored();
+  const AXObject* body = GetAXBodyObject();
   ASSERT_NE(nullptr, body);
   const auto root_first = AXPosition::CreateFirstPositionInObject(*body);
   const auto root_last = AXPosition::CreateLastPositionInObject(*body);
@@ -689,7 +689,7 @@ TEST_F(AccessibilityTest, PositionInHTMLLabel) {
   const Node* paragraph = GetElementById("paragraph");
   ASSERT_NE(nullptr, paragraph);
 
-  const AXObject* ax_body = GetAXRootObject()->FirstChildIncludingIgnored();
+  const AXObject* ax_body = GetAXBodyObject();
   ASSERT_NE(nullptr, ax_body);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_body->RoleValue());
 
@@ -746,7 +746,12 @@ TEST_F(AccessibilityTest, PositionInIgnoredObject) {
   ASSERT_EQ(ax::mojom::Role::kRootWebArea, ax_root->RoleValue());
   ASSERT_EQ(1, ax_root->ChildCountIncludingIgnored());
 
-  const AXObject* ax_body = ax_root->FirstChildIncludingIgnored();
+  const AXObject* ax_html = ax_root->FirstChildIncludingIgnored();
+  ASSERT_NE(nullptr, ax_html);
+  ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_html->RoleValue());
+  ASSERT_EQ(1, ax_html->ChildCountIncludingIgnored());
+
+  const AXObject* ax_body = GetAXBodyObject();
   ASSERT_NE(nullptr, ax_body);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_body->RoleValue());
   ASSERT_EQ(2, ax_body->ChildCountIncludingIgnored());
@@ -782,16 +787,17 @@ TEST_F(AccessibilityTest, PositionInIgnoredObject) {
   const auto ax_position_first =
       AXPosition::CreateFirstPositionInObject(*ax_root);
   const auto position_first = ax_position_first.ToPositionWithAffinity();
-  EXPECT_EQ(GetDocument().body()->parentElement(), position_first.AnchorNode());
-  EXPECT_FALSE(position_first.GetPosition().IsBeforeChildren());
-  EXPECT_EQ(1, position_first.GetPosition().OffsetInContainerNode());
-  EXPECT_EQ(GetDocument().body(),
+  EXPECT_EQ(GetDocument(), position_first.AnchorNode());
+  EXPECT_TRUE(position_first.GetPosition().IsBeforeChildren());
+
+  EXPECT_EQ(GetDocument().documentElement(),
             position_first.GetPosition().ComputeNodeAfterPosition());
 
   const auto ax_position_first_from_dom =
       AXPosition::FromPosition(position_first);
   EXPECT_EQ(ax_position_first, ax_position_first_from_dom);
-  EXPECT_EQ(ax_body, ax_position_first_from_dom.ChildAfterTreePosition());
+
+  EXPECT_EQ(ax_html, ax_position_first_from_dom.ChildAfterTreePosition());
 
   // A DOM position before |hidden| should convert to an accessibility position
   // before |hidden| because the node is ignored but included in the tree.

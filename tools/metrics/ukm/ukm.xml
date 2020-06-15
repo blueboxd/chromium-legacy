@@ -80,6 +80,26 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Accessibility.Renderer">
+  <owner>dmazzoni@chromium.org</owner>
+  <summary>
+    Tracks the amount of time sending accessibility events from web renderers.
+  </summary>
+  <metric name="CpuTime.SendPendingAccessibilityEvents">
+    <summary>
+      The amount of time spent in
+      RenderAccessibilityImpl.SendPendingAccessibilityEvents
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="AdFrameLoad">
   <owner>johnidel@chromium.org</owner>
   <owner>jkarlin@chromium.org</owner>

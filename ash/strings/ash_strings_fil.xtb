@@ -509,7 +509,6 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="7068360136237591149">Magbukas ng mga file</translation>
 <translation id="7076293881109082629">Nagsa-sign in</translation>
 <translation id="7088960765736518739">Switch Access</translation>
-<translation id="7092922358121866860">Ipakita ang mga setting ng Night Light</translation>
 <translation id="7098389117866926363">USB-C device (kaliwang port sa likod)</translation>
 <translation id="7131634465328662194">Awtomatiko kang masa-sign out.</translation>
 <translation id="7143207342074048698">Kumokonekta</translation>
@@ -661,7 +660,6 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="8877788021141246043">Magtakda ng paalala</translation>
 <translation id="8878886163241303700">Pinapalawak ang screen</translation>
 <translation id="890616557918890486">Baguhin ang source</translation>
-<translation id="8908312332415978740">Hindi sinusuportahan ng <ph name="DISPLAY_NAME" /> ang <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Ginawang <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) ang resolution. I-click ang kumpirmahin para panatilihin ang mga pagbabago. Ire-restore ang mga nakaraang setting pagkalipas ng <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Nasa <ph name="PERCENTAGE" /> porsyento ang baterya.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Hindi nagsasalita ng ganitong wika ang Google Assistant.</translation>

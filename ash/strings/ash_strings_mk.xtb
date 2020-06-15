@@ -510,7 +510,6 @@
 <translation id="7068360136237591149">Отвори датотеки</translation>
 <translation id="7076293881109082629">Пријавување</translation>
 <translation id="7088960765736518739">Пристап со прекинувачи</translation>
-<translation id="7092922358121866860">Прикажи ги поставките за „Ноќно светло“</translation>
 <translation id="7098389117866926363">USB-Ц уред (лева порта на задната страна)</translation>
 <translation id="7131634465328662194">Автоматски ќе ве одјавиме.</translation>
 <translation id="7143207342074048698">Се поврзува</translation>
@@ -662,7 +661,6 @@
 <translation id="8877788021141246043">Потсетник</translation>
 <translation id="8878886163241303700">Проширување екран</translation>
 <translation id="890616557918890486">Промени го изворот</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> не поддржува <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Резолуцијата е променета на <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Кликнете „Потврди“ за да ги задржите промените. Претходната поставка ќе се врати за <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Батеријата е на <ph name="PERCENTAGE" /> %.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">„Помошникот на Google“ не зборува на овој јазик.</translation>

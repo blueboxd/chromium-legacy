@@ -30,11 +30,11 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.v
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.FrameLayout;
 
 import androidx.test.espresso.contrib.RecyclerViewActions;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Rule;

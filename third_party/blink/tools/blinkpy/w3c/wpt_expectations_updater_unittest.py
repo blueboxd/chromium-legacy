@@ -755,6 +755,41 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
              ' webdriverexpectations or neverfixtests.'),
             logs)
 
+    def test_cleanup_outside_affected_expectations_in_cl(self):
+        host = self.mock_host()
+        expectations_path = \
+            host.port_factory.get().path_to_generic_test_expectations_file()
+        host.filesystem.write_text_file(
+            expectations_path,
+            '# tags: [ Linux ]\n' +
+            '# results: [ Pass Failure ]\n' +
+            WPTExpectationsUpdater.MARKER_COMMENT + '\n' +
+            '[ linux ] external/wpt/fake/some_test.html?HelloWorld [ Failure ]\n' +
+            'external/wpt/fake/file/non_existent_file.html [ Pass ]\n' +
+            'external/wpt/fake/file/deleted_path.html [ Pass ]\n')
+        updater = WPTExpectationsUpdater(
+            host, ['--cleanup-test-expectations-only'])
+        updater.port.tests = lambda: {
+            'external/wpt/fake/new.html?HelloWorld'}
+
+        def _git_command_return_val(cmd):
+            if '--diff-filter=D' in cmd:
+                return 'external/wpt/fake/file/deleted_path.html'
+            if '--diff-filter=R' in cmd:
+                return 'C external/wpt/fake/some_test.html external/wpt/fake/new.html'
+            return ''
+
+        updater.git.run = _git_command_return_val
+        updater._relative_to_web_test_dir = lambda test_path: test_path
+        updater.run()
+
+        value = host.filesystem.read_text_file(expectations_path)
+        self.assertMultiLineEqual(
+            value, ('# tags: [ Linux ]\n' +
+                    '# results: [ Pass Failure ]\n' +
+                    WPTExpectationsUpdater.MARKER_COMMENT + '\n' +
+                    '[ linux ] external/wpt/fake/new.html?HelloWorld [ Failure ]\n'))
+
     def test_write_to_test_expectations_and_cleanup_expectations(self):
         host = self.mock_host()
         expectations_path = \
@@ -788,11 +823,6 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
 
         updater.write_to_test_expectations(test_expectations)
         value = host.filesystem.read_text_file(expectations_path)
-        print ('# tags: [ Linux ]\n' +
-               '# results: [ Pass Failure ]\n' +
-               WPTExpectationsUpdater.MARKER_COMMENT + '\n' +
-               'crbug.com/123 [ Trusty ] external/wpt/fake/file/path.html [ Pass ]\n' +
-               '[ linux ] external/wpt/fake/some_test.html?HelloWorld [ Failure ]')
         self.assertMultiLineEqual(
             value, ('# tags: [ Linux ]\n' +
                     '# results: [ Pass Failure ]\n' +

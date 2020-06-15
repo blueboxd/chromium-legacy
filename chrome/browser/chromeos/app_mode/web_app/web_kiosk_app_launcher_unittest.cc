@@ -94,8 +94,8 @@ class WebKioskAppLauncherTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     app_manager_ = std::make_unique<WebKioskAppManager>();
     delegate_ = std::make_unique<MockAppLauncherDelegate>();
-    launcher_ =
-        std::make_unique<WebKioskAppLauncher>(profile(), delegate_.get());
+    launcher_ = std::make_unique<WebKioskAppLauncher>(
+        profile(), delegate_.get(), AccountId::FromUserEmail(kAppEmail));
 
     browser_window_ = new TestBrowserWindow();
     new TestBrowserWindowOwner(browser_window_);
@@ -181,7 +181,7 @@ TEST_F(WebKioskAppLauncherTest, NormalFlowNotInstalled) {
   base::RunLoop loop1;
   EXPECT_CALL(*delegate(), InitializeNetwork())
       .WillOnce(RunClosure(loop1.QuitClosure()));
-  launcher()->Initialize(account_id_);
+  launcher()->Initialize();
   loop1.Run();
 
   SetupInstallData();
@@ -210,7 +210,7 @@ TEST_F(WebKioskAppLauncherTest, NormalFlowAlreadyInstalled) {
   base::RunLoop loop1;
   EXPECT_CALL(*delegate(), OnAppPrepared())
       .WillOnce(RunClosure(loop1.QuitClosure()));
-  launcher()->Initialize(account_id_);
+  launcher()->Initialize();
   loop1.Run();
 
   base::RunLoop loop2;
@@ -228,7 +228,7 @@ TEST_F(WebKioskAppLauncherTest, NormalFlowBadLaunchUrl) {
   base::RunLoop loop1;
   EXPECT_CALL(*delegate(), InitializeNetwork())
       .WillOnce(RunClosure(loop1.QuitClosure()));
-  launcher()->Initialize(account_id_);
+  launcher()->Initialize();
   loop1.Run();
 
   SetupBadInstallData();
@@ -252,7 +252,7 @@ TEST_F(WebKioskAppLauncherTest, InstallationRestarted) {
   base::RunLoop loop1;
   EXPECT_CALL(*delegate(), InitializeNetwork())
       .WillOnce(RunClosure(loop1.QuitClosure()));
-  launcher()->Initialize(account_id_);
+  launcher()->Initialize();
   loop1.Run();
 
   SetupInstallData();
@@ -260,7 +260,8 @@ TEST_F(WebKioskAppLauncherTest, InstallationRestarted) {
   EXPECT_CALL(*delegate(), OnAppStartedInstalling());
   launcher()->ContinueWithNetworkReady();
 
-  launcher()->CancelCurrentInstallation();
+  EXPECT_CALL(*delegate(), InitializeNetwork()).Times(1);
+  launcher()->RestartLauncher();
 
   // App should not be installed yet.
   EXPECT_NE(app_data()->status(), WebKioskAppData::STATUS_INSTALLED);
@@ -296,7 +297,7 @@ TEST_F(WebKioskAppLauncherTest, UrlNotLoaded) {
   base::RunLoop loop1;
   EXPECT_CALL(*delegate(), InitializeNetwork())
       .WillOnce(RunClosure(loop1.QuitClosure()));
-  launcher()->Initialize(account_id_);
+  launcher()->Initialize();
   loop1.Run();
 
   SetupNotLoadedAppData();

@@ -652,8 +652,7 @@ void V4LocalDatabaseManager::DeleteUnusedStoreFiles() {
         continue;
       }
       task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                    store_path, false /* recursive */));
+          FROM_HERE, base::BindOnce(base::GetDeleteFileCallback(), store_path));
     } else {
       NOTREACHED() << "Trying to delete a store file that's in use: "
                    << store_filename_to_delete;

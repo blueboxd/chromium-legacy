@@ -509,7 +509,6 @@
 <translation id="7068360136237591149">ເປີດໄຟລ໌</translation>
 <translation id="7076293881109082629">ກໍາລັງເຂົ້າ​ລະ​ບົບ</translation>
 <translation id="7088960765736518739">ການເຂົ້າເຖິງດ້ວຍປຸ່ມ</translation>
-<translation id="7092922358121866860">ສະແດງການຕັ້ງຄ່າແສງກາງຄືນ</translation>
 <translation id="7098389117866926363">ອຸ​ປະ​ກອນ USB-C (ຜອດ​ດ້ານດ້ານ​ຊ້າຍ​ຢູ່​ເບື້ອງ​ຫຼັງ)</translation>
 <translation id="7131634465328662194">ທ່ານຈະຖືກນຳອອກຈາກລະບົບໂດຍອັດຕະໂນມັດ</translation>
 <translation id="7143207342074048698">ກຳ​ລັງ​ເຊື່ອມ​ຕໍ່</translation>
@@ -661,7 +660,6 @@
 <translation id="8877788021141246043">ຕັ້ງຄ່າການແຈ້ງເຕືອນ</translation>
 <translation id="8878886163241303700">ກໍາລັງຂະ​ຫຍາຍຫນ້າ​ຈໍ​</translation>
 <translation id="890616557918890486">ປ່ຽນແຫຼ່ງ</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> ບໍ່ຮອງຮັບ <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). ຄວາມລະອຽດໄດ້ຖືກປ່ຽນເປັນ <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) ແລ້ວ. ກະລຸນາຄລິກຢືນຢັນເພື່ອຮັກສາການປ່ຽນແປງ. ລະບົບຈະກູ້ຄືນການຕັ້ງຄ່າກ່ອນໜ້າໃນ <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">ແບັດເຕີຣີຢູ່ທີ່ <ph name="PERCENTAGE" /> ເປີເຊັນ.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">ຜູ້ຊ່ວຍ Google ເວົ້າພາສານີ້ບໍ່ໄດ້.</translation>

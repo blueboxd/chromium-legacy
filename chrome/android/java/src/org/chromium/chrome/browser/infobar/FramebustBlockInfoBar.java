@@ -16,8 +16,8 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarCompactLayout;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarControlLayout;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
+import org.chromium.components.infobars.InfoBarControlLayout;
+import org.chromium.components.infobars.InfoBarLayout;
 import org.chromium.components.url_formatter.UrlFormatter;
 
 /**

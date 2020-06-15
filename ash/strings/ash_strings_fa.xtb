@@ -509,7 +509,6 @@
 <translation id="7068360136237591149">‏Open files (فایل‌ها را باز کن)</translation>
 <translation id="7076293881109082629">در حال ورود به سیستم</translation>
 <translation id="7088960765736518739">دسترسی کلیدی</translation>
-<translation id="7092922358121866860">نمایش تنظیمات «نور شب»</translation>
 <translation id="7098389117866926363">‏دستگاه USB-C (درگاه عقب سمت چپ)</translation>
 <translation id="7131634465328662194">به‌طور خودکار از سیستم خارج خواهید شد.</translation>
 <translation id="7143207342074048698">در حال اتصال</translation>
@@ -661,7 +660,6 @@
 <translation id="8877788021141246043">‏Set a reminder (یادآوری تنظیم کن)</translation>
 <translation id="8878886163241303700">صفحه گسترش یافته است</translation>
 <translation id="890616557918890486">تغییر منبع</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> از <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> هرتز) پشتیبانی نمی‌کند. وضوح به <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) تغییر کرده است. برای حفظ تغییرات، روی تأیید کلیک کنید. تنظیمات قبلی <ph name="TIMEOUT_SECONDS" /> دیگر بازیابی خواهد شد.</translation>
 <translation id="8909138438987180327">شارژ باتری <ph name="PERCENTAGE" /> درصد است.</translation>
 <translation id="8921554779039049422">H+‎</translation>
 <translation id="8921624153894383499">‏«دستیار Google» به این زبان صحبت نمی‌کند.</translation>

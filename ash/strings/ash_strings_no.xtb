@@ -83,6 +83,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="1864454756846565995">USB-C-enhet (porten på baksiden)</translation>
 <translation id="1882897271359938046">Speiler <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Lås opp med fingeravtrykk</translation>
+<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> støtter ikke <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Oppløsningen ble endret til <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Klikk på Bekreft for å beholde endringene. De forrige innstillingene blir gjenopprettet om <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1919743966458266018">Snarveien for å åpne oppgavebehandlingen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatiske klikk</translation>
 <translation id="1928739107511554905">For å laste ned oppdateringen, bruk berøringsskjermen til å starte Chromebooken på nytt med tastaturet tilkoblet.</translation>
@@ -509,7 +510,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="7068360136237591149">Åpne filer</translation>
 <translation id="7076293881109082629">Pålogging</translation>
 <translation id="7088960765736518739">Brytertilgang</translation>
-<translation id="7092922358121866860">Vis innstillinger for nattlys</translation>
 <translation id="7098389117866926363">USB-C-enhet (venstre port på baksiden)</translation>
 <translation id="7131634465328662194">Du logges av automatisk.</translation>
 <translation id="7143207342074048698">Kobler til</translation>
@@ -661,7 +661,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="8877788021141246043">Angi en påminnelse</translation>
 <translation id="8878886163241303700">Utvidet skjerm</translation>
 <translation id="890616557918890486">Endre kilde</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> støtter ikke <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Oppløsningen ble endret til <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Klikk på Bekreft for å beholde endringene. De forrige innstillingene blir gjenopprettet om <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Batteriet er <ph name="PERCENTAGE" /> % fullt.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google-assistenten kan ikke dette språket.</translation>

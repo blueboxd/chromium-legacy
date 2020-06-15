@@ -1855,35 +1855,6 @@ static void MergeRects(Vector<IntRect>& rects) {
   }
 }
 
-static void AccumulateTouchActionRectList(
-    PaintLayerCompositor* compositor,
-    GraphicsLayer* graphics_layer,
-    HitTestLayerRectList* hit_test_rects) {
-  const cc::TouchActionRegion& touch_action_region =
-      graphics_layer->CcLayer()->touch_action_region();
-  if (!touch_action_region.GetAllRegions().IsEmpty()) {
-    const auto& layer_position = graphics_layer->GetOffsetFromTransformNode();
-    const auto& layer_bounds = graphics_layer->CcLayer()->bounds();
-    IntRect layer_rect(layer_position.X(), layer_position.Y(),
-                       layer_bounds.width(), layer_bounds.height());
-
-    Vector<IntRect> layer_hit_test_rects;
-    for (const gfx::Rect& hit_test_rect : touch_action_region.GetAllRegions())
-      layer_hit_test_rects.push_back(IntRect(hit_test_rect));
-    MergeRects(layer_hit_test_rects);
-
-    for (const IntRect& hit_test_rect : layer_hit_test_rects) {
-      if (!hit_test_rect.IsEmpty()) {
-        hit_test_rects->Append(DOMRectReadOnly::FromIntRect(layer_rect),
-                               DOMRectReadOnly::FromIntRect(hit_test_rect));
-      }
-    }
-  }
-
-  for (GraphicsLayer* child_layer : graphics_layer->Children())
-    AccumulateTouchActionRectList(compositor, child_layer, hit_test_rects);
-}
-
 HitTestLayerRectList* Internals::touchEventTargetLayerRects(
     Document* document,
     ExceptionState& exception_state) {
@@ -1894,60 +1865,31 @@ HitTestLayerRectList* Internals::touchEventTargetLayerRects(
     return nullptr;
   }
 
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    auto* pac = document->View()->GetPaintArtifactCompositor();
-    document->View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  document->View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
-    auto* hit_test_rects = MakeGarbageCollected<HitTestLayerRectList>();
-    for (const auto& layer : pac->RootLayer()->children()) {
-      const cc::TouchActionRegion& touch_action_region =
-          layer->touch_action_region();
-      if (!touch_action_region.GetAllRegions().IsEmpty()) {
-        const auto& offset = layer->offset_to_transform_parent();
-        IntRect layer_rect(RoundedIntPoint(FloatPoint(offset.x(), offset.y())),
-                           IntSize(layer->bounds()));
+  auto* hit_test_rects = MakeGarbageCollected<HitTestLayerRectList>();
+  for (const auto& layer : document->View()->RootCcLayer()->children()) {
+    const cc::TouchActionRegion& touch_action_region =
+        layer->touch_action_region();
+    if (!touch_action_region.GetAllRegions().IsEmpty()) {
+      const auto& offset = layer->offset_to_transform_parent();
+      IntRect layer_rect(RoundedIntPoint(FloatPoint(offset.x(), offset.y())),
+                         IntSize(layer->bounds()));
 
-        Vector<IntRect> layer_hit_test_rects;
-        for (const auto& hit_test_rect : touch_action_region.GetAllRegions())
-          layer_hit_test_rects.push_back(IntRect(hit_test_rect));
-        MergeRects(layer_hit_test_rects);
+      Vector<IntRect> layer_hit_test_rects;
+      for (const auto& hit_test_rect : touch_action_region.GetAllRegions())
+        layer_hit_test_rects.push_back(IntRect(hit_test_rect));
+      MergeRects(layer_hit_test_rects);
 
-        for (const IntRect& hit_test_rect : layer_hit_test_rects) {
-          if (!hit_test_rect.IsEmpty()) {
-            hit_test_rects->Append(DOMRectReadOnly::FromIntRect(layer_rect),
-                                   DOMRectReadOnly::FromIntRect(hit_test_rect));
-          }
+      for (const IntRect& hit_test_rect : layer_hit_test_rects) {
+        if (!hit_test_rect.IsEmpty()) {
+          hit_test_rects->Append(DOMRectReadOnly::FromIntRect(layer_rect),
+                                 DOMRectReadOnly::FromIntRect(hit_test_rect));
         }
       }
     }
-    return hit_test_rects;
   }
-
-  if (ScrollingCoordinator* scrolling_coordinator =
-          document->GetPage()->GetScrollingCoordinator()) {
-    FrameView* view = document->GetPage()->MainFrame()->View();
-    if (view->IsLocalFrameView()) {
-      scrolling_coordinator->UpdateAfterPaint(
-          static_cast<LocalFrameView*>(view));
-    } else {
-      NOTREACHED();
-    }
-  }
-
-  if (auto* view = document->GetLayoutView()) {
-    if (PaintLayerCompositor* compositor = view->Compositor()) {
-      // Use the paint-root since we sometimes want to know about touch rects
-      // on layers outside the document hierarchy (e.g. when we replace the
-      // document with a video layer).
-      if (GraphicsLayer* root_layer = compositor->PaintRootGraphicsLayer()) {
-        auto* hit_test_rects = MakeGarbageCollected<HitTestLayerRectList>();
-        AccumulateTouchActionRectList(compositor, root_layer, hit_test_rects);
-        return hit_test_rects;
-      }
-    }
-  }
-
-  return nullptr;
+  return hit_test_rects;
 }
 
 bool Internals::executeCommand(Document* document,
@@ -2258,10 +2200,6 @@ DOMRectList* Internals::nonFastScrollableRects(
     return nullptr;
   }
 
-  // Update lifecycle. This includes the compositing update and
-  // ScrollingCoordinator::UpdateAfterPaint, which computes the non-fast
-  // scrollable region. For CompositeAfterPaint, this includes running
-  // PaintArtifactCompositor which updates the non-fast regions.
   frame->View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
 
   auto* pac = document->View()->GetPaintArtifactCompositor();

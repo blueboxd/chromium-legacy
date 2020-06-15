@@ -13,8 +13,9 @@ import android.app.job.JobScheduler;
 import android.app.job.JobWorkItem;
 import android.content.ComponentName;
 import android.content.Context;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;

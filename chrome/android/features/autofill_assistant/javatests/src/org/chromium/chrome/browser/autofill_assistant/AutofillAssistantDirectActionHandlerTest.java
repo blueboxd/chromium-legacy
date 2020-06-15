@@ -18,7 +18,8 @@ import static org.junit.Assert.assertTrue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.os.Bundle;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

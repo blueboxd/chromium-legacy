@@ -2119,6 +2119,7 @@ static_library("ui") {
       "//chrome/browser/chromeos",
       "//chrome/browser/chromeos:backdrop_wallpaper_proto",
       "//chrome/browser/chromeos/net/network_health/public/mojom:mojom",
+      "//chrome/browser/resources:bluetooth_pairing_dialog_resources",
       "//chrome/browser/resources/chromeos:network_health_resources",
       "//chrome/browser/ui/webui/app_management:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",

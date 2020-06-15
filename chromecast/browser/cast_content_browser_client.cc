@@ -100,6 +100,7 @@
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_ANDROID)
+#include "chromecast/media/audio/cast_audio_manager_android.h"  //nogncheck
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/core/app/crashpad.h"
 #else
@@ -272,6 +273,16 @@ CastContentBrowserClient::CreateAudioManager(
       GetMediaTaskRunner(),
       ServiceConnector::MakeRemote(kBrowserProcessClientId),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
+#elif defined(OS_ANDROID)
+  return std::make_unique<media::CastAudioManagerAndroid>(
+      std::move(audio_thread), audio_log_factory,
+      base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
+                          base::Unretained(this)),
+      base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
+      GetMediaTaskRunner(),
+      ServiceConnector::MakeRemote(kBrowserProcessClientId),
+      BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #else
   return std::make_unique<media::CastAudioManager>(
       std::move(audio_thread), audio_log_factory,
@@ -282,7 +293,7 @@ CastContentBrowserClient::CreateAudioManager(
       GetMediaTaskRunner(),
       ServiceConnector::MakeRemote(kBrowserProcessClientId),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
-#endif  // defined(USE_ALSA)
+#endif
 }
 
 bool CastContentBrowserClient::OverridesAudioManager() {

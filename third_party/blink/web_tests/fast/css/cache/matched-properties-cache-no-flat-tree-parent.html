@@ -3,15 +3,19 @@
 <script src="../../../resources/testharnessreport.js"></script>
 <style>
     .green { color: green; }
-    body { perspective: inherit; }
+    #body { perspective: inherit; }
 </style>
 <body>
+	<div id=host>
+		<div id=body>
+		</div>
+	</div>
 <script>
     test(() => {
-        var root = document.documentElement.createShadowRoot();
-        document.body.offsetTop;
-        document.documentElement.className = "green";
-        document.body.offsetTop;
-        root.appendChild(document.createElement("content"));
+        var root = host.attachShadow({mode: 'open'});
+        body.offsetTop;
+        host.className = "green";
+        body.offsetTop;
+        root.appendChild(document.createElement("slot"));
     }, "Check that we don't trigger an assert by caching matched properties for an element using explicit inheritance.");
 </script>

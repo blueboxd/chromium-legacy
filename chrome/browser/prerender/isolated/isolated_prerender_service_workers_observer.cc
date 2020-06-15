@@ -44,6 +44,11 @@ IsolatedPrerenderServiceWorkersObserver::IsServiceWorkerRegisteredForOrigin(
   return false;
 }
 
+void IsolatedPrerenderServiceWorkersObserver::
+    CallOnRegistrationCompletedForTesting(const GURL& scope) {
+  OnRegistrationCompleted(scope);
+}
+
 void IsolatedPrerenderServiceWorkersObserver::OnRegistrationCompleted(
     const GURL& scope) {
   registered_origins_.insert(url::Origin::Create(scope));

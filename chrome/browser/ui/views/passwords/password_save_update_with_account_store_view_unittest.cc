@@ -13,6 +13,7 @@
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
+#include "content/public/test/navigation_simulator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -40,9 +41,11 @@ class PasswordSaveUpdateWithAccountStoreViewTest
     return view_->DestinationDropdownForTesting();
   }
 
+ protected:
+  autofill::PasswordForm pending_password_;
+
  private:
   PasswordSaveUpdateWithAccountStoreView* view_;
-  autofill::PasswordForm pending_password_;
   std::vector<std::unique_ptr<autofill::PasswordForm>> current_forms_;
 };
 
@@ -135,4 +138,19 @@ TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
   EXPECT_EQ(
       base::ASCIIToUTF16("Local"),
       account_picker()->GetTextForRow(account_picker()->GetSelectedIndex()));
+}
+
+// This is a regression test for crbug.com/1093290
+TEST_F(PasswordSaveUpdateWithAccountStoreViewTest,
+       OnThemesChangedShouldNotCrashForFederatedCredentials) {
+  GURL kURL("https://example.com");
+  url::Origin kOrigin = url::Origin::Create(kURL);
+  ON_CALL(*model_delegate_mock(), GetOrigin).WillByDefault(Return(kOrigin));
+  content::NavigationSimulator::NavigateAndCommitFromDocument(
+      kURL, web_contents()->GetMainFrame());
+
+  // Set the federation_origin to force a Federated Credentials bubble.
+  pending_password_.federation_origin = kOrigin;
+
+  CreateViewAndShow();
 }

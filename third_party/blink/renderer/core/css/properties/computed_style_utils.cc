@@ -2085,21 +2085,42 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style,
 
 CSSValue* ComputedStyleUtils::ValueForCounterDirectives(
     const ComputedStyle& style,
-    bool is_increment) {
+    CounterNode::Type type) {
   const CounterDirectiveMap* map = style.GetCounterDirectives();
   if (!map)
     return CSSIdentifierValue::Create(CSSValueID::kNone);
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   for (const auto& item : *map) {
-    bool is_valid_counter_value =
-        is_increment ? item.value.IsIncrement() : item.value.IsReset();
+    bool is_valid_counter_value = false;
+    switch (type) {
+      case CounterNode::kIncrementType:
+        is_valid_counter_value = item.value.IsIncrement();
+        break;
+      case CounterNode::kResetType:
+        is_valid_counter_value = item.value.IsReset();
+        break;
+      case CounterNode::kSetType:
+        is_valid_counter_value = item.value.IsSet();
+        break;
+    }
+
     if (!is_valid_counter_value)
       continue;
 
     list->Append(*MakeGarbageCollected<CSSCustomIdentValue>(item.key));
-    int32_t number =
-        is_increment ? item.value.IncrementValue() : item.value.ResetValue();
+    int32_t number = 0;
+    switch (type) {
+      case CounterNode::kIncrementType:
+        number = item.value.IncrementValue();
+        break;
+      case CounterNode::kResetType:
+        number = item.value.ResetValue();
+        break;
+      case CounterNode::kSetType:
+        number = item.value.SetValue();
+        break;
+    }
     list->Append(*CSSNumericLiteralValue::Create(
         (double)number, CSSPrimitiveValue::UnitType::kInteger));
   }

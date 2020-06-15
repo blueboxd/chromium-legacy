@@ -27,17 +27,18 @@ namespace chromeos {
 
 WebKioskAppLauncher::WebKioskAppLauncher(
     Profile* profile,
-    WebKioskAppLauncher::Delegate* delegate)
+    WebKioskAppLauncher::Delegate* delegate,
+    const AccountId& account_id)
     : profile_(profile),
       delegate_(delegate),
+      account_id_(account_id),
       url_loader_(std::make_unique<web_app::WebAppUrlLoader>()),
       data_retriever_factory_(base::BindRepeating(
           &std::make_unique<web_app::WebAppDataRetriever>)) {}
 
 WebKioskAppLauncher::~WebKioskAppLauncher() = default;
 
-void WebKioskAppLauncher::Initialize(const AccountId& account_id) {
-  account_id_ = account_id;
+void WebKioskAppLauncher::Initialize() {
   const WebKioskAppData* app =
       WebKioskAppManager::Get()->GetAppByAccountId(account_id_);
   DCHECK(app);
@@ -119,9 +120,11 @@ void WebKioskAppLauncher::LaunchApp() {
   delegate_->OnAppLaunched();
 }
 
-void WebKioskAppLauncher::CancelCurrentInstallation() {
+void WebKioskAppLauncher::RestartLauncher() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   install_task_.reset();
+
+  Initialize();
 }
 
 void WebKioskAppLauncher::SetDataRetrieverFactoryForTesting(

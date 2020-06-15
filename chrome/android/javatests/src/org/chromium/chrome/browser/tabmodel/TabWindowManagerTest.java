@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager.TabModelSelectorFactory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
@@ -40,10 +41,11 @@ public class TabWindowManagerTest {
             new TabModelSelectorFactory() {
                 @Override
                 public TabModelSelector buildSelector(Activity activity,
-                        TabCreatorManager tabCreatorManager, int selectorIndex) {
+                        TabCreatorManager tabCreatorManager,
+                        NextTabPolicySupplier nextTabPolicySupplier, int selectorIndex) {
                     return new MockTabModelSelector(0, 0, null);
                 }
-    };
+            };
 
     private ChromeActivity buildActivity() {
         ChromeActivity activity = new CustomTabActivity();
@@ -60,7 +62,8 @@ public class TabWindowManagerTest {
     private MockTabModelSelector requestSelector(ChromeActivity activity, int requestedIndex) {
         final TabWindowManager manager = TabWindowManager.getInstance();
         manager.setTabModelSelectorFactory(mMockTabModelSelectorFactory);
-        return (MockTabModelSelector) manager.requestSelector(activity, activity, requestedIndex);
+        return (MockTabModelSelector) manager.requestSelector(
+                activity, activity, () -> NextTabPolicy.HIERARCHICAL, requestedIndex);
     }
 
     @After

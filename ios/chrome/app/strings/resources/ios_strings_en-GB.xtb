@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Sign in to website</translation>
 <translation id="1509960214886564027">Features on many sites may break</translation>
 <translation id="152234381334907219">Never Saved</translation>
+<translation id="1535268707340844072">Your current setting may cause some sites to break. To manage cookies for all sites, see <ph name="BEGIN_LINK" />Cookie settings<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Address 1</translation>
 <translation id="1545749641540134597">Scan QR Code</translation>
 <translation id="1552525382687785070">Sync is Disabled by your Administrator</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Active <ph name="DAYS" /> days ago</translation>
 <translation id="2074131957428911366">You can always choose what to sync in <ph name="BEGIN_LINK" />settings<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Undo</translation>
+<translation id="2081417079511601293">Block third party in Incognito</translation>
 <translation id="209018056901015185">Request Desktop Site</translation>
 <translation id="2103075008456228677">Open history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items moved</translation>
@@ -100,7 +102,6 @@
 <translation id="2139867232736819575">Search for text that you copied</translation>
 <translation id="2149973817440762519">Edit Bookmark</translation>
 <translation id="2175927920773552910">QR code</translation>
-<translation id="2179182049312275900">You can turn on sync at any time in settings.</translation>
 <translation id="2198757192731523470">Google may use your history to personalise Search, ads and other Google services.</translation>
 <translation id="2218443599109088993">Zoom out</translation>
 <translation id="2230173723195178503">Web page loaded</translation>
@@ -177,6 +178,7 @@
 <translation id="2989805286512600854">Open in New Tab</translation>
 <translation id="3037605927509011580">Aw, Snap!</translation>
 <translation id="3112556859945124369">Mark…</translation>
+<translation id="3131206671572504478">Block all</translation>
 <translation id="3153862085237805241">Save Card</translation>
 <translation id="3157684681743766797">Mark All…</translation>
 <translation id="3161291298470460782">This will sign you out, turn off sync and clear all Chrome data from this device. Your synced data will remain in your Google Account.</translation>
@@ -249,7 +251,6 @@
 <translation id="4038354071007134711">No application on this device can open the file.</translation>
 <translation id="4042870976416480368">Find in Page</translation>
 <translation id="4049507953662678203">Make sure you have a network connection, and try again.</translation>
-<translation id="4071530748369333746">Cancel sync?</translation>
 <translation id="4082688844002261427">Control how your browsing history is used to personalise Search, ads and more</translation>
 <translation id="408404951701638773">Search bar is now easier to reach</translation>
 <translation id="411254640334432676">Download failed.</translation>
@@ -274,6 +275,7 @@
 <translation id="4389019817280890563">Tap to change language.</translation>
 <translation id="441868831736628555">Privacy Notice</translation>
 <translation id="4454246407045105932">Add language</translation>
+<translation id="4469418912670346607">Continue setup</translation>
 <translation id="4476574785019001431">Settings</translation>
 <translation id="4496373720959965247">Add tabs and switch between pages</translation>
 <translation id="4508750114462689118">Close sign-in promo</translation>
@@ -302,6 +304,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4805759445554688327">Invalid Card Number</translation>
 <translation id="4818522717893377262">Add language…</translation>
 <translation id="481968316161811770">Cookies, Site Data</translation>
+<translation id="4826218269716039351">Block third party</translation>
 <translation id="4833786495304741580">Automatically sends usage statistics and crash reports to Google.</translation>
 <translation id="4840495572919996524">Your bookmarks, history, passwords and more will no longer be synced to your Google Account.</translation>
 <translation id="4854345657858711387">Set A Passcode</translation>
@@ -347,6 +350,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="54401264925851789">Page Security Info</translation>
 <translation id="5443952882982198570">Credit cards</translation>
 <translation id="5457907402803865181">Error syncing passwords.</translation>
+<translation id="5489208564673669003">To manage cookies for all sites, see <ph name="BEGIN_LINK" />Cookie settings<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Sign out and clear data from this device</translation>
 <translation id="5525269841082836315">Create a Pass phrase</translation>
 <translation id="5548760955356983418">Handoff lets you start browsing a website on this device and then easily continue on your Mac. The current open website will appear in the Dock of your Mac.
@@ -434,6 +438,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6418346271604475326">Preparing PDF</translation>
 <translation id="6426067060178468363">Allow cookies</translation>
 <translation id="6434591244308415567">An error occurred. Try again later.</translation>
+<translation id="6439338047467462846">Allow all</translation>
 <translation id="6445051938772793705">Country</translation>
 <translation id="6445981559479772097">Message sent.</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -441,6 +446,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="6476800141292307438">Translating the page to <ph name="LANGUAGE" />. Options available near bottom of the screen.</translation>
 <translation id="648164694371393720">Authentication error</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> items deleted</translation>
+<translation id="651505212789431520">Cancel sync? You can turn on sync at any time in Settings.</translation>
 <translation id="6561262006871132942">Zoom in</translation>
 <translation id="6610002944194042868">Translate Options</translation>
 <translation id="6628106477656132239">Invalid Expiry Date</translation>

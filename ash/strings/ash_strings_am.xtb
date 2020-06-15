@@ -83,6 +83,7 @@
 <translation id="1864454756846565995">USB-C መሣሪያ (የኋላ ወደብ)</translation>
 <translation id="1882897271359938046">ወደ <ph name="DISPLAY_NAME" /> በማንጸባረቅ ላይ</translation>
 <translation id="1885785240814121742">በጣት አሻራ ይክፈቱ</translation>
+<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />ን (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) አይደግፍም። የምስል ጥራቱ ወደ <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />) ተቀይሯል። ለውጦቹን ለማስቀመጥ ጠቅ ያድርጉት። ቀዳሚ ቅንብሮቹ በ<ph name="TIMEOUT_SECONDS" /> ውስጥ ወደነበሩበት ይመለሳሉ።</translation>
 <translation id="1919743966458266018">የተግባር መሪው የሚከፈትበት አቋራጭ ተቀይሯል። እባክዎ ከ<ph name="OLD_SHORTCUT" /> ይልቅ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>
 <translation id="1923539912171292317">ራስ-ሰር ጠቅታዎች</translation>
 <translation id="1928739107511554905">ዝማኔውን ለማግኘት የእርስዎን Chromebook ከተያያዘው የቁልፍ ሰሌዳ ጋር እንደገና ለማስጀመር የንኪ ማያ ገጹን ይጠቀሙ።</translation>
@@ -509,7 +510,6 @@
 <translation id="7068360136237591149">ፋይሎችን ይክፈቱ</translation>
 <translation id="7076293881109082629">በመግባት ላይ</translation>
 <translation id="7088960765736518739">የመዳረሻ መቀየሪያ</translation>
-<translation id="7092922358121866860">የማታ ብርሃን ቅንብሮችን አሳይ</translation>
 <translation id="7098389117866926363">USB-C መሣሪያ (የግራ ወደብ ከኋላ በኩል)</translation>
 <translation id="7131634465328662194">በራስሰር ዘግተው እንዲወጡ ይደረጋሉ።</translation>
 <translation id="7143207342074048698">በመያያዝ ላይ</translation>
@@ -661,7 +661,6 @@
 <translation id="8877788021141246043">አስታዋሽ አዘጋጅ</translation>
 <translation id="8878886163241303700">ማያ ገጽ በማስቀጠል ላይ</translation>
 <translation id="890616557918890486">ምንጭ ይለውጡ</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />ን (<ph name="SPECIFIED_REFRESH_RATE" /> ኸ) አይደግፍም። የምስል ጥራቱ ወደ <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) ተቀይሯል። ለውጦቹን ለማስቀመጥ ጠቅ ያድርጉት። ቀዳሚ ቅንብሮቹ በ<ph name="TIMEOUT_SECONDS" /> ውስጥ ወደነበሩበት ይመለሳሉ።</translation>
 <translation id="8909138438987180327">ባትሪ <ph name="PERCENTAGE" /> መቶኛ ላይ።</translation>
 <translation id="8921554779039049422">ኤች+</translation>
 <translation id="8921624153894383499">የGoogle ረዳቱ ይህን ቋንቋ አይናገርም።</translation>

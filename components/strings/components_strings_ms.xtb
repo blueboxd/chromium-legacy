@@ -384,6 +384,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="2544644783021658368">Satu dokumen</translation>
 <translation id="254947805923345898">Nilai dasar tidak sah.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> menghantar balasan yang tidak sah.</translation>
+<translation id="2552295903035773204">Gunakan kunci skrin untuk mengesahkan kad mulai sekarang</translation>
 <translation id="2553853292994445426">Semak tetapan DNS selamat anda. Anda mungkin telah mengkonfigurasikan pelayan DNS selamat yang menyebabkan sambungan gagal.</translation>
 <translation id="2556876185419854533">&amp;Buat Asal Edit</translation>
 <translation id="257674075312929031">Kumpulan</translation>
@@ -732,7 +733,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="4101413244023615925">Teks dan grafik</translation>
 <translation id="4103249731201008433">Nombor siri peranti tidak sah</translation>
 <translation id="4103763322291513355">Lawati &lt;strong&gt;chrome://policy&lt;/strong&gt; untuk melihat senarai URL yang disenarai hitam dan dasar lain yang dikuatkuasakan oleh pentadbir sistem anda.</translation>
-<translation id="4108231218301530806">Gunakan cap jari untuk mengesahkan kad ini pada masa akan datang.</translation>
 <translation id="4110652170750985508">Semak pembayaran anda</translation>
 <translation id="4112140312785995938">Cari Ke Belakang</translation>
 <translation id="4116663294526079822">Sentiasa benarkan di tapak ini</translation>
@@ -1130,6 +1130,7 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="569000877158168851">Nilai DnsOverHttpsTemplates tidak berkaitan dan tidak akan digunakan, melainkan dasar DnsOverHttpsMode ditetapkan kepada <ph name="SECURE_DNS_MODE_AUTOMATIC" /> atau <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Tengah</translation>
 <translation id="570530837424789914">Urus...</translation>
+<translation id="5705882733397021510">Kembali</translation>
 <translation id="57094364128775171">Cadangkan kata laluan yang kukuh…</translation>
 <translation id="5710435578057952990">Identiti tapak web ini belum disahkan.</translation>
 <translation id="5720705177508910913">Pengguna semasa</translation>
@@ -1346,7 +1347,6 @@ Jika tidak, ini akan disekat oleh tetapan privasi anda. Kebenaran ini akan membo
 <translation id="6631202559048444592">Lebih daripada satu sumber terdapat dalam dasar ini, tetapi nilainya sama.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Kosongkan</translation>
-<translation id="6644283850729428850">Dasar ini telah dikecam.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Tiada}=1{Daripada 1 tapak (anda tidak akan dilog keluar daripada Akaun Google anda)}other{Daripada # tapak (anda tidak akan dilog keluar daripada Akaun Google anda)}}</translation>
 <translation id="6652101503459149953">Gunakan Windows Hello</translation>
 <translation id="6657585470893396449">Kata laluan</translation>

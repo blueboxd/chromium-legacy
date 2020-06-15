@@ -164,8 +164,6 @@ bool WebExternalWidgetImpl::SupportsBufferedTouchEvents() {
   return client_->SupportsBufferedTouchEvents();
 }
 
-void WebExternalWidgetImpl::DidHandleKeyEvent() {}
-
 void WebExternalWidgetImpl::QueueSyntheticEvent(
     std::unique_ptr<blink::WebCoalescedInputEvent>) {}
 

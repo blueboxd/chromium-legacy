@@ -1886,6 +1886,16 @@
       typedom_types: ["Keyword"],
     },
     {
+      name: "counter-set",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      style_builder_template: "counter",
+      style_builder_template_args: {
+        action: "Set",
+      },
+      keywords: ["none"],
+      typedom_types: ["Keyword"],
+    },
+    {
       name: "cursor",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       inherited: true,

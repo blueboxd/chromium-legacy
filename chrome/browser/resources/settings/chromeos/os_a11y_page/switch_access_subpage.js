@@ -16,8 +16,13 @@
  */
 const SwitchAccessAssignmentValue = {
   NONE: 0,
-  SPACE: 1,
-  ENTER: 2,
+  ONE: 1,
+  TWO: 2,
+  THREE: 3,
+  FOUR: 4,
+  FIVE: 5,
+  SPACE: 6,
+  ENTER: 7,
 };
 
 /**
@@ -152,6 +157,13 @@ Polymer({
             value: SwitchAccessAssignmentValue.ENTER,
             name: this.i18n('switchAssignOptionEnter')
           },
+          // Arabic numerals are used consistently across languages, so the
+          // strings need not be internationalized.
+          {value: SwitchAccessAssignmentValue.ONE, name: '1'},
+          {value: SwitchAccessAssignmentValue.TWO, name: '2'},
+          {value: SwitchAccessAssignmentValue.THREE, name: '3'},
+          {value: SwitchAccessAssignmentValue.FOUR, name: '4'},
+          {value: SwitchAccessAssignmentValue.FIVE, name: '5'},
         ];
       },
     },
@@ -220,17 +232,31 @@ Polymer({
     // we instead store two distinct preferences (one for the dropdown selection
     // and one with the key codes that Switch Access intercepts). The following
     // code sets the key code preference based on the dropdown preference.
+    const keyPref = PREFIX + command + KEY_CODE_SUFFIX;
     switch (newPref.value) {
       case SwitchAccessAssignmentValue.NONE:
-        chrome.settingsPrivate.setPref(PREFIX + command + KEY_CODE_SUFFIX, []);
+        chrome.settingsPrivate.setPref(keyPref, []);
         break;
       case SwitchAccessAssignmentValue.SPACE:
-        chrome.settingsPrivate.setPref(
-            PREFIX + command + KEY_CODE_SUFFIX, [32]);
+        chrome.settingsPrivate.setPref(keyPref, [32]);
         break;
       case SwitchAccessAssignmentValue.ENTER:
-        chrome.settingsPrivate.setPref(
-            PREFIX + command + KEY_CODE_SUFFIX, [13]);
+        chrome.settingsPrivate.setPref(keyPref, [13]);
+        break;
+      case SwitchAccessAssignmentValue.ONE:
+        chrome.settingsPrivate.setPref(keyPref, [49]);
+        break;
+      case SwitchAccessAssignmentValue.TWO:
+        chrome.settingsPrivate.setPref(keyPref, [50]);
+        break;
+      case SwitchAccessAssignmentValue.THREE:
+        chrome.settingsPrivate.setPref(keyPref, [51]);
+        break;
+      case SwitchAccessAssignmentValue.FOUR:
+        chrome.settingsPrivate.setPref(keyPref, [52]);
+        break;
+      case SwitchAccessAssignmentValue.FIVE:
+        chrome.settingsPrivate.setPref(keyPref, [53]);
         break;
     }
   },

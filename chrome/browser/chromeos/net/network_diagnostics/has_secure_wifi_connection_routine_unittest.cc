@@ -26,6 +26,11 @@ class HasSecureWiFiConnectionRoutineTest : public ::testing::Test {
         std::make_unique<HasSecureWiFiConnectionRoutine>();
   }
 
+  HasSecureWiFiConnectionRoutineTest(
+      const HasSecureWiFiConnectionRoutineTest&) = delete;
+  HasSecureWiFiConnectionRoutineTest& operator=(
+      const HasSecureWiFiConnectionRoutineTest&) = delete;
+
   void CompareVerdict(mojom::RoutineVerdict expected_verdict,
                       const std::vector<mojom::HasSecureWiFiConnectionProblem>&
                           expected_problems,
@@ -78,14 +83,12 @@ class HasSecureWiFiConnectionRoutineTest : public ::testing::Test {
       has_secure_wifi_connection_routine_;
   std::string wifi_path_;
   base::WeakPtrFactory<HasSecureWiFiConnectionRoutineTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(HasSecureWiFiConnectionRoutineTest);
 };
 
 TEST_F(HasSecureWiFiConnectionRoutineTest, TestSecureWiFiConnection) {
   SetUpWiFi(shill::kStateOnline, kSecureSecurity);
   std::vector<mojom::HasSecureWiFiConnectionProblem> expected_problems = {};
-  has_secure_wifi_connection_routine()->RunTest(base::BindOnce(
+  has_secure_wifi_connection_routine()->RunRoutine(base::BindOnce(
       &HasSecureWiFiConnectionRoutineTest::CompareVerdict, weak_ptr(),
       mojom::RoutineVerdict::kNoProblem, expected_problems));
   base::RunLoop().RunUntilIdle();
@@ -95,7 +98,7 @@ TEST_F(HasSecureWiFiConnectionRoutineTest, TestInsecureWiFiConnection) {
   SetUpWiFi(shill::kStateOnline, kInsecureSecurity);
   std::vector<mojom::HasSecureWiFiConnectionProblem> expected_problems = {
       mojom::HasSecureWiFiConnectionProblem::kSecurityTypeWepPsk};
-  has_secure_wifi_connection_routine()->RunTest(base::BindOnce(
+  has_secure_wifi_connection_routine()->RunRoutine(base::BindOnce(
       &HasSecureWiFiConnectionRoutineTest::CompareVerdict, weak_ptr(),
       mojom::RoutineVerdict::kProblem, expected_problems));
   base::RunLoop().RunUntilIdle();
@@ -104,7 +107,7 @@ TEST_F(HasSecureWiFiConnectionRoutineTest, TestInsecureWiFiConnection) {
 TEST_F(HasSecureWiFiConnectionRoutineTest, TestWiFiNotConnected) {
   SetUpWiFi(shill::kStateOffline, kSecureSecurity);
   std::vector<mojom::HasSecureWiFiConnectionProblem> expected_problems = {};
-  has_secure_wifi_connection_routine()->RunTest(base::BindOnce(
+  has_secure_wifi_connection_routine()->RunRoutine(base::BindOnce(
       &HasSecureWiFiConnectionRoutineTest::CompareVerdict, weak_ptr(),
       mojom::RoutineVerdict::kNotRun, expected_problems));
   base::RunLoop().RunUntilIdle();

@@ -17,11 +17,12 @@ import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUi
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
 import android.graphics.Typeface;
-import android.support.test.filters.MediumTest;
 import android.text.SpannedString;
 import android.text.style.StyleSpan;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

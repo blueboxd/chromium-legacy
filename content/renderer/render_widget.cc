@@ -1141,7 +1141,13 @@ void RenderWidget::OnMouseCaptureLost() {
 
 void RenderWidget::OnSetEditCommandsForNextKeyEvent(
     std::vector<blink::mojom::EditCommandPtr> edit_commands) {
-  edit_commands_ = std::move(edit_commands);
+  if (auto* frame_widget = GetFrameWidget()) {
+    for (auto& command : edit_commands) {
+      frame_widget->AddEditCommandForNextKeyEvent(
+          WebString::FromUTF8(command->name),
+          WebString::FromUTF8(command->value));
+    }
+  }
 }
 
 void RenderWidget::OnSetActive(bool active) {
@@ -1278,20 +1284,6 @@ void RenderWidget::DidHandleGestureScrollEvent(
 
   widget_input_handler_manager_->ObserveGestureEventOnMainThread(gesture_event,
                                                                  scroll_result);
-}
-
-void RenderWidget::DidHandleKeyEvent() {
-  ClearEditCommands();
-}
-
-void RenderWidget::SetEditCommandForNextKeyEvent(const std::string& name,
-                                                 const std::string& value) {
-  ClearEditCommands();
-  edit_commands_.push_back(blink::mojom::EditCommand::New(name, value));
-}
-
-void RenderWidget::ClearEditCommands() {
-  edit_commands_.clear();
 }
 
 void RenderWidget::DidOverscroll(const gfx::Vector2dF& overscroll_delta,

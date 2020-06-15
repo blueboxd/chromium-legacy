@@ -39,7 +39,6 @@ import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
 
@@ -50,6 +49,7 @@ import androidx.test.espresso.action.Press;
 import androidx.test.espresso.action.Swipe;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.RecyclerViewActions;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

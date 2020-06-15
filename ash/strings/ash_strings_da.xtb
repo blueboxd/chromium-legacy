@@ -83,6 +83,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1864454756846565995">USB-C-enhed (port bagpå)</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Lås op med fingeraftryk</translation>
+<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> understøtter ikke <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Klik på Bekræft for at anvende ændringerne. De tidligere indstillinger gendannes om <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1919743966458266018">Genvejen til at åbne Jobliste er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatiske klik</translation>
 <translation id="1928739107511554905">Brug touchskærmen til at genstarte din Chromebook med det tilsluttede tastatur for at hente opdateringen.</translation>
@@ -510,7 +511,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7068360136237591149">Åbn filer</translation>
 <translation id="7076293881109082629">Login</translation>
 <translation id="7088960765736518739">Kontaktadgang</translation>
-<translation id="7092922358121866860">Vis indstillinger for Nattelys</translation>
 <translation id="7098389117866926363">USB-C-enhed (porten bagpå i venstre side)</translation>
 <translation id="7131634465328662194">Du logges automatisk ud.</translation>
 <translation id="7143207342074048698">Opretter forbindelse</translation>
@@ -662,7 +662,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="8877788021141246043">Opret en påmindelse</translation>
 <translation id="8878886163241303700">Udvider skærm</translation>
 <translation id="890616557918890486">Skift kilde</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> understøtter ikke <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Klik på Bekræft for at anvende ændringerne. De tidligere indstillinger gendannes om <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Batteriet er på <ph name="PERCENTAGE" /> procent.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google-assistenten taler ikke dette sprog.</translation>

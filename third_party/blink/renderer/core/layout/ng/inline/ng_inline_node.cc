@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
@@ -818,7 +819,7 @@ void NGInlineNode::SegmentText(NGInlineNodeData* data) const {
 
 // Segment NGInlineItem by script, Emoji, and orientation using RunSegmenter.
 void NGInlineNode::SegmentScriptRuns(NGInlineNodeData* data) const {
-  DCHECK_EQ(data->segments, nullptr);
+  DCHECK_EQ(data->segments.get(), nullptr);
 
   String& text_content = data->text_content;
   if (text_content.IsEmpty()) {
@@ -988,6 +989,7 @@ void NGInlineNode::SegmentBidiRuns(NGInlineNodeData* data) const {
 void NGInlineNode::ShapeText(NGInlineItemsData* data,
                              const String* previous_text,
                              const Vector<NGInlineItem>* previous_items) const {
+  TRACE_EVENT0("blink", "NGInlineNode::ShapeText");
   const String& text_content = data->text_content;
   Vector<NGInlineItem>* items = &data->items;
 

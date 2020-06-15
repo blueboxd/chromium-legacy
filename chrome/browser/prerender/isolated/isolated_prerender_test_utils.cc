@@ -104,6 +104,10 @@ TestProxyTunnelConnection::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+bool TestProxyTunnelConnection::IsReadyForIncomingSocket() const {
+  return !!client_socket_ && !incoming_socket_;
+}
+
 bool TestProxyTunnelConnection::ConnectToPeerOnLocalhost(int port) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   client_socket_ = std::make_unique<net::TCPClientSocket>(

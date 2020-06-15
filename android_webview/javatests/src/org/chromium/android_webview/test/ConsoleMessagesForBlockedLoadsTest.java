@@ -6,9 +6,10 @@ package org.chromium.android_webview.test;
 
 import static org.junit.Assert.assertNotEquals;
 
-import android.support.test.filters.SmallTest;
 import android.util.Pair;
 import android.webkit.WebSettings;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;

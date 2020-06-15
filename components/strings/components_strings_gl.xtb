@@ -231,6 +231,7 @@
 <translation id="1898423065542865115">Filtrando</translation>
 <translation id="1901443836186977402">{1,plural, =1{Este servidor non puido demostrar que é <ph name="DOMAIN" />; o seu certificado de seguranza caducou o último día. Isto pode deberse a un erro de configuración ou a que un atacante interceptase a túa conexión. A data actual do reloxo do teu ordenador é a seguinte: <ph name="CURRENT_DATE" />. É correcta? Se non é así, debes corrixir o reloxo do sistema e despois actualizar esta páxina.}other{Este servidor non puido demostrar que é <ph name="DOMAIN" />; o seu certificado de seguranza caducou hai # días. Isto pode deberse a un erro de configuración ou a que un atacante interceptase a túa conexión. A data actual do reloxo do teu ordenador é a seguinte: <ph name="CURRENT_DATE" />. É correcta? Se non é así, debes corrixir o reloxo do sistema e despois actualizar esta páxina.}}</translation>
 <translation id="1902576642799138955">Período de validez</translation>
+<translation id="1908217026282415406">Uso e movemento da cámara</translation>
 <translation id="191374271204266022">Copiar como JSON</translation>
 <translation id="1914326953223720820">Servizo de descompresión</translation>
 <translation id="1915697529809968049">Queres usar Touch ID en lugar do CVC?</translation>
@@ -727,7 +728,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4101413244023615925">Texto e gráficos</translation>
 <translation id="4103249731201008433">O número de serie do dispositivo non é válido</translation>
 <translation id="4103763322291513355">Visita &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver a lista dos URL incluídos na lista negra e outras políticas aplicadas polo administrador do teu sistema.</translation>
-<translation id="4108231218301530806">Utilizar impresión dixital para verificar esta tarxeta a próxima vez.</translation>
 <translation id="4110652170750985508">Revisa o pago</translation>
 <translation id="4112140312785995938">Retroceder</translation>
 <translation id="4116663294526079822">Permitir sempre neste sitio</translation>
@@ -1125,6 +1125,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="569000877158168851">O valor de DnsOverHttpsTemplates non é relevante e non se utilizará, a non ser que a política DnsOverHttpsMode se defina como <ph name="SECURE_DNS_MODE_AUTOMATIC" /> ou <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Centrar</translation>
 <translation id="570530837424789914">Xestiona o contido...</translation>
+<translation id="5705882733397021510">Volver</translation>
 <translation id="57094364128775171">Suxerir contrasinal seguro…</translation>
 <translation id="5710435578057952990">Non se verificou a identidade deste sitio web.</translation>
 <translation id="5720705177508910913">Usuario actual</translation>
@@ -1132,6 +1133,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5730040223043577876">Chrome recoméndache que restablezas o contrasinal se o reutilizaches noutros sitios.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Garda a tarxeta na túa Conta de Google}other{Garda tarxetas na túa Conta de Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Utilizar un número virtual para esta tarxeta}other{Seleccionar unha tarxeta}}</translation>
+<translation id="5759751709240058861">Utilizar e mover a túa cámara</translation>
 <translation id="5763042198335101085">Introduce un enderezo de correo electrónico válido</translation>
 <translation id="5765072501007116331">Para consultar os requisitos e métodos de entrega, selecciona un enderezo</translation>
 <translation id="5776313857861697733">Prioridade</translation>
@@ -1340,7 +1342,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="6631202559048444592">A política contén máis dunha fonte, pero teñen os mesmos valores.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Borrar</translation>
-<translation id="6644283850729428850">Esta política é obsoleta.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Ningún}=1{De 1 sitio (non se pechará sesión na túa conta de Google)}other{De # sitios (non se pechará sesión na túa conta de Google)}}</translation>
 <translation id="6652101503459149953">Usar Windows Hello</translation>
 <translation id="6657585470893396449">Contrasinal</translation>

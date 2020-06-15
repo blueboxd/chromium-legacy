@@ -17,8 +17,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.widget.LinearLayout;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

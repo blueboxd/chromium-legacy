@@ -14,6 +14,8 @@
 
 namespace blink {
 
+namespace {
+
 const blink::ContentDescription* CreateDescription(const WTF::String& category,
                                                    const WTF::String& url) {
   auto* description = blink::MakeGarbageCollected<blink::ContentDescription>();
@@ -30,10 +32,27 @@ const blink::ContentDescription* CreateDescription(const WTF::String& category,
   return description;
 }
 
+// Migration adapters for operator==(ContentIconDefinition).
+base::Optional<String> GetSizesOrNone(const ContentIconDefinition* cid) {
+  if (cid->hasSizes())
+    return cid->sizes();
+  return base::nullopt;
+}
+
+base::Optional<String> GetTypeOrNone(const ContentIconDefinition* cid) {
+  if (cid->hasType())
+    return cid->type();
+  return base::nullopt;
+}
+
+}  // anonymous namespace
+
+// TODO(crbug.com/1070871): Use fooOr() and drop migration adapters above.
 bool operator==(const Member<ContentIconDefinition>& cid1,
                 const Member<ContentIconDefinition>& cid2) {
-  return cid1->src() == cid2->src() && cid1->sizes() == cid2->sizes() &&
-         cid1->type() == cid2->type();
+  return cid1->src() == cid2->src() &&
+         GetSizesOrNone(cid1) == GetSizesOrNone(cid2) &&
+         GetTypeOrNone(cid1) == GetTypeOrNone(cid2);
 }
 
 bool operator==(const ContentDescription& cd1, const ContentDescription& cd2) {

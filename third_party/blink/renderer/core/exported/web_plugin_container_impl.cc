@@ -890,12 +890,6 @@ void WebPluginContainerImpl::HandleKeyboardEvent(KeyboardEvent& event) {
     return;
   }
 
-  // Give the client a chance to issue edit comamnds.
-  WebLocalFrameImpl* web_frame =
-      WebLocalFrameImpl::FromFrame(element_->GetDocument().GetFrame());
-  if (web_plugin_->SupportsEditCommands())
-    web_frame->Client()->HandleCurrentKeyboardEvent();
-
   ui::Cursor dummy_cursor;
   if (web_plugin_->HandleInputEvent(
           WebCoalescedInputEvent(web_event, ui::LatencyInfo()),

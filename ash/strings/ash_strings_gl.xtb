@@ -510,7 +510,6 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="7068360136237591149">Abrir ficheiros</translation>
 <translation id="7076293881109082629">Iniciando sesión</translation>
 <translation id="7088960765736518739">Acceso con interruptores</translation>
-<translation id="7092922358121866860">Mostrar a configuración de Luz nocturna</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porto esquerdo posterior)</translation>
 <translation id="7131634465328662194">A sesión pecharase automaticamente.</translation>
 <translation id="7143207342074048698">Conectando</translation>
@@ -662,7 +661,6 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="8877788021141246043">Definir un recordatorio</translation>
 <translation id="8878886163241303700">Ampliando a pantalla</translation>
 <translation id="890616557918890486">Cambiar fonte</translation>
-<translation id="8908312332415978740">O dispositivo <ph name="DISPLAY_NAME" /> non é compatible cunha resolución de <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). A resolución cambiouse a <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Para conservar este cambio, fai clic en Confirmar. A configuración anterior restaurarase en <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Nivel de batería: <ph name="PERCENTAGE" /> por cento.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">O Asistente de Google non fala este idioma.</translation>

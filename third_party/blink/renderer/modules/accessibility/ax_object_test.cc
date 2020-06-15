@@ -100,7 +100,7 @@ TEST_F(AccessibilityTest, SimpleTreeNavigation) {
                    <span id="ignored_b" aria-hidden="true"></span>
                    <button id="button">button</button>)HTML");
 
-  const AXObject* body = GetAXRootObject()->FirstChildIncludingIgnored();
+  const AXObject* body = GetAXBodyObject();
   ASSERT_NE(nullptr, body);
   const AXObject* input = GetAXObjectByElementId("input");
   ASSERT_NE(nullptr, input);
@@ -178,7 +178,7 @@ TEST_F(AccessibilityTest, TreeNavigationWithIgnoredContainer) {
     </body>)HTML");
 
   const AXObject* root = GetAXRootObject();
-  const AXObject* body = root->FirstChildIncludingIgnored();
+  const AXObject* body = GetAXBodyObject();
   ASSERT_EQ(3, body->ChildCountIncludingIgnored());
   ASSERT_EQ(1, body->ChildAtIncludingIgnored(1)->ChildCountIncludingIgnored());
 
@@ -315,12 +315,13 @@ TEST_F(AccessibilityTest, AXObjectInOrderTraversalIterator) {
 
   AXObject* root = GetAXRootObject();
   ASSERT_NE(nullptr, root);
+  AXObject* body = GetAXBodyObject();
+  ASSERT_NE(nullptr, root);
   AXObject* checkbox = GetAXObjectByElementId("checkbox");
   ASSERT_NE(nullptr, checkbox);
 
-  AXObject::InOrderTraversalIterator iter = root->GetInOrderTraversalIterator();
-  EXPECT_EQ(*root, *iter);
-  ++iter;  // Skip the generic container which is an ignored object.
+  AXObject::InOrderTraversalIterator iter = body->GetInOrderTraversalIterator();
+  EXPECT_EQ(*body, *iter);
   EXPECT_NE(GetAXObjectCache().InOrderTraversalEnd(), iter);
   EXPECT_EQ(*checkbox, *++iter);
   EXPECT_EQ(ax::mojom::Role::kCheckBox, iter->RoleValue());
@@ -328,7 +329,8 @@ TEST_F(AccessibilityTest, AXObjectInOrderTraversalIterator) {
   EXPECT_EQ(GetAXObjectCache().InOrderTraversalEnd(), iter);
   EXPECT_EQ(*checkbox, *--iter);
   EXPECT_EQ(*checkbox, *iter--);
-  --iter;  // Skip the generic container which is an ignored object.
+  --iter;  // Skip the BODY element.
+  --iter;  // Skip the HTML element.
   EXPECT_EQ(ax::mojom::Role::kRootWebArea, iter->RoleValue());
   EXPECT_EQ(GetAXObjectCache().InOrderTraversalBegin(), iter);
 }

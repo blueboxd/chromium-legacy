@@ -380,6 +380,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="2544644783021658368">Pojedynczy dokument</translation>
 <translation id="254947805923345898">Wartość zasady jest nieprawidłowa.</translation>
 <translation id="255002559098805027">Serwer <ph name="HOST_NAME" /> wysłał nieprawidłową odpowiedź.</translation>
+<translation id="2552295903035773204">Od teraz używaj blokady ekranu, by potwierdzać karty</translation>
 <translation id="2553853292994445426">Sprawdź ustawienia bezpiecznego DNS. Być może masz skonfigurowany serwer bezpiecznego DNS, z którym nie można się połączyć.</translation>
 <translation id="2556876185419854533">&amp;Cofnij edycję</translation>
 <translation id="257674075312929031">Grupa</translation>
@@ -726,7 +727,6 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="4101413244023615925">Tekst i grafika</translation>
 <translation id="4103249731201008433">Numer seryjny urządzenia jest nieprawidłowy</translation>
 <translation id="4103763322291513355">Wejdź na stronę &lt;strong&gt;chrome://policy&lt;/strong&gt;, aby wyświetlić czarną listę URL-i oraz inne zasady egzekwowane przez administratora systemu.</translation>
-<translation id="4108231218301530806">Następnym razem do weryfikacji tej karty użyj odcisku palca.</translation>
 <translation id="4110652170750985508">Sprawdź szczegóły płatności</translation>
 <translation id="4112140312785995938">Przewiń do tyłu</translation>
 <translation id="4116663294526079822">Zawsze zezwalaj w tej witrynie</translation>
@@ -1120,6 +1120,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="569000877158168851">Wartość DnsOverHttpsTemplates jest nieodpowiednia i nie zostanie użyta, chyba że zasada DnsOverHttpsMode jest ustawiona jako <ph name="SECURE_DNS_MODE_AUTOMATIC" /> lub <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Wyśrodkuj</translation>
 <translation id="570530837424789914">Zarządzaj…</translation>
+<translation id="5705882733397021510">Wróć</translation>
 <translation id="57094364128775171">Zaproponuj silne hasło…</translation>
 <translation id="5710435578057952990">Tożsamość witryny nie została zweryfikowana.</translation>
 <translation id="5720705177508910913">Bieżący użytkownik</translation>
@@ -1336,7 +1337,6 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="6631202559048444592">Dla tej zasady określono więcej niż jedno źródło, ale wartości tych źródeł są jednakowe.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
-<translation id="6644283850729428850">Zasada jest wycofana</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Brak}=1{Z 1 witryny (nie spowoduje to wylogowania z konta Google)}few{Z # witryn (nie spowoduje to wylogowania z konta Google)}many{Z # witryn (nie spowoduje to wylogowania z konta Google)}other{Z # witryny (nie spowoduje to wylogowania z konta Google)}}</translation>
 <translation id="6652101503459149953">Używaj Windows Hello</translation>
 <translation id="6657585470893396449">Hasło</translation>

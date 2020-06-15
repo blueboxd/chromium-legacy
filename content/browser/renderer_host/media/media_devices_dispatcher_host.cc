@@ -81,6 +81,9 @@ void MediaDevicesDispatcherHost::Create(
                            RenderFrameHost::FromID(render_process_id,
                                                    render_frame_id);
 
+                       if (!render_frame_host)
+                         return;
+
                        BackForwardCache::DisableForRenderFrameHost(
                            render_frame_host, "MediaDevicesDispatcherHost");
                      },

@@ -1788,8 +1788,11 @@ ukm::SourceId Textfield::GetClientSourceForMetrics() const {
 }
 
 bool Textfield::ShouldDoLearning() {
-  // TODO(https://crbug.com/311180): Implement this method.
-  NOTIMPLEMENTED_LOG_ONCE();
+  if (should_do_learning_.has_value())
+    return should_do_learning_.value();
+
+  NOTIMPLEMENTED_LOG_ONCE() << "A Textfield does not support ShouldDoLearning";
+  DVLOG(1) << "This Textfield instance does not support ShouldDoLearning";
   return false;
 }
 

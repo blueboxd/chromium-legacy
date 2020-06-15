@@ -485,7 +485,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameBrowserTest,
   child_rwh_impl->WasHidden();
   child_rwh_impl->WasShown(RecordContentToVisibleTimeRequest{
       base::TimeTicks::Now(), /* destination_is_loaded */ true,
-      /* show_reason_tab_switching */ true,
+      /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
       /* show_reason_unoccluded */ false,
       /* show_reason_bfcache_restore */ false});
   // Force the child to submit a new frame.

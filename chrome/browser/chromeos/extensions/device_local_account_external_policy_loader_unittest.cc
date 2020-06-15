@@ -232,11 +232,10 @@ void DeviceLocalAccountExternalPolicyLoaderTest::
 }
 
 void DeviceLocalAccountExternalPolicyLoaderTest::SetForceInstallListPolicy() {
-  std::unique_ptr<base::ListValue> forcelist(new base::ListValue);
-  forcelist->AppendString("invalid");
-  forcelist->AppendString(base::StringPrintf(
-      "%s;%s",
-      kExtensionId,
+  base::Value forcelist(base::Value::Type::LIST);
+  forcelist.Append("invalid");
+  forcelist.Append(base::StringPrintf(
+      "%s;%s", kExtensionId,
       extension_urls::GetWebstoreUpdateUrl().spec().c_str()));
   store_.policy_map_.Set(policy::key::kExtensionInstallForcelist,
                          policy::POLICY_LEVEL_MANDATORY,

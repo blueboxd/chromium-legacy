@@ -25,6 +25,8 @@ class LanConnectivityRoutine : public NetworkDiagnosticsRoutine {
       mojom::NetworkDiagnosticsRoutines::LanConnectivityCallback;
 
   LanConnectivityRoutine();
+  LanConnectivityRoutine(const LanConnectivityRoutine&) = delete;
+  LanConnectivityRoutine& operator=(const LanConnectivityRoutine&) = delete;
   ~LanConnectivityRoutine() override;
 
   // NetworkDiagnosticsRoutine:
@@ -34,7 +36,7 @@ class LanConnectivityRoutine : public NetworkDiagnosticsRoutine {
   // Run the core logic of this routine. Set |callback| to
   // |routine_completed_callback_|, which is to be executed in
   // AnalyzeResultsAndExecuteCallback().
-  void RunTest(LanConnectivityRoutineCallback callback);
+  void RunRoutine(LanConnectivityRoutineCallback callback);
 
  private:
   void FetchActiveNetworks();
@@ -46,8 +48,6 @@ class LanConnectivityRoutine : public NetworkDiagnosticsRoutine {
       remote_cros_network_config_;
   bool lan_connected_ = false;
   LanConnectivityRoutineCallback routine_completed_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(LanConnectivityRoutine);
 };
 
 }  // namespace network_diagnostics

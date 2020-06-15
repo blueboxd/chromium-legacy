@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">Синхалска клавиатура</translation>
 <translation id="240770291734945588">Свободно място: <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="2425665904502185219">Общ размер на файловете</translation>
+<translation id="2428749644083375155"><ph name="NUMBER_OF_ITEMS" /> елемента се копират в(ъв) „<ph name="FOLDER_NAME" />“</translation>
 <translation id="2448312741937722512">Тип</translation>
 <translation id="2453576648990281505">Файлът вече съществува</translation>
 <translation id="2464079411014186876">Сладолед</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346">Добавихте <ph name="ENTRY_NAME" /> към избраните.</translation>
 <translation id="4582497162516204941">Инсталиране чрез Linux (бета)</translation>
 <translation id="4594543368593301662">Показани са резултати за „<ph name="SEARCH_TERM" />“.</translation>
+<translation id="4603392156942865207">„<ph name="FILE_NAME" />“ се копира в(ъв) „<ph name="FOLDER_NAME" />“</translation>
 <translation id="4631887759990505102">Изпълнител</translation>
 <translation id="4656293982926141856">Този компютър</translation>
 <translation id="4669606053856530811">Членовете на „<ph name="SOURCE_NAME" />“ ще загубят достъп, ако тези елементи не са споделени с тях.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">Контраст</translation>
 <translation id="5068919226082848014">Пица</translation>
 <translation id="5081517858322016911">Ще бъдат изтрити файлове, заемащи <ph name="TOTAL_FILE_SIZE" /></translation>
+<translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> елемента се преместват в(ъв) „<ph name="FOLDER_NAME" />“</translation>
 <translation id="509429900233858213">Възникна грешка.</translation>
 <translation id="5098629044894065541">иврит</translation>
 <translation id="5123433949759960244">Баскетболна топка</translation>
@@ -455,6 +458,7 @@
 <translation id="6054173164583630569">Френска клавиатура</translation>
 <translation id="6074825444536523002">Формуляр на Google</translation>
 <translation id="6096979789310008754">Текстът за търсене е изчистен. Показват се всички файлове и папки.</translation>
+<translation id="610101264611565198">„<ph name="FILE_NAME" />“ се премества в(ъв) „<ph name="FOLDER_NAME" />“</translation>
 <translation id="6111770213269631447">Транслитерация (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Интервал</translation>
 <translation id="6133173853026656527">„<ph name="FILE_NAME" />“ се премества...</translation>
@@ -538,6 +542,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Инсталацията не бе успешна.</translation>
 <translation id="7040138676081995583">Отваряне със...</translation>
+<translation id="7059566040011178088">По-малко от <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> избрани елемента</translation>
 <translation id="7106346894903675391">Купуване на още хранилище...</translation>
 <translation id="7126604456862387217">&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; – &lt;em&gt;търсене в Диск&lt;/em&gt;</translation>
@@ -648,6 +653,7 @@
 <translation id="8193175696669055101">Модел на устройството</translation>
 <translation id="8208580316430297579">Художествено произведение</translation>
 <translation id="8223479393428528563">За да запазите тези файлове за използване офлайн, върнете се онлайн, кликнете с десния бутон на мишката върху тях и изберете опцията „<ph name="OFFLINE_CHECKBOX_NAME" />“.</translation>
+<translation id="8231972167769262174">Около <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Прекратяване</translation>
 <translation id="8261506727792406068">Изтриване</translation>
 <translation id="8269755669432358899">Свиване на панелите с информация за файловете</translation>

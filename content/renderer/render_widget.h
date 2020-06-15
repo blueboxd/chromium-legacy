@@ -261,14 +261,6 @@ class CONTENT_EXPORT RenderWidget
   // destroyed RenderWidget.
   bool IsForProvisionalFrame() const;
 
-  // Manage edit commands to be used for the next keyboard event.
-  const std::vector<blink::mojom::EditCommandPtr>& edit_commands() const {
-    return edit_commands_;
-  }
-  void SetEditCommandForNextKeyEvent(const std::string& name,
-                                     const std::string& value);
-  void ClearEditCommands();
-
   // Functions to track out-of-process frames for special notifications.
   void RegisterRenderFrameProxy(RenderFrameProxy* proxy);
   void UnregisterRenderFrameProxy(RenderFrameProxy* proxy);
@@ -347,7 +339,6 @@ class CONTENT_EXPORT RenderWidget
       const gfx::Vector2dF& unused_delta,
       const cc::OverscrollBehavior& overscroll_behavior,
       bool event_processed) override;
-  void DidHandleKeyEvent() override;
   void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
                      const gfx::Vector2dF& accumulated_overscroll,
                      const gfx::PointF& position_in_viewport,
@@ -943,10 +934,6 @@ class CONTENT_EXPORT RenderWidget
   // position or range as well as finding character index at a given position.
   std::unique_ptr<TextInputClientObserver> text_input_client_observer_;
 #endif
-
-  // Stores edit commands associated to the next key event.
-  // Will be cleared as soon as the next key event is processed.
-  std::vector<blink::mojom::EditCommandPtr> edit_commands_;
 
   // This field stores drag/drop related info for the event that is currently
   // being handled. If the current event results in starting a drag/drop

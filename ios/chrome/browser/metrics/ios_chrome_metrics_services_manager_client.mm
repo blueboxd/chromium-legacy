@@ -119,7 +119,7 @@ bool IOSChromeMetricsServicesManagerClient::IsMetricsConsentGiven() {
   return enabled_state_provider_->IsConsentGiven();
 }
 
-bool IOSChromeMetricsServicesManagerClient::IsIncognitoSessionActive() {
+bool IOSChromeMetricsServicesManagerClient::IsOffTheRecordSessionActive() {
   return AreIncognitoTabsPresent();
 }
 

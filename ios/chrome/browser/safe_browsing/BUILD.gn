@@ -25,7 +25,6 @@ source_set("safe_browsing") {
   ]
 
   deps = [
-    ":allow_list",
     ":util",
     "//base",
     "//build:branding_buildflags",
@@ -37,6 +36,7 @@ source_set("safe_browsing") {
     "//components/safe_browsing/core/db:database_manager",
     "//components/safe_browsing/core/db:v4_local_database_manager",
     "//components/safe_browsing/core/db:v4_protocol_manager_util",
+    "//components/safe_browsing/ios/browser:allow_list",
     "//components/security_interstitials/core",
     "//components/security_interstitials/core:unsafe_resource",
     "//ios/chrome/browser",
@@ -52,21 +52,6 @@ source_set("safe_browsing") {
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//ui/base",
-  ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
-source_set("allow_list") {
-  sources = [
-    "safe_browsing_url_allow_list.h",
-    "safe_browsing_url_allow_list.mm",
-  ]
-
-  deps = [
-    "//components/safe_browsing/core/db:v4_protocol_manager_util",
-    "//ios/web/public",
-    "//url",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -97,9 +82,9 @@ source_set("util") {
   ]
 
   deps = [
-    ":allow_list",
     "//base",
     "//components/safe_browsing/core/db:v4_protocol_manager_util",
+    "//components/safe_browsing/ios/browser:allow_list",
     "//components/security_interstitials/core",
     "//components/security_interstitials/core:unsafe_resource",
     "//ios/web/public",
@@ -142,7 +127,6 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":allow_list",
     ":safe_browsing",
     ":test_support",
     "//base/test:test_support",
@@ -159,6 +143,7 @@ source_set("unit_tests") {
     "//components/safe_browsing/core/db:v4_get_hash_protocol_manager",
     "//components/safe_browsing/core/db:v4_protocol_manager_util",
     "//components/safe_browsing/core/db:v4_test_util",
+    "//components/safe_browsing/ios/browser:allow_list",
     "//components/security_interstitials/core:unsafe_resource",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/prerender",

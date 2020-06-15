@@ -342,7 +342,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
   policy.Set(policy::key::kArcBackupRestoreServiceEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(static_cast<int>(
+             base::Value(static_cast<int>(
                  policy::ArcServicePolicyValue::kUnderUserControl)),
              nullptr);
   UpdatePolicy(policy);
@@ -356,12 +356,12 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
   fake_backup_settings_instance_->ClearCallHistory();
 
   // The policy is set to disabled.
-  policy.Set(policy::key::kArcBackupRestoreServiceEnabled,
-             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(
-                 static_cast<int>(policy::ArcServicePolicyValue::kDisabled)),
-             nullptr);
+  policy.Set(
+      policy::key::kArcBackupRestoreServiceEnabled,
+      policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+      policy::POLICY_SOURCE_CLOUD,
+      base::Value(static_cast<int>(policy::ArcServicePolicyValue::kDisabled)),
+      nullptr);
   UpdatePolicy(policy);
 
   // The pref is disabled and managed, but the corresponding sync method does
@@ -378,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
   policy.Set(policy::key::kArcBackupRestoreServiceEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(static_cast<int>(
+             base::Value(static_cast<int>(
                  policy::ArcServicePolicyValue::kUnderUserControl)),
              nullptr);
   UpdatePolicy(policy);
@@ -394,12 +394,12 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, BackupRestorePolicyTest) {
   fake_backup_settings_instance_->ClearCallHistory();
 
   // The policy is set to enabled.
-  policy.Set(policy::key::kArcBackupRestoreServiceEnabled,
-             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(
-                 static_cast<int>(policy::ArcServicePolicyValue::kEnabled)),
-             nullptr);
+  policy.Set(
+      policy::key::kArcBackupRestoreServiceEnabled,
+      policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+      policy::POLICY_SOURCE_CLOUD,
+      base::Value(static_cast<int>(policy::ArcServicePolicyValue::kEnabled)),
+      nullptr);
   UpdatePolicy(policy);
 
   // The pref is enabled and managed, but the corresponding sync method does
@@ -417,7 +417,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, LocationServicePolicyTest) {
   policy.Set(policy::key::kArcGoogleLocationServicesEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(static_cast<int>(
+             base::Value(static_cast<int>(
                  policy::ArcServicePolicyValue::kUnderUserControl)),
              nullptr);
   UpdatePolicy(policy);
@@ -431,12 +431,12 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, LocationServicePolicyTest) {
   fake_intent_helper_instance_->clear_broadcasts();
 
   // The policy is set to disabled.
-  policy.Set(policy::key::kArcGoogleLocationServicesEnabled,
-             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(
-                 static_cast<int>(policy::ArcServicePolicyValue::kDisabled)),
-             nullptr);
+  policy.Set(
+      policy::key::kArcGoogleLocationServicesEnabled,
+      policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+      policy::POLICY_SOURCE_CLOUD,
+      base::Value(static_cast<int>(policy::ArcServicePolicyValue::kDisabled)),
+      nullptr);
   UpdatePolicy(policy);
 
   // The pref is disabled and managed, but no broadcast is sent as the setting
@@ -451,7 +451,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, LocationServicePolicyTest) {
   policy.Set(policy::key::kArcGoogleLocationServicesEnabled,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
              policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(static_cast<int>(
+             base::Value(static_cast<int>(
                  policy::ArcServicePolicyValue::kUnderUserControl)),
              nullptr);
   UpdatePolicy(policy);
@@ -462,12 +462,12 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, LocationServicePolicyTest) {
   EXPECT_EQ(0UL, fake_intent_helper_instance_->broadcasts().size());
 
   // The policy is set to enabled.
-  policy.Set(policy::key::kArcGoogleLocationServicesEnabled,
-             policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(
-                 static_cast<int>(policy::ArcServicePolicyValue::kEnabled)),
-             nullptr);
+  policy.Set(
+      policy::key::kArcGoogleLocationServicesEnabled,
+      policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+      policy::POLICY_SOURCE_CLOUD,
+      base::Value(static_cast<int>(policy::ArcServicePolicyValue::kEnabled)),
+      nullptr);
   UpdatePolicy(policy);
 
   // The pref is enabled and managed, but no broadcast is sent as the setting
@@ -481,11 +481,9 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, ProxyModePolicyTest) {
   fake_intent_helper_instance_->clear_broadcasts();
 
   policy::PolicyMap policy;
-  policy.Set(
-      policy::key::kProxyMode, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      std::make_unique<base::Value>(ProxyPrefs::kAutoDetectProxyModeName),
-      nullptr);
+  policy.Set(policy::key::kProxyMode, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+             base::Value(ProxyPrefs::kAutoDetectProxyModeName), nullptr);
   UpdatePolicy(policy);
 
   base::Value expected_proxy_config(base::Value::Type::DICTIONARY);
@@ -503,8 +501,7 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, ONCProxyPolicyTest) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kOpenNetworkConfiguration,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kONCPolicy), nullptr);
+             policy::POLICY_SOURCE_CLOUD, base::Value(kONCPolicy), nullptr);
   UpdatePolicy(policy);
 
   base::Value expected_proxy_config(base::Value::Type::DICTIONARY);
@@ -523,14 +520,12 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, TwoSourcesTest) {
 
   policy::PolicyMap policy;
   // Proxy policy.
-  policy.Set(
-      policy::key::kProxyMode, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      std::make_unique<base::Value>(ProxyPrefs::kFixedServersProxyModeName),
-      nullptr);
+  policy.Set(policy::key::kProxyMode, policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+             base::Value(ProxyPrefs::kFixedServersProxyModeName), nullptr);
   policy.Set(policy::key::kProxyServer, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>("proxy:8888"), nullptr);
+             base::Value("proxy:8888"), nullptr);
   UpdatePolicy(policy);
 
   base::Value proxy_config(base::Value::Type::DICTIONARY);
@@ -696,12 +691,11 @@ IN_PROC_BROWSER_TEST_F(ArcSettingsServiceTest, TwoONCProxyPolicyTest) {
   policy::PolicyMap policy;
   policy.Set(policy::key::kOpenNetworkConfiguration,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-             policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kUserONCPolicy), nullptr);
+             policy::POLICY_SOURCE_CLOUD, base::Value(kUserONCPolicy), nullptr);
   policy.Set(policy::key::kDeviceOpenNetworkConfiguration,
              policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_MACHINE,
-             policy::POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(kDeviceONCPolicy), nullptr);
+             policy::POLICY_SOURCE_CLOUD, base::Value(kDeviceONCPolicy),
+             nullptr);
   UpdatePolicy(policy);
 
   base::Value expected_proxy_config(base::Value::Type::DICTIONARY);

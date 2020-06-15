@@ -22,13 +22,17 @@ class HasSecureWiFiConnectionRoutine : public NetworkDiagnosticsRoutine {
       mojom::NetworkDiagnosticsRoutines::HasSecureWiFiConnectionCallback;
 
   HasSecureWiFiConnectionRoutine();
+  HasSecureWiFiConnectionRoutine(const HasSecureWiFiConnectionRoutine&) =
+      delete;
+  HasSecureWiFiConnectionRoutine& operator=(
+      const HasSecureWiFiConnectionRoutine&) = delete;
   ~HasSecureWiFiConnectionRoutine() override;
 
   // NetworkDiagnosticsRoutine:
   bool CanRun() override;
   void AnalyzeResultsAndExecuteCallback() override;
 
-  void RunTest(HasSecureWiFiConnectionRoutineCallback callback);
+  void RunRoutine(HasSecureWiFiConnectionRoutineCallback callback);
 
  private:
   void FetchActiveWiFiNetworks();
@@ -43,8 +47,6 @@ class HasSecureWiFiConnectionRoutine : public NetworkDiagnosticsRoutine {
   chromeos::network_config::mojom::SecurityType wifi_security_ =
       chromeos::network_config::mojom::SecurityType::kNone;
   std::vector<mojom::HasSecureWiFiConnectionProblem> problems_;
-
-  DISALLOW_COPY_AND_ASSIGN(HasSecureWiFiConnectionRoutine);
 };
 
 }  // namespace network_diagnostics

@@ -1799,7 +1799,7 @@ Output = class {
 
       const isWithinVirtualKeyboard = AutomationUtil.getAncestors(node).find(
           (n) => n.role == RoleType.KEYBOARD);
-      if (node.defaultActionVerb != 'none' && !isWithinVirtualKeyboard) {
+      if (AutomationPredicate.clickable(node) && !isWithinVirtualKeyboard) {
         ret.push({msgId: 'hint_double_tap'});
       }
 

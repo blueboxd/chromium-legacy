@@ -6,7 +6,7 @@ package org.chromium.android_webview.test.common.variations;
 
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import com.google.protobuf.ByteString;
 

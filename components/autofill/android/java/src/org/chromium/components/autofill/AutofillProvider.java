@@ -4,7 +4,9 @@
 
 package org.chromium.components.autofill;
 
+import android.graphics.RectF;
 import android.util.SparseArray;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStructure;
 import android.view.autofill.AutofillValue;
@@ -142,6 +144,11 @@ public abstract class AutofillProvider {
                 nativeAutofillProvider, AutofillProvider.this, value);
     }
 
+    protected void setAnchorViewRect(long nativeAutofillProvider, View anchorView, RectF rect) {
+        AutofillProviderJni.get().setAnchorViewRect(nativeAutofillProvider, AutofillProvider.this,
+                anchorView, rect.left, rect.top, rect.width(), rect.height());
+    }
+
     /**
      * Invoked when current query need to be reset.
      */
@@ -157,6 +164,10 @@ public abstract class AutofillProvider {
     @CalledByNative
     protected abstract void hidePopup();
 
+    @CalledByNative
+    protected abstract void showDatalistPopup(
+            String[] datalistValues, String[] datalistLabels, boolean isRtl);
+
     @NativeMethods
     interface Natives {
         void onAutofillAvailable(
@@ -164,5 +175,8 @@ public abstract class AutofillProvider {
 
         void onAcceptDataListSuggestion(
                 long nativeAutofillProviderAndroid, AutofillProvider caller, String value);
+
+        void setAnchorViewRect(long nativeAutofillProviderAndroid, AutofillProvider caller,
+                View anchorView, float x, float y, float width, float height);
     }
 }

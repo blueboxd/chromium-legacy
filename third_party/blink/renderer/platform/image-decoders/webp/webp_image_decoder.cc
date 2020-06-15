@@ -430,7 +430,6 @@ IntSize WEBPImageDecoder::DecodedYUVSize(int component) const {
     case SkYUVAIndex::kY_Index:
       return Size();
     case SkYUVAIndex::kU_Index:
-      FALLTHROUGH;
     case SkYUVAIndex::kV_Index:
       return IntSize((Size().Width() + 1) / 2, (Size().Height() + 1) / 2);
   }
@@ -445,7 +444,6 @@ size_t WEBPImageDecoder::DecodedYUVWidthBytes(int component) const {
     case SkYUVAIndex::kY_Index:
       return base::checked_cast<size_t>(Size().Width());
     case SkYUVAIndex::kU_Index:
-      FALLTHROUGH;
     case SkYUVAIndex::kV_Index:
       return base::checked_cast<size_t>((Size().Width() + 1) / 2);
   }

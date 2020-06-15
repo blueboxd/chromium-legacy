@@ -72,10 +72,9 @@ FullscreenControllerTest::~FullscreenControllerTest() = default;
 void FullscreenControllerTest::SetUpOnMainThread() {
   GetExclusiveAccessManager()
       ->mouse_lock_controller()
-      ->set_bubble_hide_callback_for_test_(
-          base::BindRepeating(&FullscreenControllerTest::OnBubbleHidden,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              &mouse_lock_bubble_hide_reason_recorder_));
+      ->bubble_hide_callback_for_test_ = base::BindRepeating(
+      &FullscreenControllerTest::OnBubbleHidden, weak_ptr_factory_.GetWeakPtr(),
+      &mouse_lock_bubble_hide_reason_recorder_);
   GetExclusiveAccessManager()
       ->keyboard_lock_controller()
       ->bubble_hide_callback_for_test_ = base::BindRepeating(
@@ -86,8 +85,8 @@ void FullscreenControllerTest::SetUpOnMainThread() {
 void FullscreenControllerTest::TearDownOnMainThread() {
   GetExclusiveAccessManager()
       ->mouse_lock_controller()
-      ->set_bubble_hide_callback_for_test_(
-          base::RepeatingCallback<void(ExclusiveAccessBubbleHideReason)>());
+      ->bubble_hide_callback_for_test_ =
+      base::RepeatingCallback<void(ExclusiveAccessBubbleHideReason)>();
   GetExclusiveAccessManager()
       ->keyboard_lock_controller()
       ->bubble_hide_callback_for_test_ =
@@ -118,18 +117,18 @@ void FullscreenControllerTest::RequestToLockMouse(
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   MouseLockController* mouse_lock_controller =
       GetExclusiveAccessManager()->mouse_lock_controller();
-  mouse_lock_controller->set_fake_mouse_lock_for_test(true);
+  mouse_lock_controller->fake_mouse_lock_for_test_ = true;
   browser()->RequestToLockMouse(tab, user_gesture,
       last_unlocked_by_target);
-  mouse_lock_controller->set_fake_mouse_lock_for_test(false);
+  mouse_lock_controller->fake_mouse_lock_for_test_ = false;
 }
 
 void FullscreenControllerTest::
     SetWebContentsGrantedSilentMouseLockPermission() {
   GetExclusiveAccessManager()
       ->mouse_lock_controller()
-      ->set_web_contents_granted_silent_mouse_lock_permission_for_test(
-          browser()->tab_strip_model()->GetActiveWebContents());
+      ->web_contents_granted_silent_mouse_lock_permission_ =
+      browser()->tab_strip_model()->GetActiveWebContents();
 }
 
 FullscreenController* FullscreenControllerTest::GetFullscreenController() {
@@ -235,6 +234,12 @@ void FullscreenControllerTest::OnBubbleHidden(
     std::vector<ExclusiveAccessBubbleHideReason>* reason_recorder,
     ExclusiveAccessBubbleHideReason reason) {
   reason_recorder->push_back(reason);
+}
+
+void FullscreenControllerTest::SetUserEscapeTimestampForTest(
+    const base::TimeTicks timestamp) {
+  GetExclusiveAccessManager()->mouse_lock_controller()->last_user_escape_time_ =
+      timestamp;
 }
 
 int FullscreenControllerTest::InitialBubbleDelayMs() const {

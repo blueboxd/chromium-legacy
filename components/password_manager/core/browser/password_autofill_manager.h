@@ -169,8 +169,8 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   void OnFaviconReady(const favicon_base::FaviconImageResult& result);
 
   // Replaces |unlock_item| with a loading symbol and triggers a reauth flow to
-  // opt in for passwords account storage, with OnUnlockReauthCompleted as
-  // callback.
+  // opt in for the account-scoped password storage, with
+  // OnUnlockReauthCompleted as callback.
   void OnUnlockItemAccepted(autofill::PopupItemId unlock_item);
 
   // If reauth failed, resets the suggestions to show the |unlock_item| again.

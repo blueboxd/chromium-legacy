@@ -13,6 +13,7 @@ import android.util.AttributeSet;
 import android.view.TouchDelegate;
 import android.view.View;
 
+import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -349,6 +350,20 @@ public class LocationBarPhone extends LocationBarLayout {
     public void onTabLoadingNTP(NewTabPage ntp) {
         super.onTabLoadingNTP(ntp);
         updateStatusVisibility();
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        try (TraceEvent e = TraceEvent.scoped("LocationBarPhone.onMeasure")) {
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        }
+    }
+
+    @Override
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        try (TraceEvent e = TraceEvent.scoped("LocationBarPhone.onLayout")) {
+            super.onLayout(changed, left, top, right, bottom);
+        }
     }
 
     public void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {

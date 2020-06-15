@@ -1516,9 +1516,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
       <!-- InfoBar -->
-      <message name="IDS_INFOBAR_CLOSE" desc="Accessibility label for the dismiss infobar Button">
-        Close
-      </message>
       <message name="IDS_BOTTOM_BAR_SCREEN_POSITION" desc="Accessibility label to inform users about the InfoBar location">
         Options available near bottom of the screen
       </message>
@@ -2932,6 +2929,20 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_EPHEMERAL_TAB_SHEET_CLOSED" desc="Accessibility string read when the preview tab bottom sheet is closed.">
         Preview tab is closed
+      </message>
+
+      <!-- Feed Card Menu -->
+      <message name="IDS_FEED_CARD_MENU_DESCRIPTION" desc="The content description of the feed card menu bottom sheet.">
+        Feed card menu
+      </message>
+      <message name="IDS_FEED_CARD_MENU_OPENED_HALF" desc="Accessibility string read when the feed card menu bottom sheet is opened at half height. This should never happen, no need to translate.">
+        Feed card menu half height
+      </message>
+      <message name="IDS_FEED_CARD_MENU_OPENED_FULL" desc="Accessibility string read when the feed card menu bottom sheet is opened at full height. The sheet will occupy up to the full screen.">
+        Feed card menu is opened
+      </message>
+      <message name="IDS_FEED_CARD_MENU_CLOSED" desc="Accessibility string read when the feed card menu bottom sheet is closed.">
+        Feed card menu is closed
       </message>
 
       <!-- Storage Preference UI strings for clearing storage. -->

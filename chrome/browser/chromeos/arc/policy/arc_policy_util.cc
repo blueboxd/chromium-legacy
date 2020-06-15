@@ -55,11 +55,10 @@ base::Optional<EcryptfsMigrationAction> DecodeMigrationActionFromPolicy(
   // policy to enum, as some obsolete policy settings need to be aliased to
   // other enum values.
   policy::PolicyMap policy_map;
-  policy_map.Set(
-      policy::key::kEcryptfsMigrationStrategy, policy::POLICY_LEVEL_MANDATORY,
-      policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-      std::make_unique<base::Value>(static_cast<int>(policy_proto.value())),
-      nullptr);
+  policy_map.Set(policy::key::kEcryptfsMigrationStrategy,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
+                 base::Value(static_cast<int>(policy_proto.value())), nullptr);
   PrefValueMap prefs;
   policy::EcryptfsMigrationStrategyPolicyHandler handler;
   handler.ApplyPolicySettings(policy_map, &prefs);

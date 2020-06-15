@@ -35,6 +35,10 @@
 #include "third_party/blink/renderer/platform/webrtc/webrtc_source.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+namespace media {
+class SpeechRecognitionClient;
+}  // namespace media
+
 namespace webrtc {
 class AudioSourceInterface;
 }  // namespace webrtc
@@ -50,6 +54,10 @@ class MODULES_EXPORT WebRtcAudioRenderer
     : public media::AudioRendererSink::RenderCallback,
       public blink::WebMediaStreamAudioRenderer {
  public:
+  // Send the audio to the speech recognition service for caption transcription.
+  using TranscribeAudioCallback = base::RepeatingCallback<
+      void(std::unique_ptr<media::AudioBus>, int, media::ChannelLayout)>;
+
   // This is a little utility class that holds the configured state of an audio
   // stream.
   // It is used by both WebRtcAudioRenderer and SharedAudioRenderer (see cc
@@ -245,6 +253,10 @@ class MODULES_EXPORT WebRtcAudioRenderer
   // Flag to keep track the state of the renderer.
   State state_;
 
+  void TranscribeAudio(std::unique_ptr<media::AudioBus> audio_bus,
+                       int sample_rate,
+                       media::ChannelLayout channel_layout);
+
   // media::AudioRendererSink::RenderCallback implementation.
   // These two methods are called on the AudioOutputDevice worker thread.
   int Render(base::TimeDelta delay,
@@ -368,6 +380,9 @@ class MODULES_EXPORT WebRtcAudioRenderer
   base::Optional<AudioStreamTracker> audio_stream_tracker_;
 
   base::RepeatingCallback<void()> on_render_error_callback_;
+
+  std::unique_ptr<media::SpeechRecognitionClient> speech_recognition_client_;
+  TranscribeAudioCallback transcribe_audio_callback_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebRtcAudioRenderer);
 };

@@ -52,6 +52,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler.IntentHandlerDelegate;
 import org.chromium.chrome.browser.IntentHandler.TabOpenType;
 import org.chromium.chrome.browser.accessibility_tab_switcher.OverviewListLayout;
+import org.chromium.chrome.browser.app.tabmodel.ChromeNextTabPolicySupplier;
 import org.chromium.chrome.browser.bookmarks.BookmarkUtils;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
@@ -129,6 +130,7 @@ import org.chromium.chrome.browser.tabbed_mode.TabbedRootUiCoordinator;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
@@ -687,8 +689,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             // TODO(yusufo): get rid of findViewById(R.id.url_bar).
             initializeCompositorContent(mLayoutManager, findViewById(R.id.url_bar),
                     mContentContainer, mControlContainer);
-
-            mTabModelSelectorImpl.setOverviewModeBehavior(mOverviewModeController);
         }
     }
 
@@ -1604,9 +1604,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 && savedInstanceState.getBoolean("is_incognito_selected", false);
         int index = savedInstanceState != null ? savedInstanceState.getInt(WINDOW_INDEX, 0) : 0;
 
+        NextTabPolicySupplier nextTabPolicySupplier =
+                new ChromeNextTabPolicySupplier(mOverviewModeController);
         mTabModelSelectorImpl =
                 (TabModelSelectorImpl) TabWindowManager.getInstance().requestSelector(
-                        this, this, index);
+                        this, this, nextTabPolicySupplier, index);
         if (mTabModelSelectorImpl == null) {
             Toast.makeText(
                          this, getString(R.string.unsupported_number_of_windows), Toast.LENGTH_LONG)

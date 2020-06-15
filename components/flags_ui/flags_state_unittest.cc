@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/flags_ui/feature_entry.h"
+#include "components/flags_ui/feature_entry_macros.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
@@ -109,47 +110,45 @@ const FeatureEntry::Choice kMultiChoices[] = {
 static FeatureEntry kEntries[] = {
     {kFlags1, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::SINGLE_VALUE, kSwitch1, "", nullptr, nullptr, nullptr, 0,
-     nullptr, nullptr, nullptr},
+     SINGLE_VALUE_TYPE(kSwitch1)},
     {kFlags2, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::SINGLE_VALUE, kSwitch2, kValueForSwitch2, nullptr, nullptr,
-     nullptr, 0, nullptr, nullptr, nullptr},
+     SINGLE_VALUE_TYPE_AND_VALUE(kSwitch2, kValueForSwitch2)},
     {kFlags3, kDummyName, kDummyDescription,
      0,  // This ends up enabling for an OS other than the current.
-     FeatureEntry::SINGLE_VALUE, kSwitch3, "", nullptr, nullptr, nullptr, 0,
-     nullptr, nullptr, nullptr},
+     SINGLE_VALUE_TYPE(kSwitch3)},
     {kFlags4, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::MULTI_VALUE, "", "", "", "", nullptr,
-     base::size(kMultiChoices), kMultiChoices, nullptr, nullptr},
+     MULTI_VALUE_TYPE(kMultiChoices)},
     {kFlags5, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::ENABLE_DISABLE_VALUE, kSwitch1, kEnableDisableValue1,
-     kSwitch2, kEnableDisableValue2, nullptr, 3, nullptr, nullptr, nullptr},
+     ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(kSwitch1,
+                                         kEnableDisableValue1,
+                                         kSwitch2,
+                                         kEnableDisableValue2)},
     {kFlags6, kDummyName, kDummyDescription, 0,
-     FeatureEntry::SINGLE_DISABLE_VALUE, kSwitch6, "", nullptr, nullptr,
-     nullptr, 0, nullptr, nullptr, nullptr},
+     SINGLE_DISABLE_VALUE_TYPE(kSwitch6)},
     {kFlags7, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::FEATURE_VALUE, nullptr, nullptr, nullptr, nullptr,
-     &kTestFeature1, 3, nullptr, nullptr, nullptr},
+     FEATURE_VALUE_TYPE(kTestFeature1)},
     {kFlags8, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr, nullptr,
-     nullptr, &kTestFeature1, 4, nullptr, kTestVariations1, kTestTrial},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kTestFeature1,
+                                    kTestVariations1,
+                                    kTestTrial)},
     {kFlags9, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr, nullptr,
-     nullptr, &kTestFeature1, 4, nullptr, kTestVariations1, kTestTrial},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kTestFeature1,
+                                    kTestVariations1,
+                                    kTestTrial)},
     {kFlags10, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::FEATURE_WITH_PARAMS_VALUE, nullptr, nullptr, nullptr,
-     nullptr, &kTestFeature2, 4, nullptr, kTestVariations2, kTestTrial},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kTestFeature2,
+                                    kTestVariations2,
+                                    kTestTrial)},
     {kFlags11, kDummyName, kDummyDescription,
      0,  // Ends up being mapped to the current platform.
-     FeatureEntry::ORIGIN_LIST_VALUE, kStringSwitch, kValueForStringSwitch,
-     nullptr, nullptr, nullptr /* feature */, 0, nullptr, nullptr, nullptr}};
+     ORIGIN_LIST_VALUE_TYPE(kStringSwitch, kValueForStringSwitch)}};
 
 class FlagsStateTest : public ::testing::Test,
                        public flags_ui::FlagsState::Delegate {

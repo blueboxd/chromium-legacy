@@ -20,13 +20,13 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Build;
-import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.View;
 import android.widget.ImageView;
 
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.filters.SmallTest;
 
 import org.hamcrest.core.AllOf;
 import org.junit.Assert;

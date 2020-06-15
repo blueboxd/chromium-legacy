@@ -4,8 +4,8 @@
 
 package org.chromium.android_webview.test;
 
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;

@@ -147,7 +147,7 @@ void MetricsServicesManager::UpdateUkmService() {
   bool sync_enabled =
       metrics_service_client_->IsMetricsReportingForceEnabled() ||
       metrics_service_client_->IsUkmAllowedForAllProfiles();
-  bool is_incognito = client_->IsIncognitoSessionActive();
+  bool is_incognito = client_->IsOffTheRecordSessionActive();
 
   if (consent_given_ && listeners_active && sync_enabled && !is_incognito) {
     // TODO(skare): revise this - merged in a big change

@@ -51,7 +51,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
@@ -64,6 +63,7 @@ import androidx.test.espresso.NoMatchingViewException;
 import androidx.test.espresso.ViewAssertion;
 import androidx.test.espresso.contrib.AccessibilityChecks;
 import androidx.test.espresso.contrib.RecyclerViewActions;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Before;

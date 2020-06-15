@@ -4,6 +4,7 @@
 
 source_set("share") {
   sources = [
+    "bitmap_download_request.cc",
     "features.cc",
     "features.h",
     "qr_code_generation_request.cc",

@@ -126,7 +126,9 @@ NativeDesktopMediaList::Worker::Worker(
     : task_runner_(task_runner),
       media_list_(media_list),
       type_(type),
-      capturer_(std::move(capturer)) {}
+      capturer_(std::move(capturer)) {
+  DCHECK(capturer_);
+}
 
 NativeDesktopMediaList::Worker::~Worker() {
   DCHECK(task_runner_->BelongsToCurrentThread());

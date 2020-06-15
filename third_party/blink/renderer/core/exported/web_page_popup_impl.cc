@@ -563,10 +563,6 @@ void WebPagePopupImpl::ObserveGestureEventAndResult(
       gesture_event, unused_delta, overscroll_behavior, event_processed);
 }
 
-void WebPagePopupImpl::DidHandleKeyEvent() {
-  WidgetClient()->DidHandleKeyEvent();
-}
-
 void WebPagePopupImpl::QueueSyntheticEvent(
     std::unique_ptr<blink::WebCoalescedInputEvent> event) {
   WidgetClient()->QueueSyntheticEvent(std::move(event));

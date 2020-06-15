@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">Tastatură sinhala</translation>
 <translation id="240770291734945588">Spațiu disponibil: <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="2425665904502185219">Dimensiunea totală a fișierelor</translation>
+<translation id="2428749644083375155">Se copiază <ph name="NUMBER_OF_ITEMS" /> elemente în <ph name="FOLDER_NAME" /></translation>
 <translation id="2448312741937722512">Tipul</translation>
 <translation id="2453576648990281505">Fișierul există deja</translation>
 <translation id="2464079411014186876">Înghețată</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346">S-a adăugat <ph name="ENTRY_NAME" /> la selecție.</translation>
 <translation id="4582497162516204941">Instalează cu Linux (Beta)</translation>
 <translation id="4594543368593301662">Se afișează rezultate pentru <ph name="SEARCH_TERM" />.</translation>
+<translation id="4603392156942865207">Se copiază <ph name="FILE_NAME" /> în <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Artist</translation>
 <translation id="4656293982926141856">Acest computer</translation>
 <translation id="4669606053856530811">Membrii „<ph name="SOURCE_NAME" />” vor pierde accesul, exceptând cazul în care li se permite accesul la aceste articole.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">Contrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> fișiere vor fi șterse</translation>
+<translation id="508423945471810158">Se mută <ph name="NUMBER_OF_ITEMS" /> elemente în <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">A apărut o eroare.</translation>
 <translation id="5098629044894065541">Ebraică</translation>
 <translation id="5123433949759960244">Baschet</translation>
@@ -455,6 +458,7 @@
 <translation id="6054173164583630569">Tastatură franceză</translation>
 <translation id="6074825444536523002">Formular Google</translation>
 <translation id="6096979789310008754">Textul căutării a fost șters; se afișează toate fișierele și dosarele.</translation>
+<translation id="610101264611565198">Se mută <ph name="FILE_NAME" /> în <ph name="FOLDER_NAME" /></translation>
 <translation id="6111770213269631447">Transliterație (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Spațiu</translation>
 <translation id="6133173853026656527">Se mută <ph name="FILE_NAME" />...</translation>
@@ -538,6 +542,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Instalarea nu a reușit.</translation>
 <translation id="7040138676081995583">Deschideți cu...</translation>
+<translation id="7059566040011178088">Mai puțin de <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> elemente selectate</translation>
 <translation id="7106346894903675391">Cumpărați mai mult spațiu de stocare...</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;” – &lt;em&gt;căutați în Google Drive&lt;/em&gt;</translation>
@@ -648,6 +653,7 @@
 <translation id="8193175696669055101">Modelul dispozitivului</translation>
 <translation id="8208580316430297579">Grafică</translation>
 <translation id="8223479393428528563">Pentru a salva aceste fișiere pentru utilizare offline, revino online, dă clic dreapta pe fișiere și selectează opțiunea <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8231972167769262174">Despre <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Abandonați</translation>
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8269755669432358899">Restrânge panourile cu feedback privind fișierele</translation>

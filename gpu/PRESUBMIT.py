@@ -17,14 +17,7 @@ def CommonChecks(input_api, output_api):
     sys.path = [
         input_api.PresubmitLocalPath()
     ] + sys.path
-    disabled_warnings = [
-        'W0622',  # redefined-builtin
-        'R0923',  # interface-not-implemented
-    ]
-    output.extend(input_api.canned_checks.RunPylint(
-      input_api,
-      output_api,
-      disabled_warnings=disabled_warnings))
+    output.extend(input_api.canned_checks.RunPylint(input_api, output_api))
   finally:
     sys.path = sys_path_backup
 

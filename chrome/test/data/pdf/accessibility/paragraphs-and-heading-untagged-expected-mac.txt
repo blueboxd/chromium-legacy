@@ -1,7 +1,7 @@
 AXGroup AXDescription='PDF document containing 1 page'
 ++AXGroup AXDescription='PDF document containing 1 page'
 ++++AXGroup AXDescription='Page 1'
-++++++AXHeading AXValue='2'
+++++++AXHeading AXValue=2
 ++++++++AXStaticText AXValue='Heading<newline>'
 ++++++AXGroup
 ++++++++AXStaticText AXValue='This is a small pdf file:<newline>'

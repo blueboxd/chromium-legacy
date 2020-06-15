@@ -26,6 +26,9 @@ class GatewayCanBePingedRoutine : public NetworkDiagnosticsRoutine {
 
   explicit GatewayCanBePingedRoutine(
       chromeos::DebugDaemonClient* debug_daemon_client);
+  GatewayCanBePingedRoutine(const GatewayCanBePingedRoutine&) = delete;
+  GatewayCanBePingedRoutine& operator=(const GatewayCanBePingedRoutine&) =
+      delete;
   ~GatewayCanBePingedRoutine() override;
 
   // NetworkDiagnosticsRoutine:
@@ -35,7 +38,7 @@ class GatewayCanBePingedRoutine : public NetworkDiagnosticsRoutine {
   // Run the core logic of this routine. Set |callback| to
   // |routine_completed_callback_|, which is to be executed in
   // AnalyzeResultsAndExecuteCallback().
-  void RunTest(GatewayCanBePingedRoutineCallback callback);
+  void RunRoutine(GatewayCanBePingedRoutineCallback callback);
 
  private:
   void FetchActiveNetworks();
@@ -80,8 +83,6 @@ class GatewayCanBePingedRoutine : public NetworkDiagnosticsRoutine {
   std::string default_network_gateway_;
   int guids_remaining_ = 0;
   int gateways_remaining_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(GatewayCanBePingedRoutine);
 };
 
 }  // namespace network_diagnostics

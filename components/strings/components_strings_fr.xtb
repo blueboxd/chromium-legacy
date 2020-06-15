@@ -232,6 +232,7 @@
 <translation id="1898423065542865115">Filtrage</translation>
 <translation id="1901443836186977402">{1,plural, =1{Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité est arrivé à expiration au cours des dernières 24 heures. Cela peut être dû à une mauvaise configuration ou à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement <ph name="CURRENT_DATE" />. Cela vous semble-t-il correct ? Si ce n'est pas le cas, vous devez corriger l'horloge de votre système, puis actualiser la page.}one{Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité est arrivé à expiration il y a # jour. Cela peut être dû à une mauvaise configuration ou à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement <ph name="CURRENT_DATE" />. Cela vous semble-t-il correct ? Si ce n'est pas le cas, vous devez corriger l'horloge de votre système, puis actualiser la page.}other{Impossible de vérifier que ce serveur est bien <ph name="DOMAIN" />, car son certificat de sécurité est arrivé à expiration il y a # jours. Cela peut être dû à une mauvaise configuration ou à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement <ph name="CURRENT_DATE" />. Cela vous semble-t-il correct ? Si ce n'est pas le cas, vous devez corriger l'horloge de votre système, puis actualiser la page.}}</translation>
 <translation id="1902576642799138955">Durée de validité</translation>
+<translation id="1908217026282415406">Utiliser et bouger la caméra</translation>
 <translation id="191374271204266022">Copier au format JSON</translation>
 <translation id="1914326953223720820">Service de décompression de fichier</translation>
 <translation id="1915697529809968049">Utiliser Touch ID au lieu du code CVC ?</translation>
@@ -728,7 +729,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="4101413244023615925">Texte et image</translation>
 <translation id="4103249731201008433">Le numéro de série de l'appareil n'est pas valide.</translation>
 <translation id="4103763322291513355">Accédez à &lt;strong&gt;chrome://policy&lt;/strong&gt; pour consulter une liste des URL ajoutées à la liste noire et des autres règles définies par votre administrateur système.</translation>
-<translation id="4108231218301530806">Utiliser votre empreinte digitale pour valider cette carte la prochaine fois.</translation>
 <translation id="4110652170750985508">Vérifier votre paiement</translation>
 <translation id="4112140312785995938">Retour rapide</translation>
 <translation id="4116663294526079822">Toujours autoriser sur ce site</translation>
@@ -1126,6 +1126,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="569000877158168851">La valeur de la règle DnsOverHttpsTemplates n'est pas valide et ne sera pas utilisée, sauf si la règle DnsOverHttpsMode est définie sur <ph name="SECURE_DNS_MODE_AUTOMATIC" /> ou <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Centrer</translation>
 <translation id="570530837424789914">Gérer…</translation>
+<translation id="5705882733397021510">Retour</translation>
 <translation id="57094364128775171">Suggérer un mot de passe sécurisé…</translation>
 <translation id="5710435578057952990">L'identité de ce site Web n'a pas été vérifiée.</translation>
 <translation id="5720705177508910913">Utilisateur actuel</translation>
@@ -1133,6 +1134,7 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="5730040223043577876">L'équipe Chrome vous recommande de réinitialiser votre mot de passe si vous l'avez réutilisé sur d'autres sites.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Enregistrer une carte dans votre compte Google}one{Enregistrer une carte dans votre compte Google}other{Enregistrer des cartes dans votre compte Google}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Utiliser un numéro virtuel pour cette carte}one{Sélectionner une carte}other{Sélectionner plusieurs cartes}}</translation>
+<translation id="5759751709240058861">Utiliser et bouger la caméra</translation>
 <translation id="5763042198335101085">Saisissez une adresse e-mail valide</translation>
 <translation id="5765072501007116331">Sélectionnez une adresse pour consulter les modes et conditions de livraison disponibles</translation>
 <translation id="5776313857861697733">Priorité</translation>
@@ -1341,7 +1343,6 @@ Par défaut, ce type d'accès est bloqué par vos paramètres de confidentialit�
 <translation id="6631202559048444592">Il existe plusieurs sources pour cette règle, mais les valeurs sont identiques.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Effacer</translation>
-<translation id="6644283850729428850">Cette règle est obsolète.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Aucun}=1{De 1 site (vous ne serez pas déconnecté de votre compte Google)}one{De # site (vous ne serez pas déconnecté de votre compte Google)}other{De # sites (vous ne serez pas déconnecté de votre compte Google)}}</translation>
 <translation id="6652101503459149953">Utiliser Windows Hello</translation>
 <translation id="6657585470893396449">Mot de passe</translation>

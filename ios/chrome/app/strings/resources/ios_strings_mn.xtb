@@ -100,7 +100,6 @@
 <translation id="2139867232736819575">Хуулсан текстээ хайх</translation>
 <translation id="2149973817440762519">Хадгалагдсан хуудсыг засах</translation>
 <translation id="2175927920773552910">Хурдан хариу үйлдлийн код</translation>
-<translation id="2179182049312275900">Та синкийг хүссэн үедээ тохиргоонд асааж болно.</translation>
 <translation id="2198757192731523470">Google таны түүхийг хайлт, зар болон Google-н бусад үйлчилгээг хувийн болгохын тулд ашиглаж болзошгүй.</translation>
 <translation id="2218443599109088993">Жижигрүүлэх</translation>
 <translation id="2230173723195178503">Вэб хуудсыг ачаалласан</translation>
@@ -249,7 +248,6 @@
 <translation id="4038354071007134711">Энэ төхөөрөмж дээрх ямар ч апп файлыг нээж чадахгүй.</translation>
 <translation id="4042870976416480368">Хуудаснаас хайх</translation>
 <translation id="4049507953662678203">Сүлжээнд холбогдсон эсэхээ шалгаад, дахин оролдоно уу.</translation>
-<translation id="4071530748369333746">Синкийг цуцлах уу?</translation>
 <translation id="4082688844002261427">Таны хөтчийн түүхийг Хайлт, зар болон бусад үйлчилгээг хувийн болгоход хэрхэн ашигладгийг хянаарай</translation>
 <translation id="408404951701638773">Хайлтын талбарыг ашиглахад илүү хялбар боллоо</translation>
 <translation id="411254640334432676">Татаж авах үйлдэл амжилгүй болсон байна.</translation>
@@ -356,7 +354,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="5592679540098330836"><ph name="NAME" />-н синк хийхийг асаах</translation>
 <translation id="5614553682702429503">Нууц үгийг хадгалах уу?</translation>
 <translation id="5626245204502895507">Файлыг одоогоор татаж авч чадаагүй байна.</translation>
-<translation id="5631164295104953411">Төлбөрийн төрөл нэмэх</translation>
+<translation id="5631164295104953411">Төлбөрийн хэрэгсэл нэмэх</translation>
 <translation id="5659593005791499971">И-мэйл хаяг</translation>
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Хувилбар <ph name="PRODUCT_VERSION" /></translation>

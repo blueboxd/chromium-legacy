@@ -6962,9 +6962,8 @@ TEST_F(AXPlatformNodeWinTest, DISABLED_BulkFetch) {
 
   // Note: base::JSONReader is fine for unit tests, but production code
   // that parses untrusted JSON should always use DataDecoder instead.
-  base::JSONReader reader;
   base::Optional<base::Value> result =
-      reader.Read(response, base::JSON_ALLOW_TRAILING_COMMAS);
+      base::JSONReader::Read(response, base::JSON_ALLOW_TRAILING_COMMAS);
   ASSERT_TRUE(result);
   ASSERT_TRUE(result->FindKey("role"));
   ASSERT_EQ("scrollBar", result->FindKey("role")->GetString());

@@ -124,12 +124,11 @@ class OmniboxViewViews : public OmniboxView,
   using OmniboxView::SetUserText;
   void SetUserText(const base::string16& text,
                    bool update_popup) override;
-  void SetWindowTextAndCaretPos(
-      const base::string16& text,
-      size_t caret_pos,
-      bool update_popup,
-      bool notify_text_changed,
-      const base::string16& additional_text = base::string16()) override;
+  void SetWindowTextAndCaretPos(const base::string16& text,
+                                size_t caret_pos,
+                                bool update_popup,
+                                bool notify_text_changed) override;
+  void SetAdditionalText(const base::string16& additional_text) override;
   void EnterKeywordModeForDefaultSearchProvider() override;
   bool IsSelectAll() const override;
   void GetSelectionBounds(base::string16::size_type* start,
@@ -152,7 +151,6 @@ class OmniboxViewViews : public OmniboxView,
   ui::TextInputType GetTextInputType() const override;
   void AddedToWidget() override;
   void RemovedFromWidget() override;
-  bool ShouldDoLearning() override;
   base::string16 GetLabelForCommandId(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
 
@@ -174,6 +172,9 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, RevealOnHover);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest,
                            HideOnInteractionAndRevealOnHover);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest,
+                           HideOnInteractionAfterFocusAndBlur);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, RevealOnHoverAfterBlur);
   // TODO(tommycli): Remove the rest of these friends after porting these
   // browser tests to unit tests.
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag);
@@ -206,6 +207,8 @@ class OmniboxViewViews : public OmniboxView,
     // views::AnimationDelegateViews:
     void AnimationProgressed(const gfx::Animation* animation) override;
 
+    bool HasStarted();
+
     gfx::MultiAnimation* GetAnimationForTesting();
 
    private:
@@ -218,6 +221,8 @@ class OmniboxViewViews : public OmniboxView,
     gfx::Range path_bounds_;
 
     gfx::MultiAnimation animation_;
+
+    bool has_started_ = false;
   };
 
   enum class UnelisionGesture {
@@ -229,10 +234,8 @@ class OmniboxViewViews : public OmniboxView,
   // Update the field with |text| and set the selection. |ranges| should not be
   // empty; even text with no selections must have at least 1 empty range in
   // |ranges| to indicate the cursor position.
-  void SetTextAndSelectedRanges(
-      const base::string16& text,
-      const std::vector<gfx::Range>& ranges,
-      const base::string16& additional_text = base::string16());
+  void SetTextAndSelectedRanges(const base::string16& text,
+                                const std::vector<gfx::Range>& ranges);
 
   void SetSelectedRanges(const std::vector<gfx::Range>& ranges);
 
@@ -281,11 +284,9 @@ class OmniboxViewViews : public OmniboxView,
                                    const AutocompleteMatch& match,
                                    bool save_original_selection,
                                    bool notify_text_changed) override;
-  void OnInlineAutocompleteTextMaybeChanged(
-      const base::string16& display_text,
-      size_t user_text_length,
-      size_t user_text_start = 0,
-      const base::string16& additional_text = base::string16()) override;
+  void OnInlineAutocompleteTextMaybeChanged(const base::string16& display_text,
+                                            size_t user_text_start,
+                                            size_t user_text_length) override;
   void OnInlineAutocompleteTextCleared() override;
   void OnRevertTemporaryText(const base::string16& display_text,
                              const AutocompleteMatch& match) override;
@@ -372,8 +373,15 @@ class OmniboxViewViews : public OmniboxView,
   // hidden) and resets state so that the path will show until user interaction.
   void ResetToHideOnInteraction();
 
+  // This method recreates the path fade-in animation. Each incarnation of the
+  // fade-in animation should only be run once, so this method should be called
+  // when the path is eligible to be faded in again (e.g., on mouse exit after a
+  // hover that faded the path in).
+  void ResetPathFadeInAnimation();
+
   PathFadeAnimation* GetPathFadeInAnimationForTesting();
-  PathFadeAnimation* GetPathFadeOutFastAnimationForTesting();
+  PathFadeAnimation* GetPathFadeOutAfterHoverAnimationForTesting();
+  PathFadeAnimation* GetPathFadeOutAfterInteractionAnimationForTesting();
 
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (smaller font size). This is used for popups.
@@ -381,16 +389,47 @@ class OmniboxViewViews : public OmniboxView,
 
   std::unique_ptr<OmniboxPopupContentsView> popup_view_;
 
-  // Animations used to fade in/out the path under some elision settings.
+  // Animations are used to fade in/out the path under some elision settings.
+  // These animations are created at different times depending on the field
+  // trial configuration, so don't assume they are non-null.
+  //
+  // These animations are used by different field trials as described below.
 
-  // Fades the path in after a short delay. Under certain variations, this
-  // animation is not created until the user interacts with the page, so it's
-  // not always guaranteed to exist.
+  // When OmniboxFieldTrial::IsHidePathQueryRefEnabled() but not
+  // ShouldRevealPathQueryRefOnHover() or ShouldHidePathQueryRefOnInteraction(),
+  // only |delayed_path_fade_out_animation_| is used. It's created in
+  // OnThemeChanged() and starts running in EmphasizeUrlComponents(), fading the
+  // path out after a fixed delay.
+  std::unique_ptr<PathFadeAnimation> delayed_path_fade_out_animation_;
+  // When ShouldRevealPathQueryRefOnHover() is enabled but not
+  // ShouldHidePathQueryRefOnInteraction(), then the path is hidden in
+  // EmphasizeUrlComponents() and |path_fade_in_animation_| and
+  // |path_fade_out_hover_animation_| are created in OnThemeChanged(). These
+  // animations are used to show or hide the path when the mouse hovers or exits
+  // the omnibox. |path_fade_in_animation_| is created afresh every time the
+  // mouse exits. The invariant is that each incarnation of the fade-in
+  // animation is run exactly once; this allows us to avoid flickering by fading
+  // the path in multiple times as the user hovers over the omnibox for a long
+  // period of time.
   std::unique_ptr<PathFadeAnimation> path_fade_in_animation_;
-  // Waits a few seconds and then fades the path out.
-  std::unique_ptr<PathFadeAnimation> path_fade_out_animation_;
-  // Fades the path out without a delay.
-  std::unique_ptr<PathFadeAnimation> path_fade_out_fast_animation_;
+  std::unique_ptr<PathFadeAnimation> path_fade_out_after_hover_animation_;
+  // Finally, when ShouldHidePathQueryRefOnInteraction() is enabled, we don't
+  // create any animations until a navigation finishes. At that point, we show
+  // the path if it was a full cross-document navigation, and create
+  // |path_fade_out_after_interaction_animation_| to fade the path out once the
+  // user interacts with the page. If ShouldRevealPathQueryRefOnHover() is also
+  // enabled, we defer the creation of |path_fade_in_animation_| and
+  // |path_fade_out_animation_| until the user interacts with the page; their
+  // creation is deferred to avoid flickering the path in and out as the user
+  // hovers over the omnibox before they've interacted with the page. After the
+  // first user interaction, |path_fade_out_after_interaction_| animation
+  // doesn't run again until it's re-created for the next navigation, and
+  // |path_fade_in_animation_| and |path_fade_out_after_hover_animation_| behave
+  // as described above for the rest of the navigation. There are 2 separate
+  // fade-out animations (one for after-interaction and one for after-hover) so
+  // that the state of the after-interaction animation can be queried to avoid
+  // flickering the path after multiple user interactions.
+  std::unique_ptr<PathFadeAnimation> path_fade_out_after_interaction_animation_;
 
   // Selection persisted across temporary text changes, like popup suggestions.
   std::vector<gfx::Range> saved_temporary_selection_;

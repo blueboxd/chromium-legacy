@@ -50,24 +50,24 @@ std::set<std::string> GetAllPublicSwitchesAndFeaturesForTesting() {
     switch (entry.type) {
       case flags_ui::FeatureEntry::SINGLE_VALUE:
       case flags_ui::FeatureEntry::SINGLE_DISABLE_VALUE:
-        result.insert(entry.command_line_switch);
+        result.insert(entry.switches.command_line_switch);
         break;
       case flags_ui::FeatureEntry::ORIGIN_LIST_VALUE:
         // Do nothing, origin list values are not added as feature flags.
         break;
       case flags_ui::FeatureEntry::MULTI_VALUE:
-        for (int j = 0; j < entry.num_options; ++j) {
+        for (int j = 0; j < entry.NumOptions(); ++j) {
           result.insert(entry.ChoiceForOption(j).command_line_switch);
         }
         break;
       case flags_ui::FeatureEntry::ENABLE_DISABLE_VALUE:
-        result.insert(entry.command_line_switch);
-        result.insert(entry.disable_command_line_switch);
+        result.insert(entry.switches.command_line_switch);
+        result.insert(entry.switches.disable_command_line_switch);
         break;
       case flags_ui::FeatureEntry::FEATURE_VALUE:
       case flags_ui::FeatureEntry::FEATURE_WITH_PARAMS_VALUE:
-        result.insert(std::string(entry.feature->name) + ":enabled");
-        result.insert(std::string(entry.feature->name) + ":disabled");
+        result.insert(std::string(entry.feature.feature->name) + ":enabled");
+        result.insert(std::string(entry.feature.feature->name) + ":disabled");
         break;
     }
   }

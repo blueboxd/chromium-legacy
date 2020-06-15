@@ -97,10 +97,12 @@ leveldb::Status TransactionalLevelDBTransaction::Rollback() {
 }
 
 std::unique_ptr<TransactionalLevelDBIterator>
-TransactionalLevelDBTransaction::CreateIterator() {
-  leveldb::Status s = scope_->WriteChangesAndUndoLog();
+TransactionalLevelDBTransaction::CreateIterator(leveldb::Status& s) {
+  s = scope_->WriteChangesAndUndoLog();
   if (!s.ok() && !s.IsNotFound())
     return nullptr;
+  // Only return a "not ok" if the returned iterator is null.
+  s = leveldb::Status::OK();
   std::unique_ptr<TransactionalLevelDBIterator> it = db_->CreateIterator(
       weak_factory_.GetWeakPtr(), db_->DefaultReadOptions());
   loaded_iterators_.insert(it.get());

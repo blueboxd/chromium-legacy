@@ -15,7 +15,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import android.content.Intent;
 import android.os.Build;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

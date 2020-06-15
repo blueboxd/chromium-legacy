@@ -12,6 +12,8 @@
 #include "base/callback.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_tab_helper.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -22,9 +24,10 @@
 // This class is an intermediary URLLoaderFactory between the renderer and
 // network process, AKA proxy which should not be confused with a proxy server.
 //
-// Currently, this class only monitors when resource loads complete successfully
-// and reports those to the |IsolatedPrerenderSubresourceManager| which owns
-// |this|.
+// This class sends all requests to an isolated network context which will strip
+// any private information before being sent on the wire. Those requests are
+// also monitored for when resource loads complete successfully and reports
+// those to the |IsolatedPrerenderSubresourceManager| which owns |this|.
 class IsolatedPrerenderProxyingURLLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
@@ -37,7 +40,9 @@ class IsolatedPrerenderProxyingURLLoaderFactory
   IsolatedPrerenderProxyingURLLoaderFactory(
       int frame_tree_node_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory>
+          network_process_factory,
+      mojo::PendingRemote<network::mojom::URLLoaderFactory> isolated_factory,
       DisconnectCallback on_disconnect,
       ResourceLoadSuccessfulCallback on_resource_load_successful);
   ~IsolatedPrerenderProxyingURLLoaderFactory() override;
@@ -60,7 +65,8 @@ class IsolatedPrerenderProxyingURLLoaderFactory
                             public network::mojom::URLLoaderClient {
    public:
     InProgressRequest(
-        IsolatedPrerenderProxyingURLLoaderFactory* factory,
+        IsolatedPrerenderProxyingURLLoaderFactory* parent_factory,
+        network::mojom::URLLoaderFactory* target_factory,
         ResourceLoadSuccessfulCallback on_resource_load_successful,
         mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
         int32_t routing_id,
@@ -103,7 +109,7 @@ class IsolatedPrerenderProxyingURLLoaderFactory
     void MaybeReportResourceLoadSuccess(int net_error);
 
     // Back pointer to the factory which owns this class.
-    IsolatedPrerenderProxyingURLLoaderFactory* const factory_;
+    IsolatedPrerenderProxyingURLLoaderFactory* const parent_factory_;
 
     // This should be run on destruction of |this|.
     base::OnceClosure destruction_callback_;
@@ -134,10 +140,28 @@ class IsolatedPrerenderProxyingURLLoaderFactory
     DISALLOW_COPY_AND_ASSIGN(InProgressRequest);
   };
 
-  void OnTargetFactoryError();
+  // Used as a callback for determining the eligibility of a resource to be
+  // cached during prerender.
+  void OnEligibilityResult(
+      mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
+      int32_t routing_id,
+      int32_t request_id,
+      uint32_t options,
+      const network::ResourceRequest& request,
+      mojo::PendingRemote<network::mojom::URLLoaderClient> client,
+      const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+      const GURL& url,
+      bool eligible,
+      base::Optional<IsolatedPrerenderTabHelper::PrefetchStatus> not_used);
+
+  void OnNetworkProcessFactoryError();
+  void OnIsolatedFactoryError();
   void OnProxyBindingError();
   void RemoveRequest(InProgressRequest* request);
   void MaybeDestroySelf();
+
+  // For getting the web contents.
+  const int frame_tree_node_id_;
 
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> proxy_receivers_;
 
@@ -150,10 +174,16 @@ class IsolatedPrerenderProxyingURLLoaderFactory
       requests_;
 
   // The network process URLLoaderFactory.
-  mojo::Remote<network::mojom::URLLoaderFactory> target_factory_;
+  mojo::Remote<network::mojom::URLLoaderFactory> network_process_factory_;
+
+  // The isolated URLLoaderFactory.
+  mojo::Remote<network::mojom::URLLoaderFactory> isolated_factory_;
 
   // Deletes |this| when run.
   DisconnectCallback on_disconnect_;
+
+  base::WeakPtrFactory<IsolatedPrerenderProxyingURLLoaderFactory> weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(IsolatedPrerenderProxyingURLLoaderFactory);
 };

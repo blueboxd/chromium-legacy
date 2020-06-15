@@ -231,6 +231,7 @@
 <translation id="1898423065542865115">Filtrlar</translation>
 <translation id="1901443836186977402">{1,plural, =1{Bu <ph name="DOMAIN" /> serveri ekanligi tasdiqlanmadi. Uning xavfsizlik sertifikati bir kun oldin eskirgan. Bu muammo server sozlamalari xato moslangan yoki kimdir sizning shaxsiy maʼlumotlaringizni oʻgʻirlashga harakat qilayotganda chiqishi mumkin. Unutmangki, kompyuteringizdagi vaqt: <ph name="CURRENT_DATE" />. Agar vaqt xato boʻlsa, uni oʻzgartiring va sahifani yangilang.}other{Bu <ph name="DOMAIN" /> serveri ekanligi tasdiqlanmadi. Uning xavfsizlik sertifikati # kun oldin eskirgan. Bu muammo server sozlamalari xato moslangan yoki kimdir sizning shaxsiy maʼlumotlaringizni oʻgʻirlashga harakat qilayotganda chiqishi mumkin. Unutmangki, kompyuteringizdagi vaqt: <ph name="CURRENT_DATE" />. Agar vaqt xato boʻlsa, uni oʻzgartiring va sahifani yangilang.}}</translation>
 <translation id="1902576642799138955">Amal qilish muddati</translation>
+<translation id="1908217026282415406">Kameradan foydalanish va siljitish</translation>
 <translation id="191374271204266022">JSON sifatida nusxa olish</translation>
 <translation id="1914326953223720820">Arxivdan chiqarish xizmati</translation>
 <translation id="1915697529809968049">CVC oʻrniga Touch ID ishlatilsinmi?</translation>
@@ -382,6 +383,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="2544644783021658368">Bitta hujjat</translation>
 <translation id="254947805923345898">Parametr qiymati yaroqsiz.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> yaroqsiz javob qaytardi.</translation>
+<translation id="2552295903035773204">Endi kartalar ekran qulfi orqali tasdiqlanadi</translation>
 <translation id="2553853292994445426">DNS sozlamalar himoyasini tekshiring. Siz sozlagan DNS serverga ulanilmayotgan boʻlishi mumkin.</translation>
 <translation id="2556876185419854533">&amp;Tahrirni bekor qilish</translation>
 <translation id="257674075312929031">Guruh</translation>
@@ -725,7 +727,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="4101413244023615925">Matn va grafika</translation>
 <translation id="4103249731201008433">Qurilma seriya raqami noto‘g‘ri</translation>
 <translation id="4103763322291513355">Administrator tomonidan qora ro‘yxatga qo‘shilgan URL manzillar va boshqa parametrlarni ko‘rish uchun quyidagi sahifaga o‘ting: &lt;strong&gt;chrome://policy&lt;/strong&gt;</translation>
-<translation id="4108231218301530806">Keyingi safar bu karta barmoq izi bilan tasdiqlansin.</translation>
 <translation id="4110652170750985508">To‘lovingizni tekshiring</translation>
 <translation id="4112140312785995938">Orqaga qaytarish</translation>
 <translation id="4116663294526079822">Bu saytda har doim ruxsat berilsin</translation>
@@ -1123,6 +1124,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="569000877158168851">DnsOverHttpsTemplates qiymati mos emas va DnsOverHttpsMode qoidasi<ph name="SECURE_DNS_MODE_AUTOMATIC" /> yoki <ph name="SECURE_DNS_MODE_SECURE" /> qilib sozlanmaguncha ishlatilmaydi.</translation>
 <translation id="5701381305118179107">Markaz bo‘yicha tartiblash</translation>
 <translation id="570530837424789914">Boshqarish...</translation>
+<translation id="5705882733397021510">Orqaga</translation>
 <translation id="57094364128775171">Ishonchli parol yaratish…</translation>
 <translation id="5710435578057952990">Bu saytning identifikatsiya ma’lumotlari tekshirilmadi.</translation>
 <translation id="5720705177508910913">Joriy foydalanuvchi</translation>
@@ -1130,6 +1132,7 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="5730040223043577876">Parolingizni tashkilot domenidan tashqaridagi saytda kiritgan bo‘lsangiz, uni zudlik bilan o‘zgartirishingizni tavsiya etamiz.</translation>
 <translation id="5737183892635480227">{NUM_CARDS,plural, =1{Kartangizni Google hisobingizda saqlang}other{Kartalaringizni Google hisobingizda saqlang}}</translation>
 <translation id="5745980000221562234">{NUM_CARDS,plural, =1{Bu karta uchun virtual raqam ishlatish}other{Kartani tanlang}}</translation>
+<translation id="5759751709240058861">Kameradan foydalanish va siljitish</translation>
 <translation id="5763042198335101085">Email manzilini xatosiz kiriting</translation>
 <translation id="5765072501007116331">Yetkazib berish usuli va talablari bilan tanishish uchun manzilni tanlang</translation>
 <translation id="5776313857861697733">Muhimligi</translation>
@@ -1337,7 +1340,6 @@ Aks holda bu maxfiylik sozlamalaringiz tomonidan bloklanadi. Bunda siz ochgan sa
 <translation id="6631202559048444592">Parametr bir nechta manbaga ega, lekin qiymatlar bir xil kiritilgan.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Tozalash</translation>
-<translation id="6644283850729428850">Qoida eskirgan.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Hech qanday}=1{1 ta saytdan (Google hisobingizdan chiqmaysiz)}other{# ta saytdan (Google hisobingizdan chiqmaysiz)}}</translation>
 <translation id="6652101503459149953">Windows Hello ishlatish</translation>
 <translation id="6657585470893396449">Parol</translation>

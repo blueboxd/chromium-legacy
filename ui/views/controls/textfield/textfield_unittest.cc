@@ -1394,6 +1394,17 @@ TEST_F(TextfieldTest, TextInputType_InsertionTest) {
             textfield_->GetText());
 }
 
+TEST_F(TextfieldTest, ShouldDoLearning) {
+  InitTextfield();
+
+  // Defaults to false.
+  EXPECT_EQ(false, textfield_->ShouldDoLearning());
+
+  // The value can be set.
+  textfield_->SetShouldDoLearning(true);
+  EXPECT_EQ(true, textfield_->ShouldDoLearning());
+}
+
 TEST_F(TextfieldTest, TextInputType) {
   InitTextfield();
 

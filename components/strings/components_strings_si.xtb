@@ -384,6 +384,7 @@
 <translation id="2544644783021658368">තනි ලේඛනය</translation>
 <translation id="254947805923345898">ප්‍රතිපත්ති අගය වලංගු නොවේ.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> වලංගු නොවන ප්‍රතිචාරයක් එවීය.</translation>
+<translation id="2552295903035773204">දැන් සිට කාඩ්පත් තහවුරු කිරීමට තිර අගුල භාවිත කරන්න</translation>
 <translation id="2553853292994445426">ඔබේ සුරක්‍ෂිත DNS සැකසුම් පරීක්‍ෂා කරන්න. ඔබ සම්බන්ධතා අසමත් වන සුරක්‍ෂිත DNS සේවාදායකයක් වින්‍යාස කර තිබිය හැක.</translation>
 <translation id="2556876185419854533">සංස්කරණය &amp;පසුගමනය කරන්න</translation>
 <translation id="257674075312929031">සමූහය</translation>
@@ -729,7 +730,6 @@
 <translation id="4101413244023615925">පාඨය සහ චිත්‍රකය</translation>
 <translation id="4103249731201008433">උපාංග අනුක්‍රමික අංකය අවලංගුය</translation>
 <translation id="4103763322291513355">ඔබේ පරිපාලක විසින් යෙදූ කළු ලැයිස්තුගත කළ ලිපින හා වෙනත් ප්‍රතිපත්ති නැරඹීමට  &lt;strong&gt;chrome://policy&lt;/strong&gt; ක්ලික් කරන්න.</translation>
-<translation id="4108231218301530806">මීළඟ වරට මෙම කාඩ්පත සත්‍යාපන කිරීමට ඇඟිලි සලකුණ භාවිත කරන්න.</translation>
 <translation id="4110652170750985508">ඔබේ ගෙවීම සමාලෝචනය කරන්න</translation>
 <translation id="4112140312785995938">පසුපසට සොයන්න</translation>
 <translation id="4116663294526079822">මෙම අඩවිය මත සැමවිටම අවසර දෙන්න</translation>
@@ -1124,6 +1124,7 @@
 <translation id="569000877158168851">DnsOverHttpsTemplates අගය අදාළ නැත, DnsOverHttpsMode ප්‍රතිපත්තිය <ph name="SECURE_DNS_MODE_AUTOMATIC" /> හෝ <ph name="SECURE_DNS_MODE_SECURE" /> ලෙස සකසන්නේ නම් මිස එය භාවිත නොකෙරේ.</translation>
 <translation id="5701381305118179107">මධ්‍ය</translation>
 <translation id="570530837424789914">කළමනාකරණය කරන්න...</translation>
+<translation id="5705882733397021510">ආපසු යන්න</translation>
 <translation id="57094364128775171">ප්‍රබල මුරපදයක් යෝජනා කරන්න...</translation>
 <translation id="5710435578057952990">මෙම වෙබ් අඩවියේ අනන්‍යතාව තහවුරු කර නැත.</translation>
 <translation id="5720705177508910913">වත්මන් භාවිතකරු</translation>
@@ -1340,7 +1341,6 @@
 <translation id="6631202559048444592">මෙම ප්‍රතිපත්තිය සඳහා එකකට වැඩි මූලාශ්‍ර තිබේ, නමුත් අගයවල් සමානයි.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">මකන්න</translation>
-<translation id="6644283850729428850">මෙම ප්‍රතිපත්තිය අවප්‍රමාණය කර තිබේ.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{කිසිවක් නැත}=1{අඩවි 1කින් (ඔබව ඔබේ Google ගිණුමෙන් වරනය නොවනු ඇත)}one{අඩවි #කින් (ඔබව ඔබේ Google ගිණුමෙන් වරනය නොවනු ඇත)}other{අඩවි #කින් (ඔබව ඔබේ Google ගිණුමෙන් වරනය නොවනු ඇත)}}</translation>
 <translation id="6652101503459149953">Windows Hello භාවිත කරන්න</translation>
 <translation id="6657585470893396449">මුරපදය</translation>

@@ -384,6 +384,7 @@ target(link_target_type, "renderer") {
     "//services/image_annotation/public/cpp:cpp",
     "//services/image_annotation/public/mojom:mojom",
     "//services/metrics/public/cpp:metrics_cpp",
+    "//services/metrics/public/cpp:ukm_builders",
     "//services/network:network_service",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",

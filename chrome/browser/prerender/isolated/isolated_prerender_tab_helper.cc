@@ -856,6 +856,8 @@ void IsolatedPrerenderTabHelper::CreateIsolatedURLLoaderFactory() {
           ->CreateCustomProxyConfig();
   context_params->cert_verifier_params = content::GetCertVerifierParams(
       network::mojom::CertVerifierCreationParams::New());
+  context_params->cors_exempt_header_list = {
+      content::kCorsExemptPurposeHeaderName};
 
   // Also register a client config receiver so that updates to the set of proxy
   // hosts or proxy headers will be updated.

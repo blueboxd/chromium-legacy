@@ -97,6 +97,11 @@ void OverlayInterstitialAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
     candidate_id_ = kInvalidDOMNodeId;
   }
 
+  // We want to explicitly prevent mid-roll ads from being categorized as
+  // pop-ups. Skip the detection if we are in the middle of a video play.
+  if (main_frame->View()->HasDominantVideoElement())
+    return;
+
   HitTestLocation location(DoublePoint(main_frame_size.Width() / 2.0,
                                        main_frame_size.Height() / 2.0));
   HitTestResult result;

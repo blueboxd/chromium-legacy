@@ -57,7 +57,8 @@ blink::mojom::blink::ContentDescriptionPtr TypeConverter<
   result->category = GetContentCategory(description->category());
   for (const auto& icon : description->icons()) {
     result->icons.push_back(blink::mojom::blink::ContentIconDefinition::New(
-        icon->src(), icon->sizes(), icon->type()));
+        icon->src(), icon->hasSizes() ? icon->sizes() : String(),
+        icon->hasType() ? icon->type() : String()));
   }
   result->launch_url = description->url();
 

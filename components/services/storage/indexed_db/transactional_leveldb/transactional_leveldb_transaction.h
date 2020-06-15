@@ -65,8 +65,9 @@ class TransactionalLevelDBTransaction
   leveldb::Status Rollback() WARN_UNUSED_RESULT;
 
   // The returned iterator must be destroyed before the destruction of this
-  // transaction.
-  std::unique_ptr<TransactionalLevelDBIterator> CreateIterator();
+  // transaction.  This may return null, if it does, status will explain why.
+  std::unique_ptr<TransactionalLevelDBIterator> CreateIterator(
+      leveldb::Status& status);
 
   uint64_t GetTransactionSize() const;
 

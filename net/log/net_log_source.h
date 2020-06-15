@@ -12,7 +12,6 @@
 #include "net/log/net_log_source_type.h"
 
 namespace base {
-class DictionaryValue;
 class Value;
 }
 
@@ -29,7 +28,7 @@ struct NET_EXPORT NetLogSource {
   NetLogSource(NetLogSourceType type, uint32_t id, base::TimeTicks start_time);
   bool IsValid() const;
 
-  // Adds the source to a DictionaryValue containing event parameters,
+  // Adds the source to a dictionary containing event parameters,
   // using the name "source_dependency".
   void AddToEventParameters(base::Value* event_params) const;
 

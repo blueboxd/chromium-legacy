@@ -384,6 +384,7 @@
 <translation id="2544644783021658368">Један документ</translation>
 <translation id="254947805923345898">Вредност смерница није важећа.</translation>
 <translation id="255002559098805027">Хост <ph name="HOST_NAME" /> је послао неважећи одговор.</translation>
+<translation id="2552295903035773204">Од сада користи закључавање екрана за потврду картица</translation>
 <translation id="2553853292994445426">Проверите подешавања за безбедан DNS. Можда сте конфигурисали безбедан DNS сервер са којим не успевате да се повежете.</translation>
 <translation id="2556876185419854533">&amp;Опозови измену</translation>
 <translation id="257674075312929031">Група</translation>
@@ -731,7 +732,6 @@
 <translation id="4101413244023615925">Текст и слика</translation>
 <translation id="4103249731201008433">Серијски број уређаја је неважећи</translation>
 <translation id="4103763322291513355">Посетите &lt;strong&gt;chrome://policy&lt;/strong&gt; да бисте видели листу URL-ова стављених на црну листу и друге смернице које је наметнуо администратор система.</translation>
-<translation id="4108231218301530806">Следећи пут верификуј ову картицу помоћу дигиталног отиска.</translation>
 <translation id="4110652170750985508">Прегледајте уплату</translation>
 <translation id="4112140312785995938">Премотај уназад</translation>
 <translation id="4116663294526079822">Увек дозволи на овом сајту</translation>
@@ -1129,6 +1129,7 @@
 <translation id="569000877158168851">Вредност DnsOverHttpsTemplates смерница није релевантна и неће се користити ако не подесите DnsOverHttpsMode смернице на<ph name="SECURE_DNS_MODE_AUTOMATIC" /> или <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Центрирај</translation>
 <translation id="570530837424789914">Управљајте...</translation>
+<translation id="5705882733397021510">Назад</translation>
 <translation id="57094364128775171">Предложи јаку лозинку…</translation>
 <translation id="5710435578057952990">Идентитет овог веб-сајта није верификован.</translation>
 <translation id="5720705177508910913">Тренутни корисник</translation>
@@ -1344,7 +1345,6 @@
 <translation id="6631202559048444592">Присутно је више извора са истим вредностима за ове смернице.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Обриши</translation>
-<translation id="6644283850729428850">Ове смернице су застареле.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{None}=1{Са 1 сајта (нећемо вас одјавити са Google налога)}one{Са # сајта (нећемо вас одјавити са Google налога)}few{Са # сајта (нећемо вас одјавити са Google налога)}other{Са # сајтова (нећемо вас одјавити са Google налога)}}</translation>
 <translation id="6652101503459149953">Користи Windows Hello</translation>
 <translation id="6657585470893396449">Лозинка</translation>

@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.feed;
 import static org.mockito.Mockito.when;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.view.View;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

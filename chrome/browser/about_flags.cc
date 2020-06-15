@@ -1250,6 +1250,20 @@ const FeatureEntry::FeatureVariation kOverscrollHistoryNavigationVariations[] =
       base::size(kOverscrollHistoryNavigationBottomSheet), nullptr}};
 #endif  // defined(OS_ANDROID)
 
+#if !defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kTabFreeze_FreezeNoUnfreeze[] = {
+    {resource_coordinator::kTabFreeze_ShouldPeriodicallyUnfreezeParam,
+     "false"}};
+const FeatureEntry::FeatureParam kTabFreeze_FreezeWithUnfreeze[] = {
+    {resource_coordinator::kTabFreeze_ShouldPeriodicallyUnfreezeParam, "true"}};
+const FeatureEntry::FeatureVariation kTabFreezeVariations[] = {
+    {"Freeze - No Unfreeze", kTabFreeze_FreezeNoUnfreeze,
+     base::size(kTabFreeze_FreezeNoUnfreeze), nullptr},
+    {"Freeze - Unfreeze 10 seconds every 15 minutes",
+     kTabFreeze_FreezeWithUnfreeze, base::size(kTabFreeze_FreezeWithUnfreeze),
+     nullptr}};
+#endif
+
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kExploreSitesExperimental = {
     chrome::android::explore_sites::kExploreSitesVariationParameterName,
@@ -2381,6 +2395,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"show-touch-hud", flag_descriptions::kShowTouchHudName,
      flag_descriptions::kShowTouchHudDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshTouchHud)},
+    {"trim-on-all-frames-frozen", flag_descriptions::kTrimOnFreezeName,
+     flag_descriptions::kTrimOnFreezeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(performance_manager::features::kTrimOnFreeze)},
     {"trim-on-memory-pressure", flag_descriptions::kTrimOnMemoryPressureName,
      flag_descriptions::kTrimOnMemoryPressureDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(performance_manager::features::kTrimOnMemoryPressure)},
@@ -4172,6 +4189,15 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(chrome::android::kCCTIncognito)},
 #endif
 
+#if !defined(OS_ANDROID)
+    {"proactive-tab-freeze", flag_descriptions::kTabFreezeName,
+     flag_descriptions::kTabFreezeDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         features::kTabFreeze,
+         kTabFreezeVariations,
+         resource_coordinator::kTabFreezeFeatureName)},
+#endif
+
 #if defined(OS_CHROMEOS)
     {"enable-arc-cups-api", flag_descriptions::kArcCupsApiName,
      flag_descriptions::kArcCupsApiDescription, kOsCrOS,
@@ -5425,6 +5451,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"paint-preview-demo", flag_descriptions::kPaintPreviewDemoName,
      flag_descriptions::kPaintPreviewDemoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(paint_preview::kPaintPreviewDemo)},
+    {"paint-preview-startup", flag_descriptions::kPaintPreviewStartupName,
+     flag_descriptions::kPaintPreviewStartupDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(paint_preview::kPaintPreviewShowOnStartup)},
 #endif  // ENABLE_PAINT_PREVIEW && defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)

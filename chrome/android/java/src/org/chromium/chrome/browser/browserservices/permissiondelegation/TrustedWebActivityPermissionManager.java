@@ -19,6 +19,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.browser.trusted.Token;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeApplication;
@@ -123,6 +124,9 @@ public class TrustedWebActivityPermissionManager {
         String appName = getAppNameForPackage(packageName);
         if (appName == null) return;
 
+        Boolean lastPermission = mStore.arePermissionEnabled(type, origin);
+        mUmaRecorder.recordPermissionChangedUma(type, lastPermission, enabled);
+
         // It's important that we set the state before we destroy the notification channel. If we
         // did it the other way around there'd be a small moment in time where the website's
         // notification permission could flicker from SET -> UNSET -> SET. This way we transition
@@ -135,7 +139,6 @@ public class TrustedWebActivityPermissionManager {
         }
 
         if (stateChanged) {
-            mUmaRecorder.recordPermissionChangedUma(type, enabled);
             InstalledWebappBridge.notifyPermissionsChange(type);
         }
     }
@@ -227,6 +230,14 @@ public class TrustedWebActivityPermissionManager {
                 // Return |ASK| if is the first time (no previous state), and is not enabled.
                 if (storedPermission == null && !enabled) return ContentSettingValues.ASK;
 
+                // This is a temperate solution for the new Android one-time permission. Since we
+                // are not able to detect if use is changing the setting to "ask every time", when
+                // there is no permission, return ASK to let the client app decide whether to show
+                // the prompt.
+                if (BuildInfo.isAtLeastR()) {
+                    if (!enabled) return ContentSettingValues.ASK;
+                }
+
                 updatePermission(origin, packageName, ContentSettingsType.GEOLOCATION, enabled);
 
                 return enabled ? ContentSettingValues.ALLOW : ContentSettingValues.BLOCK;
@@ -241,6 +252,8 @@ public class TrustedWebActivityPermissionManager {
      **/
     @Nullable
     public static Boolean hasAndroidLocationPermission(String packageName) {
+        if (packageName == null) return null;
+
         try {
             PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
             PackageInfo packageInfo =

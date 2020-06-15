@@ -8,11 +8,16 @@ android_library("java") {
   sources = [
     "android/java/src/org/chromium/chrome/browser/tabmodel/EmptyTabModel.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/EmptyTabModelFilter.java",
+    "android/java/src/org/chromium/chrome/browser/tabmodel/EmptyTabModelSelectorObserver.java",
+    "android/java/src/org/chromium/chrome/browser/tabmodel/NextTabPolicy.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabList.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabModel.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelFilter.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelFilterFactory.java",
+    "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelFilterProvider.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelObserver.java",
+    "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelSelector.java",
+    "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelSelectorObserver.java",
     "android/java/src/org/chromium/chrome/browser/tabmodel/TabModelUtils.java",
   ]
   deps = [

@@ -57,8 +57,8 @@ class MetricsServicesManagerClient {
   // Returns whether metrics consent is given.
   virtual bool IsMetricsConsentGiven() = 0;
 
-  // Returns whether there are any Incognito browsers/tabs open.
-  virtual bool IsIncognitoSessionActive() = 0;
+  // Returns whether there are any OffTheRecord browsers/tabs open.
+  virtual bool IsOffTheRecordSessionActive() = 0;
 
   // Update the running state of metrics services managed by the embedder, for
   // example, crash reporting.

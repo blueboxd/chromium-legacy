@@ -509,7 +509,6 @@
 <translation id="7068360136237591149">ਫ਼ਾਈਲਾਂ ਖੋਲ੍ਹੋ</translation>
 <translation id="7076293881109082629">ਸਾਈਨ ਇਨ ਕਰ ਰਿਹਾ ਹੈ</translation>
 <translation id="7088960765736518739">ਸਵਿੱਚ ਪਹੁੰਚ</translation>
-<translation id="7092922358121866860">ਰਾਤ ਦੀ ਰੋਸ਼ਨੀ ਦੀਆਂ ਸੈਟਿੰਗਾਂ ਦਿਖਾਓ</translation>
 <translation id="7098389117866926363">USB-C ਡੀਵਾਈਸ (ਪਿੱਛੇ ਖੱਬਾ ਪੋਰਟ)</translation>
 <translation id="7131634465328662194">ਤੁਹਾਨੂੰ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਸਾਈਨ-ਆਊਟ ਕਰ ਦਿੱਤਾ ਜਾਵੇਗਾ।</translation>
 <translation id="7143207342074048698">ਕਨੈਕਟ ਕਰ ਰਿਹਾ ਹੈ</translation>
@@ -661,7 +660,6 @@
 <translation id="8877788021141246043">ਕੋਈ ਯਾਦ-ਸੂਚਨਾ ਸੈੱਟ ਕਰੋ</translation>
 <translation id="8878886163241303700">ਸਕ੍ਰੀਨ ਦਾ ਵਿਸਤਾਰ ਕਰ ਰਿਹਾ ਹੈ</translation>
 <translation id="890616557918890486">ਸਰੋਤ ਬਦਲੋ</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) ਦਾ ਸਮਰਥਨ ਨਹੀਂ ਕਰਦਾ। ਰੈਜ਼ੋਲਿਊਸ਼ਨ ਨੂੰ <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) 'ਤੇ ਬਦਲ ਦਿੱਤਾ ਗਿਆ ਸੀ। ਤਬਦੀਲੀਆਂ ਨੂੰ ਰੱਖਣ ਲਈ ਤਸਦੀਕ ਕਰੋ 'ਤੇ ਕਲਿੱਕ ਕਰੋ। ਪਿਛਲੀਆਂ ਸੈਟਿੰਗਾਂ ਨੂੰ <ph name="TIMEOUT_SECONDS" /> ਵਿੱਚ ਮੁੜ-ਬਹਾਲ ਕੀਤਾ ਜਾਵੇਗਾ।</translation>
 <translation id="8909138438987180327">ਬੈਟਰੀ <ph name="PERCENTAGE" /> ਫ਼ੀਸਦ ਹੈ।</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google ਸਹਾਇਕ ਇਹ ਭਾਸ਼ਾ ਨਹੀਂ ਬੋਲਦਾ ਹੈ।</translation>

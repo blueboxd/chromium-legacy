@@ -7,7 +7,8 @@ package org.chromium.android_webview.test;
 import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_MS;
 
 import android.os.Looper;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;

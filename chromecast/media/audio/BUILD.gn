@@ -104,6 +104,13 @@ cast_source_set("audio") {
     ]
   }
 
+  if (is_android) {
+    sources += [
+      "cast_audio_manager_android.cc",
+      "cast_audio_manager_android.h",
+    ]
+  }
+
   configs += [ "//media/audio:platform_config" ]
 }
 

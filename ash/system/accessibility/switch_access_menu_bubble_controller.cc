@@ -48,6 +48,7 @@ void SwitchAccessMenuBubbleController::ShowMenu(
     init_params.has_shadow = false;
     init_params.translucent = true;
     bubble_view_ = new TrayBubbleView(init_params);
+    bubble_view_->SetArrow(views::BubbleBorder::Arrow::TOP_LEFT);
 
     menu_view_ = new SwitchAccessMenuView();
     menu_view_->SetBorder(
@@ -84,6 +85,11 @@ void SwitchAccessMenuBubbleController::ShowMenu(
   widget_->Show();
   bubble_view_->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged,
                                          true);
+
+  // The resting bounds includes padding on each side of the menu.
+  // Remove that before passing to the back button controller so the back button
+  // appears in the correct position.
+  resting_bounds.Inset(kUnifiedMenuPadding, kUnifiedMenuPadding);
   back_button_controller_->ShowBackButton(resting_bounds,
                                           /*show_focus_ring=*/false,
                                           /*for_menu=*/true);

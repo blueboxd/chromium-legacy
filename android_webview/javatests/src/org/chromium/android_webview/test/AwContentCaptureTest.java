@@ -5,8 +5,9 @@
 package org.chromium.android_webview.test;
 
 import android.graphics.Rect;
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;

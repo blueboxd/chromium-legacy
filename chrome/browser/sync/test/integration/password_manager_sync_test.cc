@@ -108,8 +108,8 @@ class PasswordManagerSyncTest : public SyncTest {
     ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
     ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
 
-    // Let the user opt in to the passwords account storage, and wait for it to
-    // become active.
+    // Let the user opt in to the account-scoped password storage, and wait for
+    // it to become active.
     password_manager::features_util::OptInToAccountStorage(
         GetProfile(0)->GetPrefs(), GetSyncService(0));
     PasswordSyncActiveChecker(GetSyncService(0)).Wait();

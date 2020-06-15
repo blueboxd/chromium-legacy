@@ -263,10 +263,11 @@ LICENSE_AND_HEADER = """\
 
 """
 
-def WriteFunctionsInternal(file, functions, gen_content, check_extension=False):
+def WriteFunctionsInternal(out_file, functions, gen_content,
+                           check_extension=False):
   for group in functions:
     if 'ifdef' in group:
-      file.write('#if %s\n' % group['ifdef'])
+      out_file.write('#if %s\n' % group['ifdef'])
 
     extension = group['extension'] if 'extension' in group else ''
     min_api_version = \
@@ -274,47 +275,47 @@ def WriteFunctionsInternal(file, functions, gen_content, check_extension=False):
 
     if not check_extension:
       for func in group['functions']:
-        file.write(gen_content(func))
+        out_file.write(gen_content(func))
     elif not extension and not min_api_version:
       for func in group['functions']:
-        file.write(gen_content(func))
+        out_file.write(gen_content(func))
     else:
       if min_api_version:
-        file.write('  if (api_version >= %s) {\n' % min_api_version)
+        out_file.write('  if (api_version >= %s) {\n' % min_api_version)
 
         for func in group['functions']:
-          file.write(
+          out_file.write(
               gen_content(func))
 
-        file.write('}\n')
+        out_file.write('}\n')
         if extension:
-          file.write('else ')
+          out_file.write('else ')
 
       if extension:
-        file.write('if (gfx::HasExtension(enabled_extensions, %s)) {\n' %
+        out_file.write('if (gfx::HasExtension(enabled_extensions, %s)) {\n' %
                    extension)
 
         extension_suffix = \
             group['extension_suffix'] if 'extension_suffix' in group \
             else ''
         for func in group['functions']:
-          file.write(gen_content(func, extension_suffix))
+          out_file.write(gen_content(func, extension_suffix))
 
-        file.write('}\n')
+        out_file.write('}\n')
     if 'ifdef' in group:
-      file.write('#endif  // %s\n' % group['ifdef'])
-    file.write('\n')
+      out_file.write('#endif  // %s\n' % group['ifdef'])
+    out_file.write('\n')
 
-def WriteFunctions(file, functions, template, check_extension=False):
+def WriteFunctions(out_file, functions, template, check_extension=False):
   def gen_content(func, suffix=''):
     return template.substitute({'name': func,'extension_suffix': suffix})
-  WriteFunctionsInternal(file, functions, gen_content, check_extension)
+  WriteFunctionsInternal(out_file, functions, gen_content, check_extension)
 
-def WriteFunctionDeclarations(file, functions):
+def WriteFunctionDeclarations(out_file, functions):
   template = Template('  VulkanFunction<PFN_${name}> ${name};\n')
-  WriteFunctions(file, functions, template)
+  WriteFunctions(out_file, functions, template)
 
-def WriteMacros(file, functions):
+def WriteMacros(out_file, functions):
   def gen_content(func, suffix=''):
     if func not in registry.cmddict:
       # Some fuchsia functions are not in the vulkan registry, so use macro for
@@ -349,12 +350,12 @@ def WriteMacros(file, functions):
     pdecl += paramdecl
     return 'ALWAYS_INLINE %s { %s; }\n' % (pdecl, callstat)
 
-  WriteFunctionsInternal(file, functions, gen_content)
+  WriteFunctionsInternal(out_file, functions, gen_content)
 
-def GenerateHeaderFile(file):
+def GenerateHeaderFile(out_file):
   """Generates gpu/vulkan/vulkan_function_pointers.h"""
 
-  file.write(LICENSE_AND_HEADER +
+  out_file.write(LICENSE_AND_HEADER +
 """
 
 #ifndef GPU_VULKAN_VULKAN_FUNCTION_POINTERS_H_
@@ -451,23 +452,23 @@ struct COMPONENT_EXPORT(VULKAN) VulkanFunctionPointers {
 
 """ % VULKAN_REQUIRED_API_VERSION)
 
-  WriteFunctionDeclarations(file, VULKAN_UNASSOCIATED_FUNCTIONS)
+  WriteFunctionDeclarations(out_file, VULKAN_UNASSOCIATED_FUNCTIONS)
 
-  file.write("""\
+  out_file.write("""\
 
   // Instance functions
 """)
 
-  WriteFunctionDeclarations(file, VULKAN_INSTANCE_FUNCTIONS);
+  WriteFunctionDeclarations(out_file, VULKAN_INSTANCE_FUNCTIONS);
 
-  file.write("""\
+  out_file.write("""\
 
   // Device functions
 """)
 
-  WriteFunctionDeclarations(file, VULKAN_DEVICE_FUNCTIONS)
+  WriteFunctionDeclarations(out_file, VULKAN_DEVICE_FUNCTIONS)
 
-  file.write("""\
+  out_file.write("""\
 };
 
 }  // namespace gpu
@@ -475,28 +476,28 @@ struct COMPONENT_EXPORT(VULKAN) VulkanFunctionPointers {
 // Unassociated functions
 """)
 
-  WriteMacros(file, [{'functions': [ 'vkGetInstanceProcAddr']}])
-  WriteMacros(file, VULKAN_UNASSOCIATED_FUNCTIONS)
+  WriteMacros(out_file, [{'functions': [ 'vkGetInstanceProcAddr']}])
+  WriteMacros(out_file, VULKAN_UNASSOCIATED_FUNCTIONS)
 
-  file.write("""\
+  out_file.write("""\
 
 // Instance functions
 """)
 
-  WriteMacros(file, VULKAN_INSTANCE_FUNCTIONS);
+  WriteMacros(out_file, VULKAN_INSTANCE_FUNCTIONS);
 
-  file.write("""\
+  out_file.write("""\
 
 // Device functions
 """)
 
-  WriteMacros(file, VULKAN_DEVICE_FUNCTIONS)
+  WriteMacros(out_file, VULKAN_DEVICE_FUNCTIONS)
 
-  file.write("""\
+  out_file.write("""\
 
 #endif  // GPU_VULKAN_VULKAN_FUNCTION_POINTERS_H_""")
 
-def WriteFunctionPointerInitialization(file, proc_addr_function, parent,
+def WriteFunctionPointerInitialization(out_file, proc_addr_function, parent,
                                        functions):
   template = Template("""  ${name} = reinterpret_cast<PFN_${name}>(
     ${get_proc_addr}(${parent}, "${name}${extension_suffix}"));
@@ -514,24 +515,24 @@ def WriteFunctionPointerInitialization(file, proc_addr_function, parent,
         'name': '${name}', 'extension_suffix': '${extension_suffix}',
         'get_proc_addr': proc_addr_function, 'parent': parent}))
 
-  WriteFunctions(file, functions, template, check_extension=True)
+  WriteFunctions(out_file, functions, template, check_extension=True)
 
-def WriteUnassociatedFunctionPointerInitialization(file, functions):
-  WriteFunctionPointerInitialization(file, 'vkGetInstanceProcAddr', 'nullptr',
-                                     functions)
+def WriteUnassociatedFunctionPointerInitialization(out_file, functions):
+  WriteFunctionPointerInitialization(out_file, 'vkGetInstanceProcAddr',
+                                     'nullptr', functions)
 
-def WriteInstanceFunctionPointerInitialization(file, functions):
-  WriteFunctionPointerInitialization(file, 'vkGetInstanceProcAddr',
+def WriteInstanceFunctionPointerInitialization(out_file, functions):
+  WriteFunctionPointerInitialization(out_file, 'vkGetInstanceProcAddr',
                                      'vk_instance', functions)
 
-def WriteDeviceFunctionPointerInitialization(file, functions):
-  WriteFunctionPointerInitialization(file, 'vkGetDeviceProcAddr', 'vk_device',
-                                     functions)
+def WriteDeviceFunctionPointerInitialization(out_file, functions):
+  WriteFunctionPointerInitialization(out_file, 'vkGetDeviceProcAddr',
+                                     'vk_device', functions)
 
-def GenerateSourceFile(file):
+def GenerateSourceFile(out_file):
   """Generates gpu/vulkan/vulkan_function_pointers.cc"""
 
-  file.write(LICENSE_AND_HEADER +
+  out_file.write(LICENSE_AND_HEADER +
 """
 
 #include "gpu/vulkan/vulkan_function_pointers.h"
@@ -561,9 +562,9 @@ bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
 """)
 
   WriteUnassociatedFunctionPointerInitialization(
-      file, VULKAN_UNASSOCIATED_FUNCTIONS)
+      out_file, VULKAN_UNASSOCIATED_FUNCTIONS)
 
-  file.write("""\
+  out_file.write("""\
 
   return true;
 }
@@ -575,9 +576,10 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
   DCHECK_GE(api_version, kVulkanRequiredApiVersion);
 """)
 
-  WriteInstanceFunctionPointerInitialization(file, VULKAN_INSTANCE_FUNCTIONS);
+  WriteInstanceFunctionPointerInitialization(
+      out_file, VULKAN_INSTANCE_FUNCTIONS);
 
-  file.write("""\
+  out_file.write("""\
 
   return true;
 }
@@ -589,9 +591,9 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
   DCHECK_GE(api_version, kVulkanRequiredApiVersion);
   // Device functions
 """)
-  WriteDeviceFunctionPointerInitialization(file, VULKAN_DEVICE_FUNCTIONS)
+  WriteDeviceFunctionPointerInitialization(out_file, VULKAN_DEVICE_FUNCTIONS)
 
-  file.write("""\
+  out_file.write("""\
 
   return true;
 }

@@ -509,7 +509,6 @@
 <translation id="7068360136237591149">فائلیں کھولیں</translation>
 <translation id="7076293881109082629">سائن ان کیا جا رہا ہے</translation>
 <translation id="7088960765736518739">سوئچ رسائی</translation>
-<translation id="7092922358121866860">نائٹ لائٹ کی ترتیبات دکھائیں</translation>
 <translation id="7098389117866926363">‏USB-C آلہ (پیچھے موجود بایاں پورٹ)</translation>
 <translation id="7131634465328662194">آپ خود بخود سائن آؤٹ ہو جائیں گے۔</translation>
 <translation id="7143207342074048698">منسلک ہو رہا ہے</translation>
@@ -661,7 +660,6 @@
 <translation id="8877788021141246043">یاد دہانی سیٹ کریں</translation>
 <translation id="8878886163241303700">اسکرین کو پھیلایا جا رہا ہے</translation>
 <translation id="890616557918890486">ماخذ تبدیل کریں</translation>
-<translation id="8908312332415978740">‏<ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />(Hz<ph name="SPECIFIED_REFRESH_RATE" />) کو سپورٹ نہیں کرتا ہے۔ ریزولیوشن کو تبدیل کر کے <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) کر دیا گیا۔ تبدیلیاں باقی رکھنے کے لیے تصدیق کریں پر کلک کریں۔ گزشتہ ترتیبات کو <ph name="TIMEOUT_SECONDS" /> میں بحال کر دیا جائے گا۔</translation>
 <translation id="8909138438987180327">بیٹری <ph name="PERCENTAGE" /> فیصد ہے۔</translation>
 <translation id="8921554779039049422">H+‎</translation>
 <translation id="8921624153894383499">‏Google اسسٹنٹ یہ زبان نہیں بولتا ہے۔</translation>

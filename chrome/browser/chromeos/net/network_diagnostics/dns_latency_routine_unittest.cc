@@ -137,6 +137,9 @@ class DnsLatencyRoutineTest : public ::testing::Test {
         session_manager::SessionState::LOGIN_PRIMARY);
   }
 
+  DnsLatencyRoutineTest(const DnsLatencyRoutineTest&) = delete;
+  DnsLatencyRoutineTest& operator=(const DnsLatencyRoutineTest&) = delete;
+
   void CompareVerdict(
       mojom::RoutineVerdict expected_verdict,
       const std::vector<mojom::DnsLatencyProblem>& expected_problems,
@@ -165,9 +168,10 @@ class DnsLatencyRoutineTest : public ::testing::Test {
     dns_latency_routine_->set_tick_clock_for_testing(fake_tick_clock_.get());
   }
 
-  void RunTest(mojom::RoutineVerdict expected_routine_verdict,
-               const std::vector<mojom::DnsLatencyProblem>& expected_problems) {
-    dns_latency_routine_->RunTest(
+  void RunRoutine(
+      mojom::RoutineVerdict expected_routine_verdict,
+      const std::vector<mojom::DnsLatencyProblem>& expected_problems) {
+    dns_latency_routine_->RunRoutine(
         base::BindOnce(&DnsLatencyRoutineTest::CompareVerdict, weak_ptr(),
                        expected_routine_verdict, expected_problems));
     run_loop_.Run();
@@ -181,14 +185,14 @@ class DnsLatencyRoutineTest : public ::testing::Test {
   // resolution.
   // |routine_verdict|: Represents the expected verdict reported by this test.
   // |expected_problems|: Represents the expected problem reported by this test.
-  void SetUpAndRunTest(
+  void SetUpAndRunRoutine(
       FakeHostResolver::DnsResult* fake_dns_result,
       const base::TimeDelta response_latency,
       mojom::RoutineVerdict expected_routine_verdict,
       const std::vector<mojom::DnsLatencyProblem>& expected_problems) {
     SetUpFakeProperties(fake_dns_result, response_latency);
     SetUpDnsLatencyRoutine();
-    RunTest(expected_routine_verdict, expected_problems);
+    RunRoutine(expected_routine_verdict, expected_problems);
   }
 
   TestingProfileManager* profile_manager() { return &profile_manager_; }
@@ -208,8 +212,6 @@ class DnsLatencyRoutineTest : public ::testing::Test {
   TestingProfileManager profile_manager_;
   std::unique_ptr<DnsLatencyRoutine> dns_latency_routine_;
   base::WeakPtrFactory<DnsLatencyRoutineTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DnsLatencyRoutineTest);
 };
 
 // A passing routine requires an error code of net::OK and a non-empty
@@ -219,8 +221,8 @@ TEST_F(DnsLatencyRoutineTest, TestSuccessfulResolutions) {
   auto fake_dns_result = std::make_unique<FakeHostResolver::DnsResult>(
       net::OK, net::ResolveErrorInfo(net::OK),
       net::AddressList(FakeIPAddress()));
-  SetUpAndRunTest(fake_dns_result.get(), kSuccessfulDnsResolutionDelayMs,
-                  mojom::RoutineVerdict::kNoProblem, {});
+  SetUpAndRunRoutine(fake_dns_result.get(), kSuccessfulDnsResolutionDelayMs,
+                     mojom::RoutineVerdict::kNoProblem, {});
 }
 
 // Set up the |fake_dns_result| to return a DnsResult with an error code
@@ -231,9 +233,9 @@ TEST_F(DnsLatencyRoutineTest, TestUnsuccessfulResolution) {
       net::ResolveErrorInfo(net::ERR_NAME_NOT_RESOLVED), net::AddressList());
   // The time taken to complete the resolution is not important for this test,
   // because a failed resolution attempt already results in a problem.
-  SetUpAndRunTest(fake_dns_result.get(), kSuccessfulDnsResolutionDelayMs,
-                  mojom::RoutineVerdict::kProblem,
-                  {mojom::DnsLatencyProblem::kFailedToResolveAllHosts});
+  SetUpAndRunRoutine(fake_dns_result.get(), kSuccessfulDnsResolutionDelayMs,
+                     mojom::RoutineVerdict::kProblem,
+                     {mojom::DnsLatencyProblem::kFailedToResolveAllHosts});
 }
 
 // This test case represents the scenario where a DNS resolution was successful;
@@ -243,9 +245,9 @@ TEST_F(DnsLatencyRoutineTest, TestLatencySlightlyAboveThreshold) {
   auto fake_dns_result = std::make_unique<FakeHostResolver::DnsResult>(
       net::OK, net::ResolveErrorInfo(net::OK),
       net::AddressList(FakeIPAddress()));
-  SetUpAndRunTest(fake_dns_result.get(), kSlightlyAboveThresholdDelayMs,
-                  mojom::RoutineVerdict::kProblem,
-                  {mojom::DnsLatencyProblem::kSlightlyAboveThreshold});
+  SetUpAndRunRoutine(fake_dns_result.get(), kSlightlyAboveThresholdDelayMs,
+                     mojom::RoutineVerdict::kProblem,
+                     {mojom::DnsLatencyProblem::kSlightlyAboveThreshold});
 }
 
 // This test case represents the scenario where the DNS resolutions were
@@ -255,9 +257,9 @@ TEST_F(DnsLatencyRoutineTest, TestLatencySignificantlyAboveThreshold) {
   auto fake_dns_result = std::make_unique<FakeHostResolver::DnsResult>(
       net::OK, net::ResolveErrorInfo(net::OK),
       net::AddressList(FakeIPAddress()));
-  SetUpAndRunTest(fake_dns_result.get(), kSignificantlyAboveThresholdDelayMs,
-                  mojom::RoutineVerdict::kProblem,
-                  {mojom::DnsLatencyProblem::kSignificantlyAboveThreshold});
+  SetUpAndRunRoutine(fake_dns_result.get(), kSignificantlyAboveThresholdDelayMs,
+                     mojom::RoutineVerdict::kProblem,
+                     {mojom::DnsLatencyProblem::kSignificantlyAboveThreshold});
 }
 
 }  // namespace network_diagnostics

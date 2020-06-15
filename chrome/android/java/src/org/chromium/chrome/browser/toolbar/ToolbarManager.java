@@ -22,6 +22,7 @@ import androidx.appcompat.app.ActionBar;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
@@ -237,6 +238,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
             ObservableSupplier<AppMenuCoordinator> appMenuCoordinatorSupplier,
             boolean shouldShowUpdateBadge) {
+        TraceEvent.begin("ToolbarManager.ToolbarManager");
         mActivity = activity;
         mBrowserControlsSizer = controlsSizer;
         mFullscreenManager = fullscreenManager;
@@ -658,6 +660,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         mFindToolbarManager = findToolbarManager;
         mFindToolbarManager.addObserver(mFindToolbarObserver);
+        TraceEvent.end("ToolbarManager.ToolbarManager");
     }
 
     /**
@@ -742,6 +745,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             OnClickListener tabSwitcherClickHandler, OnClickListener newTabClickHandler,
             OnClickListener bookmarkClickHandler, OnClickListener customTabsBackClickHandler,
             Supplier<Boolean> showStartSurfaceSupplier) {
+        TraceEvent.begin("ToolbarManager.initializeWithNative");
         assert !mInitializedWithNative;
 
         mTabModelSelector = tabModelSelector;
@@ -825,7 +829,15 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             mOnInitializedRunnable = null;
         }
 
+        // Allow bitmap capturing once everything has been initialized.
+        Tab currentTab = tabModelSelector.getCurrentTab();
+        if (currentTab != null && currentTab.getWebContents() != null
+                && !TextUtils.isEmpty(currentTab.getUrlString())) {
+            mControlContainer.setReadyForBitmapCapture(true);
+        }
+
         setCurrentProfile(mProfileSupplier.get());
+        TraceEvent.end("ToolbarManager.initializeWithNative");
     }
 
     /**

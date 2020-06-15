@@ -10,7 +10,7 @@ import androidx.annotation.ColorRes;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.ui.messages.infobar.ConfirmInfoBar;
-import org.chromium.chrome.browser.ui.messages.infobar.InfoBarLayout;
+import org.chromium.components.infobars.InfoBarLayout;
 
 /**
  * An infobar to present a Safety Tip. This is a thin vineer over standard ConfirmInfoBar to provide

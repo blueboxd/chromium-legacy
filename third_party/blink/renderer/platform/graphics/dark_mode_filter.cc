@@ -157,6 +157,11 @@ void DarkModeFilter::ApplyToImageFlagsIfNeeded(const SkRect& src,
                                                const PaintImage& paint_image,
                                                cc::PaintFlags* flags,
                                                ElementRole element_role) {
+  // The construction of |paint_image| is expensive, so ensure
+  // IsDarkModeActive() is checked prior to calling this function.
+  // See: https://crbug.com/1094781.
+  DCHECK(IsDarkModeActive());
+
   if (!image_filter_ ||
       !ShouldApplyToImage(settings(), src, dst, paint_image, element_role)) {
     return;

@@ -509,8 +509,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7067196344162293536">ಸ್ವಯಂ ತಿರುಗಿಸು</translation>
 <translation id="7068360136237591149">ಫೈಲ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="7076293881109082629">ಸೈನ್ ಇನ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
-<translation id="7088960765736518739">ಪ್ರವೇಶ ಬದಲಾವಣೆ</translation>
-<translation id="7092922358121866860">ನೈಟ್ ಲೈಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
+<translation id="7088960765736518739">ಪ್ರವೇಶಿಸುವಿಕೆ ಬದಲಿಸಿ</translation>
 <translation id="7098389117866926363">USB-C ಸಾಧನ (ಹಿಂಭಾಗದಲ್ಲಿ ಎಡ ಪೋರ್ಟ್‌)</translation>
 <translation id="7131634465328662194">ನೀವು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸೈನ್‌ಔಟ್‌ ಆಗುತ್ತೀರಿ.</translation>
 <translation id="7143207342074048698">ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
@@ -662,7 +661,6 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8877788021141246043">ಜ್ಞಾಪನೆಯನ್ನು ಹೊಂದಿಸಿ</translation>
 <translation id="8878886163241303700">ಪರದೆಯನ್ನು ವಿಸ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="890616557918890486">ಮೂಲವನ್ನು ಬದಲಿಸಿ</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> ರೆಸಲ್ಯೂಷನ್ <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) ಅನ್ನು ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. ಈ ರೆಸಲ್ಯೂಷನ್‌‌ ಅನ್ನು <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) ಗೆ ಬದಲಾಯಿಸಲಾಗಿದೆ. ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಲು 'ಖಚಿತಪಡಿಸಿ' ಕ್ಲಿಕ್ ಮಾಡಿ. ಈ ಹಿಂದಿನ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು <ph name="TIMEOUT_SECONDS" /> ನಲ್ಲಿ ಮರುಸ್ಥಾಪಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="8909138438987180327">ಬ್ಯಾಟರಿ <ph name="PERCENTAGE" /> ಪ್ರತಿಶತ ಇದೆ.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google ಸಹಾಯಕವು ಈ ಭಾಷೆಯನ್ನು ಮಾತನಾಡುವುದಿಲ್ಲ.</translation>

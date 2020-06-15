@@ -137,8 +137,17 @@ bool WebAppShimManagerDelegate::HasNonBookmarkAppWindowsOpen() {
 
 bool WebAppShimManagerDelegate::UseFallback(Profile* profile,
                                             const AppId& app_id) const {
-  if (!fallback_delegate_)
+  if (!profile)
     return false;
+
+  // If |app_id| is installed via WebAppProvider, then use |this| as the
+  // delegate.
+  auto* provider = WebAppProvider::Get(profile);
+  if (provider->registrar().IsInstalled(app_id))
+    return false;
+
+  // Use |fallback_delegate_| only if |app_id| is installed for |profile|
+  // as an extension.
   return fallback_delegate_->AppIsInstalled(profile, app_id);
 }
 

@@ -26,7 +26,7 @@ extern const base::Feature kPaintPreviewDemo;
 
 // Used to enable the paint preview capture and show on startup for Android. If
 // enabled, paint previews for each tab are captured when a tab is hidden and
-// are deleted when a tab is cloased. When a tab with a captured paint perview
+// are deleted when a tab is closed. When a tab with a captured paint perview
 // is shown at startup and there is no cached page we will show the paint
 // preview.
 extern const base::Feature kPaintPreviewShowOnStartup;

@@ -2275,9 +2275,6 @@ bool VaapiWrapper::Initialize(CodecMode mode, VAProfile va_profile) {
   }
 #endif  // DCHECK_IS_ON()
 
-  if (mode != kVideoProcess)
-    TryToSetVADisplayAttributeToLocalGPU();
-
   const VAEntrypoint entrypoint = GetDefaultVaEntryPoint(mode, va_profile);
 
   base::AutoLock auto_lock(*va_lock_);
@@ -2483,19 +2480,6 @@ bool VaapiWrapper::Execute_Locked(VASurfaceID va_surface_id) {
                       base::TimeTicks::Now() - decode_start_time);
 
   return true;
-}
-
-void VaapiWrapper::TryToSetVADisplayAttributeToLocalGPU() {
-  base::AutoLock auto_lock(*va_lock_);
-  VADisplayAttribute item = {VADisplayAttribRenderMode,
-                             1,   // At least support '_LOCAL_OVERLAY'.
-                             -1,  // The maximum possible support 'ALL'.
-                             VA_RENDER_MODE_LOCAL_GPU,
-                             VA_DISPLAY_ATTRIB_SETTABLE};
-
-  VAStatus va_res = vaSetDisplayAttributes(va_display_, &item, 1);
-  if (va_res != VA_STATUS_SUCCESS)
-    DVLOG(2) << "vaSetDisplayAttributes unsupported, ignoring by default.";
 }
 
 }  // namespace media

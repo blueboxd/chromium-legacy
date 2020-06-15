@@ -70,7 +70,7 @@
 
 # Never inline classes or methods with this annotation, but allow shrinking and
 # obfuscation.
--keep,allowobfuscation,allowoptimization @org.chromium.base.annotations.DoNotInline class ** {
+-keepclassmembers,allowobfuscation,allowoptimization @org.chromium.base.annotations.DoNotInline class ** {
   <methods>;
 }
 -keepclassmembers,allowobfuscation,allowoptimization class ** {

@@ -83,6 +83,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="1864454756846565995">Urządzenie USB-C (tylny port)</translation>
 <translation id="1882897271359938046">Kopia na <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Odblokuj odciskiem palca</translation>
+<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> nie obsługuje ustawienia <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Rozdzielczość została zmieniona na <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Kliknij, by potwierdzić i zachować zmiany. Poprzednie ustawienia zostaną przywrócone za <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1919743966458266018">Zmieniliśmy skrót, który otwiera menedżera zadań. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatyczne kliknięcia</translation>
 <translation id="1928739107511554905">Aby pobrać aktualizację, użyj ekranu dotykowego, by uruchomić Chromebooka ponownie z podłączoną klawiaturą.</translation>
@@ -509,7 +510,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="7068360136237591149">Otwórz pliki</translation>
 <translation id="7076293881109082629">Loguję</translation>
 <translation id="7088960765736518739">Switch Access</translation>
-<translation id="7092922358121866860">Pokaż ustawienia Podświetlenia nocnego</translation>
 <translation id="7098389117866926363">Urządzenie USB-C (lewy port z tyłu)</translation>
 <translation id="7131634465328662194">Nastąpi automatyczne wylogowanie.</translation>
 <translation id="7143207342074048698">Łączenie</translation>
@@ -661,7 +661,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="8877788021141246043">Ustaw przypomnienie</translation>
 <translation id="8878886163241303700">Rozszerzony ekran</translation>
 <translation id="890616557918890486">Zmień źródło</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> nie obsługuje ustawienia <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Rozdzielczość została zmieniona na <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Kliknij, by potwierdzić i zachować zmiany. Poprzednie ustawienia zostaną przywrócone za <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Poziom naładowania baterii: <ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Asystent Google nie mówi w tym języku.</translation>

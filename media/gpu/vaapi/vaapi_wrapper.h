@@ -429,9 +429,6 @@ class MEDIA_GPU_EXPORT VaapiWrapper
 
   void DestroyPendingBuffers_Locked() EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
 
-  // Attempt to set render mode to "render to texture.". Failure is non-fatal.
-  void TryToSetVADisplayAttributeToLocalGPU();
-
   const CodecMode mode_;
 
   // Pointer to VADisplayState's member |va_lock_|. Guaranteed to be valid for

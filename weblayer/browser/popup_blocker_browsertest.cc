@@ -161,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, OpensBlockedPopup) {
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
-                       AllowsPopupThroughContentSetting) {
+                       AllowsPopupThroughContentSettingException) {
   GURL popup_url = embedded_test_server()->GetURL("/echo?popup");
   HostContentSettingsMapFactory::GetForBrowserContext(
       GetWebContents(original_tab())->GetBrowserContext())
@@ -174,6 +174,39 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   Tab* new_tab = WaitForNewTab();
   ExpectTabURL(new_tab, popup_url);
   EXPECT_EQ(GetBlockedPopupCount(), 0u);
+}
+
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
+                       AllowsPopupThroughContentSettingDefaultValue) {
+  GURL popup_url = embedded_test_server()->GetURL("/echo?popup");
+  HostContentSettingsMapFactory::GetForBrowserContext(
+      GetWebContents(original_tab())->GetBrowserContext())
+      ->SetDefaultContentSetting(ContentSettingsType::POPUPS,
+                                 CONTENT_SETTING_ALLOW);
+  ExecuteScript(
+      original_tab(),
+      base::StringPrintf("window.open('%s')", popup_url.spec().c_str()), true);
+  Tab* new_tab = WaitForNewTab();
+  ExpectTabURL(new_tab, popup_url);
+  EXPECT_EQ(GetBlockedPopupCount(), 0u);
+}
+
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
+                       BlockPopupThroughContentSettingException) {
+  GURL popup_url = embedded_test_server()->GetURL("/echo?popup");
+  HostContentSettingsMapFactory::GetForBrowserContext(
+      GetWebContents(original_tab())->GetBrowserContext())
+      ->SetDefaultContentSetting(ContentSettingsType::POPUPS,
+                                 CONTENT_SETTING_ALLOW);
+  HostContentSettingsMapFactory::GetForBrowserContext(
+      GetWebContents(original_tab())->GetBrowserContext())
+      ->SetContentSettingDefaultScope(popup_url, GURL(),
+                                      ContentSettingsType::POPUPS,
+                                      std::string(), CONTENT_SETTING_BLOCK);
+  ExecuteScript(
+      original_tab(),
+      base::StringPrintf("window.open('%s')", popup_url.spec().c_str()), true);
+  EXPECT_EQ(GetBlockedPopupCount(), 1u);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,

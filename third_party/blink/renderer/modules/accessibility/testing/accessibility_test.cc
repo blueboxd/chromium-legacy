@@ -21,8 +21,8 @@ AccessibilityTest::AccessibilityTest(LocalFrameClient* local_frame_client)
 
 void AccessibilityTest::SetUp() {
   RenderingTest::SetUp();
-  RuntimeEnabledFeatures::SetAccessibilityExposeHTMLElementEnabled(false);
-  ax_context_.reset(new AXContext(GetDocument()));
+  RuntimeEnabledFeatures::SetAccessibilityExposeHTMLElementEnabled(true);
+  ax_context_ = std::make_unique<AXContext>(GetDocument());
 }
 
 AXObjectCacheImpl& AccessibilityTest::GetAXObjectCache() const {
@@ -38,6 +38,10 @@ AXObject* AccessibilityTest::GetAXObject(const Node& node) const {
 
 AXObject* AccessibilityTest::GetAXRootObject() const {
   return GetAXObjectCache().GetOrCreate(&GetLayoutView());
+}
+
+AXObject* AccessibilityTest::GetAXBodyObject() const {
+  return GetAXObjectCache().GetOrCreate(GetDocument().body());
 }
 
 AXObject* AccessibilityTest::GetAXFocusedObject() const {

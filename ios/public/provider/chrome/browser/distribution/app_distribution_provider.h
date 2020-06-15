@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/time/time.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -18,6 +18,9 @@ class AppDistributionProvider {
  public:
   AppDistributionProvider();
   virtual ~AppDistributionProvider();
+
+  AppDistributionProvider(const AppDistributionProvider&) = delete;
+  AppDistributionProvider& operator=(const AppDistributionProvider&) = delete;
 
   // Returns the distribution brand code.
   virtual std::string GetDistributionBrandCode();
@@ -33,10 +36,8 @@ class AppDistributionProvider {
   // Initializes Firebase for installation attribution purpose. |install_date|
   // is used to detect "legacy" users that installed Chrome before Firebase
   // was integrated and thus should not have Firebase enabled.
+  virtual void InitializeFirebase(base::Time install_date, bool is_first_run);
   virtual void InitializeFirebase(int64_t install_date, bool is_first_run);
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppDistributionProvider);
 };
 
 #endif  // IOS_PUBLIC_PROVIDER_CHROME_BROWSER_DISTRIBUTION_APP_DISTRIBUTION_PROVIDER_H_

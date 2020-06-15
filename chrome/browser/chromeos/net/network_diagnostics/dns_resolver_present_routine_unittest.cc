@@ -67,6 +67,10 @@ class DnsResolverPresentRoutineTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  DnsResolverPresentRoutineTest(const DnsResolverPresentRoutineTest&) = delete;
+  DnsResolverPresentRoutineTest& operator=(
+      const DnsResolverPresentRoutineTest&) = delete;
+
   ~DnsResolverPresentRoutineTest() override {
     NetworkCertLoader::Shutdown();
     LoginState::Shutdown();
@@ -168,10 +172,10 @@ class DnsResolverPresentRoutineTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  void RunTest(
+  void RunRoutine(
       mojom::RoutineVerdict routine_verdict,
       const std::vector<mojom::DnsResolverPresentProblem>& expected_problems) {
-    dns_resolver_present_routine_->RunTest(
+    dns_resolver_present_routine_->RunRoutine(
         base::BindOnce(&DnsResolverPresentRoutineTest::CompareVerdict,
                        weak_ptr(), routine_verdict, expected_problems));
     run_loop().Run();
@@ -221,34 +225,32 @@ class DnsResolverPresentRoutineTest : public ::testing::Test {
   sync_preferences::TestingPrefServiceSyncable user_prefs_;
   TestingPrefServiceSimple local_state_;
   base::WeakPtrFactory<DnsResolverPresentRoutineTest> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(DnsResolverPresentRoutineTest);
 };
 
 TEST_F(DnsResolverPresentRoutineTest, TestResolverPresent) {
   SetUpWiFi(shill::kStateOnline);
   SetUpNameServers(kWellFormedDnsServers);
-  RunTest(mojom::RoutineVerdict::kNoProblem, {});
+  RunRoutine(mojom::RoutineVerdict::kNoProblem, {});
 }
 
 TEST_F(DnsResolverPresentRoutineTest, TestNoResolverPresent) {
   SetUpWiFi(shill::kStateOnline);
-  RunTest(mojom::RoutineVerdict::kProblem,
-          {mojom::DnsResolverPresentProblem::kNoNameServersFound});
+  RunRoutine(mojom::RoutineVerdict::kProblem,
+             {mojom::DnsResolverPresentProblem::kNoNameServersFound});
 }
 
 TEST_F(DnsResolverPresentRoutineTest, TestMalformedNameServers) {
   SetUpWiFi(shill::kStateOnline);
   SetUpNameServers(kMalformedDnsServers);
-  RunTest(mojom::RoutineVerdict::kProblem,
-          {mojom::DnsResolverPresentProblem::kMalformedNameServers});
+  RunRoutine(mojom::RoutineVerdict::kProblem,
+             {mojom::DnsResolverPresentProblem::kMalformedNameServers});
 }
 
 TEST_F(DnsResolverPresentRoutineTest, TestEmptyNameServers) {
   SetUpWiFi(shill::kStateOnline);
   SetUpNameServers(kEmptyDnsServers);
-  RunTest(mojom::RoutineVerdict::kProblem,
-          {mojom::DnsResolverPresentProblem::kEmptyNameServers});
+  RunRoutine(mojom::RoutineVerdict::kProblem,
+             {mojom::DnsResolverPresentProblem::kEmptyNameServers});
 }
 
 }  // namespace network_diagnostics

@@ -16,6 +16,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
+import org.chromium.components.infobars.InfoBarInteractionHandler;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**

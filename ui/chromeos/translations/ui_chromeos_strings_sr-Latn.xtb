@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">Sinhalska tastatura</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> slobodnog prostora</translation>
 <translation id="2425665904502185219">Ukupna veličina datoteke</translation>
+<translation id="2428749644083375155">Stavke (<ph name="NUMBER_OF_ITEMS" />) se kopiraju u direktorijum <ph name="FOLDER_NAME" /></translation>
 <translation id="2448312741937722512">Tip</translation>
 <translation id="2453576648990281505">Datoteka već postoji</translation>
 <translation id="2464079411014186876">Sladoled</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346">Stavka <ph name="ENTRY_NAME" /> je dodata u izbor.</translation>
 <translation id="4582497162516204941">Instaliraj za Linux (beta)</translation>
 <translation id="4594543368593301662">Prikazuju se rezultati za: <ph name="SEARCH_TERM" />.</translation>
+<translation id="4603392156942865207"><ph name="FILE_NAME" /> se kopira u direktorijum <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Izvođač</translation>
 <translation id="4656293982926141856">Ovaj računar</translation>
 <translation id="4669606053856530811">Članovi iz „<ph name="SOURCE_NAME" />“ će izgubiti pristup ako se ove stavke ne dele sa njima.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pica</translation>
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> datoteka će se izbrisati</translation>
+<translation id="508423945471810158">Stavke (<ph name="NUMBER_OF_ITEMS" />) se premeštaju u direktorijum <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Došlo je do greške.</translation>
 <translation id="5098629044894065541">hebrejski</translation>
 <translation id="5123433949759960244">Košarkaška lopta</translation>
@@ -455,6 +458,7 @@
 <translation id="6054173164583630569">Jezik tastature: francuski</translation>
 <translation id="6074825444536523002">Google obrazac</translation>
 <translation id="6096979789310008754">Tekst pretrage je obrisan, prikazuju se sve datoteke i direktorijumi.</translation>
+<translation id="610101264611565198"><ph name="FILE_NAME" /> se premešta u direktorijum <ph name="FOLDER_NAME" /></translation>
 <translation id="6111770213269631447">Transliteracija (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Razmak</translation>
 <translation id="6133173853026656527">Premeštanje datoteke <ph name="FILE_NAME" />...</translation>
@@ -538,6 +542,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Instalacija nije uspela.</translation>
 <translation id="7040138676081995583">Otvori pomoću aplikacije...</translation>
+<translation id="7059566040011178088">Manje od <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">Izabranih stavki: <ph name="COUNT" /></translation>
 <translation id="7106346894903675391">Kupi još memorijskog prostora...</translation>
 <translation id="7126604456862387217">„&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;“ – &lt;em&gt;pretraži Disk&lt;/em&gt;</translation>
@@ -648,6 +653,7 @@
 <translation id="8193175696669055101">Model uređaja</translation>
 <translation id="8208580316430297579">Ilustracije</translation>
 <translation id="8223479393428528563">Da biste sačuvali ove datoteke za oflajn korišćenje, povežite se ponovo na internet, kliknite desnim tasterom na datoteke i izaberite opciju <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8231972167769262174">Oko <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Otkaži</translation>
 <translation id="8261506727792406068">Izbriši</translation>
 <translation id="8269755669432358899">Skupi okna za povratne informacije o datotekama</translation>

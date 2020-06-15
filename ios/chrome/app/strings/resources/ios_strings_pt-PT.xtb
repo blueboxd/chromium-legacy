@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Inicie sessão no Website</translation>
 <translation id="1509960214886564027">As funcionalidades em muitos sites podem falhar.</translation>
 <translation id="152234381334907219">Nunca guardado</translation>
+<translation id="1535268707340844072">A sua definição atual pode fazer com que alguns sites falhem. Para gerir cookies de todos os sites, veja <ph name="BEGIN_LINK" />Definições de cookies<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Morada 1</translation>
 <translation id="1545749641540134597">Ler código QR</translation>
 <translation id="1552525382687785070">A sincronização foi desativada pelo administrador.</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Ativo há <ph name="DAYS" /> dias</translation>
 <translation id="2074131957428911366">Pode escolher o que pretende sincronizar nas <ph name="BEGIN_LINK" />definições<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Anular</translation>
+<translation id="2081417079511601293">Bloquear terceiros na Navegação anónima</translation>
 <translation id="209018056901015185">Pedir site para computador</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens movidos</translation>
@@ -100,7 +102,6 @@
 <translation id="2139867232736819575">Pesquisar o texto que copiou</translation>
 <translation id="2149973817440762519">Editar marcador</translation>
 <translation id="2175927920773552910">Código QR</translation>
-<translation id="2179182049312275900">Pode ativar a sincronização em qualquer altura nas definições.</translation>
 <translation id="2198757192731523470">A Google pode utilizar o seu histórico para personalizar a Pesquisa, os anúncios e outros serviços Google.</translation>
 <translation id="2218443599109088993">Diminuir zoom</translation>
 <translation id="2230173723195178503">Página Web carregada</translation>
@@ -177,6 +178,7 @@
 <translation id="2989805286512600854">Abrir num Novo Separador</translation>
 <translation id="3037605927509011580">Ah, bolas!!</translation>
 <translation id="3112556859945124369">Marcar…</translation>
+<translation id="3131206671572504478">Bloquear tudo</translation>
 <translation id="3153862085237805241">Guardar cartão</translation>
 <translation id="3157684681743766797">Marcar tudo…</translation>
 <translation id="3161291298470460782">Esta ação termina a sua sessão, desativa a sincronização e limpa todos os dados do Chrome deste dispositivo. Os seus dados sincronizados permanecem na sua Conta Google.</translation>
@@ -249,7 +251,6 @@
 <translation id="4038354071007134711">Nenhuma app neste disp. pode abrir o ficheiro.</translation>
 <translation id="4042870976416480368">Localizar na página</translation>
 <translation id="4049507953662678203">Certifique-se de que tem uma ligação de rede e tente novamente.</translation>
-<translation id="4071530748369333746">Pretende cancelar a sincronização?</translation>
 <translation id="4082688844002261427">Controle a forma como o histórico de navegação é utilizado para personalizar a Pesquisa, os anúncios e muito mais</translation>
 <translation id="408404951701638773">Agora é mais fácil aceder à barra de pesquisa</translation>
 <translation id="411254640334432676">A transferência falhou.</translation>
@@ -274,6 +275,7 @@
 <translation id="4389019817280890563">Toque para alterar o idioma.</translation>
 <translation id="441868831736628555">Aviso de Privacidade</translation>
 <translation id="4454246407045105932">Adicione um idioma</translation>
+<translation id="4469418912670346607">Continuar configuração</translation>
 <translation id="4476574785019001431">Definições</translation>
 <translation id="4496373720959965247">Adicione separadores e alterne entre páginas.</translation>
 <translation id="4508750114462689118">Fechar a promoção de início de sessão</translation>
@@ -302,6 +304,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="4805759445554688327">Número de cartão inválido</translation>
 <translation id="4818522717893377262">Adicionar idioma…</translation>
 <translation id="481968316161811770">Cookies, dados de sites</translation>
+<translation id="4826218269716039351">Bloquear terceiros</translation>
 <translation id="4833786495304741580">Envia automaticamente estatísticas de utilização e relatórios de falhas para a Google.</translation>
 <translation id="4840495572919996524">Os seus marcadores, o histórico, as palavras-passe, entre outros, deixam de ser sincronizados com a sua Conta Google.</translation>
 <translation id="4854345657858711387">Definir um código secreto</translation>
@@ -347,6 +350,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="54401264925851789">Informações de Segurança da Página</translation>
 <translation id="5443952882982198570">Cartões de crédito</translation>
 <translation id="5457907402803865181">Erro ao sincronizar as palavras-passe.</translation>
+<translation id="5489208564673669003">Para gerir cookies de todos os sites, veja <ph name="BEGIN_LINK" />Definições de cookies<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Terminar sessão e limpar dados deste dispositivo</translation>
 <translation id="5525269841082836315">Criar Frase de Acesso</translation>
 <translation id="5548760955356983418">A Entrega permite-lhe começar a navegar num Website neste dispositivo e, em seguida, continuar facilmente no seu Mac. O Website atualmente aberto aparece na Dock do seu Mac.
@@ -434,6 +438,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6418346271604475326">A preparar PDF</translation>
 <translation id="6426067060178468363">Permitir cookies</translation>
 <translation id="6434591244308415567">Ocorreu um erro. Tente novamente mais tarde.</translation>
+<translation id="6439338047467462846">Permitir tudo</translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="6445981559479772097">Mensagem enviada.</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -441,6 +446,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6476800141292307438">A traduzir a página para <ph name="LANGUAGE" />. Estão disponíveis opções junto à parte inferior do ecrã.</translation>
 <translation id="648164694371393720">Erro de autenticação</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens eliminados</translation>
+<translation id="651505212789431520">Pretende cancelar a sincronização? Pode ativar a sincronização em qualquer altura nas Definições.</translation>
 <translation id="6561262006871132942">Aumentar zoom</translation>
 <translation id="6610002944194042868">Opções de tradução</translation>
 <translation id="6628106477656132239">Data de validade inválida</translation>

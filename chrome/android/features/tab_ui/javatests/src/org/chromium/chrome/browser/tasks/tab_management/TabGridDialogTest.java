@@ -34,6 +34,7 @@ import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_AND
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstCardFromTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.clickFirstTabInDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.closeFirstTabInDialog;
+import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.closeNthTabInDialog;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.createTabs;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.enterTabSwitcher;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
@@ -47,7 +48,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Rect;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -59,6 +59,7 @@ import androidx.test.espresso.Espresso;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.espresso.intent.rule.IntentsTestRule;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -612,6 +613,8 @@ public class TabGridDialogTest {
                                             .getTabModelFilterProvider()
                                             .getCurrentTabModelFilter()::isTabModelRestored);
         openDialogFromStripAndVerify(mActivityTestRule.getActivity(), 2, null);
+        closeNthTabInDialog(0);
+        verifyShowingDialog(cta, 1, null);
     }
 
     private void openDialogFromTabSwitcherAndVerify(
@@ -631,6 +634,7 @@ public class TabGridDialogTest {
     private void verifyShowingDialog(
             ChromeTabbedActivity cta, int tabCount, String customizedTitle) {
         onView(allOf(withId(R.id.tab_list_view), withParent(withId(R.id.dialog_container_view))))
+                .check(matches(isDisplayed()))
                 .check(TabUiTestHelper.ChildrenCountAssertion.havingTabCount(tabCount));
 
         // Check contents within dialog.

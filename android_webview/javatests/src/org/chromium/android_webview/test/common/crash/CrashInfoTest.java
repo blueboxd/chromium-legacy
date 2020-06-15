@@ -7,7 +7,7 @@ package org.chromium.android_webview.test.common.crash;
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
 import static org.chromium.android_webview.test.common.crash.CrashInfoEqualityMatcher.equalsTo;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.json.JSONObject;
 import org.junit.Assert;

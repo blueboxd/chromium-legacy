@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">Papan kekunci bahasa Sinhala</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> tersedia</translation>
 <translation id="2425665904502185219">Jumlah saiz fail</translation>
+<translation id="2428749644083375155">Menyalin <ph name="NUMBER_OF_ITEMS" /> item ke <ph name="FOLDER_NAME" /></translation>
 <translation id="2448312741937722512">Jenis</translation>
 <translation id="2453576648990281505">Fail sudah wujud</translation>
 <translation id="2464079411014186876">Aiskrim</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" />ditambahkan pada pilihan.</translation>
 <translation id="4582497162516204941">Pasang dengan Linux (Beta)</translation>
 <translation id="4594543368593301662">Menunjukkan hasil untuk <ph name="SEARCH_TERM" />.</translation>
+<translation id="4603392156942865207">Menyalin <ph name="FILE_NAME" /> ke <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Artis</translation>
 <translation id="4656293982926141856">Komputer ini</translation>
 <translation id="4669606053856530811">Ahli '<ph name="SOURCE_NAME" />' akan kehilangan akses melainkan item ini dikongsi dengan mereka.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">Kontras</translation>
 <translation id="5068919226082848014">Piza</translation>
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> fail akan dipadamkan</translation>
+<translation id="508423945471810158">Mengalihkan <ph name="NUMBER_OF_ITEMS" /> item ke <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Ralat telah berlaku.</translation>
 <translation id="5098629044894065541">Bahasa Ibrani</translation>
 <translation id="5123433949759960244">Bola Keranjang</translation>
@@ -455,6 +458,7 @@
 <translation id="6054173164583630569">Papan kekunci Perancis</translation>
 <translation id="6074825444536523002">Borang Google</translation>
 <translation id="6096979789310008754">Carian teks dikosongkan, menunjukkan semua fail dan folder.</translation>
+<translation id="610101264611565198">Mengalihkan <ph name="FILE_NAME" /> ke <ph name="FOLDER_NAME" /></translation>
 <translation id="6111770213269631447">Pengalihan huruf (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Ruang</translation>
 <translation id="6133173853026656527">Memindahkan <ph name="FILE_NAME" />...</translation>
@@ -538,6 +542,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Gagal pemasangan.</translation>
 <translation id="7040138676081995583">Buka dengan...</translation>
+<translation id="7059566040011178088">Kurang daripada <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> item dipilih</translation>
 <translation id="7106346894903675391">Beli lagi storan...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;cari di Drive&lt;/em&gt;</translation>
@@ -648,6 +653,7 @@
 <translation id="8193175696669055101">Model peranti</translation>
 <translation id="8208580316430297579">Kerja seni</translation>
 <translation id="8223479393428528563">Bagi menyimpan fail-fail ini untuk kegunaan diluar talian, sila kembali ke dalam talian, klik kanan fail dan pilih pilihan <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8231972167769262174">Kira-kira <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Henti paksa</translation>
 <translation id="8261506727792406068">Padam</translation>
 <translation id="8269755669432358899">Runtuhkan panel maklum balas fail</translation>

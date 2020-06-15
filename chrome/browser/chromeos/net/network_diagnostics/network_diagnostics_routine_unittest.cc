@@ -26,6 +26,10 @@ class NetworkDiagnosticsRoutineTest : public ::testing::Test {
   class TestNetworkDiagnosticsRoutine : public NetworkDiagnosticsRoutine {
    public:
     TestNetworkDiagnosticsRoutine() = default;
+    TestNetworkDiagnosticsRoutine(const TestNetworkDiagnosticsRoutine&) =
+        delete;
+    TestNetworkDiagnosticsRoutine& operator=(
+        const TestNetworkDiagnosticsRoutine&) = delete;
     ~TestNetworkDiagnosticsRoutine() override {}
 
     // NetworkDiagnosticRoutine:
@@ -58,8 +62,6 @@ class NetworkDiagnosticsRoutineTest : public ::testing::Test {
  private:
   std::unique_ptr<TestNetworkDiagnosticsRoutine>
       test_network_diagnostics_routine_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkDiagnosticsRoutineTest);
 };
 
 TEST_F(NetworkDiagnosticsRoutineTest, TestTitleFunctionality) {

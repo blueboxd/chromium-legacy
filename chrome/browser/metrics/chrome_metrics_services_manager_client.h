@@ -84,7 +84,7 @@ class ChromeMetricsServicesManagerClient
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsMetricsReportingEnabled() override;
   bool IsMetricsConsentGiven() override;
-  bool IsIncognitoSessionActive() override;
+  bool IsOffTheRecordSessionActive() override;
 #if defined(OS_WIN)
   // On Windows, the client controls whether Crashpad can upload crash reports.
   void UpdateRunningServices(bool may_record, bool may_upload) override;

@@ -13,7 +13,6 @@
 #include "third_party/blink/renderer/core/css/style_recalc.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_document_state.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
-#include "third_party/blink/renderer/core/display_lock/render_subtree_activation_event.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -378,12 +377,6 @@ bool DisplayLockContext::IsActivatable(
   return activatable_mask_ & static_cast<uint16_t>(reason);
 }
 
-void DisplayLockContext::FireActivationEvent(Element* activated_element) {
-  DCHECK(RuntimeEnabledFeatures::CSSContentVisibilityActivationEventEnabled());
-  element_->DispatchEvent(
-      *MakeGarbageCollected<RenderSubtreeActivationEvent>(*activated_element));
-}
-
 void DisplayLockContext::CommitForActivationWithSignal(
     Element* activated_element,
     DisplayLockActivationReason reason) {
@@ -392,13 +385,6 @@ void DisplayLockContext::CommitForActivationWithSignal(
   DCHECK(ConnectedToView());
   DCHECK(IsLocked());
   DCHECK(ShouldCommitForActivation(DisplayLockActivationReason::kAny));
-
-  // TODO(vmpstr): Remove this when we have a beforematch event.
-  if (RuntimeEnabledFeatures::CSSContentVisibilityActivationEventEnabled()) {
-    document_->EnqueueDisplayLockActivationTask(
-        WTF::Bind(&DisplayLockContext::FireActivationEvent,
-                  WrapWeakPersistent(this), WrapPersistent(activated_element)));
-  }
 
   RecordActivationReason(document_, reason);
 }

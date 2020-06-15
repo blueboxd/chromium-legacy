@@ -59,7 +59,7 @@ TEST_F(ManagedBrowserUtilsTest, HasMachineLevelPolicies) {
   policy::PolicyMap map;
   map.Set("test-policy", policy::POLICY_LEVEL_MANDATORY,
           policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_PLATFORM,
-          std::make_unique<base::Value>("hello"), nullptr);
+          base::Value("hello"), nullptr);
   mock_provider_->UpdateChromePolicy(map);
 
   EXPECT_TRUE(chrome::enterprise_util::HasBrowserPoliciesApplied(&profile));

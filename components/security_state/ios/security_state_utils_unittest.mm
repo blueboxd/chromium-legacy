@@ -4,9 +4,9 @@
 
 #include "components/security_state/ios/security_state_utils.h"
 
+#import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/security_state/core/security_state.h"
 #import "components/security_state/ios/insecure_input_tab_helper.h"
-#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/ssl_status.h"

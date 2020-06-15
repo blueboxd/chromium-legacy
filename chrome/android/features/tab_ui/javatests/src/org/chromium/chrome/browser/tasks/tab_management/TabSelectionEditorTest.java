@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.view.ViewGroup;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Before;

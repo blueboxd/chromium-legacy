@@ -509,7 +509,6 @@
 <translation id="7068360136237591149">Файлдарды ачуу</translation>
 <translation id="7076293881109082629">Кирүү</translation>
 <translation id="7088960765736518739">Switch Access функциясы</translation>
-<translation id="7092922358121866860">"Түнкү жарык" режиминин жөндөөлөрүн көрсөтүү</translation>
 <translation id="7098389117866926363">USB-C түзмөгү (аркасындагы сол жактагы оюкча)</translation>
 <translation id="7131634465328662194">Андан кийин тутумдан автоматтык түрдө чыгарыласыз.</translation>
 <translation id="7143207342074048698">Туташууда</translation>
@@ -661,7 +660,6 @@
 <translation id="8877788021141246043">Эстеткич коюу</translation>
 <translation id="8878886163241303700">Кеңейтилген экран</translation>
 <translation id="890616557918890486">Булагын өзгөртүү</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Герц) дааналыкты колдоого албайт. Дааналыгы <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) өзгөрдү. Өзгөртүүлөрдү сактоо үчүн "Ырастоо" баскычын басыңыз. Мурунку жөндөөлөр <ph name="TIMEOUT_SECONDS" /> кийин калыбына келтирилет.</translation>
 <translation id="8909138438987180327">Батареянын кубаты – <ph name="PERCENTAGE" /> пайыз.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Жардамчы бул тилде иштебейт.</translation>

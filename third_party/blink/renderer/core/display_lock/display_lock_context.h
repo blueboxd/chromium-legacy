@@ -276,10 +276,6 @@ class CORE_EXPORT DisplayLockContext final
   // register/unregister is required.
   void UpdateActivationObservationIfNeeded();
 
-  // This function is called from within a task to fire the activation event.
-  // Scheduled by CommitForActivationWithSignal.
-  void FireActivationEvent(Element* activated_element);
-
   // Determines whether or not we need lifecycle notifications.
   bool NeedsLifecycleNotifications() const;
   // Updates the lifecycle notification registration based on whether we need

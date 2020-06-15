@@ -895,11 +895,13 @@ bool ContentBrowserClient::ShouldCreateThreadPool() {
   return true;
 }
 
+#if !defined(OS_ANDROID)
 std::unique_ptr<AuthenticatorRequestClientDelegate>
 ContentBrowserClient::GetWebAuthenticationRequestDelegate(
     RenderFrameHost* render_frame_host) {
   return std::make_unique<AuthenticatorRequestClientDelegate>();
 }
+#endif
 
 std::unique_ptr<net::ClientCertStore>
 ContentBrowserClient::CreateClientCertStore(BrowserContext* browser_context) {

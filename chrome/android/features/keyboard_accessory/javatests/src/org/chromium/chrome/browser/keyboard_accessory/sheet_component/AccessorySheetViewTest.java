@@ -27,12 +27,13 @@ import static org.chromium.chrome.browser.keyboard_accessory.sheet_component.Acc
 import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

@@ -729,7 +729,6 @@
 <translation id="4101413244023615925">Текст і графіка</translation>
 <translation id="4103249731201008433">Недійсний серійний номер пристрою</translation>
 <translation id="4103763322291513355">Перейдіть на сторінку &lt;strong&gt;chrome://policy&lt;/strong&gt;, щоб переглянути список URL-адрес із "чорного" списку й інші правила, що примусово застосовується системним адміністратором.</translation>
-<translation id="4108231218301530806">Підтвердити цю картку наступного разу можна цифровим відбитком.</translation>
 <translation id="4110652170750985508">Переглянути платіж</translation>
 <translation id="4112140312785995938">Перейти назад</translation>
 <translation id="4116663294526079822">Завжди дозволяти на цьому сайті</translation>
@@ -1127,6 +1126,7 @@
 <translation id="569000877158168851">Значення DnsOverHttpsTemplates невідповідне й не використовуватиметься, якщо для правила DnsOverHttpsMode не буде вибрано значення <ph name="SECURE_DNS_MODE_AUTOMATIC" /> або <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">По центру</translation>
 <translation id="570530837424789914">Керувати…</translation>
+<translation id="5705882733397021510">Назад</translation>
 <translation id="57094364128775171">Запропонувати надійний пароль…</translation>
 <translation id="5710435578057952990">Ідентифікаційну інформацію цього веб-сайта не було перевірено.</translation>
 <translation id="5720705177508910913">Поточний користувач</translation>
@@ -1343,7 +1343,6 @@
 <translation id="6631202559048444592">У правилі є кілька джерел з однаковими значеннями.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Очистити</translation>
-<translation id="6644283850729428850">Це правило більше не використовується.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Немає}=1{З 1 сайту (ви не вийдете з облікового запису Google)}one{З # сайту (ви не вийдете з облікового запису Google)}few{З # сайтів (ви не вийдете з облікового запису Google)}many{З # сайтів (ви не вийдете з облікового запису Google)}other{З # сайту (ви не вийдете з облікового запису Google)}}</translation>
 <translation id="6652101503459149953">Використовувати Windows Hello</translation>
 <translation id="6657585470893396449">Пароль</translation>

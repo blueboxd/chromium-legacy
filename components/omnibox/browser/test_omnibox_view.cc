@@ -31,12 +31,10 @@ base::string16 TestOmniboxView::GetText() const {
   return text_;
 }
 
-void TestOmniboxView::SetWindowTextAndCaretPos(
-    const base::string16& text,
-    size_t caret_pos,
-    bool update_popup,
-    bool notify_text_changed,
-    const base::string16& additional_text) {
+void TestOmniboxView::SetWindowTextAndCaretPos(const base::string16& text,
+                                               size_t caret_pos,
+                                               bool update_popup,
+                                               bool notify_text_changed) {
   text_ = text;
   selection_ = gfx::Range(caret_pos);
 }
@@ -74,9 +72,8 @@ void TestOmniboxView::OnTemporaryTextMaybeChanged(
 
 void TestOmniboxView::OnInlineAutocompleteTextMaybeChanged(
     const base::string16& display_text,
-    size_t user_text_length,
     size_t user_text_start,
-    const base::string16& additional_text) {
+    size_t user_text_length) {
   const bool text_changed = text_ != display_text;
   text_ = display_text;
   inline_autocomplete_text_ = display_text.substr(user_text_length);

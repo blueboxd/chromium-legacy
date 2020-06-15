@@ -39293,6 +39293,7 @@ from previous Chrome versions.
   <int value="-1514943439" label="ash-enable-swipe-to-close-in-overview-mode"/>
   <int value="-1514611301" label="enable-data-reduction-proxy-bypass-warnings"/>
   <int value="-1512656386" label="disable-new-audio-rendering-mixing-strategy"/>
+  <int value="-1512555526" label="PaintPreviewShowOnStartup:enabled"/>
   <int value="-1510839574" label="disable-sync-synced-notifications"/>
   <int value="-1508852757" label="CreditCardAutofillTouchBar:disabled"/>
   <int value="-1506880454"
@@ -40841,6 +40842,7 @@ from previous Chrome versions.
   <int value="194895489" label="passive-listeners-default"/>
   <int value="195335115" label="AudioWorkletRealtimeThread:disabled"/>
   <int value="195570937" label="EnableHomeLauncher:disabled"/>
+  <int value="196103097" label="PaintPreviewShowOnStartup:disabled"/>
   <int value="198719062" label="WebAssemblyLazyCompilation:disabled"/>
   <int value="198762155" label="SharingPeerConnectionSender:enabled"/>
   <int value="200347243" label="WebVRExperimentalRendering:disabled"/>
@@ -44008,6 +44010,7 @@ Called by update_use_counter_css.py.-->
   <int value="663" label="text-decoration-thickness"/>
   <int value="664" label="page-orientation"/>
   <int value="665" label="animation-timeline"/>
+  <int value="666" label="counter-set"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -44396,6 +44399,7 @@ Called by update_use_counter_css.py.-->
   <int value="3" label="Bad logo"/>
   <int value="4" label="Bad user identifier"/>
   <int value="5" label="Bad reset reason"/>
+  <int value="6" label="Bad safe search result"/>
 </enum>
 
 <enum name="MediaFeedSafeSearchResult">
@@ -68388,6 +68392,13 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Fallback icon mot provided"/>
   <int value="2" label="Fallback for Status Bar"/>
   <int value="3" label="Fallback for Status Bar and content"/>
+</enum>
+
+<enum name="TrustedWebActivityPermissionChanged">
+  <int value="0" label="Null to False"/>
+  <int value="1" label="Null to True"/>
+  <int value="2" label="True to False"/>
+  <int value="3" label="False to True"/>
 </enum>
 
 <enum name="TunnelRedirectHistogramValue">

@@ -651,6 +651,9 @@ public class PortalsTest {
         mActivityTestRule.startMainActivityWithURL(mainUrl);
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
 
+        Assert.assertEquals("\"prompt\"",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        tab.getWebContents(), "queryGeolocationPermission()"));
         // Request geolocation.
         JavaScriptUtils.executeJavaScript(tab.getWebContents(), "requestLocation()");
         // Wait for permissions dialog.
@@ -689,6 +692,9 @@ public class PortalsTest {
         mActivityTestRule.startMainActivityWithURL(mainUrl);
         Tab tab = mActivityTestRule.getActivity().getActivityTab();
         WebContents webContents = tab.getWebContents();
+        Assert.assertEquals("\"prompt\"",
+                JavaScriptUtils.runJavascriptWithAsyncResult(
+                        webContents, "queryGeolocationPermission()"));
         JavaScriptUtils.executeJavaScript(webContents, "requestLocation()");
         // Wait for permissions dialog.
         CriteriaHelper.pollUiThread(() -> {

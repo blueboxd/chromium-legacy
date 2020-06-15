@@ -170,6 +170,7 @@ Aby coś wyszukać, dotknij dowolnego słowa. Aby doprecyzować wyszukiwanie, na
 <translation id="2387895666653383613">Skalowanie tekstu</translation>
 <translation id="2394602618534698961">Tutaj pojawią się pobrane pliki</translation>
 <translation id="2407481962792080328">Ta funkcja zostanie włączona, gdy zalogujesz się na swoje konto Google</translation>
+<translation id="2407674018644220013">Czy <ph name="APP_NAME" /> ma być aplikacją domyślną?</translation>
 <translation id="2410754283952462441">Wybierz konto</translation>
 <translation id="2414886740292270097">Ciemny</translation>
 <translation id="2426805022920575512">Wybierz inne konto</translation>
@@ -179,6 +180,7 @@ Aby coś wyszukać, dotknij dowolnego słowa. Aby doprecyzować wyszukiwanie, na
 
 Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować wyszukiwanie, wybierz więcej lub mniej słów. Aby edytować wyszukiwanie, otwórz panel i kliknij ikonę, by przejść do nowej karty, i wprowadź zmiany w polu wyszukiwania.</translation>
 <translation id="246532703174860178">Udostępnij</translation>
+<translation id="2479148705183875116">Otwórz Ustawienia</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
 <translation id="2494974097748878569">Asystent Google w Chrome</translation>
 <translation id="2496180316473517155">Historia przeglądania</translation>
@@ -617,6 +619,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="6140912465461743537">Kraj/region</translation>
 <translation id="614940544461990577">Wypróbuj te rozwiązania:</translation>
 <translation id="6154478581116148741">Włącz blokadę ekranu w ustawieniach, by wyeksportować hasła z urządzenia</translation>
+<translation id="6157392216611456285">Wybierz <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">Oszczędność danych: <ph name="PERCENT" /></translation>
 <translation id="6192333916571137726">Pobranie pliku</translation>
 <translation id="6201345951596836663">Link został skopiowany</translation>
@@ -641,6 +644,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6341580099087024258">Pytaj, gdzie zapisać pliki</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}few{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}many{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">Usunąć sugestię z historii?</translation>
+<translation id="6366047038980456022">Technologia i szybkość działania <ph name="APP_NAME" /> pozwolą Ci bezpiecznie znaleźć to, czego szukasz online, i robić to, co chcesz.</translation>
 <translation id="6369229450655021117">Tutaj możesz wyszukiwać informacje w internecie, udostępniać treści znajomym i przeglądać otwarte strony</translation>
 <translation id="6378173571450987352">Szczegóły: posortowane według wykorzystanych danych</translation>
 <translation id="6379829913050047669">Aplikacja <ph name="APP_NAME" /> zostanie otwarta w Chrome. Przechodząc dalej, wyrażasz zgodę na <ph name="BEGIN_LINK1" />Warunki korzystania z usług Google<ph name="END_LINK1" /> oraz <ph name="BEGIN_LINK2" />Dodatkowe warunki korzystania z Google Chrome i Chrome OS<ph name="END_LINK2" />.</translation>
@@ -692,6 +696,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6671495933530132209">Kopiuj grafikę</translation>
 <translation id="6676840375528380067">Usunąć dane Chrome z tego urządzenia?</translation>
 <translation id="6689172468748959065">Zdjęcia profilowe</translation>
+<translation id="6691888250440401212">1. Wybierz aplikację <ph name="APP_NAME" />\n2. Kliknij „Ustaw jako domyślną”.</translation>
 <translation id="6697492270171225480">Gdy nie można odnaleźć strony, pokazuj sugestie podobnych stron</translation>
 <translation id="6698801883190606802">Zarządzaj synchronizowanymi danymi</translation>
 <translation id="6699370405921460408">Serwery Google będą optymalizować otwierane strony.</translation>
@@ -895,6 +900,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8364299278605033898">Zobacz najpopularniejsze strony</translation>
 <translation id="8368027906805972958">Nieznane lub nieobsługiwane urządzenie (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">Wyślij wiadomość</translation>
+<translation id="8407396331882458341">1. Wybierz <ph name="APP_NAME" />\n2. Kliknij „Zawsze”.</translation>
 <translation id="8413126021676339697">Wyświetl całą historię</translation>
 <translation id="8425213833346101688">Zmień</translation>
 <translation id="8427875596167638501">Karta podglądu jest otwarta w połowie</translation>
@@ -921,6 +927,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8555836665334561807">Po połączeniu z Wi-Fi</translation>
 <translation id="8558485628462305855">Aby oglądać treści rzeczywistości rozszerzonej, zaktualizuj ARCore</translation>
 <translation id="8559990750235505898">Proponuj tłumaczenie stron w innych językach</translation>
+<translation id="8561196567344536112">1. Otwórz Ustawienia\n2. Kliknij „Przeglądarka”\n3. Wybierz <ph name="APP_NAME" /></translation>
 <translation id="8562452229998620586">Tutaj pojawią się zapisane hasła.</translation>
 <translation id="8569404424186215731">od <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Ostatnie 4 tygodnie</translation>

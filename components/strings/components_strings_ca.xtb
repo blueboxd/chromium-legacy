@@ -380,6 +380,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="2544644783021658368">Document únic</translation>
 <translation id="254947805923345898">El valor de la política no és vàlid.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ha enviat una resposta que no és vàlida.</translation>
+<translation id="2552295903035773204">A partir d'ara, fes servir el bloqueig de pantalla per confirmar les targetes</translation>
 <translation id="2553853292994445426">Revisa la configuració de DNS segur. Pot ser que hagis configurat un servidor de DNS segur en què fallin les connexions.</translation>
 <translation id="2556876185419854533">&amp;Desfés la modificació</translation>
 <translation id="257674075312929031">Grup</translation>
@@ -724,7 +725,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="4101413244023615925">Text i gràfics</translation>
 <translation id="4103249731201008433">El número de sèrie del dispositiu no és vàlid</translation>
 <translation id="4103763322291513355">Ves a &lt;strong&gt;chrome://policy&lt;/strong&gt; per veure la llista d'URL inclosos a la llista negra i altres polítiques aplicades per l'administrador del sistema.</translation>
-<translation id="4108231218301530806">Fes servir l'empremta digital per verificar aquesta targeta la propera vegada.</translation>
 <translation id="4110652170750985508">Revisa el pagament</translation>
 <translation id="4112140312785995938">Retrocedeix</translation>
 <translation id="4116663294526079822">Permet sempre en aquest lloc web</translation>
@@ -1118,6 +1118,7 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="569000877158168851">El valor de DnsOverHttpsTemplates no és rellevant i no s'utilitzarà tret que la política DnsOverHttpsMode s'estableixi en <ph name="SECURE_DNS_MODE_AUTOMATIC" /> o en <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Centre</translation>
 <translation id="570530837424789914">Gestiona...</translation>
+<translation id="5705882733397021510">Enrere</translation>
 <translation id="57094364128775171">Suggereix una contrasenya segura…</translation>
 <translation id="5710435578057952990">La identitat d'aquest lloc web no ha estat verificada.</translation>
 <translation id="5720705177508910913">Usuari actual</translation>
@@ -1334,7 +1335,6 @@ En cas contrari, la configuració de privadesa el bloquejarà. Això permetrà q
 <translation id="6631202559048444592">Hi ha més d'un origen en aquesta política, però els valors són els mateixos.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Esborra</translation>
-<translation id="6644283850729428850">Aquesta política ha quedat obsoleta.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Cap}=1{D'1 lloc web (no se't tancarà la sessió del Compte de Google)}other{De # llocs web (no se't tancarà la sessió del Compte de Google)}}</translation>
 <translation id="6652101503459149953">Utilitza Windows Hello</translation>
 <translation id="6657585470893396449">Contrasenya</translation>

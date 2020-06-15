@@ -384,6 +384,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="2544644783021658368">Documento único</translation>
 <translation id="254947805923345898">O valor da política não é válido.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> enviou uma resposta inválida.</translation>
+<translation id="2552295903035773204">Utilizar o bloqueio de ecrã para confirmar os cartões a partir de agora</translation>
 <translation id="2553853292994445426">Verifique as definições seguras do DNS. Pode ter configurado um servidor DNS seguro cujas ligações estejam a falhar.</translation>
 <translation id="2556876185419854533">&amp;Anular edição</translation>
 <translation id="257674075312929031">Grupo</translation>
@@ -731,7 +732,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="4101413244023615925">Texto e gráficos</translation>
 <translation id="4103249731201008433">Número de série do dispositivo é inválido</translation>
 <translation id="4103763322291513355">Visite &lt;strong&gt;chrome://policy&lt;/strong&gt; para ver os URLs que foram colocados na lista negra e outras políticas aplicadas pelo gestor do sistema.</translation>
-<translation id="4108231218301530806">Utilizar impressão digital para validar este cartão na próxima vez</translation>
 <translation id="4110652170750985508">Rever o seu pagamento</translation>
 <translation id="4112140312785995938">Procurar para trás</translation>
 <translation id="4116663294526079822">Permitir sempre neste Website</translation>
@@ -1129,6 +1129,7 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="569000877158168851">O valor DnsOverHttpsTemplates não é relevante e não será utilizado, a menos que a política DnsOverHttpsMode esteja definida como <ph name="SECURE_DNS_MODE_AUTOMATIC" /> ou <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Centrar</translation>
 <translation id="570530837424789914">Gerir…</translation>
+<translation id="5705882733397021510">Voltar</translation>
 <translation id="57094364128775171">Sugerir palavra-passe forte…</translation>
 <translation id="5710435578057952990">A identidade deste Website não foi verificada.</translation>
 <translation id="5720705177508910913">Utilizador atual</translation>
@@ -1345,7 +1346,6 @@ Se não permitir, isto será bloqueado pelas suas definições de privacidade. I
 <translation id="6631202559048444592">Existe mais de uma origem para a política, mas os valores são iguais.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Limpar</translation>
-<translation id="6644283850729428850">Esta política está obsoleta.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Nenhum}=1{De 1 site (a sessão na sua Conta Google não é terminada).}other{De # sites (a sessão na sua Conta Google não é terminada).}}</translation>
 <translation id="6652101503459149953">Utilizar o Windows Hello</translation>
 <translation id="6657585470893396449">Palavra-passe</translation>

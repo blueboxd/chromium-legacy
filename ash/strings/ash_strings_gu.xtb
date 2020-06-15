@@ -509,7 +509,6 @@
 <translation id="7068360136237591149">ફાઇલો ખોલો</translation>
 <translation id="7076293881109082629">સાઇન ઇન કરી રહ્યું છે</translation>
 <translation id="7088960765736518739">સ્વિચ ઍક્સેસ</translation>
-<translation id="7092922358121866860">રાત્રિ પ્રકાશ સેટિંગ બતાવો</translation>
 <translation id="7098389117866926363">USB-C ડિવાઇસ (પાછળની બાજુએ ડાબું પોર્ટ)</translation>
 <translation id="7131634465328662194">તમે આપમેળે સાઇન આઉટ થઈ જશો.</translation>
 <translation id="7143207342074048698">કનેક્ટ કરી રહ્યું છે</translation>
@@ -661,7 +660,6 @@
 <translation id="8877788021141246043">રિમાઇન્ડર સેટ કરો</translation>
 <translation id="8878886163241303700">સ્ક્રીનને વિસ્તૃત કરી રહ્યું છે</translation>
 <translation id="890616557918890486">સ્રોત બદલો</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz)ને સપોર્ટ આપતું નથી. રિઝોલ્યુશનને બદલીને <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) કરવામાં આવ્યું. ફેરફારો જાળવવા માટે કન્ફર્મ કરો પર ક્લિક કરો. અગાઉના સેટિંગ <ph name="TIMEOUT_SECONDS" />માં રિસ્ટોર કરવામાં આવશે.</translation>
 <translation id="8909138438987180327">બૅટરી <ph name="PERCENTAGE" /> ટકા પર છે.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google સહાયક આ ભાષા બોલતું નથી.</translation>

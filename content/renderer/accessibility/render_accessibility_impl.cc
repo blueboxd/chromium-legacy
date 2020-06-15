@@ -21,7 +21,9 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/renderer/accessibility/ax_action_target_factory.h"
 #include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/accessibility/blink_ax_action_target.h"
@@ -30,6 +32,8 @@
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_view_impl.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/web/web_document.h"
@@ -179,6 +183,10 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
       last_scroll_offset_(gfx::Size()),
       event_schedule_status_(EventScheduleStatus::kNotWaiting),
       reset_token_(0) {
+  mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+  content::RenderThread::Get()->BindHostReceiver(
+      recorder.InitWithNewPipeAndPassReceiver());
+  ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
   WebSettings* settings = web_view->GetSettings();
 
@@ -692,6 +700,8 @@ std::string RenderAccessibilityImpl::GetLanguage() {
 void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   TRACE_EVENT0("accessibility",
                "RenderAccessibilityImpl::SendPendingAccessibilityEvents");
+  base::ElapsedTimer timer_;
+
   // Clear status here in case we return early.
   event_schedule_status_ = EventScheduleStatus::kNotWaiting;
   WebDocument document = GetMainDocument();
@@ -894,6 +904,11 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
 
   if (image_annotation_debugging_)
     AddImageAnnotationDebuggingAttributes(updates);
+
+  ukm::builders::Accessibility_Renderer(document.GetUkmSourceId())
+      .SetCpuTime_SendPendingAccessibilityEvents(
+          timer_.Elapsed().InMilliseconds())
+      .Record(ukm_recorder_.get());
 }
 
 void RenderAccessibilityImpl::SendLocationChanges() {

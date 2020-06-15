@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.feed;
 
 import android.content.Context;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

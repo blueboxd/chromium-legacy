@@ -1229,6 +1229,7 @@ class ComputedStyle : public ComputedStyleBase,
   }
   void ClearIncrementDirectives();
   void ClearResetDirectives();
+  void ClearSetDirectives();
 
   bool IsDeprecatedWebkitBox() const {
     return Display() == EDisplay::kWebkitBox ||

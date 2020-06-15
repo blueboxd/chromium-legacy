@@ -102,7 +102,6 @@ core_idl_files =
                     "css/cssom/css_variable_reference_value.idl",
                     "css/cssom/style_property_map.idl",
                     "css/cssom/style_property_map_read_only.idl",
-                    "display_lock/render_subtree_activation_event.idl",
                     "dom/abort_controller.idl",
                     "dom/abort_signal.idl",
                     "dom/attr.idl",

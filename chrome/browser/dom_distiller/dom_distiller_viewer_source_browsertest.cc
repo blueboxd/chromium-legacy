@@ -638,6 +638,11 @@ IN_PROC_BROWSER_TEST_F(DomDistillerViewerSourceBrowserTest, UISetsPrefs) {
   ViewSingleDistilledPage(view_url, "text/html");
   content::WaitForLoadStop(contents);
 
+  // Wait for all currently executing scripts to finish. Otherwise, the
+  // distiller object used to send the prefs to the browser from the JavaScript
+  // may not exist, causing test flakiness.
+  base::RunLoop().RunUntilIdle();
+
   DistilledPagePrefs* distilled_page_prefs =
       DomDistillerServiceFactory::GetForBrowserContext(browser()->profile())
           ->GetDistilledPagePrefs();

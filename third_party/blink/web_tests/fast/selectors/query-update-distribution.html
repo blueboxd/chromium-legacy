@@ -12,13 +12,13 @@ function test(fn)
 
     sandbox.innerHTML = "<div id=host><div id=a><div id=b></div></div>";
     host = document.getElementById("host");
-    hostRoot = host.createShadowRoot();
-    hostRoot.innerHTML = "<div id=c><content></content></div>";
+    hostRoot = host.attachShadow({mode: 'open'});
+    hostRoot.innerHTML = "<div id=c><slot></slot></div>";
 
     a = document.getElementById("a");
     b = document.getElementById("b");
 
-    aRoot = a.createShadowRoot();
+    aRoot = a.attachShadow({mode: 'open'});
     aRoot.innerHTML = "<div id=d><div id=e></div></div>";
 
     c = hostRoot.getElementById("c");

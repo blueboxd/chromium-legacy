@@ -102,7 +102,6 @@ static_idl_files_in_core = get_path_info(
           "//third_party/blink/renderer/core/css/style_media.idl",
           "//third_party/blink/renderer/core/css/style_sheet.idl",
           "//third_party/blink/renderer/core/css/style_sheet_list.idl",
-          "//third_party/blink/renderer/core/display_lock/render_subtree_activation_event.idl",
           "//third_party/blink/renderer/core/dom/abort_controller.idl",
           "//third_party/blink/renderer/core/dom/abort_signal.idl",
           "//third_party/blink/renderer/core/dom/accessibility_role.idl",

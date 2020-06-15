@@ -740,7 +740,7 @@ void WebFrameWidgetBase::ObserveGestureEventAndResult(
 }
 
 void WebFrameWidgetBase::DidHandleKeyEvent() {
-  Client()->DidHandleKeyEvent();
+  ClearEditCommands();
 }
 
 void WebFrameWidgetBase::QueueSyntheticEvent(
@@ -1048,6 +1048,29 @@ float WebFrameWidgetBase::TextZoomFactor() {
 void WebFrameWidgetBase::SetMainFrameOverlayColor(SkColor color) {
   DCHECK(!local_root_->Parent());
   local_root_->GetFrame()->SetMainFrameColorOverlay(color);
+}
+
+void WebFrameWidgetBase::AddEditCommandForNextKeyEvent(const WebString& name,
+                                                       const WebString& value) {
+  edit_commands_.push_back(mojom::blink::EditCommand::New(name, value));
+}
+
+bool WebFrameWidgetBase::HandleCurrentKeyboardEvent() {
+  bool did_execute_command = false;
+  for (const auto& command : edit_commands_) {
+    // In gtk and cocoa, it's possible to bind multiple edit commands to one
+    // key (but it's the exception). Once one edit command is not executed, it
+    // seems safest to not execute the rest.
+    if (!local_root_->ExecuteCommand(command->name, command->value))
+      break;
+    did_execute_command = true;
+  }
+
+  return did_execute_command;
+}
+
+void WebFrameWidgetBase::ClearEditCommands() {
+  edit_commands_ = Vector<mojom::blink::EditCommandPtr>();
 }
 
 void WebFrameWidgetBase::SetToolTipText(const String& tooltip_text,

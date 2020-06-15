@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
@@ -1035,9 +1036,9 @@ String LocalFrameClientImpl::evaluateInInspectorOverlayForTesting(
 }
 
 bool LocalFrameClientImpl::HandleCurrentKeyboardEvent() {
-  if (web_frame_->Client())
-    return web_frame_->Client()->HandleCurrentKeyboardEvent();
-  return false;
+  return web_frame_->LocalRoot()
+      ->FrameWidgetImpl()
+      ->HandleCurrentKeyboardEvent();
 }
 
 void LocalFrameClientImpl::DidChangeSelection(bool is_selection_empty) {
@@ -1104,6 +1105,12 @@ std::unique_ptr<WebContentSettingsClient>
 LocalFrameClientImpl::CreateWorkerContentSettingsClient() {
   DCHECK(web_frame_->Client());
   return web_frame_->Client()->CreateWorkerContentSettingsClient();
+}
+
+std::unique_ptr<media::SpeechRecognitionClient>
+LocalFrameClientImpl::CreateSpeechRecognitionClient() {
+  DCHECK(web_frame_->Client());
+  return web_frame_->Client()->CreateSpeechRecognitionClient();
 }
 
 void LocalFrameClientImpl::SetMouseCapture(bool capture) {

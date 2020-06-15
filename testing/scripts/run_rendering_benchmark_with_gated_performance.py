@@ -267,7 +267,7 @@ class RenderingRepresentativePerfTest(object):
       # positive.
       print('============ Re_run the failed tests ============')
       all_failed_stories = '('+'|'.join(
-        self.result_recorder[True].failed_stories)+')'
+        self.result_recorder[False].failed_stories)+')'
       # TODO(crbug.com/1055893): Remove the extra chrome categories after
       # investigation of flakes in representative perf tests.
       self.re_run_args.extend(

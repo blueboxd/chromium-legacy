@@ -6,8 +6,9 @@ package org.chromium.android_webview.test;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;

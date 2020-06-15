@@ -22,5 +22,13 @@ void AppDistributionProvider::ScheduleDistributionNotifications(
 
 void AppDistributionProvider::CancelDistributionNotifications() {}
 
+void AppDistributionProvider::InitializeFirebase(base::Time install_date,
+                                                 bool is_first_run) {
+  // Call int64_t version since it is the only one implemented downstream.
+  // Will remove this once downstream has been fixed to overload the
+  // base::Time version of the function.
+  InitializeFirebase(install_date.ToTimeT(), is_first_run);
+}
+
 void AppDistributionProvider::InitializeFirebase(int64_t install_date,
                                                  bool is_first_run) {}

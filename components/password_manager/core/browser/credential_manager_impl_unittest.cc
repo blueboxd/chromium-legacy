@@ -28,6 +28,7 @@
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -76,8 +77,11 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                     const url::Origin&,
                     const std::vector<const autofill::PasswordForm*>*));
 
-  explicit MockPasswordManagerClient(PasswordStore* store)
-      : store_(store), password_manager_(this) {
+  explicit MockPasswordManagerClient(PasswordStore* profile_store,
+                                     PasswordStore* account_store)
+      : profile_store_(profile_store),
+        account_store_(account_store),
+        password_manager_(this) {
     prefs_ = std::make_unique<TestingPrefServiceSimple>();
     prefs_->registry()->RegisterBooleanPref(prefs::kCredentialsEnableAutosignin,
                                             true);
@@ -105,7 +109,12 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
     NotifyUserCouldBeAutoSignedInPtr(form.get());
   }
 
-  PasswordStore* GetProfilePasswordStore() const override { return store_; }
+  PasswordStore* GetProfilePasswordStore() const override {
+    return profile_store_;
+  }
+  PasswordStore* GetAccountPasswordStore() const override {
+    return account_store_;
+  }
 
   PrefService* GetPrefs() const override { return prefs_.get(); }
 
@@ -160,7 +169,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 
  private:
   std::unique_ptr<TestingPrefServiceSimple> prefs_;
-  PasswordStore* store_;
+  PasswordStore* profile_store_;
+  PasswordStore* account_store_;
   std::unique_ptr<PasswordFormManagerForUI> manager_;
   PasswordManager password_manager_;
   GURL last_committed_url_{kTestWebOrigin};
@@ -197,9 +207,14 @@ class CredentialManagerImplTest : public testing::Test {
 
   void SetUp() override {
     store_ = new TestPasswordStore;
-    store_->Init(nullptr);
+    store_->Init(/*prefs=*/nullptr);
+    if (base::FeatureList::IsEnabled(
+            features::kEnablePasswordsAccountStorage)) {
+      account_store_ = new TestPasswordStore;
+      ASSERT_TRUE(account_store_->Init(/*prefs=*/nullptr));
+    }
     client_ = std::make_unique<testing::NiceMock<MockPasswordManagerClient>>(
-        store_.get());
+        store_.get(), account_store_.get());
     cm_service_impl_ = std::make_unique<CredentialManagerImpl>(client_.get());
     ON_CALL(*client_, IsSavingAndFillingEnabled(_))
         .WillByDefault(testing::Return(true));
@@ -262,6 +277,9 @@ class CredentialManagerImplTest : public testing::Test {
   void TearDown() override {
     cm_service_impl_.reset();
 
+    if (account_store_) {
+      account_store_->ShutdownOnUIThread();
+    }
     store_->ShutdownOnUIThread();
 
     // It's needed to cleanup the password store asynchronously.
@@ -357,6 +375,7 @@ class CredentialManagerImplTest : public testing::Test {
   autofill::PasswordForm subdomain_form_;
   autofill::PasswordForm cross_origin_form_;
   scoped_refptr<TestPasswordStore> store_;
+  scoped_refptr<TestPasswordStore> account_store_;
   std::unique_ptr<testing::NiceMock<MockPasswordManagerClient>> client_;
   std::unique_ptr<CredentialManagerImpl> cm_service_impl_;
 };

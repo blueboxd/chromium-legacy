@@ -508,7 +508,6 @@
 <translation id="7068360136237591149">ফাইলসমূহ খোলক</translation>
 <translation id="7076293881109082629">ছাইন ইন কৰি থকা হৈছে</translation>
 <translation id="7088960765736518739">ছুইচ্চ এক্সেছ</translation>
-<translation id="7092922358121866860">নিশাৰ পোহৰৰ ছেটিংসমূহ দেখুৱাওক</translation>
 <translation id="7098389117866926363">USB-C ডিভাইচ (পিছফালৰ বাওঁফালৰ প’র্ট)</translation>
 <translation id="7131634465328662194">আপোনাক স্বয়ংক্ৰিয়ভাৱে ছাইন আউট কৰোৱা হ'ব।</translation>
 <translation id="7143207342074048698">সংযোগ কৰি থকা হৈছে</translation>
@@ -657,7 +656,6 @@
 <translation id="8877788021141246043">ৰিমাইণ্ডাৰ ছেট কৰক</translation>
 <translation id="8878886163241303700">বিস্তাৰিত স্ক্ৰীণ</translation>
 <translation id="890616557918890486">উৎস সলনি কৰক</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" />এ<ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz) সমৰ্থন নকৰে। ৰিজ’লিউশ্বনটো <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />)লৈ সলনি কৰা হৈছে। সালসলনিসমূহ ৰাখিবলৈ নিশ্চিত কৰকত ক্লিক কৰক। পূৰ্বৱৰ্তী ছেটিংসমূহ <ph name="TIMEOUT_SECONDS" />ত পুনঃস্থাপন কৰা হ’ব।</translation>
 <translation id="8909138438987180327">বেটাৰী <ph name="PERCENTAGE" /> শতাংশত আছে।</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistantএ এই ভাষাটো ব্যৱহাৰ নকৰে।</translation>

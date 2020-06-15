@@ -3330,6 +3330,16 @@ void AXPlatformNodeAuraLinux::OnCheckedStateChanged() {
       GetData().GetCheckedState() != ax::mojom::CheckedState::kFalse);
 }
 
+void AXPlatformNodeAuraLinux::OnEnabledChanged() {
+  AtkObject* obj = GetOrCreateAtkObject();
+  if (!obj)
+    return;
+
+  atk_object_notify_state_change(
+      obj, ATK_STATE_ENABLED,
+      GetData().GetRestriction() != ax::mojom::Restriction::kDisabled);
+}
+
 void AXPlatformNodeAuraLinux::OnExpandedStateChanged(bool is_expanded) {
   // When a list box is expanded, it becomes visible. This means that it might
   // now have a different role (the role for hidden Views is kUnknown).  We
@@ -3720,6 +3730,21 @@ void AXPlatformNodeAuraLinux::EmitCaretChangedSignal() {
   DCHECK(ATK_IS_TEXT(atk_object));
   g_signal_emit_by_name(atk_object, "text-caret-moved",
                         UTF16ToUnicodeOffsetInText(selection.second));
+}
+
+void AXPlatformNodeAuraLinux::OnTextAttributesChanged() {
+  if (!EmitsAtkTextEvents()) {
+    if (auto* parent = FromAtkObject(GetParent()))
+      parent->OnTextAttributesChanged();
+    return;
+  }
+
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  if (!atk_object)
+    return;
+
+  DCHECK(ATK_IS_TEXT(atk_object));
+  g_signal_emit_by_name(atk_object, "text-attributes-changed");
 }
 
 void AXPlatformNodeAuraLinux::OnTextSelectionChanged() {

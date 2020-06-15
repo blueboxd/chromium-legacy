@@ -182,7 +182,7 @@ void WebWidgetTestProxy::Reset() {
   widget_input_handler_manager()->InvokeInputProcessedCallback();
 
   // Reset state in the RenderWidget base class.
-  ClearEditCommands();
+  GetWebFrameWidget()->ClearEditCommands();
 
   GetTestRunner()->ResetWebWidget(this);
 }

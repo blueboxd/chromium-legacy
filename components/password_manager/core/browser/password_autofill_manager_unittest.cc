@@ -287,6 +287,17 @@ class PasswordAutofillManagerTest : public testing::Test {
     return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_MANAGE_PASSWORDS);
   }
 
+  std::string GetManagePasswordsIcon() {
+    // The "Manage passwords" entry only has an icon if
+    // kEnablePasswordsAccountStorage is enabled.
+    std::string settings_icon;
+    if (base::FeatureList::IsEnabled(
+            password_manager::features::kEnablePasswordsAccountStorage)) {
+      return "settingsIcon";
+    }
+    return std::string();
+  }
+
  protected:
   autofill::PasswordFormFillData& fill_data() { return fill_data_; }
 
@@ -1271,7 +1282,7 @@ TEST_F(PasswordAutofillManagerTest,
   EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(data.url, _, _));
   password_autofill_manager_->OnAddPasswordFillData(data);
 
-  // Bring up the drop-down with the generaion option.
+  // Bring up the drop-down with the generation option.
   base::string16 generation_string =
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD);
   autofill::AutofillClient::PopupOpenArgs open_args;
@@ -1285,8 +1296,8 @@ TEST_F(PasswordAutofillManagerTest,
       kDropdownShownHistogram,
       metrics_util::PasswordDropdownState::kStandardGenerate, 1);
   EXPECT_THAT(open_args.suggestions,
-              SuggestionVectorIconsAre(
-                  ElementsAre("globeIcon", "keyIcon", std::string())));
+              SuggestionVectorIconsAre(ElementsAre("globeIcon", "keyIcon",
+                                                   GetManagePasswordsIcon())));
   EXPECT_THAT(open_args.suggestions, SuggestionVectorValuesAre(ElementsAre(
                                          test_username_, generation_string,
                                          GetManagePasswordsTitle())));
@@ -1328,8 +1339,8 @@ TEST_F(PasswordAutofillManagerTest,
       password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
           element_bounds, base::i18n::RIGHT_TO_LEFT,
           /*show_password_suggestions=*/false));
-  EXPECT_THAT(open_args.suggestions,
-              SuggestionVectorIconsAre(ElementsAre("keyIcon", std::string())));
+  EXPECT_THAT(open_args.suggestions, SuggestionVectorIconsAre(ElementsAre(
+                                         "keyIcon", GetManagePasswordsIcon())));
   EXPECT_THAT(open_args.suggestions,
               SuggestionVectorValuesAre(
                   ElementsAre(generation_string, GetManagePasswordsTitle())));

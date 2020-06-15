@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tabmodel.TabWindowManager.TabModelSelectorFactory;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -82,7 +83,7 @@ public class ContextMenuLoadUrlParamsTest {
                 TabModelFilterFactory tabModelFilterFactory, int selectorIndex) {
             super(activity, tabCreatorManager,
                     new TabbedModeTabPersistencePolicy(selectorIndex, false), tabModelFilterFactory,
-                    false, false, false);
+                    () -> NextTabPolicy.HIERARCHICAL, false, false, false);
         }
     }
 
@@ -105,7 +106,8 @@ public class ContextMenuLoadUrlParamsTest {
                     new TabModelSelectorFactory() {
                         @Override
                         public TabModelSelector buildSelector(Activity activity,
-                                TabCreatorManager tabCreatorManager, int selectorIndex) {
+                                TabCreatorManager tabCreatorManager,
+                                NextTabPolicySupplier nextTabPolicySupplier, int selectorIndex) {
                             return new RecordingTabModelSelector(activity, tabCreatorManager,
                                     new ChromeTabModelFilterFactory(), selectorIndex);
                         }

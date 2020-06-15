@@ -30,6 +30,7 @@ class AXWindowObjWrapper : public AXAuraObjWrapper,
   ~AXWindowObjWrapper() override;
 
   // AXAuraObjWrapper overrides.
+  bool HandleAccessibleAction(const ui::AXActionData& action) override;
   bool IsIgnored() override;
   AXAuraObjWrapper* GetParent() override;
   void GetChildren(std::vector<AXAuraObjWrapper*>* out_children) override;

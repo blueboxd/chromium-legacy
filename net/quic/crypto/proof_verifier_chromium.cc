@@ -80,6 +80,7 @@ class ProofVerifierChromium::Job {
   // asynchronously when the verification completes.
   quic::QuicAsyncStatus VerifyCertChain(
       const std::string& hostname,
+      const uint16_t port,
       const std::vector<std::string>& certs,
       const std::string& ocsp_response,
       const std::string& cert_sct,
@@ -156,9 +157,6 @@ class ProofVerifierChromium::Job {
   // passed to CertVerifier::Verify.
   int cert_verify_flags_;
 
-  // If set to true, enforces policy checking in DoVerifyCertComplete().
-  bool enforce_policy_checking_;
-
   State next_state_;
 
   base::TimeTicks start_time_;
@@ -182,7 +180,6 @@ ProofVerifierChromium::Job::Job(
       transport_security_state_(transport_security_state),
       cert_transparency_verifier_(cert_transparency_verifier),
       cert_verify_flags_(cert_verify_flags),
-      enforce_policy_checking_(true),
       next_state_(STATE_NONE),
       start_time_(base::TimeTicks::Now()),
       net_log_(net_log) {
@@ -252,13 +249,13 @@ quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyProof(
     return quic::QUIC_FAILURE;
   }
 
-  DCHECK(enforce_policy_checking_);
   return VerifyCert(hostname, port, /*ocsp_response=*/std::string(), cert_sct,
                     error_details, verify_details, std::move(callback));
 }
 
 quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyCertChain(
     const string& hostname,
+    const uint16_t port,
     const std::vector<string>& certs,
     const std::string& ocsp_response,
     const std::string& cert_sct,
@@ -283,10 +280,15 @@ quic::QuicAsyncStatus ProofVerifierChromium::Job::VerifyCertChain(
   if (!GetX509Certificate(certs, error_details, verify_details))
     return quic::QUIC_FAILURE;
 
-  enforce_policy_checking_ = false;
-  // |port| is not needed because |enforce_policy_checking_| is false.
-  return VerifyCert(hostname, /*port=*/0, ocsp_response, cert_sct,
-                    error_details, verify_details, std::move(callback));
+  // Note that this is a completely synchronous operation: The CT Log Verifier
+  // gets all the data it needs for SCT verification and does not do any
+  // external communication.
+  cert_transparency_verifier_->Verify(
+      hostname, cert_.get(), std::string(), cert_sct,
+      &verify_details_->ct_verify_result.scts, net_log_);
+
+  return VerifyCert(hostname, port, ocsp_response, cert_sct, error_details,
+                    verify_details, std::move(callback));
 }
 
 bool ProofVerifierChromium::Job::GetX509Certificate(
@@ -412,7 +414,7 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
 
   // If the connection was good, check HPKP and CT status simultaneously,
   // but prefer to treat the HPKP error as more serious, if there was one.
-  if (enforce_policy_checking_ && result == OK) {
+  if (result == OK) {
     ct::SCTList verified_scts = ct::SCTsMatchingStatus(
         verify_details_->ct_verify_result.scts, ct::SCT_STATUS_OK);
 
@@ -646,7 +648,7 @@ quic::QuicAsyncStatus ProofVerifierChromium::VerifyProof(
 
 quic::QuicAsyncStatus ProofVerifierChromium::VerifyCertChain(
     const std::string& hostname,
-    const uint16_t /*port*/,
+    const uint16_t port,
     const std::vector<std::string>& certs,
     const std::string& ocsp_response,
     const std::string& cert_sct,
@@ -665,7 +667,7 @@ quic::QuicAsyncStatus ProofVerifierChromium::VerifyCertChain(
       cert_transparency_verifier_, chromium_context->cert_verify_flags,
       chromium_context->net_log);
   quic::QuicAsyncStatus status =
-      job->VerifyCertChain(hostname, certs, ocsp_response, cert_sct,
+      job->VerifyCertChain(hostname, port, certs, ocsp_response, cert_sct,
                            error_details, verify_details, std::move(callback));
   if (status == quic::QUIC_PENDING) {
     Job* job_ptr = job.get();

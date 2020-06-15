@@ -728,7 +728,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="4101413244023615925">Testo e grafica</translation>
 <translation id="4103249731201008433">Il numero di serie del dispositivo non è valido</translation>
 <translation id="4103763322291513355">Visita &lt;strong&gt;chrome://policy&lt;/strong&gt; per visualizzare l'elenco di URL inseriti nella blacklist e altre norme applicate dall'amministratore di sistema.</translation>
-<translation id="4108231218301530806">Usa l'impronta per verificare questa carta la prossima volta</translation>
 <translation id="4110652170750985508">Verifica il pagamento</translation>
 <translation id="4112140312785995938">Vai indietro</translation>
 <translation id="4116663294526079822">Consenti sempre su questo sito</translation>
@@ -1126,6 +1125,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="569000877158168851">Il valore DnsOverHttpsTemplates non è pertinente e non verrà utilizzato a meno che il criterio DnsOverHttpsMode non venga impostato su <ph name="SECURE_DNS_MODE_AUTOMATIC" /> o su <ph name="SECURE_DNS_MODE_SECURE" />.</translation>
 <translation id="5701381305118179107">Centra</translation>
 <translation id="570530837424789914">Gestisci…</translation>
+<translation id="5705882733397021510">Indietro</translation>
 <translation id="57094364128775171">Suggerisci password efficace…</translation>
 <translation id="5710435578057952990">L'identità di questo sito web non è stata verificata.</translation>
 <translation id="5720705177508910913">Utente corrente</translation>
@@ -1341,7 +1341,6 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="6631202559048444592">È presente più di un'origine per questo criterio, ma i valori sono gli stessi.</translation>
 <translation id="663260587451432563">JIS B4</translation>
 <translation id="6643016212128521049">Cancella</translation>
-<translation id="6644283850729428850">Questa norma è obsoleta.</translation>
 <translation id="6646269444027925224">{COUNT,plural, =0{Nessuno}=1{Da 1 sito (non verrai disconnesso dal tuo Account Google)}other{Da # siti (non verrai disconnesso dal tuo Account Google)}}</translation>
 <translation id="6652101503459149953">Usa Windows Hello</translation>
 <translation id="6657585470893396449">Password</translation>

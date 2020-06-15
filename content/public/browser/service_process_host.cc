@@ -15,12 +15,6 @@ ServiceProcessHost::Options::~Options() = default;
 
 ServiceProcessHost::Options::Options(Options&&) = default;
 
-ServiceProcessHost::Options& ServiceProcessHost::Options::WithSandboxType(
-    SandboxType type) {
-  sandbox_type = type;
-  return *this;
-}
-
 ServiceProcessHost::Options& ServiceProcessHost::Options::WithDisplayName(
     const std::string& name) {
   display_name = base::UTF8ToUTF16(name);

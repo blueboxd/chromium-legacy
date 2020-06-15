@@ -24,6 +24,9 @@ class TestManagePasswordsUIController : public ManagePasswordsUIController {
     return model_delegate_;
   }
 
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {}
+
  private:
   base::WeakPtr<PasswordsModelDelegate> model_delegate_;
 };

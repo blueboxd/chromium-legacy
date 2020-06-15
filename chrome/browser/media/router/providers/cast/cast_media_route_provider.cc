@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider.h"
 
+#include <array>
 #include <utility>
 #include <vector>
 
@@ -24,19 +25,28 @@ namespace media_router {
 
 namespace {
 
+// Whitelist of origins allowed to use a PresentationRequest to initiate
+// mirroring.
+constexpr std::array<base::StringPiece, 2> kPresentationApiWhitelist = {
+    "https://docs.google.com",
+    "https://meet.google.com",
+};
+
 // Returns a list of origins that are valid for |source_id|. An empty list
 // means all origins are valid.
 std::vector<url::Origin> GetOrigins(const MediaSource::Id& source_id) {
-  // Use of the mirroring app as a Cast URL is permitted for Slides as a
-  // temporary workaround only. The eventual goal is to support their usecase
-  // using generic Presentation API.
-  // See also cast_media_source.cc.
+  // Use of the mirroring app as a Cast URL is permitted for certain origins as
+  // a temporary workaround only. The eventual goal is to support their usecase
+  // using generic Presentation API.  See also cast_media_source.cc.
+  std::vector<url::Origin> allowed_origins;
   static const char kMirroringAppPrefix[] = "cast:0F5096E8";
-  return base::StartsWith(source_id, kMirroringAppPrefix,
-                          base::CompareCase::SENSITIVE)
-             ? std::vector<url::Origin>(
-                   {url::Origin::Create(GURL("https://docs.google.com"))})
-             : std::vector<url::Origin>();
+  if (base::StartsWith(source_id, kMirroringAppPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    allowed_origins.reserve(kPresentationApiWhitelist.size());
+    for (const auto& origin : kPresentationApiWhitelist)
+      allowed_origins.push_back(url::Origin::Create(GURL(origin)));
+  }
+  return allowed_origins;
 }
 
 }  // namespace

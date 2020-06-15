@@ -1,11 +1,11 @@
 AXWebArea
 ++AXList
-++++AXGroup AXGrabbed='1'
+++++AXGroup AXGrabbed=1
 ++++++AXListMarker AXValue='• '
 ++++++++AXStaticText AXValue='• '
 ++++++AXStaticText AXValue='grabbed-true '
 ++++++AXImage AXDescription='blue'
-++++AXGroup AXGrabbed='0'
+++++AXGroup AXGrabbed=0
 ++++++AXListMarker AXValue='• '
 ++++++++AXStaticText AXValue='• '
 ++++++AXStaticText AXValue='grabbed-false '

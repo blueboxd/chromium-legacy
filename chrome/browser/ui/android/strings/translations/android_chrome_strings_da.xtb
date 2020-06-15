@@ -170,6 +170,7 @@ Tryk på et ord for at søge. Du kan tilpasse søgningen ved at holde fingeren n
 <translation id="2387895666653383613">Tekststørrelse</translation>
 <translation id="2394602618534698961">Her vises de filer, du downloader</translation>
 <translation id="2407481962792080328">Når du logger ind på din Google-konto, er denne funktion aktiveret</translation>
+<translation id="2407674018644220013">Vil du angive <ph name="APP_NAME" /> som din standardapp?</translation>
 <translation id="2410754283952462441">Vælg en konto</translation>
 <translation id="2414886740292270097">Mørk</translation>
 <translation id="2426805022920575512">Vælg en anden konto</translation>
@@ -179,6 +180,7 @@ Tryk på et ord for at søge. Du kan tilpasse søgningen ved at holde fingeren n
 
 Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge flere eller færre ord. Hvis du vil redigere din søgning, skal du åbne panelet, trykke på ikonet Ny fane og så foretage dine ændringer i søgefeltet.</translation>
 <translation id="246532703174860178">Del</translation>
+<translation id="2479148705183875116">Gå til Indstillinger</translation>
 <translation id="2482878487686419369">Notifikationer</translation>
 <translation id="2494974097748878569">Google Assistent i Chrome</translation>
 <translation id="2496180316473517155">Browserhistorik</translation>
@@ -617,6 +619,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="6140912465461743537">Land/region</translation>
 <translation id="614940544461990577">Prøv at:</translation>
 <translation id="6154478581116148741">Aktivér skærmlåsen i Indstillinger for at eksportere dine adgangskoder fra denne enhed</translation>
+<translation id="6157392216611456285">Vælg <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> sparet data</translation>
 <translation id="6192333916571137726">Download fil</translation>
 <translation id="6201345951596836663">Linket blev kopieret</translation>
@@ -641,6 +644,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6341580099087024258">Spørg, hvor filer skal gemmes</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> mere}one{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> mere}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> mere}}</translation>
 <translation id="6364438453358674297">Vil du fjerne forslaget fra historikken?</translation>
+<translation id="6366047038980456022"><ph name="APP_NAME" /> er hurtig og har de smarte funktioner, du skal bruge til at arbejde, skabe indhold og gå på opdagelse online</translation>
 <translation id="6369229450655021117">Herfra kan du søge på nettet, dele indhold med venner og se åbne sider</translation>
 <translation id="6378173571450987352">Info: Sorteret efter mængden af brugte data</translation>
 <translation id="6379829913050047669"><ph name="APP_NAME" /> åbnes i Chrome. Når du fortsætter, accepterer du <ph name="BEGIN_LINK1" />Googles servicevilkår<ph name="END_LINK1" /> og de <ph name="BEGIN_LINK2" />yderligere servicevilkår for Google Chrome og Chrome OS<ph name="END_LINK2" />.</translation>
@@ -692,6 +696,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6671495933530132209">Kopiér billede</translation>
 <translation id="6676840375528380067">Vil du rydde dine Chrome-data på denne enhed?</translation>
 <translation id="6689172468748959065">Profilbilleder</translation>
+<translation id="6691888250440401212">1. Vælg <ph name="APP_NAME" />\n2. Tryk på "Angiv som standard"</translation>
 <translation id="6697492270171225480">Se forslag til lignende sider, når en side ikke kan findes</translation>
 <translation id="6698801883190606802">Administrer synkroniserede data</translation>
 <translation id="6699370405921460408">Google-serverne optimerer de sider, du besøger.</translation>
@@ -895,6 +900,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8364299278605033898">Se populære websites</translation>
 <translation id="8368027906805972958">Ukendt eller ikke-understøttet enhed (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">Send en besked</translation>
+<translation id="8407396331882458341">1. Vælg <ph name="APP_NAME" />\n2. Tryk på "Altid"</translation>
 <translation id="8413126021676339697">Vis hele historikken</translation>
 <translation id="8425213833346101688">Skift</translation>
 <translation id="8427875596167638501">Fanen forhåndsvisning er åbnet halvt</translation>
@@ -921,6 +927,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8555836665334561807">Via Wi-Fi</translation>
 <translation id="8558485628462305855">Opdater ARCore for at se augmented reality-indhold</translation>
 <translation id="8559990750235505898">Tilbyd at oversætte sider på andre sprog</translation>
+<translation id="8561196567344536112">1. Gå til Indstillinger\n2. Tryk på "Browserapp"\n3. Vælg <ph name="APP_NAME" /></translation>
 <translation id="8562452229998620586">Dine gemte adgangskoder vises her.</translation>
 <translation id="8569404424186215731">siden den <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Seneste 4 uger</translation>

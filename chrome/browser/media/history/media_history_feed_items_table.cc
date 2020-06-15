@@ -772,6 +772,7 @@ MediaHistoryFeedItemsTable::GetPendingSafeSearchCheckItems() {
   while (statement.Step()) {
     auto check =
         std::make_unique<MediaHistoryKeyedService::PendingSafeSearchCheck>(
+            MediaHistoryKeyedService::SafeSearchCheckedType::kFeedItem,
             statement.ColumnInt64(0));
 
     if (statement.GetColumnType(1) == sql::ColumnType::kBlob) {

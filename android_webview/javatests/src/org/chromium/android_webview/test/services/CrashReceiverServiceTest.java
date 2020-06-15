@@ -7,7 +7,8 @@ package org.chromium.android_webview.test.services;
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
 
 import android.os.ParcelFileDescriptor;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.json.JSONException;
 import org.junit.Assert;

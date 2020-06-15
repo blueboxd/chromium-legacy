@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/safe_browsing/unsafe_resource_util.h"
 
-#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
+#import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -83,6 +83,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1864454756846565995">Peranti USB-C (port belakang)</translation>
 <translation id="1882897271359938046">Mencerminkan <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Buka kunci dengan cap jari</translation>
+<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> tidak menyokong <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Peleraian telah diubah kepada <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Klik sahkan untuk menyimpan perubahan. Tetapan terdahulu akan dipulihkan dalam masa <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1919743966458266018">Pintasan untuk membuka pengurus tugas telah berubah. Sila gunakan <ph name="NEW_SHORTCUT" /> dan bukannya <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Klik automatik</translation>
 <translation id="1928739107511554905">Untuk mendapatkan kemas kini, gunakan skrin sentuh untuk memulakan semula Chromebook anda dengan papan kekunci yang dipasang.</translation>
@@ -510,7 +511,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7068360136237591149">Buka fail</translation>
 <translation id="7076293881109082629">Melog masuk</translation>
 <translation id="7088960765736518739">Akses Suis</translation>
-<translation id="7092922358121866860">Tunjukkan tetapan Cahaya Malam</translation>
 <translation id="7098389117866926363">Peranti USB-C (port kiri di belakang)</translation>
 <translation id="7131634465328662194">Anda akan dilog keluar secara automatik.</translation>
 <translation id="7143207342074048698">Menyambung</translation>
@@ -662,7 +662,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8877788021141246043">Tetapkan peringatan</translation>
 <translation id="8878886163241303700">Meluaskan skrin</translation>
 <translation id="890616557918890486">Tukar sumber</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> tidak menyokong <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Peleraian telah diubah kepada <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />). Klik sahkan untuk menyimpan perubahan. Tetapan terdahulu akan dipulihkan dalam masa <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="8909138438987180327">Kuasa bateri pada tahap <ph name="PERCENTAGE" /> peratus.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant tidak bertutur dalam bahasa ini.</translation>

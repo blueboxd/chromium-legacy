@@ -509,7 +509,6 @@
 <translation id="7068360136237591149">Файлдарды ашу</translation>
 <translation id="7076293881109082629">Кіру</translation>
 <translation id="7088960765736518739">Switch Access</translation>
-<translation id="7092922358121866860">"Night Light" режимі параметрлерін көрсету</translation>
 <translation id="7098389117866926363">USB-C құрылғысы (артқы сол жақ порты)</translation>
 <translation id="7131634465328662194">Есептік жазбадан автоматты түрде шығасыз.</translation>
 <translation id="7143207342074048698">Қосылып жатыр</translation>
@@ -661,7 +660,6 @@
 <translation id="8877788021141246043">Еске салғыш орнату</translation>
 <translation id="8878886163241303700">Экранды кеңейту</translation>
 <translation id="890616557918890486">Дереккөзді өзгерту</translation>
-<translation id="8908312332415978740"><ph name="DISPLAY_NAME" /> дисплейі <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Гц) ажыратымдылығын қолдамайды. Ажыратымдылық <ph name="FALLBACK_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" />) болып өзгертілді. Өзгерістерді сақтау үшін "Растау" түймесін басыңыз. Алдыңғы параметрлер <ph name="TIMEOUT_SECONDS" /> кейін қалпына келтіріледі.</translation>
 <translation id="8909138438987180327">Батарея қуаты: <ph name="PERCENTAGE" />.</translation>
 <translation id="8921554779039049422">H+</translation>
 <translation id="8921624153894383499">Google Assistant бұл тілде жұмыс істемейді.</translation>

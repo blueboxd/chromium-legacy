@@ -361,7 +361,8 @@ int Main(const MainParams& params) {
       mojo_config.is_broker_process = true;
     }
     mojo_config.max_message_num_bytes = kMaximumMojoMessageSize;
-    delegate->InitializeMojo(&mojo_config);
+    delegate->OverrideMojoConfiguration(&mojo_config);
+    mojo::core::Init(mojo_config);
 
     ui::RegisterPathProvider();
 

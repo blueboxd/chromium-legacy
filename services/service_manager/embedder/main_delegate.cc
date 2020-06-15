@@ -24,7 +24,8 @@ ProcessType MainDelegate::OverrideProcessType() {
   return ProcessType::kDefault;
 }
 
-void MainDelegate::InitializeMojo(mojo::core::Configuration* config) {}
+void MainDelegate::OverrideMojoConfiguration(
+    mojo::core::Configuration* config) {}
 
 std::vector<Manifest> MainDelegate::GetServiceManifests() {
   return std::vector<Manifest>();

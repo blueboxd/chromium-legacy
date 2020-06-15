@@ -31,6 +31,7 @@ class ArcMidisClient;
 class ArcObbMounterClient;
 class ArcOemCryptoClient;
 class CecServiceClient;
+class ChunneldClient;
 class CiceroneClient;
 class ConciergeClient;
 class CrosDisksClient;
@@ -123,6 +124,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   ArcObbMounterClient* GetArcObbMounterClient();
   ArcOemCryptoClient* GetArcOemCryptoClient();
   CecServiceClient* GetCecServiceClient();
+  ChunneldClient* GetChunneldClient();
   CiceroneClient* GetCiceroneClient();
   ConciergeClient* GetConciergeClient();
   CrosDisksClient* GetCrosDisksClient();
@@ -180,6 +182,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManagerSetter {
  public:
   ~DBusThreadManagerSetter();
 
+  void SetChunneldClient(std::unique_ptr<ChunneldClient> client);
   void SetCiceroneClient(std::unique_ptr<CiceroneClient> client);
   void SetConciergeClient(std::unique_ptr<ConciergeClient> client);
   void SetCrosDisksClient(std::unique_ptr<CrosDisksClient> client);

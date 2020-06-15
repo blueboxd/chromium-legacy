@@ -311,16 +311,27 @@ void PageLoadTracker::LogAbortChainHistograms(
 
 void PageLoadTracker::PageHidden() {
   // Only log the first time we background in a given page load.
-  if (!first_background_time_.has_value()) {
+  if (!first_background_time_.has_value() ||
+      !first_background_time_after_back_forward_cache_restore_.has_value()) {
     // Make sure we either started in the foreground and haven't been
     // foregrounded yet, or started in the background and have already been
     // foregrounded.
     base::TimeTicks background_time;
-    DCHECK_EQ(started_in_foreground_, !first_foreground_time_.has_value());
+
+    if (!first_background_time_.has_value())
+      DCHECK_EQ(started_in_foreground_, !first_foreground_time_.has_value());
+
     background_time = base::TimeTicks::Now();
     ClampBrowserTimestampIfInterProcessTimeTickSkew(&background_time);
     DCHECK_GE(background_time, navigation_start_);
-    first_background_time_ = background_time - navigation_start_;
+
+    if (!first_background_time_.has_value())
+      first_background_time_ = background_time - navigation_start_;
+
+    if (!first_background_time_after_back_forward_cache_restore_.has_value()) {
+      first_background_time_after_back_forward_cache_restore_ =
+          background_time - navigation_start_after_back_forward_cache_restore_;
+    }
   }
   visibility_tracker_.OnHidden();
   INVOKE_AND_PRUNE_OBSERVERS(observers_, OnHidden,
@@ -778,8 +789,17 @@ const base::Optional<base::TimeDelta>& PageLoadTracker::GetFirstForegroundTime()
   return first_foreground_time_;
 }
 
+const base::Optional<base::TimeDelta>&
+PageLoadTracker::GetFirstBackgroundTimeAfterBackForwardCacheRestore() const {
+  return first_background_time_after_back_forward_cache_restore_;
+}
+
 bool PageLoadTracker::StartedInForeground() const {
   return started_in_foreground_;
+}
+
+bool PageLoadTracker::LastBackForwardCacheRestoreWasInForeground() const {
+  return last_back_forward_cache_restore_was_in_foreground_;
 }
 
 const UserInitiatedInfo& PageLoadTracker::GetUserInitiatedInfo() const {
@@ -862,7 +882,6 @@ bool PageLoadTracker::IsFirstNavigationInWebContents() const {
 }
 
 void PageLoadTracker::OnEnterBackForwardCache() {
-  DCHECK(visibility_tracker_.currently_in_foreground());
   if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE) {
     PageHidden();
   }
@@ -871,11 +890,18 @@ void PageLoadTracker::OnEnterBackForwardCache() {
                              metrics_update_dispatcher_.timing());
 }
 
-void PageLoadTracker::OnRestoreFromBackForwardCache() {
+void PageLoadTracker::OnRestoreFromBackForwardCache(
+    content::NavigationHandle* navigation_handle) {
+  first_background_time_after_back_forward_cache_restore_.reset();
+  navigation_start_after_back_forward_cache_restore_ =
+      navigation_handle->NavigationStart();
+
   DCHECK(!visibility_tracker_.currently_in_foreground());
-  if (GetWebContents()->GetVisibility() == content::Visibility::VISIBLE) {
+  bool visible =
+      GetWebContents()->GetVisibility() == content::Visibility::VISIBLE;
+  last_back_forward_cache_restore_was_in_foreground_ = visible;
+  if (visible)
     PageShown();
-  }
 
   for (const auto& observer : observers_) {
     observer->OnRestoreFromBackForwardCache(

@@ -46,9 +46,8 @@ class DownloadsCounterTest : public InProcessBrowserTest,
             ->GetDownloadHistory();
     history_->AddObserver(this);
 
-    otr_manager_ =
-        content::BrowserContext::GetDownloadManager(
-            browser()->profile()->GetOffTheRecordProfile());
+    otr_manager_ = content::BrowserContext::GetDownloadManager(
+        browser()->profile()->GetPrimaryOTRProfile());
     SetDownloadsDeletionPref(true);
     SetDeletionPeriodPref(browsing_data::TimePeriod::ALL_TIME);
   }

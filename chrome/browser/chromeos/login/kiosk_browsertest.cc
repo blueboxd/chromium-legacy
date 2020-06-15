@@ -39,6 +39,7 @@
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/kiosk_test_helpers.h"
 #include "chrome/browser/chromeos/login/test/local_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
@@ -290,31 +291,6 @@ void SetPlatformVersion(const std::string& platform_version) {
       "CHROMEOS_RELEASE_VERSION=%s", platform_version.c_str());
   base::SysInfo::SetChromeOSVersionInfoForTest(lsb_release, base::Time::Now());
 }
-
-class KioskSessionInitializedWaiter : public KioskAppManagerObserver {
- public:
-  KioskSessionInitializedWaiter() {
-    scoped_observer_.Add(KioskAppManager::Get());
-  }
-  ~KioskSessionInitializedWaiter() override = default;
-
-  void Wait() {
-    if (KioskAppManager::Get()->app_session())
-      return;
-
-    run_loop_.Run();
-  }
-
-  // KioskAppManagerObserver:
-  void OnKioskSessionInitialized() override { run_loop_.Quit(); }
-
- private:
-  ScopedObserver<KioskAppManagerBase, KioskAppManagerObserver> scoped_observer_{
-      this};
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskSessionInitializedWaiter);
-};
 
 // Helper functions for CanConfigureNetwork mock.
 class ScopedCanConfigureNetwork {

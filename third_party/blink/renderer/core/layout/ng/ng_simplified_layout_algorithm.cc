@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_simplified_layout_algorithm.h"
 
+#include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
@@ -24,8 +25,7 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
     const NGLayoutResult& result)
     : NGLayoutAlgorithm(params),
       previous_result_(result),
-      writing_mode_(Style().GetWritingMode()),
-      direction_(Style().Direction()) {
+      writing_direction_(Style().GetWritingDirection()) {
   // Currently this only supports block-flow layout due to the static-position
   // calculations. If support for other layout types is added this logic will
   // need to be changed.
@@ -123,7 +123,8 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
     container_builder_.SetBlockSize(new_block_size);
   } else {
     LayoutUnit old_block_size =
-        NGFragment(writing_mode_, physical_fragment).BlockSize();
+        NGFragment(writing_direction_.GetWritingMode(), physical_fragment)
+            .BlockSize();
     DCHECK_EQ(old_block_size, new_block_size);
     container_builder_.SetBlockSize(old_block_size);
   }
@@ -193,8 +194,7 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
     if (const NGFragmentItems* previous_items = previous_fragment.Items()) {
       auto* items_builder = container_builder_.ItemsBuilder();
       DCHECK(items_builder);
-      DCHECK_EQ(items_builder->GetWritingMode(), writing_mode_);
-      DCHECK_EQ(items_builder->Direction(), direction_);
+      DCHECK_EQ(items_builder->GetWritingDirection(), writing_direction_);
       items_builder->AddPreviousItems(*previous_items,
                                       previous_physical_container_size_);
     }
@@ -218,7 +218,7 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
 
 NOINLINE scoped_refptr<const NGLayoutResult>
 NGSimplifiedLayoutAlgorithm::LayoutWithItemsBuilder() {
-  NGFragmentItemsBuilder items_builder(writing_mode_, direction_);
+  NGFragmentItemsBuilder items_builder(writing_direction_);
   container_builder_.SetItemsBuilder(&items_builder);
   scoped_refptr<const NGLayoutResult> result = Layout();
   // Ensure stack-allocated |NGFragmentItemsBuilder| is not used anymore.
@@ -234,9 +234,10 @@ void NGSimplifiedLayoutAlgorithm::AddChildFragment(
   DCHECK_EQ(old_fragment->Size(), new_fragment.Size());
 
   // Determine the previous position in the logical coordinate system.
-  LogicalOffset child_offset = old_fragment.Offset().ConvertToLogical(
-      writing_mode_, direction_, previous_physical_container_size_,
-      new_fragment.Size());
+  LogicalOffset child_offset =
+      WritingModeConverter(writing_direction_,
+                           previous_physical_container_size_)
+          .ToLogical(old_fragment.Offset(), new_fragment.Size());
 
   // Add the new fragment to the builder.
   container_builder_.AddChild(new_fragment, child_offset);

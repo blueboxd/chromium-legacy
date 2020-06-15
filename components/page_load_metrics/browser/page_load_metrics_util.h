@@ -103,6 +103,10 @@ bool WasStartedInForegroundOptionalEventInForeground(
     const base::Optional<base::TimeDelta>& event,
     const PageLoadMetricsObserverDelegate& delegate);
 
+bool WasStartedInForegroundOptionalEventInForegroundAfterBackForwardCacheRestore(
+    const base::Optional<base::TimeDelta>& event,
+    const PageLoadMetricsObserverDelegate& delegate);
+
 // Returns true if:
 // - We have timing information for the event.
 // - The page load started in the background.

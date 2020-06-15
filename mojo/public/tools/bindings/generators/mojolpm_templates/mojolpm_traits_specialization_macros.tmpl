@@ -17,7 +17,7 @@ struct StructTraits<{{dataview_type}}, {{struct_type}}> {
       const {{struct_type}}& input) {
     {{field_mojom_type}} maybe_local_{{name}};
     {{field_maybe_mojom_type}} local_{{name}};
-    if (mojolpm::FromProto(
+    if (input.has_m_{{name}}() && mojolpm::FromProto(
       input.m_{{name}}(),
       local_{{name}})) {
       maybe_local_{{name}} = std::move(local_{{name}});

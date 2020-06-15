@@ -609,14 +609,25 @@ TEST_F(CheckedPtrTest, AssignmentFromNullptr) {
 
 #if defined(__LP64__)
 
+namespace {
+
+struct CheckedPtr2ImplPartitionAllocSupportEnabled
+    : base::internal::CheckedPtr2ImplPartitionAllocSupport {
+  static bool EnableForPtr(void* ptr) { return true; }
+};
+
+using CheckedPtr2ImplEnabled = base::internal::CheckedPtr2Impl<
+    CheckedPtr2ImplPartitionAllocSupportEnabled>;
+
+}  // namespace
+
 TEST(CheckedPtr2Impl, WrapNull) {
-  ASSERT_EQ(base::internal::CheckedPtr2Impl::GetWrappedNullPtr(), 0u);
-  ASSERT_EQ(base::internal::CheckedPtr2Impl::WrapRawPtr(nullptr), 0u);
+  ASSERT_EQ(base::internal::CheckedPtr2Impl<>::GetWrappedNullPtr(), 0u);
+  ASSERT_EQ(base::internal::CheckedPtr2Impl<>::WrapRawPtr(nullptr), 0u);
 }
 
 TEST(CheckedPtr2Impl, SafelyUnwrapNull) {
-  ASSERT_EQ(base::internal::CheckedPtr2Impl::SafelyUnwrapPtrForExtraction(0),
-            nullptr);
+  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrForExtraction(0), nullptr);
 }
 
 TEST(CheckedPtr2Impl, WrapAndSafelyUnwrap) {
@@ -639,7 +650,7 @@ TEST(CheckedPtr2Impl, WrapAndSafelyUnwrap) {
 #endif
 #endif
 
-  uintptr_t wrapped = base::internal::CheckedPtr2Impl::WrapRawPtr(ptr);
+  uintptr_t wrapped = CheckedPtr2ImplEnabled::WrapRawPtr(ptr);
   // First 2 bytes in the preceding word will be used as generation (in reverse
   // order due to little-endianness).
 #if CHECKED_PTR2_USE_NO_OP_WRAPPER
@@ -649,21 +660,19 @@ TEST(CheckedPtr2Impl, WrapAndSafelyUnwrap) {
 #else
   ASSERT_EQ(wrapped, (addr | 0x42BA000000000000 | set_top_bit) & mask);
 #endif
-  ASSERT_EQ(base::internal::CheckedPtr2Impl::SafelyUnwrapPtrInternal(wrapped),
-            addr);
+  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrInternal(wrapped), addr);
 
   bytes[7] |= 0x80;
 #if !CHECKED_PTR2_PROTECTION_ENABLED
   bytes[9] = bytes[7];
 #endif
-  wrapped = base::internal::CheckedPtr2Impl::WrapRawPtr(ptr);
+  wrapped = CheckedPtr2ImplEnabled::WrapRawPtr(ptr);
 #if CHECKED_PTR2_USE_NO_OP_WRAPPER
   ASSERT_EQ(wrapped, addr);
 #else
   ASSERT_EQ(wrapped, (addr | 0xC2BA000000000000 | set_top_bit) & mask);
 #endif
-  ASSERT_EQ(base::internal::CheckedPtr2Impl::SafelyUnwrapPtrInternal(wrapped),
-            addr);
+  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrInternal(wrapped), addr);
 
 #if CHECKED_PTR2_AVOID_BRANCH_WHEN_DEREFERENCING
   bytes[6] = 0;
@@ -681,9 +690,8 @@ TEST(CheckedPtr2Impl, WrapAndSafelyUnwrap) {
 #endif
 
   // Mask out the top bit, because in some cases (not all), it may differ.
-  ASSERT_EQ(
-      base::internal::CheckedPtr2Impl::SafelyUnwrapPtrInternal(wrapped) & mask,
-      wrapped & mask);
+  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrInternal(wrapped) & mask,
+            wrapped & mask);
 #endif
 }
 
@@ -691,8 +699,7 @@ TEST(CheckedPtr2Impl, SafelyUnwrapDisabled) {
   char bytes[] = {0x12, 0x23, 0x34, 0x45, 0x56, 0x67, 0xBA, 0x42, 0x78, 0x89};
   void* ptr = bytes + sizeof(uintptr_t);
   uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-  ASSERT_EQ(base::internal::CheckedPtr2Impl::SafelyUnwrapPtrInternal(addr),
-            addr);
+  ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrInternal(addr), addr);
 }
 
 #endif  // defined(__LP64__)

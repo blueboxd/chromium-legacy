@@ -10,6 +10,10 @@
 
 namespace local_search_service {
 
+// Given a list of tokens, returns a list of tokens where each token has a
+// unique content.
+std::vector<Token> ConsolidateToken(const std::vector<Token>& tokens);
+
 // Given a text document, returns a list of Tokens.
 // Locale should be obtained using this function:
 // base::i18n::GetConfiguredLocale(). The format of locale will be

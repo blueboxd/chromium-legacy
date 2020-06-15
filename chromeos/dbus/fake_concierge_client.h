@@ -255,6 +255,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeConciergeClient
   void NotifyVmStopped(const vm_tools::concierge::VmStoppedSignal& signal);
   bool HasVmObservers() const;
 
+  void NotifyConciergeStopped();
+  void NotifyConciergeStarted();
+
  protected:
   void Init(dbus::Bus* bus) override {}
 

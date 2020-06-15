@@ -56,8 +56,8 @@ void CrostiniUpgraderPageHandler::RequestClosePage() {
 
 void CrostiniUpgraderPageHandler::Backup(bool show_file_chooser) {
   Redisplay();
-  base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,
-                                crostini::UpgradeDialogEvent::kDidBackup);
+  CrostiniUpgraderDialog::EmitUpgradeDialogEventHistogram(
+      crostini::UpgradeDialogEvent::kDidBackup);
   upgrader_ui_delegate_->Backup(crostini::ContainerId::GetDefault(),
                                 show_file_chooser, web_contents_);
 }
@@ -73,15 +73,15 @@ void CrostiniUpgraderPageHandler::Upgrade() {
 
 void CrostiniUpgraderPageHandler::Restore() {
   Redisplay();
-  base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,
-                                crostini::UpgradeDialogEvent::kDidRestore);
+  CrostiniUpgraderDialog::EmitUpgradeDialogEventHistogram(
+      crostini::UpgradeDialogEvent::kDidRestore);
   upgrader_ui_delegate_->Restore(crostini::ContainerId::GetDefault(),
                                  web_contents_);
 }
 
 void CrostiniUpgraderPageHandler::Cancel() {
-  base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,
-                                crostini::UpgradeDialogEvent::kUpgradeCanceled);
+  CrostiniUpgraderDialog::EmitUpgradeDialogEventHistogram(
+      crostini::UpgradeDialogEvent::kUpgradeCanceled);
   upgrader_ui_delegate_->Cancel();
 }
 
@@ -90,8 +90,8 @@ void CrostiniUpgraderPageHandler::Launch() {
 }
 
 void CrostiniUpgraderPageHandler::CancelBeforeStart() {
-  base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,
-                                crostini::UpgradeDialogEvent::kNotStarted);
+  CrostiniUpgraderDialog::EmitUpgradeDialogEventHistogram(
+      crostini::UpgradeDialogEvent::kNotStarted);
   restart_required_ = false;
   upgrader_ui_delegate_->CancelBeforeStart();
   if (launch_callback_) {
@@ -116,15 +116,15 @@ void CrostiniUpgraderPageHandler::OnUpgradeProgress(
 
 void CrostiniUpgraderPageHandler::OnUpgradeSucceeded() {
   Redisplay();
-  base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,
-                                crostini::UpgradeDialogEvent::kUpgradeSuccess);
+  CrostiniUpgraderDialog::EmitUpgradeDialogEventHistogram(
+      crostini::UpgradeDialogEvent::kUpgradeSuccess);
   page_->OnUpgradeSucceeded();
 }
 
 void CrostiniUpgraderPageHandler::OnUpgradeFailed() {
   Redisplay();
-  base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,
-                                crostini::UpgradeDialogEvent::kUpgradeFailed);
+  CrostiniUpgraderDialog::EmitUpgradeDialogEventHistogram(
+      crostini::UpgradeDialogEvent::kUpgradeFailed);
   page_->OnUpgradeFailed();
 }
 
@@ -134,15 +134,15 @@ void CrostiniUpgraderPageHandler::OnBackupProgress(int percent) {
 
 void CrostiniUpgraderPageHandler::OnBackupSucceeded(bool was_cancelled) {
   Redisplay();
-  base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,
-                                crostini::UpgradeDialogEvent::kBackupSucceeded);
+  CrostiniUpgraderDialog::EmitUpgradeDialogEventHistogram(
+      crostini::UpgradeDialogEvent::kBackupSucceeded);
   page_->OnBackupSucceeded(was_cancelled);
 }
 
 void CrostiniUpgraderPageHandler::OnBackupFailed() {
   Redisplay();
-  base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,
-                                crostini::UpgradeDialogEvent::kBackupFailed);
+  CrostiniUpgraderDialog::EmitUpgradeDialogEventHistogram(
+      crostini::UpgradeDialogEvent::kBackupFailed);
   page_->OnBackupFailed();
 }
 
@@ -157,16 +157,15 @@ void CrostiniUpgraderPageHandler::OnRestoreProgress(int percent) {
 
 void CrostiniUpgraderPageHandler::OnRestoreSucceeded() {
   Redisplay();
-  base::UmaHistogramEnumeration(
-      crostini::kUpgradeDialogEventHistogram,
+  CrostiniUpgraderDialog::EmitUpgradeDialogEventHistogram(
       crostini::UpgradeDialogEvent::kRestoreSucceeded);
   page_->OnRestoreSucceeded();
 }
 
 void CrostiniUpgraderPageHandler::OnRestoreFailed() {
   Redisplay();
-  base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,
-                                crostini::UpgradeDialogEvent::kRestoreFailed);
+  CrostiniUpgraderDialog::EmitUpgradeDialogEventHistogram(
+      crostini::UpgradeDialogEvent::kRestoreFailed);
   page_->OnRestoreFailed();
 }
 

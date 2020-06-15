@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <limits>
 
 #include "base/command_line.h"
@@ -56,6 +57,11 @@ constexpr const char* help_msg =
 constexpr base::FilePath::CharType kDefaultTestVideoPath[] =
     FILE_PATH_LITERAL("bear_320x192_40frames.yuv.webm");
 
+// The number of frames to encode for bitrate check test cases.
+constexpr size_t kNumFramesToEncodeForBitrateCheck = 300;
+// Tolerance factor for how encoded bitrate can differ from requested bitrate.
+constexpr double kBitrateTolerance = 0.1;
+
 media::test::VideoEncoderTestEnvironment* g_env;
 
 // Video encode test class. Performs setup and teardown for each single test.
@@ -63,7 +69,7 @@ class VideoEncoderTest : public ::testing::Test {
  public:
   std::unique_ptr<VideoEncoder> CreateVideoEncoder(
       Video* video,
-      VideoEncoderClientConfig config = VideoEncoderClientConfig()) {
+      const VideoEncoderClientConfig& config) {
     LOG_ASSERT(video);
 
     auto video_encoder =
@@ -129,9 +135,9 @@ class VideoEncoderTest : public ::testing::Test {
     auto ssim_validator = SSIMVideoFrameValidator::Create(get_model_frame_cb);
     video_frame_processors.push_back(std::move(psnr_validator));
     video_frame_processors.push_back(std::move(ssim_validator));
-    auto bitstream_validator =
-        BitstreamValidator::Create(decoder_config, video->NumFrames() - 1,
-                                   std::move(video_frame_processors));
+    auto bitstream_validator = BitstreamValidator::Create(
+        decoder_config, config.num_frames_to_encode - 1,
+        std::move(video_frame_processors));
     LOG_ASSERT(bitstream_validator);
     bitstream_processors.emplace_back(std::move(bitstream_validator));
 
@@ -140,7 +146,8 @@ class VideoEncoderTest : public ::testing::Test {
 
   scoped_refptr<const VideoFrame> GetModelFrame(size_t frame_index) {
     LOG_ASSERT(raw_data_helper_);
-    return raw_data_helper_->GetFrame(frame_index);
+    return raw_data_helper_->GetFrame(frame_index %
+                                      g_env->Video()->NumFrames());
   }
 
   std::unique_ptr<RawDataHelper> raw_data_helper_;
@@ -149,8 +156,8 @@ class VideoEncoderTest : public ::testing::Test {
 }  // namespace
 
 // TODO(dstaessens): Add more test scenarios:
-// - Vary framerate
-// - Vary bitrate
+// - Dynamic framerate change
+// - Dynamic bitrate change
 // - Flush midstream
 // - Forcing key frames
 
@@ -160,6 +167,7 @@ TEST_F(VideoEncoderTest, FlushAtEndOfStream) {
   VideoEncoderClientConfig config = VideoEncoderClientConfig();
   config.framerate = g_env->Video()->FrameRate();
   config.output_profile = g_env->Profile();
+  config.num_frames_to_encode = g_env->Video()->NumFrames();
   auto encoder = CreateVideoEncoder(g_env->Video(), config);
 
   encoder->Encode();
@@ -217,6 +225,22 @@ TEST_F(VideoEncoderTest, FlushAtEndOfStream_MultipleConcurrentEncodes) {
   }
 }
 
+TEST_F(VideoEncoderTest, BitrateCheck) {
+  VideoEncoderClientConfig config = VideoEncoderClientConfig();
+  config.framerate = g_env->Video()->FrameRate();
+  config.output_profile = g_env->Profile();
+  config.num_frames_to_encode = kNumFramesToEncodeForBitrateCheck;
+  auto encoder = CreateVideoEncoder(g_env->Video(), config);
+
+  encoder->Encode();
+  EXPECT_TRUE(encoder->WaitForFlushDone());
+
+  EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(encoder->GetFrameReleasedCount(), config.num_frames_to_encode);
+  EXPECT_TRUE(encoder->WaitForBitstreamProcessors());
+  EXPECT_NEAR(encoder->GetStats().Bitrate(), config.bitrate,
+              kBitrateTolerance * config.bitrate);
+}
 }  // namespace test
 }  // namespace media
 

@@ -120,3 +120,44 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
         internal::kHistogramFirstPaintAfterBackForwardCacheRestore, 2);
   }
 }
+
+IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
+                       FirstPaintAfterBackForwardCacheRestoreBackground) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // Navigate to A.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_a));
+  content::RenderFrameHost* rfh_a = top_frame_host();
+
+  // Navigate to B.
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), url_b));
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  // Go back to A.
+  {
+    auto waiter = CreatePageLoadMetricsTestWaiter();
+    waiter->AddPageExpectation(
+        page_load_metrics::PageLoadMetricsTestWaiter::TimingField::
+            kFirstPaintAfterBackForwardCacheRestore);
+
+    web_contents()->GetController().GoBack();
+
+    // Make the tab backgrounded before the tab goes back.
+    web_contents()->WasHidden();
+
+    EXPECT_TRUE(WaitForLoadStop(web_contents()));
+    EXPECT_EQ(rfh_a, top_frame_host());
+    EXPECT_FALSE(rfh_a->IsInBackForwardCache());
+
+    web_contents()->WasShown();
+
+    waiter->Wait();
+
+    // As the tab goes to the background before the first paint, the UMA is not
+    // recorded.
+    histogram_tester_.ExpectTotalCount(
+        internal::kHistogramFirstPaintAfterBackForwardCacheRestore, 0);
+  }
+}

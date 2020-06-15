@@ -769,10 +769,9 @@ bool ChromeDownloadManagerDelegate::IsMostRecentDownloadItemAtFilePath(
     DownloadItem* download) {
   Profile* profile = Profile::FromBrowserContext(
       content::DownloadItemUtils::GetBrowserContext(download));
-  std::vector<Profile*> profiles_to_check = {profile->GetOriginalProfile()};
-  if (profile->HasOffTheRecordProfile()) {
-    profiles_to_check.push_back(profile->GetOffTheRecordProfile());
-  }
+  std::vector<Profile*> profiles_to_check =
+      profile->GetOriginalProfile()->GetAllOffTheRecordProfiles();
+  profiles_to_check.push_back(profile->GetOriginalProfile());
 
   std::vector<DownloadItem*> all_downloads;
   for (auto* profile : profiles_to_check) {

@@ -349,6 +349,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeCiceroneClient
   void NotifyFileWatchTriggered(
       const vm_tools::cicerone::FileWatchTriggeredSignal& signal);
 
+  void NotifyCiceroneStopped();
+  void NotifyCiceroneStarted();
+
  protected:
   void Init(dbus::Bus* bus) override {}
 

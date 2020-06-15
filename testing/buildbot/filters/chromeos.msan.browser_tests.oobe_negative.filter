@@ -48,6 +48,7 @@
 -HidDetectionTest.*
 -InitialEnrollmentTest.*
 -InterruptedAutoStartEnrollmentTest.*
+-KioskEnrollmentTest.*
 -KioskEnterpriseTest.*
 -KioskHiddenWebUITest.*
 -KioskTest.*

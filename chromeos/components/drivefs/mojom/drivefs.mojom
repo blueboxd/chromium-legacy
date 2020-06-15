@@ -75,6 +75,26 @@ interface DriveFs {
   // Gets the currently set arguments parsed by DriveFS on startup. Should only
   // be called in developer mode.
   GetStartupArguments() => (string arguments);
+
+  // Enables or disables performance tracing, which logs to
+  // |data_dir_path|/Logs/drive_fs_trace.
+  SetTracingEnabled(bool enabled);
+
+  // Enables or disables networking for testing. Should only be called in
+  // developer mode.
+  SetNetworkingEnabled(bool enabled);
+
+  // Overrides syncing to be paused if enabled. Should only be called in
+  // developer mode.
+  ForcePauseSyncing(bool enable);
+
+  // Dumps account settings (including feature flags) to
+  // |data_dir_path/account_settings. Should only be called in developer mode.
+  DumpAccountSettings();
+
+  // Loads account settings (including feature flags) from
+  // |data_dir_path/account_settings. Should only be called in developer mode.
+  LoadAccountSettings();
 };
 
 // Implemented by Chrome, used from DriveFS.

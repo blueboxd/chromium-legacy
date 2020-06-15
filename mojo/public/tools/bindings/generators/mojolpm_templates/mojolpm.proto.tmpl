@@ -12,6 +12,12 @@ import "{{proto_import}}";
 
 {%- set module_prefix = "%s"|format(namespaces_as_array|join(".")) %}
 
+{%- macro optional_or_required(kind) %}
+{%-   if kind|is_nullable_kind %}optional
+{%-   else -%}required
+{%-   endif %}
+{%- endmacro -%}
+
 {%- for enum in enums %}
 {%-   set enum_name = enum|get_name_for_kind(flatten_nested_kind=True) %}
 {%-   if enum|is_native_only_kind %}
@@ -127,9 +133,9 @@ message {{struct_name}}_ProtoStruct {
 {%-       set name = pf.field.name|camel_to_under %}
 {%-       set kind = pf.field.kind %}
 {%-       if kind|is_array_kind %}
-  required {{name|under_to_camel}}_Array m_{{name}} = {{name|proto_id(kind)}};
+  {{optional_or_required(kind)}} {{name|under_to_camel}}_Array m_{{name}} = {{name|proto_id(kind)}};
 {%-       elif kind|is_map_kind %}
-  required {{name|under_to_camel}}_Map m_{{name}} = {{name|proto_id(kind)}};
+  {{optional_or_required(kind)}} {{name|under_to_camel}}_Map m_{{name}} = {{name|proto_id(kind)}};
 {%-       else %}
   {{kind|proto_field_type}} m_{{name}} = {{name|proto_id(kind)}};
 {%-       endif %}
@@ -309,9 +315,9 @@ message {{interface.name}} {
 {%-       set name = parameter.name|camel_to_under %}
 {%-       set kind = parameter.kind %}
 {%-       if kind|is_array_kind %}
-    required {{name|under_to_camel}}_Array m_{{name}} = {{name|proto_id(kind)}};
+    {{optional_or_required(kind)}} {{name|under_to_camel}}_Array m_{{name}} = {{name|proto_id(kind)}};
 {%-       elif kind|is_map_kind %}
-    required {{name|under_to_camel}}_Map m_{{name}} = {{name|proto_id(kind)}};
+    {{optional_or_required(kind)}} {{name|under_to_camel}}_Map m_{{name}} = {{name|proto_id(kind)}};
 {%-       else %}
     {{kind|proto_field_type}} m_{{name}} = {{name|proto_id(kind)}};
 {%-       endif %}

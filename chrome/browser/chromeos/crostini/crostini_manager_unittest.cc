@@ -60,6 +60,7 @@ constexpr int64_t kDiskSizeBytes = 4ll * 1024 * 1024 * 1024;  // 4 GiB
 const uint8_t kUsbPort = 0x01;
 const char kTerminaKernelVersion[] =
     "4.19.56-05556-gca219a5b1086 #3 SMP PREEMPT Mon Jul 1 14:36:38 CEST 2019";
+const char kCrostiniCorruptionHistogram[] = "Crostini.FilesystemCorruption";
 
 void ExpectFailure(base::OnceClosure closure, bool success) {
   EXPECT_FALSE(success);

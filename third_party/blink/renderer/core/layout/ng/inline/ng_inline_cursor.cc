@@ -943,12 +943,22 @@ PositionWithAffinity NGInlineCursor::PositionForPointInChild(
 
 PositionWithAffinity NGInlineCursor::PositionForStartOfLine() const {
   DCHECK(Current().IsLineBox());
-  return PositionForPointInInlineBox(Current().LineStartPoint());
+  const PhysicalOffset point_in_line = Current().LineStartPoint();
+  if (IsItemCursor()) {
+    return PositionForPointInInlineBox(point_in_line +
+                                       Current().OffsetInContainerBlock());
+  }
+  return CurrentPaintFragment()->PositionForPoint(point_in_line);
 }
 
 PositionWithAffinity NGInlineCursor::PositionForEndOfLine() const {
   DCHECK(Current().IsLineBox());
-  return PositionForPointInInlineBox(Current().LineEndPoint());
+  const PhysicalOffset point_in_line = Current().LineEndPoint();
+  if (IsItemCursor()) {
+    return PositionForPointInInlineBox(point_in_line +
+                                       Current().OffsetInContainerBlock());
+  }
+  return CurrentPaintFragment()->PositionForPoint(point_in_line);
 }
 
 void NGInlineCursor::MoveTo(const NGInlineCursorPosition& position) {

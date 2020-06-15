@@ -28,12 +28,14 @@ BackForwardCachePageLoadMetricsObserver::OnEnterBackForwardCache(
 void BackForwardCachePageLoadMetricsObserver::
     OnFirstPaintAfterBackForwardCacheRestoreInPage(
         const page_load_metrics::mojom::PageLoadTiming& timing) {
-  // TODO(hajimehoshi): Check that the tab was in foreground when restored and
-  // the tab wasn't backgrounded between
-  // |back_forward_cache_restore_navigation_start| and
-  // |first_paint_after_restore|.
   auto first_paint = timing.back_forward_cache_timing
                          ->first_paint_after_back_forward_cache_restore.back();
-  PAGE_LOAD_HISTOGRAM(
-      internal::kHistogramFirstPaintAfterBackForwardCacheRestore, first_paint);
+  if (!first_paint.is_zero() &&
+      page_load_metrics::
+          WasStartedInForegroundOptionalEventInForegroundAfterBackForwardCacheRestore(
+              first_paint, GetDelegate())) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramFirstPaintAfterBackForwardCacheRestore,
+        first_paint);
+  }
 }

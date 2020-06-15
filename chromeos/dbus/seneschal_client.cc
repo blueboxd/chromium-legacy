@@ -12,7 +12,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
-#include "dbus/object_proxy.h"
 #include "third_party/cros_system_api/dbus/seneschal/dbus-constants.h"
 
 namespace chromeos {
@@ -22,6 +21,20 @@ class SeneschalClientImpl : public SeneschalClient {
   SeneschalClientImpl() {}
 
   ~SeneschalClientImpl() override = default;
+
+  void AddObserver(Observer* observer) override {
+    observer_list_.AddObserver(observer);
+  }
+
+  void RemoveObserver(Observer* observer) override {
+    observer_list_.RemoveObserver(observer);
+  }
+
+  void WaitForServiceToBeAvailable(
+      dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback)
+      override {
+    seneschal_proxy_->WaitForServiceToBeAvailable(std::move(callback));
+  }
 
   void SharePath(const vm_tools::seneschal::SharePathRequest& request,
                  DBusMethodCallback<vm_tools::seneschal::SharePathResponse>
@@ -70,6 +83,9 @@ class SeneschalClientImpl : public SeneschalClient {
     seneschal_proxy_ = bus->GetObjectProxy(
         vm_tools::seneschal::kSeneschalServiceName,
         dbus::ObjectPath(vm_tools::seneschal::kSeneschalServicePath));
+    seneschal_proxy_->SetNameOwnerChangedCallback(
+        base::BindRepeating(&SeneschalClientImpl::NameOwnerChangedReceived,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -89,6 +105,22 @@ class SeneschalClientImpl : public SeneschalClient {
     }
     std::move(callback).Run(std::move(reponse_proto));
   }
+
+  void NameOwnerChangedReceived(const std::string& old_owner,
+                                const std::string& new_owner) {
+    if (!old_owner.empty()) {
+      for (auto& observer : observer_list_) {
+        observer.SeneschalServiceStopped();
+      }
+    }
+    if (!new_owner.empty()) {
+      for (auto& observer : observer_list_) {
+        observer.SeneschalServiceStarted();
+      }
+    }
+  }
+
+  base::ObserverList<Observer> observer_list_;
 
   dbus::ObjectProxy* seneschal_proxy_ = nullptr;
 

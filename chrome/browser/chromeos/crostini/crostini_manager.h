@@ -39,6 +39,8 @@ class Profile;
 
 namespace crostini {
 
+class CrostiniStabilityMonitor;
+
 class LinuxPackageOperationProgressObserver {
  public:
   // A successfully started package install will continually fire progress
@@ -954,6 +956,8 @@ class CrostiniManager : public KeyedService,
   bool dbus_observers_removed_ = false;
 
   base::Time time_of_last_disk_type_metric_;
+
+  std::unique_ptr<CrostiniStabilityMonitor> crostini_stability_monitor_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

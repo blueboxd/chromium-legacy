@@ -38,8 +38,7 @@ void CrostiniUpgraderDialog::Show(base::OnceClosure launch_closure,
   instance = new CrostiniUpgraderDialog(std::move(launch_closure),
                                         only_run_launch_closure_on_restart);
   instance->ShowSystemDialog();
-  base::UmaHistogramEnumeration(crostini::kUpgradeDialogEventHistogram,
-                                crostini::UpgradeDialogEvent::kDialogShown);
+  EmitUpgradeDialogEventHistogram(crostini::UpgradeDialogEvent::kDialogShown);
 }
 
 CrostiniUpgraderDialog::CrostiniUpgraderDialog(
@@ -153,6 +152,11 @@ void CrostiniUpgraderDialog::OnCloseContents(content::WebContents* source,
   crostini_manager->SetCrostiniDialogStatus(crostini::DialogType::UPGRADER,
                                             false);
   return SystemWebDialogDelegate::OnCloseContents(source, out_close_dialog);
+}
+
+void CrostiniUpgraderDialog::EmitUpgradeDialogEventHistogram(
+    crostini::UpgradeDialogEvent event) {
+  base::UmaHistogramEnumeration("Crostini.UpgradeDialogEvent", event);
 }
 
 }  // namespace chromeos

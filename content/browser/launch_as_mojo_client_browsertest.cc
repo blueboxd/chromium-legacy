@@ -7,10 +7,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/process/launch.h"
 #include "base/run_loop.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/shell/common/shell_controller.test-mojom.h"
@@ -28,7 +26,6 @@ namespace {
 const char kShellExecutableName[] = "content_shell.exe";
 #else
 const char kShellExecutableName[] = "content_shell";
-const char kMojoCoreLibraryName[] = "libmojo_core.so";
 #endif
 
 base::FilePath GetCurrentDirectory() {
@@ -80,12 +77,6 @@ class LaunchAsMojoClientBrowserTest : public ContentBrowserTest {
     return controller;
   }
 
-#if defined(OS_LINUX)
-  base::FilePath GetMojoCoreLibraryPath() {
-    return GetFilePathNextToCurrentExecutable(kMojoCoreLibraryName);
-  }
-#endif
-
  private:
   base::FilePath GetFilePathNextToCurrentExecutable(
       const std::string& filename) {
@@ -133,40 +124,6 @@ IN_PROC_BROWSER_TEST_F(LaunchAsMojoClientBrowserTest, LaunchAndBindInterface) {
 
   shell_controller->ShutDown();
 }
-
-// Running a Content embedder with a dynamically loaded Mojo Core library is
-// currently only supported on Linux and Chrome OS.
-#if defined(OS_LINUX)
-IN_PROC_BROWSER_TEST_F(LaunchAsMojoClientBrowserTest, WithMojoCoreLibrary) {
-  // Instructs a newly launched Content Shell browser to initialize Mojo Core
-  // dynamically from a shared library, rather than using the version linked
-  // into the Content Shell binary.
-  //
-  // This exercises end-to-end JS in order to cover real IPC behavior between
-  // the browser and a renderer.
-
-  base::CommandLine command_line = MakeShellCommandLine();
-  command_line.AppendSwitchPath(switches::kMojoCoreLibraryPath,
-                                GetMojoCoreLibraryPath());
-  mojo::Remote<mojom::ShellController> shell_controller =
-      LaunchContentShell(command_line);
-
-  // Indisputable proof that we're evaluating JavaScript.
-  const std::string kExpressionToEvaluate = "'ba'+ +'a'+'as'";
-  const base::Value kExpectedValue("baNaNas");
-
-  base::RunLoop loop;
-  shell_controller->ExecuteJavaScript(
-      base::ASCIIToUTF16(kExpressionToEvaluate),
-      base::BindLambdaForTesting([&](base::Value value) {
-        EXPECT_EQ(kExpectedValue, value);
-        loop.Quit();
-      }));
-  loop.Run();
-
-  shell_controller->ShutDown();
-}
-#endif  // defined(OS_LINUX)
 
 }  // namespace
 }  // namespace content

@@ -303,8 +303,12 @@ static webrtc::PeerConnectionInterface::IceServer ConvertIceServer(
   for (const String& url_string : url_strings) {
     converted_ice_server.urls.push_back(url_string.Utf8());
   }
-  converted_ice_server.username = ice_server->username().Utf8();
-  converted_ice_server.password = ice_server->credential().Utf8();
+  if (ice_server->hasUsername()) {
+    converted_ice_server.username = ice_server->username().Utf8();
+  }
+  if (ice_server->hasCredential()) {
+    converted_ice_server.password = ice_server->credential().Utf8();
+  }
   return converted_ice_server;
 }
 

@@ -190,8 +190,6 @@ struct LinuxPackageInfo {
   std::string description;
 };
 
-constexpr char kCrostiniCorruptionHistogram[] = "Crostini.FilesystemCorruption";
-
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class CorruptionStates {
@@ -207,8 +205,6 @@ enum class DialogType {
   UPGRADER,
   REMOVER,
 };
-
-constexpr char kUpgradeDialogEventHistogram[] = "Crostini.UpgradeDialogEvent";
 
 enum class UpgradeDialogEvent {
   kDialogShown = 0,

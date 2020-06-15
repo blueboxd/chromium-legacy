@@ -24,6 +24,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/url_utils.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/base/escape.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
@@ -45,6 +46,14 @@ using SensitiveDirectoryResult =
 using storage::FileSystemContext;
 
 namespace {
+
+#if defined(OS_CHROMEOS)
+// Path prefix for Chrome OS File System Provider (FSP) file systems. Copied
+// here to avoid complex dependencies. See |kProvidedMountPointRoot| in
+// chrome/browser/chromeos/file_system_provider/mount_path_util.cc.
+// Files and directories provided by FSP API resides in this directory.
+static constexpr char kProvidedMountPointRoot[] = "/provided";
+#endif  // OS_CHROMEOS
 
 void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
                               GlobalFrameRoutingId frame_id,
@@ -344,6 +353,16 @@ void NativeFileSystemManagerImpl::DidResolveForSerializeHandle(
       data.mutable_sandboxed()->set_virtual_path(SerializePath(virtual_path));
       break;
     }
+
+#if defined(OS_CHROMEOS)
+    // For now, we don't support serializing handles for Chrome OS specific
+    // types, run |callback| with an empty vector to indicate an error.
+    case storage::kFileSystemTypeProvided:
+    case storage::kFileSystemTypeNativeForPlatformApp:
+      std::move(callback).Run({});
+      return;
+#endif
+
     default:
       NOTREACHED();
   }
@@ -803,10 +822,22 @@ NativeFileSystemManagerImpl::CreateFileSystemURLFromPath(
   DCHECK(isolated_context);
 
   FileSystemURLAndFSHandle result;
+  storage::FileSystemType fs_type = storage::kFileSystemTypeNativeLocal;
+
+#if defined(OS_CHROMEOS)
+  // TODO(crbug.com/1093653): Support Chrome OS File System Provider in all Web
+  // Apps. For now, we only support FSP for WebUIs.
+  bool is_web_ui = HasWebUIScheme(origin.GetURL());
+  // Check the path prefix to determine if a file is provided by FSP API.
+  bool is_provided_path =
+      base::StartsWith(path.AsUTF8Unsafe(), kProvidedMountPointRoot,
+                       base::CompareCase::SENSITIVE);
+  if (is_web_ui && is_provided_path)
+    fs_type = storage::kFileSystemTypeNativeForPlatformApp;
+#endif
 
   result.file_system = isolated_context->RegisterFileSystemForPath(
-      storage::kFileSystemTypeNativeLocal, std::string(), path,
-      &result.base_name);
+      fs_type, std::string(), path, &result.base_name);
 
   base::FilePath root_path =
       isolated_context->CreateVirtualRootPath(result.file_system.id());

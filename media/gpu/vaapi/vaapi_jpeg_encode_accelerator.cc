@@ -263,8 +263,7 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
   auto output_gmb_buffer =
       gpu_memory_buffer_support_->CreateGpuMemoryBufferImplFromHandle(
           std::move(output_gmb_handle), output_gmb_buffer_size,
-          gfx::BufferFormat::R_8,
-          gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+          gfx::BufferFormat::R_8, gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
           base::DoNothing());
   if (output_gmb_buffer == nullptr) {
     VLOGF(1) << "Failed to create GpuMemoryBufferImpl from handle";

@@ -277,7 +277,7 @@ bool FromProto(
 {%-       if not kind|is_nullable_kind %}
   mojolpm_result &= FromProto(input.m_{{name}}(), local_{{name}});
 {%-       else %}
-  if (FromProto(input.m_{{name}}(), local_maybe_{{name}})) {
+  if (input.has_m_{{name}}() && FromProto(input.m_{{name}}(), local_maybe_{{name}})) {
     local_{{name}} = std::move(local_maybe_{{name}});
   }
 {%-       endif %}

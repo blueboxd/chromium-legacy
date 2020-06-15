@@ -52,12 +52,11 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   NGConstraintSpace constraint_space = builder.ToConstraintSpace();
 
   NGInlineChildLayoutContext context;
-  NGBoxFragmentBuilder container_builder(block_flow, block_flow->Style(),
-                                         block_flow->Style()->GetWritingMode(),
-                                         block_flow->Style()->Direction());
+  NGBoxFragmentBuilder container_builder(
+      block_flow, block_flow->Style(),
+      block_flow->Style()->GetWritingDirection());
   NGFragmentItemsBuilder items_builder(inline_node,
-                                       container_builder.GetWritingMode(),
-                                       container_builder.Direction());
+                                       container_builder.GetWritingDirection());
   if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     container_builder.SetItemsBuilder(&items_builder);
     context.SetItemsBuilder(&items_builder);

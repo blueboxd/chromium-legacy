@@ -170,7 +170,8 @@ class CORE_EXPORT NGInlineCursorPosition {
   // other than line.
   bool HasSoftWrapToNextLine() const;
 
-  // Returns a point at the visual start/end of the line.
+  // Returns a point at the visual start/end of the line. (0, 0) is left-top of
+  // the line.
   // Encapsulates the handling of text direction and writing mode.
   PhysicalOffset LineStartPoint() const;
   PhysicalOffset LineEndPoint() const;

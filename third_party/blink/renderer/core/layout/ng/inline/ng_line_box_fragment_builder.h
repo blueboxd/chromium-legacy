@@ -31,13 +31,13 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   NGLineBoxFragmentBuilder(NGInlineNode node,
                            scoped_refptr<const ComputedStyle> style,
                            const NGConstraintSpace* space,
-                           WritingMode writing_mode,
-                           TextDirection)
-      : NGContainerFragmentBuilder(node,
-                                   style,
-                                   space,
-                                   writing_mode,
-                                   TextDirection::kLtr),
+                           WritingDirectionMode writing_direction)
+      : NGContainerFragmentBuilder(
+            node,
+            style,
+            space,
+            // Always use LTR because line items are in visual order.
+            {writing_direction.GetWritingMode(), TextDirection::kLtr}),
         line_box_type_(NGPhysicalLineBoxFragment::kNormalLineBox),
         base_direction_(TextDirection::kLtr) {}
 

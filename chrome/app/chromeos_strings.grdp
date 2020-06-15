@@ -4468,6 +4468,9 @@
   <message name="IDS_CROSTINI_SHUT_DOWN_LINUX_MENU_ITEM" desc="Text shown in the context menu for the Linux terminal app, allowing users to shut down the Linux virtual machine.">
     Shut down Linux (Beta)
   </message>
+  <message name="IDS_CROSTINI_CREDITS_PLACEHOLDER" desc="Message shown to the user if the credits file is unavailable (e.g. because Crostini isn't installed).">
+    Crostini is not installed. Please install Crostini to view credits.
+  </message>
   <message name="IDS_CROSTINI_TERMINA_UPDATE_REQUIRED" desc="Text shown in the Crostini update dialog when the VM component needs updating.">
     Linux (Beta) update required
   </message>

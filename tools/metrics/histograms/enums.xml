@@ -13321,6 +13321,14 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3" label="Failed VM Started"/>
 </enum>
 
+<enum name="CrostiniFailureClasses">
+  <int value="0" label="Concierge stopped"/>
+  <int value="1" label="Cicerone stopped"/>
+  <int value="2" label="Seneschal stopped"/>
+  <int value="3" label="Chunneld stopped"/>
+  <int value="4" label="VM hypervisor stopped"/>
+</enum>
+
 <enum name="CrostiniImportContainerResult">
   <int value="0" label="Success"/>
   <int value="1" label="Failed"/>

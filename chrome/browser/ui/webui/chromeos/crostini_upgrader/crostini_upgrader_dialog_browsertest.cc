@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(CrostiniUpgraderDialogBrowserTest, ShowsOnAppLaunch) {
   ExpectNoDialog();
 
   histogram_tester.ExpectUniqueSample(
-      crostini::kUpgradeDialogEventHistogram,
+      "Crostini.UpgradeDialogEvent",
       static_cast<base::HistogramBase::Sample>(
           crostini::UpgradeDialogEvent::kDialogShown),
       1);

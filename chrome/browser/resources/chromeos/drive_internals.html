@@ -26,12 +26,45 @@
 
     <section id="drive-debug" hidden>
       <h2>Drive Debug</h2>
-      <form id="startup-arguments-form" hidden>
-        Startup Arguments
-        <input id="startup-arguments-input">
-        <button type="submit">Apply</button>
-        <span id="arguments-status-text"></span>
-      </form>
+      <div>
+        <label>
+          Verbose logging
+          <input type="checkbox" id="verbose-logging-toggle">
+        </label>
+      </div>
+      <div>
+        Tracing
+        <button id="button-enable-tracing">Enable</button>
+        <button id="button-disable-tracing">Disable</button>
+      </div>
+      <div id="developer-mode-controls" hidden>
+        <div>
+          <div>Startup Arguments</div>
+          <form id="startup-arguments-form">
+            <input id="startup-arguments-input">
+            <button type="submit">Apply</button>
+            <span id="arguments-status-text"></span>
+          </form>
+
+          <div>Networking</div>
+          <div>
+            <button id="button-enable-networking">Enable</button>
+            <button id="button-disable-networking">Disable</button>
+          </div>
+
+          <div>Force pause syncing</div>
+          <div>
+            <button id="button-enable-force-pause-syncing">Enable</button>
+            <button id="button-disable-force-pause-syncing">Disable</button>
+          </div>
+
+          <div>Account settings</div>
+          <div>
+            <button id="button-dump-account-settings">Dump</button>
+            <button id="button-load-account-settings">Load</button>
+          </div>
+        </div>
+      </div>
       <div>
         <button id="button-restart-drive">Restart Drive</button>
         <button id="button-reset-drive-filesystem">

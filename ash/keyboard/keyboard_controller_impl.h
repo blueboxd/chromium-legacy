@@ -86,6 +86,7 @@ class ASH_EXPORT KeyboardControllerImpl
   bool SetAreaToRemainOnScreen(const gfx::Rect& bounds) override;
   void SetDraggableArea(const gfx::Rect& bounds) override;
   bool SetWindowBoundsInScreen(const gfx::Rect& bounds_in_screen) override;
+  void SetKeyboardConfigFromPref(bool enabled) override;
   bool ShouldOverscroll() override;
   void AddObserver(KeyboardControllerObserver* observer) override;
   void RemoveObserver(KeyboardControllerObserver* observer) override;
@@ -127,12 +128,18 @@ class ASH_EXPORT KeyboardControllerImpl
 
   void ObservePrefs(PrefService* prefs);
   void SendKeyRepeatUpdate();
+  void SendKeyboardConfigUpdate();
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   SessionControllerImpl* session_controller_;  // unowned
   std::unique_ptr<keyboard::KeyboardUIController> keyboard_ui_controller_;
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   base::ObserverList<KeyboardControllerObserver>::Unchecked observers_;
+
+  // This flag controls if the keyboard config is set from the policy settings.
+  // Note: the flag value cannot be changed from 'true' to 'false' because
+  // original config is not stored.
+  bool keyboard_config_from_pref_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerImpl);
 };

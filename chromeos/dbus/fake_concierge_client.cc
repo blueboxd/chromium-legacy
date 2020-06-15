@@ -26,6 +26,17 @@ void FakeConciergeClient::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void FakeConciergeClient::NotifyConciergeStopped() {
+  for (auto& observer : observer_list_) {
+    observer.ConciergeServiceStopped();
+  }
+}
+void FakeConciergeClient::NotifyConciergeStarted() {
+  for (auto& observer : observer_list_) {
+    observer.ConciergeServiceStarted();
+  }
+}
+
 void FakeConciergeClient::AddVmObserver(VmObserver* observer) {
   vm_observer_list_.AddObserver(observer);
 }

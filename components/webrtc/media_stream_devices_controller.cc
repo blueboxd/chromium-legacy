@@ -112,7 +112,6 @@ void MediaStreamDevicesController::RequestPermissions(
     will_prompt_for_video =
         permission_status.content_setting == CONTENT_SETTING_ASK;
 
-#if !defined(OS_ANDROID)
     // Request CAMERA_PAN_TILT_ZOOM only if the the website requested
     // the pan-tilt-zoom permission and there are suitable PTZ capable devices
     // available.
@@ -134,7 +133,6 @@ void MediaStreamDevicesController::RequestPermissions(
       content_settings_types.push_back(
           ContentSettingsType::CAMERA_PAN_TILT_ZOOM);
     }
-#endif
   }
 
   permission_manager->RequestPermissions(

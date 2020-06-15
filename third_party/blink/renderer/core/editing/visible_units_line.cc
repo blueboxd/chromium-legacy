@@ -431,10 +431,11 @@ static bool InSameLineAlgorithm(
     if (block1 || block2) {
       if (block1 != block2)
         return false;
-      // TODO(editing-dev): We may incorrectly return false if a position is in
-      // an empty NG block with height, in which case there is no line box. We
-      // must handle this case when enabling Layout NG for contenteditable.
-      return InSameNGLineBox(position1, position2);
+      if (!InSameNGLineBox(position1, position2))
+        return false;
+      // See (ParameterizedVisibleUnitsLineTest.InSameLineWithMixedEditability
+      return RootEditableElementOf(position1.GetPosition()) ==
+             RootEditableElementOf(position2.GetPosition());
     }
 
     // Neither positions are in LayoutNG. Fall through to legacy handling.

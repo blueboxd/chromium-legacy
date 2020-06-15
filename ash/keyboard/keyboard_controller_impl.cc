@@ -39,12 +39,41 @@ namespace ash {
 
 namespace {
 
+// Boolean controlling whether auto-complete for virtual keyboard is
+// enabled.
+const char kAutoCompleteEnabledKey[] = "auto_complete_enabled";
+// Boolean controlling whether auto-correct for virtual keyboard is
+// enabled.
+const char kAutoCorrectEnabledKey[] = "auto_correct_enabled";
+// Boolean controlling whether handwriting for virtual keyboard is
+// enabled.
+const char kHandwritingEnabledKey[] = "handwriting_enabled";
+// Boolean controlling whether spell check for virtual keyboard is
+// enabled.
+const char kSpellCheckEnabledKey[] = "spell_check_enabled";
+// Boolean controlling whether voice input for virtual keyboard is
+// enabled.
+const char kVoiceInputEnabledKey[] = "voice_input_enabled";
+
 base::Optional<display::Display> GetFirstTouchDisplay() {
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
     if (display.touch_support() == display::Display::TouchSupport::AVAILABLE)
       return display;
   }
   return base::nullopt;
+}
+
+bool GetVirtualKeyboardFeatureValue(PrefService* prefs,
+                                    const std::string& feature_path) {
+  DCHECK(prefs);
+  const base::DictionaryValue* features =
+      prefs->GetDictionary(prefs::kAccessibilityVirtualKeyboardFeatures);
+
+  if (!features)
+    return false;
+
+  bool feature_value = false;
+  return features->GetBoolean(feature_path, &feature_value) && feature_value;
 }
 
 }  // namespace
@@ -116,7 +145,22 @@ void KeyboardControllerImpl::SendOnKeyboardUIDestroyed() {
 // ash::KeyboardController
 
 keyboard::KeyboardConfig KeyboardControllerImpl::GetKeyboardConfig() {
-  return keyboard_ui_controller_->keyboard_config();
+  if (!keyboard_config_from_pref_enabled_)
+    return keyboard_ui_controller_->keyboard_config();
+
+  PrefService* prefs = pref_change_registrar_->prefs();
+  KeyboardConfig config;
+  config.auto_complete =
+      GetVirtualKeyboardFeatureValue(prefs, kAutoCompleteEnabledKey);
+  config.auto_correct =
+      GetVirtualKeyboardFeatureValue(prefs, kAutoCorrectEnabledKey);
+  config.handwriting =
+      GetVirtualKeyboardFeatureValue(prefs, kHandwritingEnabledKey);
+  config.spell_check =
+      GetVirtualKeyboardFeatureValue(prefs, kSpellCheckEnabledKey);
+  config.voice_input =
+      GetVirtualKeyboardFeatureValue(prefs, kVoiceInputEnabledKey);
+  return config;
 }
 
 void KeyboardControllerImpl::SetKeyboardConfig(
@@ -213,6 +257,11 @@ bool KeyboardControllerImpl::SetWindowBoundsInScreen(
       bounds_in_screen);
 }
 
+void KeyboardControllerImpl::SetKeyboardConfigFromPref(bool enabled) {
+  keyboard_config_from_pref_enabled_ = enabled;
+  SendKeyboardConfigUpdate();
+}
+
 bool KeyboardControllerImpl::ShouldOverscroll() {
   return keyboard_ui_controller_->IsKeyboardOverscrollEnabled();
 }
@@ -279,6 +328,7 @@ void KeyboardControllerImpl::ObservePrefs(PrefService* prefs) {
 
   // Immediately tell all our observers to load this user's saved preferences.
   SendKeyRepeatUpdate();
+  SendKeyboardConfigUpdate();
 
   // Listen to prefs changes and forward them to all observers.
   // |prefs| is assumed to outlive |pref_change_registrar_|, and therefore also
@@ -295,10 +345,18 @@ void KeyboardControllerImpl::ObservePrefs(PrefService* prefs) {
       ash::prefs::kXkbAutoRepeatDelay,
       base::BindRepeating(&KeyboardControllerImpl::SendKeyRepeatUpdate,
                           base::Unretained(this)));
+  pref_change_registrar_->Add(
+      ash::prefs::kAccessibilityVirtualKeyboardFeatures,
+      base::BindRepeating(&KeyboardControllerImpl::SendKeyboardConfigUpdate,
+                          base::Unretained(this)));
 }
 
 void KeyboardControllerImpl::SendKeyRepeatUpdate() {
   OnKeyRepeatSettingsChanged(GetKeyRepeatSettings());
+}
+
+void KeyboardControllerImpl::SendKeyboardConfigUpdate() {
+  keyboard_ui_controller_->UpdateKeyboardConfig(GetKeyboardConfig());
 }
 
 void KeyboardControllerImpl::OnRootWindowClosing(aura::Window* root_window) {

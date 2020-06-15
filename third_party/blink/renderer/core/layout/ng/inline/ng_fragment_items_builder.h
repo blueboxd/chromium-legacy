@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_logical_line_item.h"
+#include "third_party/blink/renderer/platform/text/writing_direction_mode.h"
 
 namespace blink {
 
@@ -22,16 +23,17 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   STACK_ALLOCATED();
 
  public:
-  NGFragmentItemsBuilder(WritingMode writing_mode, TextDirection direction);
+  explicit NGFragmentItemsBuilder(WritingDirectionMode writing_direction);
   NGFragmentItemsBuilder(const NGInlineNode& node,
-                         WritingMode writing_mode,
-                         TextDirection direction);
+                         WritingDirectionMode writing_direction);
 
   WritingDirectionMode GetWritingDirection() const {
-    return {writing_mode_, direction_};
+    return writing_direction_;
   }
-  WritingMode GetWritingMode() const { return writing_mode_; }
-  TextDirection Direction() const { return direction_; }
+  WritingMode GetWritingMode() const {
+    return writing_direction_.GetWritingMode();
+  }
+  TextDirection Direction() const { return writing_direction_.Direction(); }
 
   wtf_size_t Size() const { return items_.size(); }
 
@@ -131,8 +133,7 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   // Keeps children of a line until the offset is determined. See |AddLine|.
   NGLogicalLineItems current_line_;
 
-  WritingMode writing_mode_;
-  TextDirection direction_;
+  WritingDirectionMode writing_direction_;
 
   bool has_floating_descendants_for_paint_ = false;
   bool is_converted_to_physical_ = false;

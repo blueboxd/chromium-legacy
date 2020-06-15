@@ -590,7 +590,7 @@ bool MetricsWebContentsObserver::MaybeRestorePageLoadTrackerForBackForwardCache(
 
   committed_load_ = std::move(it->second);
   back_forward_cached_pages_.erase(it);
-  committed_load_->OnRestoreFromBackForwardCache();
+  committed_load_->OnRestoreFromBackForwardCache(navigation_handle);
 
   for (auto& observer : testing_observers_)
     observer.OnRestoredFromBackForwardCache(committed_load_.get());

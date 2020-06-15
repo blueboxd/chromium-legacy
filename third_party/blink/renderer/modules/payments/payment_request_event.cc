@@ -44,6 +44,7 @@ PaymentRequestEvent* PaymentRequestEvent::Create(
       wait_until_observer, execution_context);
 }
 
+// TODO(crbug.com/1070871): Use fooOr() in members' initializers.
 PaymentRequestEvent::PaymentRequestEvent(
     const AtomicString& type,
     const PaymentRequestEventInit* initializer,
@@ -52,9 +53,14 @@ PaymentRequestEvent::PaymentRequestEvent(
     WaitUntilObserver* wait_until_observer,
     ExecutionContext* execution_context)
     : ExtendableEvent(type, initializer, wait_until_observer),
-      top_origin_(initializer->topOrigin()),
-      payment_request_origin_(initializer->paymentRequestOrigin()),
-      payment_request_id_(initializer->paymentRequestId()),
+      top_origin_(initializer->hasTopOrigin() ? initializer->topOrigin()
+                                              : String()),
+      payment_request_origin_(initializer->hasPaymentRequestOrigin()
+                                  ? initializer->paymentRequestOrigin()
+                                  : String()),
+      payment_request_id_(initializer->hasPaymentRequestId()
+                              ? initializer->paymentRequestId()
+                              : String()),
       method_data_(initializer->hasMethodData()
                        ? initializer->methodData()
                        : HeapVector<Member<PaymentMethodData>>()),
@@ -63,7 +69,9 @@ PaymentRequestEvent::PaymentRequestEvent(
       modifiers_(initializer->hasModifiers()
                      ? initializer->modifiers()
                      : HeapVector<Member<PaymentDetailsModifier>>()),
-      instrument_key_(initializer->instrumentKey()),
+      instrument_key_(initializer->hasInstrumentKey()
+                          ? initializer->instrumentKey()
+                          : String()),
       payment_options_(initializer->hasPaymentOptions()
                            ? initializer->paymentOptions()
                            : PaymentOptions::Create()),

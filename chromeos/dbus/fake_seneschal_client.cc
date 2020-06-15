@@ -19,6 +19,31 @@ FakeSeneschalClient::FakeSeneschalClient() {
 
 FakeSeneschalClient::~FakeSeneschalClient() = default;
 
+void FakeSeneschalClient::AddObserver(Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void FakeSeneschalClient::RemoveObserver(Observer* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void FakeSeneschalClient::NotifySeneschalStopped() {
+  for (auto& observer : observer_list_) {
+    observer.SeneschalServiceStopped();
+  }
+}
+void FakeSeneschalClient::NotifySeneschalStarted() {
+  for (auto& observer : observer_list_) {
+    observer.SeneschalServiceStarted();
+  }
+}
+
+void FakeSeneschalClient::WaitForServiceToBeAvailable(
+    dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
 void FakeSeneschalClient::SharePath(
     const vm_tools::seneschal::SharePathRequest& request,
     DBusMethodCallback<vm_tools::seneschal::SharePathResponse> callback) {

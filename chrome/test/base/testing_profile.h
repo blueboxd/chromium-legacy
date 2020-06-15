@@ -401,6 +401,11 @@ class TestingProfile : public Profile {
     profile_name_ = profile_name;
   }
 
+  using ProfileDestructionCallback = base::OnceCallback<void()>;
+  void SetProfileDestructionObserver(ProfileDestructionCallback callback) {
+    profile_destruction_callback_ = std::move(callback);
+  }
+
  private:
   // We use a temporary directory to store testing profile data. This
   // must be declared before anything that may make use of the
@@ -408,6 +413,9 @@ class TestingProfile : public Profile {
   // multi-profile environment, this is invalid and the directory is
   // managed by the TestingProfileManager.
   base::ScopedTempDir temp_dir_;
+
+  // Called when profile is deleted.
+  ProfileDestructionCallback profile_destruction_callback_;
 
  protected:
   base::Time start_time_;

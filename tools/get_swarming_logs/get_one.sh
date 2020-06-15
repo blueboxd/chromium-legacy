@@ -21,7 +21,6 @@ shift
 
 out="$base_dir/$id.txt"
 mkdir -p "$base_dir"
-python tools/swarming_client/swarming.py \
-    collect -S chromium-swarm.appspot.com "$id" > "$out" \
-    || true
+tools/luci-go/swarming collect -task-output-stdout=console \
+    -S chromium-swarm.appspot.com "$id" > "$out"
 echo "$out"

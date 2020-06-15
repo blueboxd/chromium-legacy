@@ -57,8 +57,7 @@ class CORE_EXPORT NGSimplifiedLayoutAlgorithm
   const NGLayoutResult& previous_result_;
   NGBoxStrut border_scrollbar_padding_;
 
-  const WritingMode writing_mode_;
-  const TextDirection direction_;
+  const WritingDirectionMode writing_direction_;
 
   PhysicalSize previous_physical_container_size_;
 };

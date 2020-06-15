@@ -83,7 +83,8 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceDescriptors(
         display_name, device_id, "" /*model_id*/,
         static_cast<VideoCaptureApi>(capture_api_type),
         VideoCaptureTransportType::OTHER_TRANSPORT,
-        static_cast<VideoFacingMode>(facing_mode));
+        static_cast<VideoFacingMode>(facing_mode),
+        /*pan_tilt_zoom_supported=*/false);
 
     // We put user-facing devices to the front of the list in order to make
     // them by-default preferred over environment-facing ones when no other

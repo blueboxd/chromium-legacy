@@ -440,7 +440,7 @@ class CrostiniCreditsHandler
     auto component_manager =
         g_browser_process->platform_part()->cros_component_manager();
     if (!component_manager) {
-      LoadCredits(base::FilePath(chrome::kLinuxCreditsPath));
+      RespondWithPlaceholder();
       return;
     }
     component_manager->Load(
@@ -461,8 +461,8 @@ class CrostiniCreditsHandler
 
   void LoadCrostiniCreditsFileAsync(base::FilePath credits_file_path) {
     if (!base::ReadFileToString(credits_file_path, &contents_)) {
-      // File with credits not found, ResponseOnUIThread will load credits
-      // from resources if contents_ is empty.
+      // File with credits not found, ResponseOnUIThread will load a placeholder
+      // if contents_ is empty.
       contents_.clear();
     }
   }
@@ -473,18 +473,19 @@ class CrostiniCreditsHandler
       LoadCredits(path.Append(kTerminaCreditsPath));
       return;
     }
-    LoadCredits(base::FilePath(chrome::kLinuxCreditsPath));
+    RespondWithPlaceholder();
+  }
+
+  void RespondWithPlaceholder() {
+    contents_.clear();
+    ResponseOnUIThread();
   }
 
   void ResponseOnUIThread() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    // If we fail to load Linux credits from disk, load the placeholder from
-    // resources.
-    // TODO(rjwright): Add a linux-specific placeholder in resources.
+    // If we fail to load Linux credits from disk, use the placeholder.
     if (contents_.empty() && path_ != kKeyboardUtilsPath) {
-      contents_ =
-          ui::ResourceBundle::GetSharedInstance().LoadDataResourceString(
-              IDR_OS_CREDITS_HTML);
+      contents_ = l10n_util::GetStringUTF8(IDS_CROSTINI_CREDITS_PLACEHOLDER);
     }
     std::move(callback_).Run(base::RefCountedString::TakeString(&contents_));
   }

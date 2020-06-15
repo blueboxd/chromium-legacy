@@ -62,7 +62,6 @@
 #include "content/child/field_trial.h"
 #include "content/common/android/cpu_time_metrics.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/mojo_core_library_support.h"
 #include "content/common/url_schemes.h"
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/app/content_main_delegate.h"
@@ -86,7 +85,6 @@
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
-#include "mojo/public/cpp/system/dynamic_library_support.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/mojom/base/binder.mojom.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -237,20 +235,15 @@ pid_t LaunchZygoteHelper(base::CommandLine* cmd_line,
   // Append any switches from the browser process that need to be forwarded on
   // to the zygote/renderers.
   static const char* const kForwardSwitches[] = {
-      switches::kAndroidFontsPath,
-      switches::kClearKeyCdmPathForTesting,
+      switches::kAndroidFontsPath, switches::kClearKeyCdmPathForTesting,
       switches::kEnableLogging,  // Support, e.g., --enable-logging=stderr.
       // Need to tell the zygote that it is headless so that we don't try to use
       // the wrong type of main delegate.
       switches::kHeadless,
       // Zygote process needs to know what resources to have loaded when it
       // becomes a renderer process.
-      switches::kForceDeviceScaleFactor,
-      switches::kLoggingLevel,
-      switches::kMojoCoreLibraryPath,
-      switches::kPpapiInProcess,
-      switches::kRegisterPepperPlugins,
-      switches::kV,
+      switches::kForceDeviceScaleFactor, switches::kLoggingLevel,
+      switches::kPpapiInProcess, switches::kRegisterPepperPlugins, switches::kV,
       switches::kVModule,
   };
   cmd_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
@@ -844,26 +837,13 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
       *base::CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line.GetSwitchValueASCII(switches::kProcessType);
-  // Run this logic on all child processes.
-  if (!process_type.empty()) {
-    if (process_type != service_manager::switches::kZygoteProcess) {
-      // Zygotes will run this at a later point in time when the command line
-      // has been updated.
-      InitializeFieldTrialAndFeatureList();
-      delegate_->PostFieldTrialInitialization();
-    }
 
-#if defined(OS_LINUX)
-    // If dynamic Mojo Core is being used, ensure that it's loaded very early in
-    // the child/zygote process, before any sandbox is initialized. The library
-    // is not fully initialized with IPC support until a ChildProcess is later
-    // constructed, as initialization spawns a background thread which would be
-    // unsafe here.
-    if (IsMojoCoreSharedLibraryEnabled()) {
-      CHECK_EQ(mojo::LoadCoreLibrary(GetMojoCoreSharedLibraryPath()),
-               MOJO_RESULT_OK);
-    }
-#endif  // defined(OS_LINUX)
+  // Run this logic on all child processes. Zygotes will run this at a later
+  // point in time when the command line has been updated.
+  if (!process_type.empty() &&
+      process_type != service_manager::switches::kZygoteProcess) {
+    InitializeFieldTrialAndFeatureList();
+    delegate_->PostFieldTrialInitialization();
   }
 
   MainFunctionParams main_params(command_line);

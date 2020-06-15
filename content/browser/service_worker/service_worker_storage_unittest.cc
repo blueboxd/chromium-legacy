@@ -1667,68 +1667,6 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration_NoLiveVersion) {
   EXPECT_FALSE(VerifyBasicResponse(storage(), resource_id2_, false));
 }
 
-TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
-  LazyInitialize();
-  const GURL kDocumentUrl("http://www.example.com/scope/foo");
-  scoped_refptr<ServiceWorkerRegistration> found_registration;
-
-  // Registration for "/scope/".
-  const GURL kScope1("http://www.example.com/scope/");
-  const GURL kScript1("http://www.example.com/script1.js");
-  scoped_refptr<ServiceWorkerRegistration> live_registration1 =
-      CreateServiceWorkerRegistrationAndVersion(context(), kScope1, kScript1,
-                                                /*resource_id=*/1);
-
-  // Registration for "/scope/foo".
-  const GURL kScope2("http://www.example.com/scope/foo");
-  const GURL kScript2("http://www.example.com/script2.js");
-  scoped_refptr<ServiceWorkerRegistration> live_registration2 =
-      CreateServiceWorkerRegistrationAndVersion(context(), kScope2, kScript2,
-                                                /*resource_id=*/2);
-
-  // Registration for "/scope/foobar".
-  const GURL kScope3("http://www.example.com/scope/foobar");
-  const GURL kScript3("http://www.example.com/script3.js");
-  scoped_refptr<ServiceWorkerRegistration> live_registration3 =
-      CreateServiceWorkerRegistrationAndVersion(context(), kScope3, kScript3,
-                                                /*resource_id=*/3);
-
-  // Notify storage of them being installed.
-  registry()->NotifyInstallingRegistration(live_registration1.get());
-  registry()->NotifyInstallingRegistration(live_registration2.get());
-  registry()->NotifyInstallingRegistration(live_registration3.get());
-
-  // Find a registration among installing ones.
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForClientUrl(kDocumentUrl, &found_registration));
-  EXPECT_EQ(live_registration2, found_registration);
-  found_registration = nullptr;
-
-  // Store registrations.
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            StoreRegistration(live_registration1,
-                              live_registration1->waiting_version()));
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            StoreRegistration(live_registration2,
-                              live_registration2->waiting_version()));
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            StoreRegistration(live_registration3,
-                              live_registration3->waiting_version()));
-
-  // Notify storage of installations no longer happening.
-  registry()->NotifyDoneInstallingRegistration(
-      live_registration1.get(), nullptr, blink::ServiceWorkerStatusCode::kOk);
-  registry()->NotifyDoneInstallingRegistration(
-      live_registration2.get(), nullptr, blink::ServiceWorkerStatusCode::kOk);
-  registry()->NotifyDoneInstallingRegistration(
-      live_registration3.get(), nullptr, blink::ServiceWorkerStatusCode::kOk);
-
-  // Find a registration among installed ones.
-  EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
-            FindRegistrationForClientUrl(kDocumentUrl, &found_registration));
-  EXPECT_EQ(live_registration2, found_registration);
-}
-
 // Test fixture that uses disk storage, rather than memory. Useful for tests
 // that test persistence by simulating browser shutdown and restart.
 class ServiceWorkerStorageDiskTest : public ServiceWorkerStorageTest {

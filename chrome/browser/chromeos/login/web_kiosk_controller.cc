@@ -212,6 +212,9 @@ void WebKioskController::OnProfileLoaded(Profile* profile) {
   // Reset virtual keyboard to use IME engines in app profile early.
   ChromeKeyboardControllerClient::Get()->RebuildKeyboardIfEnabled();
 
+  // Make keyboard config sync with the |VirtualKeyboardFeatures| policy.
+  ChromeKeyboardControllerClient::Get()->SetKeyboardConfigFromPref(true);
+
   // Can be not null in tests.
   if (!app_launcher_)
     app_launcher_.reset(new WebKioskAppLauncher(profile, this));

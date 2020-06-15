@@ -326,6 +326,7 @@ jumbo_component("base") {
     "macros.h",
     "memory/aligned_memory.cc",
     "memory/aligned_memory.h",
+    "memory/checked_ptr.cc",
     "memory/checked_ptr.h",
     "memory/discardable_memory.cc",
     "memory/discardable_memory.h",

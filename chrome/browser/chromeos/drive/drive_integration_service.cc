@@ -1077,6 +1077,36 @@ void DriveIntegrationService::GetStartupArguments(
   GetDriveFsInterface()->GetStartupArguments(std::move(callback));
 }
 
+void DriveIntegrationService::SetTracingEnabled(bool enabled) {
+  if (GetDriveFsInterface()) {
+    GetDriveFsInterface()->SetTracingEnabled(enabled);
+  }
+}
+
+void DriveIntegrationService::SetNetworkingEnabled(bool enabled) {
+  if (GetDriveFsInterface()) {
+    GetDriveFsInterface()->SetNetworkingEnabled(enabled);
+  }
+}
+
+void DriveIntegrationService::ForcePauseSyncing(bool enabled) {
+  if (GetDriveFsInterface()) {
+    GetDriveFsInterface()->ForcePauseSyncing(enabled);
+  }
+}
+
+void DriveIntegrationService::DumpAccountSettings() {
+  if (GetDriveFsInterface()) {
+    GetDriveFsInterface()->DumpAccountSettings();
+  }
+}
+
+void DriveIntegrationService::LoadAccountSettings() {
+  if (GetDriveFsInterface()) {
+    GetDriveFsInterface()->LoadAccountSettings();
+  }
+}
+
 //===================== DriveIntegrationServiceFactory =======================
 
 DriveIntegrationServiceFactory::FactoryCallback*

@@ -24,6 +24,7 @@ component("dbus") {
   ]
   deps = [
     ":anomaly_detector_proto",
+    ":chunneld_proto",
     ":cicerone_proto",
     ":concierge_proto",
     ":lorgnette_proto",
@@ -60,6 +61,8 @@ component("dbus") {
     "arc_oemcrypto_client.h",
     "cec_service_client.cc",
     "cec_service_client.h",
+    "chunneld_client.cc",
+    "chunneld_client.h",
     "cicerone_client.cc",
     "cicerone_client.h",
     "concierge_client.cc",
@@ -89,6 +92,8 @@ component("dbus") {
     "fake_arc_oemcrypto_client.h",
     "fake_cec_service_client.cc",
     "fake_cec_service_client.h",
+    "fake_chunneld_client.cc",
+    "fake_chunneld_client.h",
     "fake_cicerone_client.cc",
     "fake_cicerone_client.h",
     "fake_concierge_client.cc",
@@ -249,6 +254,13 @@ proto_library("anomaly_detector_proto") {
   sources = [ "//third_party/cros_system_api/dbus/anomaly_detector/anomaly_detector.proto" ]
 
   proto_out_dir = "chromeos/dbus/anomaly_detector"
+}
+
+proto_library("chunneld_proto") {
+  sources =
+      [ "//third_party/cros_system_api/dbus/chunneld/chunneld_service.proto" ]
+
+  proto_out_dir = "chromeos/dbus/chunneld"
 }
 
 proto_library("cicerone_proto") {

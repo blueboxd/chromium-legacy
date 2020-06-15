@@ -43,8 +43,18 @@ class PageLoadMetricsObserverDelegate {
   virtual const base::Optional<base::TimeDelta>& GetFirstForegroundTime()
       const = 0;
 
+  // The first time that the page was backgrounded after the last restore from
+  // the back-forward cache, relative to the navigation start of the bfcache
+  // restore navigation.
+  virtual const base::Optional<base::TimeDelta>&
+  GetFirstBackgroundTimeAfterBackForwardCacheRestore() const = 0;
+
   // True if the page load started in the foreground.
   virtual bool StartedInForeground() const = 0;
+
+  // True if the last restore from back-forward cache occurred in a foreground
+  // tab.
+  virtual bool LastBackForwardCacheRestoreWasInForeground() const = 0;
 
   // Whether the page load was initiated by a user.
   virtual const UserInitiatedInfo& GetUserInitiatedInfo() const = 0;

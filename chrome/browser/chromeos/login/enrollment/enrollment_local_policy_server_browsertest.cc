@@ -10,6 +10,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/app_mode/fake_cws.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen_view.h"
@@ -18,6 +21,7 @@
 #include "chrome/browser/chromeos/login/test/enrollment_ui_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/kiosk_test_helpers.h"
 #include "chrome/browser/chromeos/login/test/local_policy_test_server_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -25,8 +29,11 @@
 #include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/device_disabled_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
@@ -1051,9 +1058,7 @@ IN_PROC_BROWSER_TEST_P(OobeGuestButtonPolicy, MAYBE_VisibilityAfterEnrollment) {
   EXPECT_EQ(GetParam(), ash::LoginScreenTestApi::IsGuestButtonShown());
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         OobeGuestButtonPolicy,
-                         ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, OobeGuestButtonPolicy, ::testing::Bool());
 
 IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, SwitchToViews) {
   base::HistogramTester histogram_tester;
@@ -1087,6 +1092,74 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, SwitchToViewsLocales) {
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
   EXPECT_NE(ash::LoginScreenTestApi::GetShutDownButtonLabel(), initial_label);
   histogram_tester.ExpectTotalCount("OOBE.WebUIToViewsSwitch.Duration", 1);
+}
+
+namespace {
+
+// Test kiosk app that creates a window and closes it.
+const char kTestAppId[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn";
+const char kTestAppFile[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn.crx";
+const char kTestAppVersion[] = "1.0.0";
+
+class ScopedDeviceSettings {
+ public:
+  ScopedDeviceSettings() : settings_helper_(false) {
+    settings_helper_.ReplaceDeviceSettingsProviderWithStub();
+    owner_settings_service_ = settings_helper_.CreateOwnerSettingsService(
+        ProfileManager::GetPrimaryUserProfile());
+  }
+
+  FakeOwnerSettingsService* owner_settings_service() {
+    return owner_settings_service_.get();
+  }
+
+ private:
+  ScopedCrosSettingsTestHelper settings_helper_;
+  std::unique_ptr<FakeOwnerSettingsService> owner_settings_service_;
+};
+
+}  // namespace
+
+class KioskEnrollmentTest : public EnrollmentLocalPolicyServerBase {
+ public:
+  KioskEnrollmentTest() : fake_cws_(new FakeCWS) {}
+  // EnrollmentLocalPolicyServerBase:
+  void SetUp() override {
+    needs_background_networking_ = true;
+    AppLaunchController::SkipSplashWaitForTesting();
+    EnrollmentLocalPolicyServerBase::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnrollmentLocalPolicyServerBase::SetUpCommandLine(command_line);
+    fake_cws_->Init(embedded_test_server());
+  }
+
+  void SetupAutoLaunchApp(FakeOwnerSettingsService* service) {
+    fake_cws_->SetUpdateCrx(kTestAppId, kTestAppFile, kTestAppVersion);
+    KioskAppManager::Get()->AddApp(kTestAppId, service);
+    KioskAppManager::Get()->SetAutoLaunchApp(kTestAppId, service);
+  }
+
+ private:
+  std::unique_ptr<FakeCWS> fake_cws_;
+};
+
+IN_PROC_BROWSER_TEST_F(KioskEnrollmentTest,
+                       ManualEnrollmentAutolaunchKioskApp) {
+  TriggerEnrollmentAndSignInSuccessfully();
+
+  enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
+  EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
+  EXPECT_TRUE(InstallAttributes::Get()->IsCloudManaged());
+
+  ScopedDeviceSettings settings;
+
+  SetupAutoLaunchApp(settings.owner_settings_service());
+  enrollment_screen()->OnConfirmationClosed();
+
+  // Wait for app to be launched.
+  KioskSessionInitializedWaiter().Wait();
 }
 
 }  // namespace chromeos

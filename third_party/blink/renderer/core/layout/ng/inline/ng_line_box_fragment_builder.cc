@@ -91,7 +91,7 @@ void NGLineBoxFragmentBuilder::PropagateChildrenData(
 
 scoped_refptr<const NGLayoutResult>
 NGLineBoxFragmentBuilder::ToLineBoxFragment() {
-  writing_mode_ = ToLineWritingMode(writing_mode_);
+  writing_direction_.SetWritingMode(ToLineWritingMode(GetWritingMode()));
 
   if (!break_token_)
     break_token_ = NGInlineBreakToken::Create(node_);

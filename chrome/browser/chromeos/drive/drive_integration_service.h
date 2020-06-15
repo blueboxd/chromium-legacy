@@ -177,6 +177,26 @@ class DriveIntegrationService : public KeyedService,
   void GetStartupArguments(
       base::OnceCallback<void(const std::string&)> callback);
 
+  // Enables or disables performance tracing, which logs to
+  // |data_dir_path|/Logs/drive_fs_trace.
+  void SetTracingEnabled(bool enabled);
+
+  // Enables or disables networking for testing. Should only be called in
+  // developer mode.
+  void SetNetworkingEnabled(bool enabled);
+
+  // Overrides syncing to be paused if enabled. Should only be called in
+  // developer mode.
+  void ForcePauseSyncing(bool enabled);
+
+  // Dumps account settings (including feature flags) to
+  // |data_dir_path/account_settings. Should only be called in developer mode.
+  void DumpAccountSettings();
+
+  // Loads account settings (including feature flags) from
+  // |data_dir_path/account_settings. Should only be called in developer mode.
+  void LoadAccountSettings();
+
  private:
   enum State {
     NOT_INITIALIZED,

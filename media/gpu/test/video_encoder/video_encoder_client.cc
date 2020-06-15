@@ -4,6 +4,7 @@
 
 #include "media/gpu/test/video_encoder/video_encoder_client.h"
 
+#include <numeric>
 #include <string>
 #include <utility>
 
@@ -40,6 +41,17 @@ void CallbackThunk(
 }
 }  // namespace
 
+VideoEncoderClientConfig::VideoEncoderClientConfig() = default;
+
+VideoEncoderStats::VideoEncoderStats(uint32_t framerate)
+    : framerate(framerate) {}
+
+uint32_t VideoEncoderStats::Bitrate() const {
+  const size_t average_frame_size_in_bits =
+      total_encoded_frames_size * 8 / num_encoded_frames;
+  return average_frame_size_in_bits * framerate;
+}
+
 VideoEncoderClient::VideoEncoderClient(
     const VideoEncoder::EventCallback& event_cb,
     std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors,
@@ -48,7 +60,8 @@ VideoEncoderClient::VideoEncoderClient(
       bitstream_processors_(std::move(bitstream_processors)),
       encoder_client_config_(config),
       encoder_client_thread_("VDAClientEncoderThread"),
-      encoder_client_state_(VideoEncoderClientState::kUninitialized) {
+      encoder_client_state_(VideoEncoderClientState::kUninitialized),
+      current_stats_(encoder_client_config_.framerate) {
   DETACH_FROM_SEQUENCE(encoder_client_sequence_checker_);
 
   weak_this_ = weak_this_factory_.GetWeakPtr();
@@ -85,6 +98,7 @@ bool VideoEncoderClient::Initialize(const Video* video) {
       FROM_HERE, base::BindOnce(&VideoEncoderClient::CreateEncoderTask,
                                 weak_this_, video, &success, &done));
   done.Wait();
+
   return success;
 }
 
@@ -128,6 +142,12 @@ bool VideoEncoderClient::WaitForBitstreamProcessors() {
   for (auto& bitstream_processor : bitstream_processors_)
     success &= bitstream_processor->WaitUntilDone();
   return success;
+}
+
+VideoEncoderStats VideoEncoderClient::GetStats() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(test_sequence_checker_);
+  base::AutoLock auto_lock(stats_lock_);
+  return current_stats_;
 }
 
 void VideoEncoderClient::RequireBitstreamBuffers(
@@ -194,6 +214,11 @@ void VideoEncoderClient::BitstreamBufferReady(
     int32_t bitstream_buffer_id,
     const BitstreamBufferMetadata& metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_client_sequence_checker_);
+  {
+    base::AutoLock auto_lock(stats_lock_);
+    current_stats_.num_encoded_frames++;
+    current_stats_.total_encoded_frames_size += metadata.payload_size_bytes;
+  }
 
   auto it = bitstream_buffers_.find(bitstream_buffer_id);
   ASSERT_NE(it, bitstream_buffers_.end());
@@ -293,14 +318,20 @@ void VideoEncoderClient::EncodeNextFrameTask() {
   if (encoder_client_state_ != VideoEncoderClientState::kEncoding)
     return;
 
-  // Flush immediately when we reached the end of the stream. This changes the
-  // state to kFlushing so further encode tasks will be aborted.
-  if (aligned_data_helper_->AtEndOfStream()) {
+  const bool end_of_stream =
+      encoder_client_config_.num_frames_to_encode == num_encodes_requested_;
+  if (end_of_stream) {
+    // Flush immediately when we reached the end of the stream (either the real
+    // end, or the artificial end when using num_encode_frames). This changes
+    // the state to kFlushing so further encode tasks will be aborted.
     FlushTask();
     return;
   }
+  if (aligned_data_helper_->AtEndOfStream())
+    aligned_data_helper_->Rewind();
 
   scoped_refptr<VideoFrame> video_frame = aligned_data_helper_->GetNextFrame();
+  ASSERT_TRUE(video_frame);
   video_frame->AddDestructionObserver(base::BindOnce(
       CallbackThunk<decltype(&VideoEncoderClient::EncodeDoneTask),
                     base::TimeDelta>,
@@ -311,6 +342,7 @@ void VideoEncoderClient::EncodeNextFrameTask() {
   bool force_keyframe = false;
   encoder_->Encode(video_frame, force_keyframe);
 
+  num_encodes_requested_++;
   num_outstanding_encode_requests_++;
 }
 

@@ -330,6 +330,7 @@ class CORE_EXPORT NGPaintFragment : public RefCounted<NGPaintFragment>,
   //
 
   scoped_refptr<const NGPhysicalFragment> physical_fragment_;
+  // The offset to |parent_| comes from |NGLink::Offset()|.
   PhysicalOffset offset_;
 
   NGPaintFragment* parent_;

@@ -95,9 +95,15 @@ static_assert(kTopBit << 1 == 0, "kTopBit should really be the top bit");
 static_assert((kTopBit & kGenerationMask) > 0,
               "kTopBit bit must be inside the generation region");
 
-// TEST: Use volatile so that the read isn't optimized out.
-static volatile bool g_enabled = true;
+// This functionality is outside of CheckedPtr2Impl, so that it can be
+// overridden by tests. The implementation is in the .cc file, because including
+// partition_alloc.h here could lead to cyclic includes.
+struct CheckedPtr2ImplPartitionAllocSupport {
+  // TODO(bartekn): Check if this function gets inlined.
+  BASE_EXPORT static bool EnableForPtr(void* ptr);
+};
 
+template <typename PartitionAllocSupport = CheckedPtr2ImplPartitionAllocSupport>
 struct CheckedPtr2Impl {
   // This implementation assumes that pointers are 64 bits long and at least 16
   // top bits are unused. The latter is harder to verify statically, but this is
@@ -113,36 +119,23 @@ struct CheckedPtr2Impl {
     static_assert(!CHECKED_PTR2_PROTECTION_ENABLED, "");
 #else
     // Make sure that the address bits that will be used for generation are 0.
-    // Otherwise the logic may fail.
+    // If they aren't, they'd fool the unwrapper into thinking that the
+    // protection is enabled, making it try to read and compare the generation.
     DCHECK_EQ(ExtractGeneration(addr), 0ull);
 
-    // TEST: |g_enabled| should be replaced with a check if the allocation is on
-    // PartitionAlloc. There could be also a Finch check added.
-    if (ptr == nullptr || !g_enabled) {
-      return addr;
-    }
-
-    // TEST: It should be |size = base::PartitionAllocGetSize(ptr)|, however
-    // |PartitionAllocGetSize()| will likely crash if used an a non-PA pointer.
-    // For now, replacing it with something that always passes.
-    //
-    // TEST: There shouldn't be |volatile|; that's to prevent optimization of %.
-    volatile size_t size = (addr & (addr - 1)) ^ addr;
-    if (addr % size != 0) {
-      DCHECK(false);
+    // Return a not-wrapped |addr|, if it's either nullptr or if the protection
+    // for this pointer is disabled.
+    if (!PartitionAllocSupport::EnableForPtr(ptr)) {
       return addr;
     }
 
     // Read the generation from 16 bits before the allocation. Then place it in
     // the top bits of the address.
-    //
-    // TODO(bartekn): Consider if casting to |volatile*| is needed. I
-    // believe it's needed when dereferencing, not sure about here.
     static_assert(sizeof(uint16_t) * 8 == kGenerationBits, "");
 #if CHECKED_PTR2_PROTECTION_ENABLED
     uintptr_t generation = *(static_cast<volatile uint16_t*>(ptr) - 1);
 #else
-    // TEST: Reading from offset -1 may crash without PA support.
+    // TEST: Reading from offset -1 may crash without full PA support.
     // Just read from offset 0 to attain the same perf characteristics as the
     // expected production solution.
     // This generation will be ignored anyway either when unwrapping or below
@@ -382,7 +375,7 @@ struct DereferencedPointerType<void> {};
 //    adding support for cases encountered so far).
 template <typename T,
 #if defined(__LP64__)
-          typename Impl = internal::CheckedPtr2Impl>
+          typename Impl = internal::CheckedPtr2Impl<>>
 #else
           typename Impl = internal::CheckedPtrNoOpImpl>
 #endif

@@ -80,21 +80,26 @@ void CanMakePaymentEvent::Trace(Visitor* visitor) const {
   ExtendableEvent::Trace(visitor);
 }
 
+// TODO(crbug.com/1070871): Use fooOr() in members' initializers.
 CanMakePaymentEvent::CanMakePaymentEvent(
     const AtomicString& type,
     const CanMakePaymentEventInit* initializer,
     CanMakePaymentRespondWithObserver* respond_with_observer,
     WaitUntilObserver* wait_until_observer)
     : ExtendableEvent(type, initializer, wait_until_observer),
-      top_origin_(initializer->topOrigin()),
-      payment_request_origin_(initializer->paymentRequestOrigin()),
+      top_origin_(initializer->hasTopOrigin() ? initializer->topOrigin()
+                                              : String()),
+      payment_request_origin_(initializer->hasPaymentRequestOrigin()
+                                  ? initializer->paymentRequestOrigin()
+                                  : String()),
       method_data_(initializer->hasMethodData()
                        ? initializer->methodData()
                        : HeapVector<Member<PaymentMethodData>>()),
       modifiers_(initializer->hasModifiers()
                      ? initializer->modifiers()
                      : HeapVector<Member<PaymentDetailsModifier>>()),
-      currency_(initializer->currency()),
+      currency_(initializer->hasCurrency() ? initializer->currency()
+                                           : String()),
       observer_(respond_with_observer) {}
 
 void CanMakePaymentEvent::RespondToCanMakePaymentEvent(

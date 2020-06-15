@@ -233,6 +233,10 @@ bool ChromeKeyboardControllerClient::SetWindowBoundsInScreen(
   return keyboard_controller_->SetWindowBoundsInScreen(bounds_in_screen);
 }
 
+void ChromeKeyboardControllerClient::SetKeyboardConfigFromPref(bool enabled) {
+  keyboard_controller_->SetKeyboardConfigFromPref(enabled);
+}
+
 bool ChromeKeyboardControllerClient::IsKeyboardOverscrollEnabled() {
   return keyboard_controller_->ShouldOverscroll();
 }

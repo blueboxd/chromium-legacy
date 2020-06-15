@@ -204,6 +204,10 @@ bool VideoEncoder::WaitForBitstreamProcessors() {
   return !encoder_client_ || encoder_client_->WaitForBitstreamProcessors();
 }
 
+VideoEncoderStats VideoEncoder::GetStats() const {
+  return !encoder_client_ ? VideoEncoderStats() : encoder_client_->GetStats();
+}
+
 size_t VideoEncoder::GetFlushDoneCount() const {
   return GetEventCount(EncoderEvent::kFlushDone);
 }

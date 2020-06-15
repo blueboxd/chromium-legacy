@@ -65,6 +65,17 @@ void FakeCiceroneClient::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void FakeCiceroneClient::NotifyCiceroneStopped() {
+  for (auto& observer : observer_list_) {
+    observer.CiceroneServiceStopped();
+  }
+}
+void FakeCiceroneClient::NotifyCiceroneStarted() {
+  for (auto& observer : observer_list_) {
+    observer.CiceroneServiceStarted();
+  }
+}
+
 bool FakeCiceroneClient::IsContainerStartedSignalConnected() {
   return is_container_started_signal_connected_;
 }

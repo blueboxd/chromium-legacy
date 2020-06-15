@@ -19,6 +19,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSeneschalClient
   ~FakeSeneschalClient() override;
 
   // SeneschalClient:
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+  void WaitForServiceToBeAvailable(
+      dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) override;
   void SharePath(const vm_tools::seneschal::SharePathRequest& request,
                  DBusMethodCallback<vm_tools::seneschal::SharePathResponse>
                      callback) override;
@@ -48,11 +52,16 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeSeneschalClient
     return last_unshare_path_request_;
   }
 
+  void NotifySeneschalStopped();
+  void NotifySeneschalStarted();
+
  protected:
   void Init(dbus::Bus* bus) override {}
 
  private:
   void InitializeProtoResponses();
+
+  base::ObserverList<Observer> observer_list_;
 
   bool share_path_called_ = false;
   bool unshare_path_called_ = false;

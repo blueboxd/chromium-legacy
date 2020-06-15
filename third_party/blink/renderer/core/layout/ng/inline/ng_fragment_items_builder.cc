@@ -12,14 +12,14 @@
 
 namespace blink {
 
-NGFragmentItemsBuilder::NGFragmentItemsBuilder(WritingMode writing_mode,
-                                               TextDirection direction)
-    : writing_mode_(writing_mode), direction_(direction) {}
+NGFragmentItemsBuilder::NGFragmentItemsBuilder(
+    WritingDirectionMode writing_direction)
+    : writing_direction_(writing_direction) {}
 
-NGFragmentItemsBuilder::NGFragmentItemsBuilder(const NGInlineNode& node,
-                                               WritingMode writing_mode,
-                                               TextDirection direction)
-    : NGFragmentItemsBuilder(writing_mode, direction) {
+NGFragmentItemsBuilder::NGFragmentItemsBuilder(
+    const NGInlineNode& node,
+    WritingDirectionMode writing_direction)
+    : NGFragmentItemsBuilder(writing_direction) {
   const NGInlineItemsData& items_data = node.ItemsData(false);
   text_content_ = items_data.text_content;
   const NGInlineItemsData& first_line = node.ItemsData(true);
@@ -86,6 +86,7 @@ void NGFragmentItemsBuilder::AddItems(NGLogicalLineItem* child_begin,
                                       NGLogicalLineItem* child_end) {
   DCHECK(!is_converted_to_physical_);
 
+  const WritingMode writing_mode = GetWritingMode();
   for (NGLogicalLineItem* child_iter = child_begin; child_iter != child_end;) {
     NGLogicalLineItem& child = *child_iter;
     // OOF children should have been added to their parent box fragments.
@@ -96,7 +97,7 @@ void NGFragmentItemsBuilder::AddItems(NGLogicalLineItem* child_begin,
     }
 
     if (child.children_count <= 1) {
-      items_.emplace_back(child.rect.offset, std::move(child), writing_mode_);
+      items_.emplace_back(child.rect.offset, std::move(child), writing_mode);
       ++child_iter;
       continue;
     }
@@ -106,7 +107,7 @@ void NGFragmentItemsBuilder::AddItems(NGLogicalLineItem* child_begin,
     //
     // Add an empty item so that the start of the box can be set later.
     const wtf_size_t box_start_index = items_.size();
-    items_.emplace_back(child.rect.offset, std::move(child), writing_mode_);
+    items_.emplace_back(child.rect.offset, std::move(child), writing_mode);
 
     // Add all children, including their desendants, skipping this item.
     CHECK_GE(child.children_count, 1u);  // 0 will loop infinitely.
@@ -161,8 +162,9 @@ NGFragmentItemsBuilder::AddPreviousItems(
   // the physical offsets are different when `writing-mode: vertial-rl`.
   DCHECK(!is_converted_to_physical_);
   const WritingModeConverter converter(GetWritingDirection(), container_size);
+  const WritingMode writing_mode = GetWritingMode();
   WritingModeConverter line_converter(
-      {ToLineWritingMode(GetWritingMode()), TextDirection::kLtr});
+      {ToLineWritingMode(writing_mode), TextDirection::kLtr});
 
   const NGFragmentItem* const end_item =
       stop_at_dirty ? items.EndOfReusableItems() : nullptr;
@@ -185,7 +187,7 @@ NGFragmentItemsBuilder::AddPreviousItems(
         last_line_fragment = item.LineBoxFragment();
         container_builder->AddChild(*last_line_fragment, item_offset);
         used_block_size +=
-            item.Size().ConvertToLogical(writing_mode_).block_size;
+            item.Size().ConvertToLogical(writing_mode).block_size;
       }
 
       items_.emplace_back(item_offset,

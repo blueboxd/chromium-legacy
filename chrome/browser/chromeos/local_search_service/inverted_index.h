@@ -32,7 +32,7 @@ struct TokenPosition {
 // positions in one document.
 struct Token {
   Token();
-  explicit Token(const Token& token);
+  Token(const Token& token);
   Token(const base::string16& text, const std::vector<TokenPosition>& pos);
   ~Token();
   base::string16 content;

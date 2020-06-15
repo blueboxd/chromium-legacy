@@ -165,13 +165,10 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
                             : nullptr),
       sudden_termination_disables_(0),
       is_locked_to_site_(false),
-      default_task_runner_(main_thread_scheduler->DefaultTaskRunner()),
       main_thread_scheduler_(main_thread_scheduler) {
 
   // RenderThread may not exist in some tests.
   if (RenderThreadImpl::current()) {
-    io_runner_ = RenderThreadImpl::current()->GetIOTaskRunner();
-    thread_safe_sender_ = RenderThreadImpl::current()->thread_safe_sender();
 #if defined(OS_LINUX)
     mojo::PendingRemote<font_service::mojom::FontService> font_service;
     RenderThreadImpl::current()->BindHostReceiver(

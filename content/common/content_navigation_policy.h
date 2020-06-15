@@ -7,6 +7,7 @@
 
 #include "content/common/content_export.h"
 
+#include <array>
 #include <string>
 
 namespace content {

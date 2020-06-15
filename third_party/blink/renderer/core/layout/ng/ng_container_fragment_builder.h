@@ -197,9 +197,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   NGContainerFragmentBuilder(NGLayoutInputNode node,
                              scoped_refptr<const ComputedStyle> style,
                              const NGConstraintSpace* space,
-                             WritingMode writing_mode,
-                             TextDirection direction)
-      : NGFragmentBuilder(std::move(style), writing_mode, direction),
+                             WritingDirectionMode writing_direction)
+      : NGFragmentBuilder(std::move(style), writing_direction),
         node_(node),
         space_(space) {
     layout_object_ = node.GetLayoutBox();

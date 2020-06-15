@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_remover.h"
 #include "chrome/browser/chromeos/crostini/crostini_reporting_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_stability_monitor.h"
 #include "chrome/browser/chromeos/crostini/crostini_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/throttle/crostini_throttle.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -127,6 +128,10 @@ bool IsMicSharingEnabled(Profile* profile, bool crostini_mic_sharing_enabled) {
     return true;
   }
   return false;
+}
+
+void EmitCorruptionStateMetric(CorruptionStates state) {
+  base::UmaHistogramEnumeration("Crostini.FilesystemCorruption", state);
 }
 
 }  // namespace
@@ -905,6 +910,8 @@ CrostiniManager::CrostiniManager(Profile* profile)
     chromeos::PowerManagerClient::Get()->AddObserver(this);
   }
   CrostiniThrottle::GetForBrowserContext(profile_);
+  crostini_stability_monitor_ =
+      std::make_unique<CrostiniStabilityMonitor>(this);
 }
 
 CrostiniManager::~CrostiniManager() {
@@ -930,6 +937,9 @@ void CrostiniManager::RemoveDBusObservers() {
   if (chromeos::PowerManagerClient::Get()) {
     chromeos::PowerManagerClient::Get()->RemoveObserver(this);
   }
+  // CrostiniStabilityMonitor needs to be destructed here so it can unregister
+  // itself from the DBus clients that may no longer exist later.
+  crostini_stability_monitor_.reset();
 }
 
 // static
@@ -2443,12 +2453,10 @@ void CrostiniManager::OnStartTerminaVm(
 
   switch (response->mount_result()) {
     case vm_tools::concierge::StartVmResponse::PARTIAL_DATA_LOSS:
-      base::UmaHistogramEnumeration(kCrostiniCorruptionHistogram,
-                                    CorruptionStates::MOUNT_ROLLED_BACK);
+      EmitCorruptionStateMetric(CorruptionStates::MOUNT_ROLLED_BACK);
       break;
     case vm_tools::concierge::StartVmResponse::FAILURE:
-      base::UmaHistogramEnumeration(kCrostiniCorruptionHistogram,
-                                    CorruptionStates::MOUNT_FAILED);
+      EmitCorruptionStateMetric(CorruptionStates::MOUNT_FAILED);
       break;
     default:
       break;
@@ -2636,8 +2644,7 @@ void CrostiniManager::OnDefaultContainerConfigured(bool success) {
 
 void CrostiniManager::OnGuestFileCorruption(
     const anomaly_detector::GuestFileCorruptionSignal& signal) {
-  base::UmaHistogramEnumeration(kCrostiniCorruptionHistogram,
-                                CorruptionStates::OTHER_CORRUPTION);
+  EmitCorruptionStateMetric(CorruptionStates::OTHER_CORRUPTION);
 }
 
 void CrostiniManager::OnVmStarted(

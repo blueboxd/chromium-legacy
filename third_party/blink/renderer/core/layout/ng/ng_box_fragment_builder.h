@@ -30,13 +30,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   NGBoxFragmentBuilder(NGLayoutInputNode node,
                        scoped_refptr<const ComputedStyle> style,
                        const NGConstraintSpace* space,
-                       WritingMode writing_mode,
-                       TextDirection direction)
+                       WritingDirectionMode writing_direction)
       : NGContainerFragmentBuilder(node,
                                    std::move(style),
                                    space,
-                                   writing_mode,
-                                   direction),
+                                   writing_direction),
         box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
         is_inline_formatting_context_(node.IsInline()),
         did_break_(false) {}
@@ -45,13 +43,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // has NGInlineItem but does not have corresponding NGLayoutInputNode.
   NGBoxFragmentBuilder(LayoutObject* layout_object,
                        scoped_refptr<const ComputedStyle> style,
-                       WritingMode writing_mode,
-                       TextDirection direction)
+                       WritingDirectionMode writing_direction)
       : NGContainerFragmentBuilder(/* node */ nullptr,
                                    std::move(style),
                                    /* space */ nullptr,
-                                   writing_mode,
-                                   direction),
+                                   writing_direction),
         box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
         is_inline_formatting_context_(true),
         did_break_(false) {

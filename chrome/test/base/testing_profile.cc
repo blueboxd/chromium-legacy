@@ -555,6 +555,9 @@ void TestingProfile::FinishInit() {
 }
 
 TestingProfile::~TestingProfile() {
+  if (!profile_destruction_callback_.is_null())
+    std::move(profile_destruction_callback_).Run();
+
   // If this profile owns OffTheRecord profiles, tear them down first.
   otr_profiles_.clear();
 

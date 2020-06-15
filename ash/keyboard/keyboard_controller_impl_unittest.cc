@@ -11,8 +11,10 @@
 #include "ash/keyboard/ui/container_behavior.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/cpp/test/test_keyboard_controller_observer.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -181,6 +183,26 @@ class KeyboardControllerImplTest : public AshTestBase {
     focusable_window->Focus();
   }
 
+  void SetKeyboardConfigToPref(const base::Value& value) {
+    base::Value features(base::Value::Type::DICTIONARY);
+    features.SetKey("auto_complete_enabled", value.Clone());
+    features.SetKey("auto_correct_enabled", value.Clone());
+    features.SetKey("handwriting_enabled", value.Clone());
+    features.SetKey("spell_check_enabled", value.Clone());
+    features.SetKey("voice_input_enabled", value.Clone());
+    PrefService* prefs =
+        Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+    prefs->Set(prefs::kAccessibilityVirtualKeyboardFeatures, features);
+  }
+
+  void VerifyKeyboardConfig(const KeyboardConfig& config, bool expected_value) {
+    EXPECT_EQ(test_observer()->config().auto_complete, expected_value);
+    EXPECT_EQ(test_observer()->config().auto_correct, expected_value);
+    EXPECT_EQ(test_observer()->config().handwriting, expected_value);
+    EXPECT_EQ(test_observer()->config().spell_check, expected_value);
+    EXPECT_EQ(test_observer()->config().voice_input, expected_value);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(KeyboardControllerImplTest);
 };
@@ -208,6 +230,71 @@ TEST_F(KeyboardControllerImplTest, SetKeyboardConfig) {
 
   // Test that the test observer received the change.
   EXPECT_NE(old_auto_complete, test_observer()->config().auto_complete);
+}
+
+TEST_F(KeyboardControllerImplTest, SetKeyboardConfigFromPref) {
+  // Enable the keyboard so that config changes trigger observer events.
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
+  // Set the policy for virtual keyboard features.
+  SetKeyboardConfigToPref(base::Value(false));
+
+  // Test that all virtual keyboard features are enabled by default.
+  VerifyKeyboardConfig(keyboard_controller()->GetKeyboardConfig(), true);
+  VerifyKeyboardConfig(test_observer()->config(), true);
+
+  // Enabled the keyboard config from pref service.
+  keyboard_controller()->SetKeyboardConfigFromPref(true);
+  VerifyKeyboardConfig(keyboard_controller()->GetKeyboardConfig(), false);
+  VerifyKeyboardConfig(test_observer()->config(), false);
+
+  // Change the feature values from 'false' to 'true'.
+  SetKeyboardConfigToPref(base::Value(true));
+  VerifyKeyboardConfig(keyboard_controller()->GetKeyboardConfig(), true);
+  VerifyKeyboardConfig(test_observer()->config(), true);
+}
+
+TEST_F(KeyboardControllerImplTest,
+       SetKeyboardConfigFromPref_DefaultPolicyValue) {
+  // Enable the keyboard so that config changes trigger observer events.
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
+  // Enabled the keyboard config from pref service. The feature values should be
+  // false by default.
+  keyboard_controller()->SetKeyboardConfigFromPref(true);
+  VerifyKeyboardConfig(keyboard_controller()->GetKeyboardConfig(), false);
+  VerifyKeyboardConfig(test_observer()->config(), false);
+}
+
+TEST_F(KeyboardControllerImplTest,
+       SetKeyboardConfigFromPref_DefaultFeatureValue) {
+  // Enable the keyboard so that config changes trigger observer events.
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
+  // Set the policy for virtual keyboard features.
+  base::Value features(base::Value::Type::DICTIONARY);
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  prefs->Set(prefs::kAccessibilityVirtualKeyboardFeatures, features);
+
+  // Enabled the keyboard config from pref service. The feature values should be
+  // false by default.
+  keyboard_controller()->SetKeyboardConfigFromPref(true);
+  VerifyKeyboardConfig(keyboard_controller()->GetKeyboardConfig(), false);
+  VerifyKeyboardConfig(test_observer()->config(), false);
+}
+
+TEST_F(KeyboardControllerImplTest,
+       SetKeyboardConfigFromPref_InvalidFeatureType) {
+  // Enable the keyboard so that config changes trigger observer events.
+  keyboard_controller()->SetEnableFlag(KeyboardEnableFlag::kExtensionEnabled);
+
+  // The Integer type is not acceptable to virtual keyboard features, so they
+  // fallback to use the default value (false).
+  SetKeyboardConfigToPref(base::Value(100));
+  keyboard_controller()->SetKeyboardConfigFromPref(true);
+  VerifyKeyboardConfig(keyboard_controller()->GetKeyboardConfig(), false);
+  VerifyKeyboardConfig(test_observer()->config(), false);
 }
 
 TEST_F(KeyboardControllerImplTest, EnableFlags) {

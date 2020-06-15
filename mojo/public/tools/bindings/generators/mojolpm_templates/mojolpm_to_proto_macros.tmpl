@@ -333,16 +333,13 @@ bool ToProto(
 {%-       set kind = field.kind %}
     case {{enum_name}}::{{field.name|upper}}: {
 {%-         if kind|is_move_only_kind and kind|is_nullable_kind %}
-//monk
       if ({{util.not_null(kind, 'input->get_' ~ raw_name ~ '()')}}) {
         mojolpm_result &= ToProto(std::move({{util.value(kind, 'input->get_' ~ raw_name ~ '()')}}), *new_instance->mutable_m_{{name}}());
       }
 {%-         elif kind|is_move_only_kind %}
-//mok
       mojolpm_result = ToProto(std::move(input->get_{{raw_name}}()),
                                *(new_instance->mutable_m_{{name}}()));
 {%-         elif kind|is_nullable_kind %}
-// nk
       if ({{util.not_null(kind, 'input->get_' ~ raw_name ~ '()')}}) {
         mojolpm_result &= ToProto({{util.value(kind, 'input->get_' ~ raw_name ~ '()')}}, *new_instance->mutable_m_{{name}}());
       }
@@ -351,7 +348,6 @@ bool ToProto(
       mojolpm_result &= ToProto(input->get_{{raw_name}}(), tmp_{{name}});
       new_instance->set_m_{{name}}(tmp_{{name}});
 {%-         else %}
-//other
       mojolpm_result = ToProto(input->get_{{name}}(),
                                *(new_instance->mutable_m_{{name}}()));
 {%-         endif %}

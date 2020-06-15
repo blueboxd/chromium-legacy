@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/local_search_service/content_extraction_utils.h"
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/check.h"
@@ -19,6 +20,21 @@
 #include "third_party/icu/source/i18n/unicode/translit.h"
 
 namespace local_search_service {
+
+std::vector<Token> ConsolidateToken(const std::vector<Token>& tokens) {
+  std::unordered_map<base::string16, std::vector<TokenPosition>> dictionary;
+  for (const auto& token : tokens) {
+    dictionary[token.content].insert(dictionary[token.content].end(),
+                                     token.positions.begin(),
+                                     token.positions.end());
+  }
+
+  std::vector<Token> results;
+  for (const auto& item : dictionary) {
+    results.push_back(Token(item.first, item.second));
+  }
+  return results;
+}
 
 std::vector<Token> ExtractContent(const std::string& content_id,
                                   const base::string16& text,

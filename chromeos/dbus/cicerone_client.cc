@@ -599,6 +599,9 @@ class CiceroneClientImpl : public CiceroneClient {
       LOG(ERROR) << "Unable to get dbus proxy for "
                  << vm_tools::cicerone::kVmCiceroneServiceName;
     }
+    cicerone_proxy_->SetNameOwnerChangedCallback(
+        base::BindRepeating(&CiceroneClientImpl::NameOwnerChangedReceived,
+                            weak_ptr_factory_.GetWeakPtr()));
     cicerone_proxy_->ConnectToSignal(
         vm_tools::cicerone::kVmCiceroneInterface,
         vm_tools::cicerone::kContainerStartedSignal,
@@ -739,6 +742,20 @@ class CiceroneClientImpl : public CiceroneClient {
       return;
     }
     std::move(callback).Run(std::move(reponse_proto));
+  }
+
+  void NameOwnerChangedReceived(const std::string& old_owner,
+                                const std::string& new_owner) {
+    if (!old_owner.empty()) {
+      for (auto& observer : observer_list_) {
+        observer.CiceroneServiceStopped();
+      }
+    }
+    if (!new_owner.empty()) {
+      for (auto& observer : observer_list_) {
+        observer.CiceroneServiceStarted();
+      }
+    }
   }
 
   void OnContainerStartedSignal(dbus::Signal* signal) {

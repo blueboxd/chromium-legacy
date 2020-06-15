@@ -370,9 +370,6 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
         return {};
       }
 
-      String username = ice_server->username();
-      String credential = ice_server->credential();
-
       for (const String& url_string : url_strings) {
         KURL url(NullURL(), url_string);
         if (!url.IsValid()) {
@@ -391,7 +388,7 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
           return {};
         }
         if ((url.ProtocolIs("turn") || url.ProtocolIs("turns")) &&
-            (username.IsNull() || credential.IsNull())) {
+            (!ice_server->hasUsername() || !ice_server->hasCredential())) {
           exception_state->ThrowDOMException(
               DOMExceptionCode::kInvalidAccessError,
               "Both username and credential are "
@@ -402,8 +399,12 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
         auto converted_ice_server =
             webrtc::PeerConnectionInterface::IceServer();
         converted_ice_server.urls.push_back(String(url).Utf8());
-        converted_ice_server.username = username.Utf8();
-        converted_ice_server.password = credential.Utf8();
+        if (ice_server->hasUsername()) {
+          converted_ice_server.username = ice_server->username().Utf8();
+        }
+        if (ice_server->hasCredential()) {
+          converted_ice_server.password = ice_server->credential().Utf8();
+        }
 
         ice_servers.emplace_back(std::move(converted_ice_server));
       }

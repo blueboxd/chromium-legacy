@@ -25,6 +25,7 @@ class BitstreamProcessor;
 class Video;
 class VideoEncoderClient;
 struct VideoEncoderClientConfig;
+struct VideoEncoderStats;
 
 // This class provides a framework to build video encode accelerator tests upon.
 // It provides methods to control video encoding, and wait for specific events
@@ -63,6 +64,9 @@ class VideoEncoder {
   // Wait until all processors have finished processing the currently queued
   // list of bitstream buffers. Returns whether processing was successful.
   bool WaitForBitstreamProcessors();
+
+  // Get video encode statistics.
+  VideoEncoderStats GetStats() const;
 
   // Set the maximum time we will wait for an event to finish.
   void SetEventWaitTimeout(base::TimeDelta timeout);

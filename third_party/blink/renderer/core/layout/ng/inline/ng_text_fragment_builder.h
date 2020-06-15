@@ -20,8 +20,8 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
   STACK_ALLOCATED();
 
  public:
-  NGTextFragmentBuilder(WritingMode writing_mode)
-      : NGFragmentBuilder(writing_mode, TextDirection::kLtr) {}
+  explicit NGTextFragmentBuilder(WritingMode writing_mode)
+      : NGFragmentBuilder({writing_mode, TextDirection::kLtr}) {}
 
   NGTextFragmentBuilder(const NGPhysicalTextFragment& fragment);
 

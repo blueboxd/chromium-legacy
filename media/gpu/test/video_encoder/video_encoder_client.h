@@ -34,15 +34,29 @@ class AlignedDataHelper;
 // Video encoder client configuration.
 // TODO(dstaessens): Add extra parameters (e.g. h264 output level)
 struct VideoEncoderClientConfig {
+  VideoEncoderClientConfig();
   // The output output profile to be used.
   VideoCodecProfile output_profile = VideoCodecProfile::H264PROFILE_MAIN;
   // The maximum number of bitstream buffer encodes that can be requested
   // without waiting for the result of the previous encodes requests.
   size_t max_outstanding_encode_requests = 1;
   // The desired bitrate in bits/second.
-  uint32_t bitrate = 64000;
+  uint32_t bitrate = 200000;
   // The desired framerate in frames/second.
   uint32_t framerate = 30.0;
+  // The number of frames to be encoded. This can be more than the number of
+  // frames in the video, and in which case the VideoEncoderClient loops the
+  // video during encoding.
+  size_t num_frames_to_encode = 0;
+};
+
+struct VideoEncoderStats {
+  explicit VideoEncoderStats(uint32_t framerate = 1u);
+  uint32_t Bitrate() const;
+
+  uint32_t framerate = 0;
+  size_t num_encoded_frames = 0;
+  size_t total_encoded_frames_size = 0;
 };
 
 // The video encoder client is responsible for the communication between the
@@ -90,6 +104,9 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
   // Wait until all bitstream processors have finished processing. Returns
   // whether processing was successful.
   bool WaitForBitstreamProcessors();
+
+  // Get video encode statistics.
+  VideoEncoderStats GetStats() const;
 
   // VideoEncodeAccelerator::Client implementation
   void RequireBitstreamBuffers(unsigned int input_count,
@@ -185,9 +202,15 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
   // Id to be used for the the next bitstream buffer.
   int32_t next_bitstream_buffer_id_ = 0;
 
+  // A counter to how many VideoEncodeAccelerator::Encode() is called.
+  size_t num_encodes_requested_ = 0;
+
   // A counter to track what frame is represented by a bitstream returned on
   // BitstreamBufferReady().
   size_t frame_index_ = 0;
+
+  VideoEncoderStats current_stats_ GUARDED_BY(stats_lock_);
+  mutable base::Lock stats_lock_;
 
   SEQUENCE_CHECKER(test_sequence_checker_);
   SEQUENCE_CHECKER(encoder_client_sequence_checker_);

@@ -9,6 +9,55 @@
 
 namespace local_search_service {
 
+TEST(ContentExtractionUtilsTest, ConsolidateTokenTest) {
+  {
+    const base::string16 text(base::UTF8ToUTF16(
+        "Check duplicate. Duplicate is #@$%^&@#$%#@$^@#$ bad"));
+    const auto tokens =
+        ConsolidateToken(ExtractContent("3rd test", text, "en"));
+    EXPECT_EQ(tokens.size(), 3u);
+
+    bool found = false;
+    for (const auto& token : tokens) {
+      if (token.content == base::UTF8ToUTF16("duplicate")) {
+        found = true;
+        EXPECT_EQ(token.positions[0].content_id, "3rd test");
+        EXPECT_EQ(token.positions[0].start, 6u);
+        EXPECT_EQ(token.positions[0].length, 9u);
+        EXPECT_EQ(token.positions[1].start, 17u);
+        EXPECT_EQ(token.positions[1].length, 9u);
+      }
+    }
+    EXPECT_TRUE(found);
+  }
+  {
+    std::vector<Token> sources = {
+        Token(base::UTF8ToUTF16("A"),
+              {TokenPosition("ID1", 1u, 1u), TokenPosition("ID1", 3u, 1u)}),
+        Token(base::UTF8ToUTF16("B"), {TokenPosition("ID1", 5, 1)}),
+        Token(base::UTF8ToUTF16("A"), {TokenPosition("ID2", 10, 1)})};
+    const auto tokens = ConsolidateToken(sources);
+    EXPECT_EQ(tokens.size(), 2u);
+
+    bool found = false;
+    for (const auto& token : tokens) {
+      if (token.content == base::UTF8ToUTF16("A")) {
+        found = true;
+        EXPECT_EQ(token.positions[0].content_id, "ID1");
+        EXPECT_EQ(token.positions[0].start, 1u);
+        EXPECT_EQ(token.positions[0].length, 1u);
+        EXPECT_EQ(token.positions[1].content_id, "ID1");
+        EXPECT_EQ(token.positions[1].start, 3u);
+        EXPECT_EQ(token.positions[1].length, 1u);
+        EXPECT_EQ(token.positions[2].content_id, "ID2");
+        EXPECT_EQ(token.positions[2].start, 10u);
+        EXPECT_EQ(token.positions[2].length, 1u);
+      }
+    }
+    EXPECT_TRUE(found);
+  }
+}
+
 TEST(ContentExtractionUtilsTest, ExtractContentTest) {
   {
     const base::string16 text(base::UTF8ToUTF16(

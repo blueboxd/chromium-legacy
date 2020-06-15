@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_CROSTINI_UPGRADER_CROSTINI_UPGRADER_DIALOG_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_CROSTINI_UPGRADER_CROSTINI_UPGRADER_DIALOG_H_
 
+#include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 
 namespace chromeos {
@@ -24,6 +25,9 @@ class CrostiniUpgraderDialog : public SystemWebDialogDelegate {
 
   void SetDeletionClosureForTesting(
       base::OnceClosure deletion_closure_for_testing);
+
+  static void EmitUpgradeDialogEventHistogram(
+      crostini::UpgradeDialogEvent event);
 
  private:
   explicit CrostiniUpgraderDialog(base::OnceClosure launch_closure,

@@ -57,7 +57,6 @@ class RasterContextProvider;
 
 namespace content {
 class ChildURLLoaderFactoryBundle;
-class ThreadSafeSender;
 
 class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
  public:
@@ -217,8 +216,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // Return the mojo interface for making CodeCache calls.
   blink::mojom::CodeCacheHost& GetCodeCacheHost();
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
-
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   std::unique_ptr<blink::WebSandboxSupport> sandbox_support_;
 #endif
@@ -231,9 +228,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   // If true, the renderer process is locked to a site.
   bool is_locked_to_site_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   // NOT OWNED
   blink::scheduler::WebThreadScheduler* main_thread_scheduler_;

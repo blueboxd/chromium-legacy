@@ -119,6 +119,7 @@ class ChromeKeyboardControllerClient
   bool SetAreaToRemainOnScreen(const gfx::Rect& bounds);
   void SetDraggableArea(const gfx::Rect& bounds);
   bool SetWindowBoundsInScreen(const gfx::Rect& bounds_in_screen);
+  void SetKeyboardConfigFromPref(bool enabled);
 
   // Returns true if overscroll is enabled by the config or command line.
   bool IsKeyboardOverscrollEnabled();

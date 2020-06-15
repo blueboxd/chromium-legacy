@@ -213,7 +213,10 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       const override;
   const base::Optional<base::TimeDelta>& GetFirstForegroundTime()
       const override;
+  const base::Optional<base::TimeDelta>&
+  GetFirstBackgroundTimeAfterBackForwardCacheRestore() const override;
   bool StartedInForeground() const override;
+  bool LastBackForwardCacheRestoreWasInForeground() const override;
   const UserInitiatedInfo& GetUserInitiatedInfo() const override;
   const GURL& GetUrl() const override;
   const GURL& GetStartUrl() const override;
@@ -360,7 +363,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   void BroadcastEventToObservers(const void* const event_key);
 
   void OnEnterBackForwardCache();
-  void OnRestoreFromBackForwardCache();
+  void OnRestoreFromBackForwardCache(
+      content::NavigationHandle* navigation_handle);
 
   // Called when the page tracked was just activated after being loaded inside a
   // portal.
@@ -397,6 +401,10 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // The navigation start in TimeTicks, not the wall time reported by Blink.
   const base::TimeTicks navigation_start_;
 
+  // The navigation start after the last time when back-forward cache is
+  // restored.
+  base::TimeTicks navigation_start_after_back_forward_cache_restore_;
+
   // The most recent URL of this page load. Updated at navigation start, upon
   // redirection, and at commit time.
   GURL url_;
@@ -432,7 +440,10 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // when they occur in the background.
   base::Optional<base::TimeDelta> first_background_time_;
   base::Optional<base::TimeDelta> first_foreground_time_;
-  bool started_in_foreground_;
+  base::Optional<base::TimeDelta>
+      first_background_time_after_back_forward_cache_restore_;
+  const bool started_in_foreground_;
+  bool last_back_forward_cache_restore_was_in_foreground_ = false;
 
   mojom::PageLoadTimingPtr last_dispatched_merged_page_timing_;
 

@@ -1279,9 +1279,6 @@ template("mojom") {
           }
           _typemap_config = typemap.config
 
-          if (defined(_typemap_config.sources)) {
-            sources += _typemap_config.sources
-          }
           if (defined(_typemap_config.deps)) {
             deps += _typemap_config.deps
           }
@@ -1290,9 +1287,6 @@ template("mojom") {
           }
         }
         foreach(config, cpp_typemap_configs) {
-          if (defined(config.traits_sources)) {
-            sources += config.traits_sources
-          }
           if (defined(config.traits_deps)) {
             deps += config.traits_deps
           }

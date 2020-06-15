@@ -68,9 +68,11 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/notreached.h"
+#include "base/partition_alloc_buildflags.h"
 #include "base/stl_util.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 #include <stdlib.h>
@@ -198,7 +200,7 @@ BASE_EXPORT void PartitionAllocGlobalInit(OomFunction on_out_of_memory);
 BASE_EXPORT void PartitionAllocGlobalUninitForTesting();
 
 ALWAYS_INLINE bool IsManagedByPartitionAlloc(const void* address) {
-#if defined(__LP64__)
+#if BUILDFLAG(USE_PARTITION_ALLOC) && defined(__LP64__)
   return internal::PartitionAddressSpace::Contains(address);
 #else
   return false;
@@ -207,7 +209,7 @@ ALWAYS_INLINE bool IsManagedByPartitionAlloc(const void* address) {
 
 ALWAYS_INLINE bool IsManagedByPartitionAllocAndNotDirectMapped(
     const void* address) {
-#if defined(__LP64__)
+#if BUILDFLAG(USE_PARTITION_ALLOC) && defined(__LP64__)
   return internal::PartitionAddressSpace::IsInNormalBucketPool(address);
 #else
   return false;

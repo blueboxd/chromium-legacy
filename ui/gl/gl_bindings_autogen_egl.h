@@ -168,6 +168,7 @@ typedef EGLBoolean(GL_BINDING_CALL* eglGetSyncValuesCHROMIUMProc)(
     EGLuint64CHROMIUM* ust,
     EGLuint64CHROMIUM* msc,
     EGLuint64CHROMIUM* sbc);
+typedef void(GL_BINDING_CALL* eglHandleGPUSwitchANGLEProc)(EGLDisplay dpy);
 typedef EGLBoolean(GL_BINDING_CALL* eglImageFlushExternalEXTProc)(
     EGLDisplay dpy,
     EGLImageKHR image,
@@ -230,6 +231,11 @@ typedef EGLBoolean(GL_BINDING_CALL* eglQuerySurfacePointerANGLEProc)(
     EGLSurface surface,
     EGLint attribute,
     void** value);
+typedef void(GL_BINDING_CALL* eglReacquireHighPowerGPUANGLEProc)(
+    EGLDisplay dpy,
+    EGLContext ctx);
+typedef void(GL_BINDING_CALL* eglReleaseHighPowerGPUANGLEProc)(EGLDisplay dpy,
+                                                               EGLContext ctx);
 typedef EGLBoolean(GL_BINDING_CALL* eglReleaseTexImageProc)(EGLDisplay dpy,
                                                             EGLSurface surface,
                                                             EGLint buffer);
@@ -293,6 +299,7 @@ struct ExtensionsEGL {
   bool b_EGL_ANDROID_get_native_client_buffer;
   bool b_EGL_ANDROID_native_fence_sync;
   bool b_EGL_ANGLE_d3d_share_handle_client_buffer;
+  bool b_EGL_ANGLE_power_preference;
   bool b_EGL_ANGLE_query_surface_pointer;
   bool b_EGL_ANGLE_stream_producer_d3d_texture;
   bool b_EGL_ANGLE_surface_d3d_texture_2d_share_handle;
@@ -359,6 +366,7 @@ struct ProcsEGL {
   eglGetProcAddressProc eglGetProcAddressFn;
   eglGetSyncAttribKHRProc eglGetSyncAttribKHRFn;
   eglGetSyncValuesCHROMIUMProc eglGetSyncValuesCHROMIUMFn;
+  eglHandleGPUSwitchANGLEProc eglHandleGPUSwitchANGLEFn;
   eglImageFlushExternalEXTProc eglImageFlushExternalEXTFn;
   eglInitializeProc eglInitializeFn;
   eglLabelObjectKHRProc eglLabelObjectKHRFn;
@@ -376,6 +384,8 @@ struct ProcsEGL {
   eglQueryStringiANGLEProc eglQueryStringiANGLEFn;
   eglQuerySurfaceProc eglQuerySurfaceFn;
   eglQuerySurfacePointerANGLEProc eglQuerySurfacePointerANGLEFn;
+  eglReacquireHighPowerGPUANGLEProc eglReacquireHighPowerGPUANGLEFn;
+  eglReleaseHighPowerGPUANGLEProc eglReleaseHighPowerGPUANGLEFn;
   eglReleaseTexImageProc eglReleaseTexImageFn;
   eglReleaseThreadProc eglReleaseThreadFn;
   eglSetBlobCacheFuncsANDROIDProc eglSetBlobCacheFuncsANDROIDFn;
@@ -536,6 +546,7 @@ class GL_EXPORT EGLApi {
                                                 EGLuint64CHROMIUM* ust,
                                                 EGLuint64CHROMIUM* msc,
                                                 EGLuint64CHROMIUM* sbc) = 0;
+  virtual void eglHandleGPUSwitchANGLEFn(EGLDisplay dpy) = 0;
   virtual EGLBoolean eglImageFlushExternalEXTFn(
       EGLDisplay dpy,
       EGLImageKHR image,
@@ -591,6 +602,10 @@ class GL_EXPORT EGLApi {
                                                    EGLSurface surface,
                                                    EGLint attribute,
                                                    void** value) = 0;
+  virtual void eglReacquireHighPowerGPUANGLEFn(EGLDisplay dpy,
+                                               EGLContext ctx) = 0;
+  virtual void eglReleaseHighPowerGPUANGLEFn(EGLDisplay dpy,
+                                             EGLContext ctx) = 0;
   virtual EGLBoolean eglReleaseTexImageFn(EGLDisplay dpy,
                                           EGLSurface surface,
                                           EGLint buffer) = 0;
@@ -697,6 +712,8 @@ class GL_EXPORT EGLApi {
 #define eglGetSyncAttribKHR ::gl::g_current_egl_context->eglGetSyncAttribKHRFn
 #define eglGetSyncValuesCHROMIUM \
   ::gl::g_current_egl_context->eglGetSyncValuesCHROMIUMFn
+#define eglHandleGPUSwitchANGLE \
+  ::gl::g_current_egl_context->eglHandleGPUSwitchANGLEFn
 #define eglImageFlushExternalEXT \
   ::gl::g_current_egl_context->eglImageFlushExternalEXTFn
 #define eglInitialize ::gl::g_current_egl_context->eglInitializeFn
@@ -718,6 +735,10 @@ class GL_EXPORT EGLApi {
 #define eglQuerySurface ::gl::g_current_egl_context->eglQuerySurfaceFn
 #define eglQuerySurfacePointerANGLE \
   ::gl::g_current_egl_context->eglQuerySurfacePointerANGLEFn
+#define eglReacquireHighPowerGPUANGLE \
+  ::gl::g_current_egl_context->eglReacquireHighPowerGPUANGLEFn
+#define eglReleaseHighPowerGPUANGLE \
+  ::gl::g_current_egl_context->eglReleaseHighPowerGPUANGLEFn
 #define eglReleaseTexImage ::gl::g_current_egl_context->eglReleaseTexImageFn
 #define eglReleaseThread ::gl::g_current_egl_context->eglReleaseThreadFn
 #define eglSetBlobCacheFuncsANDROID \

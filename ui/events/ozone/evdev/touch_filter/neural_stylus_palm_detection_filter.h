@@ -11,6 +11,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -82,6 +83,9 @@ class COMPONENT_EXPORT(EVDEV) NeuralStylusPalmDetectionFilter
   std::bitset<kNumTouchEvdevSlots> is_palm_;
   std::bitset<kNumTouchEvdevSlots> is_delay_;
   std::map<int, PalmFilterStroke> strokes_;
+  base::TimeTicks previous_report_time_;
+  std::unordered_set<int> active_tracking_ids_;
+  int tracking_ids_count_within_session_;
   int tracking_ids_[kNumTouchEvdevSlots];
   const PalmFilterDeviceInfo palm_filter_dev_info_;
   std::unique_ptr<NeuralStylusPalmDetectionFilterModel> model_;

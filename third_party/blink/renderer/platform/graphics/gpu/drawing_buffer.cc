@@ -349,7 +349,11 @@ bool DrawingBuffer::PrepareTransferableResourceInternal(
     // 4. Here.
     return false;
   }
-  DCHECK(!is_hidden_);
+
+  // There used to be a DCHECK(!is_hidden_) here, but in some tab
+  // switching scenarios, it seems that this can racily be called for
+  // backgrounded tabs.
+
   if (!contents_changed_)
     return false;
 

@@ -120,7 +120,8 @@ struct InProgressInfo {
   // triggered resumption.
   int32_t auto_resume_count = 0;
 
-  // Whether the download is initiated on a metered network
+  // Whether the download is initiated on a metered network. If false, download
+  // can ony be resumed on WIFI.
   bool metered = false;
 
   // When to start the download. Used by download later feature.

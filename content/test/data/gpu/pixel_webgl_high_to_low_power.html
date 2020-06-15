@@ -26,6 +26,13 @@ function initialize(runningOnDualGPUMacBookPro) {
 function notifyHarness() {
   assertRunningOnHighPerformanceGpu();
   sendResult("READY", "Ready for second tab to be closed");
+  // When running on the passthrough command decoder and ANGLE, ANGLE
+  // can only detect the need to switch GPUs upon context switch.
+  // Schedule some rendering work 10 seconds from now so that ANGLE
+  // can detect and perform the switch.
+  const numSecondsBeforeGPUSwitch = 10;
+  setTimeout(() => drawSomeFrames(() => {}),
+             numSecondsBeforeGPUSwitch * 1000);
 }
 
 function runToCompletion() {

@@ -307,16 +307,18 @@ void AppShortcutLauncherItemController::ItemSelected(
     return;
   }
 
-  if (items.size() == 1) {
-    DCHECK(AppMenuSize() == 1);
+  if (source != ash::LAUNCH_FROM_SHELF || items.size() == 1) {
+    const bool can_minimize = source != ash::LAUNCH_FROM_APP_LIST &&
+                              source != ash::LAUNCH_FROM_APP_LIST_SEARCH;
     std::move(callback).Run(
         app_menu_cached_by_browsers_
             ? ChromeLauncherController::instance()
                   ->ActivateWindowOrMinimizeIfActive(
                       // We don't need to check nullptr here because
                       // we just called GetAppMenuItems() above to update it.
-                      app_menu_browsers_[0]->window(), true)
-            : ActivateContentOrMinimize(app_menu_web_contents_[0], true),
+                      app_menu_browsers_[0]->window(), can_minimize)
+            : ActivateContentOrMinimize(app_menu_web_contents_[0],
+                                        can_minimize),
         {});
   } else {
     // Multiple items, a menu will be shown. No need to activate the most

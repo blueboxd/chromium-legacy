@@ -48,7 +48,7 @@ bool ColorChooserDialog::IsRunning(gfx::NativeWindow owning_window) const {
 void ColorChooserDialog::ListenerDestroyed() {
   // Our associated listener has gone away, so we shouldn't call back to it if
   // our worker thread returns after the listener is dead.
-  listener_ = NULL;
+  listener_ = nullptr;
 }
 
 ColorChooserDialog::~ColorChooserDialog() {

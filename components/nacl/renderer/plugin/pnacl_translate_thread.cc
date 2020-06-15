@@ -137,7 +137,7 @@ void PnaclTranslateThread::RunLink() {
 
 // Called from main thread to send bytes to the translator.
 void PnaclTranslateThread::PutBytes(const void* bytes, int32_t count) {
-  CHECK(bytes != NULL);
+  CHECK(bytes);
   base::AutoLock lock(cond_mu_);
   data_buffers_.push_back(std::string());
   data_buffers_.back().insert(data_buffers_.back().end(),
@@ -363,14 +363,14 @@ void PnaclTranslateThread::TranslateFailed(
 void PnaclTranslateThread::AbortSubprocesses() {
   {
     base::AutoLock lock(subprocess_mu_);
-    if (compiler_subprocess_ != NULL && compiler_subprocess_active_) {
+    if (compiler_subprocess_ && compiler_subprocess_active_) {
       // We only run the service_runtime's Shutdown and do not run the
       // NaClSubprocess Shutdown, which would otherwise nullify some
       // pointers that could still be in use (srpc_client, etc.).
       compiler_subprocess_->service_runtime()->Shutdown();
       compiler_subprocess_active_ = false;
     }
-    if (ld_subprocess_ != NULL && ld_subprocess_active_) {
+    if (ld_subprocess_ && ld_subprocess_active_) {
       ld_subprocess_->service_runtime()->Shutdown();
       ld_subprocess_active_ = false;
     }

@@ -83,20 +83,10 @@ source_set("intents") {
   ]
 
   deps = [
-    ":intent_util",
     "//base",
     "//components/services/app_service/public/mojom",
     "//url",
   ]
-}
-
-source_set("intent_util") {
-  sources = [
-    "arc_intent_util.cc",
-    "arc_intent_util.h",
-  ]
-
-  deps = [ "//base" ]
 }
 
 source_set("preferred_apps") {

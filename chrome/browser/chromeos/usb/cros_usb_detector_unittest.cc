@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
@@ -134,8 +133,6 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
     crostini_test_helper_.reset(new crostini::CrostiniTestHelper(profile()));
-    scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kCrostiniUsbAllowUnsupported}, {});
 
     TestingBrowserProcess::GetGlobal()->SetSystemNotificationHelper(
         std::make_unique<SystemNotificationHelper>());
@@ -154,7 +151,6 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
-    scoped_feature_list_.Reset();
     crostini_test_helper_.reset();
     BrowserWithTestWindowTest::TearDown();
   }
@@ -220,8 +216,6 @@ class CrosUsbDetectorTest : public BrowserWithTestWindowTest {
 
   TestCrosUsbDeviceObserver usb_device_observer_;
   std::unique_ptr<chromeos::CrosUsbDetector> cros_usb_detector_;
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<crostini::CrostiniTestHelper> crostini_test_helper_;
 
@@ -726,7 +720,6 @@ TEST_F(CrosUsbDetectorTest, AttachingAlreadyAttachedDeviceIsANoOp) {
 }
 
 TEST_F(CrosUsbDetectorTest, DeviceCanBeAttachedToArcVmWhenCrostiniIsDisabled) {
-  scoped_feature_list_.Reset();  // Clears Crostini flags.
   ConnectToDeviceManager();
   base::RunLoop().RunUntilIdle();
 

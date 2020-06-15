@@ -119,14 +119,12 @@ void SearchBookmarksForText(NSString* search_text) {
 @implementation ManagedBookmarksTestCase
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
-  const std::string loadPolicyKey =
-      base::SysNSStringToUTF8(kPolicyLoaderIOSLoadPolicyKey);
   const std::string managedBookmarksData = [self managedBookmarksPolicyData];
   std::string policyData = "<dict>"
-                           "<key>" +
-                           loadPolicyKey +
-                           "</key>"
-                           "<true/>"
+                           "<key>EnableExperimentalPolicies</key>"
+                           "<array><string>" +
+                           std::string(policy::key::kManagedBookmarks) +
+                           "</string></array>"
                            "<key>" +
                            std::string(policy::key::kManagedBookmarks) +
                            "</key>" + managedBookmarksData + "</dict>";

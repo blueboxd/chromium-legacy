@@ -8,11 +8,9 @@
 
 namespace download {
 
-DownloadSchedule::DownloadSchedule(bool only_on_wifi)
-    : only_on_wifi_(only_on_wifi) {}
-
-DownloadSchedule::DownloadSchedule(base::Optional<base::Time> start_time)
-    : only_on_wifi_(false), start_time_(start_time) {}
+DownloadSchedule::DownloadSchedule(bool only_on_wifi,
+                                   base::Optional<base::Time> start_time)
+    : only_on_wifi_(only_on_wifi), start_time_(start_time) {}
 
 DownloadSchedule::DownloadSchedule(const DownloadSchedule&) = default;
 

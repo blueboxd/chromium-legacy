@@ -209,12 +209,6 @@ class NamingController {
    * @private
    */
   onRenameInputKeyDown_(event) {
-    // Ignore key events if event.keyCode is VK_PROCESSKEY(229).
-    // TODO(fukino): Remove this workaround once crbug.com/644140 is fixed.
-    if (event.keyCode === 229) {
-      return;
-    }
-
     if (!this.isRenamingInProgress()) {
       return;
     }

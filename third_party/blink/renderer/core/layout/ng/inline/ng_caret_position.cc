@@ -322,17 +322,17 @@ PositionWithAffinity NGCaretPosition::ToPositionInDOMTreeWithAffinity() const {
     return PositionWithAffinity();
   switch (position_type) {
     case NGCaretPositionType::kBeforeBox:
-      if (cursor.Current().GetNode())
-        return PositionWithAffinity();
-      return PositionWithAffinity(
-          Position::BeforeNode(*cursor.Current().GetNode()),
-          TextAffinity::kDownstream);
+      if (const Node* node = cursor.Current().GetNode()) {
+        return PositionWithAffinity(Position::BeforeNode(*node),
+                                    TextAffinity::kDownstream);
+      }
+      return PositionWithAffinity();
     case NGCaretPositionType::kAfterBox:
-      if (cursor.Current().GetNode())
-        return PositionWithAffinity();
-      return PositionWithAffinity(
-          Position::AfterNode(*cursor.Current().GetNode()),
-          TextAffinity::kUpstreamIfPossible);
+      if (const Node* node = cursor.Current().GetNode()) {
+        return PositionWithAffinity(Position::AfterNode(*node),
+                                    TextAffinity::kUpstreamIfPossible);
+      }
+      return PositionWithAffinity();
     case NGCaretPositionType::kAtTextOffset:
       // In case of ::first-letter, |cursor.Current().GetNode()| is null.
       DCHECK(text_offset.has_value());

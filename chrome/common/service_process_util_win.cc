@@ -64,7 +64,7 @@ class ServiceProcessTerminateMonitor
   void Start() {
     base::string16 event_name = GetServiceProcessTerminateEventName();
     DCHECK(event_name.length() <= MAX_PATH);
-    terminate_event_.Set(CreateEvent(NULL, TRUE, FALSE, event_name.c_str()));
+    terminate_event_.Set(CreateEvent(nullptr, TRUE, FALSE, event_name.c_str()));
     watcher_.StartWatchingOnce(terminate_event_.Get(), this);
   }
 
@@ -211,7 +211,7 @@ bool ServiceProcessState::TakeSingletonLock() {
   DCHECK(event_name.length() <= MAX_PATH);
   base::win::ScopedHandle service_process_ready_event;
   service_process_ready_event.Set(
-      CreateEvent(NULL, TRUE, FALSE, event_name.c_str()));
+      CreateEvent(nullptr, TRUE, FALSE, event_name.c_str()));
   DWORD error = GetLastError();
   if ((error == ERROR_ALREADY_EXISTS) || (error == ERROR_ACCESS_DENIED))
     return false;
@@ -262,5 +262,5 @@ bool ServiceProcessState::RemoveFromAutoRun() {
 
 void ServiceProcessState::TearDownState() {
   delete state_;
-  state_ = NULL;
+  state_ = nullptr;
 }

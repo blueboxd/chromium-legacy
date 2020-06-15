@@ -88,13 +88,9 @@ TestHarness::~TestHarness() {
 }
 
 void TestHarness::SetUp() {
-  // Make sure there is no pre-existing policy present. Ensure that
-  // kPolicyLoaderIOSLoadPolicyKey is set, or else the loader won't load any
-  // policy data.
-  NSDictionary* policy = @{kPolicyLoaderIOSLoadPolicyKey : @YES};
+  // Make sure there is no pre-existing policy present.
   [[NSUserDefaults standardUserDefaults]
-      setObject:policy
-         forKey:kPolicyLoaderIOSConfigurationKey];
+      removeObjectForKey:kPolicyLoaderIOSConfigurationKey];
 }
 
 ConfigurationPolicyProvider* TestHarness::CreateProvider(
@@ -195,78 +191,5 @@ INSTANTIATE_TEST_SUITE_P(PolicyProviderIOSChromePolicyTest,
 INSTANTIATE_TEST_SUITE_P(PolicyProviderIOSChromePolicyJSONTest,
                          ConfigurationPolicyProviderTest,
                          testing::Values(TestHarness::CreateWithJSONEncoding));
-
-class PolicyLoaderIOSTest : public PlatformTest {
- public:
-  void SetUp() override {
-    const std::string load_policy_key =
-        base::SysNSStringToUTF8(kPolicyLoaderIOSLoadPolicyKey);
-    const std::string test_schema = "{"
-                                    "  \"type\": \"object\","
-                                    "  \"properties\": {"
-                                    "    \"" +
-                                    load_policy_key +
-                                    "\": { \"type\": \"boolean\" },"
-                                    "    \"key1\": { \"type\": \"string\" },"
-                                    "    \"key2\": { \"type\": \"string\" },"
-                                    "  }"
-                                    "}";
-
-    std::string error;
-    Schema schema = Schema::Parse(test_schema, &error);
-    ASSERT_TRUE(schema.valid());
-
-    const PolicyNamespace ns(POLICY_DOMAIN_CHROME, "");
-    schema_registry_.RegisterComponent(ns, schema);
-
-    scoped_refptr<base::TestSimpleTaskRunner> task_runner =
-        new base::TestSimpleTaskRunner();
-    loader_ = std::make_unique<PolicyLoaderIOS>(&schema_registry_, task_runner);
-  }
-
- protected:
-  // Verifies that |loader_| does not load any policies.
-  void VerifyNoPoliciesAreLoaded() {
-    PolicyBundle empty;
-    std::unique_ptr<PolicyBundle> bundle = loader_->Load();
-    ASSERT_TRUE(bundle);
-    EXPECT_TRUE(bundle->Equals(empty));
-  }
-
-  // The schema registry used while testing.
-  SchemaRegistry schema_registry_;
-
-  // The PolicyLoaderIOS under test.
-  std::unique_ptr<PolicyLoaderIOS> loader_;
-};
-
-// Verifies that policies are not loaded if kPolicyLoaderIOSLoadPolicyKey is not
-// present.
-TEST_F(PolicyLoaderIOSTest, NoPoliciesLoadedWithoutLoadPolicyKey) {
-  NSDictionary* policy = @{
-    @"key1" : @"value1",
-    @"key2" : @"value2",
-  };
-  [[NSUserDefaults standardUserDefaults]
-      setObject:policy
-         forKey:kPolicyLoaderIOSConfigurationKey];
-
-  VerifyNoPoliciesAreLoaded();
-}
-
-// Verifies that policies are not loaded if kPolicyLoaderIOSLoadPolicyKey is set
-// to false.
-TEST_F(PolicyLoaderIOSTest, NoPoliciesLoadedWhenEnableChromeKeyIsFalse) {
-  NSDictionary* policy = @{
-    kPolicyLoaderIOSLoadPolicyKey : @NO,
-    @"key1" : @"value1",
-    @"key2" : @"value2",
-  };
-  [[NSUserDefaults standardUserDefaults]
-      setObject:policy
-         forKey:kPolicyLoaderIOSConfigurationKey];
-
-  VerifyNoPoliciesAreLoaded();
-}
 
 }  // namespace policy

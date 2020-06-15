@@ -157,6 +157,7 @@ Mock_eglGetSyncValuesCHROMIUM(EGLDisplay dpy,
                               EGLuint64CHROMIUM* ust,
                               EGLuint64CHROMIUM* msc,
                               EGLuint64CHROMIUM* sbc);
+static void GL_BINDING_CALL Mock_eglHandleGPUSwitchANGLE(EGLDisplay dpy);
 static EGLBoolean GL_BINDING_CALL
 Mock_eglImageFlushExternalEXT(EGLDisplay dpy,
                               EGLImageKHR image,
@@ -217,6 +218,10 @@ Mock_eglQuerySurfacePointerANGLE(EGLDisplay dpy,
                                  EGLSurface surface,
                                  EGLint attribute,
                                  void** value);
+static void GL_BINDING_CALL Mock_eglReacquireHighPowerGPUANGLE(EGLDisplay dpy,
+                                                               EGLContext ctx);
+static void GL_BINDING_CALL Mock_eglReleaseHighPowerGPUANGLE(EGLDisplay dpy,
+                                                             EGLContext ctx);
 static EGLBoolean GL_BINDING_CALL Mock_eglReleaseTexImage(EGLDisplay dpy,
                                                           EGLSurface surface,
                                                           EGLint buffer);

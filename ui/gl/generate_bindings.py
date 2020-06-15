@@ -2568,6 +2568,10 @@ EGL_FUNCTIONS = [
       'EGLDisplay dpy, EGLSurface surface, '
       'EGLuint64CHROMIUM* ust, EGLuint64CHROMIUM* msc, '
       'EGLuint64CHROMIUM* sbc', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'eglHandleGPUSwitchANGLE',
+                 'extensions': ['EGL_ANGLE_power_preference'] }],
+  'arguments': 'EGLDisplay dpy' },
 { 'return_type': 'EGLBoolean',
   'versions': [{ 'name': 'eglImageFlushExternalEXT',
                  'extensions': ['EGL_EXT_image_flush_external'] }],
@@ -2644,6 +2648,14 @@ EGL_FUNCTIONS = [
   'names': ['eglQuerySurfacePointerANGLE'],
   'arguments':
       'EGLDisplay dpy, EGLSurface surface, EGLint attribute, void** value', },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'eglReacquireHighPowerGPUANGLE',
+                 'extensions': ['EGL_ANGLE_power_preference'] }],
+  'arguments': 'EGLDisplay dpy, EGLContext ctx' },
+{ 'return_type': 'void',
+  'versions': [{ 'name': 'eglReleaseHighPowerGPUANGLE',
+                 'extensions': ['EGL_ANGLE_power_preference'] }],
+  'arguments': 'EGLDisplay dpy, EGLContext ctx' },
 { 'return_type': 'EGLBoolean',
   'names': ['eglReleaseTexImage'],
   'arguments': 'EGLDisplay dpy, EGLSurface surface, EGLint buffer', },

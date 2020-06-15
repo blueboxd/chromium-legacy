@@ -181,6 +181,8 @@ void DriverEGL::InitializeExtensionBindings() {
       gfx::HasExtension(extensions, "EGL_ANDROID_native_fence_sync");
   ext.b_EGL_ANGLE_d3d_share_handle_client_buffer =
       gfx::HasExtension(extensions, "EGL_ANGLE_d3d_share_handle_client_buffer");
+  ext.b_EGL_ANGLE_power_preference =
+      gfx::HasExtension(extensions, "EGL_ANGLE_power_preference");
   ext.b_EGL_ANGLE_query_surface_pointer =
       gfx::HasExtension(extensions, "EGL_ANGLE_query_surface_pointer");
   ext.b_EGL_ANGLE_stream_producer_d3d_texture =
@@ -303,6 +305,12 @@ void DriverEGL::InitializeExtensionBindings() {
             GetGLProcAddress("eglGetSyncValuesCHROMIUM"));
   }
 
+  if (ext.b_EGL_ANGLE_power_preference) {
+    fn.eglHandleGPUSwitchANGLEFn =
+        reinterpret_cast<eglHandleGPUSwitchANGLEProc>(
+            GetGLProcAddress("eglHandleGPUSwitchANGLE"));
+  }
+
   if (ext.b_EGL_EXT_image_flush_external) {
     fn.eglImageFlushExternalEXTFn =
         reinterpret_cast<eglImageFlushExternalEXTProc>(
@@ -328,6 +336,18 @@ void DriverEGL::InitializeExtensionBindings() {
     fn.eglQuerySurfacePointerANGLEFn =
         reinterpret_cast<eglQuerySurfacePointerANGLEProc>(
             GetGLProcAddress("eglQuerySurfacePointerANGLE"));
+  }
+
+  if (ext.b_EGL_ANGLE_power_preference) {
+    fn.eglReacquireHighPowerGPUANGLEFn =
+        reinterpret_cast<eglReacquireHighPowerGPUANGLEProc>(
+            GetGLProcAddress("eglReacquireHighPowerGPUANGLE"));
+  }
+
+  if (ext.b_EGL_ANGLE_power_preference) {
+    fn.eglReleaseHighPowerGPUANGLEFn =
+        reinterpret_cast<eglReleaseHighPowerGPUANGLEProc>(
+            GetGLProcAddress("eglReleaseHighPowerGPUANGLE"));
   }
 
   if (ext.b_EGL_ANDROID_blob_cache) {
@@ -649,6 +669,10 @@ EGLBoolean EGLApiBase::eglGetSyncValuesCHROMIUMFn(EGLDisplay dpy,
   return driver_->fn.eglGetSyncValuesCHROMIUMFn(dpy, surface, ust, msc, sbc);
 }
 
+void EGLApiBase::eglHandleGPUSwitchANGLEFn(EGLDisplay dpy) {
+  driver_->fn.eglHandleGPUSwitchANGLEFn(dpy);
+}
+
 EGLBoolean EGLApiBase::eglImageFlushExternalEXTFn(
     EGLDisplay dpy,
     EGLImageKHR image,
@@ -754,6 +778,15 @@ EGLBoolean EGLApiBase::eglQuerySurfacePointerANGLEFn(EGLDisplay dpy,
                                                      void** value) {
   return driver_->fn.eglQuerySurfacePointerANGLEFn(dpy, surface, attribute,
                                                    value);
+}
+
+void EGLApiBase::eglReacquireHighPowerGPUANGLEFn(EGLDisplay dpy,
+                                                 EGLContext ctx) {
+  driver_->fn.eglReacquireHighPowerGPUANGLEFn(dpy, ctx);
+}
+
+void EGLApiBase::eglReleaseHighPowerGPUANGLEFn(EGLDisplay dpy, EGLContext ctx) {
+  driver_->fn.eglReleaseHighPowerGPUANGLEFn(dpy, ctx);
 }
 
 EGLBoolean EGLApiBase::eglReleaseTexImageFn(EGLDisplay dpy,
@@ -1171,6 +1204,11 @@ EGLBoolean TraceEGLApi::eglGetSyncValuesCHROMIUMFn(EGLDisplay dpy,
   return egl_api_->eglGetSyncValuesCHROMIUMFn(dpy, surface, ust, msc, sbc);
 }
 
+void TraceEGLApi::eglHandleGPUSwitchANGLEFn(EGLDisplay dpy) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceEGLAPI::eglHandleGPUSwitchANGLE")
+  egl_api_->eglHandleGPUSwitchANGLEFn(dpy);
+}
+
 EGLBoolean TraceEGLApi::eglImageFlushExternalEXTFn(
     EGLDisplay dpy,
     EGLImageKHR image,
@@ -1295,6 +1333,20 @@ EGLBoolean TraceEGLApi::eglQuerySurfacePointerANGLEFn(EGLDisplay dpy,
                                 "TraceEGLAPI::eglQuerySurfacePointerANGLE")
   return egl_api_->eglQuerySurfacePointerANGLEFn(dpy, surface, attribute,
                                                  value);
+}
+
+void TraceEGLApi::eglReacquireHighPowerGPUANGLEFn(EGLDisplay dpy,
+                                                  EGLContext ctx) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceEGLAPI::eglReacquireHighPowerGPUANGLE")
+  egl_api_->eglReacquireHighPowerGPUANGLEFn(dpy, ctx);
+}
+
+void TraceEGLApi::eglReleaseHighPowerGPUANGLEFn(EGLDisplay dpy,
+                                                EGLContext ctx) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceEGLAPI::eglReleaseHighPowerGPUANGLE")
+  egl_api_->eglReleaseHighPowerGPUANGLEFn(dpy, ctx);
 }
 
 EGLBoolean TraceEGLApi::eglReleaseTexImageFn(EGLDisplay dpy,
@@ -1901,6 +1953,12 @@ EGLBoolean LogEGLApi::eglGetSyncValuesCHROMIUMFn(EGLDisplay dpy,
   return result;
 }
 
+void LogEGLApi::eglHandleGPUSwitchANGLEFn(EGLDisplay dpy) {
+  GL_SERVICE_LOG("eglHandleGPUSwitchANGLE"
+                 << "(" << dpy << ")");
+  egl_api_->eglHandleGPUSwitchANGLEFn(dpy);
+}
+
 EGLBoolean LogEGLApi::eglImageFlushExternalEXTFn(EGLDisplay dpy,
                                                  EGLImageKHR image,
                                                  const EGLAttrib* attrib_list) {
@@ -2096,6 +2154,19 @@ EGLBoolean LogEGLApi::eglQuerySurfacePointerANGLEFn(EGLDisplay dpy,
       egl_api_->eglQuerySurfacePointerANGLEFn(dpy, surface, attribute, value);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
+}
+
+void LogEGLApi::eglReacquireHighPowerGPUANGLEFn(EGLDisplay dpy,
+                                                EGLContext ctx) {
+  GL_SERVICE_LOG("eglReacquireHighPowerGPUANGLE"
+                 << "(" << dpy << ", " << ctx << ")");
+  egl_api_->eglReacquireHighPowerGPUANGLEFn(dpy, ctx);
+}
+
+void LogEGLApi::eglReleaseHighPowerGPUANGLEFn(EGLDisplay dpy, EGLContext ctx) {
+  GL_SERVICE_LOG("eglReleaseHighPowerGPUANGLE"
+                 << "(" << dpy << ", " << ctx << ")");
+  egl_api_->eglReleaseHighPowerGPUANGLEFn(dpy, ctx);
 }
 
 EGLBoolean LogEGLApi::eglReleaseTexImageFn(EGLDisplay dpy,

@@ -9,6 +9,20 @@
 #include "base/pickle.h"
 
 namespace download {
+namespace {
+
+// Converts base::Time to a timpstamp in milliseconds.
+int64_t FromTimeToMilliseconds(base::Time time) {
+  return time.ToDeltaSinceWindowsEpoch().InMilliseconds();
+}
+
+// Converts a time stamp in milliseconds to base::Time.
+base::Time FromMillisecondsToTime(int64_t time_ms) {
+  return base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromMilliseconds(time_ms));
+}
+
+}  // namespace
 
 DownloadEntry DownloadDBConversions::DownloadEntryFromProto(
     const download_pb::DownloadEntry& proto) {
@@ -173,12 +187,10 @@ download_pb::InProgressInfo DownloadDBConversions::InProgressInfoToProto(
   proto.set_start_time(
       in_progress_info.start_time.is_null()
           ? -1
-          : in_progress_info.start_time.ToDeltaSinceWindowsEpoch()
-                .InMilliseconds());
+          : FromTimeToMilliseconds(in_progress_info.start_time));
   proto.set_end_time(in_progress_info.end_time.is_null()
                          ? -1
-                         : in_progress_info.end_time.ToDeltaSinceWindowsEpoch()
-                               .InMilliseconds());
+                         : FromTimeToMilliseconds(in_progress_info.end_time));
   for (size_t i = 0; i < in_progress_info.received_slices.size(); ++i) {
     download_pb::ReceivedSlice* slice = proto.add_received_slices();
     slice->set_received_bytes(
@@ -195,6 +207,15 @@ download_pb::InProgressInfo DownloadDBConversions::InProgressInfoToProto(
   proto.set_metered(in_progress_info.metered);
   proto.set_bytes_wasted(in_progress_info.bytes_wasted);
   proto.set_auto_resume_count(in_progress_info.auto_resume_count);
+  if (in_progress_info.download_schedule.has_value()) {
+    DCHECK_NE(in_progress_info.download_schedule->only_on_wifi(),
+              in_progress_info.metered);
+    auto download_schedule_proto =
+        std::make_unique<download_pb::DownloadSchedule>(DownloadScheduleToProto(
+            in_progress_info.download_schedule.value()));
+    proto.set_allocated_download_schedule(download_schedule_proto.release());
+  }
+
   return proto;
 }
 
@@ -223,16 +244,12 @@ InProgressInfo DownloadDBConversions::InProgressInfoFromProto(
       base::Pickle(proto.target_path().data(), proto.target_path().size()));
   info.target_path.ReadFromPickle(&target_path);
   info.received_bytes = proto.received_bytes();
-  info.start_time =
-      proto.start_time() == -1
-          ? base::Time()
-          : base::Time::FromDeltaSinceWindowsEpoch(
-                base::TimeDelta::FromMilliseconds(proto.start_time()));
-  info.end_time =
-      proto.end_time() == -1
-          ? base::Time()
-          : base::Time::FromDeltaSinceWindowsEpoch(
-                base::TimeDelta::FromMilliseconds(proto.end_time()));
+  info.start_time = proto.start_time() == -1
+                        ? base::Time()
+                        : FromMillisecondsToTime(proto.start_time());
+  info.end_time = proto.end_time() == -1
+                      ? base::Time()
+                      : FromMillisecondsToTime(proto.end_time());
 
   for (int i = 0; i < proto.received_slices_size(); ++i) {
     info.received_slices.emplace_back(proto.received_slices(i).offset(),
@@ -249,6 +266,12 @@ InProgressInfo DownloadDBConversions::InProgressInfoFromProto(
   info.metered = proto.metered();
   info.bytes_wasted = proto.bytes_wasted();
   info.auto_resume_count = proto.auto_resume_count();
+  if (proto.has_download_schedule()) {
+    info.download_schedule = DownloadScheduleFromProto(
+        proto.download_schedule(), !proto.metered() /*only_on_wifi*/);
+    DCHECK_NE(info.download_schedule->only_on_wifi(), info.metered);
+  }
+
   return info;
 }
 
@@ -266,6 +289,27 @@ download_pb::UkmInfo DownloadDBConversions::UkmInfoToProto(
   proto.set_download_source(DownloadSourceToProto(info.download_source));
   proto.set_ukm_download_id(info.ukm_download_id);
   return proto;
+}
+
+download_pb::DownloadSchedule DownloadDBConversions::DownloadScheduleToProto(
+    const DownloadSchedule& download_schedule) {
+  // download::DownloadSchedule.only_on_wifi is not persisted, use
+  // InProgressInfo.metered instead.
+  download_pb::DownloadSchedule proto;
+  if (download_schedule.start_time().has_value()) {
+    proto.set_start_time(
+        FromTimeToMilliseconds(download_schedule.start_time().value()));
+  }
+  return proto;
+}
+
+DownloadSchedule DownloadDBConversions::DownloadScheduleFromProto(
+    const download_pb::DownloadSchedule& proto,
+    bool only_on_wifi) {
+  base::Optional<base::Time> start_time;
+  if (proto.has_start_time())
+    start_time = FromMillisecondsToTime(proto.start_time());
+  return DownloadSchedule(only_on_wifi, std::move(start_time));
 }
 
 DownloadInfo DownloadDBConversions::DownloadInfoFromProto(

@@ -640,6 +640,7 @@
         'SpokenFeedbackEnabled',
         'HighContrastEnabled',
         'VirtualKeyboardEnabled',
+        'VirtualKeyboardFeatures',
         'StickyKeysEnabled',
         'KeyboardDefaultToFunctionKeys',
         'ScreenMagnifierType',
@@ -1291,8 +1292,8 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -1648,8 +1649,8 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -2889,8 +2890,8 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -2947,8 +2948,8 @@
       'supported_on': [
         'chrome.*:83-',
         'chrome_os:83-',
-        'ios:84-'
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -3007,8 +3008,8 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -3111,8 +3112,8 @@
         'chrome.*:69-',
         'chrome_os:69-',
         'android:69-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -3135,8 +3136,8 @@
         'chrome.*:63-',
         'chrome_os:63-',
         'android:63-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -4778,8 +4779,8 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -4833,8 +4834,8 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -4856,8 +4857,8 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -4881,8 +4882,8 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -4906,8 +4907,8 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -4956,8 +4957,8 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -4984,8 +4985,8 @@
         'chrome.*:8-',
         'chrome_os:11-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -5012,8 +5013,8 @@
         'chrome.*:24-',
         'chrome_os:24-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -5058,8 +5059,8 @@
         'chrome.*:29-',
         'chrome_os:29-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -5083,8 +5084,8 @@
         'chrome.*:30-',
         'chrome_os:30-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -5108,8 +5109,8 @@
         'chrome.*:29-',
         'chrome_os:29-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -5133,8 +5134,8 @@
         'chrome.*:29-',
         'chrome_os:29-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -5179,8 +5180,8 @@
         'chrome.*:29-',
         'chrome_os:29-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -5373,8 +5374,8 @@
         'chrome.*:10-',
         'chrome_os:11-',
         'android:33-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -6192,8 +6193,8 @@
         'chrome.*:11-',
         'chrome_os:11-',
         'android:34-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -6261,8 +6262,8 @@
         'chrome.*:11-',
         'chrome_os:11-',
         'android:34-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -6773,8 +6774,8 @@
         'chrome.*:12-',
         'chrome_os:12-',
         'android:30-',
-        'ios:84-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'can_be_recommended': True,
         'dynamic_refresh': True,
@@ -6881,8 +6882,8 @@
         'chrome.*:12-',
         'chrome_os:12-',
         'android:30-',
-        'ios:85-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -7186,8 +7187,8 @@
         'chrome_os:15-',
         'android:30-',
         'webview_android:47-',
-        'ios:85-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -7222,8 +7223,8 @@
         'chrome_os:15-',
         'android:30-',
         'webview_android:47-',
-        'ios:85-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -11110,6 +11111,59 @@
       If you set the policy, users can't change it. If not set, the on-screen keyboard is off at first, but users can turn it on any time.'''
     },
     {
+      'name': 'VirtualKeyboardFeatures',
+      'owners': ['anqing@chromium.org'],
+      'type': 'dict',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'auto_complete_enabled': {
+            'description': 'A boolean flag indicating if the on-screen keyboard can provide auto-complete.',
+            'type': 'boolean'
+          },
+          'auto_correct_enabled': {
+            'description': 'A boolean flag indicating if the on-screen keyboard can provide auto-correct.',
+            'type': 'boolean'
+          },
+          'handwriting_enabled': {
+            'description': 'A boolean flag indicating if the on-screen keyboard can provide input via handwriting recognition.',
+            'type': 'boolean'
+          },
+          'spell_check_enabled': {
+            'description': 'A boolean flag indicating if the on-screen keyboard can provide spell-check.',
+            'type': 'boolean'
+          },
+          'voice_input_enabled': {
+            'description': 'A boolean flag indicating if the on-screen keyboard can provide voice input.',
+            'type': 'boolean'
+          }
+        }
+      },
+      'supported_on': ['chrome_os:86-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': {
+        "auto_complete_enabled": True,
+        "auto_correct_enabled": True,
+        "handwriting_enabled": False,
+        "spell_check_enabled": False,
+        "voice_input_enabled": False
+      },
+      'future': True,
+      'id': 717,
+      'caption': '''Enable or disable various features for the on-screen keyboard''',
+      'tags': [],
+      'desc': '''Enable or disable various features for the on-screen keyboard. This policy takes effect only when "VirtualKeyboardEnabled" policy is enabled.
+
+      If one feature in this policy is set to True, it will be enabled for the on-screen keyboard.
+
+      If one feature is set to False or left unset, it will be disabled for the non-screen keyboard.
+
+      NOTE: this policy is only supported in PWA Kiosk mode.'''
+    },
+    {
       'name': 'StickyKeysEnabled',
       'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
       'type': 'main',
@@ -12435,8 +12489,8 @@
         'android:30-',
         'chrome.*:37-',
         'chrome_os:37-',
-        'ios:85-',
       ],
+      'future_on': [ 'ios' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -22246,6 +22300,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 716,
+  'highest_id_currently_used': 717,
   'highest_atomic_group_id_currently_used': 38
 }

@@ -11,21 +11,17 @@ namespace download {
 namespace {
 
 TEST(DownloadScheduleTest, CtorAndCopy) {
-  DownloadSchedule download_schedule(false);
+  DownloadSchedule download_schedule(false, base::nullopt);
   EXPECT_FALSE(download_schedule.only_on_wifi());
   EXPECT_EQ(download_schedule.start_time(), base::nullopt);
 
-  download_schedule = DownloadSchedule(true);
+  download_schedule = DownloadSchedule(true, base::nullopt);
   EXPECT_TRUE(download_schedule.only_on_wifi());
-  EXPECT_EQ(download_schedule.start_time(), base::nullopt);
-
-  download_schedule = DownloadSchedule(base::nullopt);
-  EXPECT_FALSE(download_schedule.only_on_wifi());
   EXPECT_EQ(download_schedule.start_time(), base::nullopt);
 
   auto time = base::make_optional(
       base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromDays(1)));
-  download_schedule = DownloadSchedule(time);
+  download_schedule = DownloadSchedule(false, time);
   EXPECT_FALSE(download_schedule.only_on_wifi());
   EXPECT_EQ(download_schedule.start_time(), time);
 }

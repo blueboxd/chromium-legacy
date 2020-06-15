@@ -35,6 +35,7 @@
 #include "ui/gl/gl_surface_presentation_helper.h"
 #include "ui/gl/gl_surface_stub.h"
 #include "ui/gl/gl_utils.h"
+#include "ui/gl/gpu_switching_manager.h"
 #include "ui/gl/scoped_make_current.h"
 #include "ui/gl/sync_control_vsync_provider.h"
 
@@ -160,6 +161,8 @@ bool GLSurfaceEGL::initialized_ = false;
 
 namespace {
 
+class EGLGpuSwitchingObserver;
+
 EGLDisplay g_egl_display = EGL_NO_DISPLAY;
 EGLDisplayPlatform g_native_display(EGL_DEFAULT_DISPLAY);
 
@@ -184,6 +187,7 @@ bool g_egl_android_native_fence_sync_supported = false;
 bool g_egl_ext_pixel_format_float_supported = false;
 bool g_egl_angle_feature_control_supported = false;
 bool g_egl_angle_power_preference_supported = false;
+EGLGpuSwitchingObserver* g_egl_gpu_switching_observer = nullptr;
 
 constexpr const char kSwapEventTraceCategories[] = "gpu";
 
@@ -246,6 +250,14 @@ class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
   EGLSurface surface_;
 
   DISALLOW_COPY_AND_ASSIGN(EGLSyncControlVSyncProvider);
+};
+
+class EGLGpuSwitchingObserver final : public ui::GpuSwitchingObserver {
+ public:
+  void OnGpuSwitched(gl::GpuPreference active_gpu_heuristic) override {
+    DCHECK(GLSurfaceEGL::IsANGLEPowerPreferenceSupported());
+    eglHandleGPUSwitchANGLE(g_egl_display);
+  }
 };
 
 std::vector<const char*> GetAttribArrayFromStringVector(
@@ -963,6 +975,12 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
   g_egl_angle_power_preference_supported =
       HasEGLExtension("EGL_ANGLE_power_preference");
 
+  if (g_egl_angle_power_preference_supported) {
+    g_egl_gpu_switching_observer = new EGLGpuSwitchingObserver();
+    ui::GpuSwitchingManager::GetInstance()->AddObserver(
+        g_egl_gpu_switching_observer);
+  }
+
   initialized_ = true;
   return true;
 }
@@ -979,6 +997,13 @@ bool GLSurfaceEGL::InitializeExtensionSettingsOneOff() {
 
 // static
 void GLSurfaceEGL::ShutdownOneOff() {
+  if (g_egl_gpu_switching_observer) {
+    ui::GpuSwitchingManager::GetInstance()->RemoveObserver(
+        g_egl_gpu_switching_observer);
+    delete g_egl_gpu_switching_observer;
+    g_egl_gpu_switching_observer = nullptr;
+  }
+
   angle::ResetPlatform(g_egl_display);
 
   if (g_egl_display != EGL_NO_DISPLAY) {

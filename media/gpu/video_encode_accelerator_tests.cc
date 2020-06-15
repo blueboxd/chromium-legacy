@@ -192,6 +192,31 @@ TEST_F(VideoEncoderTest, DestroyBeforeInitialize) {
   EXPECT_NE(video_encoder, nullptr);
 }
 
+// Encode multiple videos simultaneously from start to finish.
+TEST_F(VideoEncoderTest, FlushAtEndOfStream_MultipleConcurrentEncodes) {
+  // The minimal number of concurrent encoders we expect to be supported.
+  constexpr size_t kMinSupportedConcurrentEncoders = 3;
+
+  VideoEncoderClientConfig config = VideoEncoderClientConfig();
+  config.framerate = g_env->Video()->FrameRate();
+
+  std::vector<std::unique_ptr<VideoEncoder>> encoders(
+      kMinSupportedConcurrentEncoders);
+  for (size_t i = 0; i < kMinSupportedConcurrentEncoders; ++i)
+    encoders[i] = CreateVideoEncoder(g_env->Video(), config);
+
+  for (size_t i = 0; i < kMinSupportedConcurrentEncoders; ++i)
+    encoders[i]->Encode();
+
+  for (size_t i = 0; i < kMinSupportedConcurrentEncoders; ++i) {
+    EXPECT_TRUE(encoders[i]->WaitForFlushDone());
+    EXPECT_EQ(encoders[i]->GetFlushDoneCount(), 1u);
+    EXPECT_EQ(encoders[i]->GetFrameReleasedCount(),
+              g_env->Video()->NumFrames());
+    EXPECT_TRUE(encoders[i]->WaitForBitstreamProcessors());
+  }
+}
+
 }  // namespace test
 }  // namespace media
 

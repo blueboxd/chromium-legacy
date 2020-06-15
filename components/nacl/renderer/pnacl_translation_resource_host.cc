@@ -28,12 +28,12 @@ void PnaclTranslationResourceHost::OnFilterAdded(IPC::Channel* channel) {
 
 void PnaclTranslationResourceHost::OnFilterRemoved() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  sender_ = NULL;
+  sender_ = nullptr;
 }
 
 void PnaclTranslationResourceHost::OnChannelClosing() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  sender_ = NULL;
+  sender_ = nullptr;
 }
 
 bool PnaclTranslationResourceHost::OnMessageReceived(

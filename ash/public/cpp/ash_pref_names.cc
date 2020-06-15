@@ -40,6 +40,10 @@ const char kAccessibilityScreenMagnifierScale[] =
 // due to lack of a physical keyboard.
 const char kAccessibilityVirtualKeyboardEnabled[] =
     "settings.a11y.virtual_keyboard";
+// A pref that identifies which kind of features are enabled for the Web Kiosk
+// session.
+const char kAccessibilityVirtualKeyboardFeatures[] =
+    "settings.a11y.virtual_keyboard_features";
 // A boolean pref which determines whether the mono audio output is enabled for
 // accessibility.
 const char kAccessibilityMonoAudioEnabled[] = "settings.a11y.mono_audio";

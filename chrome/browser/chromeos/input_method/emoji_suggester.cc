@@ -124,7 +124,7 @@ SuggestionStatus EmojiSuggester::HandleKeyEvent(
     return SuggestionStatus::kNotHandled;
   SuggestionStatus status = SuggestionStatus::kNotHandled;
   std::string error;
-  if (event.key == "Tab" || event.key == "Right" || event.key == "Enter") {
+  if (event.key == "Enter" && candidate_id_ != -1) {
     suggestion_shown_ = false;
     engine_->AcceptSuggestionCandidate(context_id_, candidates_[candidate_id_],
                                        &error);

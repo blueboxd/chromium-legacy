@@ -252,12 +252,14 @@ TEST_F(SimpleGeolocationTest, InvalidResponse) {
                      base::Unretained(&receiver)));
   receiver.WaitUntilRequestDone();
 
-  EXPECT_EQ(
-      "latitude=200.000000, longitude=200.000000, accuracy=-1.000000, "
-      "error_code=0, error_message='SimpleGeolocation provider at "
-      "'https://localhost/' : JSONReader failed: Line: 1, column: 1, "
-      "Unexpected token..', status=4 (TIMEOUT)",
-      receiver.position().ToString());
+  std::string receiver_position = receiver.position().ToString();
+  EXPECT_NE(
+      std::string::npos,
+      receiver_position.find(
+          "latitude=200.000000, longitude=200.000000, accuracy=-1.000000, "
+          "error_code=0, error_message='SimpleGeolocation provider at "
+          "'https://localhost/' : JSONReader failed:"));
+  EXPECT_NE(std::string::npos, receiver_position.find("status=4 (TIMEOUT)"));
   EXPECT_TRUE(receiver.server_error());
   EXPECT_GE(url_factory.attempts(), 2U);
   if (url_factory.attempts() > expected_retries + 1) {

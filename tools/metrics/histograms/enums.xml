@@ -20535,6 +20535,7 @@ Called by update_document_policy_enum.py.-->
   <int value="714" label="MinimumChromeVersionEolMessage"/>
   <int value="715" label="DefaultSearchProviderContextMenuAccessAllowed"/>
   <int value="716" label="CrostiniPortForwardingAllowed"/>
+  <int value="717" label="VirtualKeyboardFeatures"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">

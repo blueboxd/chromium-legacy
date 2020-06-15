@@ -146,6 +146,9 @@ function isRunningOnDualGpuSystem() {
 
 function getUnmaskedVendor() {
   let ext = gl.getExtension('WEBGL_debug_renderer_info');
+  let renderer = gl.getParameter(ext.UNMASKED_RENDERER_WEBGL);
+  if (renderer.startsWith('ANGLE'))
+    return renderer;
   return gl.getParameter(ext.UNMASKED_VENDOR_WEBGL);
 }
 

@@ -369,7 +369,7 @@ void PnaclHost::CheckCacheQueryReady(
   }
 
   std::unique_ptr<base::File> file(pt->nexe_fd);
-  pt->nexe_fd = NULL;
+  pt->nexe_fd = nullptr;
   pt->got_nexe_fd = false;
   FileProxy* proxy(new FileProxy(std::move(file), this));
 
@@ -444,7 +444,7 @@ void PnaclHost::TranslationFinished(int render_process_id,
     store_nexe = false;
   } else {
     std::unique_ptr<base::File> file(entry->second.nexe_fd);
-    entry->second.nexe_fd = NULL;
+    entry->second.nexe_fd = nullptr;
     entry->second.got_nexe_fd = false;
 
     base::ThreadPool::PostTaskAndReplyWithResult(
@@ -458,7 +458,7 @@ void PnaclHost::TranslationFinished(int render_process_id,
     // If store_nexe is true, the fd will be closed by CopyFileToBuffer.
     if (entry->second.got_nexe_fd) {
       std::unique_ptr<base::File> file(entry->second.nexe_fd);
-      entry->second.nexe_fd = NULL;
+      entry->second.nexe_fd = nullptr;
       CloseBaseFile(std::move(*file.get()));
     }
     pending_translations_.erase(entry);
@@ -482,7 +482,7 @@ void PnaclHost::StoreTranslatedNexe(
     return;
   }
 
-  if (buffer.get() == NULL) {
+  if (!buffer.get()) {
     LOG(ERROR) << "Error reading translated nexe";
     return;
   }
@@ -565,7 +565,7 @@ void PnaclHost::RendererClosing(int render_process_id) {
       // Clean up the open files.
       if (to_erase->second.nexe_fd) {
         std::unique_ptr<base::File> file(to_erase->second.nexe_fd);
-        to_erase->second.nexe_fd = NULL;
+        to_erase->second.nexe_fd = nullptr;
         CloseBaseFile(std::move(*file.get()));
       }
       std::string key(to_erase->second.cache_key);

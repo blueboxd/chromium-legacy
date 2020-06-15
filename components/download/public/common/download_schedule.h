@@ -15,8 +15,7 @@ namespace download {
 // feature.
 class COMPONENTS_DOWNLOAD_EXPORT DownloadSchedule {
  public:
-  explicit DownloadSchedule(bool only_on_wifi);
-  explicit DownloadSchedule(base::Optional<base::Time> start_time);
+  DownloadSchedule(bool only_on_wifi, base::Optional<base::Time> start_time);
   DownloadSchedule(const DownloadSchedule&);
   ~DownloadSchedule();
 

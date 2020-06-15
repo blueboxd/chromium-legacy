@@ -58,4 +58,63 @@ TEST_F(EmojiSuggesterTest, DoNotShowSuggestionWhenVirtualKeyboardEnabled) {
   EXPECT_FALSE(emoji_suggester_->GetSuggestionShownForTesting());
 }
 
+TEST_F(EmojiSuggesterTest, ReturnkBrowsingWhenPressingDown) {
+  EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
+  InputMethodEngineBase::KeyboardEvent event;
+  event.key = "Down";
+  EXPECT_EQ(SuggestionStatus::kBrowsing,
+            emoji_suggester_->HandleKeyEvent(event));
+}
+
+TEST_F(EmojiSuggesterTest, ReturnkBrowsingWhenPressingUp) {
+  EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
+  InputMethodEngineBase::KeyboardEvent event;
+  event.key = "Up";
+  EXPECT_EQ(SuggestionStatus::kBrowsing,
+            emoji_suggester_->HandleKeyEvent(event));
+}
+
+TEST_F(EmojiSuggesterTest, ReturnkDismissWhenPressingEsc) {
+  EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
+  InputMethodEngineBase::KeyboardEvent event;
+  event.key = "Esc";
+  EXPECT_EQ(SuggestionStatus::kDismiss,
+            emoji_suggester_->HandleKeyEvent(event));
+}
+
+TEST_F(EmojiSuggesterTest,
+       ReturnkNotHandledWhenPressingEnterAndACandidateHasNotBeenChosen) {
+  EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
+  InputMethodEngineBase::KeyboardEvent event;
+  event.key = "Enter";
+  EXPECT_EQ(SuggestionStatus::kNotHandled,
+            emoji_suggester_->HandleKeyEvent(event));
+}
+
+TEST_F(EmojiSuggesterTest,
+       ReturnkAcceptWhenPressingEnterAndACandidateHasBeenChosenByPressingDown) {
+  EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
+  // Press "Down" to choose a candidate.
+  InputMethodEngineBase::KeyboardEvent event1;
+  event1.key = "Down";
+  emoji_suggester_->HandleKeyEvent(event1);
+  InputMethodEngineBase::KeyboardEvent event2;
+  event2.key = "Enter";
+  EXPECT_EQ(SuggestionStatus::kAccept,
+            emoji_suggester_->HandleKeyEvent(event2));
+}
+
+TEST_F(EmojiSuggesterTest,
+       ReturnkAcceptWhenPressingEnterAndACandidateHasBeenChosenByPressingUp) {
+  EXPECT_TRUE(emoji_suggester_->Suggest(base::UTF8ToUTF16("happy ")));
+  // Press "Down" to choose a candidate.
+  InputMethodEngineBase::KeyboardEvent event1;
+  event1.key = "Up";
+  emoji_suggester_->HandleKeyEvent(event1);
+  InputMethodEngineBase::KeyboardEvent event2;
+  event2.key = "Enter";
+  EXPECT_EQ(SuggestionStatus::kAccept,
+            emoji_suggester_->HandleKeyEvent(event2));
+}
+
 }  // namespace chromeos

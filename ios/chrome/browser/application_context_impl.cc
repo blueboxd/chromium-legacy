@@ -424,15 +424,24 @@ BrowserPolicyConnectorIOS* ApplicationContextImpl::GetBrowserPolicyConnector() {
       // later in the startup sequence, after the ResourceBundle is initialized.
       DCHECK(ui::ResourceBundle::HasSharedInstance());
       version_info::Channel channel = ::GetChannel();
+      policy::ConfigurationPolicyProvider* test_policy_provider =
+          tests_hook::GetOverriddenPlatformPolicyProvider();
+
+      // If running under test (for example, if a mock platform policy provider
+      // was provided), enable future policies without requiring them to be on
+      // an allowlist. Otherwise, disable future policies on
+      // externally-published channels, unless a domain administrator explicitly
+      // adds them to the allowlist.
+      bool enable_future_policies_without_allowlist =
+          test_policy_provider != nullptr ||
+          (channel != version_info::Channel::STABLE &&
+           channel != version_info::Channel::BETA);
       browser_policy_connector_ = std::make_unique<BrowserPolicyConnectorIOS>(
           base::Bind(&BuildPolicyHandlerList,
-                     channel != version_info::Channel::STABLE &&
-                         channel != version_info::Channel::BETA));
+                     enable_future_policies_without_allowlist));
 
       // Install a mock platform policy provider, if running under EG2 and one
       // is supplied.
-      policy::ConfigurationPolicyProvider* test_policy_provider =
-          tests_hook::GetOverriddenPlatformPolicyProvider();
       if (test_policy_provider) {
         browser_policy_connector_->SetPolicyProviderForTesting(
             test_policy_provider);

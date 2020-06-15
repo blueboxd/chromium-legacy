@@ -4,6 +4,8 @@
 
 #include "components/download/database/download_db_conversions.h"
 
+#include "base/optional.h"
+#include "components/download/public/common/download_schedule.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,6 +48,8 @@ InProgressInfo CreateInProgressInfo() {
       std::make_pair<std::string, std::string>("123", "456"));
   info.request_headers.emplace_back(
       std::make_pair<std::string, std::string>("ABC", "def"));
+  info.download_schedule = base::make_optional<DownloadSchedule>(
+      false /*only_on_wifi*/, base::nullopt);
   return info;
 }
 
@@ -161,6 +165,24 @@ TEST_F(DownloadDBConversionsTest, DownloadDBEntry) {
 
   entry.download_info = CreateDownloadInfo();
   EXPECT_EQ(entry, DownloadDBEntryFromProto(DownloadDBEntryToProto(entry)));
+}
+
+TEST_F(DownloadDBConversionsTest, DownloadSchedule) {
+  const bool kOnlyOnWifi = true;
+  DownloadSchedule download_schedule(kOnlyOnWifi, base::nullopt /*start_time*/);
+  // InProgressInfo.metered is used to set DownloadSchedule.only_on_wifi.
+  auto persisted_download_schedule = DownloadScheduleFromProto(
+      DownloadScheduleToProto(download_schedule), !kOnlyOnWifi);
+  EXPECT_FALSE(persisted_download_schedule.only_on_wifi());
+  EXPECT_TRUE(download_schedule.only_on_wifi());
+
+  base::Time time;
+  bool success = base::Time::FromUTCString("2020-06-11 15:41", &time);
+  ASSERT_TRUE(success);
+  download_schedule = DownloadSchedule(kOnlyOnWifi, time);
+  persisted_download_schedule = DownloadScheduleFromProto(
+      DownloadScheduleToProto(download_schedule), kOnlyOnWifi);
+  EXPECT_EQ(persisted_download_schedule, download_schedule);
 }
 
 }  // namespace download

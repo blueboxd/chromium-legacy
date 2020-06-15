@@ -37,7 +37,7 @@ bool SelectFileDialogImpl::IsRunning(gfx::NativeWindow parent_window) const {
 }
 
 void SelectFileDialogImpl::ListenerDestroyed() {
-  listener_ = NULL;
+  listener_ = nullptr;
 }
 
 void SelectFileDialogImpl::FileWasSelected(

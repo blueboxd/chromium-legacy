@@ -149,6 +149,7 @@ MOCK_METHOD5(GetSyncValuesCHROMIUM,
                         EGLuint64CHROMIUM* ust,
                         EGLuint64CHROMIUM* msc,
                         EGLuint64CHROMIUM* sbc));
+MOCK_METHOD1(HandleGPUSwitchANGLE, void(EGLDisplay dpy));
 MOCK_METHOD3(ImageFlushExternalEXT,
              EGLBoolean(EGLDisplay dpy,
                         EGLImageKHR image,
@@ -210,6 +211,8 @@ MOCK_METHOD4(QuerySurfacePointerANGLE,
                         EGLSurface surface,
                         EGLint attribute,
                         void** value));
+MOCK_METHOD2(ReacquireHighPowerGPUANGLE, void(EGLDisplay dpy, EGLContext ctx));
+MOCK_METHOD2(ReleaseHighPowerGPUANGLE, void(EGLDisplay dpy, EGLContext ctx));
 MOCK_METHOD3(ReleaseTexImage,
              EGLBoolean(EGLDisplay dpy, EGLSurface surface, EGLint buffer));
 MOCK_METHOD0(ReleaseThread, EGLBoolean());

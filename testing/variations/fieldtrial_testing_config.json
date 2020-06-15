@@ -2441,6 +2441,21 @@
             ]
         }
     ],
+    "EnterpriseReportingInChromeOS": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200508",
+                    "enable_features": [
+                        "EnterpriseReportingInChromeOS"
+                    ]
+                }
+            ]
+        }
+    ],
     "EphemeralTab": [
         {
             "platforms": [

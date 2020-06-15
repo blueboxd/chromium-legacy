@@ -48,7 +48,7 @@ void SelectFileDialogImpl::OnFileSelected(
   if (!file_name.empty())
     file_info.display_name = file_name;
 
-  listener_->FileSelectedWithExtraInfo(file_info, 0, NULL);
+  listener_->FileSelectedWithExtraInfo(file_info, 0, nullptr);
 }
 
 void SelectFileDialogImpl::OnMultipleFilesSelected(
@@ -83,14 +83,14 @@ void SelectFileDialogImpl::OnMultipleFilesSelected(
     selected_files.push_back(file_info);
   }
 
-  listener_->MultiFilesSelectedWithExtraInfo(selected_files, NULL);
+  listener_->MultiFilesSelectedWithExtraInfo(selected_files, nullptr);
 }
 
 void SelectFileDialogImpl::OnFileNotSelected(
     JNIEnv* env,
     const JavaParamRef<jobject>& java_object) {
   if (listener_)
-    listener_->FileSelectionCanceled(NULL);
+    listener_->FileSelectionCanceled(nullptr);
 }
 
 void SelectFileDialogImpl::OnContactsSelected(
@@ -107,7 +107,7 @@ bool SelectFileDialogImpl::IsRunning(gfx::NativeWindow) const {
 }
 
 void SelectFileDialogImpl::ListenerDestroyed() {
-  listener_ = NULL;
+  listener_ = nullptr;
 }
 
 void SelectFileDialogImpl::SelectFileImpl(

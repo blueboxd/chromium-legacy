@@ -275,9 +275,6 @@ void AppWindow::Init(const GURL& url,
   // Initialize the window
   CreateParams new_params = LoadDefaults(params);
   window_type_ = new_params.window_type;
-  UMA_HISTOGRAM_ENUMERATION("Apps.Window.Type", new_params.window_type,
-                            WINDOW_TYPE_COUNT);
-
   window_key_ = new_params.window_key;
 
   // Windows cannot be always-on-top in fullscreen mode for security reasons.

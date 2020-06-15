@@ -79,6 +79,8 @@ void KeyboardControllerImpl::RegisterProfilePrefs(
       ash::prefs::kXkbAutoRepeatInterval,
       ash::kDefaultKeyAutoRepeatInterval.InMilliseconds(),
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterDictionaryPref(
+      prefs::kAccessibilityVirtualKeyboardFeatures);
 }
 
 void KeyboardControllerImpl::CreateVirtualKeyboard(

@@ -4906,8 +4906,8 @@
   <message name="IDS_SMB_SHARES_ADD_SERVICE_MENU_OPTION" desc="The text displayed in the files app Add New Services menu for the option that allows users to mount a new SMB file share.">
     SMB file share
   </message>
-  <message name="IDS_SMB_SHARES_CREDENTIALS_DIALOG_TITLE" desc="The text displayed as the title of the dialog that prompts users to updated their username and passowrd for a mounted SMB file share.">
-    Update credentials for <ph name="SHARE_PATH">$1<ex>\\server\share</ex></ph>.
+  <message name="IDS_SMB_SHARES_CREDENTIALS_DIALOG_TITLE" desc="The text displayed as the title of the dialog that prompts users to update their username and password for a mounted SMB file share. Without full stop at the end, because this is a title.">
+    Update credentials for <ph name="SHARE_PATH">$1<ex>\\server\share</ex></ph>
   </message>
   <message name="IDS_SMB_SHARES_CREDENTIALS_USERNAME" desc="Title for the input that lets users specify their username for an SMB share. This field is required.">
     Username

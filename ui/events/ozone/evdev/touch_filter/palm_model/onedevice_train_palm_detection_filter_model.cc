@@ -58,6 +58,7 @@ OneDeviceTrainNeuralStylusPalmDetectionFilterModel::
   config_.max_dead_neighbor_time = base::TimeDelta::FromMillisecondsD(100.0f);
   config_.heuristic_palm_touch_limit = 20.0f;
   config_.heuristic_palm_area_limit = 400.0f;
+  config_.max_blank_time = base::TimeDelta::FromMillisecondsD(100.0f);
 }
 
 OneDeviceTrainNeuralStylusPalmDetectionFilterModel::

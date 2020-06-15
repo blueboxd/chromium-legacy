@@ -11,7 +11,7 @@
 #include "base/strings/string_util.h"
 #include "components/arc/intent_helper/intent_constants.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
-#include "components/services/app_service/public/cpp/arc_intent_util.h"
+#include "components/services/app_service/public/cpp/intent_util.h"
 #include "url/gurl.h"
 
 namespace arc {

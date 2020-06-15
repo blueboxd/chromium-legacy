@@ -269,6 +269,18 @@ YUVToRGBConverter* GLContextEGL::GetYUVToRGBConverter(
   return yuv_to_rgb_converter.get();
 }
 
+void GLContextEGL::SetVisibility(bool visibility) {
+  if (GLSurfaceEGL::IsANGLEPowerPreferenceSupported()) {
+    // It doesn't matter whether this context was explicitly allocated
+    // with a power preference - ANGLE will take care of any default behavior.
+    if (visibility) {
+      eglReacquireHighPowerGPUANGLE(display_, context_);
+    } else {
+      eglReleaseHighPowerGPUANGLE(display_, context_);
+    }
+  }
+}
+
 void GLContextEGL::ReleaseYUVToRGBConvertersAndBackpressureFences() {
 #if defined(OS_MACOSX)
   bool has_backpressure_fences = HasBackpressureFences();

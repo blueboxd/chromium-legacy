@@ -36,16 +36,16 @@ struct PermissionInfo {
 // |length| is the length of the blob.  Zero on failure.
 // Returns the blob pointer, or NULL on failure.
 void* GetPermissionInfo(const FilePath& path, size_t* length) {
-  DCHECK(length != NULL);
+  DCHECK(length);
   *length = 0;
-  PACL dacl = NULL;
+  PACL dacl = nullptr;
   PSECURITY_DESCRIPTOR security_descriptor;
   if (GetNamedSecurityInfo(path.value().c_str(), SE_FILE_OBJECT,
-                           DACL_SECURITY_INFORMATION, NULL, NULL, &dacl, NULL,
-                           &security_descriptor) != ERROR_SUCCESS) {
-    return NULL;
+                           DACL_SECURITY_INFORMATION, nullptr, nullptr, &dacl,
+                           nullptr, &security_descriptor) != ERROR_SUCCESS) {
+    return nullptr;
   }
-  DCHECK(dacl != NULL);
+  DCHECK(dacl);
 
   *length = sizeof(PSECURITY_DESCRIPTOR) + dacl->AclSize;
   PermissionInfo* info = reinterpret_cast<PermissionInfo*>(new char[*length]);
@@ -68,7 +68,7 @@ bool RestorePermissionInfo(const FilePath& path, void* info, size_t length) {
 
   DWORD rc = SetNamedSecurityInfo(const_cast<wchar_t*>(path.value().c_str()),
                                   SE_FILE_OBJECT, DACL_SECURITY_INFORMATION,
-                                  NULL, NULL, &perm->dacl, NULL);
+                                  nullptr, nullptr, &perm->dacl, nullptr);
   LocalFree(perm->security_descriptor);
 
   char* char_array = reinterpret_cast<char*>(info);
@@ -113,8 +113,8 @@ void SyncPageCacheToDisk() {
 
 bool EvictFileFromSystemCache(const FilePath& file) {
   win::ScopedHandle file_handle(
-      CreateFile(file.value().c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL,
-                 OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, NULL));
+      CreateFile(file.value().c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr,
+                 OPEN_EXISTING, FILE_FLAG_NO_BUFFERING, nullptr));
   if (!file_handle.IsValid())
     return false;
 
@@ -175,9 +175,9 @@ bool MakeFileUnwritable(const FilePath& path) {
 }
 
 FilePermissionRestorer::FilePermissionRestorer(const FilePath& path)
-    : path_(path), info_(NULL), length_(0) {
+    : path_(path), info_(nullptr), length_(0) {
   info_ = GetPermissionInfo(path_, &length_);
-  DCHECK(info_ != NULL);
+  DCHECK(info_);
   DCHECK_NE(0u, length_);
 }
 

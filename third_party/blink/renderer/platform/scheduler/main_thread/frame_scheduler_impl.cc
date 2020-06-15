@@ -558,12 +558,18 @@ void FrameSchedulerImpl::DidCommitProvisionalLoad(
     bool is_web_history_inert_commit,
     NavigationType navigation_type) {
   bool is_main_frame = GetFrameType() == FrameType::kMainFrame;
-  if (is_main_frame && navigation_type != NavigationType::kSameDocument)
+  bool is_same_document = navigation_type == NavigationType::kSameDocument;
+
+  if (!is_same_document) {
+    waiting_for_contentful_paint_ = true;
+    waiting_for_meaningful_paint_ = true;
+  }
+  if (is_main_frame && !is_same_document)
     task_time_ = base::TimeDelta();
   main_thread_scheduler_->DidCommitProvisionalLoad(
       is_web_history_inert_commit, navigation_type == NavigationType::kReload,
       is_main_frame);
-  if (navigation_type != NavigationType::kSameDocument)
+  if (!is_same_document)
     ResetForNavigation();
 }
 

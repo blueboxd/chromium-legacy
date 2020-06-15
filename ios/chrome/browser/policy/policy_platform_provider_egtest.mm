@@ -46,6 +46,9 @@ AppLaunchConfiguration GenerateAppLaunchConfiguration(std::string policy_data,
   if (disable_policy) {
     config.additional_args.push_back(std::string("--") +
                                      switches::kDisableEnterprisePolicy);
+  } else {
+    config.additional_args.push_back(std::string("--") +
+                                     switches::kEnableEnterprisePolicy);
   }
 
   // Remove whitespace from the policy data, because the XML parser does not
@@ -72,17 +75,18 @@ AppLaunchConfiguration GenerateAppLaunchConfiguration(std::string policy_data,
 @implementation PolicyPlatformProviderTestCase
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
-  const std::string loadPolicyKey =
-      base::SysNSStringToUTF8(kPolicyLoaderIOSLoadPolicyKey);
   std::string policyData = "<dict>"
-                           "    <key>" +
-                           loadPolicyKey +
-                           "</key>"
-                           "    <true/>"
+                           "    <key>EnableExperimentalPolicies</key>"
+                           "    <array>"
+                           "      <string>DefaultSearchProviderName</string>"
+                           "      <string>SearchSuggestEnabled</string>"
+                           "    </array>"
                            "    <key>DefaultSearchProviderName</key>"
                            "    <string>Test</string>"
                            "    <key>NotARegisteredPolicy</key>"
                            "    <string>Unknown</string>"
+                           "    <key>SavingBrowserHistoryDisabled</key>"
+                           "    <true/>"
                            "    <key>SearchSuggestEnabled</key>"
                            "    <false/>"
                            "</dict>";
@@ -126,41 +130,6 @@ AppLaunchConfiguration GenerateAppLaunchConfiguration(std::string policy_data,
                   @"unknownValue had an unexpected value");
 }
 
-// Verifies that the kPolicyLoaderIOSLoadPolicyKey field is not loaded, even
-// though it is present in the policy data.
-- (void)testLoadPolicyKeyIsStripped {
-  std::unique_ptr<base::Value> loadValue =
-      GetPlatformPolicy(base::SysNSStringToUTF8(kPolicyLoaderIOSLoadPolicyKey));
-  GREYAssertTrue(loadValue && loadValue->is_none(),
-                 @"The LoadPolicy key was unexpectedly present in policy data");
-}
-
-@end
-
-// Test case that uses the production platform policy provider but does not pass
-// the special key that enables policy support.
-@interface PolicyNotEnabledTestCase : ChromeTestCase
-@end
-
-@implementation PolicyNotEnabledTestCase
-
-- (AppLaunchConfiguration)appConfigurationForTestCase {
-  std::string policyData = "<dict>"
-                           "    <key>DefaultSearchProviderName</key>"
-                           "    <string>Test</string>"
-                           "</dict>";
-  return GenerateAppLaunchConfiguration(policyData, /*disable_policy=*/false);
-}
-
-// Tests that policies are not loaded unless kPolicyLoaderIOSLoadPolicyKey is
-// set.
-- (void)testLoadPolicyKeyNotSet {
-  std::unique_ptr<base::Value> searchValue =
-      GetPlatformPolicy(policy::key::kDefaultSearchProviderName);
-  GREYAssertTrue(searchValue && searchValue->is_none(),
-                 @"searchValue was unexpectedly set");
-}
-
 @end
 
 // Test case that uses the production platform policy provider and explicitly
@@ -171,13 +140,11 @@ AppLaunchConfiguration GenerateAppLaunchConfiguration(std::string policy_data,
 @implementation PolicyDisabledTestCase
 
 - (AppLaunchConfiguration)appConfigurationForTestCase {
-  const std::string loadPolicyKey =
-      base::SysNSStringToUTF8(kPolicyLoaderIOSLoadPolicyKey);
   std::string policyData = "<dict>"
-                           "    <key>" +
-                           loadPolicyKey +
-                           "    </key>"
-                           "    <true/>"
+                           "    <key>EnableExperimentalPolicies</key>"
+                           "    <array>"
+                           "      <string>DefaultSearchProviderName</string>"
+                           "    </array>"
                            "    <key>DefaultSearchProviderName</key>"
                            "    <string>Test</string>"
                            "</dict>";

@@ -142,7 +142,7 @@ TEST_F(LockLayoutManagerTest, MaximizedFullscreenWindowBoundsAreEqualToScreen) {
       CreateTestLoginWindow(std::move(widget_params), true /* use_delegate */));
 
   widget_params.show_state = ui::SHOW_STATE_FULLSCREEN;
-  widget_params.delegate = NULL;
+  widget_params.delegate = nullptr;
   std::unique_ptr<aura::Window> fullscreen_window(CreateTestLoginWindow(
       std::move(widget_params), false /* use_delegate */));
 

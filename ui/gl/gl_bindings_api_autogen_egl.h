@@ -134,6 +134,7 @@ EGLBoolean eglGetSyncValuesCHROMIUMFn(EGLDisplay dpy,
                                       EGLuint64CHROMIUM* ust,
                                       EGLuint64CHROMIUM* msc,
                                       EGLuint64CHROMIUM* sbc) override;
+void eglHandleGPUSwitchANGLEFn(EGLDisplay dpy) override;
 EGLBoolean eglImageFlushExternalEXTFn(EGLDisplay dpy,
                                       EGLImageKHR image,
                                       const EGLAttrib* attrib_list) override;
@@ -188,6 +189,8 @@ EGLBoolean eglQuerySurfacePointerANGLEFn(EGLDisplay dpy,
                                          EGLSurface surface,
                                          EGLint attribute,
                                          void** value) override;
+void eglReacquireHighPowerGPUANGLEFn(EGLDisplay dpy, EGLContext ctx) override;
+void eglReleaseHighPowerGPUANGLEFn(EGLDisplay dpy, EGLContext ctx) override;
 EGLBoolean eglReleaseTexImageFn(EGLDisplay dpy,
                                 EGLSurface surface,
                                 EGLint buffer) override;

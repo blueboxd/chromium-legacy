@@ -13,7 +13,6 @@
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
-#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -33,6 +32,7 @@ class Display;
 }
 
 namespace ui {
+class AnimationMetricsReporter;
 class ImplicitAnimationObserver;
 }  // namespace ui
 
@@ -298,8 +298,8 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
       const ui::LocatedEvent& event_in_screen,
       float launcher_above_shelf_bottom_amount) const;
 
-  // Returns a animation metrics reporting callback  for state transition.
-  metrics_util::SmoothnessCallback GetStateTransitionMetricsReportCallback();
+  // Returns a animation metrics reportre for state transition.
+  ui::AnimationMetricsReporter* GetStateTransitionMetricsReporter();
 
   // Called when drag in tablet mode starts/proceeds/ends.
   void OnHomeLauncherDragStart();

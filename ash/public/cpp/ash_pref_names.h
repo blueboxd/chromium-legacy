@@ -20,6 +20,7 @@ ASH_PUBLIC_EXPORT extern const char kAccessibilityScreenMagnifierCenterFocus[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityScreenMagnifierEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityScreenMagnifierScale[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityVirtualKeyboardEnabled[];
+ASH_PUBLIC_EXPORT extern const char kAccessibilityVirtualKeyboardFeatures[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityMonoAudioEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityAutoclickEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityShortcutsEnabled[];

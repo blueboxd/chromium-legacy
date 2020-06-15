@@ -399,9 +399,7 @@ void CrosUsbDetector::OnDeviceChecked(
       GetFilteredInterfacesMask(guest_os_classes_blocked_, *device_info);
 
   new_device.sharable_with_crostini =
-      has_supported_interface ||
-      (new_device.allowed_interfaces_mask != 0 &&
-       base::FeatureList::IsEnabled(features::kCrostiniUsbAllowUnsupported));
+      has_supported_interface || new_device.allowed_interfaces_mask != 0;
 
   usb_devices_.push_back(new_device);
   available_device_info_.emplace(device_info->guid, device_info.Clone());

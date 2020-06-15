@@ -38,12 +38,13 @@ ExtensionRequestObserver::ExtensionRequestObserver(Profile* profile)
 }
 
 ExtensionRequestObserver::~ExtensionRequestObserver() {
-  // If Profile is still available during shutdown
-  if (g_browser_process->profile_manager()) {
-    extensions::ExtensionManagementFactory::GetForBrowserContext(profile_)
-        ->RemoveObserver(this);
-    CloseAllNotifications();
+  // If ExtensionManagement is still available during shutdown
+  extensions::ExtensionManagement* extension_management =
+      extensions::ExtensionManagementFactory::GetForBrowserContext(profile_);
+  if (extension_management) {
+    extension_management->RemoveObserver(this);
   }
+  CloseAllNotifications();
 }
 
 void ExtensionRequestObserver::OnExtensionManagementSettingsChanged() {

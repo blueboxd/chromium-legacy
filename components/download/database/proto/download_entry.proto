@@ -44,6 +44,11 @@ message UkmInfo {
   optional int64 ukm_download_id = 2;
 }
 
+// Information about when to start the download, used by download later feature.
+message DownloadSchedule {
+  optional int64 start_time = 1;
+}
+
 // Information about an in progress download.
 message InProgressInfo {
   repeated string url_chain = 1;
@@ -73,6 +78,7 @@ message InProgressInfo {
   optional bool metered = 25;
   optional int64 bytes_wasted = 26;
   optional int32 auto_resume_count = 27;
+  optional DownloadSchedule download_schedule = 28;
 }
 
 // Stores various metadata related to a download.

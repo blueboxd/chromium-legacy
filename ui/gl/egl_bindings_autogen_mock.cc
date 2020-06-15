@@ -355,6 +355,12 @@ MockEGLInterface::Mock_eglGetSyncValuesCHROMIUM(EGLDisplay dpy,
   return interface_->GetSyncValuesCHROMIUM(dpy, surface, ust, msc, sbc);
 }
 
+void GL_BINDING_CALL
+MockEGLInterface::Mock_eglHandleGPUSwitchANGLE(EGLDisplay dpy) {
+  MakeEglMockFunctionUnique("eglHandleGPUSwitchANGLE");
+  interface_->HandleGPUSwitchANGLE(dpy);
+}
+
 EGLBoolean GL_BINDING_CALL
 MockEGLInterface::Mock_eglImageFlushExternalEXT(EGLDisplay dpy,
                                                 EGLImageKHR image,
@@ -490,6 +496,20 @@ MockEGLInterface::Mock_eglQuerySurfacePointerANGLE(EGLDisplay dpy,
                                                    void** value) {
   MakeEglMockFunctionUnique("eglQuerySurfacePointerANGLE");
   return interface_->QuerySurfacePointerANGLE(dpy, surface, attribute, value);
+}
+
+void GL_BINDING_CALL
+MockEGLInterface::Mock_eglReacquireHighPowerGPUANGLE(EGLDisplay dpy,
+                                                     EGLContext ctx) {
+  MakeEglMockFunctionUnique("eglReacquireHighPowerGPUANGLE");
+  interface_->ReacquireHighPowerGPUANGLE(dpy, ctx);
+}
+
+void GL_BINDING_CALL
+MockEGLInterface::Mock_eglReleaseHighPowerGPUANGLE(EGLDisplay dpy,
+                                                   EGLContext ctx) {
+  MakeEglMockFunctionUnique("eglReleaseHighPowerGPUANGLE");
+  interface_->ReleaseHighPowerGPUANGLE(dpy, ctx);
 }
 
 EGLBoolean GL_BINDING_CALL
@@ -723,6 +743,9 @@ MockEGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "eglGetSyncValuesCHROMIUM") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_eglGetSyncValuesCHROMIUM);
+  if (strcmp(name, "eglHandleGPUSwitchANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_eglHandleGPUSwitchANGLE);
   if (strcmp(name, "eglImageFlushExternalEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_eglImageFlushExternalEXT);
@@ -761,6 +784,12 @@ MockEGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "eglQuerySurfacePointerANGLE") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_eglQuerySurfacePointerANGLE);
+  if (strcmp(name, "eglReacquireHighPowerGPUANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_eglReacquireHighPowerGPUANGLE);
+  if (strcmp(name, "eglReleaseHighPowerGPUANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_eglReleaseHighPowerGPUANGLE);
   if (strcmp(name, "eglReleaseTexImage") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_eglReleaseTexImage);
   if (strcmp(name, "eglReleaseThread") == 0)

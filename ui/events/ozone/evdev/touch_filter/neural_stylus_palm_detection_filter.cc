@@ -33,6 +33,7 @@ NeuralStylusPalmDetectionFilter::NeuralStylusPalmDetectionFilter(
     std::unique_ptr<NeuralStylusPalmDetectionFilterModel> palm_model,
     SharedPalmDetectionFilterState* shared_palm_state)
     : PalmDetectionFilter(shared_palm_state),
+      tracking_ids_count_within_session_(0),
       palm_filter_dev_info_(CreatePalmFilterDeviceInfo(devinfo)),
       model_(std::move(palm_model)) {
   DCHECK(CompatibleWithNeuralStylusPalmDetectionFilter(devinfo))
@@ -120,6 +121,7 @@ void NeuralStylusPalmDetectionFilter::Filter(
   slots_to_hold->reset();
   slots_to_suppress->reset();
   std::unordered_set<int> slots_to_decide;
+  std::vector<int> ended_tracking_ids;
   uint32_t total_finger_touching = 0;
   for (const auto& touch : touches) {
     if (touch.touching && touch.tool_code != BTN_TOOL_PEN) {
@@ -156,6 +158,12 @@ void NeuralStylusPalmDetectionFilter::Filter(
     }
 
     DCHECK_NE(tracking_id, -1);
+
+    auto insert_result = active_tracking_ids_.insert(tracking_id);
+    // New tracking_id.
+    if (insert_result.second)
+      tracking_ids_count_within_session_++;
+
     // Find the stroke in the stroke list.
     auto stroke_it = strokes_.find(tracking_id);
 
@@ -172,6 +180,8 @@ void NeuralStylusPalmDetectionFilter::Filter(
       if (stroke.samples().size() < config.max_sample_count) {
         slots_to_decide.insert(slot);
       }
+
+      ended_tracking_ids.push_back(tracking_id);
       continue;
     }
 
@@ -212,6 +222,11 @@ void NeuralStylusPalmDetectionFilter::Filter(
       shared_palm_state_->latest_palm_touch_time = time;
     }
   }
+
+  for (const int tracking_id : ended_tracking_ids) {
+    active_tracking_ids_.erase(tracking_id);
+  }
+
   *slots_to_suppress |= is_palm_;
   *slots_to_hold |= is_delay_;
 
@@ -304,6 +319,14 @@ std::vector<float> NeuralStylusPalmDetectionFilter::ExtractFeatures(
       features.resize(
           features.size() + features_per_stroke + kExtraFeaturesForNeighbor, 0);
     }
+  }
+
+  if (config.use_tracking_id_count) {
+    features.push_back(tracking_ids_count_within_session_);
+  }
+
+  if (config.use_active_tracking_id_count) {
+    features.push_back(active_tracking_ids_.size());
   }
 
   return features;
@@ -419,5 +442,12 @@ void NeuralStylusPalmDetectionFilter::EraseOldStrokes(base::TimeTicks time) {
       ++it;
     }
   }
+
+  // If the blank time is more than max_blank_time, starts a new session.
+  if (time - previous_report_time_ > model_->config().max_blank_time) {
+    tracking_ids_count_within_session_ = 0;
+    active_tracking_ids_.clear();
+  }
+  previous_report_time_ = time;
 }
 }  // namespace ui

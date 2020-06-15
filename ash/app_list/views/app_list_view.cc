@@ -23,7 +23,6 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_features.h"
-#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "base/macros.h"
@@ -38,7 +37,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
-#include "ui/compositor/animation_throughput_reporter.h"
+#include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -252,63 +251,65 @@ float ComputeSubpixelOffset(const display::Display& display, float value) {
 ////////////////////////////////////////////////////////////////////////////////
 // AppListView::StateAnimationMetricsReporter
 
-class AppListView::StateAnimationMetricsReporter {
+class AppListView::StateAnimationMetricsReporter
+    : public ui::AnimationMetricsReporter {
  public:
   explicit StateAnimationMetricsReporter(AppListView* view) : view_(view) {}
-  StateAnimationMetricsReporter(const StateAnimationMetricsReporter&) = delete;
-  StateAnimationMetricsReporter& operator=(
-      const StateAnimationMetricsReporter&) = delete;
-  ~StateAnimationMetricsReporter() = default;
 
-  // Sets target state of the transition for metrics.
+  ~StateAnimationMetricsReporter() override = default;
+
   void SetTargetState(AppListViewState target_state) {
     target_state_ = target_state;
   }
 
-  // Sets tablet animation transition type for metrics.
+  void Start(bool is_in_tablet_mode) {
+    is_in_tablet_mode_ = is_in_tablet_mode;
+#if defined(DCHECK)
+    DCHECK(!started_);
+    started_ = ui::ScopedAnimationDurationScaleMode::duration_scale_mode() !=
+               ui::ScopedAnimationDurationScaleMode::ZERO_DURATION;
+#endif
+  }
+
+  void Reset();
+
   void SetTabletModeAnimationTransition(
       TabletModeAnimationTransition transition) {
     tablet_transition_ = transition;
   }
 
-  // Resets the target state and animation type for metrics.
-  void Reset();
-
-  // Gets a callback to report smoothness.
-  metrics_util::SmoothnessCallback GetReportCallback(bool tablet_mode) {
-    return base::BindRepeating(&StateAnimationMetricsReporter::Report,
-                               weak_ptr_factory_.GetWeakPtr(), tablet_mode);
-  }
+  // ui::AnimationMetricsReporter:
+  void Report(int value) override;
 
  private:
-  // Reports smoothness.
-  void Report(bool tablet_mode, int smoothess);
-
   void RecordMetricsInTablet(int value);
   void RecordMetricsInClamshell(int value);
 
+#if defined(DCHECK)
+  bool started_ = false;
+#endif
   base::Optional<AppListViewState> target_state_;
   base::Optional<TabletModeAnimationTransition> tablet_transition_;
+  bool is_in_tablet_mode_ = false;
   AppListView* view_;
 
-  base::WeakPtrFactory<StateAnimationMetricsReporter> weak_ptr_factory_{this};
+  DISALLOW_COPY_AND_ASSIGN(StateAnimationMetricsReporter);
 };
 
 void AppListView::StateAnimationMetricsReporter::Reset() {
+#if defined(DCHECK)
+  started_ = false;
+#endif
   tablet_transition_.reset();
   target_state_.reset();
 }
 
-void AppListView::StateAnimationMetricsReporter::Report(bool tablet_mode,
-                                                        int smoothess) {
-  UMA_HISTOGRAM_PERCENTAGE("Apps.StateTransition.AnimationSmoothness",
-                           smoothess);
-
-  if (tablet_mode)
-    RecordMetricsInTablet(smoothess);
+void AppListView::StateAnimationMetricsReporter::Report(int value) {
+  UMA_HISTOGRAM_PERCENTAGE("Apps.StateTransition.AnimationSmoothness", value);
+  if (is_in_tablet_mode_)
+    RecordMetricsInTablet(value);
   else
-    RecordMetricsInClamshell(smoothess);
-
+    RecordMetricsInClamshell(value);
   view_->OnStateTransitionAnimationCompleted();
   Reset();
 }
@@ -1728,9 +1729,7 @@ void AppListView::ApplyBoundsAnimation(AppListViewState target_state,
   ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
   animation.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
-  ui::AnimationThroughputReporter reporter(
-      animation.GetAnimator(),
-      metrics_util::ForSmoothness(GetStateTransitionMetricsReportCallback()));
+  animation.SetAnimationMetricsReporter(GetStateTransitionMetricsReporter());
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ui", "AppList::StateTransitionAnimations",
                                     bounds_animation_observer_.get());
   bounds_animation_observer_->set_target_state(target_state);
@@ -2031,10 +2030,9 @@ AppListViewState AppListView::CalculateStateAfterShelfDrag(
   return app_list_state;
 }
 
-metrics_util::SmoothnessCallback
-AppListView::GetStateTransitionMetricsReportCallback() {
-  return state_animation_metrics_reporter_->GetReportCallback(
-      delegate_->IsInTabletMode());
+ui::AnimationMetricsReporter* AppListView::GetStateTransitionMetricsReporter() {
+  state_animation_metrics_reporter_->Start(delegate_->IsInTabletMode());
+  return state_animation_metrics_reporter_.get();
 }
 
 void AppListView::OnHomeLauncherDragStart() {

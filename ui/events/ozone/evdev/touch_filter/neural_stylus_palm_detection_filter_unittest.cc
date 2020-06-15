@@ -182,6 +182,10 @@ TEST_F(NeuralStylusPalmDetectionFilterTest, CallFilterTest) {
   std::bitset<kNumTouchEvdevSlots> actual_held, actual_cancelled;
   std::bitset<kNumTouchEvdevSlots> expected_cancelled;
 
+  model_config_.max_blank_time = base::TimeDelta::FromMillisecondsD(100);
+  model_config_.use_tracking_id_count = true;
+  model_config_.use_active_tracking_id_count = true;
+
   touch_[0].touching = true;
   touch_[0].tracking_id = 500;
   touch_[0].major = 15;
@@ -237,7 +241,7 @@ TEST_F(NeuralStylusPalmDetectionFilterTest, CallFilterTest) {
       11, 9,  0, 0.625, 1, 11, 9,  0,    0.625, 1, 0,   0,    0, 0, 0,
       0,  0,  0, 0,     0, 0,  0,  0,    0,     0, 0.4, 0,    0, 0, 0,
       0,  0,  0, 0,     0, 0,  0,  0,    0,     0, 0,   0,    0, 0, 0,
-      0,  0,  0, 0,     0, 0,  0,  0,    0,     0, 0,   0,    0};
+      0,  0,  0, 0,     0, 0,  0,  0,    0,     0, 0,   0,    0, 4, 4};
   EXPECT_CALL(*model_,
               Inference(testing::Pointwise(testing::FloatEq(), features)))
       .Times(1)
@@ -247,6 +251,28 @@ TEST_F(NeuralStylusPalmDetectionFilterTest, CallFilterTest) {
                                  &actual_cancelled);
   EXPECT_TRUE(actual_held.none());
   expected_cancelled.set(0, true);
+  EXPECT_EQ(actual_cancelled, expected_cancelled);
+
+  // Touch 0 already ended in last report, now we mark touch 2 ended, its last
+  // two features should be 4 and 3 (tracking_id_count and
+  // active_tracking_id_count).
+  touch_[0].was_touching = false;
+  touch_[2].tracking_id = -1;
+  touch_[3].was_touching = true;
+  features = {10, 8, 0, 73.55, 1, 10, 8, 0,   73.55, 1, 0, 0, 0, 0, 0, 0, 0, 0,
+              0,  0, 0, 0,     0, 0,  0, 0.4, 0,     0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0,  0, 0, 0,     0, 0,  0, 0,   0,     0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0,  0, 0, 0,     0, 0,  0, 0,   0,     0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0,  0, 0, 0,     0, 0,  0, 0,   0,     0, 0, 0, 0, 0, 0, 0, 4, 3};
+  EXPECT_CALL(*model_,
+              Inference(testing::Pointwise(testing::FloatEq(), features)))
+      .Times(1)
+      .WillOnce(testing::Return(0.5));
+  touch_time += base::TimeDelta::FromMillisecondsD(8.0f);
+  palm_detection_filter_->Filter(touch_, touch_time, &actual_held,
+                                 &actual_cancelled);
+  EXPECT_TRUE(actual_held.none());
+  expected_cancelled.set(2, true);
   EXPECT_EQ(actual_cancelled, expected_cancelled);
 }
 

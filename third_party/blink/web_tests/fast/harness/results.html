@@ -197,25 +197,16 @@ p, h2, h3, h4 {
 
 #timing-stats-table {
   text-align: right;
-  white-space: nowrap;
 }
 
 #timing-stats-table th {
   padding-left: 10px;
 }
 
-.stat-bar-count, .stat-bar-time {
-  width: 12px;
-  height: 8px;
-  margin-left: 4px;
-}
-
-.stat-bar-count {
+.stat-bar {
   background: blue;
-}
-
-.stat-bar-time {
-  background: cyan;
+  height: 10px;
+  margin-left: 10px;
 }
 </style>
 <body>
@@ -1640,74 +1631,44 @@ const GUI = {
     let table = document.querySelector("#timing-stats-table");
     if (!table.firstChild) {
       let counts = [];
-      let times = [];
       let timeout_counts = [];
       let total_count = 0;
-      let total_count_timeouts = 0;
       let max = 0;
-      let total_time_all = 0;
-      let total_time_timeouts = 0;
       new Traversal(globalResults.tests).traverse(
         test => test.actualFinal != "SKIP",
         (test, path) => {
-          let time = test.time || 0;
-          let int_time = Math.floor(time);
-          counts[int_time] = (counts[int_time] || 0) + 1;
-          times[int_time] = (times[int_time] || 0) + time;
-          total_time_all += time;
+          let time = Math.floor(test.time || 0);
+          counts[time] = (counts[time] || 0) + 1;
           // result.time is measured during the first run, so check the first
           // TIMEOUT here.
-          if (test.actual.startsWith('TIMEOUT')) {
-            timeout_counts[int_time] = (timeout_counts[int_time] || 0) + 1;
-            total_time_timeouts += time;
-            total_count_timeouts++;
-          }
+          if (test.actual.startsWith('TIMEOUT'))
+            timeout_counts[time] = (timeout_counts[time] || 0) + 1;
           total_count++;
-          max = Math.max(max, int_time + 1);
-        }u
+          max = Math.max(max, time + 1);
+        }
       );
       let i = 0;
       let html = `<tr>
-                    <th>Range</th>
-                    <th colspan="2">Count/Percent<img class="stat-bar-count"></th>
-                    <th>Timeouts</th>
-                    <th colspan="2">Time/Percent<img class="stat-bar-time"></th>
-                    <th style='width: 60%'></th>
-                  </tr>`;u
-      for (let end of [1, 2, 3, 4, 6, 8, 10, 15, 20, 30, 45, 60, 90, 9999]) {
+                    <th>Range(s)</th><th>Count</th><th>Percent</th>
+                    <th>Timeouts</th><th style='width: 60%'></th>
+                  </tr>`;
+      for (let end of [1, 2, 3, 4, 6, 8, 10, 15, 20, 30, 999]) {
         let begin = i;
         end = Math.min(end, max);
-        let count = 0, timeout_count = 0, time = 0;
+        let count = 0, timeout_count = 0;
         for (; i < end; i++) {
           count += (counts[i] || 0);
           timeout_count += (timeout_counts[i] || 0);
-          time += (times[i] || 0);
         }
-        let count_percent = (count / total_count * 100).toFixed(2);
-        let time_percent = (time / total_time_all * 100).toFixed(2);
+        let percent = (count / total_count * 100).toFixed(2);
         html += `<tr>
-                   <td>${begin}-${end}s</td>
-                   <td>${count}</td><td>${count_percent}%</td>
+                   <td>${begin}-${end}</td><td>${count}</td><td>${percent}%</td>
                    <td>${timeout_count}</td>
-                   <td>${Math.round(time)}s</td><td>${time_percent}%</td>
-                   <td>
-                     <div class="stat-bar-count" style="width: ${count_percent}%"></div>
-                     <div class="stat-bar-time" style="width: ${time_percent}%"></div>
-                   </td>
+                   <td><div class="stat-bar" style="width: ${percent}%"></div></td>
                  </tr>`;
         if (end == max)
           break;
       }
-      html += `<tr>
-                 <th>Total</th>
-                 <th>${total_count}</th><th>100%</th>
-                 <th>${total_count_timeouts}</th>
-                 <th>${Math.round(total_time_all)}s</th><th>100%</th>
-               </tr>
-               <tr>
-                 <td colspan="4">Timeouts:</td>
-                 <td>${Math.round(total_time_timeouts)}s</td>
-               </tr>`;
       table.innerHTML = html;
     }
     GUI.toggleVisibility('timing-stats');

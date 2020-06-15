@@ -9,6 +9,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
+#include "chrome/browser/profiles/profile_observer.h"
 
 namespace enterprise_reporting {
 
@@ -16,7 +17,8 @@ class ExtensionRequestObserver;
 
 // Factory class for ExtensionRequestObserver. It creates
 // ExtensionRequestObserver for each Profile or a specific profile.
-class ExtensionRequestObserverFactory : public ProfileManagerObserver {
+class ExtensionRequestObserverFactory : public ProfileManagerObserver,
+                                        public ProfileObserver {
  public:
   // If a specific |profile| is given, this factory class only create an
   // observer for it. If no |profile| is given, this factory class create
@@ -32,11 +34,17 @@ class ExtensionRequestObserverFactory : public ProfileManagerObserver {
   void OnProfileAdded(Profile* profile) override;
   void OnProfileMarkedForPermanentDeletion(Profile* profile) override;
 
+  // ProfileObserver
+  // According to the destructor of ProfileImpl, the ExtensionManager may be
+  // disposed before this class is released in the CrOS environment. So we use
+  // this OnProfileWillBeDestroyed method to remove all observers earlier.
+  void OnProfileWillBeDestroyed(Profile* profile) override;
+
   ExtensionRequestObserver* GetObserverByProfileForTesting(Profile* profile);
   int GetNumberOfObserversForTesting();
 
  private:
-  const Profile* profile_;
+  Profile* profile_;
   std::map<Profile*, std::unique_ptr<ExtensionRequestObserver>, ProfileCompare>
       observers_;
 };

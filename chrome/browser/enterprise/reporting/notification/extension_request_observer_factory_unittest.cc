@@ -79,6 +79,26 @@ TEST_F(ExtensionRequestObserverFactoryTest,
   EXPECT_EQ(1, factory_.GetNumberOfObserversForTesting());
 }
 
+TEST_F(ExtensionRequestObserverFactoryTest, OnProfileWillBeDestroyed) {
+  TestingProfile* profile = profile_manager()->CreateTestingProfile(kProfile1);
+  ExtensionRequestObserverFactory factory_(profile);
+  EXPECT_TRUE(factory_.GetObserverByProfileForTesting(profile));
+  EXPECT_EQ(1, factory_.GetNumberOfObserversForTesting());
+
+  // If the profile to be destroyed is not same as the one assigned in the
+  // constructor. Nothing will happen.
+  TestingProfile* profile2 = profile_manager()->CreateTestingProfile(kProfile2);
+  factory_.OnProfileWillBeDestroyed(profile2);
+  EXPECT_TRUE(factory_.GetObserverByProfileForTesting(profile));
+  EXPECT_EQ(1, factory_.GetNumberOfObserversForTesting());
+
+  // If the profile to be destroyed is same as the one assigned in the
+  // constructor. The corresponding observer will be removed.
+  factory_.OnProfileWillBeDestroyed(profile);
+  EXPECT_FALSE(factory_.GetObserverByProfileForTesting(profile));
+  EXPECT_EQ(0, factory_.GetNumberOfObserversForTesting());
+}
+
 TEST_F(ExtensionRequestObserverFactoryTest, LoadExistProfile) {
   TestingProfile* profile = profile_manager()->CreateTestingProfile(kProfile1);
   ExtensionRequestObserverFactory factory_;

@@ -13,7 +13,7 @@
 
 namespace chromeos {
 
-UserFlow::UserFlow() : host_(NULL) {}
+UserFlow::UserFlow() : host_(nullptr) {}
 
 UserFlow::~UserFlow() {}
 

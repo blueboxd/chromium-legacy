@@ -92,11 +92,11 @@ void DownloadDialogBridge::OnComplete(
 
   if (on_wifi) {
     dialog_result.download_schedule =
-        download::DownloadSchedule(true /*on_wifi*/);
+        download::DownloadSchedule(true /*only_on_wifi*/, base::nullopt);
   }
   if (start_time > 0) {
-    dialog_result.download_schedule =
-        download::DownloadSchedule(base::Time::FromJavaTime(start_time));
+    dialog_result.download_schedule = download::DownloadSchedule(
+        false /*only_on_wifi*/, base::Time::FromJavaTime(start_time));
   }
 
   CompleteSelection(std::move(dialog_result));

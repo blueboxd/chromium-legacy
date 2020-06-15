@@ -76,7 +76,7 @@ class PnaclTranslateThread {
   int64_t GetCompileTime() const { return compile_time_; }
 
   // Returns true if the translation process is initiated via SetupState.
-  bool started() const { return coordinator_ != NULL; }
+  bool started() const { return !!coordinator_; }
 
  private:
   ppapi::proxy::SerializedHandle GetHandleForSubprocess(base::File* file,

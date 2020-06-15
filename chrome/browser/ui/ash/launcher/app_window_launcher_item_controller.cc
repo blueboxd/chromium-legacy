@@ -111,8 +111,12 @@ void AppWindowLauncherItemController::ItemSelected(
   if (windows_.size() >= 1 && window_to_show->IsActive() && event &&
       event->type() == ui::ET_KEY_RELEASED) {
     action = ActivateOrAdvanceToNextAppWindow(window_to_show);
-  } else {
+  } else if (windows_.size() <= 1 || source != ash::LAUNCH_FROM_SHELF) {
     action = ShowAndActivateOrMinimize(window_to_show);
+  } else {
+    // Do nothing if multiple windows are available when launching from shelf -
+    // the shelf will show a context menu with available windows.
+    action = ash::SHELF_ACTION_NONE;
   }
 
   std::move(callback).Run(

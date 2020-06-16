@@ -786,8 +786,10 @@ bool LayerTreeHost::CaptureContent(std::vector<NodeId>* content) {
 }
 
 void LayerTreeHost::DidObserveFirstScrollDelay(
-    base::TimeDelta first_scroll_delay) {
-  client_->DidObserveFirstScrollDelay(first_scroll_delay);
+    base::TimeDelta first_scroll_delay,
+    base::TimeTicks first_scroll_timestamp) {
+  client_->DidObserveFirstScrollDelay(first_scroll_delay,
+                                      first_scroll_timestamp);
 }
 
 bool LayerTreeHost::DoUpdateLayers() {

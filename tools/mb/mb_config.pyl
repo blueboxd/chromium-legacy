@@ -550,6 +550,7 @@
 
       # This should be the same with 'Win x64 Builder'.
       'win-rel-swarming': 'gpu_tests_release_bot_minimal_symbols',
+      'win-rel-swarming-staging': 'gpu_tests_release_bot_minimal_symbols',
     },
 
     'client.nacl.sdk': {
@@ -2850,7 +2851,7 @@
     },
 
     'use_clang_coverage': {
-      'gn_args': 'use_clang_coverage=false',
+      'gn_args': 'use_clang_coverage=true',
     },
 
     'use_cxx11': {

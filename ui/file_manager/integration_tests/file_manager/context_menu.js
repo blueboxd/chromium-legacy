@@ -757,6 +757,89 @@ testcase.checkRenameEnabledInDocProvider = () => {
 };
 
 /**
+ * Tests that the specified menu item is in |expectedEnabledState| when the
+ * entry at |path| is selected.
+ *
+ * @param {string} commandId ID of the command in the context menu to check.
+ * @param {string} fileName Name of the file to open the context menu for.
+ * @param {boolean} expectedEnabledState True if the command should be enabled
+ *     in the context menu, false if not.
+ * @param {boolean=} opt_selectMultiple True if multiple file should be selected
+ *     before the context menu is shown.
+ */
+async function checkRecentsContextMenu(
+    commandId, fileName, expectedEnabledState, opt_selectMultiple) {
+  // Populate both downloads and drive with disjoint sets of files.
+  const appId = await setupAndWaitUntilReady(
+      RootPath.DOWNLOADS, [ENTRIES.beautiful, ENTRIES.hello, ENTRIES.photos],
+      [ENTRIES.desktop, ENTRIES.world, ENTRIES.testDocument]);
+
+  // Navigate to Recents.
+  await navigateWithDirectoryTree(appId, '/Recent');
+
+  // Wait for the navigation to complete.
+  const expectedRows = TestEntryInfo.getExpectedRows(RECENT_ENTRY_SET);
+  await remoteCall.waitForFiles(appId, expectedRows);
+
+  if (opt_selectMultiple) {
+    // Select all the files and check that the delete button isn't visible.
+    const ctrlA = ['#file-list', 'a', true, false, false];
+    await remoteCall.callRemoteTestUtil('fakeKeyDown', appId, ctrlA);
+
+    // Check: the file-list should be selected.
+    await remoteCall.waitForElement(appId, '#file-list li[selected]');
+  } else {
+    // Select the item.
+    chrome.test.assertTrue(
+        !!await remoteCall.callRemoteTestUtil('selectFile', appId, [fileName]));
+
+    // Wait for the file to be selected.
+    await remoteCall.waitForElement(appId, '.table-row[selected]');
+  }
+
+  // Right-click the selected file.
+  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
+      'fakeMouseRightClick', appId, ['.table-row[selected]']));
+
+  // Wait for the context menu to appear.
+  await remoteCall.waitForElement(appId, '#file-context-menu:not([hidden])');
+
+  // Wait for the command option to appear.
+  let query = '#file-context-menu:not([hidden])';
+  if (expectedEnabledState) {
+    query += ` [command="#${commandId}"]:not([hidden]):not([disabled])`;
+  } else {
+    query += ` [command="#${commandId}"][disabled]`;
+  }
+  await remoteCall.waitForElement(appId, query);
+}
+
+/**
+ * Tests that the Delete menu item is disabled for files in Recents.
+ */
+testcase.checkDeleteDisabledInRecents = () => {
+  return checkRecentsContextMenu('delete', 'My Desktop Background.png', false);
+};
+
+/**
+ * Tests that the "Go to file location" menu item is enabled for files in
+ * Recents.
+ */
+testcase.checkGoToFileLocationEnabledInRecents = () => {
+  return checkRecentsContextMenu(
+      'go-to-file-location', 'My Desktop Background.png', true);
+};
+
+/**
+ * Tests that the "Go to file location" menu item is disabled when multiple
+ * files are selected in Recents.
+ */
+testcase.checkGoToFileLocationDisabledInMultipleSelection = () => {
+  return checkRecentsContextMenu(
+      'go-to-file-location', 'My Desktop Background.png', false, true);
+};
+
+/**
  * Tests that context menu in file list gets the focus, so ChromeVox can
  * announce it.
  */

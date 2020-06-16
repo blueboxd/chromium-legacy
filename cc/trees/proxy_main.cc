@@ -387,8 +387,11 @@ void ProxyMain::SubmitThroughputData(ukm::SourceId source_id,
                                          impl_percent, main_percent);
 }
 
-void ProxyMain::DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) {
-  layer_tree_host_->DidObserveFirstScrollDelay(first_scroll_delay);
+void ProxyMain::DidObserveFirstScrollDelay(
+    base::TimeDelta first_scroll_delay,
+    base::TimeTicks first_scroll_timestamp) {
+  layer_tree_host_->DidObserveFirstScrollDelay(first_scroll_delay,
+                                               first_scroll_timestamp);
 }
 
 bool ProxyMain::IsStarted() const {

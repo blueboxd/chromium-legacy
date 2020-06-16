@@ -472,7 +472,7 @@ def builder(
       dimensions = dimensions,
       properties = properties,
       resultdb_settings = resultdb.settings(
-          enable = True,
+          enable = False, # TODO(nodir): re-enable.
           bq_exports = defaults.get_value(
               'resultdb_bigquery_exports', resultdb_bigquery_exports),
       ),

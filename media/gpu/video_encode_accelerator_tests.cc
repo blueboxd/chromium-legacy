@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
+#include "media/base/video_bitrate_allocation.h"
 #include "media/base/video_decoder_config.h"
 #include "media/gpu/test/video.h"
 #include "media/gpu/test/video_encoder/bitstream_validator.h"
@@ -58,6 +59,7 @@ constexpr base::FilePath::CharType kDefaultTestVideoPath[] =
     FILE_PATH_LITERAL("bear_320x192_40frames.yuv.webm");
 
 // The number of frames to encode for bitrate check test cases.
+// TODO(hiroh): Decrease this values to make the test faster.
 constexpr size_t kNumFramesToEncodeForBitrateCheck = 300;
 // Tolerance factor for how encoded bitrate can differ from requested bitrate.
 constexpr double kBitrateTolerance = 0.1;
@@ -156,9 +158,6 @@ class VideoEncoderTest : public ::testing::Test {
 }  // namespace
 
 // TODO(dstaessens): Add more test scenarios:
-// - Dynamic framerate change
-// - Dynamic bitrate change
-// - Flush midstream
 // - Forcing key frames
 
 // Encode video from start to end. Wait for the kFlushDone event at the end of
@@ -240,6 +239,67 @@ TEST_F(VideoEncoderTest, BitrateCheck) {
   EXPECT_TRUE(encoder->WaitForBitstreamProcessors());
   EXPECT_NEAR(encoder->GetStats().Bitrate(), config.bitrate,
               kBitrateTolerance * config.bitrate);
+}
+
+TEST_F(VideoEncoderTest, DynamicBitrateChange) {
+  VideoEncoderClientConfig config;
+  config.framerate = g_env->Video()->FrameRate();
+  config.output_profile = g_env->Profile();
+  config.num_frames_to_encode = kNumFramesToEncodeForBitrateCheck * 2;
+  auto encoder = CreateVideoEncoder(g_env->Video(), config);
+
+  // Encode the video with the first bitrate.
+  const uint32_t first_bitrate = config.bitrate;
+  encoder->EncodeUntil(VideoEncoder::kFrameReleased,
+                       kNumFramesToEncodeForBitrateCheck);
+  encoder->WaitForEvent(VideoEncoder::kFrameReleased,
+                        kNumFramesToEncodeForBitrateCheck);
+  EXPECT_NEAR(encoder->GetStats().Bitrate(), first_bitrate,
+              kBitrateTolerance * first_bitrate);
+
+  // Encode the video with the second bitrate.
+  const uint32_t second_bitrate = first_bitrate * 3 / 2;
+  encoder->ResetStats();
+  encoder->UpdateBitrate(second_bitrate, config.framerate);
+  encoder->Encode();
+  EXPECT_TRUE(encoder->WaitForFlushDone());
+  EXPECT_NEAR(encoder->GetStats().Bitrate(), second_bitrate,
+              kBitrateTolerance * second_bitrate);
+
+  EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(encoder->GetFrameReleasedCount(), config.num_frames_to_encode);
+  EXPECT_TRUE(encoder->WaitForBitstreamProcessors());
+}
+
+TEST_F(VideoEncoderTest, DynamicFramerateChange) {
+  VideoEncoderClientConfig config;
+  config.framerate = g_env->Video()->FrameRate();
+  config.output_profile = g_env->Profile();
+  config.num_frames_to_encode = kNumFramesToEncodeForBitrateCheck * 2;
+  auto encoder = CreateVideoEncoder(g_env->Video(), config);
+
+  // Encode the video with the first framerate.
+  const uint32_t first_framerate = config.framerate;
+
+  encoder->EncodeUntil(VideoEncoder::kFrameReleased,
+                       kNumFramesToEncodeForBitrateCheck);
+  encoder->WaitForEvent(VideoEncoder::kFrameReleased,
+                        kNumFramesToEncodeForBitrateCheck);
+  EXPECT_NEAR(encoder->GetStats().Bitrate(), config.bitrate,
+              kBitrateTolerance * config.bitrate);
+
+  // Encode the video with the second framerate.
+  const uint32_t second_framerate = first_framerate * 3 / 2;
+  encoder->ResetStats();
+  encoder->UpdateBitrate(config.bitrate, second_framerate);
+  encoder->Encode();
+  EXPECT_TRUE(encoder->WaitForFlushDone());
+  EXPECT_NEAR(encoder->GetStats().Bitrate(), config.bitrate,
+              kBitrateTolerance * config.bitrate);
+
+  EXPECT_EQ(encoder->GetFlushDoneCount(), 1u);
+  EXPECT_EQ(encoder->GetFrameReleasedCount(), config.num_frames_to_encode);
+  EXPECT_TRUE(encoder->WaitForBitstreamProcessors());
 }
 }  // namespace test
 }  // namespace media

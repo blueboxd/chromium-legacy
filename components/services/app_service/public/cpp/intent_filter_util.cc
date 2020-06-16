@@ -49,41 +49,38 @@ apps::mojom::ConditionPtr MakeCondition(
   return condition;
 }
 
+void AddSingleValueCondition(apps::mojom::ConditionType condition_type,
+                             const std::string& value,
+                             apps::mojom::PatternMatchType pattern_match_type,
+                             apps::mojom::IntentFilterPtr& intent_filter) {
+  std::vector<apps::mojom::ConditionValuePtr> condition_values;
+  condition_values.push_back(
+      apps_util::MakeConditionValue(value, pattern_match_type));
+  auto condition =
+      apps_util::MakeCondition(condition_type, std::move(condition_values));
+  intent_filter->conditions.push_back(std::move(condition));
+}
+
 apps::mojom::IntentFilterPtr CreateIntentFilterForUrlScope(
     const GURL& url,
     bool with_action_view) {
   auto intent_filter = apps::mojom::IntentFilter::New();
 
   if (with_action_view) {
-    std::vector<apps::mojom::ConditionValuePtr> action_condition_values;
-    action_condition_values.push_back(apps_util::MakeConditionValue(
-        apps_util::kIntentActionView, apps::mojom::PatternMatchType::kNone));
-    auto action_condition =
-        apps_util::MakeCondition(apps::mojom::ConditionType::kAction,
-                                 std::move(action_condition_values));
-    intent_filter->conditions.push_back(std::move(action_condition));
+    AddSingleValueCondition(
+        apps::mojom::ConditionType::kAction, apps_util::kIntentActionView,
+        apps::mojom::PatternMatchType::kNone, intent_filter);
   }
 
-  std::vector<apps::mojom::ConditionValuePtr> scheme_condition_values;
-  scheme_condition_values.push_back(apps_util::MakeConditionValue(
-      url.scheme(), apps::mojom::PatternMatchType::kNone));
-  auto scheme_condition = apps_util::MakeCondition(
-      apps::mojom::ConditionType::kScheme, std::move(scheme_condition_values));
-  intent_filter->conditions.push_back(std::move(scheme_condition));
+  AddSingleValueCondition(apps::mojom::ConditionType::kScheme, url.scheme(),
+                          apps::mojom::PatternMatchType::kNone, intent_filter);
 
-  std::vector<apps::mojom::ConditionValuePtr> host_condition_values;
-  host_condition_values.push_back(apps_util::MakeConditionValue(
-      url.host(), apps::mojom::PatternMatchType::kNone));
-  auto host_condition = apps_util::MakeCondition(
-      apps::mojom::ConditionType::kHost, std::move(host_condition_values));
-  intent_filter->conditions.push_back(std::move(host_condition));
+  AddSingleValueCondition(apps::mojom::ConditionType::kHost, url.host(),
+                          apps::mojom::PatternMatchType::kNone, intent_filter);
 
-  std::vector<apps::mojom::ConditionValuePtr> path_condition_values;
-  path_condition_values.push_back(apps_util::MakeConditionValue(
-      url.path(), apps::mojom::PatternMatchType::kPrefix));
-  auto path_condition = apps_util::MakeCondition(
-      apps::mojom::ConditionType::kPattern, std::move(path_condition_values));
-  intent_filter->conditions.push_back(std::move(path_condition));
+  AddSingleValueCondition(apps::mojom::ConditionType::kPattern, url.path(),
+                          apps::mojom::PatternMatchType::kPrefix,
+                          intent_filter);
 
   return intent_filter;
 }
@@ -105,9 +102,9 @@ int GetFilterMatchLevel(const apps::mojom::IntentFilterPtr& intent_filter) {
       case apps::mojom::ConditionType::kPattern:
         match_level += IntentFilterMatchLevel::kPattern;
         break;
-      // TODO(crbug.com/1092784): Handle mime type.
       case apps::mojom::ConditionType::kMimeType:
-        NOTIMPLEMENTED();
+        match_level += IntentFilterMatchLevel::kMimeType;
+        break;
     }
   }
   return match_level;

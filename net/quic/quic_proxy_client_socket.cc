@@ -458,25 +458,7 @@ int QuicProxyClientSocket::ProcessResponseHeaders(
     DLOG(WARNING) << "Invalid headers";
     return ERR_QUIC_PROTOCOL_ERROR;
   }
-  // Populate |connect_timing_| when response headers are received. This
-  // should take care of 0-RTT where request is sent before handshake is
-  // confirmed.
-  connect_timing_ = session_->GetConnectTiming();
   return OK;
-}
-
-bool QuicProxyClientSocket::GetLoadTimingInfo(
-    LoadTimingInfo* load_timing_info) const {
-  bool is_first_stream = stream_->IsFirstStream();
-  if (stream_)
-    is_first_stream = stream_->IsFirstStream();
-  if (is_first_stream) {
-    load_timing_info->socket_reused = false;
-    load_timing_info->connect_timing = connect_timing_;
-  } else {
-    load_timing_info->socket_reused = true;
-  }
-  return true;
 }
 
 }  // namespace net

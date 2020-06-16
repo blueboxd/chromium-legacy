@@ -595,4 +595,8 @@ void ServiceWorkerMetrics::RecordByteForByteUpdateCheckStatus(
   }
 }
 
+void ServiceWorkerMetrics::RecordGetAllOriginsInfoTime(base::TimeDelta time) {
+  base::UmaHistogramMediumTimes("ServiceWorker.GetAllOriginsInfoTime", time);
+}
+
 }  // namespace content

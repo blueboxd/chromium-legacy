@@ -403,6 +403,11 @@ bool AppsNavigationThrottle::ShouldShowPersistenceOptions(
   return !ContainsOnlyPwasAndMacApps(apps);
 }
 
+bool AppsNavigationThrottle::ShouldCancelNavigation(
+    content::NavigationHandle* handle) {
+  return false;
+}
+
 bool AppsNavigationThrottle::ShouldDeferNavigation(
     content::NavigationHandle* handle) {
   return false;
@@ -501,6 +506,12 @@ AppsNavigationThrottle::HandleRequest() {
 
   if (CaptureExperimentalTabStripWebAppScopeNavigations(web_contents, handle))
     return content::NavigationThrottle::CANCEL_AND_IGNORE;
+
+  // Handles apps that are automatically launched and the navigation needs to be
+  // cancelled.
+  if (ShouldCancelNavigation(handle)) {
+    return content::NavigationThrottle::CANCEL_AND_IGNORE;
+  }
 
   if (ShouldDeferNavigation(handle)) {
     // Handling is now deferred to ArcIntentPickerAppFetcher, which

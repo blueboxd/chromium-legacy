@@ -58,9 +58,6 @@ public class VrTestRuleUtils extends XrTestRuleUtils {
 
         VrTestRuleUtils.ensureNoVrActivitiesDisplayed();
         launcher.launch();
-        // Must be called after Chrome is started, as otherwise startService fails with an
-        // IllegalStateException for being used from a backgrounded app.
-        VrSettingsServiceUtils.checkForAndApplyVrSettingsFileAnnotation(desc, rule);
 
         // Reset the VR feedback shared preferences if they're not currently the default because
         // otherwise we can run into issues with VrFeedbackInfoBarTest#* erroneously failing due to

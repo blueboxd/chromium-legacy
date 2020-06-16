@@ -268,7 +268,9 @@ class LayerTreeHostImplTest : public testing::Test,
                             int impl_percent,
                             base::Optional<int> main_percent) override {}
 
-  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override {
+  void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) override {
     first_scroll_observed++;
   }
   void set_reduce_memory_result(bool reduce_memory_result) {

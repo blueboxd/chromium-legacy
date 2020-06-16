@@ -19,10 +19,8 @@ import org.chromium.chrome.browser.download.DownloadDirectoryProvider;
 import org.chromium.chrome.browser.download.DownloadLocationDialogType;
 import org.chromium.chrome.browser.download.DownloadPromptStatus;
 import org.chromium.chrome.browser.download.R;
-import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
-import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -55,22 +53,21 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
 
     /**
      * Shows the download location dialog.
-     * @param windowAndroid The window android handle to provide the activity.
+     * @param activity The activity that provides android {@link Context} to the dialog.
+     * @param modalDialogManager {@link ModalDialogManager} to control the dialog.
      * @param totalBytes The total download file size. May be 0 if not available.
      * @param dialogType The type of the location dialog.
      * @param suggestedPath The suggested file path used by the location dialog.
      */
-    public void showDialog(WindowAndroid windowAndroid, long totalBytes,
-            @DownloadLocationDialogType int dialogType, String suggestedPath) {
-        Activity activity = windowAndroid.getActivity().get();
-        // If the activity has gone away, just clean up the native pointer.
-        if (activity == null) {
+    public void showDialog(Activity activity, ModalDialogManager modalDialogManager,
+            long totalBytes, @DownloadLocationDialogType int dialogType, String suggestedPath) {
+        if (activity == null || modalDialogManager == null) {
             onDismiss(null, DialogDismissalCause.ACTIVITY_DESTROYED);
             return;
         }
 
-        mModalDialogManager = ((ModalDialogManagerHolder) activity).getModalDialogManager();
         mContext = activity;
+        mModalDialogManager = modalDialogManager;
         mTotalBytes = totalBytes;
         mDialogType = dialogType;
         mSuggestedPath = suggestedPath;
@@ -132,7 +129,7 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
             if (dir.type == DirectoryOption.DownloadLocationDirectoryType.DEFAULT) {
                 assert (!TextUtils.isEmpty(dir.location));
                 DownloadDialogBridge.setDownloadAndSaveFileDefaultDirectory(dir.location);
-                mController.onComplete(mSuggestedPath);
+                mController.onDownloadLocationDialogComplete(mSuggestedPath);
             }
             return;
         }
@@ -212,8 +209,9 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
                 directoryOption.type, DirectoryOption.DownloadLocationDirectoryType.NUM_ENTRIES);
 
         File file = new File(directoryOption.location, fileName);
+
         assert mController != null;
-        mController.onComplete(file.getAbsolutePath());
+        mController.onDownloadLocationDialogComplete(file.getAbsolutePath());
 
         // Update preference to show prompt based on whether checkbox is checked only when the user
         // click the positive button.
@@ -226,6 +224,6 @@ public class DownloadLocationDialogCoordinator implements ModalDialogProperties.
 
     private void cancel() {
         assert mController != null;
-        mController.onCancel();
+        mController.onDownloadLocationDialogCanceled();
     }
 }

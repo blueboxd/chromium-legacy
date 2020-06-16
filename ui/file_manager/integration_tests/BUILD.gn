@@ -26,6 +26,6 @@ js_library("test_util") {
   testonly = true
   externs_list = [
     "$externs_path/chrome_extensions.js",
-    "//ui/file_manager/externs/chrome_test.js",
+    "$externs_path/test.js",
   ]
 }

@@ -99,7 +99,9 @@ class WidgetBaseClient {
   virtual void DidBeginMainFrame() {}
   virtual void DidCommitAndDrawCompositorFrame() {}
 
-  virtual void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) {}
+  virtual void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) {}
 
   virtual void OnDeferMainFrameUpdatesChanged(bool defer) {}
   virtual void OnDeferCommitsChanged(bool defer) {}

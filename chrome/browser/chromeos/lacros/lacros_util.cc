@@ -38,6 +38,8 @@ bool IsUserTypeAllowed(const User* user) {
 
 }  // namespace
 
+constexpr char kUserDataDir[] = "/home/chronos/user/lacros";
+
 bool IsLacrosAllowed() {
   return IsLacrosAllowed(chrome::GetChannel());
 }

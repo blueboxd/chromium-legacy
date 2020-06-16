@@ -370,8 +370,7 @@ void PluginVmInstaller::OnDlcDownloadCompleted(
   InstallFailed(reason);
 }
 
-void PluginVmInstaller::OnDownloadStarted() {
-}
+void PluginVmInstaller::OnDownloadStarted() {}
 
 void PluginVmInstaller::OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                                   int64_t content_length) {
@@ -396,8 +395,6 @@ void PluginVmInstaller::OnDownloadCompleted(
     downloaded_image_ = downloaded_image_for_testing_.value();
 
   if (!VerifyDownload(info.hash256)) {
-    LOG(ERROR) << "Downloaded PluginVm image archive hash doesn't match "
-               << "hash specified by the PluginVmImage policy";
     OnDownloadFailed(FailureReason::HASH_MISMATCH);
     return;
   }
@@ -871,8 +868,16 @@ bool PluginVmInstaller::VerifyDownload(
   }
   std::string plugin_vm_image_hash = plugin_vm_image_hash_ptr->GetString();
 
-  return base::EqualsCaseInsensitiveASCII(plugin_vm_image_hash,
-                                          downloaded_archive_hash);
+  if (!base::EqualsCaseInsensitiveASCII(plugin_vm_image_hash,
+                                        downloaded_archive_hash)) {
+    LOG(ERROR) << "Downloaded PluginVm image archive hash ("
+               << downloaded_archive_hash << ") doesn't match "
+               << "hash specified by the PluginVmImage policy ("
+               << plugin_vm_image_hash << ")";
+    return false;
+  }
+
+  return true;
 }
 
 void PluginVmInstaller::RemoveTemporaryImageIfExists() {

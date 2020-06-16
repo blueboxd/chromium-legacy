@@ -92,6 +92,8 @@ TabModel* TabModelList::FindTabModelWithId(SessionID desired_id) {
 }
 
 bool TabModelList::IsOffTheRecordSessionActive() {
+  // TODO(https://crbug.com/1023759): This function should return true for
+  // incognito CCTs.
   for (TabModelList::const_iterator i = TabModelList::begin();
       i != TabModelList::end(); i++) {
     if ((*i)->IsOffTheRecord() && (*i)->GetTabCount() > 0)

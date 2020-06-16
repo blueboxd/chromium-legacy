@@ -58,6 +58,9 @@ class WebAppInstallTask : content::WebContentsObserver {
   // kExpectedAppIdCheckFailed if actual app_id doesn't match expected app_id.
   // The actual resulting app_id is reported as a part of OnceInstallCallback.
   void ExpectAppId(const AppId& expected_app_id);
+  const base::Optional<AppId>& app_id_to_expect() const {
+    return expected_app_id_;
+  }
 
   void SetInstallParams(const InstallManager::InstallParams& install_params);
 

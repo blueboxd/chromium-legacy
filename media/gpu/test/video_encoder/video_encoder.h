@@ -65,8 +65,9 @@ class VideoEncoder {
   // list of bitstream buffers. Returns whether processing was successful.
   bool WaitForBitstreamProcessors();
 
-  // Get video encode statistics.
+  // Get/Reset video encode statistics.
   VideoEncoderStats GetStats() const;
+  void ResetStats();
 
   // Set the maximum time we will wait for an event to finish.
   void SetEventWaitTimeout(base::TimeDelta timeout);
@@ -82,6 +83,8 @@ class VideoEncoder {
   void EncodeUntil(EncoderEvent event, size_t event_count = 1);
   // Flush the encoder.
   void Flush();
+  // Updates bitrate based on the specified |bitrate| and |framerate|.
+  void UpdateBitrate(uint32_t bitrate, uint32_t framerate);
 
   // Get the current state of the video encoder.
   EncoderState GetState() const;

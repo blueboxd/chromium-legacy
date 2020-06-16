@@ -350,8 +350,9 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
                             int aggregated_percent,
                             int impl_percent,
                             base::Optional<int> main_percent) override {}
-  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override {
-  }
+  void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) override {}
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;

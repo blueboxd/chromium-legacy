@@ -11,9 +11,11 @@
 #include "chrome/browser/chromeos/crostini/crostini_export_import.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_port_forwarder.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/usb/cros_usb_detector.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class Profile;
 
@@ -147,10 +149,15 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   void HandleGetCrostiniMicSharingEnabled(const base::ListValue* args);
   // Handle a request for checking permission for changing ARC adb sideloading.
   void HandleCanChangeArcAdbSideloadingRequest(const base::ListValue* args);
-  // Callback of HandleCanChangeArcAdbSideloadingRequest.
+  // Get permission of changing ARC adb sideloading
+  void FetchCanChangeAdbSideloading();
+  // Callback of FetchCanChangeAdbSideloading.
   void OnCanChangeArcAdbSideloading(bool can_change_arc_adb_sideloading);
 
   Profile* profile_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      adb_sideloading_device_policy_subscription_;
+  PrefChangeRegistrar pref_change_registrar_;
   // weak_ptr_factory_ should always be last member.
   base::WeakPtrFactory<CrostiniHandler> weak_ptr_factory_{this};
 

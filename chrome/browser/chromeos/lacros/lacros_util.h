@@ -11,6 +11,9 @@ enum class Channel;
 
 namespace lacros_util {
 
+// Path of the user directory for lacros-chrome.
+extern const char kUserDataDir[];
+
 // Returns true if lacros is allowed for the current user type, chrome channel,
 // etc.
 bool IsLacrosAllowed();

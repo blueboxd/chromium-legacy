@@ -714,7 +714,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
     return delegated_ink_metadata_.get();
   }
 
-  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay);
+  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay,
+                                  base::TimeTicks first_scroll_timestamp);
 
  protected:
   LayerTreeHost(InitParams params, CompositorMode mode);

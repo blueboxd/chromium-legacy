@@ -473,11 +473,13 @@ void WebFrameWidgetBase::DidCommitAndDrawCompositorFrame() {
 }
 
 void WebFrameWidgetBase::DidObserveFirstScrollDelay(
-    base::TimeDelta first_scroll_delay) {
+    base::TimeDelta first_scroll_delay,
+    base::TimeTicks first_scroll_timestamp) {
   if (!LocalRoot() || !(LocalRoot()->Client())) {
     return;
   }
-  LocalRoot()->Client()->DidObserveFirstScrollDelay(first_scroll_delay);
+  LocalRoot()->Client()->DidObserveFirstScrollDelay(first_scroll_delay,
+                                                    first_scroll_timestamp);
 }
 
 void WebFrameWidgetBase::OnDeferMainFrameUpdatesChanged(bool defer) {

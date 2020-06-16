@@ -89,6 +89,8 @@ class CommonAppsNavigationThrottle : public apps::AppsNavigationThrottle {
       IntentPickerAutoDisplayService* ui_auto_display_service,
       const GURL& url) override;
 
+  bool ShouldCancelNavigation(content::NavigationHandle* handle) override;
+
   bool ShouldDeferNavigation(content::NavigationHandle* handle) override;
 
   void OnDeferredNavigationProcessed(

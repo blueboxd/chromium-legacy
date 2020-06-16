@@ -173,23 +173,29 @@ class FakePrintingMetadataProvider {
     /** @type {!Array<chromeos.printing.printingManager.mojom.PrintJobInfo>} */
     this.printJobs_ = [];
 
+    /** @private boolean */
+    this.shouldAttemptCancel_ = true;
+
     /**
      * @type {?chromeos.printing.printingManager.mojom.PrintJobsObserverRemote}
      */
-    this.printJobsObserverRemote;
+    this.printJobsObserverRemote_;
 
     this.resetForTest();
   }
 
   resetForTest() {
     this.printJobs_ = [];
-    if (this.printJobsObserverRemote) {
-      this.printJobsObserverRemote = null;
+    this.shouldAttemptCancel_ = true;
+
+    if (this.printJobsObserverRemote_) {
+      this.printJobsObserverRemote_ = null;
     }
 
     this.resolverMap_.set('getPrintJobs', new PromiseResolver());
     this.resolverMap_.set('deleteAllPrintJobs', new PromiseResolver());
     this.resolverMap_.set('observePrintJobs', new PromiseResolver());
+    this.resolverMap_.set('cancelPrintJob', new PromiseResolver());
   }
 
   /**
@@ -223,11 +229,26 @@ class FakePrintingMetadataProvider {
   }
 
   /**
+   * @return
+   *      {chromeos.printing.printingManager.mojom.PrintJobsObserverRemote}
+   */
+  getObserverRemote() {
+    return this.printJobsObserverRemote_;
+  }
+
+  /**
    * @param {?Array<!chromeos.printing.printingManager.mojom.PrintJobInfo>}
    *     printJobs
    */
   setPrintJobs(printJobs) {
     this.printJobs_ = printJobs;
+  }
+
+  /**
+   * @param {boolean} shouldAttemptCancel
+   */
+  setShouldAttemptCancel(shouldAttemptCancel) {
+    this.shouldAttemptCancel_ = shouldAttemptCancel;
   }
 
   /**
@@ -239,7 +260,7 @@ class FakePrintingMetadataProvider {
 
   simulatePrintJobsDeletedfromDatabase() {
     this.printJobs_ = [];
-    this.printJobsObserverRemote.onAllPrintJobsDeleted();
+    this.printJobsObserverRemote_.onAllPrintJobsDeleted();
   }
 
   /**
@@ -260,7 +281,7 @@ class FakePrintingMetadataProvider {
         this.printJobs_.splice(idx, 1, updatedJob);
       }
     }
-    this.printJobsObserverRemote.onPrintJobUpdate(job);
+    this.printJobsObserverRemote_.onPrintJobUpdate(job);
   }
 
   // printingMetadataProvider methods
@@ -286,13 +307,24 @@ class FakePrintingMetadataProvider {
   }
 
   /**
+   * @param {!string} id
+   * @return {!Promise<{attemptedCancel}>}
+   */
+  cancelPrintJob(id) {
+    return new Promise(resolve => {
+      this.methodCalled('cancelPrintJob');
+      resolve({attempedCancel: this.shouldAttemptCancel_});
+    });
+  }
+
+  /**
    * @param
    * {!chromeos.printing.printingManager.mojom.PrintJobsObserverRemote} remote
    * @return {!Promise}
    */
   observePrintJobs(remote) {
     return new Promise(resolve => {
-      this.printJobsObserverRemote = remote;
+      this.printJobsObserverRemote_ = remote;
       this.methodCalled('observePrintJobs');
       resolve();
     });
@@ -337,6 +369,34 @@ suite('PrintManagementTest', () => {
     assert(!!page);
     flush();
     return mojoApi_.whenCalled('observePrintJobs');
+  }
+
+  /**
+   * @param {!HtmlElement} jobEntryElement
+   * @param {FakePrintingMetadataProvider} mojoApi
+   * @param {boolean} shouldAttemptCancel
+   * @param {?Array<!chromeos.printing.printingManager.mojom.PrintJobInfo>}
+   *    expectedHistoryList
+   * @return {!Promise}
+   */
+  function simulateCancelPrintJob(
+      jobEntryElement, mojoApi, shouldAttemptCancel, expectedHistoryList) {
+    mojoApi.setShouldAttemptCancel(shouldAttemptCancel);
+
+    const cancelButton = jobEntryElement.$$('#cancelPrintJobButton');
+    cancelButton.click();
+    return mojoApi.whenCalled('cancelPrintJob').then(() => {
+      // Create copy of |jobEntryElement.jobEntry| to modify.
+      let updatedJob = Object.assign({}, jobEntryElement.jobEntry);
+      updatedJob.activePrintJobInfo = createOngoingPrintJobInfo(
+          /*printedPages=*/ 0, ActivePrintJobState.kDocumentDone);
+      // Simulate print jobs cancelled notification update sent.
+      mojoApi.getObserverRemote().onPrintJobUpdate(updatedJob);
+
+      // Simulate print job database updated with the canceled print job.
+      mojoApi.setPrintJobs(expectedHistoryList);
+      return mojoApi.whenCalled('getPrintJobs');
+    });
   }
 
   test('PrintHistoryListIsSortedReverseChronologically', () => {
@@ -607,6 +667,84 @@ suite('PrintManagementTest', () => {
         .then(() => {
           flush();
           verifyPrintJobs(expectedPrintJobArr, getHistoryPrintJobEntries(page));
+        });
+  });
+
+  test('CancelOngoingPrintJob', () => {
+    const kId = 'fileA';
+    const kTitle = 'titleA';
+    const kTime =
+        convertToMojoTime(new Date(Date('February 5, 2020 03:23:00')));
+    const expectedArr = [
+      createJobEntry(
+          kId, kTitle, kTime, /*completedInfo=*/ null,
+          createOngoingPrintJobInfo(
+              /*printedPages=*/ 0, ActivePrintJobState.STARTED)),
+    ];
+
+    const expectedHistoryList = [createJobEntry(
+        kId, kTitle, kTime,
+        createCompletedPrintJobInfo(CompletionStatus.CANCELED))];
+
+    return initializePrintManagementApp(expectedArr)
+        .then(() => {
+          return mojoApi_.whenCalled('getPrintJobs');
+        })
+        .then(() => {
+          flush();
+          let jobEntries = getOngoingPrintJobEntries(page);
+          verifyPrintJobs(expectedArr, jobEntries);
+
+          return simulateCancelPrintJob(
+              jobEntries[0], mojoApi_,
+              /*shouldAttemptCancel*/ true, expectedHistoryList);
+        })
+        .then(() => {
+          flush();
+          // Verify that there are no ongoing print jobs and history list is
+          // populated.
+          assertTrue(!page.$$('#ongoingList'));
+          verifyPrintJobs(expectedHistoryList, getHistoryPrintJobEntries(page));
+        });
+  });
+
+  test('CancelOngoingPrintJobNotAttempted', () => {
+    const kId = 'fileA';
+    const kTitle = 'titleA';
+    const kTime =
+        convertToMojoTime(new Date(Date('February 5, 2020 03:23:00')));
+
+    const expectedArr = [
+      createJobEntry(
+          kId, kTitle, kTime, /*completedInfo=*/ null,
+          createOngoingPrintJobInfo(
+              /*printedPages=*/ 0, ActivePrintJobState.STARTED)),
+    ];
+
+    const expectedHistoryList = [createJobEntry(
+        kId, kTitle, kTime,
+        createCompletedPrintJobInfo(CompletionStatus.CANCELED))];
+
+    return initializePrintManagementApp(expectedArr)
+        .then(() => {
+          return mojoApi_.whenCalled('getPrintJobs');
+        })
+        .then(() => {
+          flush();
+          let jobEntries = getOngoingPrintJobEntries(page);
+          verifyPrintJobs(expectedArr, jobEntries);
+
+          return simulateCancelPrintJob(
+              jobEntries[0], mojoApi_,
+              /*shouldAttemptCancel=*/ false, expectedHistoryList);
+        })
+        .then(() => {
+          flush();
+          // Verify that there are no ongoing print jobs and history list is
+          // populated.
+          // TODO(crbug/1093527): Show error message to user after UX guidance.
+          assertTrue(!page.$$('#ongoingList'));
+          verifyPrintJobs(expectedHistoryList, getHistoryPrintJobEntries(page));
         });
   });
 });

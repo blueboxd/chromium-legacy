@@ -419,7 +419,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkRenameDisabledInDocProvider").EnableDocumentsProvider(),
         TestCase("checkRenameEnabledInDocProvider").EnableDocumentsProvider(),
         TestCase("checkContextMenuFocus"),
-        TestCase("checkContextMenusForInputElements")));
+        TestCase("checkContextMenusForInputElements"),
+        TestCase("checkDeleteDisabledInRecents").EnableUnifiedMediaView(),
+        TestCase("checkGoToFileLocationEnabledInRecents")
+            .EnableUnifiedMediaView(),
+        TestCase("checkGoToFileLocationDisabledInMultipleSelection")
+            .EnableUnifiedMediaView()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Toolbar, /* toolbar.js */

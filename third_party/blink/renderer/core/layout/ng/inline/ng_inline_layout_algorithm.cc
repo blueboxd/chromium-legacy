@@ -476,13 +476,23 @@ NGLineHeightMetrics NGInlineLayoutAlgorithm::ComputeAnnotationOverflow(
 
   const LayoutUnit line_block_end =
       line_block_start + line_box_metrics.LineHeight();
-  for (const auto& item : line_box_) {
+  bool has_over_emphasis = false;
+  bool has_under_emphasis = false;
+  for (const NGLogicalLineItem& item : line_box_) {
     if (item.HasInFlowFragment()) {
       content_block_start =
           std::min(content_block_start, item.Offset().block_offset);
       content_block_end =
           std::max(content_block_end,
                    item.Offset().block_offset + item.Size().block_size);
+      if (const auto* style = item.Style()) {
+        if (style->GetTextEmphasisMark() != TextEmphasisMark::kNone) {
+          if (style->GetTextEmphasisLineLogicalSide() == LineLogicalSide::kOver)
+            has_over_emphasis = true;
+          else
+            has_under_emphasis = true;
+        }
+      }
     }
 
     // Accumulate |AnnotationOverflow| from ruby runs. All ruby run items have
@@ -516,6 +526,14 @@ NGLineHeightMetrics NGInlineLayoutAlgorithm::ComputeAnnotationOverflow(
     content_block_start = line_block_start + half_leading;
     content_block_end = line_block_end - half_leading;
   }
+
+  // Don't provide annotation space if text-emphasis exists.
+  // TODO(layout-dev): If the text-emphasis is in
+  // [line_block_start, line_block_end], this line can provide annotation space.
+  if (has_over_emphasis)
+    content_block_start = line_block_start;
+  if (has_under_emphasis)
+    content_block_end = line_block_end;
 
   const LayoutUnit content_or_annotation_block_start =
       std::min(content_block_start, annotation_block_start);

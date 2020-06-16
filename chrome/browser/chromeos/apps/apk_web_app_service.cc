@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/apps/apk_web_app_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -123,6 +124,17 @@ base::Optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
     return base::nullopt;
 
   return base::Optional<std::string>(v->GetString());
+}
+
+base::Optional<std::string> ApkWebAppService::GetPackageNameForWebApp(
+    const GURL& url) {
+  web_app::AppRegistrar& registrar =
+      web_app::WebAppProvider::Get(profile_)->registrar();
+  base::Optional<web_app::AppId> app_id = registrar.FindAppWithUrlInScope(url);
+  if (!app_id)
+    return base::nullopt;
+
+  return GetPackageNameForWebApp(app_id.value());
 }
 
 base::Optional<std::string> ApkWebAppService::GetCertificateSha256Fingerprint(

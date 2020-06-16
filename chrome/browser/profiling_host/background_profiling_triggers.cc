@@ -103,7 +103,7 @@ bool BackgroundProfilingTriggers::IsAllowedToUpload() const {
   if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
     return false;
 
-  return !chrome::IsIncognitoSessionActive();
+  return !chrome::IsOffTheRecordSessionActive();
 }
 
 bool BackgroundProfilingTriggers::IsOverTriggerThreshold(

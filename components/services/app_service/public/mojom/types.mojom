@@ -265,6 +265,7 @@ enum PatternMatchType {
   kLiteral,
   kPrefix,
   kGlob,
+  kMimeType,
 };
 
 // For pattern type of condition, the value match will be based on the pattern
@@ -291,14 +292,14 @@ struct IntentFilter {
 };
 
 // Action and resource handling request. This includes the scheme and URL at
-// the moment, and will be extended to handle MIME type and file extensions in
-// the future.
+// the moment, and will be extended to handle files in the future.
 struct Intent {
   string? action; // Intent action. e.g. view, send.
   string? scheme; // URL scheme. e.g. https.
   string? host;   // URL host. e.g. www.google.com.
   string? port;   // URL host. e.g. 8080.
   string? path;   // URL path. e.g. /abc.
+  string? mime_type; // MIME type. e.g. text/plain, image/*.
 };
 
 // Represents a group of |app_ids| that is no longer preferred app of their

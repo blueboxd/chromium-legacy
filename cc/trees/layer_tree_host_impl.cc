@@ -273,8 +273,8 @@ void ApplyFirstScrollTracking(const ui::LatencyInfo* latency,
           [](base::TimeTicks event_creation,
              LayerTreeHostImpl* layer_tree_host_impl,
              const gfx::PresentationFeedback& feedback) {
-            layer_tree_host_impl->DidObserveScrollDelay(feedback.timestamp -
-                                                        event_creation);
+            layer_tree_host_impl->DidObserveScrollDelay(
+                feedback.timestamp - event_creation, event_creation);
           },
           creation_timestamp, impl);
 
@@ -3715,10 +3715,12 @@ void LayerTreeHostImpl::DidChangeBrowserControlsPosition() {
   SetFullViewportDamage();
 }
 
-void LayerTreeHostImpl::DidObserveScrollDelay(base::TimeDelta scroll_delay) {
+void LayerTreeHostImpl::DidObserveScrollDelay(
+    base::TimeDelta scroll_delay,
+    base::TimeTicks scroll_timestamp) {
   // Record First Scroll Delay.
   if (!has_observed_first_scroll_delay_) {
-    client_->DidObserveFirstScrollDelay(scroll_delay);
+    client_->DidObserveFirstScrollDelay(scroll_delay, scroll_timestamp);
     has_observed_first_scroll_delay_ = true;
   }
 }

@@ -12,6 +12,9 @@ import android.app.job.JobService;
 import android.content.ComponentName;
 import android.content.Context;
 import android.os.Build;
+import android.os.PersistableBundle;
+
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.variations.VariationsServiceMetricsHelper;
@@ -43,9 +46,16 @@ import java.util.concurrent.TimeUnit;
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP) // for JobService
 public class AwVariationsSeedFetcher extends JobService {
+    @VisibleForTesting
+    public static final String JOB_REQUEST_COUNT_KEY = "RequestCount";
+    @VisibleForTesting
+    public static final int JOB_MAX_REQUEST_COUNT = 5;
+
     private static final String TAG = "AwVariationsSeedFet-";
     private static final int JOB_ID = TaskIds.WEBVIEW_VARIATIONS_SEED_FETCH_JOB_ID;
     private static final long MIN_JOB_PERIOD_MILLIS = TimeUnit.HOURS.toMillis(12);
+    private static final int JOB_BACKOFF_POLICY = JobInfo.BACKOFF_POLICY_EXPONENTIAL;
+    private static final long JOB_INITIAL_BACKOFF_TIME_IN_MS = TimeUnit.MINUTES.toMillis(5);
 
     /** Clock used to fake time in tests. */
     public interface Clock { long currentTimeMillis(); }
@@ -119,10 +129,15 @@ public class AwVariationsSeedFetcher extends JobService {
         VariationsUtils.debugLog("Scheduling seed download job");
         Context context = ContextUtils.getApplicationContext();
         ComponentName thisComponent = new ComponentName(context, AwVariationsSeedFetcher.class);
-        JobInfo job = new JobInfo.Builder(JOB_ID, thisComponent)
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .setRequiresCharging(true)
-                .build();
+        PersistableBundle extras = new PersistableBundle(/*capacity=*/1);
+        extras.putInt(JOB_REQUEST_COUNT_KEY, 0);
+        JobInfo job =
+                new JobInfo.Builder(JOB_ID, thisComponent)
+                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                        .setRequiresCharging(true)
+                        .setBackoffCriteria(JOB_INITIAL_BACKOFF_TIME_IN_MS, JOB_BACKOFF_POLICY)
+                        .setExtras(extras)
+                        .build();
         if (scheduler.schedule(job) == JobScheduler.RESULT_SUCCESS) {
             VariationsServiceMetricsHelper metrics =
                     VariationsServiceMetricsHelper.fromVariationsSharedPreferences(context);
@@ -144,8 +159,10 @@ public class AwVariationsSeedFetcher extends JobService {
 
         @Override
         protected Void doInBackground() {
-            // Should we call jobFinished at the end of this task?
+            // Should we call onFinished at the end of this task?
             boolean shouldFinish = true;
+            // Should we retry the job?
+            boolean needsReschedule = false;
             long startTime = currentTimeMillis();
 
             try {
@@ -165,13 +182,21 @@ public class AwVariationsSeedFetcher extends JobService {
                     return null;
                 }
 
+                // VariationsSeedFetcher returns a negative status code for IOExceptions or other
+                // failures that indicate the HTTP request didn't complete.
+                if (fetchInfo.seedFetchResult < 0) {
+                    int requestCount = mParams.getExtras().getInt(JOB_REQUEST_COUNT_KEY) + 1;
+                    mParams.getExtras().putInt(JOB_REQUEST_COUNT_KEY, requestCount);
+                    // Limit the retries to JOB_MAX_REQUEST_COUNT.
+                    needsReschedule = (requestCount <= JOB_MAX_REQUEST_COUNT);
+                }
                 if (fetchInfo.seedInfo != null) {
-                    VariationsSeedHolder.getInstance().updateSeed(
-                            fetchInfo.seedInfo, /*onFinished=*/() -> jobFinished(mParams));
+                    VariationsSeedHolder.getInstance().updateSeed(fetchInfo.seedInfo,
+                            /*onFinished=*/() -> onFinished(mParams, /*needsReschedule=*/false));
                     shouldFinish = false; // jobFinished will be deferred until updateSeed is done.
                 }
             } finally {
-                if (shouldFinish) jobFinished(mParams);
+                if (shouldFinish) onFinished(mParams, needsReschedule);
             }
 
             return null;
@@ -215,9 +240,9 @@ public class AwVariationsSeedFetcher extends JobService {
         return false;
     }
 
-    protected void jobFinished(JobParameters params) {
+    protected void onFinished(JobParameters params, boolean needsReschedule) {
         assert params.getJobId() == JOB_ID;
-        jobFinished(params, /*needsReschedule=*/false);
+        jobFinished(params, needsReschedule);
     }
 
     public static void setMocks(JobScheduler scheduler, VariationsSeedFetcher fetcher) {

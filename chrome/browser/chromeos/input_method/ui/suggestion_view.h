@@ -42,6 +42,7 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::View {
                         const base::string16& text);
 
   void SetHighlighted(bool highlighted);
+  void SetMinWidth(int width);
 
  private:
   friend class SuggestionWindowViewTest;
@@ -66,6 +67,7 @@ class UI_CHROMEOS_EXPORT SuggestionView : public views::View {
 
   int suggestion_width_ = 0;
   int index_width_ = 0;
+  int min_width_ = 0;
   bool highlighted_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionView);

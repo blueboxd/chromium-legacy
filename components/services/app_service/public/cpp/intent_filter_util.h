@@ -25,6 +25,7 @@ enum IntentFilterMatchLevel {
   kScheme = 1,
   kHost = 2,
   kPattern = 4,
+  kMimeType = 8,
 };
 
 // Creates condition value that makes up App Service intent filter
@@ -44,6 +45,13 @@ apps::mojom::ConditionValuePtr MakeConditionValue(
 apps::mojom::ConditionPtr MakeCondition(
     apps::mojom::ConditionType condition_type,
     std::vector<apps::mojom::ConditionValuePtr> condition_values);
+
+// Creates condition that only contain one value and add the condition to
+// the intent filter.
+void AddSingleValueCondition(apps::mojom::ConditionType condition_type,
+                             const std::string& value,
+                             apps::mojom::PatternMatchType pattern_match_type,
+                             apps::mojom::IntentFilterPtr& intent_filter);
 
 // Create intent filter for URL scope, with prefix matching only for the path.
 // e.g. filter created for https://www.google.com/ will match any URL that

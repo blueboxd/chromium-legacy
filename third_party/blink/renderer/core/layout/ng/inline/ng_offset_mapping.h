@@ -214,6 +214,10 @@ class CORE_EXPORT NGOffsetMapping {
   base::span<const NGOffsetMappingUnit>
   GetMappingUnitsForTextContentOffsetRange(unsigned start, unsigned end) const;
 
+  // Returns the first |NGOffsetMappingUnit| where |TextContentStart() >=
+  // offset| including unit for generated content.
+  const NGOffsetMappingUnit* GetFirstMappingUnit(unsigned offset) const;
+
   // Returns the last |NGOffsetMappingUnit| where |TextContentStart() >= offset|
   // including unit for generated content.
   const NGOffsetMappingUnit* GetLastMappingUnit(unsigned offset) const;

@@ -459,7 +459,8 @@ _BANNED_CPP_FUNCTIONS = (
         r"^ui[\\/]gl[\\/].*\.cc$",
         r"^media[\\/]gpu[\\/].*\.cc$",
         r"^gpu[\\/].*\.cc$",
-      ),
+        r"^ui[\\/]base[\\/]x[\\/]xwmstartupcheck[\\/]xwmstartupcheck\.cc$",
+        ),
     ),
     (
       r'/XInternAtom|xcb_intern_atom',
@@ -2512,7 +2513,9 @@ def _CheckSpamLogging(input_api, output_api):
                  r"^tools[\\/]",
                  r"^ui[\\/]base[\\/]resource[\\/]data_pack.cc$",
                  r"^ui[\\/]aura[\\/]bench[\\/]bench_main\.cc$",
-                 r"^ui[\\/]ozone[\\/]platform[\\/]cast[\\/]"))
+                 r"^ui[\\/]ozone[\\/]platform[\\/]cast[\\/]",
+                 r"^ui[\\/]base[\\/]x[\\/]xwmstartupcheck[\\/]"
+                     r"xwmstartupcheck\.cc$"))
   source_file_filter = lambda x: input_api.FilterSourceFile(
       x, white_list=file_inclusion_pattern, black_list=black_list)
 

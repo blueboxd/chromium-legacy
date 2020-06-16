@@ -373,6 +373,10 @@
       name: "CorsRFC1918",
     },
     {
+      name: "CrossOriginIsolation",
+      status: "experimental",
+    },
+    {
       name: "CSS3Text",
       status: "experimental",
     },

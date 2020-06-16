@@ -513,6 +513,35 @@ Position NGOffsetMapping::GetFirstPosition(unsigned offset) const {
   return CreatePositionForOffsetMapping(node, dom_offset);
 }
 
+const NGOffsetMappingUnit* NGOffsetMapping::GetFirstMappingUnit(
+    unsigned offset) const {
+  // Find the first unit where |unit.TextContentEnd() <= offset|
+  if (units_.IsEmpty() || units_.front().TextContentStart() > offset)
+    return nullptr;
+  const NGOffsetMappingUnit* result =
+      std::lower_bound(units_.begin(), units_.end(), offset,
+                       [](const NGOffsetMappingUnit& unit, unsigned offset) {
+                         return unit.TextContentEnd() < offset;
+                       });
+  if (result == units_.end())
+    return nullptr;
+  const NGOffsetMappingUnit* next_unit = std::next(result);
+  if (next_unit != units_.end() && next_unit->TextContentStart() == offset) {
+    // For offset=2, returns [1] instead of [0].
+    // For offset=3, returns [3] instead of [2],
+    // in below example:
+    //  text_content = "ab\ncd"
+    //  offset mapping unit:
+    //   [0] I DOM:0-2 TC:0-2 "ab"
+    //   [1] C DOM:2-3 TC:2-2
+    //   [2] I DOM:3-4 TC:2-3 "\n"
+    //   [3] C DOM:4-5 TC:3-3
+    //   [4] I DOM:5-7 TC:3-5 "cd"
+    return next_unit;
+  }
+  return result;
+}
+
 const NGOffsetMappingUnit* NGOffsetMapping::GetLastMappingUnit(
     unsigned offset) const {
   // Find the last unit where |unit.TextContentStart() <= offset|

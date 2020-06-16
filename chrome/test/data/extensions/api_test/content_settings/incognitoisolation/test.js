@@ -7,16 +7,13 @@
 //     --gtest_filter=ExtensionContentSettingsApiTest.Incognito*
 //
 // Arguments: [Permission]
-// Example Arguments: "?allow"
+// Example Arguments: "allow"
 
 'use strict';
 
 var cs = chrome.contentSettings;
 
-var queryString = window.location.search;
-var givenPermission = queryString[0] === '?' ? queryString.substr(1)
-                                              : queryString;
-
+var givenPermission;
 
 var settings = [
   'cookies',
@@ -39,6 +36,12 @@ var settings = [
 }
 
 chrome.test.runTests([
+  function setup() {
+    chrome.test.getConfig(function(config) {
+      givenPermission = config.customArg;
+      chrome.test.succeed();
+    });
+  },
   function setContentSettings() {
     settings.forEach(function(type) {
       cs[type].set({

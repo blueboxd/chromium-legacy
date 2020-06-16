@@ -22,6 +22,7 @@
 
 class ArcAppListPrefs;
 class Profile;
+class GURL;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -53,6 +54,8 @@ class ApkWebAppService : public KeyedService,
 
   base::Optional<std::string> GetPackageNameForWebApp(
       const web_app::AppId& app_id);
+
+  base::Optional<std::string> GetPackageNameForWebApp(const GURL& url);
 
   base::Optional<std::string> GetCertificateSha256Fingerprint(
       const web_app::AppId& app_id);

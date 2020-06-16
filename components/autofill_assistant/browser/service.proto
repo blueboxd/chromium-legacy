@@ -1479,7 +1479,7 @@ message PopupListSectionProto {
 
 // Asks to provide the data used by UseAddressAction and
 // UseCreditCardAction.
-// Next: 33
+// Next: 34
 message CollectUserDataProto {
   enum TermsAndConditionsState {
     // No choice has been made yet.
@@ -1508,8 +1508,11 @@ message CollectUserDataProto {
   repeated string supported_basic_card_networks = 6;
   // Contact details that should be gathered.
   optional ContactDetailsProto contact_details = 5;
-  // Override for the text of the confirm button.
-  optional string confirm_button_text = 7;
+  // Optional specification for the confirm button (defaults to standard confirm
+  // chip if not specified).
+  optional ChipProto confirm_chip = 33;
+  // Optionally allows confirming through the given direct actions.
+  optional DirectActionProto confirm_direct_action = 10;
   // The initial state of the terms & conditions choice.
   optional TermsAndConditionsState terms_and_conditions_state = 8;
   // When 'false', hide the terms and conditions box in the UI.
@@ -1531,8 +1534,6 @@ message CollectUserDataProto {
   // Privacy notice telling users that autofill assistant will send personal
   // data to a third party’s website.
   optional string privacy_notice_text = 21;
-  // Optionally allows confiriming through the given direct actions.
-  optional DirectActionProto confirm_direct_action = 10;
   // Additional actions available to the user. This can be used for instance to
   // display a "Show terms" button that will navigate the user to the terms and
   // conditions page when clicked.
@@ -1579,7 +1580,7 @@ message CollectUserDataProto {
   // address, the selected credit card should also be cleared!
   repeated string clear_previous_profile_selection = 30;
 
-  reserved 26;
+  reserved 7, 26;
 }
 
 // Stop Autofill Assistant.

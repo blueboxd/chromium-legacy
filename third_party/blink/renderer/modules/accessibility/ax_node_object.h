@@ -128,6 +128,12 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // Properties of static elements.
   const AtomicString& AccessKey() const override;
   RGBA32 ColorValue() const final;
+  RGBA32 ComputeBackgroundColor() const final;
+  RGBA32 GetColor() const final;
+  String FontFamily() const final;
+  // Font size is in pixels.
+  float FontSize() const final;
+  float FontWeight() const final;
   bool CanvasHasFallbackContent() const final;
   int HeadingLevel() const final;
   unsigned HierarchicalLevel() const final;

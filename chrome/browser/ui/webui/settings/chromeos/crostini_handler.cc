@@ -196,6 +196,20 @@ void CrostiniHandler::OnJavascriptAllowed() {
   }
   crostini::CrostiniExportImport::GetForProfile(profile_)->AddObserver(this);
   crostini::CrostiniPortForwarder::GetForProfile(profile_)->AddObserver(this);
+
+  // Observe ADB sideloading device policy and react to its changes
+  adb_sideloading_device_policy_subscription_ =
+      chromeos::CrosSettings::Get()->AddSettingsObserver(
+          chromeos::kDeviceCrostiniArcAdbSideloadingAllowed,
+          base::BindRepeating(&CrostiniHandler::FetchCanChangeAdbSideloading,
+                              weak_ptr_factory_.GetWeakPtr()));
+
+  // Observe ADB sideloading user policy and react to its changes
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      crostini::prefs::kCrostiniArcAdbSideloadingUserPref,
+      base::BindRepeating(&CrostiniHandler::FetchCanChangeAdbSideloading,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CrostiniHandler::OnJavascriptDisallowed() {
@@ -211,6 +225,9 @@ void CrostiniHandler::OnJavascriptDisallowed() {
   crostini::CrostiniExportImport::GetForProfile(profile_)->RemoveObserver(this);
   crostini::CrostiniPortForwarder::GetForProfile(profile_)->RemoveObserver(
       this);
+
+  adb_sideloading_device_policy_subscription_.reset();
+  pref_change_registrar_.RemoveAll();
 }
 
 void CrostiniHandler::HandleRequestCrostiniInstallerView(
@@ -524,6 +541,10 @@ void CrostiniHandler::HandleCanChangeArcAdbSideloadingRequest(
   AllowJavascript();
   CHECK_EQ(0U, args->GetList().size());
 
+  FetchCanChangeAdbSideloading();
+}
+
+void CrostiniHandler::FetchCanChangeAdbSideloading() {
   crostini::CrostiniFeatures::Get()->CanChangeAdbSideloading(
       profile_, base::BindOnce(&CrostiniHandler::OnCanChangeArcAdbSideloading,
                                weak_ptr_factory_.GetWeakPtr()));

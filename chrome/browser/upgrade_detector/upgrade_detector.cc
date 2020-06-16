@@ -164,9 +164,9 @@ void UpgradeDetector::TriggerCriticalUpdate() {
 }
 
 void UpgradeDetector::CheckIdle() {
-  // Don't proceed while an incognito window is open. The timer will still
+  // Don't proceed while an off-the-record window is open. The timer will still
   // keep firing, so this function will get a chance to re-evaluate this.
-  if (chrome::IsIncognitoSessionActive())
+  if (chrome::IsOffTheRecordSessionActive())
     return;
 
   // CalculateIdleState expects an interval in seconds.

@@ -81,6 +81,10 @@ class AccessContextAuditDatabase
                                  const std::string& domain,
                                  const std::string& path);
 
+  // Remove all records of access to |origin|'s storage API of |type|.
+  void RemoveAllRecordsForOriginStorage(const GURL& origin,
+                                        StorageAPIType type);
+
  protected:
   virtual ~AccessContextAuditDatabase() = default;
 

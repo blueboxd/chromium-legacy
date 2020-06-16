@@ -145,7 +145,9 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   void RequestNewLayerTreeFrameSink();
 
-  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override {
+  void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) override {
     // Single-threaded mode is only for browser compositing and for renderers in
     // layout tests. This will still get called in the latter case, but we don't
     // need to record UKM in that case.

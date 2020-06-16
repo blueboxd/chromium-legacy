@@ -218,7 +218,6 @@
 #include "components/net_log/chrome_net_log.h"
 #include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
-#include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/payments/content/payment_request_display_manager.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
 #include "components/permissions/permission_context_base.h"
@@ -3882,19 +3881,6 @@ ChromeContentBrowserClient::GetReceiverPresentationServiceDelegate(
     }
   }
   return nullptr;
-}
-
-std::string ChromeContentBrowserClient::GetMetricSuffixForURL(const GURL& url) {
-  // Don't change these returned strings. They are written (in hashed form) into
-  // UMA logs. If you add more strings, you must update histograms.xml and get
-  // histograms review. Only Google domains should be here for privacy purposes.
-  // TODO(falken): Ideally Chrome would log the relevant UMA directly and this
-  // function could be removed.
-  if (page_load_metrics::IsGoogleSearchResultUrl(url))
-    return "search";
-  if (url.host() == "docs.google.com")
-    return "docs";
-  return std::string();
 }
 
 std::vector<std::unique_ptr<content::NavigationThrottle>>

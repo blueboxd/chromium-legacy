@@ -228,12 +228,12 @@ bool IsUsingOzonePlatform() {
   // builds.
 #if defined(USE_X11) && defined(USE_OZONE)
   return base::FeatureList::IsEnabled(kUseOzonePlatform);
-#elif defined(USE_X11) && !defined(USE_ZONE)
+#elif defined(USE_X11) && !defined(USE_OZONE)
   // This shouldn't be switchable for pure X11 builds.
   return false;
 #else
-    // All the other platforms must use Ozone by default and can't disable that.
-    return true;
+  // All the other platforms must use Ozone by default and can't disable that.
+  return true;
 #endif
 }
 #endif  // defined(USE_X11) || defined(USE_OZONE)

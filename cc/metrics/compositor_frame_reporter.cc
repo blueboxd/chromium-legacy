@@ -17,6 +17,8 @@
 #include "cc/base/rolling_time_delta_history.h"
 #include "cc/metrics/frame_sequence_tracker.h"
 #include "cc/metrics/latency_ukm_reporter.h"
+#include "services/tracing/public/cpp/perfetto/macros.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/chrome_frame_reporter.pbzero.h"
 #include "ui/events/types/event_type.h"
 
 namespace cc {
@@ -366,11 +368,9 @@ void CompositorFrameReporter::TerminateReporter() {
   PopulateVizBreakdownList();
 
   DCHECK_EQ(current_stage_.start_time, base::TimeTicks());
-  const char* termination_status_str = nullptr;
   switch (frame_termination_status_) {
     case FrameTerminationStatus::kPresentedFrame:
       EnableReportType(FrameReportType::kNonDroppedFrame);
-      termination_status_str = "presented_frame";
       ReportOffsetBetweenDeadlineAndPresentationTime(args_,
                                                      frame_termination_time_);
       if (ComputeSafeDeadlineForFrame(args_) < frame_termination_time_)
@@ -378,26 +378,21 @@ void CompositorFrameReporter::TerminateReporter() {
       break;
     case FrameTerminationStatus::kDidNotPresentFrame:
       EnableReportType(FrameReportType::kDroppedFrame);
-      termination_status_str = "did_not_present_frame";
       break;
     case FrameTerminationStatus::kReplacedByNewReporter:
       EnableReportType(FrameReportType::kDroppedFrame);
-      termination_status_str = "replaced_by_new_reporter_at_same_stage";
       break;
     case FrameTerminationStatus::kDidNotProduceFrame:
-      termination_status_str = "did_not_produce_frame";
       if (!frame_skip_reason_.has_value() ||
           frame_skip_reason() != FrameSkippedReason::kNoDamage) {
         EnableReportType(FrameReportType::kDroppedFrame);
-        termination_status_str = "dropped_frame";
       }
       break;
     case FrameTerminationStatus::kUnknown:
-      termination_status_str = "terminated_before_ending";
       break;
   }
 
-  ReportCompositorLatencyTraceEvents(termination_status_str);
+  ReportCompositorLatencyTraceEvents();
   if (TestReportType(FrameReportType::kNonDroppedFrame))
     ReportEventLatencyTraceEvents();
 
@@ -714,15 +709,31 @@ void CompositorFrameReporter::ReportEventLatencyHistogram(
           base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
-void CompositorFrameReporter::ReportCompositorLatencyTraceEvents(
-    const char* termination_status_str) const {
+void CompositorFrameReporter::ReportCompositorLatencyTraceEvents() const {
   if (stage_history_.empty())
     return;
 
-  const auto trace_id = TRACE_ID_LOCAL(this);
-  TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP1(
-      "cc,benchmark", "PipelineReporter", trace_id,
-      stage_history_.front().start_time, "frame_id", args_.frame_id.ToString());
+  const auto trace_track = perfetto::Track(reinterpret_cast<uint64_t>(this));
+  TRACE_EVENT_BEGIN(
+      "cc,benchmark", "PipelineReporter", trace_track,
+      stage_history_.front().start_time, [&](perfetto::EventContext context) {
+        using perfetto::protos::pbzero::ChromeFrameReporter;
+        bool frame_dropped = TestReportType(FrameReportType::kDroppedFrame);
+        ChromeFrameReporter::State state;
+        if (frame_dropped) {
+          state = ChromeFrameReporter::STATE_DROPPED;
+        } else if (frame_termination_status_ ==
+                   FrameTerminationStatus::kDidNotProduceFrame) {
+          state = ChromeFrameReporter::STATE_NO_UPDATE_DESIRED;
+        } else {
+          state = ChromeFrameReporter::STATE_PRESENTED_ALL;
+        }
+        auto* reporter = context.event()->set_chrome_frame_reporter();
+        reporter->set_state(state);
+        reporter->set_frame_source(args_.frame_id.source_id);
+        reporter->set_frame_sequence(args_.frame_id.sequence_number);
+        // TODO(crbug.com/1086974): Set 'drop reason' if applicable.
+      });
 
   // The trace-viewer cannot seem to handle a single child-event that has the
   // same start/end timestamps as the parent-event. So avoid adding the
@@ -738,9 +749,8 @@ void CompositorFrameReporter::ReportCompositorLatencyTraceEvents(
       if (stage.start_time == stage.end_time)
         continue;
       const char* stage_name = GetStageName(stage_type_index);
-      TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-          "cc,benchmark", stage_name, trace_id, stage.start_time);
-
+      TRACE_EVENT_BEGIN("cc,benchmark", stage_name, trace_track,
+                        stage.start_time);
       if (stage.stage_type ==
           StageType::kSubmitCompositorFrameToPresentationCompositorFrame) {
         for (size_t i = 0; i < base::size(viz_breakdown_list_); i++) {
@@ -753,25 +763,16 @@ void CompositorFrameReporter::ReportCompositorLatencyTraceEvents(
             continue;
           const char* substage_name =
               GetVizBreakdownName(static_cast<VizBreakdown>(i));
-          TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
-              "cc,benchmark", substage_name, trace_id, start_time);
-          TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
-              "cc,benchmark", substage_name, trace_id, end_time);
+          TRACE_EVENT_BEGIN("cc,benchmark", substage_name, trace_track,
+                            start_time);
+          TRACE_EVENT_END("cc,benchmark", trace_track, end_time);
         }
       }
-
-      TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0("cc,benchmark", stage_name,
-                                                     trace_id, stage.end_time);
+      TRACE_EVENT_END("cc,benchmark", trace_track, stage.end_time);
     }
   }
 
-  const char* submission_status_str =
-      TestReportType(FrameReportType::kDroppedFrame) ? "dropped_frame"
-                                                     : "non_dropped_frame";
-  TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP2(
-      "cc,benchmark", "PipelineReporter", trace_id, frame_termination_time_,
-      "termination_status", termination_status_str,
-      "compositor_frame_submission_status", submission_status_str);
+  TRACE_EVENT_END("cc,benchmark", trace_track, frame_termination_time_);
 }
 
 void CompositorFrameReporter::ReportEventLatencyTraceEvents() const {

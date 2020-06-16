@@ -481,7 +481,11 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // The first scroll delay, which measures the time between the user's first
   // scrolling and the resultant display update, has been observed.
-  virtual void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) {}
+  // The first scroll timestamp is when the first scroll event was created which
+  // is the hardware timestamp provided by the host OS.
+  virtual void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) {}
 
   // A cpu task or tasks completed.  Triggered when at least 100ms of wall time
   // was spent in tasks on the frame.

@@ -29,6 +29,8 @@ const char kResourcesExhaustedReadBuffer[] =
     "Resources exhausted allocating read buffer.";
 const char kResourcesExhaustedWriteBuffer[] =
     "Resources exhausted allocation write buffer.";
+const char kNoSignals[] =
+    "Signals dictionary must contain at least one member.";
 const char kPortClosed[] = "The port is closed.";
 const char kOpenError[] = "Failed to open serial port.";
 const char kDeviceLostError[] = "The device has been lost.";
@@ -347,6 +349,11 @@ ScriptPromise SerialPort::setSignals(ScriptState* script_state,
   if (!port_.is_bound()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kPortClosed);
+    return ScriptPromise();
+  }
+
+  if (!signals->hasDtr() && !signals->hasRts() && !signals->hasBrk()) {
+    exception_state.ThrowTypeError(kNoSignals);
     return ScriptPromise();
   }
 

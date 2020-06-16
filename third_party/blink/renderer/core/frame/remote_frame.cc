@@ -96,9 +96,14 @@ RemoteFrame::RemoteFrame(
             frame_token,
             MakeGarbageCollected<RemoteWindowProxyManager>(*this),
             inheriting_agent_factory) {
-  auto frame_tracking_result = GetRemoteFramesMap().insert(
-      base::UnguessableTokenHash()(frame_token), this);
-  CHECK(frame_tracking_result.stored_value) << "Inserting a duplicate item.";
+  // TODO(crbug.com/1094850): Remove this check once the renderer is correctly
+  // handling errors during the creation of HTML portal elements, which would
+  // otherwise cause RemoteFrame() being created with empty frame tokens.
+  if (!frame_token.is_empty()) {
+    auto frame_tracking_result = GetRemoteFramesMap().insert(
+        base::UnguessableTokenHash()(frame_token), this);
+    CHECK(frame_tracking_result.stored_value) << "Inserting a duplicate item.";
+  }
 
   dom_window_ = MakeGarbageCollected<RemoteDOMWindow>(*this);
 

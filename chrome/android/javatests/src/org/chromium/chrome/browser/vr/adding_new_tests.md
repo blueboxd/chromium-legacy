@@ -81,14 +81,6 @@ You can add or remove command line flags that are set before the test runs using
 override a flag set by the test class on a per-test basis, you must remove and
 re-add it.
 
-#### @VrSettingsFile
-
-You can have the test apply non-standard VrCore settings such as enabling the
-DON flow by using `@VrSettingsFile` and the pre-defined files in
-[`util/VrSettingsServiceUtils.java`][vr_settings_service_utils] (or create your
-own settings file). This should be used alongside an `@Restriction` containing
-`RESTRICTION_TYPE_VR_SETTINGS_SERVICE`.
-
 ### Test Body
 
 #### HTML Test File
@@ -190,6 +182,5 @@ bucket.
 [xr_instrumentation_deep_dive]: https://chromium.googlesource.com/chromium/src/+/master/chrome/android/javatests/src/org/chromium/chrome/browser/vr/xr_instrumentation_deep_dive.md
 [webxr_vr_transition_test]: https://chromium.googlesource.com/chromium/src/+/master/chrome/android/javatests/src/org/chromium/chrome/browser/vr/WebXrVrTransitionTest.java
 [webxr_vr_transition_test_html]: https://chromium.googlesource.com/chromium/src/+/master/chrome/test/data/xr/e2e_test_files/html/test_non_immersive_stops_during_immersive.html
-[vr_settings_service_utils]: https://chromium.googlesource.com/chromium/src/+/master/chrome/android/javatests/src/org/chromium/chrome/browser/vr/util/VrSettingsServiceUtils.java
 [vr_browser_transition_test]: https://chromium.googlesource.com/chromium/src/+/master/chrome/android/javatests/src/org/chromium/chrome/browser/vr/VrBrowserTransitionTest.java
 [build_gn]: https://chromium.googlesource.com/chromium/src/+/master/chrome/android/BUILD.gn

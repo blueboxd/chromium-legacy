@@ -1913,6 +1913,98 @@ RGBA32 AXNodeObject::ColorValue() const {
   return color.Rgb();
 }
 
+RGBA32 AXNodeObject::ComputeBackgroundColor() const {
+  if (!GetLayoutObject())
+    return AXObject::BackgroundColor();
+
+  Color blended_color = Color::kTransparent;
+  // Color::blend should be called like this: background.blend(foreground).
+  for (LayoutObject* layout_object = GetLayoutObject(); layout_object;
+       layout_object = layout_object->Parent()) {
+    const AXObject* ax_parent = AXObjectCache().GetOrCreate(layout_object);
+    if (ax_parent && ax_parent != this) {
+      Color parent_color = ax_parent->BackgroundColor();
+      blended_color = parent_color.Blend(blended_color);
+      return blended_color.Rgb();
+    }
+
+    const ComputedStyle* style = layout_object->Style();
+    if (!style || !style->HasBackground())
+      continue;
+
+    Color current_color =
+        style->VisitedDependentColor(GetCSSPropertyBackgroundColor());
+    blended_color = current_color.Blend(blended_color);
+    // Continue blending until we get no transparency.
+    if (!blended_color.HasAlpha())
+      break;
+  }
+
+  // If we still have some transparency, blend in the document base color.
+  if (blended_color.HasAlpha()) {
+    LocalFrameView* view = DocumentFrameView();
+    if (view) {
+      Color document_base_color = view->BaseBackgroundColor();
+      blended_color = document_base_color.Blend(blended_color);
+    } else {
+      // Default to a white background.
+      blended_color.BlendWithWhite();
+    }
+  }
+
+  return blended_color.Rgb();
+}
+
+RGBA32 AXNodeObject::GetColor() const {
+  if (!GetLayoutObject() || IsColorWell())
+    return AXObject::GetColor();
+
+  const ComputedStyle* style = GetLayoutObject()->Style();
+  if (!style)
+    return AXObject::GetColor();
+
+  Color color = style->VisitedDependentColor(GetCSSPropertyColor());
+  return color.Rgb();
+}
+
+String AXNodeObject::FontFamily() const {
+  if (!GetLayoutObject())
+    return AXObject::FontFamily();
+
+  const ComputedStyle* style = GetLayoutObject()->Style();
+  if (!style)
+    return AXObject::FontFamily();
+
+  const SimpleFontData* primary_font = style->GetFont().PrimaryFont();
+  if (!primary_font)
+    return AXObject::FontFamily();
+
+  return primary_font->PlatformData().FontFamilyName();
+}
+
+// Font size is in pixels.
+float AXNodeObject::FontSize() const {
+  if (!GetLayoutObject())
+    return AXObject::FontSize();
+
+  const ComputedStyle* style = GetLayoutObject()->Style();
+  if (!style)
+    return AXObject::FontSize();
+
+  return style->ComputedFontSize();
+}
+
+float AXNodeObject::FontWeight() const {
+  if (!GetLayoutObject())
+    return AXObject::FontWeight();
+
+  const ComputedStyle* style = GetLayoutObject()->Style();
+  if (!style)
+    return AXObject::FontWeight();
+
+  return style->GetFontWeight();
+}
+
 ax::mojom::blink::AriaCurrentState AXNodeObject::GetAriaCurrentState() const {
   const AtomicString& attribute_value =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kCurrent);

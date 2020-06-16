@@ -554,11 +554,14 @@ void ProxyImpl::SubmitThroughputData(ukm::SourceId source_id,
                      main_percent));
 }
 
-void ProxyImpl::DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) {
+void ProxyImpl::DidObserveFirstScrollDelay(
+    base::TimeDelta first_scroll_delay,
+    base::TimeTicks first_scroll_timestamp) {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&ProxyMain::DidObserveFirstScrollDelay,
-                                proxy_main_weak_ptr_, first_scroll_delay));
+                                proxy_main_weak_ptr_, first_scroll_delay,
+                                first_scroll_timestamp));
 }
 
 bool ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {

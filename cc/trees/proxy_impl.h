@@ -123,7 +123,9 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
                             int aggregated_percent,
                             int impl_percent,
                             base::Optional<int> main_percent) override;
-  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override;
+  void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) override;
 
   // SchedulerClient implementation
   bool WillBeginImplFrame(const viz::BeginFrameArgs& args) override;

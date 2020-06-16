@@ -26,6 +26,7 @@ namespace plugin_vm {
 
 class PluginVmPolicySubscription;
 
+// This is used by both the Plugin VM app and its installer.
 // Generated as crx_file::id_util::GenerateId("org.chromium.plugin_vm");
 constexpr char kPluginVmAppId[] = "lgjpclljbbmphhnalkeplcmnjpfmmaek";
 
@@ -71,7 +72,8 @@ bool IsPluginVmRunning(Profile* profile);
 
 void ShowPluginVmInstallerView(Profile* profile);
 
-// Checks if an window is for Plugin VM.
+// Checks if an window is for the Plugin VM app. Note that it returns false for
+// the Plugin VM installer.
 bool IsPluginVmWindow(const aura::Window* window);
 
 // Retrieves the license key to be used for Plugin VM. If

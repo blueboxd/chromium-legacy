@@ -77,12 +77,6 @@ static void ReportToUMA(VAVEAEncoderFailure failure) {
 // requirements.
 gfx::Size GetInputFrameSize(VideoPixelFormat format,
                             const gfx::Size& visible_size) {
-  if (format == PIXEL_FORMAT_I420) {
-    // Since we don't have gfx::BufferFormat for I420, replace I420 with YV12.
-    // Remove this workaround once crrev.com/c/1573718 is landed.
-    format = PIXEL_FORMAT_YV12;
-  }
-
   std::unique_ptr<::gpu::GpuMemoryBufferFactory> gpu_memory_buffer_factory =
       ::gpu::GpuMemoryBufferFactory::CreateNativeType(nullptr);
   // Get a VideoFrameLayout of a graphic buffer with the same gfx::BufferUsage
@@ -427,10 +421,11 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
 
   DCHECK_EQ(IsConfiguredForTesting(), !aligned_va_surface_size_.IsEmpty());
   if (!IsConfiguredForTesting()) {
-    // The aligned surface size must be the same as a size of a native graphic
-    // buffer.
+    // The aligned VA surface size must be the same as a size of a native
+    // graphics buffer. Since the VA surface's format is NV12, we specify NV12
+    // to query the size of the native graphics buffer.
     aligned_va_surface_size_ =
-        GetInputFrameSize(config.input_format, config.input_visible_size);
+        GetInputFrameSize(PIXEL_FORMAT_NV12, config.input_visible_size);
     if (aligned_va_surface_size_.IsEmpty()) {
       NOTIFY_ERROR(kPlatformFailureError, "Failed to get frame size");
       return;

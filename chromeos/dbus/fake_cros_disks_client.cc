@@ -153,9 +153,8 @@ void FakeCrosDisksClient::Unmount(const std::string& device_path,
         FROM_HERE,
         {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                       base::FilePath::FromUTF8Unsafe(device_path),
-                       true /* recursive */),
+        base::BindOnce(base::GetDeletePathRecursivelyCallback(),
+                       base::FilePath::FromUTF8Unsafe(device_path)),
         base::BindOnce(std::move(callback), unmount_error_));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(

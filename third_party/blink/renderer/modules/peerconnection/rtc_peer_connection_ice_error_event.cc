@@ -53,7 +53,7 @@ RTCPeerConnectionIceErrorEvent::RTCPeerConnectionIceErrorEvent(
     address_ = initializer->address();
   if (initializer->hasPort())
     port_ = initializer->port();
-  if (initializer->hostCandidate())
+  if (initializer->hasHostCandidate())
     host_candidate_ = initializer->hostCandidate();
   if (initializer->hasUrl())
     url_ = initializer->url();

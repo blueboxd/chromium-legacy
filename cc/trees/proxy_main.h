@@ -62,7 +62,8 @@ class CC_EXPORT ProxyMain : public Proxy {
                             int aggregated_percent,
                             int impl_percent,
                             base::Optional<int> main_percent);
-  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay);
+  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay,
+                                  base::TimeTicks first_scroll_timestamp);
 
   CommitPipelineStage max_requested_pipeline_stage() const {
     return max_requested_pipeline_stage_;

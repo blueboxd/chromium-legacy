@@ -139,6 +139,8 @@ struct NGLogicalLineItem {
                           : TextDirection::kLtr;
   }
 
+  const ComputedStyle* Style() const;
+
   scoped_refptr<const NGLayoutResult> layout_result;
   scoped_refptr<const NGPhysicalTextFragment> fragment;
 

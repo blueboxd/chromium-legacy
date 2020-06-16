@@ -17,24 +17,23 @@ export let PinchEventDetail;
 // A class that listens for touch events and produces events when these
 // touches form gestures (e.g. pinching).
 export class GestureDetector {
-  /** @param {!Element} element The element to monitor for touch gestures. */
+  /**
+   * @param {!EventTarget|!Element} element The element to monitor for touch
+   *     gestures.
+   */
   constructor(element) {
-    /** @private {!Element} */
-    this.element_ = element;
-
-    this.element_.addEventListener(
+    element.addEventListener(
         'touchstart',
         /** @type {function(!Event)} */ (this.onTouchStart_.bind(this)),
         {passive: true});
 
     const boundOnTouch =
         /** @type {function(!Event)} */ (this.onTouch_.bind(this));
-    this.element_.addEventListener('touchmove', boundOnTouch, {passive: true});
-    this.element_.addEventListener('touchend', boundOnTouch, {passive: true});
-    this.element_.addEventListener(
-        'touchcancel', boundOnTouch, {passive: true});
+    element.addEventListener('touchmove', boundOnTouch, {passive: true});
+    element.addEventListener('touchend', boundOnTouch, {passive: true});
+    element.addEventListener('touchcancel', boundOnTouch, {passive: true});
 
-    this.element_.addEventListener(
+    element.addEventListener(
         'wheel',
         /** @type {function(!Event)} */ (this.onWheel_.bind(this)),
         {passive: false});

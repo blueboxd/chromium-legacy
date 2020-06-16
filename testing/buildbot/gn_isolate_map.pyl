@@ -1944,6 +1944,10 @@
       '--enable-pixel-output-in-tests',
     ],
   },
+  "x11_unittests": {
+    "label": "//ui/platform_window/x11:x11_unittests",
+    "type": "windowed_test_launcher",
+  },
   "zucchini_unittests": {
     "label": "//components/zucchini:zucchini_unittests",
     "type": "console_test_launcher",

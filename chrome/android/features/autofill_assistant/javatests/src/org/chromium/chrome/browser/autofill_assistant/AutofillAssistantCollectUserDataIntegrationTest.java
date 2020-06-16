@@ -57,6 +57,7 @@ import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill_assistant.carousel.ButtonView;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ChipIcon;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipType;
 import org.chromium.chrome.browser.autofill_assistant.proto.ClickType;
@@ -242,19 +243,24 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
                                                                         .setCssSelector(
                                                                                 "div.terms"))))))
                         .build());
-        list.add(
-                (ActionProto) ActionProto.newBuilder()
-                        .setCollectUserData(CollectUserDataProto.newBuilder()
-                                                    .setRequestPaymentMethod(true)
-                                                    .setBillingAddressName("billing_address")
-                                                    .addSupportedBasicCardNetworks("visa")
-                                                    .setPrivacyNoticeText("3rd party privacy text")
-                                                    .setShowTermsAsCheckbox(true)
-                                                    .setRequestTermsAndConditions(true)
-                                                    .setAcceptTermsAndConditionsText("accept terms")
-                                                    .setTermsAndConditionsState(
-                                                            TermsAndConditionsState.ACCEPTED))
-                        .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(
+                                 CollectUserDataProto.newBuilder()
+                                         .setRequestPaymentMethod(true)
+                                         .setBillingAddressName("billing_address")
+                                         .addSupportedBasicCardNetworks("visa")
+                                         .setPrivacyNoticeText("3rd party privacy text")
+                                         .setShowTermsAsCheckbox(true)
+                                         .setRequestTermsAndConditions(true)
+                                         .setAcceptTermsAndConditionsText("accept terms")
+                                         .setTermsAndConditionsState(
+                                                 TermsAndConditionsState.ACCEPTED)
+                                         .setConfirmChip(
+                                                 ChipProto.newBuilder()
+                                                         .setText("Custom text")
+                                                         .setType(ChipType.HIGHLIGHTED_ACTION)
+                                                         .setIcon(ChipIcon.ICON_REFRESH)))
+                         .build());
         Choice toggle_chip =
                 Choice.newBuilder()
                         .setChip(ChipProto.newBuilder().setText("Toggle"))
@@ -287,9 +293,9 @@ public class AutofillAssistantCollectUserDataIntegrationTest {
                 new AutofillAssistantTestService(Collections.singletonList(script));
         startAutofillAssistant(mTestRule.getActivity(), testService);
 
-        waitUntilViewMatchesCondition(withText("Continue"), isDisplayed());
+        waitUntilViewMatchesCondition(withText("Custom text"), isDisplayed());
         tapElement(mTestRule, "button");
-        onView(withText("Continue")).perform(click());
+        onView(withText("Custom text")).perform(click());
         waitUntilViewMatchesCondition(withText("Toggle"), isDisplayed());
 
         // Verify that in the next step the touchable window is not present anymore.

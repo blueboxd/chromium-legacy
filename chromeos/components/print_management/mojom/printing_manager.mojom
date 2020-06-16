@@ -125,4 +125,10 @@ interface PrintingMetadataProvider {
   // print jobs was successful. Returns false if there was an error with
   // retrieving the print jobs to delete in this device.
   DeleteAllPrintJobs() => (bool success);
+
+  // Cancels an ongoing print job keyed by PrintJobInfo.id.
+  // This is a best effort attempt as there is no guarantee that we can cancel
+  // a print job. Returns true if cancelling the print job was attempted.
+  // Returns false if cancelling the print job was not attempted.
+  CancelPrintJob(string id) => (bool attempted_cancel);
 };

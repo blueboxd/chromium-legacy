@@ -27,19 +27,6 @@ CameraPanTiltZoomPermissionContext::~CameraPanTiltZoomPermissionContext() {
   host_content_settings_map_->RemoveObserver(this);
 }
 
-#if defined(OS_ANDROID)
-void CameraPanTiltZoomPermissionContext::DecidePermission(
-    content::WebContents* web_contents,
-    const permissions::PermissionRequestID& id,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin,
-    bool user_gesture,
-    permissions::BrowserPermissionCallback callback) {
-  // User should not be prompted on Android.
-  NOTREACHED();
-}
-#endif
-
 void CameraPanTiltZoomPermissionContext::RequestPermission(
     content::WebContents* web_contents,
     const permissions::PermissionRequestID& id,

@@ -231,6 +231,20 @@ void AccessContextAuditDatabase::RemoveAllRecordsForCookie(
   remove_statement.Run();
 }
 
+void AccessContextAuditDatabase::RemoveAllRecordsForOriginStorage(
+    const GURL& origin,
+    StorageAPIType type) {
+  std::string remove;
+  remove.append("DELETE FROM ");
+  remove.append(kStorageAPITableName);
+  remove.append(" WHERE origin = ? AND type = ?");
+  sql::Statement remove_statement(
+      db_.GetCachedStatement(SQL_FROM_HERE, remove.c_str()));
+  remove_statement.BindString(0, origin.GetOrigin().spec());
+  remove_statement.BindInt(1, static_cast<int>(type));
+  remove_statement.Run();
+}
+
 std::vector<AccessContextAuditDatabase::AccessRecord>
 AccessContextAuditDatabase::GetAllRecords() {
   std::vector<AccessContextAuditDatabase::AccessRecord> records;

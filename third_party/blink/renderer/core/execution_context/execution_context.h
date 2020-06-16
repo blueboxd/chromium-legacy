@@ -339,6 +339,9 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   }
   unsigned ContextLifecycleStateObserverCountForTesting() const;
 
+  // Implementation of WindowOrWorkerGlobalScope.crossOriginIsolated.
+  bool IsCrossOriginIsolated() const;
+
  protected:
   explicit ExecutionContext(v8::Isolate* isolate);
   ~ExecutionContext() override;

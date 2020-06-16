@@ -643,11 +643,17 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
   EXPECT_TRUE(incognito_action->GetIsVisible(incognito_tab_id));
 }
 
+constexpr char kRulesExtensionName[] =
+    "Declarative content persistence apitest";
+
+// TODO(crbug.com/512431): Flaky on Windows release builds.
+#if defined(OS_WIN) && defined(NDEBUG)
+#define MAYBE_PRE_RulesPersistence DISABLED_PRE_RulesPersistence
+#else
+#define MAYBE_PRE_RulesPersistence PRE_RulesPersistence
+#endif
 // Sets up rules matching http://test1/ in a normal and incognito browser.
-// Frequently times out on ChromiumOS, Linux ASan, and Windows:
-// https://crbug.com/512431.
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
-                       DISABLED_PRE_RulesPersistence) {
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, MAYBE_PRE_RulesPersistence) {
   ExtensionTestMessageListener ready("ready", false);
   ExtensionTestMessageListener ready_split("ready (split)", false);
   // An on-disk extension is required so that it can be reloaded later in the
@@ -656,29 +662,35 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest,
       LoadExtensionIncognito(test_data_dir_.AppendASCII("declarative_content")
                              .AppendASCII("persistence"));
   ASSERT_TRUE(extension);
+  ASSERT_EQ(kRulesExtensionName, extension->name());
   ASSERT_TRUE(ready.WaitUntilSatisfied());
 
   CreateIncognitoBrowser();
   ASSERT_TRUE(ready_split.WaitUntilSatisfied());
 }
 
+// TODO(crbug.com/512431): Flaky on Windows release builds.
+#if defined(OS_WIN) && defined(NDEBUG)
+#define MAYBE_RulesPersistence DISABLED_RulesPersistence
+#else
+#define MAYBE_RulesPersistence RulesPersistence
+#endif
 // Reloads the extension from PRE_RulesPersistence and checks that the rules
 // continue to work as expected after being persisted and reloaded.
-IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, DISABLED_RulesPersistence) {
-  ExtensionTestMessageListener ready("second run ready", false);
-  ExtensionTestMessageListener ready_split("second run ready (split)", false);
-  ASSERT_TRUE(ready.WaitUntilSatisfied());
-
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-  const Extension* extension =
-      GetExtensionByPath(registry->enabled_extensions(),
-                         test_data_dir_.AppendASCII("declarative_content")
-                         .AppendASCII("persistence"));
+IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, MAYBE_RulesPersistence) {
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+  ASSERT_EQ(kRulesExtensionName, extension->name());
 
   // Check non-incognito browser.
   content::WebContents* const tab =
       browser()->tab_strip_model()->GetWebContentsAt(0);
   const int tab_id = ExtensionTabUtil::GetTabId(tab);
+
+  // Observer to track page action visibility. This helps avoid
+  // flakes by waiting to check visibility until there is an
+  // actual update to the page action.
+  ChromeExtensionTestNotificationObserver test_observer(browser());
 
   const ExtensionAction* action =
       ExtensionActionManager::Get(browser()->profile())
@@ -687,10 +699,14 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, DISABLED_RulesPersistence) {
   EXPECT_FALSE(action->GetIsVisible(tab_id));
 
   NavigateInRenderer(tab, GURL("http://test_normal/"));
+  test_observer.WaitForPageActionVisibilityChangeTo(1);
   EXPECT_TRUE(action->GetIsVisible(tab_id));
 
   NavigateInRenderer(tab, GURL("http://test_split/"));
+  test_observer.WaitForPageActionVisibilityChangeTo(0);
   EXPECT_FALSE(action->GetIsVisible(tab_id));
+
+  ExtensionTestMessageListener ready_split("second run ready (split)", false);
 
   // Check incognito browser.
   Browser* incognito_browser = CreateIncognitoBrowser();
@@ -699,15 +715,20 @@ IN_PROC_BROWSER_TEST_F(DeclarativeContentApiTest, DISABLED_RulesPersistence) {
       incognito_browser->tab_strip_model()->GetWebContentsAt(0);
   const int incognito_tab_id = ExtensionTabUtil::GetTabId(incognito_tab);
 
+  ChromeExtensionTestNotificationObserver incognito_test_observer(
+      incognito_browser);
+
   const ExtensionAction* incognito_action =
       ExtensionActionManager::Get(incognito_browser->profile())
           ->GetExtensionAction(*extension);
   ASSERT_TRUE(incognito_action);
 
   NavigateInRenderer(incognito_tab, GURL("http://test_split/"));
+  incognito_test_observer.WaitForPageActionVisibilityChangeTo(1);
   EXPECT_TRUE(incognito_action->GetIsVisible(incognito_tab_id));
 
   NavigateInRenderer(incognito_tab, GURL("http://test_normal/"));
+  incognito_test_observer.WaitForPageActionVisibilityChangeTo(0);
   EXPECT_FALSE(incognito_action->GetIsVisible(incognito_tab_id));
 }
 

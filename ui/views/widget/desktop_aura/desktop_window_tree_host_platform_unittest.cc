@@ -143,4 +143,68 @@ TEST_F(DesktopWindowTreeHostPlatformTest, CallOnNativeWidgetVisibilityChanged) {
   EXPECT_TRUE(observer.visible());
 }
 
+// Tests that the minimization information is propagated to the content window.
+TEST_F(DesktopWindowTreeHostPlatformTest,
+       ToggleMinimizePropogateToContentWindow) {
+  std::unique_ptr<Widget> widget = CreateWidgetWithNativeWidget();
+  widget->Show();
+
+  auto* host_platform = DesktopWindowTreeHostPlatform::GetHostForWidget(
+      widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+  ASSERT_TRUE(host_platform);
+
+  EXPECT_TRUE(widget->GetNativeWindow()->IsVisible());
+
+  // Pretend a PlatformWindow enters the minimized state.
+  host_platform->OnWindowStateChanged(ui::PlatformWindowState::kMinimized);
+
+  EXPECT_FALSE(widget->GetNativeWindow()->IsVisible());
+
+  // Pretend a PlatformWindow exits the minimized state.
+  host_platform->OnWindowStateChanged(ui::PlatformWindowState::kNormal);
+  EXPECT_TRUE(widget->GetNativeWindow()->IsVisible());
+}
+
+// A Widget that allows setting the min/max size for the widget.
+class CustomSizeWidget : public Widget {
+ public:
+  CustomSizeWidget() = default;
+  ~CustomSizeWidget() override = default;
+
+  void set_min_size(const gfx::Size& size) { min_size_ = size; }
+  void set_max_size(const gfx::Size& size) { max_size_ = size; }
+
+  // Widget:
+  gfx::Size GetMinimumSize() const override { return min_size_; }
+  gfx::Size GetMaximumSize() const override { return max_size_; }
+
+ private:
+  gfx::Size min_size_;
+  gfx::Size max_size_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomSizeWidget);
+};
+
+TEST_F(DesktopWindowTreeHostPlatformTest, SetBoundsWithMinMax) {
+  CustomSizeWidget widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.bounds = gfx::Rect(200, 100);
+  widget.Init(std::move(params));
+  widget.Show();
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(gfx::Size(200, 100).ToString(),
+            widget.GetWindowBoundsInScreen().size().ToString());
+  widget.SetBounds(gfx::Rect(300, 200));
+  EXPECT_EQ(gfx::Size(300, 200).ToString(),
+            widget.GetWindowBoundsInScreen().size().ToString());
+
+  widget.set_min_size(gfx::Size(100, 100));
+  widget.SetBounds(gfx::Rect(50, 500));
+  EXPECT_EQ(gfx::Size(100, 500).ToString(),
+            widget.GetWindowBoundsInScreen().size().ToString());
+}
+
 }  // namespace views

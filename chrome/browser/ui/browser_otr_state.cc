@@ -8,7 +8,7 @@
 
 namespace chrome {
 
-bool IsIncognitoSessionActive() {
+bool IsOffTheRecordSessionActive() {
   return BrowserList::IsOffTheRecordBrowserActive();
 }
 

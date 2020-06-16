@@ -215,7 +215,7 @@ IntentPickerResponse CommonAppsNavigationThrottle::GetOnPickerClosedCallback(
                         ui_auto_display_service, url);
 }
 
-bool CommonAppsNavigationThrottle::ShouldDeferNavigation(
+bool CommonAppsNavigationThrottle::ShouldCancelNavigation(
     content::NavigationHandle* handle) {
   content::WebContents* web_contents = handle->GetWebContents();
 
@@ -259,6 +259,14 @@ bool CommonAppsNavigationThrottle::ShouldDeferNavigation(
       }
     }
   }
+  return false;
+}
+
+bool CommonAppsNavigationThrottle::ShouldDeferNavigation(
+    content::NavigationHandle* handle) {
+  content::WebContents* web_contents = handle->GetWebContents();
+
+  const GURL& url = handle->GetURL();
 
   std::vector<apps::IntentPickerAppInfo> apps_for_picker =
       FindAllAppsForUrl(web_contents, url, {});

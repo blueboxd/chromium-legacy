@@ -19,7 +19,7 @@
     [CallWith=ScriptState, RaisesException]
     Promise<SerialInputSignals> getSignals();
     [CallWith=ScriptState, RaisesException]
-    Promise<void> setSignals(SerialOutputSignals signals);
+    Promise<void> setSignals(optional SerialOutputSignals signals = {});
     [RaisesException, CallWith=ScriptState, MeasureAs=SerialPortClose]
     Promise<void> close();
 };

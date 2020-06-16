@@ -182,7 +182,7 @@ Polymer({
       case SafetyCheckChromeCleanerStatus.CLEANING:
         Router.getInstance().navigateTo(
             routes.CHROME_CLEANUP,
-            /* dynamicParams */ null, /* removeSearch */ true);
+            /* dynamicParams= */ null, /* removeSearch= */ true);
         break;
       case SafetyCheckChromeCleanerStatus.REBOOT_REQUIRED:
         // TODO(crbug.com/1087263): Implement CCT-based reboot here.

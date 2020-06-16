@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_password_check_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
@@ -77,6 +78,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeSettingsSyncError,
   ItemTypeAutofillData,
   ItemTypeAccount,
+  ItemTypePasswordCheck1,
+  ItemTypePasswordCheck2,
+  ItemTypePasswordCheck3,
 };
 }
 
@@ -374,6 +378,40 @@ typedef NS_ENUM(NSInteger, ItemType) {
   imageDetailTextItem.image = [[ChromeIcon infoIcon]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   [model addItem:imageDetailTextItem
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  SettingsPasswordCheckItem* checkPasswordsInProcess =
+      [[SettingsPasswordCheckItem alloc] initWithType:ItemTypePasswordCheck1];
+  checkPasswordsInProcess.text = @"This is running password check item";
+  checkPasswordsInProcess.detailText =
+      @"This is very long description of password check item. Another line of "
+      @"description.";
+  checkPasswordsInProcess.enabled = YES;
+  checkPasswordsInProcess.indicatorHidden = NO;
+  [model addItem:checkPasswordsInProcess
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  SettingsPasswordCheckItem* checkPasswordsFinished =
+      [[SettingsPasswordCheckItem alloc] initWithType:ItemTypePasswordCheck2];
+  checkPasswordsFinished.text = @"This is finished password check item";
+  checkPasswordsFinished.detailText =
+      @"This is very long description of password check item. Another line of "
+      @"description.";
+  checkPasswordsFinished.enabled = YES;
+  checkPasswordsFinished.indicatorHidden = YES;
+  checkPasswordsFinished.image = [[ChromeIcon infoIcon]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  [model addItem:checkPasswordsFinished
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  SettingsPasswordCheckItem* checkPasswordsDisabled =
+      [[SettingsPasswordCheckItem alloc] initWithType:ItemTypePasswordCheck3];
+  checkPasswordsDisabled.text = @"This is disabled password check item";
+  checkPasswordsDisabled.detailText =
+      @"This is very long description of password check item. Another line of "
+      @"description.";
+  checkPasswordsDisabled.enabled = NO;
+  [model addItem:checkPasswordsDisabled
       toSectionWithIdentifier:SectionIdentifierSettings];
 
   TableViewLinkHeaderFooterItem* linkFooter =

@@ -9,6 +9,14 @@
 
 namespace blink {
 
+const ComputedStyle* NGLogicalLineItem::Style() const {
+  if (const auto* fragment = PhysicalFragment())
+    return &fragment->Style();
+  if (inline_item)
+    return inline_item->Style();
+  return nullptr;
+}
+
 void NGLogicalLineItems::CreateTextFragments(WritingMode writing_mode,
                                              const String& text_content) {
   NGTextFragmentBuilder text_builder(writing_mode);

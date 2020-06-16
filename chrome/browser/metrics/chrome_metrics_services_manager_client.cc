@@ -259,7 +259,7 @@ std::unique_ptr<rappor::RapporServiceImpl>
 ChromeMetricsServicesManagerClient::CreateRapporServiceImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return std::make_unique<rappor::RapporServiceImpl>(
-      local_state_, base::Bind(&chrome::IsIncognitoSessionActive));
+      local_state_, base::Bind(&chrome::IsOffTheRecordSessionActive));
 }
 
 std::unique_ptr<variations::VariationsService>

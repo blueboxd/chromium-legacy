@@ -43,6 +43,8 @@ class PrintingManager
   void ObservePrintJobs(
       mojo::PendingRemote<printing_manager::mojom::PrintJobsObserver> observer,
       ObservePrintJobsCallback callback) override;
+  void CancelPrintJob(const std::string& id,
+                      CancelPrintJobCallback callback) override;
 
   void BindInterface(
       mojo::PendingReceiver<printing_manager::mojom::PrintingMetadataProvider>

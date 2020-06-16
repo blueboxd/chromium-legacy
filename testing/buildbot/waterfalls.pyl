@@ -1643,6 +1643,14 @@
            'gtest_tests': 'chromium_swarm_desktop_gtests',
         },
       },
+      'win-rel-swarming-staging': {
+        'mixins': [
+          'chromium-template-pool',
+        ],
+        'test_suites': {
+           'gtest_tests': 'chromium_swarm_desktop_gtests',
+        },
+      },
     },
   },
   {

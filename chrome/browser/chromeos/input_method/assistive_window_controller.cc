@@ -11,9 +11,12 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_controller_delegate.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/views/widget/widget.h"
@@ -92,7 +95,8 @@ void AssistiveWindowController::InitSuggestionWindow() {
   if (suggestion_window_view_)
     return;
   // suggestion_window_view_ is deleted by DialogDelegateView::DeleteDelegate.
-  suggestion_window_view_ = new ui::ime::SuggestionWindowView(GetParentView());
+  suggestion_window_view_ =
+      new ui::ime::SuggestionWindowView(GetParentView(), this);
   views::Widget* widget = suggestion_window_view_->InitWidget();
   widget->AddObserver(this);
   widget->Show();
@@ -209,7 +213,14 @@ void AssistiveWindowController::SetAssistiveWindowProperties(
 void AssistiveWindowController::AssistiveWindowButtonClicked(
     ui::ime::ButtonId id,
     ui::ime::AssistiveWindowType type) const {
-  delegate_->AssistiveWindowButtonClicked(id, type);
+  if (id == ui::ime::ButtonId::kSmartInputsSettingLink) {
+    base::RecordAction(base::UserMetricsAction("OpenSmartInputsSettings"));
+    chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+        ProfileManager::GetActiveUserProfile(),
+        chromeos::settings::mojom::kSmartInputsSubpagePath);
+  } else {
+    delegate_->AssistiveWindowButtonClicked(id, type);
+  }
 }
 
 ui::ime::SuggestionWindowView*

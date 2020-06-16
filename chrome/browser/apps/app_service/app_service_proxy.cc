@@ -175,11 +175,10 @@ void AppServiceProxy::Initialize() {
       plugin_vm_apps_ = std::make_unique<PluginVmApps>(app_service_, profile_);
     }
     if (chromeos::features::IsLacrosSupportEnabled()) {
-      // LacrosApps uses LacrosLoader, which is a singleton. Don't create an
+      // LacrosApps uses LacrosManager, which is a singleton. Don't create an
       // instance of LacrosApps for the lock screen app profile, as we want to
       // maintain a single instance of LacrosApps.
-      // TODO(jamescook): Multiprofile support. Consider adding a list of
-      // "ready" callbacks to LacrosLoader.
+      // TODO(jamescook): Multiprofile support. Consider switching to observers.
       if (!chromeos::ProfileHelper::IsLockScreenAppProfile(profile_)) {
         lacros_apps_ = std::make_unique<LacrosApps>(app_service_);
       }

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/printing/print_management/printing_manager.h"
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/history/print_job_history_service.h"
 #include "chrome/browser/chromeos/printing/history/print_job_history_service_factory.h"
@@ -59,6 +60,20 @@ void PrintingManager::DeleteAllPrintJobs(DeleteAllPrintJobsCallback callback) {
   }
 
   print_job_history_service_->DeleteAllPrintJobs(std::move(callback));
+}
+
+void PrintingManager::CancelPrintJob(const std::string& id,
+                                     CancelPrintJobCallback callback) {
+  // Checks if the print job is still stored in the local cache and the validity
+  // of the WeakPtr and do not attempt to cancel an invalid print job.
+  if (!base::Contains(active_print_jobs_, id) || !active_print_jobs_[id]) {
+    std::move(callback).Run(/*attempted_cancel=*/false);
+    return;
+  }
+
+  CupsPrintJob* print_job = active_print_jobs_[id].get();
+  cups_print_job_manager_->CancelPrintJob(print_job);
+  std::move(callback).Run(/*attempted_cancel=*/true);
 }
 
 void PrintingManager::ObservePrintJobs(

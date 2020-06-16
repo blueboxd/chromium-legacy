@@ -4,8 +4,6 @@
   }
 
   .column-headers {
-    align-items: center;
-    display: flex;
     color: var(--google-grey-700);
     min-height: var(--cr-section-min-height);
   }
@@ -55,13 +53,14 @@
     </print-job-clear-history-dialog>
   </template>
 
-  <div class="column-headers"
+  <div class="column-headers flex-center"
       aria-labeledby="fileNameColumn printerNameColumn dateColumn statusColumn">
     <div id="fileNameColumn" class="long-text overflow-ellipsis"
         aria-hidden="true">
       [[i18n('fileNameColumn')]]
     </div>
-    <div id="printerNameColumn" class="long-text overflow-ellipsis padded-left"
+    <div id="printerNameColumn"
+        class="medium-text overflow-ellipsis padded-left"
         aria-hidden="true">
       [[i18n('printerNameColumn')]]
     </div>
@@ -69,7 +68,7 @@
         aria-hidden="true">
       [[i18n('dateColumn')]]
     </div>
-    <div id="statusColumn" class="short-text overflow-ellipsis padded-left"
+    <div id="statusColumn" class="medium-text overflow-ellipsis padded-left"
         aria-hidden="true">
       [[i18n('statusColumn')]]
     </div>
@@ -87,7 +86,7 @@
   </template>
 
   <template is="dom-if" if="[[printJobs_.length]]" restamp>
-    <div id="historyHeaderContainer" class="column-headers">
+    <div id="historyHeaderContainer" class="column-headers flex-center">
       <div aria-label$="[[i18n('historyToolTip')]]">
         [[i18n('historyHeader')]]
       </div>
@@ -106,4 +105,4 @@
         </print-job-entry>
       </template>
     </iron-list>
-</template>
+  </template>

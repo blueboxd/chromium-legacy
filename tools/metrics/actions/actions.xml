@@ -16131,6 +16131,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="OpenSmartInputsSettings">
+  <owner>myy@chromium.org</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <description>
+    When user click the link to open Smart Inputs setting page in ChromeOS.
+  </description>
+</action>
+
 <action name="OpenSystemOptionsDialog">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

@@ -210,7 +210,9 @@ class CORE_EXPORT WebFrameWidgetBase
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
   void DidCompletePageScaleAnimation() override;
-  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override;
+  void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) override;
   void DidBeginMainFrame() override;
   void WillBeginMainFrame() override;
   void SubmitThroughputData(ukm::SourceId source_id,

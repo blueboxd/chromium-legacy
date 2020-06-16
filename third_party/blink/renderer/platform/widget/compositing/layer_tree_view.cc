@@ -347,11 +347,13 @@ void LayerTreeView::SubmitThroughputData(ukm::SourceId source_id,
 }
 
 void LayerTreeView::DidObserveFirstScrollDelay(
-    base::TimeDelta first_scroll_delay) {
+    base::TimeDelta first_scroll_delay,
+    base::TimeTicks first_scroll_timestamp) {
   if (!delegate_) {
     return;
   }
-  delegate_->DidObserveFirstScrollDelay(first_scroll_delay);
+  delegate_->DidObserveFirstScrollDelay(first_scroll_delay,
+                                        first_scroll_timestamp);
 }
 
 void LayerTreeView::DidScheduleBeginMainFrame() {

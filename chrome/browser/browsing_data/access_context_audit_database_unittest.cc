@@ -11,12 +11,17 @@
 
 namespace {
 
-// Define an ordering based on ascending timestamps to allow sorting of
-// AccessRecords for easier testing, as no ordering is guaranteed by the
-// database.
-bool TimestampOrdering(const AccessContextAuditDatabase::AccessRecord& a,
-                       const AccessContextAuditDatabase::AccessRecord& b) {
-  return a.last_access_time < b.last_access_time;
+// Define an arbitrary ordering to allow sorting of AccessRecords for easier
+// testing, as no ordering is guaranteed by the database.
+bool RecordTestOrdering(const AccessContextAuditDatabase::AccessRecord& a,
+                        const AccessContextAuditDatabase::AccessRecord& b) {
+  if (a.last_access_time != b.last_access_time)
+    return a.last_access_time < b.last_access_time;
+
+  if (a.top_frame_origin != b.top_frame_origin)
+    return a.top_frame_origin < b.top_frame_origin;
+
+  return a.type < b.type;
 }
 
 void ExpectAccessRecordsEqual(
@@ -37,10 +42,13 @@ void ExpectAccessRecordsEqual(
 
 void ValidateDatabaseRecords(
     AccessContextAuditDatabase* database,
-    const std::vector<AccessContextAuditDatabase::AccessRecord>&
-        expected_records) {
+    std::vector<AccessContextAuditDatabase::AccessRecord> expected_records) {
   auto stored_records = database->GetAllRecords();
-  std::sort(stored_records.begin(), stored_records.end(), TimestampOrdering);
+
+  // Apply an arbitrary ordering to simplify testing equivalence.
+  std::sort(stored_records.begin(), stored_records.end(), RecordTestOrdering);
+  std::sort(expected_records.begin(), expected_records.end(),
+            RecordTestOrdering);
 
   EXPECT_EQ(stored_records.size(), expected_records.size());
   for (size_t i = 0;
@@ -52,6 +60,13 @@ void ValidateDatabaseRecords(
 constexpr char kManyContextsCookieName[] = "multiple contexts cookie";
 constexpr char kManyContextsCookieDomain[] = "multi-contexts.com";
 constexpr char kManyContextsCookiePath[] = "/";
+constexpr char kManyContextsStorageAPIOrigin[] = "https://many-contexts.com";
+constexpr AccessContextAuditDatabase::StorageAPIType
+    kManyContextsStorageAPIType =
+        AccessContextAuditDatabase::StorageAPIType::kWebDatabase;
+constexpr AccessContextAuditDatabase::StorageAPIType
+    kSingleContextStorageAPIType =
+        AccessContextAuditDatabase::StorageAPIType::kIndexedDB;
 
 }  // namespace
 
@@ -105,6 +120,21 @@ class AccessContextAuditDatabaseTest : public testing::Test {
             kManyContextsCookieDomain, kManyContextsCookiePath,
             base::Time::FromDeltaSinceWindowsEpoch(
                 base::TimeDelta::FromHours(4))),
+        AccessContextAuditDatabase::AccessRecord(
+            GURL("https://test4.com:8000"), kManyContextsStorageAPIType,
+            GURL(kManyContextsStorageAPIOrigin),
+            base::Time::FromDeltaSinceWindowsEpoch(
+                base::TimeDelta::FromHours(5))),
+        AccessContextAuditDatabase::AccessRecord(
+            GURL("https://test5.com:8000"), kManyContextsStorageAPIType,
+            GURL(kManyContextsStorageAPIOrigin),
+            base::Time::FromDeltaSinceWindowsEpoch(
+                base::TimeDelta::FromHours(6))),
+        AccessContextAuditDatabase::AccessRecord(
+            GURL("https://test5.com:8000"), kSingleContextStorageAPIType,
+            GURL(kManyContextsStorageAPIOrigin),
+            base::Time::FromDeltaSinceWindowsEpoch(
+                base::TimeDelta::FromHours(7))),
     };
   }
 
@@ -217,6 +247,29 @@ TEST_F(AccessContextAuditDatabaseTest, RemoveAllCookieRecords) {
           }),
       test_records.end());
 
+  ValidateDatabaseRecords(database(), test_records);
+}
+
+TEST_F(AccessContextAuditDatabaseTest, RemoveAllStorageRecords) {
+  // Check that all records matching the provided origin and storage type
+  // are removed.
+  auto test_records = GetTestRecords();
+  OpenDatabase();
+  database()->AddRecords(test_records);
+  ValidateDatabaseRecords(database(), test_records);
+
+  database()->RemoveAllRecordsForOriginStorage(
+      GURL(kManyContextsStorageAPIOrigin), kManyContextsStorageAPIType);
+
+  test_records.erase(
+      std::remove_if(
+          test_records.begin(), test_records.end(),
+          [=](const AccessContextAuditDatabase::AccessRecord& record) {
+            return (record.type == kManyContextsStorageAPIType &&
+                    record.origin.GetOrigin() ==
+                        GURL(kManyContextsStorageAPIOrigin).GetOrigin());
+          }),
+      test_records.end());
   ValidateDatabaseRecords(database(), test_records);
 }
 

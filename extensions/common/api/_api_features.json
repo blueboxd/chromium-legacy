@@ -497,7 +497,7 @@
       "content_script"
     ]
   },
-  "runtime.sendMessage": {
+  "runtime.sendMessage": [{
     // Everything except WebUI.
     "contexts": [
       "blessed_web_page",
@@ -508,7 +508,12 @@
       "web_page"
     ],
     "matches": ["<all_urls>"]
-  },
+  },{
+    "contexts": ["webui"],
+    "matches": [
+      "chrome://password-change/*"
+    ]
+  }],
   "runtime.sendNativeMessage": {
     "dependencies": ["permission:nativeMessaging"],
     "contexts": ["blessed_extension"]

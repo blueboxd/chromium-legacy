@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/window_properties.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,6 +21,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
@@ -73,6 +76,8 @@ void plugin_vm::ShowPluginVmInstallerView(Profile* profile) {
     g_plugin_vm_installer_view = new PluginVmInstallerView(profile);
     views::DialogDelegate::CreateDialogWidget(g_plugin_vm_installer_view,
                                               nullptr, nullptr);
+    g_plugin_vm_installer_view->GetWidget()->GetNativeWindow()->SetProperty(
+        ash::kShelfIDKey, ash::ShelfID(plugin_vm::kPluginVmAppId).Serialize());
   }
   g_plugin_vm_installer_view->SetButtonRowInsets(kButtonRowInsets);
   g_plugin_vm_installer_view->GetWidget()->Show();

@@ -426,8 +426,9 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
     test_hooks_->ApplyViewportChanges(args);
   }
 
-  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override {
-  }
+  void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) override {}
 
   void RecordManipulationTypeCounts(ManipulationInfo info) override {}
 

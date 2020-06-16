@@ -10,7 +10,6 @@
 #include <string>
 
 #include "net/base/completion_once_callback.h"
-#include "net/base/load_timing_info.h"
 #include "net/base/proxy_server.h"
 #include "net/http/proxy_client_socket.h"
 #include "net/quic/quic_chromium_client_session.h"
@@ -109,8 +108,6 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   int DoReadReply();
   int DoReadReplyComplete(int result);
 
-  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const;
-
   State next_state_;
 
   // Handle to the QUIC Stream that this sits on top of.
@@ -147,9 +144,6 @@ class NET_EXPORT_PRIVATE QuicProxyClientSocket : public ProxyClientSocket {
   ProxyDelegate* const proxy_delegate_;
 
   std::string user_agent_;
-
-  // Session connect timing info.
-  LoadTimingInfo::ConnectTiming connect_timing_;
 
   const NetLogWithSource net_log_;
 

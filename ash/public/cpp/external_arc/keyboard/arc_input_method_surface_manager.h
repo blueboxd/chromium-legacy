@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_KEYBOARD_ARC_ARC_INPUT_METHOD_SURFACE_MANAGER_H_
-#define ASH_KEYBOARD_ARC_ARC_INPUT_METHOD_SURFACE_MANAGER_H_
+#ifndef ASH_PUBLIC_CPP_EXTERNAL_ARC_KEYBOARD_ARC_INPUT_METHOD_SURFACE_MANAGER_H_
+#define ASH_PUBLIC_CPP_EXTERNAL_ARC_KEYBOARD_ARC_INPUT_METHOD_SURFACE_MANAGER_H_
 
+#include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/keyboard/arc/arc_input_method_bounds_tracker.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
@@ -13,8 +14,9 @@
 
 namespace ash {
 
-class ArcInputMethodSurfaceManager : public exo::InputMethodSurfaceManager,
-                                     public ArcInputMethodBoundsTracker {
+class ASH_PUBLIC_EXPORT ArcInputMethodSurfaceManager
+    : public exo::InputMethodSurfaceManager,
+      public ArcInputMethodBoundsTracker {
  public:
   ArcInputMethodSurfaceManager();
   ~ArcInputMethodSurfaceManager() override;
@@ -33,4 +35,4 @@ class ArcInputMethodSurfaceManager : public exo::InputMethodSurfaceManager,
 
 }  // namespace ash
 
-#endif  // ASH_KEYBOARD_ARC_ARC_INPUT_METHOD_SURFACE_MANAGER_H_
+#endif  // ASH_PUBLIC_CPP_EXTERNAL_ARC_KEYBOARD_ARC_INPUT_METHOD_SURFACE_MANAGER_H_

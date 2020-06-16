@@ -213,8 +213,7 @@ class CC_EXPORT CompositorFrameReporter {
                                    int stage_type_index,
                                    base::TimeDelta latency) const;
 
-  void ReportCompositorLatencyTraceEvents(
-      const char* termination_status_str) const;
+  void ReportCompositorLatencyTraceEvents() const;
   void ReportEventLatencyTraceEvents() const;
 
   void EnableReportType(FrameReportType report_type) {

@@ -12,7 +12,7 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_SVR;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VR_SETTINGS_SERVICE;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VR_DON_ENABLED;
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
@@ -41,11 +41,9 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.vr.rules.VrSettingsFile;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.PermissionUtils;
-import org.chromium.chrome.browser.vr.util.VrSettingsServiceUtils;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.vr.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -164,11 +162,10 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
-    @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VR_SETTINGS_SERVICE})
-    @VrSettingsFile(VrSettingsServiceUtils.FILE_DDVIEW_DONENABLED)
-            @CommandLineFlags.Add({"enable-features=WebXR"})
-            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            public void testPresentationPromiseUnresolvedDuringDon_WebXr() {
+    @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VR_DON_ENABLED})
+    @CommandLineFlags.Add({"enable-features=WebXR"})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+    public void testPresentationPromiseUnresolvedDuringDon_WebXr() {
         presentationPromiseUnresolvedDuringDonImpl(
 
                 "webxr_test_presentation_promise_unresolved_during_don", mWebXrVrTestFramework);
@@ -186,11 +183,10 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
-    @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VR_SETTINGS_SERVICE})
-    @VrSettingsFile(VrSettingsServiceUtils.FILE_DDVIEW_DONENABLED)
-            @CommandLineFlags.Add({"enable-features=WebXR"})
-            @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-            public void testPresentationPromiseRejectedIfDonCanceled_WebXr() {
+    @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VR_DON_ENABLED})
+    @CommandLineFlags.Add({"enable-features=WebXR"})
+    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+    public void testPresentationPromiseRejectedIfDonCanceled_WebXr() {
         presentationPromiseRejectedIfDonCanceledImpl(
 
                 "webxr_test_presentation_promise_rejected_if_don_canceled", mWebXrVrTestFramework);

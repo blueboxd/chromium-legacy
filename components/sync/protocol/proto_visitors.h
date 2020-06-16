@@ -38,6 +38,7 @@
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sharing_message_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync/protocol/sync_invalidations_payload.pb.h"
 #include "components/sync/protocol/theme_specifics.pb.h"
 #include "components/sync/protocol/typed_url_specifics.pb.h"
 #include "components/sync/protocol/unique_position.pb.h"
@@ -834,6 +835,16 @@ VISIT_PROTO_FIELDS(const sync_pb::SyncEntity& proto) {
   VISIT(folder);
   VISIT(client_defined_unique_tag);
   VISIT_BYTES(ordinal_in_parent);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::SyncInvalidationsPayload& proto) {
+  VISIT_REP(data_type_invalidations);
+  VISIT_BYTES(hint);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::SyncInvalidationsPayload::DataTypeInvalidation& proto) {
+  VISIT(data_type_id);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SecurityEventSpecifics& proto) {

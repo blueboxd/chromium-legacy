@@ -50,13 +50,13 @@
         },
         'test': 'chrome_public_test_vr_apk',
       },
-      'chrome_public_test_vr_apk-ddready-dynamicsettings': {
+      'chrome_public_test_vr_apk-ddready-don-enabled': {
         'args': [
-          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json',
+          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json',
           '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
           '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk',
-          '--annotation=Restriction=VR_Settings_Service',
-          '--vr-settings-service-enabled',
+          '--annotation=Restriction=VR_DON_Enabled',
+          '--vr-don-enabled',
         ],
         'test': 'chrome_public_test_vr_apk',
       },
@@ -718,6 +718,10 @@
       'dbus_unittests': {},
       'mojo_core_unittests': {},
       'nacl_helper_nonsfi_unittests': {},
+    },
+
+    'chromium_gtests_for_linux_only': {
+      'x11_unittests': {},
     },
 
     'chromium_gtests_for_win_and_linux_only': {
@@ -3114,6 +3118,7 @@
 
     'linux_ozone_x11_only_gtests': {
       'ozone_x11_unittests': {},
+      'x11_unittests': {},
     },
 
     'linux_specific_chromium_isolated_scripts': {
@@ -4444,6 +4449,7 @@
       'chromium_gtests',
       'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_linux_and_chromeos_only',
+      'chromium_gtests_for_linux_only',
       'chromium_gtests_for_win_and_linux_only',
       'linux_flavor_specific_chromium_gtests',
       'linux_specific_xr_gtests',

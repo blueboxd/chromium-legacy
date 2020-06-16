@@ -8,7 +8,6 @@
 #include <sstream>
 #include <type_traits>
 
-#include "base/value_conversions.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,15 +66,6 @@ TEST(UnguessableTokenTest, VerifySerialization) {
 
   UnguessableToken Deserialized = UnguessableToken::Deserialize(high, low);
   EXPECT_EQ(token, Deserialized);
-}
-
-TEST(UnguessableTokenTest, VerifyValueSerialization) {
-  UnguessableToken token = UnguessableToken::Create();
-  Value value = CreateUnguessableTokenValue(token);
-
-  UnguessableToken deserialized;
-  EXPECT_TRUE(GetValueAsUnguessableToken(value, &deserialized));
-  EXPECT_EQ(token, deserialized);
 }
 
 // Common case (~88% of the time) - no leading zeroes in high_ nor low_.

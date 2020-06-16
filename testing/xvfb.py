@@ -142,6 +142,7 @@ def _run_with_xvfb(cmd, env, stdoutfile, use_openbox, use_xcompmgr):
   openbox_proc = None
   xcompmgr_proc = None
   xvfb_proc = None
+  xwmstartupcheck_proc = None
   xvfb_ready = MutableBoolean()
   def set_xvfb_ready(*_):
     xvfb_ready.setvalue(True)
@@ -181,8 +182,34 @@ def _run_with_xvfb(cmd, env, stdoutfile, use_openbox, use_xcompmgr):
     dbus_pid = launch_dbus(env)
 
     if use_openbox:
+      # This is not ideal, but x11_unittests require that (other X11 tests have
+      # a race with the openbox as well, but they take more time to initialize.
+      # And thus, they do no time out compate to the x11_unittests that are
+      # quick enough to start up before openbox is ready.
+      # TODO(dpranke): remove this nasty hack once the test() template is
+      # reworked.
+      wait_for_openbox = False
+      wait_openbox_program = './xwmstartupcheck'
+      if not os.path.isfile(wait_openbox_program):
+        wait_for_openbox = False
+      # Creates a dummy window that waits for a ReparentNotify event that is
+      # sent whenever Openbox WM starts. Must be started before the OpenBox WM
+      # so that it does not miss the event. This helper program is located in
+      # the current build directory. The program terminates automatically after
+      # 30 seconds of waiting for the event.
+      if wait_for_openbox:
+        xwmstartupcheck_proc = subprocess.Popen(
+            wait_openbox_program, stderr=subprocess.STDOUT, env=env)
+
       openbox_proc = subprocess.Popen(
           ['openbox', '--sm-disable'], stderr=subprocess.STDOUT, env=env)
+
+      # Wait until execution is done. Does not block if the process has already
+      # been terminated. In that case, it's safe to read the return value.
+      if wait_for_openbox:
+        xwmstartupcheck_proc.wait()
+        if xwmstartupcheck_proc.returncode is not 0:
+          raise _XvfbProcessError('Failed to get OpenBox up.')
 
     if use_xcompmgr:
       xcompmgr_proc = subprocess.Popen(

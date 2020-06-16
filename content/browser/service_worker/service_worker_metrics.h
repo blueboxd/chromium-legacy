@@ -267,6 +267,8 @@ class ServiceWorkerMetrics {
       blink::ServiceWorkerStatusCode status,
       bool has_found_update);
 
+  static void RecordGetAllOriginsInfoTime(base::TimeDelta time);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);
 };

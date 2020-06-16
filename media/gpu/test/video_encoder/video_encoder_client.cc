@@ -52,6 +52,11 @@ uint32_t VideoEncoderStats::Bitrate() const {
   return average_frame_size_in_bits * framerate;
 }
 
+void VideoEncoderStats::Reset() {
+  num_encoded_frames = 0;
+  total_encoded_frames_size = 0;
+}
+
 VideoEncoderClient::VideoEncoderClient(
     const VideoEncoder::EventCallback& event_cb,
     std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors,
@@ -137,6 +142,15 @@ void VideoEncoderClient::Flush() {
       FROM_HERE, base::BindOnce(&VideoEncoderClient::FlushTask, weak_this_));
 }
 
+void VideoEncoderClient::UpdateBitrate(const VideoBitrateAllocation& bitrate,
+                                       uint32_t framerate) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(test_sequence_checker_);
+
+  encoder_client_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&VideoEncoderClient::UpdateBitrateTask,
+                                weak_this_, bitrate, framerate));
+}
+
 bool VideoEncoderClient::WaitForBitstreamProcessors() {
   bool success = true;
   for (auto& bitstream_processor : bitstream_processors_)
@@ -148,6 +162,11 @@ VideoEncoderStats VideoEncoderClient::GetStats() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(test_sequence_checker_);
   base::AutoLock auto_lock(stats_lock_);
   return current_stats_;
+}
+
+void VideoEncoderClient::ResetStats() {
+  base::AutoLock auto_lock(stats_lock_);
+  current_stats_.Reset();
 }
 
 void VideoEncoderClient::RequireBitstreamBuffers(
@@ -367,6 +386,16 @@ void VideoEncoderClient::FlushTask() {
   encoder_->Flush(std::move(flush_done_cb));
 
   FireEvent(VideoEncoder::EncoderEvent::kFlushing);
+}
+
+void VideoEncoderClient::UpdateBitrateTask(
+    const VideoBitrateAllocation& bitrate,
+    uint32_t framerate) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_client_sequence_checker_);
+  DVLOGF(4);
+  encoder_->RequestEncodingParametersChange(bitrate, framerate);
+  base::AutoLock auto_lcok(stats_lock_);
+  current_stats_.framerate = framerate;
 }
 
 void VideoEncoderClient::EncodeDoneTask(base::TimeDelta timestamp) {

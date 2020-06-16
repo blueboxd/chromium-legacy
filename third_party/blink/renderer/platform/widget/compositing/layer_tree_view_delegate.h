@@ -66,7 +66,8 @@ class LayerTreeViewDelegate {
   virtual void DidCommitAndDrawCompositorFrame() = 0;
 
   virtual void DidObserveFirstScrollDelay(
-      base::TimeDelta first_scroll_delay) = 0;
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) = 0;
 
   // Notifies that a compositor frame commit operation is about to start.
   virtual void WillCommitCompositorFrame() = 0;

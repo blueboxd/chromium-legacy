@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+import 'chrome://resources/cr_elements/cr_icons_css.m.js';
+import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
@@ -11,6 +14,7 @@ import './print_management_shared_css.js';
 import './printing_manager.mojom-lite.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {getMetadataProvider} from './mojo_interface_provider.js';
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -65,6 +69,13 @@ Polymer({
     FocusRowBehavior,
   ],
 
+  /**
+   * @private {
+   *  ?chromeos.printing.printingManager.mojom.PrintingMetadataProviderInterface
+   * }
+   */
+  mojoInterfaceProvider_: null,
+
   properties: {
     /** @type {!chromeos.printing.printingManager.mojom.PrintJobInfo} */
     jobEntry: {
@@ -115,6 +126,11 @@ Polymer({
     }
   },
 
+  /** @override */
+  created() {
+    this.mojoInterfaceProvider_ = getMetadataProvider();
+  },
+
   /**
    * @return {string}
    * @private
@@ -140,6 +156,23 @@ Polymer({
     return loadTimeData.getStringF('printedPagesFraction',
         this.jobEntry.activePrintJobInfo.printedPages.toString(),
         this.jobEntry.numberOfPages.toString());
+  },
+
+  /** @private */
+  onCancelPrintJobClicked_() {
+    this.mojoInterfaceProvider_.cancelPrintJob(this.jobEntry.id).then(
+      (/** @param {{attemptedCancel: boolean}} response */(response) =>
+          this.onPrintJobCanceled_(response.attemptedCancel)));
+  },
+
+  /**
+   * @param {boolean} attemptedCancel
+   * @private
+   */
+  onPrintJobCanceled_(attemptedCancel) {
+    // TODO(crbug/1093527): Handle error case in which attempted cancellation
+    // failed. Need to discuss with UX on error states.
+    this.fire('remove-print-job', this.jobEntry.id);
   },
 
   /**

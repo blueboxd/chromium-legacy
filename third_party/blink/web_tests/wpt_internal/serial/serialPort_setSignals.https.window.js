@@ -17,7 +17,10 @@ serial_test(async (t, fake) => {
   let expectedSignals = { dtr: true, rts: false, brk: false };
   assert_object_equals(fakePort.outputSignals, expectedSignals, "initial");
 
-  await port.setSignals({});
+  await promise_rejects_js(t, TypeError, port.setSignals());
+  assert_object_equals(fakePort.outputSignals, expectedSignals, "no-op");
+
+  await promise_rejects_js(t, TypeError, port.setSignals({}));
   assert_object_equals(fakePort.outputSignals, expectedSignals, "no-op");
 
   await port.setSignals({ dtr: false });

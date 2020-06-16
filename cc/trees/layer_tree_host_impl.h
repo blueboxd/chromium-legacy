@@ -184,7 +184,8 @@ class LayerTreeHostImplClient {
                                     base::Optional<int> main_percent) = 0;
 
   virtual void DidObserveFirstScrollDelay(
-      base::TimeDelta first_scroll_delay) = 0;
+      base::TimeDelta first_scroll_delay,
+      base::TimeTicks first_scroll_timestamp) = 0;
 
  protected:
   virtual ~LayerTreeHostImplClient() = default;
@@ -343,7 +344,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   float CurrentTopControlsShownRatio() const override;
   float CurrentBottomControlsShownRatio() const override;
   void DidChangeBrowserControlsPosition() override;
-  void DidObserveScrollDelay(base::TimeDelta scroll_delay);
+  void DidObserveScrollDelay(base::TimeDelta scroll_delay,
+                             base::TimeTicks scroll_timestamp);
   bool HaveRootScrollNode() const override;
   void SetNeedsCommit() override;
 

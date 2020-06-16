@@ -34,6 +34,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_install_task.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/test/base/testing_profile.h"
@@ -124,6 +125,16 @@ std::unique_ptr<WebAppDataRetriever> ConvertWebAppToDataRetriever(
 std::unique_ptr<WebAppDataRetriever> CreateEmptyDataRetriever() {
   auto data_retriever = std::make_unique<TestDataRetriever>();
   return std::unique_ptr<WebAppDataRetriever>(std::move(data_retriever));
+}
+
+std::unique_ptr<WebAppInstallTask> CreateDummyTask() {
+  return std::make_unique<WebAppInstallTask>(
+      /*profile=*/nullptr,
+      /*registrar=*/nullptr,
+      /*shortcut_manager=*/nullptr,
+      /*file_handler_manager=*/nullptr,
+      /*install_finalizer=*/nullptr,
+      /*data_retriever=*/nullptr);
 }
 
 }  // namespace
@@ -1342,19 +1353,16 @@ TEST_F(WebAppInstallManagerTest,
   EXPECT_TRUE(registrar().GetAppById(bookmark_app_id));
 }
 
-TEST_F(WebAppInstallManagerTest,
-       SyncRace_InstallBookmarkAppFullThenWebAppFull) {
+TEST_F(WebAppInstallManagerTest, SyncRace_InstallBookmarkAppFull_ThenWebApp) {
   InitEmptyRegistrar();
 
   const GURL url{"https://example.com/path"};
   const AppId app_id = GenerateAppIdFromURL(url);
 
-  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded,
-                                     WebAppUrlLoader::Result::kUrlLoaded});
-  // The web site url will be loaded twice in a sequence.
+  // The web site url must be loaded only once.
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded});
   url_loader().AddNextLoadUrlResults(url,
-                                     {WebAppUrlLoader::Result::kUrlLoaded,
-                                      WebAppUrlLoader::Result::kUrlLoaded});
+                                     {WebAppUrlLoader::Result::kUrlLoaded});
 
   // Prepare web site data for next enqueued full install (the bookmark app).
   UseDefaultDataRetriever(url);
@@ -1363,6 +1371,10 @@ TEST_F(WebAppInstallManagerTest,
   server_bookmark_app_info->app_url = url;
 
   bool bookmark_app_installed = false;
+  bool web_app_install_returns_early = false;
+
+  base::RunLoop run_loop;
+
   // The bookmark app object arrives first from the server, enqueue full
   // install.
   install_manager().InstallBookmarkAppFromSync(
@@ -1372,9 +1384,9 @@ TEST_F(WebAppInstallManagerTest,
             EXPECT_EQ(app_id, installed_app_id);
             EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
             bookmark_app_installed = true;
+            run_loop.Quit();
           }));
 
-  base::RunLoop run_loop;
   controller().SetInstallWebAppsAfterSyncDelegate(base::BindLambdaForTesting(
       [&](std::vector<WebApp*> web_apps_installed,
           SyncInstallDelegate::RepeatingInstallCallback callback) {
@@ -1390,8 +1402,9 @@ TEST_F(WebAppInstallManagerTest,
             base::BindLambdaForTesting(
                 [&](const AppId& installed_app_id, InstallResultCode code) {
                   EXPECT_EQ(app_id, installed_app_id);
-                  EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
-                  run_loop.Quit();
+                  EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, code);
+                  EXPECT_FALSE(bookmark_app_installed);
+                  web_app_install_returns_early = true;
                 }));
       }));
 
@@ -1400,23 +1413,22 @@ TEST_F(WebAppInstallManagerTest,
   controller().ApplySyncChanges_AddApps({url});
   run_loop.Run();
 
+  EXPECT_TRUE(web_app_install_returns_early);
   EXPECT_TRUE(bookmark_app_installed);
 }
 
 TEST_F(WebAppInstallManagerTest,
-       SyncRace_InstallBookmarkAppFullThenWebAppFallback) {
+       SyncRace_InstallBookmarkAppFallback_ThenWebApp) {
   InitEmptyRegistrar();
 
   const GURL url{"https://example.com/path"};
   const AppId app_id = GenerateAppIdFromURL(url);
 
-  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded,
-                                     WebAppUrlLoader::Result::kUrlLoaded});
-  // The web site url will be loaded twice in a sequence. The second load fails
-  // (the web app).
+  // We will try to load the web site url only once.
+  url_loader().AddAboutBlankResults({WebAppUrlLoader::Result::kUrlLoaded});
+  // The web site url will fail.
   url_loader().AddNextLoadUrlResults(
-      url, {WebAppUrlLoader::Result::kUrlLoaded,
-            WebAppUrlLoader::Result::kFailedPageTookTooLong});
+      url, {WebAppUrlLoader::Result::kFailedPageTookTooLong});
 
   // Prepare web site data for next enqueued full install (the bookmark app).
   UseDefaultDataRetriever(url);
@@ -1425,6 +1437,10 @@ TEST_F(WebAppInstallManagerTest,
   server_bookmark_app_info->app_url = url;
 
   bool bookmark_app_installed = false;
+  bool web_app_install_returns_early = false;
+
+  base::RunLoop run_loop;
+
   // The bookmark app object arrives first from the server, enqueue full
   // install.
   install_manager().InstallBookmarkAppFromSync(
@@ -1432,11 +1448,12 @@ TEST_F(WebAppInstallManagerTest,
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
             EXPECT_EQ(app_id, installed_app_id);
+            // Full web app install fails, fallback install succeeds.
             EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
             bookmark_app_installed = true;
+            run_loop.Quit();
           }));
 
-  base::RunLoop run_loop;
   controller().SetInstallWebAppsAfterSyncDelegate(base::BindLambdaForTesting(
       [&](std::vector<WebApp*> web_apps_installed,
           SyncInstallDelegate::RepeatingInstallCallback callback) {
@@ -1452,10 +1469,10 @@ TEST_F(WebAppInstallManagerTest,
             base::BindLambdaForTesting(
                 [&](const AppId& installed_app_id, InstallResultCode code) {
                   EXPECT_EQ(app_id, installed_app_id);
-                  // Full web app install fails, the web app fallback install
-                  // returns early.
+                  // The web app fallback install returns early.
                   EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, code);
-                  run_loop.Quit();
+                  EXPECT_FALSE(bookmark_app_installed);
+                  web_app_install_returns_early = true;
                 }));
       }));
 
@@ -1464,7 +1481,50 @@ TEST_F(WebAppInstallManagerTest,
   controller().ApplySyncChanges_AddApps({url});
   run_loop.Run();
 
+  EXPECT_TRUE(web_app_install_returns_early);
   EXPECT_TRUE(bookmark_app_installed);
+}
+
+TEST_F(WebAppInstallManagerTest, TaskQueueWebContentsReadyRace) {
+  InitEmptyRegistrar();
+
+  std::unique_ptr<WebAppInstallTask> task_a = CreateDummyTask();
+  WebAppInstallTask* task_a_ptr = task_a.get();
+  std::unique_ptr<WebAppInstallTask> task_b = CreateDummyTask();
+  std::unique_ptr<WebAppInstallTask> task_c = CreateDummyTask();
+
+  // Enqueue task A and await it to be started.
+  base::RunLoop run_loop_a_start;
+  url_loader().SetAboutBlankResultLoaded();
+  install_manager().EnsureWebContentsCreated();
+  install_manager().EnqueueTask(std::move(task_a),
+                                run_loop_a_start.QuitClosure());
+  run_loop_a_start.Run();
+
+  // Enqueue task B before A has finished.
+  bool task_b_started = false;
+  install_manager().EnqueueTask(
+      std::move(task_b),
+      base::BindLambdaForTesting([&]() { task_b_started = true; }));
+
+  // Finish task A.
+  url_loader().SetAboutBlankResultLoaded();
+  install_manager().OnQueuedTaskCompleted(
+      task_a_ptr, base::DoNothing(), AppId(),
+      InstallResultCode::kSuccessNewInstall);
+
+  // Task B needs to wait for WebContents to return ready.
+  EXPECT_FALSE(task_b_started);
+
+  // Enqueue task C before B has started.
+  bool task_c_started = false;
+  install_manager().EnqueueTask(
+      std::move(task_c),
+      base::BindLambdaForTesting([&]() { task_c_started = true; }));
+
+  // Task C should not start before B has started.
+  EXPECT_FALSE(task_b_started);
+  EXPECT_FALSE(task_c_started);
 }
 
 }  // namespace web_app

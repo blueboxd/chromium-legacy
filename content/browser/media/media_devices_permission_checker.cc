@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -151,10 +150,6 @@ bool MediaDevicesPermissionChecker::HasPanTiltZoomPermissionGrantedOnUIThread(
     int render_process_id,
     int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-#if defined(OS_ANDROID)
-  // Camera PTZ is desktop only at the moment.
-  return true;
-#else
   // TODO(crbug.com/934063): Remove when MediaCapturePanTilt Blink feature is
   // enabled by default.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -181,7 +176,6 @@ bool MediaDevicesPermissionChecker::HasPanTiltZoomPermissionGrantedOnUIThread(
           PermissionType::CAMERA_PAN_TILT_ZOOM, frame_host, origin);
 
   return status == blink::mojom::PermissionStatus::GRANTED;
-#endif
 }
 
 }  // namespace content

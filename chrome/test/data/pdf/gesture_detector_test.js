@@ -2,27 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {GestureDetector} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/gesture_detector.js';
+import {GestureDetector, PinchEventDetail} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/gesture_detector.js';
+import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
 
 chrome.test.runTests(function() {
   'use strict';
 
   class PinchListener {
+    /** @param {!GestureDetector} gestureDetector */
     constructor(gestureDetector) {
+      /** @type {?CustomEvent<!PinchEventDetail>} */
       this.lastEvent = null;
+
       gestureDetector.getEventTarget().addEventListener(
-          'pinchstart', this.onPinch_.bind(this));
+          'pinchstart',
+          e => this.onPinch_(
+              /** @type {!CustomEvent<!PinchEventDetail>} */ (e)));
       gestureDetector.getEventTarget().addEventListener(
-          'pinchupdate', this.onPinch_.bind(this));
+          'pinchupdate',
+          e => this.onPinch_(
+              /** @type {!CustomEvent<!PinchEventDetail>} */ (e)));
       gestureDetector.getEventTarget().addEventListener(
-          'pinchend', this.onPinch_.bind(this));
+          'pinchend',
+          e => this.onPinch_(
+              /** @type {!CustomEvent<!PinchEventDetail>} */ (e)));
     }
 
+    /**
+     * @param {!CustomEvent<!PinchEventDetail>} pinchEvent
+     * @private
+     */
     onPinch_(pinchEvent) {
       this.lastEvent = pinchEvent;
     }
   }
 
+  /**
+   * @param {number} deltaY
+   * @param {{clientX: number, clientY: number}} position
+   * @param {boolean} ctrlKey
+   * @return {!WheelEvent}
+   */
   function createWheelEvent(deltaY, position, ctrlKey) {
     return new WheelEvent('wheel', {
       deltaY,
@@ -34,13 +54,23 @@ chrome.test.runTests(function() {
     });
   }
 
+  /** @type {!EventTarget} */
   let stubElement;
 
+  /**
+   * @param {string} type
+   * @param {!Array<{
+   *   clientX: (number|undefined),
+   *   clientY: (number|undefined)
+   * }>} touches
+   * @return {!TouchEvent}
+   */
   function createTouchEvent(type, touches) {
     return new TouchEvent(type, {
       touches: touches.map(t => {
         return new Touch(
-            Object.assign({identifier: 0, target: stubElement}, t));
+            /** @type {!TouchInitDict} */ (
+                Object.assign({identifier: 0, target: stubElement}, t)));
       }),
       // Necessary for preventDefault() to work.
       cancelable: true,

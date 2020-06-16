@@ -202,14 +202,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, AppFieldsChangeDoesNotSync) {
   info_a.theme_color = SK_ColorBLUE;
   AppId app_id_a = InstallApp(info_a, GetProfile(0));
 
-  // Wait for InstallBookmarkAppFromSync completion.
   EXPECT_EQ(WebAppInstallObserver(GetProfile(1)).AwaitNextInstall(), app_id_a);
-  if (!IsBookmarkAppsSync()) {
-    // Wait for InstallWebAppsAfterSync completion. TODO(crbug.com/1020037):
-    // Fix double installation if InstallWebAppsAfterSync happens second.
-    EXPECT_EQ(WebAppInstallObserver(GetProfile(1)).AwaitNextInstall(),
-              app_id_a);
-  }
 
   EXPECT_EQ(base::UTF8ToUTF16(registrar1.GetAppShortName(app_id_a)),
             info_a.title);

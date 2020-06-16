@@ -197,6 +197,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   virtual bool ShouldDeferNavigation(content::NavigationHandle* handle);
 
+  virtual bool ShouldCancelNavigation(content::NavigationHandle* handle);
+
   void ShowIntentPickerForApps(
       content::WebContents* web_contents,
       IntentPickerAutoDisplayService* ui_auto_display_service,

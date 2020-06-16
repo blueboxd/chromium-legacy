@@ -4,6 +4,7 @@
 
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
+import("//testing/test.gni")
 import("//ui/ozone/ozone.gni")
 
 assert(use_x11 || ozone_platform_x11)
@@ -48,4 +49,38 @@ jumbo_component("x11") {
     configs += [ "//build/config/linux/atk" ]
     deps += [ "//ui/events/x" ]
   }
+}
+
+test("x11_unittests") {
+  sources = [ "test/x11_window_unittest.cc" ]
+  deps = [
+    ":x11",
+    "//base/test:run_all_unittests",
+    "//base/test:test_support",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/base/x",
+    "//ui/base/x:test_support",
+    "//ui/events:test_support",
+    "//ui/events/platform/x11",
+    "//ui/events/x",
+    "//ui/gfx:test_support",
+    "//ui/gfx/x",
+    "//ui/platform_window",
+    "//ui/platform_window/extensions",
+  ]
+  configs += [ "//build/config:precompiled_headers" ]
+
+  # Needed for tests.  Please note that if you want to run tests locally,
+  # ensure that you start them from your out directory with the xvfb
+  # script so that openbox has time to start. Otherwise, the x11_unittests
+  # will time out. e.g. -
+  #
+  # 1) cd out/Debug.
+  # 2) ../../testing/xvfb.py ./x11_unittests.
+  #
+  #TODO(dpranke): move that to appropriate place after test() template is
+  # reworked.
+  data_deps = [ "//ui/base/x/xwmstartupcheck" ]
 }

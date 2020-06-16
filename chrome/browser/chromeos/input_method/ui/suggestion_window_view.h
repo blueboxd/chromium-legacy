@@ -14,13 +14,15 @@
 namespace ui {
 namespace ime {
 
+class AssistiveDelegate;
+class SettingLinkView;
 class SuggestionView;
 
 // SuggestionWindowView is the main container of the suggestion window UI.
 class UI_CHROMEOS_EXPORT SuggestionWindowView
     : public views::BubbleDialogDelegateView {
  public:
-  explicit SuggestionWindowView(gfx::NativeView parent);
+  SuggestionWindowView(gfx::NativeView parent, AssistiveDelegate* delegate);
   ~SuggestionWindowView() override;
   views::Widget* InitWidget();
 
@@ -48,8 +50,14 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
   // views::BubbleDialogDelegateView:
   const char* GetClassName() const override;
 
+  // The delegate to handle events from this class.
+  AssistiveDelegate* delegate_;
+
   // The view containing all the suggestions.
   views::View* candidate_area_;
+
+  // The view for rendering setting link, positioned below candidate_area_.
+  SettingLinkView* setting_link_view_;
 
   // The items in view_
   std::vector<std::unique_ptr<SuggestionView>> candidate_views_;

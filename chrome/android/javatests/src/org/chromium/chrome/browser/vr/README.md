@@ -175,30 +175,16 @@ headset. The currently supported files are:
   those that require the DON flow to be enabled. This will pair the device with
   a Daydream View headset, set the DON flow to be skipped, and enable controller
   emulation.
-* `//chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json`
-  combined with the extra `--vr-settings-service-enabled` and
-  `--annotation=Restriction=VR_Settings_Service` flags will cause all tests that
-  are using the `RESTRICTION_TYPE_VR_SETTINGS_SERVICE` restriction to run. See
-  the section below for more detail on this.
+* `//chrome/android/shared_preference_files/test/vr_ddview_don_setupcomplete.json`
+  combined with the extra `--vr-don-enabled` and
+  `--annotation=Restriction=VR_DON_Enabled` flags will cause all tests that
+  are using the `RESTRICTION_TYPE_VR_DON_ENABLED` restriction to run. This runs
+  tests that expect to have the DON flow enabled.
 
 The test runner will automatically revert any changed settings back to their
 pre-test values after the test suite has completed. If for whatever reason you
 want to manually apply settings outside of a test, you can do so with
 `//build/android/apply_shared_preference_file.py`.
-
-#### vr-settings-service-enabled
-
-`--vr-settings-service-enabled --annotation=Restriction=VR_Settings_Service`
-
-Tells the test runner to allow the running of tests that utilize the VR settings
-service to dynamically change VrCore settings during a test instead of relying
-on whatever was set by the shared preference file that was applied. This is used
-as a catch-all for less standard tests, such as those that require the DON flow
-to be enabled or that need to switch the paired viewer mid-test.
-
-This should only be used when `--shared-prefs-file` is passed
-`//chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json`
-as otherwise trying to use the service will be a NOOP.
 
 ## Adding New Tests
 

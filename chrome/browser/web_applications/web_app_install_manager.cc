@@ -236,6 +236,17 @@ void WebAppInstallManager::EnqueueInstallBookmarkAppFromSync(
   EnqueueTask(std::move(task), std::move(start_task));
 }
 
+bool WebAppInstallManager::IsAppIdAlreadyEnqueued(const AppId& app_id) const {
+  for (const std::unique_ptr<WebAppInstallTask>& task : tasks_) {
+    if (task->app_id_to_expect().has_value() &&
+        task->app_id_to_expect().value() == app_id) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void WebAppInstallManager::UpdateWebAppFromInfo(
     const AppId& app_id,
     std::unique_ptr<WebApplicationInfo> web_application_info,
@@ -262,6 +273,20 @@ void WebAppInstallManager::InstallWebAppsAfterSync(
 
   for (WebApp* web_app : web_apps) {
     DCHECK(web_app->is_in_sync_install());
+
+    // TODO(crbug.com/1065748): Delete this check together with
+    // WebAppInstallManager::InstallBookmarkAppFromSync backward compatibility
+    // install.
+    if (IsAppIdAlreadyEnqueued(web_app->app_id())) {
+      // An install for this app is already enqueued. It will overwrite the
+      // web app in sync install anyway. Note that we call the callback too
+      // early here: an enqueued task has not yet installed the app. Let's use
+      // kSuccessAlreadyInstalled here to indicate it (not
+      // kSuccessNewInstall).
+      callback.Run(web_app->app_id(),
+                   InstallResultCode::kSuccessAlreadyInstalled);
+      continue;
+    }
 
     auto task = std::make_unique<WebAppInstallTask>(
         profile(), registrar(), shortcut_manager(), file_handler_manager(),
@@ -413,9 +438,9 @@ void WebAppInstallManager::OnQueuedTaskCompleted(WebAppInstallTask* task,
   if (is_running_queued_task_)
     return;
 
+  web_contents_ready_ = false;
   if (task_queue_.empty()) {
     web_contents_.reset();
-    web_contents_ready_ = false;
   } else {
     // Load about:blank to clean up the renderer process.
     url_loader_->LoadUrl(

@@ -20,12 +20,10 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.components.signin.AccountManagerFacadeImpl;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.components.signin.test.util.AccountHolder;
-import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
+import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
 import org.chromium.components.sync.AndroidSyncSettings.AndroidSyncSettingsObserver;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 
@@ -105,7 +103,6 @@ public class AndroidSyncSettingsTest {
     private Account mAccount;
     private Account mAlternateAccount;
     private MockSyncSettingsObserver mSyncSettingsObserver;
-    private FakeAccountManagerDelegate mAccountManager;
     private CallbackHelper mCallbackHelper;
     private int mNumberOfCallsToWait;
 
@@ -139,25 +136,18 @@ public class AndroidSyncSettingsTest {
     }
 
     private void setupTestAccounts() {
-        mAccountManager = new FakeAccountManagerDelegate();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            AccountManagerFacadeProvider.setInstanceForTests(
-                    new AccountManagerFacadeImpl(mAccountManager));
-        });
-        mAccount = addTestAccount("account@example.com");
-        mAlternateAccount = addTestAccount("alternate@example.com");
-    }
-
-    private Account addTestAccount(String name) {
-        Account account = AccountUtils.createAccountFromName(name);
-        AccountHolder holder = AccountHolder.builder(account).alwaysAccept(true).build();
-        mAccountManager.addAccountHolderBlocking(holder);
-        return account;
+        FakeAccountManagerFacade fakeAccountManagerFacade = new FakeAccountManagerFacade(null);
+        AccountManagerFacadeProvider.setInstanceForTests(fakeAccountManagerFacade);
+        mAccount = AccountUtils.createAccountFromName("account@example.com");
+        fakeAccountManagerFacade.addAccount(mAccount);
+        mAlternateAccount = AccountUtils.createAccountFromName("alternate@example.com");
+        fakeAccountManagerFacade.addAccount(mAlternateAccount);
     }
 
     @After
     public void tearDown() throws Exception {
         if (mNumberOfCallsToWait > 0) mCallbackHelper.waitForCallback(0, mNumberOfCallsToWait);
+        AccountManagerFacadeProvider.resetInstanceForTests();
     }
 
     private void enableChromeSyncOnUiThread() {

@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/optional.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 
 namespace {
@@ -23,11 +24,44 @@ base::Optional<std::string> GetIntentConditionValueByType(
       return intent->host;
     case apps::mojom::ConditionType::kPattern:
       return intent->path;
-    // TODO(crbug.com/1092784): Handle mime type.
     case apps::mojom::ConditionType::kMimeType:
-      NOTIMPLEMENTED();
-      return base::nullopt;
+      return intent->mime_type;
   }
+}
+
+bool ComponentMatched(const std::string& component1,
+                      const std::string& component2) {
+  const char kWildCardAny[] = "*";
+  return component1 == kWildCardAny || component2 == kWildCardAny ||
+         component1 == component2;
+}
+
+// TODO(crbug.com/1092784): Handle file path with extension with mime type.
+bool MimeTypeMatched(const std::string& mime_type1,
+                     const std::string& mime_type2) {
+  const char kMimeTypeSeparator[] = "/";
+
+  std::vector<std::string> components1 =
+      base::SplitString(mime_type1, kMimeTypeSeparator, base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+
+  std::vector<std::string> components2 =
+      base::SplitString(mime_type2, kMimeTypeSeparator, base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+
+  const size_t kMimeTypeComponentSize = 2;
+  if (components1.size() != kMimeTypeComponentSize ||
+      components2.size() != kMimeTypeComponentSize) {
+    return false;
+  }
+
+  // Both intent and intent filter can use wildcard for mime type.
+  for (size_t i = 0; i < kMimeTypeComponentSize; i++) {
+    if (!ComponentMatched(components1[i], components2[i])) {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace
@@ -61,6 +95,8 @@ bool ConditionValueMatches(
                               base::CompareCase::INSENSITIVE_ASCII);
     case apps::mojom::PatternMatchType::kGlob:
       return MatchGlob(value, condition_value->value);
+    case apps::mojom::PatternMatchType::kMimeType:
+      return MimeTypeMatched(value, condition_value->value);
   }
 }
 

@@ -85,8 +85,6 @@ bool OnlyLoginRequested(
           collect_user_data_options.additional_appended_sections.end(),
           find_additional_input_sections) !=
           collect_user_data_options.additional_appended_sections.end();
-  LOG(ERROR) << "HAS_INPUT_SECTIONS: " << has_input_sections;
-
   return !has_input_sections && !collect_user_data_options.request_payer_name &&
          !collect_user_data_options.request_payer_email &&
          !collect_user_data_options.request_payer_phone &&
@@ -434,7 +432,6 @@ void CollectUserDataAction::InternalProcessAction(
     ProcessActionCallback callback) {
   callback_ = std::move(callback);
   if (!CreateOptionsFromProto()) {
-    LOG(ERROR) << "INVALID";
     EndAction(ClientStatus(INVALID_ACTION));
     return;
   }
@@ -874,17 +871,16 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
         collect_user_data.additional_model_identifier_to_check();
   }
 
-  // TODO(crbug.com/806868): Maybe we could refactor this to make the confirm
-  // chip and direct_action part of the additional_actions.
-  std::string confirm_text = collect_user_data.confirm_button_text();
-  if (confirm_text.empty()) {
-    confirm_text =
-        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM);
+  auto* confirm_chip =
+      collect_user_data_options_->confirm_action.mutable_chip();
+  if (collect_user_data.has_confirm_chip()) {
+    *confirm_chip = collect_user_data.confirm_chip();
+  } else {
+    confirm_chip->set_text(
+        l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM));
+    confirm_chip->set_type(HIGHLIGHTED_ACTION);
   }
-  collect_user_data_options_->confirm_action.mutable_chip()->set_text(
-      confirm_text);
-  collect_user_data_options_->confirm_action.mutable_chip()->set_type(
-      HIGHLIGHTED_ACTION);
+
   *collect_user_data_options_->confirm_action.mutable_direct_action() =
       collect_user_data.confirm_direct_action();
 

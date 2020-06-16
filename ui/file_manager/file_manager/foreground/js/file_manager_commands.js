@@ -1568,6 +1568,47 @@ CommandHandler.COMMANDS_['show-submenu'] = new class extends Command {
 };
 
 /**
+ * Opens containing folder of the focused file.
+ */
+CommandHandler.COMMANDS_['go-to-file-location'] = new class extends Command {
+  execute(event, fileManager) {
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    if (entries.length !== 1) {
+      return;
+    }
+
+    const components = PathComponent.computeComponentsFromEntry(
+        entries[0], fileManager.volumeManager);
+    // Entries in file list table should always have its containing folder.
+    // (i.e. Its path have at least two components: its parent and itself.)
+    assert(components.length >= 2);
+    const parentComponent = components[components.length - 2];
+    parentComponent.resolveEntry().then(entry => {
+      if (entry && entry.isDirectory) {
+        fileManager.directoryModel.changeDirectoryEntry(
+            /** @type {!(DirectoryEntry|FilesAppDirEntry)} */ (entry));
+      }
+    });
+  }
+
+  /** @override */
+  canExecute(event, fileManager) {
+    // Available in Recents, Audio, Images, and Videos.
+    if (!util.isRecentRootType(
+            fileManager.directoryModel.getCurrentRootType())) {
+      event.canExecute = false;
+      event.command.setHidden(true);
+      return;
+    }
+
+    // Available for a single entry.
+    const entries = CommandUtil.getCommandEntries(fileManager, event.target);
+    event.canExecute = entries.length === 1;
+    event.command.setHidden(!event.canExecute);
+  }
+};
+
+/**
  * Displays QuickView for current selection.
  */
 CommandHandler.COMMANDS_['get-info'] = new class extends Command {
@@ -1993,7 +2034,8 @@ CommandHandler.COMMANDS_['share-with-plugin-vm'] = new class extends Command {
       fileManager.ui.toast.show(str('FOLDER_SHARED_WITH_PLUGIN_VM'), {
         text: str('MANAGE_TOAST_BUTTON_LABEL'),
         callback: () => {
-          chrome.fileManagerPrivate.openSettingsSubpage('pluginVm/sharedPaths');
+          chrome.fileManagerPrivate.openSettingsSubpage(
+              'app-management/pluginVm/sharedPaths');
           CommandHandler.recordMenuItemSelected(
               CommandHandler.MenuCommandsForUMA.MANAGE_PLUGIN_VM_SHARING_TOAST);
         }
@@ -2086,7 +2128,8 @@ CommandHandler.COMMANDS_['manage-linux-sharing'] = new class extends Command {
 CommandHandler.COMMANDS_['manage-plugin-vm-sharing-gear'] =
     new class extends Command {
   execute(event, fileManager) {
-    chrome.fileManagerPrivate.openSettingsSubpage('pluginVm/sharedPaths');
+    chrome.fileManagerPrivate.openSettingsSubpage(
+        'app-management/pluginVm/sharedPaths');
     CommandHandler.recordMenuItemSelected(
         CommandHandler.MenuCommandsForUMA.MANAGE_PLUGIN_VM_SHARING);
   }
@@ -2105,7 +2148,8 @@ CommandHandler.COMMANDS_['manage-plugin-vm-sharing-gear'] =
 CommandHandler.COMMANDS_['manage-plugin-vm-sharing'] =
     new class extends Command {
   execute(event, fileManager) {
-    chrome.fileManagerPrivate.openSettingsSubpage('pluginVm/sharedPaths');
+    chrome.fileManagerPrivate.openSettingsSubpage(
+        'app-management/pluginVm/sharedPaths');
     CommandHandler.recordMenuItemSelected(
         CommandHandler.MenuCommandsForUMA.MANAGE_PLUGIN_VM_SHARING);
   }

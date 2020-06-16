@@ -14,6 +14,7 @@ enum class ButtonId {
   kNone,
   kUndo,
   kAddToDictionary,
+  kSmartInputsSettingLink,
 };
 
 enum class AssistiveWindowType {

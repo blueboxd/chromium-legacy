@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
-#include "chrome/browser/chromeos/lacros/lacros_loader.h"
+#include "chrome/browser/chromeos/lacros/lacros_manager.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -68,9 +68,9 @@ apps::mojom::IconKeyPtr LacrosApps::NewIconKey(State state) {
 void LacrosApps::Connect(
     mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
     apps::mojom::ConnectOptionsPtr opts) {
-  bool is_ready = LacrosLoader::Get()->IsReady();
+  bool is_ready = chromeos::LacrosManager::Get()->IsReady();
   if (!is_ready) {
-    LacrosLoader::Get()->SetLoadCompleteCallback(base::BindOnce(
+    chromeos::LacrosManager::Get()->SetLoadCompleteCallback(base::BindOnce(
         &LacrosApps::OnLoadComplete, weak_factory_.GetWeakPtr()));
   }
   std::vector<apps::mojom::AppPtr> apps;
@@ -105,7 +105,7 @@ void LacrosApps::Launch(const std::string& app_id,
                         apps::mojom::LaunchSource launch_source,
                         int64_t display_id) {
   DCHECK_EQ(extension_misc::kLacrosAppId, app_id);
-  LacrosLoader::Get()->Start();
+  chromeos::LacrosManager::Get()->Start();
 }
 
 void LacrosApps::GetMenuModel(const std::string& app_id,

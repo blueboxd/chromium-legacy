@@ -297,7 +297,7 @@ group("gn_all") {
   }
 
   if (use_x11 || ozone_platform_x11) {
-    deps += [ "//tools/xdisplaycheck" ]
+    deps += [ "//ui/platform_window/x11:x11_unittests" ]
   }
 
   if (is_win) {

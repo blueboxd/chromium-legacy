@@ -11,6 +11,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/input_method/ui/assistive_delegate.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_view.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -24,6 +25,7 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/wm/core/window_animations.h"
@@ -56,7 +58,48 @@ class SuggestionWindowBorder : public views::BubbleBorder {
 
 }  // namespace
 
-SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent) {
+const int kSettingLinkFontSize = 13;
+// TODO(crbug/1094843): Add localised string.
+const char kSettingLinkLabel[] = "Why am I seeing this suggestion?";
+
+class SettingLinkView : public views::View {
+ public:
+  explicit SettingLinkView(AssistiveDelegate* delegate) : delegate_(delegate) {
+    SetLayoutManager(std::make_unique<views::FillLayout>());
+    setting_link_ = AddChildView(
+        std::make_unique<views::Link>(base::UTF8ToUTF16(kSettingLinkLabel)));
+    setting_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    setting_link_->SetFontList(gfx::FontList({kFontStyle}, gfx::Font::ITALIC,
+                                             kSettingLinkFontSize,
+                                             gfx::Font::Weight::NORMAL));
+    setting_link_->set_callback(base::BindRepeating(
+        &SettingLinkView::LinkClicked, base::Unretained(this)));
+  }
+
+ private:
+  AssistiveDelegate* delegate_;
+  views::Link* setting_link_;
+
+  void LinkClicked() {
+    delegate_->AssistiveWindowButtonClicked(ButtonId::kSmartInputsSettingLink,
+                                            AssistiveWindowType::kNone);
+  }
+
+  void Layout() override {
+    setting_link_->SetBounds(kPadding, 0, width(), height());
+  }
+
+  gfx::Size CalculatePreferredSize() const override {
+    gfx::Size size;
+    size.Enlarge(setting_link_->GetPreferredSize().width() + 2 * kPadding, 0);
+    return size;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(SettingLinkView);
+};
+
+SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent,
+                                           AssistiveDelegate* delegate) {
   DialogDelegate::SetButtons(ui::DIALOG_BUTTON_NONE);
   SetCanActivate(false);
   DCHECK(parent);
@@ -68,6 +111,9 @@ SuggestionWindowView::SuggestionWindowView(gfx::NativeView parent) {
   candidate_area_ = AddChildView(std::make_unique<views::View>());
   candidate_area_->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
+  setting_link_view_ =
+      AddChildView(std::make_unique<SettingLinkView>(delegate));
+  setting_link_view_->SetVisible(false);
 }
 
 SuggestionWindowView::~SuggestionWindowView() = default;
@@ -99,6 +145,9 @@ void SuggestionWindowView::Show(const base::string16& text,
   MaybeInitializeSuggestionViews(1);
   candidate_views_[0]->SetEnabled(true);
   candidate_views_[0]->SetView(text, confirmed_length, show_tab);
+  candidate_views_[0]->SetMinWidth(
+      setting_link_view_->GetPreferredSize().width());
+  setting_link_view_->SetVisible(true);
   MakeVisible();
 }
 

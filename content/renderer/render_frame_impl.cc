@@ -4684,7 +4684,8 @@ void RenderFrameImpl::DidObserveInputDelay(base::TimeDelta input_delay) {
 }
 
 void RenderFrameImpl::DidObserveFirstScrollDelay(
-    base::TimeDelta first_scroll_delay) {
+    base::TimeDelta first_scroll_delay,
+    base::TimeTicks first_scroll_timestamp) {
   // TODO(hbsong): Plumbing first_scroll_delay to UKM observer.
   return;
 }

@@ -174,7 +174,13 @@ gfx::Size SuggestionView::CalculatePreferredSize() const {
     gfx::Size annotation_size = annotation_label_->GetPreferredSize();
     size.Enlarge(annotation_size.width() + kPadding, 0);
   }
+  if (min_width_ > size.width())
+    size.Enlarge(min_width_ - size.width(), 0);
   return size;
+}
+
+void SuggestionView::SetMinWidth(int min_width) {
+  min_width_ = min_width;
 }
 
 }  // namespace ime

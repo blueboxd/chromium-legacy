@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "media/base/video_bitrate_allocation.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/test/bitstream_helpers.h"
 #include "media/gpu/test/video.h"
 #include "media/gpu/test/video_encoder/video_encoder_client.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 namespace test {
@@ -147,6 +149,15 @@ void VideoEncoder::Flush() {
   encoder_client_->Flush();
 }
 
+void VideoEncoder::UpdateBitrate(uint32_t bitrate, uint32_t framerate) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DVLOGF(4);
+
+  VideoBitrateAllocation bitrate_allocation;
+  ASSERT_TRUE(bitrate_allocation.SetBitrate(0, 0, bitrate));
+  encoder_client_->UpdateBitrate(bitrate_allocation, framerate);
+}
+
 VideoEncoder::EncoderState VideoEncoder::GetState() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -206,6 +217,11 @@ bool VideoEncoder::WaitForBitstreamProcessors() {
 
 VideoEncoderStats VideoEncoder::GetStats() const {
   return !encoder_client_ ? VideoEncoderStats() : encoder_client_->GetStats();
+}
+
+void VideoEncoder::ResetStats() {
+  if (encoder_client_)
+    encoder_client_->ResetStats();
 }
 
 size_t VideoEncoder::GetFlushDoneCount() const {

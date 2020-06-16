@@ -669,10 +669,6 @@ void ContentBrowserClient::OpenURL(
   std::move(callback).Run(nullptr);
 }
 
-std::string ContentBrowserClient::GetMetricSuffixForURL(const GURL& url) {
-  return std::string();
-}
-
 std::vector<std::unique_ptr<NavigationThrottle>>
 ContentBrowserClient::CreateThrottlesForNavigation(
     NavigationHandle* navigation_handle) {

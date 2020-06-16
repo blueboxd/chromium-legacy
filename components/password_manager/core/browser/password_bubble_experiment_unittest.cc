@@ -6,6 +6,7 @@
 
 #include <ostream>
 
+#include "base/feature_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -108,6 +109,13 @@ TEST_F(PasswordManagerPasswordBubbleExperimentTest,
 
 #if !defined(OS_CHROMEOS)
 TEST_F(PasswordManagerPasswordBubbleExperimentTest, ReviveSignInPasswordPromo) {
+  // If kEnablePasswordsAccountStorage is enabled, then the password manager
+  // bubble never shows Sync promos, so this test doesn't apply.
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kEnablePasswordsAccountStorage)) {
+    return;
+  }
+
   sync_service()->SetDisableReasons(syncer::SyncService::DisableReasonSet());
   sync_service()->SetFirstSetupComplete(false);
   sync_service()->SetTransportState(

@@ -7,19 +7,21 @@
   }
 
   .list-item {
-    align-items: center;
-    display: flex;
     min-height: 40px;
     padding: 0;
   }
 
-  #activeStatusContainer {
-    display: flex;
+  #cancelPrintJobButton {
+    margin-inline-start: 4px;
   }
 
   #numericalProgress {
     color: var(--google-blue-600);
     margin-inline-end: 16px;
+  }
+
+  #printProgress {
+    margin-top: 0px;
   }
 
   paper-progress {
@@ -31,38 +33,42 @@
 </style>
 <div focus-row-container>
   <!-- TODO(crbug/1073693): Update the a11y based on expert guidance -->
-  <div class="list-item"
+  <div class="list-item flex-center"
       focus-row-control
       focus-type="rowWrapper"
       aria-label$="[[jobEntryAriaLabel_]]">
     <div id="jobTitle" class="long-text overflow-ellipsis" aria-hidden="true">
       [[jobTitle_]]
     </div>
-    <div id="printerName" class="long-text overflow-ellipsis padded-left"
-        aria-hidden="true">
+    <div id="printerName"
+        class="medium-text overflow-ellipsis padded-left" aria-hidden="true">
       [[printerName_]]
     </div>
     <div id="creationTime" class="short-text overflow-ellipsis padded-left"
         aria-hidden="true">
       [[creationTime_]]
     </div>
-    
+
     <template is="dom-if" if="[[isCompletedPrintJob_(jobEntry)]]" restamp>
       <div id="completionStatus"
-          class="short-text overflow-ellipsis padded-left"
+          class="medium-text overflow-ellipsis padded-left"
           aria-hidden="true">
         [[completionStatus_]]
       </div>
     </template>
 
     <template is="dom-if" if="[[!isCompletedPrintJob_(jobEntry)]]" restamp>
-      <div id="activeStatusContainer" class="padded-left" aria-hidden="true">
+      <div id="activeStatusContainer" class="padded-left flex-center"
+          aria-hidden="true">
         <div id="numericalProgress">[[readableProgress_]]</div>
         <paper-progress
             value="[[computePrintPagesProgress_(
                 jobEntry.activePrintJobInfo.printedPages,
                 jobEntry.numberOfPages)]]">
         </paper-progress>
+        <cr-icon-button id="cancelPrintJobButton" class="icon-cancel"
+            on-click="onCancelPrintJobClicked_">
+        </cr-icon-button>
       </div>
     </template>
   </div>

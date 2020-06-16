@@ -21,5 +21,6 @@ luci.console_view(
     repo = 'https://chromium.googlesource.com/chromium/src',
     entries = [
         luci.console_view_entry(builder = 'ci/linux-rel-swarming-staging'),
+        luci.console_view_entry(builder = 'ci/win-rel-swarming-staging'),
    ],
 )

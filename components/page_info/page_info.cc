@@ -179,10 +179,6 @@ bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
   // The Native File System write permission is desktop only at the moment.
   if (info.type == ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD)
     return false;
-
-  // Camera PTZ is desktop only at the moment.
-  if (info.type == ContentSettingsType::CAMERA_PAN_TILT_ZOOM)
-    return false;
 #else
   // Flash is shown if the user has ever changed its setting for |site_url|.
   if (info.type == ContentSettingsType::PLUGINS &&

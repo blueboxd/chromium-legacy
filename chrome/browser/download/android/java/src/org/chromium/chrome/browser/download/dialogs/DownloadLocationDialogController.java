@@ -12,10 +12,10 @@ public interface DownloadLocationDialogController {
      * Called when the user finished download location selection flow.
      * @param returnedPath The download file path picked by the user.
      */
-    void onComplete(String returnedPath);
+    void onDownloadLocationDialogComplete(String returnedPath);
 
     /**
      * Called when the user cancel or dismiss the download location dialog.
      */
-    void onCancel();
+    void onDownloadLocationDialogCanceled();
 }

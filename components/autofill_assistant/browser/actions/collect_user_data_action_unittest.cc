@@ -2286,5 +2286,60 @@ TEST_F(CollectUserDataActionTest, LinkClickWritesPartialUserData) {
   action.ProcessAction(callback_.Get());
 }
 
+TEST_F(CollectUserDataActionTest, ConfirmButtonChip) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  auto* confirm_chip = collect_user_data_proto->mutable_confirm_chip();
+  confirm_chip->set_text("Custom text");
+  confirm_chip->set_icon(ICON_CLEAR);
+  confirm_chip->set_sticky(true);
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([this](CollectUserDataOptions* collect_user_data_options) {
+            EXPECT_EQ(collect_user_data_options->confirm_action.chip().text(),
+                      "Custom text");
+            EXPECT_EQ(collect_user_data_options->confirm_action.chip().icon(),
+                      ICON_CLEAR);
+            EXPECT_EQ(collect_user_data_options->confirm_action.chip().sticky(),
+                      true);
+            user_data_.succeed_ = true;
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(&user_data_, &user_model_);
+          }));
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
+TEST_F(CollectUserDataActionTest, ConfirmButtonFallbackText) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault(
+          Invoke([this](CollectUserDataOptions* collect_user_data_options) {
+            EXPECT_EQ(collect_user_data_options->confirm_action.chip().text(),
+                      l10n_util::GetStringUTF8(
+                          IDS_AUTOFILL_ASSISTANT_PAYMENT_INFO_CONFIRM));
+            user_data_.succeed_ = true;
+            std::move(collect_user_data_options->confirm_callback)
+                .Run(&user_data_, &user_model_);
+          }));
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+}
+
 }  // namespace
 }  // namespace autofill_assistant

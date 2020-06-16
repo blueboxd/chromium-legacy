@@ -53,6 +53,7 @@ struct VideoEncoderClientConfig {
 struct VideoEncoderStats {
   explicit VideoEncoderStats(uint32_t framerate = 1u);
   uint32_t Bitrate() const;
+  void Reset();
 
   uint32_t framerate = 0;
   size_t num_encoded_frames = 0;
@@ -101,12 +102,16 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
   // event is always sent after all associated kFrameEncoded events.
   void Flush();
 
+  // Updates bitrate based on the specified |bitrate| and |framerate|.
+  void UpdateBitrate(const VideoBitrateAllocation& bitrate, uint32_t framerate);
+
   // Wait until all bitstream processors have finished processing. Returns
   // whether processing was successful.
   bool WaitForBitstreamProcessors();
 
-  // Get video encode statistics.
+  // Get/Reset video encode statistics.
   VideoEncoderStats GetStats() const;
+  void ResetStats();
 
   // VideoEncodeAccelerator::Client implementation
   void RequireBitstreamBuffers(unsigned int input_count,
@@ -147,6 +152,8 @@ class VideoEncoderClient : public VideoEncodeAccelerator::Client {
   void EncodeNextFrameTask();
   // Instruct the encoder to perform a flush on the |encoder_client_thread_|.
   void FlushTask();
+  void UpdateBitrateTask(const VideoBitrateAllocation& bitrate,
+                         uint32_t framerate);
 
   // Called by the encoder when a frame has been encoded.
   void EncodeDoneTask(base::TimeDelta timestamp);

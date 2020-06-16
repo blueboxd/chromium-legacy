@@ -154,6 +154,28 @@ Path QuadToPath(const FloatQuad& quad) {
   return quad_path;
 }
 
+Path RowQuadToPath(const FloatQuad& quad, bool drawEndLine) {
+  Path quad_path;
+  quad_path.MoveTo(quad.P1());
+  quad_path.AddLineTo(quad.P2());
+  if (drawEndLine) {
+    quad_path.MoveTo(quad.P3());
+    quad_path.AddLineTo(quad.P4());
+  }
+  return quad_path;
+}
+
+Path ColumnQuadToPath(const FloatQuad& quad, bool drawEndLine) {
+  Path quad_path;
+  quad_path.MoveTo(quad.P1());
+  quad_path.AddLineTo(quad.P4());
+  if (drawEndLine) {
+    quad_path.MoveTo(quad.P3());
+    quad_path.AddLineTo(quad.P2());
+  }
+  return quad_path;
+}
+
 FloatPoint FramePointToViewport(const LocalFrameView* view,
                                 FloatPoint point_in_frame) {
   FloatPoint point_in_root_frame = view->ConvertToRootFrame(point_in_frame);
@@ -428,7 +450,8 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
     PhysicalRect row(position, size);
     FloatQuad row_quad = layout_grid->LocalRectToAbsoluteQuad(row);
     FrameQuadToViewport(containing_view, row_quad);
-    row_builder.AppendPath(QuadToPath(row_quad), scale);
+    row_builder.AppendPath(
+        RowQuadToPath(row_quad, i == rows.size() - 1 || row_gap > 0), scale);
     // Row Gaps
     if (i != rows.size() - 1) {
       PhysicalOffset gap_position(row_left, rows.at(i) - row_gap);
@@ -454,7 +477,10 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
     PhysicalRect column(position, size);
     FloatQuad column_quad = layout_grid->LocalRectToAbsoluteQuad(column);
     FrameQuadToViewport(containing_view, column_quad);
-    column_builder.AppendPath(QuadToPath(column_quad), scale);
+    column_builder.AppendPath(
+        ColumnQuadToPath(column_quad,
+                         i == columns.size() - 1 || column_gap > 0),
+        scale);
     // Column Gaps
     if (i != columns.size() - 1) {
       PhysicalOffset gap_position(columns.at(i) - column_gap, column_top);

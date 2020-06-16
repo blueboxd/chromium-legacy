@@ -99,6 +99,8 @@ class CORE_EXPORT WindowOrWorkerGlobalScope {
                                          int sh,
                                          const ImageBitmapOptions*,
                                          ExceptionState&);
+
+  static bool crossOriginIsolated(const ExecutionContext&);
 };
 
 }  // namespace blink

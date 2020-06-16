@@ -5532,7 +5532,8 @@ crbug.com/923244 external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Fai
 crbug.com/920979 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCTrackEvent-fire.html [ Timeout ]
 # WebRTC codec tests - software H.264 not present on webkit bot family
 crbug.com/840659 external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
-crbug.com/840659 external/wpt/webrtc/simulcast/h264.https.html [ Pass Failure ]
+# In addition, simulcast/h264 has a crash in MSAN.
+crbug.com/1095518 external/wpt/webrtc/simulcast/h264.https.html [ Pass Failure Crash ]
 
 # Mac doesn't support lowLatency/desynchronized Canvas Contexts.
 crbug.com/922218 [ Mac ] fast/canvas-api/canvas-lowlatency-getContext.html [ Failure ]

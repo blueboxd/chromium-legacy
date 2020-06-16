@@ -74,18 +74,57 @@ async function verifyBreadcrumbsPath(appId, expectedPath) {
   chrome.test.assertEq(expectedPath, path);
 }
 
+/**
+ * Opens given file's containing folder by choosing "Go to file location"
+ * context menu item.
+ *
+ * @param {string} appId Files app windowId.
+ * @param {string} itemName Name of the file to open containing folder.
+ */
+async function goToFileLocation(appId, itemName) {
+  // Select the item.
+  chrome.test.assertTrue(
+      !!await remoteCall.callRemoteTestUtil('selectFile', appId, [itemName]));
+
+  // Right-click the selected file.
+  await remoteCall.waitAndRightClick(appId, '.table-row[selected]');
+
+  // Click 'Go to file location' menu command.
+  const goToLocationMenu = '#file-context-menu:not([hidden]) ' +
+      '[command="#go-to-file-location"]:not([hidden]):not([disabled])';
+  remoteCall.waitAndClickElement(appId, goToLocationMenu);
+}
+
 testcase.recentsDownloads = async () => {
   // Populate downloads.
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
+
+  // Verifies file list in Recents.
   await verifyRecents(appId);
+
+  // Tests that selecting "Go to file location" for a file navigates to
+  // Downloads since the file in Recents is from Downloads.
+  await goToFileLocation(appId, ENTRIES.desktop.nameText);
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET));
+  await verifyBreadcrumbsPath(appId, '/My files/Downloads');
 };
 
 testcase.recentsDrive = async () => {
   // Populate drive.
   const appId =
       await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
+
+  // Verifies file list in Recents.
   await verifyRecents(appId);
+
+  // Tests that selecting "Go to file location" for a file navigates to
+  // My Drive since the file in Recents is from Google Drive.
+  await goToFileLocation(appId, ENTRIES.desktop.nameText);
+  await remoteCall.waitForFiles(
+      appId, TestEntryInfo.getExpectedRows(BASIC_DRIVE_ENTRY_SET));
+  await verifyBreadcrumbsPath(appId, '/My Drive');
 };
 
 testcase.recentsCrostiniNotMounted = async () => {

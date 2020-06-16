@@ -11709,6 +11709,7 @@ interface webkitURL
     getter caches
     getter clientInformation
     getter cookieStore
+    getter crossOriginIsolated
     getter crypto
     getter customElements
     getter defaultStatus

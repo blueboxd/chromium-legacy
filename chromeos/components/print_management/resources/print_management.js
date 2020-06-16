@@ -112,6 +112,7 @@ Polymer({
 
   listeners: {
     'all-history-cleared': 'getPrintJobs_',
+    'remove-print-job' : 'removePrintJob_',
   },
 
   /** @override */
@@ -165,8 +166,7 @@ Polymer({
 
     // Check if |job| is an existing ongoing print job and requires an update
     // or if |job| is a new ongoing print job.
-    const idx = this.ongoingPrintJobs_.findIndex(
-        arr_job => arr_job.id === job.id);
+    const idx = this.getIndexOfOngoingPrintJob_(job.id);
     if (idx !== -1) {
       // Replace the existing ongoing print job with its updated entry.
       this.splice('ongoingPrintJobs_', idx, 1, job);
@@ -216,6 +216,17 @@ Polymer({
         .then(this.onPrintJobsReceived_.bind(this));
   },
 
+  /**
+   * @param {!CustomEvent<string>} e
+   * @private
+   */
+  removePrintJob_(e) {
+    const idx = this.getIndexOfOngoingPrintJob_(e.detail) ;
+    if (idx !== -1) {
+      this.splice('ongoingPrintJobs_', idx, 1);
+    }
+  },
+
   /** @private */
   onClearHistoryClicked_() {
     this.showClearAllDialog_ = true;
@@ -232,5 +243,16 @@ Polymer({
    */
   getHistoryLabel_() {
     return loadTimeData.getString('historyToolTip');
+  },
+
+  /**
+   * @param {string} expectedId
+   * @return {number}
+   * @private
+   */
+  getIndexOfOngoingPrintJob_(expectedId) {
+    return this.ongoingPrintJobs_.findIndex(
+        arr_job => arr_job.id === expectedId
+    );
   },
 });

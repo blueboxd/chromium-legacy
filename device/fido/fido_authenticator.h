@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/component_export.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -189,6 +190,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   virtual void BioEnrollDelete(const pin::TokenResponse&,
                                std::vector<uint8_t> template_id,
                                BioEnrollmentCallback);
+
+  // GetAlgorithms returns the list of supported COSEAlgorithmIdentifiers, or
+  // |nullopt| if this is unknown and thus all requests should be tried in case
+  // they work.
+  virtual base::Optional<base::span<const int32_t>> GetAlgorithms();
 
   // Reset triggers a reset operation on the authenticator. This erases all
   // stored resident keys and any configured PIN.

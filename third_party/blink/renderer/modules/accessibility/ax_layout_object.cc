@@ -32,7 +32,6 @@
 #include <memory>
 #include <string>
 
-#include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -44,7 +43,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
-#include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_label_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
@@ -57,9 +55,7 @@
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
 #include "third_party/blink/renderer/core/html/html_table_col_element.h"
 #include "third_party/blink/renderer/core/html/html_table_element.h"
-#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
-#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
@@ -94,7 +90,6 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_svg_root.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -851,13 +846,6 @@ bool AXLayoutObject::CanIgnoreTextAsEmpty() const {
 // Properties of static elements.
 //
 
-const AtomicString& AXLayoutObject::AccessKey() const {
-  auto* element = DynamicTo<Element>(layout_object_->GetNode());
-  if (!element)
-    return g_null_atom;
-  return element->FastGetAttribute(html_names::kAccesskeyAttr);
-}
-
 RGBA32 AXLayoutObject::ComputeBackgroundColor() const {
   if (!GetLayoutObject())
     return AXNodeObject::BackgroundColor();
@@ -948,75 +936,6 @@ float AXLayoutObject::FontWeight() const {
     return AXNodeObject::FontWeight();
 
   return style->GetFontWeight();
-}
-
-String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
-  Node* node = GetNode();
-  if (!node)
-    return String();
-
-  ImageBitmapOptions* options = ImageBitmapOptions::Create();
-  ImageBitmap* image_bitmap = nullptr;
-  if (auto* image = DynamicTo<HTMLImageElement>(node)) {
-    image_bitmap = MakeGarbageCollected<ImageBitmap>(
-        image, base::Optional<IntRect>(), options);
-  } else if (auto* canvas = DynamicTo<HTMLCanvasElement>(node)) {
-    image_bitmap = MakeGarbageCollected<ImageBitmap>(
-        canvas, base::Optional<IntRect>(), options);
-  } else if (auto* video = DynamicTo<HTMLVideoElement>(node)) {
-    image_bitmap = MakeGarbageCollected<ImageBitmap>(
-        video, base::Optional<IntRect>(), options);
-  }
-  if (!image_bitmap)
-    return String();
-
-  scoped_refptr<StaticBitmapImage> bitmap_image = image_bitmap->BitmapImage();
-  if (!bitmap_image)
-    return String();
-
-  sk_sp<SkImage> image = bitmap_image->PaintImageForCurrentFrame().GetSkImage();
-  if (!image || image->width() <= 0 || image->height() <= 0)
-    return String();
-
-  // Determine the width and height of the output image, using a proportional
-  // scale factor such that it's no larger than |maxSize|, if |maxSize| is not
-  // empty. It only resizes the image to be smaller (if necessary), not
-  // larger.
-  float x_scale =
-      max_size.Width() ? max_size.Width() * 1.0 / image->width() : 1.0;
-  float y_scale =
-      max_size.Height() ? max_size.Height() * 1.0 / image->height() : 1.0;
-  float scale = std::min(x_scale, y_scale);
-  if (scale >= 1.0)
-    scale = 1.0;
-  int width = std::round(image->width() * scale);
-  int height = std::round(image->height() * scale);
-
-  // Draw the scaled image into a bitmap in native format.
-  SkBitmap bitmap;
-  bitmap.allocPixels(SkImageInfo::MakeN32(width, height, kPremul_SkAlphaType));
-  SkCanvas canvas(bitmap);
-  canvas.clear(SK_ColorTRANSPARENT);
-  canvas.drawImageRect(image, SkRect::MakeIWH(width, height), nullptr);
-
-  // Copy the bits into a buffer in RGBA_8888 unpremultiplied format
-  // for encoding.
-  SkImageInfo info = SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
-                                       kUnpremul_SkAlphaType);
-  size_t row_bytes = info.minRowBytes();
-  Vector<char> pixel_storage(
-      SafeCast<wtf_size_t>(info.computeByteSize(row_bytes)));
-  SkPixmap pixmap(info, pixel_storage.data(), row_bytes);
-  if (!SkImage::MakeFromBitmap(bitmap)->readPixels(pixmap, 0, 0))
-    return String();
-
-  // Encode as a PNG and return as a data url.
-  std::unique_ptr<ImageDataBuffer> buffer = ImageDataBuffer::Create(pixmap);
-
-  if (!buffer)
-    return String();
-
-  return buffer->ToDataURL(kMimeTypePng, 1.0);
 }
 
 ax::mojom::blink::ListStyle AXLayoutObject::GetListStyle() const {
@@ -1138,13 +1057,6 @@ ax::mojom::blink::TextPosition AXLayoutObject::GetTextPosition() const {
     case EVerticalAlign::kSuper:
       return ax::mojom::blink::TextPosition::kSuperscript;
   }
-}
-
-int AXLayoutObject::TextLength() const {
-  if (!IsTextControl())
-    return -1;
-
-  return GetText().length();
 }
 
 static unsigned TextStyleFlag(ax::mojom::blink::TextStyle text_style_enum) {

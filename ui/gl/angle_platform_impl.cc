@@ -12,6 +12,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/angle/include/platform/PlatformMethods.h"
 #include "ui/gl/gl_bindings.h"
@@ -170,7 +171,11 @@ bool InitializePlatform(EGLDisplay display) {
       ANGLEPlatformImpl_monotonicallyIncreasingTime;
   platformMethods->updateTraceEventDuration =
       ANGLEPlatformImpl_updateTraceEventDuration;
-  platformMethods->postWorkerTask = ANGLEPlatformImpl_postWorkerTask;
+
+  // Initialize the delegate to allow posting tasks in the Chromium thread pool.
+  // The thread pool is not available in some unittests.
+  if (base::ThreadPoolInstance::Get())
+    platformMethods->postWorkerTask = ANGLEPlatformImpl_postWorkerTask;
   return true;
 }
 

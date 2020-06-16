@@ -37,9 +37,9 @@ unsigned int XEventState(int flags) {
 int XKeyEventType(ui::EventType type) {
   switch (type) {
     case ui::ET_KEY_PRESSED:
-      return x11::KeyPressEvent::opcode;
+      return x11::KeyEvent::Press;
     case ui::ET_KEY_RELEASED:
-      return x11::KeyReleaseEvent::opcode;
+      return x11::KeyEvent::Release;
     default:
       return 0;
   }
@@ -194,9 +194,8 @@ void ScopedXI2Event::InitButtonEvent(EventType type,
                                      int flags) {
   event_.reset(new XEvent);
   memset(event_.get(), 0, sizeof(XEvent));
-  event_->type = (type == ui::ET_MOUSE_PRESSED)
-                     ? x11::ButtonPressEvent::opcode
-                     : x11::ButtonReleaseEvent::opcode;
+  event_->type = (type == ui::ET_MOUSE_PRESSED) ? x11::ButtonEvent::Press
+                                                : x11::ButtonEvent::Release;
   event_->xbutton.serial = 0;
   event_->xbutton.send_event = 0;
   event_->xbutton.display = gfx::GetXDisplay();

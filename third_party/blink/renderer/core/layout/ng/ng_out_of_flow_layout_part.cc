@@ -113,7 +113,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
 
   default_containing_block_.direction = container_style.Direction();
   default_containing_block_.content_size_for_absolute =
-      ShrinkAvailableSize(container_builder_->Size(), border_scrollbar);
+      ShrinkLogicalSize(container_builder_->Size(), border_scrollbar);
   default_containing_block_.content_size_for_fixed =
       initial_containing_block_fixed_size
           ? *initial_containing_block_fixed_size

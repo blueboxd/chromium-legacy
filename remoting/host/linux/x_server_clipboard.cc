@@ -110,16 +110,16 @@ void XServerClipboard::ProcessXEvent(XEvent* event) {
   }
 
   switch (event->type) {
-    case PropertyNotify:
+    case x11::PropertyNotifyEvent::opcode:
       OnPropertyNotify(event);
       break;
-    case SelectionNotify:
+    case x11::SelectionNotifyEvent::opcode:
       OnSelectionNotify(event);
       break;
-    case SelectionRequest:
+    case x11::SelectionRequestEvent::opcode:
       OnSelectionRequest(event);
       break;
-    case SelectionClear:
+    case x11::SelectionClearEvent::opcode:
       OnSelectionClear(event);
       break;
     default:

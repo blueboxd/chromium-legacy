@@ -72,6 +72,22 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
     this.methodCalls_[name] = [];
   }
 
+  async rejectAllPromises(names) {
+    for (name of names) {
+      if (this.methodCalls_[name] == null) {
+        console.log('\'' + name + '\' wasn\'t called during this test.');
+        continue;
+      }
+      console.log(
+          'Rejecting ' + this.methodCalls_[name].length + ' \'' + name +
+          '\' promises.');
+      for (const o of this.methodCalls_[name]) {
+        await o.reject();
+      }
+      this.methodCalls_[name] = [];
+    }
+  }
+
   /** @override */
   requestCrostiniInstallerView() {
     this.methodCalled('requestCrostiniInstallerView');

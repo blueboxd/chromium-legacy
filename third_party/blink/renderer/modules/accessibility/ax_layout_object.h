@@ -105,19 +105,16 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 
   // Properties of static elements.
-  const AtomicString& AccessKey() const override;
   RGBA32 ComputeBackgroundColor() const final;
   RGBA32 GetColor() const final;
   String FontFamily() const final;
   // Font size is in pixels.
   float FontSize() const final;
   float FontWeight() const final;
-  String ImageDataUrl(const IntSize& max_size) const final;
   ax::mojom::blink::ListStyle GetListStyle() const final;
   String GetText() const override;
   ax::mojom::blink::TextDirection GetTextDirection() const final;
   ax::mojom::blink::TextPosition GetTextPosition() const final;
-  int TextLength() const override;
   void GetTextStyleAndTextDecorationStyle(
       int32_t* text_style,
       ax::mojom::blink::TextDecorationStyle* text_overline_style,

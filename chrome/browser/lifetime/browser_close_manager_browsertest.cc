@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -221,16 +222,18 @@ class TestDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
     return true;
   }
 
-  static void SetDangerous(content::DownloadTargetCallback callback,
-                           const base::FilePath& target_path,
-                           download::DownloadItem::TargetDisposition disp,
-                           download::DownloadDangerType danger_type,
-                           download::DownloadItem::MixedContentStatus mcs,
-                           const base::FilePath& intermediate_path,
-                           download::DownloadInterruptReason reason) {
+  static void SetDangerous(
+      content::DownloadTargetCallback callback,
+      const base::FilePath& target_path,
+      download::DownloadItem::TargetDisposition disp,
+      download::DownloadDangerType danger_type,
+      download::DownloadItem::MixedContentStatus mcs,
+      const base::FilePath& intermediate_path,
+      base::Optional<download::DownloadSchedule> download_schedule,
+      download::DownloadInterruptReason reason) {
     std::move(callback).Run(target_path, disp,
                             download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL, mcs,
-                            intermediate_path, reason);
+                            intermediate_path, download_schedule, reason);
   }
 };
 

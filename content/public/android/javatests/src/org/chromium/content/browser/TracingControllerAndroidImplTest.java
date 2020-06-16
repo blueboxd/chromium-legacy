@@ -4,8 +4,9 @@
 
 package org.chromium.content.browser;
 
-import android.support.test.filters.MediumTest;
 import android.util.Pair;
+
+import androidx.test.filters.MediumTest;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;

@@ -205,10 +205,6 @@ bool IsAdbSideloadingAllowed() {
   return base::FeatureList::IsEnabled(features::kArcAdbSideloadingFeature);
 }
 
-bool IsPortForwardingAllowed() {
-  return base::FeatureList::IsEnabled(features::kCrostiniPortForwarding);
-}
-
 bool IsDiskResizingAllowed() {
   return base::FeatureList::IsEnabled(features::kCrostiniDiskResizing);
 }
@@ -541,6 +537,10 @@ bool CrostiniSection::IsExportImportAllowed() {
 
 bool CrostiniSection::IsContainerUpgradeAllowed() {
   return crostini::ShouldAllowContainerUpgrade(profile());
+}
+
+bool CrostiniSection::IsPortForwardingAllowed() {
+  return crostini::CrostiniFeatures::Get()->IsPortForwardingAllowed(profile());
 }
 
 void CrostiniSection::UpdateSearchTags() {

@@ -58,7 +58,7 @@ class UIControlsX11 : public UIControlsAura {
                                   base::OnceClosure closure) override {
     XEvent xevent;
     xevent.xkey = {};
-    xevent.xkey.type = x11::KeyPressEvent::opcode;
+    xevent.xkey.type = x11::KeyEvent::Press;
     if (control)
       SetKeycodeAndSendThenMask(&xevent, XK_Control_L, ControlMask);
     if (shift)
@@ -72,7 +72,7 @@ class UIControlsX11 : public UIControlsAura {
     PostEventToWindowTreeHost(xevent, host_);
 
     // Send key release events.
-    xevent.xkey.type = x11::KeyReleaseEvent::opcode;
+    xevent.xkey.type = x11::KeyEvent::Release;
     PostEventToWindowTreeHost(xevent, host_);
     if (alt)
       UnmaskAndSetKeycodeThenSend(&xevent, Mod1Mask, XK_Alt_L);
@@ -173,12 +173,12 @@ class UIControlsX11 : public UIControlsAura {
 
     // WindowEventDispatcher will take care of other necessary fields.
     if (button_state & DOWN) {
-      xevent.xbutton.type = x11::ButtonPressEvent::opcode;
+      xevent.xbutton.type = x11::ButtonEvent::Press;
       PostEventToWindowTreeHost(xevent, host_);
       button_down_mask |= xbutton->state;
     }
     if (button_state & UP) {
-      xevent.xbutton.type = x11::ButtonReleaseEvent::opcode;
+      xevent.xbutton.type = x11::ButtonEvent::Release;
       PostEventToWindowTreeHost(xevent, host_);
       button_down_mask = (button_down_mask | xbutton->state) ^ xbutton->state;
     }

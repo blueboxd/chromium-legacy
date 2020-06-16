@@ -42,7 +42,8 @@ class QuickAnswersViewsTest : public AshTestBase {
     AshTestBase::SetUp();
 
     dummy_anchor_bounds_ = kDefaultAnchorBoundsInScreen;
-    CreateQuickAnswersView(dummy_anchor_bounds_, "dummy_title");
+    CreateQuickAnswersView(dummy_anchor_bounds_, "dummy_title",
+                           /*create_menu=*/false);
   }
 
   void TearDown() override {
@@ -66,9 +67,14 @@ class QuickAnswersViewsTest : public AshTestBase {
   // Create a QuickAnswersView instance with custom anchor-bounds and
   // title-text.
   void CreateQuickAnswersView(const gfx::Rect anchor_bounds,
-                              const char* title) {
+                              const char* title,
+                              bool create_menu) {
     // Reset existing view if any.
     quick_answers_view_.reset();
+
+    // Set up a companion menu before creating the QuickAnswersView.
+    if (create_menu)
+      CreateAndShowBasicMenu();
 
     dummy_anchor_bounds_ = anchor_bounds;
     auto* ui_controller =
@@ -120,7 +126,7 @@ TEST_F(QuickAnswersViewsTest, PositionedBelowAnchorIfLessSpaceAbove) {
   // space above it to show the QuickAnswersView.
   anchor_bounds.set_y(kSmallTop);
 
-  CreateQuickAnswersView(anchor_bounds, "dummy_title");
+  CreateQuickAnswersView(anchor_bounds, "dummy_title", /*create_menu=*/false);
   gfx::Rect view_bounds = view()->GetBoundsInScreen();
 
   // Anchor is positioned above the view.
@@ -136,11 +142,11 @@ TEST_F(QuickAnswersViewsTest, FocusProperties) {
   view()->RequestFocus();
   EXPECT_FALSE(view()->HasFocus());
 
-  // Set up an owned menu and create a new view.
-  CreateAndShowBasicMenu();
+  // Set up a companion menu before creating a new view.
+  CreateQuickAnswersView(dummy_anchor_bounds(), "dummy_title",
+                         /*create_menu=*/true);
   CHECK(views::MenuController::GetActiveInstance() &&
         views::MenuController::GetActiveInstance()->owner());
-  CreateQuickAnswersView(dummy_anchor_bounds(), "dummy_title");
 
   // Gains focus only upon request, if an owned menu was active when the view
   // was created.

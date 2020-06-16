@@ -42,7 +42,8 @@ TestRule CreateModifyHeadersRule(
     int priority,
     base::Optional<std::string> url_filter,
     base::Optional<std::string> regex_filter,
-    std::vector<TestHeaderInfo> request_headers_list) {
+    base::Optional<std::vector<TestHeaderInfo>> request_headers_list,
+    base::Optional<std::vector<TestHeaderInfo>> response_headers_list) {
   TestRule rule = CreateGenericRule();
   rule.id = id;
   rule.priority = priority;
@@ -55,7 +56,10 @@ TestRule CreateModifyHeadersRule(
   }
 
   rule.action->type = std::string("modifyHeaders");
-  rule.action->request_headers = std::move(request_headers_list);
+  if (request_headers_list)
+    rule.action->request_headers = std::move(request_headers_list);
+  if (response_headers_list)
+    rule.action->response_headers = std::move(response_headers_list);
   return rule;
 }
 
@@ -127,13 +131,17 @@ TEST_F(CompositeMatcherTest, GetModifyHeadersActions) {
 
   TestRule rule_1 = CreateModifyHeadersRule(
       kMinValidID, kMinValidPriority, "google.com", base::nullopt,
-      std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove"),
-                                   TestHeaderInfo("header2", "remove")}));
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("header1", "remove", base::nullopt),
+           TestHeaderInfo("header2", "set", "value2")}),
+      base::nullopt);
 
   TestRule rule_2 = CreateModifyHeadersRule(
-      kMinValidID, kMinValidPriority + 1, "/path", base::nullopt,
-      std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove"),
-                                   TestHeaderInfo("header3", "remove")}));
+      kMinValidID, kMinValidPriority + 1, "/path", base::nullopt, base::nullopt,
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("header1", "remove", base::nullopt),
+           TestHeaderInfo("header2", "append", "VALUE2"),
+           TestHeaderInfo("header3", "set", "VALUE3")}));
 
   // Create the first ruleset matcher, which matches all requests from
   // |google.com|.
@@ -175,15 +183,21 @@ TEST_F(CompositeMatcherTest, GetModifyHeadersActions) {
       CreateRequestActionForTesting(RequestAction::Type::MODIFY_HEADERS,
                                     *rule_1.id, *rule_1.priority, kSource1ID);
   action_1.request_headers_to_modify = {
-      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE),
-      RequestAction::HeaderInfo("header2", dnr_api::HEADER_OPERATION_REMOVE)};
+      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE,
+                                base::nullopt),
+      RequestAction::HeaderInfo("header2", dnr_api::HEADER_OPERATION_SET,
+                                "value2")};
 
   RequestAction action_2 =
       CreateRequestActionForTesting(RequestAction::Type::MODIFY_HEADERS,
                                     *rule_2.id, *rule_2.priority, kSource2ID);
-  action_2.request_headers_to_modify = {
-      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE),
-      RequestAction::HeaderInfo("header3", dnr_api::HEADER_OPERATION_REMOVE)};
+  action_2.response_headers_to_modify = {
+      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE,
+                                base::nullopt),
+      RequestAction::HeaderInfo("header2", dnr_api::HEADER_OPERATION_APPEND,
+                                "VALUE2"),
+      RequestAction::HeaderInfo("header3", dnr_api::HEADER_OPERATION_SET,
+                                "VALUE3")};
 
   // |action_2| should be before |action_1| because |rule_2|
   // has a higher priority.
@@ -211,21 +225,27 @@ TEST_F(CompositeMatcherTest, GetModifyHeadersActions) {
                                             PageAccess::kAllowed);
 
   // Re-create |action_1| and |action_2| with the updated rule
-  // priorities. The headers removed by each action should not change.
+  // priorities. The headers modified by each action should not change.
   actions = composite_matcher->GetModifyHeadersActions(google_params);
   action_1 =
       CreateRequestActionForTesting(RequestAction::Type::MODIFY_HEADERS,
                                     *rule_1.id, *rule_1.priority, kSource1ID);
   action_1.request_headers_to_modify = {
-      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE),
-      RequestAction::HeaderInfo("header2", dnr_api::HEADER_OPERATION_REMOVE)};
+      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE,
+                                base::nullopt),
+      RequestAction::HeaderInfo("header2", dnr_api::HEADER_OPERATION_SET,
+                                "value2")};
 
   action_2 =
       CreateRequestActionForTesting(RequestAction::Type::MODIFY_HEADERS,
                                     *rule_2.id, *rule_2.priority, kSource2ID);
-  action_2.request_headers_to_modify = {
-      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE),
-      RequestAction::HeaderInfo("header3", dnr_api::HEADER_OPERATION_REMOVE)};
+  action_2.response_headers_to_modify = {
+      RequestAction::HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE,
+                                base::nullopt),
+      RequestAction::HeaderInfo("header2", dnr_api::HEADER_OPERATION_APPEND,
+                                "VALUE2"),
+      RequestAction::HeaderInfo("header3", dnr_api::HEADER_OPERATION_SET,
+                                "VALUE3")};
 
   // |action_1| should now be before |action_2| after their
   // priorities have been reversed.
@@ -253,27 +273,39 @@ TEST_F(CompositeMatcherTest, GetModifyHeadersActions_Priority) {
 
   TestRule url_rule_1 = CreateModifyHeadersRule(
       kMinValidID + 1, allow_rule_priority - 1, "google.com", base::nullopt,
-      std::vector<TestHeaderInfo>({TestHeaderInfo("header1", "remove")}));
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("header1", "remove", base::nullopt)}),
+      base::nullopt);
 
   TestRule url_rule_2 = CreateModifyHeadersRule(
       kMinValidID + 2, allow_rule_priority, "google.com", base::nullopt,
-      std::vector<TestHeaderInfo>({TestHeaderInfo("header2", "remove")}));
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("header2", "remove", base::nullopt)}),
+      base::nullopt);
 
   TestRule url_rule_3 = CreateModifyHeadersRule(
       kMinValidID + 3, allow_rule_priority + 1, "google.com", base::nullopt,
-      std::vector<TestHeaderInfo>({TestHeaderInfo("header3", "remove")}));
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("header3", "remove", base::nullopt)}),
+      base::nullopt);
 
   TestRule regex_rule_1 = CreateModifyHeadersRule(
       kMinValidID + 4, allow_rule_priority - 1, base::nullopt, R"(google\.com)",
-      std::vector<TestHeaderInfo>({TestHeaderInfo("header4", "remove")}));
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("header4", "remove", base::nullopt)}),
+      base::nullopt);
 
   TestRule regex_rule_2 = CreateModifyHeadersRule(
       kMinValidID + 5, allow_rule_priority, base::nullopt, R"(google\.com)",
-      std::vector<TestHeaderInfo>({TestHeaderInfo("header5", "remove")}));
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("header5", "remove", base::nullopt)}),
+      base::nullopt);
 
   TestRule regex_rule_3 = CreateModifyHeadersRule(
       kMinValidID + 6, allow_rule_priority + 1, base::nullopt, R"(google\.com)",
-      std::vector<TestHeaderInfo>({TestHeaderInfo("header6", "remove")}));
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("header6", "remove", base::nullopt)}),
+      base::nullopt);
 
   const RulesetID kSource1ID(1);
   std::unique_ptr<RulesetMatcher> matcher_1;
@@ -323,10 +355,10 @@ TEST_F(CompositeMatcherTest, GetModifyHeadersActions_Priority) {
 
   RequestAction header_3_action = create_action_for_rule(
       url_rule_3, kSource1ID,
-      {HeaderInfo("header3", dnr_api::HEADER_OPERATION_REMOVE)});
+      {HeaderInfo("header3", dnr_api::HEADER_OPERATION_REMOVE, base::nullopt)});
   RequestAction header_6_action = create_action_for_rule(
       regex_rule_3, kSource2ID,
-      {HeaderInfo("header6", dnr_api::HEADER_OPERATION_REMOVE)});
+      {HeaderInfo("header6", dnr_api::HEADER_OPERATION_REMOVE, base::nullopt)});
 
   // For the request to "http://google.com/1", since |url_rule_3| and
   // |regex_rule_3| are the only rules with a greater priority than
@@ -348,16 +380,16 @@ TEST_F(CompositeMatcherTest, GetModifyHeadersActions_Priority) {
 
   RequestAction header_1_action = create_action_for_rule(
       url_rule_1, kSource1ID,
-      {HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE)});
+      {HeaderInfo("header1", dnr_api::HEADER_OPERATION_REMOVE, base::nullopt)});
   RequestAction header_2_action = create_action_for_rule(
       url_rule_2, kSource1ID,
-      {HeaderInfo("header2", dnr_api::HEADER_OPERATION_REMOVE)});
+      {HeaderInfo("header2", dnr_api::HEADER_OPERATION_REMOVE, base::nullopt)});
   RequestAction header_4_action = create_action_for_rule(
       regex_rule_1, kSource2ID,
-      {HeaderInfo("header4", dnr_api::HEADER_OPERATION_REMOVE)});
+      {HeaderInfo("header4", dnr_api::HEADER_OPERATION_REMOVE, base::nullopt)});
   RequestAction header_5_action = create_action_for_rule(
       regex_rule_2, kSource2ID,
-      {HeaderInfo("header5", dnr_api::HEADER_OPERATION_REMOVE)});
+      {HeaderInfo("header5", dnr_api::HEADER_OPERATION_REMOVE, base::nullopt)});
 
   // For the request to "http://google.com/2", "header1" to "header6" should be
   // removed since all modifyHeaders rules are matched and there is no matching

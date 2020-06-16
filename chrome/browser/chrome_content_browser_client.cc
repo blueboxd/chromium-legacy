@@ -214,6 +214,7 @@
 #include "components/google/core/common/google_switches.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/client_info.h"
+#include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
@@ -239,8 +240,6 @@
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
 #include "components/safe_browsing/content/password_protection/password_protection_navigation_throttle.h"
@@ -3646,10 +3645,6 @@ void ChromeContentBrowserClient::GetURLRequestAutoMountHandlers(
     extra_parts_[i]->GetURLRequestAutoMountHandlers(handlers);
 }
 
-::rappor::RapporService* ChromeContentBrowserClient::GetRapporService() {
-  return g_browser_process->rappor_service();
-}
-
 void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
     content::BrowserContext* browser_context,
     const base::FilePath& storage_partition_path,
@@ -3887,14 +3882,6 @@ ChromeContentBrowserClient::GetReceiverPresentationServiceDelegate(
     }
   }
   return nullptr;
-}
-
-void ChromeContentBrowserClient::RecordURLMetric(const std::string& metric,
-                                                 const GURL& url) {
-  if (url.is_valid()) {
-    rappor::SampleDomainAndRegistryFromGURL(g_browser_process->rappor_service(),
-                                            metric, url);
-  }
 }
 
 std::string ChromeContentBrowserClient::GetMetricSuffixForURL(const GURL& url) {
@@ -5801,4 +5788,8 @@ bool ChromeContentBrowserClient::
 #else
   return false;
 #endif
+}
+
+ukm::UkmService* ChromeContentBrowserClient::GetUkmService() {
+  return g_browser_process->GetMetricsServicesManager()->GetUkmService();
 }

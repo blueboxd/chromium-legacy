@@ -217,7 +217,7 @@ bool ConvertKeyCodeToText(
       GetXModifierMask(display, kNumLockKeyModifierMask, &x_modifier)) {
     key_event->state |= x_modifier;
   }
-  key_event->type = x11::KeyPressEvent::opcode;
+  key_event->type = x11::KeyEvent::Press;
   uint16_t character = ui::GetCharacterFromXEvent(&event);
 
   if (!character)

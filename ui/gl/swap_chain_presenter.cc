@@ -587,7 +587,11 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
     DCHECK(media_factory);
 
     DXGI_DECODE_SWAP_CHAIN_DESC desc = {};
-    desc.Flags = 0;
+    // Set the DXGI_SWAP_CHAIN_FLAG_FULLSCREEN_VIDEO flag to mark this surface
+    // as a candidate for full screen video optimizations. If the surface
+    // does not qualify as fullscreen by DWM's logic then the flag will have
+    // no effects.
+    desc.Flags = DXGI_SWAP_CHAIN_FLAG_FULLSCREEN_VIDEO;
     HRESULT hr =
         media_factory->CreateDecodeSwapChainForCompositionSurfaceHandle(
             d3d11_device_.Get(), swap_chain_handle_.Get(), &desc,

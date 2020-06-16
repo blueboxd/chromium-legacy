@@ -715,6 +715,38 @@ struct FuzzTraits<viz::FrameSinkId> {
 };
 
 template <>
+struct FuzzTraits<viz::LocalSurfaceId> {
+  static bool Fuzz(viz::LocalSurfaceId* p, Fuzzer* fuzzer) {
+    uint32_t parent_sequence_number = p->parent_sequence_number();
+    uint32_t child_sequence_number = p->child_sequence_number();
+    base::UnguessableToken embed_token = p->embed_token();
+    if (!FuzzParam(&parent_sequence_number, fuzzer))
+      return false;
+    if (!FuzzParam(&child_sequence_number, fuzzer))
+      return false;
+    if (!FuzzParam(&embed_token, fuzzer))
+      return false;
+    *p = viz::LocalSurfaceId(parent_sequence_number, child_sequence_number,
+                             embed_token);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<viz::LocalSurfaceIdAllocation> {
+  static bool Fuzz(viz::LocalSurfaceIdAllocation* p, Fuzzer* fuzzer) {
+    viz::LocalSurfaceId local_surface_id = p->local_surface_id();
+    base::TimeTicks allocation_time = p->allocation_time();
+    if (!FuzzParam(&local_surface_id, fuzzer))
+      return false;
+    if (!FuzzParam(&allocation_time, fuzzer))
+      return false;
+    *p = viz::LocalSurfaceIdAllocation(local_surface_id, allocation_time);
+    return true;
+  }
+};
+
+template <>
 struct FuzzTraits<viz::ResourceFormat> {
   static bool Fuzz(viz::ResourceFormat* p, Fuzzer* fuzzer) {
     int format = RandInRange(viz::ResourceFormat::RESOURCE_FORMAT_MAX + 1);
@@ -790,6 +822,16 @@ struct FuzzTraits<content::PageState> {
     if (!FuzzParam(&data, fuzzer))
       return false;
     *p = content::PageState::CreateFromEncodedData(data);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<content::ScreenOrientationValues> {
+  static bool Fuzz(content::ScreenOrientationValues* p, Fuzzer* fuzzer) {
+    int value = RandInRange(
+        content::ScreenOrientationValues::SCREEN_ORIENTATION_VALUES_LAST + 1);
+    *p = static_cast<content::ScreenOrientationValues>(value);
     return true;
   }
 };
@@ -1070,6 +1112,40 @@ struct FuzzTraits<gfx::SizeF> {
 };
 
 template <>
+struct FuzzTraits<gfx::SwapResponse> {
+  static bool Fuzz(gfx::SwapResponse* p, Fuzzer* fuzzer) {
+    if (!FuzzParam(&p->swap_id, fuzzer))
+      return false;
+    if (!FuzzParam(&p->result, fuzzer))
+      return false;
+    if (!FuzzParam(&p->timings, fuzzer))
+      return false;
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gfx::SwapResult> {
+  static bool Fuzz(gfx::SwapResult* p, Fuzzer* fuzzer) {
+    int result =
+        RandInRange(static_cast<int>(gfx::SwapResult::SWAP_RESULT_LAST) + 1);
+    *p = static_cast<gfx::SwapResult>(result);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gfx::SwapTimings> {
+  static bool Fuzz(gfx::SwapTimings* p, Fuzzer* fuzzer) {
+    if (!FuzzParam(&p->swap_start, fuzzer))
+      return false;
+    if (!FuzzParam(&p->swap_end, fuzzer))
+      return false;
+    return true;
+  }
+};
+
+template <>
 struct FuzzTraits<gfx::Transform> {
   static bool Fuzz(gfx::Transform* p, Fuzzer* fuzzer) {
     SkScalar matrix[16];
@@ -1158,6 +1234,27 @@ struct FuzzTraits<gpu::ColorSpace> {
 };
 
 template <>
+struct FuzzTraits<gpu::CommandBuffer::State> {
+  static bool Fuzz(gpu::CommandBuffer::State* p, Fuzzer* fuzzer) {
+    if (!FuzzParam(&p->get_offset, fuzzer))
+      return false;
+    if (!FuzzParam(&p->token, fuzzer))
+      return false;
+    if (!FuzzParam(&p->release_count, fuzzer))
+      return false;
+    if (!FuzzParam(&p->error, fuzzer))
+      return false;
+    if (!FuzzParam(&p->context_lost_reason, fuzzer))
+      return false;
+    if (!FuzzParam(&p->generation, fuzzer))
+      return false;
+    if (!FuzzParam(&p->set_get_buffer_count, fuzzer))
+      return false;
+    return true;
+  }
+};
+
+template <>
 struct FuzzTraits<gpu::CommandBufferNamespace> {
   static bool Fuzz(gpu::CommandBufferNamespace* p, Fuzzer* fuzzer) {
     int name_space =
@@ -1224,6 +1321,15 @@ struct FuzzTraits<gpu::SchedulingPriority> {
     int priority =
         RandInRange(static_cast<int>(gpu::SchedulingPriority::kLast) + 1);
     *p = static_cast<gpu::SchedulingPriority>(priority);
+    return true;
+  }
+};
+
+template <>
+struct FuzzTraits<gpu::SwapBuffersCompleteParams> {
+  static bool Fuzz(gpu::SwapBuffersCompleteParams* p, Fuzzer* fuzzer) {
+    if (!FuzzParam(&p->swap_response, fuzzer))
+      return false;
     return true;
   }
 };

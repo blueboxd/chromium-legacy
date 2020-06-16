@@ -26,6 +26,8 @@ import org.chromium.components.query_tiles.QueryTileConstants;
 import org.chromium.components.query_tiles.TileUmaLogger;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.modelutil.PropertyKey;
+import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -77,9 +79,20 @@ public class OmniboxQueryTileCoordinator {
                 org.chromium.chrome.R.layout.omnibox_query_tiles_suggestion, null);
 
         View tilesView = getTileCoordinator().getView();
-        if (tilesView.getParent() != suggestionView) UiUtils.removeViewFromParent(tilesView);
+        if (tilesView.getParent() != null) UiUtils.removeViewFromParent(tilesView);
         suggestionView.addView(tilesView);
         return suggestionView;
+    }
+
+    /**
+     * A mechanism for binding query tile suggestion properties to its view.
+     * @see PropertyModelChangeProcessor.ViewBinder#bind(Object, Object, Object).
+     */
+    public void bind(PropertyModel model, View view, PropertyKey propertyKey) {
+        ViewGroup suggestionView = (ViewGroup) view;
+        View tilesView = getTileCoordinator().getView();
+        if (tilesView.getParent() != null) UiUtils.removeViewFromParent(tilesView);
+        suggestionView.addView(tilesView);
     }
 
     /** @return A {@link ImageTileCoordinator} instance. Creates if it doesn't exist yet. */

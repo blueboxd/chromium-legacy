@@ -8,7 +8,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

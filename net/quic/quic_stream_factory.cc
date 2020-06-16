@@ -45,6 +45,7 @@
 #include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_chromium_packet_reader.h"
 #include "net/quic/quic_chromium_packet_writer.h"
+#include "net/quic/quic_client_session_cache.h"
 #include "net/quic/quic_context.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_http_stream.h"
@@ -203,8 +204,9 @@ class QuicStreamFactory::QuicCryptoClientConfigOwner {
  public:
   QuicCryptoClientConfigOwner(
       std::unique_ptr<quic::ProofVerifier> proof_verifier,
+      std::unique_ptr<QuicClientSessionCache> session_cache,
       QuicStreamFactory* quic_stream_factory)
-      : config_(std::move(proof_verifier)),
+      : config_(std::move(proof_verifier), std::move(session_cache)),
         quic_stream_factory_(quic_stream_factory) {
     DCHECK(quic_stream_factory_);
   }
@@ -2128,7 +2130,7 @@ QuicStreamFactory::CreateCryptoConfigHandle(
               cert_transparency_verifier_,
               HostsFromOrigins(params_.origins_to_force_quic_on),
               actual_network_isolation_key),
-          this);
+          std::make_unique<QuicClientSessionCache>(), this);
 
   quic::QuicCryptoClientConfig* crypto_config = crypto_config_owner->config();
   crypto_config->set_user_agent_id(params_.user_agent_id);

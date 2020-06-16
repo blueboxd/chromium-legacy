@@ -24,6 +24,8 @@ namespace x11 {
 
 class Connection;
 
+constexpr uint8_t kSendEventMask = 0x80;
+
 namespace detail {
 
 template <typename Reply>
@@ -41,6 +43,9 @@ T Read(const uint8_t* buf);
 
 template <typename T>
 std::vector<uint8_t> Write(const T& t);
+
+template <typename T>
+void ReadEvent(T* event, const uint8_t* buf);
 
 template <typename Reply>
 struct Response {

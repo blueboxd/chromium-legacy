@@ -843,19 +843,18 @@ LCDTextDisallowedReason PictureLayerImpl::ComputeLCDTextDisallowedReason()
     return LCDTextDisallowedReason::kContentsNotOpaque;
   }
 
-  // We can't use LCD text with the following conditions because we are not
-  // aligned with the physical pixels. Even with transformed rasterization,
-  // we may still draw text on the translucent pixels along the layer edges.
-  if (!GetTransformTree()
-           .Node(transform_tree_index())
-           ->node_and_ancestors_have_only_integer_translation)
-    return LCDTextDisallowedReason::kNonIntegralTranslation;
-  if (static_cast<int>(offset_to_transform_parent().x()) !=
-      offset_to_transform_parent().x())
-    return LCDTextDisallowedReason::kNonIntegralXOffset;
-  if (static_cast<int>(offset_to_transform_parent().y()) !=
-      offset_to_transform_parent().y())
-    return LCDTextDisallowedReason::kNonIntegralYOffset;
+  if (!use_transformed_rasterization_) {
+    if (!GetTransformTree()
+             .Node(transform_tree_index())
+             ->node_and_ancestors_have_only_integer_translation)
+      return LCDTextDisallowedReason::kNonIntegralTranslation;
+    if (static_cast<int>(offset_to_transform_parent().x()) !=
+        offset_to_transform_parent().x())
+      return LCDTextDisallowedReason::kNonIntegralXOffset;
+    if (static_cast<int>(offset_to_transform_parent().y()) !=
+        offset_to_transform_parent().y())
+      return LCDTextDisallowedReason::kNonIntegralYOffset;
+  }
 
   if (has_will_change_transform_hint())
     return LCDTextDisallowedReason::kWillChangeTransform;
@@ -1070,13 +1069,18 @@ void PictureLayerImpl::SetNearestNeighbor(bool nearest_neighbor) {
 }
 
 void PictureLayerImpl::SetUseTransformedRasterization(bool use) {
-  // PictureLayer ensures this.
-  DCHECK(!use || !contents_opaque());
-
   if (use_transformed_rasterization_ == use)
     return;
 
   use_transformed_rasterization_ = use;
+  // With transformed rasterization, the pixels along the edge of the layer may
+  // become translucent, so clear contents_opaque.
+  if (use) {
+    // This doesn't affect contents_opaque_for_text.
+    bool opaque_for_text = contents_opaque_for_text();
+    SetContentsOpaque(false);
+    SetContentsOpaqueForText(opaque_for_text);
+  }
   NoteLayerPropertyChanged();
 }
 

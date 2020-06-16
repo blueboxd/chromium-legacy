@@ -43,11 +43,10 @@ class MODULES_EXPORT VideoDecoder final : public ScriptWrappable {
 
   // video_decoder.idl implementation.
   int32_t decodeQueueSize();
-  int32_t decodeProcessingCount();
-  ScriptPromise configure(const EncodedVideoConfig*, ExceptionState&);
-  ScriptPromise decode(const EncodedVideoChunk*, ExceptionState&);
+  void configure(const EncodedVideoConfig*, ExceptionState&);
+  void decode(const EncodedVideoChunk*, ExceptionState&);
   ScriptPromise flush(ExceptionState&);
-  ScriptPromise reset(ExceptionState&);
+  void reset(ExceptionState&);
 
   // GarbageCollected override.
   void Trace(Visitor*) const override;
@@ -64,8 +63,14 @@ class MODULES_EXPORT VideoDecoder final : public ScriptWrappable {
     void Trace(Visitor*) const;
 
     Type type;
+
+    // For kConfigure Requests.
     Member<const EncodedVideoConfig> config;
+
+    // For kDecode Requests.
     Member<const EncodedVideoChunk> chunk;
+
+    // For kFlush Requests.
     Member<ScriptPromiseResolver> resolver;
   };
 

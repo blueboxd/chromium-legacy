@@ -20491,7 +20491,7 @@
     },
     {
       'name': 'DeviceWebBasedAttestationAllowedUrls',
-      'owners': ['miersh@google.com', 'pmarko@chromium.com', 'file://chrome/browser/chromeos/login/OWNERS'],
+      'owners': ['miersh@google.com', 'pmarko@chromium.org', 'file://chrome/browser/chromeos/login/OWNERS'],
       'device_only': True,
       'type': 'list',
       'schema': {

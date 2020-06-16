@@ -16,8 +16,9 @@ import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
-import android.support.test.filters.MediumTest;
 import android.support.test.rule.ActivityTestRule;
+
+import androidx.test.filters.MediumTest;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;

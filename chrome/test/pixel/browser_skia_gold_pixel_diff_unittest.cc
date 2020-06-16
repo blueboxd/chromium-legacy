@@ -34,8 +34,10 @@ class MockBrowserSkiaGoldPixelDiffMockUpload
     : public MockBrowserSkiaGoldPixelDiff {
  public:
   MockBrowserSkiaGoldPixelDiffMockUpload() = default;
-  MOCK_CONST_METHOD2(UploadToSkiaGoldServer,
-                     bool(const base::FilePath&, const std::string&));
+  MOCK_CONST_METHOD3(UploadToSkiaGoldServer,
+                     bool(const base::FilePath&,
+                          const std::string&,
+                          const ui::test::SkiaGoldMatchingAlgorithm*));
 };
 
 class BrowserSkiaGoldPixelDiffTest : public views::test::WidgetTest {
@@ -52,9 +54,10 @@ class BrowserSkiaGoldPixelDiffTest : public views::test::WidgetTest {
 TEST_F(BrowserSkiaGoldPixelDiffTest, CompareScreenshotByView) {
   views::View view;
   MockBrowserSkiaGoldPixelDiffMockUpload mock_pixel;
-  EXPECT_CALL(mock_pixel,
-              UploadToSkiaGoldServer(
-                  _, "Prefix_Demo_" + SkiaGoldPixelDiff::GetPlatform()))
+  EXPECT_CALL(
+      mock_pixel,
+      UploadToSkiaGoldServer(
+          _, "Prefix_Demo_" + ui::test::SkiaGoldPixelDiff::GetPlatform(), _))
       .Times(1)
       .WillOnce(Return(true));
   views::Widget* widget = CreateTopLevelNativeWidget();

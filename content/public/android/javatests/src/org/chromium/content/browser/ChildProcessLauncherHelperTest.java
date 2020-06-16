@@ -15,7 +15,8 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;

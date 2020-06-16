@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.preferences;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
 import org.junit.Test;

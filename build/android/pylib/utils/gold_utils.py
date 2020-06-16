@@ -1,7 +1,12 @@
 # Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Utilities for interacting with the Skia Gold image diffing service."""
+"""Utilities for interacting with the Skia Gold image diffing service.
+
+The files in //content/test/gpu/gpu_tests/skia_gold are heavily based on this.
+If you need to make a change to this file, check to see if the same change needs
+to be made there.
+"""
 
 import json
 import logging
@@ -260,16 +265,10 @@ class SkiaGoldSession(object):
       self._comparison_results[name].triage_link_omission_reason = (
           'Comparison succeeded, no triage link')
     elif self._gold_properties.IsTryjobRun():
-      # TODO(skbug.com/9879): Remove the explicit corpus when Gold's UI is
-      # updated to show results from all corpora for tryjobs.
       cl_triage_link = ('https://{instance}-gold.skia.org/search?'
-                        'issue={issue}&'
-                        'new_clstore=true&'
-                        'query=source_type%3D{corpus}')
-      cl_triage_link = cl_triage_link.format(
-          instance=self._instance,
-          issue=self._gold_properties.issue,
-          corpus=self._corpus)
+                        'issue={issue}')
+      cl_triage_link = cl_triage_link.format(instance=self._instance,
+                                             issue=self._gold_properties.issue)
       self._comparison_results[name].triage_link = cl_triage_link
     else:
       try:

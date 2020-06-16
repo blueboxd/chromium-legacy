@@ -76,7 +76,8 @@ class TestConnectionHelper : public quic::QuicConnectionHelperInterface {
 class QuicTransportEndToEndTest : public TestWithTaskEnvironment {
  public:
   QuicTransportEndToEndTest() {
-    quic::QuicEnableVersion(QuicTransportClient::kQuicVersionForOriginTrial);
+    quic::QuicEnableVersion(
+        QuicTransportClient::QuicVersionsForWebTransportOriginTrial()[0]);
     origin_ = url::Origin::Create(GURL{"https://example.org"});
     isolation_key_ = NetworkIsolationKey(origin_, origin_);
 
@@ -263,6 +264,35 @@ TEST_F(QuicTransportEndToEndTest, CertificateFingerprintMismatch) {
   EXPECT_EQ(client_->error().quic_error, quic::QUIC_HANDSHAKE_FAILED);
 }
 
+TEST_F(QuicTransportEndToEndTest, OldVersion) {
+  SetQuicReloadableFlag(quic_enable_version_draft_29, false);
+  SetQuicReloadableFlag(quic_enable_version_draft_27, true);
+
+  StartServer();
+  client_ = std::make_unique<QuicTransportClient>(
+      GetURL("/discard"), origin_, &visitor_, isolation_key_, context_.get(),
+      QuicTransportClient::Parameters());
+  client_->Connect();
+  EXPECT_CALL(visitor_, OnConnected()).WillOnce(StopRunning());
+  Run();
+  ASSERT_TRUE(client_->session() != nullptr);
+  EXPECT_TRUE(client_->session()->IsSessionReady());
+}
+
+TEST_F(QuicTransportEndToEndTest, NoCommonVersion) {
+  SetQuicReloadableFlag(quic_enable_version_draft_29, false);
+  SetQuicReloadableFlag(quic_enable_version_draft_27, false);
+
+  StartServer();
+  client_ = std::make_unique<QuicTransportClient>(
+      GetURL("/discard"), origin_, &visitor_, isolation_key_, context_.get(),
+      QuicTransportClient::Parameters());
+  client_->Connect();
+  EXPECT_CALL(visitor_, OnConnectionFailed()).WillOnce(StopRunning());
+  Run();
+  EXPECT_TRUE(client_->session() == nullptr);
+  EXPECT_EQ(client_->error().quic_error, quic::QUIC_INVALID_VERSION);
+}
 }  // namespace
 }  // namespace test
 }  // namespace net

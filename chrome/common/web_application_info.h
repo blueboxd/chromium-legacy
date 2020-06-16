@@ -34,12 +34,24 @@ struct WebApplicationIconInfo {
   WebApplicationIconInfo& operator=(WebApplicationIconInfo&&);
 
   GURL url;
-  SquareSizePx square_size_px;
+  base::Optional<SquareSizePx> square_size_px;
 };
 
 // Structure used when creating app icon shortcuts menu and for downloading
 // associated shortcut icons when supported by OS platform (eg. Windows).
 struct WebApplicationShortcutsMenuItemInfo {
+  struct Icon {
+    Icon();
+    Icon(const Icon&);
+    Icon(Icon&&);
+    ~Icon();
+    Icon& operator=(const Icon&);
+    Icon& operator=(Icon&&);
+
+    GURL url;
+    SquareSizePx square_size_px = 0;
+  };
+
   WebApplicationShortcutsMenuItemInfo();
   WebApplicationShortcutsMenuItemInfo(
       const WebApplicationShortcutsMenuItemInfo&);
@@ -58,7 +70,7 @@ struct WebApplicationShortcutsMenuItemInfo {
   GURL url;
 
   // List of shortcut icon URLs with associated square size.
-  std::vector<WebApplicationIconInfo> shortcut_icon_infos;
+  std::vector<Icon> shortcut_icon_infos;
 };
 
 // Structure used when installing a web page as an app.

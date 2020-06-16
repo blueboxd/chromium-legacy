@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.ui.appmenu;
 
 import android.graphics.Rect;
-import android.support.test.filters.MediumTest;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
+import androidx.test.filters.MediumTest;
 
 import org.junit.AfterClass;
 import org.junit.Assert;

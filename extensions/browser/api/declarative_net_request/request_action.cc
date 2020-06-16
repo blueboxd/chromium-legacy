@@ -32,12 +32,27 @@ dnr_api::HeaderOperation ConvertFlatHeaderOperation(
 }  // namespace
 
 RequestAction::HeaderInfo::HeaderInfo(std::string header,
-                                      dnr_api::HeaderOperation operation)
-    : header(std::move(header)), operation(operation) {}
+                                      dnr_api::HeaderOperation operation,
+                                      base::Optional<std::string> value)
+    : header(std::move(header)),
+      operation(operation),
+      value(std::move(value)) {}
 
 RequestAction::HeaderInfo::HeaderInfo(const flat::ModifyHeaderInfo& info)
     : header(CreateString<std::string>(*info.header())),
-      operation(ConvertFlatHeaderOperation(info.operation())) {}
+      operation(ConvertFlatHeaderOperation(info.operation())) {
+  if (info.value())
+    value = CreateString<std::string>(*info.value());
+}
+
+RequestAction::HeaderInfo::~HeaderInfo() = default;
+RequestAction::HeaderInfo::HeaderInfo(const RequestAction::HeaderInfo& other) =
+    default;
+RequestAction::HeaderInfo& RequestAction::HeaderInfo::operator=(
+    const RequestAction::HeaderInfo& other) = default;
+RequestAction::HeaderInfo::HeaderInfo(RequestAction::HeaderInfo&&) = default;
+RequestAction::HeaderInfo& RequestAction::HeaderInfo::operator=(
+    RequestAction::HeaderInfo&&) = default;
 
 RequestAction::RequestAction(RequestAction::Type type,
                              uint32_t rule_id,

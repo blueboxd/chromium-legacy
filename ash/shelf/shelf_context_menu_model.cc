@@ -20,6 +20,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -115,6 +116,9 @@ void ShelfContextMenuModel::ExecuteCommand(int command_id, int event_flags) {
     case MENU_CHANGE_WALLPAPER:
       shell->wallpaper_controller()->OpenWallpaperPickerIfAllowed();
       break;
+    case MENU_DISPLAY_SETTINGS:
+      shell->shell_delegate()->OpenDisplaySettings();
+      break;
     default:
       if (delegate_) {
         if (IsCommandIdAnAppLaunch(command_id)) {
@@ -170,6 +174,10 @@ void ShelfContextMenuModel::AddShelfAndWallpaperItems() {
         alignment_submenu_.get(),
         ui::ImageModel::FromVectorIcon(kShelfPositionIcon));
   }
+
+  AddItemWithStringIdAndIcon(
+      MENU_DISPLAY_SETTINGS, IDS_ASH_SHELF_DISPLAY_SETTINGS,
+      ui::ImageModel::FromVectorIcon(kDisplaySettingsIcon));
 
   if (Shell::Get()->wallpaper_controller()->CanOpenWallpaperPicker()) {
     AddItemWithStringIdAndIcon(MENU_CHANGE_WALLPAPER,

@@ -689,7 +689,7 @@ ServerCacheReplayer::Status PopulateCacheFromJSONFile(
   base::Value root_node;
   {
     JSONReader::ValueWithError value_with_error =
-        JSONReader().ReadAndReturnValueWithError(
+        JSONReader::ReadAndReturnValueWithError(
             decompressed_json_text, JSONParserOptions::JSON_PARSE_RFC);
     if (!value_with_error.value) {
       return ServerCacheReplayer::Status{

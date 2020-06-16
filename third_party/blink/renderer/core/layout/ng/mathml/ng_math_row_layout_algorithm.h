@@ -30,10 +30,6 @@ class CORE_EXPORT NGMathRowLayoutAlgorithm
   scoped_refptr<const NGLayoutResult> Layout() final;
 
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const final;
-
-  LogicalSize child_available_size_;
-  const NGBoxStrut border_padding_;
-  const NGBoxStrut border_scrollbar_padding_;
 };
 
 }  // namespace blink

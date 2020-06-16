@@ -15,6 +15,8 @@ namespace extensions {
 
 // A structure to hold the parsed linked app icon data.
 struct LinkedAppIcons : public Extension::ManifestData {
+  static constexpr int kAnySize = 0;
+
   struct IconInfo {
     IconInfo();
     ~IconInfo();

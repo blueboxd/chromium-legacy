@@ -79,6 +79,7 @@ extern const char kRequestHeadersPath[];
 extern const char kResponseHeadersPath[];
 extern const char kHeaderNameKey[];
 extern const char kHeaderOperationKey[];
+extern const char kHeaderValueKey[];
 
 }  // namespace declarative_net_request
 }  // namespace extensions

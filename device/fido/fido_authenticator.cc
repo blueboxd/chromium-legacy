@@ -122,6 +122,10 @@ void FidoAuthenticator::BioEnrollDelete(const pin::TokenResponse&,
   NOTREACHED();
 }
 
+base::Optional<base::span<const int32_t>> FidoAuthenticator::GetAlgorithms() {
+  return base::nullopt;
+}
+
 void FidoAuthenticator::Reset(ResetCallback callback) {
   std::move(callback).Run(CtapDeviceResponseCode::kCtap1ErrInvalidCommand,
                           base::nullopt);

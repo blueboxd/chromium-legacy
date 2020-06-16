@@ -49,7 +49,9 @@ suite('CrostiniPageTests', function() {
   });
 
   teardown(function() {
+    console.log('Teardown has begun.');
     crostiniPage.remove();
+    console.log('Teardown has ended.');
   });
 
   function flushAsync() {
@@ -714,6 +716,9 @@ suite('CrostiniPageTests', function() {
         assertEquals(
             subpage.$$('#diskSizeDescription').innerText,
             loadTimeData.getString('crostiniDiskResizeNotSupportedSubtext'));
+        console.log('Rejecting promises.');
+        await crostiniBrowserProxy.rejectAllPromises(
+            ['getCrostiniDiskInfo', 'resizeCrostiniDisk']);
         console.log(`Finished test ${this.test.title}`);
       });
 
@@ -728,6 +733,9 @@ suite('CrostiniPageTests', function() {
             button.innerText,
             loadTimeData.getString('crostiniDiskResizeShowButton'));
         assertEquals(subtext.innerText, 'label 100');
+        console.log('Rejecting promises.');
+        await crostiniBrowserProxy.rejectAllPromises(
+            ['getCrostiniDiskInfo', 'resizeCrostiniDisk']);
         console.log(`Finished test ${this.test.title}`);
       });
 
@@ -745,6 +753,9 @@ suite('CrostiniPageTests', function() {
             subtext.innerText,
             loadTimeData.getString(
                 'crostiniDiskResizeDynamicallyAllocatedSubtext'));
+        console.log('Rejecting promises.');
+        await crostiniBrowserProxy.rejectAllPromises(
+            ['getCrostiniDiskInfo', 'resizeCrostiniDisk']);
         console.log(`Finished test ${this.test.title}`);
       });
 
@@ -758,6 +769,9 @@ suite('CrostiniPageTests', function() {
 
         assertTrue(isVisible(dialog.$$('#recommended-size')));
         assertFalse(isVisible(dialog.$$('#recommended-size-warning')));
+        console.log('Rejecting promises.');
+        await crostiniBrowserProxy.rejectAllPromises(
+            ['getCrostiniDiskInfo', 'resizeCrostiniDisk']);
         console.log(`Finished test ${this.test.title}`);
       });
 
@@ -772,6 +786,9 @@ suite('CrostiniPageTests', function() {
 
         assertFalse(isVisible(dialog.$$('#recommended-size')));
         assertTrue(isVisible(dialog.$$('#recommended-size-warning')));
+        console.log('Rejecting promises.');
+        await crostiniBrowserProxy.rejectAllPromises(
+            ['getCrostiniDiskInfo', 'resizeCrostiniDisk']);
         console.log(`Finished test ${this.test.title}`);
       });
 
@@ -807,6 +824,9 @@ suite('CrostiniPageTests', function() {
         assertTrue(dialog.$$('#resize').disabled);
         assertFalse(dialog.$$('#cancel').disabled);
 
+        console.log('Rejecting promises.');
+        await crostiniBrowserProxy.rejectAllPromises(
+            ['getCrostiniDiskInfo', 'resizeCrostiniDisk']);
         console.log(`Finished test ${this.test.title}`);
       });
 
@@ -820,6 +840,9 @@ suite('CrostiniPageTests', function() {
         assertVisibleBlockIs('#unsupported');
         assertTrue(dialog.$$('#resize').disabled);
         assertFalse(dialog.$$('#cancel').disabled);
+        console.log('Rejecting promises.');
+        await crostiniBrowserProxy.rejectAllPromises(
+            ['getCrostiniDiskInfo', 'resizeCrostiniDisk']);
         console.log(`Finished test ${this.test.title}`);
       });
 
@@ -837,6 +860,9 @@ suite('CrostiniPageTests', function() {
 
         assertFalse(dialog.$$('#resize').disabled);
         assertFalse(dialog.$$('#cancel').disabled);
+        console.log('Rejecting promises.');
+        await crostiniBrowserProxy.rejectAllPromises(
+            ['getCrostiniDiskInfo', 'resizeCrostiniDisk']);
         console.log(`Finished test ${this.test.title}`);
       });
 
@@ -855,6 +881,9 @@ suite('CrostiniPageTests', function() {
         assertTrue(isVisible(dialog.$$('#resizing')));
         assertFalse(isVisible(dialog.$$('#resize-error')));
         assertTrue(dialog.$$('#cancel').disabled);
+        console.log('Rejecting promises.');
+        await crostiniBrowserProxy.rejectAllPromises(
+            ['getCrostiniDiskInfo', 'resizeCrostiniDisk']);
         console.log(`Finished test ${this.test.title}`);
       });
 
@@ -873,6 +902,9 @@ suite('CrostiniPageTests', function() {
         assertFalse(isVisible(dialog.$$('#resizing')));
         assertTrue(isVisible(dialog.$$('#resize-error')));
         assertFalse(dialog.$$('#cancel').disabled);
+        console.log('Rejecting promises.');
+        await crostiniBrowserProxy.rejectAllPromises(
+            ['getCrostiniDiskInfo', 'resizeCrostiniDisk']);
         console.log(`Finished test ${this.test.title}`);
       });
 
@@ -889,6 +921,9 @@ suite('CrostiniPageTests', function() {
         // Dialog should close itself.
         console.log('Awaiting close');
         await test_util.eventToPromise('close', dialog);
+        console.log('Rejecting promises.');
+        await crostiniBrowserProxy.rejectAllPromises(
+            ['getCrostiniDiskInfo', 'resizeCrostiniDisk']);
         console.log(`Finished test ${this.test.title}`);
       });
 
@@ -934,6 +969,9 @@ suite('CrostiniPageTests', function() {
         assertTrue(!!dialog);
         assertTrue(isVisible(dialog.$$('#resize')));
         assertTrue(isVisible(dialog.$$('#cancel')));
+        console.log('Rejecting promises.');
+        await crostiniBrowserProxy.rejectAllPromises(
+            ['getCrostiniDiskInfo', 'resizeCrostiniDisk']);
         console.log(`Finished test ${this.test.title}`);
       });
 
@@ -953,6 +991,9 @@ suite('CrostiniPageTests', function() {
         await test_util.eventToPromise('close', confirmationDialog);
 
         assertFalse(!!subpage.$$('settings-crostini-disk-resize-dialog'));
+        console.log('Rejecting promises.');
+        await crostiniBrowserProxy.rejectAllPromises(
+            ['getCrostiniDiskInfo', 'resizeCrostiniDisk']);
         console.log(`Finished test ${this.test.title}`);
       });
     });

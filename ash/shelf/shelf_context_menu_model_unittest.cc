@@ -89,10 +89,11 @@ class TestShelfItemDelegate : public ShelfItemDelegate {
 TEST_F(ShelfContextMenuModelTest, Basic) {
   ShelfContextMenuModel menu(nullptr, GetPrimaryDisplay().id());
 
-  ASSERT_EQ(3, menu.GetItemCount());
+  ASSERT_EQ(4, menu.GetItemCount());
   EXPECT_EQ(CommandId::MENU_AUTO_HIDE, menu.GetCommandIdAt(0));
   EXPECT_EQ(CommandId::MENU_ALIGNMENT_MENU, menu.GetCommandIdAt(1));
-  EXPECT_EQ(CommandId::MENU_CHANGE_WALLPAPER, menu.GetCommandIdAt(2));
+  EXPECT_EQ(CommandId::MENU_DISPLAY_SETTINGS, menu.GetCommandIdAt(2));
+  EXPECT_EQ(CommandId::MENU_CHANGE_WALLPAPER, menu.GetCommandIdAt(3));
   for (int i = 0; i < menu.GetItemCount(); ++i) {
     EXPECT_TRUE(menu.IsEnabledAt(i));
     EXPECT_TRUE(menu.IsVisibleAt(i));
@@ -143,7 +144,7 @@ TEST_F(ShelfContextMenuModelTest, Invocation) {
   EXPECT_EQ(0u, client.open_count());
 
   // Click the third option, wallpaper picker. It should open.
-  menu3.ActivatedAt(2);
+  menu3.ActivatedAt(3);
   EXPECT_EQ(1u, client.open_count());
 }
 
@@ -200,20 +201,22 @@ TEST_F(ShelfContextMenuModelTest, ExcludeClamshellOptionsOnTabletMode) {
       Shell::Get()->tablet_mode_controller();
   int64_t primary_id = GetPrimaryDisplay().id();
 
-  // In tablet mode, the wallpaper picker and auto-hide should be the only two
-  // options because other options are disabled.
+  // In tablet mode, shelf alignment is disabled.
   tablet_mode_controller->SetEnabledForTest(true);
   ShelfContextMenuModel menu1(nullptr, primary_id);
-  EXPECT_EQ(2, menu1.GetItemCount());
+  EXPECT_EQ(3, menu1.GetItemCount());
   EXPECT_EQ(ShelfContextMenuModel::MENU_AUTO_HIDE, menu1.GetCommandIdAt(0));
-  EXPECT_EQ(ShelfContextMenuModel::MENU_CHANGE_WALLPAPER,
+  EXPECT_EQ(ShelfContextMenuModel::MENU_DISPLAY_SETTINGS,
             menu1.GetCommandIdAt(1));
+  EXPECT_EQ(ShelfContextMenuModel::MENU_CHANGE_WALLPAPER,
+            menu1.GetCommandIdAt(2));
 
-  // Test that a menu shown out of tablet mode includes all three options:
-  // MENU_AUTO_HIDE, MENU_ALIGNMENT_MENU, and MENU_CHANGE_WALLPAPER.
+  // Test that a menu shown out of tablet mode includes all four options.
+  // MENU_AUTO_HIDE, MENU_ALIGNMENT_MENU, MENU_DISPLAY_SETTINGS and
+  // MENU_CHANGE_WALLPAPER.
   tablet_mode_controller->SetEnabledForTest(false);
   ShelfContextMenuModel menu2(nullptr, primary_id);
-  EXPECT_EQ(3, menu2.GetItemCount());
+  EXPECT_EQ(4, menu2.GetItemCount());
 
   // Test the auto hide option.
   EXPECT_EQ(ShelfContextMenuModel::MENU_AUTO_HIDE, menu2.GetCommandIdAt(0));
@@ -238,10 +241,15 @@ TEST_F(ShelfContextMenuModelTest, ExcludeClamshellOptionsOnTabletMode) {
             submenu->GetCommandIdAt(2));
   EXPECT_TRUE(submenu->IsEnabledAt(2));
 
-  // Test the wallpaper picker option.
-  EXPECT_EQ(ShelfContextMenuModel::MENU_CHANGE_WALLPAPER,
+  // Test the open display settings option.
+  EXPECT_EQ(ShelfContextMenuModel::MENU_DISPLAY_SETTINGS,
             menu2.GetCommandIdAt(2));
   EXPECT_TRUE(menu2.IsEnabledAt(2));
+
+  // Test the wallpaper picker option.
+  EXPECT_EQ(ShelfContextMenuModel::MENU_CHANGE_WALLPAPER,
+            menu2.GetCommandIdAt(3));
+  EXPECT_TRUE(menu2.IsEnabledAt(3));
 }
 
 TEST_F(ShelfContextMenuModelTest, CommandIdsMatchEnumsForHistograms) {
@@ -253,15 +261,16 @@ TEST_F(ShelfContextMenuModelTest, CommandIdsMatchEnumsForHistograms) {
   EXPECT_EQ(503, ShelfContextMenuModel::MENU_ALIGNMENT_RIGHT);
   EXPECT_EQ(504, ShelfContextMenuModel::MENU_ALIGNMENT_BOTTOM);
   EXPECT_EQ(505, ShelfContextMenuModel::MENU_CHANGE_WALLPAPER);
+  EXPECT_EQ(506, ShelfContextMenuModel::MENU_DISPLAY_SETTINGS);
 }
 
 TEST_F(ShelfContextMenuModelTest, ShelfContextMenuOptions) {
-  // Tests that there are exactly 3 shelf context menu options. If you're adding
+  // Tests that there are exactly 4 shelf context menu options. If you're adding
   // a context menu option ensure that you have added the enum to
   // tools/metrics/enums.xml and that you haven't modified the order of the
   // existing enums.
   ShelfContextMenuModel menu(nullptr, GetPrimaryDisplay().id());
-  EXPECT_EQ(3, menu.GetItemCount());
+  EXPECT_EQ(4, menu.GetItemCount());
 }
 
 TEST_F(ShelfContextMenuModelTest, NotificationContainerEnabled) {

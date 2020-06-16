@@ -6,11 +6,11 @@ package org.chromium.chrome.browser.thumbnail.generator;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.support.test.filters.SmallTest;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Pair;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

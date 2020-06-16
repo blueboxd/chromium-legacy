@@ -16,6 +16,10 @@ class CommandLine;
 
 class SkBitmap;
 
+namespace ui {
+namespace test {
+
+class SkiaGoldMatchingAlgorithm;
 // This is the utility class for Skia Gold pixeltest.
 class SkiaGoldPixelDiff {
  public:
@@ -38,15 +42,18 @@ class SkiaGoldPixelDiff {
   //   E.g. 'ToolbarTest_BackButtonHover'.
   void Init(const std::string& screenshot_prefix);
 
-  bool CompareScreenshot(const std::string& screenshot_name,
-                         const SkBitmap& bitmap) const;
+  bool CompareScreenshot(
+      const std::string& screenshot_name,
+      const SkBitmap& bitmap,
+      const SkiaGoldMatchingAlgorithm* algorithm = nullptr) const;
 
  protected:
   // Upload the local file to Skia Gold server. Return true if the screenshot
   // is the same as the remote golden image.
   virtual bool UploadToSkiaGoldServer(
       const base::FilePath& local_file_path,
-      const std::string& remote_golden_image_name) const;
+      const std::string& remote_golden_image_name,
+      const SkiaGoldMatchingAlgorithm* algorithm) const;
 
   virtual int LaunchProcess(const base::CommandLine& cmdline) const;
   bool Initialized() const { return initialized_; }
@@ -72,5 +79,8 @@ class SkiaGoldPixelDiff {
 
   DISALLOW_COPY_AND_ASSIGN(SkiaGoldPixelDiff);
 };
+
+}  // namespace test
+}  // namespace ui
 
 #endif  // UI_BASE_TEST_SKIA_GOLD_PIXEL_DIFF_H_

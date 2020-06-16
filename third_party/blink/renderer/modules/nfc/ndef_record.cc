@@ -134,27 +134,27 @@ bool IsValidLocalType(const String& input) {
 }
 
 String getDocumentLanguage(const ExecutionContext* execution_context) {
-  DCHECK(execution_context);
   String document_language;
-  Element* document_element =
-      To<LocalDOMWindow>(execution_context)->document()->documentElement();
-  if (document_element) {
-    document_language = document_element->getAttribute(html_names::kLangAttr);
-  }
-  if (document_language.IsEmpty()) {
-    document_language = "en";
+  if (execution_context) {
+    Element* document_element =
+        To<LocalDOMWindow>(execution_context)->document()->documentElement();
+    if (document_element) {
+      document_language = document_element->getAttribute(html_names::kLangAttr);
+    }
+    if (document_language.IsEmpty()) {
+      document_language = "en";
+    }
   }
   return document_language;
 }
 
-static NDEFRecord* CreateTextRecord(const String& id,
-                                    const ExecutionContext* execution_context,
-                                    const String& encoding,
-                                    const String& lang,
-                                    const NDEFRecordDataSource& data,
+static NDEFRecord* CreateTextRecord(const ExecutionContext* execution_context,
+                                    const String& id,
+                                    const NDEFRecordInit& record,
                                     ExceptionState& exception_state) {
   // https://w3c.github.io/web-nfc/#mapping-string-to-ndef
-  if (!(data.IsString() || IsBufferSource(data))) {
+  if (!record.hasData() ||
+      !(record.data().IsString() || IsBufferSource(record.data()))) {
     exception_state.ThrowTypeError(
         "The data for 'text' NDEFRecords must be a String or a BufferSource.");
     return nullptr;
@@ -162,8 +162,10 @@ static NDEFRecord* CreateTextRecord(const String& id,
 
   // Set language to lang if it exists, or the document element's lang
   // attribute, or 'en'.
-  String language = lang;
-  if (execution_context && language.IsEmpty()) {
+  String language;
+  if (record.hasLang()) {
+    language = record.lang();
+  } else {
     language = getDocumentLanguage(execution_context);
   }
 
@@ -175,7 +177,9 @@ static NDEFRecord* CreateTextRecord(const String& id,
     return nullptr;
   }
 
-  String encoding_label = encoding.IsNull() ? "utf-8" : encoding;
+  auto& data = record.data();
+  // TODO(crbug.com/1070871): Use encodingOr("utf-8").
+  String encoding_label = record.hasEncoding() ? record.encoding() : "utf-8";
   WTF::Vector<uint8_t> bytes;
   if (data.IsString()) {
     if (encoding_label != "utf-8") {
@@ -205,67 +209,69 @@ static NDEFRecord* CreateTextRecord(const String& id,
 }
 
 // Create a 'url' record or an 'absolute-url' record.
-static NDEFRecord* CreateUrlRecord(const String& record_type,
-                                   const String& id,
-                                   const NDEFRecordDataSource& data,
+static NDEFRecord* CreateUrlRecord(const String& id,
+                                   const NDEFRecordInit& record,
                                    ExceptionState& exception_state) {
   // https://w3c.github.io/web-nfc/#mapping-url-to-ndef
-  if (!data.IsString()) {
+  if (!record.hasData() || !record.data().IsString()) {
     exception_state.ThrowTypeError(
         "The data for url NDEFRecord must be a String.");
     return nullptr;
   }
 
   // No need to check mediaType according to the spec.
-  String url = data.GetAsString();
+  String url = record.data().GetAsString();
   if (!KURL(NullURL(), url).IsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
                                       "Cannot parse data for url record.");
     return nullptr;
   }
+
   return MakeGarbageCollected<NDEFRecord>(
-      device::mojom::blink::NDEFRecordTypeCategory::kStandardized, record_type,
-      id, GetUTF8DataFromString(url));
+      device::mojom::blink::NDEFRecordTypeCategory::kStandardized,
+      record.recordType(), id, GetUTF8DataFromString(url));
 }
 
 static NDEFRecord* CreateMimeRecord(const String& id,
-                                    const NDEFRecordDataSource& data,
-                                    const String& media_type,
+                                    const NDEFRecordInit& record,
                                     ExceptionState& exception_state) {
   // https://w3c.github.io/web-nfc/#mapping-binary-data-to-ndef
-  if (!IsBufferSource(data)) {
+  if (!record.hasData() || !IsBufferSource(record.data())) {
     exception_state.ThrowTypeError(
         "The data for 'mime' NDEFRecord must be a BufferSource.");
     return nullptr;
   }
 
-  WTF::Vector<uint8_t> bytes;
-  if (!GetBytesOfBufferSource(data, &bytes, exception_state)) {
-    return nullptr;
+  // ExtractMIMETypeFromMediaType() ignores parameters of the MIME type.
+  String mime_type;
+  if (record.hasMediaType() && !record.mediaType().IsEmpty()) {
+    mime_type = ExtractMIMETypeFromMediaType(AtomicString(record.mediaType()));
+  } else {
+    mime_type = "application/octet-stream";
   }
 
-  // ExtractMIMETypeFromMediaType() ignores parameters of the MIME type.
-  String mime_type = ExtractMIMETypeFromMediaType(AtomicString(media_type));
-  if (mime_type.IsEmpty()) {
-    mime_type = "application/octet-stream";
+  WTF::Vector<uint8_t> bytes;
+  if (!GetBytesOfBufferSource(record.data(), &bytes, exception_state)) {
+    return nullptr;
   }
 
   return MakeGarbageCollected<NDEFRecord>(id, mime_type, bytes);
 }
 
 static NDEFRecord* CreateUnknownRecord(const String& id,
-                                       const NDEFRecordDataSource& data,
+                                       const NDEFRecordInit& record,
                                        ExceptionState& exception_state) {
-  if (!IsBufferSource(data)) {
+  if (!record.hasData() || !IsBufferSource(record.data())) {
     exception_state.ThrowTypeError(
         "The data for 'unknown' NDEFRecord must be a BufferSource.");
     return nullptr;
   }
 
   WTF::Vector<uint8_t> bytes;
-  if (!GetBytesOfBufferSource(data, &bytes, exception_state)) {
+  if (!GetBytesOfBufferSource(record.data(), &bytes, exception_state)) {
     return nullptr;
   }
+
   return MakeGarbageCollected<NDEFRecord>(
       device::mojom::blink::NDEFRecordTypeCategory::kStandardized, "unknown",
       id, bytes);
@@ -274,17 +280,17 @@ static NDEFRecord* CreateUnknownRecord(const String& id,
 static NDEFRecord* CreateSmartPosterRecord(
     const ExecutionContext* execution_context,
     const String& id,
-    const NDEFRecordDataSource& data,
+    const NDEFRecordInit& record,
     ExceptionState& exception_state) {
   // https://w3c.github.io/web-nfc/#dfn-map-smart-poster-to-ndef
-  if (!data.IsNDEFMessageInit()) {
+  if (!record.hasData() || !record.data().IsNDEFMessageInit()) {
     exception_state.ThrowTypeError(
         "The data for 'smart-poster' NDEFRecord must be an NDEFMessageInit.");
     return nullptr;
   }
 
   NDEFMessage* payload_message = NDEFMessage::CreateAsPayloadOfSmartPoster(
-      execution_context, data.GetAsNDEFMessageInit(), exception_state);
+      execution_context, record.data().GetAsNDEFMessageInit(), exception_state);
   if (exception_state.HadException())
     return nullptr;
   DCHECK(payload_message);
@@ -296,23 +302,24 @@ static NDEFRecord* CreateSmartPosterRecord(
 
 static NDEFRecord* CreateExternalRecord(
     const ExecutionContext* execution_context,
-    const String& record_type,
     const String& id,
-    const NDEFRecordDataSource& data,
+    const NDEFRecordInit& record,
     ExceptionState& exception_state) {
+  const String& record_type = record.recordType();
+
   // https://w3c.github.io/web-nfc/#dfn-map-external-data-to-ndef
-  if (IsBufferSource(data)) {
+  if (record.hasData() && IsBufferSource(record.data())) {
     WTF::Vector<uint8_t> bytes;
-    if (!GetBytesOfBufferSource(data, &bytes, exception_state)) {
+    if (!GetBytesOfBufferSource(record.data(), &bytes, exception_state)) {
       return nullptr;
     }
     return MakeGarbageCollected<NDEFRecord>(
         device::mojom::blink::NDEFRecordTypeCategory::kExternal, record_type,
         id, bytes);
-  } else if (data.IsNDEFMessageInit()) {
-    NDEFMessage* payload_message =
-        NDEFMessage::Create(execution_context, data.GetAsNDEFMessageInit(),
-                            exception_state, /*is_embedded=*/true);
+  } else if (record.hasData() && record.data().IsNDEFMessageInit()) {
+    NDEFMessage* payload_message = NDEFMessage::Create(
+        execution_context, record.data().GetAsNDEFMessageInit(),
+        exception_state, /*is_embedded=*/true);
     if (exception_state.HadException())
       return nullptr;
     DCHECK(payload_message);
@@ -328,23 +335,24 @@ static NDEFRecord* CreateExternalRecord(
 }
 
 static NDEFRecord* CreateLocalRecord(const ExecutionContext* execution_context,
-                                     const String& record_type,
                                      const String& id,
-                                     const NDEFRecordDataSource& data,
+                                     const NDEFRecordInit& record,
                                      ExceptionState& exception_state) {
+  const String& record_type = record.recordType();
+
   // https://w3c.github.io/web-nfc/#dfn-map-local-type-to-ndef
-  if (IsBufferSource(data)) {
+  if (record.hasData() && IsBufferSource(record.data())) {
     WTF::Vector<uint8_t> bytes;
-    if (!GetBytesOfBufferSource(data, &bytes, exception_state)) {
+    if (!GetBytesOfBufferSource(record.data(), &bytes, exception_state)) {
       return nullptr;
     }
     return MakeGarbageCollected<NDEFRecord>(
         device::mojom::blink::NDEFRecordTypeCategory::kLocal, record_type, id,
         bytes);
-  } else if (data.IsNDEFMessageInit()) {
-    NDEFMessage* payload_message =
-        NDEFMessage::Create(execution_context, data.GetAsNDEFMessageInit(),
-                            exception_state, /*is_embedded=*/true);
+  } else if (record.hasData() && record.data().IsNDEFMessageInit()) {
+    NDEFMessage* payload_message = NDEFMessage::Create(
+        execution_context, record.data().GetAsNDEFMessageInit(),
+        exception_state, /*is_embedded=*/true);
     if (exception_state.HadException())
       return nullptr;
     DCHECK(payload_message);
@@ -363,51 +371,50 @@ static NDEFRecord* CreateLocalRecord(const ExecutionContext* execution_context,
 
 // static
 NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
-                               const NDEFRecordInit* init,
+                               const NDEFRecordInit* record,
                                ExceptionState& exception_state,
                                bool is_embedded) {
   // https://w3c.github.io/web-nfc/#creating-ndef-record
-
-  // NDEFRecordInit#recordType is a required field.
-  DCHECK(init->hasRecordType());
-  const String& record_type = init->recordType();
+  const String& record_type = record->recordType();
 
   // https://w3c.github.io/web-nfc/#dom-ndefrecordinit-mediatype
-  if (init->hasMediaType() && record_type != "mime") {
+  if (record->hasMediaType() && record_type != "mime") {
     exception_state.ThrowTypeError(
         "NDEFRecordInit#mediaType is only applicable for 'mime' records.");
     return nullptr;
   }
 
   // https://w3c.github.io/web-nfc/#dfn-map-empty-record-to-ndef
-  if (init->hasId() && record_type == "empty") {
+  if (record->hasId() && record_type == "empty") {
     exception_state.ThrowTypeError(
         "NDEFRecordInit#id is not applicable for 'empty' records.");
     return nullptr;
   }
 
+  // TODO(crbug.com/1070871): Use IdOr(String()).
+  String id;
+  if (record->hasId())
+    id = record->id();
+
   if (record_type == "empty") {
     // https://w3c.github.io/web-nfc/#mapping-empty-record-to-ndef
     return MakeGarbageCollected<NDEFRecord>(
         device::mojom::blink::NDEFRecordTypeCategory::kStandardized,
-        record_type, init->id(), WTF::Vector<uint8_t>());
+        record_type, /*id=*/String(), WTF::Vector<uint8_t>());
   } else if (record_type == "text") {
-    return CreateTextRecord(init->id(), execution_context, init->encoding(),
-                            init->lang(), init->data(), exception_state);
+    return CreateTextRecord(execution_context, id, *record, exception_state);
   } else if (record_type == "url" || record_type == "absolute-url") {
-    return CreateUrlRecord(record_type, init->id(), init->data(),
-                           exception_state);
+    return CreateUrlRecord(id, *record, exception_state);
   } else if (record_type == "mime") {
-    return CreateMimeRecord(init->id(), init->data(), init->mediaType(),
-                            exception_state);
+    return CreateMimeRecord(id, *record, exception_state);
   } else if (record_type == "unknown") {
-    return CreateUnknownRecord(init->id(), init->data(), exception_state);
+    return CreateUnknownRecord(id, *record, exception_state);
   } else if (record_type == "smart-poster") {
-    return CreateSmartPosterRecord(execution_context, init->id(), init->data(),
+    return CreateSmartPosterRecord(execution_context, id, *record,
                                    exception_state);
   } else if (IsValidExternalType(record_type)) {
-    return CreateExternalRecord(execution_context, record_type, init->id(),
-                                init->data(), exception_state);
+    return CreateExternalRecord(execution_context, id, *record,
+                                exception_state);
   } else if (IsValidLocalType(record_type)) {
     if (!is_embedded) {
       exception_state.ThrowTypeError(
@@ -415,8 +422,7 @@ NDEFRecord* NDEFRecord::Create(const ExecutionContext* execution_context,
           "of another record (smart-poster, external, or local).");
       return nullptr;
     }
-    return CreateLocalRecord(execution_context, record_type, init->id(),
-                             init->data(), exception_state);
+    return CreateLocalRecord(execution_context, id, *record, exception_state);
   }
 
   exception_state.ThrowTypeError("Invalid NDEFRecord type.");

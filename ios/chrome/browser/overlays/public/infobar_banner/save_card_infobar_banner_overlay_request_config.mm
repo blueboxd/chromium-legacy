@@ -39,6 +39,7 @@ SaveCardBannerRequestConfig::SaveCardBannerRequestConfig(
           ? l10n_util::GetStringUTF16(IDS_IOS_AUTOFILL_SAVE_ELLIPSIS)
           : delegate->GetButtonLabel(ConfirmInfoBarDelegate::BUTTON_OK);
   icon_image_name_ = kIconImageName;
+  should_upload_credentials_ = delegate->upload();
 }
 
 SaveCardBannerRequestConfig::~SaveCardBannerRequestConfig() = default;

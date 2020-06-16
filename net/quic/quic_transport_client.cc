@@ -5,6 +5,7 @@
 #include "net/quic/quic_transport_client.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_resolution_request.h"
@@ -57,9 +58,6 @@ std::unique_ptr<quic::ProofVerifier> CreateProofVerifier(
   return verifier;
 }
 }  // namespace
-
-constexpr quic::ParsedQuicVersion
-    QuicTransportClient::kQuicVersionForOriginTrial;
 
 QuicTransportClient::Parameters::Parameters() = default;
 QuicTransportClient::Parameters::~Parameters() = default;
@@ -168,13 +166,13 @@ int QuicTransportClient::DoInit() {
 
   // Ensure that for the duration of the origin trial, a fixed QUIC transport
   // version is available.
-  supported_versions_.push_back(kQuicVersionForOriginTrial);
+  supported_versions_ = QuicVersionsForWebTransportOriginTrial();
   // Add other supported versions if available.
   for (quic::ParsedQuicVersion& version :
        quic_context_->params()->supported_versions) {
     if (!quic::IsVersionValidForQuicTransport(version))
       continue;
-    if (version == kQuicVersionForOriginTrial)
+    if (base::Contains(supported_versions_, version))
       continue;  // Skip as we've already added it above.
     supported_versions_.push_back(version);
   }
@@ -256,6 +254,20 @@ int QuicTransportClient::DoConnect() {
   if (rv != OK)
     return rv;
 
+  CreateConnection();
+  next_connect_state_ = CONNECT_STATE_CONFIRM_CONNECTION;
+  return ERR_IO_PENDING;
+}
+
+void QuicTransportClient::CreateConnection() {
+  // Delete the objects in the same order they would be normally deleted by the
+  // destructor.
+  packet_reader_ = nullptr;
+  session_ = nullptr;
+  connection_ = nullptr;
+
+  IPEndPoint server_address =
+      *resolve_host_request_->GetAddressResults()->begin();
   quic::QuicConnectionId connection_id =
       quic::QuicUtils::CreateRandomConnectionId(
           quic_context_->random_generator());
@@ -280,9 +292,6 @@ int QuicTransportClient::DoConnect() {
   session_->Initialize();
   packet_reader_->StartReading();
   session_->CryptoConnect();
-
-  next_connect_state_ = CONNECT_STATE_CONFIRM_CONNECTION;
-  return ERR_IO_PENDING;
 }
 
 int QuicTransportClient::DoConfirmConnection() {
@@ -414,6 +423,26 @@ void QuicTransportClient::OnConnectionClosed(
     quic::QuicErrorCode error,
     const std::string& error_details,
     quic::ConnectionCloseSource source) {
+  if (!retried_with_new_version_ &&
+      session_->error() == quic::QUIC_INVALID_VERSION) {
+    retried_with_new_version_ = true;
+    base::EraseIf(
+        supported_versions_, [this](const quic::ParsedQuicVersion& version) {
+          return !base::Contains(
+              session_->connection()->server_supported_versions(), version);
+        });
+    if (!supported_versions_.empty()) {
+      // Since this is a callback from QuicConnection, we can't replace the
+      // connection object in this method; do it from the top of the event loop
+      // instead.
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&QuicTransportClient::CreateConnection,
+                                    weak_factory_.GetWeakPtr()));
+      return;
+    }
+    // If there are no supported versions, treat this as a regular error.
+  }
+
   std::string histogram_name;
   switch (source) {
     case quic::ConnectionCloseSource::FROM_SELF:

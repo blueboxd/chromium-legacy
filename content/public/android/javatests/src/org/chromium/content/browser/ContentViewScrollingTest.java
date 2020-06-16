@@ -6,10 +6,11 @@ package org.chromium.content.browser;
 
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+
+import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;

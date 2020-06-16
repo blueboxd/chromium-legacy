@@ -314,4 +314,21 @@ void CrostiniFeatures::CanChangeAdbSideloading(
   std::move(callback).Run(true);
 }
 
+bool CrostiniFeatures::IsPortForwardingAllowed(Profile* profile) {
+  if (!base::FeatureList::IsEnabled(
+          chromeos::features::kCrostiniPortForwarding)) {
+    VLOG(1) << "kCrostiniPortForwarding chromeos feature is disabled.";
+    return false;
+  }
+  if (!profile->GetPrefs()->GetBoolean(
+          crostini::prefs::kCrostiniPortForwardingAllowedByPolicy)) {
+    VLOG(1) << "kCrostiniPortForwardingAllowedByPolicy preference is false.";
+    return false;
+  }
+  // If kCrostiniPortForwardingAllowedByPolicy is not false, then we know that
+  // the user is either unmanaged, the policy is not set or the policy is set
+  // as true. In either of those 3 cases, port forwarding is allowed.
+  return true;
+}
+
 }  // namespace crostini

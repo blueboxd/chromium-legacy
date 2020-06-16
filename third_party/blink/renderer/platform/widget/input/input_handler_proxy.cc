@@ -590,7 +590,7 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
     input_handler_->SetNeedsAnimateInput();
 }
 
-bool HasModifier(const WebInputEvent& event) {
+bool HasScrollbarJumpKeyModifier(const WebInputEvent& event) {
 #if defined(OS_MACOSX)
   // Mac uses the "Option" key (which is mapped to the enum "kAltKey").
   return event.GetModifiers() & WebInputEvent::kAltKey;
@@ -681,7 +681,7 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
         cc::InputHandlerPointerResult pointer_result =
             input_handler_->MouseDown(
                 gfx::PointF(mouse_event.PositionInWidget()),
-                HasModifier(event));
+                HasScrollbarJumpKeyModifier(event));
         if (pointer_result.type == cc::PointerResultType::kScrollbarScroll) {
           // Since a kScrollbarScroll is about to commence, ensure that any
           // existing ongoing scroll is ended.

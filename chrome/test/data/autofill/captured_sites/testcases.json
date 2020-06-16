@@ -146,7 +146,7 @@
     { "site_name": "oshkosh" },
     { "site_name": "oup" },
     { "site_name": "overstock" },
-    { "site_name": "pac_sun" },
+    { "site_name": "pac_sun", "expectation":"FAIL", "bug_number":1090042 },
     { "site_name": "palmettostatearmory" },
     { "site_name": "pandora" },
     { "site_name": "panerabread", "disabled":true, "bug_number":984664 },

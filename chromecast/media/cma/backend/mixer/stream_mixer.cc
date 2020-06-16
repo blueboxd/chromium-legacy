@@ -908,8 +908,7 @@ void StreamMixer::SetOutputLimit(AudioContentType type, float limit) {
   MAKE_SURE_MIXER_THREAD(SetOutputLimit, type, limit);
   DCHECK(type != AudioContentType::kOther);
 
-  LOG(INFO) << "Set volume limit for " << static_cast<int>(type) << " to "
-            << limit;
+  LOG(INFO) << "Set volume limit for " << type << " to " << limit;
   volume_info_[type].limit = limit;
   int fade_ms = kUseDefaultFade;
   if (type == AudioContentType::kMedia) {

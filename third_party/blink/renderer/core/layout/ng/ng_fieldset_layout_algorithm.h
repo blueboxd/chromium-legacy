@@ -52,7 +52,6 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
 
   const WritingMode writing_mode_;
 
-  const NGBoxStrut border_padding_;
   NGBoxStrut borders_;
   NGBoxStrut padding_;
 

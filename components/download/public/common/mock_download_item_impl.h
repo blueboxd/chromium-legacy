@@ -14,6 +14,7 @@
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_file.h"
 #include "components/download/public/common/download_item_impl.h"
+#include "components/download/public/common/download_schedule.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/origin.h"
 
@@ -27,12 +28,13 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   explicit MockDownloadItemImpl(DownloadItemImplDelegate* delegate);
   ~MockDownloadItemImpl() override;
 
-  MOCK_METHOD6(OnDownloadTargetDetermined,
+  MOCK_METHOD7(OnDownloadTargetDetermined,
                void(const base::FilePath&,
                     TargetDisposition,
                     DownloadDangerType,
                     MixedContentStatus,
                     const base::FilePath&,
+                    base::Optional<DownloadSchedule>,
                     DownloadInterruptReason));
   MOCK_METHOD1(AddObserver, void(DownloadItem::Observer*));
   MOCK_METHOD1(RemoveObserver, void(DownloadItem::Observer*));

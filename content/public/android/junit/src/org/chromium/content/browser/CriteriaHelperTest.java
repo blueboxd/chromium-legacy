@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 import static org.chromium.base.task.TaskTraits.THREAD_POOL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

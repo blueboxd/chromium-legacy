@@ -744,7 +744,17 @@ void HotseatWidget::UpdateLayout(bool animate) {
   if (animate) {
     LayoutHotseatByAnimation(target_opacity, target_bounds);
   } else {
-    GetNativeView()->layer()->SetOpacity(target_opacity);
+    ui::Layer* hotseat_layer = GetNativeView()->layer();
+
+    // If the running bounds animation is not aborted, it will be interrupted
+    // and set hotseat widget with the old target bounds which may differ from
+    // |target_bounds| greatly and bring DCHECK errors. For example,
+    // if hotseat animation is interrupted by the bounds setting triggered by
+    // shelf alignment update, hotseat will be caught in an intermediate state
+    // where the shelf alignment is new and the hotseat bounds are old.
+    hotseat_layer->GetAnimator()->AbortAllAnimations();
+
+    hotseat_layer->SetOpacity(target_opacity);
     SetBounds(target_bounds);
   }
 

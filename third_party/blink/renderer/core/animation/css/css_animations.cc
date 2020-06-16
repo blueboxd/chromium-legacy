@@ -854,6 +854,12 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     }
   }
 
+  if (!pending_update_.NewTransitions().IsEmpty()) {
+    element->GetDocument()
+        .GetDocumentAnimations()
+        .IncrementTrasitionGeneration();
+  }
+
   for (const auto& entry : pending_update_.NewTransitions()) {
     const CSSAnimationUpdate::NewTransition& new_transition = entry.value;
 
@@ -1498,13 +1504,6 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
     Timing::Phase current_phase) {
   if (current_phase == previous_phase_)
     return;
-  // Our implement of transition_generation is slightly different from the spec
-  // We increment the transition_generation per transition event instead of per
-  // style change event. A state transition would trigger one or more events.
-  // Thus, the spec version increments more than is necessary to ensure a change
-  // in transition generation. Spec defines style-change-event:
-  // https://drafts.csswg.org/css-transitions-1/#style-change-event
-  GetDocument().GetDocumentAnimations().IncrementTrasitionGeneration();
 
   if (GetDocument().HasListenerType(Document::kTransitionRunListener)) {
     if (previous_phase_ == Timing::kPhaseNone) {

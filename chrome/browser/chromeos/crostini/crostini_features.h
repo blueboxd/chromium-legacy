@@ -57,6 +57,12 @@ class CrostiniFeatures {
       Profile* profile,
       CanChangeAdbSideloadingCallback callback);
 
+  // Returns whether the user is allowed to configure port forwarding into
+  // Crostini. If the user is not managed or if the policy is unset or true,
+  // then this returns true, else if the policy is set to false, this returns
+  // false.
+  virtual bool IsPortForwardingAllowed(Profile* profile);
+
   // TODO(crbug.com/1004708): Move other functions from crostini_util to here.
 
  protected:

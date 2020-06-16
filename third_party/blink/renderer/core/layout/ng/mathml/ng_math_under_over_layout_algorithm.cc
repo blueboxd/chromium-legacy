@@ -75,10 +75,7 @@ UnderOverVerticalParameters GetUnderOverVerticalParameters(
 
 NGMathUnderOverLayoutAlgorithm::NGMathUnderOverLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params),
-      border_scrollbar_padding_(params.fragment_geometry.border +
-                                params.fragment_geometry.padding +
-                                params.fragment_geometry.scrollbar) {
+    : NGLayoutAlgorithm(params) {
   DCHECK(params.space.IsNewFormattingContext());
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
@@ -94,8 +91,7 @@ void NGMathUnderOverLayoutAlgorithm::GatherChildren(NGBlockNode* base,
     NGBlockNode block_child = To<NGBlockNode>(child);
     if (child.IsOutOfFlowPositioned()) {
       container_builder_.AddOutOfFlowChildCandidate(
-          block_child, {border_scrollbar_padding_.inline_start,
-                        border_scrollbar_padding_.block_start});
+          block_child, BorderScrollbarPadding().StartOffset());
       continue;
     }
     if (!*base) {
@@ -135,10 +131,11 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
   GatherChildren(&base, &over, &under);
 
   const LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
-  auto child_available_size =
-      ShrinkAvailableSize(border_box_size, border_scrollbar_padding_);
 
-  LayoutUnit block_offset = border_scrollbar_padding_.block_start;
+  const LogicalOffset content_start_offset =
+      BorderScrollbarPadding().StartOffset();
+
+  LayoutUnit block_offset = content_start_offset.block_offset;
   UnderOverVerticalParameters parameters =
       GetUnderOverVerticalParameters(Style());
   // TODO(rbuis): handle stretchy operators.
@@ -148,7 +145,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
   // therefore centered relative to themselves).
   if (over) {
     auto over_space = CreateConstraintSpaceForMathChild(
-        Node(), child_available_size, ConstraintSpace(), over);
+        Node(), ChildAvailableSize(), ConstraintSpace(), over);
     scoped_refptr<const NGLayoutResult> over_layout_result =
         over.Layout(over_space);
     NGBoxStrut over_margins =
@@ -158,8 +155,8 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
         To<NGPhysicalBoxFragment>(over_layout_result->PhysicalFragment()));
     block_offset += parameters.over_extra_ascender + over_margins.block_start;
     LogicalOffset over_offset = {
-        border_scrollbar_padding_.inline_start + over_margins.inline_start +
-            (child_available_size.inline_size -
+        content_start_offset.inline_offset + over_margins.inline_start +
+            (ChildAvailableSize().inline_size -
              (over_fragment.InlineSize() + over_margins.InlineSum())) /
                 2,
         block_offset};
@@ -180,7 +177,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
   }
 
   auto base_space = CreateConstraintSpaceForMathChild(
-      Node(), child_available_size, ConstraintSpace(), base);
+      Node(), ChildAvailableSize(), ConstraintSpace(), base);
   auto base_layout_result = base.Layout(base_space);
   auto base_margins =
       ComputeMarginsFor(base_space, base.Style(), ConstraintSpace());
@@ -191,8 +188,8 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
 
   block_offset += base_margins.block_start;
   LogicalOffset base_offset = {
-      border_scrollbar_padding_.inline_start + base_margins.inline_start +
-          (child_available_size.inline_size -
+      content_start_offset.inline_offset + base_margins.inline_start +
+          (ChildAvailableSize().inline_size -
            (base_fragment.InlineSize() + base_margins.InlineSum())) /
               2,
       block_offset};
@@ -203,7 +200,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
 
   if (under) {
     auto under_space = CreateConstraintSpaceForMathChild(
-        Node(), child_available_size, ConstraintSpace(), under);
+        Node(), ChildAvailableSize(), ConstraintSpace(), under);
     scoped_refptr<const NGLayoutResult> under_layout_result =
         under.Layout(under_space);
     NGBoxStrut under_margins =
@@ -221,8 +218,8 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
                                parameters.under_shift_min - under_ascent);
     }
     LogicalOffset under_offset = {
-        border_scrollbar_padding_.inline_start + under_margins.inline_start +
-            (child_available_size.inline_size -
+        content_start_offset.inline_offset + under_margins.inline_start +
+            (ChildAvailableSize().inline_size -
              (under_fragment.InlineSize() + under_margins.InlineSum())) /
                 2,
         block_offset};
@@ -238,11 +235,11 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
       base_fragment.Baseline().value_or(base_fragment.BlockSize());
   container_builder_.SetBaseline(base_offset.block_offset + base_ascent);
 
-  block_offset += border_scrollbar_padding_.block_end;
+  block_offset += BorderScrollbarPadding().block_end;
 
-  LayoutUnit block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), border_scrollbar_padding_, block_offset,
-      border_box_size.inline_size);
+  LayoutUnit block_size =
+      ComputeBlockSizeForFragment(ConstraintSpace(), Style(), BorderPadding(),
+                                  block_offset, border_box_size.inline_size);
 
   container_builder_.SetIntrinsicBlockSize(block_offset);
   container_builder_.SetBlockSize(block_size);
@@ -259,7 +256,7 @@ MinMaxSizesResult NGMathUnderOverLayoutAlgorithm::ComputeMinMaxSizes(
   DCHECK(IsValidMathMLScript(Node()));
 
   if (auto result = CalculateMinMaxSizesIgnoringChildren(
-          Node(), border_scrollbar_padding_))
+          Node(), BorderScrollbarPadding()))
     return *result;
 
   MinMaxSizes sizes;
@@ -279,7 +276,7 @@ MinMaxSizesResult NGMathUnderOverLayoutAlgorithm::ComputeMinMaxSizes(
         child_result.depends_on_percentage_block_size;
   }
 
-  sizes += border_scrollbar_padding_.InlineSum();
+  sizes += BorderScrollbarPadding().InlineSum();
   return {sizes, depends_on_percentage_block_size};
 }
 

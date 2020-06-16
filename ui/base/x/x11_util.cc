@@ -355,19 +355,20 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap& cursor_image,
 }
 
 int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
-  DCHECK(xev->type == MotionNotify || xev->type == x11::GeGenericEvent::opcode);
+  DCHECK(xev->type == x11::MotionNotifyEvent::opcode ||
+         xev->type == x11::GeGenericEvent::opcode);
   auto* conn = x11::Connection::Get();
   bool is_motion = false;
   int num_coalesced = 0;
 
   conn->ReadResponses();
-  if (xev->type == MotionNotify) {
+  if (xev->type == x11::MotionNotifyEvent::opcode) {
     is_motion = true;
     for (auto it = conn->events().begin(); it != conn->events().end();) {
-      const auto& next_event = it->xlib_event;
+      const auto& next_event = it->xlib_event();
       // Discard all but the most recent motion event that targets the same
       // window with unchanged state.
-      if (next_event.type == MotionNotify &&
+      if (next_event.type == x11::MotionNotifyEvent::opcode &&
           next_event.xmotion.window == xev->xmotion.window &&
           next_event.xmotion.subwindow == xev->xmotion.subwindow &&
           next_event.xmotion.state == xev->xmotion.state) {
@@ -384,10 +385,12 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
     is_motion = event_type == XI_Motion;
 
     for (auto it = conn->events().begin(); it != conn->events().end();) {
-      auto& next_event = it->xlib_event;
+      auto& next_event = it->xlib_event();
 
-      if (next_event.type != GenericEvent || !next_event.xcookie.data)
+      if (next_event.type != x11::GeGenericEvent::opcode ||
+          !next_event.xcookie.data) {
         break;
+      }
 
       // If this isn't from a valid device, throw the event away, as
       // that's what the message pump would do. Device events come in pairs

@@ -70,6 +70,7 @@ action("gen_xprotos") {
   ]
   sources = []
   outputs = [
+    "$target_gen_dir/read_event.cc",
     "$target_gen_dir/extension_manager.h",
     "$target_gen_dir/extension_manager.cc",
   ]
@@ -108,6 +109,8 @@ component("xprotos") {
               "xproto_util.cc",
               "connection.h",
               "connection.cc",
+              "event.h",
+              "event.cc",
               "x11_switches.cc",
               "x11_switches.h",
             ]

@@ -33,6 +33,7 @@
 #include <algorithm>
 
 #include "third_party/blink/public/strings/grit/blink_strings.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_image_bitmap_options.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -49,6 +50,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
+#include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -72,8 +74,10 @@
 #include "third_party/blink/renderer/core/html/html_table_row_element.h"
 #include "third_party/blink/renderer/core/html/html_table_section_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
@@ -94,6 +98,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_svg_root.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
+#include "third_party/blink/renderer/platform/graphics/image_data_buffer.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -1807,6 +1812,89 @@ String AXNodeObject::GetText() const {
 
   auto* element = DynamicTo<Element>(node);
   return element ? element->innerText() : String();
+}
+
+String AXNodeObject::ImageDataUrl(const IntSize& max_size) const {
+  Node* node = GetNode();
+  if (!node)
+    return String();
+
+  ImageBitmapOptions* options = ImageBitmapOptions::Create();
+  ImageBitmap* image_bitmap = nullptr;
+  if (auto* image = DynamicTo<HTMLImageElement>(node)) {
+    image_bitmap = MakeGarbageCollected<ImageBitmap>(
+        image, base::Optional<IntRect>(), options);
+  } else if (auto* canvas = DynamicTo<HTMLCanvasElement>(node)) {
+    image_bitmap = MakeGarbageCollected<ImageBitmap>(
+        canvas, base::Optional<IntRect>(), options);
+  } else if (auto* video = DynamicTo<HTMLVideoElement>(node)) {
+    image_bitmap = MakeGarbageCollected<ImageBitmap>(
+        video, base::Optional<IntRect>(), options);
+  }
+  if (!image_bitmap)
+    return String();
+
+  scoped_refptr<StaticBitmapImage> bitmap_image = image_bitmap->BitmapImage();
+  if (!bitmap_image)
+    return String();
+
+  sk_sp<SkImage> image = bitmap_image->PaintImageForCurrentFrame().GetSkImage();
+  if (!image || image->width() <= 0 || image->height() <= 0)
+    return String();
+
+  // Determine the width and height of the output image, using a proportional
+  // scale factor such that it's no larger than |maxSize|, if |maxSize| is not
+  // empty. It only resizes the image to be smaller (if necessary), not
+  // larger.
+  float x_scale =
+      max_size.Width() ? max_size.Width() * 1.0 / image->width() : 1.0;
+  float y_scale =
+      max_size.Height() ? max_size.Height() * 1.0 / image->height() : 1.0;
+  float scale = std::min(x_scale, y_scale);
+  if (scale >= 1.0)
+    scale = 1.0;
+  int width = std::round(image->width() * scale);
+  int height = std::round(image->height() * scale);
+
+  // Draw the scaled image into a bitmap in native format.
+  SkBitmap bitmap;
+  bitmap.allocPixels(SkImageInfo::MakeN32(width, height, kPremul_SkAlphaType));
+  SkCanvas canvas(bitmap);
+  canvas.clear(SK_ColorTRANSPARENT);
+  canvas.drawImageRect(image, SkRect::MakeIWH(width, height), nullptr);
+
+  // Copy the bits into a buffer in RGBA_8888 unpremultiplied format
+  // for encoding.
+  SkImageInfo info = SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
+                                       kUnpremul_SkAlphaType);
+  size_t row_bytes = info.minRowBytes();
+  Vector<char> pixel_storage(
+      SafeCast<wtf_size_t>(info.computeByteSize(row_bytes)));
+  SkPixmap pixmap(info, pixel_storage.data(), row_bytes);
+  if (!SkImage::MakeFromBitmap(bitmap)->readPixels(pixmap, 0, 0))
+    return String();
+
+  // Encode as a PNG and return as a data url.
+  std::unique_ptr<ImageDataBuffer> buffer = ImageDataBuffer::Create(pixmap);
+
+  if (!buffer)
+    return String();
+
+  return buffer->ToDataURL(kMimeTypePng, 1.0);
+}
+
+const AtomicString& AXNodeObject::AccessKey() const {
+  auto* element = DynamicTo<Element>(GetNode());
+  if (!element)
+    return g_null_atom;
+  return element->FastGetAttribute(html_names::kAccesskeyAttr);
+}
+
+int AXNodeObject::TextLength() const {
+  if (!IsTextControl())
+    return -1;
+
+  return GetText().length();
 }
 
 RGBA32 AXNodeObject::ColorValue() const {

@@ -11,9 +11,7 @@ namespace blink {
 
 NGMathSpaceLayoutAlgorithm::NGMathSpaceLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params),
-      border_padding_(params.fragment_geometry.border +
-                      params.fragment_geometry.padding) {
+    : NGLayoutAlgorithm(params) {
   DCHECK(params.fragment_geometry.scrollbar.IsEmpty());
   container_builder_.SetIsNewFormattingContext(true);
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
@@ -22,27 +20,28 @@ NGMathSpaceLayoutAlgorithm::NGMathSpaceLayoutAlgorithm(
 scoped_refptr<const NGLayoutResult> NGMathSpaceLayoutAlgorithm::Layout() {
   DCHECK(!BreakToken());
 
+  LayoutUnit intrinsic_block_size = BorderScrollbarPadding().BlockSum();
   LayoutUnit block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), border_padding_, border_padding_.BlockSum(),
+      ConstraintSpace(), Style(), BorderPadding(), intrinsic_block_size,
       container_builder_.InitialBorderBoxSize().inline_size);
 
-  container_builder_.SetIntrinsicBlockSize(border_padding_.BlockSum());
+  container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
   container_builder_.SetBlockSize(block_size);
 
   container_builder_.SetBaseline(
-      border_padding_.block_start +
+      BorderScrollbarPadding().block_start +
       ValueForLength(Style().GetMathBaseline(), LayoutUnit()));
   return container_builder_.ToBoxFragment();
 }
 
 MinMaxSizesResult NGMathSpaceLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput&) const {
-  if (auto result =
-          CalculateMinMaxSizesIgnoringChildren(Node(), border_padding_))
+  if (auto result = CalculateMinMaxSizesIgnoringChildren(
+          Node(), BorderScrollbarPadding()))
     return *result;
 
   MinMaxSizes sizes;
-  sizes += border_padding_.InlineSum();
+  sizes += BorderScrollbarPadding().InlineSum();
 
   return {sizes, /* depends_on_percentage_block_size */ false};
 }

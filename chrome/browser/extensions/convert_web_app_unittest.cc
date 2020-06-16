@@ -588,7 +588,7 @@ TEST_F(ExtensionFromWebAppWithShortcutsMenu,
   {
     const int sizes[] = {16, 128};
     for (const auto& size : sizes) {
-      WebApplicationIconInfo icon_info;
+      WebApplicationShortcutsMenuItemInfo::Icon icon_info;
       icon_info.url =
           web_app.app_url.Resolve(base::StringPrintf("shortcut1/%i.png", size));
       icon_info.square_size_px = size;
@@ -605,7 +605,7 @@ TEST_F(ExtensionFromWebAppWithShortcutsMenu,
   {
     const int sizes[] = {16, 48};
     for (const auto& size : sizes) {
-      WebApplicationIconInfo icon_info;
+      WebApplicationShortcutsMenuItemInfo::Icon icon_info;
       icon_info.url =
           web_app.app_url.Resolve(base::StringPrintf("0/%i.png", size));
       icon_info.square_size_px = size;
@@ -628,7 +628,7 @@ TEST_F(ExtensionFromWebAppWithShortcutsMenu,
   const std::map<int, ExtensionIconSet>& shortcut_icons =
       WebAppShortcutIconsInfo::GetShortcutIcons(extension.get());
   for (size_t i = 0; i < web_app.shortcut_infos.size(); ++i) {
-    const std::vector<WebApplicationIconInfo>& icon_infos =
+    const std::vector<WebApplicationShortcutsMenuItemInfo::Icon>& icon_infos =
         web_app.shortcut_infos[i].shortcut_icon_infos;
     const std::vector<WebAppLinkedShortcutItems::ShortcutItemInfo::IconInfo>&
         linked_shortcut_icons_info =

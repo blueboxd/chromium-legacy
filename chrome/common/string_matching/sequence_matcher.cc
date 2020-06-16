@@ -5,6 +5,7 @@
 #include "chrome/common/string_matching/sequence_matcher.h"
 
 #include <algorithm>
+#include <cmath>
 #include <queue>
 
 #include "base/check_op.h"

@@ -21,8 +21,6 @@ class CORE_EXPORT NGMathSpaceLayoutAlgorithm
   scoped_refptr<const NGLayoutResult> Layout() final;
 
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const final;
-
-  const NGBoxStrut border_padding_;
 };
 
 }  // namespace blink

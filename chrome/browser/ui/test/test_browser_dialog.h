@@ -30,6 +30,11 @@ class TestBrowserDialog : public TestBrowserUi {
   bool VerifyUi() override;
   void WaitForUserDismissal() override;
   void DismissUi() override;
+
+  // Verify UI.
+  // When pixel verifcation is enabled(--browser-ui-tests-verify-pixels),
+  // this function will also verify pixels using Skia Gold. Call set_baseline()
+  // and set_pixel_match_algorithm() to adjust parameters used for verification.
   void ShowAndVerifyUi();
 
   // Only useful when pixel verification is enabled.

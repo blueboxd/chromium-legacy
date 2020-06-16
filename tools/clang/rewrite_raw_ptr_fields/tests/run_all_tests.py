@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import glob
 import os.path
 import shutil
 import subprocess
@@ -30,6 +31,12 @@ def RunGeneratingTest(test_path):
     os.remove(tmp_test_path)
 
 
+def RunGeneratingTests():
+  tests = glob.glob("tools/clang/rewrite_raw_ptr_fields/tests/gen-*-test.cc")
+  for test_path in tests:
+    RunGeneratingTest(test_path)
+
+
 def main():
   if not os.path.exists("ENG_REVIEW_OWNERS"):
     sys.stderr.write(
@@ -42,8 +49,7 @@ def main():
     return -1
 
   RunRewritingTests()
-  RunGeneratingTest(
-      "tools/clang/rewrite_raw_ptr_fields/tests/in-out-arg-test.cc")
+  RunGeneratingTests()
 
 
 if __name__ == "__main__":

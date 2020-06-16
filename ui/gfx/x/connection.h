@@ -9,6 +9,7 @@
 #include <queue>
 
 #include "base/component_export.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/extension_manager.h"
 #include "ui/gfx/x/xproto.h"
 
@@ -21,29 +22,13 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
   class Delegate {
    public:
     virtual bool ShouldContinueStream() const = 0;
-    virtual void DispatchXEvent(XEvent* event) = 0;
+    virtual void DispatchXEvent(x11::Event* event) = 0;
 
    protected:
     virtual ~Delegate() = default;
   };
 
-  struct Event {
-    Event(base::Optional<uint32_t> sequence, const XEvent& xlib_event);
-    Event(xcb_generic_event_t* xcb_event, x11::Connection* connection);
-
-    Event(const Event&) = delete;
-    Event& operator=(const Event&) = delete;
-
-    Event(Event&& event);
-    Event& operator=(Event&& event);
-
-    ~Event();
-
-    base::Optional<uint32_t> sequence;
-    XEvent xlib_event;
-  };
-
-  // Gets or creates the singeton connection.
+  // Gets or creates the singleton connection.
   static Connection* Get();
 
   explicit Connection();

@@ -65,9 +65,6 @@ class CSSToStyleMap {
   static void MapFillPositionY(StyleResolverState&,
                                FillLayer*,
                                const CSSValue&);
-  static void MapFillMaskSourceType(StyleResolverState&,
-                                    FillLayer*,
-                                    const CSSValue&);
 
   static double MapAnimationDelay(const CSSValue&);
   static Timing::PlaybackDirection MapAnimationDirection(const CSSValue&);

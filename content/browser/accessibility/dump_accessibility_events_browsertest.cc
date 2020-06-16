@@ -760,11 +760,6 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsStyleChanged) {
-  RunEventTest(FILE_PATH_LITERAL("style-changed.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsTabindexAddedOnPlainDiv) {
   RunEventTest(FILE_PATH_LITERAL("tabindex-added-on-plain-div.html"));
 }

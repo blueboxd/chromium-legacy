@@ -455,10 +455,6 @@
       name: "CSSMarkerPseudoElement",
       status: "experimental",
     },
-    {
-      name: "CSSMaskSourceType",
-      status: "experimental",
-    },
     // Enables dependency support for the MatchedPropertiesCache.
     {
       name: "CSSMatchedPropertiesCacheDependencies",

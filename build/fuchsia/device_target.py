@@ -141,7 +141,7 @@ class DeviceTarget(target.Target):
     or waits up to |timeout| seconds and returns False if the device couldn't
     be found."""
 
-    dev_finder_path = GetHostToolPathFromPlatform('dev_finder')
+    dev_finder_path = GetHostToolPathFromPlatform('device-finder')
 
     if self._node_name:
       command = [dev_finder_path, 'resolve',
@@ -163,13 +163,13 @@ class DeviceTarget(target.Target):
       return False
 
     if self._node_name:
-      # Handle the result of "dev_finder resolve".
+      # Handle the result of "device-finder resolve".
       self._host = output.pop().strip()
 
     else:
       name_host_pairs = [x.strip().split(' ') for x in output]
 
-      # Handle the output of "dev_finder list".
+      # Handle the output of "device-finder list".
       if len(name_host_pairs) > 1:
         print('More than one device was discovered on the network.')
         print('Use --node-name <name> to specify the device to use.')

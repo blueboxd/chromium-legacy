@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.share.clipboard;
 
 import android.graphics.Bitmap;
 import android.os.Looper;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;

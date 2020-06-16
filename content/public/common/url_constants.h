@@ -48,6 +48,7 @@ CONTENT_EXPORT extern const char kChromeUIProcessInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUIResourcesHost[];
 CONTENT_EXPORT extern const char kChromeUIServiceWorkerInternalsHost[];
 CONTENT_EXPORT extern const char kChromeUITracingHost[];
+CONTENT_EXPORT extern const char kChromeUIUkmHost[];
 CONTENT_EXPORT extern const char kChromeUIWebRTCInternalsHost[];
 
 // Full about URLs (including schemes).

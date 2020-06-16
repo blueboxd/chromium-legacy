@@ -11,8 +11,9 @@ import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Matchers.any;
 
 import android.app.Activity;
-import android.support.test.filters.MediumTest;
 import android.support.test.rule.ActivityTestRule;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

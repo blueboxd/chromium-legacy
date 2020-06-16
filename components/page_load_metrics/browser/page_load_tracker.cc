@@ -357,6 +357,8 @@ void PageLoadTracker::PageShown() {
 }
 
 void PageLoadTracker::FrameDeleted(content::RenderFrameHost* rfh) {
+  metrics_update_dispatcher_.OnFrameDeleted(rfh);
+  largest_contentful_paint_handler_.OnFrameDeleted(rfh);
   for (const auto& observer : observers_) {
     observer->OnFrameDeleted(rfh);
   }

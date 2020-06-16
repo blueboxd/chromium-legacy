@@ -89,6 +89,24 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
   // Compute the output for k-rate AudioParams
   double ProcessKRate(int n, float* dest_p, double virtual_read_index) const;
 
+  // Scalar version for the main loop in ProcessKRate().  Returns the updated
+  // virtual_read_index.
+  double ProcessKRateScalar(int start_index,
+                            int n,
+                            float* dest_p,
+                            double virtual_read_index,
+                            float frequency,
+                            float rate_scale) const;
+
+  // Vectorized version (if available) for the main loop in ProcessKRate().
+  // Returns the number of elements processed and the updated
+  // virtual_read_index.
+  std::tuple<int, double> ProcessKRateVector(int n,
+                                             float* dest_p,
+                                             double virtual_read_index,
+                                             float frequency,
+                                             float rate_scale) const;
+
   // Compute the output for a-rate AudioParams
   double ProcessARate(int n,
                       float* dest_p,

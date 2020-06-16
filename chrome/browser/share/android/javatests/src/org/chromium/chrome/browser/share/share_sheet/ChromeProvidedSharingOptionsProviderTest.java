@@ -8,8 +8,9 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 
 import android.app.Activity;
-import android.support.test.filters.MediumTest;
 import android.support.test.rule.ActivityTestRule;
+
+import androidx.test.filters.MediumTest;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;

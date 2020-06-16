@@ -19,7 +19,6 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/check.h"
 #include "base/i18n/rtl.h"
-#include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
@@ -74,9 +73,6 @@ constexpr base::TimeDelta kZeroAnimationMs =
 constexpr char kCrossFadeSmoothness[] =
     "Ash.Window.AnimationSmoothness.CrossFade";
 
-base::NoDestructor<ui::HistogramPercentageMetricsReporter<kCrossFadeSmoothness>>
-    g_reporter_cross_fade;
-
 base::TimeDelta GetCrossFadeDuration(aura::Window* window,
                                      const gfx::RectF& old_bounds,
                                      const gfx::Rect& new_bounds) {
@@ -104,20 +100,28 @@ base::TimeDelta GetCrossFadeDuration(aura::Window* window,
 // the layer's animation completes, it deletes the layer and removes itself as
 // an observer.
 class CrossFadeObserver : public aura::WindowObserver,
-                          public ui::ImplicitAnimationObserver {
+                          public ui::ImplicitAnimationObserver,
+                          public ui::AnimationMetricsReporter {
  public:
   // Observes |window| for destruction, but does not take ownership.
   // Takes ownership of |layer_owner| and its child layers.
   CrossFadeObserver(aura::Window* window,
                     std::unique_ptr<ui::LayerTreeOwner> layer_owner)
-      : window_(window), layer_owner_(std::move(layer_owner)) {
+      : window_(window),
+        layer_(window->layer()),
+        layer_owner_(std::move(layer_owner)) {
     window_->AddObserver(this);
   }
   CrossFadeObserver(const CrossFadeObserver&) = delete;
   CrossFadeObserver& operator=(const CrossFadeObserver&) = delete;
   ~CrossFadeObserver() override {
+    // Stop the old animator to trigger aborts or ends on any observers it may
+    // have.
+    layer_owner_->root()->GetAnimator()->StopAnimating();
+
     window_->RemoveObserver(this);
     window_ = nullptr;
+    layer_ = nullptr;
   }
 
   // aura::WindowObserver:
@@ -126,15 +130,45 @@ class CrossFadeObserver : public aura::WindowObserver,
                                       aura::Window* new_root) override {
     StopAnimating();
   }
+  void OnWindowLayerRecreated(aura::Window* window) override {
+    // If the window layer is recreated. |layer_| will hold the LayerAnimator we
+    // were originally observing. Layer recreation is usually done when doing
+    // another window animation, so stop this current one and trigger
+    // OnImplicitAnimationsCompleted to delete ourselves.
+    layer_->GetAnimator()->StopAnimating();
+  }
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override { delete this; }
 
- protected:
-  // Triggers OnImplicitAnimationsCompleted() to be called and deletes us.
-  void StopAnimating() { layer_owner_->root()->GetAnimator()->StopAnimating(); }
+  // ui::AnimationMetricsReporter:
+  void Report(int value) override {
+    if (reported_)
+      return;
 
-  aura::Window* window_;  // not owned
+    UMA_HISTOGRAM_PERCENTAGE(kCrossFadeSmoothness, value);
+    reported_ = true;
+  }
+
+ protected:
+  void StopAnimating() {
+    // Trigger OnImplicitAnimationsCompleted() to be called and deletes us. If
+    // no animation is running then do the deletion ourselves.
+    DCHECK(window_);
+    window_->layer()->GetAnimator()->StopAnimating();
+  }
+
+  // Report() gets called for each LayerAnimationElement. For cross fade, its
+  // fairly common to animate both transform and opacity, so only report the
+  // metric once.
+  bool reported_ = false;
+
+  // The window and the associated layer this observer is watching. The window
+  // layer may be recreated during the course of the animation so |layer_| will
+  // be different |window_->layer()| after construction.
+  aura::Window* window_;
+  ui::Layer* layer_;
+
   std::unique_ptr<ui::LayerTreeOwner> layer_owner_;
 };
 
@@ -164,6 +198,7 @@ class CrossFadeUpdateTransformObserver
   void OnLayerAnimationStarted(ui::LayerAnimationSequence* sequence) override {
     DCHECK(!layer_owner_->root()->GetAnimator()->IsAnimatingProperty(
         ui::LayerAnimationElement::TRANSFORM));
+    CrossFadeObserver::OnLayerAnimationStarted(sequence);
   }
 
   // ui::CompositorAnimationObserver:
@@ -245,18 +280,10 @@ void CrossFadeAnimationInternal(
     old_layer->GetAnimator()->StopAnimating();
     old_layer->SetTransform(old_transform);
     ui::ScopedLayerAnimationSettings settings(old_layer->GetAnimator());
-    // Animation observer owns the old layer and deletes itself.
-    CrossFadeObserver* observer =
-        animate_old_layer_transform
-            ? new CrossFadeObserver(window, std::move(old_layer_owner))
-            : new CrossFadeUpdateTransformObserver(window,
-                                                   std::move(old_layer_owner));
-    settings.AddObserver(observer);
     settings.SetTransitionDuration(animation_duration);
     settings.SetTweenType(animation_tween_type);
-    // Only add reporter to |old_layer|.
-    settings.SetAnimationMetricsReporter(g_reporter_cross_fade.get());
     settings.DeferPaint();
+
     if (old_on_top) {
       // Only caching render surface when there is an opacity animation and
       // multiple layers.
@@ -307,9 +334,20 @@ void CrossFadeAnimationInternal(
     new_layer->SetOpacity(kWindowAnimation_HideOpacity);
   }
   {
+    // Animation observer owns the old layer and deletes itself. It should be
+    // attached to the new layer so that if the new layer animation gets
+    // aborted, we can delete the old layer.
+    CrossFadeObserver* observer =
+        animate_old_layer_transform
+            ? new CrossFadeObserver(window, std::move(old_layer_owner))
+            : new CrossFadeUpdateTransformObserver(window,
+                                                   std::move(old_layer_owner));
+
     // Animate the new layer to the identity transform, so the window goes to
     // its newly set bounds.
     ui::ScopedLayerAnimationSettings settings(new_layer->GetAnimator());
+    settings.AddObserver(observer);
+    settings.SetAnimationMetricsReporter(observer);
     settings.SetTransitionDuration(animation_duration);
     settings.SetTweenType(animation_tween_type);
     settings.DeferPaint();

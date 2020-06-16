@@ -5,11 +5,12 @@
 package org.chromium.chrome.browser.share.screenshot;
 
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.MediumTest;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Test;

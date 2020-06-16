@@ -201,7 +201,6 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // Event helpers
   void OnActiveDescendantChanged();
   void OnCheckedStateChanged();
-  void OnEnabledChanged();
   void OnExpandedStateChanged(bool is_expanded);
   void OnFocused();
   void OnWindowActivated();
@@ -211,7 +210,6 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void OnAllMenusEnded();
   void OnSelected();
   void OnSelectedChildrenChanged();
-  void OnTextAttributesChanged();
   void OnTextSelectionChanged();
   void OnValueChanged();
   void OnNameChanged();

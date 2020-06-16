@@ -35,7 +35,7 @@ checkout.sh
 Running this script without arguments will remove the existing checkout
 (third_party/wpt/wpt) and perform a fresh one. See "Rolling in WPT" for more.
 
-WPTWhiteList
+WPTIncludeList
 ============
 The explicit list of files being kept, everything else not on this list is
 deleted when running "./checkout.sh reduce". Use this file to control what gets
@@ -72,8 +72,8 @@ re-generate them:
 Rolling in WPT
 
 If there are new files that need to be rolled in, add the intended files to
-the WPTWhiteList. Ensure these files are in the correct order by running
-"LC_ALL=C sort WPTWhiteList".
+the WPTIncludeList. Ensure these files are in the correct order by running
+"LC_ALL=C sort WPTIncludeList".
 
 When rolling in new versions of WPT support, modify WPT_HEAD in checkout.sh to
 the desired HEAD position. You can then call "./checkout.sh clone" which will
@@ -85,11 +85,11 @@ the "Local Modifications" section which lists ways in which Chromium has
 diverged from WPT. Make sure these modifications are persisted when reviewing
 the changes being made.
 
-You can examine what's pulled in and update WPTWhiteList if some new files are
+You can examine what's pulled in and update WPTIncludeList if some new files are
 required to run the updated version.
 
 Once you've cloned the repositories you can call "./checkout.sh reduce" to
-remove everything that is not listed in WPTWhiteList.
+remove everything that is not listed in WPTIncludeList.
 
 Note that calling "./checkout.sh" without arguments is equivalent of calling
 "./checkout.sh clone reduce".

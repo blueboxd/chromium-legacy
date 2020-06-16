@@ -41,6 +41,13 @@ void AddPrintManagementStrings(content::WebUIDataSource* html_source) {
        IDS_PRINT_MANAGEMENT_CLEAR_ALL_HISTORY_CONFIRMATION_TEXT},
       {"cancelButtonLabel", IDS_PRINT_MANAGEMENT_CANCEL_BUTTON_LABEL},
       {"clearButtonLabel", IDS_PRINT_MANAGEMENT_CLEAR_BUTTON_LABEL},
+      {"historyHeader", IDS_PRINT_MANAGEMENT_HISTORY_HEADER_LABEL},
+      {"historyToolTip", IDS_PRINT_MANAGEMENT_HISTORY_TOOL_TIP},
+      {"printedPageLabel", IDS_PRINT_MANAGEMENT_PRINTED_PAGES_ARIA_LABEL},
+      {"printedPagesFraction",
+       IDS_PRINT_MANAGEMENT_PRINTED_PAGES_PROGRESS_FRACTION},
+      {"completePrintJobLabel", IDS_PRINT_MANAGEMENT_COMPLETED_JOB_ARIA_LABEL},
+      {"ongoingPrintJobLabel", IDS_PRINT_MANAGEMENT_ONGOING_JOB_ARIA_LABEL},
   };
 
   for (const auto& str : kLocalizedStrings) {

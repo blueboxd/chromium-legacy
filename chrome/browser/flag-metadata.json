@@ -659,8 +659,8 @@
   },
   {
     "name": "cors-for-content-scripts",
-    "owners": [ "lukasza" ],
-    "expiry_milestone": 85
+    "owners": [ "lukasza", "creis", "rdcronin" ],
+    "expiry_milestone": 89
   },
   {
     "name": "credit-card-scanner",
@@ -1709,8 +1709,8 @@
   },
   {
     "name": "enable-immersive-fullscreen-toolbar",
-    "owners": [ "ellyjones" ],
-    "expiry_milestone": 80
+    "owners": [ "lgrey" ],
+    "expiry_milestone": 90
   },
   {
     "name": "enable-implicit-root-scroller",
@@ -2477,7 +2477,7 @@
   {
     "name": "enterprise-reporting-in-chromeos",
     "owners": [ "anqing" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 87
   },
   {
     "name": "ev-details-in-page-info",
@@ -2592,6 +2592,11 @@
     // ECT is a baked-in feature of Chrome. This flag is used for frequent
     // testing and should not be removed.
     "expiry_milestone": -1
+  },
+  {
+    "name": "force-empty-CORB-and-CORS-allowlist",
+    "owners": [ "lukasza", "creis", "rdcronin" ],
+    "expiry_milestone": 89
   },
   {
     "name": "force-show-update-menu-badge",

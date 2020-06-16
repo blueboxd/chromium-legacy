@@ -79,7 +79,12 @@ std::vector<uint8_t> AuthenticatorGetInfoResponse::EncodeToCBOR(
     std::vector<cbor::Value> algorithms_cbor;
     algorithms_cbor.reserve(response.algorithms.size());
     for (const auto& algorithm : response.algorithms) {
-      algorithms_cbor.emplace_back(cbor::Value(algorithm));
+      // Entries are PublicKeyCredentialParameters
+      // https://w3c.github.io/webauthn/#dictdef-publickeycredentialparameters
+      cbor::Value::MapValue entry;
+      entry.emplace("type", "public-key");
+      entry.emplace("alg", algorithm);
+      algorithms_cbor.emplace_back(cbor::Value(entry));
     }
     device_info_map.emplace(10, std::move(algorithms_cbor));
   }

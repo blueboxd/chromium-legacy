@@ -29,8 +29,6 @@ class CORE_EXPORT NGCustomLayoutAlgorithm
   scoped_refptr<const NGLayoutResult> FallbackLayout();
 
   const NGLayoutAlgorithmParams& params_;
-  const NGBoxStrut border_padding_;
-  const NGBoxStrut border_scrollbar_padding_;
 };
 
 }  // namespace blink

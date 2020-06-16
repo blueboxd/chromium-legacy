@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.util;
 
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

@@ -13,6 +13,7 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
+#include "base/clang_profiling_buildflags.h"
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_enumerator.h"
@@ -437,6 +438,29 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
     // Cleanup the data directory.
     CHECK(DeleteFileRecursively(nested_data_path));
 #elif defined(OS_POSIX)
+
+#if BUILDFLAG(CLANG_PROFILING)
+    // TODO(crbug.com/1094369): Remove this condition once the child process
+    // leaking bug is fixed.
+    //
+    // TODO(crbug.com/1095075): Make test launcher treat lingering child
+    // processes hard failures so that they can be detected and surfaced
+    // gracefully.
+    //
+    // When profiling is enabled, browser child processes take extra time to
+    // dump profiles, which means that lingering processes are much more likely
+    // to happen than non-profiling build. Therefore, on POSIX, in order to
+    // avoid polluting the machine state, ensure any child processes that the
+    // test might have created are cleaned up to avoid potential leaking even
+    // when tests have passed. On Windows, child processes are automatically
+    // cleaned up using JobObjects.
+    //
+    // On non-profiling build, when tests have passed, we don't clean up the
+    // lingering processes even when there are any, and the reason is that they
+    // usually indicate prod issues, letting them slip to the following test
+    // tasks and cause failures increses the chance of them being surfaced.
+    kill(-1 * process.Handle(), SIGKILL);
+#else
     if (exit_code != 0) {
       // On POSIX, in case the test does not exit cleanly, either due to a crash
       // or due to it timing out, we need to clean up any child processes that
@@ -444,6 +468,7 @@ int LaunchChildTestProcessWithOptions(const CommandLine& command_line,
       // cleaned up using JobObjects.
       KillProcessGroup(process.Handle());
     }
+#endif
 #endif
 
     GetLiveProcesses()->erase(process.Handle());

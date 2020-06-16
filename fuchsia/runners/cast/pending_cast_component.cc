@@ -163,5 +163,7 @@ void PendingCastComponent::MaybeLaunchComponent() {
   // user-after-free of |this|.
   params_.url_rewrite_rules_provider.set_error_handler(nullptr);
 
+  params_.application_context = application_context_.Unbind();
+
   delegate_->LaunchPendingComponent(this, std::move(params_));
 }

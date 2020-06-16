@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_PUBLIC_VOLUME_CONTROL_H_
 #define CHROMECAST_PUBLIC_VOLUME_CONTROL_H_
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -24,6 +25,10 @@ enum class AudioContentType {
   kNumTypes,       // Not a valid type; should always be last in the enum.
 };
 
+// In case of link issue, implement it by your own or depend on
+// c/common/volume_control_enum_printer
+std::ostream& operator<<(std::ostream& os, AudioContentType audio_type);
+
 // Different sources of volume changes. Used to change behaviour (eg feedback
 // sounds) based on the source.
 enum class VolumeChangeSource {
@@ -32,6 +37,11 @@ enum class VolumeChangeSource {
   kAutoWithFeedback,  // Automatic volume change, but we still want to have
                       // volume feedback UX.
 };
+
+// In case of link issue, implement it by your own or depend on
+// c/common/volume_control_enum_printer
+std::ostream& operator<<(std::ostream& os,
+                         VolumeChangeSource vol_change_source);
 
 // Observer for volume/mute state changes. This is useful to detect volume
 // changes that occur outside of cast_shell. Add/RemoveVolumeObserver() must not

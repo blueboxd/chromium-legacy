@@ -25,11 +25,11 @@ CodecImage::~CodecImage() {
 
 void CodecImage::Initialize(
     std::unique_ptr<CodecOutputBufferRenderer> output_buffer_renderer,
-    scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
+    bool is_texture_owner_backed,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb) {
   DCHECK(output_buffer_renderer);
   output_buffer_renderer_ = std::move(output_buffer_renderer);
-  codec_buffer_wait_coordinator_ = std::move(codec_buffer_wait_coordinator);
+  is_texture_owner_backed_ = is_texture_owner_backed;
   promotion_hint_cb_ = std::move(promotion_hint_cb);
 }
 
@@ -42,7 +42,6 @@ void CodecImage::NotifyUnused() {
   // our reference to the TextureOwner (if any).  In other words, undo anything
   // that we did in Initialize.
   ReleaseCodecBuffer();
-  codec_buffer_wait_coordinator_.reset();
   promotion_hint_cb_ = base::NullCallback();
 
   for (auto& cb : unused_cbs_)
@@ -65,7 +64,7 @@ unsigned CodecImage::GetDataType() {
 CodecImage::BindOrCopy CodecImage::ShouldBindOrCopy() {
   // If we're using an overlay, then pretend it's bound.  That way, we'll get
   // calls to ScheduleOverlayPlane.  Otherwise, CopyTexImage needs to be called.
-  return !codec_buffer_wait_coordinator_ ? BIND : COPY;
+  return is_texture_owner_backed_ ? COPY : BIND;
 }
 
 bool CodecImage::BindTexImage(unsigned target) {
@@ -82,16 +81,17 @@ bool CodecImage::CopyTexImage(unsigned target) {
   if (target != GL_TEXTURE_EXTERNAL_OES)
     return false;
 
+  if (!output_buffer_renderer_)
+    return true;
+
   GLint bound_service_id = 0;
   glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &bound_service_id);
   // The currently bound texture should be the texture owner's texture.
   if (bound_service_id !=
       static_cast<GLint>(
-          codec_buffer_wait_coordinator_->texture_owner()->GetTextureId()))
+          output_buffer_renderer_->texture_owner()->GetTextureId()))
     return false;
 
-  if (!output_buffer_renderer_)
-    return true;
 
   output_buffer_renderer_->RenderToTextureOwnerFrontBuffer(
       BindingsMode::kEnsureTexImageBound);
@@ -113,7 +113,7 @@ bool CodecImage::ScheduleOverlayPlane(
     bool enable_blend,
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   TRACE_EVENT0("media", "CodecImage::ScheduleOverlayPlane");
-  if (codec_buffer_wait_coordinator_) {
+  if (is_texture_owner_backed_) {
     DVLOG(1) << "Invalid call to ScheduleOverlayPlane; this image is "
                 "TextureOwner backed.";
     return false;
@@ -131,7 +131,7 @@ void CodecImage::NotifyOverlayPromotion(bool promotion,
   if (!promotion_hint_cb_)
     return;
 
-  if (!codec_buffer_wait_coordinator_ && promotion) {
+  if (!is_texture_owner_backed_ && promotion) {
     // When |CodecImage| is already backed by SurfaceView, and it should be used
     // as overlay.
 
@@ -174,7 +174,7 @@ void CodecImage::NotifyPromotionHint(bool promotion_hint,
                                      int display_height) {
   // TODO(crbug.com/1004859): Add back early skip due to suspecting affecting
   // video smoothness.
-  if (promotion_hint && !codec_buffer_wait_coordinator_)
+  if (promotion_hint && !is_texture_owner_backed_)
     return;
 
   NotifyOverlayPromotion(
@@ -241,11 +241,11 @@ CodecImage::GetAHardwareBuffer() {
   // as free when viz is still using us for drawing.  This can happen if the
   // renderer crashes before receiving returns.  It's hard to catch elsewhere,
   // so just handle it gracefully here.
-  if (!codec_buffer_wait_coordinator_)
+  if (!output_buffer_renderer_)
     return nullptr;
 
   RenderToTextureOwnerFrontBuffer(BindingsMode::kDontRestoreIfBound);
-  return codec_buffer_wait_coordinator_->texture_owner()->GetAHardwareBuffer();
+  return output_buffer_renderer_->texture_owner()->GetAHardwareBuffer();
 }
 
 gfx::Rect CodecImage::GetCropRect() {

@@ -55,6 +55,7 @@ enum class MakeCredentialStatus {
   // there's no UI support for collecting a PIN. This could
   // be clearer.
   kAuthenticatorMissingUserVerification,
+  kNoCommonAlgorithms,
   kStorageFull,
   kWinInvalidStateError,
   kWinNotAllowedError,

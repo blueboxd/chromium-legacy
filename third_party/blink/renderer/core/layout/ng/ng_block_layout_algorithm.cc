@@ -273,16 +273,11 @@ inline bool IsEarlyBreakpoint(const NGEarlyBreak& breakpoint,
 NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
     : NGLayoutAlgorithm(params),
-      border_padding_(params.fragment_geometry.border +
-                      params.fragment_geometry.padding),
-      border_scrollbar_padding_(border_padding_ +
-                                params.fragment_geometry.scrollbar),
       previous_result_(params.previous_result),
       is_resuming_(IsResumingLayout(params.break_token)),
       exclusion_space_(params.space.ExclusionSpace()),
       lines_until_clamp_(params.space.LinesUntilClamp()),
       early_break_(params.early_break) {
-  AdjustForFragmentation(BreakToken(), &border_scrollbar_padding_);
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
@@ -298,8 +293,8 @@ void NGBlockLayoutAlgorithm::SetBoxType(NGPhysicalFragment::NGBoxType type) {
 
 MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& input) const {
-  if (auto result = CalculateMinMaxSizesIgnoringChildren(
-          node_, border_scrollbar_padding_))
+  if (auto result =
+          CalculateMinMaxSizesIgnoringChildren(node_, BorderScrollbarPadding()))
     return *result;
 
   MinMaxSizes sizes;
@@ -439,7 +434,7 @@ MinMaxSizesResult NGBlockLayoutAlgorithm::ComputeMinMaxSizes(
   DCHECK_GE(sizes.min_size, LayoutUnit());
   DCHECK_LE(sizes.min_size, sizes.max_size) << Node().ToString();
 
-  sizes += border_scrollbar_padding_.InlineSum();
+  sizes += BorderScrollbarPadding().InlineSum();
   return {sizes, depends_on_percentage_block_size};
 }
 
@@ -548,22 +543,14 @@ NGBlockLayoutAlgorithm::RelayoutIgnoringLineClamp() {
 
 inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     NGInlineChildLayoutContext* inline_child_layout_context) {
-  const LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
-  child_available_size_ =
-      ShrinkAvailableSize(border_box_size, border_scrollbar_padding_);
-
   child_percentage_size_ = CalculateChildPercentageSize(
-      ConstraintSpace(), Node(), child_available_size_);
+      ConstraintSpace(), Node(), ChildAvailableSize());
   replaced_child_percentage_size_ = CalculateReplacedChildPercentageSize(
-      ConstraintSpace(), Node(), child_available_size_,
-      border_scrollbar_padding_, border_padding_);
+      ConstraintSpace(), Node(), ChildAvailableSize(), BorderScrollbarPadding(),
+      BorderPadding());
 
-  // All of the above calculations with border_scrollbar_padding_ shouldn't
-  // include the table cell's intrinsic padding. We can now add this.
-  if (ConstraintSpace().IsTableCell()) {
-    border_scrollbar_padding_ += ComputeIntrinsicPadding(
-        ConstraintSpace(), Style(), container_builder_.Scrollbar());
-  }
+  container_builder_.AdjustBorderScrollbarPaddingForFragmentation(BreakToken());
+  container_builder_.AdjustBorderScrollbarPaddingForTableCell();
 
   DCHECK_EQ(!!inline_child_layout_context,
             Node().IsInlineFormattingContextRoot());
@@ -591,7 +578,7 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
       !ignore_line_clamp_)
     lines_until_clamp_ = Style().LineClamp();
 
-  LayoutUnit content_edge = border_scrollbar_padding_.block_start;
+  LayoutUnit content_edge = BorderScrollbarPadding().block_start;
 
   NGPreviousInflowPosition previous_inflow_position = {
       LayoutUnit(), ConstraintSpace().MarginStrut(),
@@ -608,11 +595,10 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   // D: We're forced to stop margin collapsing by a CSS property
   //
   // In all those cases we can and must resolve the BFC block offset now.
-  if (border_scrollbar_padding_.block_start || is_resuming_ ||
+  if (content_edge || is_resuming_ ||
       ConstraintSpace().IsNewFormattingContext()) {
     bool discard_subsequent_margins =
-        previous_inflow_position.margin_strut.discard_margins &&
-        !border_scrollbar_padding_.block_start;
+        previous_inflow_position.margin_strut.discard_margins && !content_edge;
     if (!ResolveBfcBlockOffset(&previous_inflow_position)) {
       // There should be no preceding content that depends on the BFC block
       // offset of a new formatting context block, and likewise when resuming
@@ -841,9 +827,10 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
   // intrinsic block-size at the time of the clamp.
   if (intrinsic_block_size_when_clamped_) {
     DCHECK(container_builder_.BfcBlockOffset());
-    intrinsic_block_size_ = *intrinsic_block_size_when_clamped_;
+    intrinsic_block_size_ = *intrinsic_block_size_when_clamped_ +
+                            BorderScrollbarPadding().block_end;
     end_margin_strut = NGMarginStrut();
-  } else if (border_scrollbar_padding_.block_end ||
+  } else if (BorderScrollbarPadding().block_end ||
              previous_inflow_position->self_collapsing_child_had_clearance ||
              ConstraintSpace().IsNewFormattingContext()) {
     // The end margin strut of an in-flow fragment contributes to the size of
@@ -889,7 +876,7 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
           previous_inflow_position->logical_block_offset + margin_strut_sum);
     }
 
-    intrinsic_block_size_ += border_scrollbar_padding_.block_end;
+    intrinsic_block_size_ += BorderScrollbarPadding().block_end;
     end_margin_strut = NGMarginStrut();
   } else {
     // Update our intrinsic block size to be just past the block-end border edge
@@ -903,13 +890,13 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
   container_builder_.SetOverflowBlockSize(intrinsic_block_size_);
 
   intrinsic_block_size_ = ClampIntrinsicBlockSize(
-      ConstraintSpace(), Node(), border_scrollbar_padding_,
+      ConstraintSpace(), Node(), BorderScrollbarPadding(),
       intrinsic_block_size_,
       CalculateQuirkyBodyMarginBlockSum(end_margin_strut));
 
   // Recompute the block-axis size now that we know our content size.
   border_box_size.block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), border_padding_, intrinsic_block_size_,
+      ConstraintSpace(), Style(), BorderPadding(), intrinsic_block_size_,
       border_box_size.inline_size);
   container_builder_.SetBlockSize(border_box_size.block_size);
 
@@ -1060,7 +1047,7 @@ void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
     const NGPreviousInflowPosition& previous_inflow_position,
     NGBlockNode child) {
   DCHECK(child.IsOutOfFlowPositioned());
-  LogicalOffset static_offset = {border_scrollbar_padding_.inline_start,
+  LogicalOffset static_offset = {BorderScrollbarPadding().inline_start,
                                  previous_inflow_position.logical_block_offset};
 
   // We only include the margin strut in the OOF static-position if we know we
@@ -1086,12 +1073,12 @@ void NGBlockLayoutAlgorithm::HandleOutOfFlowPositioned(
 
     NGBfcOffset origin_bfc_offset = {
         ConstraintSpace().BfcOffset().line_offset +
-            border_scrollbar_padding_.LineLeft(Style().Direction()),
+            BorderScrollbarPadding().LineLeft(Style().Direction()),
         origin_bfc_block_offset};
 
     static_offset.inline_offset += CalculateOutOfFlowStaticInlineLevelOffset(
         Style(), origin_bfc_offset, exclusion_space_,
-        child_available_size_.inline_size);
+        ChildAvailableSize().inline_size);
   }
 
   container_builder_.AddOutOfFlowChildCandidate(child, static_offset);
@@ -1109,13 +1096,13 @@ void NGBlockLayoutAlgorithm::HandleFloat(
   // is used to optimistically place floats.
   NGBfcOffset origin_bfc_offset = {
       ConstraintSpace().BfcOffset().line_offset +
-          border_scrollbar_padding_.LineLeft(ConstraintSpace().Direction()),
+          BorderScrollbarPadding().LineLeft(ConstraintSpace().Direction()),
       container_builder_.BfcBlockOffset()
           ? NextBorderEdge(previous_inflow_position)
           : ConstraintSpace().ExpectedBfcBlockOffset()};
 
   NGUnpositionedFloat unpositioned_float(
-      child, child_break_token, child_available_size_, child_percentage_size_,
+      child, child_break_token, ChildAvailableSize(), child_percentage_size_,
       replaced_child_percentage_size_, origin_bfc_offset, ConstraintSpace(),
       Style());
 
@@ -1193,7 +1180,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleNewFormattingContext(
 
   LayoutUnit child_origin_line_offset =
       ConstraintSpace().BfcOffset().line_offset +
-      border_scrollbar_padding_.LineLeft(direction);
+      BorderScrollbarPadding().LineLeft(direction);
 
   // If the child has a block-start margin, and the BFC block offset is still
   // unresolved, and we have preceding adjoining floats, things get complicated
@@ -1379,7 +1366,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleNewFormattingContext(
   // The margins we store will be used by e.g. getComputedStyle().
   // When calculating these values, ignore any floats that might have
   // affected the child. This is what Edge does.
-  ResolveInlineMargins(child_style, Style(), child_available_size_.inline_size,
+  ResolveInlineMargins(child_style, Style(), ChildAvailableSize().inline_size,
                        fragment.InlineSize(), &child_data.margins);
   To<NGBlockNode>(child).StoreMargins(ConstraintSpace(), child_data.margins);
 
@@ -1411,8 +1398,8 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
   DCHECK(container_builder_.BfcBlockOffset());
 
   LayoutOpportunityVector opportunities =
-      exclusion_space_.AllLayoutOpportunities(
-          origin_offset, child_available_size_.inline_size);
+      exclusion_space_.AllLayoutOpportunities(origin_offset,
+                                              ChildAvailableSize().inline_size);
 
   // We should always have at least one opportunity.
   DCHECK_GT(opportunities.size(), 0u);
@@ -1444,14 +1431,14 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
     bool can_expand_outside_opportunity =
         opportunity.rect.start_offset.line_offset ==
             origin_offset.line_offset &&
-        opportunity.rect.InlineSize() == child_available_size_.inline_size;
+        opportunity.rect.InlineSize() == ChildAvailableSize().inline_size;
 
     if (can_expand_outside_opportunity) {
       // No floats have affected the available inline-size, adjust the
       // available inline-size by the margins.
       DCHECK_EQ(line_left_offset, origin_offset.line_offset);
       DCHECK_EQ(line_right_offset,
-                origin_offset.line_offset + child_available_size_.inline_size);
+                origin_offset.line_offset + ChildAvailableSize().inline_size);
       line_left_offset += line_left_margin;
       line_right_offset -= line_right_margin;
     } else {
@@ -1463,7 +1450,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
           origin_offset.line_offset + line_left_margin.ClampNegativeToZero());
       line_right_offset = std::min(line_right_offset,
                                    origin_offset.line_offset +
-                                       child_available_size_.inline_size -
+                                       ChildAvailableSize().inline_size -
                                        line_right_margin.ClampNegativeToZero());
     }
     LayoutUnit opportunity_size =
@@ -1480,7 +1467,7 @@ NGBlockLayoutAlgorithm::LayoutNewFormattingContext(
 
     NGConstraintSpace child_space = CreateConstraintSpaceForChild(
         child, child_data,
-        {child_available_inline_size, child_available_size_.block_size},
+        {child_available_inline_size, ChildAvailableSize().block_size},
         /* is_new_fc */ true, opportunity.rect.start_offset.block_offset);
 
     // All formatting context roots (like this child) should start with an empty
@@ -1616,7 +1603,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::HandleInflow(
       ComputeChildData(*previous_inflow_position, child, child_break_token,
                        /* is_new_fc */ false);
   NGConstraintSpace child_space = CreateConstraintSpaceForChild(
-      child, child_data, child_available_size_, /* is_new_fc */ false,
+      child, child_data, ChildAvailableSize(), /* is_new_fc */ false,
       forced_bfc_block_offset, has_clearance_past_adjoining_floats,
       previous_inflow_position->block_end_annotation_space);
   scoped_refptr<const NGLayoutResult> layout_result =
@@ -1796,7 +1783,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
        self_collapsing_child_needs_relayout) &&
       child_bfc_block_offset) {
     NGConstraintSpace new_child_space = CreateConstraintSpaceForChild(
-        child, *child_data, child_available_size_, /* is_new_fc */ false,
+        child, *child_data, ChildAvailableSize(), /* is_new_fc */ false,
         child_bfc_block_offset);
     layout_result =
         LayoutInflow(new_child_space, child_break_token, early_break_, &child,
@@ -1811,7 +1798,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
       child_bfc_block_offset = layout_result->BfcBlockOffset();
       DCHECK(child_bfc_block_offset);
       new_child_space = CreateConstraintSpaceForChild(
-          child, *child_data, child_available_size_, /* is_new_fc */ false,
+          child, *child_data, ChildAvailableSize(), /* is_new_fc */ false,
           child_bfc_block_offset);
       layout_result =
           LayoutInflow(new_child_space, child_break_token, early_break_, &child,
@@ -1893,7 +1880,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
     // required by e.g. getComputedStyle()).
     if (!child_data->margins_fully_resolved) {
       ResolveInlineMargins(child.Style(), Style(),
-                           child_available_size_.inline_size,
+                           ChildAvailableSize().inline_size,
                            fragment.InlineSize(), &child_data->margins);
       child_data->margins_fully_resolved = true;
     }
@@ -1943,8 +1930,7 @@ NGLayoutResult::EStatus NGBlockLayoutAlgorithm::FinishInflow(
       // If line-clamping occurred save the intrinsic block-size, as this
       // becomes the final intrinsic block-size.
       intrinsic_block_size_when_clamped_ =
-          previous_inflow_position->logical_block_offset +
-          border_scrollbar_padding_.block_end;
+          previous_inflow_position->logical_block_offset;
     }
   }
   return NGLayoutResult::kSuccess;
@@ -1990,7 +1976,7 @@ NGInflowChildData NGBlockLayoutAlgorithm::ComputeChildData(
 
   NGBfcOffset child_bfc_offset = {
       ConstraintSpace().BfcOffset().line_offset +
-          border_scrollbar_padding_.LineLeft(ConstraintSpace().Direction()) +
+          BorderScrollbarPadding().LineLeft(ConstraintSpace().Direction()) +
           margins.LineLeft(ConstraintSpace().Direction()),
       BfcBlockOffset() + logical_block_offset};
 
@@ -2205,11 +2191,11 @@ bool NGBlockLayoutAlgorithm::FinalizeForFragmentation() {
   }
 
   LayoutUnit fragments_total_block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), border_padding_,
+      ConstraintSpace(), Style(), BorderPadding(),
       consumed_block_size + intrinsic_block_size_,
       container_builder_.InitialBorderBoxSize().inline_size);
 
-  FinishFragmentation(Node(), ConstraintSpace(), BreakToken(), border_padding_,
+  FinishFragmentation(Node(), ConstraintSpace(), BreakToken(), BorderPadding(),
                       fragments_total_block_size, intrinsic_block_size_,
                       space_left, &container_builder_);
 
@@ -2407,7 +2393,7 @@ NGBoxStrut NGBlockLayoutAlgorithm::CalculateMargins(
     NGConstraintSpaceBuilder builder(ConstraintSpace(),
                                      child_style.GetWritingMode(),
                                      /* is_new_fc */ false);
-    builder.SetAvailableSize(child_available_size_);
+    builder.SetAvailableSize(ChildAvailableSize());
     builder.SetPercentageResolutionSize(child_percentage_size_);
     NGConstraintSpace space = builder.ToConstraintSpace();
 
@@ -2743,7 +2729,7 @@ bool NGBlockLayoutAlgorithm::PositionOrPropagateListMarker(
     }
 
     list_marker.AddToBox(space, baseline_type, content,
-                         border_scrollbar_padding_, *marker_layout_result,
+                         BorderScrollbarPadding(), *marker_layout_result,
                          *content_baseline, content_offset,
                          &container_builder_);
     return true;
@@ -2821,7 +2807,7 @@ void NGBlockLayoutAlgorithm::LayoutRubyText(
 
   NGConstraintSpaceBuilder builder(
       ConstraintSpace(), ruby_text_child->Style().GetWritingMode(), true);
-  builder.SetAvailableSize(child_available_size_);
+  builder.SetAvailableSize(ChildAvailableSize());
 
   scoped_refptr<const NGLayoutResult> result =
       To<NGBlockNode>(*ruby_text_child)

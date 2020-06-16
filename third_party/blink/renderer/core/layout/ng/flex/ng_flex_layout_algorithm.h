@@ -76,13 +76,10 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
       LayoutUnit block_offset,
       base::Optional<LayoutUnit>* fallback_baseline);
 
-  const NGBoxStrut border_padding_;
-  const NGBoxStrut border_scrollbar_padding_;
   const bool is_column_;
   const bool is_horizontal_flow_;
   const bool is_cross_size_definite_;
   LogicalSize border_box_size_;
-  LogicalSize content_box_size_;
   LogicalSize child_percentage_size_;
   base::Optional<FlexLayoutAlgorithm> algorithm_;
 };

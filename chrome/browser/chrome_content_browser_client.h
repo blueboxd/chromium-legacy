@@ -429,7 +429,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   content::ReceiverPresentationServiceDelegate*
   GetReceiverPresentationServiceDelegate(
       content::WebContents* web_contents) override;
-  void RecordURLMetric(const std::string& metric, const GURL& url) override;
   std::string GetMetricSuffixForURL(const GURL& url) override;
   std::vector<std::unique_ptr<content::NavigationThrottle>>
   CreateThrottlesForNavigation(content::NavigationHandle* handle) override;
@@ -439,7 +438,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const std::string& key_system,
       base::flat_set<media::VideoCodec>* video_codecs,
       base::flat_set<media::EncryptionScheme>* encryption_schemes) override;
-  ::rappor::RapporService* GetRapporService() override;
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   void CreateMediaRemoter(
       content::RenderFrameHost* render_frame_host,
@@ -680,6 +678,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context) override;
   bool ShouldInheritCrossOriginEmbedderPolicyImplicitly(
       const GURL& url) override;
+  ukm::UkmService* GetUkmService() override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

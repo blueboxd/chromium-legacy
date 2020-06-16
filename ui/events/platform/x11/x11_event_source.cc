@@ -26,6 +26,7 @@
 #include "ui/events/x/events_x_utils.h"
 #include "ui/events/x/x11_event_translation.h"
 #include "ui/events/x/x11_window_event_manager.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
@@ -69,24 +70,24 @@ bool InitializeXkb(XDisplay* display) {
 
 Time ExtractTimeFromXEvent(const XEvent& xevent) {
   switch (xevent.type) {
-    case x11::KeyPressEvent::opcode:
-    case x11::KeyReleaseEvent::opcode:
+    case x11::KeyEvent::Press:
+    case x11::KeyEvent::Release:
       return xevent.xkey.time;
-    case x11::ButtonPressEvent::opcode:
-    case x11::ButtonReleaseEvent::opcode:
+    case x11::ButtonEvent::Press:
+    case x11::ButtonEvent::Release:
       return xevent.xbutton.time;
-    case MotionNotify:
+    case x11::MotionNotifyEvent::opcode:
       return xevent.xmotion.time;
-    case EnterNotify:
-    case LeaveNotify:
+    case x11::CrossingEvent::EnterNotify:
+    case x11::CrossingEvent::LeaveNotify:
       return xevent.xcrossing.time;
-    case PropertyNotify:
+    case x11::PropertyNotifyEvent::opcode:
       return xevent.xproperty.time;
-    case SelectionClear:
+    case x11::SelectionClearEvent::opcode:
       return xevent.xselectionclear.time;
-    case SelectionRequest:
+    case x11::SelectionRequestEvent::opcode:
       return xevent.xselectionrequest.time;
-    case SelectionNotify:
+    case x11::SelectionNotifyEvent::opcode:
       return xevent.xselection.time;
     case x11::GeGenericEvent::opcode:
       if (DeviceDataManagerX11::GetInstance()->IsXIDeviceEvent(xevent))
@@ -198,10 +199,10 @@ Time X11EventSource::GetCurrentServerTime() {
   connection->ReadResponses();
 
   Time time = x11::CurrentTime;
-  auto pred = [&](const x11::Connection::Event& event) {
-    if (event.xlib_event.type == x11::PropertyNotifyEvent::opcode &&
-        event.xlib_event.xproperty.window == dummy_window_) {
-      time = event.xlib_event.xproperty.time;
+  auto pred = [&](const x11::Event& event) {
+    if (event.xlib_event().type == x11::PropertyNotifyEvent::opcode &&
+        event.xlib_event().xproperty.window == dummy_window_) {
+      time = event.xlib_event().xproperty.time;
       return true;
     }
     return false;
@@ -237,17 +238,17 @@ X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
                        : event->type;
 
   bool is_valid_event = false;
-  static_assert(XI_ButtonPress == x11::ButtonPressEvent::opcode, "");
-  static_assert(XI_ButtonRelease == x11::ButtonReleaseEvent::opcode, "");
-  static_assert(XI_Motion == MotionNotify, "");
-  static_assert(XI_Enter == EnterNotify, "");
-  static_assert(XI_Leave == LeaveNotify, "");
+  static_assert(XI_ButtonPress == x11::ButtonEvent::Press, "");
+  static_assert(XI_ButtonRelease == x11::ButtonEvent::Release, "");
+  static_assert(XI_Motion == x11::MotionNotifyEvent::opcode, "");
+  static_assert(XI_Enter == x11::CrossingEvent::EnterNotify, "");
+  static_assert(XI_Leave == x11::CrossingEvent::LeaveNotify, "");
   switch (event_type) {
-    case x11::ButtonPressEvent::opcode:
-    case x11::ButtonReleaseEvent::opcode:
-    case MotionNotify:
-    case EnterNotify:
-    case LeaveNotify:
+    case x11::ButtonEvent::Press:
+    case x11::ButtonEvent::Release:
+    case x11::MotionNotifyEvent::opcode:
+    case x11::CrossingEvent::EnterNotify:
+    case x11::CrossingEvent::LeaveNotify:
       is_valid_event =
           is_xi2_event
               ? ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(event)
@@ -406,7 +407,7 @@ void X11EventSource::PostDispatchEvent(XEvent* xevent) {
     hotplug_event_handler_->OnHotplugEvent();
   }
 
-  if (xevent->type == EnterNotify &&
+  if (xevent->type == x11::CrossingEvent::EnterNotify &&
       xevent->xcrossing.detail != NotifyInferior &&
       xevent->xcrossing.mode != NotifyUngrab) {
     // Clear stored scroll data
@@ -433,11 +434,17 @@ bool X11EventSource::ShouldContinueStream() const {
   return continue_stream_;
 }
 
-void X11EventSource::DispatchXEvent(XEvent* event) {
-  base::AutoReset<XEvent*> dispatching_event(&dispatching_event_, event);
+void X11EventSource::DispatchXEvent(x11::Event* event) {
+  // NB: The event should be reset to nullptr when this function
+  // returns, not to its initial value, otherwise nested message loops
+  // will incorrectly think that the current event being dispatched is
+  // an old event.  This means base::AutoReset should not be used.
+  dispatching_event_ = &event->xlib_event();
 
-  ProcessXEvent(event);
-  PostDispatchEvent(event);
+  ProcessXEvent(&event->xlib_event());
+  PostDispatchEvent(&event->xlib_event());
+
+  dispatching_event_ = nullptr;
 }
 
 // ScopedXEventDispatcher implementation

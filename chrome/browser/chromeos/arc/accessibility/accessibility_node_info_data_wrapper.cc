@@ -35,11 +35,9 @@ using AXStringProperty = mojom::AccessibilityStringProperty;
 AccessibilityNodeInfoDataWrapper::AccessibilityNodeInfoDataWrapper(
     AXTreeSourceArc* tree_source,
     AXNodeInfoData* node,
-    bool is_clickable_leaf,
     bool is_important)
     : AccessibilityInfoDataWrapper(tree_source),
       node_ptr_(node),
-      is_clickable_leaf_(is_clickable_leaf),
       is_important_(is_important) {}
 
 AccessibilityNodeInfoDataWrapper::~AccessibilityNodeInfoDataWrapper() = default;
@@ -74,7 +72,40 @@ bool AccessibilityNodeInfoDataWrapper::IsVirtualNode() const {
   return node_ptr_->is_virtual_node;
 }
 
+bool AccessibilityNodeInfoDataWrapper::IsIgnored() const {
+  if (!tree_source_->IsScreenReaderMode())
+    return !is_important_;
+
+  // Most conditions are precomputed in AXTreeSourceArc::BuildImportanceTable().
+  // TODO(hirokisato): migrate importance computation here.
+  if (!is_important_)
+    return true;
+
+  if (IsAccessibilityFocusableContainer())
+    return false;
+
+  // On screen reader mode, text might be used by focusable ancestor.
+  // Make such nodes ignored. See ComputeNameFromContents().
+  bool has_text = HasNonEmptyStringProperty(
+                      node_ptr_, AXStringProperty::CONTENT_DESCRIPTION) ||
+                  HasNonEmptyStringProperty(node_ptr_, AXStringProperty::TEXT);
+  if (!has_text)
+    return false;
+
+  AccessibilityInfoDataWrapper* parent = tree_source_->GetParent(
+      const_cast<AccessibilityNodeInfoDataWrapper*>(this));
+  while (parent && parent->IsNode()) {
+    if (parent->IsAccessibilityFocusableContainer())
+      return true;
+    parent = tree_source_->GetParent(parent);
+  }
+  return false;
+}
+
 bool AccessibilityNodeInfoDataWrapper::CanBeAccessibilityFocused() const {
+  // TODO(hirokisato): Remove this method and only use
+  // IsAccessibilityFocusableContainer().
+
   // An important node with a non-generic role and:
   // - actionable nodes
   // - top level scrollables with a name
@@ -85,13 +116,23 @@ bool AccessibilityNodeInfoDataWrapper::CanBeAccessibilityFocused() const {
                           data.role != ax::mojom::Role::kGroup &&
                           data.role != ax::mojom::Role::kList &&
                           data.role != ax::mojom::Role::kGrid;
-  bool actionable = is_clickable_leaf_ ||
+  bool actionable = GetProperty(AXBooleanProperty::CLICKABLE) ||
                     GetProperty(AXBooleanProperty::FOCUSABLE) ||
                     GetProperty(AXBooleanProperty::CHECKABLE);
   bool top_level_scrollable = HasProperty(AXStringProperty::TEXT) &&
                               GetProperty(AXBooleanProperty::SCROLLABLE);
-  return is_important_ && non_generic_role &&
+  return !IsIgnored() && non_generic_role &&
          (actionable || top_level_scrollable || IsInterestingLeaf());
+}
+
+bool AccessibilityNodeInfoDataWrapper::IsAccessibilityFocusableContainer()
+    const {
+  if (!is_important_)
+    return false;
+
+  return GetProperty(AXBooleanProperty::SCREEN_READER_FOCUSABLE) ||
+         GetProperty(AXBooleanProperty::CLICKABLE) ||
+         GetProperty(AXBooleanProperty::FOCUSABLE) || IsToplevelScrollItem();
 }
 
 void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
@@ -244,6 +285,13 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXRole(
 
 #undef MAP_ROLE
 
+  if (node_ptr_->collection_info) {
+    // Fallback for some RecyclerViews which doesn't correctly populate
+    // row/col counts.
+    out_data->role = ax::mojom::Role::kList;
+    return;
+  }
+
   std::string text;
   GetProperty(AXStringProperty::TEXT, &text);
   std::vector<AccessibilityInfoDataWrapper*> children;
@@ -264,11 +312,16 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXState(
   // BrowserAccessibilityAndroid. They do not completely match the above two
   // sources.
   MAP_STATE(AXBooleanProperty::EDITABLE, ax::mojom::State::kEditable);
-  MAP_STATE(AXBooleanProperty::FOCUSABLE, ax::mojom::State::kFocusable);
   MAP_STATE(AXBooleanProperty::MULTI_LINE, ax::mojom::State::kMultiline);
   MAP_STATE(AXBooleanProperty::PASSWORD, ax::mojom::State::kProtected);
 
 #undef MAP_STATE
+
+  const bool focusable = tree_source_->IsScreenReaderMode()
+                             ? IsAccessibilityFocusableContainer()
+                             : GetProperty(AXBooleanProperty::FOCUSABLE);
+  if (focusable)
+    out_data->AddState(ax::mojom::State::kFocusable);
 
   if (GetProperty(AXBooleanProperty::CHECKABLE)) {
     const bool is_checked = GetProperty(AXBooleanProperty::CHECKED);
@@ -282,7 +335,7 @@ void AccessibilityNodeInfoDataWrapper::PopulateAXState(
   if (!GetProperty(AXBooleanProperty::VISIBLE_TO_USER))
     out_data->AddState(ax::mojom::State::kInvisible);
 
-  if (!is_important_)
+  if (IsIgnored())
     out_data->AddState(ax::mojom::State::kIgnored);
 }
 
@@ -360,10 +413,11 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
     // from Talkback.
     if (!names.empty())
       out_data->SetName(base::JoinString(names, " "));
-  } else if (is_clickable_leaf_) {
+  } else if (tree_source_->IsScreenReaderMode() &&
+             IsAccessibilityFocusableContainer()) {
     // Compute the name by joining all nodes with names.
     std::vector<std::string> names;
-    ComputeNameFromContents(this, &names);
+    ComputeNameFromContents(&names);
     if (!names.empty())
       out_data->SetName(base::JoinString(names, " "));
   }
@@ -422,7 +476,7 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   if (GetProperty(AXBooleanProperty::SCROLLABLE)) {
     out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kScrollable, true);
   }
-  if (is_clickable_leaf_) {
+  if (GetProperty(AXBooleanProperty::CLICKABLE)) {
     out_data->AddBoolAttribute(ax::mojom::BoolAttribute::kClickable, true);
   }
   if (GetProperty(AXBooleanProperty::SELECTED)) {
@@ -586,14 +640,27 @@ bool AccessibilityNodeInfoDataWrapper::HasCoveringSpan(
 }
 
 void AccessibilityNodeInfoDataWrapper::ComputeNameFromContents(
-    const AccessibilityNodeInfoDataWrapper* data,
     std::vector<std::string>* names) const {
+  std::vector<AccessibilityInfoDataWrapper*> children;
+  GetChildren(&children);
+  for (AccessibilityInfoDataWrapper* child : children) {
+    static_cast<AccessibilityNodeInfoDataWrapper*>(child)
+        ->ComputeNameFromContentsInternal(names);
+  }
+}
+
+void AccessibilityNodeInfoDataWrapper::ComputeNameFromContentsInternal(
+    std::vector<std::string>* names) const {
+  if (IsAccessibilityFocusableContainer())
+    return;
+
   // Take the name from either content description or text. It's not clear
   // whether labelled by should be taken into account here.
   std::string name;
-  if (!data->GetProperty(AXStringProperty::CONTENT_DESCRIPTION, &name) ||
-      name.empty())
-    data->GetProperty(AXStringProperty::TEXT, &name);
+  if (!GetProperty(AXStringProperty::CONTENT_DESCRIPTION, &name) ||
+      name.empty()) {
+    GetProperty(AXStringProperty::TEXT, &name);
+  }
 
   // Stop when we get a name for this subtree.
   if (!name.empty()) {
@@ -603,11 +670,36 @@ void AccessibilityNodeInfoDataWrapper::ComputeNameFromContents(
 
   // Otherwise, continue looking for a name in this subtree.
   std::vector<AccessibilityInfoDataWrapper*> children;
-  data->GetChildren(&children);
+  GetChildren(&children);
   for (AccessibilityInfoDataWrapper* child : children) {
-    ComputeNameFromContents(
-        static_cast<AccessibilityNodeInfoDataWrapper*>(child), names);
+    static_cast<AccessibilityNodeInfoDataWrapper*>(child)
+        ->ComputeNameFromContentsInternal(names);
   }
+}
+
+bool AccessibilityNodeInfoDataWrapper::IsScrollableContainer() const {
+  if (GetProperty(AXBooleanProperty::SCROLLABLE))
+    return true;
+
+  ui::AXNodeData data;
+  PopulateAXRole(&data);
+  return data.role == ax::mojom::Role::kList ||
+         data.role == ax::mojom::Role::kGrid ||
+         data.role == ax::mojom::Role::kScrollView;
+}
+
+bool AccessibilityNodeInfoDataWrapper::IsToplevelScrollItem() const {
+  if (!IsVisibleToUser())
+    return false;
+
+  AccessibilityInfoDataWrapper* parent =
+      tree_source_->GetFirstImportantAncestor(
+          const_cast<AccessibilityNodeInfoDataWrapper*>(this));
+  if (!parent || !parent->IsNode())
+    return false;
+
+  return static_cast<AccessibilityNodeInfoDataWrapper*>(parent)
+      ->IsScrollableContainer();
 }
 
 bool AccessibilityNodeInfoDataWrapper::IsInterestingLeaf() const {

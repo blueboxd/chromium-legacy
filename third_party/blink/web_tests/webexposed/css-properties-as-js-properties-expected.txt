@@ -235,7 +235,6 @@ markerEnd
 markerMid
 markerStart
 mask
-maskSourceType
 maskType
 mathStyle
 mathSuperscriptShiftStyle

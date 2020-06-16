@@ -12,7 +12,8 @@ import static org.chromium.base.GarbageCollectionTestUtils.canBeGarbageCollected
 
 import android.graphics.Bitmap;
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

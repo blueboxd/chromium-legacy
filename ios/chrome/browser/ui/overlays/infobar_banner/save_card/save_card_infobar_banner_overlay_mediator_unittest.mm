@@ -16,7 +16,9 @@
 #include "components/infobars/core/infobar_feature.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
+#include "ios/chrome/browser/overlays/public/infobar_banner/infobar_banner_overlay_responses.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_card_infobar_banner_overlay_request_config.h"
+#include "ios/chrome/browser/overlays/test/fake_overlay_request_callback_installer.h"
 #import "ios/chrome/browser/ui/infobars/banners/test/fake_infobar_banner_consumer.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "testing/gtest_mac.h"
@@ -31,19 +33,24 @@ using save_card_infobar_overlays::SaveCardBannerRequestConfig;
 // Test fixture for SaveCardInfobarBannerOverlayMediator.
 class SaveCardInfobarBannerOverlayMediatorTest : public PlatformTest {
  public:
-  SaveCardInfobarBannerOverlayMediatorTest() {
+  SaveCardInfobarBannerOverlayMediatorTest()
+      : callback_installer_(
+            &callback_receiver_,
+            {InfobarBannerShowModalResponse::ResponseSupport(),
+             InfobarBannerMainActionResponse::ResponseSupport()}) {
     feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
                                    {kInfobarUIRebootOnlyiOS13});
   }
 
- private:
+ protected:
   base::test::ScopedFeatureList feature_list_;
+  MockOverlayRequestCallbackReceiver callback_receiver_;
+  FakeOverlayRequestCallbackInstaller callback_installer_;
 };
 
 // Tests that a SaveCardInfobarBannerOverlayMediator correctly sets up its
 // consumer.
 TEST_F(SaveCardInfobarBannerOverlayMediatorTest, SetUpConsumer) {
-  // Create an InfoBarIOS with a ConfirmInfoBarDelegate.
   autofill::CreditCard credit_card(base::GenerateGUID(),
                                    "https://www.example.com/");
   std::unique_ptr<PrefService> prefs = autofill::test::PrefServiceForTesting();
@@ -82,4 +89,81 @@ TEST_F(SaveCardInfobarBannerOverlayMediatorTest, SetUpConsumer) {
               consumer.buttonText);
   EXPECT_NSEQ(base::SysUTF16ToNSString(delegate->card_label()),
               consumer.subtitleText);
+}
+
+// Tests that when upload is turned on, tapping on the banner action button
+// presents the modal.
+TEST_F(SaveCardInfobarBannerOverlayMediatorTest, PresentModalWhenUploadOn) {
+  // Create an InfoBarIOS with a ConfirmInfoBarDelegate.
+  autofill::CreditCard credit_card(base::GenerateGUID(),
+                                   "https://www.example.com/");
+  std::unique_ptr<PrefService> prefs = autofill::test::PrefServiceForTesting();
+  std::unique_ptr<autofill::AutofillSaveCardInfoBarDelegateMobile>
+      passed_delegate = std::make_unique<
+          autofill::AutofillSaveCardInfoBarDelegateMobile>(
+          /*upload=*/true, autofill::AutofillClient::SaveCreditCardOptions(),
+          credit_card, autofill::LegalMessageLines(),
+          base::BindOnce(^(
+              autofill::AutofillClient::SaveCardOfferUserDecision user_decision,
+              const autofill::AutofillClient::UserProvidedCardDetails&
+                  user_provided_card_details){
+          }),
+          autofill::AutofillClient::LocalSaveCardPromptCallback(), prefs.get());
+
+  InfoBarIOS infobar(InfobarType::kInfobarTypeSaveCard,
+                     std::move(passed_delegate));
+
+  // Package the infobar into an OverlayRequest, then create a mediator that
+  // uses this request in order to set up a fake consumer.
+  std::unique_ptr<OverlayRequest> request =
+      OverlayRequest::CreateWithConfig<SaveCardBannerRequestConfig>(&infobar);
+  callback_installer_.InstallCallbacks(request.get());
+  SaveCardInfobarBannerOverlayMediator* mediator =
+      [[SaveCardInfobarBannerOverlayMediator alloc]
+          initWithRequest:request.get()];
+
+  EXPECT_CALL(
+      callback_receiver_,
+      DispatchCallback(request.get(),
+                       InfobarBannerShowModalResponse::ResponseSupport()));
+  [mediator bannerInfobarButtonWasPressed:nil];
+}
+
+// Tests that when upload is turned off, tapping on the banner action button
+// does not present the modal.
+TEST_F(SaveCardInfobarBannerOverlayMediatorTest, PresentModalWhenUploadOff) {
+  // Create an InfoBarIOS with a ConfirmInfoBarDelegate.
+  autofill::CreditCard credit_card(base::GenerateGUID(),
+                                   "https://www.example.com/");
+  std::unique_ptr<PrefService> prefs = autofill::test::PrefServiceForTesting();
+  std::unique_ptr<autofill::AutofillSaveCardInfoBarDelegateMobile>
+      passed_delegate =
+          std::make_unique<autofill::AutofillSaveCardInfoBarDelegateMobile>(
+              /*upload=*/false,
+              autofill::AutofillClient::SaveCreditCardOptions(), credit_card,
+              autofill::LegalMessageLines(),
+              autofill::AutofillClient::UploadSaveCardPromptCallback(),
+              base::BindOnce(
+                  ^(autofill::AutofillClient::SaveCardOfferUserDecision
+                        user_decision){
+                  }),
+              prefs.get());
+
+  InfoBarIOS infobar(InfobarType::kInfobarTypeSaveCard,
+                     std::move(passed_delegate));
+
+  // Package the infobar into an OverlayRequest, then create a mediator that
+  // uses this request in order to set up a fake consumer.
+  std::unique_ptr<OverlayRequest> request =
+      OverlayRequest::CreateWithConfig<SaveCardBannerRequestConfig>(&infobar);
+  callback_installer_.InstallCallbacks(request.get());
+  SaveCardInfobarBannerOverlayMediator* mediator =
+      [[SaveCardInfobarBannerOverlayMediator alloc]
+          initWithRequest:request.get()];
+
+  EXPECT_CALL(
+      callback_receiver_,
+      DispatchCallback(request.get(),
+                       InfobarBannerMainActionResponse::ResponseSupport()));
+  [mediator bannerInfobarButtonWasPressed:nil];
 }

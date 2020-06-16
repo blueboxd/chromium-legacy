@@ -13,7 +13,7 @@ package web_app;
 // Local data: Information about web app icon.
 message WebAppIconInfoProto {
   // The size of the square app icon, in raw pixels.
-  required int32 size_in_px = 1;
+  optional int32 size_in_px = 1;
   // The URL of the app icon.
   optional string url = 2;
 }

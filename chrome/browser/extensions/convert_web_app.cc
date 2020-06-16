@@ -32,6 +32,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
+#include "chrome/common/extensions/manifest_handlers/linked_app_icons.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/common/url_constants.h"
 #include "crypto/sha2.h"
@@ -290,7 +291,9 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
     std::unique_ptr<base::DictionaryValue> linked_icon(
         new base::DictionaryValue());
     linked_icon->SetString(keys::kLinkedAppIconURL, icon_info.url.spec());
-    linked_icon->SetInteger(keys::kLinkedAppIconSize, icon_info.square_size_px);
+    linked_icon->SetInteger(
+        keys::kLinkedAppIconSize,
+        icon_info.square_size_px.value_or(LinkedAppIcons::kAnySize));
     linked_icons->Append(std::move(linked_icon));
   }
   auto icons = std::make_unique<base::DictionaryValue>();

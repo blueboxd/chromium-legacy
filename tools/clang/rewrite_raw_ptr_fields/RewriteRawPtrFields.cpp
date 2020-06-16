@@ -8,6 +8,20 @@
 // becomes:
 //     CheckedPtr<Pointee> field_
 //
+// Note that the tool always emits two kinds of output:
+// 1. Fields to exclude:
+//    - FilteredExprWriter
+// 2. Edit/replacement directives:
+//    - FieldDeclRewriter
+//    - AffectedExprRewriter
+// The rewriter is expected to be used twice, in two passes:
+// 1. Output from the 1st pass should be used to generate fields-to-ignore.txt
+//    (or to augment the manually created exclusion list file)
+// 2. The 2nd pass should use fields-to-ignore.txt from the first pass as input
+//    for the --exclude-fields cmdline parameter.  The output from the 2nd pass
+//    can be used to perform the actual rewrite via extract_edits.py and
+//    apply_edits.py.
+//
 // For more details, see the doc here:
 // https://docs.google.com/document/d/1chTvr3fSofQNV_PDPEHRyUgcJCQBgTDOOBriW9gIm9M
 
@@ -33,6 +47,7 @@
 #include "clang/Tooling/CommonOptionsParser.h"
 #include "clang/Tooling/Refactoring.h"
 #include "clang/Tooling/Tooling.h"
+#include "llvm/ADT/StringExtras.h"
 #include "llvm/Support/CommandLine.h"
 #include "llvm/Support/ErrorOr.h"
 #include "llvm/Support/FormatVariadic.h"
@@ -133,7 +148,8 @@ class OutputHelper : public clang::tooling::SourceFileCallbacks {
         source_manager, clang::CharSourceRange::getCharRange(replacement_range),
         replacement_text);
     llvm::StringRef file_path = replacement.getFilePath();
-    assert(!file_path.empty());
+    if (file_path.empty())
+      return;
 
     std::replace(replacement_text.begin(), replacement_text.end(), '\n', '\0');
     llvm::outs() << "r:::" << file_path << ":::" << replacement.getOffset()
@@ -668,21 +684,19 @@ int main(int argc, const char* argv[]) {
   //   struct MyStrict {
   //     int* int_ptr;
   //     int i;
-  //     char* char_ptr;
   //     int (*func_ptr)();
   //     int (MyStruct::* member_func_ptr)(char);
   //     int (*ptr_to_array_of_ints)[123]
   //     StructOrClassWithDeletedOperatorNew* stack_or_gc_ptr;
-  //     struct { int i }* ptr_to_non_free_standing_record_or_union_or_class;
   //   };
   // matches |int*|, but not the other types.
   auto record_with_deleted_allocation_operator_type_matcher =
       recordType(hasDeclaration(cxxRecordDecl(
           hasMethod(allOf(hasOverloadedOperatorName("new"), isDeleted())))));
   auto supported_pointer_types_matcher =
-      pointerType(unless(pointee(hasUnqualifiedDesugaredType(anyOf(
-          record_with_deleted_allocation_operator_type_matcher, functionType(),
-          memberPointerType(), anyCharType(), arrayType())))));
+      pointerType(unless(pointee(hasUnqualifiedDesugaredType(
+          anyOf(record_with_deleted_allocation_operator_type_matcher,
+                functionType(), memberPointerType(), arrayType())))));
 
   // Implicit field declarations =========
   // Matches field declarations that do not explicitly appear in the source
@@ -715,10 +729,8 @@ int main(int argc, const char* argv[]) {
   auto field_decl_matcher =
       fieldDecl(
           allOf(hasType(supported_pointer_types_matcher),
-                unless(anyOf(overlapsOtherDeclsWithinRecordDecl(),
-                             isInThirdPartyLocation(), isInGeneratedLocation(),
-                             isExpansionInSystemHeader(), isInMacroLocation(),
-                             isInExternCContext(),
+                unless(anyOf(isInThirdPartyLocation(), isInGeneratedLocation(),
+                             isExpansionInSystemHeader(), isInExternCContext(),
                              isListedInFilterFile(fields_to_exclude),
                              implicit_field_decl_matcher))))
           .bind("affectedFieldDecl");
@@ -755,6 +767,8 @@ int main(int argc, const char* argv[]) {
   //     reinterpret_cast<...>(s.y)
   //   }
   // matches the |s.y| expr if it matches the |affected_expr_matcher| above.
+  //
+  // See also testcases in tests/affected-expr-original.cc
   auto affected_expr_that_needs_fixing_matcher = expr(allOf(
       affected_expr_matcher,
       hasParent(expr(anyOf(callExpr(callee(functionDecl(isVariadic()))),
@@ -769,6 +783,8 @@ int main(int argc, const char* argv[]) {
   //     cond ? s.y : ...
   //   }
   // binds the |s.y| expr if it matches the |affected_expr_matcher| above.
+  //
+  // See also testcases in tests/affected-expr-original.cc
   auto affected_ternary_operator_arg_matcher =
       conditionalOperator(eachOf(hasTrueExpression(affected_expr_matcher),
                                  hasFalseExpression(affected_expr_matcher)));
@@ -784,14 +800,20 @@ int main(int argc, const char* argv[]) {
   //     templatedFunc(s.y);
   //   }
   // binds the |s.y| expr if it matches the |affected_expr_matcher| above.
+  //
+  // See also testcases in tests/affected-expr-original.cc
   auto templated_function_arg_matcher = forEachArgumentWithParam(
       affected_expr_matcher, parmVarDecl(hasType(qualType(allOf(
                                  findAll(qualType(substTemplateTypeParmType())),
                                  unless(referenceType()))))));
   match_finder.addMatcher(callExpr(templated_function_arg_matcher),
                           &affected_expr_rewriter);
-  match_finder.addMatcher(cxxConstructExpr(templated_function_arg_matcher),
-                          &affected_expr_rewriter);
+  // TODO(lukasza): It is unclear why |traverse| below is needed.  Maybe it can
+  // be removed if https://bugs.llvm.org/show_bug.cgi?id=46287 is fixed.
+  match_finder.addMatcher(
+      traverse(clang::ast_type_traits::TK_AsIs,
+               cxxConstructExpr(templated_function_arg_matcher)),
+      &affected_expr_rewriter);
 
   // |auto| type declarations =========
   // Given
@@ -800,6 +822,8 @@ int main(int argc, const char* argv[]) {
   //     auto* p = s.y;
   //   }
   // binds the |s.y| expr if it matches the |affected_expr_matcher| above.
+  //
+  // See also testcases in tests/affected-expr-original.cc
   auto auto_var_decl_matcher = declStmt(forEach(
       varDecl(allOf(hasType(pointerType(pointee(autoType()))),
                     hasInitializer(anyOf(
@@ -812,6 +836,8 @@ int main(int argc, const char* argv[]) {
   //   ... &s.y ...
   // matches the |s.y| expr if it matches the |affected_member_expr_matcher|
   // above.
+  //
+  // See also the testcases in tests/gen-in-out-arg-test.cc.
   auto affected_addr_of_expr_matcher = expr(allOf(
       affected_expr_matcher, hasParent(unaryOperator(hasOperatorName("&")))));
   FilteredExprWriter filtered_addr_of_expr_writer(&output_helper, "addr-of");
@@ -829,6 +855,8 @@ int main(int argc, const char* argv[]) {
   // matches the |s.ptr_field| expr if it matches the
   // |affected_member_expr_matcher| and is passed as a function argument that
   // has |FooBar*&| type.
+  //
+  // See also the testcases in tests/gen-in-out-arg-test.cc.
   auto affected_in_out_ref_arg_matcher = callExpr(forEachArgumentWithParam(
       affected_expr_matcher.bind("expr"),
       parmVarDecl(hasType(referenceType(pointee(pointerType()))))));
@@ -836,6 +864,31 @@ int main(int argc, const char* argv[]) {
                                                     "in-out-param-ref");
   match_finder.addMatcher(affected_in_out_ref_arg_matcher,
                           &filtered_in_out_ref_arg_writer);
+
+  // See the doc comment for the overlapsOtherDeclsWithinRecordDecl matcher
+  // and the testcases in tests/gen-overlaps-test.cc.
+  auto overlapping_field_decl_matcher = fieldDecl(
+      allOf(field_decl_matcher, overlapsOtherDeclsWithinRecordDecl()));
+  FilteredExprWriter overlapping_field_decl_writer(&output_helper,
+                                                   "overlapping");
+  match_finder.addMatcher(overlapping_field_decl_matcher,
+                          &overlapping_field_decl_writer);
+
+  // See the doc comment for the isInMacroLocation matcher
+  // and the testcases in tests/gen-macro-test.cc.
+  auto macro_field_decl_matcher =
+      fieldDecl(allOf(field_decl_matcher, isInMacroLocation()));
+  FilteredExprWriter macro_field_decl_writer(&output_helper, "macro");
+  match_finder.addMatcher(macro_field_decl_matcher, &macro_field_decl_writer);
+
+  // See the doc comment for the anyCharType matcher
+  // and the testcases in tests/gen-char-test.cc.
+  auto char_ptr_field_decl_matcher = fieldDecl(allOf(
+      field_decl_matcher, hasType(pointerType(pointee(
+                              hasUnqualifiedDesugaredType(anyCharType()))))));
+  FilteredExprWriter char_ptr_field_decl_writer(&output_helper, "char");
+  match_finder.addMatcher(char_ptr_field_decl_matcher,
+                          &char_ptr_field_decl_writer);
 
   // Prepare and run the tool.
   std::unique_ptr<clang::tooling::FrontendActionFactory> factory =

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
@@ -110,7 +109,9 @@ PhishingDOMFeatureExtractor::PhishingDOMFeatureExtractor()
 PhishingDOMFeatureExtractor::~PhishingDOMFeatureExtractor() {
   // The RenderView should have called CancelPendingExtraction() before
   // we are destroyed.
-  CheckNoPendingExtraction();
+  DCHECK(done_callback_.is_null());
+  DCHECK(!cur_frame_data_.get());
+  DCHECK(cur_document_.IsNull());
 }
 
 void PhishingDOMFeatureExtractor::ExtractFeatures(blink::WebDocument document,
@@ -118,7 +119,9 @@ void PhishingDOMFeatureExtractor::ExtractFeatures(blink::WebDocument document,
                                                   DoneCallback done_callback) {
   // The RenderView should have called CancelPendingExtraction() before
   // starting a new extraction, so DCHECK this.
-  CheckNoPendingExtraction();
+  DCHECK(done_callback_.is_null());
+  DCHECK(!cur_frame_data_.get());
+  DCHECK(cur_document_.IsNull());
   // However, in an opt build, we will go ahead and clean up the pending
   // extraction so that we can start in a known state.
   CancelPendingExtraction();
@@ -192,7 +195,6 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
         base::TimeTicks now = clock_->NowTicks();
         if (now - page_feature_state_->start_time >=
             base::TimeDelta::FromMilliseconds(kMaxTotalTimeMs)) {
-          DLOG(ERROR) << "Feature extraction took too long, giving up";
           // We expect this to happen infrequently, so record when it does.
           UMA_HISTOGRAM_COUNTS_1M("SBClientPhishing.DOMFeatureTimeout", 1);
           RunCallback(false);
@@ -232,20 +234,16 @@ void PhishingDOMFeatureExtractor::ExtractFeaturesWithTimeout() {
 void PhishingDOMFeatureExtractor::HandleLink(
     const blink::WebElement& element) {
   // Count the number of times we link to a different host.
-  if (!element.HasAttribute("href")) {
-    DVLOG(1) << "Skipping anchor tag with no href";
+  if (!element.HasAttribute("href"))
     return;
-  }
 
   // Retrieve the link and resolve the link in case it's relative.
   blink::WebURL full_url = CompleteURL(element, element.GetAttribute("href"));
 
   std::string domain;
   bool is_external = IsExternalDomain(full_url, &domain);
-  if (domain.empty()) {
-    DVLOG(1) << "Could not extract domain from link: " << full_url;
+  if (domain.empty())
     return;
-  }
 
   if (is_external) {
     ++page_feature_state_->external_links;
@@ -278,10 +276,8 @@ void PhishingDOMFeatureExtractor::HandleForm(
 
   std::string domain;
   bool is_external = IsExternalDomain(full_url, &domain);
-  if (domain.empty()) {
-    DVLOG(1) << "Could not extract domain from form action: " << full_url;
+  if (domain.empty())
     return;
-  }
 
   if (is_external) {
     ++page_feature_state_->action_other_domain;
@@ -291,22 +287,16 @@ void PhishingDOMFeatureExtractor::HandleForm(
 
 void PhishingDOMFeatureExtractor::HandleImage(
     const blink::WebElement& element) {
-  if (!element.HasAttribute("src")) {
-    DVLOG(1) << "Skipping img tag with no src";
-  }
-
   // Record whether the image points to a different domain.
   blink::WebURL full_url = CompleteURL(element, element.GetAttribute("src"));
   std::string domain;
   bool is_external = IsExternalDomain(full_url, &domain);
-  if (domain.empty()) {
-    DVLOG(1) << "Could not extract domain from image src: " << full_url;
+  if (domain.empty())
     return;
-  }
 
-  if (is_external) {
+  if (is_external)
     ++page_feature_state_->img_other_domain;
-  }
+
   ++page_feature_state_->total_imgs;
 }
 
@@ -337,17 +327,6 @@ void PhishingDOMFeatureExtractor::HandleInput(
 void PhishingDOMFeatureExtractor::HandleScript(
     const blink::WebElement& element) {
   ++page_feature_state_->num_script_tags;
-}
-
-void PhishingDOMFeatureExtractor::CheckNoPendingExtraction() {
-  DCHECK(done_callback_.is_null());
-  DCHECK(!cur_frame_data_.get());
-  DCHECK(cur_document_.IsNull());
-  if (!done_callback_.is_null() || cur_frame_data_.get() ||
-      !cur_document_.IsNull()) {
-    LOG(ERROR) << "Extraction in progress, missing call to "
-               << "CancelPendingExtraction";
-  }
 }
 
 void PhishingDOMFeatureExtractor::RunCallback(bool success) {

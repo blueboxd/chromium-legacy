@@ -32,6 +32,7 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
   void CanChangeAdbSideloading(
       Profile* profile,
       CanChangeAdbSideloadingCallback callback) override;
+  bool IsPortForwardingAllowed(Profile* profile) override;
 
   void SetAll(bool flag);
   void ClearAll();
@@ -59,6 +60,10 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
     can_change_adb_sideloading_ = can_change;
   }
 
+  void set_port_forwarding_allowed(bool allowed) {
+    port_forwarding_allowed_ = allowed;
+  }
+
  private:
   // Original global static when this instance is created. It is captured when
   // FakeCrostiniFeatures is created and replaced at destruction.
@@ -71,6 +76,7 @@ class FakeCrostiniFeatures : public CrostiniFeatures {
   base::Optional<bool> root_access_allowed_;
   base::Optional<bool> container_upgrade_ui_allowed_;
   base::Optional<bool> can_change_adb_sideloading_;
+  base::Optional<bool> port_forwarding_allowed_;
 };
 
 }  // namespace crostini

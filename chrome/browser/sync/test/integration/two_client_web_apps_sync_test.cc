@@ -264,8 +264,7 @@ IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, AppFieldsChangeDoesNotSync) {
 
 // Tests that we don't crash when syncing an icon info with no size.
 // Context: https://crbug.com/1058283
-// Disabled because it takes too long to complete on the trybots.
-IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, DISABLED_SyncFaviconOnly) {
+IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, SyncFaviconOnly) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -289,13 +288,18 @@ IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, DISABLED_SyncFaviconOnly) {
   }
   EXPECT_EQ(GetRegistrar(sourceProfile).GetAppShortName(app_id),
             "Favicon only");
-  EXPECT_EQ(GetRegistrar(sourceProfile).GetAppIconInfos(app_id).size(), 1u);
+  std::vector<WebApplicationIconInfo> icon_infos =
+      GetRegistrar(sourceProfile).GetAppIconInfos(app_id);
+  ASSERT_EQ(icon_infos.size(), 1u);
+  EXPECT_FALSE(icon_infos[0].square_size_px.has_value());
 
   // Wait for app to sync across.
   AppId synced_app_id = destInstallObserver.AwaitNextInstall();
   EXPECT_EQ(synced_app_id, app_id);
   EXPECT_EQ(GetRegistrar(destProfile).GetAppShortName(app_id), "Favicon only");
-  EXPECT_EQ(GetRegistrar(destProfile).GetAppIconInfos(app_id).size(), 1u);
+  icon_infos = GetRegistrar(destProfile).GetAppIconInfos(app_id);
+  ASSERT_EQ(icon_infos.size(), 1u);
+  EXPECT_FALSE(icon_infos[0].square_size_px.has_value());
 }
 
 // Tests that we don't use the manifest start_url if it differs from what came

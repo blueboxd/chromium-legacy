@@ -29,12 +29,6 @@ struct MyStruct {
   // clang-format off
   CheckedPtr<SomeClass> raw_ptr_field2;
   // clang-format on
-
-  // No rewrite expected.  (The syntax below should be rare + it is difficult to
-  // generate correct, non-overlapping replacements that cover both fields.)
-  SomeClass *overlapping_fields_1a, *overlapping_fields_1b;
-  int overlapping_fields_2a, *overlapping_fields_2b;
-  int *overlapping_fields_3a, overlapping_fields_3b;
 };
 
 template <typename T>

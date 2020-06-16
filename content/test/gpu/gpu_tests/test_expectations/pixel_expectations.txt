@@ -191,20 +191,6 @@ crbug.com/1068301 [ win no-skia-renderer ] Pixel_DirectComposition_Video_MP4_Rou
 # Produces blank images on Intel HD 630 w/ Mesa 19.0.2
 crbug.com/976861 [ linux intel-0x5912 no-use-skia-dawn ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
 
-# Skip swap chain tests on non-Windows
-[ android ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
-[ android ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
-[ android ] Pixel_CanvasLowLatencyWebGLSwapChainAlphaFalse [ Skip ]
-[ chromeos ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
-[ chromeos ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
-[ chromeos ] Pixel_CanvasLowLatencyWebGLSwapChainAlphaFalse [ Skip ]
-[ linux ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
-[ linux ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
-[ linux ] Pixel_CanvasLowLatencyWebGLSwapChainAlphaFalse [ Skip ]
-[ mac ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
-[ mac ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
-[ mac ] Pixel_CanvasLowLatencyWebGLSwapChainAlphaFalse [ Skip ]
-
 # Producing incorrect image on Win10 Intel HD 630 and UHD 630 w/ 26.20.100.6912
 # or later drivers.
 crbug.com/997313 [ win intel-0x5912 no-use-skia-dawn ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
@@ -261,10 +247,11 @@ crbug.com/1021566 [ linux use-skia-dawn ] Pixel_WebGLReadPixelsTabSwitch [ Skip 
 crbug.com/1021566 [ linux use-skia-dawn ] Pixel_WebGL_PremultipliedAlpha_False [ Skip ]
 crbug.com/1021566 [ win use-skia-dawn ] Pixel_Canvas2DTabSwitch [ Skip ]
 crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatency2D [ Skip ]
-crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
 crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatencyWebGL [ Skip ]
-crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
-crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatencyWebGLSwapChainAlphaFalse [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatency2DDrawImage [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatencyWebGLDrawImage [ Skip ]
+crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatency2DImageData [ Skip ]
 crbug.com/1021566 [ win use-skia-dawn ] Pixel_OffscreenCanvas2DResizeOnWorker [ Skip ]
 crbug.com/1021566 [ win use-skia-dawn ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Skip ]
 crbug.com/1021566 [ win use-skia-dawn ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Skip ]

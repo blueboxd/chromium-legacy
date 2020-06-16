@@ -2442,7 +2442,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ApplicationShortcut.NewIncognitoSearchPressed">
-  <owner>pschaffner@chromium.com</owner>
+  <owner>pschaffner@chromium.org</owner>
   <description>
     Force pressed on a springboard shortcut and tapped Incognito Search in
     Chrome for iOS.
@@ -2450,7 +2450,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ApplicationShortcut.NewSearchPressed">
-  <owner>pschaffner@chromium.com</owner>
+  <owner>pschaffner@chromium.org</owner>
   <description>
     Force pressed on a springboard shortcut and tapped New Search in Chrome for
     iOS.
@@ -5134,14 +5134,14 @@ should be able to be added at any place in this file.
 
 <action name="ContextualSuggestions">
   <obsolete>This feature was deprecated in M74</obsolete>
-  <owner>twellington@chromium.com</owner>
-  <owner>wylieb@chromium.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>wylieb@chromium.org</owner>
   <description>Android: User interacts with the feature directly.</description>
 </action>
 
 <action name="ContextualSuggestions.ContextMenu">
   <obsolete>This feature was deprecated in M74</obsolete>
-  <owner>twellington@chromium.com</owner>
+  <owner>twellington@chromium.org</owner>
   <description>
     Android: User used the context menu on a suggested item on the contextual
     suggestions surface.
@@ -8632,7 +8632,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="IOSBookmarkManagerCloseWithSwipe">
-  <owner>eugenebut@chromium.com</owner>
+  <owner>eugenebut@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
   <description>
     Recorded when a user closes bookmark manager by swiping down. iOS-only.
@@ -8775,7 +8775,7 @@ should be able to be added at any place in this file.
 
 <action name="IOSPasswordsSettingsCloseWithSwipe">
   <owner>djean@chromium.org</owner>
-  <owner>javierrobles@chromium.com</owner>
+  <owner>javierrobles@chromium.org</owner>
   <description>
     Reported when Passwords Settings UI was dismissed using swipe down gesture.
     iOS only.
@@ -13853,7 +13853,7 @@ should be able to be added at any place in this file.
 
 <action name="MobilePasswordsSettingsClose">
   <owner>djean@chromium.org</owner>
-  <owner>javierrobles@chromium.com</owner>
+  <owner>javierrobles@chromium.org</owner>
   <description>
     Reported when Passwords Settings UI was dismissed. iOS only.
   </description>
@@ -23176,7 +23176,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Suggestions.ExpandableHeader.Collapsed">
-  <owner>twellington@chromium.com</owner>
+  <owner>twellington@chromium.org</owner>
   <owner>chrome-android-app@chromium.org</owner>
   <description>
     Android: The suggestions section is collapsed by user click on the section
@@ -23185,7 +23185,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Suggestions.ExpandableHeader.Expanded">
-  <owner>twellington@chromium.com</owner>
+  <owner>twellington@chromium.org</owner>
   <owner>chrome-android-app@chromium.org</owner>
   <description>
     Android: The suggestions section is expanded by user click on the section

@@ -120,6 +120,7 @@ class CORE_EXPORT ScrollbarTheme {
   }
 
   virtual bool SupportsDragSnapBack() const { return false; }
+  virtual bool JumpOnTrackClick() const { return false; }
 
   // The position of the thumb relative to the track.
   int ThumbPosition(const Scrollbar& scrollbar) {

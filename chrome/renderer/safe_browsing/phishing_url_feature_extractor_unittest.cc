@@ -6,6 +6,8 @@
 
 #include <string>
 #include <vector>
+#include "base/format_macros.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,10 +27,24 @@ class PhishingUrlFeatureExtractorTest : public ::testing::Test {
     PhishingUrlFeatureExtractor::SplitStringIntoLongAlphanumTokens(full,
                                                                    tokens);
   }
+
+  void FillFeatureMap(size_t count, FeatureMap* features) {
+    for (size_t i = 0; i < count; ++i) {
+      EXPECT_TRUE(
+          features->AddBooleanFeature(base::StringPrintf("Feature%" PRIuS, i)));
+    }
+  }
 };
 
 TEST_F(PhishingUrlFeatureExtractorTest, ExtractFeatures) {
   std::string url = "http://123.0.0.1/mydocuments/a.file.html";
+  FeatureMap features;
+
+  // If feature map is already full, features cannot be extracted.
+  FillFeatureMap(FeatureMap::kMaxFeatureMapSize, &features);
+  ASSERT_FALSE(extractor_.ExtractFeatures(GURL(url), &features));
+  features.Clear();
+
   FeatureMap expected_features;
   expected_features.AddBooleanFeature(features::kUrlHostIsIpAddress);
   expected_features.AddBooleanFeature(features::kUrlPathToken +
@@ -38,9 +54,13 @@ TEST_F(PhishingUrlFeatureExtractorTest, ExtractFeatures) {
   expected_features.AddBooleanFeature(features::kUrlPathToken +
                                       std::string("html"));
 
-  FeatureMap features;
   ASSERT_TRUE(extractor_.ExtractFeatures(GURL(url), &features));
   ExpectFeatureMapsAreEqual(features, expected_features);
+  // If feature map is already full, features cannot be extracted.
+  features.Clear();
+  FillFeatureMap(FeatureMap::kMaxFeatureMapSize - 1, &features);
+  ASSERT_FALSE(extractor_.ExtractFeatures(GURL(url), &features));
+  features.Clear();
 
   url = "http://www.www.cnn.co.uk/sports/sports/index.html?shouldnotappear";
   expected_features.Clear();
@@ -61,6 +81,10 @@ TEST_F(PhishingUrlFeatureExtractorTest, ExtractFeatures) {
   features.Clear();
   ASSERT_TRUE(extractor_.ExtractFeatures(GURL(url), &features));
   ExpectFeatureMapsAreEqual(features, expected_features);
+  features.Clear();
+  // If feature map is already full, features cannot be extracted.
+  FillFeatureMap(FeatureMap::kMaxFeatureMapSize - 5, &features);
+  ASSERT_FALSE(extractor_.ExtractFeatures(GURL(url), &features));
 
   url = "http://justadomain.com/";
   expected_features.Clear();
@@ -72,6 +96,10 @@ TEST_F(PhishingUrlFeatureExtractorTest, ExtractFeatures) {
   features.Clear();
   ASSERT_TRUE(extractor_.ExtractFeatures(GURL(url), &features));
   ExpectFeatureMapsAreEqual(features, expected_features);
+  // If feature map is already full, features cannot be extracted.
+  features.Clear();
+  FillFeatureMap(FeatureMap::kMaxFeatureMapSize - 1, &features);
+  ASSERT_FALSE(extractor_.ExtractFeatures(GURL(url), &features));
 
   url = "http://witharef.com/#abc";
   expected_features.Clear();
@@ -96,6 +124,10 @@ TEST_F(PhishingUrlFeatureExtractorTest, ExtractFeatures) {
   features.Clear();
   ASSERT_TRUE(extractor_.ExtractFeatures(GURL(url), &features));
   ExpectFeatureMapsAreEqual(features, expected_features);
+  // If feature map is already full, features cannot be extracted.
+  features.Clear();
+  FillFeatureMap(FeatureMap::kMaxFeatureMapSize - 2, &features);
+  ASSERT_FALSE(extractor_.ExtractFeatures(GURL(url), &features));
 
   url = "http://unrecognized.tld/";
   EXPECT_FALSE(extractor_.ExtractFeatures(GURL(url), &features));

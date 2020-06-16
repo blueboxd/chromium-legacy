@@ -45,6 +45,10 @@ gfx::Rect FakeScrollbar::ForwardButtonRect() const {
   return forward_button_rect_;
 }
 
+bool FakeScrollbar::JumpOnTrackClick() const {
+  return false;
+}
+
 bool FakeScrollbar::SupportsDragSnapBack() const {
   return false;
 }

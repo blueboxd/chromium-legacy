@@ -341,15 +341,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // |ruby_text_child|. This is called only if IsRubyText() returns true.
   void LayoutRubyText(NGLayoutInputNode* ruby_text_child);
 
-  // Border + padding sum, resolved from the node's computed style.
-  const NGBoxStrut border_padding_;
-
-  // Border + scrollbar + padding sum for the fragment to be generated (most
-  // importantly, for non-first fragments, leading block border + scrollbar +
-  // padding is zero).
-  NGBoxStrut border_scrollbar_padding_;
-
-  LogicalSize child_available_size_;
   LogicalSize child_percentage_size_;
   LogicalSize replaced_child_percentage_size_;
 

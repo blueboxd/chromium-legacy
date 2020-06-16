@@ -88,6 +88,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
                        std::vector<uint8_t> template_id,
                        BioEnrollmentCallback) override;
 
+  base::Optional<base::span<const int32_t>> GetAlgorithms() override;
   void Reset(ResetCallback callback) override;
   void Cancel() override;
   std::string GetId() const override;

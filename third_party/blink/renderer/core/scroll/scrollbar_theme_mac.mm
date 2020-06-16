@@ -486,6 +486,10 @@ float ScrollbarThemeMac::Opacity(const Scrollbar& scrollbar) const {
   return [scrollbar_painter knobAlpha];
 }
 
+bool ScrollbarThemeMac::JumpOnTrackClick() const {
+  return s_jump_on_track_click;
+}
+
 // static
 void ScrollbarThemeMac::UpdateScrollbarsWithNSDefaults(
     base::Optional<float> initial_button_delay,

@@ -147,7 +147,7 @@ void TouchFactory::UpdateDeviceList(XDisplay* display) {
 }
 
 bool TouchFactory::ShouldProcessXI2Event(XEvent* xev) {
-  DCHECK_EQ(GenericEvent, xev->type);
+  DCHECK_EQ(x11::GeGenericEvent::opcode, xev->type);
   XIEvent* event = static_cast<XIEvent*>(xev->xcookie.data);
   XIDeviceEvent* xiev = reinterpret_cast<XIDeviceEvent*>(event);
 

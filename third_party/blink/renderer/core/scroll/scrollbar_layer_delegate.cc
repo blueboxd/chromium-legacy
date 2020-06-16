@@ -88,6 +88,10 @@ bool ScrollbarLayerDelegate::SupportsDragSnapBack() const {
   return scrollbar_->GetTheme().SupportsDragSnapBack();
 }
 
+bool ScrollbarLayerDelegate::JumpOnTrackClick() const {
+  return scrollbar_->GetTheme().JumpOnTrackClick();
+}
+
 gfx::Rect ScrollbarLayerDelegate::BackButtonRect() const {
   IntRect back_button_rect = scrollbar_->GetTheme().BackButtonRect(*scrollbar_);
   if (!back_button_rect.IsEmpty())

@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
 
@@ -25,6 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -100,6 +102,9 @@ public class SiteSettingsTest {
     }
 
     private void initializeUpdateWaiter(final boolean expectGranted) {
+        if (mPermissionUpdateWaiter != null) {
+            mPermissionRule.getActivity().getActivityTab().removeObserver(mPermissionUpdateWaiter);
+        }
         Tab tab = mPermissionRule.getActivity().getActivityTab();
 
         mPermissionUpdateWaiter = new PermissionUpdateWaiter(
@@ -1306,5 +1311,71 @@ public class SiteSettingsTest {
             Assert.assertNull(blockedGroup.getPreference(1).getSummary());
         });
         settingsActivity.finish();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
+    public void testProtectedContentDefaultOption() throws Exception {
+        initializeUpdateWaiter(true /* expectGranted */);
+        mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
+                "/content/test/data/android/eme_permissions.html", "requestEME()", 0, true, true);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
+    public void testProtectedContentAskAllow() throws Exception {
+        setGlobalTriStateToggleForCategory(
+                SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.ASK);
+
+        initializeUpdateWaiter(true /* expectGranted */);
+        mPermissionRule.runAllowTest(mPermissionUpdateWaiter,
+                "/content/test/data/android/eme_permissions.html", "requestEME()", 0, true, true);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
+    public void testProtectedContentAskBlocked() throws Exception {
+        setGlobalTriStateToggleForCategory(
+                SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.ASK);
+
+        initializeUpdateWaiter(false /* expectGranted */);
+        mPermissionRule.runDenyTest(mPermissionUpdateWaiter,
+                "/content/test/data/android/eme_permissions.html", "requestEME()", 0, true, true);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
+    public void testProtectedContentBlocked() throws Exception {
+        setGlobalTriStateToggleForCategory(
+                SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.BLOCK);
+
+        initializeUpdateWaiter(false /* expectGranted */);
+        mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
+                "/content/test/data/android/eme_permissions.html", "requestEME()", 0, true, true);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Preferences"})
+    @DisableIf.Build(message = "EME not working before M", sdk_is_less_than = Build.VERSION_CODES.M)
+    public void testProtectedContentAllowThenBlock() throws Exception {
+        initializeUpdateWaiter(true /* expectGranted */);
+        mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
+                "/content/test/data/android/eme_permissions.html", "requestEME()", 0, true, true);
+
+        setGlobalTriStateToggleForCategory(
+                SiteSettingsCategory.Type.PROTECTED_MEDIA, ContentSettingValues.BLOCK);
+
+        initializeUpdateWaiter(false /* expectGranted */);
+        mPermissionRule.runNoPromptTest(mPermissionUpdateWaiter,
+                "/content/test/data/android/eme_permissions.html", "requestEME()", 0, true, true);
     }
 }

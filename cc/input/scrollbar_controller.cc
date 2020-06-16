@@ -52,7 +52,7 @@ ScrollbarLayerImplBase* ScrollbarController::ScrollbarLayer() const {
 // GSU.
 InputHandlerPointerResult ScrollbarController::HandlePointerDown(
     const gfx::PointF position_in_widget,
-    bool shift_modifier) {
+    bool jump_key_modifier) {
   LayerImpl* layer_impl = GetLayerHitByPoint(position_in_widget);
 
   // If a non-custom scrollbar layer was not found, we return early as there is
@@ -89,11 +89,14 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
   layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
   const ScrollbarPart scrollbar_part =
       GetScrollbarPartFromPointerDown(position_in_widget);
-  scroll_result.scroll_offset =
-      GetScrollOffsetForScrollbarPart(scrollbar_part, shift_modifier);
+  const bool perform_jump_click_on_track =
+      scrollbar->JumpOnTrackClick() != jump_key_modifier;
+  scroll_result.scroll_offset = GetScrollOffsetForScrollbarPart(
+      scrollbar_part, perform_jump_click_on_track);
   last_known_pointer_position_ = position_in_widget;
   scrollbar_scroll_is_active_ = true;
-  scroll_result.scroll_units = Granularity(scrollbar_part, shift_modifier);
+  scroll_result.scroll_units =
+      Granularity(scrollbar_part, perform_jump_click_on_track);
   if (scrollbar_part == ScrollbarPart::THUMB) {
     drag_state_ = DragState();
     drag_state_->drag_origin = position_in_widget;
@@ -189,10 +192,10 @@ bool ScrollbarController::SnapToDragOrigin(
 
 ui::ScrollGranularity ScrollbarController::Granularity(
     const ScrollbarPart scrollbar_part,
-    const bool shift_modifier) const {
+    const bool jump_key_modifier) const {
   const bool shift_click_on_scrollbar_track =
-      shift_modifier && (scrollbar_part == ScrollbarPart::FORWARD_TRACK ||
-                         scrollbar_part == ScrollbarPart::BACK_TRACK);
+      jump_key_modifier && (scrollbar_part == ScrollbarPart::FORWARD_TRACK ||
+                            scrollbar_part == ScrollbarPart::BACK_TRACK);
   if (shift_click_on_scrollbar_track || scrollbar_part == ScrollbarPart::THUMB)
     return ui::ScrollGranularity::kScrollByPrecisePixel;
 
@@ -588,7 +591,7 @@ int ScrollbarController::GetViewportLength() const {
 
 int ScrollbarController::GetScrollDeltaForScrollbarPart(
     const ScrollbarPart scrollbar_part,
-    const bool shift_modifier) const {
+    const bool jump_key_modifier) const {
   int scroll_delta = 0;
 
   switch (scrollbar_part) {
@@ -602,7 +605,7 @@ int ScrollbarController::GetScrollDeltaForScrollbarPart(
       break;
     case ScrollbarPart::BACK_TRACK:
     case ScrollbarPart::FORWARD_TRACK: {
-      if (shift_modifier) {
+      if (jump_key_modifier) {
         scroll_delta = GetScrollDeltaForAbsoluteJump();
         break;
       }
@@ -688,10 +691,10 @@ gfx::Rect ScrollbarController::GetRectForScrollbarPart(
 // orientation.
 gfx::ScrollOffset ScrollbarController::GetScrollOffsetForScrollbarPart(
     const ScrollbarPart scrollbar_part,
-    const bool shift_modifier) const {
+    const bool jump_key_modifier) const {
   const ScrollbarLayerImplBase* scrollbar = ScrollbarLayer();
   float scroll_delta =
-      GetScrollDeltaForScrollbarPart(scrollbar_part, shift_modifier);
+      GetScrollDeltaForScrollbarPart(scrollbar_part, jump_key_modifier);
 
   // See CreateScrollStateForGesture for more information on how these values
   // will be interpreted.

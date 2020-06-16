@@ -75,7 +75,7 @@ inline bool IsAligned(uintptr_t val, size_t alignment) {
 
 #undef SUPPORTS_BUILTIN_IS_ALIGNED
 
-inline bool IsAligned(void* val, size_t alignment) {
+inline bool IsAligned(const void* val, size_t alignment) {
   return IsAligned(reinterpret_cast<uintptr_t>(val), alignment);
 }
 

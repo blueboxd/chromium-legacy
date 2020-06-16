@@ -84,9 +84,6 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache> {
 
   virtual const Element* RootAXEditableElement(const Node*) = 0;
 
-  // Called when aspects of the style (e.g. color, alignment) change.
-  virtual void StyleChanged(LayoutObject*) = 0;
-
   // Called by a node when text or a text equivalent (e.g. alt) attribute is
   // changed.
   virtual void TextChanged(LayoutObject*) = 0;

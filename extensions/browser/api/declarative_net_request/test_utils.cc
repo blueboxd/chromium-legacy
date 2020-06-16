@@ -61,8 +61,13 @@ bool operator==(const RequestAction::HeaderInfo& lhs,
 
 std::ostream& operator<<(std::ostream& output,
                          const RequestAction::HeaderInfo& header_info) {
-  return output << dnr_api::ToString(header_info.operation) << ":"
-                << header_info.header;
+  output << "\nRequestAction::HeaderInfo\n";
+  output << "\t|operation| " << dnr_api::ToString(header_info.operation)
+         << "\n";
+  output << "\t|header| " << header_info.header << "\n";
+  output << "\t|value| "
+         << (header_info.value ? *header_info.value : std::string("nullopt"));
+  return output;
 }
 
 // Note: This is not declared in the anonymous namespace so that we can use it
@@ -83,8 +88,8 @@ bool operator==(const RequestAction& lhs, const RequestAction& rhs) {
                               std::vector<RequestAction::HeaderInfo> b) {
     auto header_info_comparator = [](const RequestAction::HeaderInfo& lhs,
                                      const RequestAction::HeaderInfo& rhs) {
-      return std::make_pair(lhs.header, lhs.operation) >
-             std::make_pair(rhs.header, rhs.operation);
+      return std::make_tuple(lhs.header, lhs.operation, lhs.value) >
+             std::make_tuple(rhs.header, rhs.operation, rhs.value);
     };
 
     std::sort(a.begin(), a.end(), header_info_comparator);
@@ -138,9 +143,9 @@ std::ostream& operator<<(std::ostream& output, const RequestAction& action) {
   output << "|index_priority| " << action.index_priority << "\n";
   output << "|ruleset_id| " << action.ruleset_id << "\n";
   output << "|extension_id| " << action.extension_id << "\n";
-  output << "|request_headers_to_modify| "
+  output << "|request_headers_to_modify|"
          << ::testing::PrintToString(action.request_headers_to_modify) << "\n";
-  output << "|response_headers_to_modify| "
+  output << "|response_headers_to_modify|"
          << ::testing::PrintToString(action.response_headers_to_modify);
   return output;
 }

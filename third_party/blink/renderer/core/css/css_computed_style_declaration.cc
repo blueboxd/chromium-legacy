@@ -138,7 +138,6 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kMarginLeft, CSSPropertyID::kMarginRight,
     CSSPropertyID::kMarginTop, CSSPropertyID::kMarkerEnd,
     CSSPropertyID::kMarkerMid, CSSPropertyID::kMarkerStart,
-    CSSPropertyID::kMask, CSSPropertyID::kMaskSourceType,
     CSSPropertyID::kMaskType, CSSPropertyID::kMathStyle,
     CSSPropertyID::kMathSuperscriptShiftStyle, CSSPropertyID::kMaxBlockSize,
     CSSPropertyID::kMaxHeight, CSSPropertyID::kMaxInlineSize,

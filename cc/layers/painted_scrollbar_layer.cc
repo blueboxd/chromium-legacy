@@ -40,6 +40,7 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(scoped_refptr<Scrollbar> scrollbar)
       internal_contents_scale_(1.f),
       painted_opacity_(scrollbar_->Opacity()),
       has_thumb_(scrollbar_->HasThumb()),
+      jump_on_track_click_(scrollbar_->JumpOnTrackClick()),
       supports_drag_snap_back_(scrollbar_->SupportsDragSnapBack()),
       is_overlay_(scrollbar_->IsOverlay()) {}
 
@@ -58,6 +59,7 @@ void PaintedScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->set_internal_contents_scale_and_bounds(
       internal_contents_scale_, internal_content_bounds_);
 
+  scrollbar_layer->SetJumpOnTrackClick(jump_on_track_click_);
   scrollbar_layer->SetSupportsDragSnapBack(supports_drag_snap_back_);
   scrollbar_layer->SetBackButtonRect(back_button_rect_);
   scrollbar_layer->SetForwardButtonRect(forward_button_rect_);
@@ -112,6 +114,7 @@ void PaintedScrollbarLayer::UpdateThumbAndTrackGeometry() {
   DCHECK_EQ(is_overlay_, scrollbar_->IsOverlay());
   DCHECK_EQ(orientation(), scrollbar_->Orientation());
 
+  UpdateProperty(scrollbar_->JumpOnTrackClick(), &jump_on_track_click_);
   UpdateProperty(scrollbar_->TrackRect(), &track_rect_);
   UpdateProperty(scrollbar_->BackButtonRect(), &back_button_rect_);
   UpdateProperty(scrollbar_->ForwardButtonRect(), &forward_button_rect_);

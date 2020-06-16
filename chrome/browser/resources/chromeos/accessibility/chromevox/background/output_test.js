@@ -1093,29 +1093,6 @@ TEST_F('ChromeVoxOutputE2ETest', 'TextFieldObeysRoleDescription', function() {
       });
 });
 
-TEST_F('ChromeVoxOutputE2ETest', 'ARCListItem', function() {
-  this.runWithLoadedTree(
-      `
-    <div role="listitem">
-      <p>storage</p>
-      <p>128 GB</p>
-    </div>
-  `,
-      function(root) {
-        const listitem = root.find({role: RoleType.LIST_ITEM});
-        Object.defineProperty(listitem, 'clickable', {get: () => true});
-        assertTrue(AutomationPredicate.leaf(listitem));
-        assertFalse(AutomationPredicate.container(listitem));
-
-        const o = new Output().withRichSpeechAndBraille(
-            cursors.Range.fromNode(listitem));
-        assertEquals(
-            'storage 128 GB|List item|Press Search+Space to activate',
-            o.speechOutputForTest.string_);
-        assertEquals('storage 128 GB lstitm', o.brailleOutputForTest.string_);
-      });
-});
-
 TEST_F('ChromeVoxOutputE2ETest', 'NestedList', function() {
   this.runWithLoadedTree(
       `

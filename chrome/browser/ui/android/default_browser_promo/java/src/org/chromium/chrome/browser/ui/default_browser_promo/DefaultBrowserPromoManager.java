@@ -14,11 +14,15 @@ import android.provider.Settings;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+
 /**
  * Manage all types of default browser promo dialogs and listen to the activity state change to
  * trigger dialogs.
  */
 public class DefaultBrowserPromoManager {
+    private static final String SKIP_PRIMER_PARAM = "skip_primer";
+
     private final Activity mActivity;
     private DefaultBrowserPromoDialog mDialog;
 
@@ -55,7 +59,7 @@ public class DefaultBrowserPromoManager {
 
     @SuppressLint({"WrongConstant", "NewApi"})
     private void promoByRoleManager() {
-        showDialog(DefaultBrowserPromoDialog.DialogStyle.ROLE_MANAGER, () -> {
+        Runnable onOK = () -> {
             RoleManager roleManager =
                     (RoleManager) mActivity.getSystemService(Context.ROLE_SERVICE);
             boolean isRoleAvailable = roleManager.isRoleAvailable(RoleManager.ROLE_BROWSER);
@@ -67,7 +71,14 @@ public class DefaultBrowserPromoManager {
 
             Intent intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_BROWSER);
             mActivity.startActivityForResult(intent, 0);
-        });
+        };
+        boolean shouldSkipPrimer = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO, SKIP_PRIMER_PARAM, false);
+        if (shouldSkipPrimer) {
+            onOK.run();
+        } else {
+            showDialog(DefaultBrowserPromoDialog.DialogStyle.ROLE_MANAGER, onOK);
+        }
     }
 
     private void promoBySystemSettings() {

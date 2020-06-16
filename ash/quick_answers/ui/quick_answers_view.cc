@@ -15,6 +15,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/button/image_button.h"
@@ -29,6 +30,7 @@
 #include "ui/views/painter.h"
 #include "ui/views/widget/tooltip_manager.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -69,6 +71,9 @@ constexpr char kNetworkErrorStr[] = "Cannot connect to internet.";
 constexpr int kDogfoodButtonMarginDip = 4;
 constexpr int kDogfoodButtonSizeDip = 20;
 constexpr SkColor kDogfoodButtonColor = gfx::kGoogleGrey500;
+
+// Accessibility.
+constexpr char kA11yNameTemplate[] = "Quick Answer: %s";
 
 // Maximum height QuickAnswersView can expand to.
 int MaximumViewHeight() {
@@ -190,6 +195,11 @@ QuickAnswersView::QuickAnswersView(const gfx::Rect& anchor_view_bounds,
   InitLayout();
   InitWidget();
 
+  // Accessibility.
+  GetViewAccessibility().OverrideRole(ax::mojom::Role::kMenuItem);
+  GetViewAccessibility().OverrideName(
+      base::StringPrintf(kA11yNameTemplate, title_.c_str()));
+
   // Focus.
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   SetInstallFocusRingOnFocus(false);
@@ -220,6 +230,8 @@ void QuickAnswersView::OnFocus() {
       nullptr);
   if (wants_focus != this)
     wants_focus->RequestFocus();
+  else
+    NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
 }
 
 void QuickAnswersView::OnBlur() {
@@ -427,8 +439,9 @@ void QuickAnswersView::UpdateBounds() {
     y = anchor_view_bounds_.bottom() + kMarginDip;
   }
 
-  GetWidget()->SetBounds(
-      gfx::Rect(anchor_view_bounds_.x(), y, desired_width, height));
+  gfx::Rect bounds = {{anchor_view_bounds_.x(), y}, {desired_width, height}};
+  wm::ConvertRectFromScreen(GetWidget()->GetNativeWindow()->parent(), &bounds);
+  GetWidget()->SetBounds(bounds);
 }
 
 void QuickAnswersView::UpdateQuickAnswerResult(
@@ -444,6 +457,16 @@ void QuickAnswersView::UpdateQuickAnswerResult(
     first_answer_view =
         AddHorizontalUiElements(quick_answer.first_answer_row, content_view_);
   }
+  bool first_answer_is_single_label =
+      first_answer_view->children().size() == 1 &&
+      first_answer_view->children().front()->GetClassName() ==
+          views::Label::kViewClassName;
+  if (first_answer_is_single_label) {
+    // Update answer announcement.
+    auto* answer_label =
+        static_cast<Label*>(first_answer_view->children().front());
+    GetViewAccessibility().OverrideDescription(answer_label->GetText());
+  }
 
   // Add second row answer.
   if (!quick_answer.second_answer_row.empty()) {
@@ -451,11 +474,7 @@ void QuickAnswersView::UpdateQuickAnswerResult(
   } else {
     // If secondary-answer does not exist and primary-answer is a single label,
     // allow that label to wrap through to the row intended for the former.
-    bool only_one_label_answer =
-        (first_answer_view->children().size() == 1 &&
-         first_answer_view->children().front()->GetClassName() ==
-             views::Label::kViewClassName);
-    if (only_one_label_answer) {
+    if (first_answer_is_single_label) {
       // Cache multi-line label for resizing when view bounds change.
       first_answer_label_ =
           static_cast<Label*>(first_answer_view->children().front());

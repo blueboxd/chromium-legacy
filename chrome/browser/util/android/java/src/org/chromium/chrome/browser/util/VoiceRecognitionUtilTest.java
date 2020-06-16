@@ -8,8 +8,9 @@ import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.speech.RecognizerIntent;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.test.mock.MockPackageManager;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;

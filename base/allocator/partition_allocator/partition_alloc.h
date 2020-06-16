@@ -343,6 +343,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::Alloc(size_t size,
   return AllocFlags(0, size, type_name);
 }
 
+// Explicitly instantantiated in the .cc file.
 template <bool thread_safe>
 BASE_EXPORT void* PartitionReallocGenericFlags(PartitionRoot<thread_safe>* root,
                                                int flags,

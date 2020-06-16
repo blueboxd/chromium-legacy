@@ -95,17 +95,17 @@ class MapsIntegrationTest(
     print 'Maps\' devicePixelRatio is ' + str(dpr)
 
     page = _GetMapsPageForUrl(url)
-    # The bottom corners of Mac screenshots have black triangles due to the rounded corners of Mac
-    # windows. So, crop the bottom few rows off now to get rid of those. The triangles appear to be
-    # 5 pixels wide and tall regardless of DPI, so 10 pixels should be sufficient.
+    # The bottom corners of Mac screenshots have black triangles due to the
+    # rounded corners of Mac windows. So, crop the bottom few rows off now to
+    # get rid of those. The triangles appear to be 5 pixels wide and tall
+    # regardless of DPI, so 10 pixels should be sufficient.
     if self.browser.platform.GetOSName() == 'mac':
       img_height, img_width = screenshot.shape[:2]
       screenshot = image_util.Crop(screenshot, 0, 0, img_width, img_height - 10)
     x1, y1, x2, y2 = _GetCropBoundaries(screenshot)
     screenshot = image_util.Crop(screenshot, x1, y1, x2 - x1, y2 - y1)
 
-    self._UploadTestResultToSkiaGold(_TEST_NAME, screenshot, page,
-                                     self._GetBuildIdArgs())
+    self._UploadTestResultToSkiaGold(_TEST_NAME, screenshot, page)
 
   @classmethod
   def ExpectationsFiles(cls):

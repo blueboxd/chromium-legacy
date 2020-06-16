@@ -1113,10 +1113,11 @@ void XWindow::ProcessEvent(XEvent* xev) {
   // May want to factor CheckXEventForConsistency(xev); into a common location
   // since it is called here.
   switch (xev->type) {
-    case EnterNotify:
-    case LeaveNotify: {
-      OnCrossingEvent(xev->type == EnterNotify, xev->xcrossing.focus,
-                      xev->xcrossing.mode, xev->xcrossing.detail);
+    case x11::CrossingEvent::EnterNotify:
+    case x11::CrossingEvent::LeaveNotify: {
+      OnCrossingEvent(xev->type == x11::CrossingEvent::EnterNotify,
+                      xev->xcrossing.focus, xev->xcrossing.mode,
+                      xev->xcrossing.detail);
       break;
     }
     case Expose: {
@@ -1211,7 +1212,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
       }
       break;
     }
-    case PropertyNotify: {
+    case x11::PropertyNotifyEvent::opcode: {
       x11::Atom changed_atom = static_cast<x11::Atom>(xev->xproperty.atom);
       if (changed_atom == gfx::GetAtom("_NET_WM_STATE")) {
         OnWMStateUpdated();
@@ -1222,7 +1223,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
       }
       break;
     }
-    case SelectionNotify: {
+    case x11::SelectionNotifyEvent::opcode: {
       OnXWindowSelectionEvent(xev);
       break;
     }

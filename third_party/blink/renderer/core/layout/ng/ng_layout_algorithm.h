@@ -112,6 +112,16 @@ class CORE_EXPORT NGLayoutAlgorithm : public NGLayoutAlgorithmOperations {
 
   const NGBreakTokenType* BreakToken() const { return break_token_.get(); }
 
+  const NGBoxStrut& BorderPadding() const {
+    return container_builder_.BorderPadding();
+  }
+  const NGBoxStrut& BorderScrollbarPadding() const {
+    return container_builder_.BorderScrollbarPadding();
+  }
+  const LogicalSize& ChildAvailableSize() const {
+    return container_builder_.ChildAvailableSize();
+  }
+
   NGInputNodeType node_;
 
   // The break token from which we are currently resuming layout.

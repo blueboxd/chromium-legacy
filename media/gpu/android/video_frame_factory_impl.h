@@ -91,7 +91,7 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
       OnceOutputCB output_cb,
       base::TimeDelta timestamp,
       gfx::Size natural_size,
-      scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
+      bool is_texture_owner_backed,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
       VideoPixelFormat pixel_format,
       OverlayMode overlay_mode,

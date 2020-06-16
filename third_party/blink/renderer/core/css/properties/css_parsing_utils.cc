@@ -2807,12 +2807,6 @@ CSSValue* ConsumeBackgroundComposite(CSSParserTokenRange& range) {
   return ConsumeIdentRange(range, CSSValueID::kClear, CSSValueID::kPlusLighter);
 }
 
-CSSValue* ConsumeMaskSourceType(CSSParserTokenRange& range) {
-  DCHECK(RuntimeEnabledFeatures::CSSMaskSourceTypeEnabled());
-  return ConsumeIdent<CSSValueID::kAuto, CSSValueID::kAlpha,
-                      CSSValueID::kLuminance>(range);
-}
-
 CSSPrimitiveValue* ConsumeLengthOrPercentCountNegative(
     CSSParserTokenRange& range,
     const CSSParserContext& context,

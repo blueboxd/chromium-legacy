@@ -121,6 +121,31 @@ MakeCredentialStatus IsCandidateAuthenticatorPostTouch(
     return MakeCredentialStatus::kAuthenticatorMissingUserVerification;
   }
 
+  base::Optional<base::span<const int32_t>> supported_algorithms(
+      authenticator->GetAlgorithms());
+  if (supported_algorithms) {
+    // Substitution of defaults should have happened by this point.
+    DCHECK(!request.public_key_credential_params.public_key_credential_params()
+                .empty());
+
+    bool at_least_one_common_algorithm = false;
+    for (const auto& algo :
+         request.public_key_credential_params.public_key_credential_params()) {
+      if (algo.type != CredentialType::kPublicKey) {
+        continue;
+      }
+
+      if (base::Contains(*supported_algorithms, algo.algorithm)) {
+        at_least_one_common_algorithm = true;
+        break;
+      }
+    }
+
+    if (!at_least_one_common_algorithm) {
+      return MakeCredentialStatus::kNoCommonAlgorithms;
+    }
+  }
+
   return MakeCredentialStatus::kSuccess;
 }
 

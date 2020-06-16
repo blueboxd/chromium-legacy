@@ -6,7 +6,8 @@ package org.chromium.content.browser;
 
 import android.content.pm.ActivityInfo;
 import android.provider.Settings;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;

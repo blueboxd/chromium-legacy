@@ -37,11 +37,9 @@ class GPU_GLES2_EXPORT ImageReaderGLOwner : public TextureOwner {
   gl::ScopedJavaSurface CreateJavaSurface() const override;
   void UpdateTexImage() override;
   void EnsureTexImageBound() override;
-  void GetTransformMatrix(float mtx[16]) override;
   void ReleaseBackBuffers() override;
   std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
   GetAHardwareBuffer() override;
-  gfx::Rect GetCropRect() override;
   void GetCodedSizeAndVisibleRect(gfx::Size rotated_visible_size,
                                   gfx::Size* coded_size,
                                   gfx::Rect* visible_rect) override;
@@ -88,6 +86,8 @@ class GPU_GLES2_EXPORT ImageReaderGLOwner : public TextureOwner {
   // fence if needed.
   void RegisterRefOnImage(AImage* image);
   void ReleaseRefOnImage(AImage* image, base::ScopedFD fence_fd);
+
+  gfx::Rect GetCropRect();
 
   static void OnFrameAvailable(void* context, AImageReader* reader);
 

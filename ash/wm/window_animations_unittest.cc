@@ -14,15 +14,18 @@
 #include "ash/wm/wm_event.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
+#include "ui/wm/core/window_util.h"
 
 using aura::Window;
 using ui::Layer;
@@ -172,6 +175,37 @@ TEST_F(WindowAnimationsTest, CrossFadeToBounds) {
                                        base::TimeDelta::FromSeconds(1));
 }
 
+TEST_F(WindowAnimationsTest, CrossFadeHistograms) {
+  constexpr char kHistogram[] = "Ash.Window.AnimationSmoothness.CrossFade";
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  base::HistogramTester histogram_tester;
+
+  std::unique_ptr<Window> window(CreateTestWindowInShellWithId(0));
+  window->SetBounds(gfx::Rect(5, 10, 320, 240));
+  window->Show();
+
+  Layer* old_layer = window->layer();
+  old_layer->GetAnimator()->StopAnimating();
+
+  auto* window_state = WindowState::Get(window.get());
+  // Cross fade to a larger size, as in a maximize animation. We should get one
+  // recorded histogram.
+  window_state->SetBoundsDirectCrossFade(gfx::Rect(640, 480));
+  old_layer->GetAnimator()->StopAnimating();
+  window->layer()->GetAnimator()->StopAnimating();
+  histogram_tester.ExpectTotalCount(kHistogram, 1);
+
+  // Cross fade to a smaller size, as in a restore animation. Tests that there
+  // is only one recorded histogram.
+  old_layer = window->layer();
+  window_state->SetBoundsDirectCrossFade(gfx::Rect(5, 10, 320, 240));
+  old_layer->GetAnimator()->StopAnimating();
+  window->layer()->GetAnimator()->StopAnimating();
+  histogram_tester.ExpectTotalCount(kHistogram, 2);
+}
+
 // Tests that when crossfading from a window which has a transform, the cross
 // fading animation should be ignored and the window should set to its desired
 // bounds directly.
@@ -200,6 +234,28 @@ TEST_F(WindowAnimationsTest, CrossFadeToBoundsFromTransform) {
   EXPECT_EQ("0,0 640x480", old_layer->bounds().ToString());
   // Window still has its old transform before crossfading animation.
   EXPECT_EQ(half_size, old_layer->transform());
+}
+
+// Tests that if we recreate the window layers during a cross fade animation,
+// there is no crash.
+// Regression test for https://crbug.com/1088169.
+TEST_F(WindowAnimationsTest, CrossFadeThenRecreate) {
+  auto window = CreateTestWindow(gfx::Rect(100, 100));
+
+  // Use a bit more time than NON_ZERO_DURATION as its possible with non zero we
+  // finish the animation instantly.
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  WindowState* window_state = WindowState::Get(window.get());
+  window_state->Maximize();
+  ASSERT_TRUE(window->layer()->GetAnimator()->is_animating());
+
+  // Recreate the layers and then delete |window|. There should be no crash when
+  // stopping the old layers animation.
+  std::unique_ptr<ui::LayerTreeOwner> tree = wm::RecreateLayers(window.get());
+  window.reset();
+  tree->root()->GetAnimator()->StopAnimating();
 }
 
 TEST_F(WindowAnimationsTest, LockAnimationDuration) {

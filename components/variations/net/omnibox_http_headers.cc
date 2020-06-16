@@ -13,8 +13,8 @@ namespace variations {
 
 // The header used to report the state of the omnibox on-device search
 // suggestions provider. This header is only set when the provider is in a
-// non-default state, and only reports one of two possible values: "Enabled" or
-// "Control".
+// non-default state, and only reports one of two possible values: "Enabled_V2"
+// or "Control_V2".
 const char kOmniboxOnDeviceSuggestionsHeader[] =
     "X-Omnibox-On-Device-Suggestions";
 
@@ -30,11 +30,11 @@ std::string GetHeaderValue() {
   // Search for a substring rather than comparing to an exact value so that
   // group names can have prefixes (e.g., "Desktop", "Android") and suffixes
   // (e.g., config versions).
-  if (group.find("ReportHttpHeader_Enabled") != std::string::npos) {
-    return "Enabled";
+  if (group.find("ReportHttpHeader_Enabled_V2") != std::string::npos) {
+    return "Enabled_V2";
   }
-  if (group.find("ReportHttpHeader_Control") != std::string::npos) {
-    return "Control";
+  if (group.find("ReportHttpHeader_Control_V2") != std::string::npos) {
+    return "Control_V2";
   }
 
   return std::string();

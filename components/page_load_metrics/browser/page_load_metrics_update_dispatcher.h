@@ -161,6 +161,8 @@ class PageLoadMetricsUpdateDispatcher {
   void DidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle);
 
+  void OnFrameDeleted(content::RenderFrameHost* render_frame_host);
+
   void ShutDown();
 
   const mojom::PageLoadTiming& timing() const {

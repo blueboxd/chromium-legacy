@@ -20,9 +20,16 @@ class Rect;
 class Image;
 }  // namespace gfx
 
+namespace ui {
+namespace test {
+class SkiaGoldMatchingAlgorithm;
+class SkiaGoldPixelDiff;
+}  // namespace test
+}  // namespace ui
+
 // This is the utility class for Skia Gold pixeltest.
 // For an example on how to write pixeltests, please refer to the demo.
-class BrowserSkiaGoldPixelDiff : public SkiaGoldPixelDiff {
+class BrowserSkiaGoldPixelDiff : public ui::test::SkiaGoldPixelDiff {
  public:
   BrowserSkiaGoldPixelDiff();
   ~BrowserSkiaGoldPixelDiff() override;
@@ -46,8 +53,10 @@ class BrowserSkiaGoldPixelDiff : public SkiaGoldPixelDiff {
   //                 is unique.
   // view The view you want to take screenshot. If the screen is not what
   //      you want, you can use the other method.
-  bool CompareScreenshot(const std::string& screenshot_name,
-                         const views::View* view) const;
+  bool CompareScreenshot(
+      const std::string& screenshot_name,
+      const views::View* view,
+      const ui::test::SkiaGoldMatchingAlgorithm* algorithm = nullptr) const;
 
  protected:
   virtual bool GrabWindowSnapshotInternal(gfx::NativeWindow window,

@@ -145,15 +145,18 @@ void PerFrameContentTranslateDriver::TranslatePage(
   ReportUserActionDuration(language_determined_time_, base::TimeTicks::Now());
   stats_.Clear();
 
+  translate_seq_no_ = IncrementSeqNo(translate_seq_no_);
+
   web_contents()->ForEachFrame(base::BindRepeating(
       &PerFrameContentTranslateDriver::TranslateFrame, base::Unretained(this),
-      translate_script, source_lang, target_lang));
+      translate_script, source_lang, target_lang, translate_seq_no_));
 }
 
 void PerFrameContentTranslateDriver::TranslateFrame(
     const std::string& translate_script,
     const std::string& source_lang,
     const std::string& target_lang,
+    int translate_seq_no,
     content::RenderFrameHost* render_frame_host) {
   if (render_frame_host->IsFrameDisplayNone() ||
       !translate::IsTranslatableURL(render_frame_host->GetLastCommittedURL())) {
@@ -167,8 +170,8 @@ void PerFrameContentTranslateDriver::TranslateFrame(
   frame_agent->TranslateFrame(
       translate_script, source_lang, target_lang,
       base::BindOnce(&PerFrameContentTranslateDriver::OnFrameTranslated,
-                     weak_pointer_factory_.GetWeakPtr(), is_main_frame,
-                     std::move(frame_agent)));
+                     weak_pointer_factory_.GetWeakPtr(), translate_seq_no,
+                     is_main_frame, std::move(frame_agent)));
   stats_.frame_request_count++;
   stats_.pending_request_count++;
 }
@@ -176,6 +179,8 @@ void PerFrameContentTranslateDriver::TranslateFrame(
 void PerFrameContentTranslateDriver::RevertTranslation(int page_seq_no) {
   if (!IsForCurrentPage(page_seq_no))
     return;
+
+  translate_seq_no_ = IncrementSeqNo(translate_seq_no_);
 
   web_contents()->ForEachFrame(base::BindRepeating(
       &PerFrameContentTranslateDriver::RevertFrame, base::Unretained(this)));
@@ -293,8 +298,8 @@ void PerFrameContentTranslateDriver::DOMContentLoaded(
   }
 
   // Main frame loaded, set new sequence number.
-  current_seq_no_ = (current_seq_no_ % 100000) + 1;
-  translate_manager()->set_current_seq_no(current_seq_no_);
+  page_seq_no_ = IncrementSeqNo(page_seq_no_);
+  translate_manager()->set_current_seq_no(page_seq_no_);
 }
 
 void PerFrameContentTranslateDriver::DocumentOnLoadCompletedInMainFrame() {
@@ -409,6 +414,7 @@ void PerFrameContentTranslateDriver::ComputeActualPageLanguage() {
 }
 
 void PerFrameContentTranslateDriver::OnFrameTranslated(
+    int translate_seq_no,
     bool is_main_frame,
     mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent,
     bool cancelled,
@@ -416,6 +422,9 @@ void PerFrameContentTranslateDriver::OnFrameTranslated(
     const std::string& translated_lang,
     TranslateErrors::Type error_type) {
   if (cancelled)
+    return;
+
+  if (translate_seq_no != translate_seq_no_)
     return;
 
   if (error_type == TranslateErrors::NONE) {
@@ -438,7 +447,7 @@ void PerFrameContentTranslateDriver::OnFrameTranslated(
 }
 
 bool PerFrameContentTranslateDriver::IsForCurrentPage(int page_seq_no) {
-  return page_seq_no > 0 && page_seq_no == current_seq_no_;
+  return page_seq_no > 0 && page_seq_no == page_seq_no_;
 }
 
 }  // namespace translate

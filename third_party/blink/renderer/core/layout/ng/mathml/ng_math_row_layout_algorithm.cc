@@ -29,11 +29,7 @@ inline LayoutUnit InlineOffsetForDisplayMathCentering(
 
 NGMathRowLayoutAlgorithm::NGMathRowLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params),
-      border_padding_(params.fragment_geometry.border +
-                      params.fragment_geometry.padding),
-      border_scrollbar_padding_(border_padding_ +
-                                params.fragment_geometry.scrollbar) {
+    : NGLayoutAlgorithm(params) {
   DCHECK(params.space.IsNewFormattingContext());
   DCHECK(!ConstraintSpace().HasBlockFragmentation());
   container_builder_.SetIsNewFormattingContext(
@@ -53,13 +49,12 @@ void NGMathRowLayoutAlgorithm::LayoutRowItems(
       // absolutely positioned".
       // Issue: https://github.com/mathml-refresh/mathml/issues/16
       container_builder_.AddOutOfFlowChildCandidate(
-          To<NGBlockNode>(child), {border_scrollbar_padding_.inline_start,
-                                   border_scrollbar_padding_.block_start});
+          To<NGBlockNode>(child), BorderScrollbarPadding().StartOffset());
       continue;
     }
     const ComputedStyle& child_style = child.Style();
     NGConstraintSpace child_space = CreateConstraintSpaceForMathChild(
-        Node(), child_available_size_, ConstraintSpace(), child);
+        Node(), ChildAvailableSize(), ConstraintSpace(), child);
     scoped_refptr<const NGLayoutResult> result =
         To<NGBlockNode>(child).Layout(child_space, nullptr /* break token */);
     const NGPhysicalContainerFragment& physical_fragment =
@@ -103,8 +98,6 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
   LayoutUnit max_row_block_baseline;
 
   const LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
-  child_available_size_ =
-      ShrinkAvailableSize(border_box_size, border_scrollbar_padding_);
 
   NGContainerFragmentBuilder::ChildrenVector children;
   LayoutRowItems(&children, &max_row_block_baseline, &max_row_size);
@@ -114,21 +107,20 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
   LayoutUnit center_offset = InlineOffsetForDisplayMathCentering(
       is_display_math, container_builder_.InlineSize(),
       max_row_size.inline_size);
-  LogicalOffset adjust_offset(
-      border_scrollbar_padding_.inline_start + center_offset,
-      border_scrollbar_padding_.block_start + max_row_block_baseline);
+
+  LogicalOffset adjust_offset = BorderScrollbarPadding().StartOffset();
+  adjust_offset += LogicalOffset{center_offset, max_row_block_baseline};
   for (auto& child : children) {
     child.offset += adjust_offset;
     container_builder_.AddChild(
         To<NGPhysicalContainerFragment>(*child.fragment), child.offset);
   }
 
-  container_builder_.SetBaseline(border_scrollbar_padding_.block_start +
-                                 max_row_block_baseline);
+  container_builder_.SetBaseline(adjust_offset.block_offset);
 
   auto block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), border_padding_,
-      max_row_size.block_size + border_scrollbar_padding_.BlockSum(),
+      ConstraintSpace(), Style(), BorderPadding(),
+      max_row_size.block_size + BorderScrollbarPadding().BlockSum(),
       border_box_size.inline_size);
   container_builder_.SetBlockSize(block_size);
 
@@ -144,7 +136,7 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
 MinMaxSizesResult NGMathRowLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& child_input) const {
   if (auto result = CalculateMinMaxSizesIgnoringChildren(
-          Node(), border_scrollbar_padding_))
+          Node(), BorderScrollbarPadding()))
     return *result;
 
   MinMaxSizes sizes;
@@ -171,7 +163,7 @@ MinMaxSizesResult NGMathRowLayoutAlgorithm::ComputeMinMaxSizes(
   sizes.Encompass(LayoutUnit());
 
   DCHECK_LE(sizes.min_size, sizes.max_size);
-  sizes += border_scrollbar_padding_.InlineSum();
+  sizes += BorderScrollbarPadding().InlineSum();
 
   return {sizes, depends_on_percentage_block_size};
 }

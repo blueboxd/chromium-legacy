@@ -5,10 +5,8 @@
 #ifndef ASH_QUICK_ANSWERS_UI_QUICK_ANSWERS_PRE_TARGET_HANDLER_H_
 #define ASH_QUICK_ANSWERS_UI_QUICK_ANSWERS_PRE_TARGET_HANDLER_H_
 
-#include "base/scoped_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/views/view.h"
-#include "ui/views/view_observer.h"
 
 namespace ui {
 class LocatedEvent;
@@ -29,8 +27,7 @@ class UserConsentView;
 // This class handles mouse events, and update background color or
 // dismiss quick answers view.
 // TODO (siabhijeet): Migrate to using two-phased event dispatching.
-class QuickAnswersPreTargetHandler : public ui::EventHandler,
-                                     public views::ViewObserver {
+class QuickAnswersPreTargetHandler : public ui::EventHandler {
  public:
   explicit QuickAnswersPreTargetHandler(QuickAnswersView* view);
   explicit QuickAnswersPreTargetHandler(quick_answers::UserConsentView* view);
@@ -45,9 +42,6 @@ class QuickAnswersPreTargetHandler : public ui::EventHandler,
   // ui::EventHandler:
   void OnEvent(ui::Event* event) override;
 
-  // views::ViewObserver:
-  void OnViewIsDeleting(views::View* observed_view) override;
-
   void set_dismiss_anchor_menu_on_view_closed(bool dismiss) {
     dismiss_anchor_menu_on_view_closed_ = dismiss;
   }
@@ -61,7 +55,6 @@ class QuickAnswersPreTargetHandler : public ui::EventHandler,
 
   // Associated view handled by this class.
   views::View* const view_;
-  ScopedObserver<views::View, views::ViewObserver> view_observer_{this};
 
   // Whether any active menus, |view_| is a companion Quick-Answers related view
   // of which, should be dismissed when it is deleted.

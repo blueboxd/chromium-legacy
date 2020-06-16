@@ -4,7 +4,8 @@
 
 #include "chrome/common/web_application_info.h"
 
-WebApplicationIconInfo::WebApplicationIconInfo() : square_size_px(0) {}
+// WebApplicationIconInfo
+WebApplicationIconInfo::WebApplicationIconInfo() = default;
 
 WebApplicationIconInfo::WebApplicationIconInfo(const WebApplicationIconInfo&) =
     default;
@@ -20,6 +21,26 @@ WebApplicationIconInfo& WebApplicationIconInfo::operator=(
 WebApplicationIconInfo& WebApplicationIconInfo::operator=(
     WebApplicationIconInfo&&) = default;
 
+// WebApplicationShortcutsMenuItemInfo::Icon
+WebApplicationShortcutsMenuItemInfo::Icon::Icon() = default;
+
+WebApplicationShortcutsMenuItemInfo::Icon::Icon(
+    const WebApplicationShortcutsMenuItemInfo::Icon&) = default;
+
+WebApplicationShortcutsMenuItemInfo::Icon::Icon(
+    WebApplicationShortcutsMenuItemInfo::Icon&&) = default;
+
+WebApplicationShortcutsMenuItemInfo::Icon::~Icon() = default;
+
+WebApplicationShortcutsMenuItemInfo::Icon&
+WebApplicationShortcutsMenuItemInfo::Icon::operator=(
+    const WebApplicationShortcutsMenuItemInfo::Icon&) = default;
+
+WebApplicationShortcutsMenuItemInfo::Icon&
+WebApplicationShortcutsMenuItemInfo::Icon::operator=(
+    WebApplicationShortcutsMenuItemInfo::Icon&&) = default;
+
+// WebApplicationShortcutsMenuItemInfo
 WebApplicationShortcutsMenuItemInfo::WebApplicationShortcutsMenuItemInfo() =
     default;
 
@@ -40,6 +61,7 @@ WebApplicationShortcutsMenuItemInfo&
 WebApplicationShortcutsMenuItemInfo::operator=(
     WebApplicationShortcutsMenuItemInfo&&) noexcept = default;
 
+// WebApplicationInfo
 WebApplicationInfo::WebApplicationInfo() = default;
 
 WebApplicationInfo::WebApplicationInfo(const WebApplicationInfo& other) =
@@ -55,6 +77,10 @@ bool operator==(const WebApplicationIconInfo& icon_info1,
 
 std::ostream& operator<<(std::ostream& out,
                          const WebApplicationIconInfo& icon_info) {
-  return out << "url: " << icon_info.url
-             << " square_size_px: " << icon_info.square_size_px;
+  out << "url: " << icon_info.url << " square_size_px: ";
+  if (icon_info.square_size_px)
+    out << *icon_info.square_size_px;
+  else
+    out << "none";
+  return out;
 }

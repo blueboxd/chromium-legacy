@@ -517,6 +517,10 @@ void ArcAccessibilityHelperBridge::OnAction(
                      base::Unretained(this), data));
 }
 
+bool ArcAccessibilityHelperBridge::IsScreenReaderEnabled() const {
+  return is_screen_reader_enabled_;
+}
+
 void ArcAccessibilityHelperBridge::OnTaskDestroyed(int32_t task_id) {
   trees_.erase(KeyForTaskId(task_id));
 }
@@ -699,11 +703,15 @@ void ArcAccessibilityHelperBridge::UpdateEnabledFeature() {
   if (instance)
     instance->SetFilter(filter_type_);
 
-  if (!chromeos::AccessibilityManager::Get())
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  if (!accessibility_manager)
     return;
+
   is_focus_highlight_enabled_ =
-      filter_type_ != arc::mojom::AccessibilityFilterType::OFF &&
-      chromeos::AccessibilityManager::Get()->IsFocusHighlightEnabled();
+      accessibility_manager->IsFocusHighlightEnabled();
+  is_screen_reader_enabled_ = accessibility_manager->IsSwitchAccessEnabled() ||
+                              accessibility_manager->IsSpokenFeedbackEnabled();
 
   bool add_activation_observer =
       filter_type_ == arc::mojom::AccessibilityFilterType::ALL;

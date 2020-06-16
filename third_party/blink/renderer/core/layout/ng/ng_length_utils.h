@@ -500,10 +500,15 @@ CORE_EXPORT NGFragmentGeometry
 CalculateInitialMinMaxFragmentGeometry(const NGConstraintSpace&,
                                        const NGBlockNode&);
 
-// Shrink and return the available size by an inset. This may e.g. be used to
-// convert from border-box to content-box size. Indefinite block size is
-// allowed, in which case the inset will be ignored for block size.
-LogicalSize ShrinkAvailableSize(LogicalSize size, const NGBoxStrut& inset);
+// Shrinks the logical |size| by |insets|.
+LogicalSize ShrinkLogicalSize(LogicalSize size, const NGBoxStrut& insets);
+
+// Calculates the available size that children of the node should use.
+LogicalSize CalculateChildAvailableSize(
+    const NGConstraintSpace&,
+    const NGBlockNode& node,
+    const LogicalSize border_box_size,
+    const NGBoxStrut& border_scrollbar_padding);
 
 // Calculates the percentage resolution size that children of the node should
 // use.

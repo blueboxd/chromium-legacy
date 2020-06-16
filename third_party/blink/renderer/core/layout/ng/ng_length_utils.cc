@@ -1103,17 +1103,28 @@ NGFragmentGeometry CalculateInitialMinMaxFragmentGeometry(
   return {/* border_box_size */ LogicalSize(), border, scrollbar, padding};
 }
 
-LogicalSize ShrinkAvailableSize(LogicalSize size, const NGBoxStrut& inset) {
-  DCHECK_NE(size.inline_size, kIndefiniteSize);
-  size.inline_size -= inset.InlineSum();
-  size.inline_size = std::max(size.inline_size, LayoutUnit());
-
+LogicalSize ShrinkLogicalSize(LogicalSize size, const NGBoxStrut& insets) {
+  if (size.inline_size != kIndefiniteSize) {
+    size.inline_size =
+        (size.inline_size - insets.InlineSum()).ClampNegativeToZero();
+  }
   if (size.block_size != kIndefiniteSize) {
-    size.block_size -= inset.BlockSum();
-    size.block_size = std::max(size.block_size, LayoutUnit());
+    size.block_size =
+        (size.block_size - insets.BlockSum()).ClampNegativeToZero();
   }
 
   return size;
+}
+
+LogicalSize CalculateChildAvailableSize(
+    const NGConstraintSpace& space,
+    const NGBlockNode& node,
+    const LogicalSize border_box_size,
+    const NGBoxStrut& border_scrollbar_padding) {
+  if (space.IsAnonymous() || node.IsAnonymousBlock())
+    return space.AvailableSize();
+
+  return ShrinkLogicalSize(border_box_size, border_scrollbar_padding);
 }
 
 namespace {

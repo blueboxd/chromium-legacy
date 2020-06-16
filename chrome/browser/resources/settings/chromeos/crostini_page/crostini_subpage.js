@@ -226,7 +226,7 @@ Polymer({
     settings.CrostiniBrowserProxyImpl.getInstance()
         .getCrostiniMicSharingEnabled()
         .then(this.onCrostiniMicSharingEnabledChanged_.bind(this));
-    this.loadDiskInfo_();
+    this.loadDiskInfo_('attached');
   },
 
   ready() {
@@ -250,7 +250,7 @@ Polymer({
     if (enabled) {
       // The disk size or type could have changed due to the user reinstalling
       // Crostini, update our info.
-      this.loadDiskInfo_();
+      this.loadDiskInfo_('onCrostiniEnabledChanged_');
     }
   },
 
@@ -271,10 +271,16 @@ Polymer({
         settings.routes.CROSTINI_ANDROID_ADB);
   },
 
-  /** @private */
-  loadDiskInfo_() {
+  /**
+   * @param {string} callerName
+   * @private
+   */
+  loadDiskInfo_(callerName) {
     // TODO(davidmunro): No magic 'termina' string.
     const vmName = 'termina';
+    console.log(
+        'crostini_subpage.js: ' + callerName +
+        ' callling \'getCrostiniDiskInfo\'');
     settings.CrostiniBrowserProxyImpl.getInstance()
         .getCrostiniDiskInfo(vmName, /*requestFullInfo=*/ false)
         .then(
@@ -282,9 +288,15 @@ Polymer({
               if (diskInfo.succeeded) {
                 this.setResizeLabels_(diskInfo);
               }
+              console.log(
+                  'crostini_subpage.js: ' + callerName +
+                  ' resolved \'getCrostiniDiskInfo\'');
             },
             reason => {
               console.log(`Unable to get info: ${reason}`);
+              console.log(
+                  'crostini_subpage.js: ' + callerName +
+                  ' resolved \'getCrostiniDiskInfo\'');
             });
   },
 
@@ -333,7 +345,7 @@ Polymer({
     this.showDiskResizeDialog_ = false;
     this.diskResizeConfirmationState_ = ConfirmationState.NOT_CONFIRMED;
     // DiskInfo could have changed.
-    this.loadDiskInfo_();
+    this.loadDiskInfo_('onDiskResizeDialogClose_');
   },
 
   /** @private */

@@ -467,7 +467,7 @@
       'fuchsia-arm64-cast': 'release_bot_fuchsia_arm64_cast',
       'fuchsia-x64-cast': 'release_bot_fuchsia_cast',
       'fuchsia-x64-dbg': 'debug_bot_fuchsia_compile_only',
-      'linux-blink-cors-rel': 'release_bot_minimal_symbols',
+      'linux-blink-cors-rel': 'release_bot_blink_minimal_symbols',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
       'linux-ozone-rel': 'ozone_linux_release_bot',
       'linux-trusty-rel': 'gpu_tests_release_bot',
@@ -492,9 +492,9 @@
       'Linux MSan Builder': 'msan_release_bot',
       'Linux TSan Builder': 'tsan_disable_nacl_release_bot',
       'Mac ASan 64 Builder': 'asan_minimal_symbols_disable_nacl_release_bot_dcheck_always_on',
-      'WebKit Linux ASAN': 'asan_lsan_release_bot',
-      'WebKit Linux Leak': 'release_bot',
-      'WebKit Linux MSAN': 'msan_release_bot',
+      'WebKit Linux ASAN': 'asan_lsan_release_bot_blink',
+      'WebKit Linux Leak': 'release_bot_blink',
+      'WebKit Linux MSAN': 'msan_release_bot_blink',
       'android-asan': 'android_clang_asan_release_bot',
       'win-asan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release',
     },
@@ -1387,6 +1387,10 @@
       'asan', 'lsan', 'release_bot',
     ],
 
+    'asan_lsan_release_bot_blink': [
+      'asan', 'lsan', 'release_bot_blink',
+    ],
+
     'asan_lsan_release_trybot': [
       'asan', 'lsan', 'release_trybot',
     ],
@@ -1999,16 +2003,16 @@
       'libfuzzer', 'asan', 'release_trybot', 'chrome_with_codecs', 'pdf_xfa', 'disable_nacl',
     ],
 
-    'msan_release_bot': [
-      'msan', 'release_bot',
-    ],
-
     'msan_no_origins_release_bot': [
       'msan_no_origins', 'release_bot',
     ],
 
     'msan_release_bot': [
       'msan', 'release_bot',
+    ],
+
+    'msan_release_bot_blink': [
+      'msan', 'release_bot_blink',
     ],
 
     'official_celab_release_bot': [
@@ -2104,6 +2108,14 @@
       'release_bot',
     ],
 
+    'release_bot_blink': [
+      'release_bot_blink',
+    ],
+
+    'release_bot_blink_minimal_symbols': [
+      'release_bot_blink', 'minimal_symbols',
+    ],
+
     'release_bot_enable_blink_heap_verification_dcheck_always_on': [
       'release_bot', 'enable_blink_heap_verification', 'dcheck_always_on',
     ],
@@ -2132,16 +2144,16 @@
       'release_bot', 'mac_strip', 'minimal_symbols', 'mac_deterministic_build'
     ],
 
+    'release_bot_minimal_symbols': [
+      'release_bot', 'minimal_symbols',
+    ],
+
     'release_bot_v8_debug': [
       'release_bot', 'v8_enable_debugging_features',
     ],
 
     'release_bot_x86': [
       'release_bot', 'x86',
-    ],
-
-    'release_bot_minimal_symbols': [
-      'release_bot', 'minimal_symbols',
     ],
 
     'release_bot_x86_minimal_symbols': [
@@ -2744,6 +2756,12 @@
 
     'release_bot': {
       'mixins': ['release', 'static', 'goma'],
+    },
+
+    # All bots that run the WPT test suite must have H.264 compiled in,
+    # in order to give consistent results for WebRTC codec-dependent tests.
+    'release_bot_blink': {
+      'mixins': ['release', 'static', 'goma', 'chrome_with_codecs'],
     },
 
     'release_java': {

@@ -814,7 +814,7 @@ TEST(EventTest, EventLatencyOSMouseWheelHistogram) {
   XEvent native_event;
   memset(&native_event, 0, sizeof(XEvent));
   XButtonEvent* button_event = &(native_event.xbutton);
-  button_event->type = x11::ButtonPressEvent::opcode;
+  button_event->type = x11::ButtonEvent::Press;
   button_event->button = 4;  // A valid wheel button number between min and max.
   auto mouse_ev = ui::BuildMouseWheelEventFromXEvent(native_event);
   histogram_tester.ExpectTotalCount("Event.Latency.OS.MOUSE_WHEEL", 1);

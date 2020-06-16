@@ -2755,7 +2755,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
       {"abc.com", 1, 1, "block", base::nullopt, base::nullopt},
       {"def.com", 2, 1, "redirect", "http://zzz.com", base::nullopt},
       {"jkl.com", 3, 1, "modifyHeaders", base::nullopt,
-       std::vector<TestHeaderInfo>({TestHeaderInfo("referer", "remove")})},
+       std::vector<TestHeaderInfo>(
+           {TestHeaderInfo("referer", "remove", base::nullopt)})},
       {"abcd.com", 4, 1, "block", base::nullopt, base::nullopt},
       {"abcd", 5, 1, "allow", base::nullopt, base::nullopt},
   };
@@ -3208,7 +3209,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
        get_set_cookie_url("setcookie.com").spec(), base::nullopt},
       {"setcookie.com", 6, 1, "modifyHeaders",
        std::vector<std::string>({"main_frame"}), base::nullopt,
-       std::vector<TestHeaderInfo>({TestHeaderInfo("set-cookie", "remove")})},
+       std::vector<TestHeaderInfo>(
+           {TestHeaderInfo("set-cookie", "remove", base::nullopt)})},
   };
 
   // Load the extension.
@@ -3291,20 +3293,25 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // Create an extension with rules and get the ExtensionAction for it.
   TestRule example_set_cookie_rule = CreateModifyHeadersRule(
       kMinValidID, kMinValidPriority, "example.com", base::nullopt,
-      std::vector<TestHeaderInfo>({TestHeaderInfo("set-cookie", "remove")}));
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("set-cookie", "remove", base::nullopt)}));
 
   TestRule both_headers_rule = CreateModifyHeadersRule(
       kMinValidID + 1, kMinValidPriority, "google.com",
-      std::vector<TestHeaderInfo>({TestHeaderInfo("referer", "remove")}),
-      std::vector<TestHeaderInfo>({TestHeaderInfo("set-cookie", "remove")}));
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("referer", "remove", base::nullopt)}),
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("set-cookie", "remove", base::nullopt)}));
 
   TestRule abc_set_cookie_rule = CreateModifyHeadersRule(
       kMinValidID + 2, kMinValidPriority, "abc.com", base::nullopt,
-      std::vector<TestHeaderInfo>({TestHeaderInfo("set-cookie", "remove")}));
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("set-cookie", "remove", base::nullopt)}));
 
   TestRule abc_referer_rule = CreateModifyHeadersRule(
       kMinValidID + 3, kMinValidPriority, "abc.com",
-      std::vector<TestHeaderInfo>({TestHeaderInfo("referer", "remove")}),
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("referer", "remove", base::nullopt)}),
       base::nullopt);
 
   ASSERT_NO_FATAL_FAILURE(
@@ -3325,7 +3332,8 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // and get the ExtensionAction for it.
   TestRule example_referer_rule = CreateModifyHeadersRule(
       kMinValidID, kMinValidPriority, "example.com",
-      std::vector<TestHeaderInfo>({TestHeaderInfo("referer", "remove")}),
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("referer", "remove", base::nullopt)}),
       base::nullopt);
 
   ASSERT_NO_FATAL_FAILURE(LoadExtensionWithRules(
@@ -3435,12 +3443,14 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Unpacked,
 
   TestRule abc_referer_rule = CreateModifyHeadersRule(
       kMinValidID, kMinValidPriority, sub_frame_host,
-      std::vector<TestHeaderInfo>({TestHeaderInfo("referer", "remove")}),
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("referer", "remove", base::nullopt)}),
       base::nullopt);
 
   TestRule abc_set_cookie_rule = CreateModifyHeadersRule(
       kMinValidID + 1, kMinValidPriority, sub_frame_host, base::nullopt,
-      std::vector<TestHeaderInfo>({TestHeaderInfo("set-cookie", "remove")}));
+      std::vector<TestHeaderInfo>(
+          {TestHeaderInfo("set-cookie", "remove", base::nullopt)}));
 
   // Load an extension with removeHeaders rules for the Referer and Set-Cookie
   // headers.

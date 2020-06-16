@@ -51,7 +51,7 @@ namespace {
 
 // These prefs go in the JsonPrefStore, and will persist across runs. Other
 // prefs go in the InMemoryPrefStore, and will be lost when the process ends.
-const char* const kPersistentPrefsWhitelist[] = {
+const char* const kPersistentPrefsAllowlist[] = {
     // Randomly-generated GUID which pseudonymously identifies uploaded metrics.
     metrics::prefs::kMetricsClientID,
     // Random seed value for variation's entropy providers. Used to assign
@@ -100,7 +100,7 @@ std::unique_ptr<PrefService> CreatePrefService() {
   PrefServiceFactory pref_service_factory;
 
   std::set<std::string> persistent_prefs;
-  for (const char* const pref_name : kPersistentPrefsWhitelist)
+  for (const char* const pref_name : kPersistentPrefsAllowlist)
     persistent_prefs.insert(pref_name);
 
   persistent_prefs.insert(std::string(metrics::prefs::kMetricsLastSeenPrefix) +

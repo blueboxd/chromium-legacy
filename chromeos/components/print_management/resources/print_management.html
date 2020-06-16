@@ -3,15 +3,15 @@
     background-color: var(--cros-default-bg-color);
   }
 
-  .main-container {
-    --cr-centered-card-max-width: 960px;
-  }
-
-  #columnHeaders {
+  .column-headers {
     align-items: center;
     display: flex;
     color: var(--google-grey-700);
     min-height: var(--cr-section-min-height);
+  }
+
+  .main-container {
+    --cr-centered-card-max-width: 960px;
   }
 
   #headerContainer {
@@ -20,6 +20,14 @@
     justify-content: space-between;
     padding-bottom: 20px;
     padding-top: 64px;
+  }
+
+  #infoIcon {
+    --iron-icon-fill-color: var(--google-grey-700);
+    --iron-icon-stroke-color: var(--google-grey-700);
+    --iron-icon-height: 13px;
+    --iron-icon-width: 13px;
+    margin-inline-start: 8px;
   }
 
   h1 {
@@ -47,7 +55,7 @@
     </print-job-clear-history-dialog>
   </template>
 
-  <div id="columnHeaders"
+  <div class="column-headers"
       aria-labeledby="fileNameColumn printerNameColumn dateColumn statusColumn">
     <div id="fileNameColumn" class="long-text overflow-ellipsis"
         aria-hidden="true">
@@ -67,12 +75,35 @@
     </div>
   </div>
 
-  <iron-list id="entryList" items="[[printJobs_]]" role="grid">
-    <template>
-      <print-job-entry job-entry="[[item]]" tabindex$="[[tabIndex]]"
-          last-focused="{{lastFocused_}}" list-blurred="{{listBlurred_}}"
-          focus-row-index="[[index]]" iron-list-tab-index="[[tabIndex]]">
-      </print-job-entry>
-    </template>
-  </iron-list>
-</div>
+  <template is="dom-if" if="[[ongoingPrintJobs_.length]]" restamp>
+    <iron-list id="ongoingList" items="[[ongoingPrintJobs_]]" role="grid">
+      <template>
+        <print-job-entry job-entry="[[item]]" tabindex$="[[tabIndex]]"
+            last-focused="{{lastFocused_}}" list-blurred="{{listBlurred_}}"
+            focus-row-index="[[index]]" iron-list-tab-index="[[tabIndex]]">
+        </print-job-entry>
+      </template>
+    </iron-list>
+  </template>
+
+  <template is="dom-if" if="[[printJobs_.length]]" restamp>
+    <div id="historyHeaderContainer" class="column-headers">
+      <div aria-label$="[[i18n('historyToolTip')]]">
+        [[i18n('historyHeader')]]
+      </div>
+      <iron-icon id="infoIcon" icon="cr:info-outline" aria-hidden="true">
+      </iron-icon>
+      <paper-tooltip for="infoIcon" fit-to-visible-bounds aria-hidden="true">
+        [[i18n('historyToolTip')]]
+      </paper-tooltip>
+    </div>
+
+    <iron-list id="entryList" items="[[printJobs_]]" role="grid">
+      <template>
+        <print-job-entry job-entry="[[item]]" tabindex$="[[tabIndex]]"
+            last-focused="{{lastFocused_}}" list-blurred="{{listBlurred_}}"
+            focus-row-index="[[index]]" iron-list-tab-index="[[tabIndex]]">
+        </print-job-entry>
+      </template>
+    </iron-list>
+</template>

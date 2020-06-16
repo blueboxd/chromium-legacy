@@ -181,6 +181,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_SHELF_CONTEXT_MENU_ALIGN_RIGHT" desc="Title of the menu item in the context menu for aligning the shelf to the right of the screen">
         Right
       </message>
+      <message name="IDS_ASH_SHELF_DISPLAY_SETTINGS" desc="Title of the menu item in the context menu for opening the display settings">
+        Display settings
+      </message>
       <message name="IDS_ASH_SHELF_ACCESSIBLE_NAME" desc="The accessible name of the shelf.">
         Shelf
       </message>

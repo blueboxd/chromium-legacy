@@ -1294,8 +1294,18 @@ void DownloadItemView::ShowDeepScanningDialog() {
 
   base::string16 elided_filename = gfx::ElideFilename(
       model_->GetFileNameToReportUser(), font_list_, kTextWidth);
-  base::string16 deep_scanning_text = l10n_util::GetStringFUTF16(
-      IDS_PROMPT_DEEP_SCANNING_DOWNLOAD, elided_filename);
+
+  // Use the enterprise-specific string if we did an enterprise upload
+  base::string16 deep_scanning_text;
+  if (model_->download() &&
+      safe_browsing::DeepScanningRequest::ShouldUploadBinary(
+          model_->download())) {
+    deep_scanning_text = l10n_util::GetStringFUTF16(
+        IDS_PROMPT_DEEP_SCANNING_DOWNLOAD, elided_filename);
+  } else {
+    deep_scanning_text = l10n_util::GetStringFUTF16(
+        IDS_PROMPT_DEEP_SCANNING_APP_DOWNLOAD, elided_filename);
+  }
 
   auto deep_scanning_label = std::make_unique<views::StyledLabel>(
       deep_scanning_text, /*listener=*/nullptr);

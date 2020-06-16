@@ -880,7 +880,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnBeforeSendHeadersResponses) {
       CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
   modify_headers_action.request_headers_to_modify = {
       DNRRequestAction::HeaderInfo(
-          "key5", api::declarative_net_request::HEADER_OPERATION_REMOVE)};
+          "key5", api::declarative_net_request::HEADER_OPERATION_REMOVE,
+          base::nullopt)};
   info.dnr_actions = std::vector<DNRRequestAction>();
   info.dnr_actions->push_back(std::move(modify_headers_action));
 
@@ -1359,7 +1360,8 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
       CreateRequestActionForTesting(DNRRequestAction::Type::MODIFY_HEADERS);
   modify_headers_action.response_headers_to_modify = {
       DNRRequestAction::HeaderInfo(
-          "key3", api::declarative_net_request::HEADER_OPERATION_REMOVE)};
+          "key3", api::declarative_net_request::HEADER_OPERATION_REMOVE,
+          base::nullopt)};
 
   info.dnr_actions = std::vector<DNRRequestAction>();
   info.dnr_actions->push_back(std::move(modify_headers_action));

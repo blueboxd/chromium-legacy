@@ -72,16 +72,6 @@ void SurfaceTextureGLOwner::EnsureTexImageBound() {
   NOTREACHED();
 }
 
-void SurfaceTextureGLOwner::GetTransformMatrix(float mtx[]) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // If we don't have a SurfaceTexture, then the matrix doesn't matter.  We
-  // still initialize it for good measure.
-  if (surface_texture_)
-    surface_texture_->GetTransformMatrix(mtx);
-  else
-    memset(mtx, 0, sizeof(mtx[0]) * 16);
-}
-
 void SurfaceTextureGLOwner::ReleaseBackBuffers() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (surface_texture_)
@@ -102,11 +92,6 @@ std::unique_ptr<base::android::ScopedHardwareBufferFenceSync>
 SurfaceTextureGLOwner::GetAHardwareBuffer() {
   NOTREACHED() << "Don't use AHardwareBuffers with SurfaceTextureGLOwner";
   return nullptr;
-}
-
-gfx::Rect SurfaceTextureGLOwner::GetCropRect() {
-  NOTREACHED() << "Don't use GetCropRect with SurfaceTextureGLOwner";
-  return gfx::Rect();
 }
 
 void SurfaceTextureGLOwner::GetCodedSizeAndVisibleRect(

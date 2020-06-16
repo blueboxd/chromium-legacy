@@ -168,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, Standard) {
 
   const char kExtensionPath[] = "preference/standard";
 
-  EXPECT_TRUE(RunExtensionSubtest(kExtensionPath, "test.html")) << message_;
+  EXPECT_TRUE(RunExtensionTest(kExtensionPath)) << message_;
   CheckPreferencesSet();
 
   // The settings should not be reset when the extension is reloaded.

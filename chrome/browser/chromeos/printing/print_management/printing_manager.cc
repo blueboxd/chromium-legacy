@@ -124,10 +124,18 @@ void PrintingManager::OnPrintJobsRetrieved(
     bool success,
     std::vector<PrintJobInfo> print_job_info_protos) {
   std::vector<PrintJobInfoPtr> print_job_infos;
+  print_job_infos.reserve(print_job_info_protos.size() +
+                          active_print_jobs_.size());
 
   if (success) {
     for (const auto& print_job_info : print_job_info_protos) {
       print_job_infos.push_back(PrintJobProtoToMojom(print_job_info));
+    }
+    for (const auto& kv : active_print_jobs_) {
+      if (kv.second) {
+        const CupsPrintJob& print_job(*kv.second);
+        print_job_infos.push_back(CupsPrintJobToMojom(print_job));
+      }
     }
   }
 

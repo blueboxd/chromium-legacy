@@ -7,7 +7,7 @@ package org.chromium.content.browser.remoteobjects;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.not;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

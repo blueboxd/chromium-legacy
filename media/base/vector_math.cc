@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "base/check_op.h"
+#include "base/memory/aligned_memory.h"
 #include "build/build_config.h"
 
 // NaCl does not allow intrinsics.
@@ -40,9 +41,8 @@ namespace media {
 namespace vector_math {
 
 void FMAC(const float src[], float scale, int len, float dest[]) {
-  // Ensure |src| and |dest| are 16-byte aligned.
-  DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(src) & (kRequiredAlignment - 1));
-  DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(dest) & (kRequiredAlignment - 1));
+  DCHECK(base::IsAligned(src, kRequiredAlignment));
+  DCHECK(base::IsAligned(dest, kRequiredAlignment));
   return FMAC_FUNC(src, scale, len, dest);
 }
 
@@ -52,9 +52,8 @@ void FMAC_C(const float src[], float scale, int len, float dest[]) {
 }
 
 void FMUL(const float src[], float scale, int len, float dest[]) {
-  // Ensure |src| and |dest| are 16-byte aligned.
-  DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(src) & (kRequiredAlignment - 1));
-  DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(dest) & (kRequiredAlignment - 1));
+  DCHECK(base::IsAligned(src, kRequiredAlignment));
+  DCHECK(base::IsAligned(dest, kRequiredAlignment));
   return FMUL_FUNC(src, scale, len, dest);
 }
 
@@ -65,8 +64,7 @@ void FMUL_C(const float src[], float scale, int len, float dest[]) {
 
 std::pair<float, float> EWMAAndMaxPower(
     float initial_value, const float src[], int len, float smoothing_factor) {
-  // Ensure |src| is 16-byte aligned.
-  DCHECK_EQ(0u, reinterpret_cast<uintptr_t>(src) & (kRequiredAlignment - 1));
+  DCHECK(base::IsAligned(src, kRequiredAlignment));
   return EWMAAndMaxPower_FUNC(initial_value, src, len, smoothing_factor);
 }
 

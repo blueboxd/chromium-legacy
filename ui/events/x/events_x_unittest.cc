@@ -43,8 +43,8 @@ void InitButtonEvent(XEvent* event,
   // We don't bother setting fields that the event code doesn't use, such as
   // x_root/y_root and window/root/subwindow.
   XButtonEvent* button_event = &(event->xbutton);
-  button_event->type = is_press ? x11::ButtonPressEvent::opcode
-                                : x11::ButtonReleaseEvent::opcode;
+  button_event->type =
+      is_press ? x11::ButtonEvent::Press : x11::ButtonEvent::Release;
   button_event->x = location.x();
   button_event->y = location.y();
   button_event->button = button;
@@ -64,8 +64,7 @@ void InitKeyEvent(Display* display,
   // x_root/y_root and window/root/subwindow.
   XKeyEvent* key_event = &(event->xkey);
   key_event->display = display;
-  key_event->type =
-      is_press ? x11::KeyPressEvent::opcode : x11::KeyReleaseEvent::opcode;
+  key_event->type = is_press ? x11::KeyEvent::Press : x11::KeyEvent::Release;
   key_event->keycode = keycode;
   key_event->state = state;
 }
@@ -191,7 +190,7 @@ TEST_F(EventsXTest, AvoidExtraEventsOnWheelRelease) {
 
 TEST_F(EventsXTest, EnterLeaveEvent) {
   XEvent event;
-  event.xcrossing.type = EnterNotify;
+  event.xcrossing.type = x11::CrossingEvent::EnterNotify;
   event.xcrossing.x = 10;
   event.xcrossing.y = 20;
   event.xcrossing.x_root = 110;
@@ -205,7 +204,7 @@ TEST_F(EventsXTest, EnterLeaveEvent) {
   EXPECT_EQ("10,20", ui::EventLocationFromXEvent(event).ToString());
   EXPECT_EQ("110,120", ui::EventSystemLocationFromXEvent(event).ToString());
 
-  event.xcrossing.type = LeaveNotify;
+  event.xcrossing.type = x11::CrossingEvent::LeaveNotify;
   event.xcrossing.x = 30;
   event.xcrossing.y = 40;
   event.xcrossing.x_root = 230;

@@ -90,9 +90,9 @@ UpdateShortcutInfosFromManifest(
     shortcut_info.name = shortcut.name;
     shortcut_info.url = shortcut.url;
 
-    std::vector<WebApplicationIconInfo> shortcut_icons;
+    std::vector<WebApplicationShortcutsMenuItemInfo::Icon> shortcut_icons;
     for (const auto& icon : shortcut.icons) {
-      WebApplicationIconInfo info;
+      WebApplicationShortcutsMenuItemInfo::Icon info;
 
       // Filter out non-square or too large icons.
       auto valid_size_it = std::find_if(

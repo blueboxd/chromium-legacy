@@ -66,7 +66,7 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
 
   LayoutUnit ConstrainColumnBlockSize(LayoutUnit size) const;
   LayoutUnit CurrentContentBlockOffset() const {
-    return intrinsic_block_size_ - border_scrollbar_padding_.block_start;
+    return intrinsic_block_size_ - BorderScrollbarPadding().block_start;
   }
 
   // Finalize layout after breaking before column contents.
@@ -97,18 +97,10 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
   // When set, this will specify where to break before or inside.
   const NGEarlyBreak* early_break_ = nullptr;
 
-  // Border + padding sum, resolved from the node's computed style.
-  const NGBoxStrut border_padding_;
-
-  // Border + scrollbar + padding sum for the fragment to be generated (most
-  // importantly, for non-first fragments, leading block border + scrollbar +
-  // padding is zero).
-  NGBoxStrut border_scrollbar_padding_;
-
-  LogicalSize content_box_size_;
   int used_column_count_;
   LayoutUnit column_inline_size_;
   LayoutUnit column_inline_progression_;
+  LayoutUnit column_block_size_;
   LayoutUnit intrinsic_block_size_;
   bool is_constrained_by_outer_fragmentation_context_ = false;
 

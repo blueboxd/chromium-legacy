@@ -6,6 +6,7 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js'
 import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
 import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
+import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import './print_management_shared_css.js';
 import './printing_manager.mojom-lite.js';
 
@@ -13,6 +14,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {assert} from 'chrome://resources/js/assert.m.js';
 import './strings.js';
 
 
@@ -65,7 +67,9 @@ Polymer({
 
   properties: {
     /** @type {!chromeos.printing.printingManager.mojom.PrintJobInfo} */
-    jobEntry: Object,
+    jobEntry: {
+      type: Object,
+    },
 
     /** @private */
     jobTitle_: {
@@ -88,9 +92,54 @@ Polymer({
     /** @private */
     completionStatus_: {
       type: String,
-      computed:
-          'convertStatusToString_(jobEntry.completedInfo.completionStatus)',
+      computed: 'computeCompletionStatus_(jobEntry.completedInfo)',
     },
+
+    /**
+     * A representation in fraction form of pages printed versus total number
+     * of pages to be printed. E.g. 5/7 (5 pages printed / 7 total pages to
+     * print).
+     * @private
+     */
+    readableProgress_: {
+      type: String,
+      computed: 'computeReadableProgress_(jobEntry.activePrintJobInfo)',
+    },
+
+    /** @private */
+    jobEntryAriaLabel_: {
+      type: String,
+      computed: 'getJobEntryAriaLabel_(jobEntry, jobTitle_, printerName_, ' +
+          'creationTime_, completionStatus_, ' +
+          'jobEntry.activePrintJobinfo.printedPages, jobEntry.numberOfPages)',
+    }
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeCompletionStatus_() {
+    if (!this.jobEntry.completedInfo) {
+      return '';
+    }
+
+    return this.convertStatusToString_(
+        this.jobEntry.completedInfo.completionStatus);
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  computeReadableProgress_() {
+    if (!this.jobEntry.activePrintJobInfo) {
+      return '';
+    }
+
+    return loadTimeData.getStringF('printedPagesFraction',
+        this.jobEntry.activePrintJobInfo.printedPages.toString(),
+        this.jobEntry.numberOfPages.toString());
   },
 
   /**
@@ -144,5 +193,57 @@ Polymer({
         assertNotReached();
         return loadTimeData.getString('completionStatusUnknownError');
     }
+  },
+
+  /**
+   * @return {boolean} Returns true if the job entry is a completed print job.
+   *                   Returns false otherwise.
+   * @private
+   */
+  isCompletedPrintJob_() {
+    return !!this.jobEntry.completedInfo && !this.jobEntry.activePrintJobInfo;
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getJobEntryAriaLabel_() {
+    if (!this.jobEntry || !this.jobEntry.numberOfPages != undefined ||
+        !this.printerName_ != undefined || !this.jobTitle_ != undefined ||
+        !this.creationTime_) {
+      return '';
+    }
+
+    // |completionStatus_| and |jobEntry.activePrintJobInfo| are mutually
+    // exclusive and one of which has to be non-null. Assert that if
+    // |completionStatus_| is non-null that |jobEntry.activePrintJobInfo| is
+    // null and vice-versa.
+    assert(this.completionStatus_ ?
+        !this.jobEntry.activePrintJobInfo : this.jobEntry.activePrintJobInfo);
+
+    if (this.isCompletedPrintJob_()) {
+      return loadTimeData.getStringF('completePrintJobLabel', this.jobTitle_,
+          this.printerName_, this.creationTime_, this.completionStatus_);
+    }
+    return loadTimeData.getStringF('ongoingPrintJobLabel', this.jobTitle_,
+          this.printerName_, this.creationTime_,
+          this.jobEntry.activePrintJobInfo.printedPages.toString(),
+          this.jobEntry.numberOfPages.toString());
+  },
+
+  /**
+   * Returns the percentage, out of 100, of the pages printed versus total
+   * number of pages.
+   * @param {number} printedPages
+   * @param {number} totalPages
+   * @return {number}
+   * @private
+   */
+  computePrintPagesProgress_(printedPages, totalPages) {
+    assert(printedPages >= 0);
+    assert(totalPages > 0);
+    assert(printedPages <= totalPages);
+    return (printedPages * 100) / totalPages;
   },
 });

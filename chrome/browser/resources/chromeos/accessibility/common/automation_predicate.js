@@ -180,8 +180,7 @@ AutomationPredicate = class {
         node.state[State.INVISIBLE] || node.children.every(function(n) {
           return n.state[State.INVISIBLE];
         }) ||
-        // Explicitly only check the clickable attribute here (for Android).
-        node.clickable || !!AutomationPredicate.math(node);
+        !!AutomationPredicate.math(node);
   }
 
   /**
@@ -309,11 +308,6 @@ AutomationPredicate = class {
   static container(node) {
     // Math is never a container.
     if (AutomationPredicate.math(node)) {
-      return false;
-    }
-
-    // Clickables (on Android) are not containers.
-    if (node.clickable) {
       return false;
     }
 

@@ -13,21 +13,14 @@ namespace blink {
 NGGridLayoutAlgorithm::NGGridLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
     : NGLayoutAlgorithm(params),
-      state_(GridLayoutAlgorithmState::kMeasuringItems),
-      border_padding_(params.fragment_geometry.border +
-                      params.fragment_geometry.padding),
-      border_scrollbar_padding_(border_padding_ +
-                                params.fragment_geometry.scrollbar) {
+      state_(GridLayoutAlgorithmState::kMeasuringItems) {
   DCHECK(params.space.IsNewFormattingContext());
   DCHECK(!params.break_token);
   container_builder_.SetIsNewFormattingContext(true);
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 
-  border_box_size_ = container_builder_.InitialBorderBoxSize();
-  content_box_size_ =
-      ShrinkAvailableSize(border_box_size_, border_scrollbar_padding_);
   child_percentage_size_ = CalculateChildPercentageSize(
-      ConstraintSpace(), Node(), content_box_size_);
+      ConstraintSpace(), Node(), ChildAvailableSize());
 }
 
 scoped_refptr<const NGLayoutResult> NGGridLayoutAlgorithm::Layout() {
@@ -74,7 +67,7 @@ NGConstraintSpace NGGridLayoutAlgorithm::BuildSpaceForMeasure(
   space_builder.SetIsPaintedAtomically(true);
 
   // TODO(kschmi) - do layout/measuring and handle non-fixed sizes here.
-  space_builder.SetAvailableSize(content_box_size_);
+  space_builder.SetAvailableSize(ChildAvailableSize());
   space_builder.SetPercentageResolutionSize(child_percentage_size_);
   space_builder.SetTextDirection(child_style.Direction());
   return space_builder.ToConstraintSpace();

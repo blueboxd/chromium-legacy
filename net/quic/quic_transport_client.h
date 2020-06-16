@@ -93,9 +93,14 @@ class NET_EXPORT QuicTransportClient
     std::vector<quic::CertificateFingerprint> server_certificate_fingerprints;
   };
 
-  // QUIC protocol version that is used in the origin trial.
-  static constexpr quic::ParsedQuicVersion kQuicVersionForOriginTrial =
-      quic::ParsedQuicVersion::Draft27();
+  // QUIC protocol versions that are used in the origin trial.
+  static quic::ParsedQuicVersionVector
+  QuicVersionsForWebTransportOriginTrial() {
+    return quic::ParsedQuicVersionVector{
+        quic::ParsedQuicVersion::Draft29(),  // Enabled in M85.
+        quic::ParsedQuicVersion::Draft27()   // Enabled in M84.
+    };
+  }
 
   // |visitor| and |context| must outlive this object.
   QuicTransportClient(const GURL& url,
@@ -180,6 +185,7 @@ class NET_EXPORT QuicTransportClient
   int DoResolveHostComplete(int rv);
   // Establishes the QUIC connection.
   int DoConnect();
+  void CreateConnection();
   // Verifies that the connection has succeeded.
   int DoConfirmConnection();
 
@@ -204,6 +210,7 @@ class NET_EXPORT QuicTransportClient
   State state_ = NEW;
   ConnectState next_connect_state_ = CONNECT_STATE_NONE;
   QuicTransportError error_;
+  bool retried_with_new_version_ = false;
 
   ProxyInfo proxy_info_;
   std::unique_ptr<ProxyResolutionRequest> proxy_resolution_request_;

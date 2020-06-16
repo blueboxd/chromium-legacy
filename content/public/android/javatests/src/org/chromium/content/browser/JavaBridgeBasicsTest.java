@@ -7,7 +7,8 @@ package org.chromium.content.browser;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

@@ -117,20 +117,15 @@ struct MyStruct {
   // No rewrite expected (for now - in V1 we only rewrite field decls).
   using SomeClassPtrAlias = SomeClass*;
 
-  // Chromium is built with a warning/error that there are no user-defined
-  // constructors invoked when initializing global-scoped values.
-  // CheckedPtr<char> conversion might trigger a global constructor for string
-  // literals:
-  //     struct MyStruct {
-  //       int foo;
-  //       CheckedPtr<const char> bar;
-  //     }
-  //     MyStruct g_foo = {123, "string literal" /* global constr! */};
-  // Because of the above, no rewrite is expected below.
-  char* char_ptr;
-  const char* const_char_ptr;
-  wchar_t* wide_char_ptr;
-  const wchar_t* const_wide_char_ptr;
+  // Char pointer fields should be rewritten, unless they are on the
+  // --field-filter-file blocklist.  See also gen-char-test.cc for tests
+  // covering generating the blocklist.
+  //
+  // Expected rewrite: CheckedPtr<char>, etc.
+  CheckedPtr<char> char_ptr;
+  CheckedPtr<const char> const_char_ptr;
+  CheckedPtr<wchar_t> wide_char_ptr;
+  CheckedPtr<const wchar_t> const_wide_char_ptr;
 
   // |array_of_ptrs| is an array 123 of pointer to SomeClass.
   // No rewrite expected (this is not a pointer - this is an array).
@@ -145,44 +140,6 @@ struct MyStruct {
   // replacement is tricky, because the |replacement_range| needs to cover
   // "[123]" that comes *after* the field name).
   const SomeClass (*ptr_to_array)[123];
-
-  // Definition of the non-freestanding struct should not disappear - i.e.
-  // we do not want the rewrite to be: CheckedPtr<struct NonFreestandingStruct>.
-  //
-  // Expected rewrite: ??? (as long as the struct definition doesn't disappear).
-  struct NonFreeStandingStruct {
-    int non_ptr;
-  } * ptr_to_non_free_standing_struct;
-
-  // Pointer to an inline definition of a struct.  There is a risk of generating
-  // an overlapping replacement (wrt the pointer field within the inline
-  // struct).
-  //
-  // Note that before a fix, the rewriter would generate an overlapping
-  // replacement under
-  // //sandbox/linux/integration_tests/bpf_dsl_seccomp_unittest.cc
-  // (see the ArgValue struct and the non-free-standing Tests struct inside).
-  //
-  // Expected rewrite: ??? (as long as there are no overlapping replacements).
-  struct NonFreeStandingStruct2 {
-    CheckedPtr<SomeClass> inner_ptr;
-  } * ptr_to_non_free_standing_struct2;
-
-  // The following is an unnamed/anonymous, free-standing struct.
-  //
-  // Expected rewrite: ??? (as long as there are no overlapping replacements).
-  struct {
-    CheckedPtr<SomeClass> inner_ptr;
-  } * ptr_to_non_free_standing_struct3;
-
-  // Despite avoiding the problems in NonFreeStandingStruct and
-  // NonFreeStandingStruct2 above, we should still rewrite the example below.
-  struct FreeStandingStruct {
-    // Expected rewrite: CheckedPtr<SomeClass> inner_ptr;
-    CheckedPtr<SomeClass> inner_ptr;
-  };
-  // Expected rewrite: CheckedPtr<InnerStruct2> ...
-  CheckedPtr<FreeStandingStruct> ptr_to_free_standing_struct;
 };
 
 extern "C" {

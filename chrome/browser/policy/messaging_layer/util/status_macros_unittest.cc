@@ -45,17 +45,20 @@ TEST(StatusMacros, ReturnIfErrorContinuesOnOk) {
 }
 
 // Function to test StatusOr macros.
-StatusOr<int> StatusOrTestFunction(bool fail, int return_value) {
+template <typename T>
+StatusOr<T> StatusOrTestFunction(bool fail, T return_value) {
   if (fail) {
     return Status(error::INVALID_ARGUMENT, "Test failure requested.");
   }
-  return return_value;
+  return std::forward<T>(return_value);
 }
 
 // Function for testing ASSIGN_OR_RETURN.
-StatusOr<int> AssignOrReturnWrapperFunction(bool fail, int return_value) {
-  ASSIGN_OR_RETURN(int value, StatusOrTestFunction(fail, return_value));
-  return value;
+template <typename T>
+StatusOr<T> AssignOrReturnWrapperFunction(bool fail, T return_value) {
+  ASSIGN_OR_RETURN(T value,
+                   StatusOrTestFunction(fail, std::forward<T>(return_value)));
+  return std::forward<T>(value);
 }
 
 // ASSIGN_OR_RETURN actually assigns the value if the status is OK.
@@ -95,6 +98,27 @@ TEST(StatusMacros, MultipleAssignsSucceed) {
   EXPECT_EQ(status_or_result.ValueOrDie(), kReturnValue);
 }
 
+// ASSIGN_OR_RETURN actually moves the value if the status is OK.
+TEST(StatusMacros, AssignOnOkMoveable) {
+  constexpr int kReturnValue = 42;
+
+  StatusOr<std::unique_ptr<int>> status_or_result =
+      AssignOrReturnWrapperFunction(/*fail=*/false,
+                                    std::make_unique<int>(kReturnValue));
+
+  ASSERT_TRUE(status_or_result.ok());
+  EXPECT_EQ(*status_or_result.ValueOrDie(), kReturnValue);
+}
+
+// ASSIGN_OR_RETURN actually returns on a non-OK status.
+TEST(StatusMacros, ReturnOnErrorMoveable) {
+  StatusOr<std::unique_ptr<int>> status_or_result =
+      AssignOrReturnWrapperFunction(/*fail=*/true,
+                                    std::make_unique<int>(/*return_value=*/0));
+  EXPECT_FALSE(status_or_result.ok());
+}
+
+// ASSIGN_OR_ONCE_CALLBACK_AND_RETURN testing
 void AssignOrOnceCallbackWrapperFunction(
     bool fail,
     base::OnceCallback<void(Status)> callback) {

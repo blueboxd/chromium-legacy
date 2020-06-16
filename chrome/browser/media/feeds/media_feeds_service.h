@@ -65,7 +65,7 @@ class MediaFeedsService : public KeyedService {
       std::unique_ptr<safe_search_api::URLChecker> safe_search_url_checker);
 
   // Stores a callback to be called once we have completed all inflight checks.
-  void SetSafeSearchCompletionCallbackForTest(base::RepeatingClosure callback);
+  void SetSafeSearchCompletionCallbackForTest(base::OnceClosure callback);
 
   // Fetches a media feed with the given ID and then store it in the
   // feeds table in media history. Runs the given callback after storing. The
@@ -89,20 +89,15 @@ class MediaFeedsService : public KeyedService {
  private:
   friend class MediaFeedsServiceTest;
 
-  bool AddInflightSafeSearchCheck(
-      const media_history::MediaHistoryKeyedService::SafeSearchID id,
-      const std::set<GURL>& urls);
+  bool AddInflightSafeSearchCheck(const int64_t id, const std::set<GURL>& urls);
 
-  void CheckForSafeSearch(
-      const media_history::MediaHistoryKeyedService::SafeSearchID id,
-      const GURL& url);
+  void CheckForSafeSearch(const int64_t id, const GURL& url);
 
-  void OnCheckURLDone(
-      const media_history::MediaHistoryKeyedService::SafeSearchID id,
-      const GURL& original_url,
-      const GURL& url,
-      safe_search_api::Classification classification,
-      bool uncertain);
+  void OnCheckURLDone(const int64_t id,
+                      const GURL& original_url,
+                      const GURL& url,
+                      safe_search_api::Classification classification,
+                      bool uncertain);
 
   void MaybeCallCompletionCallback();
 
@@ -131,8 +126,6 @@ class MediaFeedsService : public KeyedService {
                                const bool include_subdomains,
                                const std::string& name,
                                const net::CookieChangeCause& cause);
-
-  void OnDiscoveredFeed();
 
   media_history::MediaHistoryKeyedService* GetMediaHistoryService();
 
@@ -169,11 +162,10 @@ class MediaFeedsService : public KeyedService {
     bool is_uncertain = false;
   };
 
-  std::map<media_history::MediaHistoryKeyedService::SafeSearchID,
-           std::unique_ptr<InflightSafeSearchCheck>>
+  std::map<int64_t, std::unique_ptr<InflightSafeSearchCheck>>
       inflight_safe_search_checks_;
 
-  base::RepeatingClosure safe_search_completion_callback_;
+  base::OnceClosure safe_search_completion_callback_;
 
   scoped_refptr<::network::SharedURLLoaderFactory>
       test_url_loader_factory_for_fetcher_;

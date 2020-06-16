@@ -148,10 +148,6 @@ class TrustedURLLoaderHeaderClient;
 struct ResourceRequest;
 }  // namespace network
 
-namespace rappor {
-class RapporService;
-}  // namespace rappor
-
 namespace sandbox {
 class TargetPolicy;
 }  // namespace sandbox
@@ -160,6 +156,10 @@ namespace ui {
 class SelectFilePolicy;
 class ClipboardFormatType;
 }  // namespace ui
+
+namespace ukm {
+class UkmService;
+}  // namespace ukm
 
 namespace url {
 class Origin;
@@ -1113,9 +1113,6 @@ class CONTENT_EXPORT ContentBrowserClient {
                        const OpenURLParams& params,
                        base::OnceCallback<void(WebContents*)> callback);
 
-  // Allows the embedder to record |metric| for a specific |url|.
-  virtual void RecordURLMetric(const std::string& metric, const GURL& url) {}
-
   // Allows the embedder to map URLs to strings, intended to be used as suffixes
   // for metric names. For example, the embedder can map
   // "my-special-site-with-a-complicated-name.example.com/and-complicated-path"
@@ -1195,9 +1192,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       RenderFrameHost* render_frame_host,
       mojo::PendingRemote<media::mojom::RemotingSource> source,
       mojo::PendingReceiver<media::mojom::Remoter> receiver) {}
-
-  // Returns the RapporService from the browser process.
-  virtual ::rappor::RapporService* GetRapporService();
 
   // Allows the embedder to register one or more URLLoaderThrottles for one of
   // the following requests:
@@ -1853,6 +1847,9 @@ class CONTENT_EXPORT ContentBrowserClient {
   // inherit the parent COEP value implicitly, similar to "blob:"
   virtual bool ShouldInheritCrossOriginEmbedderPolicyImplicitly(
       const GURL& url);
+
+  // Returns the URL-Keyed Metrics service for chrome:ukm.
+  virtual ukm::UkmService* GetUkmService();
 };
 
 }  // namespace content

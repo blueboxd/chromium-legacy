@@ -147,8 +147,12 @@ std::unique_ptr<base::DictionaryValue> TestRuleRedirect::ToValue() const {
   return dict;
 }
 
-TestHeaderInfo::TestHeaderInfo(std::string header, std::string operation)
-    : header(std::move(header)), operation(std::move(operation)) {}
+TestHeaderInfo::TestHeaderInfo(std::string header,
+                               std::string operation,
+                               base::Optional<std::string> value)
+    : header(std::move(header)),
+      operation(std::move(operation)),
+      value(std::move(value)) {}
 TestHeaderInfo::~TestHeaderInfo() = default;
 TestHeaderInfo::TestHeaderInfo(const TestHeaderInfo&) = default;
 TestHeaderInfo& TestHeaderInfo::operator=(const TestHeaderInfo&) = default;
@@ -157,6 +161,7 @@ std::unique_ptr<base::DictionaryValue> TestHeaderInfo::ToValue() const {
   auto dict = std::make_unique<base::DictionaryValue>();
   SetValue(dict.get(), kHeaderNameKey, header);
   SetValue(dict.get(), kHeaderOperationKey, operation);
+  SetValue(dict.get(), kHeaderValueKey, value);
   return dict;
 }
 

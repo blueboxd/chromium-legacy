@@ -293,6 +293,23 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         getPopupController().registerPopup(this);
     }
 
+    private void reset() {
+        dropFocus();
+        mContext = null;
+        mWindowAndroid = null;
+    }
+
+    private void dropFocus() {
+        // Hide popups and clear selection.
+        destroyActionModeAndUnselect();
+        dismissTextHandles();
+        PopupController.hideAll(mWebContents);
+        // Clear the selection. The selection is cleared on destroying IME
+        // and also here since we may receive destroy first, for example
+        // when focus is lost in webview.
+        clearSelection();
+    }
+
     public static String sanitizeQuery(String query, int maxLength) {
         if (TextUtils.isEmpty(query) || query.length() < maxLength) return query;
         Log.w(TAG, "Truncating oversized query (" + query.length() + ").");
@@ -610,6 +627,11 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     @Override
     public void onWindowAndroidChanged(WindowAndroid newWindowAndroid) {
+        if (newWindowAndroid == null) {
+            reset();
+            return;
+        }
+
         mWindowAndroid = newWindowAndroid;
         mContext = mWebContents.getContext();
         initHandleObserver();
@@ -638,14 +660,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
                 setPreserveSelectionOnNextLossOfFocus(false);
                 hidePopupsAndPreserveSelection();
             } else {
-                // Hide popups and clear selection.
-                destroyActionModeAndUnselect();
-                dismissTextHandles();
-                PopupController.hideAll(mWebContents);
-                // Clear the selection. The selection is cleared on destroying IME
-                // and also here since we may receive destroy first, for example
-                // when focus is lost in webview.
-                clearSelection();
+                dropFocus();
             }
         }
     }

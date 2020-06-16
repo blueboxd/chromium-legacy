@@ -549,12 +549,16 @@ CommandLine::StringType CommandLine::GetCommandLineString() const {
 }
 
 #if defined(OS_WIN)
+// NOTE: this function is used to set Chrome's open command in the registry
+// during update. Any change to the syntax must be compatible with the prior
+// version, to prevent shell-launch functionality from breaking in between the
+// update and the browser restarting (see crbug.com/1092913).
 CommandLine::StringType CommandLine::GetCommandLineStringForShell() const {
   DCHECK(GetArgs().empty());
   StringType command_line_string = GetCommandLineString();
   return command_line_string + FILE_PATH_LITERAL(" ") +
          kSwitchPrefixes[0].as_string() + kSingleArgument +
-         kSwitchValueSeparator + FILE_PATH_LITERAL("%1");
+         FILE_PATH_LITERAL(" %1");
 }
 #endif  // defined(OS_WIN)
 
@@ -589,25 +593,26 @@ CommandLine::StringType CommandLine::GetArgumentsString() const {
 
 #if defined(OS_WIN)
 void CommandLine::ParseAsSingleArgument(
-    const CommandLine::StringType& single_arg_switch_string) {
+    const CommandLine::StringType& single_arg_switch) {
   DCHECK(!raw_command_line_string_.empty());
 
   // Remove any previously parsed arguments.
   argv_.resize(begin_args_);
 
-  // Locate "--single-argument=" in the process's raw command line. Results are
-  // unpredictable if "--single-argument=" appears as part of a previous
+  // Locate "--single-argument" in the process's raw command line. Results are
+  // unpredictable if "--single-argument" appears as part of a previous
   // argument or switch.
-  StringType single_arg_switch =
-      single_arg_switch_string + kSwitchValueSeparator;
   const size_t single_arg_switch_position =
       raw_command_line_string_.find(single_arg_switch);
   CHECK_NE(single_arg_switch_position, StringType::npos);
 
-  // Append the portion of the raw command line that comes after
-  // "--single-argument=" as the one and only argument.
+  // Append the portion of the raw command line that starts one character past
+  // "--single-argument" as the one and only argument, or return if no
+  // argument is present.
   const size_t arg_position =
-      single_arg_switch_position + single_arg_switch.length();
+      single_arg_switch_position + single_arg_switch.length() + 1;
+  if (arg_position >= raw_command_line_string_.length())
+    return;
   const StringPieceType arg = raw_command_line_string_.substr(arg_position);
   if (!arg.empty()) {
     AppendArgNative(arg.as_string());

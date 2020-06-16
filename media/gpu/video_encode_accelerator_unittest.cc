@@ -20,6 +20,7 @@
 #include "base/containers/queue.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
@@ -556,7 +557,7 @@ static void CreateAlignedInputStreamFile(const gfx::Size& coded_size,
     const char* src_ptr = &src_data[0];
     for (size_t i = 0; i < num_planes; i++) {
       // Assert that each plane of frame starts at required byte boundary.
-      ASSERT_EQ(0u, dest_offset & (test::kPlatformBufferAlignment - 1))
+      ASSERT_TRUE(base::IsAligned(dest_offset, test::kPlatformBufferAlignment))
           << "Planes of frame should be mapped per platform requirements";
       char* dst_ptr = &test_stream->aligned_in_file_data[dest_offset];
       for (size_t j = 0; j < visible_plane_rows[i]; j++) {

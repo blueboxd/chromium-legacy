@@ -8,10 +8,11 @@ import android.annotation.TargetApi;
 import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.os.Build;
-import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.inputmethod.CursorAnchorInfo;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Test;

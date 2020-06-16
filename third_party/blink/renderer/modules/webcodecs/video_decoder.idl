@@ -21,69 +21,50 @@
   // When in an error state, methods other than reset() will fail.
   //
   // TODO(sandersd): Consider adding a state or last error attribute.
-  // TODO(sandersd): Consider aborting pending decodes on error, rather than
-  // waiting for reset().
   [CallWith=ScriptState, RaisesException] constructor(VideoDecoderInit init);
 
-  // The number of queued decode requests. This does not include requests that
-  // have been taken for processing.
+  // The number of pending decode requests. This does not include requests that
+  // have been sent to the underlying codec.
   //
   // Applications can minimize underflow by enqueueing decode requests until
   // |decodeQueueSize| is greater than a constant.
+  //
+  // TODO(sandersd): Consider adding a predicted output count or other
+  // backpressure mechanism that considers the state of the underlying codec.
+  // TODO(sandersd): Consider emitting an event when this number decreases.
   readonly attribute long decodeQueueSize;
 
-  // The number of decode requests currently being processed.
+  // Set the stream configuration for future decode() requests.
   //
-  // Applications can minimize resource consumption and decode latency by
-  // enqueueing decode requests only when |decodeQueueSize| and
-  // |decodeProcessingCount| are small.
+  // The next decode request must be for a keyframe.
   //
-  // TODO(sandersd): Consider counting queued decode requests as well. This
-  // could be simpler for apps.
-  readonly attribute long decodeProcessingCount;
-
-  // Enqueue a request to set or change the stream configuration.
-  //
-  // The next enqueued decode request must be for a keyframe.
-  //
-  // Resolved after emitting output for all earlier decode requests.
-  //
-  // TODO(sandersd): Test that resolution (a microtask) interleaves between
-  // outputs callback calls in all cases.
   // TODO(sandersd): Move the keyframe rule into the bytestream registry.
-  [RaisesException] Promise<void> configure(EncodedVideoConfig config);
+  [RaisesException] void configure(EncodedVideoConfig config);
 
-  // Enqueue a request to decode an input chunk.
+  // Request decoding of an input chunk.
   //
-  // You must call configure() before calling enqueue() for the first time.
-  //
-  // Resolved after decoding of the input chunk has started (that is, after
-  // decreasing |decodeQueueSize|).
+  // You must call configure() before calling decode() for the first time.
   //
   // TODO(sandersd): Change to a dictionary type.
-  // TODO(sandersd): Should we guarantee that resolution occurs in order?
-  // TODO(sandersd): Add status to result.
-  // TODO(sandersd): Buffer return.
-  [RaisesException] Promise<void> decode(EncodedVideoChunk chunk);
+  [RaisesException] void decode(EncodedVideoChunk chunk);
 
-  // Enqueue a request to finish decoding queued input chunks.
+  // Request output from all previous decode requests.
   //
-  // The next enqueued input chunk must be a keyframe.
+  // Resolved after all output for earlier decode requests has been emitted.
   //
-  // Resolved after emitting output for all earlier decode requests.
+  // The next decode request must be for a keyframe.
   //
   // TODO(sandersd): Consider relaxing the keyframe requirement.
+  // TODO(sandersd): Indicate whether the flush() completed successfully or due
+  // to a reset.
   [RaisesException] Promise<void> flush();
 
-  // Discard all pending work.
+  // Discard all pending decode requests.
   //
-  // Output for earlier decode requests will not be emitted, even if processing
-  // has already started.
+  // The next decode request must be for a keyframe.
   //
-  // The next enqueued input chunk must be a keyframe.
-  //
-  // Resolved after all earlier enqueue() promises have been resolved.
-  //
-  // TODO(sandersd): Require configure() after reset()?
-  [RaisesException] Promise<void> reset();
+  // Note: It may be possible to call reset() after a flush() promise has been
+  // resolved but before it is fulfilled. In that case the flush() promise will
+  // be fulfilled successfully even though reset() was called.
+  [RaisesException] void reset();
 };

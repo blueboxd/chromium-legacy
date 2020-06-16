@@ -163,6 +163,10 @@ class OmniboxViewViews : public OmniboxView,
     return popup_view_.get();
   }
 
+  // Applies |color| to the URL's path. Callers should ensure that the URL is
+  // valid before calling. Virtual for testing.
+  virtual void SetPathColor(SkColor color);
+
  protected:
   // views::Textfield:
   void OnThemeChanged() override;
@@ -175,6 +179,11 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest,
                            HideOnInteractionAfterFocusAndBlur);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, RevealOnHoverAfterBlur);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, PathChangeDuringAnimation);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest,
+                           HideOnInteractionSameDocNavigations);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest,
+                           HideOnInteractionSubframeNavigations);
   // TODO(tommycli): Remove the rest of these friends after porting these
   // browser tests to unit tests.
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag);

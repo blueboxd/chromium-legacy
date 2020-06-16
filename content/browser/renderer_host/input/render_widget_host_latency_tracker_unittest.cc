@@ -191,7 +191,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestValidEventTiming) {
   latency_info.AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT, now);
 
-  viz_tracker()->OnGpuSwapBuffersCompleted(latency_info);
+  viz_tracker()->OnGpuSwapBuffersCompleted({latency_info});
 
   // When last_event_time of the end_component is less than the first_event_time
   // of the start_component, zero is recorded instead of a negative value.
@@ -250,7 +250,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
       tracker()->OnInputEventAck(
           wheel, &wheel_latency,
           blink::mojom::InputEventResultState::kNotConsumed);
-      viz_tracker()->OnGpuSwapBuffersCompleted(wheel_latency);
+      viz_tracker()->OnGpuSwapBuffersCompleted({wheel_latency});
 
       // UKM metrics.
       total_ukm_entry_count++;
@@ -364,7 +364,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_TestWheelToScrollHistograms) {
       tracker()->OnInputEventAck(
           wheel, &wheel_latency,
           blink::mojom::InputEventResultState::kNotConsumed);
-      viz_tracker()->OnGpuSwapBuffersCompleted(wheel_latency);
+      viz_tracker()->OnGpuSwapBuffersCompleted({wheel_latency});
 
       // UKM metrics.
       total_ukm_entry_count++;
@@ -474,7 +474,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
       tracker()->OnInputEventAck(
           scroll, &scroll_latency,
           blink::mojom::InputEventResultState::kNotConsumed);
-      viz_tracker()->OnGpuSwapBuffersCompleted(scroll_latency);
+      viz_tracker()->OnGpuSwapBuffersCompleted({scroll_latency});
     }
 
     // UMA histograms.
@@ -562,7 +562,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
       tracker()->OnInputEventAck(
           touch, &touch_latency,
           blink::mojom::InputEventResultState::kNotConsumed);
-      viz_tracker()->OnGpuSwapBuffersCompleted(touch_latency);
+      viz_tracker()->OnGpuSwapBuffersCompleted({touch_latency});
     }
 
     // UKM metrics.
@@ -681,7 +681,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_TestTouchToScrollHistograms) {
       tracker()->OnInputEventAck(
           touch, &touch_latency,
           blink::mojom::InputEventResultState::kNotConsumed);
-      viz_tracker()->OnGpuSwapBuffersCompleted(touch_latency);
+      viz_tracker()->OnGpuSwapBuffersCompleted({touch_latency});
     }
 
     // UKM metrics.
@@ -780,7 +780,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_ScrollbarEndToEndHistograms) {
         tracker()->OnInputEventAck(
             mouse_move, &scrollbar_latency,
             blink::mojom::InputEventResultState::kNotConsumed);
-        viz_tracker()->OnGpuSwapBuffersCompleted(scrollbar_latency);
+        viz_tracker()->OnGpuSwapBuffersCompleted({scrollbar_latency});
       }
     }
   }
@@ -1227,7 +1227,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, KeyEndToEndLatency) {
       base::TimeTicks() +
           base::TimeDelta::FromMicroseconds(event_timestamps_microseconds[1]));
 
-  viz_tracker()->OnGpuSwapBuffersCompleted(latency_info);
+  viz_tracker()->OnGpuSwapBuffersCompleted({latency_info});
 
   EXPECT_THAT(
       histogram_tester().GetAllSamples("Event.Latency.EndToEnd.KeyPress"),
@@ -1301,7 +1301,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TouchpadPinchEvents) {
   AddFakeComponentsWithTimeStamp(
       *tracker(), &latency,
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(5));
-  viz_tracker()->OnGpuSwapBuffersCompleted(latency);
+  viz_tracker()->OnGpuSwapBuffersCompleted({latency});
 
   EXPECT_TRUE(HistogramSizeEq("Event.Latency.EventToRender.TouchpadPinch", 1));
   EXPECT_TRUE(HistogramSizeEq("Event.Latency.EndToEnd.TouchpadPinch", 1));

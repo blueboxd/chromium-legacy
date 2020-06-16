@@ -4120,37 +4120,6 @@ const CSSValue* Mask::CSSValueFromComputedStyleInternal(
   return ComputedStyleUtils::ValueForSVGResource(svg_style.MaskerResource());
 }
 
-const CSSValue* MaskSourceType::ParseSingleValue(
-    CSSParserTokenRange& range,
-    const CSSParserContext&,
-    const CSSParserLocalContext&) const {
-  return css_parsing_utils::ConsumeCommaSeparatedList(
-      css_parsing_utils::ConsumeMaskSourceType, range);
-}
-
-static CSSValue* ValueForFillSourceType(EMaskSourceType type) {
-  switch (type) {
-    case EMaskSourceType::kAlpha:
-      return CSSIdentifierValue::Create(CSSValueID::kAlpha);
-    case EMaskSourceType::kLuminance:
-      return CSSIdentifierValue::Create(CSSValueID::kLuminance);
-  }
-  NOTREACHED();
-  return nullptr;
-}
-
-const CSSValue* MaskSourceType::CSSValueFromComputedStyleInternal(
-    const ComputedStyle& style,
-    const SVGComputedStyle&,
-    const LayoutObject*,
-    bool allow_visited_style) const {
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  for (const FillLayer* curr_layer = &style.MaskLayers(); curr_layer;
-       curr_layer = curr_layer->Next())
-    list->Append(*ValueForFillSourceType(curr_layer->MaskSourceType()));
-  return list;
-}
-
 const CSSValue* MaskType::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,

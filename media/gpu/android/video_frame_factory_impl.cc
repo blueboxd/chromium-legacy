@@ -171,7 +171,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
   auto image_ready_cb =
       base::BindOnce(&VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady,
                      weak_factory_.GetWeakPtr(), std::move(output_cb),
-                     timestamp, natural_size, codec_buffer_wait_coordinator_,
+                     timestamp, natural_size, !!codec_buffer_wait_coordinator_,
                      std::move(promotion_hint_cb), pixel_format, overlay_mode_,
                      enable_threaded_texture_mailboxes_, gpu_task_runner_);
 
@@ -246,7 +246,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
     OnceOutputCB output_cb,
     base::TimeDelta timestamp,
     gfx::Size natural_size,
-    scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
+    bool is_texture_owner_backed,
     PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
     VideoPixelFormat pixel_format,
     OverlayMode overlay_mode,
@@ -268,7 +268,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
   // When we remove the output buffer management from CodecImage, then that's
   // what we'd have a reference to here rather than CodecImage.
   record.codec_image_holder->codec_image_raw()->Initialize(
-      std::move(output_buffer_renderer), codec_buffer_wait_coordinator,
+      std::move(output_buffer_renderer), is_texture_owner_backed,
       std::move(promotion_hint_cb));
 
   // Send the CodecImage (via holder, since we can't touch the refcount here) to
@@ -309,17 +309,15 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
   const bool wants_promotion_hints =
       overlay_mode == OverlayMode::kRequestPromotionHints;
 
-  // Remember that we can't access |codec_buffer_wait_coordinator|, but we can
-  // check if we have one here.
   bool allow_overlay = false;
   if (is_surface_control) {
-    DCHECK(codec_buffer_wait_coordinator);
+    DCHECK(is_texture_owner_backed);
     allow_overlay = true;
   } else {
     // We unconditionally mark the picture as overlayable, even if
-    // |!codec_buffer_wait_coordinator|, if we want to get hints.  It's
+    // |!is_texture_owner_backed|, if we want to get hints.  It's
     // required, else we won't get hints.
-    allow_overlay = !codec_buffer_wait_coordinator || wants_promotion_hints;
+    allow_overlay = !is_texture_owner_backed || wants_promotion_hints;
   }
 
   frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY,
@@ -327,7 +325,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
   frame->metadata()->SetBoolean(VideoFrameMetadata::WANTS_PROMOTION_HINT,
                                 wants_promotion_hints);
   frame->metadata()->SetBoolean(VideoFrameMetadata::TEXTURE_OWNER,
-                                !!codec_buffer_wait_coordinator);
+                                is_texture_owner_backed);
 
   // TODO(liberato): if this is run via being dropped, then it would be nice
   // to find that out rather than treating the image as unused.  If the renderer

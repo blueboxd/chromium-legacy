@@ -445,6 +445,8 @@ extern const char kEnableTranslateSubFramesDescription[];
 
 extern const char kCorsForContentScriptsName[];
 extern const char kCorsForContentScriptsDescription[];
+extern const char kForceEmptyCorbAndCorsAllowlistName[];
+extern const char kForceEmptyCorbAndCorsAllowlistDescription[];
 
 extern const char kCrossOriginOpenerPolicyName[];
 extern const char kCrossOriginOpenerPolicyDescription[];

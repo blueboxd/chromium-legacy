@@ -12,6 +12,7 @@
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/test/pixel/browser_skia_gold_pixel_diff.h"
+#include "ui/base/test/skia_gold_matching_algorithm.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/views/widget/widget.h"
 #endif
@@ -30,14 +31,22 @@ std::string NameFromTestCase() {
 
 }  // namespace
 
-TestBrowserUi::TestBrowserUi() = default;
+TestBrowserUi::TestBrowserUi() {
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  // Default to fuzzy diff. The magic number is chosen based on
+  // past experiments.
+  SetPixelMatchAlgorithm(
+      std::make_unique<ui::test::FuzzySkiaGoldMatchingAlgorithm>(20, 255 * 3));
+#endif
+}
+
 TestBrowserUi::~TestBrowserUi() = default;
 
+// TODO(https://crbug.com/958242) support Mac for pixel tests.
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 bool TestBrowserUi::VerifyPixelUi(views::Widget* widget,
                                   const std::string& screenshot_prefix,
                                   const std::string& screenshot_name) {
-// TODO(https://crbug.com/958242) support Mac for pixel tests.
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           "browser-ui-tests-verify-pixels"))
     return true;
@@ -48,12 +57,15 @@ bool TestBrowserUi::VerifyPixelUi(views::Widget* widget,
 
   BrowserSkiaGoldPixelDiff pixel_diff;
   pixel_diff.Init(widget, screenshot_prefix);
-  return pixel_diff.CompareScreenshot(screenshot_name,
-                                      widget->GetContentsView());
-#else
-  return true;
-#endif
+  return pixel_diff.CompareScreenshot(
+      screenshot_name, widget->GetContentsView(), GetPixelMatchAlgorithm());
 }
+
+void TestBrowserUi::SetPixelMatchAlgorithm(
+    std::unique_ptr<ui::test::SkiaGoldMatchingAlgorithm> algorithm) {
+  algorithm_ = std::move(algorithm);
+}
+#endif
 
 void TestBrowserUi::ShowAndVerifyUi() {
   PreShow();

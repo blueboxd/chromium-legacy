@@ -9,20 +9,23 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
+#include "ui/base/test/skia_gold_matching_algorithm.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
 
 using ::testing::_;
+using ::testing::AllOf;
+using ::testing::AnyNumber;
+using ::testing::HasSubstr;
+using ::testing::Property;
+
+namespace ui {
+namespace test {
 
 class MockSkiaGoldPixelDiff : public SkiaGoldPixelDiff {
  public:
   MockSkiaGoldPixelDiff() = default;
   MOCK_CONST_METHOD1(LaunchProcess, int(const base::CommandLine&));
-  bool UploadToSkiaGoldServer(
-      const base::FilePath& local_file_path,
-      const std::string& remote_golden_image_name) const override {
-    return true;
-  }
 };
 
 class SkiaGoldPixelDiffTest : public ::testing::Test {
@@ -45,6 +48,7 @@ TEST_F(SkiaGoldPixelDiffTest, CompareScreenshotBySkBitmap) {
                         SkAlphaType::kPremul_SkAlphaType);
   bitmap.allocPixels(info, 10 * 4);
   MockSkiaGoldPixelDiff mock_pixel;
+  EXPECT_CALL(mock_pixel, LaunchProcess(_)).Times(3);
   mock_pixel.Init("Prefix");
   bool ret = mock_pixel.CompareScreenshot("test", bitmap);
   EXPECT_TRUE(ret);
@@ -65,3 +69,98 @@ TEST_F(SkiaGoldPixelDiffTest, BypassSkiaGoldFunctionality) {
   bool ret = mock_pixel.CompareScreenshot("test", bitmap);
   EXPECT_TRUE(ret);
 }
+
+TEST_F(SkiaGoldPixelDiffTest, FuzzyMatching) {
+  SkBitmap bitmap;
+  SkImageInfo info =
+      SkImageInfo::Make(10, 10, SkColorType::kBGRA_8888_SkColorType,
+                        SkAlphaType::kPremul_SkAlphaType);
+  bitmap.allocPixels(info, 10 * 4);
+
+  MockSkiaGoldPixelDiff mock_pixel;
+  EXPECT_CALL(mock_pixel, LaunchProcess(_)).Times(AnyNumber());
+  EXPECT_CALL(
+      mock_pixel,
+      LaunchProcess(AllOf(
+          Property(
+              &base::CommandLine::GetCommandLineString,
+              HasSubstr(FILE_PATH_LITERAL("image_matching_algorithm:fuzzy"))),
+          Property(
+              &base::CommandLine::GetCommandLineString,
+              HasSubstr(FILE_PATH_LITERAL("fuzzy_max_different_pixels:1"))),
+          Property(
+              &base::CommandLine::GetCommandLineString,
+              HasSubstr(FILE_PATH_LITERAL("fuzzy_pixel_delta_threshold:2"))))))
+      .Times(1);
+  mock_pixel.Init("Prefix");
+  FuzzySkiaGoldMatchingAlgorithm algorithm(1, 2);
+  bool ret = mock_pixel.CompareScreenshot("test", bitmap, &algorithm);
+  EXPECT_TRUE(ret);
+}
+
+TEST_F(SkiaGoldPixelDiffTest, FuzzyMatchingWithIgnoredBorder) {
+  SkBitmap bitmap;
+  SkImageInfo info =
+      SkImageInfo::Make(10, 10, SkColorType::kBGRA_8888_SkColorType,
+                        SkAlphaType::kPremul_SkAlphaType);
+  bitmap.allocPixels(info, 10 * 4);
+
+  MockSkiaGoldPixelDiff mock_pixel;
+  EXPECT_CALL(mock_pixel, LaunchProcess(_)).Times(AnyNumber());
+  EXPECT_CALL(
+      mock_pixel,
+      LaunchProcess(AllOf(
+          Property(
+              &base::CommandLine::GetCommandLineString,
+              HasSubstr(FILE_PATH_LITERAL("image_matching_algorithm:fuzzy"))),
+          Property(
+              &base::CommandLine::GetCommandLineString,
+              HasSubstr(FILE_PATH_LITERAL("fuzzy_max_different_pixels:1"))),
+          Property(
+              &base::CommandLine::GetCommandLineString,
+              HasSubstr(FILE_PATH_LITERAL("fuzzy_pixel_delta_threshold:2"))),
+          Property(&base::CommandLine::GetCommandLineString,
+                   HasSubstr(FILE_PATH_LITERAL(
+                       "fuzzy_ignored_border_thickness:3"))))))
+      .Times(1);
+  mock_pixel.Init("Prefix");
+  FuzzySkiaGoldMatchingAlgorithm algorithm(1, 2, 3);
+  bool ret = mock_pixel.CompareScreenshot("test", bitmap, &algorithm);
+  EXPECT_TRUE(ret);
+}
+
+TEST_F(SkiaGoldPixelDiffTest, SobelMatching) {
+  SkBitmap bitmap;
+  SkImageInfo info =
+      SkImageInfo::Make(10, 10, SkColorType::kBGRA_8888_SkColorType,
+                        SkAlphaType::kPremul_SkAlphaType);
+  bitmap.allocPixels(info, 10 * 4);
+
+  MockSkiaGoldPixelDiff mock_pixel;
+  EXPECT_CALL(mock_pixel, LaunchProcess(_)).Times(AnyNumber());
+  EXPECT_CALL(
+      mock_pixel,
+      LaunchProcess(AllOf(
+          Property(
+              &base::CommandLine::GetCommandLineString,
+              HasSubstr(FILE_PATH_LITERAL("image_matching_algorithm:sobel"))),
+          Property(
+              &base::CommandLine::GetCommandLineString,
+              HasSubstr(FILE_PATH_LITERAL("fuzzy_max_different_pixels:1"))),
+          Property(
+              &base::CommandLine::GetCommandLineString,
+              HasSubstr(FILE_PATH_LITERAL("fuzzy_pixel_delta_threshold:2"))),
+          Property(&base::CommandLine::GetCommandLineString,
+                   HasSubstr(FILE_PATH_LITERAL("sobel_edge_threshold:3"))),
+          Property(&base::CommandLine::GetCommandLineString,
+                   HasSubstr(FILE_PATH_LITERAL(
+                       "fuzzy_ignored_border_thickness:4"))))))
+      .Times(1);
+  mock_pixel.Init("Prefix");
+  SobelSkiaGoldMatchingAlgorithm algorithm(1, 2, 3, 4);
+  bool ret = mock_pixel.CompareScreenshot("test", bitmap, &algorithm);
+  EXPECT_TRUE(ret);
+}
+
+}  // namespace test
+}  // namespace ui

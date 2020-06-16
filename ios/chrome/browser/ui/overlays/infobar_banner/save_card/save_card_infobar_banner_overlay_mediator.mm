@@ -5,9 +5,13 @@
 #import "ios/chrome/browser/ui/overlays/infobar_banner/save_card/save_card_infobar_banner_overlay_mediator.h"
 
 #include "base/strings/sys_string_conversions.h"
+#include "ios/chrome/browser/overlays/public/infobar_banner/infobar_banner_overlay_responses.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_card_infobar_banner_overlay_request_config.h"
+#include "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_consumer.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_overlay_mediator+consumer_support.h"
+#import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_overlay_mediator.h"
+#import "ios/chrome/browser/ui/overlays/overlay_request_mediator+subclassing.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -34,6 +38,23 @@ using save_card_infobar_overlays::SaveCardBannerRequestConfig;
 
 + (const OverlayRequestSupport*)requestSupport {
   return SaveCardBannerRequestConfig::RequestSupport();
+}
+
+#pragma mark - InfobarOverlayRequestMediator
+
+- (void)bannerInfobarButtonWasPressed:(UIButton*)sender {
+  // Display the modal (thus the ToS) if the card will be uploaded, this is a
+  // legal requirement and shouldn't be changed.
+  if (self.config->should_upload_credentials()) {
+    [self dispatchResponse:OverlayResponse::CreateWithInfo<
+                               InfobarBannerShowModalResponse>()];
+    return;
+  }
+  // Notify the model layer to perform the infobar's main action before
+  // dismissing the banner.
+  [self dispatchResponse:OverlayResponse::CreateWithInfo<
+                             InfobarBannerMainActionResponse>()];
+  [self dismissOverlay];
 }
 
 @end

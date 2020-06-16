@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/stream_texture_shared_image_interface.h"
-#include "media/gpu/android/codec_buffer_wait_coordinator.h"
 #include "media/gpu/android/codec_output_buffer_renderer.h"
 #include "media/gpu/android/promotion_hint_aggregator.h"
 #include "media/gpu/media_gpu_export.h"
@@ -54,7 +53,7 @@ class MEDIA_GPU_EXPORT CodecImage
   // not in use.
   void Initialize(
       std::unique_ptr<CodecOutputBufferRenderer> output_buffer_renderer,
-      scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator,
+      bool is_texture_owner_backed,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb);
 
   // Add a callback that will be called when we're marked as unused.  Does not
@@ -129,18 +128,11 @@ class MEDIA_GPU_EXPORT CodecImage
 
 
   // Whether this image is backed by a texture owner.
-  // We want to check for texture_owner owned by
-  // |codec_buffer_wait_coordinator_| and hence only checking for
-  // |codec_buffer_wait_coordinator_| is enough here.
-  // TODO(vikassoni): Update the method name in future refactorings.
-  bool is_texture_owner_backed() const {
-    return !!codec_buffer_wait_coordinator_;
-  }
+  bool is_texture_owner_backed() const { return is_texture_owner_backed_; }
 
   scoped_refptr<gpu::TextureOwner> texture_owner() const {
-    return codec_buffer_wait_coordinator_
-               ? codec_buffer_wait_coordinator_->texture_owner()
-               : nullptr;
+    return output_buffer_renderer_ ? output_buffer_renderer_->texture_owner()
+                                   : nullptr;
   }
 
   // Renders this image to the front buffer of its backing surface.
@@ -180,9 +172,8 @@ class MEDIA_GPU_EXPORT CodecImage
   // frame available event before calling UpdateTexImage().
   bool RenderToTextureOwnerFrontBuffer(BindingsMode bindings_mode);
 
-  // The CodecBufferWaitCoordinator that |output_buffer_| will be rendered to.
-  // Or null, if this image is backed by an overlay.
-  scoped_refptr<CodecBufferWaitCoordinator> codec_buffer_wait_coordinator_;
+  // Whether this image is texture_owner or overlay backed.
+  bool is_texture_owner_backed_ = false;
 
   // The bounds last sent to the overlay.
   gfx::Rect most_recent_bounds_;

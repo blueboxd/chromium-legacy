@@ -213,8 +213,6 @@ margin-top: 0px
 marker-end: none
 marker-mid: none
 marker-start: none
-mask: none
-mask-source-type: alpha
 mask-type: luminance
 math-style: inline
 math-superscript-shift-style: display

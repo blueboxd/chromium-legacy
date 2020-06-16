@@ -94,7 +94,7 @@ class CodecImageTest : public testing::Test {
 
     scoped_refptr<CodecImage> image = new CodecImage(buffer_renderer->size());
     image->Initialize(
-        std::move(buffer_renderer), codec_buffer_wait_coordinator,
+        std::move(buffer_renderer), kind == kTextureOwner,
         base::BindRepeating(&PromotionHintReceiver::OnPromotionHint,
                             base::Unretained(&promotion_hint_receiver_)));
 
@@ -144,7 +144,7 @@ TEST_F(CodecImageTest, UnusedCBRunsOnNotifyUnused) {
   base::MockCallback<CodecImage::UnusedCB> cb_2;
   auto i = NewImage(kTextureOwner);
   ASSERT_TRUE(i->get_codec_output_buffer_for_testing());
-  ASSERT_TRUE(i->is_texture_owner_backed());
+  ASSERT_TRUE(i->HasTextureOwner());
   i->AddUnusedCB(cb_1.Get());
   i->AddUnusedCB(cb_2.Get());
   EXPECT_CALL(cb_1, Run(i.get()));
@@ -153,7 +153,7 @@ TEST_F(CodecImageTest, UnusedCBRunsOnNotifyUnused) {
   // Also verify that the output buffer and texture owner are released.
   i->NotifyUnused();
   EXPECT_FALSE(i->get_codec_output_buffer_for_testing());
-  EXPECT_FALSE(i->is_texture_owner_backed());
+  EXPECT_FALSE(i->HasTextureOwner());
 
   // Verify that an additional call doesn't crash.  It should do nothing.
   i->NotifyUnused();
@@ -391,7 +391,7 @@ TEST_F(CodecImageTest, CodedSizeVsVisibleSize) {
       std::make_unique<CodecOutputBufferRenderer>(std::move(buffer), nullptr);
 
   scoped_refptr<CodecImage> image = new CodecImage(coded_size);
-  image->Initialize(std::move(buffer_renderer), nullptr,
+  image->Initialize(std::move(buffer_renderer), false,
                     PromotionHintAggregator::NotifyPromotionHintCB());
 
   // Verify that CodecImage::GetSize returns coded_size and not visible_size

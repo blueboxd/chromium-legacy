@@ -57,6 +57,7 @@ const char kRequestHeadersPath[] = "action.requestHeaders";
 const char kResponseHeadersPath[] = "action.responseHeaders";
 const char kHeaderNameKey[] = "header";
 const char kHeaderOperationKey[] = "operation";
+const char kHeaderValueKey[] = "value";
 
 }  // namespace declarative_net_request
 }  // namespace extensions

@@ -5,6 +5,7 @@
   "description" : "Tests the behavior of the Safe Browsing API.",
   "permissions": [ "privacy" ],
   "background": {
-    "page": "test.html"
+    "scripts": ["test.js"],
+    "persistent": false
   }
 }

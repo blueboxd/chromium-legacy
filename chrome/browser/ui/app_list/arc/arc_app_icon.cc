@@ -220,16 +220,16 @@ ArcAppIcon::ArcAppIcon(content::BrowserContext* context,
                        const std::string& app_id,
                        int resource_size_in_dip,
                        Observer* observer,
-                       bool serve_compressed_icons)
+                       IconType icon_type)
     : context_(context),
       app_id_(app_id),
       mapped_app_id_(arc::GetAppFromAppOrGroupId(context, app_id)),
       resource_size_in_dip_(resource_size_in_dip),
       observer_(observer),
-      serve_compressed_icons_(serve_compressed_icons) {
+      icon_type_(icon_type) {
   CHECK(observer_);
 
-  if (!serve_compressed_icons_) {
+  if (icon_type == IconType::kUncompressed) {
     auto source = std::make_unique<Source>(weak_ptr_factory_.GetWeakPtr(),
                                            resource_size_in_dip);
     gfx::Size resource_size(resource_size_in_dip, resource_size_in_dip);
@@ -246,7 +246,7 @@ ArcAppIcon::~ArcAppIcon() {
 }
 
 void ArcAppIcon::LoadSupportedScaleFactors() {
-  if (serve_compressed_icons_) {
+  if (icon_type_ == IconType::kCompressed) {
     for (auto scale_factor : incomplete_scale_factors_)
       LoadForScaleFactor(scale_factor.first);
   } else {
@@ -350,7 +350,7 @@ void ArcAppIcon::OnIconRead(
     MaybeRequestIcon(read_result->scale_factor);
 
   if (!read_result->unsafe_icon_data.empty()) {
-    if (serve_compressed_icons_) {
+    if (icon_type_ == IconType::kCompressed) {
       UpdateCompressed(read_result->scale_factor,
                        std::move(read_result->unsafe_icon_data));
       return;

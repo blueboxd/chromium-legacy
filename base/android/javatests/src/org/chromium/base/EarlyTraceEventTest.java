@@ -6,7 +6,8 @@ package org.chromium.base;
 
 import android.os.Process;
 import android.os.SystemClock;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

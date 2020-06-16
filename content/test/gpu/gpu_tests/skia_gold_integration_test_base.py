@@ -3,12 +3,9 @@
 # found in the LICENSE file.
 
 from datetime import date
-import json
 import logging
 import os
 import re
-import subprocess
-from subprocess import CalledProcessError
 import shutil
 import sys
 import tempfile
@@ -16,6 +13,9 @@ import tempfile
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 from gpu_tests import color_profile_manager
+from gpu_tests.skia_gold import skia_gold_properties
+from gpu_tests.skia_gold import skia_gold_session
+from gpu_tests.skia_gold import skia_gold_session_manager
 
 from py_utils import cloud_storage
 
@@ -29,24 +29,8 @@ TEST_DATA_DIRS = [
     os.path.join(path_util.GetChromiumSrcDir(), 'media/test/data'),
 ]
 
-GOLDCTL_BIN = os.path.join(path_util.GetChromiumSrcDir(), 'tools',
-                           'skia_goldctl')
-if sys.platform == 'win32':
-  GOLDCTL_BIN = os.path.join(GOLDCTL_BIN, 'win', 'goldctl') + '.exe'
-elif sys.platform == 'darwin':
-  GOLDCTL_BIN = os.path.join(GOLDCTL_BIN, 'mac', 'goldctl')
-else:
-  GOLDCTL_BIN = os.path.join(GOLDCTL_BIN, 'linux', 'goldctl')
-
 SKIA_GOLD_INSTANCE = 'chrome-gpu'
 SKIA_GOLD_CORPUS = SKIA_GOLD_INSTANCE
-
-
-# This is mainly used to determine if we need to run a subprocess through the
-# shell - on Windows, finding executables via PATH doesn't work properly unless
-# run through the shell.
-def IsWin():
-  return sys.platform == 'win32'
 
 
 class _ImageParameters(object):
@@ -78,9 +62,8 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   _image_parameters = None
 
   _skia_gold_temp_dir = None
-
-  _local_run = None
-  _git_revision = None
+  _skia_gold_session_manager = None
+  _skia_gold_properties = None
 
   @classmethod
   def SetParsedCommandLineOptions(cls, options):
@@ -100,6 +83,21 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     cls.StartBrowser()
     cls.SetStaticServerDirs(TEST_DATA_DIRS)
     cls._skia_gold_temp_dir = tempfile.mkdtemp()
+
+  @classmethod
+  def GetSkiaGoldProperties(cls):
+    if not cls._skia_gold_properties:
+      cls._skia_gold_properties = skia_gold_properties.SkiaGoldProperties(
+          cls.GetParsedCommandLineOptions())
+    return cls._skia_gold_properties
+
+  @classmethod
+  def GetSkiaGoldSessionManager(cls):
+    if not cls._skia_gold_session_manager:
+      cls._skia_gold_session_manager =\
+          skia_gold_session_manager.SkiaGoldSessionManager(
+              cls._skia_gold_temp_dir, cls.GetSkiaGoldProperties())
+    return cls._skia_gold_session_manager
 
   @staticmethod
   def _AddDefaultArgs(browser_args):
@@ -164,16 +162,27 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
         help='For Skia Gold integration. Always report that the test passed '
         'even if the Skia Gold image comparison reported a failure, but '
         'otherwise perform the same steps as usual.')
+    # Telemetry is *still* using optparse instead of argparse, so we can't have
+    # these two options in a mutually exclusive group.
     parser.add_option(
-        '--local-run',
+        '--local-pixel-tests',
+        action='store_true',
         default=None,
-        type=int,
         help='Specifies to run the test harness in local run mode or not. When '
         'run in local mode, uploading to Gold is disabled and links to '
         'help with local debugging are output. Running in local mode also '
-        'implies --no-luci-auth. If left unset, the test harness will '
-        'attempt to detect whether it is running on a workstation or not '
-        'and set this option accordingly.')
+        'implies --no-luci-auth. If both this and --no-local-pixel-tests are '
+        'left unset, the test harness will attempt to detect whether it is '
+        'running on a workstation or not and set this option accordingly.')
+    parser.add_option(
+        '--no-local-pixel-tests',
+        action='store_false',
+        dest='local_pixel_tests',
+        help='Specifies to run the test harness in non-local (bot) mode. When '
+        'run in this mode, data is actually uploaded to Gold and triage links '
+        'arge generated. If both this and --local-pixel-tests are left unset, '
+        'the test harness will attempt to detect whether it is running on a '
+        'workstation or not and set this option accordingly.')
     parser.add_option(
         '--no-luci-auth',
         action='store_true',
@@ -250,11 +259,12 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   # bots, so kept around for future use.
   @classmethod
   def _UploadGoldErrorImageToCloudStorage(cls, image_name, screenshot):
+    revision = cls.GetSkiaGoldProperties().git_revision
     machine_name = re.sub(r'\W+', '_',
                           cls.GetParsedCommandLineOptions().test_machine_name)
     base_bucket = '%s/gold_failures' % (cls._error_image_cloud_storage_bucket)
     image_name_with_revision_and_machine = '%s_%s_%s.png' % (
-        image_name, machine_name, cls._GetBuildRevision())
+        image_name, machine_name, revision)
     cls._UploadBitmapToCloudStorage(
         base_bucket,
         image_name_with_revision_and_machine,
@@ -340,26 +350,6 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     image_name = re.sub(r'(\.|/|-)', '_', image_name)
     return image_name
 
-  def _GetBuildIdArgs(self):
-    # Get all the information that goldctl requires.
-    parsed_options = self.GetParsedCommandLineOptions()
-    build_id_args = [
-        '--commit',
-        self._GetBuildRevision(),
-    ]
-    # If --gerrit-issue is passed, then we assume we're running on a trybot.
-    if parsed_options.gerrit_issue:
-      # yapf: disable
-      build_id_args += [
-          '--issue', parsed_options.gerrit_issue,
-          '--patchset', parsed_options.gerrit_patchset,
-          '--jobid', parsed_options.buildbucket_id,
-          '--crs', 'gerrit',
-          '--cis', 'buildbucket',
-      ]
-      # yapf: enable
-    return build_id_args
-
   def GetGoldJsonKeys(self, page):
     """Get all the JSON metadata that will be passed to golctl."""
     img_params = self.GetImageParameters(page)
@@ -400,17 +390,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       gpu_keys['ignore'] = '1'
     return gpu_keys
 
-# TODO(crbug.com/1076144): This is due for a refactor, likely similar to how
-# the instrumentation tests handle it (see
-# //build/android/pylib/utils/gold_utils.py), which will address the
-# too-many-locals error.
-# pylint: disable=too-many-locals
-
-  def _UploadTestResultToSkiaGold(self,
-                                  image_name,
-                                  screenshot,
-                                  page,
-                                  build_id_args=None):
+  def _UploadTestResultToSkiaGold(self, image_name, screenshot, page):
     """Compares the given image using Skia Gold and uploads the result.
 
     No uploading is done if the test is being run in local run mode. Compares
@@ -421,128 +401,56 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       image_name: the name of the image being checked.
       screenshot: the image being checked as a Telemetry Bitmap.
       page: the GPU PixelTestPage object for the test.
-      build_id_args: a list of build-identifying flags and values.
     """
-    if self.GetParsedCommandLineOptions().bypass_skia_gold_functionality:
-      logging.warning('Not actually comparing with Gold due to '
-                      '--bypass-skia-gold-functionality being present.')
-      return
-    if not isinstance(build_id_args, list) or '--commit' not in build_id_args:
-      raise Exception('Requires build args to be specified, including --commit')
-
     # Write screenshot to PNG file on local disk.
     png_temp_file = tempfile.NamedTemporaryFile(
         suffix='.png', dir=self._skia_gold_temp_dir).name
     image_util.WritePngFile(screenshot, png_temp_file)
 
     gpu_keys = self.GetGoldJsonKeys(page)
-    json_temp_file = tempfile.NamedTemporaryFile(
-        suffix='.json', dir=self._skia_gold_temp_dir).name
-    failure_file = tempfile.NamedTemporaryFile(
-        suffix='.txt', dir=self._skia_gold_temp_dir).name
-    with open(json_temp_file, 'w+') as f:
-      json.dump(gpu_keys, f)
+    gold_session = self.GetSkiaGoldSessionManager().GetSkiaGoldSession(gpu_keys)
+    gold_properties = self.GetSkiaGoldProperties()
+    use_luci = not (gold_properties.local_pixel_tests
+                    or gold_properties.no_luci_auth)
 
-    # Figure out any extra args we need to pass to goldctl.
-    extra_imgtest_args = []
-    extra_auth_args = []
-    parsed_options = self.GetParsedCommandLineOptions()
-    if self._IsLocalRun():
-      extra_imgtest_args.append('--dryrun')
-    elif not parsed_options.no_luci_auth:
-      extra_auth_args = ['--luci']
+    status, error = gold_session.RunComparison(name=image_name,
+                                               png_file=png_temp_file,
+                                               use_luci=use_luci)
+    if not status:
+      return
 
-    # Run goldctl for a result.
-    try:
-      subprocess.check_output(
-          [GOLDCTL_BIN, 'auth', '--work-dir', self._skia_gold_temp_dir] +
-          extra_auth_args,
-          stderr=subprocess.STDOUT)
-      algorithm_args = page.matching_algorithm.GetCmdline()
-      if algorithm_args:
-        logging.info('Using non-exact matching algorithm %s for %s',
-                     page.matching_algorithm.Name(), image_name)
-      # yapf: disable
-      cmd = ([
-          GOLDCTL_BIN,
-          'imgtest', 'add',
-          '--passfail',
-          '--test-name', image_name,
-          '--instance', SKIA_GOLD_INSTANCE,
-          '--keys-file', json_temp_file,
-          '--png-file', png_temp_file,
-          '--work-dir', self._skia_gold_temp_dir,
-          '--failure-file', failure_file
-      ] + build_id_args + extra_imgtest_args + algorithm_args)
-      # yapf: enable
-      output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-      # TODO(skbug.com/10245): Remove this once the issue with auto-triaging
-      # inexactly matched images is fixed.
-      if 'VP9_YUY2' in image_name:
-        logging.error(output)
-    except CalledProcessError as e:
-      # We don't want to bother printing out triage links for local runs.
-      # Instead, we print out local filepaths for debugging. However, we want
-      # these to be at the bottom of the output so they're easier to find, so
-      # that is handled later.
-      if self._IsLocalRun():
-        pass
-      # The triage link for the image is output to the failure file, so report
-      # that if it's available so it shows up in Milo. If for whatever reason
-      # the file is not present or malformed, the triage link will still be
-      # present in the stdout of the goldctl command.
-      # If we're running on a trybot, instead generate a link to all results
-      # for the CL so that the user can visit a single page instead of
-      # clicking on multiple links on potentially multiple bots.
-      elif parsed_options.gerrit_issue:
-        cl_images = ('https://%s-gold.skia.org/search?'
-                     'issue=%s&new_clstore=true' %
-                     (SKIA_GOLD_INSTANCE, parsed_options.gerrit_issue))
-        self.artifacts.CreateLink('triage_link_for_entire_cl', cl_images)
+    status_codes = skia_gold_session.SkiaGoldSession.StatusCodes
+    if status == status_codes.AUTH_FAILURE:
+      logging.error('Gold authentication failed with output %s', error)
+    elif status == status_codes.INIT_FAILURE:
+      logging.error('Gold initialization failed with output %s', error)
+    elif status == status_codes.COMPARISON_FAILURE_REMOTE:
+      triage_link = gold_session.GetTriageLink(image_name)
+      if not triage_link:
+        logging.error('Failed to get triage link for %s, raw output: %s',
+                      image_name, error)
+        logging.error('Reason for no triage link: %s',
+                      gold_session.GetTriageLinkOmissionReason(image_name))
+      elif gold_properties.IsTryjobRun():
+        self.artifacts.CreateLink('triage_link_for_entire_cl', triage_link)
       else:
-        try:
-          with open(failure_file, 'r') as ff:
-            self.artifacts.CreateLink('gold_triage_link', ff.read())
-        except Exception:
-          logging.error('Failed to read contents of goldctl failure file')
-
-      logging.error('goldctl failed with output: %s', e.output)
-      if self._IsLocalRun():
-        # Intentionally not cleaned up so the user can look at its contents.
-        diff_dir = tempfile.mkdtemp()
-        # yapf: disable
-        cmd = [
-            GOLDCTL_BIN,
-            'diff',
-            '--corpus', SKIA_GOLD_CORPUS,
-            '--instance', SKIA_GOLD_INSTANCE,
-            '--input', png_temp_file,
-            '--test', image_name,
-            '--work-dir', self._skia_gold_temp_dir,
-            '--out-dir', diff_dir,
-        ]
-        # yapf: enable
-        try:
-          subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        except CalledProcessError as e:
-          logging.error('Failed to generate diffs from Gold: %s', e)
-
-        # The directory should contain "input-<hash>.png", "closest-<hash>.png",
-        # and "diff.png".
-        for f in os.listdir(diff_dir):
-          filepath = os.path.join(diff_dir, f)
-          if f.startswith("input-"):
-            logging.error("Image produced by %s: file://%s", image_name,
-                          filepath)
-          elif f.startswith("closest-"):
-            logging.error("Closest image for %s: file://%s", image_name,
-                          filepath)
-          elif f == "diff.png":
-            logging.error("Diff image for %s: file://%s", image_name, filepath)
-
-      if self._ShouldReportGoldFailure(page):
-        raise Exception('goldctl command failed, see above for details')
-# pylint: enable=too-many-locals
+        self.artifacts.CreateLink('gold_triage_link', triage_link)
+    elif status == status_codes.COMPARISON_FAILURE_LOCAL:
+      logging.error('Local comparison failed. Local diff files:')
+      _OutputLocalDiffFiles(gold_session, image_name)
+    elif status == status_codes.LOCAL_DIFF_FAILURE:
+      logging.error(
+          'Local comparison failed and an error occurred during diff '
+          'generation: %s', error)
+      # There might be some files, so try outputting them.
+      logging.error('Local diff files:')
+      _OutputLocalDiffFiles(gold_session, image_name)
+    else:
+      logging.error(
+          'Given unhandled SkiaGoldSession StatusCode %s with error %s', status,
+          error)
+    if self._ShouldReportGoldFailure(page):
+      raise Exception('goldctl command failed, see above for details')
 
   def _ShouldReportGoldFailure(self, page):
     """Determines if a Gold failure should actually be surfaced.
@@ -565,7 +473,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     return True
 
   def _ValidateScreenshotSamplesWithSkiaGold(self, tab, page, screenshot,
-                                             device_pixel_ratio, build_id_args):
+                                             device_pixel_ratio):
     """Samples the given screenshot and verifies pixel color values.
 
     In case any of the samples do not match the expected color, it raises
@@ -576,7 +484,6 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       page: the GPU PixelTestPage object for the test.
       screenshot: the screenshot of the test page as a Telemetry Bitmap.
       device_pixel_ratio: the device pixel ratio for the test device as a float.
-      build_id_args: a list of build-identifying flags and values.
     """
     try:
       self._CompareScreenshotSamples(
@@ -589,8 +496,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       # We want to report the screenshot comparison failure, not any failures
       # related to Gold.
       try:
-        self._UploadTestResultToSkiaGold(
-            image_name, screenshot, page, build_id_args=build_id_args)
+        self._UploadTestResultToSkiaGold(image_name, screenshot, page)
       except Exception as gold_exception:
         logging.error(str(gold_exception))
       # TODO(https://crbug.com/1043129): Switch this to just "raise" once these
@@ -599,50 +505,6 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
       # _UploadTestResultToSkiaGold instead of the one by
       # _CompareScreenshotSamples. See https://stackoverflow.com/q/28698622.
       raise comparison_exception
-
-  @classmethod
-  def _IsLocalRun(cls):
-    """Returns whether the test is running on a local workstation or not."""
-    # Do nothing if we've already determine whether we're in local mode or not.
-    if cls._local_run is not None:
-      pass
-    # Use the --local-run value if it's been set.
-    elif cls.GetParsedCommandLineOptions().local_run is not None:
-      cls._local_run = cls.GetParsedCommandLineOptions().local_run
-    # Look for the presence of the SWARMING_SERVER environment variable as a
-    # heuristic to determine whether we're running on a workstation or a bot.
-    # This should always be set on swarming, but would be strange to be set on
-    # a workstation.
-    cls._local_run = 'SWARMING_SERVER' not in os.environ
-    if cls._local_run:
-      logging.warning(
-          'Automatically determined that test is running on a workstation')
-    else:
-      logging.warning('Automatically determined that test is running on a bot')
-    return cls._local_run
-
-  @classmethod
-  def _GetBuildRevision(cls):
-    """Returns the current git master revision being tested."""
-    # Do nothing if we've already determined the git revision.
-    if cls._git_revision is not None:
-      pass
-    # use the --git-revision value if it's been set.
-    elif cls.GetParsedCommandLineOptions().git_revision:
-      cls._git_revision = cls.GetParsedCommandLineOptions().git_revision
-    # Try to determine what revision we're on using git.
-    else:
-      try:
-        cls._git_revision = subprocess.check_output(
-            ['git', 'rev-parse', 'origin/master'],
-            shell=IsWin(),
-            cwd=path_util.GetChromiumSrcDir()).strip()
-        logging.warning('Automatically determined git revision to be %s',
-                        cls._git_revision)
-      except subprocess.CalledProcessError:
-        raise Exception('--git-revision not passed, and unable to '
-                        'determine revision using git')
-    return cls._git_revision
 
   @classmethod
   def GenerateGpuTests(cls, options):
@@ -700,6 +562,24 @@ def _StripAngleRevisionFromDriver(img_params):
       break
     kept_parts.append(part)
   img_params.driver_version = '.'.join(kept_parts)
+
+
+def _OutputLocalDiffFiles(gold_session, image_name):
+  """Logs the local diff image files from the given SkiaGoldSession.
+
+  Args:
+    gold_session: A skia_gold_session.SkiaGoldSession instance to pull files
+        from.
+    image_name: A string containing the name of the image/test that was
+        compared.
+  """
+  given_file = gold_session.GetGivenImageLink(image_name)
+  closest_file = gold_session.GetClosestImageLink(image_name)
+  diff_file = gold_session.GetDiffImageLink(image_name)
+  failure_message = 'Unable to retrieve link'
+  logging.error('Generated image: %s', given_file or failure_message)
+  logging.error('Closest image: %s', closest_file or failure_message)
+  logging.error('Diff image: %s', diff_file or failure_message)
 
 
 def load_tests(loader, tests, pattern):

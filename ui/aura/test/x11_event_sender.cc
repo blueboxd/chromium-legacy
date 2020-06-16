@@ -19,13 +19,13 @@ void PostEventToWindowTreeHost(const XEvent& xevent, WindowTreeHost* host) {
   event.xany.window = xwindow;
 
   switch (event.type) {
-    case EnterNotify:
-    case LeaveNotify:
-    case MotionNotify:
-    case x11::KeyPressEvent::opcode:
-    case x11::KeyReleaseEvent::opcode:
-    case x11::ButtonPressEvent::opcode:
-    case x11::ButtonReleaseEvent::opcode: {
+    case x11::CrossingEvent::EnterNotify:
+    case x11::CrossingEvent::LeaveNotify:
+    case x11::MotionNotifyEvent::opcode:
+    case x11::KeyEvent::Press:
+    case x11::KeyEvent::Release:
+    case x11::ButtonEvent::Press:
+    case x11::ButtonEvent::Release: {
       // The fields used below are in the same place for all of events
       // above. Using xmotion from XEvent's unions to avoid repeating
       // the code.

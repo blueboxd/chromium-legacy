@@ -4,8 +4,9 @@
 
 package org.chromium.content.browser;
 
-import android.support.test.filters.LargeTest;
 import android.view.View;
+
+import androidx.test.filters.LargeTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

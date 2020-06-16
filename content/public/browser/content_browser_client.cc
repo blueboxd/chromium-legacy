@@ -729,10 +729,6 @@ std::vector<std::string> ContentBrowserClient::GetStartupServices() {
   return std::vector<std::string>();
 }
 
-::rappor::RapporService* ContentBrowserClient::GetRapporService() {
-  return nullptr;
-}
-
 std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 ContentBrowserClient::CreateURLLoaderThrottles(
     const network::ResourceRequest& request,
@@ -1103,6 +1099,10 @@ void ContentBrowserClient::BindBrowserControlInterface(
 bool ContentBrowserClient::ShouldInheritCrossOriginEmbedderPolicyImplicitly(
     const GURL& url) {
   return false;
+}
+
+ukm::UkmService* ContentBrowserClient::GetUkmService() {
+  return nullptr;
 }
 
 }  // namespace content

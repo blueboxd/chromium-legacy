@@ -276,6 +276,12 @@ void LargestContentfulPaintHandler::OnDidFinishSubFrameNavigation(
       navigation_handle->GetFrameTreeNodeId(), navigation_delta));
 }
 
+void LargestContentfulPaintHandler::OnFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  subframe_navigation_start_offset_.erase(
+      render_frame_host->GetFrameTreeNodeId());
+}
+
 void LargestContentfulPaintHandler::MergeForSubframes(
     ContentfulPaintTimingInfo* inout_timing,
     const base::Optional<base::TimeDelta>& candidate_new_time,

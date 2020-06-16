@@ -14,7 +14,8 @@ import android.os.FileObserver;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import dalvik.system.DexFile;
 

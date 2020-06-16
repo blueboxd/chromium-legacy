@@ -7,8 +7,9 @@ package org.chromium.content.browser;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.support.test.filters.LargeTest;
 import android.text.TextUtils;
+
+import androidx.test.filters.LargeTest;
 
 import org.junit.Assert;
 import org.junit.Before;

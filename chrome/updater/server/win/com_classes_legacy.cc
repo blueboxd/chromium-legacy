@@ -19,7 +19,24 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/win/scoped_bstr.h"
+#include "chrome/updater/constants.h"
 #include "chrome/updater/server/win/server.h"
+
+namespace {
+
+// Constants from Google Update.
+// TODO(crbug/1094024): once group policy manager code is available, the
+// server must respond with the following errors:
+// const HRESULT GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY = 0x80040813;
+// const HRESULT GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL = 0x8004081f;
+
+// This is a GoogleUpdate error code, which must be retained by this
+// implementation in order to be backward compatible with the existing
+// update client code in Chrome.
+const HRESULT GOOPDATEINSTALL_E_INSTALLER_FAILED = 0x80040902;
+
+}  // namespace
 
 namespace updater {
 
@@ -32,7 +49,6 @@ LegacyOnDemandImpl::~LegacyOnDemandImpl() = default;
 STDMETHODIMP LegacyOnDemandImpl::createAppBundleWeb(
     IDispatch** app_bundle_web) {
   DCHECK(app_bundle_web);
-
   Microsoft::WRL::ComPtr<IAppBundleWeb> app_bundle(this);
   *app_bundle_web = app_bundle.Detach();
   return S_OK;
@@ -168,7 +184,6 @@ STDMETHODIMP LegacyOnDemandImpl::get_command(BSTR command_id,
 
 STDMETHODIMP LegacyOnDemandImpl::get_currentState(IDispatch** current_state) {
   DCHECK(current_state);
-
   Microsoft::WRL::ComPtr<ICurrentState> state(this);
   *current_state = state.Detach();
   return S_OK;
@@ -190,24 +205,81 @@ STDMETHODIMP LegacyOnDemandImpl::put_serverInstallDataIndex(BSTR language) {
   return E_NOTIMPL;
 }
 
+// Returns the state of update as seen by the on-demand client:
+// - if the repeading callback has been received: returns the specific state.
+// - if the completion callback has been received, but no repeating callback,
+//   then it returns STATE_ERROR. This is an error state and it indicates that
+//   update is not going to be further handled and repeating callbacks posted.
+// - if no callback has been received at all: returns STATE_INIT.
 STDMETHODIMP LegacyOnDemandImpl::get_stateValue(LONG* state_value) {
   DCHECK(state_value);
+  base::AutoLock lock{lock_};
+  if (state_update_) {
+    switch (state_update_.value().state) {
+      case UpdateService::UpdateState::State::kUnknown:  // Fall through.
+      case UpdateService::UpdateState::State::kNotStarted:
+        *state_value = STATE_INIT;
+        break;
+      case UpdateService::UpdateState::State::kCheckingForUpdates:
+        *state_value = STATE_CHECKING_FOR_UPDATE;
+        break;
+      case UpdateService::UpdateState::State::kUpdateAvailable:
+        *state_value = STATE_UPDATE_AVAILABLE;
+        break;
+      case UpdateService::UpdateState::State::kDownloading:
+        *state_value = STATE_DOWNLOADING;
+        break;
+      case UpdateService::UpdateState::State::kInstalling:
+        *state_value = STATE_INSTALLING;
+        break;
+      case UpdateService::UpdateState::State::kUpdated:
+        *state_value = STATE_INSTALL_COMPLETE;
+        break;
+      case UpdateService::UpdateState::State::kNoUpdate:
+        *state_value = STATE_NO_UPDATE;
+        break;
+      case UpdateService::UpdateState::State::kUpdateError:
+        *state_value = STATE_ERROR;
+        break;
+    }
+  } else if (result_) {
+    DCHECK_NE(result_.value(), UpdateService::Result::kSuccess);
+    *state_value = STATE_ERROR;
+  } else {
+    *state_value = STATE_INIT;
+  }
 
-  *state_value = GetOnDemandCurrentState();
   return S_OK;
 }
 
 STDMETHODIMP LegacyOnDemandImpl::get_availableVersion(BSTR* available_version) {
-  return E_NOTIMPL;
+  base::AutoLock lock{lock_};
+  if (state_update_) {
+    *available_version =
+        base::win::ScopedBstr(
+            base::UTF8ToWide(state_update_->next_version.GetString()))
+            .Release();
+  }
+  return S_OK;
 }
 
 STDMETHODIMP LegacyOnDemandImpl::get_bytesDownloaded(ULONG* bytes_downloaded) {
-  return E_NOTIMPL;
+  DCHECK(bytes_downloaded);
+  base::AutoLock lock{lock_};
+  if (!state_update_ || state_update_->downloaded_bytes == -1)
+    return E_FAIL;
+  *bytes_downloaded = state_update_->downloaded_bytes;
+  return S_OK;
 }
 
 STDMETHODIMP LegacyOnDemandImpl::get_totalBytesToDownload(
     ULONG* total_bytes_to_download) {
-  return E_NOTIMPL;
+  DCHECK(total_bytes_to_download);
+  base::AutoLock lock{lock_};
+  if (!state_update_ || state_update_->total_bytes == -1)
+    return E_FAIL;
+  *total_bytes_to_download = state_update_->total_bytes;
+  return S_OK;
 }
 
 STDMETHODIMP LegacyOnDemandImpl::get_downloadTimeRemainingMs(
@@ -221,7 +293,12 @@ STDMETHODIMP LegacyOnDemandImpl::get_nextRetryTime(ULONGLONG* next_retry_time) {
 
 STDMETHODIMP LegacyOnDemandImpl::get_installProgress(
     LONG* install_progress_percentage) {
-  return E_NOTIMPL;
+  DCHECK(install_progress_percentage);
+  base::AutoLock lock{lock_};
+  if (!state_update_ || state_update_->install_progress == -1)
+    return E_FAIL;
+  *install_progress_percentage = state_update_->install_progress;
+  return S_OK;
 }
 
 STDMETHODIMP LegacyOnDemandImpl::get_installTimeRemainingMs(
@@ -233,24 +310,62 @@ STDMETHODIMP LegacyOnDemandImpl::get_isCanceled(VARIANT_BOOL* is_canceled) {
   return E_NOTIMPL;
 }
 
+// In the error case, if an installer error occurred, it remaps the installer
+// error to the legacy installer error value, for backward compatibility.
 STDMETHODIMP LegacyOnDemandImpl::get_errorCode(LONG* error_code) {
-  *error_code = GetOnDemandError();
-
+  DCHECK(error_code);
+  base::AutoLock lock{lock_};
+  if (state_update_ &&
+      state_update_->state == UpdateService::UpdateState::State::kUpdateError) {
+    *error_code = state_update_->error_code == kErrorApplicationInstallerFailed
+                      ? GOOPDATEINSTALL_E_INSTALLER_FAILED
+                      : state_update_->error_code;
+  } else if (result_) {
+    *error_code = (result_.value() == UpdateService::Result::kSuccess) ? 0 : -1;
+  } else {
+    *error_code = 0;
+  }
   return S_OK;
 }
 
 STDMETHODIMP LegacyOnDemandImpl::get_extraCode1(LONG* extra_code1) {
-  return E_NOTIMPL;
+  DCHECK(extra_code1);
+  base::AutoLock lock{lock_};
+  if (state_update_ &&
+      state_update_->state == UpdateService::UpdateState::State::kUpdateError) {
+    *extra_code1 = state_update_->extra_code1;
+  } else {
+    *extra_code1 = 0;
+  }
+  return S_OK;
 }
 
+// Returns an installer error completion message.
 STDMETHODIMP LegacyOnDemandImpl::get_completionMessage(
     BSTR* completion_message) {
-  return E_NOTIMPL;
+  DCHECK(completion_message);
+  base::AutoLock lock{lock_};
+  if (state_update_ &&
+      state_update_->error_code == kErrorApplicationInstallerFailed) {
+    // TODO(1095133): this string needs localization.
+    *completion_message = base::win::ScopedBstr(L"Installer failed.").Release();
+  } else {
+    completion_message = nullptr;
+  }
+  return S_OK;
 }
 
 STDMETHODIMP LegacyOnDemandImpl::get_installerResultCode(
     LONG* installer_result_code) {
-  return E_NOTIMPL;
+  DCHECK(installer_result_code);
+  base::AutoLock lock{lock_};
+  if (state_update_ &&
+      state_update_->error_code == kErrorApplicationInstallerFailed) {
+    *installer_result_code = state_update_->extra_code1;
+  } else {
+    *installer_result_code = 0;
+  }
+  return S_OK;
 }
 
 STDMETHODIMP LegacyOnDemandImpl::get_installerResultExtraCode1(
@@ -308,52 +423,6 @@ void LegacyOnDemandImpl::UpdateStateCallback(
 void LegacyOnDemandImpl::UpdateResultCallback(UpdateService::Result result) {
   base::AutoLock lock{lock_};
   result_ = result;
-}
-
-// Returns the state of update as seen by the on-demand client:
-// - if the repeading callback has been received: returns the specific state.
-// - if the completion callback has been received, but no repeating callback,
-//   then it returns STATE_ERROR. This is an error state and it indicates that
-//   update is not going to be further handled and repeating callbacks posted.
-// - if no callback has been received at all: returns STATE_INIT.
-CurrentState LegacyOnDemandImpl::GetOnDemandCurrentState() const {
-  base::AutoLock lock{lock_};
-  if (state_update_) {
-    switch (state_update_.value().state) {
-      case UpdateService::UpdateState::State::kUnknown:
-        // Fall through.
-      case UpdateService::UpdateState::State::kNotStarted:
-        return STATE_INIT;
-      case UpdateService::UpdateState::State::kCheckingForUpdates:
-        return STATE_CHECKING_FOR_UPDATE;
-      case UpdateService::UpdateState::State::kUpdateAvailable:
-        return STATE_UPDATE_AVAILABLE;
-      case UpdateService::UpdateState::State::kDownloading:
-        return STATE_DOWNLOADING;
-      case UpdateService::UpdateState::State::kInstalling:
-        return STATE_INSTALLING;
-      case UpdateService::UpdateState::State::kUpdated:
-        return STATE_INSTALL_COMPLETE;
-      case UpdateService::UpdateState::State::kNoUpdate:
-        return STATE_NO_UPDATE;
-      case UpdateService::UpdateState::State::kUpdateError:
-        return STATE_ERROR;
-    }
-  } else if (result_) {
-    DCHECK_NE(result_.value(), UpdateService::Result::kSuccess);
-    return STATE_ERROR;
-  } else {
-    return STATE_INIT;
-  }
-}
-
-// TODO(crbug.com/1073659): improve the error handling.
-HRESULT LegacyOnDemandImpl::GetOnDemandError() const {
-  base::AutoLock lock{lock_};
-  if (!result_)
-    return S_OK;
-
-  return (result_.value() == UpdateService::Result::kSuccess) ? S_OK : E_FAIL;
 }
 
 }  // namespace updater

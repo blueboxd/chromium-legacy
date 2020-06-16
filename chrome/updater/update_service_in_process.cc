@@ -111,6 +111,7 @@ MakeUpdateClientCrxStateChangeCallback(
         update_state.next_version = crx_update_item.next_version;
         update_state.downloaded_bytes = crx_update_item.downloaded_bytes;
         update_state.total_bytes = crx_update_item.total_bytes;
+        update_state.install_progress = crx_update_item.install_progress;
         update_state.error_category =
             ToErrorCategory(crx_update_item.error_category);
         update_state.error_code = crx_update_item.error_code;

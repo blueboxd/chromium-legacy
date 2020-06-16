@@ -3568,8 +3568,10 @@ void CrostiniManager::ActiveNetworksChanged(
           network->device_path());
   if (!device)
     return;
-  crostini::CrostiniPortForwarder::GetForProfile(profile_)
-      ->ActiveNetworksChanged(device->interface());
+  if (CrostiniFeatures::Get()->IsPortForwardingAllowed(profile_)) {
+    crostini::CrostiniPortForwarder::GetForProfile(profile_)
+        ->ActiveNetworksChanged(device->interface());
+  }
 }
 
 void CrostiniManager::SuspendImminent(

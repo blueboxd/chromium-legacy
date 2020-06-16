@@ -526,6 +526,12 @@ void PageLoadMetricsUpdateDispatcher::DidFinishSubFrameNavigation(
       navigation_handle->GetFrameTreeNodeId(), navigation_delta));
 }
 
+void PageLoadMetricsUpdateDispatcher::OnFrameDeleted(
+    content::RenderFrameHost* render_frame_host) {
+  subframe_navigation_start_offset_.erase(
+      render_frame_host->GetFrameTreeNodeId());
+}
+
 void PageLoadMetricsUpdateDispatcher::UpdateSubFrameTiming(
     content::RenderFrameHost* render_frame_host,
     mojom::PageLoadTimingPtr new_timing) {

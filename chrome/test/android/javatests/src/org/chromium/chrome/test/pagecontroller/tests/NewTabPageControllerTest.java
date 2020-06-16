@@ -7,8 +7,8 @@ package org.chromium.chrome.test.pagecontroller.tests;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

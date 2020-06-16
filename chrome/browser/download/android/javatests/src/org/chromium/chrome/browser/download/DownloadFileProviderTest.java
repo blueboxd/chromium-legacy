@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.download;
 import static org.mockito.Mockito.doReturn;
 
 import android.net.Uri;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

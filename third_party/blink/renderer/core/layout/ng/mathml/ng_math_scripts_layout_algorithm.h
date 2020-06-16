@@ -57,9 +57,6 @@ class CORE_EXPORT NGMathScriptsLayoutAlgorithm
                                      const ChildAndMetrics& sup_metrics) const;
 
   scoped_refptr<const NGLayoutResult> Layout() final;
-
-  LogicalSize child_available_size_;
-  const NGBoxStrut border_scrollbar_padding_;
 };
 
 }  // namespace blink

@@ -6,9 +6,11 @@
 
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/confirm_infobar_banner_overlay_request_config.h"
+#import "ios/chrome/browser/overlays/public/infobar_banner/save_card_infobar_banner_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_password_infobar_banner_overlay.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/translate_infobar_banner_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/infobar_modal/password_infobar_modal_overlay_request_config.h"
+#import "ios/chrome/browser/overlays/public/infobar_modal/save_card_infobar_modal_overlay_request_config.h"
 #import "ios/chrome/browser/overlays/public/infobar_modal/translate_infobar_modal_overlay_request_config.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -19,6 +21,8 @@ using infobars::InfoBar;
 using translate_infobar_overlays::TranslateBannerRequestConfig;
 using translate_infobar_overlays::TranslateModalRequestConfig;
 using confirm_infobar_overlays::ConfirmBannerRequestConfig;
+using save_card_infobar_overlays::SaveCardBannerRequestConfig;
+using save_card_infobar_overlays::SaveCardModalRequestConfig;
 
 InfobarOverlayRequestFactoryImpl::InfobarOverlayRequestFactoryImpl() {
   // Create the factory helpers for the supported infobar types.
@@ -36,6 +40,10 @@ InfobarOverlayRequestFactoryImpl::InfobarOverlayRequestFactoryImpl() {
                  CreateFactory<ConfirmBannerRequestConfig>(),
                  /*detail_sheet_factory=*/nullptr,
                  /*modal_factory=*/nullptr);
+  SetUpFactories(InfobarType::kInfobarTypeSaveCard,
+                 CreateFactory<SaveCardBannerRequestConfig>(),
+                 /*detail_sheet_factory=*/nullptr,
+                 CreateFactory<SaveCardModalRequestConfig>());
 }
 
 InfobarOverlayRequestFactoryImpl::~InfobarOverlayRequestFactoryImpl() = default;

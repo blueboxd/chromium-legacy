@@ -569,6 +569,11 @@ void CrostiniHandler::HandleAddCrostiniPortForward(
   int protocol_type = args->GetList()[4].GetInt();
   std::string label = args->GetList()[5].GetString();
 
+  if (!crostini::CrostiniFeatures::Get()->IsPortForwardingAllowed(profile_)) {
+    OnPortForwardComplete(callback_id, false);
+    return;
+  }
+
   crostini::CrostiniPortForwarder::GetForProfile(profile_)->AddPort(
       crostini::ContainerId(std::move(vm_name), std::move(container_name)),
       port_number,
@@ -592,6 +597,11 @@ void CrostiniHandler::HandleRemoveCrostiniPortForward(
   int protocol_type;
   CHECK(args->GetInteger(4, &protocol_type));
 
+  if (!crostini::CrostiniFeatures::Get()->IsPortForwardingAllowed(profile_)) {
+    OnPortForwardComplete(callback_id, false);
+    return;
+  }
+
   crostini::CrostiniPortForwarder::GetForProfile(profile_)->RemovePort(
       crostini::ContainerId(std::move(vm_name), std::move(container_name)),
       port_number,
@@ -606,6 +616,10 @@ void CrostiniHandler::HandleRemoveAllCrostiniPortForwards(
   const auto& args_list = args->GetList();
   std::string vm_name = args_list[0].GetString();
   std::string container_name = args_list[1].GetString();
+
+  if (!crostini::CrostiniFeatures::Get()->IsPortForwardingAllowed(profile_)) {
+    return;
+  }
 
   crostini::CrostiniPortForwarder::GetForProfile(profile_)->RemoveAllPorts(
       crostini::ContainerId(std::move(vm_name), std::move(container_name)));
@@ -625,6 +639,11 @@ void CrostiniHandler::HandleActivateCrostiniPortForward(
   CHECK(args->GetInteger(3, &port_number));
   int protocol_type;
   CHECK(args->GetInteger(4, &protocol_type));
+
+  if (!crostini::CrostiniFeatures::Get()->IsPortForwardingAllowed(profile_)) {
+    OnPortForwardComplete(callback_id, false);
+    return;
+  }
 
   crostini::CrostiniPortForwarder::GetForProfile(profile_)->ActivatePort(
       crostini::ContainerId(std::move(vm_name), std::move(container_name)),
@@ -648,6 +667,11 @@ void CrostiniHandler::HandleDeactivateCrostiniPortForward(
   CHECK(args->GetInteger(3, &port_number));
   int protocol_type;
   CHECK(args->GetInteger(4, &protocol_type));
+
+  if (!crostini::CrostiniFeatures::Get()->IsPortForwardingAllowed(profile_)) {
+    OnPortForwardComplete(callback_id, false);
+    return;
+  }
 
   crostini::CrostiniPortForwarder::GetForProfile(profile_)->DeactivatePort(
       crostini::ContainerId(std::move(vm_name), std::move(container_name)),

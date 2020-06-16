@@ -309,7 +309,8 @@ void OnCheckExistingDownloadPathDone(
   std::move(callback).Run(
       target_info->target_path, target_info->target_disposition,
       target_info->danger_type, target_info->mixed_content_status,
-      target_info->intermediate_path, target_info->result);
+      target_info->intermediate_path, std::move(target_info->download_schedule),
+      target_info->result);
 }
 
 #if defined(OS_ANDROID)
@@ -327,6 +328,7 @@ void HandleMixedDownloadInfoBarResult(
                             download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
                             DownloadItem::MixedContentStatus::SILENT_BLOCK,
                             target_info->intermediate_path,
+                            std::move(target_info->download_schedule),
                             download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
     return;
   }

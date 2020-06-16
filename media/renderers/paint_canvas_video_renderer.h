@@ -71,10 +71,18 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
 
   // Convert the contents of |video_frame| to raw RGB pixels. |rgb_pixels|
   // should point into a buffer large enough to hold as many 32 bit RGBA pixels
-  // as are in the visible_rect() area of the frame.
+  // as are in the visible_rect() area of the frame. |premultiply_alpha|
+  // indicates whether the R, G, B samples in |rgb_pixels| should be multiplied
+  // by alpha.
+  //
+  // NOTE: If |video_frame| doesn't have an alpha plane, all the A samples in
+  // |rgb_pixels| will be 255 (equivalent to an alpha of 1.0) and therefore the
+  // value of |premultiply_alpha| has no effect on the R, G, B samples in
+  // |rgb_pixels|.
   static void ConvertVideoFrameToRGBPixels(const media::VideoFrame* video_frame,
                                            void* rgb_pixels,
-                                           size_t row_bytes);
+                                           size_t row_bytes,
+                                           bool premultiply_alpha = true);
 
   // Copy the visible rect size contents of texture of |video_frame| to
   // texture |texture|. |level|, |internal_format|, |type| specify target

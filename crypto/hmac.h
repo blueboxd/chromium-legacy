@@ -65,6 +65,8 @@ class CRYPTO_EXPORT HMAC {
   // Calculates the HMAC for the message in |data| using the algorithm supplied
   // to the constructor and the key supplied to the Init method. The HMAC is
   // returned in |digest|, which has |digest_length| bytes of storage available.
+  // If |digest_length| is smaller than DigestLength(), the output will be
+  // truncated. If it is larger, this method will fail.
   bool Sign(base::StringPiece data,
             unsigned char* digest,
             size_t digest_length) const WARN_UNUSED_RESULT;

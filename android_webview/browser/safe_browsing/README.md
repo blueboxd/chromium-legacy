@@ -108,9 +108,10 @@ As Chrome supports more threat types, so can WebView. The steps are:
 
 1. Create quiet interstitial resources for the new threat type ([example
    CL](https://chromium-review.googlesource.com/c/chromium/src/+/1256021)).
-1. Whitelist [resources](/android_webview/ui/grit_resources_whitelist.txt) and
-   [strings](/android_webview/ui/grit_strings_whitelist.txt) (
-   [general docs](/android_webview/ui/README.md), [example
+1. Add IDs to their respective allowlist files:
+   [resources](/android_webview/ui/grit_resources_allowlist.txt) and
+   [strings](/android_webview/ui/grit_strings_allowlist.txt) ([general
+   docs](/android_webview/ui/README.md), [example
    CL](https://chromium-review.googlesource.com/c/chromium/src/+/1270476/12/android_webview/ui/grit_strings_whitelist.txt)).
 1. Add the new threat type to our list of threats ([example
    CL](https://chromium-review.googlesource.com/c/chromium/src/+/1270476/12/android_webview/browser/aw_url_checker_delegate_impl.cc)).

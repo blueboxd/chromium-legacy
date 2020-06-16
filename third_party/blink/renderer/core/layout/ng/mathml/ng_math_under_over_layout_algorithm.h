@@ -26,8 +26,6 @@ class CORE_EXPORT NGMathUnderOverLayoutAlgorithm
   void GatherChildren(NGBlockNode* base,
                       NGBlockNode* second,
                       NGBlockNode* third);
-
-  const NGBoxStrut border_scrollbar_padding_;
 };
 
 }  // namespace blink

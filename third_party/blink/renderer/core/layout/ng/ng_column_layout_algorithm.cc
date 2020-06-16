@@ -88,32 +88,30 @@ void PushSpannerBreakTokens(
 
 NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params),
-      early_break_(params.early_break),
-      border_padding_(params.fragment_geometry.border +
-                      params.fragment_geometry.padding),
-      border_scrollbar_padding_(border_padding_ +
-                                params.fragment_geometry.scrollbar) {
-  AdjustForFragmentation(BreakToken(), &border_scrollbar_padding_);
+    : NGLayoutAlgorithm(params), early_break_(params.early_break) {
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
+  container_builder_.AdjustBorderScrollbarPaddingForFragmentation(BreakToken());
 }
 
 scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
-  LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
-  content_box_size_ =
-      ShrinkAvailableSize(border_box_size, border_scrollbar_padding_);
+  const LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
+  // TODO(mstensho): This isn't the content-box size, as
+  // |BorderScrollbarPadding()| has been adjusted for fragmentation. Verify
+  // that this is the correct size.
+  column_block_size_ =
+      ShrinkLogicalSize(border_box_size, BorderScrollbarPadding()).block_size;
 
-  DCHECK_GE(content_box_size_.inline_size, LayoutUnit());
+  DCHECK_GE(ChildAvailableSize().inline_size, LayoutUnit());
   column_inline_size_ =
-      ResolveUsedColumnInlineSize(content_box_size_.inline_size, Style());
+      ResolveUsedColumnInlineSize(ChildAvailableSize().inline_size, Style());
 
   column_inline_progression_ =
       column_inline_size_ +
-      ResolveUsedColumnGap(content_box_size_.inline_size, Style());
+      ResolveUsedColumnGap(ChildAvailableSize().inline_size, Style());
   used_column_count_ =
-      ResolveUsedColumnCount(content_box_size_.inline_size, Style());
+      ResolveUsedColumnCount(ChildAvailableSize().inline_size, Style());
 
   // If we know the block-size of the fragmentainers in an outer fragmentation
   // context (if any), our columns may be constrained by that, meaning that we
@@ -129,7 +127,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
 
   container_builder_.SetIsBlockFragmentationContextRoot();
 
-  intrinsic_block_size_ = border_scrollbar_padding_.block_start;
+  intrinsic_block_size_ = BorderScrollbarPadding().block_start;
 
   NGBreakStatus break_status = LayoutChildren();
   if (break_status == NGBreakStatus::kNeedsEarlierBreak) {
@@ -155,7 +153,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   LayoutUnit block_size;
   if (border_box_size.block_size == kIndefiniteSize) {
     // Get the block size from the contents if it's auto.
-    block_size = intrinsic_block_size_ + border_scrollbar_padding_.block_end;
+    block_size = intrinsic_block_size_ + BorderScrollbarPadding().block_end;
   } else {
     // TODO(mstensho): end border and padding may overflow the parent
     // fragmentainer, and we should avoid that.
@@ -168,7 +166,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     LayoutUnit all_fragments_block_size =
         previously_consumed_block_size + block_size;
     FinishFragmentation(
-        Node(), ConstraintSpace(), BreakToken(), border_padding_,
+        Node(), ConstraintSpace(), BreakToken(), BorderPadding(),
         all_fragments_block_size, intrinsic_block_size_,
         FragmentainerSpaceAtBfcStart(ConstraintSpace()), &container_builder_);
   } else {
@@ -214,7 +212,7 @@ MinMaxSizesResult NGColumnLayoutAlgorithm::ComputeMinMaxSizes(
 
   // TODO(mstensho): Need to include spanners.
 
-  result.sizes += border_scrollbar_padding_.InlineSum();
+  result.sizes += BorderScrollbarPadding().InlineSum();
   return result;
 }
 
@@ -387,7 +385,7 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutChildren() {
 scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
     const NGBlockBreakToken* next_column_token,
     NGMarginStrut* margin_strut) {
-  LogicalSize column_size(column_inline_size_, content_box_size_.block_size);
+  LogicalSize column_size(column_inline_size_, column_block_size_);
 
   // If block-size is non-auto, subtract the space for content we've consumed in
   // previous fragments. This is necessary when we're nested inside another
@@ -470,7 +468,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
     // preceding columns in this row and there are also no preceding rows.
     bool is_first_fragmentainer = !column_break_token && !BreakToken();
 
-    LayoutUnit column_inline_offset(border_scrollbar_padding_.inline_start);
+    LayoutUnit column_inline_offset(BorderScrollbarPadding().inline_start);
     int actual_column_count = 0;
     int forced_break_count = 0;
 
@@ -638,7 +636,7 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutSpanner(
   *spanner_break_token = nullptr;
   const ComputedStyle& spanner_style = spanner_node.Style();
   NGBoxStrut margins = ComputeMarginsFor(
-      spanner_style, content_box_size_.inline_size,
+      spanner_style, ChildAvailableSize().inline_size,
       ConstraintSpace().GetWritingMode(), ConstraintSpace().Direction());
 
   if (break_token) {
@@ -700,11 +698,11 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutSpanner(
   NGFragment fragment(ConstraintSpace().GetWritingMode(),
                       result->PhysicalFragment());
 
-  ResolveInlineMargins(spanner_style, Style(), content_box_size_.inline_size,
+  ResolveInlineMargins(spanner_style, Style(), ChildAvailableSize().inline_size,
                        fragment.InlineSize(), &margins);
 
   LogicalOffset offset(
-      border_scrollbar_padding_.inline_start + margins.inline_start,
+      BorderScrollbarPadding().inline_start + margins.inline_start,
       block_offset);
   container_builder_.AddResult(*result, offset);
 
@@ -822,7 +820,7 @@ LayoutUnit NGColumnLayoutAlgorithm::CalculateBalancedColumnBlockSize(
 
   // Then distribute as many implicit breaks into the content runs as we need.
   int used_column_count =
-      ResolveUsedColumnCount(content_box_size_.inline_size, Style());
+      ResolveUsedColumnCount(ChildAvailableSize().inline_size, Style());
   for (int columns_found = content_runs.size();
        columns_found < used_column_count; columns_found++) {
     // The tallest content run (with all assumed implicit breaks added so far
@@ -876,15 +874,15 @@ LayoutUnit NGColumnLayoutAlgorithm::ConstrainColumnBlockSize(
   // First of all we need to convert the size to a value that can be compared
   // against the resolved properties on the multicol container. That means that
   // we have to convert the value from content-box to border-box.
-  LayoutUnit extra = border_scrollbar_padding_.BlockSum();
+  LayoutUnit extra = BorderScrollbarPadding().BlockSum();
   size += extra;
 
   const ComputedStyle& style = Style();
   LayoutUnit max = ResolveMaxBlockLength(
-      ConstraintSpace(), style, border_padding_, style.LogicalMaxHeight(),
+      ConstraintSpace(), style, BorderPadding(), style.LogicalMaxHeight(),
       LengthResolvePhase::kLayout);
   LayoutUnit extent = ResolveMainBlockLength(
-      ConstraintSpace(), style, border_padding_, style.LogicalHeight(), size,
+      ConstraintSpace(), style, BorderPadding(), style.LogicalHeight(), size,
       LengthResolvePhase::kLayout);
   if (extent != kIndefiniteSize) {
     // A specified height/width will just constrain the maximum length.
@@ -994,8 +992,8 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForSpanner(
     LayoutUnit block_offset) const {
   NGConstraintSpaceBuilder space_builder(
       ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
-  space_builder.SetAvailableSize(content_box_size_);
-  space_builder.SetPercentageResolutionSize(content_box_size_);
+  space_builder.SetAvailableSize(ChildAvailableSize());
+  space_builder.SetPercentageResolutionSize(ChildAvailableSize());
 
   if (ConstraintSpace().HasBlockFragmentation()) {
     SetupSpaceBuilderForFragmentation(ConstraintSpace(), spanner, block_offset,

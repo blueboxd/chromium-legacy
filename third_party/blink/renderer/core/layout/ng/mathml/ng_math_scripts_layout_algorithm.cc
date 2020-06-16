@@ -79,16 +79,11 @@ ScriptsVerticalParameters GetScriptsVerticalParameters(
 
 NGMathScriptsLayoutAlgorithm::NGMathScriptsLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params),
-      border_scrollbar_padding_(params.fragment_geometry.border +
-                                params.fragment_geometry.scrollbar +
-                                params.fragment_geometry.padding) {
+    : NGLayoutAlgorithm(params) {
   DCHECK(params.space.IsNewFormattingContext());
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
-  child_available_size_ = ShrinkAvailableSize(
-      container_builder_.InitialBorderBoxSize(), border_scrollbar_padding_);
 }
 
 void NGMathScriptsLayoutAlgorithm::GatherChildren(
@@ -103,8 +98,7 @@ void NGMathScriptsLayoutAlgorithm::GatherChildren(
     if (child.IsOutOfFlowPositioned()) {
       if (container_builder) {
         container_builder->AddOutOfFlowChildCandidate(
-            block_child, {border_scrollbar_padding_.inline_start,
-                          border_scrollbar_padding_.block_start});
+            block_child, BorderScrollbarPadding().StartOffset());
       }
       continue;
     }
@@ -232,7 +226,7 @@ NGMathScriptsLayoutAlgorithm::ChildAndMetrics
 NGMathScriptsLayoutAlgorithm::LayoutAndGetMetrics(NGBlockNode child) const {
   ChildAndMetrics child_and_metrics;
   auto constraint_space = CreateConstraintSpaceForMathChild(
-      Node(), child_available_size_, ConstraintSpace(), child);
+      Node(), ChildAvailableSize(), ConstraintSpace(), child);
   child_and_metrics.result =
       child.Layout(constraint_space, nullptr /*break_token*/);
   NGBoxFragment fragment(
@@ -265,14 +259,17 @@ scoped_refptr<const NGLayoutResult> NGMathScriptsLayoutAlgorithm::Layout() {
   VerticalMetrics metrics =
       GetVerticalMetrics(base_metrics, sub_metrics, sup_metrics);
 
+  const LogicalOffset content_start_offset =
+      BorderScrollbarPadding().StartOffset();
+
   LayoutUnit ascent =
       std::max(base_metrics.ascent, metrics.ascent + metrics.sup_shift) +
-      border_scrollbar_padding_.block_start;
+      content_start_offset.block_offset;
   LayoutUnit descent =
       std::max(base_metrics.descent, metrics.descent + metrics.sub_shift);
   // TODO(rbuis): take into account italic correction.
-  LayoutUnit inline_offset = border_scrollbar_padding_.inline_start +
-                             base_metrics.margins.inline_start;
+  LayoutUnit inline_offset =
+      content_start_offset.inline_offset + base_metrics.margins.inline_start;
 
   LogicalOffset base_offset(
       inline_offset,
@@ -302,11 +299,10 @@ scoped_refptr<const NGLayoutResult> NGMathScriptsLayoutAlgorithm::Layout() {
   container_builder_.SetBaseline(ascent);
 
   LayoutUnit intrinsic_block_size =
-      ascent + descent + border_scrollbar_padding_.block_end;
+      ascent + descent + BorderScrollbarPadding().block_end;
 
   LayoutUnit block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), border_scrollbar_padding_,
-      intrinsic_block_size,
+      ConstraintSpace(), Style(), BorderPadding(), intrinsic_block_size,
       container_builder_.InitialBorderBoxSize().inline_size);
 
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
@@ -322,7 +318,7 @@ scoped_refptr<const NGLayoutResult> NGMathScriptsLayoutAlgorithm::Layout() {
 MinMaxSizesResult NGMathScriptsLayoutAlgorithm::ComputeMinMaxSizes(
     const MinMaxSizesInput& child_input) const {
   if (auto result = CalculateMinMaxSizesIgnoringChildren(
-          Node(), border_scrollbar_padding_))
+          Node(), BorderScrollbarPadding()))
     return *result;
 
   NGBlockNode base = nullptr;
@@ -384,7 +380,7 @@ MinMaxSizesResult NGMathScriptsLayoutAlgorithm::ComputeMinMaxSizes(
       NOTREACHED();
       break;
   }
-  sizes += border_scrollbar_padding_.InlineSum();
+  sizes += BorderScrollbarPadding().InlineSum();
 
   return {sizes, depends_on_percentage_block_size};
 }

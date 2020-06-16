@@ -1129,9 +1129,10 @@ void ColorSpace::GetRangeAdjustMatrix(int bit_depth, SkMatrix44* matrix) const {
 
 bool ColorSpace::ToSkYUVColorSpace(SkYUVColorSpace* out) const {
   if (range_ == RangeID::FULL) {
-    // TODO(dalecurtis): This is probably not right for BT.2020.
-    *out = kJPEG_SkYUVColorSpace;
-    return true;
+    if (matrix_ == MatrixID::BT470BG || matrix_ == MatrixID::SMPTE170M) {
+      *out = kJPEG_SkYUVColorSpace;
+      return true;
+    }
   }
   switch (matrix_) {
     case MatrixID::BT709:

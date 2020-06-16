@@ -358,10 +358,6 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
         FireUiaAccessibilityEvent(UIA_MenuOpenedEventId, node);
       }
       break;
-    case ui::AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED:
-      FireWinAccessibilityEvent(IA2_EVENT_TEXT_ATTRIBUTE_CHANGED, node);
-      FireUiaTextContainerEvent(UIA_Text_TextChangedEventId, node);
-      break;
     case ui::AXEventGenerator::Event::VALUE_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_VALUECHANGE, node);
       if (node->GetData().IsRangeValueSupported()) {

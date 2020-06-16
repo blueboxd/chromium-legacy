@@ -126,11 +126,6 @@ class LegacyOnDemandImpl
   void UpdateStateCallback(UpdateService::UpdateState state_update);
   void UpdateResultCallback(UpdateService::Result result);
 
-  // Returns the state of the update and the error code as seen by the
-  // on-demand client.
-  CurrentState GetOnDemandCurrentState() const;
-  HRESULT GetOnDemandError() const;
-
   // Handles the update service callbacks.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

@@ -232,7 +232,6 @@ All changes to this list should go through Blink's feature review process: http:
     marker-mid
     marker-start
     mask
-    mask-source-type
     mask-type
     math-style
     math-superscript-shift-style

@@ -353,6 +353,24 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PRINT_MANAGEMENT_CLEAR_BUTTON_LABEL" desc="The label for the action button that confirms clearing a user's print history in the clear print history dialog.">
         Clear
       </message>
+      <message name="IDS_PRINT_MANAGEMENT_HISTORY_HEADER_LABEL" desc="The header label that indicates that print jobs below this header are the user's print history.">
+        History
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_HISTORY_TOOL_TIP" desc="The tooltip that states that the user's print jobs are automatically deleted after 90 days.">
+        Print jobs older than 90 days will be removed
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_PRINTED_PAGES_ARIA_LABEL" desc="The aria label that describes the current page printed printed versus the total number of pages.">
+        Printed page <ph name="PRINTED_PAGES">$1<ex>1</ex></ph> out of <ph name="TOTAL_PAGES">$2<ex>2</ex></ph>.
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_PRINTED_PAGES_PROGRESS_FRACTION" desc="A fraction-based progress indicator that lets users know how many pages are print versus how many pages total to be printed. Example: 5/7 (where 5 pages haves been printed out of 7 total pages">
+        <ph name="PRINTED_PAGES_NUMBER">$1<ex>5</ex></ph>/<ph name="TOTAL_PAGES_NUMBER">$2<ex>7</ex></ph>
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_COMPLETED_JOB_ARIA_LABEL" desc="The aria label that describes a completed print job that includes the print job documenet title, printer name, creation time, and completion status. This is a sentence with commas and spaces (minor pause) between placeholders.">
+        <ph name="DOCUMENT_TITLE">$1<ex>my_essay.doc</ex></ph>, <ph name="PRINTER_NAME">$2<ex>canon 6450</ex></ph>, <ph name="CREATION_TIME">$3<ex>February 8, 2020</ex></ph>, <ph name="COMPLETION_STATUS">$4<ex>Printed</ex></ph>
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_ONGOING_JOB_ARIA_LABEL" desc="The aria label that describes an ongoing print job that includes the print job documenet title, printer name, creation time, and ongoing status.">
+        <ph name="DOCUMENT_TITLE">$1<ex>my_essay.doc</ex></ph>, <ph name="PRINTER_NAME">$2<ex>canon 6450</ex></ph>, <ph name="CREATION_TIME">$3<ex>February 8, 2020</ex></ph>, <ph name="PRINTED_PAGE_NUMBER">$4<ex>5</ex></ph> out of <ph name="TOTAL_PAGE_NUMBER">$5<ex>7</ex></ph>
+      </message>
     </messages>
   </release>
 </grit>

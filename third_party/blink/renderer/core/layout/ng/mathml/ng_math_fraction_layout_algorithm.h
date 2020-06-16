@@ -22,7 +22,6 @@ class CORE_EXPORT NGMathFractionLayoutAlgorithm
   MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const final;
 
   void GatherChildren(NGBlockNode* numerator, NGBlockNode* denominator);
-  const NGBoxStrut border_scrollbar_padding_;
 };
 
 }  // namespace blink

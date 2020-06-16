@@ -11,9 +11,11 @@
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_mathml_paint_info.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_container_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -57,6 +59,32 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     initial_fragment_geometry_ = &initial_fragment_geometry;
     size_ = initial_fragment_geometry_->border_box_size;
     is_initial_block_size_indefinite_ = size_.block_size == kIndefiniteSize;
+
+    border_padding_ =
+        initial_fragment_geometry.border + initial_fragment_geometry.padding;
+    border_scrollbar_padding_ =
+        border_padding_ + initial_fragment_geometry.scrollbar;
+    if (space_) {
+      child_available_size_ = CalculateChildAvailableSize(
+          *space_, To<NGBlockNode>(node_), size_, border_scrollbar_padding_);
+    }
+  }
+
+  void AdjustBorderScrollbarPaddingForFragmentation(
+      const NGBlockBreakToken* break_token) {
+    if (LIKELY(!break_token))
+      return;
+    if (break_token->IsBreakBefore())
+      return;
+    border_scrollbar_padding_.block_start = LayoutUnit();
+  }
+
+  void AdjustBorderScrollbarPaddingForTableCell() {
+    if (!space_->IsTableCell())
+      return;
+
+    border_scrollbar_padding_ +=
+        ComputeIntrinsicPadding(*space_, *style_, Scrollbar());
   }
 
   const NGFragmentGeometry& InitialFragmentGeometry() const {
@@ -86,6 +114,22 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   const LogicalSize& InitialBorderBoxSize() const {
     DCHECK(initial_fragment_geometry_);
     return initial_fragment_geometry_->border_box_size;
+  }
+  const NGBoxStrut& BorderPadding() const {
+    DCHECK(initial_fragment_geometry_);
+    return border_padding_;
+  }
+  const NGBoxStrut& BorderScrollbarPadding() const {
+    DCHECK(initial_fragment_geometry_);
+    return border_scrollbar_padding_;
+  }
+  // The child available-size is subtly different from the content-box size of
+  // an element. For an anonymous-block the child available-size is equal to
+  // its non-anonymous parent (similar to percentages).
+  const LogicalSize& ChildAvailableSize() const {
+    DCHECK(initial_fragment_geometry_);
+    DCHECK(space_);
+    return child_available_size_;
   }
 
   // Add a break token for a child that doesn't yet have any fragments, because
@@ -373,6 +417,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   scoped_refptr<const NGLayoutResult> ToBoxFragment(WritingMode);
 
   const NGFragmentGeometry* initial_fragment_geometry_ = nullptr;
+  NGBoxStrut border_padding_;
+  NGBoxStrut border_scrollbar_padding_;
+  LogicalSize child_available_size_;
   LayoutUnit overflow_block_size_ = kIndefiniteSize;
   LayoutUnit intrinsic_block_size_;
 

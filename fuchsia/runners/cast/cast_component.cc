@@ -57,6 +57,7 @@ CastComponent::CastComponent(WebContentRunner* runner,
       initial_url_rewrite_rules_(
           std::move(params.initial_url_rewrite_rules.value())),
       api_bindings_client_(std::move(params.api_bindings_client)),
+      application_context_(params.application_context.Bind()),
       media_session_id_(params.media_session_id.value()),
       headless_disconnect_watch_(FROM_HERE) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
@@ -132,9 +133,6 @@ void CastComponent::StartComponent() {
         application_config_.force_content_dimensions()));
   }
 
-  application_context_ =
-      agent_manager_->ConnectToAgentService<chromium::cast::ApplicationContext>(
-          application_config_.agent_url());
   application_controller_ = std::make_unique<ApplicationControllerImpl>(
       frame(), application_context_.get());
 

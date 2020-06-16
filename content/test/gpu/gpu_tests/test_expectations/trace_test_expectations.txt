@@ -45,6 +45,9 @@ crbug.com/1009860 [ android ] SwapChainTraceTest_* [ Skip ]
 crbug.com/1009860 [ chromeos ] SwapChainTraceTest_* [ Skip ]
 crbug.com/1009860 [ win7 ] SwapChainTraceTest_* [ Skip ]
 
+# Skip unaccelerated canvas test since we don't use swap chains without GPU compositing.
+crbug.com/1009860 [ win10 ] SwapChainTraceTest_CanvasUnacceleratedLowLatency2D [ Skip ]
+
 # VP9 videos fail to trigger zero copy video presentation path.
 crbug.com/930343 [ win intel ] VideoPathTraceTest_DirectComposition_Video_VP9_Fullsize [ Failure ]
 

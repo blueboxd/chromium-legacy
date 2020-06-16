@@ -83,7 +83,6 @@ css3/filters/filter-repaint-child-layers.html
 css3/filters/filter-repaint-shadow.html
 css3/filters/filter-repaint.html
 css3/filters/regions-expanding.html
-css3/masking/mask-luminance-png.html
 css3/masking/mask-repeat-round-auto1.html
 css3/masking/mask-repeat-round-border.html
 css3/masking/mask-repeat-round-content.html

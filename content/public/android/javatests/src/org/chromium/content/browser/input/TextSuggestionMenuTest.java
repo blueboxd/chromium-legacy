@@ -4,13 +4,14 @@
 
 package org.chromium.content.browser.input;
 
-import android.support.test.filters.LargeTest;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.SuggestionSpan;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.test.filters.LargeTest;
 
 import org.junit.Assert;
 import org.junit.Before;

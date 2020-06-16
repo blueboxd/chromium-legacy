@@ -15,7 +15,7 @@
 namespace views {
 namespace examples {
 
-class ExamplesSkiaGoldPixelDiff : public SkiaGoldPixelDiff {
+class ExamplesSkiaGoldPixelDiff : public ui::test::SkiaGoldPixelDiff {
  public:
   ExamplesSkiaGoldPixelDiff();
   ~ExamplesSkiaGoldPixelDiff() override;

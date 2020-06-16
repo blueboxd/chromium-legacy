@@ -86,6 +86,7 @@ class CC_EXPORT PaintedScrollbarLayer : public ScrollbarLayerBase {
   gfx::Rect forward_button_rect_;
   float painted_opacity_;
   bool has_thumb_;
+  bool jump_on_track_click_;
 
   const bool supports_drag_snap_back_;
   const bool is_overlay_;

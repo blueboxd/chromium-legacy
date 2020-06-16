@@ -14,12 +14,12 @@ import static org.chromium.chrome.browser.ui.appmenu.AppMenuAdapterTest.buildMen
 import static org.chromium.chrome.browser.ui.appmenu.AppMenuAdapterTest.buildTitleMenuItem;
 
 import android.graphics.drawable.Drawable;
-import android.support.test.filters.MediumTest;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Rule;
 import org.junit.Test;

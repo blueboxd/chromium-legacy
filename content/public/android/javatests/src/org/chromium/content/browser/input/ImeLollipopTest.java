@@ -6,9 +6,10 @@ package org.chromium.content.browser.input;
 
 import android.annotation.TargetApi;
 import android.os.Build;
-import android.support.test.filters.MediumTest;
 import android.view.inputmethod.CursorAnchorInfo;
 import android.view.inputmethod.InputConnection;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

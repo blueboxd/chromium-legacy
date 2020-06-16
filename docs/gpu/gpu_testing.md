@@ -278,11 +278,11 @@ being tested. This *should* mean that the pixel tests will automatically work
 when run locally. However, if the local run detection code fails for some
 reason, you can manually pass some flags to force the same behavior:
 
-In order to get around the local run issues, simply pass the `--local-run=1`
-flag to the tests. This will disable uploading, but otherwise go through the
-same steps as a test normally would. Each test will also print out `file://`
-URLs to the produced image, the closest image for the test known to Gold, and
-the diff between the two.
+In order to get around the local run issues, simply pass the
+`--local-pixel-tests` flag to the tests. This will disable uploading, but
+otherwise go through the same steps as a test normally would. Each test will
+also print out `file://` URLs to the produced image, the closest image for the
+test known to Gold, and the diff between the two.
 
 Because the image produced by the test locally is likely slightly different from
 any of the approved images in Gold, local test runs are likely to fail during
@@ -292,7 +292,7 @@ comparison. When using `--no-skia-gold-failure`, you'll also need to pass the
 `--passthrough` flag in order to actually see the link output.
 
 Example usage:
-`run_gpu_integration_test.py pixel --no-skia-gold-failure --local-run=1
+`run_gpu_integration_test.py pixel --no-skia-gold-failure --local-pixel-tests
 --passthrough`
 
 If, for some reason, the local run code is unable to determine what the git
@@ -300,7 +300,7 @@ revision is, simply pass `--git-revision aabbccdd`. Note that `aabbccdd` must
 be replaced with an actual Chromium src revision (typically whatever revision
 origin/master is currently synced to) in order for the tests to work. This can
 be done automatically using:
-``run_gpu_integration_test.py pixel --no-skia-gold-failure --local-run
+``run_gpu_integration_test.py pixel --no-skia-gold-failure --local-pixel-tests
 --passthrough --git-revision `git rev-parse origin/master` ``
 
 ## Running Binaries from the Bots Locally

@@ -40,6 +40,7 @@ class CrostiniSection : public OsSettingsSection {
   bool IsCrostiniAllowed();
   bool IsExportImportAllowed();
   bool IsContainerUpgradeAllowed();
+  bool IsPortForwardingAllowed();
   void UpdateSearchTags();
 
   PrefService* pref_service_;

@@ -107,13 +107,16 @@ struct TestRuleRedirect : public DictionarySource {
 };
 
 struct TestHeaderInfo : public DictionarySource {
-  TestHeaderInfo(std::string header, std::string operation);
+  TestHeaderInfo(std::string header,
+                 std::string operation,
+                 base::Optional<std::string> value);
   ~TestHeaderInfo() override;
   TestHeaderInfo(const TestHeaderInfo&);
   TestHeaderInfo& operator=(const TestHeaderInfo&);
 
   base::Optional<std::string> header;
   base::Optional<std::string> operation;
+  base::Optional<std::string> value;
 
   std::unique_ptr<base::DictionaryValue> ToValue() const override;
 };

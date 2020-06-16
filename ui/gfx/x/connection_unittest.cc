@@ -86,7 +86,7 @@ TEST(X11ConnectionTest, Event) {
 
   connection.ReadResponses();
   ASSERT_EQ(connection.events().size(), 1u);
-  XEvent& event = connection.events().front().xlib_event;
+  XEvent& event = connection.events().front().xlib_event();
   auto property_notify_opcode = PropertyNotifyEvent::opcode;
   EXPECT_EQ(event.type, property_notify_opcode);
   EXPECT_EQ(event.xproperty.atom, static_cast<uint32_t>(x11::Atom::WM_NAME));

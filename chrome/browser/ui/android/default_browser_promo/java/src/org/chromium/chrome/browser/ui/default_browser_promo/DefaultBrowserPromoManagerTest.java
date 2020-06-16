@@ -12,7 +12,6 @@ import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import android.app.Activity;
 import android.os.Build;
-import android.support.test.rule.ActivityTestRule;
 
 import androidx.test.filters.MediumTest;
 
@@ -27,9 +26,9 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.browser_ui.widget.PromoDialog;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.test.util.DummyUiActivity;
 
 /**
  * Instrument test for {@link DefaultBrowserPromoManager}.
@@ -37,8 +36,9 @@ import org.chromium.ui.test.util.DummyUiActivity;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class DefaultBrowserPromoManagerTest {
+    // TODO(crbug.com/1090103): change this back to DummyUIActivity.
     @Rule
-    public ActivityTestRule<DummyUiActivity> mRule = new ActivityTestRule<>(DummyUiActivity.class);
+    public ChromeTabbedActivityTestRule mRule = new ChromeTabbedActivityTestRule();
 
     private DefaultBrowserPromoManager mManager;
     private Activity mActivity;
@@ -46,6 +46,7 @@ public class DefaultBrowserPromoManagerTest {
 
     @Before
     public void setUp() {
+        mRule.startMainActivityOnBlankPage();
         mActivity = mRule.getActivity();
         mManager = DefaultBrowserPromoManager.create(mActivity);
         mAppName = BuildInfo.getInstance().hostPackageLabel;

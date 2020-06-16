@@ -39,8 +39,8 @@ ExamplesExitCode ExamplesSkiaGoldPixelDiff::CompareScreenshot(
   run_loop.Run();
   if (screenshot_.IsEmpty())
     return ExamplesExitCode::kImageEmpty;
-  return SkiaGoldPixelDiff::CompareScreenshot(screenshot_name,
-                                              *screenshot_.ToSkBitmap())
+  return ui::test::SkiaGoldPixelDiff::CompareScreenshot(
+             screenshot_name, *screenshot_.ToSkBitmap())
              ? ExamplesExitCode::kSucceeded
              : ExamplesExitCode::kFailed;
 }

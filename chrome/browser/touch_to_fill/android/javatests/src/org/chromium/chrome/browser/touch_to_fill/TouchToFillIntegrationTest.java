@@ -17,13 +17,13 @@ import static org.chromium.content_public.browser.test.util.CriteriaHelper.pollU
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
 import android.annotation.SuppressLint;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.Espresso;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

@@ -1696,6 +1696,10 @@ are declared in tools/grit/grit_rule.gni.
         desc="Message shown in the download shelf when a download is being scanned, without the file name">
         Checking with your organization's security policies.
       </message>
+      <message name="IDS_PROMPT_DEEP_SCANNING_APP_DOWNLOAD"
+        desc="Message shown in the download shelf when a download is being scanned for an Advanced Protection user">
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is being scanned.
+      </message>
       <message name="IDS_PROMPT_CONFIRM_MIXED_CONTENT_DOWNLOAD"
         desc="Message shown to the user to validate the download when the download content is a mixed-content download.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely

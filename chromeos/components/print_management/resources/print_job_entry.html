@@ -12,13 +12,29 @@
     min-height: 40px;
     padding: 0;
   }
+
+  #activeStatusContainer {
+    display: flex;
+  }
+
+  #numericalProgress {
+    color: var(--google-blue-600);
+    margin-inline-end: 16px;
+  }
+
+  paper-progress {
+    --paper-progress-active-color: var(--google-blue-600);
+    --paper-progress-container-color: rgba(var(--google-blue-600-rgb), .24);
+    margin-top: 5px;
+    width: 72px;
+  }
 </style>
 <div focus-row-container>
   <!-- TODO(crbug/1073693): Update the a11y based on expert guidance -->
   <div class="list-item"
       focus-row-control
       focus-type="rowWrapper"
-      aria-labeledby="jobTitle printerName creationTime completionStatus">
+      aria-label$="[[jobEntryAriaLabel_]]">
     <div id="jobTitle" class="long-text overflow-ellipsis" aria-hidden="true">
       [[jobTitle_]]
     </div>
@@ -30,9 +46,24 @@
         aria-hidden="true">
       [[creationTime_]]
     </div>
-    <div id="completionStatus" class="short-text overflow-ellipsis padded-left"
-        aria-hidden="true">
-      [[completionStatus_]]
-    </div>
+    
+    <template is="dom-if" if="[[isCompletedPrintJob_(jobEntry)]]" restamp>
+      <div id="completionStatus"
+          class="short-text overflow-ellipsis padded-left"
+          aria-hidden="true">
+        [[completionStatus_]]
+      </div>
+    </template>
+
+    <template is="dom-if" if="[[!isCompletedPrintJob_(jobEntry)]]" restamp>
+      <div id="activeStatusContainer" class="padded-left" aria-hidden="true">
+        <div id="numericalProgress">[[readableProgress_]]</div>
+        <paper-progress
+            value="[[computePrintPagesProgress_(
+                jobEntry.activePrintJobInfo.printedPages,
+                jobEntry.numberOfPages)]]">
+        </paper-progress>
+      </div>
+    </template>
   </div>
 </div>

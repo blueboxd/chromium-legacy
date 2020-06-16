@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.ui.appmenu;
 
 import android.graphics.drawable.Drawable;
-import android.support.test.filters.MediumTest;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.SubMenu;
@@ -15,6 +14,7 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Test;

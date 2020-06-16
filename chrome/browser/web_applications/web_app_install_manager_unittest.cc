@@ -46,6 +46,8 @@ namespace web_app {
 
 namespace {
 
+constexpr SquareSizePx kDefaultImageSize = 100;
+
 // TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
 // function.
 GURL IconUrl() {
@@ -78,7 +80,8 @@ std::vector<blink::Manifest::ImageResource> ConvertWebAppIconsToImageResources(
     icon.src = icon_info.url;
     icon.purpose.push_back(blink::Manifest::ImageResource::Purpose::ANY);
     icon.sizes.push_back(
-        gfx::Size(icon_info.square_size_px, icon_info.square_size_px));
+        gfx::Size(icon_info.square_size_px.value_or(kDefaultImageSize),
+                  icon_info.square_size_px.value_or(kDefaultImageSize)));
     icons.push_back(std::move(icon));
   }
   return icons;
@@ -99,8 +102,8 @@ std::unique_ptr<blink::Manifest> ConvertWebAppToManifest(const WebApp& app) {
 IconsMap ConvertWebAppIconsToIconsMap(const WebApp& app) {
   IconsMap icons_map;
   for (const WebApplicationIconInfo& icon_info : app.icon_infos()) {
-    icons_map[icon_info.url] = {
-        CreateSquareIcon(icon_info.square_size_px, SK_ColorBLACK)};
+    icons_map[icon_info.url] = {CreateSquareIcon(
+        icon_info.square_size_px.value_or(kDefaultImageSize), SK_ColorBLACK)};
   }
   return icons_map;
 }

@@ -48,11 +48,20 @@ bool AccessibilityWindowInfoDataWrapper::IsVirtualNode() const {
   return false;
 }
 
+bool AccessibilityWindowInfoDataWrapper::IsIgnored() const {
+  return false;
+}
+
 bool AccessibilityWindowInfoDataWrapper::CanBeAccessibilityFocused() const {
   // Windows are too generic to be Accessibility focused in Chrome, although
   // they can be Accessibility focused in Android by virtue of having
   // accessibility focus on nodes within themselves.
   return false;
+}
+
+bool AccessibilityWindowInfoDataWrapper::IsAccessibilityFocusableContainer()
+    const {
+  return tree_source_->GetRoot()->GetId() == GetId();
 }
 
 void AccessibilityWindowInfoDataWrapper::PopulateAXRole(

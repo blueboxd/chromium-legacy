@@ -144,7 +144,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                  finish_js_condition='domAutomationController._finished',
                  success_eval_func='CheckVideoPath',
                  other_args=p.other_args))
-    for p in namespace.LowLatencySwapChainPages('SwapChainTraceTest'):
+    for p in namespace.LowLatencyPages('SwapChainTraceTest'):
       yield (p.name, gpu_relative_path + p.url,
              _TraceTestArguments(
                  browser_args=p.browser_args,
@@ -213,13 +213,14 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
   @staticmethod
   def _AddDefaultArgs(browser_args):
     # All tests receive the following options.
-    return [
+    default_args = [
         '--enable-logging',
         '--enable-experimental-web-platform-features',
         # All bots are connected with a power source, however, we want to to
         # test with the code path that's enabled with battery power.
         '--disable_vp_scaling=1'
-    ] + browser_args
+    ]
+    return default_args + (browser_args or [])
 
   def _GetOverlayBotConfigHelper(self):
     system_info = self.browser.GetSystemInfo()

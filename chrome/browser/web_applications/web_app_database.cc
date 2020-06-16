@@ -148,7 +148,8 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
 
   for (const WebApplicationIconInfo& icon_info : web_app.icon_infos()) {
     WebAppIconInfoProto* icon_info_proto = local_data->add_icon_infos();
-    icon_info_proto->set_size_in_px(icon_info.square_size_px);
+    if (icon_info.square_size_px)
+      icon_info_proto->set_size_in_px(*icon_info.square_size_px);
     DCHECK(!icon_info.url.is_empty());
     icon_info_proto->set_url(icon_info.url.spec());
   }
@@ -304,7 +305,8 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   std::vector<WebApplicationIconInfo> icon_infos;
   for (const WebAppIconInfoProto& icon_info_proto : local_data.icon_infos()) {
     WebApplicationIconInfo icon_info;
-    icon_info.square_size_px = icon_info_proto.size_in_px();
+    if (icon_info_proto.has_size_in_px())
+      icon_info.square_size_px = icon_info_proto.size_in_px();
     if (!icon_info_proto.has_url()) {
       DLOG(ERROR) << "WebApp IconInfo has missing url";
       return nullptr;

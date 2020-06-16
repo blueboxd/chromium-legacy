@@ -71,12 +71,20 @@ void ArcIconOnceLoader::SizeSpecificLoader::LoadIcon(
   if (iter != icons_.end()) {
     return;
   }
-  bool compressed =
-      icon_compression_ == apps::mojom::IconCompression::kCompressed;
+  ArcAppIcon::IconType icon_type;
+  switch (icon_compression_) {
+    case apps::mojom::IconCompression::kUnknown:
+    case apps::mojom::IconCompression::kUncompressed:
+      icon_type = ArcAppIcon::IconType::kUncompressed;
+      break;
+    case apps::mojom::IconCompression::kCompressed:
+      icon_type = ArcAppIcon::IconType::kCompressed;
+      break;
+  }
   iter = icons_
              .insert(std::make_pair(
                  app_id, std::make_unique<ArcAppIcon>(
-                             profile_, app_id, size_in_dip_, this, compressed)))
+                             profile_, app_id, size_in_dip_, this, icon_type)))
              .first;
   iter->second->LoadSupportedScaleFactors();
 }

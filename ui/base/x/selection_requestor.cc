@@ -262,9 +262,9 @@ void SelectionRequestor::BlockTillSelectionNotifyForRequest(Request* request) {
       conn->Flush();
       conn->ReadResponses();
       if (!conn->events().empty()) {
-        x11::Connection::Event event = std::move(events.front());
+        x11::Event event = std::move(events.front());
         events.pop_front();
-        dispatcher_->DispatchXEvent(&event.xlib_event);
+        dispatcher_->DispatchXEvent(&event.xlib_event());
       }
     }
   }

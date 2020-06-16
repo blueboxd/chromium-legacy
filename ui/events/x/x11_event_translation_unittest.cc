@@ -150,7 +150,7 @@ TEST(XEventTranslationTest, ChangedMouseButtonFlags) {
   // Taking in a EnterNotify XEvent
   auto enter_event = std::make_unique<XEvent>();
   memset(enter_event.get(), 0, sizeof(XEvent));
-  enter_event->type = EnterNotify;
+  enter_event->type = x11::CrossingEvent::EnterNotify;
   enter_event->xcrossing.detail = NotifyVirtual;
   auto mouseev3 = ui::BuildMouseEventFromXEvent(*enter_event);
   EXPECT_TRUE(mouseev3);

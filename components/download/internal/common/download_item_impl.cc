@@ -1647,6 +1647,7 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
     DownloadDangerType danger_type,
     MixedContentStatus mixed_content_status,
     const base::FilePath& intermediate_path,
+    base::Optional<DownloadSchedule> download_schedule,
     DownloadInterruptReason interrupt_reason) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (state_ == CANCELLED_INTERNAL)

@@ -8,8 +8,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.graphics.Color;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
 import android.text.InputType;
 import android.text.SpannableString;
 import android.text.Spanned;
@@ -19,6 +17,9 @@ import android.view.KeyEvent;
 import android.view.ViewConfiguration;
 import android.view.inputmethod.BaseInputConnection;
 import android.view.inputmethod.EditorInfo;
+
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

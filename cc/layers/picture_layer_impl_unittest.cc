@@ -5721,7 +5721,6 @@ TEST_F(LegacySWPictureLayerImplTest,
   gfx::Size layer_bounds(200, 200);
   gfx::Size tile_size(256, 256);
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, Region());
-  pending_layer()->SetContentsOpaque(false);
   pending_layer()->SetUseTransformedRasterization(true);
 
   // Start with scale & translation of * 2.25 + (0.25, 0.5).
@@ -5787,9 +5786,7 @@ TEST_F(LegacySWPictureLayerImplTest,
   gfx::Size layer_bounds(200, 200);
   gfx::Size tile_size(256, 256);
   SetupDefaultTreesWithFixedTileSize(layer_bounds, tile_size, Region());
-  active_layer()->SetContentsOpaque(false);
   active_layer()->SetUseTransformedRasterization(true);
-  pending_layer()->SetContentsOpaque(false);
   pending_layer()->SetUseTransformedRasterization(true);
 
   // Start with scale & translation of * 2.25 + (0.25, 0.5) on the active layer.
@@ -5982,6 +5979,24 @@ TEST_F(LegacySWPictureLayerImplTest, NoTilingsUsesScaleOne) {
   // and the transform should be identity.
   EXPECT_RECT_EQ(gfx::Rect(1000, 10000), shared_quad_state->quad_layer_rect);
   EXPECT_TRUE(shared_quad_state->quad_to_target_transform.IsIdentity());
+}
+
+TEST_F(LegacySWPictureLayerImplTest,
+       TransformedRasterizationAndContentsOpaqueAndLCDText) {
+  SetupDefaultTreesWithInvalidation(gfx::Size(200, 200), Region());
+
+  pending_layer()->SetContentsOpaque(true);
+  pending_layer()->SetOffsetToTransformParent(gfx::Vector2dF(0.2, 0.3));
+  EXPECT_TRUE(pending_layer()->contents_opaque());
+  EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
+  EXPECT_EQ(LCDTextDisallowedReason::kNonIntegralXOffset,
+            pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
+
+  pending_layer()->SetUseTransformedRasterization(true);
+  EXPECT_FALSE(pending_layer()->contents_opaque());
+  EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
+  EXPECT_EQ(LCDTextDisallowedReason::kNone,
+            pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
 }
 
 }  // namespace

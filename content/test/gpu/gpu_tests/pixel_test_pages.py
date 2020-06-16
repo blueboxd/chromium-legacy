@@ -385,7 +385,7 @@ class PixelTestPages(object):
   @staticmethod
   def ExperimentalCanvasFeaturesPages(base_name):
     browser_args = [
-        '--enable-experimental-web-platform-features',  # For lowLatency.
+        '--enable-experimental-web-platform-features',
     ]
     accelerated_args = [
         '--disable-software-compositing-fallback',
@@ -481,38 +481,37 @@ class PixelTestPages(object):
             base_name + '_CanvasDisplaySRGBUnaccelerated2DGPUCompositing',
             test_rect=[0, 0, 140, 140],
             browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
-        PixelTestPage('pixel_canvas_low_latency_2d.html',
-                      base_name + '_CanvasLowLatency2D',
-                      test_rect=[0, 0, 100, 100],
-                      browser_args=browser_args),
-        PixelTestPage('pixel_canvas_low_latency_2d.html',
-                      base_name + '_CanvasUnacceleratedLowLatency2D',
-                      test_rect=[0, 0, 100, 100],
-                      browser_args=browser_args + unaccelerated_args),
-        PixelTestPage('pixel_canvas_low_latency_webgl.html',
-                      base_name + '_CanvasLowLatencyWebGL',
-                      test_rect=[0, 0, 200, 200],
-                      browser_args=browser_args),
     ]
 
   @staticmethod
-  def LowLatencySwapChainPages(base_name):
-    browser_args = [
-        '--enable-features=LowLatencyWebGLSwapChain,LowLatencyCanvas2dSwapChain'
+  def LowLatencyPages(base_name):
+    unaccelerated_args = [
+        '--disable-accelerated-2d-canvas',
+        '--disable-gpu-compositing',
     ]
     return [
         PixelTestPage('pixel_canvas_low_latency_2d.html',
-                      base_name + '_CanvasLowLatency2DSwapChain',
+                      base_name + '_CanvasLowLatency2D',
+                      test_rect=[0, 0, 100, 100]),
+        PixelTestPage('pixel_canvas_low_latency_2d.html',
+                      base_name + '_CanvasUnacceleratedLowLatency2D',
                       test_rect=[0, 0, 100, 100],
-                      browser_args=browser_args),
+                      browser_args=unaccelerated_args),
         PixelTestPage('pixel_canvas_low_latency_webgl.html',
-                      base_name + '_CanvasLowLatencyWebGLSwapChain',
-                      test_rect=[0, 0, 200, 200],
-                      browser_args=browser_args),
+                      base_name + '_CanvasLowLatencyWebGL',
+                      test_rect=[0, 0, 200, 200]),
         PixelTestPage('pixel_canvas_low_latency_webgl_alpha_false.html',
-                      base_name + '_CanvasLowLatencyWebGLSwapChainAlphaFalse',
-                      test_rect=[0, 0, 200, 200],
-                      browser_args=browser_args),
+                      base_name + '_CanvasLowLatencyWebGLAlphaFalse',
+                      test_rect=[0, 0, 200, 200]),
+        PixelTestPage('pixel_canvas_low_latency_2d_draw_image.html',
+                      base_name + '_CanvasLowLatency2DDrawImage',
+                      test_rect=[0, 0, 200, 100]),
+        PixelTestPage('pixel_canvas_low_latency_webgl_draw_image.html',
+                      base_name + '_CanvasLowLatencyWebGLDrawImage',
+                      test_rect=[0, 0, 200, 100]),
+        PixelTestPage('pixel_canvas_low_latency_2d_image_data.html',
+                      base_name + '_CanvasLowLatency2DImageData',
+                      test_rect=[0, 0, 200, 100]),
     ]
 
   # Only add these tests on platforms where SwiftShader is enabled.

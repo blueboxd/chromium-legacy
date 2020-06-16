@@ -59,6 +59,9 @@ bool HMAC::Sign(base::StringPiece data,
                 size_t digest_length) const {
   DCHECK(initialized_);
 
+  if (digest_length > DigestLength())
+    return false;
+
   ScopedOpenSSLSafeSizeBuffer<EVP_MAX_MD_SIZE> result(digest, digest_length);
   return !!::HMAC(hash_alg_ == SHA1 ? EVP_sha1() : EVP_sha256(), key_.data(),
                   key_.size(),
@@ -77,6 +80,9 @@ bool HMAC::VerifyTruncated(base::StringPiece data,
   if (digest.empty())
     return false;
   size_t digest_length = DigestLength();
+  if (digest.size() > digest_length)
+    return false;
+
   std::unique_ptr<unsigned char[]> computed_digest(
       new unsigned char[digest_length]);
   if (!Sign(data, computed_digest.get(), digest_length))

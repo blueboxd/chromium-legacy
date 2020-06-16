@@ -214,11 +214,17 @@ class AXTreeSourceArcTest : public testing::Test,
     EXPECT_EQ(expected, tree_text.substr(first_new_line));
   }
 
+  void SetScreenReaderMode(bool enabled) { screen_reader_enabled_ = enabled; }
+
+  bool IsScreenReaderEnabled() const override { return screen_reader_enabled_; }
+
  private:
   void OnAction(const ui::AXActionData& data) const override {}
 
   const std::unique_ptr<MockAutomationEventRouter> router_;
   const std::unique_ptr<AXTreeSourceArc> tree_source_;
+
+  bool screen_reader_enabled_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AXTreeSourceArcTest);
 };
@@ -384,18 +390,6 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   AXNodeInfoData* root = event->node_data.back().get();
   root->id = 10;
   SetProperty(root, AXStringProperty::CLASS_NAME, "");
-  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
-              std::vector<int>({1, 2}));
-
-  // Add child node.
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* child1 = event->node_data.back().get();
-  child1->id = 1;
-
-  // Add another child.
-  event->node_data.push_back(AXNodeInfoData::New());
-  AXNodeInfoData* child2 = event->node_data.back().get();
-  child2->id = 2;
 
   // Populate the tree source with the data.
   CallNotifyAccessibilityEvent(event.get());
@@ -412,7 +406,7 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
 
   CallNotifyAccessibilityEvent(event.get());
   data = GetSerializedNode(root->id);
-  // With crrev/1786363, empty text on node will not set the name.
+  // With crrev.com/c/1786363, empty text on node will not set the name.
   ASSERT_FALSE(
       data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
 
@@ -453,15 +447,71 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   ASSERT_TRUE(
       data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   EXPECT_EQ("label content description label text", name);
+}
 
-  // Name from contents.
+TEST_F(AXTreeSourceArcTest, AccessibleNameComputationFromDescendants) {
+  auto event = AXEventData::New();
+  event->source_id = 0;
+  event->task_id = 1;
+  event->event_type = AXEventType::VIEW_FOCUSED;
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 10;
+
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* root = event->node_data.back().get();
+  root->id = 10;
+  SetProperty(root, AXStringProperty::CLASS_NAME, "");
+  SetProperty(root, AXBooleanProperty::IMPORTANCE, true);
+  SetProperty(root, AXIntListProperty::CHILD_NODE_IDS,
+              std::vector<int>({1, 2}));
+
+  // Add child node.
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* child1 = event->node_data.back().get();
+  child1->id = 1;
+  SetProperty(child1, AXBooleanProperty::IMPORTANCE, true);
+
+  // Add another child.
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* child2 = event->node_data.back().get();
+  child2->id = 2;
+  SetProperty(child2, AXBooleanProperty::IMPORTANCE, true);
 
   // Root node has no name, but has descendants with name.
-  root->string_properties->clear();
-  // Name from contents only happens if a node is clickable.
-  SetProperty(root, AXBooleanProperty::CLICKABLE, true);
+  // Name from contents can happen if a node is focusable.
+  SetProperty(root, AXBooleanProperty::FOCUSABLE, true);
   SetProperty(child1, AXStringProperty::TEXT, "child1 label text");
   SetProperty(child2, AXStringProperty::TEXT, "child2 label text");
+
+  // If the screen reader mode is off, do not compute from descendants.
+  SetScreenReaderMode(false);
+  CallNotifyAccessibilityEvent(event.get());
+
+  ui::AXNodeData data;
+  data = GetSerializedNode(root->id);
+  std::string name;
+  ASSERT_FALSE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+
+  data = GetSerializedNode(child1->id);
+  ASSERT_FALSE(data.IsIgnored());
+  ASSERT_TRUE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  ASSERT_EQ("child1 label text", name);
+
+  data = GetSerializedNode(child2->id);
+  ASSERT_FALSE(data.IsIgnored());
+  ASSERT_TRUE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  ASSERT_EQ("child2 label text", name);
+
+  // Enable screen reader.
+  // Compute the name of the clickable node from descendants, and ignore them.
+  SetScreenReaderMode(true);
 
   CallNotifyAccessibilityEvent(event.get());
   data = GetSerializedNode(root->id);
@@ -469,8 +519,30 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
       data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   ASSERT_EQ("child1 label text child2 label text", name);
 
-  // If a child is also clickable, do not use child property.
+  data = GetSerializedNode(child1->id);
+  ASSERT_TRUE(data.IsIgnored());
+  data = GetSerializedNode(child2->id);
+  ASSERT_TRUE(data.IsIgnored());
+
+  // If one child is clickable, do not use clickable child.
   SetProperty(child1, AXBooleanProperty::CLICKABLE, true);
+
+  CallNotifyAccessibilityEvent(event.get());
+  data = GetSerializedNode(root->id);
+  ASSERT_TRUE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  ASSERT_EQ("child2 label text", name);
+
+  data = GetSerializedNode(child1->id);
+  ASSERT_FALSE(data.IsIgnored());
+  ASSERT_TRUE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+  ASSERT_EQ("child1 label text", name);
+
+  data = GetSerializedNode(child2->id);
+  ASSERT_TRUE(data.IsIgnored());
+
+  // If both children are also clickable, do not use child properties.
   SetProperty(child2, AXBooleanProperty::CLICKABLE, true);
 
   CallNotifyAccessibilityEvent(event.get());
@@ -488,15 +560,6 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
   ASSERT_TRUE(
       data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
   ASSERT_EQ("root label text", name);
-
-  // The placeholder text on the node, should also be appended to the name.
-  SetProperty(child2, AXStringProperty::HINT_TEXT, "child2 hint text");
-
-  CallNotifyAccessibilityEvent(event.get());
-  data = GetSerializedNode(child2->id);
-  ASSERT_TRUE(
-      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
-  ASSERT_EQ("child2 label text child2 hint text", name);
 
   // Clearing both clickable and name from root, the name should not be
   // populated.

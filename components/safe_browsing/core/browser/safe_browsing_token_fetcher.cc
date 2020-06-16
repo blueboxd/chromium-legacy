@@ -24,7 +24,7 @@ namespace {
 
 const char kAPIScope[] = "https://www.googleapis.com/auth/chrome-safe-browsing";
 
-const int kTimeoutDelaySeconds = 5 * 60;
+const int kTimeoutDelaySeconds = 1;
 
 }  // namespace
 

@@ -341,7 +341,7 @@ body.should-handle-intent-result #pause-recordvideo {
 }
 
 #video-snapshot-holder {
-  bottom: calc(var(--shutter-vertical-center) + 100px);
+  bottom: calc(var(--shutter-vertical-center) + 84px);
   transform: translate(50%, 50%);
 }
 
@@ -379,7 +379,7 @@ body.should-handle-intent-result #pause-recordvideo {
 }
 
 #pause-recordvideo-holder {
-  bottom: calc(var(--shutter-vertical-center) - 100px);
+  bottom: calc(var(--shutter-vertical-center) - 84px);
   transform: translate(50%, 50%);
 }
 

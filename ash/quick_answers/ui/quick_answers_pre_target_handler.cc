@@ -31,6 +31,14 @@ QuickAnswersPreTargetHandler::QuickAnswersPreTargetHandler(
 
 QuickAnswersPreTargetHandler::~QuickAnswersPreTargetHandler() {
   aura::Env::GetInstance()->RemovePreTargetHandler(this);
+
+  // Cancel any active context-menus, |view_| was a companion-view of which,
+  // unless it had requested otherwise for some cases.
+  if (dismiss_anchor_menu_on_view_closed_) {
+    auto* active_menu_instance = views::MenuController::GetActiveInstance();
+    if (active_menu_instance)
+      active_menu_instance->Cancel(views::MenuController::ExitType::kAll);
+  }
 }
 
 void QuickAnswersPreTargetHandler::Init() {
@@ -39,15 +47,11 @@ void QuickAnswersPreTargetHandler::Init() {
   // here as well to intercept events for QuickAnswersView.
   aura::Env::GetInstance()->AddPreTargetHandler(
       this, ui::EventTarget::Priority::kSystem);
-  view_observer_.Add(view_);
   external_focus_tracker_ =
       std::make_unique<views::ExternalFocusTracker>(view_, nullptr);
 }
 
 void QuickAnswersPreTargetHandler::OnEvent(ui::Event* event) {
-  if (!view_observer_.IsObservingSources())
-    return;
-
   if (event->IsKeyEvent()) {
     ProcessKeyEvent(static_cast<ui::KeyEvent*>(event));
     return;
@@ -95,20 +99,6 @@ void QuickAnswersPreTargetHandler::OnEvent(ui::Event* event) {
   auto* tooltip_manager = view_->GetWidget()->GetTooltipManager();
   if (tooltip_manager)
     tooltip_manager->UpdateTooltip();
-}
-
-void QuickAnswersPreTargetHandler::OnViewIsDeleting(
-    views::View* observed_view) {
-  DCHECK_EQ(observed_view, view_);
-
-  // Cancel any active context-menus, the deleting Quick-Answers view is a
-  // companion-view of which, unless it requests otherwise for some cases.
-  if (dismiss_anchor_menu_on_view_closed_) {
-    auto* active_menu_instance = views::MenuController::GetActiveInstance();
-    if (active_menu_instance)
-      active_menu_instance->Cancel(views::MenuController::ExitType::kAll);
-  }
-  view_observer_.Remove(view_);
 }
 
 // TODO(siabhijeet): Investigate using SendEventsToSink() for dispatching.

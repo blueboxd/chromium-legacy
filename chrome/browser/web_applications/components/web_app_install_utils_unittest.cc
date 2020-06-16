@@ -157,7 +157,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 
   for (int i = 1; i < 4; ++i) {
     WebApplicationShortcutsMenuItemInfo shortcut_item;
-    WebApplicationIconInfo icon;
+    WebApplicationShortcutsMenuItemInfo::Icon icon;
     std::string shortcut_name = kShortcutItemName;
     shortcut_name += base::NumberToString(i);
     shortcut_item.name = base::UTF8ToUTF16(shortcut_name);
@@ -249,7 +249,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 
   EXPECT_EQ(2u, web_app_info.shortcut_infos.size());
   EXPECT_EQ(1u, web_app_info.shortcut_infos[0].shortcut_icon_infos.size());
-  WebApplicationIconInfo web_app_shortcut_icon =
+  WebApplicationShortcutsMenuItemInfo::Icon web_app_shortcut_icon =
       web_app_info.shortcut_infos[0].shortcut_icon_infos[0];
   EXPECT_EQ(IconUrl2(), web_app_shortcut_icon.url);
 
@@ -304,7 +304,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   WebApplicationInfo web_app_info;
   UpdateWebAppInfoFromManifest(manifest, &web_app_info);
 
-  std::vector<WebApplicationIconInfo> all_icons;
+  std::vector<WebApplicationShortcutsMenuItemInfo::Icon> all_icons;
   for (const auto& shortcut : web_app_info.shortcut_infos) {
     for (const auto& icon_info : shortcut.shortcut_icon_infos) {
       all_icons.push_back(std::move(icon_info));
@@ -356,7 +356,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   WebApplicationInfo web_app_info;
   UpdateWebAppInfoFromManifest(manifest, &web_app_info);
 
-  std::vector<WebApplicationIconInfo> all_icons;
+  std::vector<WebApplicationShortcutsMenuItemInfo::Icon> all_icons;
   for (const auto& shortcut : web_app_info.shortcut_infos) {
     for (const auto& icon_info : shortcut.shortcut_icon_infos) {
       all_icons.push_back(std::move(icon_info));
@@ -370,7 +370,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
 TEST(WebAppInstallUtils, PopulateShortcutItemIcons) {
   WebApplicationInfo web_app_info;
   WebApplicationShortcutsMenuItemInfo shortcut_item;
-  WebApplicationIconInfo icon;
+  WebApplicationShortcutsMenuItemInfo::Icon icon;
   std::string shortcut_name = kShortcutItemName;
   shortcut_name += base::NumberToString(1);
   shortcut_item.name = base::UTF8ToUTF16(shortcut_name);
@@ -472,7 +472,7 @@ TEST_F(WebAppInstallUtilsWithShortcutsMenu,
   shortcut_item.name = base::UTF8ToUTF16(kShortcutItemName);
   shortcut_item.url = ShortcutItemUrl();
   // Construct |icon| to add to |shortcut_item.shortcut_icon_infos|.
-  WebApplicationIconInfo icon;
+  WebApplicationShortcutsMenuItemInfo::Icon icon;
   icon.url = IconUrl2();
   icon.square_size_px = kIconSize;
   shortcut_item.shortcut_icon_infos.push_back(std::move(icon));

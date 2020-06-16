@@ -192,7 +192,8 @@ std::vector<WebApplicationIconInfo> BookmarkAppRegistrar::GetAppIconInfos(
        LinkedAppIcons::GetLinkedAppIcons(extension).icons) {
     WebApplicationIconInfo web_app_icon_info;
     web_app_icon_info.url = icon_info.url;
-    web_app_icon_info.square_size_px = icon_info.size;
+    if (icon_info.size != LinkedAppIcons::kAnySize)
+      web_app_icon_info.square_size_px = icon_info.size;
     result.push_back(std::move(web_app_icon_info));
   }
   return result;

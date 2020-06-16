@@ -17,28 +17,21 @@ namespace blink {
 
 NGPageLayoutAlgorithm::NGPageLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params)
-    : NGLayoutAlgorithm(params),
-      border_padding_(params.fragment_geometry.border +
-                      params.fragment_geometry.padding),
-      border_scrollbar_padding_(border_padding_ +
-                                params.fragment_geometry.scrollbar) {
+    : NGLayoutAlgorithm(params) {
   container_builder_.SetIsNewFormattingContext(
       params.space.IsNewFormattingContext());
   container_builder_.SetInitialFragmentGeometry(params.fragment_geometry);
 }
 
 scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
-  LogicalSize border_box_size = container_builder_.InitialBorderBoxSize();
-  LogicalSize content_box_size =
-      ShrinkAvailableSize(border_box_size, border_scrollbar_padding_);
-  LogicalSize page_size = content_box_size;
+  LogicalSize page_size = ChildAvailableSize();
 
   NGConstraintSpace child_space = CreateConstraintSpaceForPages(page_size);
 
   WritingMode writing_mode = ConstraintSpace().GetWritingMode();
   scoped_refptr<const NGBlockBreakToken> break_token = BreakToken();
   LayoutUnit intrinsic_block_size;
-  LogicalOffset page_offset(border_scrollbar_padding_.StartOffset());
+  LogicalOffset page_offset = BorderScrollbarPadding().StartOffset();
   // TODO(mstensho): Handle auto block size.
   LogicalOffset page_progression(LayoutUnit(), page_size.block_size);
 
@@ -64,11 +57,11 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
 
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
 
-  // Recompute the block-axis size now that we know our content size.
-  border_box_size.block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Style(), border_padding_, intrinsic_block_size,
-      border_box_size.inline_size);
-  container_builder_.SetBlockSize(border_box_size.block_size);
+  // Compute the block-axis size now that we know our content size.
+  LayoutUnit block_size = ComputeBlockSizeForFragment(
+      ConstraintSpace(), Style(), BorderPadding(), intrinsic_block_size,
+      container_builder_.InitialBorderBoxSize().inline_size);
+  container_builder_.SetBlockSize(block_size);
 
   NGOutOfFlowLayoutPart(
       Node(), ConstraintSpace(),

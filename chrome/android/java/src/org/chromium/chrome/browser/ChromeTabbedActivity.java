@@ -254,7 +254,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private AppIndexingUtil mAppIndexingUtil;
 
     private Runnable mShowHistoryRunnable;
-    private NavigationPopup mNavigationPopup;
     private NavigationSheet mNavigationSheet;
 
     private StartSurface mStartSurface;
@@ -2180,12 +2179,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     }
 
     @VisibleForTesting
-    public NavigationPopup getNavigationPopupForTesting() {
-        ThreadUtils.assertOnUiThread();
-        return mNavigationPopup;
-    }
-
-    @VisibleForTesting
     public boolean hasPendingNavigationRunnableForTesting() {
         ThreadUtils.assertOnUiThread();
         return mShowHistoryRunnable != null;
@@ -2194,15 +2187,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     private void showFullHistoryForTab() {
         Tab tab = getActivityTab();
         if (tab == null || tab.getWebContents() == null || !tab.isUserInteractable()) return;
-        if (NavigationSheet.isEnabled()) {
-            showFullHistoryOnNavigationSheet(tab);
-        } else {
-            mNavigationPopup = new NavigationPopup(Profile.fromWebContents(tab.getWebContents()),
-                    this, tab.getWebContents().getNavigationController(),
-                    NavigationPopup.Type.ANDROID_SYSTEM_BACK);
-            mNavigationPopup.setOnDismissCallback(() -> mNavigationPopup = null);
-            mNavigationPopup.show(findViewById(R.id.navigation_popup_anchor_stub));
-        }
+        showFullHistoryOnNavigationSheet(tab);
     }
 
     private void showFullHistoryOnNavigationSheet(Tab tab) {
@@ -2309,17 +2294,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     public void onSceneChange(Layout layout) {
         super.onSceneChange(layout);
         if (!layout.shouldDisplayContentOverlay()) mTabModelSelectorImpl.onTabsViewShown();
-    }
-
-    @Override
-    public void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
-        super.onMultiWindowModeChanged(isInMultiWindowMode);
-
-        // Navigation Popup does not move with multi-window bar.
-        // When multi-window starts, the popup is cut off, and the cut off portion is inaccessible.
-        // When the window size changes through multi-window, the popup windows position does not
-        // change. Because of these problems, dismiss the popup window until a solution appears.
-        if (mNavigationPopup != null) mNavigationPopup.dismiss();
     }
 
     /**

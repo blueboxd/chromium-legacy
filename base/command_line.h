@@ -119,7 +119,7 @@ class BASE_EXPORT CommandLine {
 
 #if defined(OS_WIN)
   // Returns the command-line string in the proper format for the Windows shell,
-  // ending with the argument placeholder "--single-argument=%1". The single-
+  // ending with the argument placeholder "--single-argument %1". The single-
   // argument switch prevents unexpected parsing of arguments from other
   // software that cannot be trusted to escape double quotes when substituting
   // into a placeholder (e.g., "%1" placeholders populated by the Windows
@@ -218,9 +218,11 @@ class BASE_EXPORT CommandLine {
 
 #if defined(OS_WIN)
   // Initializes by parsing |raw_command_line_string_|, treating everything
-  // after |single_arg_switch_string| + "=" as the command line's single
-  // argument, and dropping any arguments previously parsed. The command line
-  // must contain |single_arg_switch_string| followed by "=".
+  // after |single_arg_switch_string| + <a single character> as the command
+  // line's single argument, and dropping any arguments previously parsed. The
+  // command line must contain |single_arg_switch_string|, and the argument, if
+  // present, must be separated from |single_arg_switch_string| by one
+  // character.
   // NOTE: the single-argument switch is not preserved after parsing;
   // GetCommandLineStringForShell() must be used to reproduce the original
   // command-line string with single-argument switch.

@@ -109,7 +109,7 @@ std::vector<CapturedSiteParams> GetCapturedSites(
   base::Value root_node;
   {
     JSONReader::ValueWithError value_with_error =
-        JSONReader().ReadAndReturnValueWithError(
+        JSONReader::ReadAndReturnValueWithError(
             json_text, JSONParserOptions::JSON_PARSE_RFC);
     if (!value_with_error.value) {
       LOG(WARNING) << "Could not load test config from json file: "

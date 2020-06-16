@@ -148,6 +148,8 @@ Polymer({
     const selectedIndex = this.$$('#diskSlider').value;
     const size = this.diskSizeTicks_[selectedIndex].value;
     this.resizeState_ = ResizeState.RESIZING;
+    console.log(
+        'crostini_disk_resize_dialog.js: calling \'resizeCrostiniDisk\'');
     settings.CrostiniBrowserProxyImpl.getInstance()
         .resizeCrostiniDisk('termina', size)
         .then(
@@ -158,10 +160,16 @@ Polymer({
               } else {
                 this.resizeState_ = ResizeState.ERROR;
               }
+              console.log(
+                  'crostini_disk_resize_dialog.js: ' +
+                  'resolved \'resizeCrostiniDisk\'');
             },
             (reason) => {
               console.log(`Unable to resize disk: ${reason}`);
               this.resizeState_ = ResizeState.ERROR;
+              console.log(
+                  'crostini_disk_resize_dialog.js: ' +
+                  'resolved \'resizeCrostiniDisk\'');
             });
   },
 

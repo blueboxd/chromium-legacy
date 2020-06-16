@@ -839,9 +839,6 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
     interpolation_quality_context.emplace(context,
                                           geometry.ImageInterpolationQuality());
 
-    if (bg_layer.MaskSourceType() == EMaskSourceType::kLuminance)
-      context.SetColorFilter(kColorFilterLuminanceToAlpha);
-
     if (ShouldApplyBlendOperation(info, bg_layer)) {
       composite_op = WebCoreCompositeToSkiaComposite(bg_layer.Composite(),
                                                      bg_layer.GetBlendMode());

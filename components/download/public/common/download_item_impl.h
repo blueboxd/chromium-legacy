@@ -562,6 +562,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
       DownloadDangerType danger_type,
       MixedContentStatus mixed_content_status,
       const base::FilePath& intermediate_path,
+      base::Optional<DownloadSchedule> download_schedule,
       DownloadInterruptReason interrupt_reason);
 
   void OnDownloadRenamedToIntermediateName(DownloadInterruptReason reason,

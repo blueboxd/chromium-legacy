@@ -110,7 +110,8 @@ std::unique_ptr<MouseEvent> CreateMouseEvent(EventType type,
   // Ignore EventNotify and LeaveNotify events from children of |xwindow_|.
   // NativeViewGLSurfaceGLX adds a child to |xwindow_|.
   // https://crbug.com/792322
-  bool enter_or_leave = xev.type == EnterNotify || xev.type == LeaveNotify;
+  bool enter_or_leave = xev.type == x11::CrossingEvent::EnterNotify ||
+                        xev.type == x11::CrossingEvent::LeaveNotify;
   if (enter_or_leave && xev.xcrossing.detail == NotifyInferior)
     return nullptr;
 
@@ -217,15 +218,15 @@ std::unique_ptr<ui::Event> TranslateFromXI2Event(const XEvent& xev,
 std::unique_ptr<Event> TranslateFromXEvent(const XEvent& xev) {
   EventType event_type = EventTypeFromXEvent(xev);
   switch (xev.type) {
-    case LeaveNotify:
-    case EnterNotify:
-    case MotionNotify:
+    case x11::CrossingEvent::LeaveNotify:
+    case x11::CrossingEvent::EnterNotify:
+    case x11::MotionNotifyEvent::opcode:
       return CreateMouseEvent(event_type, xev);
-    case x11::KeyPressEvent::opcode:
-    case x11::KeyReleaseEvent::opcode:
+    case x11::KeyEvent::Press:
+    case x11::KeyEvent::Release:
       return CreateKeyEvent(event_type, xev);
-    case x11::ButtonPressEvent::opcode:
-    case x11::ButtonReleaseEvent::opcode: {
+    case x11::ButtonEvent::Press:
+    case x11::ButtonEvent::Release: {
       switch (event_type) {
         case ET_MOUSEWHEEL:
           return CreateMouseWheelEvent(xev);

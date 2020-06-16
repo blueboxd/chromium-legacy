@@ -467,6 +467,17 @@ void* PartitionReallocGenericFlags(PartitionRoot<thread_safe>* root,
 #endif
 }  // namespace base
 
+template void* PartitionReallocGenericFlags<false>(PartitionRoot<false>*,
+                                                   int,
+                                                   void*,
+                                                   size_t,
+                                                   const char*);
+template void* PartitionReallocGenericFlags<true>(PartitionRoot<true>*,
+                                                  int,
+                                                  void*,
+                                                  size_t,
+                                                  const char*);
+
 template <bool thread_safe>
 void* PartitionRoot<thread_safe>::Realloc(void* ptr,
                                           size_t new_size,

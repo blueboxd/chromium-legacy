@@ -32,4 +32,4 @@ Description: This includes code for the manifest tool, lint tool, and wptserve.
     web_tests/external/wpt contains the tests. Also see wpt/README.chromium
     for more details on maintenance.
 Local Modifications:
-- Removed all files except for those listed in wpt/WPTWhiteList.
+- Removed all files except for those listed in wpt/WPTIncludeList.

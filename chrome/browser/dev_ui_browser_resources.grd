@@ -90,9 +90,8 @@ This file specifies browser resources for developer-facing chrome:// pages
         <include name="IDR_SUPERVISED_USER_INTERNALS_CSS" file="resources\supervised_user_internals\supervised_user_internals.css" type="BINDATA" />
         <include name="IDR_SUPERVISED_USER_INTERNALS_JS" file="resources\supervised_user_internals\supervised_user_internals.js" type="BINDATA" />
       </if>
-
-      <include name="IDR_TRANSLATE_INTERNALS_HTML" file="../../components/translate/translate_internals/translate_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_TRANSLATE_INTERNALS_JS" file="../../components/translate/translate_internals/translate_internals.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_TRANSLATE_INTERNALS_HTML" file="../../components/translate/translate_internals/translate_internals.html" flattenhtml="true" allowexternalscript="true" compress="gzip" type="BINDATA" />
+      <include name="IDR_TRANSLATE_INTERNALS_JS" file="../../components/translate/translate_internals/translate_internals.js" flattenhtml="true" compress="gzip" type="BINDATA" />
       <include name="IDR_UKM_INTERNALS_HTML" file="../../components/ukm/debug/ukm_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_UKM_INTERNALS_JS" file="../../components/ukm/debug/ukm_internals.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_UKM_INTERNALS_CSS" file="../../components/ukm/debug/ukm_internals.css" flattenhtml="true" type="BINDATA" />

@@ -282,7 +282,8 @@ class ChromeAppForLinkDelegate : public extensions::AppForLinkDelegate {
     info.icons->reserve(icon_infos.size());
     for (const WebApplicationIconInfo& web_app_icon_info : icon_infos) {
       extensions::api::management::IconInfo icon_info;
-      icon_info.size = web_app_icon_info.square_size_px;
+      if (web_app_icon_info.square_size_px)
+        icon_info.size = *web_app_icon_info.square_size_px;
       icon_info.url = web_app_icon_info.url.spec();
       info.icons->push_back(std::move(icon_info));
     }

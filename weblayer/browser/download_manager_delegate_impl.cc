@@ -5,6 +5,7 @@
 #include "weblayer/browser/download_manager_delegate_impl.h"
 
 #include "base/files/file_util.h"
+#include "base/optional.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
@@ -89,7 +90,8 @@ bool DownloadManagerDelegateImpl::DetermineDownloadTarget(
         download::DownloadItem::TARGET_DISPOSITION_OVERWRITE,
         download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
         download::DownloadItem::MixedContentStatus::UNKNOWN,
-        item->GetForcedFilePath(), download::DOWNLOAD_INTERRUPT_REASON_NONE);
+        item->GetForcedFilePath(), base::nullopt /*download_schedule*/,
+        download::DOWNLOAD_INTERRUPT_REASON_NONE);
     return true;
   }
 
@@ -240,6 +242,7 @@ void DownloadManagerDelegateImpl::OnDownloadPathGenerated(
       download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       download::DownloadItem::MixedContentStatus::UNKNOWN,
       suggested_path.AddExtension(FILE_PATH_LITERAL(".crdownload")),
+      base::nullopt /*download_schedule*/,
       download::DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 

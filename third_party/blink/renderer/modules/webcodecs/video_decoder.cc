@@ -101,51 +101,45 @@ int32_t VideoDecoder::decodeQueueSize() {
   return requested_decodes_;
 }
 
-int32_t VideoDecoder::decodeProcessingCount() {
-  return pending_decodes_.size();
-}
-
-ScriptPromise VideoDecoder::configure(const EncodedVideoConfig* config,
-                                      ExceptionState&) {
+void VideoDecoder::configure(const EncodedVideoConfig* config,
+                             ExceptionState&) {
   DVLOG(1) << __func__;
   Request* request = MakeGarbageCollected<Request>();
   request->type = Request::Type::kConfigure;
   request->config = config;
-  return EnqueueRequest(request);
+  requests_.push_back(request);
+  ProcessRequests();
 }
 
-ScriptPromise VideoDecoder::decode(const EncodedVideoChunk* chunk,
-                                   ExceptionState&) {
+void VideoDecoder::decode(const EncodedVideoChunk* chunk, ExceptionState&) {
   DVLOG(3) << __func__;
-  requested_decodes_++;
   Request* request = MakeGarbageCollected<Request>();
   request->type = Request::Type::kDecode;
   request->chunk = chunk;
-  return EnqueueRequest(request);
+  requests_.push_back(request);
+  ++requested_decodes_;
+  ProcessRequests();
 }
 
 ScriptPromise VideoDecoder::flush(ExceptionState&) {
   DVLOG(3) << __func__;
   Request* request = MakeGarbageCollected<Request>();
   request->type = Request::Type::kFlush;
-  return EnqueueRequest(request);
-}
-
-ScriptPromise VideoDecoder::reset(ExceptionState&) {
-  DVLOG(3) << __func__;
-  requested_resets_++;
-  Request* request = MakeGarbageCollected<Request>();
-  request->type = Request::Type::kReset;
-  return EnqueueRequest(request);
-}
-
-ScriptPromise VideoDecoder::EnqueueRequest(Request* request) {
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state_);
   request->resolver = resolver;
   requests_.push_back(request);
   ProcessRequests();
   return resolver->Promise();
+}
+
+void VideoDecoder::reset(ExceptionState&) {
+  DVLOG(3) << __func__;
+  Request* request = MakeGarbageCollected<Request>();
+  request->type = Request::Type::kReset;
+  requests_.push_back(request);
+  ++requested_resets_;
+  ProcessRequests();
 }
 
 void VideoDecoder::ProcessRequests() {
@@ -191,9 +185,6 @@ bool VideoDecoder::ProcessConfigureRequest(Request* request) {
     media_log_ = std::make_unique<media::NullMediaLog>();
     decoder_ = CreateVideoDecoder(media_log_.get());
     if (!decoder_) {
-      request->resolver.Release()->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNotSupportedError,
-          "Codec initialization failed."));
       // TODO(sandersd): This is a bit awkward because |request| is still in the
       // queue.
       HandleError();
@@ -236,11 +227,10 @@ bool VideoDecoder::ProcessDecodeRequest(Request* request) {
   DCHECK(request->chunk);
   DCHECK_GT(requested_decodes_, 0);
 
-  // TODO(sandersd): If a reset has been requested, resolve immediately.
+  // TODO(sandersd): If a reset has been requested, complete immediately.
 
   if (!decoder_) {
-    // TODO(sandersd): Add explanation (no valid configuration).
-    request->resolver.Release()->Reject();
+    // TODO(sandersd): Emit an error?
     return true;
   }
 
@@ -348,14 +338,11 @@ void VideoDecoder::OnInitializeDone(media::Status status) {
   if (!status.is_ok()) {
     // TODO(tmathmeyer) this drops the media error - should we consider logging
     // it or converting it to the DOMException type somehow?
-    pending_request_.Release()->resolver.Release()->Reject(
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                           "Codec initialization failed."));
     HandleError();
     return;
   }
 
-  pending_request_.Release()->resolver.Release()->Resolve();
+  pending_request_.Release();
   ProcessRequests();
 }
 
@@ -370,7 +357,6 @@ void VideoDecoder::OnDecodeDone(uint32_t id, media::DecodeStatus status) {
   }
 
   auto it = pending_decodes_.find(id);
-  it->value->resolver.Release()->Resolve();
   pending_decodes_.erase(it);
   ProcessRequests();
 }
@@ -394,7 +380,7 @@ void VideoDecoder::OnResetDone() {
   DCHECK(pending_request_);
   DCHECK_EQ(pending_request_->type, Request::Type::kReset);
 
-  pending_request_.Release()->resolver.Release()->Resolve();
+  pending_request_.Release();
   ProcessRequests();
 }
 

@@ -1223,8 +1223,7 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
             return ''
 
         updater.git.run = _git_command_return_val
-        updater.port.tests = lambda: [
-            'some/test/b.html?Goodbye', 'some/test/d.html']
+        updater.port.tests = lambda: ['some/test/d.html']
         updater._relative_to_web_test_dir = lambda test_path: test_path
         updater.cleanup_test_expectations_files()
         self.assertMultiLineEqual(

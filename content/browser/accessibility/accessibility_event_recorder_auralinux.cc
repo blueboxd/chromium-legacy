@@ -166,7 +166,6 @@ void AccessibilityEventRecorderAuraLinux::AddATKEventListeners() {
   AddATKEventListener("ATK:AtkText:text-remove");
   AddATKEventListener("ATK:AtkText:text-selection-changed");
   AddATKEventListener("ATK:AtkText:text-caret-moved");
-  AddATKEventListener("ATK:AtkText:text-attributes-changed");
   AddATKEventListener("ATK:AtkSelection:selection-changed");
 }
 
@@ -327,7 +326,6 @@ const char* const kEventNames[] = {
     "object:row-reordered",
     "object:selection-changed",
     "object:state-changed",
-    "object:text-attributes-changed",
     "object:text-caret-moved",
     "object:text-changed",
     "object:text-selection-changed",

@@ -282,7 +282,6 @@ void BrowserAccessibilityManagerAndroid::FireGeneratedEvent(
     case ui::AXEventGenerator::Event::SORT_CHANGED:
     case ui::AXEventGenerator::Event::STATE_CHANGED:
     case ui::AXEventGenerator::Event::SUBTREE_CREATED:
-    case ui::AXEventGenerator::Event::TEXT_ATTRIBUTE_CHANGED:
     case ui::AXEventGenerator::Event::VALUE_MAX_CHANGED:
     case ui::AXEventGenerator::Event::VALUE_MIN_CHANGED:
     case ui::AXEventGenerator::Event::VALUE_STEP_CHANGED:

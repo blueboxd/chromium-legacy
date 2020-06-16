@@ -127,6 +127,7 @@ struct DetermineDownloadTargetResult {
   download::DownloadItem::MixedContentStatus mixed_content_status;
   base::FilePath intermediate_path;
   download::DownloadInterruptReason interrupt_reason;
+  base::Optional<download::DownloadSchedule> download_schedule;
 };
 
 DetermineDownloadTargetResult::DetermineDownloadTargetResult()
@@ -399,6 +400,7 @@ void StoreDownloadTargetInfo(
     download::DownloadDangerType danger_type,
     download::DownloadItem::MixedContentStatus mixed_content_status,
     const base::FilePath& intermediate_path,
+    base::Optional<download::DownloadSchedule> download_schedule,
     download::DownloadInterruptReason interrupt_reason) {
   result->target_path = target_path;
   result->disposition = target_disposition;
@@ -406,6 +408,7 @@ void StoreDownloadTargetInfo(
   result->mixed_content_status = mixed_content_status;
   result->intermediate_path = intermediate_path;
   result->interrupt_reason = interrupt_reason;
+  result->download_schedule = std::move(download_schedule);
   closure.Run();
 }
 

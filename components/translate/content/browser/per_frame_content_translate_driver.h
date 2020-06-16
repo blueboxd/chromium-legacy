@@ -87,6 +87,7 @@ class PerFrameContentTranslateDriver : public ContentTranslateDriver {
   void TranslateFrame(const std::string& translate_script,
                       const std::string& source_lang,
                       const std::string& target_lang,
+                      int translate_seq_no,
                       content::RenderFrameHost* render_frame_host);
 
   void RevertFrame(content::RenderFrameHost* render_frame_host);
@@ -116,6 +117,7 @@ class PerFrameContentTranslateDriver : public ContentTranslateDriver {
   // handle to the TranslateAgent through to it in order for the Remote
   // handle to stay alive to receive the callback.
   void OnFrameTranslated(
+      int translate_seq_no,
       bool is_main_frame,
       mojo::AssociatedRemote<mojom::TranslateAgent> translate_agent,
       bool cancelled,
@@ -123,10 +125,15 @@ class PerFrameContentTranslateDriver : public ContentTranslateDriver {
       const std::string& translated_lang,
       TranslateErrors::Type error_type);
 
+  int IncrementSeqNo(int seq_no) { return (seq_no % 100000) + 1; }
+
   bool IsForCurrentPage(int page_seq_no);
 
   // Sequence number to track most recent main frame for associated WebContents.
-  int current_seq_no_ = 0;
+  int page_seq_no_ = 0;
+
+  // Sequence number to track renderer responses for a translate operation.
+  int translate_seq_no_ = 0;
 
   LanguageDetectionDetails details_;
 

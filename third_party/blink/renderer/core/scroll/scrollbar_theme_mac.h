@@ -65,6 +65,7 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
                       const IntRect&) override;
 
   bool ShouldCenterOnThumb(const Scrollbar&, const WebMouseEvent&) override;
+  bool JumpOnTrackClick() const override;
 
   bool ShouldRepaintAllPartsOnInvalidation() const override { return false; }
   ScrollbarPart PartsToInvalidateOnThumbPositionChange(

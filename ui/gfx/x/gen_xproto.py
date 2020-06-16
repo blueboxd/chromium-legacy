@@ -169,6 +169,7 @@ from __future__ import print_function
 import argparse
 import collections
 import functools
+import itertools
 import os
 import re
 import sys
@@ -246,6 +247,36 @@ def adjust_type_case(name):
     # be snake case with a single word, but that would be same as caml case.
     # To convert all of these, just capitalize the first letter.
     return name[0].upper() + name[1:]
+
+
+# Given a list of event names like ["KeyPress", "KeyRelease"], returns a name
+# suitable for use as a base event like "Key".
+def event_base_name(names):
+    # If there's only one event in this group, the "common name" is just
+    # the event name.
+    if len(names) == 1:
+        return names[0]
+
+    # Handle a few special cases where the longest common prefix is empty: eg.
+    # EnterNotify/LeaveNotify/FocusIn/FocusOut -> Crossing.
+    EVENT_NAMES = [
+        ('Motion', 'Pointer'),
+        ('RawMotion', 'RawPointer'),
+        ('Enter', 'Crossing'),
+        ('EnterNotify', 'Crossing'),
+        ('DeviceButtonPress', 'Device'),
+    ]
+    for name, rename in EVENT_NAMES:
+        if name in names:
+            return rename
+
+    # Use the longest common prefix of the event names as the base name.
+    name = ''.join(
+        chars[0]
+        for chars in itertools.takewhile(lambda chars: len(set(chars)) == 1,
+                                         zip(*names)))
+    assert name
+    return name
 
 
 # Left-pad with 2 spaces while this class is alive.
@@ -798,16 +829,32 @@ class GenXproto(FileWriter):
             self.write('%s = static_cast<%s>(%s);' %
                        (real_name, enum_type, tmp_name))
 
+    def declare_fields(self, fields):
+        for field in fields:
+            for field_type_name in self.declare_field(field):
+                self.write('%s %s{};' % field_type_name)
+
+    def declare_event(self, event, name):
+        event_name = name[-1] + 'Event'
+        self.undef(event_name)
+        with Indent(self, 'struct %s {' % adjust_type_case(event_name), '};'):
+            self.write('static constexpr int type_id = %d;' % event.type_id)
+            if len(event.opcodes) == 1:
+                self.write('static constexpr uint8_t opcode = %s;' %
+                           event.opcodes[name])
+            else:
+                with Indent(self, 'enum Opcode {', '} opcode{};'):
+                    for opname, opcode in event.enum_opcodes.items():
+                        self.undef(opname)
+                        self.write('%s = %s,' % (opname, opcode))
+            self.declare_fields(event.fields)
+        self.write()
+
     def declare_container(self, struct, struct_name):
         name = struct_name[-1] + self.type_suffix(struct)
         self.undef(name)
         with Indent(self, 'struct %s {' % adjust_type_case(name), '};'):
-            if struct.is_event:
-                self.write('static constexpr uint8_t opcode = %s;' %
-                           struct.opcodes[struct_name])
-            for field in struct.fields:
-                for field_type_name in self.declare_field(field):
-                    self.write('%s %s{};' % field_type_name)
+            self.declare_fields(struct.fields)
         self.write()
 
     def copy_container(self, struct, name):
@@ -845,6 +892,11 @@ class GenXproto(FileWriter):
 
     def declare_union(self, union):
         name = union.name[-1]
+        if union.elt.tag == 'eventstruct':
+            # There's only one of these in all of the protocol descriptions.
+            # It's just used to represent any 32-byte event for XInput.
+            self.write('using %s = std::array<uint8_t, 32>;' % name)
+            return
         with Indent(self, 'union %s {' % name, '};'):
             self.write('%s() { memset(this, 0, sizeof(*this)); }' % name)
             self.write()
@@ -922,6 +974,19 @@ class GenXproto(FileWriter):
             self.write('return reply;')
         self.write()
 
+    def define_event(self, event, name):
+        self.namespace = ['x11']
+        name = self.qualtype(event, name)
+        self.write('template <> COMPONENT_EXPORT(X11)')
+        self.write('void ReadEvent<%s>(' % name)
+        with Indent(self, '    %s* event_, const uint8_t* buffer) {' % name,
+                    '}'):
+            self.write('ReadBuffer buf{buffer, 0UL};')
+            self.write()
+            self.is_read = True
+            self.copy_container(event, '(*event_)')
+        self.write()
+
     def define_type(self, item, name):
         if name in READ_SPECIAL:
             self.read_special_container(item, name)
@@ -929,12 +994,16 @@ class GenXproto(FileWriter):
             self.write_special_container(item, name)
         if isinstance(item, self.xcbgen.xtypes.Request):
             self.define_request(item)
+        elif item.is_event:
+            self.define_event(item, name)
 
     def declare_type(self, item, name):
         if item.is_union:
             self.declare_union(item)
         elif isinstance(item, self.xcbgen.xtypes.Request):
             self.declare_request(item)
+        elif item.is_event:
+            self.declare_event(item, name)
         elif item.is_container:
             self.declare_container(item, name)
         elif isinstance(item, self.xcbgen.xtypes.Enum):
@@ -1011,11 +1080,45 @@ class GenXproto(FileWriter):
         if isinstance(t, self.xcbgen.xtypes.Request) and t.reply:
             self.resolve_type(t.reply, t.reply.name)
 
+    # Multiple event names may map to the same underlying event.  For these
+    # cases, we want to avoid duplicating the event structure.  Instead, put
+    # all of these events under one structure with an additional opcode field
+    # to indicate the type of event.
+    def uniquify_events(self):
+        types = []
+        events = set()
+        for name, t in self.module.all:
+            if not t.is_event or len(t.opcodes) == 1:
+                types.append((name, t))
+                continue
+
+            renamed = tuple(self.rename_type(t, name))
+            self.all_types[renamed] = t
+            if t in events:
+                continue
+            events.add(t)
+
+            names = [name[-1] for name in t.opcodes.keys()]
+            name = name[:-1] + (event_base_name(names), )
+            types.append((name, t))
+
+            t.enum_opcodes = {}
+            for opname in t.opcodes:
+                opcode = t.opcodes[opname]
+                opname = opname[-1]
+                if opname.startswith(name[-1]):
+                    opname = opname[len(name[-1]):]
+                t.enum_opcodes[opname] = opcode
+        self.module.all = types
+
     # Perform preprocessing like renaming, reordering, and adding additional
     # data fields.
     def resolve(self):
         self.class_name = (adjust_type_case(self.module.namespace.ext_name)
                            if self.module.namespace.is_ext else 'XProto')
+
+        self.uniquify_events()
+
         for i, (name, t) in enumerate(self.module.all):
             # Work around a name conflict: the type ScreenSaver has the same
             # name as the extension, so rename the type.
@@ -1122,6 +1225,8 @@ class GenXproto(FileWriter):
                 self.write('    Connection* connection, uint8_t major_opcode,')
                 self.write('    uint8_t first_event, uint8_t first_error);')
                 self.write()
+                with Indent(self, 'uint8_t major_opcode() const {', '}'):
+                    self.write('return major_opcode_;')
                 with Indent(self, 'uint8_t first_event() const {', '}'):
                     self.write('return first_event_;')
                 with Indent(self, 'uint8_t first_error() const {', '}'):
@@ -1287,6 +1392,97 @@ class GenExtensionManager(FileWriter):
         self.write('}  // namespace x11')
 
 
+class GenReadEvent(FileWriter):
+    def __init__(self, gen_dir, genprotos):
+        FileWriter.__init__(self)
+
+        self.gen_dir = gen_dir
+        self.genprotos = genprotos
+
+        self.events = []
+        for proto in self.genprotos:
+            for name, item in proto.module.all:
+                if item.is_event:
+                    self.events.append((name, item, proto))
+
+    def event_condition(self, event, typename, proto):
+        ext = 'conn->%s()' % proto.proto
+
+        conds = []
+        if not proto.module.namespace.is_ext:
+            # Core protocol event
+            opcode = 'evtype'
+        elif event.is_ge_event:
+            # GenericEvent extension event
+            conds.extend([
+                ext,
+                'evtype == GeGenericEvent::opcode',
+                'ge->extension == %s->major_opcode()' % ext,
+            ])
+            opcode = 'ge->event_type'
+        else:
+            # Extension event
+            conds.append(ext)
+            opcode = 'evtype - %s->first_event()' % ext
+
+        if len(event.opcodes) == 1:
+            conds.append('%s == %s::opcode' % (opcode, typename))
+        else:
+            conds.append('(%s)' % ' || '.join([
+                '%s == %s::%s' % (opcode, typename, opname)
+                for opname in event.enum_opcodes.keys()
+            ]))
+
+        return ' && '.join(conds), opcode
+
+    def gen_event(self, name, event, proto):
+        # We can't ever have a plain generic event.  It must be a concrete
+        # event provided by an extension.
+        if name == ('xcb', 'GeGeneric'):
+            return
+
+        name = [adjust_type_case(part) for part in name[1:]]
+        typename = '::'.join(name) + 'Event'
+
+        cond, opcode = self.event_condition(event, typename, proto)
+        with Indent(self, 'if (%s) {' % cond, '}'):
+            self.write('event->type_id_ = %d;' % event.type_id)
+            with Indent(self, 'event->deleter_ = [](void* event) {', '};'):
+                self.write('delete reinterpret_cast<%s*>(event);' % typename)
+            self.write('auto* event_ = new %s;' % typename)
+            self.write('ReadEvent(event_, buf);')
+            if len(event.opcodes) > 1:
+                self.write('{0} = static_cast<decltype({0})>({1});'.format(
+                    'event_->opcode', opcode))
+            self.write('event->event_ = event_;')
+            self.write('return;')
+        self.write()
+
+    def gen_source(self):
+        self.file = open(os.path.join(self.gen_dir, 'read_event.cc'), 'w')
+        self.write('#include "ui/gfx/x/event.h"')
+        self.write()
+        self.write('#include "ui/gfx/x/connection.h"')
+        for genproto in self.genprotos:
+            self.write('#include "ui/gfx/x/%s.h"' % genproto.proto)
+        self.write()
+        self.write('namespace x11 {')
+        self.write()
+        self.write('void ReadEvent(')
+        args = 'Event* event, Connection* conn, const uint8_t* buf'
+        with Indent(self, '    %s) {' % args, '}'):
+            cast = 'auto* %s = reinterpret_cast<const %s*>(buf);'
+            self.write(cast % ('ev', 'xcb_generic_event_t'))
+            self.write(cast % ('ge', 'xcb_ge_generic_event_t'))
+            self.write('auto evtype = ev->response_type & ~kSendEventMask;')
+            self.write()
+            for name, event, proto in self.events:
+                self.gen_event(name, event, proto)
+            self.write('NOTREACHED();')
+        self.write()
+        self.write('}  // namespace x11')
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('proto_dir', type=str)
@@ -1312,11 +1508,25 @@ def main():
         genproto.parse()
     for genproto in genprotos:
         genproto.resolve()
+
+    # Give each event a unique type ID.  This is used by x11::Event to
+    # implement downcasting for events.
+    type_id = 1
+    for proto in genprotos:
+        for _, item in proto.module.all:
+            if item.is_event:
+                item.type_id = type_id
+                type_id += 1
+
     for genproto in genprotos:
         genproto.generate()
+
     gen_extension_manager = GenExtensionManager(args.gen_dir, genprotos)
     gen_extension_manager.gen_header()
     gen_extension_manager.gen_source()
+
+    gen_read_event = GenReadEvent(args.gen_dir, genprotos)
+    gen_read_event.gen_source()
 
     return 0
 

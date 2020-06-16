@@ -24,19 +24,17 @@ static base::LazyInstance<LinkedAppIcons>::DestructorAtExit
 
 }  // namespace
 
-LinkedAppIcons::IconInfo::IconInfo() {
-}
+constexpr int LinkedAppIcons::kAnySize;
 
-LinkedAppIcons::IconInfo::~IconInfo() {
-}
+LinkedAppIcons::IconInfo::IconInfo() = default;
 
-LinkedAppIcons::LinkedAppIcons() {
-}
+LinkedAppIcons::IconInfo::~IconInfo() = default;
+
+LinkedAppIcons::LinkedAppIcons() = default;
 
 LinkedAppIcons::LinkedAppIcons(const LinkedAppIcons& other) = default;
 
-LinkedAppIcons::~LinkedAppIcons() {
-}
+LinkedAppIcons::~LinkedAppIcons() = default;
 
 // static
 const LinkedAppIcons& LinkedAppIcons::GetLinkedAppIcons(

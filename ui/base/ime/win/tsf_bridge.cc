@@ -309,7 +309,8 @@ void TSFBridgeImpl::SetFocusedClient(HWND focused_window,
 
 void TSFBridgeImpl::RemoveFocusedClient(TextInputClient* client) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
-  DCHECK(IsInitialized());
+  if (!IsInitialized())
+    return;
   if (client_ != client)
     return;
   ClearAssociateFocus();

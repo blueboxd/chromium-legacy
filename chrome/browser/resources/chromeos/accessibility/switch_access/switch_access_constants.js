@@ -145,13 +145,13 @@ const SAConstants = {
      * @type {string}
      * @const
      */
-    PRIMARY_COLOR: '#1A73E8FF',
+    PRIMARY_COLOR: '#8AB4F8',
 
     /**
      * The outer color of the focus rings.
      * @type {string}
      * @const
      */
-    SECONDARY_COLOR: '#0006',
+    SECONDARY_COLOR: '#000',
   },
 };

@@ -288,35 +288,6 @@ void CSSToStyleMap::MapFillPositionY(StyleResolverState& state,
   }
 }
 
-void CSSToStyleMap::MapFillMaskSourceType(StyleResolverState&,
-                                          FillLayer* layer,
-                                          const CSSValue& value) {
-  EMaskSourceType type = FillLayer::InitialFillMaskSourceType(layer->GetType());
-  if (value.IsInitialValue()) {
-    layer->SetMaskSourceType(type);
-    return;
-  }
-
-  const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (!identifier_value)
-    return;
-
-  switch (identifier_value->GetValueID()) {
-    case CSSValueID::kAlpha:
-      type = EMaskSourceType::kAlpha;
-      break;
-    case CSSValueID::kLuminance:
-      type = EMaskSourceType::kLuminance;
-      break;
-    case CSSValueID::kAuto:
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  layer->SetMaskSourceType(type);
-}
-
 double CSSToStyleMap::MapAnimationDelay(const CSSValue& value) {
   if (value.IsInitialValue())
     return CSSTimingData::InitialDelay();

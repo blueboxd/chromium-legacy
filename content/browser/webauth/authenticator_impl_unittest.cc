@@ -674,30 +674,6 @@ TEST_F(AuthenticatorImplTest, MakeCredentialURLs) {
   }
 }
 
-// Test that MakeCredential request times out with NOT_ALLOWED_ERROR if no
-// parameters contain a supported algorithm.
-TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
-  SimulateNavigation(GURL(kTestOrigin1));
-  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
-      base::Time::Now(), base::TimeTicks::Now());
-  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
-
-  PublicKeyCredentialCreationOptionsPtr options =
-      GetTestPublicKeyCredentialCreationOptions();
-  options->public_key_parameters =
-      GetTestPublicKeyCredentialParameters(static_cast<int32_t>(
-          device::CoseAlgorithmIdentifier::kInvalidForTesting));
-
-  TestMakeCredentialCallback callback_receiver;
-  authenticator->MakeCredential(std::move(options),
-                                callback_receiver.callback());
-  // Trigger timer.
-  base::RunLoop().RunUntilIdle();
-  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
-  callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
-}
-
 // Test that MakeCredential request times out with NOT_ALLOWED_ERROR if user
 // verification is required for U2F devices.
 TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
@@ -3989,6 +3965,65 @@ TEST_F(PINAuthenticatorImplTest, GetAssertionHardLock) {
   ASSERT_TRUE(test_client_.failure_reason.has_value());
   EXPECT_EQ(InterestingFailureReason::kHardPINBlock,
             *test_client_.failure_reason);
+}
+
+TEST_F(PINAuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
+  SimulateNavigation(GURL(kTestOrigin1));
+
+  for (int i = 0; i < 3; i++) {
+    SCOPED_TRACE(i);
+
+    test_client_.expected.clear();
+    bool expected_to_succeed = false;
+    if (i == 0) {
+      device::VirtualCtap2Device::Config config;
+      // The first config is a CTAP2 device that doesn't support the
+      // kInvalidForTesting algorithm. A dummy touch should be requested in this
+      // case.
+      config.support_invalid_for_testing_algorithm = false;
+      virtual_device_factory_->SetCtap2Config(config);
+    } else if (i == 1) {
+      device::VirtualCtap2Device::Config config;
+      // The second config is a device with a PIN set that _does_ support the
+      // algorithm. Since the PIN is set, we might convert the makeCredential
+      // request to U2F, but shouldn't because the algorithm cannot be
+      // represented in U2F.
+      config.support_invalid_for_testing_algorithm = true;
+      config.u2f_support = true;
+      config.pin_support = true;
+      virtual_device_factory_->mutable_state()->pin = kTestPIN;
+      virtual_device_factory_->mutable_state()->pin_retries =
+          device::kMaxPinRetries;
+      virtual_device_factory_->SetCtap2Config(config);
+      test_client_.expected = {{device::kMaxPinRetries, kTestPIN}};
+      // Since converting to U2F isn't possible, this will trigger a PIN prompt
+      // and succeed because the device does actually support the algorithm.
+      expected_to_succeed = true;
+    } else if (i == 2) {
+      // The third case is a plain U2F authenticator, which implicitly only
+      // supports ES256.
+      virtual_device_factory_->SetSupportedProtocol(
+          device::ProtocolVersion::kU2f);
+    }
+
+    auto authenticator = ConnectToAuthenticator();
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    // Set uv=discouraged so that U2F fallback is possible.
+    options->authenticator_selection->SetUserVerificationRequirementForTesting(
+        device::UserVerificationRequirement::kDiscouraged);
+    options->public_key_parameters =
+        GetTestPublicKeyCredentialParameters(static_cast<int32_t>(
+            device::CoseAlgorithmIdentifier::kInvalidForTesting));
+
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+    EXPECT_EQ(expected_to_succeed ? AuthenticatorStatus::SUCCESS
+                                  : AuthenticatorStatus::NOT_ALLOWED_ERROR,
+              callback_receiver.status());
+  }
 }
 
 class InternalUVAuthenticatorImplTest : public UVAuthenticatorImplTest {

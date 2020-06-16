@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.thumbnail.generator;
 
 import android.os.Build;
-import android.support.test.filters.LargeTest;
+
+import androidx.test.filters.LargeTest;
 
 import org.junit.Assert;
 import org.junit.Before;

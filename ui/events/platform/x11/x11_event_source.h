@@ -181,7 +181,7 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
 
   // x11::Connection::Delegate:
   bool ShouldContinueStream() const override;
-  void DispatchXEvent(XEvent* event) override;
+  void DispatchXEvent(x11::Event* event) override;
 
  protected:
   // Handles updates after event has been dispatched.

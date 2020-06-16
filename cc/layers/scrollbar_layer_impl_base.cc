@@ -291,6 +291,10 @@ bool ScrollbarLayerImplBase::SupportsDragSnapBack() const {
   return false;
 }
 
+bool ScrollbarLayerImplBase::JumpOnTrackClick() const {
+  return false;
+}
+
 gfx::Rect ScrollbarLayerImplBase::BackButtonRect() const {
   return gfx::Rect(0, 0);
 }

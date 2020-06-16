@@ -2525,15 +2525,6 @@
       converter: "ConvertElementReference",
     },
     {
-      name: "mask-source-type",
-      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      runtime_flag: "CSSMaskSourceType",
-      style_builder_template: "mask_layer",
-      style_builder_template_args: {
-        fill_type: "MaskSourceType",
-      },
-    },
-    {
       name: "mask-type",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       svg: true,

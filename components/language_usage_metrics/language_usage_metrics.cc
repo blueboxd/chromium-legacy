@@ -7,12 +7,17 @@
 #include <algorithm>
 
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 
 namespace {
 void RecordAcceptLanguage(int language_code) {
   base::UmaHistogramSparse("LanguageUsage.AcceptLanguage", language_code);
+}
+void RecordLanguageCount(int language_count) {
+  UMA_HISTOGRAM_COUNTS_100("LanguageUsage.AcceptLanguage.Count",
+                           language_count);
 }
 }  // namespace
 
@@ -23,6 +28,7 @@ void LanguageUsageMetrics::RecordAcceptLanguages(
     const std::string& accept_languages) {
   std::set<int> languages;
   ParseAcceptLanguages(accept_languages, &languages);
+  RecordLanguageCount(languages.size());
   std::for_each(languages.begin(), languages.end(), RecordAcceptLanguage);
 }
 

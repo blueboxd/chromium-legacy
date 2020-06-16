@@ -28,11 +28,11 @@ namespace reporting {
 #define STATUS_MACROS_CONCAT_NAME(x, y) STATUS_MACROS_CONCAT_NAME_INNER(x, y)
 
 #define ASSIGN_OR_RETURN_IMPL(result, lhs, rexpr) \
-  const auto result = (rexpr);                    \
+  auto result = rexpr;                            \
   if (__builtin_expect(!result.ok(), 0)) {        \
     return result.status();                       \
   }                                               \
-  lhs = result.ValueOrDie()
+  lhs = std::move(result).ValueOrDie()
 
 // Executes an expression that returns a StatusOr, extracting its value
 // into the variable defined by lhs (or returning on error).

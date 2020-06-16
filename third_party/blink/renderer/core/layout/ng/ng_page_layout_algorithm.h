@@ -30,9 +30,6 @@ class CORE_EXPORT NGPageLayoutAlgorithm
  private:
   NGConstraintSpace CreateConstraintSpaceForPages(
       const LogicalSize& size) const;
-
-  NGBoxStrut border_padding_;
-  NGBoxStrut border_scrollbar_padding_;
 };
 
 }  // namespace blink

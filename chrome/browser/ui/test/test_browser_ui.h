@@ -15,6 +15,12 @@ namespace views {
 class Widget;
 }  // namespace views
 
+namespace ui {
+namespace test {
+class SkiaGoldMatchingAlgorithm;
+}  // namespace test
+}  // namespace ui
+
 // TestBrowserUi provides a way to register an InProcessBrowserTest testing
 // harness with a framework that invokes Chrome browser UI in a consistent way.
 // It optionally provides a way to invoke UI "interactively". This allows
@@ -85,10 +91,19 @@ class TestBrowserUi {
   // successfully shown.
   virtual bool VerifyUi() = 0;
 
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
   // Can be called by VerifyUi() to ensure pixel correctness.
   bool VerifyPixelUi(views::Widget* widget,
                      const std::string& screenshot_prefix,
                      const std::string& screenshot_name);
+
+  // Own |algorithm|.
+  void SetPixelMatchAlgorithm(
+      std::unique_ptr<ui::test::SkiaGoldMatchingAlgorithm> algorithm);
+  ui::test::SkiaGoldMatchingAlgorithm* GetPixelMatchAlgorithm() {
+    return algorithm_.get();
+  }
+#endif
 
   // Called by ShowAndVerifyUi() after VerifyUi(), in the case where the test is
   // interactive.  This should block until the UI has been dismissed.
@@ -105,6 +120,11 @@ class TestBrowserUi {
   void ShowAndVerifyUi();
 
  private:
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  std::unique_ptr<ui::test::SkiaGoldMatchingAlgorithm> algorithm_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(TestBrowserUi);
 };
 

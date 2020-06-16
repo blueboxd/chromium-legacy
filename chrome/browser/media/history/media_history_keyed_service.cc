@@ -331,22 +331,17 @@ void MediaHistoryKeyedService::GetURLsInTableForTest(
       std::move(callback));
 }
 
-void MediaHistoryKeyedService::DiscoverMediaFeed(const GURL& url,
-                                                 base::OnceClosure callback) {
+void MediaHistoryKeyedService::DiscoverMediaFeed(const GURL& url) {
   if (auto* store = store_->GetForWrite()) {
-    store->db_task_runner_->PostTaskAndReply(
+    store->db_task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(&MediaHistoryStore::DiscoverMediaFeed, store, url),
-        std::move(callback));
-  } else {
-    std::move(callback).Run();
+        base::BindOnce(&MediaHistoryStore::DiscoverMediaFeed, store, url));
   }
 }
 
 MediaHistoryKeyedService::PendingSafeSearchCheck::PendingSafeSearchCheck(
-    SafeSearchCheckedType type,
     int64_t id)
-    : id(std::make_pair(type, id)) {}
+    : id(id) {}
 
 MediaHistoryKeyedService::PendingSafeSearchCheck::~PendingSafeSearchCheck() =
     default;
@@ -362,7 +357,7 @@ void MediaHistoryKeyedService::GetPendingSafeSearchCheckMediaFeedItems(
 }
 
 void MediaHistoryKeyedService::StoreMediaFeedItemSafeSearchResults(
-    std::map<SafeSearchID, media_feeds::mojom::SafeSearchResult> results) {
+    std::map<int64_t, media_feeds::mojom::SafeSearchResult> results) {
   if (auto* store = store_->GetForWrite()) {
     store->db_task_runner_->PostTask(
         FROM_HERE,

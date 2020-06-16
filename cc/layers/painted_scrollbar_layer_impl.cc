@@ -43,6 +43,7 @@ PaintedScrollbarLayerImpl::PaintedScrollbarLayerImpl(
       thumb_ui_resource_id_(0),
       painted_opacity_(1.f),
       internal_contents_scale_(1.f),
+      jump_on_track_click_(false),
       supports_drag_snap_back_(false),
       thumb_thickness_(0),
       thumb_length_(0) {}
@@ -65,6 +66,7 @@ void PaintedScrollbarLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   scrollbar_layer->set_internal_contents_scale_and_bounds(
       internal_contents_scale_, internal_content_bounds_);
 
+  scrollbar_layer->SetJumpOnTrackClick(jump_on_track_click_);
   scrollbar_layer->SetSupportsDragSnapBack(supports_drag_snap_back_);
   scrollbar_layer->SetThumbThickness(thumb_thickness_);
   scrollbar_layer->SetThumbLength(thumb_length_);
@@ -160,6 +162,17 @@ gfx::Rect PaintedScrollbarLayerImpl::GetEnclosingRectInTargetSpace() const {
     return gfx::Rect();
   DCHECK_GT(internal_contents_scale_, 0.f);
   return GetScaledEnclosingRectInTargetSpace(internal_contents_scale_);
+}
+
+void PaintedScrollbarLayerImpl::SetJumpOnTrackClick(bool jump_on_track_click) {
+  if (jump_on_track_click_ == jump_on_track_click)
+    return;
+  jump_on_track_click_ = jump_on_track_click;
+  NoteLayerPropertyChanged();
+}
+
+bool PaintedScrollbarLayerImpl::JumpOnTrackClick() const {
+  return jump_on_track_click_;
 }
 
 void PaintedScrollbarLayerImpl::SetSupportsDragSnapBack(

@@ -30,7 +30,9 @@ class AccessibilityWindowInfoDataWrapper : public AccessibilityInfoDataWrapper {
   const gfx::Rect GetBounds() const override;
   bool IsVisibleToUser() const override;
   bool IsVirtualNode() const override;
+  bool IsIgnored() const override;
   bool CanBeAccessibilityFocused() const override;
+  bool IsAccessibilityFocusableContainer() const override;
   void PopulateAXRole(ui::AXNodeData* out_data) const override;
   void PopulateAXState(ui::AXNodeData* out_data) const override;
   void Serialize(ui::AXNodeData* out_data) const override;

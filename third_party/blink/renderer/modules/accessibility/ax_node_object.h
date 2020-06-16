@@ -126,6 +126,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AXRestriction Restriction() const override;
 
   // Properties of static elements.
+  const AtomicString& AccessKey() const override;
   RGBA32 ColorValue() const final;
   bool CanvasHasFallbackContent() const final;
   int HeadingLevel() const final;
@@ -138,6 +139,8 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   static HeapVector<Member<HTMLInputElement>> FindAllRadioButtonsWithSameName(
       HTMLInputElement* radio_button);
   String GetText() const override;
+  String ImageDataUrl(const IntSize& max_size) const final;
+  int TextLength() const override;
 
   // Properties of interactive elements.
   ax::mojom::blink::AriaCurrentState GetAriaCurrentState() const final;

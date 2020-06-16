@@ -775,21 +775,23 @@ class WPTExpectationsUpdater(object):
 
         Returns: A list of web test files that have been deleted.
         """
-        # TODO(robertma): Improve Git.changed_files so that we can use it here.
-        paths = set(self.git.run(
-            ['diff', 'origin/master', '-M100%', '--diff-filter=D',
-             '--name-only']).splitlines())
-        deleted_tests = set()
-        for path in paths:
-            test = self._relative_to_web_test_dir(path)
-            if test:
-                deleted_tests.add(test)
-
-        if not self.options.clean_up_affected_tests_only:
+        if self.options.clean_up_affected_tests_only:
+            deleted_tests = set()
+            # TODO(robertma): Improve Git.changed_files so that we can use
+            # it here.
+            paths = set(self.git.run(
+                ['diff', 'origin/master', '-M100%', '--diff-filter=D',
+                 '--name-only']).splitlines())
+            deleted_tests = set()
+            for path in paths:
+                test = self._relative_to_web_test_dir(path)
+                if test:
+                    deleted_tests.add(test)
+        else:
             # Remove expectations for all test which have files that
             # were deleted. Paths are already relative to the web_tests
             # directory
-            deleted_tests.update(self._deleted_test_files_in_expectations())
+            deleted_tests = self._deleted_test_files_in_expectations()
         return deleted_tests
 
     def _list_renamed_test_files(self):

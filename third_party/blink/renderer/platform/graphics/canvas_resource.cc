@@ -1149,11 +1149,9 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSwapChain::Bitmap() {
       Size().Width(), Size().Height(), ColorParams().GetSkColorType(),
       ColorParams().GetSkAlphaType(), ColorParams().GetSkColorSpace());
 
-  // It's safe to share the front buffer texture id if we're on the same thread
+  // It's safe to share the back buffer texture id if we're on the same thread
   // since the |release_callback| ensures this resource will be alive.
-  GLuint shared_texture_id = 0u;
-  if (!is_cross_thread())
-    shared_texture_id = front_buffer_texture_id_;
+  GLuint shared_texture_id = !is_cross_thread() ? back_buffer_texture_id_ : 0u;
 
   // The |release_callback| keeps a ref on this resource to ensure the backing
   // shared image is kept alive until the lifetime of the image.
@@ -1163,8 +1161,11 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSwapChain::Bitmap() {
       },
       base::RetainedRef(this)));
 
+  // Use an empty sync token so that the image lazily generates its own sync
+  // token so that it can synchronize with Skia commands as well as the copy
+  // from the front buffer to back buffer after present.
   return AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
-      front_buffer_mailbox_, sync_token_, shared_texture_id, image_info,
+      back_buffer_mailbox_, gpu::SyncToken(), shared_texture_id, image_info,
       GL_TEXTURE_2D, true /*is_origin_top_left*/, context_provider_wrapper_,
       owning_thread_ref_, owning_thread_task_runner_,
       std::move(release_callback));
@@ -1184,9 +1185,6 @@ void CanvasResourceSwapChain::TearDown() {
   auto* raster_interface =
       context_provider_wrapper_->ContextProvider()->RasterInterface();
   DCHECK(raster_interface);
-  raster_interface->EndSharedImageAccessDirectCHROMIUM(
-      front_buffer_texture_id_);
-  raster_interface->DeleteGpuRasterTexture(front_buffer_texture_id_);
   raster_interface->EndSharedImageAccessDirectCHROMIUM(back_buffer_texture_id_);
   raster_interface->DeleteGpuRasterTexture(back_buffer_texture_id_);
   // No synchronization is needed here because the GL SharedImageRepresentation
@@ -1243,6 +1241,7 @@ void CanvasResourceSwapChain::PresentSwapChain() {
                                    GL_TEXTURE_2D, 0, 0, 0, 0, size_.Width(),
                                    size_.Height(), false /* unpack_flip_y */,
                                    false /* unpack_premultiply_alpha */);
+  // Don't generate sync token here so that the copy is not on critical path.
 }
 
 base::WeakPtr<WebGraphicsContext3DProviderWrapper>
@@ -1283,11 +1282,6 @@ CanvasResourceSwapChain::CanvasResourceSwapChain(
       context_provider_wrapper_->ContextProvider()->RasterInterface();
   DCHECK(raster_interface);
   raster_interface->WaitSyncTokenCHROMIUM(sync_token_.GetData());
-
-  front_buffer_texture_id_ =
-      raster_interface->CreateAndConsumeForGpuRaster(front_buffer_mailbox_);
-  raster_interface->BeginSharedImageAccessDirectCHROMIUM(
-      front_buffer_texture_id_, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
 
   back_buffer_texture_id_ =
       raster_interface->CreateAndConsumeForGpuRaster(back_buffer_mailbox_);

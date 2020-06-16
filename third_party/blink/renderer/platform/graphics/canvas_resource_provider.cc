@@ -658,6 +658,10 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
     resource_ = CanvasResourceSwapChain::Create(
         Size(), ColorParams(), ContextProviderWrapper(), CreateWeakPtr(),
         FilterQuality());
+    // CanvasResourceProviderSwapChain can only operate in a single buffered
+    // mode so enable it as soon as possible.
+    TryEnableSingleBuffering();
+    DCHECK(IsSingleBuffered());
   }
   ~CanvasResourceProviderSwapChain() override = default;
 
@@ -667,7 +671,10 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
   bool SupportsSingleBuffering() const override { return true; }
 
  private:
-  void WillDraw() override { dirty_ = true; }
+  void WillDraw() override {
+    needs_present_ = true;
+    needs_flush_ = true;
+  }
 
   scoped_refptr<CanvasResource> CreateResource() final {
     TRACE_EVENT0("blink", "CanvasResourceProviderSwapChain::CreateResource");
@@ -680,10 +687,12 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
                  "CanvasResourceProviderSwapChain::ProduceCanvasResource");
     if (!IsValid())
       return nullptr;
-    FlushCanvas();
-    if (dirty_) {
+
+    FlushIfNeeded();
+
+    if (needs_present_) {
       resource_->PresentSwapChain();
-      dirty_ = false;
+      needs_present_ = false;
     }
     return resource_;
   }
@@ -691,11 +700,12 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
   scoped_refptr<StaticBitmapImage> Snapshot(const ImageOrientation&) override {
     TRACE_EVENT0("blink", "CanvasResourceProviderSwapChain::Snapshot");
 
-    // Use ProduceCanvasResource to ensure any queued commands are flushed and
-    // the resource is updated.
-    if (auto resource = ProduceCanvasResource())
-      return resource->Bitmap();
-    return nullptr;
+    if (!IsValid())
+      return nullptr;
+
+    FlushIfNeeded();
+
+    return resource_->Bitmap();
   }
 
   sk_sp<SkSurface> CreateSkSurface() const override {
@@ -703,9 +713,8 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
     if (IsGpuContextLost() || !resource_)
       return nullptr;
 
-    DCHECK(resource_);
     GrGLTextureInfo texture_info = {};
-    texture_info.fID = resource_->GetBackingTextureHandleForOverwrite();
+    texture_info.fID = resource_->GetBackBufferTextureId();
     texture_info.fTarget = resource_->TextureTarget();
     texture_info.fFormat = ColorParams().GLSizedInternalFormat();
 
@@ -719,7 +728,19 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
         ColorParams().GetSkSurfaceProps());
   }
 
-  bool dirty_ = false;
+  void FlushIfNeeded() {
+    if (needs_flush_) {
+      // This only flushes recorded draw ops.
+      FlushCanvas();
+      // Call flushAndSubmit() explicitly so that any non-draw-op rendering by
+      // Skia is flushed to GL.  This is needed specifically for WritePixels().
+      GetGrContext()->flushAndSubmit();
+      needs_flush_ = false;
+    }
+  }
+
+  bool needs_present_ = false;
+  bool needs_flush_ = false;
   scoped_refptr<CanvasResourceSwapChain> resource_;
 };
 

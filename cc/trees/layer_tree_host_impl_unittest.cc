@@ -12952,7 +12952,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   auto& scrollbar_effect_node = CreateEffectNode(scrollbar);
   scrollbar_effect_node.opacity = 0.8;
 
-  host_impl_->MouseDown(gfx::PointF(350, 18), /*shift_modifier*/ false);
+  host_impl_->MouseDown(gfx::PointF(350, 18), /*jump_key_modifier*/ false);
   InputHandlerPointerResult result =
       host_impl_->MouseMoveAt(gfx::Point(350, 28));
   EXPECT_GT(result.scroll_offset.y(), 0u);
@@ -12961,7 +12961,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   // Scrolling shouldn't occur at opacity = 0.
   scrollbar_effect_node.opacity = 0;
 
-  host_impl_->MouseDown(gfx::PointF(350, 18), /*shift_modifier*/ false);
+  host_impl_->MouseDown(gfx::PointF(350, 18), /*jump_key_modifier*/ false);
   result = host_impl_->MouseMoveAt(gfx::Point(350, 28));
   EXPECT_EQ(result.scroll_offset.y(), 0u);
   host_impl_->MouseUp(gfx::PointF(350, 28));
@@ -13008,7 +13008,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, PointerMoveOutOfSequence) {
   // PointerDown sets up the state needed to initiate a drag. Although, the
   // resulting GSB won't be dispatched until the next VSync. Hence, the
   // CurrentlyScrollingNode is expected to be null.
-  host_impl_->MouseDown(gfx::PointF(350, 18), /*shift_modifier*/ false);
+  host_impl_->MouseDown(gfx::PointF(350, 18), /*jump_key_modifier*/ false);
   EXPECT_TRUE(!host_impl_->CurrentlyScrollingNode());
 
   // PointerMove arrives before the next VSync. This still needs to be handled
@@ -13081,14 +13081,14 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, FadedOutPaintedScrollbarHitTest) {
   // scroll.
   scrollbar->set_scrollbar_painted_opacity(0);
   InputHandlerPointerResult result =
-      host_impl_->MouseDown(gfx::PointF(350, 100), /*shift_modifier*/ false);
+      host_impl_->MouseDown(gfx::PointF(350, 100), /*jump_key_modifier*/ false);
   EXPECT_EQ(result.scroll_offset.y(), 0u);
 
   // MouseDown on the track of a scrollbar with opacity > 0 should produce a
   // scroll.
   scrollbar->set_scrollbar_painted_opacity(1);
   result =
-      host_impl_->MouseDown(gfx::PointF(350, 100), /*shift_modifier*/ false);
+      host_impl_->MouseDown(gfx::PointF(350, 100), /*jump_key_modifier*/ false);
   EXPECT_GT(result.scroll_offset.y(), 0u);
 
   // Tear down the LayerTreeHostImpl before the InputHandlerClient.
@@ -13147,7 +13147,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
 
   // MouseDown on the thumb should not produce a scroll.
   InputHandlerPointerResult result =
-      host_impl_->MouseDown(gfx::PointF(350, 18), /*shift_modifier*/ false);
+      host_impl_->MouseDown(gfx::PointF(350, 18), /*jump_key_modifier*/ false);
   EXPECT_EQ(result.scroll_offset.y(), 0u);
 
   // The first request for a GSU should be processed as expected.
@@ -13224,8 +13224,8 @@ TEST_F(LayerTreeHostImplTest, AutoscrollTaskAbort) {
 
   {
     // An autoscroll task gets scheduled on mousedown.
-    InputHandlerPointerResult result =
-        host_impl_->MouseDown(gfx::PointF(350, 575), /*shift_modifier*/ false);
+    InputHandlerPointerResult result = host_impl_->MouseDown(
+        gfx::PointF(350, 575), /*jump_key_modifier*/ false);
     EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
     auto begin_state = BeginState(gfx::Point(350, 575), gfx::Vector2d(0, 40),
                                   ui::ScrollInputType::kScrollbar);
@@ -13241,12 +13241,108 @@ TEST_F(LayerTreeHostImplTest, AutoscrollTaskAbort) {
   {
     // Another mousedown occurs in the same frame. InputHandlerProxy calls
     // LayerTreeHostImpl::ScrollEnd and the autoscroll task should be cancelled.
-    InputHandlerPointerResult result =
-        host_impl_->MouseDown(gfx::PointF(350, 575), /*shift_modifier*/ false);
+    InputHandlerPointerResult result = host_impl_->MouseDown(
+        gfx::PointF(350, 575), /*jump_key_modifier*/ false);
     EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
     host_impl_->ScrollEnd();
     EXPECT_FALSE(host_impl_->scrollbar_controller_for_testing()
                      ->AutoscrollTaskIsScheduled());
+  }
+
+  // Tear down the LayerTreeHostImpl before the InputHandlerClient.
+  host_impl_->ReleaseLayerTreeFrameSink();
+  host_impl_ = nullptr;
+}
+
+// Tests that the ScrollbarController handles jump clicks.
+TEST_F(LayerTreeHostImplTest, JumpOnScrollbarClick) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.compositor_threaded_scrollbar_scrolling = true;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+
+  // Setup the viewport.
+  const gfx::Size viewport_size = gfx::Size(360, 600);
+  const gfx::Size content_size = gfx::Size(345, 3800);
+  SetupViewportLayersOuterScrolls(viewport_size, content_size);
+  LayerImpl* scroll_layer = OuterViewportScrollLayer();
+
+  // Set up the scrollbar and its dimensions.
+  LayerTreeImpl* layer_tree_impl = host_impl_->active_tree();
+  auto* scrollbar = AddLayer<PaintedScrollbarLayerImpl>(
+      layer_tree_impl, VERTICAL, /*is_left_side_vertical_scrollbar*/ false,
+      /*is_overlay*/ false);
+
+  SetupScrollbarLayer(scroll_layer, scrollbar);
+  const gfx::Size scrollbar_size = gfx::Size(15, 600);
+  scrollbar->SetBounds(scrollbar_size);
+  host_impl_->set_force_smooth_wheel_scrolling_for_testing(true);
+
+  // Set up the thumb dimensions.
+  scrollbar->SetThumbThickness(15);
+  scrollbar->SetThumbLength(50);
+  scrollbar->SetTrackRect(gfx::Rect(0, 15, 15, 575));
+
+  // Set up scrollbar arrows.
+  scrollbar->SetBackButtonRect(
+      gfx::Rect(gfx::Point(345, 0), gfx::Size(15, 15)));
+  scrollbar->SetForwardButtonRect(
+      gfx::Rect(gfx::Point(345, 570), gfx::Size(15, 15)));
+  scrollbar->SetOffsetToTransformParent(gfx::Vector2dF(345, 0));
+
+  TestInputHandlerClient input_handler_client;
+  host_impl_->BindToClient(&input_handler_client);
+
+  // Verify all 4 combinations of JumpOnTrackClick and jump_key_modifier.
+  {
+    // Click on track when JumpOnTrackClick is false and jump_key_modifier is
+    // false. Expected to perform a regular track scroll.
+    scrollbar->SetJumpOnTrackClick(false);
+    InputHandlerPointerResult result = host_impl_->MouseDown(
+        gfx::PointF(350, 400), /*jump_key_modifier*/ false);
+    EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
+    EXPECT_EQ(result.scroll_offset.y(), 525);
+    result = host_impl_->MouseUp(gfx::PointF(350, 400));
+    EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
+    EXPECT_EQ(result.scroll_offset.y(), 0);
+  }
+
+  {
+    // Click on track when JumpOnTrackClick is false and jump_key_modifier is
+    // true. Expected to perform scroller jump to the clicked location.
+    scrollbar->SetJumpOnTrackClick(false);
+    InputHandlerPointerResult result = host_impl_->MouseDown(
+        gfx::PointF(350, 400), /*jump_key_modifier*/ true);
+    EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
+    EXPECT_EQ(result.scroll_offset.y(), 2194);
+    result = host_impl_->MouseUp(gfx::PointF(350, 400));
+    EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
+    EXPECT_EQ(result.scroll_offset.y(), 0);
+  }
+
+  {
+    // Click on track when JumpOnTrackClick is true and jump_key_modifier is
+    // false. Expected to perform scroller jump to the clicked location.
+    scrollbar->SetJumpOnTrackClick(true);
+    InputHandlerPointerResult result = host_impl_->MouseDown(
+        gfx::PointF(350, 400), /*jump_key_modifier*/ false);
+    EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
+    EXPECT_EQ(result.scroll_offset.y(), 2194);
+    result = host_impl_->MouseUp(gfx::PointF(350, 400));
+    EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
+    EXPECT_EQ(result.scroll_offset.y(), 0);
+  }
+
+  {
+    // Click on track when JumpOnTrackClick is true and jump_key_modifier is
+    // true. Expected to perform a regular track scroll.
+    scrollbar->SetJumpOnTrackClick(true);
+    InputHandlerPointerResult result = host_impl_->MouseDown(
+        gfx::PointF(350, 400), /*jump_key_modifier*/ true);
+    EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
+    EXPECT_EQ(result.scroll_offset.y(), 525);
+    result = host_impl_->MouseUp(gfx::PointF(350, 400));
+    EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
+    EXPECT_EQ(result.scroll_offset.y(), 0);
   }
 
   // Tear down the LayerTreeHostImpl before the InputHandlerClient.
@@ -13298,7 +13394,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, AnimatedScrollYielding) {
   {
     // Set up an animated scrollbar autoscroll.
     host_impl_->scrollbar_controller_for_testing()->HandlePointerDown(
-        gfx::PointF(350, 560), /*shift_modifier*/ false);
+        gfx::PointF(350, 560), /*jump_key_modifier*/ false);
     auto begin_state = BeginState(gfx::Point(350, 560), gfx::Vector2d(0, 40),
                                   ui::ScrollInputType::kScrollbar);
     EXPECT_EQ(
@@ -13407,7 +13503,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ThumbDragScrollerLengthIncrease) {
   begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   InputHandlerPointerResult result =
-      host_impl_->MouseDown(gfx::PointF(350, 18), /*shift_modifier*/ false);
+      host_impl_->MouseDown(gfx::PointF(350, 18), /*jump_key_modifier*/ false);
   EXPECT_EQ(result.scroll_offset.y(), 0);
   EXPECT_EQ(result.type, PointerResultType::kScrollbarScroll);
   host_impl_->DidFinishImplFrame(begin_frame_args);
@@ -13497,7 +13593,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, MainThreadFallback) {
 
   // Clicking on the track should produce a scroll on the compositor thread.
   InputHandlerPointerResult compositor_threaded_scrolling_result =
-      host_impl_->MouseDown(gfx::PointF(350, 500), /*shift_modifier*/ false);
+      host_impl_->MouseDown(gfx::PointF(350, 500), /*jump_key_modifier*/ false);
   host_impl_->MouseUp(gfx::PointF(350, 500));
   EXPECT_EQ(compositor_threaded_scrolling_result.scroll_offset.y(), 525u);
   EXPECT_FALSE(GetScrollNode(scroll_layer)->main_thread_scrolling_reasons);
@@ -13508,7 +13604,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, MainThreadFallback) {
   GetScrollNode(scroll_layer)->main_thread_scrolling_reasons =
       MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects;
   compositor_threaded_scrolling_result =
-      host_impl_->MouseDown(gfx::PointF(350, 500), /*shift_modifier*/ false);
+      host_impl_->MouseDown(gfx::PointF(350, 500), /*jump_key_modifier*/ false);
   host_impl_->MouseUp(gfx::PointF(350, 500));
   EXPECT_EQ(compositor_threaded_scrolling_result.scroll_offset.y(), 0u);
 
@@ -14920,7 +15016,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   animation_task_.Reset();
 
   // Only the MouseMove's location will affect the overlay scrollbar.
-  host_impl_->MouseDown(gfx::PointF(60, 50), /*shift_modifier*/ false);
+  host_impl_->MouseDown(gfx::PointF(60, 50), /*jump_key_modifier*/ false);
   host_impl_->MouseMoveAt(gfx::Point(60, 50));
   host_impl_->MouseUp(gfx::PointF(60, 50));
 
@@ -14931,14 +15027,14 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   host_impl_->MouseMoveAt(gfx::Point(40, 150));
   animation_task_.Reset();
 
-  host_impl_->MouseDown(gfx::PointF(40, 150), /*shift_modifier*/ false);
+  host_impl_->MouseDown(gfx::PointF(40, 150), /*jump_key_modifier*/ false);
   host_impl_->MouseUp(gfx::PointF(40, 150));
   EXPECT_TRUE(animation_task_.is_null());
 
   // Near scrollbar_1, then mouse down and unregister
   // scrollbar_2_animation_controller, then mouse up should not cause crash.
   host_impl_->MouseMoveAt(gfx::Point(40, 150));
-  host_impl_->MouseDown(gfx::PointF(40, 150), /*shift_modifier*/ false);
+  host_impl_->MouseDown(gfx::PointF(40, 150), /*jump_key_modifier*/ false);
   host_impl_->DidUnregisterScrollbarLayer(root_scroll->element_id());
   host_impl_->MouseUp(gfx::PointF(40, 150));
 }

@@ -7,7 +7,7 @@ package org.chromium.content.browser.scheduler;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;

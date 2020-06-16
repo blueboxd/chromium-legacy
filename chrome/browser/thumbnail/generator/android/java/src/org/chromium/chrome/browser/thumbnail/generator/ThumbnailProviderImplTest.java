@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.thumbnail.generator;
 
 import android.graphics.Bitmap;
-import android.support.test.filters.MediumTest;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;

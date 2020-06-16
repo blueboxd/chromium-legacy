@@ -70,7 +70,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
 
   // The following loops perform caching to prepare for AXTreeSerializer.
   // First, we cache the windows.
-  // Next, we cache the nodes. To compute IsClickableLeaf, we want a mapping
+  // Next, we cache the nodes. To compute importance table, we want a mapping
   // from node id to an index in event_data->node_data is needed to avoid O(N^2)
   // computation, iterate it twice.
   // Finally, we cache each node's computed bounds, based on its descendants.
@@ -113,10 +113,8 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   for (int i = event_data->node_data.size() - 1; i >= 0; --i) {
     int32_t id = event_data->node_data[i]->id;
     AXNodeInfoData* node = event_data->node_data[i].get();
-    bool is_clickable_leaf =
-        ComputeIsClickableLeaf(event_data->node_data, i, node_data_index_map);
     tree_map_[id] = std::make_unique<AccessibilityNodeInfoDataWrapper>(
-        this, node, is_clickable_leaf, is_important[i]);
+        this, node, is_important[i]);
   }
 
   // Assuming |nodeData| is in pre-order, compute cached bounds in post-order to
@@ -198,6 +196,10 @@ void AXTreeSourceArc::NotifyGetTextLocationDataResult(
   GetAutomationEventRouter()->DispatchGetTextLocationDataResult(data, rect);
 }
 
+bool AXTreeSourceArc::IsScreenReaderMode() const {
+  return delegate_->IsScreenReaderEnabled();
+}
+
 void AXTreeSourceArc::InvalidateTree() {
   current_tree_serializer_->Reset();
 }
@@ -217,6 +219,16 @@ bool AXTreeSourceArc::IsRootOfNodeTree(int32_t id) const {
   const auto& parent_tree_it = tree_map_.find(parent_it->second);
   CHECK(parent_tree_it != tree_map_.end());
   return !parent_tree_it->second->IsNode();
+}
+
+AccessibilityInfoDataWrapper* AXTreeSourceArc::GetFirstImportantAncestor(
+    AccessibilityInfoDataWrapper* info_data) const {
+  AccessibilityInfoDataWrapper* parent = GetParent(info_data);
+  while (parent && parent->IsNode() &&
+         !IsImportantInAndroid(parent->GetNode())) {
+    parent = GetParent(parent);
+  }
+  return parent;
 }
 
 bool AXTreeSourceArc::GetTreeData(ui::AXTreeData* data) const {
@@ -298,40 +310,11 @@ void AXTreeSourceArc::ComputeEnclosingBoundsInternal(
   return;
 }
 
-bool AXTreeSourceArc::ComputeIsClickableLeaf(
-    const std::vector<AXNodeInfoDataPtr>& nodes,
-    int32_t node_index,
-    const std::map<int32_t, int32_t>& node_id_to_nodes_index) const {
-  AXNodeInfoData* node = nodes[node_index].get();
-  if (!GetBooleanProperty(node, AXBooleanProperty::CLICKABLE))
-    return false;
-
-  std::vector<int32_t> children;
-  if (!GetProperty(node->int_list_properties, AXIntListProperty::CHILD_NODE_IDS,
-                   &children))
-    return true;
-
-  std::stack<int32_t, std::vector<int32_t>> stack(children);
-  while (!stack.empty()) {
-    int32_t parent_id = stack.top();
-    stack.pop();
-    AXNodeInfoData* parent_node =
-        nodes[node_id_to_nodes_index.at(parent_id)].get();
-    if (GetBooleanProperty(parent_node, AXBooleanProperty::CLICKABLE))
-      return false;
-    if (GetProperty(parent_node->int_list_properties,
-                    AXIntListProperty::CHILD_NODE_IDS, &children)) {
-      for (const int32_t child : children)
-        stack.push(child);
-    }
-  }
-  return true;
-}
-
 void AXTreeSourceArc::BuildImportanceTable(
     AXEventData* event_data,
     const std::map<int32_t, int32_t>& node_id_to_nodes_index,
     std::vector<bool>* out_values) const {
+  // TODO(hirokisato): move this logic into AccessibilityNodeInfoDataWrapper.
   DCHECK(out_values);
   DCHECK(out_values->size() == event_data->node_data.size());
 

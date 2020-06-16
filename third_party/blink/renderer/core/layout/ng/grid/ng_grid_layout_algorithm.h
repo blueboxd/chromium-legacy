@@ -41,12 +41,7 @@ class CORE_EXPORT NGGridLayoutAlgorithm
   };
   Vector<GridItem> items_;
 
-  LogicalSize border_box_size_;
-  LogicalSize content_box_size_;
   LogicalSize child_percentage_size_;
-
-  const NGBoxStrut border_padding_;
-  const NGBoxStrut border_scrollbar_padding_;
 };
 
 }  // namespace blink

@@ -58,9 +58,6 @@ class CC_EXPORT PictureLayer : public Layer {
   RecordingSource* GetRecordingSourceForTesting() {
     return recording_source_.get();
   }
-  bool ShouldUseTransformedRasterizationForTesting() const {
-    return ShouldUseTransformedRasterization();
-  }
 
   const DisplayItemList* GetDisplayItemList();
 

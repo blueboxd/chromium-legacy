@@ -27,7 +27,9 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_util.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "content/public/browser/device_service.h"
@@ -192,4 +194,10 @@ std::unique_ptr<ash::BackGestureContextualNudgeDelegate>
 ChromeShellDelegate::CreateBackGestureContextualNudgeDelegate(
     ash::BackGestureContextualNudgeController* controller) {
   return std::make_unique<BackGestureContextualNudgeDelegate>(controller);
+}
+
+void ChromeShellDelegate::OpenDisplaySettings() const {
+  chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+      ProfileManager::GetActiveUserProfile(),
+      chromeos::settings::mojom::kDisplaySubpagePath);
 }

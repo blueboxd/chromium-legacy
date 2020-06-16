@@ -20,6 +20,7 @@
 #include "device/fido/get_assertion_task.h"
 #include "device/fido/make_credential_task.h"
 #include "device/fido/pin.h"
+#include "device/fido/u2f_command_constructor.h"
 
 namespace device {
 
@@ -260,11 +261,12 @@ FidoDeviceAuthenticator::WillNeedPINToMakeCredential(
 
   // CTAP 2.0 requires a PIN for credential creation once a PIN has been set.
   // Thus, if fallback to U2F isn't possible, a PIN will be needed if set.
-  const bool supports_u2f =
+  const bool u2f_fallback_possible =
       device()->device_info() &&
-      device()->device_info()->versions.contains(ProtocolVersion::kU2f);
+      device()->device_info()->versions.contains(ProtocolVersion::kU2f) &&
+      IsConvertibleToU2fRegisterCommand(request);
   if (device_support == ClientPinAvailability::kSupportedAndPinSet &&
-      !supports_u2f) {
+      !u2f_fallback_possible) {
     if (can_collect_pin) {
       return MakeCredentialPINDisposition::kUsePIN;
     } else {
@@ -291,7 +293,7 @@ FidoDeviceAuthenticator::WillNeedPINToMakeCredential(
   // else the device supports U2F (because the alternative was handled above)
   // and we'll use a U2F fallback to create a credential without a PIN.
   DCHECK(device_support != ClientPinAvailability::kSupportedAndPinSet ||
-         supports_u2f);
+         u2f_fallback_possible);
   // TODO(agl): perhaps CTAP2 is indicated when, for example, hmac-secret is
   // requested?
   if (request.user_verification == UserVerificationRequirement::kDiscouraged) {
@@ -622,6 +624,22 @@ void FidoDeviceAuthenticator::BioEnrollEnumerate(
       BioEnrollmentRequest::ForEnumerate(
           GetBioEnrollmentRequestVersion(*Options()), std::move(response)),
       std::move(callback), base::BindOnce(&BioEnrollmentResponse::Parse));
+}
+
+base::Optional<base::span<const int32_t>>
+FidoDeviceAuthenticator::GetAlgorithms() {
+  if (device_->supported_protocol() == ProtocolVersion::kU2f) {
+    static constexpr int32_t kU2fAlgorithms[1] = {
+        static_cast<int32_t>(CoseAlgorithmIdentifier::kEs256)};
+    return kU2fAlgorithms;
+  }
+
+  const base::Optional<AuthenticatorGetInfoResponse>& get_info_response =
+      device_->device_info();
+  if (get_info_response) {
+    return get_info_response->algorithms;
+  }
+  return base::nullopt;
 }
 
 void FidoDeviceAuthenticator::Reset(ResetCallback callback) {

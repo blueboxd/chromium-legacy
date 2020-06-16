@@ -1132,6 +1132,13 @@ void AuthenticatorCommon::OnRegisterResponse(
               kAuthenticatorMissingUserVerification,
           blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
       return;
+    case device::MakeCredentialStatus::kNoCommonAlgorithms:
+      SignalFailureToRequestDelegate(
+          authenticator,
+          AuthenticatorRequestClientDelegate::InterestingFailureReason::
+              kNoCommonAlgorithms,
+          blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
+      return;
     case device::MakeCredentialStatus::kStorageFull:
       SignalFailureToRequestDelegate(
           authenticator,

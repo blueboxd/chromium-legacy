@@ -119,9 +119,19 @@ class CC_EXPORT ScrollbarController {
   explicit ScrollbarController(LayerTreeHostImpl*);
   virtual ~ScrollbarController();
 
+  // On Mac, the "jump to the spot that's clicked" setting can be dynamically
+  // set via System Preferences. When enabled, the expectation is that regular
+  // clicks on the scrollbar should make the scroller "jump" to the clicked
+  // location rather than animated scrolling. Additionally, when this is enabled
+  // and the user does an Option + click on the scrollbar, the scroller should
+  // *not* jump to that spot (i.e it should be treated as a regular track
+  // click). When this setting is disabled on the Mac, Option + click should
+  // make the scroller jump and a regular click should animate the scroll
+  // offset. On all other platforms, the "jump on click" option is available
+  // (via Shift + click) but is not configurable.
   InputHandlerPointerResult HandlePointerDown(
       const gfx::PointF position_in_widget,
-      const bool shift_modifier);
+      const bool jump_key_modifier);
   InputHandlerPointerResult HandlePointerMove(
       const gfx::PointF position_in_widget);
   InputHandlerPointerResult HandlePointerUp(
@@ -203,14 +213,14 @@ class CC_EXPORT ScrollbarController {
   // Returns scroll offsets based on which ScrollbarPart was hit tested.
   gfx::ScrollOffset GetScrollOffsetForScrollbarPart(
       const ScrollbarPart scrollbar_part,
-      const bool shift_modifier) const;
+      const bool jump_key_modifier) const;
 
   // Returns the rect for the ScrollbarPart.
   gfx::Rect GetRectForScrollbarPart(const ScrollbarPart scrollbar_part) const;
 
   LayerImpl* GetLayerHitByPoint(const gfx::PointF position_in_widget) const;
   int GetScrollDeltaForScrollbarPart(const ScrollbarPart scrollbar_part,
-                                     const bool shift_modifier) const;
+                                     const bool jump_key_modifier) const;
 
   // Makes position_in_widget relative to the scrollbar.
   gfx::PointF GetScrollbarRelativePosition(const gfx::PointF position_in_widget,
@@ -231,7 +241,7 @@ class CC_EXPORT ScrollbarController {
 
   // Determines if the delta needs to be animated.
   ui::ScrollGranularity Granularity(const ScrollbarPart scrollbar_part,
-                                    bool shift_modifier) const;
+                                    bool jump_key_modifier) const;
 
   // Calculates the delta based on position_in_widget and drag_origin.
   int GetScrollDeltaForDragPosition(

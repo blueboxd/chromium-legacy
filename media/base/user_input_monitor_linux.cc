@@ -154,8 +154,8 @@ void UserInputMonitorLinuxCore::StartMonitor() {
     return;
   }
 
-  x_record_range_->device_events.first = x11::KeyPressEvent::opcode;
-  x_record_range_->device_events.last = x11::KeyReleaseEvent::opcode;
+  x_record_range_->device_events.first = x11::KeyEvent::Press;
+  x_record_range_->device_events.last = x11::KeyEvent::Release;
 
   if (x_record_context_) {
     XRecordDisableContext(x_control_display_, x_record_context_);
@@ -248,10 +248,10 @@ void UserInputMonitorLinuxCore::OnXEvent() {
 
 void UserInputMonitorLinuxCore::ProcessXEvent(xEvent* event) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  DCHECK(event->u.u.type == x11::KeyReleaseEvent::opcode ||
-         event->u.u.type == x11::KeyPressEvent::opcode);
+  DCHECK(event->u.u.type == x11::KeyEvent::Release ||
+         event->u.u.type == x11::KeyEvent::Press);
 
-  ui::EventType type = (event->u.u.type == x11::KeyPressEvent::opcode)
+  ui::EventType type = (event->u.u.type == x11::KeyEvent::Press)
                            ? ui::ET_KEY_PRESSED
                            : ui::ET_KEY_RELEASED;
 

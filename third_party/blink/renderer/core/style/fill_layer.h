@@ -87,9 +87,6 @@ class CORE_EXPORT FillLayer {
   FillSize Size() const {
     return FillSize(static_cast<EFillSizeType>(size_type_), size_length_);
   }
-  EMaskSourceType MaskSourceType() const {
-    return static_cast<EMaskSourceType>(mask_source_type_);
-  }
 
   const FillLayer* Next() const { return next_; }
   FillLayer* Next() { return next_; }
@@ -114,7 +111,6 @@ class CORE_EXPORT FillLayer {
   bool IsSizeSet() const {
     return size_type_ != static_cast<unsigned>(EFillSizeType::kSizeNone);
   }
-  bool IsMaskSourceTypeSet() const { return mask_source_type_set_; }
 
   void SetImage(StyleImage* i) {
     image_ = i;
@@ -177,10 +173,6 @@ class CORE_EXPORT FillLayer {
     size_type_ = static_cast<unsigned>(f.type);
     size_length_ = f.size;
   }
-  void SetMaskSourceType(EMaskSourceType m) {
-    mask_source_type_ = static_cast<unsigned>(m);
-    mask_source_type_set_ = true;
-  }
 
   void ClearImage() {
     image_.Clear();
@@ -205,7 +197,6 @@ class CORE_EXPORT FillLayer {
   void ClearSize() {
     size_type_ = static_cast<unsigned>(EFillSizeType::kSizeNone);
   }
-  void ClearMaskSourceType() { mask_source_type_set_ = false; }
 
   FillLayer& operator=(const FillLayer&);
   FillLayer(const FillLayer&);
@@ -289,9 +280,6 @@ class CORE_EXPORT FillLayer {
     return Length::Percent(0.0);
   }
   static StyleImage* InitialFillImage(EFillLayerType) { return nullptr; }
-  static EMaskSourceType InitialFillMaskSourceType(EFillLayerType) {
-    return EMaskSourceType::kAlpha;
-  }
 
  private:
   friend class ComputedStyle;
@@ -325,7 +313,6 @@ class CORE_EXPORT FillLayer {
   unsigned composite_ : 4;            // CompositeOperator
   unsigned size_type_ : 2;            // EFillSizeType
   unsigned blend_mode_ : 5;           // BlendMode
-  unsigned mask_source_type_ : 1;     // EMaskSourceType
   unsigned background_x_origin_ : 2;  // BackgroundEdgeOrigin
   unsigned background_y_origin_ : 2;  // BackgroundEdgeOrigin
 
@@ -341,7 +328,6 @@ class CORE_EXPORT FillLayer {
   unsigned background_y_origin_set_ : 1;
   unsigned composite_set_ : 1;
   unsigned blend_mode_set_ : 1;
-  unsigned mask_source_type_set_ : 1;
 
   unsigned type_ : 1;  // EFillLayerType
 

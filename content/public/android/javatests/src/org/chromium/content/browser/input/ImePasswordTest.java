@@ -4,8 +4,9 @@
 
 package org.chromium.content.browser.input;
 
-import android.support.test.filters.MediumTest;
 import android.text.InputType;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

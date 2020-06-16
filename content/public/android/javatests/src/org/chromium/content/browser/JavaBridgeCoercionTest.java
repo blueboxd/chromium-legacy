@@ -4,7 +4,7 @@
 
 package org.chromium.content.browser;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import dalvik.system.DexClassLoader;
 

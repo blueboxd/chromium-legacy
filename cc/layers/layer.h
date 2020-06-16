@@ -769,9 +769,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // be changed while the frame is being generated for commit.
   bool IsPropertyChangeAllowed() const;
 
-  // Called during Update() when we found that the layer becomes non-opaque.
-  void ClearContentsOpaqueDuringUpdate();
-
   void IncreasePaintCount() {
     if (debug_info_)
       ++debug_info_->paint_count;

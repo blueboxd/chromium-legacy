@@ -64,6 +64,7 @@ class PixelIntegrationTest(
     pages = namespace.DefaultPages(cls.test_base_name)
     pages += namespace.GpuRasterizationPages(cls.test_base_name)
     pages += namespace.ExperimentalCanvasFeaturesPages(cls.test_base_name)
+    pages += namespace.LowLatencyPages(cls.test_base_name)
     pages += namespace.PaintWorkletPages(cls.test_base_name)
     # pages += namespace.NoGpuProcessPages(cls.test_base_name)
     # The following pages should run only on platforms where SwiftShader is
@@ -77,7 +78,6 @@ class PixelIntegrationTest(
       pages += namespace.DualGPUMacSpecificPages(cls.test_base_name)
     if sys.platform.startswith('win'):
       pages += namespace.DirectCompositionPages(cls.test_base_name)
-      pages += namespace.LowLatencySwapChainPages(cls.test_base_name)
       pages += namespace.HdrTestPages(cls.test_base_name)
     for p in pages:
       yield (p.name, skia_gold_integration_test_base.GPU_RELATIVE_PATH + p.url,
@@ -153,17 +153,13 @@ class PixelIntegrationTest(
                                    int(page.test_rect[2] * dpr),
                                    int(page.test_rect[3] * dpr))
 
-    build_id_args = self._GetBuildIdArgs()
-
     # Compare images against approved images/colors.
     if page.expected_colors:
       # Use expected colors instead of hash comparison for validation.
-      self._ValidateScreenshotSamplesWithSkiaGold(tab, page, screenshot, dpr,
-                                                  build_id_args)
+      self._ValidateScreenshotSamplesWithSkiaGold(tab, page, screenshot, dpr)
       return
     image_name = self._UrlToImageName(page.name)
-    self._UploadTestResultToSkiaGold(
-        image_name, screenshot, page, build_id_args=build_id_args)
+    self._UploadTestResultToSkiaGold(image_name, screenshot, page)
 
   def _DoPageAction(self, tab, page):
     getattr(self, '_' + page.optional_action)(tab, page)

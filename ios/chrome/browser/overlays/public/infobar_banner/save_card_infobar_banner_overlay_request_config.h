@@ -34,6 +34,9 @@ class SaveCardBannerRequestConfig
   // The name of the icon image.
   NSString* icon_image_name() const { return icon_image_name_; }
 
+  // Whether the action is an upload or a local save.
+  bool should_upload_credentials() const { return should_upload_credentials_; }
+
  private:
   OVERLAY_USER_DATA_SETUP(SaveCardBannerRequestConfig);
   explicit SaveCardBannerRequestConfig(infobars::InfoBar* infobar);
@@ -48,6 +51,7 @@ class SaveCardBannerRequestConfig
   base::string16 card_label_;
   base::string16 button_label_text_;
   NSString* icon_image_name_ = nil;
+  bool should_upload_credentials_ = false;
 };
 
 }  // namespace save_card_infobar_overlays

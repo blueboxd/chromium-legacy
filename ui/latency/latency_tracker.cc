@@ -63,11 +63,6 @@ void RecordUmaEventLatencyScrollWheelTimeToScrollUpdateSwapBegin2Histogram(
       1000000, 100);
 }
 
-LatencyTracker::LatencyInfoProcessor& GetLatencyInfoProcessor() {
-  static base::NoDestructor<LatencyTracker::LatencyInfoProcessor> processor;
-  return *processor;
-}
-
 bool LatencyTraceIdCompare(const LatencyInfo& i, const LatencyInfo& j) {
   return i.trace_id() < j.trace_id();
 }
@@ -80,9 +75,6 @@ LatencyTracker::~LatencyTracker() = default;
 void LatencyTracker::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info,
     bool top_controls_visible_height_changed) {
-  auto& callback = GetLatencyInfoProcessor();
-  if (!callback.is_null())
-    callback.Run(latency_info);
   // Sort latency_info as they can be in incorrect order.
   std::vector<ui::LatencyInfo> latency_infos(latency_info);
   std::sort(latency_infos.begin(), latency_infos.end(), LatencyTraceIdCompare);
@@ -389,12 +381,6 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
   UMA_HISTOGRAM_SCROLL_LATENCY_SHORT_2(
       "Event.Latency." + scroll_name + "." + input_modality + ".GpuSwap2",
       gpu_swap_begin_timestamp, gpu_swap_end_timestamp);
-}
-
-// static
-void LatencyTracker::SetLatencyInfoProcessorForTesting(
-    const LatencyInfoProcessor& processor) {
-  GetLatencyInfoProcessor() = processor;
 }
 
 }  // namespace ui

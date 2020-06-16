@@ -178,7 +178,7 @@ void MediaFeedsService::SetSafeSearchURLCheckerForTest(
 }
 
 void MediaFeedsService::SetSafeSearchCompletionCallbackForTest(
-    base::RepeatingClosure callback) {
+    base::OnceClosure callback) {
   safe_search_completion_callback_ = std::move(callback);
 }
 
@@ -212,9 +212,8 @@ MediaFeedsService::GetMediaHistoryService() {
   return service;
 }
 
-bool MediaFeedsService::AddInflightSafeSearchCheck(
-    const media_history::MediaHistoryKeyedService::SafeSearchID id,
-    const std::set<GURL>& urls) {
+bool MediaFeedsService::AddInflightSafeSearchCheck(const int64_t id,
+                                                   const std::set<GURL>& urls) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (base::Contains(inflight_safe_search_checks_, id))
@@ -226,9 +225,7 @@ bool MediaFeedsService::AddInflightSafeSearchCheck(
   return true;
 }
 
-void MediaFeedsService::CheckForSafeSearch(
-    const media_history::MediaHistoryKeyedService::SafeSearchID id,
-    const GURL& url) {
+void MediaFeedsService::CheckForSafeSearch(const int64_t id, const GURL& url) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(IsSafeSearchCheckingEnabled());
 
@@ -286,9 +283,7 @@ void MediaFeedsService::SetCookieChangeCallbackForTest(
 }
 
 void MediaFeedsService::DiscoverMediaFeed(const GURL& url) {
-  GetMediaHistoryService()->DiscoverMediaFeed(
-      url, base::BindOnce(&MediaFeedsService::OnDiscoveredFeed,
-                          weak_factory_.GetWeakPtr()));
+  GetMediaHistoryService()->DiscoverMediaFeed(url);
 }
 
 void MediaFeedsService::ResetMediaFeed(const url::Origin& origin,
@@ -297,7 +292,7 @@ void MediaFeedsService::ResetMediaFeed(const url::Origin& origin,
 }
 
 void MediaFeedsService::OnCheckURLDone(
-    const media_history::MediaHistoryKeyedService::SafeSearchID id,
+    const int64_t id,
     const GURL& original_url,
     const GURL& url,
     safe_search_api::Classification classification,
@@ -334,9 +329,7 @@ void MediaFeedsService::OnCheckURLDone(
     result = media_feeds::mojom::SafeSearchResult::kSafe;
   }
 
-  std::map<media_history::MediaHistoryKeyedService::SafeSearchID,
-           media_feeds::mojom::SafeSearchResult>
-      results;
+  std::map<int64_t, media_feeds::mojom::SafeSearchResult> results;
   results.emplace(id, result);
   inflight_safe_search_checks_.erase(id);
 
@@ -353,7 +346,7 @@ void MediaFeedsService::OnCheckURLDone(
 void MediaFeedsService::MaybeCallCompletionCallback() {
   if (inflight_safe_search_checks_.empty() &&
       !safe_search_completion_callback_.is_null()) {
-    safe_search_completion_callback_.Run();
+    std::move(safe_search_completion_callback_).Run();
   }
 }
 
@@ -491,15 +484,6 @@ MediaFeedsService::GetURLLoaderFactoryForFetcher() {
 
 bool MediaFeedsService::HasCookieObserverForTest() const {
   return cookie_change_listener_ != nullptr;
-}
-
-void MediaFeedsService::OnDiscoveredFeed() {
-  if (!IsSafeSearchCheckingEnabled())
-    return;
-
-  GetMediaHistoryService()->GetPendingSafeSearchCheckMediaFeedItems(
-      base::BindOnce(&MediaFeedsService::CheckItemsAgainstSafeSearch,
-                     weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace media_feeds

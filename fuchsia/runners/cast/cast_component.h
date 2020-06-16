@@ -52,6 +52,8 @@ class CastComponent : public WebComponent,
     // Parameters asynchronously initialized by PendingCastComponent.
     std::unique_ptr<ApiBindingsClient> api_bindings_client;
     chromium::cast::ApplicationConfig application_config;
+    fidl::InterfaceHandle<chromium::cast::ApplicationContext>
+        application_context;
     base::Optional<std::vector<fuchsia::web::UrlRequestRewriteRule>>
         initial_url_rewrite_rules;
     base::Optional<uint64_t> media_session_id;

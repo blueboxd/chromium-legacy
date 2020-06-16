@@ -778,7 +778,20 @@ const char kEnableTranslateSubFramesDescription[] =
 
 const char kCorsForContentScriptsName[] = "CORS for content scripts";
 const char kCorsForContentScriptsDescription[] =
-    "Prevent content scripts of Chrome Extensions from bypassing CORS.";
+    "Prevent content scripts of Chrome Extensions from bypassing CORS. "
+    "For more information about the allowlist and the changes to the "
+    "security model of content scripts, please see: "
+    "https://www.chromium.org/Home/chromium-security/"
+    "extension-content-script-fetches";
+
+const char kForceEmptyCorbAndCorsAllowlistName[] =
+    "Force empty CORB and CORS allowlist";
+const char kForceEmptyCorbAndCorsAllowlistDescription[] =
+    "Removes all Chrome Extensions from the CORB and CORS allowlist. "
+    "For more information about the allowlist and the changes to the "
+    "security model of content scripts, please see: "
+    "https://www.chromium.org/Home/chromium-security/"
+    "extension-content-script-fetches";
 
 const char kCrossOriginOpenerPolicyName[] = "Cross Origin Opener Policy";
 const char kCrossOriginOpenerPolicyDescription[] =

@@ -119,7 +119,8 @@ class WebAppDatabaseTest : public WebAppTest {
     WebApplicationIconInfo icon;
     icon.url = GURL(base_url + "/icon" + base::NumberToString(suffix));
     const SquareSizePx size = 256;
-    icon.square_size_px = size;
+    if (suffix % 2 == 0)
+      icon.square_size_px = size;
     app->SetIconInfos({std::move(icon)});
     app->SetDownloadedIconSizes({size});
 
@@ -402,7 +403,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
     icon.url = GURL(base_url + "/icon" + base::NumberToString(num_icons));
     // Let size equals the icon's number squared.
     icon.square_size_px = i * i;
-    sizes.push_back(icon.square_size_px);
+    sizes.push_back(*icon.square_size_px);
     icons.push_back(std::move(icon));
   }
   app->SetIconInfos(std::move(icons));

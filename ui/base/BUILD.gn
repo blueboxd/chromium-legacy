@@ -634,10 +634,13 @@ component("features") {
   ]
 }
 
+# TODO(crbug.com/1091985): Support CrOS.
 if (is_win || is_mac || (is_linux && !is_chromeos)) {
   jumbo_static_library("pixel_diff_test_support") {
     testonly = true
     sources = [
+      "test/skia_gold_matching_algorithm.cc",
+      "test/skia_gold_matching_algorithm.h",
       "test/skia_gold_pixel_diff.cc",
       "test/skia_gold_pixel_diff.h",
     ]
@@ -973,8 +976,12 @@ test("ui_base_unittests") {
     }
   }
 
+  # TODO(crbug.com/1091985): Support CrOS.
   if (is_win || is_mac || (is_linux && !is_chromeos)) {
-    sources += [ "test/skia_gold_pixel_diff_unittest.cc" ]
+    sources += [
+      "test/skia_gold_matching_algorithm_unittest.cc",
+      "test/skia_gold_pixel_diff_unittest.cc",
+    ]
     deps += [ ":pixel_diff_test_support" ]
   }
 

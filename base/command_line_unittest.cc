@@ -318,7 +318,7 @@ TEST(CommandLineTest, GetCommandLineStringForShell) {
       FILE_PATH_LITERAL("program --switch /switch2 --"));
   EXPECT_EQ(
       cl.GetCommandLineStringForShell(),
-      FILE_PATH_LITERAL("program --switch /switch2 -- --single-argument=%1"));
+      FILE_PATH_LITERAL("program --switch /switch2 -- --single-argument %1"));
 }
 #endif  // defined(OS_WIN)
 
@@ -568,13 +568,21 @@ TEST(CommandLineTest, MultipleSameSwitch) {
 TEST(CommandLineTest, ParseAsSingleArgument) {
   CommandLine cl = CommandLine::FromString(
       FILE_PATH_LITERAL("program --switch_before arg_before "
-                        "--single-argument=arg with spaces \"and quotes\" \""));
+                        "--single-argument arg with spaces \"and quotes\" \""));
 
   EXPECT_FALSE(cl.GetCommandLineString().empty());
   EXPECT_EQ(FilePath(FILE_PATH_LITERAL("program")), cl.GetProgram());
   EXPECT_TRUE(cl.HasSwitch("switch_before"));
   EXPECT_EQ(cl.GetArgs(), CommandLine::StringVector({FILE_PATH_LITERAL(
                               "arg with spaces \"and quotes\" \"")}));
+
+  CommandLine cl_without_arg =
+      CommandLine::FromString(FILE_PATH_LITERAL("program --single-argument "));
+
+  EXPECT_FALSE(cl_without_arg.GetCommandLineString().empty());
+  EXPECT_EQ(FilePath(FILE_PATH_LITERAL("program")),
+            cl_without_arg.GetProgram());
+  EXPECT_TRUE(cl_without_arg.GetArgs().empty());
 }
 #endif  // defined(OS_WIN)
 

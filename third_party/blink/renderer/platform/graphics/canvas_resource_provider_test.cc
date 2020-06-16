@@ -514,30 +514,17 @@ TEST_F(CanvasResourceProviderTest, CanvasResourceProviderDirect2DSwapChain) {
       kSize, context_provider_wrapper_, kLow_SkFilterQuality, kColorParams,
       true /* is_origin_top_left */, nullptr /* resource_dispatcher */);
 
-  if (!provider) {
-    const uint32_t shared_image_usage_flags =
-        gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT |
-        gpu::SHARED_IMAGE_USAGE_CONCURRENT_READ_WRITE;
-
-    provider = CanvasResourceProvider::CreateSharedImageProvider(
-        kSize, context_provider_wrapper_, kLow_SkFilterQuality, kColorParams,
-        true /* is_origin_top_left */, CanvasResourceProvider::RasterMode::kGPU,
-        shared_image_usage_flags);
-  }
-
+  ASSERT_TRUE(provider);
   EXPECT_EQ(provider->Size(), kSize);
   EXPECT_TRUE(provider->IsValid());
   EXPECT_TRUE(provider->IsAccelerated());
   EXPECT_TRUE(provider->SupportsDirectCompositing());
   EXPECT_TRUE(provider->SupportsSingleBuffering());
+  EXPECT_TRUE(provider->IsSingleBuffered());
   EXPECT_EQ(provider->ColorParams().ColorSpace(), kColorParams.ColorSpace());
   EXPECT_EQ(provider->ColorParams().PixelFormat(), kColorParams.PixelFormat());
   EXPECT_EQ(provider->ColorParams().GetOpacityMode(),
             kColorParams.GetOpacityMode());
-
-  EXPECT_FALSE(provider->IsSingleBuffered());
-  provider->TryEnableSingleBuffering();
-  EXPECT_TRUE(provider->IsSingleBuffered());
 }
 
 }  // namespace blink

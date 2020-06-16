@@ -422,6 +422,47 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
     response.max_credential_id_length = CBORUnsignedToUint32Safe(it->second);
   }
 
+  it = response_map.find(CBOR(10));
+  if (it != response_map.end()) {
+    if (!it->second.is_array()) {
+      return base::nullopt;
+    }
+
+    response.algorithms.clear();
+
+    const std::vector<cbor::Value>& algorithms = it->second.GetArray();
+    for (const auto& algorithm : algorithms) {
+      // Entries are PublicKeyCredentialParameters
+      // https://w3c.github.io/webauthn/#dictdef-publickeycredentialparameters
+      if (!algorithm.is_map()) {
+        return base::nullopt;
+      }
+
+      const auto& map = algorithm.GetMap();
+      const auto type_it = map.find(CBOR("type"));
+      if (type_it == map.end() || !type_it->second.is_string()) {
+        return base::nullopt;
+      }
+
+      if (type_it->second.GetString() != "public-key") {
+        continue;
+      }
+
+      const auto alg_it = map.find(CBOR("alg"));
+      if (alg_it == map.end() || !alg_it->second.is_integer()) {
+        return base::nullopt;
+      }
+
+      const int64_t alg = alg_it->second.GetInteger();
+      if (alg < std::numeric_limits<int32_t>::min() ||
+          alg > std::numeric_limits<int32_t>::max()) {
+        continue;
+      }
+
+      response.algorithms.push_back(alg);
+    }
+  }
+
   return base::Optional<AuthenticatorGetInfoResponse>(std::move(response));
 }
 

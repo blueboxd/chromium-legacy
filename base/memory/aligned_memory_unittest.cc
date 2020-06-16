@@ -38,6 +38,10 @@ TEST(AlignedMemoryTest, ScopedDynamicAllocation) {
       static_cast<float*>(AlignedAlloc(8, 8)));
   EXPECT_TRUE(p.get());
   EXPECT_TRUE(IsAligned(p.get(), 8));
+
+  // Make sure IsAligned() can check const pointers as well.
+  const float* const_p = p.get();
+  EXPECT_TRUE(IsAligned(const_p, 8));
 }
 
 TEST(AlignedMemoryTest, IsAligned) {

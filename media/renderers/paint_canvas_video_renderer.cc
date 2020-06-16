@@ -356,6 +356,7 @@ size_t LCM(size_t a, size_t b) {
 void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
                                       void* rgb_pixels,
                                       size_t row_bytes,
+                                      bool premultiply_alpha,
                                       size_t task_index,
                                       size_t n_tasks,
                                       base::RepeatingClosure* done) {
@@ -480,16 +481,15 @@ void ConvertVideoFrameToRGBPixelsTask(const VideoFrame* video_frame,
       break;
 
     case PIXEL_FORMAT_I420A:
-      LIBYUV_I420ALPHA_TO_ARGB(
-          plane_meta[VideoFrame::kYPlane].data,
-          plane_meta[VideoFrame::kYPlane].stride,
-          plane_meta[VideoFrame::kUPlane].data,
-          plane_meta[VideoFrame::kUPlane].stride,
-          plane_meta[VideoFrame::kVPlane].data,
-          plane_meta[VideoFrame::kVPlane].stride,
-          plane_meta[VideoFrame::kAPlane].data,
-          plane_meta[VideoFrame::kAPlane].stride, pixels, row_bytes, width,
-          rows, 1);  // 1 = enable RGB premultiplication by Alpha.
+      LIBYUV_I420ALPHA_TO_ARGB(plane_meta[VideoFrame::kYPlane].data,
+                               plane_meta[VideoFrame::kYPlane].stride,
+                               plane_meta[VideoFrame::kUPlane].data,
+                               plane_meta[VideoFrame::kUPlane].stride,
+                               plane_meta[VideoFrame::kVPlane].data,
+                               plane_meta[VideoFrame::kVPlane].stride,
+                               plane_meta[VideoFrame::kAPlane].data,
+                               plane_meta[VideoFrame::kAPlane].stride, pixels,
+                               row_bytes, width, rows, premultiply_alpha);
       break;
 
     case PIXEL_FORMAT_I444:
@@ -1102,7 +1102,8 @@ void TextureSubImageUsingIntermediate(unsigned target,
 void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     const VideoFrame* video_frame,
     void* rgb_pixels,
-    size_t row_bytes) {
+    size_t row_bytes,
+    bool premultiply_alpha) {
   if (!video_frame->IsMappable()) {
     NOTREACHED() << "Cannot extract pixels from non-CPU frame formats.";
     return;
@@ -1156,12 +1157,13 @@ void PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
 
   for (size_t i = 1; i < n_tasks; ++i) {
     base::ThreadPool::PostTask(
-        FROM_HERE, base::BindOnce(ConvertVideoFrameToRGBPixelsTask,
-                                  base::Unretained(video_frame), rgb_pixels,
-                                  row_bytes, i, n_tasks, &barrier));
+        FROM_HERE,
+        base::BindOnce(ConvertVideoFrameToRGBPixelsTask,
+                       base::Unretained(video_frame), rgb_pixels, row_bytes,
+                       premultiply_alpha, i, n_tasks, &barrier));
   }
-  ConvertVideoFrameToRGBPixelsTask(video_frame, rgb_pixels, row_bytes, 0,
-                                   n_tasks, &barrier);
+  ConvertVideoFrameToRGBPixelsTask(video_frame, rgb_pixels, row_bytes,
+                                   premultiply_alpha, 0, n_tasks, &barrier);
   {
     base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
     event.Wait();

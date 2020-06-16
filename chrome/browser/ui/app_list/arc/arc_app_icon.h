@@ -49,11 +49,16 @@ class ArcAppIcon {
     virtual ~Observer() {}
   };
 
+  enum IconType {
+    kUncompressed,
+    kCompressed,
+  };
+
   ArcAppIcon(content::BrowserContext* context,
              const std::string& app_id,
              int resource_size_in_dip,
              Observer* observer,
-             bool serve_compressed_icons = false);
+             IconType icon_type = IconType::kUncompressed);
   ~ArcAppIcon();
 
   // Starts loading the icon at every supported scale factor. The |observer_|
@@ -66,14 +71,17 @@ class ArcAppIcon {
   bool EverySupportedScaleFactorIsLoaded() const;
 
   const std::string& app_id() const { return app_id_; }
-  // Valid if the |serve_compressed_icons_| is false.
+
+  // Returns |image_skia_| and valid if the |icon_type_| is
+  // IconType::kUncompressed.
   const gfx::ImageSkia& image_skia() const {
-    DCHECK(!serve_compressed_icons_);
+    DCHECK_EQ(IconType::kUncompressed, icon_type_);
     return image_skia_;
   }
-  // Valid if the |serve_compressed_icons_| is true.
+  // Returns |compressed_images_| and valid if the |icon_type_| is
+  // IconType::kCompressed.
   const std::map<ui::ScaleFactor, std::string>& compressed_images() const {
-    DCHECK(serve_compressed_icons_);
+    DCHECK_EQ(IconType::kCompressed, icon_type_);
     return compressed_images_;
   }
 
@@ -132,7 +140,7 @@ class ArcAppIcon {
   const std::string mapped_app_id_;
   const int resource_size_in_dip_;
   Observer* const observer_;
-  const bool serve_compressed_icons_;
+  const IconType icon_type_;
   // Used to separate first 5 loaded app icons and other app icons.
   // Only one form of app icons will be loaded, compressed or uncompressed, so
   // only one counter is needed.

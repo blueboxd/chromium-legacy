@@ -4,8 +4,9 @@
 
 package org.chromium.content.browser.input;
 
-import android.support.test.filters.SmallTest;
 import android.view.inputmethod.EditorInfo;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

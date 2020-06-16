@@ -7,7 +7,8 @@ package org.chromium.base;
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.LocaleList;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Test;

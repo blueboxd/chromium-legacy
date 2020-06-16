@@ -127,6 +127,7 @@ class LargestContentfulPaintHandler {
   void OnDidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle,
       base::TimeTicks navigation_start);
+  void OnFrameDeleted(content::RenderFrameHost* render_frame_host);
 
  private:
   void RecordSubframeTiming(const mojom::PaintTimingPtr& timing,

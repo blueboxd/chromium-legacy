@@ -24,62 +24,65 @@ bool IsMachineExternallyManaged() {
 }
 
 MacDeviceManagementStateOld IsDeviceRegisteredWithManagementOld() {
-  @autoreleasepool {
-    std::vector<std::string> profiler_argv{"/usr/sbin/system_profiler",
-                                           "SPConfigurationProfileDataType",
-                                           "-detailLevel",
-                                           "mini",
-                                           "-timeout",
-                                           "15",
-                                           "-xml"};
+  if (@available(macOS 10.10, *)) {
+    @autoreleasepool {
+      std::vector<std::string> profiler_argv{"/usr/sbin/system_profiler",
+                                             "SPConfigurationProfileDataType",
+                                             "-detailLevel",
+                                             "mini",
+                                             "-timeout",
+                                             "15",
+                                             "-xml"};
 
-    std::string profiler_stdout;
-    if (!GetAppOutput(profiler_argv, &profiler_stdout)) {
-      LOG(WARNING) << "Could not get system_profiler output.";
-      return MacDeviceManagementStateOld::kFailureAPIUnavailable;
-    };
+      std::string profiler_stdout;
+      if (!GetAppOutput(profiler_argv, &profiler_stdout)) {
+        LOG(WARNING) << "Could not get system_profiler output.";
+        return MacDeviceManagementStateOld::kFailureAPIUnavailable;
+      };
 
-    NSArray* root = base::mac::ObjCCast<NSArray>([NSPropertyListSerialization
-        propertyListWithData:[SysUTF8ToNSString(profiler_stdout)
-                                 dataUsingEncoding:NSUTF8StringEncoding]
-                     options:NSPropertyListImmutable
-                      format:nil
-                       error:nil]);
-    if (!root) {
-      LOG(WARNING) << "Could not parse system_profiler output.";
-      return MacDeviceManagementStateOld::kFailureUnableToParseResult;
-    };
+      NSArray* root = base::mac::ObjCCast<NSArray>([NSPropertyListSerialization
+          propertyListWithData:[SysUTF8ToNSString(profiler_stdout)
+                                   dataUsingEncoding:NSUTF8StringEncoding]
+                       options:NSPropertyListImmutable
+                        format:nil
+                         error:nil]);
+      if (!root) {
+        LOG(WARNING) << "Could not parse system_profiler output.";
+        return MacDeviceManagementStateOld::kFailureUnableToParseResult;
+      };
 
-    for (NSDictionary* results in root) {
-      for (NSDictionary* dict in results[@"_items"]) {
-        for (NSDictionary* device_config_profiles in dict[@"_items"]) {
-          for (NSDictionary* profile_item in
-                   device_config_profiles[@"_items"]) {
-            if (![profile_item[@"_name"] isEqual:@"com.apple.mdm"])
-              continue;
+      for (NSDictionary* results in root) {
+        for (NSDictionary* dict in results[@"_items"]) {
+          for (NSDictionary* device_config_profiles in dict[@"_items"]) {
+            for (NSDictionary* profile_item in
+                     device_config_profiles[@"_items"]) {
+              if (![profile_item[@"_name"] isEqual:@"com.apple.mdm"])
+                continue;
 
-            NSString* payload_data =
-                profile_item[@"spconfigprofile_payload_data"];
-            NSDictionary* payload_data_dict = base::mac::ObjCCast<
-                NSDictionary>([NSPropertyListSerialization
-                propertyListWithData:[payload_data
-                                         dataUsingEncoding:NSUTF8StringEncoding]
-                             options:NSPropertyListImmutable
-                              format:nil
-                               error:nil]);
+              NSString* payload_data =
+                  profile_item[@"spconfigprofile_payload_data"];
+              NSDictionary* payload_data_dict = base::mac::ObjCCast<
+                  NSDictionary>([NSPropertyListSerialization
+                  propertyListWithData:[payload_data
+                                           dataUsingEncoding:NSUTF8StringEncoding]
+                               options:NSPropertyListImmutable
+                                format:nil
+                                 error:nil]);
 
-            if (!payload_data_dict)
-              continue;
+              if (!payload_data_dict)
+                continue;
 
-            // Verify that the URL validates.
-            if ([NSURL URLWithString:payload_data_dict[@"CheckInURL"]])
-              return MacDeviceManagementStateOld::kMDMEnrollment;
+              // Verify that the URL validates.
+              if ([NSURL URLWithString:payload_data_dict[@"CheckInURL"]])
+                return MacDeviceManagementStateOld::kMDMEnrollment;
+            }
           }
         }
       }
+      return MacDeviceManagementStateOld::kNoEnrollment;
     }
-
-    return MacDeviceManagementStateOld::kNoEnrollment;
+  } else {
+    return MacDeviceManagementStateOld::kFailureAPIUnavailable;
   }
 }
 

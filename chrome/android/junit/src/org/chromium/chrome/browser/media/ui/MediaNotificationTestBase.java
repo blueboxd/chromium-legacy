@@ -34,8 +34,9 @@ import org.robolectric.shadows.ShadowLooper;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.AppHooks;
-import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
+import org.chromium.chrome.browser.media.ui.ChromeMediaNotificationControllerDelegate.ListenerService;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.ForegroundServiceUtils;
 import org.chromium.media_session.mojom.MediaSessionAction;
 import org.chromium.services.media_session.MediaMetadata;
@@ -46,9 +47,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Common test fixtures for MediaNotificationManager JUnit tests.
+ * Common test fixtures for MediaNotificationController JUnit tests.
  */
-public class MediaNotificationManagerTestBase {
+public class MediaNotificationTestBase {
     private static final int NOTIFICATION_ID = 0;
     static final String NOTIFICATION_GROUP_NAME = "group-name";
     static final Set<Integer> DEFAULT_ACTIONS =
@@ -69,16 +70,15 @@ public class MediaNotificationManagerTestBase {
         return new MediaNotificationTestTabHolder(tabId, url, title, mocker);
     }
 
-    static class MockMediaNotificationManager extends MediaNotificationManager {
-        public MockMediaNotificationManager(NotificationUmaTracker umaTracker, int notificationId) {
-            super(umaTracker, notificationId);
+    static class MockMediaNotificationController extends MediaNotificationController {
+        public MockMediaNotificationController(MediaNotificationController.Delegate delegate) {
+            super(delegate);
         }
     }
 
     class MockListenerService extends ListenerService {
-        @Override
-        protected int getNotificationId() {
-            return MediaNotificationManagerTestBase.this.getNotificationId();
+        MockListenerService() {
+            super(MediaNotificationTestBase.this.getNotificationId());
         }
     }
 
@@ -94,13 +94,22 @@ public class MediaNotificationManagerTestBase {
 
         mListener = mock(MediaNotificationListener.class);
 
-        MediaNotificationManager.sMapNotificationIdToOptions.put(getNotificationId(),
-                new MediaNotificationManager.NotificationOptions(
+        ChromeMediaNotificationControllerDelegate.sMapNotificationIdToOptions.put(
+                getNotificationId(),
+                new ChromeMediaNotificationControllerDelegate.NotificationOptions(
                         MockListenerService.class, NOTIFICATION_GROUP_NAME));
 
         mMockUmaTracker = mock(NotificationUmaTracker.class);
-        MediaNotificationManager.setManagerForTesting(getNotificationId(),
-                spy(new MockMediaNotificationManager(mMockUmaTracker, getNotificationId())));
+        MediaNotificationManager.setControllerForTesting(getNotificationId(),
+                spy(new MockMediaNotificationController(
+                        new ChromeMediaNotificationControllerDelegate(getNotificationId()) {
+                            @Override
+                            public void logNotificationShown(ChromeNotification notification) {
+                                mMockUmaTracker.onNotificationShown(
+                                        NotificationUmaTracker.SystemNotificationType.MEDIA,
+                                        notification.getNotification());
+                            }
+                        })));
 
         mMediaNotificationInfoBuilder =
                 new MediaNotificationInfo.Builder()
@@ -110,18 +119,18 @@ public class MediaNotificationManagerTestBase {
                         .setMediaSessionActions(DEFAULT_ACTIONS)
                         .setId(getNotificationId());
 
-        doNothing().when(getManager()).onServiceStarted(any(ListenerService.class));
+        doNothing().when(getController()).onServiceStarted(any(ListenerService.class));
         // Robolectric does not have "ShadowMediaSession".
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocation) {
                 MediaSessionCompat mockSession = mock(MediaSessionCompat.class);
-                getManager().mMediaSession = mockSession;
+                getController().mMediaSession = mockSession;
                 doReturn(null).when(mockSession).getSessionToken();
                 return "Created mock media session";
             }
         })
-                .when(getManager())
+                .when(getController())
                 .updateMediaSession();
 
         doAnswer(new Answer() {
@@ -145,17 +154,17 @@ public class MediaNotificationManagerTestBase {
         MediaNotificationManager.clear(NOTIFICATION_ID);
     }
 
-    MediaNotificationManager getManager() {
-        return MediaNotificationManager.getManager(getNotificationId());
+    MediaNotificationController getController() {
+        return MediaNotificationManager.getController(getNotificationId());
     }
 
     void ensureMediaNotificationInfo() {
-        getManager().mMediaNotificationInfo = mMediaNotificationInfoBuilder.build();
+        getController().mMediaNotificationInfo = mMediaNotificationInfoBuilder.build();
     }
 
     void setUpServiceAndClearInvocations() {
         setUpService();
-        clearInvocations(getManager());
+        clearInvocations(getController());
         clearInvocations(mService);
         clearInvocations(mMockContext);
         clearInvocations(mMockUmaTracker);
@@ -164,7 +173,7 @@ public class MediaNotificationManagerTestBase {
     void setUpService() {
         ensureMediaNotificationInfo();
 
-        Intent intent = getManager().createIntent();
+        Intent intent = getController().mDelegate.createServiceIntent();
         mMockContext.startService(intent);
     }
 

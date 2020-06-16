@@ -17,7 +17,7 @@ import org.chromium.media_session.mojom.MediaSessionAction;
 import java.util.ArrayList;
 
 /**
- * Robolectric tests for compact view button computation in {@link MediaNotificationManager}.
+ * Robolectric tests for compact view button computation in {@link MediaNotificationController}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
@@ -31,7 +31,7 @@ public class MediaNotificationButtonComputationTest {
         actions.add(MediaSessionAction.PLAY);
 
         int[] compactViewActions =
-                MediaNotificationManager.computeCompactViewActionIndices(actions);
+                MediaNotificationController.computeCompactViewActionIndices(actions);
 
         assertEquals(3, compactViewActions.length);
         assertEquals(0, compactViewActions[0]);
@@ -49,7 +49,7 @@ public class MediaNotificationButtonComputationTest {
         actions.add(MediaSessionAction.PLAY);
 
         int[] compactViewActions =
-                MediaNotificationManager.computeCompactViewActionIndices(actions);
+                MediaNotificationController.computeCompactViewActionIndices(actions);
 
         assertEquals(3, compactViewActions.length);
         assertEquals(0, compactViewActions[0]);
@@ -67,7 +67,7 @@ public class MediaNotificationButtonComputationTest {
         actions.add(MediaSessionAction.PLAY);
 
         int[] compactViewActions =
-                MediaNotificationManager.computeCompactViewActionIndices(actions);
+                MediaNotificationController.computeCompactViewActionIndices(actions);
 
         assertEquals(3, compactViewActions.length);
         assertEquals(1, compactViewActions[0]);
@@ -86,7 +86,7 @@ public class MediaNotificationButtonComputationTest {
         actions.add(MediaSessionAction.PLAY);
 
         int[] compactViewActions =
-                MediaNotificationManager.computeCompactViewActionIndices(actions);
+                MediaNotificationController.computeCompactViewActionIndices(actions);
 
         assertEquals(3, compactViewActions.length);
         assertEquals(0, compactViewActions[0]);

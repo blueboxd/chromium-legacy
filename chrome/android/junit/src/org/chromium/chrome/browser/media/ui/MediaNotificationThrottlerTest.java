@@ -23,7 +23,7 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 
 /**
- * JUnit tests for checking {@link MediaNotificationManager} throttles notification updates
+ * JUnit tests for checking {@link MediaNotificationController} throttles notification updates
  * correctly.
  */
 @RunWith(BaseRobolectricTestRunner.class)
@@ -31,14 +31,16 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
         // Remove this after updating to a version of Robolectric that supports
         // notification channel creation. crbug.com/774315
         sdk = Build.VERSION_CODES.N_MR1, shadows = {MediaNotificationTestShadowResources.class})
-public class MediaNotificationManagerThrottlerTest extends MediaNotificationManagerTestBase {
-    private static final int THROTTLE_MILLIS = MediaNotificationManager.Throttler.THROTTLE_MILLIS;
+public class MediaNotificationThrottlerTest extends MediaNotificationTestBase {
+    private static final int THROTTLE_MILLIS =
+            MediaNotificationController.Throttler.THROTTLE_MILLIS;
 
     @Before
     @Override
     public void setUp() {
         super.setUp();
-        getManager().mThrottler = spy(new MediaNotificationManager.Throttler(getManager()));
+        getController().mThrottler =
+                spy(new MediaNotificationController.Throttler(getController()));
     }
 
     @Test
@@ -54,7 +56,7 @@ public class MediaNotificationManagerThrottlerTest extends MediaNotificationMana
 
         // Verify the notification is shown immediately
         verify(getThrottler()).showNotificationImmediately(info);
-        verify(getManager()).showNotification(info);
+        verify(getController()).showNotification(info);
 
         // Verify entering the throttled state.
         assertNotNull(getThrottler().mTask);
@@ -136,7 +138,7 @@ public class MediaNotificationManagerThrottlerTest extends MediaNotificationMana
         getThrottler().queueNotification(infoPlaying1);
 
         // This will not update the queued notification as it is the same as which stored in
-        // MediaNotificationManager.
+        // MediaNotificationController.
         getThrottler().queueNotification(infoPlaying2);
         assertNull(getThrottler().mLastPendingInfo);
 
@@ -174,7 +176,7 @@ public class MediaNotificationManagerThrottlerTest extends MediaNotificationMana
         MediaNotificationInfo info = mMediaNotificationInfoBuilder.build();
         getThrottler().queueNotification(info);
 
-        getManager().clearNotification();
+        getController().clearNotification();
 
         verify(getThrottler()).clearPendingNotifications();
     }
@@ -196,7 +198,7 @@ public class MediaNotificationManagerThrottlerTest extends MediaNotificationMana
                 .showNotificationImmediately(any(MediaNotificationInfo.class));
     }
 
-    private MediaNotificationManager.Throttler getThrottler() {
-        return getManager().mThrottler;
+    private MediaNotificationController.Throttler getThrottler() {
+        return getController().mThrottler;
     }
 }

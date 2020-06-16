@@ -80,7 +80,7 @@ public class PauseOnHeadsetUnplugTest {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return MediaNotificationManager.hasManagerForTesting(
+                return MediaNotificationManager.hasControllerForTesting(
                         R.id.media_playback_notification);
             }
         });
@@ -88,7 +88,7 @@ public class PauseOnHeadsetUnplugTest {
 
     private void simulateHeadsetUnplug() {
         Intent i = new Intent(InstrumentationRegistry.getTargetContext(),
-                MediaNotificationManager.PlaybackListenerService.class);
+                ChromeMediaNotificationControllerDelegate.PlaybackListenerService.class);
         i.setAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
 
         InstrumentationRegistry.getContext().startService(i);

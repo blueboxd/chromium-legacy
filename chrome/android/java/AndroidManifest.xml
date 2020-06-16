@@ -1169,19 +1169,19 @@ by a child template that "extends" this file.
 
         <service android:name="org.chromium.chrome.browser.media.MediaCaptureNotificationService"
             android:exported="false"/>
-        <service android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$PlaybackListenerService"
+        <service android:name="org.chromium.chrome.browser.media.ui.ChromeMediaNotificationControllerDelegate$PlaybackListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </service>
-        <service android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$PresentationListenerService"
+        <service android:name="org.chromium.chrome.browser.media.ui.ChromeMediaNotificationControllerDelegate$PresentationListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </service>
-        <service android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$CastListenerService"
+        <service android:name="org.chromium.chrome.browser.media.ui.ChromeMediaNotificationControllerDelegate$CastListenerService"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />

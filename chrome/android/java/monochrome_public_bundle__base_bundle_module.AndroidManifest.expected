@@ -1075,21 +1075,21 @@
         android:name="org.chromium.chrome.browser.media.MediaCaptureNotificationService"/>
     <service
         android:exported="false"
-        android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$CastListenerService">
+        android:name="org.chromium.chrome.browser.media.ui.ChromeMediaNotificationControllerDelegate$CastListenerService">
       <intent-filter>
         <action android:name="android.intent.action.MEDIA_BUTTON"/>
       </intent-filter>
     </service>
     <service
         android:exported="false"
-        android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$PlaybackListenerService">
+        android:name="org.chromium.chrome.browser.media.ui.ChromeMediaNotificationControllerDelegate$PlaybackListenerService">
       <intent-filter>
         <action android:name="android.intent.action.MEDIA_BUTTON"/>
       </intent-filter>
     </service>
     <service
         android:exported="false"
-        android:name="org.chromium.chrome.browser.media.ui.MediaNotificationManager$PresentationListenerService">
+        android:name="org.chromium.chrome.browser.media.ui.ChromeMediaNotificationControllerDelegate$PresentationListenerService">
       <intent-filter>
         <action android:name="android.intent.action.MEDIA_BUTTON"/>
       </intent-filter>

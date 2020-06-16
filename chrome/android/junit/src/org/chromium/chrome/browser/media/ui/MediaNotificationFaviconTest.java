@@ -25,7 +25,7 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.media.ui.MediaNotificationManager.ListenerService;
+import org.chromium.chrome.browser.media.ui.ChromeMediaNotificationControllerDelegate.ListenerService;
 import org.chromium.chrome.browser.ui.favicon.IconType;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 
@@ -37,9 +37,8 @@ import org.chromium.chrome.browser.ui.favicon.LargeIconBridge;
 @Config(manifest = Config.NONE,
         // Remove this after updating to a version of Robolectric that supports
         // notification channel creation. crbug.com/774315
-        sdk = Build.VERSION_CODES.N_MR1,
-        shadows = {MediaNotificationTestShadowResources.class})
-public class MediaNotificationFaviconTest extends MediaNotificationManagerTestBase {
+        sdk = Build.VERSION_CODES.N_MR1, shadows = {MediaNotificationTestShadowResources.class})
+public class MediaNotificationFaviconTest extends MediaNotificationTestBase {
     private static final int TAB_ID_1 = 1;
     private static final String IS_LOW_END_DEVICE_SWITCH =
             "--" + BaseSwitches.ENABLE_LOW_END_DEVICE_MODE;
@@ -74,8 +73,8 @@ public class MediaNotificationFaviconTest extends MediaNotificationManagerTestBa
     public void setUp() {
         super.setUp();
 
-        getManager().mThrottler.mManager = getManager();
-        doCallRealMethod().when(getManager()).onServiceStarted(any(ListenerService.class));
+        getController().mThrottler.mController = getController();
+        doCallRealMethod().when(getController()).onServiceStarted(any(ListenerService.class));
         doCallRealMethod()
                 .when(mMockForegroundServiceUtils)
                 .startForegroundService(any(Intent.class));

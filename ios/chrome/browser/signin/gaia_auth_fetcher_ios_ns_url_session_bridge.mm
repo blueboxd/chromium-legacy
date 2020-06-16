@@ -63,6 +63,8 @@
   NSHTTPURLResponse* responseWithHeaders =
       base::mac::ObjCCastStrict<NSHTTPURLResponse>(response);
   if (error) {
+    VLOG(1) << "Fetch failed: "
+            << base::SysNSStringToUTF8(error.localizedDescription);
     self.bridge->OnURLFetchFailure(net::ERR_FAILED,
                                    responseWithHeaders.statusCode);
   } else {
@@ -105,6 +107,7 @@ void GaiaAuthFetcherIOSNSURLSessionBridge::FetchPendingRequest() {
 
 void GaiaAuthFetcherIOSNSURLSessionBridge::Cancel() {
   [url_session_data_task_ cancel];
+  VLOG(1) << "Fetch was cancelled";
   OnURLFetchFailure(net::ERR_ABORTED, 0);
 }
 

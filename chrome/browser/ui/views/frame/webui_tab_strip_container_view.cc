@@ -392,7 +392,7 @@ class WebUITabStripContainerView::IPHController : public TabStripModelObserver,
     promo_ = FeaturePromoBubbleView::CreateOwned(
         anchor_view, views::BubbleBorder::TOP_RIGHT,
         FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
-        IDS_WEBUI_TAB_STRIP_PROMO);
+        /*title_string_specifier=*/base::nullopt, IDS_WEBUI_TAB_STRIP_PROMO);
     promo_->set_close_on_deactivate(false);
     widget_observer_.Add(promo_->GetWidget());
   }

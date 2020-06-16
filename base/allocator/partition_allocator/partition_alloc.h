@@ -136,10 +136,19 @@ struct BASE_EXPORT PartitionRoot
 
   ALWAYS_INLINE void* Alloc(size_t size, const char* type_name);
   ALWAYS_INLINE void* AllocFlags(int flags, size_t size, const char* type_name);
-  NOINLINE void* Realloc(void* ptr, size_t new_size, const char* type_name);
+
+  ALWAYS_INLINE void* Realloc(void* ptr,
+                              size_t new_size,
+                              const char* type_name);
   // Overload that may return nullptr if reallocation isn't possible. In this
   // case, |ptr| remains valid.
-  NOINLINE void* TryRealloc(void* ptr, size_t new_size, const char* type_name);
+  ALWAYS_INLINE void* TryRealloc(void* ptr,
+                                 size_t new_size,
+                                 const char* type_name);
+  NOINLINE void* ReallocFlags(int flags,
+                              void* ptr,
+                              size_t new_size,
+                              const char* type_name);
 
   ALWAYS_INLINE size_t ActualSize(size_t size);
 
@@ -148,6 +157,13 @@ struct BASE_EXPORT PartitionRoot
   void DumpStats(const char* partition_name,
                  bool is_light_dump,
                  PartitionStatsDumper* partition_stats_dumper);
+
+  internal::PartitionBucket<thread_safe>* SizeToBucket(size_t size) const;
+
+ private:
+  bool ReallocDirectMappedInPlace(internal::PartitionPage<thread_safe>* page,
+                                  size_t raw_size)
+      EXCLUSIVE_LOCKS_REQUIRED(this->lock_);
 };
 
 // Struct used to retrieve total memory usage of a partition. Used by
@@ -279,16 +295,16 @@ ALWAYS_INLINE size_t PartitionAllocGetSlotOffset(void* ptr) {
 
 template <bool thread_safe>
 ALWAYS_INLINE internal::PartitionBucket<thread_safe>*
-PartitionGenericSizeToBucket(PartitionRoot<thread_safe>* root, size_t size) {
+PartitionRoot<thread_safe>::SizeToBucket(size_t size) const {
   size_t order = kBitsPerSizeT - bits::CountLeadingZeroBitsSizeT(size);
   // The order index is simply the next few bits after the most significant bit.
-  size_t order_index = (size >> root->order_index_shifts[order]) &
-                       (kGenericNumBucketsPerOrder - 1);
+  size_t order_index =
+      (size >> order_index_shifts[order]) & (kGenericNumBucketsPerOrder - 1);
   // And if the remaining bits are non-zero we must bump the bucket up.
-  size_t sub_order_index = size & root->order_sub_index_masks[order];
+  size_t sub_order_index = size & order_sub_index_masks[order];
   internal::PartitionBucket<thread_safe>* bucket =
-      root->bucket_lookups[(order << kGenericNumBucketsPerOrderBits) +
-                           order_index + !!sub_order_index];
+      bucket_lookups[(order << kGenericNumBucketsPerOrderBits) + order_index +
+                     !!sub_order_index];
   CHECK(bucket);
   DCHECK(!bucket->slot_size || bucket->slot_size >= size);
   DCHECK(!(bucket->slot_size % kGenericSmallestBucket));
@@ -322,7 +338,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlags(
   }
   size_t requested_size = size;
   size = internal::PartitionCookieSizeAdjustAdd(size);
-  auto* bucket = PartitionGenericSizeToBucket(this, size);
+  auto* bucket = SizeToBucket(size);
   DCHECK(bucket);
   {
     internal::ScopedGuard<thread_safe> guard{this->lock_};
@@ -345,11 +361,19 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::Alloc(size_t size,
 
 // Explicitly instantantiated in the .cc file.
 template <bool thread_safe>
-BASE_EXPORT void* PartitionReallocGenericFlags(PartitionRoot<thread_safe>* root,
-                                               int flags,
-                                               void* ptr,
-                                               size_t new_size,
-                                               const char* type_name);
+ALWAYS_INLINE void* PartitionRoot<thread_safe>::Realloc(void* ptr,
+                                                        size_t new_size,
+                                                        const char* type_name) {
+  return ReallocFlags(0, ptr, new_size, type_name);
+}
+
+template <bool thread_safe>
+ALWAYS_INLINE void* PartitionRoot<thread_safe>::TryRealloc(
+    void* ptr,
+    size_t new_size,
+    const char* type_name) {
+  return ReallocFlags(PartitionAllocReturnNull, ptr, new_size, type_name);
+}
 
 template <bool thread_safe>
 ALWAYS_INLINE size_t PartitionRoot<thread_safe>::ActualSize(size_t size) {
@@ -358,7 +382,7 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::ActualSize(size_t size) {
 #else
   DCHECK(internal::PartitionRootBase<thread_safe>::initialized);
   size = internal::PartitionCookieSizeAdjustAdd(size);
-  auto* bucket = PartitionGenericSizeToBucket<thread_safe>(this, size);
+  auto* bucket = SizeToBucket(size);
   if (LIKELY(!bucket->is_direct_mapped())) {
     size = bucket->slot_size;
   } else if (size > kGenericMaxDirectMapped) {
@@ -371,7 +395,6 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::ActualSize(size_t size) {
 }
 
 namespace internal {
-
 template <bool thread_safe>
 struct BASE_EXPORT PartitionAllocator {
   PartitionAllocator() = default;

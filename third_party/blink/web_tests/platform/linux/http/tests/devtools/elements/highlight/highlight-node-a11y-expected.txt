@@ -82,16 +82,17 @@ button{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "button",
     "idValue": "button",
     "nodeWidth": "43",
     "nodeHeight": "22",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": true,
     "accessibleName": "click",
-    "accessibleRole": "button"
+    "accessibleRole": "button",
+    "showAccessibilityInfo": true
   }
 }
 input{
@@ -176,16 +177,17 @@ input{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "input",
     "idValue": "input",
     "nodeWidth": "185",
     "nodeHeight": "22",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": true,
     "accessibleName": "",
-    "accessibleRole": "textbox"
+    "accessibleRole": "textbox",
+    "showAccessibilityInfo": true
   }
 }
 div{
@@ -270,16 +272,17 @@ div{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "div",
     "nodeWidth": "784",
     "nodeHeight": "20",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": true,
     "accessibleName": "click",
-    "accessibleRole": "button"
+    "accessibleRole": "button",
+    "showAccessibilityInfo": true
   }
 }
 

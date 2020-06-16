@@ -56,11 +56,9 @@ class ContentSettingsUsagesStateTests : public testing::Test {
   permissions::PermissionDecisionAutoBlocker* auto_blocker_;
   std::unique_ptr<TestDelegate> delegate_;
 
-  void ClearOnNewOrigin(ContentSettingsType type) {
-    ContentSettingsUsagesState state(delegate_.get(), type);
+  void GetDetailedInfoWithDifferentHosts(ContentSettingsType type) {
     const GURL url_0("http://www.example.com");
-
-    state.DidNavigate(url_0, GURL());
+    ContentSettingsUsagesState state(delegate_.get(), type, url_0);
 
     content_settings_map_->SetContentSettingDefaultScope(
         url_0, url_0, type, std::string(), CONTENT_SETTING_ALLOW);
@@ -120,31 +118,11 @@ class ContentSettingsUsagesStateTests : public testing::Test {
                       url_0.host()));
     EXPECT_EQ(1U, formatted_host_per_state[CONTENT_SETTING_BLOCK].count(
                       url_1.host()));
-
-    state.OnPermissionSet(url_0, true);
-
-    state.DidNavigate(url_0, url_0);
-
-    ContentSettingsUsagesState::StateMap new_state_map = state.state_map();
-    EXPECT_EQ(state_map.size(), new_state_map.size());
-
-    state.DidNavigate(GURL("http://foo.com/"), url_0);
-
-    EXPECT_TRUE(state.state_map().empty());
-
-    formatted_host_per_state.clear();
-    tab_state_flags = 0;
-    state.GetDetailedInfo(&formatted_host_per_state, &tab_state_flags);
-    EXPECT_TRUE(formatted_host_per_state.empty());
-    EXPECT_EQ(0U, tab_state_flags);
   }
 
   void ShowPortOnSameHost(ContentSettingsType type) {
-    ContentSettingsUsagesState state(delegate_.get(), type);
-
     const GURL url_0("http://www.example.com");
-
-    state.DidNavigate(url_0, GURL());
+    ContentSettingsUsagesState state(delegate_.get(), type, url_0);
 
     content_settings_map_->SetContentSettingDefaultScope(
         url_0, url_0, type, std::string(), CONTENT_SETTING_ALLOW);
@@ -192,12 +170,14 @@ class ContentSettingsUsagesStateTests : public testing::Test {
 
 };  // namespace
 
-TEST_F(ContentSettingsUsagesStateTests, ClearOnNewOriginForGeolocation) {
-  ClearOnNewOrigin(ContentSettingsType::GEOLOCATION);
+TEST_F(ContentSettingsUsagesStateTests,
+       GetDetailedInfoWithDifferentHostsForGeolocation) {
+  GetDetailedInfoWithDifferentHosts(ContentSettingsType::GEOLOCATION);
 }
 
-TEST_F(ContentSettingsUsagesStateTests, ClearOnNewOriginForMidi) {
-  ClearOnNewOrigin(ContentSettingsType::MIDI_SYSEX);
+TEST_F(ContentSettingsUsagesStateTests,
+       GetDetailedInfoWithDifferentHostsForMidi) {
+  GetDetailedInfoWithDifferentHosts(ContentSettingsType::MIDI_SYSEX);
 }
 
 TEST_F(ContentSettingsUsagesStateTests, ShowPortOnSameHostForGeolocation) {
@@ -212,19 +192,15 @@ TEST_F(ContentSettingsUsagesStateTests, GetDetailedInfo) {
   // Verify an origin with blocked |ContentSettingsType::GEOLOCATION| shown as
   // |ContentSettingsUsagesState::TABSTATE_HAS_EXCEPTION|.
   {
-    ContentSettingsUsagesState state(delegate_.get(),
-                                     ContentSettingsType::GEOLOCATION);
-
     const GURL origin_to_block("http://www.example.com");
+
+    ContentSettingsUsagesState state(
+        delegate_.get(), ContentSettingsType::GEOLOCATION, origin_to_block);
 
     content_settings_map_->SetContentSettingDefaultScope(
         origin_to_block, origin_to_block, ContentSettingsType::GEOLOCATION,
         std::string(), CONTENT_SETTING_BLOCK);
     state.OnPermissionSet(origin_to_block, false);
-
-    // Call |ContentSettingsUsagesState::DidNavigate| to initialize
-    // |ContentSettingsUsagesState::embedder_url_|.
-    state.DidNavigate(origin_to_block, origin_to_block);
 
     ContentSettingsUsagesState::FormattedHostsPerState formatted_host_per_state;
     unsigned int tab_state_flags = 0;
@@ -237,18 +213,14 @@ TEST_F(ContentSettingsUsagesStateTests, GetDetailedInfo) {
   // Verify an origin with embargoed |ContentSettingsType::GEOLOCATION| shown as
   // |ContentSettingsUsagesState::TABSTATE_HAS_EXCEPTION|.
   {
-    ContentSettingsUsagesState state(delegate_.get(),
-                                     ContentSettingsType::GEOLOCATION);
-
     const GURL origin_to_embargo("http://www.google.com");
+    ContentSettingsUsagesState state(
+        delegate_.get(), ContentSettingsType::GEOLOCATION, origin_to_embargo);
+
     for (int i = 0; i < 3; ++i) {
       auto_blocker_->RecordDismissAndEmbargo(
           origin_to_embargo, ContentSettingsType::GEOLOCATION, false);
     }
-
-    // Call |ContentSettingsUsagesState::DidNavigate| to initialize
-    // |ContentSettingsUsagesState::embedder_url_|.
-    state.DidNavigate(origin_to_embargo, origin_to_embargo);
 
     state.OnPermissionSet(origin_to_embargo, false);
 
@@ -272,13 +244,11 @@ TEST_F(ContentSettingsUsagesStateTests, OriginEmbargoedWhileDefaultIsBlock) {
         origin_to_embargo, ContentSettingsType::GEOLOCATION, false);
   }
 
-  ContentSettingsUsagesState state(delegate_.get(),
-                                   ContentSettingsType::GEOLOCATION);
+  ContentSettingsUsagesState state(
+      delegate_.get(), ContentSettingsType::GEOLOCATION, origin_to_embargo);
 
   state.OnPermissionSet(origin_to_embargo, false);
-  // Call |ContentSettingsUsagesState::DidNavigate| to initialize
-  // |ContentSettingsUsagesState::embedder_url_|.
-  state.DidNavigate(origin_to_embargo, origin_to_embargo);
+
   ContentSettingsUsagesState::FormattedHostsPerState formatted_host_per_state;
   unsigned int tab_state_flags = 0;
   state.GetDetailedInfo(&formatted_host_per_state, &tab_state_flags);
@@ -300,12 +270,9 @@ TEST_F(ContentSettingsUsagesStateTests, OriginEmbargoedWhileDefaultIsAsk) {
         origin_to_embargo, ContentSettingsType::GEOLOCATION, false);
   }
 
-  ContentSettingsUsagesState state(delegate_.get(),
-                                   ContentSettingsType::GEOLOCATION);
+  ContentSettingsUsagesState state(
+      delegate_.get(), ContentSettingsType::GEOLOCATION, origin_to_embargo);
   state.OnPermissionSet(origin_to_embargo, false);
-  // Call |ContentSettingsUsagesState::DidNavigate| to initialize
-  // |ContentSettingsUsagesState::embedder_url_|.
-  state.DidNavigate(origin_to_embargo, origin_to_embargo);
   ContentSettingsUsagesState::FormattedHostsPerState formatted_host_per_state;
   unsigned int tab_state_flags = 0;
   state.GetDetailedInfo(&formatted_host_per_state, &tab_state_flags);

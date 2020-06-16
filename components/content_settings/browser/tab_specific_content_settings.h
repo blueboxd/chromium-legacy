@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
@@ -24,6 +25,8 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/allow_service_worker_result.h"
+#include "content/public/browser/render_document_host_user_data.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -45,13 +48,28 @@ namespace content_settings {
 // content::WebContentsUserData
 
 // This class manages state about permissions, content settings, cookies and
-// site data for a specific WebContents. It tracks which content was accessed
-// and which content was blocked. Based on this it provides information about
-// which types of content were accessed and blocked.
+// site data for a specific page (main document and all of its child frames). It
+// tracks which content was accessed and which content was blocked. Based on
+// this it provides information about which types of content were accessed and
+// blocked.
+//
+// Tracking is done per main document so instances of this class will be deleted
+// when the main document is deleted. This can happen after the tab navigates
+// away to a new document or when the tab itself is deleted, so you should not
+// keep references to objects of this class.
+//
+// When a page enters the back-forward cache its associated
+// TabSpecificContentSettings are not cleared and will be restored along with
+// the document when navigating back. These stored instances still listen to
+// content settings updates and keep their internal state up to date.
+//
+// Events tied to a main frame navigation will be associated with the newly
+// loaded page once the navigation commits or discarded if it does not.
+//
+// TODO(carlscab): Rename this class to PageSpecificContentSettings
 class TabSpecificContentSettings
-    : public content::WebContentsObserver,
-      public content_settings::Observer,
-      public content::WebContentsUserData<TabSpecificContentSettings> {
+    : public content_settings::Observer,
+      public content::RenderDocumentHostUserData<TabSpecificContentSettings> {
  public:
   // Fields describing the current mic/camera state. If a page has attempted to
   // access a device, the XXX_ACCESSED bit will be set. If access was blocked,
@@ -119,23 +137,20 @@ class TabSpecificContentSettings
   // |TabSpecificContentSettings|.
   class SiteDataObserver {
    public:
-    explicit SiteDataObserver(
-        TabSpecificContentSettings* tab_specific_content_settings);
+    explicit SiteDataObserver(content::WebContents* web_contents);
     virtual ~SiteDataObserver();
 
     // Called whenever site data is accessed.
     virtual void OnSiteDataAccessed() = 0;
 
-    TabSpecificContentSettings* tab_specific_content_settings() {
-      return tab_specific_content_settings_;
-    }
+    content::WebContents* web_contents() { return web_contents_; }
 
-    // Called when the TabSpecificContentSettings is destroyed; nulls out
+    // Called when the WebContents is destroyed; nulls out
     // the local reference.
-    void ContentSettingsDestroyed();
+    void WebContentsDestroyed();
 
    private:
-    TabSpecificContentSettings* tab_specific_content_settings_;
+    content::WebContents* web_contents_;
 
     DISALLOW_COPY_AND_ASSIGN(SiteDataObserver);
   };
@@ -144,10 +159,14 @@ class TabSpecificContentSettings
 
   static void CreateForWebContents(content::WebContents* web_contents,
                                    std::unique_ptr<Delegate> delegate);
+  static void DeleteForWebContentsForTest(content::WebContents* web_contents);
 
   // Returns the object given a RenderFrameHost ids.
   static TabSpecificContentSettings* GetForFrame(int render_process_id,
                                                  int render_frame_id);
+  // TODO(carlscab): Get rid of this and use GetForFrame instead
+  static TabSpecificContentSettings* FromWebContents(
+      content::WebContents* contents);
 
   // Called when a specific Web database in the current page was accessed. If
   // access was blocked due to the user's content settings,
@@ -193,17 +212,15 @@ class TabSpecificContentSettings
                                    const url::Origin& constructor_origin,
                                    bool blocked_by_policy);
 
-  // Resets the |content_settings_status_|, except for
-  // information which are needed for navigation: ContentSettingsType::COOKIES
-  // for cookies and service workers, and ContentSettingsType::JAVASCRIPT for
-  // service workers.
-  // Only public for tests.
-  void ClearContentSettingsExceptForNavigationRelatedSettings();
+  static content::WebContentsObserver* GetWebContentsObserverForTest(
+      content::WebContents* web_contents);
 
-  // Resets navigation related information (ContentSettingsType::COOKIES and
-  // ContentSettingsType::JAVASCRIPT).
-  // Only public for tests.
-  void ClearNavigationRelatedContentSettings();
+  // Returns a WeakPtr to this instance. Given that TabSpecificContentSettings
+  // instances are tied to a page it is generally unsafe to store these
+  // references, instead a WeakPtr should be used instead.
+  base::WeakPtr<TabSpecificContentSettings> AsWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
 
   // Notifies that a Flash download has been blocked.
   void FlashDownloadBlocked();
@@ -334,12 +351,9 @@ class TabSpecificContentSettings
   void OnMidiSysExAccessed(const GURL& reqesting_origin);
   void OnMidiSysExAccessBlocked(const GURL& requesting_origin);
 
-  // Adds the given |SiteDataObserver|. The |observer| is notified when a
-  // locale shared object, like for example a cookie, is accessed.
-  void AddSiteDataObserver(SiteDataObserver* observer);
-
-  // Removes the given |SiteDataObserver|.
-  void RemoveSiteDataObserver(SiteDataObserver* observer);
+  void OnCookiesAccessed(const content::CookieAccessDetails& details);
+  void OnServiceWorkerAccessed(const GURL& scope,
+                               content::AllowServiceWorkerResult allowed);
 
   // Block all content. Used for testing content setting bubbles.
   void BlockAllContentForTesting();
@@ -351,45 +365,121 @@ class TabSpecificContentSettings
   // since the last navigation.
   bool HasContentSettingChangedViaPageInfo(ContentSettingsType type) const;
 
-  Delegate* delegate() { return delegate_.get(); }
+  Delegate* delegate() { return delegate_; }
 
  private:
-  friend class content::WebContentsUserData<TabSpecificContentSettings>;
+  friend class content::RenderDocumentHostUserData<TabSpecificContentSettings>;
 
-  explicit TabSpecificContentSettings(content::WebContents* tab,
-                                      std::unique_ptr<Delegate> delegate);
+  // This class attaches to WebContents to listen to events and route them to
+  // appropriate TabSpecificContentSettings, store navigation related events
+  // until the navigation finishes and then transferring the
+  // navigation-associated state to the newly-created page.
+  class WebContentsHandler
+      : public content::WebContentsObserver,
+        public content::WebContentsUserData<WebContentsHandler> {
+   public:
+    static void CreateForWebContents(content::WebContents* web_contents,
+                                     std::unique_ptr<Delegate> delegate);
 
-  void MaybeSendRendererContentSettingsRules(
-      content::WebContents* web_contents);
+    explicit WebContentsHandler(content::WebContents* web_contents,
+                                std::unique_ptr<Delegate> delegate);
+    ~WebContentsHandler() override;
+    // Adds the given |SiteDataObserver|. The |observer| is notified when a
+    // locale shared object, like for example a cookie, is accessed.
+    void AddSiteDataObserver(SiteDataObserver* observer);
 
-  // content::WebContentsObserver overrides.
-  void RenderFrameForInterstitialPageCreated(
-      content::RenderFrameHost* render_frame_host) override;
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override;
-  void ReadyToCommitNavigation(
-      content::NavigationHandle* navigation_handle) override;
-  void DidFinishNavigation(
-      content::NavigationHandle* navigation_handle) override;
-  void AppCacheAccessed(const GURL& manifest_url,
-                        bool blocked_by_policy) override;
-  void OnCookiesAccessed(content::NavigationHandle* navigation,
-                         const content::CookieAccessDetails& details) override;
-  void OnCookiesAccessed(content::RenderFrameHost* rfh,
-                         const content::CookieAccessDetails& details) override;
-  // Called when a specific Service Worker scope was accessed.
-  // If access was blocked due to the user's content settings,
-  // |blocked_by_policy_javascript| or/and |blocked_by_policy_cookie| should be
-  // true, and this function should invoke OnContentBlocked for JavaScript
-  // or/and cookies respectively.
-  void OnServiceWorkerAccessed(
-      content::NavigationHandle* navigation,
-      const GURL& scope,
-      content::AllowServiceWorkerResult allowed) override;
-  void OnServiceWorkerAccessed(
-      content::RenderFrameHost* frame,
-      const GURL& scope,
-      content::AllowServiceWorkerResult allowed) override;
+    // Removes the given |SiteDataObserver|.
+    void RemoveSiteDataObserver(SiteDataObserver* observer);
+
+    // Notifies all registered |SiteDataObserver|s.
+    void NotifySiteDataObservers();
+
+   private:
+    friend class content::WebContentsUserData<WebContentsHandler>;
+
+    // Keeps track of cookie and service worker access during a navigation.
+    // These types of access can happen for the current page or for a new
+    // navigation (think cookies sent in the HTTP request or service worker
+    // being run to serve a fetch request). A navigation might fail to
+    // commit in which case we have to handle it as if it had never
+    // occurred. So we cache all cookies and service worker accesses that
+    // happen during a navigation and only apply the changes if the
+    // navigation commits.
+    struct InflightNavigationContentSettings {
+      InflightNavigationContentSettings();
+      InflightNavigationContentSettings(
+          const InflightNavigationContentSettings&);
+      InflightNavigationContentSettings(InflightNavigationContentSettings&&);
+
+      ~InflightNavigationContentSettings();
+
+      InflightNavigationContentSettings& operator=(
+          InflightNavigationContentSettings&&);
+
+      std::vector<content::CookieAccessDetails> cookie_accesses;
+      std::vector<std::pair<GURL, content::AllowServiceWorkerResult>>
+          service_worker_accesses;
+    };
+
+    // Applies all stored events for the given navigation to the current main
+    // document.
+    void TransferNavigationContentSettingsToCommittedDocument(
+        const InflightNavigationContentSettings& navigation_settings,
+        content::RenderFrameHost* rfh);
+
+    // content::WebContentsObserver overrides.
+    void RenderFrameForInterstitialPageCreated(
+        content::RenderFrameHost* render_frame_host) override;
+    void DidStartNavigation(
+        content::NavigationHandle* navigation_handle) override;
+    void ReadyToCommitNavigation(
+        content::NavigationHandle* navigation_handle) override;
+    void DidFinishNavigation(
+        content::NavigationHandle* navigation_handle) override;
+    // TODO(carlscab): Change interface to pass target RenderFrameHost
+    void AppCacheAccessed(const GURL& manifest_url,
+                          bool blocked_by_policy) override;
+    void OnCookiesAccessed(
+        content::NavigationHandle* navigation,
+        const content::CookieAccessDetails& details) override;
+    void OnCookiesAccessed(
+        content::RenderFrameHost* rfh,
+        const content::CookieAccessDetails& details) override;
+    // Called when a specific Service Worker scope was accessed.
+    // If access was blocked due to the user's content settings,
+    // |blocked_by_policy_javascript| or/and |blocked_by_policy_cookie|
+    // should be true, and this function should invoke OnContentBlocked for
+    // JavaScript or/and cookies respectively.
+    void OnServiceWorkerAccessed(
+        content::NavigationHandle* navigation,
+        const GURL& scope,
+        content::AllowServiceWorkerResult allowed) override;
+    void OnServiceWorkerAccessed(
+        content::RenderFrameHost* frame,
+        const GURL& scope,
+        content::AllowServiceWorkerResult allowed) override;
+
+    std::unique_ptr<Delegate> delegate_;
+
+    HostContentSettingsMap* map_;
+
+    // All currently registered |SiteDataObserver|s.
+    base::ObserverList<SiteDataObserver>::Unchecked observer_list_;
+
+    // Keeps track of currently inflight navigations. Updates for those are
+    // kept aside until the navigation commits.
+    std::unordered_map<content::NavigationHandle*,
+                       InflightNavigationContentSettings>
+        inflight_navigation_settings_;
+
+    WEB_CONTENTS_USER_DATA_KEY_DECL();
+  };
+
+  explicit TabSpecificContentSettings(
+      TabSpecificContentSettings::WebContentsHandler& handler,
+      Delegate* delegate);
+
+  void AppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
@@ -397,25 +487,15 @@ class TabSpecificContentSettings
                                ContentSettingsType content_type,
                                const std::string& resource_identifier) override;
 
-  // Notifies all registered |SiteDataObserver|s.
-  void NotifySiteDataObservers();
-
   // Clears settings changed by the user via PageInfo since the last navigation.
   void ClearContentSettingsChangedViaPageInfo();
 
-  // Updates Geolocation settings on navigation.
-  void GeolocationDidNavigate(content::NavigationHandle* navigation_handle);
+  WebContentsHandler& handler_;
+  content::RenderFrameHost* main_frame_;
 
-  // Updates MIDI settings on navigation.
-  void MidiDidNavigate(content::NavigationHandle* navigation_handle);
+  Delegate* delegate_;
 
-  // Updates the list of allowed and blocked cookies.
-  void OnCookiesAccessedImpl(const content::CookieAccessDetails& details);
-
-  std::unique_ptr<Delegate> delegate_;
-
-  // All currently registered |SiteDataObserver|s.
-  base::ObserverList<SiteDataObserver>::Unchecked observer_list_;
+  GURL visible_url_;
 
   struct ContentSettingsStatus {
     bool blocked;
@@ -469,7 +549,9 @@ class TabSpecificContentSettings
   // navigation. Used to determine whether to display the settings in page info.
   std::set<ContentSettingsType> content_settings_changed_via_page_info_;
 
-  WEB_CONTENTS_USER_DATA_KEY_DECL();
+  RENDER_DOCUMENT_HOST_USER_DATA_KEY_DECL();
+
+  base::WeakPtrFactory<TabSpecificContentSettings> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabSpecificContentSettings);
 };

@@ -4520,6 +4520,19 @@
     ]
   },
 
+  "PinUnlockAutosubmitEnabled": {
+    "os": ["chromeos"],
+    "can_be_recommended": true,
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "PinUnlockAutosubmitEnabled": true
+        },
+        "prefs": { "pin_unlock_autosubmit_enabled": {} }
+      }
+    ]
+  },
+
   "ArcCertificatesSyncMode": {
     "os": ["chromeos"],
     "can_be_recommended": false,

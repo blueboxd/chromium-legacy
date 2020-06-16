@@ -129,7 +129,11 @@ void WebComponent::CreateView(
     fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
     fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services) {
   DCHECK(frame_);
-  DCHECK(!view_is_bound_);
+  if (view_is_bound_) {
+    LOG(ERROR) << "CreateView() called more than once.";
+    DestroyComponent(ZX_ERR_BAD_STATE, fuchsia::sys::TerminationReason::EXITED);
+    return;
+  }
 
   fuchsia::ui::views::ViewToken view_token;
   view_token.value = std::move(view_token_value);

@@ -686,6 +686,13 @@ class PolicyTemplateChecker(object):
           optional=True,
           container_name='features')
 
+      # 'internal_only' feature must be an optional boolean flag.
+      platform_only = self._CheckContains(features,
+                                          'internal_only',
+                                          bool,
+                                          optional=True,
+                                          container_name='features')
+
       if cloud_only and platform_only:
         self._Error("cloud_only and platfrom_only must not be true at the same "
                     "time.")

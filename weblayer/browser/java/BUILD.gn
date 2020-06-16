@@ -9,6 +9,7 @@ import("//weblayer/variables.gni")
 
 android_resources("weblayer_resources") {
   sources = [
+    "res/drawable/weblayer_infobar_wrapper_bg.xml",
     "res/drawable/weblayer_tab_indicator.xml",
     "res/layout/site_settings_layout.xml",
     "res/layout/weblayer_infobar_translate_compact_content.xml",
@@ -30,6 +31,7 @@ android_resources("weblayer_resources") {
     "//components/browser_ui/site_settings/android:java_resources",
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
+    "//components/infobars/android:java_resources",
     "//components/page_info/android:java_resources",
     "//components/permissions/android:java_resources",
     "//third_party/android_deps:com_google_android_material_material_java",

@@ -50,6 +50,9 @@ NET_EXPORT bool IsClientCertificateError(int error);
 // Returns true if |error| is an error from hostname resolution.
 NET_EXPORT bool IsHostnameResolutionError(int error);
 
+// Returns true if |error| means that the request has been blocked.
+NET_EXPORT bool IsRequestBlockedError(int error);
+
 // Map system error code to Error.
 NET_EXPORT Error MapSystemError(logging::SystemErrorCode os_error);
 

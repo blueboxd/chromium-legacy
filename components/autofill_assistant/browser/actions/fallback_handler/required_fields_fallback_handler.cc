@@ -45,6 +45,12 @@ void FillStatusDetailsWithError(const RequiredField& required_field,
   field_error->set_status(error_status);
 }
 
+void FillStatusDetailsWithEmptyField(const RequiredField& required_field,
+                                     ClientStatus* client_status) {
+  auto* field_error = AddAutofillError(required_field, client_status);
+  field_error->set_empty_after_fallback(true);
+}
+
 }  // namespace
 
 RequiredFieldsFallbackHandler::~RequiredFieldsFallbackHandler() = default;
@@ -129,6 +135,11 @@ void RequiredFieldsFallbackHandler::OnCheckRequiredFieldsDone(
   for (const RequiredField& required_field : required_fields_) {
     if (required_field.ShouldFallback(apply_fallback)) {
       should_fallback = true;
+      if (!apply_fallback) {
+        VLOG(1) << "Field was empty after applying fallback: "
+                << required_field.selector;
+        FillStatusDetailsWithEmptyField(required_field, &client_status_);
+      }
       break;
     }
   }
@@ -159,6 +170,8 @@ void RequiredFieldsFallbackHandler::OnCheckRequiredFieldsDone(
             .has_value()) {
       has_fallbacks = true;
     } else {
+      VLOG(3) << "Field has no fallback data: " << required_field.selector
+              << " " << required_field.value_expression;
       FillStatusDetailsWithMissingFallbackData(required_field, &client_status_);
     }
   }
@@ -319,6 +332,9 @@ void RequiredFieldsFallbackHandler::OnSetFallbackFieldValue(
     size_t required_fields_index,
     const ClientStatus& set_field_status) {
   if (!set_field_status.ok()) {
+    VLOG(1) << "Error setting value for required_field: "
+            << required_fields_[required_fields_index].selector << " "
+            << set_field_status;
     FillStatusDetailsWithError(required_fields_[required_fields_index],
                                set_field_status.proto_status(),
                                &client_status_);

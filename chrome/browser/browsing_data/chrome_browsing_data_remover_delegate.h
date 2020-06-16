@@ -104,6 +104,10 @@ class ChromeBrowsingDataRemoverDelegate
                             content::BrowsingDataRemover::DATA_TYPE_CACHE |
                             content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS,
 
+    // Datatypes with account-scoped data that needs to be removed
+    // before Google cookies are deleted.
+    DEFERRED_COOKIE_DELETION_DATA_TYPES = DATA_TYPE_PASSWORDS,
+
     // Includes all the available remove options. Meant to be used by clients
     // that wish to wipe as much data as possible from a Profile, to make it
     // look like a new Profile.
@@ -152,7 +156,13 @@ class ChromeBrowsingDataRemoverDelegate
   static_assert((IMPORTANT_SITES_DATA_TYPES & ~FILTERABLE_DATA_TYPES) == 0,
                 "All important sites datatypes must be filterable.");
 
-  ChromeBrowsingDataRemoverDelegate(content::BrowserContext* browser_context);
+  static_assert((DEFERRED_COOKIE_DELETION_DATA_TYPES & FILTERABLE_DATA_TYPES) ==
+                    0,
+                "Deferred deletion is currently not implemented for filterable "
+                "data types");
+
+  explicit ChromeBrowsingDataRemoverDelegate(
+      content::BrowserContext* browser_context);
   ~ChromeBrowsingDataRemoverDelegate() override;
 
   // KeyedService:
@@ -162,6 +172,8 @@ class ChromeBrowsingDataRemoverDelegate
   content::BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher
   GetOriginTypeMatcher() override;
   bool MayRemoveDownloadHistory() override;
+  std::vector<std::string> GetDomainsForDeferredCookieDeletion(
+      uint64_t remove_mask) override;
   void RemoveEmbedderData(const base::Time& delete_begin,
                           const base::Time& delete_end,
                           uint64_t remove_mask,
@@ -230,7 +242,9 @@ class ChromeBrowsingDataRemoverDelegate
     kCompromisedCredentials = 34,
     kUserDataSnapshot = 35,
     kMediaFeeds = 36,
-    kMaxValue = kMediaFeeds,
+    kAccountPasswords = 37,
+    kAccountPasswordsSynced = 38,
+    kMaxValue = kAccountPasswordsSynced,
   };
 
   // Called by CreateTaskCompletionClosure().

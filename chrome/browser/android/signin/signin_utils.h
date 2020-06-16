@@ -23,7 +23,7 @@ class SigninUtils {
                                           const std::string& email);
 
   // Opens the account picker bottomsheet
-  static void OpenAccountPickerBottomSheet();
+  static void OpenAccountPickerBottomSheet(ui::WindowAndroid* window);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SigninUtils);

@@ -5,18 +5,13 @@
 cr.define('account_manager_welcome', function() {
   'use strict';
 
-  function initialize() {
-    $('ok-button').addEventListener('click', closeDialog);
-  }
+  Polymer({
+    is: 'account-manager-welcome',
 
-  function closeDialog() {
-    account_manager.AccountManagerBrowserProxyImpl.getInstance().closeDialog();
-  }
-
-  return {
-    initialize: initialize,
-  };
+    /** @private */
+    closeDialog_() {
+      account_manager.AccountManagerBrowserProxyImpl.getInstance()
+          .closeDialog();
+    },
+  });
 });
-
-document.addEventListener(
-    'DOMContentLoaded', account_manager_welcome.initialize);

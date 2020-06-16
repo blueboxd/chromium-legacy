@@ -9,6 +9,8 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,9 +33,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state_pref_names.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_details.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -45,9 +44,6 @@
 #include "url/origin.h"
 
 using content::BrowserThread;
-using content::NavigationController;
-using content::NavigationEntry;
-using content::WebContents;
 
 namespace content_settings {
 namespace {
@@ -63,64 +59,337 @@ bool ShouldSendUpdatedContentSettingsRulesToRenderer(
   return RendererContentSettingRules::IsRendererContentSetting((content_type));
 }
 
+void MaybeSendRendererContentSettingsRules(
+    content::RenderFrameHost* rfh,
+    const HostContentSettingsMap* map,
+    TabSpecificContentSettings::Delegate* delegate) {
+  DCHECK_EQ(rfh, rfh->GetMainFrame());
+  // Only send a message to the renderer if it is initialised and not dead.
+  // Otherwise, the IPC messages will be queued in the browser process,
+  // potentially causing large memory leaks. See https://crbug.com/875937.
+  content::RenderProcessHost* process = rfh->GetProcess();
+  if (!process->IsInitializedAndNotDead())
+    return;
+
+  RendererContentSettingRules rules;
+  GetRendererContentSettingRules(map, &rules);
+  delegate->SetContentSettingRules(process, rules);
+}
+
+bool WillNavigationCreateNewTabSpecificContentSettingsOnCommit(
+    content::NavigationHandle* navigation_handle) {
+  return navigation_handle->IsInMainFrame() &&
+         !navigation_handle->IsSameDocument() &&
+         !navigation_handle->IsServedFromBackForwardCache();
+}
+
 }  // namespace
 
 TabSpecificContentSettings::SiteDataObserver::SiteDataObserver(
-    TabSpecificContentSettings* tab_specific_content_settings)
-    : tab_specific_content_settings_(tab_specific_content_settings) {
-  tab_specific_content_settings_->AddSiteDataObserver(this);
+    content::WebContents* web_contents)
+    : web_contents_(web_contents) {
+  // Make sure the handler was attached to the WebContents as some UT might skip
+  // this.
+  auto* handler =
+      TabSpecificContentSettings::WebContentsHandler::FromWebContents(
+          web_contents_);
+  if (handler)
+    handler->AddSiteDataObserver(this);
 }
 
 TabSpecificContentSettings::SiteDataObserver::~SiteDataObserver() {
-  if (tab_specific_content_settings_)
-    tab_specific_content_settings_->RemoveSiteDataObserver(this);
+  if (!web_contents_)
+    return;
+  auto* handler =
+      TabSpecificContentSettings::WebContentsHandler::FromWebContents(
+          web_contents_);
+  if (handler)
+    handler->RemoveSiteDataObserver(this);
 }
 
-void TabSpecificContentSettings::SiteDataObserver::ContentSettingsDestroyed() {
-  tab_specific_content_settings_ = nullptr;
+void TabSpecificContentSettings::SiteDataObserver::WebContentsDestroyed() {
+  web_contents_ = nullptr;
 }
+
+// static
+void TabSpecificContentSettings::WebContentsHandler::CreateForWebContents(
+    content::WebContents* web_contents,
+    std::unique_ptr<Delegate> delegate) {
+  DCHECK(web_contents);
+  if (TabSpecificContentSettings::WebContentsHandler::FromWebContents(
+          web_contents)) {
+    return;
+  }
+
+  web_contents->SetUserData(
+      TabSpecificContentSettings::WebContentsHandler::UserDataKey(),
+      base::WrapUnique(new TabSpecificContentSettings::WebContentsHandler(
+          web_contents, std::move(delegate))));
+}
+
+TabSpecificContentSettings::WebContentsHandler::WebContentsHandler(
+    content::WebContents* web_contents,
+    std::unique_ptr<Delegate> delegate)
+    : WebContentsObserver(web_contents),
+      delegate_(std::move(delegate)),
+      map_(delegate_->GetSettingsMap()) {
+  DCHECK(!TabSpecificContentSettings::GetForCurrentDocument(
+      web_contents->GetMainFrame()));
+  content::SetRenderDocumentHostUserData(
+      web_contents->GetMainFrame(), TabSpecificContentSettings::UserDataKey(),
+      base::WrapUnique(new TabSpecificContentSettings(*this, delegate_.get())));
+}
+
+TabSpecificContentSettings::WebContentsHandler::~WebContentsHandler() {
+  for (SiteDataObserver& observer : observer_list_)
+    observer.WebContentsDestroyed();
+}
+
+void TabSpecificContentSettings::WebContentsHandler::
+    TransferNavigationContentSettingsToCommittedDocument(
+        const InflightNavigationContentSettings& navigation_settings,
+        content::RenderFrameHost* rfh) {
+  for (const auto& cookie_access : navigation_settings.cookie_accesses) {
+    OnCookiesAccessed(rfh, cookie_access);
+  }
+  for (const auto& service_worker_access :
+       navigation_settings.service_worker_accesses) {
+    OnServiceWorkerAccessed(rfh, service_worker_access.first,
+                            service_worker_access.second);
+  }
+}
+
+void TabSpecificContentSettings::WebContentsHandler::OnCookiesAccessed(
+    content::NavigationHandle* navigation,
+    const content::CookieAccessDetails& details) {
+  auto it = inflight_navigation_settings_.find(navigation);
+  if (it != inflight_navigation_settings_.end()) {
+    it->second.cookie_accesses.push_back(details);
+    return;
+  }
+  // TODO(carlscab): We should be able to
+  // DHECK(!WillNavigationCreateNewTabSpecificContentSettingsOnCommit) here, but
+  // there is still code that starts a navigation before attaching the tab
+  // helpers in DevConsole related code. So we miss the DidStartNavigation event
+  // for those navigations. (https://crbug.com/1095576)
+  OnCookiesAccessed(web_contents()->GetMainFrame(), details);
+}
+
+void TabSpecificContentSettings::WebContentsHandler::OnCookiesAccessed(
+    content::RenderFrameHost* rfh,
+    const content::CookieAccessDetails& details) {
+  auto* tscs =
+      TabSpecificContentSettings::GetForCurrentDocument(rfh->GetMainFrame());
+  if (tscs)
+    tscs->OnCookiesAccessed(details);
+}
+
+void TabSpecificContentSettings::WebContentsHandler::OnServiceWorkerAccessed(
+    content::NavigationHandle* navigation,
+    const GURL& scope,
+    content::AllowServiceWorkerResult allowed) {
+  DCHECK(scope.is_valid());
+
+  auto it = inflight_navigation_settings_.find(navigation);
+  if (it != inflight_navigation_settings_.end()) {
+    it->second.service_worker_accesses.emplace_back(
+        std::make_pair(scope, allowed));
+    return;
+  }
+  // TODO(carlscab): We should be able to
+  // DHECK(!WillNavigationCreateNewTabSpecificContentSettingsOnCommit) here, but
+  // there is still code that starts a navigation before attaching the tab
+  // helpers in DevConsole related code. So we miss the DidStartNavigation event
+  // for those navigations.
+  OnServiceWorkerAccessed(web_contents()->GetMainFrame(), scope, allowed);
+}
+
+void TabSpecificContentSettings::WebContentsHandler::OnServiceWorkerAccessed(
+    content::RenderFrameHost* frame,
+    const GURL& scope,
+    content::AllowServiceWorkerResult allowed) {
+  auto* tscs =
+      TabSpecificContentSettings::GetForCurrentDocument(frame->GetMainFrame());
+  if (tscs)
+    tscs->OnServiceWorkerAccessed(scope, allowed);
+}
+
+void TabSpecificContentSettings::WebContentsHandler::
+    RenderFrameForInterstitialPageCreated(
+        content::RenderFrameHost* render_frame_host) {
+  // We want to tell the renderer-side code to ignore content settings for this
+  // page.
+  mojo::AssociatedRemote<content_settings::mojom::ContentSettingsAgent>
+      content_settings_agent;
+  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+      &content_settings_agent);
+  content_settings_agent->SetAsInterstitial();
+}
+
+void TabSpecificContentSettings::WebContentsHandler::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!WillNavigationCreateNewTabSpecificContentSettingsOnCommit(
+          navigation_handle)) {
+    return;
+  }
+
+  inflight_navigation_settings_.insert(
+      std::make_pair(navigation_handle, InflightNavigationContentSettings()));
+}
+
+void TabSpecificContentSettings::WebContentsHandler::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!WillNavigationCreateNewTabSpecificContentSettingsOnCommit(
+          navigation_handle)) {
+    return;
+  }
+
+  PrefService* prefs = delegate_->GetPrefs();
+  if (prefs &&
+      !prefs->GetBoolean(
+          security_state::prefs::kStricterMixedContentTreatmentEnabled)) {
+    auto* render_frame_host = navigation_handle->GetRenderFrameHost();
+    mojo::AssociatedRemote<content_settings::mojom::ContentSettingsAgent>
+        content_settings_agent;
+    render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+        &content_settings_agent);
+    content_settings_agent->SetDisabledMixedContentUpgrades();
+  }
+
+  // There may be content settings that were updated for the navigated URL.
+  // These would not have been sent before if we're navigating cross-origin.
+  // Ensure up to date rules are sent before navigation commits.
+  MaybeSendRendererContentSettingsRules(
+      navigation_handle->GetWebContents()->GetMainFrame(), map_,
+      delegate_.get());
+}
+
+void TabSpecificContentSettings::WebContentsHandler::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!WillNavigationCreateNewTabSpecificContentSettingsOnCommit(
+          navigation_handle)) {
+    return;
+  }
+
+  if (!navigation_handle->HasCommitted()) {
+    inflight_navigation_settings_.erase(navigation_handle);
+    return;
+  }
+
+  auto tscs =
+      base::WrapUnique(new TabSpecificContentSettings(*this, delegate_.get()));
+
+  // TODO(carlscab): This sort of internal. Maybe add a
+  // RenderDocumentHostUserData::Create(RenderFrameHost* rfh, Params...)
+  content::SetRenderDocumentHostUserData(
+      navigation_handle->GetRenderFrameHost(),
+      TabSpecificContentSettings::UserDataKey(), std::move(tscs));
+
+  auto it = inflight_navigation_settings_.find(navigation_handle);
+  if (it != inflight_navigation_settings_.end()) {
+    TransferNavigationContentSettingsToCommittedDocument(
+        it->second, navigation_handle->GetRenderFrameHost());
+    inflight_navigation_settings_.erase(it);
+  }
+
+  delegate_->UpdateLocationBar();
+}
+
+void TabSpecificContentSettings::WebContentsHandler::AppCacheAccessed(
+    const GURL& manifest_url,
+    bool blocked_by_policy) {
+  auto* tscs = TabSpecificContentSettings::GetForCurrentDocument(
+      web_contents()->GetMainFrame());
+  if (tscs)
+    tscs->AppCacheAccessed(manifest_url, blocked_by_policy);
+}
+
+void TabSpecificContentSettings::WebContentsHandler::AddSiteDataObserver(
+    SiteDataObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void TabSpecificContentSettings::WebContentsHandler::RemoveSiteDataObserver(
+    SiteDataObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
+void TabSpecificContentSettings::WebContentsHandler::NotifySiteDataObservers() {
+  for (SiteDataObserver& observer : observer_list_)
+    observer.OnSiteDataAccessed();
+}
+
+TabSpecificContentSettings::WebContentsHandler::
+    InflightNavigationContentSettings::InflightNavigationContentSettings() =
+        default;
+TabSpecificContentSettings::WebContentsHandler::
+    InflightNavigationContentSettings::InflightNavigationContentSettings(
+        const InflightNavigationContentSettings&) = default;
+TabSpecificContentSettings::WebContentsHandler::
+    InflightNavigationContentSettings::InflightNavigationContentSettings(
+        InflightNavigationContentSettings&&) = default;
+
+TabSpecificContentSettings::WebContentsHandler::
+    InflightNavigationContentSettings::~InflightNavigationContentSettings() =
+        default;
+
+TabSpecificContentSettings::WebContentsHandler::
+    InflightNavigationContentSettings&
+    TabSpecificContentSettings::WebContentsHandler::
+        InflightNavigationContentSettings::operator=(
+            InflightNavigationContentSettings&&) = default;
+
+WEB_CONTENTS_USER_DATA_KEY_IMPL(TabSpecificContentSettings::WebContentsHandler)
 
 TabSpecificContentSettings::TabSpecificContentSettings(
-    WebContents* tab,
-    std::unique_ptr<Delegate> delegate)
-    : content::WebContentsObserver(tab),
-      delegate_(std::move(delegate)),
+    TabSpecificContentSettings::WebContentsHandler& handler,
+    Delegate* delegate)
+    : handler_(handler),
+      main_frame_(handler_.web_contents()->GetMainFrame()),
+      delegate_(delegate),
+      visible_url_(handler_.web_contents()->GetVisibleURL()),
       map_(delegate_->GetSettingsMap()),
-      allowed_local_shared_objects_(tab->GetBrowserContext(),
-                                    delegate_->GetAdditionalFileSystemTypes(),
-                                    delegate_->GetIsDeletionDisabledCallback()),
-      blocked_local_shared_objects_(tab->GetBrowserContext(),
-                                    delegate_->GetAdditionalFileSystemTypes(),
-                                    delegate_->GetIsDeletionDisabledCallback()),
+      allowed_local_shared_objects_(
+          handler_.web_contents()->GetBrowserContext(),
+          delegate_->GetAdditionalFileSystemTypes(),
+          delegate_->GetIsDeletionDisabledCallback()),
+      blocked_local_shared_objects_(
+          handler_.web_contents()->GetBrowserContext(),
+          delegate_->GetAdditionalFileSystemTypes(),
+          delegate_->GetIsDeletionDisabledCallback()),
       geolocation_usages_state_(std::make_unique<ContentSettingsUsagesState>(
-          delegate_.get(),
-          ContentSettingsType::GEOLOCATION)),
+          delegate_,
+          ContentSettingsType::GEOLOCATION,
+          handler_.web_contents()->GetVisibleURL())),
       midi_usages_state_(std::make_unique<ContentSettingsUsagesState>(
-          delegate_.get(),
-          ContentSettingsType::MIDI_SYSEX)),
+          delegate_,
+          ContentSettingsType::MIDI_SYSEX,
+          handler_.web_contents()->GetVisibleURL())),
       load_plugins_link_enabled_(true),
       microphone_camera_state_(MICROPHONE_CAMERA_NOT_ACCESSED) {
-  ClearContentSettingsExceptForNavigationRelatedSettings();
-  ClearNavigationRelatedContentSettings();
-
   observer_.Add(map_);
 }
 
-TabSpecificContentSettings::~TabSpecificContentSettings() {
-  for (SiteDataObserver& observer : observer_list_)
-    observer.ContentSettingsDestroyed();
-}
+TabSpecificContentSettings::~TabSpecificContentSettings() = default;
 
 // static
 void TabSpecificContentSettings::CreateForWebContents(
     content::WebContents* web_contents,
     std::unique_ptr<Delegate> delegate) {
-  DCHECK(web_contents);
-  if (!FromWebContents(web_contents)) {
-    web_contents->SetUserData(UserDataKey(),
-                              base::WrapUnique(new TabSpecificContentSettings(
-                                  web_contents, std::move(delegate))));
+  TabSpecificContentSettings::WebContentsHandler::CreateForWebContents(
+      web_contents, std::move(delegate));
+}
+
+// static
+void TabSpecificContentSettings::DeleteForWebContentsForTest(
+    content::WebContents* web_contents) {
+  if (web_contents->GetMainFrame()) {
+    TabSpecificContentSettings::DeleteForCurrentDocument(
+        web_contents->GetMainFrame());
   }
+
+  web_contents->RemoveUserData(
+      TabSpecificContentSettings::WebContentsHandler::UserDataKey());
 }
 
 // static
@@ -131,11 +400,18 @@ TabSpecificContentSettings* TabSpecificContentSettings::GetForFrame(
 
   content::RenderFrameHost* frame =
       content::RenderFrameHost::FromID(render_process_id, render_frame_id);
-  WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
-  if (!web_contents)
+  if (!frame)
     return nullptr;
+  return TabSpecificContentSettings::GetForCurrentDocument(
+      frame->GetMainFrame());
+}
 
-  return TabSpecificContentSettings::FromWebContents(web_contents);
+// static
+TabSpecificContentSettings* TabSpecificContentSettings::FromWebContents(
+    content::WebContents* web_contents) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return TabSpecificContentSettings::GetForCurrentDocument(
+      web_contents->GetMainFrame());
 }
 
 // static
@@ -200,6 +476,14 @@ void TabSpecificContentSettings::SharedWorkerAccessed(
   if (settings)
     settings->OnSharedWorkerAccessed(worker_url, name, constructor_origin,
                                      blocked_by_policy);
+}
+
+// static
+content::WebContentsObserver*
+TabSpecificContentSettings::GetWebContentsObserverForTest(
+    content::WebContents* web_contents) {
+  return TabSpecificContentSettings::WebContentsHandler::FromWebContents(
+      web_contents);
 }
 
 bool TabSpecificContentSettings::IsContentBlocked(
@@ -335,22 +619,10 @@ void TabSpecificContentSettings::OnDomStorageAccessed(const GURL& url,
   else
     OnContentAllowed(ContentSettingsType::COOKIES);
 
-  NotifySiteDataObservers();
+  handler_.NotifySiteDataObservers();
 }
 
 void TabSpecificContentSettings::OnCookiesAccessed(
-    content::NavigationHandle* navigation,
-    const content::CookieAccessDetails& details) {
-  OnCookiesAccessedImpl(details);
-}
-
-void TabSpecificContentSettings::OnCookiesAccessed(
-    content::RenderFrameHost* rfh,
-    const content::CookieAccessDetails& details) {
-  OnCookiesAccessedImpl(details);
-}
-
-void TabSpecificContentSettings::OnCookiesAccessedImpl(
     const content::CookieAccessDetails& details) {
   if (details.cookie_list.empty())
     return;
@@ -362,7 +634,7 @@ void TabSpecificContentSettings::OnCookiesAccessedImpl(
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 
-  NotifySiteDataObservers();
+  handler_.NotifySiteDataObservers();
 }
 
 void TabSpecificContentSettings::OnIndexedDBAccessed(const GURL& url,
@@ -375,7 +647,7 @@ void TabSpecificContentSettings::OnIndexedDBAccessed(const GURL& url,
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 
-  NotifySiteDataObservers();
+  handler_.NotifySiteDataObservers();
 }
 
 void TabSpecificContentSettings::OnCacheStorageAccessed(
@@ -391,36 +663,10 @@ void TabSpecificContentSettings::OnCacheStorageAccessed(
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 
-  NotifySiteDataObservers();
+  handler_.NotifySiteDataObservers();
 }
 
 void TabSpecificContentSettings::OnServiceWorkerAccessed(
-    content::NavigationHandle* navigation,
-    const GURL& scope,
-    content::AllowServiceWorkerResult allowed) {
-  DCHECK(scope.is_valid());
-  if (allowed) {
-    allowed_local_shared_objects_.service_workers()->Add(
-        url::Origin::Create(scope));
-  } else {
-    blocked_local_shared_objects_.service_workers()->Add(
-        url::Origin::Create(scope));
-  }
-
-  if (allowed.javascript_blocked_by_policy()) {
-    OnContentBlocked(ContentSettingsType::JAVASCRIPT);
-  } else {
-    OnContentAllowed(ContentSettingsType::JAVASCRIPT);
-  }
-  if (allowed.cookies_blocked_by_policy()) {
-    OnContentBlocked(ContentSettingsType::COOKIES);
-  } else {
-    OnContentAllowed(ContentSettingsType::COOKIES);
-  }
-}
-
-void TabSpecificContentSettings::OnServiceWorkerAccessed(
-    content::RenderFrameHost* frame,
     const GURL& scope,
     content::AllowServiceWorkerResult allowed) {
   DCHECK(scope.is_valid());
@@ -471,7 +717,7 @@ void TabSpecificContentSettings::OnWebDatabaseAccessed(const GURL& url,
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 
-  NotifySiteDataObservers();
+  handler_.NotifySiteDataObservers();
 }
 
 void TabSpecificContentSettings::OnFileSystemAccessed(const GURL& url,
@@ -487,7 +733,7 @@ void TabSpecificContentSettings::OnFileSystemAccessed(const GURL& url,
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 
-  NotifySiteDataObservers();
+  handler_.NotifySiteDataObservers();
 }
 
 void TabSpecificContentSettings::OnGeolocationPermissionSet(
@@ -579,34 +825,6 @@ void TabSpecificContentSettings::OnMidiSysExAccessBlocked(
   OnContentBlocked(ContentSettingsType::MIDI_SYSEX);
 }
 
-void TabSpecificContentSettings::
-    ClearContentSettingsExceptForNavigationRelatedSettings() {
-  for (auto& status : content_settings_status_) {
-    if (status.first == ContentSettingsType::COOKIES ||
-        status.first == ContentSettingsType::JAVASCRIPT)
-      continue;
-    status.second.blocked = false;
-    status.second.allowed = false;
-  }
-  microphone_camera_state_ = MICROPHONE_CAMERA_NOT_ACCESSED;
-  camera_was_just_granted_on_site_level_ = false;
-  mic_was_just_granted_on_site_level_ = false;
-  load_plugins_link_enabled_ = true;
-  delegate_->UpdateLocationBar();
-}
-
-void TabSpecificContentSettings::ClearNavigationRelatedContentSettings() {
-  blocked_local_shared_objects_.Reset();
-  allowed_local_shared_objects_.Reset();
-  for (ContentSettingsType type :
-       {ContentSettingsType::COOKIES, ContentSettingsType::JAVASCRIPT}) {
-    ContentSettingsStatus& status = content_settings_status_[type];
-    status.blocked = false;
-    status.allowed = false;
-  }
-  delegate_->UpdateLocationBar();
-}
-
 void TabSpecificContentSettings::FlashDownloadBlocked() {
   OnContentBlocked(ContentSettingsType::PLUGINS);
 }
@@ -640,7 +858,7 @@ void TabSpecificContentSettings::OnContentSettingChanged(
   if (!details.update_all() &&
       // The visible URL is the URL in the URL field of a tab.
       // Currently this should be matched by the |primary_pattern|.
-      !details.primary_pattern().Matches(web_contents()->GetVisibleURL())) {
+      !details.primary_pattern().Matches(visible_url_)) {
     return;
   }
 
@@ -679,8 +897,7 @@ void TabSpecificContentSettings::OnContentSettingChanged(
     case ContentSettingsType::CLIPBOARD_READ_WRITE:
     case ContentSettingsType::SENSORS: {
       ContentSetting setting = map_->GetContentSetting(
-          web_contents()->GetVisibleURL(), web_contents()->GetVisibleURL(),
-          content_type, std::string());
+          visible_url_, visible_url_, content_type, std::string());
       // If an indicator is shown and the content settings has changed, swap the
       // indicator for the one with the opposite meaning (allowed <=> blocked).
       if (setting == CONTENT_SETTING_BLOCK && status.allowed) {
@@ -701,82 +918,7 @@ void TabSpecificContentSettings::OnContentSettingChanged(
   if (!ShouldSendUpdatedContentSettingsRulesToRenderer(content_type))
     return;
 
-  MaybeSendRendererContentSettingsRules(web_contents());
-}
-
-void TabSpecificContentSettings::MaybeSendRendererContentSettingsRules(
-    content::WebContents* web_contents) {
-  // Only send a message to the renderer if it is initialised and not dead.
-  // Otherwise, the IPC messages will be queued in the browser process,
-  // potentially causing large memory leaks. See https://crbug.com/875937.
-  content::RenderProcessHost* process =
-      web_contents->GetMainFrame()->GetProcess();
-  if (!process->IsInitializedAndNotDead())
-    return;
-
-  RendererContentSettingRules rules;
-  GetRendererContentSettingRules(map_, &rules);
-  delegate_->SetContentSettingRules(process, rules);
-}
-
-void TabSpecificContentSettings::RenderFrameForInterstitialPageCreated(
-    content::RenderFrameHost* render_frame_host) {
-  // We want to tell the renderer-side code to ignore content settings for this
-  // page.
-  mojo::AssociatedRemote<content_settings::mojom::ContentSettingsAgent>
-      content_settings_agent;
-  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
-      &content_settings_agent);
-  content_settings_agent->SetAsInterstitial();
-}
-
-void TabSpecificContentSettings::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument()) {
-    return;
-  }
-
-  ClearNavigationRelatedContentSettings();
-}
-
-void TabSpecificContentSettings::ReadyToCommitNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      navigation_handle->IsSameDocument()) {
-    return;
-  }
-
-  PrefService* prefs = delegate_->GetPrefs();
-  if (prefs &&
-      !prefs->GetBoolean(
-          security_state::prefs::kStricterMixedContentTreatmentEnabled)) {
-    auto* render_frame_host = navigation_handle->GetRenderFrameHost();
-    mojo::AssociatedRemote<content_settings::mojom::ContentSettingsAgent>
-        content_settings_agent;
-    render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
-        &content_settings_agent);
-    content_settings_agent->SetDisabledMixedContentUpgrades();
-  }
-
-  // There may be content settings that were updated for the navigated URL.
-  // These would not have been sent before if we're navigating cross-origin.
-  // Ensure up to date rules are sent before navigation commits.
-  MaybeSendRendererContentSettingsRules(navigation_handle->GetWebContents());
-}
-
-void TabSpecificContentSettings::DidFinishNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame() ||
-      !navigation_handle->HasCommitted() ||
-      navigation_handle->IsSameDocument()) {
-    return;
-  }
-
-  ClearContentSettingsExceptForNavigationRelatedSettings();
-  GeolocationDidNavigate(navigation_handle);
-  MidiDidNavigate(navigation_handle);
-  ClearContentSettingsChangedViaPageInfo();
+  MaybeSendRendererContentSettingsRules(main_frame_, map_, delegate_);
 }
 
 void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
@@ -792,37 +934,8 @@ void TabSpecificContentSettings::AppCacheAccessed(const GURL& manifest_url,
   }
 }
 
-void TabSpecificContentSettings::AddSiteDataObserver(
-    SiteDataObserver* observer) {
-  observer_list_.AddObserver(observer);
-}
-
-void TabSpecificContentSettings::RemoveSiteDataObserver(
-    SiteDataObserver* observer) {
-  observer_list_.RemoveObserver(observer);
-}
-
-void TabSpecificContentSettings::NotifySiteDataObservers() {
-  for (SiteDataObserver& observer : observer_list_)
-    observer.OnSiteDataAccessed();
-}
-
 void TabSpecificContentSettings::ClearContentSettingsChangedViaPageInfo() {
   content_settings_changed_via_page_info_.clear();
-}
-
-void TabSpecificContentSettings::GeolocationDidNavigate(
-    content::NavigationHandle* navigation_handle) {
-  geolocation_usages_state_->ClearStateMap();
-  geolocation_usages_state_->DidNavigate(navigation_handle->GetURL(),
-                                         navigation_handle->GetPreviousURL());
-}
-
-void TabSpecificContentSettings::MidiDidNavigate(
-    content::NavigationHandle* navigation_handle) {
-  midi_usages_state_->ClearStateMap();
-  midi_usages_state_->DidNavigate(navigation_handle->GetURL(),
-                                  navigation_handle->GetPreviousURL());
 }
 
 void TabSpecificContentSettings::BlockAllContentForTesting() {
@@ -839,16 +952,16 @@ void TabSpecificContentSettings::BlockAllContentForTesting() {
 
   // Geolocation and media must be blocked separately, as the generic
   // TabSpecificContentSettings::OnContentBlocked does not apply to them.
-  OnGeolocationPermissionSet(web_contents()->GetLastCommittedURL(), false);
+  OnGeolocationPermissionSet(main_frame_->GetLastCommittedURL(), false);
   MicrophoneCameraStateFlags media_blocked =
       static_cast<MicrophoneCameraStateFlags>(
           TabSpecificContentSettings::MICROPHONE_ACCESSED |
           TabSpecificContentSettings::MICROPHONE_BLOCKED |
           TabSpecificContentSettings::CAMERA_ACCESSED |
           TabSpecificContentSettings::CAMERA_BLOCKED);
-  OnMediaStreamPermissionSet(web_contents()->GetLastCommittedURL(),
-                             media_blocked, std::string(), std::string(),
-                             std::string(), std::string());
+  OnMediaStreamPermissionSet(main_frame_->GetLastCommittedURL(), media_blocked,
+                             std::string(), std::string(), std::string(),
+                             std::string());
 }
 
 void TabSpecificContentSettings::ContentSettingChangedViaPageInfo(
@@ -862,6 +975,6 @@ bool TabSpecificContentSettings::HasContentSettingChangedViaPageInfo(
          content_settings_changed_via_page_info_.end();
 }
 
-WEB_CONTENTS_USER_DATA_KEY_IMPL(TabSpecificContentSettings)
+RENDER_DOCUMENT_HOST_USER_DATA_KEY_IMPL(TabSpecificContentSettings)
 
 }  // namespace content_settings

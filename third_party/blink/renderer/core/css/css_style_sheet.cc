@@ -226,6 +226,8 @@ void CSSStyleSheet::DidMutateRules() {
         resolver->InvalidateMatchedPropertiesCache();
     }
   }
+
+  probe::DidMutateStyleSheet(OwnerDocument(), this);
 }
 
 void CSSStyleSheet::DidMutate() {

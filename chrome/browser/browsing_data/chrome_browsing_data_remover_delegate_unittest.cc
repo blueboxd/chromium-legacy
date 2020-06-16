@@ -3104,3 +3104,25 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
       ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_USAGE_DATA, false);
   EXPECT_TRUE(prefs->GetList(kNotificationPermissionActionsPrefPath)->empty());
 }
+
+TEST_F(ChromeBrowsingDataRemoverDelegateTest,
+       GetDomainsForDeferredCookieDeletion) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      password_manager::features::kEnablePasswordsAccountStorage);
+
+  auto* delegate = GetProfile()->GetBrowsingDataRemoverDelegate();
+  auto domains = delegate->GetDomainsForDeferredCookieDeletion(
+      ChromeBrowsingDataRemoverDelegate::ALL_DATA_TYPES);
+  EXPECT_EQ(domains.size(), 1u);
+  EXPECT_EQ(domains[0], "google.com");
+
+  domains = delegate->GetDomainsForDeferredCookieDeletion(
+      ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS);
+  EXPECT_EQ(domains.size(), 1u);
+  EXPECT_EQ(domains[0], "google.com");
+
+  domains = delegate->GetDomainsForDeferredCookieDeletion(
+      content::BrowsingDataRemover::DATA_TYPE_COOKIES);
+  EXPECT_EQ(domains.size(), 0u);
+}

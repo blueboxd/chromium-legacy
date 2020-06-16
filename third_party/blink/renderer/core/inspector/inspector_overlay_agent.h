@@ -184,6 +184,7 @@ class CORE_EXPORT InspectorOverlayAgent final
       protocol::Maybe<bool> include_distance,
       protocol::Maybe<bool> include_style,
       protocol::Maybe<String> color_format,
+      protocol::Maybe<bool> show_accessibility_info,
       std::unique_ptr<protocol::DictionaryValue>* highlight) override;
   protocol::Response setShowHinge(
       protocol::Maybe<protocol::Overlay::HingeConfig> hinge_config) override;

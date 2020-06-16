@@ -77,6 +77,11 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
   void UpdateRadioButtonGroup(const std::string& radio_group,
                               const std::string& selected_model_identifier);
 
+  // Runs all callbacks triggered by model value changes. This is useful to
+  // properly initialize a UI after inflation, since all UI state should be
+  // bound to the model.
+  void RunValueChangedCallbacks();
+
  private:
   base::Optional<InteractionCallback> CreateInteractionCallbackFromProto(
       const CallbackProto& proto);

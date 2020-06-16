@@ -788,7 +788,7 @@ suite('PrintJobEntryTest', () => {
   }
 
   test('initializeJobEntry', () => {
-    const expectedTitle = 'title';
+    const expectedTitle = 'title.pdf';
     const expectedStatus = CompletionStatus.PRINTED;
     const expectedCreationTime = convertToMojoTime(new Date());
 
@@ -805,6 +805,9 @@ suite('PrintJobEntryTest', () => {
     assertEquals(
         'Printed',
         jobEntryTestElement.$$('#completionStatus').textContent.trim());
+    // Verify correct icon is shown.
+    assertEquals(
+        'print-management:file-pdf', jobEntryTestElement.$$('#fileIcon').icon);
 
     // Change date and assert it shows the correct date (Feb 5, 2020);
     jobEntryTestElement.set('jobEntry.creationTime', {
@@ -836,5 +839,8 @@ suite('PrintJobEntryTest', () => {
         jobEntryTestElement.$$('#creationTime').textContent.trim());
     assertEquals(
         '1/4', jobEntryTestElement.$$('#numericalProgress').textContent.trim());
+    assertEquals(
+        'print-management:file-generic',
+        jobEntryTestElement.$$('#fileIcon').icon);
   });
 });

@@ -533,7 +533,7 @@ String StylePropertySerializer::SerializeShorthand(
     case CSSPropertyID::kPaddingInline:
       return Get2Values(paddingInlineShorthand());
     case CSSPropertyID::kTextDecoration:
-      return GetShorthandValue(textDecorationShorthand());
+      return TextDecorationValue();
     case CSSPropertyID::kTransition:
       return GetLayeredShorthandValue(transitionShorthand());
     case CSSPropertyID::kListStyle:
@@ -815,6 +815,37 @@ String StylePropertySerializer::OffsetValue() const {
       result.Append(" / ");
       result.Append(anchor->CssText());
     }
+  }
+  return result.ToString();
+}
+
+String StylePropertySerializer::TextDecorationValue() const {
+  StringBuilder result;
+  const auto& shorthand = shorthandForProperty(CSSPropertyID::kTextDecoration);
+  for (unsigned i = 0; i < shorthand.length(); ++i) {
+    const CSSValue* value =
+        property_set_.GetPropertyCSSValue(*shorthand.properties()[i]);
+    String value_text = value->CssText();
+    if (value->IsInitialValue())
+      continue;
+    if (shorthand.properties()[i]->PropertyID() ==
+        CSSPropertyID::kTextDecorationThickness) {
+      if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+        // Do not include initial value 'auto' for thickness.
+        // TODO(https://crbug.com/1093826): general shorthand serialization
+        // issues remain, in particular for text-decoration.
+        CSSValueID value_id = identifier_value->GetValueID();
+        if (value_id == CSSValueID::kAuto)
+          continue;
+      }
+    }
+    if (!result.IsEmpty())
+      result.Append(" ");
+    result.Append(value_text);
+  }
+
+  if (result.IsEmpty()) {
+    return "none";
   }
   return result.ToString();
 }

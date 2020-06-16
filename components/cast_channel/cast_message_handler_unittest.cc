@@ -331,7 +331,7 @@ TEST_F(CastMessageHandlerTest, CloseConnectionFromReceiver) {
 TEST_F(CastMessageHandlerTest, LaunchSession) {
   ExpectEnsureConnectionThen(CastMessageType::kLaunch);
 
-  const base::Optional<base::Value> json = base::JSONReader().Read(kAppParams);
+  const base::Optional<base::Value> json = base::JSONReader::Read(kAppParams);
 
   handler_.LaunchSession(
       channel_id_, kAppId1, base::TimeDelta::FromSeconds(30), {"WEB"}, json,

@@ -252,11 +252,11 @@
 
 # Never inline classes or methods with this annotation, but allow shrinking and
 # obfuscation.
--keepclassmembers,allowobfuscation,allowoptimization @org.chromium.base.annotations.DoNotInline class ** {
-  <methods>;
+-if @org.chromium.base.annotations.DoNotInline class * {
+    *** *(...);
 }
--keepclassmembers,allowobfuscation,allowoptimization class ** {
-  @org.chromium.base.annotations.DoNotInline <methods>;
+-keep,allowobfuscation class <1> {
+    *** <2>(...);
 }
 
 # Keep all CREATOR fields within Parcelable that are kept.
@@ -794,36 +794,51 @@
 ################################################################################
 # THIS LINE WAS OMITTED
 -keep @interface org.chromium.base.annotations.VerifiesOnNMR1
--keepclassmembers,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnNMR1 class ** {
-  <methods>;
+-if @org.chromium.base.annotations.VerifiesOnNMR1 class * {
+    *** *(...);
+}
+-keep,allowobfuscation class <1> {
+    *** <2>(...);
 }
 -keepclassmembers,allowobfuscation,allowoptimization class ** {
   @org.chromium.base.annotations.VerifiesOnNMR1 <methods>;
 }
 -keep @interface org.chromium.base.annotations.VerifiesOnO
--keepclassmembers,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnO class ** {
-  <methods>;
+-if @org.chromium.base.annotations.VerifiesOnO class * {
+    *** *(...);
+}
+-keep,allowobfuscation class <1> {
+    *** <2>(...);
 }
 -keepclassmembers,allowobfuscation,allowoptimization class ** {
   @org.chromium.base.annotations.VerifiesOnO <methods>;
 }
 -keep @interface org.chromium.base.annotations.VerifiesOnOMR1
--keepclassmembers,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnOMR1 class ** {
-  <methods>;
+-if @org.chromium.base.annotations.VerifiesOnOMR1 class * {
+    *** *(...);
+}
+-keep,allowobfuscation class <1> {
+    *** <2>(...);
 }
 -keepclassmembers,allowobfuscation,allowoptimization class ** {
   @org.chromium.base.annotations.VerifiesOnOMR1 <methods>;
 }
 -keep @interface org.chromium.base.annotations.VerifiesOnP
--keepclassmembers,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnP class ** {
-  <methods>;
+-if @org.chromium.base.annotations.VerifiesOnP class * {
+    *** *(...);
+}
+-keep,allowobfuscation class <1> {
+    *** <2>(...);
 }
 -keepclassmembers,allowobfuscation,allowoptimization class ** {
   @org.chromium.base.annotations.VerifiesOnP <methods>;
 }
 -keep @interface org.chromium.base.annotations.VerifiesOnQ
--keepclassmembers,allowobfuscation,allowoptimization @org.chromium.base.annotations.VerifiesOnQ class ** {
-  <methods>;
+-if @org.chromium.base.annotations.VerifiesOnQ class * {
+    *** *(...);
+}
+-keep,allowobfuscation class <1> {
+    *** <2>(...);
 }
 -keepclassmembers,allowobfuscation,allowoptimization class ** {
   @org.chromium.base.annotations.VerifiesOnQ <methods>;

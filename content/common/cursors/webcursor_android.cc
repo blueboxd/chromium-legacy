@@ -18,10 +18,6 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
 void WebCursor::SetDisplayInfo(const display::Display& display) {}
 #endif
 
-bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {
-  return true;
-}
-
 void WebCursor::CleanupPlatformData() {}
 
 void WebCursor::CopyPlatformData(const WebCursor& other) {}

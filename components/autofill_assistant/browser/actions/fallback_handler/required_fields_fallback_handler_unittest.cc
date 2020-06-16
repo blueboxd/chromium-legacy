@@ -75,7 +75,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest,
 }
 
 TEST_F(RequiredFieldsFallbackHandlerTest,
-       AddsMissingOrEmptyFallbackFieldToError) {
+       AddsMissingOrEmptyFallbackValuesToError) {
   ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), ""));
 
@@ -107,7 +107,7 @@ TEST_F(RequiredFieldsFallbackHandlerTest,
                           .details()
                           .autofill_error_info()
                           .autofill_field_error_size(),
-                      2);
+                      3);
             EXPECT_EQ(detail_status.value()
                           .details()
                           .autofill_error_info()
@@ -130,6 +130,17 @@ TEST_F(RequiredFieldsFallbackHandlerTest,
                             .autofill_error_info()
                             .autofill_field_error(1)
                             .no_fallback_value());
+            EXPECT_EQ(detail_status.value()
+                          .details()
+                          .autofill_error_info()
+                          .autofill_field_error(2)
+                          .value_expression(),
+                      "${51}");
+            EXPECT_TRUE(detail_status.value()
+                            .details()
+                            .autofill_error_info()
+                            .autofill_field_error(2)
+                            .empty_after_fallback());
           });
 
   fallback_handler.CheckAndFallbackRequiredFields(OkClientStatus(),
@@ -182,6 +193,56 @@ TEST_F(RequiredFieldsFallbackHandlerTest, AddsFirstFieldFillingError) {
                           .autofill_field_error(0)
                           .status(),
                       OTHER_ACTION_STATUS);
+          });
+
+  fallback_handler.CheckAndFallbackRequiredFields(OkClientStatus(),
+                                                  std::move(callback));
+}
+
+TEST_F(RequiredFieldsFallbackHandlerTest,
+       AddsFirstEmptyFieldAfterFillingToError) {
+  ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), ""));
+
+  std::vector<RequiredField> required_fields = {
+      CreateRequiredField("${51}", {"#card_name"}),
+      CreateRequiredField("${52}", {"#card_number"})};
+
+  std::map<std::string, std::string> fallback_values;
+  fallback_values.emplace(
+      base::NumberToString(
+          static_cast<int>(autofill::ServerFieldType::CREDIT_CARD_NAME_FULL)),
+      "John Doe");
+  fallback_values.emplace(base::NumberToString(static_cast<int>(
+                              autofill::ServerFieldType::CREDIT_CARD_NUMBER)),
+                          "4111111111111111");
+
+  RequiredFieldsFallbackHandler fallback_handler(
+      required_fields, fallback_values, &mock_action_delegate_);
+
+  base::OnceCallback<void(const ClientStatus&,
+                          const base::Optional<ClientStatus>&)>
+      callback =
+          base::BindOnce([](const ClientStatus& status,
+                            const base::Optional<ClientStatus>& detail_status) {
+            EXPECT_EQ(status.proto_status(), AUTOFILL_INCOMPLETE);
+            ASSERT_TRUE(detail_status.has_value());
+            ASSERT_EQ(detail_status.value()
+                          .details()
+                          .autofill_error_info()
+                          .autofill_field_error_size(),
+                      1);
+            EXPECT_EQ(detail_status.value()
+                          .details()
+                          .autofill_error_info()
+                          .autofill_field_error(0)
+                          .value_expression(),
+                      "${51}");
+            EXPECT_TRUE(detail_status.value()
+                            .details()
+                            .autofill_error_info()
+                            .autofill_field_error(0)
+                            .empty_after_fallback());
           });
 
   fallback_handler.CheckAndFallbackRequiredFields(OkClientStatus(),

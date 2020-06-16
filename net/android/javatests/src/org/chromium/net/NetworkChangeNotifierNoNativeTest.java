@@ -11,7 +11,8 @@ import android.net.ConnectivityManager.NetworkCallback;
 import android.os.Build;
 import android.os.Looper;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;

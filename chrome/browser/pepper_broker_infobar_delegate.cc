@@ -43,7 +43,8 @@ PepperBrokerInfoBarDelegate::PepperBrokerInfoBarDelegate(
     : url_(url),
       plugin_name_(plugin_name),
       content_settings_(content_settings),
-      tab_content_settings_(tab_content_settings),
+      tab_content_settings_(
+          tab_content_settings ? tab_content_settings->AsWeakPtr() : nullptr),
       callback_(std::move(callback)) {}
 
 PepperBrokerInfoBarDelegate::~PepperBrokerInfoBarDelegate() {
@@ -76,8 +77,9 @@ base::string16 PepperBrokerInfoBarDelegate::GetMessageText() const {
 
 base::string16 PepperBrokerInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
-      IDS_PEPPER_BROKER_ALLOW_BUTTON : IDS_PEPPER_BROKER_DENY_BUTTON);
+  return l10n_util::GetStringUTF16((button == BUTTON_OK)
+                                       ? IDS_PEPPER_BROKER_ALLOW_BUTTON
+                                       : IDS_PEPPER_BROKER_DENY_BUTTON);
 }
 
 bool PepperBrokerInfoBarDelegate::Accept() {
@@ -98,5 +100,7 @@ void PepperBrokerInfoBarDelegate::DispatchCallback(bool result) {
   content_settings_->SetContentSettingDefaultScope(
       url_, GURL(), ContentSettingsType::PPAPI_BROKER, std::string(),
       result ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
-  tab_content_settings_->SetPepperBrokerAllowed(result);
+  if (tab_content_settings_) {
+    tab_content_settings_->SetPepperBrokerAllowed(result);
+  }
 }

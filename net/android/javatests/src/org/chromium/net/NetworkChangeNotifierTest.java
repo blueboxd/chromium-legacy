@@ -27,9 +27,10 @@ import android.os.Looper;
 import android.os.StrictMode;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.MediumTest;
 import android.support.test.rule.UiThreadTestRule;
 import android.telephony.TelephonyManager;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

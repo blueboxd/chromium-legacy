@@ -649,6 +649,10 @@ message AutofillErrorInfoProto {
 
       // The status of the action.
       ProcessedActionStatusProto status = 4;
+
+      // The field was required and expected to be filled during the fallback
+      // flow but was empty in the end.
+      bool empty_after_fallback = 6;
     }
 
     reserved 2;

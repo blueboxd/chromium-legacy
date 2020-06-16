@@ -54,6 +54,11 @@ struct DeleteRegistrationResult {
   storage::mojom::ServiceWorkerStorageOriginState origin_state;
 };
 
+struct GetNewVersionIdResult {
+  int64_t version_id;
+  mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef> reference;
+};
+
 struct GetUserDataResult {
   DatabaseStatus status;
   std::vector<std::string> values;
@@ -347,16 +352,19 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     return return_value;
   }
 
-  int64_t GetNewVersionId() {
-    int64_t return_value;
+  GetNewVersionIdResult GetNewVersionId() {
+    GetNewVersionIdResult result;
     base::RunLoop loop;
-    storage()->GetNewVersionId(
-        base::BindLambdaForTesting([&](int64_t version_id) {
-          return_value = version_id;
+    storage()->GetNewVersionId(base::BindLambdaForTesting(
+        [&](int64_t version_id,
+            mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
+                reference) {
+          result.version_id = version_id;
+          result.reference = std::move(reference);
           loop.Quit();
         }));
     loop.Run();
-    return return_value;
+    return result;
   }
 
   int64_t GetNewResourceId() {
@@ -691,7 +699,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndDeleteRegistration) {
   LazyInitializeForTest();
 
   const int64_t kRegistrationId = GetNewResourceId();
-  const int64_t kVersionId = GetNewVersionId();
+  const int64_t kVersionId = GetNewVersionId().version_id;
 
   // Create a registration data with a single resource.
   std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources;
@@ -766,7 +774,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, UpdateToActiveState) {
 
   // Preparation: Store a registration.
   const int64_t registration_id = GetNewRegistrationId();
-  const int64_t version_id = GetNewVersionId();
+  const int64_t version_id = GetNewVersionId().version_id;
   const int64_t resource_id = GetNewResourceId();
   DatabaseStatus status =
       CreateAndStoreRegistration(registration_id, version_id, resource_id,
@@ -803,7 +811,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, UpdateLastUpdateCheckTime) {
 
   // Preparation: Store a registration.
   const int64_t registration_id = GetNewRegistrationId();
-  const int64_t version_id = GetNewVersionId();
+  const int64_t version_id = GetNewVersionId().version_id;
   const int64_t resource_id = GetNewResourceId();
   DatabaseStatus status =
       CreateAndStoreRegistration(registration_id, version_id, resource_id,
@@ -841,7 +849,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, Update) {
 
   // Preparation: Store a registration.
   const int64_t registration_id = GetNewRegistrationId();
-  const int64_t version_id = GetNewVersionId();
+  const int64_t version_id = GetNewVersionId().version_id;
   const int64_t resource_id = GetNewResourceId();
   DatabaseStatus status =
       CreateAndStoreRegistration(registration_id, version_id, resource_id,
@@ -890,14 +898,14 @@ TEST_F(ServiceWorkerStorageControlImplTest, GetRegistrationsForOrigin) {
   // Store two registrations which have the same origin.
   DatabaseStatus status;
   const int64_t registration_id1 = GetNewRegistrationId();
-  const int64_t version_id1 = GetNewVersionId();
+  const int64_t version_id1 = GetNewVersionId().version_id;
   const int64_t resource_id1 = GetNewResourceId();
   status =
       CreateAndStoreRegistration(registration_id1, version_id1, resource_id1,
                                  kScope1, kScriptUrl1, kScriptSize);
   ASSERT_EQ(status, DatabaseStatus::kOk);
   const int64_t registration_id2 = GetNewRegistrationId();
-  const int64_t version_id2 = GetNewVersionId();
+  const int64_t version_id2 = GetNewVersionId().version_id;
   const int64_t resource_id2 = GetNewResourceId();
   status =
       CreateAndStoreRegistration(registration_id2, version_id2, resource_id2,
@@ -1040,7 +1048,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, UncommittedResources) {
       resource_id2, kImportedScriptUrl, resource_data2.size()));
 
   const int64_t registration_id = GetNewRegistrationId();
-  const int64_t version_id = GetNewVersionId();
+  const int64_t version_id = GetNewVersionId().version_id;
   RegistrationData registration_data = CreateRegistrationData(
       registration_id, version_id, kScope, kScriptUrl, resources);
 
@@ -1103,7 +1111,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndGetUserData) {
   LazyInitializeForTest();
 
   const int64_t registration_id = GetNewRegistrationId();
-  const int64_t version_id = GetNewVersionId();
+  const int64_t version_id = GetNewVersionId().version_id;
   const int64_t resource_id = GetNewResourceId();
   DatabaseStatus status;
   status = CreateAndStoreRegistration(registration_id, version_id, resource_id,
@@ -1163,7 +1171,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndGetUserData) {
   // Delete the registration and store a new registration for the same
   // scope.
   const int64_t new_registration_id = GetNewRegistrationId();
-  const int64_t new_version_id = GetNewVersionId();
+  const int64_t new_version_id = GetNewVersionId().version_id;
   const int64_t new_resource_id = GetNewResourceId();
   {
     DeleteRegistrationResult result =
@@ -1194,7 +1202,7 @@ TEST_F(ServiceWorkerStorageControlImplTest, StoreAndGetUserDataByKeyPrefix) {
   LazyInitializeForTest();
 
   const int64_t registration_id = GetNewRegistrationId();
-  const int64_t version_id = GetNewVersionId();
+  const int64_t version_id = GetNewVersionId().version_id;
   const int64_t resource_id = GetNewResourceId();
   DatabaseStatus status;
   status = CreateAndStoreRegistration(registration_id, version_id, resource_id,
@@ -1272,14 +1280,14 @@ TEST_F(ServiceWorkerStorageControlImplTest,
   // Preparation: Create and store two registrations.
   DatabaseStatus status;
   const int64_t registration_id1 = GetNewRegistrationId();
-  const int64_t version_id1 = GetNewVersionId();
+  const int64_t version_id1 = GetNewVersionId().version_id;
   const int64_t resource_id1 = GetNewResourceId();
   status =
       CreateAndStoreRegistration(registration_id1, version_id1, resource_id1,
                                  kScope1, kScriptUrl1, kScriptSize);
   ASSERT_EQ(status, DatabaseStatus::kOk);
   const int64_t registration_id2 = GetNewRegistrationId();
-  const int64_t version_id2 = GetNewVersionId();
+  const int64_t version_id2 = GetNewVersionId().version_id;
   const int64_t resource_id2 = GetNewResourceId();
   status =
       CreateAndStoreRegistration(registration_id2, version_id2, resource_id2,
@@ -1376,14 +1384,14 @@ TEST_F(ServiceWorkerStorageControlImplTest, ApplyPolicyUpdates) {
   // Preparation: Create and store two registrations.
   DatabaseStatus status;
   const int64_t registration_id1 = GetNewRegistrationId();
-  const int64_t version_id1 = GetNewVersionId();
+  const int64_t version_id1 = GetNewVersionId().version_id;
   const int64_t resource_id1 = GetNewResourceId();
   status =
       CreateAndStoreRegistration(registration_id1, version_id1, resource_id1,
                                  kScope1, kScriptUrl1, kScriptSize);
   ASSERT_EQ(status, DatabaseStatus::kOk);
   const int64_t registration_id2 = GetNewRegistrationId();
-  const int64_t version_id2 = GetNewVersionId();
+  const int64_t version_id2 = GetNewVersionId().version_id;
   const int64_t resource_id2 = GetNewResourceId();
   status =
       CreateAndStoreRegistration(registration_id2, version_id2, resource_id2,
@@ -1435,22 +1443,21 @@ TEST_F(ServiceWorkerStorageControlImplTest, TrackRunningVersion) {
       resource_id2, kImportedScriptUrl, resource_data2.size()));
 
   const int64_t registration_id = GetNewRegistrationId();
-  const int64_t version_id = GetNewVersionId();
+  GetNewVersionIdResult new_version_id_result = GetNewVersionId();
+  ASSERT_NE(new_version_id_result.version_id,
+            blink::mojom::kInvalidServiceWorkerVersionId);
+  const int64_t version_id = new_version_id_result.version_id;
   RegistrationData registration_data = CreateRegistrationData(
       registration_id, version_id, kScope, kScriptUrl, resources);
   DatabaseStatus status =
       StoreRegistration(std::move(registration_data), std::move(resources));
   ASSERT_EQ(status, DatabaseStatus::kOk);
 
-  // Create two references.
+  // Create two references, one from GetNewVersionId() and the other from
+  // FindRegistrationForId().
   mojo::Remote<storage::mojom::ServiceWorkerLiveVersionRef> reference1;
-  {
-    FindRegistrationResult result =
-        FindRegistrationForId(registration_id, kScope.GetOrigin());
-    ASSERT_EQ(result->status, DatabaseStatus::kOk);
-    ASSERT_TRUE(result->version_reference);
-    reference1.Bind(std::move(result->version_reference));
-  }
+  ASSERT_TRUE(new_version_id_result.reference);
+  reference1.Bind(std::move(new_version_id_result.reference));
 
   mojo::Remote<storage::mojom::ServiceWorkerLiveVersionRef> reference2;
   {

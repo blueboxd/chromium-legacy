@@ -306,25 +306,23 @@ void PartitionRoot<thread_safe>::InitSlowPath() {
 }
 
 template <bool thread_safe>
-bool PartitionReallocDirectMappedInPlace(
-    PartitionRoot<thread_safe>* root,
+bool PartitionRoot<thread_safe>::ReallocDirectMappedInPlace(
     internal::PartitionPage<thread_safe>* page,
-    size_t raw_size) EXCLUSIVE_LOCKS_REQUIRED(root->lock_) {
+    size_t raw_size) {
   DCHECK(page->bucket->is_direct_mapped());
 
   raw_size = internal::PartitionCookieSizeAdjustAdd(raw_size);
 
   // Note that the new size might be a bucketed size; this function is called
   // whenever we're reallocating a direct mapped allocation.
-  size_t new_size =
-      PartitionRoot<thread_safe>::Bucket::get_direct_map_size(raw_size);
+  size_t new_size = Bucket::get_direct_map_size(raw_size);
   if (new_size < kGenericMinDirectMappedDownsize)
     return false;
 
   // bucket->slot_size is the current size of the allocation.
   size_t current_size = page->bucket->slot_size;
   char* char_ptr =
-      static_cast<char*>(PartitionRoot<thread_safe>::Page::ToPointer(page));
+      static_cast<char*>(internal::PartitionPage<thread_safe>::ToPointer(page));
   if (new_size == current_size) {
     // No need to move any memory around, but update size and cookie below.
   } else if (new_size < current_size) {
@@ -339,7 +337,7 @@ bool PartitionReallocDirectMappedInPlace(
 
     // Shrink by decommitting unneeded pages and making them inaccessible.
     size_t decommit_size = current_size - new_size;
-    root->DecommitSystemPages(char_ptr + new_size, decommit_size);
+    DecommitSystemPages(char_ptr + new_size, decommit_size);
     SetSystemPagesAccess(char_ptr + new_size, decommit_size, PageInaccessible);
   } else if (new_size <=
              internal::PartitionDirectMapExtent<thread_safe>::FromPage(page)
@@ -348,7 +346,7 @@ bool PartitionReallocDirectMappedInPlace(
     // pages accessible again.
     size_t recommit_size = new_size - current_size;
     SetSystemPagesAccess(char_ptr + current_size, recommit_size, PageReadWrite);
-    root->RecommitSystemPages(char_ptr + current_size, recommit_size);
+    this->RecommitSystemPages(char_ptr + current_size, recommit_size);
 
 #if DCHECK_IS_ON()
     memset(char_ptr + current_size, kUninitializedByte, recommit_size);
@@ -373,11 +371,11 @@ bool PartitionReallocDirectMappedInPlace(
 }
 
 template <bool thread_safe>
-void* PartitionReallocGenericFlags(PartitionRoot<thread_safe>* root,
-                                   int flags,
-                                   void* ptr,
-                                   size_t new_size,
-                                   const char* type_name) {
+
+void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
+                                               void* ptr,
+                                               size_t new_size,
+                                               const char* type_name) {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   CHECK_MAX_SIZE_OR_RETURN_NULLPTR(new_size, flags);
   void* result = realloc(ptr, new_size);
@@ -385,9 +383,9 @@ void* PartitionReallocGenericFlags(PartitionRoot<thread_safe>* root,
   return result;
 #else
   if (UNLIKELY(!ptr))
-    return root->AllocFlags(flags, new_size, type_name);
+    return AllocFlags(flags, new_size, type_name);
   if (UNLIKELY(!new_size)) {
-    root->Free(ptr);
+    this->Free(ptr);
     return nullptr;
   }
 
@@ -409,15 +407,15 @@ void* PartitionReallocGenericFlags(PartitionRoot<thread_safe>* root,
         internal::PartitionCookieFreePointerAdjust(ptr));
     bool success = false;
     {
-      internal::ScopedGuard<thread_safe> guard{root->lock_};
+      internal::ScopedGuard<thread_safe> guard{this->lock_};
       // TODO(palmer): See if we can afford to make this a CHECK.
-      DCHECK(root->IsValidPage(page));
+      DCHECK(this->IsValidPage(page));
 
       if (UNLIKELY(page->bucket->is_direct_mapped())) {
         // We may be able to perform the realloc in place by changing the
         // accessibility of memory pages and, if reducing the size, decommitting
         // them.
-        success = PartitionReallocDirectMappedInPlace(root, page, new_size);
+        success = ReallocDirectMappedInPlace(page, new_size);
       }
     }
     if (success) {
@@ -428,7 +426,7 @@ void* PartitionReallocGenericFlags(PartitionRoot<thread_safe>* root,
       return ptr;
     }
 
-    const size_t actual_new_size = root->ActualSize(new_size);
+    const size_t actual_new_size = ActualSize(new_size);
     actual_old_size = PartitionAllocGetSize<thread_safe>(ptr);
 
     // TODO: note that tcmalloc will "ignore" a downsizing realloc() unless the
@@ -450,7 +448,7 @@ void* PartitionReallocGenericFlags(PartitionRoot<thread_safe>* root,
   }
 
   // This realloc cannot be resized in-place. Sadness.
-  void* ret = root->AllocFlags(flags, new_size, type_name);
+  void* ret = AllocFlags(flags, new_size, type_name);
   if (!ret) {
     if (flags & PartitionAllocReturnNull)
       return nullptr;
@@ -462,36 +460,10 @@ void* PartitionReallocGenericFlags(PartitionRoot<thread_safe>* root,
     copy_size = new_size;
 
   memcpy(ret, ptr, copy_size);
-  root->Free(ptr);
+  this->Free(ptr);
   return ret;
 #endif
 }  // namespace base
-
-template void* PartitionReallocGenericFlags<false>(PartitionRoot<false>*,
-                                                   int,
-                                                   void*,
-                                                   size_t,
-                                                   const char*);
-template void* PartitionReallocGenericFlags<true>(PartitionRoot<true>*,
-                                                  int,
-                                                  void*,
-                                                  size_t,
-                                                  const char*);
-
-template <bool thread_safe>
-void* PartitionRoot<thread_safe>::Realloc(void* ptr,
-                                          size_t new_size,
-                                          const char* type_name) {
-  return PartitionReallocGenericFlags(this, 0, ptr, new_size, type_name);
-}
-
-template <bool thread_safe>
-void* PartitionRoot<thread_safe>::TryRealloc(void* ptr,
-                                             size_t new_size,
-                                             const char* type_name) {
-  return PartitionReallocGenericFlags(this, PartitionAllocReturnNull, ptr,
-                                      new_size, type_name);
-}
 
 template <bool thread_safe>
 static size_t PartitionPurgePage(internal::PartitionPage<thread_safe>* page,

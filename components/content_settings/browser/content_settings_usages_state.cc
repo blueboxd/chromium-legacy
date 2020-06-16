@@ -12,8 +12,9 @@
 
 ContentSettingsUsagesState::ContentSettingsUsagesState(
     content_settings::TabSpecificContentSettings::Delegate* delegate_,
-    ContentSettingsType type)
-    : delegate_(delegate_), type_(type) {}
+    ContentSettingsType type,
+    const GURL& embedder_url)
+    : delegate_(delegate_), type_(type), embedder_url_(embedder_url) {}
 
 ContentSettingsUsagesState::~ContentSettingsUsagesState() {}
 
@@ -21,26 +22,6 @@ void ContentSettingsUsagesState::OnPermissionSet(const GURL& requesting_origin,
                                                  bool allowed) {
   state_map_[requesting_origin] =
       allowed ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
-}
-
-void ContentSettingsUsagesState::DidNavigate(const GURL& url,
-                                             const GURL& previous_url) {
-  embedder_url_ = url;
-  if (state_map_.empty())
-    return;
-  if (previous_url.GetOrigin() != url.GetOrigin()) {
-    state_map_.clear();
-    return;
-  }
-  // We're in the same origin, check if there's any icon to be displayed.
-  unsigned int tab_state_flags = 0;
-  GetDetailedInfo(nullptr, &tab_state_flags);
-  if (!(tab_state_flags & TABSTATE_HAS_ANY_ICON))
-    state_map_.clear();
-}
-
-void ContentSettingsUsagesState::ClearStateMap() {
-  state_map_.clear();
 }
 
 void ContentSettingsUsagesState::GetDetailedInfo(

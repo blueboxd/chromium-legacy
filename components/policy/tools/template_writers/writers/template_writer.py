@@ -43,7 +43,7 @@ class TemplateWriter(object):
       policy: The dictionary of the policy.
 
     Returns:
-      True if the writer chooses to include the deprecated 'policy' in its
+      True if the writer chooses to include the unreleased 'policy' in its
       output.
     '''
     return False
@@ -55,7 +55,19 @@ class TemplateWriter(object):
       policy: The dictionary of the policy.
 
     Returns:
-      True if the writer chooses to include the deprecated 'policy' in its
+      True if the writer chooses to include the cloud only 'policy' in its
+      output.
+    '''
+    return False
+
+  def IsInternalOnlyPolicySupported(self, policy):
+    '''Checks if the given internal policy is supported by the writer.
+
+    Args:
+      policy: The dictionary of the policy.
+
+    Returns:
+      True if the writer chooses to include the internal only 'policy' in its
       output.
     '''
     return False
@@ -82,6 +94,10 @@ class TemplateWriter(object):
 
     if (self.IsCloudOnlyPolicy(policy)
         and not self.IsCloudOnlyPolicySupported(policy)):
+      return False
+
+    if (self.IsInternalOnlyPolicy(policy)
+        and not self.IsInternalOnlyPolicySupported(policy)):
       return False
 
     for supported_on in policy['supported_on']:
@@ -114,6 +130,10 @@ class TemplateWriter(object):
   def IsCloudOnlyPolicy(self, policy):
     '''Checks if the given policy is cloud only'''
     return self.GetPolicyFeature(policy, 'cloud_only', False)
+
+  def IsInternalOnlyPolicy(self, policy):
+    '''Checks if the given policy is internal only'''
+    return self.GetPolicyFeature(policy, 'internal_only', False)
 
   def IsPolicyOrItemSupportedOnPlatform(self,
                                         item,

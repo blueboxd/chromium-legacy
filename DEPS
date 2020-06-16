@@ -182,11 +182,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'f4ec452b7ab35de73d394cdcf1db674a91d88559',
+  'skia_revision': '762cb4ea46dd54c1e6042b73ba3e8cc51f29a7a9',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '4d4f21d0d94f679c852cfe738653a00a0bceba26',
+  'v8_revision': '74788d0176162919dab4cd0af13a641dcf0783cc',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -194,7 +194,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'd2d8282a9e7d6e03eb6d9935838f213f2142e7ac',
+  'angle_revision': '002fa6dcfa6aa236071222893f7581c150f6b152',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -245,7 +245,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '9253b254e24be0e953c5562420167c6d63277672',
+  'catapult_revision': '69e9be86628f57afbc47d8b58e3130a2bdf30f29',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '085beaa595a6e9cdde6a1c824a6cae06dd9ebcff',
+  'devtools_frontend_revision': '36c50114f184ab9c5d35981811c8beaaf0249446',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -305,7 +305,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '984493d0ac077cccbe4e5b83ab6028aaa5d40357',
+  'dawn_revision': 'fefb452f2969e9e012c332e58a04e3b72abb8ae3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -528,7 +528,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'df6658771a83f2e8d3637f7ff0549437fb9c1d5f',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'ef53fab9cac468f10d2e1b80c3329cf7cea0f0bc',
       'condition': 'checkout_ios',
   },
 
@@ -931,7 +931,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + 'bf190c43e5c7cc81751867c917a81bc2920be079',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '00965b9fa9a85a97e228d24800286471188c5d2c',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '4928d556e6b5e55fed93f9ded03d897d3b0c7ea7',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1452,7 +1452,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '9465978a3b627655b2c99389dc35bcd343866ee1',
+    Var('webrtc_git') + '/src.git' + '@' + '7d3cfbf90d6ef9678e75a01badfb293be15df4d2',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

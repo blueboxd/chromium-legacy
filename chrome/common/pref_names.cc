@@ -813,6 +813,10 @@ const char kPinUnlockMinimumLength[] = "pin_unlock_minimum_length";
 const char kPinUnlockMaximumLength[] = "pin_unlock_maximum_length";
 // Boolean pref indicating whether users are allowed to set easy pins.
 const char kPinUnlockWeakPinsAllowed[] = "pin_unlock_weak_pins_allowed";
+// A boolean pref that controls whether the PIN autosubmit feature is enabled.
+// This feature, when enabled, exposes the user's PIN length by showing how many
+// digits are necessary to unlock the device. Can be recommended.
+const char kPinUnlockAutosubmitEnabled[] = "pin_unlock_autosubmit_enabled";
 
 // Boolean pref indicating whether this device supports BLE advertising.
 const char kInstantTetheringBleAdvertisingSupported[] =

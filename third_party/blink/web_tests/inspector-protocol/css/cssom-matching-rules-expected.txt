@@ -14,7 +14,7 @@ Original rule:
 }
 --------------
 Modified rule 1:
-*#modifyRule* {    regular    readonly
+*#modifyRule* {    regular
     box-sizing: border-box;
     color: red;
 }
@@ -26,41 +26,41 @@ Modified rule 1:
 }
 ---------------
 Modified rule 3:
-*#modifyRule* {    regular    readonly
+*#modifyRule* {    regular
     box-sizing: border-box;
     color: red;
 }
 *#modifyRule* {    regular
     height: 100%;
 }
-*#modifyRule* {    regular    readonly
+*#modifyRule* {    regular
     width: 100%;
     color: blue;
 }
 ---------------
 Modified rule 2:
-*#modifyRule* {    regular    readonly
+*#modifyRule* {    regular
     box-sizing: border-box;
     color: red;
 }
-*#modifyRule* {    regular    readonly
+*#modifyRule* {    regular
     height: 100%;
     color: green;
 }
-*#modifyRule* {    regular    readonly
+*#modifyRule* {    regular
     width: 100%;
     color: blue;
 }
 ---------------
 Restored rule 2:
-*#modifyRule* {    regular    readonly
+*#modifyRule* {    regular
     box-sizing: border-box;
     color: red;
 }
 *#modifyRule* {    regular
     height: 100%;
 }
-*#modifyRule* {    regular    readonly
+*#modifyRule* {    regular
     width: 100%;
     color: blue;
 }
@@ -86,7 +86,7 @@ Original rule:
 }
 --------------
 After inserted rule:
-*#insertRule* {    regular    readonly
+*#insertRule* {    regular
     color: red;
 }
 *#insertRule* {    regular
@@ -117,7 +117,7 @@ After inserted rule:
 *#insertRule* {    regular
     box-sizing: border-box;
 }
-*#insertRule* {    regular    readonly
+*#insertRule* {    regular
     color: red;
 }
 *#insertRule* {    regular
@@ -148,7 +148,7 @@ After inserted rule:
 *#insertRule* {    regular
     width: 100%;
 }
-*#insertRule* {    regular    readonly
+*#insertRule* {    regular
     color: red;
 }
 --------------

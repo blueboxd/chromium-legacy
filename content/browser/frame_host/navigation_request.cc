@@ -2593,7 +2593,7 @@ bool NavigationRequest::ShouldKeepErrorPageInCurrentProcess(int net_error) {
   //   URLs should be allowed to transfer away from the current process, which
   //   didn't request the navigation and may have a higher privilege level
   //   than the blocked destination.
-  return net_error == net::ERR_BLOCKED_BY_CLIENT && !browser_initiated();
+  return net::IsRequestBlockedError(net_error) && !browser_initiated();
 }
 
 void NavigationRequest::OnRequestStarted(base::TimeTicks timestamp) {
@@ -2628,8 +2628,7 @@ void NavigationRequest::OnStartChecksComplete(
       result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
 #if DCHECK_IS_ON()
     if (result.action() == NavigationThrottle::BLOCK_REQUEST) {
-      DCHECK(result.net_error_code() == net::ERR_BLOCKED_BY_CLIENT ||
-             result.net_error_code() == net::ERR_BLOCKED_BY_ADMINISTRATOR);
+      DCHECK(net::IsRequestBlockedError(result.net_error_code()));
     }
     // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
     else if (result.action() == NavigationThrottle::CANCEL_AND_IGNORE) {
@@ -2837,8 +2836,7 @@ void NavigationRequest::OnRedirectChecksComplete(
 
   if (result.action() == NavigationThrottle::BLOCK_REQUEST ||
       result.action() == NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE) {
-    DCHECK(result.net_error_code() == net::ERR_BLOCKED_BY_CLIENT ||
-           result.net_error_code() == net::ERR_BLOCKED_BY_ADMINISTRATOR);
+    DCHECK(net::IsRequestBlockedError(result.net_error_code()));
     OnRequestFailedInternal(
         network::URLLoaderCompletionStatus(result.net_error_code()),
         true /* skip_throttles */, result.error_page_content(), collapse_frame);
@@ -3317,11 +3315,8 @@ net::Error NavigationRequest::CheckCSPDirectives(
   if (navigate_to_allowed && frame_src_allowed)
     return net::OK;
 
-  // If 'frame-src' fails, ERR_BLOCKED_BY_CLIENT is used instead.
-  // If both checks fail, ERR_BLOCKED_BY_CLIENT is used to keep the existing
-  // behaviour before 'navigate-to' was introduced.
   if (!frame_src_allowed)
-    return net::ERR_BLOCKED_BY_CLIENT;
+    return net::ERR_BLOCKED_BY_CSP;
 
   // net::ERR_ABORTED is used to ensure that the navigation is cancelled
   // when the 'navigate-to' directive check is failed. This is a better user

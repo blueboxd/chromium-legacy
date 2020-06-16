@@ -61,9 +61,10 @@ def main(args):
           },
           "seconds_since_epoch": %s,
           "tests": {
-             "upload_trace_processor": {
-                 "actual": "PASS",
-                 "expected": "PASS"
+               "upload_trace_processor": {
+                   "actual": "PASS",
+                   "expected": "PASS"
+               }
           },
           "version": 3
       }''' % time.time())

@@ -102,23 +102,6 @@
   }
 }
 
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  if (@available(iOS 13, *)) {
-    if ([self.traitCollection
-            hasDifferentColorAppearanceComparedToTraitCollection:
-                previousTraitCollection]) {
-      // MDCCollectionView doesn't support dynamic colors, so they have to be
-      // resolved now.
-      // TODO(crbug.com/984928): Clean up once dynamic color support is added.
-      self.styler.cellBackgroundColor =
-          [UIColor.cr_secondarySystemGroupedBackgroundColor
-              resolvedColorWithTraitCollection:self.traitCollection];
-      [self.collectionViewLayout invalidateLayout];
-    }
-  }
-}
-
 #pragma mark MDCCollectionViewEditingDelegate
 
 - (void)collectionView:(UICollectionView*)collectionView

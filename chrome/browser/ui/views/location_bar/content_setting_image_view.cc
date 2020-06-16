@@ -88,8 +88,7 @@ ContentSettingImageView::ContentSettingImageView(
     SetID(*view_id);
 }
 
-ContentSettingImageView::~ContentSettingImageView() {
-}
+ContentSettingImageView::~ContentSettingImageView() {}
 
 void ContentSettingImageView::Update() {
   content::WebContents* web_contents =
@@ -242,6 +241,7 @@ void ContentSettingImageView::AnimationEnded(const gfx::Animation* animation) {
     indicator_promo_ = FeaturePromoBubbleView::CreateOwned(
         this, views::BubbleBorder::TOP_RIGHT,
         FeaturePromoBubbleView::ActivationAction::ACTIVATE,
+        /*title_string_specifier=*/base::nullopt,
         IDS_NOTIFICATIONS_QUIET_PERMISSION_NEW_REQUEST_PROMO, promo_width,
         base::nullopt, base::nullopt);
 

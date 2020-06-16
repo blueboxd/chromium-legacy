@@ -3623,12 +3623,6 @@ crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-001.html 
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-scroll-001.html [ Skip ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-vertical-001.html [ Skip ]
 crbug.com/785230 external/wpt/css/css-text-decor/text-underline-offset-vertical-002.html [ Skip ]
-crbug.com/785230 [ Linux ] external/wpt/css/css-text-decor/text-decoration-shorthands-002.html [ Failure ]
-crbug.com/785230 [ Mac ] external/wpt/css/css-text-decor/text-decoration-shorthands-002.html [ Failure ]
-crbug.com/785230 [ Win ] external/wpt/css/css-text-decor/text-decoration-shorthands-002.html [ Failure ]
-crbug.com/785230 [ Linux ] external/wpt/css/css-text-decor/text-decoration-shorthands-001.html [ Failure ]
-crbug.com/785230 [ Mac ] external/wpt/css/css-text-decor/text-decoration-shorthands-001.html [ Failure ]
-crbug.com/785230 [ Win ] external/wpt/css/css-text-decor/text-decoration-shorthands-001.html [ Failure ]
 crbug.com/785230 [ Linux ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
 crbug.com/785230 [ Mac ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
 crbug.com/785230 [ Win ] external/wpt/css/css-text-decor/text-decoration-skip-ink-003.html [ Failure ]
@@ -6353,7 +6347,6 @@ crbug.com/1044563 [ Release ] http/tests/devtools/background-services/background
 crbug.com/1044805 [ Release ] http/tests/devtools/elements/styles-2/inject-stylesheet.js [ Pass Timeout ]
 crbug.com/1044822 [ Release ] http/tests/devtools/cache-storage/cache-entry-deletion.js [ Pass Timeout ]
 #crbug.com/1044823 [ Release ] http/tests/devtools/extensions/extensions-timeline-api.js [ Pass Timeout ]
-crbug.com/1044825 [ Release ] http/tests/devtools/network/resource-priority.js [ Pass Timeout ]
 crbug.com/1044829 [ Release Win ] http/tests/devtools/cache-storage/cache-deletion.js [ Pass Timeout ]
 crbug.com/1044829 [ Release Mac ] http/tests/devtools/cache-storage/cache-deletion.js [ Pass Timeout ]
 crbug.com/1043847 [ Release Win ] virtual/threaded/fast/scroll-snap/snaps-for-different-key-granularity.html [ Pass Timeout ]
@@ -6782,3 +6775,8 @@ crbug.com/924472 external/wpt/css/css-transforms/transform-box/cssbox-fill-box.h
 crbug.com/924472 external/wpt/css/css-transforms/transform-box/svgbox-border-box.html [ Failure ]
 crbug.com/924472 external/wpt/css/css-transforms/transform-box/svgbox-content-box.html [ Failure ]
 crbug.com/924472 external/wpt/css/css-transforms/transform-box/svgbox-stroke-box.html [ Failure ]
+
+crbug.com/1092135 [ Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass Timeout ]
+
+# Sheriff 2020-06-16
+crbug.com/1044825 http/tests/devtools/network/resource-priority.js [ Pass Timeout ]

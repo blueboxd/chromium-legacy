@@ -411,7 +411,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   void SetHasForcedBreak() {
     has_forced_break_ = true;
-    minimal_space_shortage_ = LayoutUnit();
+    minimal_space_shortage_ = LayoutUnit::Max();
   }
 
   scoped_refptr<const NGLayoutResult> ToBoxFragment(WritingMode);

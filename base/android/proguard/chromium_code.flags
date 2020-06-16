@@ -70,11 +70,11 @@
 
 # Never inline classes or methods with this annotation, but allow shrinking and
 # obfuscation.
--keepclassmembers,allowobfuscation,allowoptimization @org.chromium.base.annotations.DoNotInline class ** {
-  <methods>;
+-if @org.chromium.base.annotations.DoNotInline class * {
+    *** *(...);
 }
--keepclassmembers,allowobfuscation,allowoptimization class ** {
-  @org.chromium.base.annotations.DoNotInline <methods>;
+-keep,allowobfuscation class <1> {
+    *** <2>(...);
 }
 
 # Keep all CREATOR fields within Parcelable that are kept.

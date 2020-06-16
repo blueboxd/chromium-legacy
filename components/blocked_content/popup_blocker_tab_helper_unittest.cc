@@ -211,18 +211,18 @@ TEST_F(PopupBlockerTabHelperTest, SetsContentSettingsPopupState) {
 }
 
 TEST_F(PopupBlockerTabHelperTest, ClearsContentSettingsPopupStateOnNavigation) {
-  auto* content_settings =
-      content_settings::TabSpecificContentSettings::FromWebContents(
-          web_contents());
-
   ResultHolder result;
   helper()->AddBlockedPopup(
       std::make_unique<TestPopupNavigationDelegate>(GURL(kUrl1), &result),
       blink::mojom::WindowFeatures(), PopupBlockType::kNoGesture);
-  EXPECT_TRUE(content_settings->IsContentBlocked(ContentSettingsType::POPUPS));
+  EXPECT_TRUE(content_settings::TabSpecificContentSettings::FromWebContents(
+                  web_contents())
+                  ->IsContentBlocked(ContentSettingsType::POPUPS));
 
   NavigateAndCommit(GURL(kUrl2));
-  EXPECT_FALSE(content_settings->IsContentBlocked(ContentSettingsType::POPUPS));
+  EXPECT_FALSE(content_settings::TabSpecificContentSettings::FromWebContents(
+                   web_contents())
+                   ->IsContentBlocked(ContentSettingsType::POPUPS));
 }
 
 }  // namespace blocked_content

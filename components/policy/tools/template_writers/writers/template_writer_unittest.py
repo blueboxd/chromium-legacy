@@ -157,6 +157,9 @@ class TemplateWriterUnittests(unittest.TestCase):
     self.assertFalse(tw.IsPolicySupported({'future': True}))
     self.assertFalse(tw.IsPolicySupported({'deprecated': True}))
     self.assertFalse(tw.IsPolicySupported({'features': {'cloud_only': True}}))
+    self.assertFalse(tw.IsPolicySupported({'features': {
+        'internal_only': True
+    }}))
 
   def testFuturePoliciesSupport(self):
     class FutureWriter(template_writer.TemplateWriter):

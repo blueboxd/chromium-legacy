@@ -128,7 +128,10 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
   EXPECT_TRUE(bubble_content.custom_link_enabled);
   EXPECT_FALSE(bubble_content.manage_text.empty());
 
-  content_settings->ClearNavigationRelatedContentSettings();
+  WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com"));
+  content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
   content_settings->OnContentAllowed(ContentSettingsType::COOKIES);
   content_setting_bubble_model =
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -774,8 +777,10 @@ TEST_F(ContentSettingBubbleModelTest, PepperBroker) {
   EXPECT_FALSE(bubble_content.custom_link_enabled);
   EXPECT_FALSE(bubble_content.manage_text.empty());
 
-  content_settings
-      ->ClearContentSettingsExceptForNavigationRelatedSettings();
+  WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com"));
+  content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
   content_settings->OnContentAllowed(ContentSettingsType::PPAPI_BROKER);
   content_setting_bubble_model =
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -1129,7 +1134,10 @@ TEST_F(ContentSettingBubbleModelTest, SensorAccessPermissionsChanged) {
     EXPECT_EQ(bubble_content_3.radio_group.default_item, 0);
   }
 
-  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+  WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com"));
+  content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
 
   // Go from block by default to allow by default to block by default.
   {
@@ -1202,7 +1210,10 @@ TEST_F(ContentSettingBubbleModelTest, SensorAccessPermissionsChanged) {
     EXPECT_EQ(bubble_content_3.radio_group.default_item, 1);
   }
 
-  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+  WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com"));
+  content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
 
   // Block by default but allow a specific site.
   {
@@ -1232,7 +1243,10 @@ TEST_F(ContentSettingBubbleModelTest, SensorAccessPermissionsChanged) {
     EXPECT_EQ(bubble_content.radio_group.default_item, 0);
   }
 
-  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+  WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL("https://www.example.com"));
+  content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
   // Clear site-specific exceptions.
   settings_map->ClearSettingsForOneType(ContentSettingsType::SENSORS);
 

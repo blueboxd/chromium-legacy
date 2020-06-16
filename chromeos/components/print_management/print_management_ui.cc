@@ -91,6 +91,8 @@ PrintManagementUI::PrintManagementUI(
   html_source->AddResourcePath(
       "print_job_clear_history_dialog.js",
       IDR_PRINT_MANAGEMENT_PRINT_JOB_CLEAR_HISTORY_DIALOG_JS);
+  html_source->AddResourcePath("icons.html", IDR_PRINT_MANAGEMENT_ICONS_HTML);
+  html_source->AddResourcePath("icons.js", IDR_PRINT_MANAGEMENT_ICONS_JS);
   html_source->SetDefaultResource(IDR_PRINT_MANAGEMENT_INDEX_HTML);
 
   AddPrintManagementStrings(html_source.get());

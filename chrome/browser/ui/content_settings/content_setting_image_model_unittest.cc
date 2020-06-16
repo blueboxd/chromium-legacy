@@ -170,10 +170,8 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
   std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
       origin, "A=B", base::Time::Now(), base::nullopt /* server_time */));
   ASSERT_TRUE(cookie);
-  static_cast<content::WebContentsObserver*>(
-      TabSpecificContentSettings::FromWebContents(web_contents()))
-      ->OnCookiesAccessed(web_contents()->GetMainFrame(),
-                          {content::CookieAccessDetails::Type::kChange,
+  TabSpecificContentSettings::FromWebContents(web_contents())
+      ->OnCookiesAccessed({content::CookieAccessDetails::Type::kChange,
                            origin,
                            origin,
                            {*cookie},
@@ -213,7 +211,9 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
   EXPECT_FALSE(content_setting_image_model->is_visible());
   EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
 
-  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+  NavigateAndCommit(controller_, GURL("http://www.google.com"));
+  content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
 
   // Allowing by default but blocking (e.g. due to a feature policy) causes the
   // indicator to be shown.
@@ -228,7 +228,9 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
   EXPECT_EQ(content_setting_image_model->get_tooltip(),
             l10n_util::GetStringUTF16(IDS_SENSORS_BLOCKED_TOOLTIP));
 
-  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+  NavigateAndCommit(controller_, GURL("http://www.google.com"));
+  content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
 
   // Blocking by default but allowing (e.g. via a site-specific exception)
   // causes the indicator to be shown.
@@ -243,7 +245,9 @@ TEST_F(ContentSettingImageModelTest, SensorAccessed) {
   EXPECT_EQ(content_setting_image_model->get_tooltip(),
             l10n_util::GetStringUTF16(IDS_SENSORS_ALLOWED_TOOLTIP));
 
-  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+  NavigateAndCommit(controller_, GURL("http://www.google.com"));
+  content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
 
   // Blocking access by default also causes the indicator to be shown so users
   // can set an exception.
@@ -311,7 +315,9 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
     EXPECT_FALSE(content_setting_image_model->is_visible());
   }
 
-  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+  NavigateAndCommit(controller_, GURL("https://www.example.com"));
+  content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
 
   // Go from block by default to allow by default to block by default.
   {
@@ -344,7 +350,9 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
               l10n_util::GetStringUTF16(IDS_SENSORS_BLOCKED_TOOLTIP));
   }
 
-  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+  NavigateAndCommit(controller_, GURL("https://www.example.com"));
+  content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
 
   // Block by default but allow a specific site.
   {
@@ -363,7 +371,9 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
               l10n_util::GetStringUTF16(IDS_SENSORS_ALLOWED_TOOLTIP));
   }
 
-  content_settings->ClearContentSettingsExceptForNavigationRelatedSettings();
+  NavigateAndCommit(controller_, GURL("https://www.example.com"));
+  content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
   // Clear site-specific exceptions.
   settings_map->ClearSettingsForOneType(ContentSettingsType::SENSORS);
 
@@ -387,7 +397,7 @@ TEST_F(ContentSettingImageModelTest, SensorAccessPermissionsChanged) {
 
 // Regression test for http://crbug.com/161854.
 TEST_F(ContentSettingImageModelTest, NULLTabSpecificContentSettings) {
-  web_contents()->RemoveUserData(TabSpecificContentSettings::UserDataKey());
+  TabSpecificContentSettings::DeleteForWebContentsForTest(web_contents());
   EXPECT_EQ(nullptr,
             TabSpecificContentSettings::FromWebContents(web_contents()));
   // Should not crash.

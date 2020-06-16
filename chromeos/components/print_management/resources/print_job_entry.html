@@ -15,6 +15,11 @@
     margin-inline-start: 4px;
   }
 
+  #fileIcon {
+    margin-inline-start: 12px;
+    margin-inline-end: 16px;
+  }
+
   #numericalProgress {
     color: var(--google-blue-600);
     margin-inline-end: 16px;
@@ -37,6 +42,9 @@
       focus-row-control
       focus-type="rowWrapper"
       aria-label$="[[jobEntryAriaLabel_]]">
+    <iron-icon id="fileIcon" class="flex-center"
+        icon="[[getFileIcon_(jobTitle_)]]" alt="">
+    </iron-icon>
     <div id="jobTitle" class="long-text overflow-ellipsis" aria-hidden="true">
       [[jobTitle_]]
     </div>

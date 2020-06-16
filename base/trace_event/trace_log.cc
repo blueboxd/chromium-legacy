@@ -172,7 +172,7 @@ void ForEachCategoryFilter(const unsigned char* category_group_enabled,
 }
 
 // The fallback arguments filtering function will filter away every argument.
-bool DefaultIsTraceEventArgsWhitelisted(
+bool DefaultIsTraceEventArgsAllowlisted(
     const char* category_group_name,
     const char* event_name,
     base::trace_event::ArgumentNameFilterPredicate* arg_name_filter) {
@@ -993,7 +993,7 @@ void TraceLog::FinishFlush(int generation, bool discard_events) {
       // use the safe default filtering predicate.
       if (argument_filter_predicate_.is_null()) {
         argument_filter_predicate =
-            base::BindRepeating(&DefaultIsTraceEventArgsWhitelisted);
+            base::BindRepeating(&DefaultIsTraceEventArgsAllowlisted);
       } else {
         argument_filter_predicate = argument_filter_predicate_;
       }

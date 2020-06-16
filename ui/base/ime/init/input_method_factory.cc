@@ -18,7 +18,9 @@
 #elif defined(OS_MACOSX)
 #include "ui/base/ime/mac/input_method_mac.h"
 #elif defined(USE_X11)
-#include "ui/base/ime/linux/input_method_auralinux.h"
+// TODO(crbug.com/1085700): Remove nogncheck when we can build both Ozone
+// Wayland and X11 on Linux codesearch-gen bots.
+#include "ui/base/ime/linux/input_method_auralinux.h"  // nogncheck
 #elif defined(USE_OZONE)
 #include "ui/ozone/public/ozone_platform.h"
 #else

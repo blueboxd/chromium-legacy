@@ -522,9 +522,10 @@ GenericUiControllerAndroid::CreateFromProto(
   }
 
   // Set initial state.
-  interaction_handler->StartListening();
   user_model->MergeWithProto(proto.model(),
-                             /*force_notifications=*/true);
+                             /* force_notifications = */ false);
+  interaction_handler->StartListening();
+  interaction_handler->RunValueChangedCallbacks();
 
   return std::make_unique<GenericUiControllerAndroid>(
       jroot_view, std::move(view_handler), std::move(interaction_handler));

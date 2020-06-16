@@ -453,6 +453,7 @@ _CONFIG = [
             'ui::AXEvent',
             'ui::AXEventIntent',
             'ui::AXNodeData',
+            'ui::IsDialog',
             'ax::mojom::BoolAttribute',
             'ax::mojom::HasPopup',
             'ax::mojom::State',

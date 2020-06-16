@@ -6122,8 +6122,13 @@ const CSSValue* TextDecorationThickness::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
+  DCHECK(RuntimeEnabledFeatures::UnderlineOffsetThicknessEnabled());
+
   if (style.GetTextDecorationThickness().IsFromFont())
     return CSSIdentifierValue::Create(CSSValueID::kFromFont);
+
+  if (style.GetTextDecorationThickness().IsAuto())
+    return CSSIdentifierValue::Create(CSSValueID::kAuto);
 
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
       style.GetTextDecorationThickness().Thickness(), style);

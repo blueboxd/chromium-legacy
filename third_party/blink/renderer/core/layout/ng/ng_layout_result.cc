@@ -49,24 +49,6 @@ NGLayoutResult::NGLayoutResult(
   bitfields_.subtree_modified_margin_strut =
       builder->subtree_modified_margin_strut_;
   intrinsic_block_size_ = builder->intrinsic_block_size_;
-  // We don't support fragment caching when block-fragmenting, so mark the
-  // result as non-reusable.
-  if (builder->has_block_fragmentation_)
-    EnsureRareData()->is_single_use = true;
-  if (builder->minimal_space_shortage_ != LayoutUnit::Max()) {
-#if DCHECK_IS_ON()
-    DCHECK(!HasRareData() || !rare_data_->has_tallest_unbreakable_block_size);
-#endif
-    EnsureRareData()->minimal_space_shortage = builder->minimal_space_shortage_;
-  }
-  if (builder->tallest_unbreakable_block_size_ >= LayoutUnit()) {
-    auto* rare_data = EnsureRareData();
-    rare_data->tallest_unbreakable_block_size =
-        builder->tallest_unbreakable_block_size_;
-#if DCHECK_IS_ON()
-    rare_data->has_tallest_unbreakable_block_size = true;
-#endif
-  }
   if (builder->overflow_block_size_ != kIndefiniteSize &&
       builder->overflow_block_size_ != intrinsic_block_size_) {
     EnsureRareData()->overflow_block_size = builder->overflow_block_size_;
@@ -75,8 +57,6 @@ NGLayoutResult::NGLayoutResult(
     EnsureRareData()->custom_layout_data =
         std::move(builder->custom_layout_data_);
   }
-  if (builder->column_spanner_)
-    EnsureRareData()->column_spanner = builder->column_spanner_;
   if (builder->lines_until_clamp_)
     EnsureRareData()->lines_until_clamp = *builder->lines_until_clamp_;
   if (builder->annotation_overflow_)
@@ -85,11 +65,37 @@ NGLayoutResult::NGLayoutResult(
     EnsureRareData()->block_end_annotation_space =
         builder->block_end_annotation_space_;
   }
-  bitfields_.initial_break_before =
-      static_cast<unsigned>(builder->initial_break_before_);
-  bitfields_.final_break_after =
-      static_cast<unsigned>(builder->previous_break_after_);
-  bitfields_.has_forced_break = builder->has_forced_break_;
+
+  if (builder->has_block_fragmentation_) {
+    RareData* rare_data = EnsureRareData();
+
+    // We don't support fragment caching when block-fragmenting, so mark the
+    // result as non-reusable.
+    rare_data->is_single_use = true;
+
+    if (builder->tallest_unbreakable_block_size_ >= LayoutUnit()) {
+      rare_data->tallest_unbreakable_block_size =
+          builder->tallest_unbreakable_block_size_;
+#if DCHECK_IS_ON()
+      rare_data->has_tallest_unbreakable_block_size = true;
+#endif
+    }
+    if (builder->minimal_space_shortage_ != LayoutUnit::Max()) {
+#if DCHECK_IS_ON()
+      DCHECK(!rare_data->has_tallest_unbreakable_block_size);
+#endif
+      rare_data->minimal_space_shortage = builder->minimal_space_shortage_;
+    }
+
+    if (builder->column_spanner_)
+      rare_data->column_spanner = builder->column_spanner_;
+
+    bitfields_.initial_break_before =
+        static_cast<unsigned>(builder->initial_break_before_);
+    bitfields_.final_break_after =
+        static_cast<unsigned>(builder->previous_break_after_);
+    bitfields_.has_forced_break = builder->has_forced_break_;
+  }
 }
 
 NGLayoutResult::NGLayoutResult(

@@ -409,7 +409,7 @@ void FetchManager::Loader::DidReceiveResponse(
 
   // TODO(crbug.com/1072350): Remove this once enough data is collected.
   if (fetch_request_data_->Method() != http_names::kGET &&
-      fetch_request_data_->Method() != http_names::kGET &&
+      fetch_request_data_->Method() != http_names::kHEAD &&
       fetch_request_data_->Mode() == network::mojom::RequestMode::kNoCors &&
       tainting == FetchRequestData::kOpaqueTainting) {
     UseCounter::Count(execution_context_,

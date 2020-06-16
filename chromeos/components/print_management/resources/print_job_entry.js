@@ -9,7 +9,9 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js'
 import 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js';
 import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
 import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
+import './icons.js';
 import './print_management_shared_css.js';
 import './printing_manager.mojom-lite.js';
 
@@ -53,6 +55,85 @@ function isToday(date) {
   return date.getDate() === today_date.getDate() &&
          date.getMonth() === today_date.getMonth() &&
          date.getFullYear() === today_date.getFullYear();
+};
+
+/**
+ * Best effort attempt of finding the file icon name based off of the file's
+ * name extension. If extension is not available, return an empty string. If
+ * file name does have an extension but we don't have an icon for it, return a
+ * generic icon name.
+ * @param {string} fileName
+ * @return {string}
+ */
+function getFileExtensionIconName(fileName) {
+  // Get file extension delimited by '.'.
+  const ext = fileName.split('.').pop();
+
+  // Return empty string if file has no extension.
+  if (ext === fileName || !ext) {
+    return '';
+  }
+
+  switch (ext) {
+    case 'pdf':
+    case 'xps':
+      return 'print-management:file-pdf';
+    case 'doc':
+    case 'docx':
+    case 'docm':
+      return 'print-management:file-word';
+    case 'png':
+    case 'jpeg':
+    case 'gif':
+    case 'raw':
+    case 'heic':
+    case 'svg':
+      return 'print-management:file-image';
+    case 'ppt':
+    case 'pptx':
+    case 'pptm':
+      return 'print-management:file-ppt';
+    case 'xlsx':
+    case 'xltx':
+    case 'xlr':
+      return 'print-management:file-excel';
+    default:
+      return 'print-management:file-generic';
+  }
+};
+
+/**
+ * Best effort to get the file icon name for a Google-file
+ * (e.g. Google docs, Google sheets, Google forms). Returns an empty
+ * string if |fileName| is not a Google-file.
+ * @param {string} fileName
+ * @return {string}
+ */
+function getGFileIconName(fileName) {
+  // Google-files are delimited by '-'.
+  const ext = fileName.split('-').pop();
+
+  // Return empty string if this doesn't have a Google-file delimiter.
+  if (ext === fileName || !ext) {
+    return '';
+  }
+
+  // Eliminate space that appears infront of Google-file file names.
+  const gExt = ext.substring(1);
+  switch (gExt) {
+    case 'Google Docs':
+      return 'print-management:file-gdoc';
+    case 'Google Sheets':
+      return 'print-management:file-gsheet';
+    case 'Google Forms':
+      return 'print-management:file-gform';
+    case 'Google Drawings':
+      return 'print-management:file-gdraw';
+    case 'Google Slides':
+      return 'print-management:file-gslide';
+    default:
+      return '';
+  }
 };
 
 /**
@@ -278,5 +359,27 @@ Polymer({
     assert(totalPages > 0);
     assert(printedPages <= totalPages);
     return (printedPages * 100) / totalPages;
+  },
+
+  /**
+   * The full icon name provided by the containing iron-iconset-svg
+   * (i.e. [iron-iconset-svg name]:[SVG <g> tag id]) for a given file.
+   * This is a best effort approach, as we are only given the file name and
+   * not necessarily its extension.
+   * @param {string} fileName
+   * @return {string}
+   * @private
+   */
+  getFileIcon_(fileName) {
+    const file_extension = getFileExtensionIconName(fileName);
+    if (file_extension) {
+      return file_extension;
+    }
+    const gfile_extension = getGFileIconName(fileName);
+    if (gfile_extension) {
+      return gfile_extension;
+    }
+
+    return 'print-management:file-generic';
   },
 });

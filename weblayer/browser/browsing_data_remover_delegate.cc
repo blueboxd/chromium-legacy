@@ -25,6 +25,12 @@ bool BrowsingDataRemoverDelegate::MayRemoveDownloadHistory() {
   return true;
 }
 
+std::vector<std::string>
+BrowsingDataRemoverDelegate::GetDomainsForDeferredCookieDeletion(
+    uint64_t remove_mask) {
+  return {};
+}
+
 void BrowsingDataRemoverDelegate::RemoveEmbedderData(
     const base::Time& delete_begin,
     const base::Time& delete_end,

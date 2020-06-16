@@ -25,7 +25,8 @@ class FeaturePromoDialogTest : public DialogBrowserTest {
     int placeholder_string = IDS_NEWTAB_PROMO_0;
     FeaturePromoBubbleView::CreateOwned(
         app_menu_button, views::BubbleBorder::TOP_RIGHT,
-        FeaturePromoBubbleView::ActivationAction::ACTIVATE, placeholder_string);
+        FeaturePromoBubbleView::ActivationAction::ACTIVATE,
+        /*title_string_specifier=*/base::nullopt, placeholder_string);
   }
 };
 

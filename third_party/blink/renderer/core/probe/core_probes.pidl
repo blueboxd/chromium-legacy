@@ -181,4 +181,5 @@ interface CoreProbes {
   void PlayerPropertiesChanged(ExecutionContext* context, String player_id, const Vector<InspectorPlayerProperty>& properties);
   void PlayersCreated(ExecutionContext* context, const Vector<WebString>& players);
   void SetDevToolsIds(CoreProbeSink*, ResourceRequest& request, const FetchInitiatorInfo&);
+  void DidMutateStyleSheet(Document*, CSSStyleSheet* style_sheet);
 }

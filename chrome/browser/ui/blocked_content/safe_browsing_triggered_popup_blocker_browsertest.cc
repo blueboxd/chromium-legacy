@@ -256,19 +256,20 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerDisabledTest,
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
   ConfigureAsAbusiveWarn(a_url);
-
   content::WebContentsConsoleObserver console_observer(web_contents());
 
   // Navigate to a_url, should not log any warning messages.
   ui_test_utils::NavigateToURL(browser(), a_url);
   bool opened_window = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents(), "openWindow()", &opened_window));
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
+                                                   &opened_window));
   EXPECT_TRUE(opened_window);
-  EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents())
+  EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
                    ->IsContentBlocked(ContentSettingsType::POPUPS));
 
-  RoundTripAndVerifyLogMessages(console_observer, web_contents(), {},
+  RoundTripAndVerifyLogMessages(console_observer, web_contents, {},
                                 {blocked_content::kAbusiveWarnMessage,
                                  blocked_content::kAbusiveEnforceMessage});
 }

@@ -5,8 +5,8 @@ element.style { ()
 
 [expanded] 
 #box { (<style>)
-    color: white;
     background: red;
+    color: white;
 
 [expanded] 
 div { (<style>)

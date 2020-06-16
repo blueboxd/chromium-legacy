@@ -543,49 +543,65 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::LayoutRow(
     if (container_builder_.DidBreakSelf())
       break;
 
-    if (!balance_columns && result->ColumnSpanner()) {
-      // We always have to balance columns preceding a spanner, so if we didn't
-      // do that initially, switch over to column balancing mode now, and lay
-      // out again.
-      balance_columns = true;
-      new_columns.clear();
-      column_size.block_size =
-          CalculateBalancedColumnBlockSize(column_size, next_column_token);
-      continue;
+    if (!balance_columns) {
+      if (result->ColumnSpanner()) {
+        // We always have to balance columns preceding a spanner, so if we
+        // didn't do that initially, switch over to column balancing mode now,
+        // and lay out again.
+        balance_columns = true;
+        new_columns.clear();
+        column_size.block_size =
+            CalculateBalancedColumnBlockSize(column_size, next_column_token);
+        continue;
+      }
+
+      // Balancing not enabled. We're done.
+      break;
     }
 
+    // We're balancing columns. Check if the column block-size that we laid out
+    // with was satisfactory. If not, stretch and retry, if possible.
+    //
     // If we overflowed (actual column count larger than what we have room for),
-    // and we're supposed to calculate the column lengths automatically (column
-    // balancing), see if we're able to stretch them.
+    // see if we're able to stretch them. We can only stretch the columns if we
+    // have at least one column that could take more content.
     //
-    // We can only stretch the columns if we have at least one column that could
-    // take more content, and we also need to know the stretch amount (minimal
-    // space shortage). We need at least one soft break opportunity to do
-    // this. If forced breaks cause too many breaks, there's no stretch amount
-    // that could prevent the actual column count from overflowing.
-    //
+    // If we didn't exceed used column-count, we're done.
+    if (actual_column_count <= used_column_count_)
+      break;
+
+    // We're in a situation where we'd like to stretch the columns, but then we
+    // need to know the stretch amount (minimal space shortage).
+    if (minimal_space_shortage == LayoutUnit::Max())
+      break;
+
+    // We also need at least one soft break opportunity. If forced breaks cause
+    // too many breaks, there's no stretch amount that could prevent the columns
+    // from overflowing.
+    if (actual_column_count <= forced_break_count + 1)
+      break;
+
     // TODO(mstensho): Handle this situation also when we're inside another
     // balanced multicol container, rather than bailing (which we do now, to
     // avoid infinite loops). If we exhaust the inner column-count in such
     // cases, that piece of information may have to be propagated to the outer
     // multicol, and instead stretch there (not here). We have no such mechanism
     // in place yet.
-    if (balance_columns && actual_column_count > used_column_count_ &&
-        actual_column_count > forced_break_count + 1 &&
-        minimal_space_shortage != LayoutUnit::Max() &&
-        !ConstraintSpace().IsInsideBalancedColumns()) {
-      LayoutUnit new_column_block_size = StretchColumnBlockSize(
-          minimal_space_shortage, column_size.block_size);
+    if (ConstraintSpace().IsInsideBalancedColumns())
+      break;
 
-      DCHECK_GE(new_column_block_size, column_size.block_size);
-      if (new_column_block_size > column_size.block_size) {
-        // Remove column fragments and re-attempt layout with taller columns.
-        new_columns.clear();
-        column_size.block_size = new_column_block_size;
-        continue;
-      }
-    }
-    break;
+    LayoutUnit new_column_block_size =
+        StretchColumnBlockSize(minimal_space_shortage, column_size.block_size);
+
+    // Give up if we cannot get taller columns. The multicol container may have
+    // a specified block-size preventing taller columns, for instance.
+    DCHECK_GE(new_column_block_size, column_size.block_size);
+    if (new_column_block_size <= column_size.block_size)
+      break;
+
+    // Remove column fragments and re-attempt layout with taller columns.
+    new_columns.clear();
+    column_size.block_size = new_column_block_size;
   } while (true);
 
   bool is_empty = false;

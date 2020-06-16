@@ -129,8 +129,8 @@ void DoPostRequest(WKWebView* web_view,
 
 - (void)javascriptCompletionWithResult:(NSString*)result error:(NSError*)error {
   if (error || !result) {
-    DVLOG(1) << "Gaia fetcher extract body failed:"
-             << base::SysNSStringToUTF8(error.localizedDescription);
+    VLOG(1) << "Gaia fetcher extract body failed:"
+            << base::SysNSStringToUTF8(error.localizedDescription);
     // WKWebViewNavigationDelegate API doesn't give any way to get the HTTP
     // response code of a navigation. Default to 500 for error.
     self.bridge->OnURLFetchFailure(net::ERR_FAILED, 500);
@@ -148,16 +148,16 @@ void DoPostRequest(WKWebView* web_view,
 - (void)webView:(WKWebView*)webView
     didFailNavigation:(WKNavigation*)navigation
             withError:(NSError*)error {
-  DVLOG(1) << "Gaia fetcher navigation failed: "
-           << base::SysNSStringToUTF8(error.localizedDescription);
+  VLOG(1) << "Gaia fetcher navigation failed: "
+          << base::SysNSStringToUTF8(error.localizedDescription);
   self.bridge->OnURLFetchFailure(net::ERR_FAILED, 500);
 }
 
 - (void)webView:(WKWebView*)webView
     didFailProvisionalNavigation:(WKNavigation*)navigation
                        withError:(NSError*)error {
-  DVLOG(1) << "Gaia fetcher provisional navigation failed: "
-           << base::SysNSStringToUTF8(error.localizedDescription);
+  VLOG(1) << "Gaia fetcher provisional navigation failed: "
+          << base::SysNSStringToUTF8(error.localizedDescription);
   self.bridge->OnURLFetchFailure(net::ERR_FAILED, 500);
 }
 
@@ -193,6 +193,7 @@ void GaiaAuthFetcherIOSWKWebViewBridge::Cancel() {
   if (!GetRequest().pending)
     return;
   [GetWKWebView() stopLoading];
+  VLOG(1) << "Fetch was cancelled";
   OnURLFetchFailure(net::ERR_ABORTED, 500);
 }
 

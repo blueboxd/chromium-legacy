@@ -2667,8 +2667,11 @@ bool TextDecoration::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSPropertyValue, 256>& properties) const {
+  // Use RuntimeEnabledFeature-aware shorthandForProperty() method until
+  // text-decoration-thickness ships, see style_property_shorthand.cc.tmpl.
   return css_parsing_utils::ConsumeShorthandGreedilyViaLonghands(
-      textDecorationShorthand(), important, context, range, properties);
+      shorthandForProperty(CSSPropertyID::kTextDecoration), important, context,
+      range, properties);
 }
 
 const CSSValue* TextDecoration::CSSValueFromComputedStyleInternal(
@@ -2676,8 +2679,31 @@ const CSSValue* TextDecoration::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValuesForShorthandProperty(
-      textDecorationShorthand(), style, layout_object, allow_visited_style);
+  // Use RuntimeEnabledFeature-aware shorthandForProperty() method until
+  // text-decoration-thickness ships, see style_property_shorthand.cc.tmpl.
+  const StylePropertyShorthand& shorthand =
+      shorthandForProperty(CSSPropertyID::kTextDecoration);
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  for (unsigned i = 0; i < shorthand.length(); ++i) {
+    const CSSValue* value =
+        shorthand.properties()[i]->CSSValueFromComputedStyle(
+            style, layout_object, allow_visited_style);
+    // Do not include initial value 'auto' for thickness.
+    // TODO(https://crbug.com/1093826): general shorthand serialization issues
+    // remain, in particular for text-decoration.
+    if (shorthand.properties()[i]->PropertyID() ==
+        CSSPropertyID::kTextDecorationThickness) {
+      if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+        CSSValueID value_id = identifier_value->GetValueID();
+        if (value_id == CSSValueID::kAuto)
+          continue;
+      }
+    }
+    DCHECK(value);
+    list->Append(*value);
+  }
+  return list;
 }
 
 namespace {

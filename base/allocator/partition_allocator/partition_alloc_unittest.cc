@@ -156,8 +156,7 @@ class PartitionAllocTest : public testing::Test {
   }
 
   size_t SizeToIndex(size_t size) {
-    return PartitionGenericSizeToBucket(allocator.root(), size) -
-           allocator.root()->buckets;
+    return allocator.root()->SizeToBucket(size) - allocator.root()->buckets;
   }
 
   void TearDown() override {
@@ -248,9 +247,8 @@ class PartitionAllocTest : public testing::Test {
         case kPartitionReallocGenericFlags: {
           ptrs[i] = allocator.root()->AllocFlags(PartitionAllocReturnNull, 1,
                                                  type_name);
-          ptrs[i] = PartitionReallocGenericFlags(
-              allocator.root(), PartitionAllocReturnNull, ptrs[i], alloc_size,
-              type_name);
+          ptrs[i] = allocator.root()->ReallocFlags(
+              PartitionAllocReturnNull, ptrs[i], alloc_size, type_name);
           break;
         }
         case kPartitionRootGenericTryRealloc: {
@@ -907,7 +905,7 @@ TEST_F(PartitionAllocTest, GetOffsetMultiplePages) {
   size_t size = 48;
   size_t real_size = size + kExtraAllocSize;
   PartitionBucket<ThreadSafe>* bucket =
-      PartitionGenericSizeToBucket(allocator.root(), real_size);
+      allocator.root()->SizeToBucket(real_size);
   // Make sure the test is testing multiple partition pages case.
   EXPECT_GT(bucket->num_system_pages_per_slot_span,
             kPartitionPageSize / kSystemPageSize);
@@ -2295,8 +2293,8 @@ TEST_F(PartitionAllocTest, Bug_897585) {
   void* ptr = allocator.root()->AllocFlags(PartitionAllocReturnNull,
                                            kInitialSize, nullptr);
   ASSERT_NE(nullptr, ptr);
-  ptr = PartitionReallocGenericFlags(allocator.root(), PartitionAllocReturnNull,
-                                     ptr, kDesiredSize, nullptr);
+  ptr = allocator.root()->ReallocFlags(PartitionAllocReturnNull, ptr,
+                                       kDesiredSize, nullptr);
   ASSERT_NE(nullptr, ptr);
   memset(ptr, 0xbd, kDesiredSize);
   allocator.root()->Free(ptr);
@@ -2346,8 +2344,8 @@ TEST_F(PartitionAllocTest, OverrideHooks) {
   // overridden_allocation has not actually been freed so we can now immediately
   // realloc it.
   free_called = false;
-  ptr = PartitionReallocGenericFlags(allocator.root(), PartitionAllocReturnNull,
-                                     ptr, 1, nullptr);
+  ptr =
+      allocator.root()->ReallocFlags(PartitionAllocReturnNull, ptr, 1, nullptr);
   ASSERT_NE(ptr, nullptr);
   EXPECT_NE(ptr, overridden_allocation);
   EXPECT_TRUE(free_called);

@@ -661,6 +661,8 @@ void Diff(const Vector<String>& list_a,
   delete[] backtrack;
 }
 
+// Warning: it does not always produce valid CSS.
+// Use the rule's cssText method if you need to expose CSS externally.
 String CanonicalCSSText(CSSRule* rule) {
   auto* style_rule = DynamicTo<CSSStyleRule>(rule);
   if (!style_rule)
@@ -929,6 +931,10 @@ const LineEndings* InspectorStyleSheetBase::GetLineEndings() {
   return line_endings_.get();
 }
 
+void InspectorStyleSheetBase::ResetLineEndings() {
+  line_endings_ = std::make_unique<LineEndings>();
+}
+
 bool InspectorStyleSheetBase::LineNumberAndColumnToOffset(
     unsigned line_number,
     unsigned column_number,
@@ -961,16 +967,7 @@ InspectorStyleSheet::InspectorStyleSheet(
       page_style_sheet_(page_style_sheet),
       origin_(origin),
       document_url_(document_url) {
-  String text;
-  bool success = InspectorStyleSheetText(&text);
-  if (!success)
-    success = InlineStyleSheetText(&text);
-  if (!success)
-    success = ResourceStyleSheetText(&text);
-  if (!success)
-    success = CSSOMStyleSheetText(&text);
-  if (success)
-    InnerSetText(text, false);
+  UpdateText();
 }
 
 InspectorStyleSheet::~InspectorStyleSheet() = default;
@@ -1433,21 +1430,37 @@ void InspectorStyleSheet::ParseText(const String& text) {
   FlattenSourceData(*rule_tree, source_data_.Get());
 }
 
+// The stylesheet text might be out of sync with `page_style_sheet_` rules.
+// This method checks if a rule is present in the source text using
+// `SourceDataForRule` and produces a new text with all rules merged into the
+// original text. For example, if the source text is
+//
+//   /* comment */ .rule1 {} .rule3 {}
+//
+// and the page_style_sheet_ contains
+//
+//   .rule0 {} .rule1 {} .rule2 {} .rule3 {} .rule4 {}
+//
+// The result should be
+//
+//   .rule0 {} /* comment */ .rule1 {} .rule2 {} .rule3 {} .rule4 {}
+//
+// Note that page_style_sheet_ does not maintain comments and original
+// formatting.
 String InspectorStyleSheet::MergeCSSOMRulesWithText(const String& text) {
-  SourceRange last_range;
   String merged_text = text;
+  unsigned original_insert_pos = 0;
+  unsigned inserted_count = 0;
   for (unsigned i = 0; i < page_style_sheet_->length(); i++) {
     CSSRuleSourceData* source_data =
         SourceDataForRule(page_style_sheet_->item(i));
     if (source_data) {
-      last_range = SourceRange(source_data->rule_body_range.start,
-                               source_data->rule_body_range.end + 1);
+      original_insert_pos = source_data->rule_body_range.end + 1;
       continue;
     }
-    SourceRange next(last_range.end, last_range.end);
-    String rule_text = CanonicalCSSText(page_style_sheet_->item(i));
-    merged_text.replace(next.start, next.length(), rule_text);
-    last_range = SourceRange(next.start, next.start + rule_text.length());
+    String rule_text = page_style_sheet_->item(i)->cssText();
+    merged_text.replace(original_insert_pos + inserted_count, 0, rule_text);
+    inserted_count += rule_text.length();
   }
   rule_to_source_data_.clear();
   source_data_to_rule_.clear();
@@ -1934,7 +1947,7 @@ Element* InspectorStyleSheet::OwnerStyleElement() {
 String InspectorStyleSheet::CollectStyleSheetRules() {
   StringBuilder builder;
   for (unsigned i = 0; i < page_style_sheet_->length(); i++) {
-    builder.Append(CanonicalCSSText(page_style_sheet_->item(i)));
+    builder.Append(page_style_sheet_->item(i)->cssText());
     builder.Append('\n');
   }
   return builder.ToString();
@@ -1946,6 +1959,41 @@ bool InspectorStyleSheet::CSSOMStyleSheetText(String* result) {
   }
   *result = CollectStyleSheetRules();
   return true;
+}
+
+void InspectorStyleSheet::Reset() {
+  ResetLineEndings();
+  if (source_data_)
+    source_data_->clear();
+  cssom_flat_rules_.clear();
+  parsed_flat_rules_.clear();
+  rule_to_source_data_.clear();
+  source_data_to_rule_.clear();
+}
+
+void InspectorStyleSheet::SyncTextIfNeeded() {
+  if (!marked_for_sync_)
+    return;
+  Reset();
+  UpdateText();
+  marked_for_sync_ = false;
+}
+
+void InspectorStyleSheet::UpdateText() {
+  String text;
+  bool success = InspectorStyleSheetText(&text);
+  if (!success)
+    success = InlineStyleSheetText(&text);
+  if (!success)
+    success = ResourceStyleSheetText(&text);
+  if (!success)
+    success = CSSOMStyleSheetText(&text);
+  if (success)
+    InnerSetText(text, false);
+}
+
+bool InspectorStyleSheet::IsMutable() const {
+  return page_style_sheet_->Contents()->IsMutable();
 }
 
 bool InspectorStyleSheet::InlineStyleSheetText(String* out) {
@@ -1962,7 +2010,7 @@ bool InspectorStyleSheet::InlineStyleSheetText(String* out) {
     result = true;
   }
 
-  if (result && page_style_sheet_->Contents()->IsMutable()) {
+  if (result && IsMutable()) {
     ParseText(*out);
     *out = MergeCSSOMRulesWithText(*out);
   }

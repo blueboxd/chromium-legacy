@@ -55,15 +55,27 @@ function containsVideoMetadata(metadata) {
 }
 
 function enableGFD(sdp) {
-  const FRAME_MARKER_EXTENSION =
-      'http://tools.ietf.org/html/draft-ietf-avtext-framemarking-07';
   const GFD_V00_EXTENSION =
       'http://www.webrtc.org/experiments/rtp-hdrext/generic-frame-descriptor-00';
   if (sdp.indexOf(GFD_V00_EXTENSION) !== -1)
     return sdp;
 
-  // Replace the frame marker extension, which is unused with the GFD extension.
-  return sdp.split(FRAME_MARKER_EXTENSION).join(GFD_V00_EXTENSION);
+  const extensionIds = sdp.trim().split('\n')
+    .map(line => line.trim())
+    .filter(line => line.startsWith('a=extmap:'))
+    .map(line => line.split(' ')[0].substr(9))
+    .map(id => parseInt(id, 10))
+    .sort((a, b) => a - b);
+  for (let newId = 1; newId <= 14; newId++) {
+    if (!extensionIds.includes(newId)) {
+      return sdp += 'a=extmap:' + newId + ' ' + GFD_V00_EXTENSION + '\r\n';
+    }
+  }
+  if (sdp.indexОf('a=extmap-allow-mixed') !== -1) { // Pick the next highest one.
+    const newId = extensionIds[extensionIds.length - 1] + 1;
+    return sdp += 'a=extmap:' + newId + ' ' + GFD_V00_EXTENSION + '\r\n';
+  }
+  throw 'Could not find free extension id to use for ' + GFD_V00_EXTENSION;
 }
 
 async function exchangeOfferAnswer(pc1, pc2) {

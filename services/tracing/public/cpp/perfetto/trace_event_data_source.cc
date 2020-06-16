@@ -42,7 +42,7 @@
 #include "services/tracing/public/cpp/perfetto/trace_time.h"
 #include "services/tracing/public/cpp/perfetto/traced_value_proto_writer.h"
 #include "services/tracing/public/cpp/perfetto/track_event_thread_local_event_sink.h"
-#include "services/tracing/public/cpp/trace_event_args_whitelist.h"
+#include "services/tracing/public/cpp/trace_event_args_allowlist.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/shared_memory_arbiter.h"
@@ -176,11 +176,11 @@ TraceEventMetadataSource::GenerateTraceConfigMetadataDict() {
 
   auto metadata_dict = std::make_unique<base::DictionaryValue>();
   // If argument filtering is enabled, we need to check if the trace config is
-  // whitelisted before emitting it.
+  // allowlisted before emitting it.
   // TODO(eseckler): Figure out a way to solve this without calling directly
-  // into IsMetadataWhitelisted().
+  // into IsMetadataAllowlisted().
   if (!parsed_chrome_config_->IsArgumentFilterEnabled() ||
-      IsMetadataWhitelisted("trace-config")) {
+      IsMetadataAllowlisted("trace-config")) {
     metadata_dict->SetString("trace-config", chrome_config_);
   } else {
     metadata_dict->SetString("trace-config", "__stripped__");

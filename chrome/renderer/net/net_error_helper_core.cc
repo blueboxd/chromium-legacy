@@ -469,9 +469,8 @@ bool NetErrorHelperCore::IsReloadableError(
          info.error.reason() != net::ERR_SSL_PROTOCOL_ERROR &&
          // Do not trigger for blacklisted URLs.
          // https://crbug.com/803839
-         info.error.reason() != net::ERR_BLOCKED_BY_ADMINISTRATOR &&
          // Do not trigger for requests that were blocked by the browser itself.
-         info.error.reason() != net::ERR_BLOCKED_BY_CLIENT &&
+         !net::IsRequestBlockedError(info.error.reason()) &&
          !info.was_failed_post &&
          // Do not trigger for this error code because it is used by Chrome
          // while an auth prompt is being displayed.

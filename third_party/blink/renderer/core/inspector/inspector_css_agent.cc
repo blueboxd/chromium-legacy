@@ -959,6 +959,13 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   if (!owner_document->IsActive())
     return Response::ServerError("Document is not active");
 
+  // The source text of mutable stylesheets needs to be updated
+  // to sync the latest changes.
+  for (InspectorStyleSheet* stylesheet :
+       css_style_sheet_to_inspector_style_sheet_.Values()) {
+    stylesheet->SyncTextIfNeeded();
+  }
+
   // FIXME: It's really gross for the inspector to reach in and access
   // StyleResolver directly here. We need to provide the Inspector better APIs
   // to get this information without grabbing at internal style classes!
@@ -2205,6 +2212,14 @@ void InspectorCSSAgent::DidModifyDOMAttr(Element* element) {
     return;
 
   it->value->DidModifyElementAttribute();
+}
+
+void InspectorCSSAgent::DidMutateStyleSheet(CSSStyleSheet* css_style_sheet) {
+  InspectorStyleSheet* style_sheet =
+      css_style_sheet_to_inspector_style_sheet_.at(css_style_sheet);
+  if (!style_sheet)
+    return;
+  style_sheet->MarkForSync();
 }
 
 void InspectorCSSAgent::StyleSheetChanged(

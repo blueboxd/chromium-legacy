@@ -54,6 +54,7 @@
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
+#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/permissions/adaptive_quiet_notification_permission_ui_enabler.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
@@ -89,6 +90,7 @@
 #include "components/device_event_log/device_event_log.h"
 #include "components/feed/content/feed_host_service.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/keyed_service/core/service_access_type.h"
 #include "components/language/core/browser/url_language_histogram.h"
 #include "components/nacl/browser/nacl_browser.h"
 #include "components/nacl/browser/pnacl_host.h"
@@ -117,6 +119,7 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_transaction_factory.h"
 
 #if defined(OS_ANDROID)
@@ -324,6 +327,32 @@ ChromeBrowsingDataRemoverDelegate::GetOriginTypeMatcher() {
 
 bool ChromeBrowsingDataRemoverDelegate::MayRemoveDownloadHistory() {
   return profile_->GetPrefs()->GetBoolean(prefs::kAllowDeletingBrowserHistory);
+}
+
+std::vector<std::string>
+ChromeBrowsingDataRemoverDelegate::GetDomainsForDeferredCookieDeletion(
+    uint64_t remove_mask) {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kEnablePasswordsAccountStorage)) {
+    return {};
+  }
+  if ((remove_mask & DEFERRED_COOKIE_DELETION_DATA_TYPES) == 0) {
+    return {};
+  }
+
+  // Return Google and Gaia domains, so Google signout is deferred until
+  // account-scoped data is deleted.
+  auto urls = {GaiaUrls::GetInstance()->google_url(),
+               GaiaUrls::GetInstance()->gaia_url()};
+  std::set<std::string> domains;
+  for (const GURL& url : urls) {
+    std::string domain = GetDomainAndRegistry(
+        url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
+    if (domain.empty())
+      domain = url.host();
+    domains.insert(domain);
+  }
+  return {domains.begin(), domains.end()};
 }
 
 void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
@@ -828,19 +857,29 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   // Password manager
   if (remove_mask & DATA_TYPE_PASSWORDS) {
     base::RecordAction(UserMetricsAction("ClearBrowsingData_Passwords"));
-    password_manager::PasswordStore* password_store =
-        PasswordStoreFactory::GetForProfile(
-            profile_, ServiceAccessType::EXPLICIT_ACCESS).get();
+    auto password_store = PasswordStoreFactory::GetForProfile(
+        profile_, ServiceAccessType::EXPLICIT_ACCESS);
 
     if (password_store) {
       password_store->RemoveLoginsByURLAndTime(
           filter, delete_begin_, delete_end_,
-          base::AdaptCallbackForRepeating(
-              CreateTaskCompletionClosure(TracingDataType::kPasswords)));
+          CreateTaskCompletionClosure(TracingDataType::kPasswords));
       password_store->RemoveCompromisedCredentialsByUrlAndTime(
           nullable_filter, delete_begin_, delete_end_,
           CreateTaskCompletionClosure(
               TracingDataType::kCompromisedCredentials));
+    }
+
+    auto account_store = AccountPasswordStoreFactory::GetForProfile(
+        profile_, ServiceAccessType::EXPLICIT_ACCESS);
+
+    if (account_store) {
+      // TODO(crbug.com/1086433): Handle sync failure.
+      account_store->RemoveLoginsByURLAndTime(
+          filter, delete_begin_, delete_end_,
+          CreateTaskCompletionClosure(TracingDataType::kAccountPasswords),
+          IgnoreArgument<bool>(CreateTaskCompletionClosure(
+              TracingDataType::kAccountPasswordsSynced)));
     }
 
     BrowserContext::GetDefaultStoragePartition(profile_)

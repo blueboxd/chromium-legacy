@@ -749,7 +749,7 @@ class CONTENT_EXPORT NavigationRequest
   // Checks if CSP allows the navigation. This will check the frame-src and
   // navigate-to directives.
   // Returns net::OK if the checks pass, and net::ERR_ABORTED or
-  // net::ERR_BLOCKED_BY_CLIENT depending on which checks fail.
+  // net::ERR_BLOCKED_BY_CSP depending on which checks fail.
   net::Error CheckCSPDirectives(
       RenderFrameHostImpl* parent,
       bool has_followed_redirect,

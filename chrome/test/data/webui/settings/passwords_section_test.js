@@ -1107,9 +1107,8 @@ suite('PasswordsSection', function() {
           isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
       assertTrue(isDisplayed(passwordsSection.$.optInToAccountStorageButton));
       assertFalse(isDisplayed(passwordsSection.$.optOutOfAccountStorageButton));
-      assertEquals(
-          passwordsSection.i18n('optInAccountStorageBody'),
-          passwordsSection.$.accountStorageBody.innerText);
+      assertTrue(isDisplayed(passwordsSection.$.accountStorageOptInBody));
+      assertFalse(isDisplayed(passwordsSection.$.accountStorageOptOutBody));
 
       // Opt in.
       passwordManager.setIsOptedInForAccountStorageAndNotify(true);
@@ -1117,9 +1116,8 @@ suite('PasswordsSection', function() {
           isDisplayed(passwordsSection.$.accountStorageButtonsContainer));
       assertFalse(isDisplayed(passwordsSection.$.optInToAccountStorageButton));
       assertTrue(isDisplayed(passwordsSection.$.optOutOfAccountStorageButton));
-      assertEquals(
-          passwordsSection.i18n('optOutAccountStorageBody'),
-          passwordsSection.$.accountStorageBody.innerText);
+      assertTrue(isDisplayed(passwordsSection.$.accountStorageOptOutBody));
+      assertFalse(isDisplayed(passwordsSection.$.accountStorageOptInBody));
 
       // Sign out
       simulateStoredAccounts([]);

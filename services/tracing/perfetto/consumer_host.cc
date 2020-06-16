@@ -26,7 +26,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "services/tracing/perfetto/perfetto_service.h"
-#include "services/tracing/public/cpp/trace_event_args_whitelist.h"
+#include "services/tracing/public/cpp/trace_event_args_allowlist.h"
 #include "third_party/perfetto/include/perfetto/ext/trace_processor/export_json.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/observable_events.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/slice.h"
@@ -382,9 +382,9 @@ void ConsumerHost::TracingSession::DisableTracingAndEmitJson(
       base::SequencedTaskRunnerHandle::Get());
 
   if (privacy_filtering_enabled) {
-    // For filtering/whitelisting to be possible at JSON export time,
+    // For filtering/allowlisting to be possible at JSON export time,
     // filtering must not have been enabled during proto emission time
-    // (or there's nothing to pass through the whitelist).
+    // (or there's nothing to pass through the allowlist).
     DCHECK(!privacy_filtering_enabled_);
     privacy_filtering_enabled_ = true;
   }
@@ -408,9 +408,9 @@ void ConsumerHost::TracingSession::ExportJson() {
           ->GetArgumentFilterPredicate()
           .is_null()) {
     base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
-        base::BindRepeating(&IsTraceEventArgsWhitelisted));
+        base::BindRepeating(&IsTraceEventArgsAllowlisted));
     base::trace_event::TraceLog::GetInstance()->SetMetadataFilterPredicate(
-        base::BindRepeating(&IsMetadataWhitelisted));
+        base::BindRepeating(&IsMetadataAllowlisted));
   }
 
   perfetto::trace_processor::json::ArgumentFilterPredicate argument_filter;

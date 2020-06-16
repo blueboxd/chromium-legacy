@@ -44,9 +44,8 @@ bool IsReloadableError(const error_page::Error& error, bool was_failed_post) {
          error.reason() != net::ERR_SSL_PROTOCOL_ERROR &&
          // Do not trigger for blacklisted URLs.
          // https://crbug.com/803839
-         error.reason() != net::ERR_BLOCKED_BY_ADMINISTRATOR &&
          // Do not trigger for requests that were blocked by the browser itself.
-         error.reason() != net::ERR_BLOCKED_BY_CLIENT && !was_failed_post &&
+         !net::IsRequestBlockedError(error.reason()) && !was_failed_post &&
          // Do not trigger for this error code because it is used by Chrome
          // while an auth prompt is being displayed.
          error.reason() != net::ERR_INVALID_AUTH_CREDENTIALS &&

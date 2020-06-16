@@ -17,6 +17,9 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.signin.account_picker.AccountPickerBottomSheetCoordinator;
+import org.chromium.chrome.browser.signin.account_picker.AccountPickerDelegate;
 import org.chromium.chrome.browser.sync.settings.AccountManagementFragment;
 import org.chromium.components.browser_ui.settings.ManagedPreferencesUtils;
 import org.chromium.components.signin.GAIAServiceType;
@@ -68,9 +71,15 @@ public class SigninUtils {
     }
 
     @CalledByNative
-    private static void openAccountPickerBottomSheet() {
-        // TODO(http://crbug.com/1063362):
-        // Opens the account picker bottom sheet here
+    private static void openAccountPickerBottomSheet(WindowAndroid windowAndroid) {
+        ThreadUtils.assertOnUiThread();
+        if (IdentityServicesProvider.get().getSigninManager().isSignInAllowed()) {
+            ChromeActivity activity = (ChromeActivity) windowAndroid.getActivity().get();
+            AccountPickerBottomSheetCoordinator coordinator =
+                    new AccountPickerBottomSheetCoordinator(activity,
+                            activity.getBottomSheetController(),
+                            new AccountPickerDelegate(activity));
+        }
     }
 
     /**

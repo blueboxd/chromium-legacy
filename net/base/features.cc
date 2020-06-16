@@ -158,7 +158,7 @@ const base::Feature kAppendFrameOriginToNetworkIsolationKey{
 
 const base::Feature kUseRegistrableDomainInNetworkIsolationKey{
     "UseRegistrableDomainInNetworkIsolationKey",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTurnOffStreamingMediaCaching{
     "TurnOffStreamingMediaCaching", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -53,11 +53,7 @@ void CookieControlsController::OnUiClosing() {
 void CookieControlsController::Update(content::WebContents* web_contents) {
   DCHECK(web_contents);
   if (!tab_observer_ || GetWebContents() != web_contents) {
-    DCHECK(content_settings::TabSpecificContentSettings::FromWebContents(
-        web_contents));
-    tab_observer_ = std::make_unique<TabObserver>(
-        this, content_settings::TabSpecificContentSettings::FromWebContents(
-                  web_contents));
+    tab_observer_ = std::make_unique<TabObserver>(this, web_contents);
   }
   auto status = GetStatus(web_contents);
   int blocked_count = GetBlockedCookieCount();
@@ -116,10 +112,14 @@ void CookieControlsController::OnCookieBlockingEnabledForSite(
 }
 
 int CookieControlsController::GetBlockedCookieCount() {
-  const browsing_data::LocalSharedObjectsContainer& blocked_objects =
-      tab_observer_->tab_specific_content_settings()
-          ->blocked_local_shared_objects();
-  return blocked_objects.GetObjectCount();
+  auto* tscs =
+      content_settings::TabSpecificContentSettings::GetForCurrentDocument(
+          tab_observer_->web_contents()->GetMainFrame());
+  if (tscs) {
+    return tscs->blocked_local_shared_objects().GetObjectCount();
+  } else {
+    return 0;
+  }
 }
 
 void CookieControlsController::PresentBlockedCookieCounter() {
@@ -140,9 +140,9 @@ void CookieControlsController::OnCookieSettingChanged() {
 }
 
 content::WebContents* CookieControlsController::GetWebContents() {
-  if (!tab_observer_ || !tab_observer_->tab_specific_content_settings())
+  if (!tab_observer_)
     return nullptr;
-  return tab_observer_->tab_specific_content_settings()->web_contents();
+  return tab_observer_->web_contents();
 }
 
 void CookieControlsController::AddObserver(CookieControlsView* obs) {
@@ -155,9 +155,9 @@ void CookieControlsController::RemoveObserver(CookieControlsView* obs) {
 
 CookieControlsController::TabObserver::TabObserver(
     CookieControlsController* cookie_controls,
-    content_settings::TabSpecificContentSettings* tab_specific_content_settings)
+    content::WebContents* web_contents)
     : content_settings::TabSpecificContentSettings::SiteDataObserver(
-          tab_specific_content_settings),
+          web_contents),
       cookie_controls_(cookie_controls) {}
 
 void CookieControlsController::TabObserver::OnSiteDataAccessed() {

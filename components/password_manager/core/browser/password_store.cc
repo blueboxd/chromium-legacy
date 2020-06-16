@@ -53,6 +53,8 @@ namespace password_manager {
 
 namespace {
 
+const base::TimeDelta kSyncTaskTimeout = base::TimeDelta::FromSeconds(30);
+
 // Utility function to simplify removing logins prior a given |cutoff| data.
 // Runs |callback| with the result.
 //
@@ -752,14 +754,15 @@ void PasswordStore::NotifyDeletionsHaveSynced(bool success) {
   // permanently). In either case, run the corresponding callbacks now (on the
   // main task runner).
   DCHECK(!GetMetadataStore()->HasUnsyncedDeletions());
-  for (base::OnceCallback<void(bool)>& callback :
-       deletions_have_synced_callbacks_) {
-    main_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce([](base::OnceCallback<void(bool)> callback,
-                          bool success) { std::move(callback).Run(success); },
-                       std::move(callback), success));
+  if (!deletions_have_synced_callbacks_.empty()) {
+    base::UmaHistogramBoolean(
+        "PasswordManager.PasswordStoreDeletionsHaveSynced", success);
   }
+  for (auto& callback : deletions_have_synced_callbacks_) {
+    main_task_runner_->PostTask(FROM_HERE,
+                                base::BindOnce(std::move(callback), success));
+  }
+  deletions_have_synced_timeout_.Cancel();
   deletions_have_synced_callbacks_.clear();
 }
 
@@ -991,6 +994,11 @@ void PasswordStore::RemoveLoginsByURLAndTimeInternal(
 
   if (sync_completion) {
     deletions_have_synced_callbacks_.push_back(std::move(sync_completion));
+    // Start a timeout for sync, or restart it if it was already running.
+    deletions_have_synced_timeout_.Reset(base::BindRepeating(
+        &PasswordStore::NotifyDeletionsHaveSynced, this, /*success=*/false));
+    background_task_runner_->PostDelayedTask(
+        FROM_HERE, deletions_have_synced_timeout_.callback(), kSyncTaskTimeout);
 
     // Do an immediate check for the case where there are already no unsynced
     // deletions.

@@ -279,6 +279,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   // crbug.com/140910: Many places were calling this with base::Time() as
   // delete_end, even though they should've used base::Time::Max().
   DCHECK_NE(base::Time(), delete_end);
+  DCHECK(domains_for_deferred_cookie_deletion_.empty());
 
   delete_begin_ = delete_begin;
   delete_end_ = delete_end;
@@ -337,6 +338,10 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   if (remove_mask & DATA_TYPE_COOKIES &&
       origin_type_mask_ & ORIGIN_TYPE_UNPROTECTED_WEB) {
     storage_partition_remove_mask |= StoragePartition::REMOVE_DATA_MASK_COOKIES;
+    if (embedder_delegate_) {
+      domains_for_deferred_cookie_deletion_ =
+          embedder_delegate_->GetDomainsForDeferredCookieDeletion(remove_mask);
+    }
   }
   if (remove_mask & DATA_TYPE_LOCAL_STORAGE) {
     storage_partition_remove_mask |=
@@ -387,13 +392,7 @@ void BrowsingDataRemoverImpl::RemoveImpl(
         StoragePartition::REMOVE_DATA_MASK_CONVERSIONS;
   }
 
-  StoragePartition* storage_partition;
-  if (storage_partition_for_testing_) {
-    storage_partition = storage_partition_for_testing_;
-  } else {
-    storage_partition =
-        BrowserContext::GetDefaultStoragePartition(browser_context_);
-  }
+  StoragePartition* storage_partition = GetStoragePartition();
 
   if (storage_partition_remove_mask) {
     uint32_t quota_storage_remove_mask =
@@ -416,6 +415,15 @@ void BrowsingDataRemoverImpl::RemoveImpl(
       deletion_filter = filter_builder->BuildCookieDeletionFilter();
     } else {
       deletion_filter = network::mojom::CookieDeletionFilter::New();
+    }
+
+    if (!domains_for_deferred_cookie_deletion_.empty()) {
+      // The data types that require deferred deletion are currently not
+      // filterable. If they become filterable we need to check if the
+      // selected domains should actually be deleted.
+      DCHECK(!deletion_filter->excluding_domains.has_value());
+      deletion_filter->excluding_domains =
+          domains_for_deferred_cookie_deletion_;
     }
 
     BrowsingDataRemoverDelegate::EmbedderOriginTypeMatcher embedder_matcher;
@@ -599,6 +607,12 @@ bool BrowsingDataRemoverImpl::RemovalTask::IsSameDeletion(
          *filter_builder == *other.filter_builder;
 }
 
+StoragePartition* BrowsingDataRemoverImpl::GetStoragePartition() {
+  return storage_partition_for_testing_
+             ? storage_partition_for_testing_
+             : BrowserContext::GetDefaultStoragePartition(browser_context_);
+}
+
 void BrowsingDataRemoverImpl::Notify() {
   // Some tests call |RemoveImpl| directly, without using the task scheduler.
   // TODO(msramek): Improve those tests so we don't have to do this. Tests
@@ -669,6 +683,24 @@ void BrowsingDataRemoverImpl::OnTaskComplete(TracingDataType data_type) {
                          static_cast<int>(data_type));
   if (!pending_sub_tasks_.empty())
     return;
+
+  // If any cookie deletions have been deferred do them now since all other
+  // tasks are completed.
+  if (!domains_for_deferred_cookie_deletion_.empty()) {
+    DCHECK(remove_mask_ & DATA_TYPE_COOKIES);
+    auto deletion_filter = network::mojom::CookieDeletionFilter::New();
+    deletion_filter->including_domains =
+        std::move(domains_for_deferred_cookie_deletion_);
+    // Moving a vector is defined to empty this vector.
+    DCHECK(domains_for_deferred_cookie_deletion_.empty());
+    GetStoragePartition()->ClearData(
+        StoragePartition::REMOVE_DATA_MASK_COOKIES,
+        /*quota_storage_remove_mask=*/0,
+        /*origin_matcher=*/base::NullCallback(), std::move(deletion_filter),
+        /*perform_storage_cleanup=*/false, delete_begin_, delete_end_,
+        CreateTaskCompletionClosure(TracingDataType::kDeferredCookies));
+    return;
+  }
 
   slow_pending_tasks_closure_.Cancel();
 

@@ -63,7 +63,7 @@
     two-columns-adaptable - if set layout might switch to two columns instead of
         one when there is not enough vertical space for elements. Left column
         would contain header-container, right columnn would contain
-        footer-container. Bottom buttons are not affected. See oobe.css for
+        footerContainer. Bottom buttons are not affected. See oobe.css for
         conditions.
 
   I.e. [no-header no-footer-padding] will make the footer occupy all the dialog
@@ -76,7 +76,7 @@
     <style include="cr-shared-style"></style>
     <cr-lazy-render id="lazy">
       <template>
-        <div id="top-scroll-container" class="layout vertical flex" scrollable>
+        <div id="topScrollContainer" class="layout vertical flex">
           <div id="header-container" hidden="[[noHeader]]">
             <div id="oobe-icon-div" class="slot-container">
               <slot name="oobe-icon"></slot>
@@ -96,7 +96,7 @@
               <slot name="progress"></slot>
             </div>
           </div>
-          <div id="footer-container" noFooterPadding$="[[noFooterPadding]]"
+          <div id="footerContainer" noFooterPadding$="[[noFooterPadding]]"
               footerShrinkable$="[[footerShrinkable]]"
               class="slot-container flex-grow layout vertical">
             <slot name="footer"></slot>

@@ -109,7 +109,8 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
     kNetworkErrorLogging = 11,
     kTrustTokens = 12,
     kConversions = 13,
-    kMaxValue = kConversions,
+    kDeferredCookies = 14,
+    kMaxValue = kDeferredCookies,
   };
 
   // Represents a single removal task. Contains all parameters needed to execute
@@ -181,6 +182,8 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
   // Records unfinished tasks from |pending_sub_tasks_| after a delay.
   void RecordUnfinishedSubTasks();
 
+  StoragePartition* GetStoragePartition();
+
   // Like GetWeakPtr(), but returns a weak pointer to BrowsingDataRemoverImpl
   // for internal purposes.
   base::WeakPtr<BrowsingDataRemoverImpl> GetWeakPtr();
@@ -202,6 +205,8 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
 
   // From which types of origins should we remove data?
   uint64_t origin_type_mask_ = 0;
+
+  std::vector<std::string> domains_for_deferred_cookie_deletion_;
 
   // True if Remove has been invoked.
   bool is_removing_;

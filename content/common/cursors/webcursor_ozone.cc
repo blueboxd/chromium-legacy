@@ -55,10 +55,6 @@ float WebCursor::GetCursorScaleFactor(SkBitmap* bitmap) {
        static_cast<float>(maximum_cursor_size_.height()) / bitmap->height()});
 }
 
-bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {
-  return true;
-}
-
 void WebCursor::CleanupPlatformData() {
   if (platform_cursor_) {
     ui::CursorFactory::GetInstance()->UnrefImageCursor(platform_cursor_);

@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
   <meta charset="utf-8">
   <link rel="import" href="chrome://resources/html/polymer.html">
@@ -30,43 +30,6 @@
     <template>
       <style include="cr-shared-style">
         <include src="account_manager_shared.css">
-
-        #content {
-          display: flex;
-          flex-direction: column;
-          height: calc(100% - 61px);
-          padding-bottom: 32px;
-          padding-inline-end: 0;
-          padding-inline-start: 0;
-          padding-top: 29px; /* 64px - 35px(dialog top border size) */
-        }
-
-        .image-container {
-          align-items: center;
-          display: flex;
-          flex-grow: 1;
-          justify-content: center;
-          width: 100%;
-        }
-
-        .main-image {
-          height: 256px;
-          width: 256px;
-        }
-
-        .main-container {
-          display: flex;
-          flex-direction: column;
-          flex-grow: 1;
-          padding-inline-end: 64px;
-          padding-inline-start: 64px;
-        }
-
-        .button-container {
-          padding-inline-end: 32px;
-          padding-inline-start: 32px;
-          position: relative;
-        }
       </style>
       <div id="content">
         <div class="main-container">

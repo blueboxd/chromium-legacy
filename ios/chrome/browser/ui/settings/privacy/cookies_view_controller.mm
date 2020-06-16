@@ -4,10 +4,12 @@
 
 #import "ios/chrome/browser/ui/settings/privacy/cookies_view_controller.h"
 
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_multiline_detail_item.h"
 #import "ios/chrome/browser/ui/settings/privacy/cookies_commands.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_cell.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
@@ -16,6 +18,7 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/elements/popover_label_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -30,7 +33,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeBlockThirdPartyCookiesIncognito,
   ItemTypeBlockThirdPartyCookies,
   ItemTypeBlockAllCookies,
-  ItemTypeCookiesDescriptionFooter,
 };
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -83,79 +85,73 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   [self.tableViewModel
       addSectionWithIdentifier:SectionIdentifierCookiesContent];
 
-  SettingsMultilineDetailItem* allowCookies =
-      [[SettingsMultilineDetailItem alloc] initWithType:ItemTypeAllowCookies];
+  TableViewInfoButtonItem* allowCookies =
+      [[TableViewInfoButtonItem alloc] initWithType:ItemTypeAllowCookies];
   allowCookies.text = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_ALLOW_COOKIES_TITLE);
   allowCookies.detailText = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_ALLOW_COOKIES_DETAIL);
   allowCookies.useCustomSeparator = YES;
+  allowCookies.iconImageName = @"accessory_no_checkmark";
   [self.tableViewModel addItem:allowCookies
        toSectionWithIdentifier:SectionIdentifierCookiesContent];
 
-  SettingsMultilineDetailItem* blockThirdPartyCookiesIncognito =
-      [[SettingsMultilineDetailItem alloc]
+  TableViewInfoButtonItem* blockThirdPartyCookiesIncognito =
+      [[TableViewInfoButtonItem alloc]
           initWithType:ItemTypeBlockThirdPartyCookiesIncognito];
   blockThirdPartyCookiesIncognito.text = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_THIRD_PARTY_COOKIES_INCOGNITO_TITLE);
   blockThirdPartyCookiesIncognito.detailText = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_THIRD_PARTY_COOKIES_DETAIL);
   blockThirdPartyCookiesIncognito.useCustomSeparator = YES;
+  blockThirdPartyCookiesIncognito.iconImageName = @"accessory_no_checkmark";
   [self.tableViewModel addItem:blockThirdPartyCookiesIncognito
        toSectionWithIdentifier:SectionIdentifierCookiesContent];
 
-  SettingsMultilineDetailItem* blockThirdPartyCookies =
-      [[SettingsMultilineDetailItem alloc]
+  TableViewInfoButtonItem* blockThirdPartyCookies =
+      [[TableViewInfoButtonItem alloc]
           initWithType:ItemTypeBlockThirdPartyCookies];
   blockThirdPartyCookies.text = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_THIRD_PARTY_COOKIES_TITLE);
   blockThirdPartyCookies.detailText = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_THIRD_PARTY_COOKIES_DETAIL);
   blockThirdPartyCookies.useCustomSeparator = YES;
+  blockThirdPartyCookies.iconImageName = @"accessory_no_checkmark";
   [self.tableViewModel addItem:blockThirdPartyCookies
        toSectionWithIdentifier:SectionIdentifierCookiesContent];
 
-  SettingsMultilineDetailItem* blockAllCookies =
-      [[SettingsMultilineDetailItem alloc]
-          initWithType:ItemTypeBlockAllCookies];
+  TableViewInfoButtonItem* blockAllCookies =
+      [[TableViewInfoButtonItem alloc] initWithType:ItemTypeBlockAllCookies];
   blockAllCookies.text = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_ALL_COOKIES_TITLE);
   blockAllCookies.detailText = l10n_util::GetNSString(
       IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_ALL_COOKIES_DETAIL);
   blockAllCookies.useCustomSeparator = YES;
+  blockAllCookies.iconImageName = @"accessory_no_checkmark";
   [self.tableViewModel addItem:blockAllCookies
-       toSectionWithIdentifier:SectionIdentifierCookiesContent];
-
-  // This item is used as a footer. It's currently not possible to have a
-  // separtor without using UITableViewStyleGrouped.
-  TableViewTextLinkItem* cookiesDescriptionFooter =
-      [[TableViewTextLinkItem alloc]
-          initWithType:ItemTypeCookiesDescriptionFooter];
-  cookiesDescriptionFooter.text =
-      l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_COOKIES_DESCRIPTION);
-  [self.tableViewModel addItem:cookiesDescriptionFooter
        toSectionWithIdentifier:SectionIdentifierCookiesContent];
 }
 
 #pragma mark - Private
 
-// Adds accessoryType to the selected item & cell.
-// Removes the accessoryType of the prevous selected option item & cell.
+// Adds Checkmark icon to the selected item.
+// Removes the checkmark icon of the prevous selected option item.
 - (void)updateSelectedCookiesItemWithIndexPath:(NSIndexPath*)indexPath {
-  UITableViewCell* selectedCookiesItemCell;
+  // TODO(crbug.com/1095579): Tint this.
+  TableViewItem* previousSelectedCookiesItem;
   if (self.selectedCookiesItem) {
-    self.selectedCookiesItem.accessoryType = UITableViewCellAccessoryNone;
-    selectedCookiesItemCell = [self.tableView
-        cellForRowAtIndexPath:[self.tableViewModel
-                                  indexPathForItem:self.selectedCookiesItem]];
-    selectedCookiesItemCell.accessoryType = UITableViewCellAccessoryNone;
+    previousSelectedCookiesItem = self.selectedCookiesItem;
+    static_cast<TableViewInfoButtonItem*>(previousSelectedCookiesItem)
+        .iconImageName = @"accessory_no_checkmark";
   }
   self.selectedCookiesItem = [self.tableViewModel itemAtIndexPath:indexPath];
-  self.selectedCookiesItem.accessoryType = UITableViewCellAccessoryCheckmark;
-  selectedCookiesItemCell = [self.tableView
-      cellForRowAtIndexPath:[self.tableViewModel
-                                indexPathForItem:self.selectedCookiesItem]];
-  selectedCookiesItemCell.accessoryType = UITableViewCellAccessoryCheckmark;
+  static_cast<TableViewInfoButtonItem*>(self.selectedCookiesItem)
+      .iconImageName = @"accessory_checkmark";
+
+  if (previousSelectedCookiesItem)
+    [self reconfigureCellsForItems:@[
+      previousSelectedCookiesItem, self.selectedCookiesItem
+    ]];
 }
 
 // Returns the ItemType associated with the CookiesSettingType.
@@ -170,6 +166,43 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
     case SettingTypeAllowCookies:
       return ItemTypeAllowCookies;
   }
+}
+
+#pragma mark - Actions
+
+// Called when the user clicks on the information button.
+- (void)didTapInfoIcon:(UIButton*)button {
+  NSString* message;
+  switch (button.tag) {
+    case ItemTypeAllowCookies:
+      message = l10n_util::GetNSString(
+          IDS_IOS_OPTIONS_PRIVACY_COOKIES_ALLOW_COOKIES_DESCRIPTION);
+      break;
+    case ItemTypeBlockThirdPartyCookiesIncognito:
+      message = l10n_util::GetNSString(
+          IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_THIRD_PARTY_COOKIES_INCOGNITO_DESCRIPTION);
+      break;
+    case ItemTypeBlockThirdPartyCookies:
+      message = l10n_util::GetNSString(
+          IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_THIRD_PARTY_COOKIES_DESCRIPTION);
+      break;
+    case ItemTypeBlockAllCookies:
+      message = l10n_util::GetNSString(
+          IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_ALL_COOKIES_DESCRIPTION);
+      break;
+    default:
+      return;
+  }
+
+  PopoverLabelViewController* bubbleViewController =
+      [[PopoverLabelViewController alloc] initWithMessage:message];
+  [self presentViewController:bubbleViewController animated:YES completion:nil];
+
+  // Set the anchor and arrow direction of the bubble.
+  bubbleViewController.popoverPresentationController.sourceView = button;
+  bubbleViewController.popoverPresentationController.sourceRect = button.bounds;
+  bubbleViewController.popoverPresentationController.permittedArrowDirections =
+      UIPopoverArrowDirectionUp;
 }
 
 #pragma mark - UITableViewDelegate
@@ -197,6 +230,39 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
       return;
   }
   [self.handler selectedCookiesSettingType:settingType];
+}
+
+#pragma mark - UITableViewDataSource
+
+- (UITableViewCell*)tableView:(UITableView*)tableView
+        cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell = [super tableView:tableView
+                     cellForRowAtIndexPath:indexPath];
+  TableViewInfoButtonCell* managedCell =
+      base::mac::ObjCCastStrict<TableViewInfoButtonCell>(cell);
+  [managedCell.trailingButton addTarget:self
+                                 action:@selector(didTapInfoIcon:)
+                       forControlEvents:UIControlEventTouchUpInside];
+  switch ([self.tableViewModel itemTypeForIndexPath:indexPath]) {
+    case ItemTypeAllowCookies: {
+      managedCell.trailingButton.tag = ItemTypeAllowCookies;
+      break;
+    }
+    case ItemTypeBlockThirdPartyCookiesIncognito: {
+      managedCell.trailingButton.tag = ItemTypeBlockThirdPartyCookiesIncognito;
+      break;
+    }
+    case ItemTypeBlockThirdPartyCookies: {
+      managedCell.trailingButton.tag = ItemTypeBlockThirdPartyCookies;
+      break;
+    }
+
+    case ItemTypeBlockAllCookies: {
+      managedCell.trailingButton.tag = ItemTypeBlockAllCookies;
+      break;
+    }
+  }
+  return cell;
 }
 
 #pragma mark - PrivacyCookiesConsumer

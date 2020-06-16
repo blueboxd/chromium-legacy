@@ -164,6 +164,10 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
       ServiceWorkerStorage::OriginState origin_state,
       int64_t deleted_version_id,
       const std::vector<int64_t>& newly_purgeable_resources);
+  void DidGetNewVersionId(GetNewVersionIdCallback callback, int64_t version_id);
+
+  mojo::PendingRemote<storage::mojom::ServiceWorkerLiveVersionRef>
+  CreateLiveVersionReference(int64_t version_id);
 
   void MaybePurgeResources(int64_t version_id,
                            const std::vector<int64_t>& purgeable_resources);

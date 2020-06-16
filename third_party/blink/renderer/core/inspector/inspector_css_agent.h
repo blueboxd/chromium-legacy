@@ -125,6 +125,7 @@ class CORE_EXPORT InspectorCSSAgent final
                     const FontCustomPlatformData*);
   void SetCoverageEnabled(bool);
   void WillChangeStyleElement(Element*);
+  void DidMutateStyleSheet(CSSStyleSheet* css_style_sheet);
 
   void enable(std::unique_ptr<EnableCallback>) override;
   protocol::Response disable() override;

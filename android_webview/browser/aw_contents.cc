@@ -1481,8 +1481,7 @@ void AwContents::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   // If this request was blocked in any way, broadcast an error.
   net::Error error_code = navigation_handle->GetNetErrorCode();
-  if (error_code != net::ERR_BLOCKED_BY_CLIENT &&
-      error_code != net::ERR_BLOCKED_BY_ADMINISTRATOR &&
+  if (!net::IsRequestBlockedError(error_code) &&
       error_code != net::ERR_ABORTED) {
     return;
   }

@@ -2483,6 +2483,19 @@ size_t LayoutGrid::NumTracks(GridTrackSizingDirection direction,
                    StyleRef(), grid.AutoRepeatTracks(kForColumns));
 }
 
+size_t LayoutGrid::ExplicitGridEndForDirection(
+    GridTrackSizingDirection direction) const {
+  size_t leading = ExplicitGridStartForDirection(direction);
+
+  if (direction == kForRows) {
+    return leading + GridPositionsResolver::ExplicitGridRowCount(
+                         StyleRef(), grid_->AutoRepeatTracks(direction));
+  }
+
+  return leading + GridPositionsResolver::ExplicitGridColumnCount(
+                       StyleRef(), grid_->AutoRepeatTracks(direction));
+}
+
 LayoutUnit LayoutGrid::GridItemOffset(
     GridTrackSizingDirection direction) const {
   return direction == kForRows ? offset_between_rows_.distribution_offset

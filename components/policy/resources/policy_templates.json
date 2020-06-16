@@ -151,6 +151,8 @@
 #   'platform_only' Set to True if the policy can only be set from platform
 #   policy but do not support Admin console. This is only used as a hint for
 #   Admin console.
+#   'internal_only' Set to True if the policy is used for internal development
+#   or testing purposes and will never be used by any external administrator.
 #
 #   The 'max_size' key is used to specify the maximal size of the external data
 #   that a policy can reference, in bytes. This annotation is compulsory for
@@ -724,6 +726,7 @@
         'PinUnlockMinimumLength',
         'PinUnlockMaximumLength',
         'PinUnlockWeakPinsAllowed',
+        'PinUnlockAutosubmitEnabled',
       ],
     },
     {
@@ -21414,6 +21417,32 @@ If you disable this policy, web page scrolling to specific text fragments via UR
           values of this policy.
           ''',
     },
+    {
+      'name': 'PinUnlockAutosubmitEnabled',
+      'owners': ['rrsilva@google.com', 'cros-oac@google.com'],
+      'future': True,
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:85-'],
+      'features': {
+        'can_be_recommended' : True,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'default_for_enterprise_users': False,
+      'id': 718,
+      'caption': '''Enable PIN auto-submit feature on the lock and login screen.''',
+      'tags': [],
+      'desc': '''The PIN auto-submit feature changes how PINs are entered in Chrome OS.
+          Instead of showing the same textfield that is used for password input, this
+          feature shows a special UI that clearly shows to the user how many
+          digits are necessary for their PIN. As a consequence, the user's PIN length
+          will be stored outside the user encrypted data.
+
+          If this policy is set to false, users will not have the option of enabling
+          the feature on the Settings page.''',
+    },
   ],
 
   'messages': {
@@ -21570,7 +21599,11 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
     'doc_feature_platform_only': {
       'desc': '''The name of the feature that indicates whether a policy can only be set with platfrom policy.''',
-      'text': '''Per Profile'''
+      'text': '''Platform Only'''
+    },
+    'doc_feature_internal_only': {
+      'desc': '''The name of the feature that indicates whether a policy is used for internal development or testing purposes.''',
+      'text': '''Internal Only'''
     },
     'doc_deprecated': {
       'desc': '''Text appended in parentheses to the policy name to indicate that it has been deprecated''',
@@ -22083,6 +22116,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'PinUnlockMinimumLength',
         'PinUnlockMaximumLength',
         'PinUnlockWeakPinsAllowed',
+        'PinUnlockAutosubmitEnabled',
       ],
     },
     {
@@ -22279,6 +22313,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 717,
+  'highest_id_currently_used': 718,
   'highest_atomic_group_id_currently_used': 38
 }

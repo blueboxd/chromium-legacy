@@ -842,6 +842,10 @@ void ExtensionDownloader::HandleManifestResults(
 
     GURL crx_url = update->crx_url;
     NotifyUpdateFound(extension_id, update->version);
+    if (fetch_data->is_all_external_policy_download() && crx_url.is_empty()) {
+      DCHECK_EQ(fetch_data->fetch_priority(),
+                ManifestFetchData::FetchPriority::FOREGROUND);
+    }
     FetchUpdatedExtension(std::make_unique<ExtensionFetch>(
         extension_id, crx_url, update->package_hash, update->version,
         fetch_data->request_ids()));

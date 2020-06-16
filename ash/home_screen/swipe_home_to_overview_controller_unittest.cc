@@ -10,6 +10,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/home_screen/home_screen_delegate.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_metrics.h"
 #include "ash/shelf/test/overview_animation_waiter.h"
@@ -17,12 +18,14 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
+#include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/test_utils.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -98,6 +101,8 @@ class SwipeHomeToOverviewControllerTest : public AshTestBase {
   }
 
   void WaitForHomeLauncherAnimationToFinish() {
+    auto* compositor =
+        Shell::GetPrimaryRootWindowController()->GetHost()->compositor();
     // Wait until home launcher animation finishes.
     while (GetAppListTestHelper()
                ->GetAppListView()
@@ -105,12 +110,13 @@ class SwipeHomeToOverviewControllerTest : public AshTestBase {
                ->GetLayer()
                ->GetAnimator()
                ->is_animating()) {
-      base::RunLoop run_loop;
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, run_loop.QuitClosure(),
-          base::TimeDelta::FromMilliseconds(200));
-      run_loop.Run();
+      EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
     }
+
+    // Ensure there is one more frame presented after animation finishes
+    // to allow animation throughput data is passed from cc to ui.
+    ignore_result(ui::WaitForNextFrameToBePresented(
+        compositor, base::TimeDelta::FromMilliseconds(200)));
   }
 
   void TapOnHomeLauncherSearchBox() {
@@ -142,8 +148,7 @@ class SwipeHomeToOverviewControllerTest : public AshTestBase {
 
 // Verify that the metrics of home launcher animation are recorded correctly
 // when entering/exiting overview mode.
-// Disabled due to flake, see crbug.com/1094441 .
-TEST_F(SwipeHomeToOverviewControllerTest, DISABLED_VerifyHomeLauncherMetrics) {
+TEST_F(SwipeHomeToOverviewControllerTest, VerifyHomeLauncherMetrics) {
   // Set non-zero animation duration to report animation metrics.
   ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);

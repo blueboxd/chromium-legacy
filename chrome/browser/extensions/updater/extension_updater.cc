@@ -328,6 +328,14 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
   ExtensionUpdateCheckParams update_check_params;
 
   if (params.ids.empty()) {
+    // We have to mark high-priority extensions (such as policy-forced
+    // extensions or external component extensions) with foreground fetch
+    // priority; otherwise their installation may be throttled by bandwidth
+    // limits.
+    // See https://crbug.com/904600 and https://crbug.com/965686.
+    if (pending_extension_manager->HasHighPriorityPendingExtension())
+      params.fetch_priority = ManifestFetchData::FOREGROUND;
+
     // If no extension ids are specified, check for updates for all extensions.
     pending_extension_manager->GetPendingIdsForUpdateCheck(&pending_ids);
 

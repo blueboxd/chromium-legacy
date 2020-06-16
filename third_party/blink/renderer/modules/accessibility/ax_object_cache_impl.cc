@@ -94,6 +94,7 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/accessibility/ax_enums.mojom-blink.h"
 #include "ui/accessibility/ax_event.h"
+#include "ui/accessibility/ax_role_properties.h"
 
 // Prevent code that runs during the lifetime of the stack from altering the
 // document lifecycle. Usually doc is the same as document_, but it can be
@@ -1938,10 +1939,8 @@ AXObject* AXObjectCacheImpl::AncestorAriaModalDialog(Node* node) {
     AXObject* ancestor_ax_object = GetOrCreate(ancestor);
     ax::mojom::blink::Role ancestor_role = ancestor_ax_object->RoleValue();
 
-    if (ancestor_role != ax::mojom::blink::Role::kDialog &&
-        ancestor_role != ax::mojom::blink::Role::kAlertDialog) {
+    if (!ui::IsDialog(ancestor_role))
       continue;
-    }
 
     return ancestor_ax_object;
   }

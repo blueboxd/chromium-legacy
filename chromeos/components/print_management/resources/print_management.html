@@ -12,6 +12,10 @@
     --cr-centered-card-max-width: 960px;
   }
 
+  #fileNameColumn {
+    width: 368px;
+  }
+
   #headerContainer {
     border-bottom: var(--cr-separator-line);
     display: flex;
@@ -55,8 +59,7 @@
 
   <div class="column-headers flex-center"
       aria-labeledby="fileNameColumn printerNameColumn dateColumn statusColumn">
-    <div id="fileNameColumn" class="long-text overflow-ellipsis"
-        aria-hidden="true">
+    <div id="fileNameColumn" class="overflow-ellipsis" aria-hidden="true">
       [[i18n('fileNameColumn')]]
     </div>
     <div id="printerNameColumn"

@@ -5831,24 +5831,24 @@ TEST_F(WebFrameTest, MoveRangeSelectionExtentScollsInputField) {
 TEST_F(WebFrameTest, SmartClipData) {
   static const char kExpectedClipText[] = "\nPrice 10,000,000won";
   static const char kExpectedClipHtml[] =
-      "<div id=\"div4\" style=\"padding: 10px; margin: 10px; border: 2px "
-      "solid skyblue; float: left; width: 190px; height: 30px; "
-      "color: rgb(0, 0, 0); font-family: myahem; font-size: 8px; font-style: "
-      "normal; font-variant-ligatures: normal; font-variant-caps: normal; "
-      "font-weight: 400; letter-spacing: "
-      "normal; orphans: 2; text-align: start; "
-      "text-indent: 0px; text-transform: none; white-space: normal; widows: "
-      "2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "
-      "text-decoration-style: initial; text-decoration-color: initial;\">Air "
-      "conditioner</div><div id=\"div5\" style=\"padding: 10px; margin: 10px; "
-      "border: 2px solid skyblue; float: left; width: 190px; height: 30px; "
-      "color: rgb(0, 0, 0); font-family: myahem; font-size: 8px; font-style: "
-      "normal; font-variant-ligatures: normal; font-variant-caps: normal; "
-      "font-weight: 400; letter-spacing: normal; orphans: 2; text-align: "
-      "start; text-indent: 0px; text-transform: none; white-space: normal; "
-      "widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "
-      "text-decoration-style: initial; text-decoration-color: initial;\">Price "
-      "10,000,000won</div>";
+      "<div id=\"div4\" style=\"padding: 10px; margin: 10px; border: 2px solid "
+      "skyblue; float: left; width: 190px; height: 30px; color: rgb(0, 0, 0); "
+      "font-family: myahem; font-size: 8px; font-style: normal; "
+      "font-variant-ligatures: normal; font-variant-caps: normal; font-weight: "
+      "400; letter-spacing: normal; orphans: 2; text-align: start; "
+      "text-indent: 0px; text-transform: none; white-space: normal; widows: 2; "
+      "word-spacing: 0px; -webkit-text-stroke-width: 0px; "
+      "text-decoration-thickness: initial; text-decoration-style: initial; "
+      "text-decoration-color: initial;\">Air conditioner</div><div id=\"div5\" "
+      "style=\"padding: 10px; margin: 10px; border: 2px solid skyblue; float: "
+      "left; width: 190px; height: 30px; color: rgb(0, 0, 0); font-family: "
+      "myahem; font-size: 8px; font-style: normal; font-variant-ligatures: "
+      "normal; font-variant-caps: normal; font-weight: 400; letter-spacing: "
+      "normal; orphans: 2; text-align: start; text-indent: 0px; "
+      "text-transform: none; white-space: normal; widows: 2; word-spacing: "
+      "0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: "
+      "initial; text-decoration-style: initial; text-decoration-color: "
+      "initial;\">Price 10,000,000won</div>";
   WebString clip_text;
   WebString clip_html;
   WebRect clip_rect;
@@ -5868,24 +5868,24 @@ TEST_F(WebFrameTest, SmartClipData) {
 TEST_F(WebFrameTest, SmartClipDataWithPinchZoom) {
   static const char kExpectedClipText[] = "\nPrice 10,000,000won";
   static const char kExpectedClipHtml[] =
-      "<div id=\"div4\" style=\"padding: 10px; margin: 10px; border: 2px "
-      "solid skyblue; float: left; width: 190px; height: 30px; "
-      "color: rgb(0, 0, 0); font-family: myahem; font-size: 8px; font-style: "
-      "normal; font-variant-ligatures: normal; font-variant-caps: normal; "
-      "font-weight: 400; letter-spacing: "
-      "normal; orphans: 2; text-align: start; "
-      "text-indent: 0px; text-transform: none; white-space: normal; widows: "
-      "2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "
-      "text-decoration-style: initial; text-decoration-color: initial;\">Air "
-      "conditioner</div><div id=\"div5\" style=\"padding: 10px; margin: 10px; "
-      "border: 2px solid skyblue; float: left; width: 190px; height: 30px; "
-      "color: rgb(0, 0, 0); font-family: myahem; font-size: 8px; font-style: "
-      "normal; font-variant-ligatures: normal; font-variant-caps: normal; "
-      "font-weight: 400; letter-spacing: normal; orphans: 2; text-align: "
-      "start; text-indent: 0px; text-transform: none; white-space: normal; "
-      "widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; "
-      "text-decoration-style: initial; text-decoration-color: initial;\">Price "
-      "10,000,000won</div>";
+      "<div id=\"div4\" style=\"padding: 10px; margin: 10px; border: 2px solid "
+      "skyblue; float: left; width: 190px; height: 30px; color: rgb(0, 0, 0); "
+      "font-family: myahem; font-size: 8px; font-style: normal; "
+      "font-variant-ligatures: normal; font-variant-caps: normal; font-weight: "
+      "400; letter-spacing: normal; orphans: 2; text-align: start; "
+      "text-indent: 0px; text-transform: none; white-space: normal; widows: 2; "
+      "word-spacing: 0px; -webkit-text-stroke-width: 0px; "
+      "text-decoration-thickness: initial; text-decoration-style: initial; "
+      "text-decoration-color: initial;\">Air conditioner</div><div id=\"div5\" "
+      "style=\"padding: 10px; margin: 10px; border: 2px solid skyblue; float: "
+      "left; width: 190px; height: 30px; color: rgb(0, 0, 0); font-family: "
+      "myahem; font-size: 8px; font-style: normal; font-variant-ligatures: "
+      "normal; font-variant-caps: normal; font-weight: 400; letter-spacing: "
+      "normal; orphans: 2; text-align: start; text-indent: 0px; "
+      "text-transform: none; white-space: normal; widows: 2; word-spacing: "
+      "0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: "
+      "initial; text-decoration-style: initial; text-decoration-color: "
+      "initial;\">Price 10,000,000won</div>";
   WebString clip_text;
   WebString clip_html;
   WebRect clip_rect;

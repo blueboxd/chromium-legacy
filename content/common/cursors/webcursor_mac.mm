@@ -279,10 +279,6 @@ gfx::NativeCursor WebCursor::GetNativeCursor() {
   return nil;
 }
 
-bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {
-  return true;
-}
-
 void WebCursor::CleanupPlatformData() {}
 
 void WebCursor::CopyPlatformData(const WebCursor& other) {}

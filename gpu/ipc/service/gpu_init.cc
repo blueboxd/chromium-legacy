@@ -707,9 +707,14 @@ bool GpuInit::InitializeVulkan() {
   DCHECK_NE(gpu_preferences_.use_vulkan, VulkanImplementationName::kNone);
   bool vulkan_use_swiftshader =
       gpu_preferences_.use_vulkan == VulkanImplementationName::kSwiftshader;
+
+// Android uses AHB and SyncFD for interop. They are imported into GL with other
+// API.
+#if !defined(OS_ANDROID)
   bool forced_native =
       gpu_preferences_.use_vulkan == VulkanImplementationName::kForcedNative;
   bool use_swiftshader = gl_use_swiftshader_ || vulkan_use_swiftshader;
+
   if (!use_swiftshader && !forced_native) {
 #if defined(OS_WIN)
     constexpr char kMemoryObjectExtension[] = "GL_EXT_memory_object_win32";
@@ -731,6 +736,7 @@ bool GpuInit::InitializeVulkan() {
       return false;
     }
   }
+#endif  // !defined(OS_ANDROID)
 
   const bool enforce_protected_memory =
       gpu_preferences_.enforce_vulkan_protected_memory;

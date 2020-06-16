@@ -40,7 +40,7 @@ Mutating 3rd:
 *#test* {    regular
     color: blue;
 }
-*#test* {    regular    readonly
+*#test* {    regular
     color: red;
 }
 *#test* {    regular
@@ -69,10 +69,10 @@ Mutating 4th:
 *#test* {    regular
     color: blue;
 }
-*#test* {    regular    readonly
+*#test* {    regular
     color: red;
 }
-*#test* {    regular    readonly
+*#test* {    regular
     color: green;
 }
 *#test* {    regular
@@ -98,13 +98,13 @@ Mutating 5th:
 *#test* {    regular
     color: blue;
 }
-*#test* {    regular    readonly
+*#test* {    regular
     color: red;
 }
-*#test* {    regular    readonly
+*#test* {    regular
     color: green;
 }
-*#test* {    regular    readonly
+*#test* {    regular
     color: blue;
 }
 *#test* {    regular

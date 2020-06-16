@@ -61,9 +61,6 @@ class CONTENT_EXPORT WebCursor {
 #endif
 
  private:
-  // Returns true if this cursor's platform data matches that of |other|.
-  bool IsPlatformDataEqual(const WebCursor& other) const;
-
   // Copies all data from |other| to this object.
   void CopyAllData(const WebCursor& other);
 

@@ -296,7 +296,8 @@ void ProcessMirrorHeader(
 #else   // !defined(OS_CHROMEOS)
   if (manage_accounts_params.show_consistency_promo &&
       base::FeatureList::IsEnabled(kMobileIdentityConsistency)) {
-    SigninUtils::OpenAccountPickerBottomSheet();
+    auto* window = web_contents->GetNativeView()->GetWindowAndroid();
+    SigninUtils::OpenAccountPickerBottomSheet(window);
     return;
   }
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {

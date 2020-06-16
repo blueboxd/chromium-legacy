@@ -27,10 +27,8 @@ class InfoBarWrapper extends FrameLayout {
         int shadowHeight = res.getDimensionPixelSize(R.dimen.infobar_shadow_height);
         setMinimumHeight(peekingHeight + shadowHeight);
 
-        // TODO(crbug.com/1025620): Bring in infobar background rather than just setting background
-        // to gray. setBackgroundResource() changes the padding, so call setPadding() second.
-        // setBackgroundResource(R.drawable.infobar_wrapper_bg);
-        setBackgroundColor(0xFFD3D3D3);
+        // setBackgroundResource() changes the padding, so call setPadding() second.
+        setBackgroundResource(R.drawable.weblayer_infobar_wrapper_bg);
         setPadding(0, shadowHeight, 0, 0);
     }
 

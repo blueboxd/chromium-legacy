@@ -143,6 +143,8 @@ class SigninMetricsTest : public ::testing::Test {
         return "ForcedSignin";
       case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
         return "AccountRenamed";
+      case AccessPoint::ACCESS_POINT_WEB_SIGNIN:
+        return "WebSignIn";
       case AccessPoint::ACCESS_POINT_MAX:
         NOTREACHED();
         return "";

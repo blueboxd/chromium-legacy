@@ -46,6 +46,43 @@ namespace {
 
 struct VisualOrdering;
 
+// See also InlineBidiResolver::NeedsTrailingSpace()
+bool NeedsTrailingSpace(const ComputedStyle& style) {
+  return style.BreakOnlyAfterWhiteSpace() && style.AutoWrap();
+}
+
+static PositionWithAffinity AdjustForSoftLineWrap(
+    const NGInlineCursorPosition& line_box,
+    const PositionWithAffinity& position) {
+  DCHECK(line_box.IsLineBox());
+  if (position.IsNull())
+    return PositionWithAffinity();
+  if (!NeedsTrailingSpace(line_box.Style()) ||
+      !line_box.HasSoftWrapToNextLine())
+    return position;
+  // Returns a position after first space causing soft line wrap for editable.
+  if (!NGOffsetMapping::AcceptsPosition(position.GetPosition()))
+    return position;
+  const NGOffsetMapping* mapping =
+      NGOffsetMapping::GetFor(position.GetPosition());
+  const auto offset = mapping->GetTextContentOffset(position.GetPosition());
+  if (offset == mapping->GetText().length())
+    return position;
+  const Position adjusted_position = mapping->GetFirstPosition(*offset + 1);
+  if (adjusted_position.IsNull())
+    return position;
+  DCHECK(IsA<Text>(adjusted_position.AnchorNode())) << adjusted_position;
+  if (!IsA<Text>(adjusted_position.AnchorNode()))
+    return position;
+  if (!adjusted_position.AnchorNode()
+           ->GetLayoutObject()
+           ->StyleRef()
+           .IsCollapsibleWhiteSpace(mapping->GetText()[*offset]))
+    return position;
+  return PositionWithAffinity(adjusted_position,
+                              TextAffinity::kUpstreamIfPossible);
+}
+
 template <typename Strategy, typename Ordering>
 static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
     const PositionWithAffinityTemplate<Strategy>& c) {
@@ -69,7 +106,9 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
     }
     NGInlineCursor line_box = caret_position.cursor;
     line_box.MoveToContainingLine();
-    return FromPositionInDOMTree<Strategy>(line_box.PositionForEndOfLine());
+    const PositionWithAffinity end_position = line_box.PositionForEndOfLine();
+    return FromPositionInDOMTree<Strategy>(
+        AdjustForSoftLineWrap(line_box.Current(), end_position));
   }
 
   const InlineBox* inline_box =
@@ -93,9 +132,8 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
   const Node* const end_node = end_box->GetLineLayoutItem().NonPseudoNode();
   DCHECK(end_node);
   if (IsA<HTMLBRElement>(*end_node)) {
-    return PositionWithAffinityTemplate<Strategy>(
-        PositionTemplate<Strategy>::BeforeNode(*end_node),
-        TextAffinity::kUpstreamIfPossible);
+    return Ordering::AdjustForSoftLineWrap(
+        PositionTemplate<Strategy>::BeforeNode(*end_node), c);
   }
 
   auto* end_text_node = DynamicTo<Text>(end_node);
@@ -104,13 +142,11 @@ static PositionWithAffinityTemplate<Strategy> EndPositionForLine(
     int end_offset = end_text_box->Start();
     if (!end_text_box->IsLineBreak())
       end_offset += end_text_box->Len();
-    return PositionWithAffinityTemplate<Strategy>(
-        PositionTemplate<Strategy>(end_text_node, end_offset),
-        TextAffinity::kUpstreamIfPossible);
+    return Ordering::AdjustForSoftLineWrap(
+        PositionTemplate<Strategy>(end_text_node, end_offset), c);
   }
-  return PositionWithAffinityTemplate<Strategy>(
-      PositionTemplate<Strategy>::AfterNode(*end_node),
-      TextAffinity::kUpstreamIfPossible);
+  return Ordering::AdjustForSoftLineWrap(
+      PositionTemplate<Strategy>::AfterNode(*end_node), c);
 }
 
 template <typename Strategy, typename Ordering>
@@ -181,6 +217,27 @@ struct LogicalOrdering {
   static const InlineBox* EndNonPseudoBoxOf(const RootInlineBox& root_box) {
     return root_box.GetLogicalEndNonPseudoBox();
   }
+
+  // Make sure the end of line is at the same line as the given input
+  // position. For a wrapping line, the logical end position for the
+  // not-last-2-lines might incorrectly hand back the logical beginning of the
+  // next line. For example,
+  // <div contenteditable dir="rtl" style="line-break:before-white-space">xyz
+  // a xyz xyz xyz xyz xyz xyz xyz xyz xyz xyz </div>
+  // In this case, use the previous position of the computed logical end
+  // position.
+  template <typename Strategy>
+  static PositionWithAffinityTemplate<Strategy> AdjustForSoftLineWrap(
+      const PositionTemplate<Strategy>& candidate,
+      const PositionWithAffinityTemplate<Strategy>& current_position) {
+    const PositionWithAffinityTemplate<Strategy> candidate_position =
+        PositionWithAffinityTemplate<Strategy>(
+            candidate, TextAffinity::kUpstreamIfPossible);
+    if (InSameLogicalLine(current_position, candidate_position))
+      return candidate_position;
+    return PreviousPositionOf(CreateVisiblePosition(candidate_position))
+        .ToPositionWithAffinity();
+  }
 };
 
 // Provides start end end of line in visual order for implementing expanding
@@ -212,6 +269,31 @@ struct VisualOrdering {
         return inline_box;
     }
     return nullptr;
+  }
+
+  // Make sure the end of line is at the same line as the given input
+  // position. Else use the previous position to obtain end of line. This
+  // condition happens when the input position is before the space character
+  // at the end of a soft-wrapped non-editable line. In this scenario,
+  // |EndPositionForLine()| would incorrectly hand back a position in the next
+  // line instead. This fix is to account for the discrepancy between lines
+  // with "webkit-line-break:after-white-space" style versus lines without
+  // that style, which would break before a space by default.
+  template <typename Strategy>
+  static PositionWithAffinityTemplate<Strategy> AdjustForSoftLineWrap(
+      const PositionTemplate<Strategy>& candidate,
+      const PositionWithAffinityTemplate<Strategy>& current_position) {
+    const PositionWithAffinityTemplate<Strategy> candidate_position =
+        PositionWithAffinityTemplate<Strategy>(
+            candidate, TextAffinity::kUpstreamIfPossible);
+    if (InSameLine(current_position, candidate_position))
+      return candidate_position;
+    const PositionWithAffinityTemplate<Strategy>& adjusted_position =
+        PreviousPositionOf(CreateVisiblePosition(current_position))
+            .ToPositionWithAffinity();
+    if (adjusted_position.IsNull())
+      return PositionWithAffinityTemplate<Strategy>();
+    return EndPositionForLine<Strategy, VisualOrdering>(adjusted_position);
   }
 };
 
@@ -303,26 +385,8 @@ static PositionWithAffinityTemplate<Strategy> EndOfLineAlgorithm(
   const PositionWithAffinityTemplate<Strategy>& candidate_position =
       EndPositionForLine<Strategy, VisualOrdering>(current_position);
 
-  // Make sure the end of line is at the same line as the given input
-  // position. Else use the previous position to obtain end of line. This
-  // condition happens when the input position is before the space character
-  // at the end of a soft-wrapped non-editable line. In this scenario,
-  // |endPositionForLine()| would incorrectly hand back a position in the next
-  // line instead. This fix is to account for the discrepancy between lines
-  // with "webkit-line-break:after-white-space" style versus lines without
-  // that style, which would break before a space by default.
-  if (InSameLine(current_position, candidate_position)) {
-    return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
-        candidate_position, current_position.GetPosition());
-  }
-  const PositionWithAffinityTemplate<Strategy>& adjusted_position =
-      PreviousPositionOf(CreateVisiblePosition(current_position))
-          .ToPositionWithAffinity();
-  if (adjusted_position.IsNull())
-    return PositionWithAffinityTemplate<Strategy>();
   return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
-      EndPositionForLine<Strategy, VisualOrdering>(adjusted_position),
-      current_position.GetPosition());
+      candidate_position, current_position.GetPosition());
 }
 
 static PositionWithAffinity EndOfLine(const PositionWithAffinity& position) {
@@ -362,33 +426,20 @@ static PositionWithAffinityTemplate<Strategy> LogicalEndOfLineAlgorithm(
     const PositionWithAffinityTemplate<Strategy>& current_position) {
   // TODO(yosin) this is the current behavior that might need to be fixed.
   // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
-  PositionWithAffinityTemplate<Strategy> vis_pos =
+  const PositionWithAffinityTemplate<Strategy> candidate_position =
       EndPositionForLine<Strategy, LogicalOrdering>(current_position);
-
-  // Make sure the end of line is at the same line as the given input
-  // position. For a wrapping line, the logical end position for the
-  // not-last-2-lines might incorrectly hand back the logical beginning of the
-  // next line. For example,
-  // <div contenteditable dir="rtl" style="line-break:before-white-space">xyz
-  // a xyz xyz xyz xyz xyz xyz xyz xyz xyz xyz </div>
-  // In this case, use the previous position of the computed logical end
-  // position.
-  if (!InSameLogicalLine(current_position, vis_pos)) {
-    vis_pos = PreviousPositionOf(CreateVisiblePosition(vis_pos))
-                  .ToPositionWithAffinity();
-  }
 
   if (ContainerNode* editable_root =
           HighestEditableRoot(current_position.GetPosition())) {
     if (!editable_root->contains(
-            vis_pos.GetPosition().ComputeContainerNode())) {
+            candidate_position.GetPosition().ComputeContainerNode())) {
       return PositionWithAffinityTemplate<Strategy>(
           PositionTemplate<Strategy>::LastPositionInNode(*editable_root));
     }
   }
 
   return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
-      vis_pos, current_position.GetPosition());
+      candidate_position, current_position.GetPosition());
 }
 
 static PositionWithAffinity LogicalEndOfLine(

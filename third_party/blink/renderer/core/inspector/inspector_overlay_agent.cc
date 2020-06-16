@@ -729,6 +729,7 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
     Maybe<bool> include_distance,
     Maybe<bool> include_style,
     Maybe<String> colorFormat,
+    Maybe<bool> show_accessibility_info,
     std::unique_ptr<protocol::DictionaryValue>* result) {
   Node* node = nullptr;
   Response response = dom_agent_->AssertNode(node_id, node);
@@ -738,6 +739,7 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
   auto config = std::make_unique<InspectorHighlightConfig>(
       InspectorHighlight::DefaultConfig());
   config->show_styles = include_style.fromMaybe(false);
+  config->show_accessibility_info = show_accessibility_info.fromMaybe(true);
   String format = colorFormat.fromMaybe("hex");
   namespace ColorFormatEnum = protocol::Overlay::ColorFormatEnum;
   if (format == ColorFormatEnum::Hsl) {
@@ -1321,6 +1323,8 @@ InspectorOverlayAgent::ToGridHighlightConfig(
       std::make_unique<InspectorGridHighlightConfig>();
   highlight_config->show_positive_line_numbers =
       config->getShowPositiveLineNumbers(false);
+  highlight_config->show_negative_line_numbers =
+      config->getShowNegativeLineNumbers(false);
   highlight_config->show_grid_extension_lines =
       config->getShowGridExtensionLines(false);
   highlight_config->grid_border_dash = config->getGridBorderDash(false);
@@ -1347,6 +1351,8 @@ InspectorOverlayAgent::ToHighlightConfig(
   std::unique_ptr<InspectorHighlightConfig> highlight_config =
       std::make_unique<InspectorHighlightConfig>();
   highlight_config->show_info = config->getShowInfo(false);
+  highlight_config->show_accessibility_info =
+      config->getShowAccessibilityInfo(true);
   highlight_config->show_styles = config->getShowStyles(false);
   highlight_config->show_rulers = config->getShowRulers(false);
   highlight_config->show_extension_lines = config->getShowExtensionLines(false);

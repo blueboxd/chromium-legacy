@@ -21,70 +21,6 @@
 
 namespace autofill_assistant {
 
-namespace {
-
-base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
-    const EventProto& proto,
-    base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
-  switch (proto.kind_case()) {
-    case EventProto::kOnValueChanged:
-      if (proto.on_value_changed().model_identifier().empty()) {
-        VLOG(1) << "Invalid OnValueChangedEventProto: no model_identifier "
-                   "specified";
-        return base::nullopt;
-      }
-      return base::Optional<EventHandler::EventKey>(
-          {proto.kind_case(), proto.on_value_changed().model_identifier()});
-    case EventProto::kOnViewClicked:
-      if (proto.on_view_clicked().view_identifier().empty()) {
-        VLOG(1) << "Invalid OnViewClickedEventProto: no view_identifier "
-                   "specified";
-        return base::nullopt;
-      }
-      return base::Optional<EventHandler::EventKey>(
-          {proto.kind_case(), proto.on_view_clicked().view_identifier()});
-    case EventProto::kOnUserActionCalled:
-      if (proto.on_user_action_called().user_action_identifier().empty()) {
-        VLOG(1) << "Invalid OnUserActionCalled: no user_action_identifier "
-                   "specified";
-        return base::nullopt;
-      }
-      return base::Optional<EventHandler::EventKey>(
-          {proto.kind_case(),
-           proto.on_user_action_called().user_action_identifier()});
-    case EventProto::kOnTextLinkClicked:
-      if (!proto.on_text_link_clicked().has_text_link()) {
-        VLOG(1) << "Invalid OnTextLinkClickedProto: no text_link specified";
-        return base::nullopt;
-      }
-      return base::Optional<EventHandler::EventKey>(
-          {proto.kind_case(),
-           base::NumberToString(proto.on_text_link_clicked().text_link())});
-    case EventProto::kOnPopupDismissed:
-      if (proto.on_popup_dismissed().popup_identifier().empty()) {
-        VLOG(1)
-            << "Invalid OnPopupDismissedProto: no popup_identifier specified";
-        return base::nullopt;
-      }
-      return base::Optional<EventHandler::EventKey>(
-          {proto.kind_case(), proto.on_popup_dismissed().popup_identifier()});
-    case EventProto::kOnViewContainerCleared:
-      if (proto.on_view_container_cleared().view_identifier().empty()) {
-        VLOG(1) << "Invalid OnViewContainerClearedProto: no view_identifier "
-                   "specified";
-        return base::nullopt;
-      }
-      return base::Optional<EventHandler::EventKey>(
-          {proto.kind_case(),
-           proto.on_view_container_cleared().view_identifier()});
-    case EventProto::KIND_NOT_SET:
-      VLOG(1) << "Error creating event: kind not set";
-      return base::nullopt;
-  }
-}
-
-}  // namespace
-
 InteractionHandlerAndroid::InteractionHandlerAndroid(
     EventHandler* event_handler,
     UserModel* user_model,
@@ -132,7 +68,7 @@ bool InteractionHandlerAndroid::AddInteractionsFromProto(
     NOTREACHED() << "Interactions can not be added while listening to events!";
     return false;
   }
-  auto key = CreateEventKeyFromProto(proto.trigger_event(), jdelegate_);
+  auto key = EventHandler::CreateEventKeyFromProto(proto.trigger_event());
   if (!key) {
     VLOG(1) << "Invalid trigger event for interaction";
     return false;
@@ -409,6 +345,14 @@ void InteractionHandlerAndroid::CreateAndShowGenericPopup(
                                      GetWeakPtr(), proto.popup_identifier()));
   android_interactions::ShowGenericPopup(proto, nested_ui->GetRootView(),
                                          jcontext_, jdelegate_);
+}
+
+void InteractionHandlerAndroid::RunValueChangedCallbacks() {
+  for (const auto& interaction : interactions_) {
+    if (interaction.first.first == EventProto::kOnValueChanged) {
+      OnEvent(interaction.first);
+    }
+  }
 }
 
 }  // namespace autofill_assistant

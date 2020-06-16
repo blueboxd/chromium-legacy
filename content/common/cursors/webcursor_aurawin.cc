@@ -25,10 +25,6 @@ ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
   return platform_cursor_;
 }
 
-bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {
-  return true;
-}
-
 void WebCursor::CleanupPlatformData() {
   if (platform_cursor_) {
     DestroyIcon(platform_cursor_);

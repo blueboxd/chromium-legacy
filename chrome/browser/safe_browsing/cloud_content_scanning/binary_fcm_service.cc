@@ -15,6 +15,7 @@
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
@@ -88,14 +89,20 @@ void BinaryFCMService::GetInstanceID(GetInstanceIDCallback callback) {
                          weakptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void BinaryFCMService::SetCallbackForToken(const std::string& token,
+                                           OnMessageCallback callback) {
+  message_token_map_[token] = std::move(callback);
+}
+
 void BinaryFCMService::SetCallbackForToken(
     const std::string& token,
-    base::RepeatingCallback<void(DeepScanningClientResponse)> callback) {
-  message_token_map_[token] = std::move(callback);
+    OnConnectorMessageCallback callback) {
+  connector_message_token_map_[token] = std::move(callback);
 }
 
 void BinaryFCMService::ClearCallbackForToken(const std::string& token) {
   message_token_map_.erase(token);
+  connector_message_token_map_.erase(token);
 }
 
 void BinaryFCMService::UnregisterInstanceID(
@@ -179,19 +186,46 @@ void BinaryFCMService::OnMessage(const std::string& app_id,
 
   DeepScanningClientResponse response;
   parsed = response.ParseFromString(serialized_proto);
-  base::UmaHistogramBoolean("SafeBrowsingFCMService.IncomingMessageParsedProto",
-                            parsed);
-  if (!parsed)
+  if (!parsed) {
+    base::UmaHistogramBoolean(
+        "SafeBrowsingFCMService.IncomingMessageParsedProto", false);
     return;
+  }
 
-  auto callback_it = message_token_map_.find(response.token());
-  bool has_valid_token = (callback_it != message_token_map_.end());
-  base::UmaHistogramBoolean(
-      "SafeBrowsingFCMService.IncomingMessageHasValidToken", has_valid_token);
-  if (!has_valid_token)
-    return;
+  // The received proto is either a DeepScanningClientResponse or a
+  // ContentAnalysisResponse. These protos only overlap on the request token
+  // field, so having that token exist in |connector_message_token_map_| means
+  // it should be parsed as a ContentAnalysisResponse instead.
+  if (connector_message_token_map_.contains(response.token())) {
+    enterprise_connectors::ContentAnalysisResponse response;
+    bool parsed = response.ParseFromString(serialized_proto);
+    base::UmaHistogramBoolean(
+        "SafeBrowsingFCMService.IncomingMessageParsedProto", parsed);
 
-  callback_it->second.Run(std::move(response));
+    if (!parsed)
+      return;
+
+    auto callback_it =
+        connector_message_token_map_.find(response.request_token());
+    bool has_valid_token = (callback_it != connector_message_token_map_.end());
+    base::UmaHistogramBoolean(
+        "SafeBrowsingFCMService.IncomingMessageHasValidToken", has_valid_token);
+    if (!has_valid_token)
+      return;
+
+    callback_it->second.Run(std::move(response));
+  } else {
+    base::UmaHistogramBoolean(
+        "SafeBrowsingFCMService.IncomingMessageParsedProto", true);
+    auto callback_it = message_token_map_.find(response.token());
+    bool has_valid_token = (callback_it != message_token_map_.end());
+    base::UmaHistogramBoolean(
+        "SafeBrowsingFCMService.IncomingMessageHasValidToken", has_valid_token);
+    if (!has_valid_token)
+      return;
+
+    callback_it->second.Run(std::move(response));
+  }
 }
 
 void BinaryFCMService::OnMessagesDeleted(const std::string& app_id) {}

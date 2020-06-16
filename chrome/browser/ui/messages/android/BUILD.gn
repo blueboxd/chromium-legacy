@@ -7,16 +7,6 @@ android_resources("java_resources") {
   custom_package = "org.chromium.chrome.ui.messages"
 
   sources = [
-    "java/res/drawable-hdpi/infobar_shadow_left.9.png",
-    "java/res/drawable-hdpi/infobar_shadow_top.png",
-    "java/res/drawable-mdpi/infobar_shadow_left.9.png",
-    "java/res/drawable-mdpi/infobar_shadow_top.png",
-    "java/res/drawable-xhdpi/infobar_shadow_left.9.png",
-    "java/res/drawable-xhdpi/infobar_shadow_top.png",
-    "java/res/drawable-xxhdpi/infobar_shadow_left.9.png",
-    "java/res/drawable-xxhdpi/infobar_shadow_top.png",
-    "java/res/drawable-xxxhdpi/infobar_shadow_left.9.png",
-    "java/res/drawable-xxxhdpi/infobar_shadow_top.png",
     "java/res/drawable/snackbar_background_tablet.xml",
     "java/res/layout/snackbar.xml",
     "java/res/values/dimens.xml",

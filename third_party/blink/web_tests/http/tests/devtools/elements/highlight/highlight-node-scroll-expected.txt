@@ -82,6 +82,7 @@ inspectedElement1{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
@@ -89,10 +90,10 @@ inspectedElement1{
     "className": ".inspected",
     "nodeWidth": "250",
     "nodeHeight": "250",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 inspectedElement2{
@@ -177,6 +178,7 @@ inspectedElement2{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
@@ -184,10 +186,10 @@ inspectedElement2{
     "className": ".inspected",
     "nodeWidth": "250",
     "nodeHeight": "250",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 

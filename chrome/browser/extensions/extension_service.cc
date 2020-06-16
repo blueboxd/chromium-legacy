@@ -1261,14 +1261,6 @@ void ExtensionService::OnAllExternalProvidersReady() {
             : base::BindOnce(
                   [](base::RepeatingClosure callback) { callback.Run(); },
                   external_updates_finished_callback_);
-    // We have to mark high-priority extensions (such as policy-forced
-    // extensions or external component extensions) with foreground fetch
-    // priority; otherwise their installation may be throttled by bandwidth
-    // limits.
-    // See https://crbug.com/904600 and https://crbug.com/965686.
-    if (pending_extension_manager_.HasHighPriorityPendingExtension()) {
-      params.fetch_priority = ManifestFetchData::FOREGROUND;
-    }
     updater()->CheckNow(std::move(params));
   }
 

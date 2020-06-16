@@ -903,12 +903,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"noExceptionsFound", IDS_SETTINGS_PASSWORDS_EXCEPTIONS_NONE},
       {"import", IDS_PASSWORD_MANAGER_IMPORT_BUTTON},
       {"exportMenuItem", IDS_SETTINGS_PASSWORDS_EXPORT_MENU_ITEM},
-      {"optInAccountStorageBody",
-       IDS_SETTINGS_PASSWORDS_OPT_IN_ACCOUNT_STORAGE_BODY},
       {"optInAccountStorageLabel",
        IDS_SETTINGS_PASSWORDS_OPT_IN_ACCOUNT_STORAGE_LABEL},
-      {"optOutAccountStorageBody",
-       IDS_SETTINGS_PASSWORDS_OPT_OUT_ACCOUNT_STORAGE_BODY},
       {"optOutAccountStorageLabel",
        IDS_SETTINGS_PASSWORDS_OPT_OUT_ACCOUNT_STORAGE_LABEL},
       {"undoRemovePassword", IDS_SETTINGS_PASSWORD_UNDO},
@@ -960,6 +956,16 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       "managePasswordsLabel",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS,
+          base::UTF8ToUTF16(google_password_manager_url.spec())));
+  html_source->AddString(
+      "optInAccountStorageBody",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_PASSWORDS_OPT_IN_ACCOUNT_STORAGE_BODY,
+          base::UTF8ToUTF16(google_password_manager_url.spec())));
+  html_source->AddString(
+      "optOutAccountStorageBody",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_PASSWORDS_OPT_OUT_ACCOUNT_STORAGE_BODY,
           base::UTF8ToUTF16(google_password_manager_url.spec())));
   html_source->AddString(
       "checkPasswordsErrorQuotaGoogleAccount",

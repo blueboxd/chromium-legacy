@@ -73,6 +73,7 @@ bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
     case signin_metrics::AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
     case signin_metrics::AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
+    case signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return false;
   }
@@ -122,6 +123,7 @@ void RecordImpressionsTilSigninButtonsHistogramForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
     case signin_metrics::AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
+    case signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -173,6 +175,7 @@ void RecordImpressionsTilDismissHistogramForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
     case signin_metrics::AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
+    case signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -224,6 +227,7 @@ void RecordImpressionsTilXButtonHistogramForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
     case signin_metrics::AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
+    case signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED() << "Unexpected value for access point "
                    << static_cast<int>(access_point);
@@ -267,6 +271,7 @@ const char* DisplayedCountPreferenceKey(
     case signin_metrics::AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
     case signin_metrics::AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
+    case signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return nullptr;
   }
@@ -308,6 +313,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
     case signin_metrics::AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
     case signin_metrics::AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
+    case signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return nullptr;
   }

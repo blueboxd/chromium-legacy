@@ -133,6 +133,7 @@ Polymer({
     /** @private */
     eligibleForAccountStorage_: {
       type: Boolean,
+      value: false,
       computed: 'computeEligibleForAccountStorage_(syncStatus_, signedIn_)',
     },
 
@@ -204,7 +205,8 @@ Polymer({
     /** @private */
     hidePasswordsLink_: {
       type: Boolean,
-      computed: 'computeHidePasswordsLink_(syncPrefs_, syncStatus_)',
+      computed: 'computeHidePasswordsLink_(syncPrefs_, syncStatus_, ' +
+          'eligibleForAccountStorage_)',
     },
 
     /** @private */
@@ -222,13 +224,6 @@ Polymer({
       value() {
         return loadTimeData.getBoolean('enableAccountStorage');
       }
-    },
-
-    /** @private */
-    accountStorageToggleBody_: {
-      type: String,
-      value: '',
-      computed: 'computeAccountStorageToggleBody(isOptedInForAccountStorage_)',
     },
 
     /** @private */
@@ -506,12 +501,16 @@ Polymer({
   },
 
   /**
+   * hide the link to the user's Google Account if:
+   *  a) the link is embedded in the account storage message OR
+   *  b) the user is signed out (or signed-in but has encrypted passwords)
    * @return {boolean}
    * @private
    */
   computeHidePasswordsLink_() {
-    return !!this.syncStatus_ && !!this.syncStatus_.signedIn &&
-        !!this.syncPrefs_ && !!this.syncPrefs_.encryptAllData;
+    return this.eligibleForAccountStorage_ ||
+        (!!this.syncStatus_ && !!this.syncStatus_.signedIn &&
+         !!this.syncPrefs_ && !!this.syncPrefs_.encryptAllData);
   },
 
   /**
@@ -668,16 +667,6 @@ Polymer({
    */
   computeHasNeverCheckedPasswords_() {
     return !this.status.elapsedTimeSinceLastCheck;
-  },
-
-  /**
-   * @private
-   * @return {string}
-   */
-  computeAccountStorageToggleBody() {
-    return this.isOptedInForAccountStorage_ ?
-        this.i18n('optOutAccountStorageBody') :
-        this.i18n('optInAccountStorageBody');
   },
 
   /**

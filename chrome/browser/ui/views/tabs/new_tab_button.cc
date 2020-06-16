@@ -126,6 +126,7 @@ void NewTabButton::ShowPromo() {
   new_tab_promo_ = FeaturePromoBubbleView::CreateOwned(
       this, views::BubbleBorder::LEFT_CENTER,
       FeaturePromoBubbleView::ActivationAction::DO_NOT_ACTIVATE,
+      /*title_string_specifier=*/base::nullopt,
       GetNewTabPromoStringSpecifier());
   new_tab_promo_observer_.Add(new_tab_promo_->GetWidget());
   SchedulePaint();

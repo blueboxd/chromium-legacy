@@ -6131,7 +6131,7 @@ bool RenderFrameImpl::ShouldDisplayErrorPageForFailedLoad(
     return false;
 
   // Don't display "client blocked" error page if browser has asked us not to.
-  if (error_code == net::ERR_BLOCKED_BY_CLIENT &&
+  if (net::IsRequestBlockedError(error_code) &&
       render_view_->renderer_preferences_.disable_client_blocked_error_page) {
     return false;
   }

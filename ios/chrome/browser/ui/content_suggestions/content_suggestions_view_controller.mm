@@ -463,13 +463,6 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
           shouldUseCustomStyleForSection:indexPath.section]) {
     return UIColor.clearColor;
   }
-  // MDCCollectionView doesn't support dynamic colors, so they have to be
-  // resolved now.
-  // TODO(crbug.com/984928): Clean up once dynamic color support is added.
-  if (@available(iOS 13, *)) {
-    return [ntp_home::kNTPBackgroundColor()
-        resolvedColorWithTraitCollection:self.traitCollection];
-  }
   return ntp_home::kNTPBackgroundColor();
 }
 

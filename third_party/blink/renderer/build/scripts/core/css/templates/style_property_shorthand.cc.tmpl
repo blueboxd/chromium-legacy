@@ -56,6 +56,19 @@ const StylePropertyShorthand& offsetShorthandWithoutPositionAnchor() {
   return offsetLonghands;
 }
 
+// TODO(https://crbug.com/1094236): Remove this override once text-decoration-thickness ships.
+const StylePropertyShorthand& textDecorationShorthandWithoutThickness() {
+  static const CSSProperty* longhands[] = {
+    &GetCSSPropertyTextDecorationLine(),
+    &GetCSSPropertyTextDecorationStyle(),
+    &GetCSSPropertyTextDecorationColor(),
+  };
+
+  DEFINE_STATIC_LOCAL(const StylePropertyShorthand, shorthand,
+        (CSSPropertyID::kTextDecoration, longhands, base::size(longhands)));
+  return shorthand;
+}
+
 // Returns an empty list if the property is not a shorthand
 const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID) {
   // FIXME: We shouldn't switch between shorthand/not shorthand based on a runtime flag
@@ -64,6 +77,9 @@ const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID) {
   if (propertyID == CSSPropertyID::kOffset &&
       !RuntimeEnabledFeatures::CSSOffsetPositionAnchorEnabled())
     return offsetShorthandWithoutPositionAnchor();
+  if (propertyID == CSSPropertyID::kTextDecoration &&
+      !RuntimeEnabledFeatures::UnderlineOffsetThicknessEnabled())
+    return textDecorationShorthandWithoutThickness();
   switch (propertyID) {
     {% for property in properties %}
     case CSSPropertyID::{{property.enum_key}}:

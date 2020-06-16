@@ -472,8 +472,11 @@ def _CreateDynamicConfig(options):
     if api_level > _min_api:
       ret.append('-keep @interface %s' % annotation_name)
       ret.append("""\
--keepclassmembers,allowobfuscation,allowoptimization @%s class ** {
-  <methods>;
+-if @%s class * {
+    *** *(...);
+}
+-keep,allowobfuscation class <1> {
+    *** <2>(...);
 }""" % annotation_name)
       ret.append("""\
 -keepclassmembers,allowobfuscation,allowoptimization class ** {

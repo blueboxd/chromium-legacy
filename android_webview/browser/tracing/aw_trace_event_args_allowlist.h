@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ANDROID_WEBVIEW_BROWSER_TRACING_AW_TRACE_EVENT_ARGS_WHITELIST_H_
-#define ANDROID_WEBVIEW_BROWSER_TRACING_AW_TRACE_EVENT_ARGS_WHITELIST_H_
+#ifndef ANDROID_WEBVIEW_BROWSER_TRACING_AW_TRACE_EVENT_ARGS_ALLOWLIST_H_
+#define ANDROID_WEBVIEW_BROWSER_TRACING_AW_TRACE_EVENT_ARGS_ALLOWLIST_H_
 
 #include <string>
 
@@ -11,17 +11,17 @@
 
 namespace android_webview {
 
-// Used to filter trace event arguments against a whitelist of events that
+// Used to filter trace event arguments against a allowlist of events that
 // have been manually vetted to not include any PII.
-bool IsTraceEventArgsWhitelisted(
+bool IsTraceEventArgsAllowlisted(
     const char* category_group_name,
     const char* event_name,
     base::trace_event::ArgumentNameFilterPredicate* arg_name_filter);
 
 // Used to filter metadata events that have been manually vetted to not include
 // any PII.
-bool IsTraceMetadataWhitelisted(const std::string& name);
+bool IsTraceMetadataAllowlisted(const std::string& name);
 
 }  // namespace android_webview
 
-#endif  // ANDROID_WEBVIEW_BROWSER_TRACING_AW_TRACE_EVENT_ARGS_WHITELIST_H_
+#endif  // ANDROID_WEBVIEW_BROWSER_TRACING_AW_TRACE_EVENT_ARGS_ALLOWLIST_H_

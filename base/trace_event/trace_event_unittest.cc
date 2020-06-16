@@ -2317,7 +2317,7 @@ bool IsArgNameWhitelisted(const char* arg_name) {
   return base::MatchPattern(arg_name, "granular_arg_whitelisted");
 }
 
-bool IsTraceEventArgsWhitelisted(const char* category_group_name,
+bool IsTraceEventArgsAllowlisted(const char* category_group_name,
                                  const char* event_name,
                                  ArgumentNameFilterPredicate* arg_filter) {
   if (base::MatchPattern(category_group_name, "toplevel") &&
@@ -2338,7 +2338,7 @@ bool IsTraceEventArgsWhitelisted(const char* category_group_name,
 
 TEST_F(TraceEventTestFixture, ArgsWhitelisting) {
   TraceLog::GetInstance()->SetArgumentFilterPredicate(
-      base::BindRepeating(&IsTraceEventArgsWhitelisted));
+      base::BindRepeating(&IsTraceEventArgsAllowlisted));
 
   TraceLog::GetInstance()->SetEnabled(
     TraceConfig(kRecordAllCategoryFilter, "enable-argument-filter"),

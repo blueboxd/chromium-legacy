@@ -121,13 +121,11 @@ if (include_js_tests) {
       "settings/test_password_manager_proxy.js",
       "settings/passwords_and_autofill_fake_data.js",
       "//chrome/browser/resources/signin/sync_confirmation/sync_confirmation_browser_proxy.js",
-      "//chrome/browser/ui/webui/chromeos/account_manager/account_manager_proxy_test.js",
     ]
 
     if (is_chromeos) {
       sources += [
         "../../../browser/resources/chromeos/login/security_token_pin_browsertest.js",
-        "../../../browser/ui/webui/chromeos/account_manager/account_migration_welcome_test.js",
         "../../../browser/ui/webui/chromeos/bluetooth_pairing_dialog_browsertest.js",
         "../../../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",
         "../chromeos/oobe_webui_browsertest.js",

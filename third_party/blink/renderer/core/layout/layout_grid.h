@@ -118,6 +118,8 @@ class LayoutGrid final : public LayoutBlock {
 
   StyleContentAlignmentData ContentAlignment(GridTrackSizingDirection) const;
 
+  size_t ExplicitGridEndForDirection(GridTrackSizingDirection) const;
+
   // Exposed for testing *ONLY*.
   Grid* InternalGrid() const { return grid_.get(); }
 

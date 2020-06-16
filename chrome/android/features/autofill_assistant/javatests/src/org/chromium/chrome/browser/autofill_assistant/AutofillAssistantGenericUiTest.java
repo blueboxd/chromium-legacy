@@ -2502,28 +2502,39 @@ public class AutofillAssistantGenericUiTest {
     }
 
     /**
-     * Creates and deletes nested UIs.
+     * Creates and deletes nested UIs. Also tests startup events for nested UIs.
      */
     @Test
     @MediumTest
     public void testCreateNestedUi() {
         GenericUserInterfaceProto nestedUi =
                 (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
-                        .setRootView(createSimpleTextView(
-                                /*identifier = */ "nested_text_view", /*text = */ "nested view"))
+                        .setRootView(
+                                ViewProto.newBuilder()
+                                        .setIdentifier("nested_text_view")
+                                        .setTextView(TextViewProto.newBuilder().setModelIdentifier(
+                                                "nested_text")))
                         .build();
 
         List<InteractionProto> interactions = new ArrayList<>();
-        interactions.add((InteractionProto) InteractionProto.newBuilder()
-                                 .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
-                                         OnViewClickedEventProto.newBuilder().setViewIdentifier(
-                                                 "text_view_create_nested_on_click")))
-                                 .addCallbacks(CallbackProto.newBuilder().setCreateNestedUi(
-                                         CreateNestedGenericUiProto.newBuilder()
-                                                 .setGenericUiIdentifier("nested_ui_identifier")
-                                                 .setGenericUi(nestedUi)
-                                                 .setParentViewIdentifier("nested_ui_container")))
-                                 .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
+                                OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                        "text_view_create_nested_on_click")))
+                        .addCallbacks(CallbackProto.newBuilder().setCreateNestedUi(
+                                CreateNestedGenericUiProto.newBuilder()
+                                        .setGenericUiIdentifier("nested_ui_identifier")
+                                        .setGenericUi(nestedUi)
+                                        .setParentViewIdentifier("nested_ui_container")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
+                                SetModelValueProto.newBuilder()
+                                        .setModelIdentifier("nested_text")
+                                        .setValue(ValueReferenceProto.newBuilder().setValue(
+                                                ValueProto.newBuilder().setStrings(
+                                                        StringList.newBuilder().addValues(
+                                                                "Hello World"))))))
+                        .build());
         interactions.add((InteractionProto) InteractionProto.newBuilder()
                                  .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
                                          OnViewClickedEventProto.newBuilder().setViewIdentifier(
@@ -2586,10 +2597,10 @@ public class AutofillAssistantGenericUiTest {
                     withText("click me to create nested UI"), isCompletelyDisplayed());
             onView(withText("click me to create nested UI")).perform(click());
 
-            waitUntilViewMatchesCondition(withText("nested view"), isCompletelyDisplayed());
+            waitUntilViewMatchesCondition(withText("Hello World"), isCompletelyDisplayed());
             onView(withText("click me to delete nested UI")).perform(click());
             waitUntilViewAssertionTrue(
-                    withText("nested view"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
+                    withText("Hello World"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
         }
     }
 }

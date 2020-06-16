@@ -6,6 +6,16 @@ import("//build/config/android/rules.gni")
 
 android_resources("java_resources") {
   sources = [
+    "res/drawable-hdpi/infobar_shadow_left.9.png",
+    "res/drawable-hdpi/infobar_shadow_top.png",
+    "res/drawable-mdpi/infobar_shadow_left.9.png",
+    "res/drawable-mdpi/infobar_shadow_top.png",
+    "res/drawable-xhdpi/infobar_shadow_left.9.png",
+    "res/drawable-xhdpi/infobar_shadow_top.png",
+    "res/drawable-xxhdpi/infobar_shadow_left.9.png",
+    "res/drawable-xxhdpi/infobar_shadow_top.png",
+    "res/drawable-xxxhdpi/infobar_shadow_left.9.png",
+    "res/drawable-xxxhdpi/infobar_shadow_top.png",
     "res/layout/infobar_control_icon_with_description.xml",
     "res/layout/infobar_control_message.xml",
     "res/layout/infobar_control_spinner.xml",

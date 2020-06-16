@@ -56,8 +56,7 @@ class CookieControlsController : content_settings::CookieSettings::Observer {
       : public content_settings::TabSpecificContentSettings::SiteDataObserver {
    public:
     TabObserver(CookieControlsController* cookie_controls,
-                content_settings::TabSpecificContentSettings*
-                    tab_specific_content_settings);
+                content::WebContents* web_contents);
 
     // TabSpecificContentSettings::SiteDataObserver:
     void OnSiteDataAccessed() override;

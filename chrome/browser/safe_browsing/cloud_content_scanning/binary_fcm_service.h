@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
@@ -48,6 +49,8 @@ class BinaryFCMService : public gcm::GCMAppHandler {
       base::OnceCallback<void(const std::string& token)>;
   using OnMessageCallback =
       base::RepeatingCallback<void(DeepScanningClientResponse)>;
+  using OnConnectorMessageCallback = base::RepeatingCallback<void(
+      enterprise_connectors::ContentAnalysisResponse)>;
   using UnregisterInstanceIDCallback = base::OnceCallback<void(bool)>;
 
   // Get an InstanceID for use.
@@ -61,6 +64,8 @@ class BinaryFCMService : public gcm::GCMAppHandler {
 
   void SetCallbackForToken(const std::string& token,
                            OnMessageCallback callback);
+  void SetCallbackForToken(const std::string& token,
+                           OnConnectorMessageCallback callback);
   void ClearCallbackForToken(const std::string& token);
 
   // Performs cleanup needed at shutdown.
@@ -118,6 +123,8 @@ class BinaryFCMService : public gcm::GCMAppHandler {
       base::TimeDelta::FromSeconds(1);
 
   base::flat_map<std::string, OnMessageCallback> message_token_map_;
+  base::flat_map<std::string, OnConnectorMessageCallback>
+      connector_message_token_map_;
 
   // Map from an InstanceID to the number of callers to GetInstanceID using that
   // InstanceID.

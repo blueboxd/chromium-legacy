@@ -258,6 +258,7 @@ const CGFloat kCellLabelsWidthProportion = 0.2f;
   self.textLabel.text = nil;
   self.detailTextLabel.text = nil;
   self.statusTextLabel.text = nil;
+  self.trailingButton.tag = 0;
   [self setIconImage:nil];
   [_trailingButton removeTarget:nil
                          action:nil

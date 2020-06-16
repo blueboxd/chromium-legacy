@@ -57,7 +57,8 @@ class PepperBrokerInfoBarDelegate : public ConfirmInfoBarDelegate {
   const GURL url_;
   const base::string16 plugin_name_;
   HostContentSettingsMap* content_settings_;
-  content_settings::TabSpecificContentSettings* tab_content_settings_;
+  base::WeakPtr<content_settings::TabSpecificContentSettings>
+      tab_content_settings_;
   base::OnceCallback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperBrokerInfoBarDelegate);

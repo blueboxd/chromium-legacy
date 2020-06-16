@@ -6,7 +6,7 @@ package org.chromium.net;
 
 import static org.chromium.net.test.util.CertTestUtil.CERTS_DIRECTORY;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

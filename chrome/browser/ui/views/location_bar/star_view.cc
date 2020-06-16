@@ -72,6 +72,7 @@ void StarView::ShowPromo() {
       FeaturePromoBubbleView::CreateOwned(
           this, views::BubbleBorder::TOP_RIGHT,
           FeaturePromoBubbleView::ActivationAction::ACTIVATE,
+          /*title_string_specifier=*/base::nullopt,
           GetBookmarkPromoStringSpecifier());
   if (!bookmark_promo_observer_.IsObserving(
           bookmark_promo_bubble->GetWidget())) {

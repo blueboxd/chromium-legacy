@@ -259,6 +259,16 @@ mojom("mojom_platform") {
           [ "//third_party/blink/public/common/page/drag_mojom_traits.h" ]
       traits_public_deps = [ "//third_party/blink/public/common:headers" ]
     },
+    {
+      types = [
+        {
+          mojom = "blink.mojom.Event"
+          cpp = "::std::unique_ptr<::blink::WebCoalescedInputEvent>"
+          move_only = true
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/input/web_coalesced_input_event_mojom_traits.h" ]
+    },
   ]
   cpp_typemaps = [
     {
@@ -270,16 +280,6 @@ mojom("mojom_platform") {
       ]
       traits_headers = [ "//ui/base/mojom/clipboard_blink_mojom_traits.h" ]
       traits_public_deps = [ "//ui/base/clipboard:clipboard_types" ]
-    },
-    {
-      types = [
-        {
-          mojom = "blink.mojom.Event"
-          cpp = "::std::unique_ptr<::blink::WebCoalescedInputEvent>"
-          move_only = true
-        },
-      ]
-      traits_headers = [ "//third_party/blink/public/common/input/web_coalesced_input_event_mojom_traits.h" ]
     },
   ]
   cpp_typemaps += shared_cpp_typemaps

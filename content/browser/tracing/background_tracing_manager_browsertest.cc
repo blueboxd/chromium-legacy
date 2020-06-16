@@ -534,9 +534,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   EXPECT_TRUE(trace_receiver_helper.trace_received());
 }
 
-// This tests that non-whitelisted args get stripped if required.
+// This tests that non-allowlisted args get stripped if required.
 IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
-                       NotWhitelistedArgsStripped) {
+                       NotAllowlistedArgsStripped) {
   TestTraceReceiverHelper trace_receiver_helper;
   TestBackgroundTracingHelper background_tracing_helper;
 
@@ -552,8 +552,8 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   background_tracing_helper.WaitForTracingEnabled();
 
   {
-    TRACE_EVENT1("benchmark", "TestWhitelist", "test_whitelist", "abc");
-    TRACE_EVENT1("benchmark", "TestNotWhitelist", "test_not_whitelist", "abc");
+    TRACE_EVENT1("benchmark", "TestAllowlist", "test_allowlist", "abc");
+    TRACE_EVENT1("benchmark", "TestNotAllowlist", "test_not_allowlist", "abc");
   }
 
   TestTriggerHelper trigger_helper;
@@ -567,9 +567,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
   EXPECT_TRUE(trace_receiver_helper.trace_received());
   EXPECT_TRUE(trace_receiver_helper.TraceHasMatchingString("{"));
-  EXPECT_TRUE(trace_receiver_helper.TraceHasMatchingString("test_whitelist"));
+  EXPECT_TRUE(trace_receiver_helper.TraceHasMatchingString("test_allowlist"));
   EXPECT_FALSE(
-      trace_receiver_helper.TraceHasMatchingString("test_not_whitelist"));
+      trace_receiver_helper.TraceHasMatchingString("test_not_allowlist"));
 }
 
 // Tests that events emitted by the browser process immediately after the

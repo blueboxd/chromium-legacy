@@ -630,15 +630,13 @@ public class InfoBarContainerLayout extends OptimizedFrameLayout {
             if (mLeftShadowView != null) return;
 
             mLeftShadowView = new View(mLayout.getContext());
-            // TODO(crbug.com/1025620): Bring in infobar shadow
-            // mLeftShadowView.setBackgroundResource(R.drawable.infobar_shadow_left);
+            mLeftShadowView.setBackgroundResource(R.drawable.infobar_shadow_left);
             LayoutParams leftLp = new FrameLayout.LayoutParams(0, 0, Gravity.LEFT);
             leftLp.leftMargin = -mShadowWidth;
             mLeftShadowView.setLayoutParams(leftLp);
 
             mRightShadowView = new View(mLayout.getContext());
-            // TODO(crbug.com/1025620): Bring in infobar shadow
-            // mRightShadowView.setBackgroundResource(R.drawable.infobar_shadow_left);
+            mRightShadowView.setBackgroundResource(R.drawable.infobar_shadow_left);
             LayoutParams rightLp = new FrameLayout.LayoutParams(0, 0, Gravity.RIGHT);
             rightLp.rightMargin = -mShadowWidth;
             mRightShadowView.setScaleX(-1f);

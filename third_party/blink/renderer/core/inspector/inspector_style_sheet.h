@@ -113,6 +113,7 @@ class InspectorStyleSheetBase
   Listener* GetListener() { return listener_; }
   void OnStyleSheetTextChanged();
   const LineEndings* GetLineEndings();
+  void ResetLineEndings();
 
   virtual InspectorStyle* GetInspectorStyle(CSSStyleDeclaration*) = 0;
 
@@ -138,6 +139,9 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
   String FinalURL();
   bool SetText(const String&, ExceptionState&) override;
   bool GetText(String* result) override;
+  void MarkForSync() { marked_for_sync_ = true; }
+  void SyncTextIfNeeded();
+
   CSSStyleRule* SetRuleSelector(const SourceRange&,
                                 const String& selector,
                                 SourceRange* new_range,
@@ -221,6 +225,10 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
   bool HasSourceURL();
   bool StartsAtZero();
 
+  bool IsMutable() const;
+  void Reset();
+  void UpdateText();
+
   void ReplaceText(const SourceRange&,
                    const String& text,
                    SourceRange* new_range,
@@ -247,6 +255,8 @@ class InspectorStyleSheet : public InspectorStyleSheetBase {
   IndexMap rule_to_source_data_;
   IndexMap source_data_to_rule_;
   String source_url_;
+  // True means that CSSOM rules are to be synced with the original source text.
+  bool marked_for_sync_;
 };
 
 class InspectorStyleSheetForInlineStyle final : public InspectorStyleSheetBase {

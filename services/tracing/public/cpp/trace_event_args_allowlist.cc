@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/tracing/public/cpp/trace_event_args_whitelist.h"
+#include "services/tracing/public/cpp/trace_event_args_allowlist.h"
 
 #include "base/bind.h"
 #include "base/strings/pattern.h"
@@ -13,14 +13,14 @@
 namespace tracing {
 namespace {
 
-// Each whitelist entry is used to whitelist an array arguments for a
+// Each allowlist entry is used to allowlist an array arguments for a
 // single or group of trace events.
-struct WhitelistEntry {
+struct AllowlistEntry {
   // Category name of the interested trace event.
   const char* category_name;
   // Pattern to match the interested trace event name.
   const char* event_name;
-  // List of patterns that match the whitelisted arguments.
+  // List of patterns that match the allowlisted arguments.
   const char* const* arg_name_filter;
 };
 
@@ -47,7 +47,7 @@ const char* const kLifecyclesTaskPostedAllowedArgs[] = {
     nullptr};
 const char* const kMemoryPressureEventsAllowedArgs[] = {"level", nullptr};
 
-const WhitelistEntry kEventArgsWhitelist[] = {
+const AllowlistEntry kEventArgsAllowlist[] = {
     {"__metadata", "thread_name", nullptr},
     {"__metadata", "process_name", nullptr},
     {"__metadata", "process_uptime_seconds", nullptr},
@@ -66,7 +66,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
     {"base", "ScopedBlockingCall*", kScopedBlockingCallAllowedArgs},
     {"base", "ScopedMayLoadLibraryAtBackgroundPriority",
      kScopedBlockingCallAllowedArgs},
-    {"benchmark", "TestWhitelist*", nullptr},
+    {"benchmark", "TestAllowlist*", nullptr},
     {"blink", "MemoryPressureListenerRegistry::onMemoryPressure",
      kMemoryPressureEventsAllowedArgs},
     {"browser", "KeyedServiceFactory::GetServiceForContext", nullptr},
@@ -104,7 +104,7 @@ const WhitelistEntry kEventArgsWhitelist[] = {
      kLifecyclesTaskPostedAllowedArgs},
     {nullptr, nullptr, nullptr}};
 
-const char* kMetadataWhitelist[] = {"chrome-bitness",
+const char* kMetadataAllowlist[] = {"chrome-bitness",
                                     "chrome-library-name",
                                     "clock-domain",
                                     "config",
@@ -126,7 +126,7 @@ const char* kMetadataWhitelist[] = {"chrome-bitness",
 
 }  // namespace
 
-bool IsTraceArgumentNameWhitelisted(const char* const* granular_filter,
+bool IsTraceArgumentNameAllowlisted(const char* const* granular_filter,
                                     const char* arg_name) {
   for (int i = 0; granular_filter[i] != nullptr; ++i) {
     if (base::MatchPattern(arg_name, granular_filter[i]))
@@ -136,7 +136,7 @@ bool IsTraceArgumentNameWhitelisted(const char* const* granular_filter,
   return false;
 }
 
-bool IsTraceEventArgsWhitelisted(
+bool IsTraceEventArgsAllowlisted(
     const char* category_group_name,
     const char* event_name,
     base::trace_event::ArgumentNameFilterPredicate* arg_name_filter) {
@@ -146,16 +146,16 @@ bool IsTraceEventArgsWhitelisted(
       ",");
   while (category_group_tokens.GetNext()) {
     const std::string& category_group_token = category_group_tokens.token();
-    for (int i = 0; kEventArgsWhitelist[i].category_name != nullptr; ++i) {
-      const WhitelistEntry& whitelist_entry = kEventArgsWhitelist[i];
-      DCHECK(whitelist_entry.event_name);
+    for (int i = 0; kEventArgsAllowlist[i].category_name != nullptr; ++i) {
+      const AllowlistEntry& allowlist_entry = kEventArgsAllowlist[i];
+      DCHECK(allowlist_entry.event_name);
 
       if (base::MatchPattern(category_group_token,
-                             whitelist_entry.category_name) &&
-          base::MatchPattern(event_name, whitelist_entry.event_name)) {
-        if (whitelist_entry.arg_name_filter) {
+                             allowlist_entry.category_name) &&
+          base::MatchPattern(event_name, allowlist_entry.event_name)) {
+        if (allowlist_entry.arg_name_filter) {
           *arg_name_filter = base::BindRepeating(
-              &IsTraceArgumentNameWhitelisted, whitelist_entry.arg_name_filter);
+              &IsTraceArgumentNameAllowlisted, allowlist_entry.arg_name_filter);
         }
         return true;
       }
@@ -165,9 +165,9 @@ bool IsTraceEventArgsWhitelisted(
   return false;
 }
 
-bool IsMetadataWhitelisted(const std::string& metadata_name) {
-  for (size_t i = 0; kMetadataWhitelist[i] != nullptr; ++i) {
-    if (base::MatchPattern(metadata_name, kMetadataWhitelist[i])) {
+bool IsMetadataAllowlisted(const std::string& metadata_name) {
+  for (size_t i = 0; kMetadataAllowlist[i] != nullptr; ++i) {
+    if (base::MatchPattern(metadata_name, kMetadataAllowlist[i])) {
       return true;
     }
   }

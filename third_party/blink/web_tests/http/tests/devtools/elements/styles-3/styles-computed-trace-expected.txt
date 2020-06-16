@@ -35,6 +35,8 @@ text-decoration-line: underline;
     underline - div <style>
 text-decoration-style: solid;
     initial - div <style>
+text-decoration-thickness: auto;
+    initial - div <style>
 [expanded] 
 element.style { ()
 
@@ -53,6 +55,8 @@ text-decoration-color: rgb(0, 0, 0);
 text-decoration-line: underline;
     underline - div <style>
 text-decoration-style: solid;
+    initial - div <style>
+text-decoration-thickness: auto;
     initial - div <style>
 [expanded] 
 element.style { ()

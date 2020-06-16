@@ -5,57 +5,69 @@
 cr.define('account_migration_welcome', function() {
   'use strict';
 
-  let userEmail;
+  Polymer({
+    is: 'account-migration-welcome',
 
-  /**
-   * Initializes the UI.
-   */
-  function initialize() {
-    setWelcomeTextContent();
+    behaviors: [
+      I18nBehavior,
+    ],
 
-    $('cancel-button').addEventListener('click', closeDialog);
-    $('migrate-button').addEventListener('click', reauthenticateAccount);
-  }
+    properties: {
+      title_: {
+        type: String,
+        value: '',
+      },
+      body_: {
+        type: String,
+        value: '',
+      },
+    },
 
-  function setWelcomeTextContent() {
-    const dialogArgs = chrome.getVariableValue('dialogArguments');
-    if (!dialogArgs) {
-      // Only if the user navigates to the URL
-      // chrome://account-migration-welcome to debug.
-      console.warn('No arguments were provided to the dialog.');
-      return;
-    }
-    const args = JSON.parse(dialogArgs);
-    assert(args);
-    assert(args.email);
-    userEmail = args.email;
+    /** @private {String} */
+    userEmail_: String,
+    /** @private {AccountManagerBrowserProxy} */
+    browserProxy_: Object,
 
-    $('welcome-title').textContent =
-        loadTimeData.getStringF('welcomeTitle', userEmail);
-    $('welcome-message').innerHTML = loadTimeData.getStringF(
-        'welcomeMessage', userEmail,
-        loadTimeData.getString('accountManagerLearnMoreUrl'));
-  }
+    /** @override */
+    ready() {
+      this.browserProxy_ =
+          account_manager.AccountManagerBrowserProxyImpl.getInstance();
 
-  /**
-   * @return {AccountManagerBrowserProxy}
-   */
-  function getBrowserProxy() {
-    return account_manager.AccountManagerBrowserProxyImpl.getInstance();
-  }
+      const dialogArgs = chrome.getVariableValue('dialogArguments');
+      if (!dialogArgs) {
+        // Only if the user navigates to the URL
+        // chrome://account-migration-welcome to debug.
+        console.warn('No arguments were provided to the dialog.');
+        return;
+      }
+      const args = JSON.parse(dialogArgs);
+      assert(args);
+      assert(args.email);
+      this.userEmail_ = args.email;
 
-  function closeDialog() {
-    getBrowserProxy().closeDialog();
-  }
+      this.title_ = loadTimeData.getStringF('welcomeTitle', this.userEmail_);
+      this.body_ = this.getWelcomeMessage_();
+    },
 
-  function reauthenticateAccount() {
-    getBrowserProxy().reauthenticateAccount(userEmail);
-  }
+    /** @private */
+    getWelcomeMessage_() {
+      const validNodeFn = (node, value) => node.tagName === 'A';
+      return this.i18nAdvanced('welcomeMessage', {
+        substitutions: [
+          this.userEmail_, loadTimeData.getString('accountManagerLearnMoreUrl')
+        ],
+        attrs: {'id': validNodeFn, 'href': validNodeFn}
+      });
+    },
 
-  return {
-    initialize: initialize,
-  };
+    /** @private */
+    closeDialog_() {
+      this.browserProxy_.closeDialog();
+    },
+
+    /** @private */
+    reauthenticateAccount_() {
+      this.browserProxy_.reauthenticateAccount(this.userEmail_);
+    },
+  });
 });
-
-document.addEventListener(
-    'DOMContentLoaded', account_migration_welcome.initialize);

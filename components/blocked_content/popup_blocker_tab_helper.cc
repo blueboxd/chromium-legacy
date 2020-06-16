@@ -75,11 +75,10 @@ void PopupBlockerTabHelper::DidFinishNavigation(
 }
 
 void PopupBlockerTabHelper::HidePopupNotification() {
-  if (!web_contents()->IsBeingDestroyed()) {
-    content_settings::TabSpecificContentSettings::FromWebContents(
-        web_contents())
-        ->ClearPopupsBlocked();
-  }
+  auto* tscs = content_settings::TabSpecificContentSettings::FromWebContents(
+      web_contents());
+  if (tscs)
+    tscs->ClearPopupsBlocked();
 }
 
 void PopupBlockerTabHelper::AddBlockedPopup(

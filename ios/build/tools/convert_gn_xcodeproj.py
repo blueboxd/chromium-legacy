@@ -89,7 +89,7 @@ def WriteXcodeProject(output_path, json_string):
         os.path.join(output_path, 'project.pbxproj'))
 
 
-def UpdateProductsProject(project_dir, configurations, root_dir):
+def UpdateXcodeProject(project_dir, configurations, root_dir):
   """Update inplace Xcode project to support multiple configurations.
 
   Args:
@@ -274,20 +274,22 @@ def ConvertGnXcodeProject(root_dir, input_dir, output_dir, configurations):
       least one value.
   '''
 
-  # Update products.xcodeproj.
-  products_xcodeproj = 'products.xcodeproj'
-  UpdateProductsProject(
-      os.path.join(input_dir, products_xcodeproj),
-      configurations, root_dir)
+  # Update the project (supports legacy name "products.xcodeproj" or the new
+  # project name "all.xcodeproj").
+  for project_name in ('products.xcodeproj', 'all.xcodeproj'):
+    if os.path.exists(os.path.join(input_dir, project_name)):
+      UpdateXcodeProject(
+          os.path.join(input_dir, project_name),
+          configurations, root_dir)
 
-  CopyTreeIfChanged(os.path.join(input_dir, products_xcodeproj),
-                    os.path.join(output_dir, products_xcodeproj))
+      CopyTreeIfChanged(os.path.join(input_dir, project_name),
+                        os.path.join(output_dir, project_name))
 
   # Copy all.xcworkspace if it exists (will be removed in a future gn version).
-  all_xcworkspace = 'all.xcworkspace'
-  if os.path.exists(os.path.join(input_dir, all_xcworkspace)):
-    CopyTreeIfChanged(os.path.join(input_dir, all_xcworkspace),
-                      os.path.join(output_dir, all_xcworkspace))
+  workspace_name = 'all.xcworkspace'
+  if os.path.exists(os.path.join(input_dir, workspace_name)):
+    CopyTreeIfChanged(os.path.join(input_dir, workspace_name),
+                      os.path.join(output_dir, workspace_name))
 
 
 def Main(args):

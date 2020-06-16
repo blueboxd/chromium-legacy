@@ -5540,7 +5540,7 @@
     },
     {
       name: "text-decoration",
-      longhands: ["text-decoration-line", "text-decoration-style", "text-decoration-color"],
+      longhands: ["text-decoration-line", "text-decoration-thickness", "text-decoration-style", "text-decoration-color"],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {

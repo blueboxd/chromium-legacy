@@ -13,6 +13,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/callback_list.h"
+#include "base/cancelable_callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -176,7 +177,8 @@ class PasswordStore : protected PasswordStoreSync,
   // |main_task_runner_| after deletions have been completed and notifications
   // have been sent out. |sync_completion| will be posted to
   // |main_task_runner_| once the deletions have also been propagated to the
-  // server (or, in rare cases, if the user permanently disables Sync). This is
+  // server (or, in rare cases, if the user permanently disables Sync or
+  // deletions haven't been propagated after 30 seconds). This is
   // only relevant for Sync users and for account store users - for other users,
   // |sync_completion| will be run immediately after |completion|.
   void RemoveLoginsByURLAndTime(
@@ -871,6 +873,8 @@ class PasswordStore : protected PasswordStoreSync,
   // sent to the Sync server. Note that the vector itself lives on the
   // background thread, but the callbacks must be run on the main thread!
   std::vector<base::OnceCallback<void(bool)>> deletions_have_synced_callbacks_;
+  // Timeout closure that runs if sync takes too long to propagate deletions.
+  base::CancelableClosure deletions_have_synced_timeout_;
 
   bool shutdown_called_ = false;
 

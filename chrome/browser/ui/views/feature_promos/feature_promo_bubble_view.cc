@@ -43,7 +43,8 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow,
     ActivationAction activation_action,
-    int string_specifier,
+    base::Optional<int> title_string_specifier,
+    int body_string_specifier,
     base::Optional<int> preferred_width,
     base::Optional<int> screenreader_string_specifier,
     base::Optional<ui::Accelerator> feature_accelerator,
@@ -61,7 +62,8 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
         std::make_unique<FeaturePromoBubbleTimeout>(kDelayDefault, kDelayShort);
   }
 
-  const base::string16 body_text = l10n_util::GetStringUTF16(string_specifier);
+  const base::string16 body_text =
+      l10n_util::GetStringUTF16(body_string_specifier);
 
   // Feature promos are purely informational. We can skip reading the UI
   // elements inside the bubble and just have the information announced when the
@@ -93,19 +95,31 @@ FeaturePromoBubbleView::FeaturePromoBubbleView(
   box_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
   box_layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
+      views::BoxLayout::CrossAxisAlignment::kStretch);
   SetLayoutManager(std::move(box_layout));
 
-  auto* label = new views::Label(body_text);
-  label->SetBackgroundColor(background_color);
-  label->SetEnabledColor(text_color);
+  if (title_string_specifier.has_value()) {
+    auto* title_label = AddChildView(std::make_unique<views::Label>(
+        l10n_util::GetStringUTF16(title_string_specifier.value())));
+    title_label->SetBackgroundColor(background_color);
+    title_label->SetEnabledColor(text_color);
+    title_label->SetFontList(views::style::GetFont(
+        views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY));
 
-  if (preferred_width.has_value()) {
-    label->SetMultiLine(true);
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    if (preferred_width.has_value()) {
+      title_label->SetMultiLine(true);
+      title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    }
   }
 
-  AddChildView(label);
+  auto* body_label = AddChildView(std::make_unique<views::Label>(body_text));
+  body_label->SetBackgroundColor(background_color);
+  body_label->SetEnabledColor(text_color);
+
+  if (preferred_width.has_value()) {
+    body_label->SetMultiLine(true);
+    body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  }
 
   if (activation_action == ActivationAction::DO_NOT_ACTIVATE) {
     SetCanActivate(activation_action == ActivationAction::ACTIVATE);
@@ -134,15 +148,16 @@ FeaturePromoBubbleView* FeaturePromoBubbleView::CreateOwned(
     views::View* anchor_view,
     views::BubbleBorder::Arrow arrow,
     ActivationAction activation_action,
-    int string_specifier,
+    base::Optional<int> title_string_specifier,
+    int body_string_specifier,
     base::Optional<int> preferred_width,
     base::Optional<int> screenreader_string_specifier,
     base::Optional<ui::Accelerator> feature_accelerator,
     std::unique_ptr<FeaturePromoBubbleTimeout> feature_promo_bubble_timeout) {
   return new FeaturePromoBubbleView(
-      anchor_view, arrow, activation_action, string_specifier, preferred_width,
-      screenreader_string_specifier, feature_accelerator,
-      std::move(feature_promo_bubble_timeout));
+      anchor_view, arrow, activation_action, title_string_specifier,
+      body_string_specifier, preferred_width, screenreader_string_specifier,
+      feature_accelerator, std::move(feature_promo_bubble_timeout));
 }
 
 void FeaturePromoBubbleView::CloseBubble() {

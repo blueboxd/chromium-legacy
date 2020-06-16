@@ -98,7 +98,7 @@ void IncognitoWindowTracker::ShowPromo() {
   incognito_promo_ = FeaturePromoBubbleView::CreateOwned(
       app_menu_button, views::BubbleBorder::TOP_RIGHT,
       FeaturePromoBubbleView::ActivationAction::ACTIVATE,
-      GetPromoStringSpecifier());
+      /*title_string_specifier=*/base::nullopt, GetPromoStringSpecifier());
   views::Widget* widget = incognito_promo_->GetWidget();
   incognito_promo_observer_.Add(widget);
   app_menu_button->SetPromoFeature(InProductHelpFeature::kIncognitoWindow);

@@ -21,7 +21,7 @@ class Rect;
 namespace ui {
 class Accelerator;
 class MouseEvent;
-}
+}  // namespace ui
 
 // The FeaturePromoBubbleView is a special BubbleDialogDelegateView for
 // in-product help which educates users about certain Chrome features in a
@@ -39,7 +39,9 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
   // is closed. It must not be manually deleted by the caller.
   // * |anchor_view| is the View this bubble is anchored to.
   // * |arrow| specifies where on the border the bubble's arrow is located.
-  // * |string_specifier| is a string ID that can be passed to
+  // * |title_string_specifier| is a string ID that can be passed to
+  // |l10n_util::GetStringUTF16()|.
+  // * |body_string_specifier| is a string ID that can be passed to
   // |l10n_util::GetStringUTF16()|.
   // * |preferred_width| is an optional width for the promo bubble.
   // * |screenreader_string_specifier| is an optional alternate string to be
@@ -53,7 +55,8 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
       views::View* anchor_view,
       views::BubbleBorder::Arrow arrow,
       ActivationAction activation_action,
-      int string_specifier,
+      base::Optional<int> title_string_specifier,
+      int body_string_specifier,
       base::Optional<int> preferred_width = base::nullopt,
       base::Optional<int> screenreader_string_specifier = base::nullopt,
       base::Optional<ui::Accelerator> feature_accelerator = base::nullopt,
@@ -68,7 +71,8 @@ class FeaturePromoBubbleView : public views::BubbleDialogDelegateView {
       views::View* anchor_view,
       views::BubbleBorder::Arrow arrow,
       ActivationAction activation_action,
-      int string_specifier,
+      base::Optional<int> title_string_specifier,
+      int body_string_specifier,
       base::Optional<int> preferred_width,
       base::Optional<int> screenreader_string_specifier,
       base::Optional<ui::Accelerator> feature_accelerator,

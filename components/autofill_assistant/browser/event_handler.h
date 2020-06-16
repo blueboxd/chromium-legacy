@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/user_model.h"
 
@@ -36,6 +37,9 @@ class EventHandler {
   ~EventHandler();
 
   void DispatchEvent(const EventKey& key);
+
+  static base::Optional<EventKey> CreateEventKeyFromProto(
+      const EventProto& proto);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(const Observer* observer);

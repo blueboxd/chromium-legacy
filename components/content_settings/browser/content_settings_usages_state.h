@@ -14,7 +14,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "url/gurl.h"
 
-// This class manages a content setting state per tab for a given
+// This class manages a content setting state per page for a given
 // |ContentSettingsType|, and provides information and presentation data about
 // the content setting usage.
 // TODO(crbug.com/1086363): Move this class into the `content_settings`
@@ -23,7 +23,8 @@ class ContentSettingsUsagesState {
  public:
   ContentSettingsUsagesState(
       content_settings::TabSpecificContentSettings::Delegate* delegate_,
-      ContentSettingsType type);
+      ContentSettingsType type,
+      const GURL& embedder_url);
 
   ~ContentSettingsUsagesState();
 
@@ -32,12 +33,6 @@ class ContentSettingsUsagesState {
 
   // Sets the state for |requesting_origin|.
   void OnPermissionSet(const GURL& requesting_origin, bool allowed);
-
-  // Delegated by WebContents to indicate a navigation has happened and we
-  // may need to clear our settings.
-  void DidNavigate(const GURL& url, const GURL& previous_url);
-
-  void ClearStateMap();
 
   enum TabState {
     TABSTATE_NONE = 0,

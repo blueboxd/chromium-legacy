@@ -511,7 +511,7 @@ bool ShouldBypassChecksForErrorPage(
     // commit in the old renderer process.  This may be true for subframe
     // navigations even when error page isolation is enabled for main frames.
     if (navigation_request &&
-        navigation_request->GetNetErrorCode() == net::ERR_BLOCKED_BY_CLIENT) {
+        net::IsRequestBlockedError(navigation_request->GetNetErrorCode())) {
       return true;
     }
   }

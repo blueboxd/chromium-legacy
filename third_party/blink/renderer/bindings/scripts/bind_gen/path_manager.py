@@ -218,4 +218,7 @@ _BACKWARD_COMPATIBLE_UNION_FILEPATHS = {
     # modules/canvas/offscreencanvas/offscreen_canvas_module.idl
     "OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext":
     "OffscreenRenderingContext",
+    # core/xmlhttprequest/xml_http_request.idl
+    "DocumentOrBlobOrArrayBufferOrArrayBufferViewOrFormDataOrURLSearchParamsOrUSVString":
+    "DocumentOrXMLHttpRequestBodyInit",
 }

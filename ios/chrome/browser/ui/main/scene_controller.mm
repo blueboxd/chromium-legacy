@@ -329,7 +329,6 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
             UrlLoadParams params = LoadParamsFromActivity(activity);
             UrlLoadingBrowserAgent::FromBrowser(self.mainInterface.browser)
                 ->Load(params);
-            return;
           } else if (!activityWithCompletion) {
             // Completion involves user interaction.
             // Only one can be triggered.

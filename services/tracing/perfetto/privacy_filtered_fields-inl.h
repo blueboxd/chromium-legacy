@@ -30,7 +30,7 @@ constexpr int kClockIndices[] = {1, 2, 3, 4, -1};
 constexpr MessageInfo kClock = {kClockIndices, nullptr};
 
 // Proto Message: ClockSnapshot
-// Manually whitelisted: 2 (primary_trace_clock).
+// Manually allowlisted: 2 (primary_trace_clock).
 constexpr int kClockSnapshotIndices[] = {1, 2, -1};
 constexpr MessageInfo const* kClockSnapshotComplexMessages[] = {&kClock,
                                                                 nullptr};
@@ -353,7 +353,7 @@ constexpr MessageInfo kTrackDescriptor = {kTrackDescriptorIndices,
                                           kTrackDescriptorComplexMessages};
 
 // Proto Message: TracePacket
-// EDIT: Manually whitelisted: 3 (trusted_uid).
+// EDIT: Manually allowlisted: 3 (trusted_uid).
 constexpr int kTracePacketIndices[] = {3,  6,  8,  10, 11, 12, 13, 35, 36, 41,
                                        42, 43, 44, 51, 54, 56, 58, 59, 60, -1};
 constexpr MessageInfo const* kTracePacketComplexMessages[] = {

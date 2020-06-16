@@ -12,7 +12,9 @@
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #elif defined(USE_AURA) && defined(OS_LINUX)
 #include "base/check.h"
-#include "ui/base/ime/linux/fake_input_method_context_factory.h"
+// TODO(crbug.com/1085700): Remove nogncheck when we can build both Ozone
+// Wayland and X11 on Linux codesearch-gen bots.
+#include "ui/base/ime/linux/fake_input_method_context_factory.h"  // nogncheck
 #elif defined(OS_WIN)
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/win/tsf_bridge.h"

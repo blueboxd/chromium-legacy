@@ -709,6 +709,7 @@ All changes to this list should go through Blink's feature review process: http:
         text-decoration-color
         text-decoration-line
         text-decoration-style
+        text-decoration-thickness
     transition
         transition-delay
         transition-duration

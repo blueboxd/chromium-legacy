@@ -13,6 +13,7 @@
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
 #include "components/gcm_driver/gcm_client.h"
@@ -173,6 +174,56 @@ TEST_F(BinaryFCMServiceTest, RoutesMessages) {
   EXPECT_EQ(response2.token(), "");
 }
 
+TEST_F(BinaryFCMServiceTest, RoutesConnectorMessages) {
+  enterprise_connectors::ContentAnalysisResponse response1;
+  enterprise_connectors::ContentAnalysisResponse response2;
+
+  binary_fcm_service_->SetCallbackForToken(
+      "token1",
+      base::BindRepeating(
+          [](enterprise_connectors::ContentAnalysisResponse* target_response,
+             enterprise_connectors::ContentAnalysisResponse response) {
+            *target_response = response;
+          },
+          &response1));
+  binary_fcm_service_->SetCallbackForToken(
+      "token2",
+      base::BindRepeating(
+          [](enterprise_connectors::ContentAnalysisResponse* target_response,
+             enterprise_connectors::ContentAnalysisResponse response) {
+            *target_response = response;
+          },
+          &response2));
+
+  enterprise_connectors::ContentAnalysisResponse message;
+  std::string serialized_message;
+  gcm::IncomingMessage incoming_message;
+
+  // Test that a message with token1 is routed only to the first callback.
+  message.set_request_token("token1");
+  ASSERT_TRUE(message.SerializeToString(&serialized_message));
+  base::Base64Encode(serialized_message, &serialized_message);
+  incoming_message.data["proto"] = serialized_message;
+  binary_fcm_service_->OnMessage("app_id", incoming_message);
+  EXPECT_EQ(response1.request_token(), "token1");
+  EXPECT_EQ(response2.request_token(), "");
+
+  // Test that a message with token2 is routed only to the second callback.
+  message.set_request_token("token2");
+  ASSERT_TRUE(message.SerializeToString(&serialized_message));
+  base::Base64Encode(serialized_message, &serialized_message);
+  incoming_message.data["proto"] = serialized_message;
+  binary_fcm_service_->OnMessage("app_id", incoming_message);
+  EXPECT_EQ(response1.request_token(), "token1");
+  EXPECT_EQ(response2.request_token(), "token2");
+
+  // Test that I can clear a callback
+  response2.clear_request_token();
+  binary_fcm_service_->ClearCallbackForToken("token2");
+  binary_fcm_service_->OnMessage("app_id", incoming_message);
+  EXPECT_EQ(response2.request_token(), "");
+}
+
 TEST_F(BinaryFCMServiceTest, EmitsHasKeyHistogram) {
   {
     base::HistogramTester histograms;
@@ -229,6 +280,21 @@ TEST_F(BinaryFCMServiceTest, EmitsMessageParsedHistogram) {
     histograms.ExpectUniqueSample(
         "SafeBrowsingFCMService.IncomingMessageParsedProto", true, 1);
   }
+  {
+    base::HistogramTester histograms;
+    gcm::IncomingMessage incoming_message;
+    enterprise_connectors::ContentAnalysisResponse message;
+    std::string serialized_message;
+
+    ASSERT_TRUE(message.SerializeToString(&serialized_message));
+    base::Base64Encode(serialized_message, &serialized_message);
+    incoming_message.data["proto"] = serialized_message;
+    binary_fcm_service_->OnMessage("app_id", incoming_message);
+    histograms.ExpectUniqueSample(
+        "SafeBrowsingFCMService.IncomingMessageParsedBase64", true, 1);
+    histograms.ExpectUniqueSample(
+        "SafeBrowsingFCMService.IncomingMessageParsedProto", true, 1);
+  }
 }
 
 TEST_F(BinaryFCMServiceTest, EmitsMessageHasValidTokenHistogram) {
@@ -248,7 +314,34 @@ TEST_F(BinaryFCMServiceTest, EmitsMessageHasValidTokenHistogram) {
         "SafeBrowsingFCMService.IncomingMessageHasValidToken", false, 1);
   }
   {
-    binary_fcm_service_->SetCallbackForToken("token1", base::DoNothing());
+    BinaryFCMService::OnMessageCallback callback = base::DoNothing();
+    binary_fcm_service_->SetCallbackForToken("token1", std::move(callback));
+    base::HistogramTester histograms;
+    binary_fcm_service_->OnMessage("app_id", incoming_message);
+    histograms.ExpectUniqueSample(
+        "SafeBrowsingFCMService.IncomingMessageHasValidToken", true, 1);
+  }
+}
+
+TEST_F(BinaryFCMServiceTest, EmitsConnectorMessageHasValidTokenHistogram) {
+  gcm::IncomingMessage incoming_message;
+  enterprise_connectors::ContentAnalysisResponse message;
+
+  message.set_request_token("token1");
+  std::string serialized_message;
+  ASSERT_TRUE(message.SerializeToString(&serialized_message));
+  base::Base64Encode(serialized_message, &serialized_message);
+  incoming_message.data["proto"] = serialized_message;
+
+  {
+    base::HistogramTester histograms;
+    binary_fcm_service_->OnMessage("app_id", incoming_message);
+    histograms.ExpectUniqueSample(
+        "SafeBrowsingFCMService.IncomingMessageHasValidToken", false, 1);
+  }
+  {
+    BinaryFCMService::OnConnectorMessageCallback callback = base::DoNothing();
+    binary_fcm_service_->SetCallbackForToken("token1", std::move(callback));
     base::HistogramTester histograms;
     binary_fcm_service_->OnMessage("app_id", incoming_message);
     histograms.ExpectUniqueSample(

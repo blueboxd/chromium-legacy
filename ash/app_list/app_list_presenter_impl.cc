@@ -15,6 +15,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/bind.h"
@@ -25,6 +26,7 @@
 #include "base/optional.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
@@ -312,10 +314,12 @@ void AppListPresenterImpl::UpdateYPositionAndOpacityForHomeLauncher(
   // reported for transform animation only.
   layer->SetOpacity(opacity);
 
+  base::Optional<ui::AnimationThroughputReporter> reporter;
   if (settings.has_value() && transition.has_value()) {
     view_->OnTabletModeAnimationTransitionNotified(transition.value());
-    settings->SetAnimationMetricsReporter(
-        view_->GetStateTransitionMetricsReporter());
+    reporter.emplace(settings->GetAnimator(),
+                     metrics_util::ForSmoothness(
+                         view_->GetStateTransitionMetricsReportCallback()));
   }
 
   layer->SetTransform(translation);
@@ -369,10 +373,12 @@ void AppListPresenterImpl::UpdateScaleAndOpacityForHomeLauncher(
   // reported for transform animation only.
   layer->SetOpacity(opacity);
 
+  base::Optional<ui::AnimationThroughputReporter> reporter;
   if (settings.has_value() && transition.has_value()) {
     view_->OnTabletModeAnimationTransitionNotified(*transition);
-    settings->SetAnimationMetricsReporter(
-        view_->GetStateTransitionMetricsReporter());
+    reporter.emplace(settings->GetAnimator(),
+                     metrics_util::ForSmoothness(
+                         view_->GetStateTransitionMetricsReportCallback()));
   }
 
   gfx::Transform transform =

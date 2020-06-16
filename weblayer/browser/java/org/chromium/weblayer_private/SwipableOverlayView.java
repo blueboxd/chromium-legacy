@@ -123,10 +123,10 @@ public abstract class SwipableOverlayView extends FrameLayout {
         return mWebContents;
     }
 
-    protected void addToParentView(ViewGroup parentView) {
+    protected void addToParentView(ViewGroup parentView, int index) {
         if (parentView == null) return;
         if (getParent() == null) {
-            parentView.addView(this, createLayoutParams());
+            parentView.addView(this, index, createLayoutParams());
 
             // Listen for the layout to know when to animate the View coming onto the screen.
             addOnLayoutChangeListener(mLayoutChangeListener);

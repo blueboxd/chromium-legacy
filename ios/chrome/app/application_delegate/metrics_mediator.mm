@@ -285,7 +285,6 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 }
 
 - (void)setAppGroupMetricsEnabled:(BOOL)enabled {
-  app_group::ProceduralBlockWithData callback;
   if (enabled) {
     PrefService* prefs = GetApplicationContext()->GetLocalState();
     NSString* brandCode =
@@ -300,22 +299,11 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
         prefs->GetInt64(metrics::prefs::kMetricsReportingEnabledTimestamp));
 
     // If metrics are enabled, process the logs. Otherwise, just delete them.
-    callback = ^(NSData* log_content) {
-      std::string log(static_cast<const char*>([log_content bytes]),
-                      static_cast<size_t>([log_content length]));
-      base::PostTask(
-          FROM_HERE, {web::WebThread::UI}, base::BindOnce(^{
-            GetApplicationContext()->GetMetricsService()->PushExternalLog(log);
-          }));
-    };
+    // TODO(crbug.com/782685): remove related code.
   } else {
     app_group::main_app::DisableMetrics();
   }
-
   app_group::main_app::RecordWidgetUsage();
-  base::ThreadPool::PostTask(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&app_group::main_app::ProcessPendingLogs, callback));
 }
 
 - (void)processCrashReportsPresentAtStartup {

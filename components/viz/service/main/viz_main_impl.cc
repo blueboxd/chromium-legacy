@@ -199,7 +199,8 @@ void VizMainImpl::CreateInfoCollectionGpuService(
 
   info_collection_gpu_service_ = std::make_unique<InfoCollectionGpuServiceImpl>(
       gpu_thread_task_runner_, io_task_runner(),
-      gpu_init_->device_perf_info().value(), std::move(pending_receiver));
+      gpu_init_->device_perf_info().value(), gpu_init_->gpu_info().active_gpu(),
+      std::move(pending_receiver));
 }
 #endif
 

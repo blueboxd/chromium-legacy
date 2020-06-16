@@ -7,11 +7,12 @@ package org.chromium.chrome.browser.locale;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.RadioButton;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

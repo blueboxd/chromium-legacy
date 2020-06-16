@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="6119846243427417423">aktivizt</translation>
 <translation id="6129953537138746214">Atstarpe</translation>
+<translation id="6134259848159370930">Varat meklēt ierīcē, lietotnēs, iestatījumos un tīmeklī.</translation>
 <translation id="6135826906199951471">Dzēst</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Skatīt visas lietotnes</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
+<translation id="6166852626429024716">Varat meklēt ierīcē, lietotnēs, iestatījumos, tīmeklī…</translation>
 <translation id="6264365405983206840">&amp;Atlasīt visu</translation>
 <translation id="6351032674660237738">LIETOTŅU IETEIKUMI</translation>
 <translation id="6364916375976753737">Ritināt pa kreisi</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623">Fails <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Plaukts tiek rādīts vienmēr</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8685326675965865247">Varat meklēt savā ierīcē, lietotnēs, iestatījumos un tīmeklī. Lai pārvietotos lietotnēs, izmantojiet bulttaustiņus.</translation>
 <translation id="8725488761726303204">vēl <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Gatavs</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}zero{# h}one{# h}other{# h}}</translation>

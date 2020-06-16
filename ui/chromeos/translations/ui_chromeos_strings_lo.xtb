@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">ຄີບອດພາສາຊິນຮາລາ</translation>
 <translation id="240770291734945588">ຍັງເຫຼືອ <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="2425665904502185219">ຂະຫນາດໄຟລ໌ທັງໝົດ</translation>
+<translation id="2428749644083375155">ກຳລັງສຳເນົາ <ph name="NUMBER_OF_ITEMS" /> ລາຍການໄວ້ໃນ <ph name="FOLDER_NAME" /></translation>
 <translation id="2448312741937722512">ປະ​ເພດ</translation>
 <translation id="2453576648990281505">ມີໄຟລ໌ຢູ່ແລ້ວ</translation>
 <translation id="2464079411014186876">ກະແລ໋ມ</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346">ເພີ່ມ <ph name="ENTRY_NAME" /> ໃສ່ການເລືອກແລ້ວ.</translation>
 <translation id="4582497162516204941">ຕິດຕັ້ງດ້ວຍ Linux (ເບຕ້າ)</translation>
 <translation id="4594543368593301662">ກຳລັງສະແດງຜົນການຊອກຫາສຳລັບ <ph name="SEARCH_TERM" />.</translation>
+<translation id="4603392156942865207">ກຳລັງສຳເນົາ <ph name="FILE_NAME" /> ໄວ້ໃນ <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">ສິລະປິນ</translation>
 <translation id="4656293982926141856">ຄອມ​ພິວ​ເຕີ​ນີ້</translation>
 <translation id="4669606053856530811">ສະມາຊິກ '<ph name="SOURCE_NAME" />' ຈະສູນເສຍການເຂົ້າເຖິງ ເວັ້ນເສຍແຕ່ວ່າມີການແບ່ງປັນລາຍການເຫຼົ່ານີ້ກັບເຂົາເຈົ້າ.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">ສີຕັດກັນ</translation>
 <translation id="5068919226082848014">ພິດຊ່າ</translation>
 <translation id="5081517858322016911">ລະບົບຈະລຶບໄຟລ໌ <ph name="TOTAL_FILE_SIZE" /></translation>
+<translation id="508423945471810158">ກຳລັງຍ້າຍ <ph name="NUMBER_OF_ITEMS" /> ລາຍການໄປຍັງ <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">ເກີດຄວາມຜິດພາດຂຶ້ນ.</translation>
 <translation id="5098629044894065541">ພາສາຮິບຣູ</translation>
 <translation id="5123433949759960244">ບານບ້ວງ</translation>
@@ -454,6 +457,7 @@
 <translation id="6054173164583630569">ຄີບອດພາສາຝຣັ່ງ</translation>
 <translation id="6074825444536523002">ຮູບແບບ Google</translation>
 <translation id="6096979789310008754">ລຶບລ້າງຂໍ້ຄວາມຊອກຫາແລ້ວ, ເຊິ່ງສະແດງຊ່ອງໄຟລ໌ ແລະ ໂຟນເດີທັງໝົດ.</translation>
+<translation id="610101264611565198">ກຳລັງຍ້າຍ <ph name="FILE_NAME" /> ໄປຍັງ <ph name="FOLDER_NAME" /></translation>
 <translation id="6111770213269631447">ການປ່ຽນ​ຖ່າຍ​ຕົວ​ອັກສອນ (namaska​​r →​ນາມັສກາ​)</translation>
 <translation id="6129953537138746214">ຍະຫວ່າງ</translation>
 <translation id="6133173853026656527">ກໍາລັງຍ້າຍ <ph name="FILE_NAME" />...</translation>
@@ -537,6 +541,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">ການ​ຕິດ​ຕັ້ງ​ບໍ່ສໍາເລັດ.</translation>
 <translation id="7040138676081995583">ເປີດດ້ວຍ...</translation>
+<translation id="7059566040011178088">ໜ້ອຍກວ່າ <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">ເລືອກ <ph name="COUNT" /> ລາຍ​ການ​ແລ້ວ</translation>
 <translation id="7106346894903675391">ຊື້ບ່ອນເກັບຂໍ້ມູນເພີ່ມ​ເຕີມ...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;ຊອກຫາ Drive&lt;/em&gt;</translation>
@@ -647,6 +652,7 @@
 <translation id="8193175696669055101">ລຸ້ນອຸປະກອນ</translation>
 <translation id="8208580316430297579">ຮູບປົກ</translation>
 <translation id="8223479393428528563">ເພື່ອ​ບັນ​ທຶກ​ໄຟ​ລ໌​ເຫຼົ່າ​ນີ້​ໄວ້​ໃຊ້​ອອ​ຟ​ລາຍ​ນ໌, ກັບ​ຄືນ​ໄປ​ອອນ​ລາຍ​ນ໌, ຄ​ລິກ​ເບື້ອງ​ຂວາ​ໃສ່​ໄຟ​ລ໌, ແລະ​ເລືອກ​ທາງ​ເລືອກ <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8231972167769262174">ກ່ຽວກັບ <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">ຍົກເລີກ</translation>
 <translation id="8261506727792406068">ລຶບ</translation>
 <translation id="8269755669432358899">ຫຍໍ້ແຜງຄຳຕິຊົມໄຟລ໌ລົງ</translation>

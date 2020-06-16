@@ -36,6 +36,10 @@ extern const char kAutofillEnableCompanyNameDescription[];
 extern const char kAutofillEnableGoogleIssuedCardName[];
 extern const char kAutofillEnableGoogleIssuedCardDescription[];
 
+// Title and description for the flag to control offers in downstream.
+extern const char kAutofillEnableOffersInDownstreamName[];
+extern const char kAutofillEnableOffersInDownstreamDescription[];
+
 // Title and description for the flag to control surfacing server card nickname.
 extern const char kAutofillEnableSurfacingServerCardNicknameName[];
 extern const char kAutofillEnableSurfacingServerCardNicknameDescription[];

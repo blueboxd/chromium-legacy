@@ -152,7 +152,7 @@ void OffscreenCanvas::setHeight(unsigned height) {
 void OffscreenCanvas::SetSize(const IntSize& size) {
   // Setting size of a canvas also resets it.
   if (size == size_) {
-    if (context_ && context_->Is2d()) {
+    if (context_ && context_->IsRenderingContext2D()) {
       context_->Reset();
       origin_clean_ = true;
     }
@@ -168,7 +168,7 @@ void OffscreenCanvas::SetSize(const IntSize& size) {
   if (context_) {
     if (context_->Is3d()) {
       context_->Reshape(size_.Width(), size_.Height());
-    } else if (context_->Is2d()) {
+    } else if (context_->IsRenderingContext2D()) {
       context_->Reset();
       origin_clean_ = true;
     }

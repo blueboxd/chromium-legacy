@@ -348,7 +348,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
                                     EVisibility::kVisible);
     }
 
-    if (Is2d() && !context_->CreationAttributes().alpha) {
+    if (IsRenderingContext2D() && !context_->CreationAttributes().alpha) {
       // In the alpha false case, canvas is initially opaque, so we need to
       // trigger an invalidation.
       DidDraw();
@@ -371,7 +371,7 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContextInternal(
 
   // A 2D context does not know before lazy creation whether or not it is
   // direct composited. The Canvas2DLayerBridge will handle this
-  if (!Is2d())
+  if (!IsRenderingContext2D())
     SetNeedsCompositingUpdate();
 
   return context_.Get();
@@ -436,7 +436,7 @@ void HTMLCanvasElement::DidDraw(const FloatRect& rect) {
   canvas_is_clear_ = false;
   if (GetLayoutObject() && !LowLatencyEnabled())
     GetLayoutObject()->SetShouldCheckForPaintInvalidation();
-  if (Is2d() && context_->ShouldAntialias() && GetPage() &&
+  if (IsRenderingContext2D() && context_->ShouldAntialias() && GetPage() &&
       GetPage()->DeviceScaleFactorDeprecated() > 1.0f) {
     FloatRect inflated_rect = rect;
     inflated_rect.Inflate(1);
@@ -444,7 +444,7 @@ void HTMLCanvasElement::DidDraw(const FloatRect& rect) {
   } else {
     dirty_rect_.Unite(rect);
   }
-  if (Is2d() && canvas2d_bridge_)
+  if (IsRenderingContext2D() && canvas2d_bridge_)
     canvas2d_bridge_->DidDraw(rect);
 }
 
@@ -541,7 +541,7 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
     }
   }
 
-  if (Is2d()) {
+  if (IsRenderingContext2D()) {
     FloatRect src_rect(0, 0, Size().Width(), Size().Height());
     dirty_rect_.Intersect(src_rect);
 
@@ -619,7 +619,7 @@ void HTMLCanvasElement::Reset() {
     h = kDefaultCanvasHeight;
   }
 
-  if (Is2d()) {
+  if (IsRenderingContext2D()) {
     context_->Reset();
     origin_clean_ = true;
   }
@@ -629,7 +629,7 @@ void HTMLCanvasElement::Reset() {
 
   // If the size of an existing buffer matches, we can just clear it instead of
   // reallocating.  This optimization is only done for 2D canvases for now.
-  if (had_resource_provider && old_size == new_size && Is2d()) {
+  if (had_resource_provider && old_size == new_size && IsRenderingContext2D()) {
     if (!canvas_is_clear_) {
       canvas_is_clear_ = true;
       if (canvas2d_bridge_)
@@ -867,7 +867,7 @@ void HTMLCanvasElement::SetSurfaceSize(const IntSize& size) {
   size_ = size;
   did_fail_to_create_resource_provider_ = false;
   DiscardResourceProvider();
-  if (Is2d() && context_->isContextLost())
+  if (IsRenderingContext2D() && context_->isContextLost())
     context_->DidSetSurfaceSize();
   if (frame_dispatcher_)
     frame_dispatcher_->Reshape(size_);
@@ -910,8 +910,8 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::Snapshot(
         image_bitmap = StaticBitmapImage::Create(std::move(pixel_data), info);
       }
     }
-  } else if (canvas2d_bridge_) {  // 2D Canvas
-    DCHECK(Is2d());
+  } else if (canvas2d_bridge_) {
+    DCHECK(IsRenderingContext2D());
     image_bitmap = canvas2d_bridge_->NewImageSnapshot(hint);
   } else if (context_) {  // Bitmap renderer canvas
     image_bitmap = context_->GetImage(hint);
@@ -1109,7 +1109,7 @@ bool HTMLCanvasElement::PushFrame(scoped_refptr<CanvasResource> image,
 }
 
 bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
-  if (context_ && !Is2d())
+  if (context_ && !IsRenderingContext2D())
     return false;
 
   // The command line flag --disable-accelerated-2d-canvas toggles this option
@@ -1158,7 +1158,7 @@ std::unique_ptr<Canvas2DLayerBridge> HTMLCanvasElement::Create2DLayerBridge(
 
 void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
     std::unique_ptr<Canvas2DLayerBridge> external_canvas2d_bridge) {
-  DCHECK(Is2d() && !canvas2d_bridge_);
+  DCHECK(IsRenderingContext2D() && !canvas2d_bridge_);
   did_fail_to_create_resource_provider_ = true;
 
   if (!IsValidImageSize(Size()))
@@ -1195,7 +1195,7 @@ void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
 }
 
 void HTMLCanvasElement::NotifyGpuContextLost() {
-  if (Is2d())
+  if (IsRenderingContext2D())
     context_->LoseContext(CanvasRenderingContext::kRealLostContext);
 }
 
@@ -1208,7 +1208,7 @@ void HTMLCanvasElement::Trace(Visitor* visitor) const {
 }
 
 Canvas2DLayerBridge* HTMLCanvasElement::GetOrCreateCanvas2DLayerBridge() {
-  DCHECK(Is2d());
+  DCHECK(IsRenderingContext2D());
   if (!canvas2d_bridge_ && !did_fail_to_create_resource_provider_) {
     SetCanvas2DLayerBridgeInternal(nullptr);
     if (did_fail_to_create_resource_provider_ && !Size().IsEmpty())
@@ -1464,7 +1464,7 @@ bool HTMLCanvasElement::IsSupportedInteractiveCanvasFallback(
 
 HitTestCanvasResult* HTMLCanvasElement::GetControlAndIdIfHitRegionExists(
     const PhysicalOffset& location) {
-  if (Is2d())
+  if (IsRenderingContext2D())
     return context_->GetControlAndIdIfHitRegionExists(location);
   return MakeGarbageCollected<HitTestCanvasResult>(String(), nullptr);
 }
@@ -1511,7 +1511,7 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
   int non_gpu_buffer_count = 0;
   int gpu_buffer_count = 0;
 
-  if (!Is2d() && !Is3d())
+  if (!IsRenderingContext2D() && !Is3d())
     return;
   if (ResourceProvider()) {
     non_gpu_buffer_count++;
@@ -1609,7 +1609,7 @@ void HTMLCanvasElement::ReplaceExisting2dLayerBridge(
 
 CanvasResourceProvider* HTMLCanvasElement::GetOrCreateCanvasResourceProvider(
     RasterModeHint hint) {
-  if (Is2d())
+  if (IsRenderingContext2D())
     return GetOrCreateCanvas2DLayerBridge()->GetOrCreateResourceProvider(hint);
 
   return CanvasRenderingContextHost::GetOrCreateCanvasResourceProvider(hint);

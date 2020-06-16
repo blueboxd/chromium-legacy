@@ -26,6 +26,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_change_notifier.h"
+#include "net/base/network_isolation_key.h"
 #include "services/network/p2p/socket.h"
 #include "services/network/p2p/socket_throttler.h"
 #include "services/network/public/cpp/p2p_socket_type.h"
@@ -58,6 +59,7 @@ class P2PSocketManager
   // P2PSocketManager. The P2PSocketManager must be destroyed before the
   // |url_request_context|.
   P2PSocketManager(
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<mojom::P2PTrustedSocketManagerClient>
           trusted_socket_manager_client,
       mojo::PendingReceiver<mojom::P2PTrustedSocketManager>
@@ -121,6 +123,7 @@ class P2PSocketManager
 
   DeleteCallback delete_callback_;
   net::URLRequestContext* url_request_context_;
+  const net::NetworkIsolationKey network_isolation_key_;
 
   std::unique_ptr<ProxyResolvingClientSocketFactory>
       proxy_resolving_socket_factory_;

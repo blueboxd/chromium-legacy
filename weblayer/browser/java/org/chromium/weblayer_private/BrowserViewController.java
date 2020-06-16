@@ -126,6 +126,11 @@ public final class BrowserViewController
         return mContentViewRenderView;
     }
 
+    /** Returns the ViewGroup into which the InfoBarContainer should be parented. **/
+    public ViewGroup getInfoBarContainerParentView() {
+        return mContentViewRenderView;
+    }
+
     public ViewGroup getContentView() {
         return mContentView;
     }
@@ -136,6 +141,14 @@ public final class BrowserViewController
 
     public ViewGroup getAutofillView() {
         return mAutofillView;
+    }
+
+    // Returns the index at which the infobar container view should be inserted.
+    public int getDesiredInfoBarContainerViewIndex() {
+        // Ensure that infobars are positioned behind WebContents overlays in z-order.
+        // TODO(blundell): Should infobars instead be hidden while a WebContents overlay is
+        // presented?
+        return mContentViewRenderView.indexOfChild(mWebContentsOverlayView) - 1;
     }
 
     public void setActiveTab(TabImpl tab) {
@@ -183,6 +196,10 @@ public final class BrowserViewController
 
     public void setBottomView(View view) {
         mBottomControlsContainerView.setView(view);
+    }
+
+    public int getBottomContentHeightDelta() {
+        return mBottomControlsContainerView.getContentHeightDelta();
     }
 
     public boolean compositorHasSurface() {

@@ -163,6 +163,9 @@ constexpr char kJSRotateCounterclockwiseType[] = "rotateCounterclockwise";
 // Toggle two-up view (Page -> Plugin)
 constexpr char kJSSetTwoUpViewType[] = "setTwoUpView";
 constexpr char kJSEnableTwoUpView[] = "enableTwoUpView";
+// Display annotations (Page -> Plugin)
+constexpr char kJSDisplayAnnotationsType[] = "displayAnnotations";
+constexpr char kJSDisplayAnnotations[] = "display";
 // Select all text in the document (Page -> Plugin)
 constexpr char kJSSelectAllType[] = "selectAll";
 // Get the selected text in the document (Page -> Plugin)
@@ -564,7 +567,9 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
   } else if (type == kJSRotateCounterclockwiseType) {
     RotateCounterclockwise();
   } else if (type == kJSSetTwoUpViewType) {
-    SetTwoUpView(dict.Get(pp::Var(kJSEnableTwoUpView)).AsBool());
+    HandleSetTwoUpViewMessage(dict);
+  } else if (type == kJSDisplayAnnotationsType) {
+    HandleDisplayAnnotations(dict);
   } else if (type == kJSSelectAllType) {
     engine_->SelectAll();
   } else if (type == kJSBackgroundColorChangedType) {
@@ -1493,19 +1498,14 @@ void OutOfProcessInstance::RotateCounterclockwise() {
   engine_->RotateCounterclockwise();
 }
 
-void OutOfProcessInstance::SetTwoUpView(bool enable_two_up_view) {
-  DCHECK(base::FeatureList::IsEnabled(features::kPDFTwoUpView));
-  engine_->SetTwoUpView(enable_two_up_view);
-}
-
 // static
 std::string OutOfProcessInstance::GetFileNameFromUrl(const std::string& url) {
   // Generate a file name. Unfortunately, MIME type can't be provided, since it
   // requires IO.
   base::string16 file_name = net::GetSuggestedFilename(
-      GURL(url), std::string() /* content_disposition */,
-      std::string() /* referrer_charset */, std::string() /* suggested_name */,
-      std::string() /* mime_type */, std::string() /* default_name */);
+      GURL(url), /*content_disposition=*/std::string(),
+      /*referrer_charset=*/std::string(), /*suggested_name=*/std::string(),
+      /*mime_type=*/std::string(), /*default_name=*/std::string());
   return base::UTF16ToUTF8(file_name);
 }
 
@@ -1517,6 +1517,17 @@ void OutOfProcessInstance::HandleBackgroundColorChangedMessage(
   }
   base::HexStringToUInt(dict.Get(pp::Var(kJSBackgroundColor)).AsString(),
                         &background_color_);
+}
+
+void OutOfProcessInstance::HandleDisplayAnnotations(
+    const pp::VarDictionary& dict) {
+  if (!dict.Get(pp::Var(kJSDisplayAnnotations)).is_bool()) {
+    NOTREACHED();
+    return;
+  }
+
+  engine_->DisplayAnnotations(
+      dict.Get(pp::Var(kJSDisplayAnnotations)).AsBool());
 }
 
 void OutOfProcessInstance::HandleGetNamedDestinationMessage(
@@ -1537,18 +1548,15 @@ void OutOfProcessInstance::HandleGetNamedDestinationMessage(
 
 void OutOfProcessInstance::HandleGetPasswordCompleteMessage(
     const pp::VarDictionary& dict) {
-  if (!dict.Get(pp::Var(kJSPassword)).is_string()) {
+  if (!dict.Get(pp::Var(kJSPassword)).is_string() || !password_callback_) {
     NOTREACHED();
     return;
   }
-  if (password_callback_) {
-    pp::CompletionCallbackWithOutput<pp::Var> callback = *password_callback_;
-    password_callback_.reset();
-    *callback.output() = dict.Get(pp::Var(kJSPassword)).pp_var();
-    callback.Run(PP_OK);
-  } else {
-    NOTREACHED();
-  }
+
+  pp::CompletionCallbackWithOutput<pp::Var> callback = *password_callback_;
+  password_callback_.reset();
+  *callback.output() = dict.Get(pp::Var(kJSPassword)).pp_var();
+  callback.Run(PP_OK);
 }
 
 void OutOfProcessInstance::HandleGetSelectedTextMessage() {
@@ -1631,16 +1639,10 @@ void OutOfProcessInstance::HandleResetPrintPreviewModeMessage(
   // case, the page index for |url| should be non-negative.
   bool is_previewing_pdf = IsPreviewingPDF(print_preview_page_count);
   int page_index = ExtractPrintPreviewPageIndex(url);
-  if (is_previewing_pdf) {
-    if (page_index != kCompletePDFIndex) {
-      NOTREACHED();
-      return;
-    }
-  } else {
-    if (page_index < 0) {
-      NOTREACHED();
-      return;
-    }
+  if ((is_previewing_pdf && page_index != kCompletePDFIndex) ||
+      (!is_previewing_pdf && page_index < 0)) {
+    NOTREACHED();
+    return;
   }
 
   print_preview_page_count_ = print_preview_page_count;
@@ -1653,9 +1655,20 @@ void OutOfProcessInstance::HandleResetPrintPreviewModeMessage(
   preview_engine_.reset();
   engine_ = PDFEngine::Create(this, false);
   engine_->SetGrayscale(dict.Get(pp::Var(kJSPrintPreviewGrayscale)).AsBool());
-  engine_->New(url_.c_str(), nullptr /* empty header */);
+  engine_->New(url_.c_str(), /*headers=*/nullptr);
 
   paint_manager_.InvalidateRect(pp::Rect(pp::Point(), plugin_size_));
+}
+
+void OutOfProcessInstance::HandleSetTwoUpViewMessage(
+    const pp::VarDictionary& dict) {
+  if (!base::FeatureList::IsEnabled(features::kPDFTwoUpView) ||
+      !dict.Get(pp::Var(kJSEnableTwoUpView)).is_bool()) {
+    NOTREACHED();
+    return;
+  }
+
+  engine_->SetTwoUpView(dict.Get(pp::Var(kJSEnableTwoUpView)).AsBool());
 }
 
 void OutOfProcessInstance::HandleViewportMessage(

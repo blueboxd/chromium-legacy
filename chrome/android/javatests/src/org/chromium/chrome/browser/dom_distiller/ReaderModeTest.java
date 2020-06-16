@@ -26,7 +26,6 @@ import static org.chromium.chrome.browser.dom_distiller.ReaderModeManager.DOM_DI
 
 import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 
 import androidx.annotation.NonNull;
 import androidx.test.espresso.Espresso;
@@ -34,6 +33,7 @@ import androidx.test.espresso.action.GeneralClickAction;
 import androidx.test.espresso.action.GeneralLocation;
 import androidx.test.espresso.action.Press;
 import androidx.test.espresso.action.Tap;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;

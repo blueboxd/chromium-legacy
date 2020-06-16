@@ -15,6 +15,7 @@ group("all_tests") {
     ":ios_chrome_eg2tests",
     ":ios_chrome_flaky_eg2tests_module",
     ":ios_chrome_integration_eg2tests_module",
+    ":ios_chrome_multitasking_eg2tests_module",
     ":ios_chrome_settings_eg2tests_module",
     ":ios_chrome_signin_eg2tests_module",
     ":ios_chrome_smoke_eg2tests_module",
@@ -24,6 +25,11 @@ group("all_tests") {
 }
 
 chrome_ios_eg2_test_app_host("ios_chrome_eg2tests") {
+}
+
+chrome_ios_eg2_test_app_host("ios_chrome_multitasking_eg2tests") {
+  deps = [ "//ios/chrome/app:multitasking_test_app_delegate" ]
+  eg_main_application_delegate = "MultitaskingTestApplicationDelegate"
 }
 
 chrome_ios_eg2_test("ios_chrome_autofill_automation_eg2tests_module") {
@@ -85,6 +91,21 @@ chrome_ios_eg2_test("ios_chrome_integration_eg2tests_module") {
     "//ios/chrome/browser/ui/integration_tests:eg2_tests",
   ]
   data_deps = [ ":ios_chrome_eg2tests" ]
+}
+
+chrome_ios_eg2_test("ios_chrome_multitasking_eg2tests_module") {
+  xcode_test_application_name = "ios_chrome_multitasking_eg2tests"
+
+  deps = [
+    ":ios_chrome_bookmarks_eg2tests_module_deps_group",
+    ":ios_chrome_integration_eg2tests_module_deps_group",
+    ":ios_chrome_settings_eg2tests_module_deps_group",
+    ":ios_chrome_signin_eg2tests_module_deps_group",
+    ":ios_chrome_smoke_eg2tests_module_deps_group",
+    ":ios_chrome_ui_eg2tests_module_deps_group",
+    ":ios_chrome_web_eg2tests_module_deps_group",
+  ]
+  data_deps = [ ":ios_chrome_multitasking_eg2tests" ]
 }
 
 chrome_ios_eg2_test("ios_chrome_smoke_eg2tests_module") {

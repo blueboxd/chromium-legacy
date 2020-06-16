@@ -19,6 +19,7 @@ class FrameWindowTreeHost : public aura::WindowTreeHostPlatform {
  public:
   // |web_contents| must to outlive |FrameWindowTreeHost|.
   FrameWindowTreeHost(fuchsia::ui::views::ViewToken view_token,
+                      scenic::ViewRefPair view_ref_pair,
                       content::WebContents* web_contents);
   ~FrameWindowTreeHost() final;
 

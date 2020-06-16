@@ -326,6 +326,10 @@ void AppsSection::AddPluginVmLoadTimeData(
       "showPluginVmCameraPermissions",
       base::FeatureList::IsEnabled(
           chromeos::features::kPluginVmShowCameraPermissions));
+  html_source->AddBoolean(
+      "showPluginVmMicrophonePermissions",
+      base::FeatureList::IsEnabled(
+          chromeos::features::kPluginVmShowMicrophonePermissions));
 }
 
 void AppsSection::UpdateAndroidSearchTags() {

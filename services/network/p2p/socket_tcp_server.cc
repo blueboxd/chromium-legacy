@@ -37,10 +37,12 @@ P2PSocketTcpServer::P2PSocketTcpServer(
 P2PSocketTcpServer::~P2PSocketTcpServer() = default;
 
 // TODO(guidou): Add support for port range.
-void P2PSocketTcpServer::Init(const net::IPEndPoint& local_address,
-                              uint16_t min_port,
-                              uint16_t max_port,
-                              const P2PHostAndIPEndPoint& remote_address) {
+void P2PSocketTcpServer::Init(
+    const net::IPEndPoint& local_address,
+    uint16_t min_port,
+    uint16_t max_port,
+    const P2PHostAndIPEndPoint& remote_address,
+    const net::NetworkIsolationKey& network_isolation_key) {
   int result = socket_->Listen(local_address, kListenBacklog);
   if (result < 0) {
     LOG(ERROR) << "Listen() failed: " << result;

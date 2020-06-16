@@ -524,13 +524,13 @@ TEST_F(CompositorFrameReportingControllerTest,
                                    args_3.interval, 0};
   reporting_controller_.DidPresentCompositorFrame(1, details);
 
-  // Frame for |args_2| was dropped waiting on the main-thread.
+  // Frames for |args_1| and |args_2| were dropped waiting on the main-thread.
   histogram_tester.ExpectBucketCount(
       "CompositorLatency.Type",
-      CompositorFrameReporter::FrameReportType::kDroppedFrame, 1);
+      CompositorFrameReporter::FrameReportType::kDroppedFrame, 2);
 
-  // Frames for |args_1| and |args_3| were presented, although |args_1| missed
-  // its deadline.
+  // Frames for |args_1| and |args_3| were presented with |args_3|, and |args_1|
+  // missed its deadline.
   histogram_tester.ExpectBucketCount(
       "CompositorLatency.Type",
       CompositorFrameReporter::FrameReportType::kNonDroppedFrame, 2);

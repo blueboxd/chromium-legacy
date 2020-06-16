@@ -58,7 +58,7 @@ ContentSetting SubresourceFilterContentSettingsManager::GetSitePermission(
                                           std::string());
 }
 
-void SubresourceFilterContentSettingsManager::WhitelistSite(const GURL& url) {
+void SubresourceFilterContentSettingsManager::AllowlistSite(const GURL& url) {
   settings_map_->SetContentSettingDefaultScope(
       url, GURL(), ContentSettingsType::ADS, std::string(),
       CONTENT_SETTING_ALLOW);

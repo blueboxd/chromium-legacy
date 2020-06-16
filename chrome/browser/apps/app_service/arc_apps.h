@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/arc_notification_manager_base.h"
-#include "ash/public/cpp/arc_notifications_host_initializer.h"
+#include "ash/public/cpp/message_center/arc_notification_manager_base.h"
+#include "ash/public/cpp/message_center/arc_notifications_host_initializer.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"

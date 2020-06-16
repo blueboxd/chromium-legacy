@@ -71,6 +71,7 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   self = [super init];
   if (self) {
     _customSpacingAfterImage = kStackViewSpacingAfterIllustration;
+    _dismissBarButtonSystemItem = UIBarButtonSystemItemDone;
   }
   return self;
 }
@@ -310,9 +311,9 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
 
 #pragma mark - Private
 
-// Handle taps on the done button.
-- (void)didTapDoneButton {
-  [self.actionHandler confirmationAlertDone];
+// Handle taps on the dismiss button.
+- (void)didTapDismissBarButton {
+  [self.actionHandler confirmationAlertDismissAction];
 }
 
 // Handle taps on the help button.
@@ -344,6 +345,12 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
                action:@selector(didTapHelpButton)];
     [regularHeightItems addObject:helpButton];
     [compactHeightItems addObject:helpButton];
+
+    if (self.helpButtonAccessibilityLabel) {
+      helpButton.isAccessibilityElement = YES;
+      helpButton.accessibilityLabel = self.helpButtonAccessibilityLabel;
+    }
+
     helpButton.accessibilityIdentifier =
         kConfirmationAlertMoreInfoAccessibilityIdentifier;
     // Set the help button as the left button item so it can be used as a
@@ -380,12 +387,12 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   [regularHeightItems addObject:spacer];
   [compactHeightItems addObject:spacer];
 
-  UIBarButtonItem* doneButton = [[UIBarButtonItem alloc]
-      initWithBarButtonSystemItem:UIBarButtonSystemItemDone
+  UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
+      initWithBarButtonSystemItem:self.dismissBarButtonSystemItem
                            target:self
-                           action:@selector(didTapDoneButton)];
-  [regularHeightItems addObject:doneButton];
-  [compactHeightItems addObject:doneButton];
+                           action:@selector(didTapDismissBarButton)];
+  [regularHeightItems addObject:dismissButton];
+  [compactHeightItems addObject:dismissButton];
 
   topToolbar.translatesAutoresizingMaskIntoConstraints = NO;
 

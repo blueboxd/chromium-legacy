@@ -28,7 +28,10 @@ class PowerMobile(perf_benchmark.PerfBenchmark):
     options = timeline_based_measurement.Options()
     options.config.enable_experimental_system_tracing = True
     options.config.system_trace_config.EnablePower()
-    options.SetTimelineBasedMetrics(['tbmv3:power_rails_metric'])
+    options.config.system_trace_config.EnableFtraceCpu()
+    options.config.system_trace_config.EnableFtraceSched()
+    options.SetTimelineBasedMetrics(
+        ['tbmv3:power_rails_metric', 'tbmv3:power_cpu_estimate'])
     return options
 
   @classmethod

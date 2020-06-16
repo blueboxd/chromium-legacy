@@ -4334,6 +4334,7 @@ class UVTokenAuthenticatorImplTest : public UVAuthenticatorImplTest {
   void SetUp() override {
     UVAuthenticatorImplTest::SetUp();
     device::VirtualCtap2Device::Config config;
+    config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
     config.internal_uv_support = true;
     config.uv_token_support = true;
     virtual_device_factory_->SetCtap2Config(config);
@@ -4393,6 +4394,7 @@ TEST_F(UVTokenAuthenticatorImplTest, GetAssertionUvFails) {
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
   device::VirtualCtap2Device::Config config;
+  config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
   config.internal_uv_support = true;
   config.uv_token_support = true;
   config.user_verification_succeeds = false;
@@ -4427,6 +4429,7 @@ TEST_F(UVTokenAuthenticatorImplTest, GetAssertionFallBackToPin) {
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
   device::VirtualCtap2Device::Config config;
+  config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
   config.internal_uv_support = true;
   config.uv_token_support = true;
   config.user_verification_succeeds = false;
@@ -4464,6 +4467,7 @@ TEST_F(UVTokenAuthenticatorImplTest, GetAssertionUvBlockedFallBackToPin) {
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
   device::VirtualCtap2Device::Config config;
+  config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
   config.internal_uv_support = true;
   config.uv_token_support = true;
   config.user_verification_succeeds = false;
@@ -4533,6 +4537,7 @@ TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialUvFails) {
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
   device::VirtualCtap2Device::Config config;
+  config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
   config.internal_uv_support = true;
   config.uv_token_support = true;
   config.user_verification_succeeds = false;
@@ -4568,6 +4573,7 @@ TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialFallBackToPin) {
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
   device::VirtualCtap2Device::Config config;
+  config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
   config.internal_uv_support = true;
   config.uv_token_support = true;
   config.user_verification_succeeds = false;
@@ -4606,6 +4612,7 @@ TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialUvBlockedFallBackToPin) {
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
   device::VirtualCtap2Device::Config config;
+  config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
   config.internal_uv_support = true;
   config.uv_token_support = true;
   config.user_verification_succeeds = false;

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace aura {
 class Window;
@@ -23,10 +24,6 @@ namespace ui {
 class Layer;
 }
 
-namespace views {
-class Widget;
-}
-
 namespace ash {
 
 enum class HighlighterGestureType;
@@ -35,9 +32,10 @@ enum class HighlighterGestureType;
 // the result of the selection.
 class HighlighterResultView : public views::View {
  public:
-  HighlighterResultView(aura::Window* root_window);
-
+  HighlighterResultView();
   ~HighlighterResultView() override;
+
+  static views::UniqueWidgetPtr Create(aura::Window* root_window);
 
   void Animate(const gfx::RectF& bounds,
                HighlighterGestureType gesture_type,
@@ -47,7 +45,6 @@ class HighlighterResultView : public views::View {
   void FadeIn(const base::TimeDelta& duration, base::OnceClosure done);
   void FadeOut(base::OnceClosure done);
 
-  std::unique_ptr<views::Widget> widget_;
   std::unique_ptr<ui::Layer> result_layer_;
   std::unique_ptr<base::OneShotTimer> animation_timer_;
 

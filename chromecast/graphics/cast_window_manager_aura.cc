@@ -213,21 +213,19 @@ void CastWindowManagerAura::Setup() {
   window_tree_host_ = std::make_unique<CastWindowTreeHostAura>(
       enable_input_, std::move(properties));
   window_tree_host_->InitHost();
-  aura::Window* tree_window = window_tree_host_->window();
-  tree_window->SetLayoutManager(new CastLayoutManager(this, tree_window));
+  aura::Window* root_window = window_tree_host_->window();
+  root_window->SetLayoutManager(new CastLayoutManager(this, root_window));
   window_tree_host_->SetRootTransform(GetPrimaryDisplayRotationTransform());
 
   // Allow seeing through to the hardware video plane:
   window_tree_host_->compositor()->SetBackgroundColor(SK_ColorTRANSPARENT);
 
   focus_client_ = std::make_unique<CastFocusClientAura>();
-  aura::client::SetFocusClient(tree_window, focus_client_.get());
-  wm::SetActivationClient(tree_window, focus_client_.get());
-  aura::client::SetWindowParentingClient(tree_window, this);
-  capture_client_.reset(new aura::client::DefaultCaptureClient(tree_window));
+  aura::client::SetFocusClient(root_window, focus_client_.get());
+  wm::SetActivationClient(root_window, focus_client_.get());
+  aura::client::SetWindowParentingClient(root_window, this);
+  capture_client_.reset(new aura::client::DefaultCaptureClient(root_window));
 
-  // TODO(seantopping): Is |root_window| different from |tree_window|?
-  aura::Window* root_window = tree_window->GetRootWindow();
   screen_position_client_ =
       std::make_unique<wm::DefaultScreenPositionClient>(root_window);
 

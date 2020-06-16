@@ -5,6 +5,7 @@
 #include "fuchsia/runners/cast/cast_component.h"
 
 #include <lib/fidl/cpp/binding.h>
+#include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <algorithm>
 #include <utility>
 
@@ -186,6 +187,16 @@ void CastComponent::CreateView(
     zx::eventpair view_token,
     fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
     fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services) {
+  scenic::ViewRefPair view_ref_pair = scenic::ViewRefPair::New();
+  CreateViewWithViewRef(std::move(view_token),
+                        std::move(view_ref_pair.control_ref),
+                        std::move(view_ref_pair.view_ref));
+}
+
+void CastComponent::CreateViewWithViewRef(
+    zx::eventpair view_token,
+    fuchsia::ui::views::ViewRefControl control_ref,
+    fuchsia::ui::views::ViewRef view_ref) {
   if (is_headless_) {
     // For headless CastComponents, |view_token| does not actually connect to a
     // Scenic View. It is merely used as a conduit for propagating termination
@@ -199,8 +210,8 @@ void CastComponent::CreateView(
     return;
   }
 
-  WebComponent::CreateView(std::move(view_token), std::move(incoming_services),
-                           std::move(outgoing_services));
+  WebComponent::CreateViewWithViewRef(
+      std::move(view_token), std::move(control_ref), std::move(view_ref));
 }
 
 void CastComponent::OnZxHandleSignalled(zx_handle_t handle,

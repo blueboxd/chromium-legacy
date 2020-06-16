@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.device_dialog;
 
 import android.app.Dialog;
-import android.support.test.filters.LargeTest;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
+
+import androidx.test.filters.LargeTest;
 
 import org.junit.Assert;
 import org.junit.Before;

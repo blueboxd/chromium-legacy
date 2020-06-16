@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Fazer login no site</translation>
 <translation id="1509960214886564027">Os recursos de muitos sites podem apresentar falhas</translation>
 <translation id="152234381334907219">Nunca salvas</translation>
+<translation id="1535268707340844072">Suas configurações atuais podem fazer com que alguns sites não funcionem corretamente. Para gerenciar os cookies de todos os sites, acesse <ph name="BEGIN_LINK" />Configurações de cookies<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Endereço 1</translation>
 <translation id="1545749641540134597">Ler código QR</translation>
 <translation id="1552525382687785070">Sincronização desativada pelo administrador</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Ativado há <ph name="DAYS" /> dias</translation>
 <translation id="2074131957428911366">Nas <ph name="BEGIN_LINK" />configurações<ph name="END_LINK" />, é possível escolher a qualquer momento o que é sincronizado.</translation>
 <translation id="2079545284768500474">Desfazer</translation>
+<translation id="2081417079511601293">Bloquear de terceiros na navegação anônima</translation>
 <translation id="209018056901015185">Versão para computador</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens movidos</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">Abrir em uma nova guia</translation>
 <translation id="3037605927509011580">Ah, não!</translation>
 <translation id="3112556859945124369">Marcar...</translation>
+<translation id="3131206671572504478">Bloquear tudo</translation>
 <translation id="3153862085237805241">Salvar cartão</translation>
 <translation id="3157684681743766797">Marcar tudo...</translation>
 <translation id="3161291298470460782">Essa ação desconectará sua conta, desativará a sincronização e apagará todos os dados do Chrome neste dispositivo. Os dados sincronizados permanecerão na sua Conta do Google.</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">Toque para mudar o idioma.</translation>
 <translation id="441868831736628555">Aviso de privacidade</translation>
 <translation id="4454246407045105932">Adicionar idioma</translation>
+<translation id="4469418912670346607">Continuar a configuração</translation>
 <translation id="4476574785019001431">Configurações</translation>
 <translation id="4496373720959965247">Adicionar guias e alternar entre páginas</translation>
 <translation id="4508750114462689118">Fechar promoção de login</translation>
@@ -300,6 +304,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="4805759445554688327">Número de cartão inválido</translation>
 <translation id="4818522717893377262">Adicionar idioma…</translation>
 <translation id="481968316161811770">Dados do site e arquivos "cookies"</translation>
+<translation id="4826218269716039351">Bloquear de terceiros</translation>
 <translation id="4833786495304741580">Envia automaticamente estatísticas de uso e relatórios de erros para o Google.</translation>
 <translation id="4840495572919996524">Seus favoritos, histórico, senhas e outras configurações não serão mais sincronizados com sua Conta do Google.</translation>
 <translation id="4854345657858711387">Defina uma senha</translation>
@@ -345,6 +350,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="54401264925851789">Informações de segurança</translation>
 <translation id="5443952882982198570">Cartões de crédito</translation>
 <translation id="5457907402803865181">Erro na sincronização das senhas.</translation>
+<translation id="5489208564673669003">Para gerenciar os cookies de todos os sites, acesse <ph name="BEGIN_LINK" />Configurações de cookies<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Sair e limpar dados deste dispositivo</translation>
 <translation id="5525269841082836315">Criar senha</translation>
 <translation id="5548760955356983418">A "Transição" permite que você comece a navegar por um website neste dispositivo e, em seguida, continue facilmente no seu Mac. O website aberto aparecerá no Dock do Mac.
@@ -432,6 +438,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6418346271604475326">Preparando PDF</translation>
 <translation id="6426067060178468363">Permitir cookies</translation>
 <translation id="6434591244308415567">Ocorreu um erro. Tente novamente mais tarde.</translation>
+<translation id="6439338047467462846">Permitir todos</translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="6445981559479772097">Mensagem enviada.</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -439,6 +446,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6476800141292307438">Tradução da página para <ph name="LANGUAGE" />. Opções disponíveis na parte inferior da tela.</translation>
 <translation id="648164694371393720">Erro de autenticação</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens excluídos</translation>
+<translation id="651505212789431520">Cancelar sincronização? É possível ativar a sincronização a qualquer momento nas configurações.</translation>
 <translation id="6561262006871132942">Aumentar zoom</translation>
 <translation id="6610002944194042868">Opções de tradução</translation>
 <translation id="6628106477656132239">Data de validade inválida</translation>
@@ -462,6 +470,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="681368974849482173">Item criado</translation>
 <translation id="6831043979455480757">Traduzir</translation>
 <translation id="6851516051005285358">Solicitar site para computador</translation>
+<translation id="6856384753476268833">Gerenciado pela sua organização.</translation>
 <translation id="6858855187367714033">Lido</translation>
 <translation id="6859944681507688231">Para ler um código QR ou cartão de crédito, ative a câmera nas configurações.</translation>
 <translation id="6873263987691478642">Visualização dividida</translation>
@@ -540,6 +549,7 @@ Como a conta é gerenciada por <ph name="HOSTED_DOMAIN" />, seus dados do Chrome
 <translation id="7856733331829174190">Falha no download</translation>
 <translation id="7859704718976024901">Histórico de navegação</translation>
 <translation id="7887198238286927132">Para proteger sua privacidade, o Chrome não preencherá esse campo automaticamente.</translation>
+<translation id="791251013315685175">Gerenciado por <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Sua lista de leitura está disponível off-line. Para adicionar uma página à lista, toque em <ph name="SHARE_OPENING_ICON" /> e depois em <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportar senhas…</translation>

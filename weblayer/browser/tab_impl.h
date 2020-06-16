@@ -26,6 +26,10 @@
 #include "weblayer/browser/browser_controls_navigation_state_handler_delegate.h"
 #endif
 
+namespace js_injection {
+class JsCommunicationHost;
+}
+
 namespace autofill {
 class AutofillProvider;
 }  // namespace autofill
@@ -197,6 +201,12 @@ class TabImpl : public Tab,
   const std::string& GetGuid() override;
   void SetData(const std::map<std::string, std::string>& data) override;
   const std::map<std::string, std::string>& GetData() override;
+  base::string16 AddWebMessageHostFactory(
+      std::unique_ptr<WebMessageHostFactory> factory,
+      const base::string16& js_object_name,
+      const std::vector<std::string>& allowed_origin_rules) override;
+  void RemoveWebMessageHostFactory(
+      const base::string16& js_object_name) override;
 #if !defined(OS_ANDROID)
   void AttachToView(views::WebView* web_view) override;
 #endif
@@ -357,6 +367,8 @@ class TabImpl : public Tab,
   base::string16 title_;
 
   HttpAuthHandlerImpl* auth_handler_ = nullptr;
+
+  std::unique_ptr<js_injection::JsCommunicationHost> js_communication_host_;
 
   base::WeakPtrFactory<TabImpl> weak_ptr_factory_{this};
 

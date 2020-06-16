@@ -27,9 +27,14 @@ cbor::Value::ArrayValue ToArrayValue(const Container& container) {
 
 AuthenticatorGetInfoResponse::AuthenticatorGetInfoResponse(
     base::flat_set<ProtocolVersion> in_versions,
+    base::flat_set<Ctap2Version> in_ctap2_versions,
     base::span<const uint8_t, kAaguidLength> in_aaguid)
     : versions(std::move(in_versions)),
-      aaguid(fido_parsing_utils::Materialize(in_aaguid)) {}
+      ctap2_versions(std::move(in_ctap2_versions)),
+      aaguid(fido_parsing_utils::Materialize(in_aaguid)) {
+  DCHECK_NE(base::Contains(versions, ProtocolVersion::kCtap2),
+            ctap2_versions.empty());
+}
 
 AuthenticatorGetInfoResponse::AuthenticatorGetInfoResponse(
     AuthenticatorGetInfoResponse&& that) = default;
@@ -44,8 +49,27 @@ std::vector<uint8_t> AuthenticatorGetInfoResponse::EncodeToCBOR(
     const AuthenticatorGetInfoResponse& response) {
   cbor::Value::ArrayValue version_array;
   for (const auto& version : response.versions) {
-    version_array.emplace_back(
-        version == ProtocolVersion::kCtap2 ? kCtap2Version : kU2fVersion);
+    switch (version) {
+      case ProtocolVersion::kCtap2:
+        for (const auto& ctap2_version : response.ctap2_versions) {
+          switch (ctap2_version) {
+            case Ctap2Version::kCtap2_0:
+              version_array.emplace_back(kCtap2Version);
+              break;
+            case Ctap2Version::kCtap2_1:
+              version_array.emplace_back(kCtap2_1Version);
+              break;
+            case Ctap2Version::kUnknown:
+              NOTREACHED();
+          }
+        }
+        break;
+      case ProtocolVersion::kU2f:
+        version_array.emplace_back(kU2fVersion);
+        break;
+      case ProtocolVersion::kUnknown:
+        NOTREACHED();
+    }
   }
   cbor::Value::MapValue device_info_map;
   device_info_map.emplace(1, std::move(version_array));

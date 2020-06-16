@@ -31,6 +31,8 @@ using ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus;
 using ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus_Connected;
 using ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus_Disconnected;
 using ABI::Windows::Devices::Bluetooth::BluetoothLEDevice;
+using ABI::Windows::Devices::Bluetooth::IBluetoothDeviceId;
+using ABI::Windows::Devices::Bluetooth::IBluetoothLEAppearance;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattCommunicationStatus;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
@@ -47,14 +49,38 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattDeviceServicesResult;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattDeviceService;
-using ABI::Windows::Devices::Bluetooth::IBluetoothLEAppearance;
 using ABI::Windows::Devices::Enumeration::DeviceAccessStatus;
 using ABI::Windows::Devices::Enumeration::IDeviceAccessInformation;
 using ABI::Windows::Devices::Enumeration::IDeviceInformation;
-using ABI::Windows::Foundation::Collections::IVectorView;
 using ABI::Windows::Foundation::IAsyncOperation;
 using ABI::Windows::Foundation::ITypedEventHandler;
+using ABI::Windows::Foundation::Collections::IVectorView;
 using Microsoft::WRL::Make;
+
+class FakeBluetoothDeviceId
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<
+              Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
+          IBluetoothDeviceId> {
+ public:
+  FakeBluetoothDeviceId() = default;
+  FakeBluetoothDeviceId(const FakeBluetoothDeviceId&) = delete;
+  FakeBluetoothDeviceId& operator=(const FakeBluetoothDeviceId&) = delete;
+  ~FakeBluetoothDeviceId() override {}
+
+  // IBluetoothDeviceId:
+  IFACEMETHODIMP get_Id(HSTRING* value) override {
+    *value = base::win::ScopedHString::Create(L"FakeBluetoothLEDeviceWinrt")
+                 .release();
+    return S_OK;
+  }
+  IFACEMETHODIMP get_IsClassicDevice(::boolean* value) override {
+    return E_NOTIMPL;
+  }
+  IFACEMETHODIMP get_IsLowEnergyDevice(::boolean* value) override {
+    return E_NOTIMPL;
+  }
+};
 
 }  // namespace
 
@@ -65,7 +91,9 @@ FakeBluetoothLEDeviceWinrt::FakeBluetoothLEDeviceWinrt(
 FakeBluetoothLEDeviceWinrt::~FakeBluetoothLEDeviceWinrt() = default;
 
 HRESULT FakeBluetoothLEDeviceWinrt::get_DeviceId(HSTRING* value) {
-  return E_NOTIMPL;
+  *value =
+      base::win::ScopedHString::Create(L"FakeBluetoothLEDeviceWinrt").release();
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::get_Name(HSTRING* value) {
@@ -167,7 +195,10 @@ HRESULT FakeBluetoothLEDeviceWinrt::GetGattServicesAsync(
   gatt_services_callback_ = async_op->callback();
   *operation = async_op.Detach();
   service_uuid_.reset();
-  bluetooth_test_winrt_->OnFakeBluetoothDeviceConnectGattCalled();
+  if (!bluetooth_test_winrt_->UsesNewGattSessionHandling()) {
+    bluetooth_test_winrt_->OnFakeBluetoothDeviceConnectGattAttempt();
+  }
+  bluetooth_test_winrt_->OnFakeBluetoothDeviceGattServiceDiscoveryAttempt();
   return S_OK;
 }
 
@@ -184,7 +215,10 @@ HRESULT FakeBluetoothLEDeviceWinrt::GetGattServicesForUuidAsync(
   gatt_services_callback_ = async_op->callback();
   service_uuid_ = service_uuid;
   *operation = async_op.Detach();
-  bluetooth_test_winrt_->OnFakeBluetoothDeviceConnectGattCalled();
+  if (!bluetooth_test_winrt_->UsesNewGattSessionHandling()) {
+    bluetooth_test_winrt_->OnFakeBluetoothDeviceConnectGattAttempt();
+  }
+  bluetooth_test_winrt_->OnFakeBluetoothDeviceGattServiceDiscoveryAttempt();
   return S_OK;
 }
 
@@ -193,6 +227,11 @@ HRESULT FakeBluetoothLEDeviceWinrt::GetGattServicesForUuidWithCacheModeAsync(
     BluetoothCacheMode cache_mode,
     IAsyncOperation<GattDeviceServicesResult*>** operation) {
   return E_NOTIMPL;
+}
+
+HRESULT FakeBluetoothLEDeviceWinrt::get_BluetoothDeviceId(
+    ABI::Windows::Devices::Bluetooth::IBluetoothDeviceId** value) {
+  return Make<FakeBluetoothDeviceId>().CopyTo(value);
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::Close() {
@@ -249,7 +288,11 @@ void FakeBluetoothLEDeviceWinrt ::SimulateGattConnectionError(
 
 void FakeBluetoothLEDeviceWinrt::SimulateGattDisconnection() {
   if (status_ == BluetoothConnectionStatus_Disconnected) {
-    DCHECK(gatt_services_callback_);
+    if (!gatt_services_callback_) {
+      DCHECK(bluetooth_test_winrt_->UsesNewGattSessionHandling());
+      return;
+    }
+
     std::move(gatt_services_callback_)
         .Run(Make<FakeGattDeviceServicesResultWinrt>(
             GattCommunicationStatus_Unreachable));

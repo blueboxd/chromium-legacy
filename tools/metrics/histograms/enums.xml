@@ -12197,8 +12197,15 @@ Called by update_net_error_codes.py.-->
 
 <enum name="CpuTimeMetricsThreadType">
   <summary>Thread types used for CPU time metric breakdowns.</summary>
-  <int value="0" label="UnattributedThread"/>
-  <int value="1" label="OtherThread"/>
+  <int value="0" label="UnattributedThread">
+    CPU time consumed by the process that could not be attributed to a specific
+    thread.
+  </int>
+  <int value="1" label="OtherThread">
+    Thread whose name was not known to the instrumentation, e.g. a new/unknown
+    type of thread or a Java thread not registered with
+    base::ThreadIdNameManager.
+  </int>
   <int value="2" label="MainThread"/>
   <int value="3" label="IOThread"/>
   <int value="4" label="ThreadPoolBackgroundWorkerThread"/>
@@ -36102,6 +36109,11 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Empty URL"/>
 </enum>
 
+<enum name="IOSActivityScenario">
+  <int value="0" label="Tab Share Button"/>
+  <int value="1" label="QR Code Image"/>
+</enum>
+
 <enum name="IOSContentSizeCategory">
   <int value="0" label="Unspecified"/>
   <int value="1" label="ExtraSmall"/>
@@ -36163,6 +36175,12 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Single App URL, handled"/>
   <int value="2" label="App Bundle URL, handled"/>
   <int value="3" label="App Bundle URL, not handled"/>
+</enum>
+
+<enum name="IOSJavascriptContentBlockType">
+  <int value="0" label="Cookie"/>
+  <int value="1" label="Local Storage"/>
+  <int value="2" label="Session Storage"/>
 </enum>
 
 <enum name="IOSJavaScriptDialogDismissalCause">
@@ -36234,6 +36252,26 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="Open URL"/>
   <int value="6" label="Search Text"/>
   <int value="7" label="Search Image"/>
+</enum>
+
+<enum name="IOSShareAction">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Cancel"/>
+  <int value="2" label="Add/Edit Bookmark"/>
+  <int value="3" label="Copy to Clipboard"/>
+  <int value="4" label="Save Image"/>
+  <int value="5" label="Find in Page"/>
+  <int value="6" label="Print"/>
+  <int value="7" label="Add to Reading List"/>
+  <int value="8" label="Mail"/>
+  <int value="9" label="Request Desktop/Mobile Site"/>
+  <int value="10" label="Send Tab To Self"/>
+  <int value="11" label="Create QR Code"/>
+  <int value="12" label="Send to iMessage"/>
+  <int value="13" label="Unknown Google App"/>
+  <int value="14" label="Native Social App"/>
+  <int value="15" label="Third-party Messaging App"/>
+  <int value="16" label="Third-party Content App"/>
 </enum>
 
 <enum name="IOSShareExtensionReceivedEntrySource">
@@ -38860,6 +38898,7 @@ from previous Chrome versions.
   <int value="-1998927516" label="enable-md-settings"/>
   <int value="-1996233283"
       label="OmniboxGroupSuggestionsBySearchVsUrl:enabled"/>
+  <int value="-1996087238" label="kAutofillEnableOffersInDownstream:enabled"/>
   <int value="-1993730028" label="CrostiniPortForwarding:enabled"/>
   <int value="-1990614981" label="StoragePressureUI:disabled"/>
   <int value="-1989747818" label="TabStripKeyboardFocus:disabled"/>
@@ -39700,6 +39739,7 @@ from previous Chrome versions.
   <int value="-1126217973" label="IdleTimeSpellChecking:disabled"/>
   <int value="-1125840399" label="ViewsBrowserWindows:enabled"/>
   <int value="-1125133283" label="disable-threaded-scrolling"/>
+  <int value="-1122899696" label="PluginVmShowMicrophonePermissions:disabled"/>
   <int value="-1122853453" label="LazyImageLoading:enabled"/>
   <int value="-1122458028" label="UnifiedMediaView:enabled"/>
   <int value="-1121931029" label="DownloadsForeground:enabled"/>
@@ -40654,6 +40694,7 @@ from previous Chrome versions.
   <int value="-41672681" label="WebUITabStripDemoOptions:disabled"/>
   <int value="-40935502" label="ContextualSuggestionsSlimPeekUI:enabled"/>
   <int value="-36503306" label="HomepageLocationPolicy:enabled"/>
+  <int value="-36234530" label="PluginVmShowMicrophonePermissions:enabled"/>
   <int value="-35388407" label="AshNewSystemMenu:disabled"/>
   <int value="-31444029" label="MediaInspectorLogging:disabled"/>
   <int value="-30966385" label="enable-hardware-overlays"/>
@@ -41703,6 +41744,7 @@ from previous Chrome versions.
   <int value="1164377197" label="SwipingFromLeftEdgeToGoBack:enabled"/>
   <int value="1164460660" label="AutofillEnableVirtualCard:enabled"/>
   <int value="1165682330" label="AutofillSaveAndFillVPA:disabled"/>
+  <int value="1165828757" label="kAutofillEnableOffersInDownstream:disabled"/>
   <int value="1166169237" label="disable-delay-agnostic-aec"/>
   <int value="1166789664" label="SyncPseudoUSSAppList:disabled"/>
   <int value="1166897718" label="TextSuggestionsTouchBar:disabled"/>

@@ -14,11 +14,15 @@ You can run web tests using `run_web_tests.py` (in
 `src/third_party/blink/tools`).
 
 ```bash
-python third_party/blink/tools/run_web_tests.py -t <build directory> storage/indexeddb
+third_party/blink/tools/run_web_tests.py -t <build directory> storage/indexeddb
 ```
 To see a complete list of arguments supported, run with `--help`.
 
-***promo
+*** promo
+Windows users need to use `third_party/blink/tools/run_web_tests.bat` instead.
+***
+
+*** promo
 You can add `<path>/third_party/blink/tools` into `PATH` so that you can
 run it from anywhere without the full path.
 ***

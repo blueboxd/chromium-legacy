@@ -71,17 +71,17 @@ void MetricsLogStore::LoadPersistedUnsentLogs() {
   unsent_logs_loaded_ = true;
 }
 
-void MetricsLogStore::StoreLog(const std::string& log_data,
-                               MetricsLog::LogType log_type) {
+void MetricsLogStore::StoreLog(
+    const std::string& log_data,
+    MetricsLog::LogType log_type,
+    base::Optional<base::HistogramBase::Count> samples_count) {
   switch (log_type) {
     case MetricsLog::INITIAL_STABILITY_LOG:
-      // TODO(crbug.com/1076564): Pass the log's sample count.
-      initial_log_queue_.StoreLog(log_data, base::nullopt);
+      initial_log_queue_.StoreLog(log_data, samples_count);
       break;
     case MetricsLog::ONGOING_LOG:
     case MetricsLog::INDEPENDENT_LOG:
-      // TODO(crbug.com/1076564): Pass the log's sample count.
-      ongoing_log_queue_.StoreLog(log_data, base::nullopt);
+      ongoing_log_queue_.StoreLog(log_data, samples_count);
       break;
   }
 }

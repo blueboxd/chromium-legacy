@@ -284,6 +284,11 @@ const base::Feature kParentalControlsSettings{
 const base::Feature kPluginVmShowCameraPermissions{
     "PluginVmShowCameraPermissions", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether the microphone permissions should be shown in the Plugin
+// VM app settings.
+const base::Feature kPluginVmShowMicrophonePermissions{
+    "PluginVmShowMicrophonePermissions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to show printer statuses.
 const base::Feature kPrinterStatus{"PrinterStatus",
                                    base::FEATURE_DISABLED_BY_DEFAULT};

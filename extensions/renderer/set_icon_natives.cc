@@ -15,9 +15,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/public/common/common_param_traits.h"
 #include "extensions/renderer/script_context.h"
+#include "gin/data_object_builder.h"
 #include "ipc/ipc_message_utils.h"
 #include "third_party/blink/public/web/web_array_buffer_converter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+
+// TODO(devlin): Looks like there are lots of opportunities to use gin helpers
+// like gin::Dictionary and gin::DataObjectBuilder here.
 
 namespace {
 
@@ -202,28 +206,42 @@ void SetIconNatives::SetIconCommon(
   CHECK_EQ(1, args.Length());
   CHECK(args[0]->IsObject());
   v8::Local<v8::Context> v8_context = context()->v8_context();
+  v8::Isolate* isolate = args.GetIsolate();
   v8::Local<v8::Object> details = args[0].As<v8::Object>();
-  v8::Local<v8::Object> bitmap_set_value(v8::Object::New(args.GetIsolate()));
+  v8::Local<v8::Object> bitmap_set_value(v8::Object::New(isolate));
+
+  auto set_null_prototype = [v8_context, isolate](v8::Local<v8::Object> obj) {
+    // Avoid any pesky Object.prototype manipulation.
+    bool succeeded =
+        obj->SetPrototype(v8_context, v8::Null(isolate)).ToChecked();
+    CHECK(succeeded);
+  };
+  set_null_prototype(bitmap_set_value);
+
   if (!ConvertImageDataSetToBitmapValueSet(details, &bitmap_set_value))
     return;
 
-  v8::Local<v8::Object> dict(v8::Object::New(args.GetIsolate()));
-  dict->Set(v8_context,
-            v8::String::NewFromUtf8(args.GetIsolate(), "imageData",
-                                    v8::NewStringType::kInternalized)
-                .ToLocalChecked(),
-            bitmap_set_value)
-      .FromMaybe(false);
-  v8::Local<v8::String> tabId =
-      v8::String::NewFromUtf8(args.GetIsolate(), "tabId",
+  gin::DataObjectBuilder dict_builder(isolate);
+  dict_builder.Set("imageData", bitmap_set_value);
+
+  v8::Local<v8::String> tab_id_key =
+      v8::String::NewFromUtf8(isolate, "tabId",
                               v8::NewStringType::kInternalized)
           .ToLocalChecked();
-  bool has_tabid = false;
-  if (details->Has(v8_context, tabId).To(&has_tabid) && has_tabid) {
-    dict->Set(v8_context, tabId,
-              details->Get(v8_context, tabId).ToLocalChecked())
-        .FromMaybe(false);
+  bool has_tab_id = false;
+  if (!details->HasOwnProperty(v8_context, tab_id_key).To(&has_tab_id))
+    return;  // HasOwnProperty() threw - bail.
+
+  if (has_tab_id) {
+    v8::Local<v8::Value> tab_id;
+    if (!details->Get(v8_context, tab_id_key).ToLocal(&tab_id)) {
+      return;  // Get() threw - bail.
+    }
+    dict_builder.Set("tabId", tab_id);
   }
+  v8::Local<v8::Object> dict = dict_builder.Build();
+  set_null_prototype(dict);
+
   args.GetReturnValue().Set(dict);
 }
 

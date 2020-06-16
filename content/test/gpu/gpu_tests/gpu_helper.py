@@ -12,7 +12,9 @@ EXPECTATIONS_DRIVER_TAGS = frozenset([
     'intel_lt_25.20.100.6577',
     'intel_lt_26.20.100.7000',
     'intel_lt_26.20.100.7323',
-    'mesa_eq_18.0.5',
+    'intel_lt_26.20.100.7870',
+    'intel_lt_26.20.100.8141',
+    'mesa_lt_19.1',
     'mesa_lt_19.1.2',
 ])
 

@@ -74,7 +74,8 @@ class BackForwardCacheMetrics
     kServiceWorkerClaim = 30,
     kIgnoreEventAndEvict = 31,
     kHaveInnerContents = 32,
-    kMaxValue = kHaveInnerContents,
+    kTimeoutPuttingInCache = 33,
+    kMaxValue = kTimeoutPuttingInCache,
   };
 
   using NotRestoredReasons =

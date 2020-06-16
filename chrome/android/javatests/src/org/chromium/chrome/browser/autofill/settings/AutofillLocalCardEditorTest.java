@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.autofill.settings;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.os.Bundle;
-import android.support.test.filters.MediumTest;
 import android.view.View;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

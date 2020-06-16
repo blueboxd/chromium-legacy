@@ -462,6 +462,7 @@
 <translation id="681368974849482173">Сохранено</translation>
 <translation id="6831043979455480757">Перевести</translation>
 <translation id="6851516051005285358">Версия для ПК</translation>
+<translation id="6856384753476268833">Управляется вашей организацией.</translation>
 <translation id="6858855187367714033">Просканировано</translation>
 <translation id="6859944681507688231">Чтобы сканировать QR-код или банковскую карту, разрешите приложению доступ к камере.</translation>
 <translation id="6873263987691478642">Режим Split View</translation>
@@ -540,6 +541,7 @@
 <translation id="7856733331829174190">Не удалось скачать файл</translation>
 <translation id="7859704718976024901">История просмотра веб-страниц</translation>
 <translation id="7887198238286927132">Чтобы обеспечить конфиденциальность ваших данных, Chrome не использует автозаполнение для этого поля.</translation>
+<translation id="791251013315685175">Устройством управляет компания "<ph name="COMPANY" />".</translation>
 <translation id="7918293828610777738">Список для чтения доступен без подключения к Интернету. Чтобы добавить в него страницу, нажмите <ph name="SHARE_OPENING_ICON" />, а затем –<ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Экспорт паролей...</translation>

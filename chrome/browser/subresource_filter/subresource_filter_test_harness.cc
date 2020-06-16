@@ -149,7 +149,7 @@ SubresourceFilterTestHarness::CreateAndNavigateDisallowedSubframe(
 
 void SubresourceFilterTestHarness::ConfigureAsSubresourceFilterOnlyURL(
     const GURL& url) {
-  fake_safe_browsing_database_->AddBlacklistedUrl(
+  fake_safe_browsing_database_->AddBlocklistedUrl(
       url, safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER);
 }
 
@@ -157,8 +157,8 @@ ChromeSubresourceFilterClient* SubresourceFilterTestHarness::GetClient() {
   return ChromeSubresourceFilterClient::FromWebContents(web_contents());
 }
 
-void SubresourceFilterTestHarness::RemoveURLFromBlacklist(const GURL& url) {
-  fake_safe_browsing_database_->RemoveBlacklistedUrl(url);
+void SubresourceFilterTestHarness::RemoveURLFromBlocklist(const GURL& url) {
+  fake_safe_browsing_database_->RemoveBlocklistedUrl(url);
 }
 
 SubresourceFilterContentSettingsManager*

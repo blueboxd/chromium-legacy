@@ -186,6 +186,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::RestartInternal() {
   DCHECK_EQ(info_->url, request_.url)
       << "UpdateRequestInfo must have been called first";
+  is_header_client_receiver_paused_ = false;
   // If the header client will be used, we start the request immediately, and
   // OnBeforeSendHeaders and OnSendHeaders will be handled there. Otherwise,
   // send these events before the request starts.
@@ -229,8 +230,10 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::RestartInternal() {
 
     // Pause the header client, since we want to wait until OnBeforeRequest has
     // finished before processing any future events.
-    if (header_client_receiver_.is_bound())
+    if (header_client_receiver_.is_bound()) {
       header_client_receiver_.Pause();
+      is_header_client_receiver_paused_ = true;
+    }
     return;
   }
   DCHECK_EQ(net::OK, result);
@@ -422,6 +425,8 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnLoaderCreated(
   header_client_receiver_.reset();
 
   header_client_receiver_.Bind(std::move(receiver));
+  if (is_header_client_receiver_paused_)
+    header_client_receiver_.Pause();
   if (for_cors_preflight_) {
     // In this case we don't have |target_loader_| and
     // |proxied_client_receiver_|, and |receiver| is the only connection to the
@@ -609,8 +614,10 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
   if (proxied_client_receiver_.is_bound())
     proxied_client_receiver_.Resume();
 
-  if (header_client_receiver_.is_bound())
+  if (header_client_receiver_.is_bound()) {
     header_client_receiver_.Resume();
+    is_header_client_receiver_paused_ = false;
+  }
 
   if (for_cors_preflight_) {
     // For CORS preflight requests, we have already started the request in

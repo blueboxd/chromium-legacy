@@ -26,7 +26,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/scoped_bstr.h"
-#include "chrome/updater/server/win/updater_idl.h"
+#include "chrome/updater/app/server/win/updater_idl.h"
 
 namespace {
 

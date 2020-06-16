@@ -76,7 +76,7 @@ using password_manager::metrics_util::LogLeakDialogTypeAndDismissalReason;
 
 #pragma mark - ConfirmationAlertActionHandler
 
-- (void)confirmationAlertDone {
+- (void)confirmationAlertDismissAction {
   self.dismissReason = LeakDialogDismissalReason::kClickedOk;
   [self.presenter stop];
 }

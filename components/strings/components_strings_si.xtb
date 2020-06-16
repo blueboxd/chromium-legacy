@@ -81,6 +81,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />ඔබේ කුකි හිස් කරමින්<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">ඔබේ සුරක්‍ෂිත DNS සැකසුම් පරීක්‍ෂා කරන්න</translation>
 <translation id="1307966114820526988">අත් හරින ලද විශේෂාංග</translation>
+<translation id="1310581832770023220">මෙම පෝරමය තුළ ඇති දත්ත අනාරක්‍ෂිත සම්බන්ධතාවක් හරහා යවනු ලැබේ</translation>
 <translation id="131405271941274527"><ph name="URL" /> හට ඔබ NFC උපාංගයක ඔබේ දුරකථනය තට්ටු කරන විට තතු යැවීමට සහ ලැබීමට අවශ්‍යයි</translation>
 <translation id="1314509827145471431">දකුණ බැඳීම</translation>
 <translation id="1320233736580025032">Prc1 (ලියුම් කවරය)</translation>
@@ -1440,6 +1441,7 @@
 <translation id="7138472120740807366">බෙදා හැරීමේ ක්‍රමය</translation>
 <translation id="7139724024395191329">එමීර් රාජ්‍ය</translation>
 <translation id="714064300541049402">පැත්ත 2 රූප X වැඩ මුරය</translation>
+<translation id="7147693119324090759">කෙසේ වූවත් ඉදිරිපත් කරන්න</translation>
 <translation id="7152423860607593928">Number-14 (ලියුම් කවරය)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> සහ තව <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> සහ තව <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> සහ තව <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">ලැවැන්ඩර්</translation>
@@ -1516,6 +1518,7 @@
 <translation id="7416351320495623771">මුරපද කළමනාකරණය කරන්න...</translation>
 <translation id="7419106976560586862">පැතිකඩ මඟ</translation>
 <translation id="7437289804838430631">සම්බන්ධතා තතු එක් කරන්න</translation>
+<translation id="743897106051685947">මුල්</translation>
 <translation id="7438976808740265764">දෙසැම්බර් 2020 ට පසුව තවදුරටත් Flash Player සඳහා සහය දක්වනු නොලැබේ.</translation>
 <translation id="7440140511386898319">නොබැඳිව සිටියදී ගවේශනය කරන්න</translation>
 <translation id="7441627299479586546">වැරදි ප්‍රතිපත්ති මාතෘකාව</translation>
@@ -1527,6 +1530,7 @@
 <translation id="7473891865547856676">එපා ස්තූතියි</translation>
 <translation id="7481312909269577407">ඉදිරියට යන්න</translation>
 <translation id="7485870689360869515">දත්ත කිසිවක් හමු නොවිනි</translation>
+<translation id="7488762544858401571">සංස්කරණ කළා</translation>
 <translation id="7495290002932347110">අඩවියක හෝ යෙදුමක සිදු වූ දත්ත කඩ කිරීමක් ඔබේ මුරපදය අනාවරණය කර ඇත. Chrome දැන් <ph name="ORIGIN" /> මත ඔබේ සුරැකි මුරපද පරීක්ෂා කිරීම සහ ඔබේ මුරපදය වෙනස් කිරීම නිර්දේශ කරයි.</translation>
 <translation id="7498234416455752244">දිගටම සංස්කරණ කරන්න</translation>
 <translation id="7503664977220660814">ඔබ මේ දැන් වංචනික අඩවියක ඔබේ මුරපදය ඇතුළු කළා. Chromium <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, සහ ඔබ දැනට මෙම මුරපදය භාවිත කරන වෙනත් වෙබ් අඩවි සඳහා ඔබේ සුරැකි මුරපද පරීක්‍ෂා කිරීම නිර්දේශ කරයි.</translation>
@@ -1610,6 +1614,7 @@
 <translation id="7770259615151589601">නියම කළ දිග</translation>
 <translation id="7773005668374414287">එකම පිළිවෙළ මුහුණු ඉහළට</translation>
 <translation id="777702478322588152">ප්‍රාන්තය</translation>
+<translation id="7791011319128895129">මුදා නොකළ</translation>
 <translation id="7791196057686275387">මිටිය</translation>
 <translation id="7791543448312431591">එක් කරන්න</translation>
 <translation id="7798389633136518089">ක්ලවුඩ් සේවයකින් ප්‍රතිපත්තිය සකසා නැති බැවින් නොසලකා හැරිණි.</translation>
@@ -1746,6 +1751,7 @@
 <translation id="8355270400102541638">ස්ථානීය බිඳ වැටීම් සංදර්භය:</translation>
 <translation id="8363502534493474904">ගුවන් යානා ප්‍රකාරය ක්‍රියාවිරහිත කරමින්</translation>
 <translation id="8364627913115013041">සකසා නැත.</translation>
+<translation id="8367477997601443248">අනාරක්‍ෂිත පෝරමය</translation>
 <translation id="8368476060205742148">Google Play සේවා</translation>
 <translation id="8371889962595521444">අභිරුචි මූල සහතික</translation>
 <translation id="8380941800586852976">අන්තරායකර</translation>
@@ -1828,6 +1834,7 @@
 <translation id="8805819170075074995">ලැයිස්තු ඇතුළත් කිරීම "<ph name="LANGUAGE_ID" />": එය SpellcheckLanguage ප්‍රතිපත්තිය තුළ ද ඇතුළු කොට තිබෙන බැවින් ඇතුළත් කිරීම නොසලකා හරිනු ලැබේ.</translation>
 <translation id="8807160976559152894">සෑම පිටුවකටම පසුව කප්පාදු කරන්න</translation>
 <translation id="8820817407110198400">පිටුසන්</translation>
+<translation id="8831512686168463822">පෝරමය ඉදිරිපත් කරනු ලබන්නේ අනාරක්‍ෂිත සම්බන්ධතාවක් හරහා වන අතර, එය මෙම වෙබ් අඩවියට යවනු ලබන විට එය ඔබේ තොරතුරු හෙළි කළ හැක (උදාහරණ ලෙස මුරපද, පණිවුඩ, හෝ ණය කාඩ්පත්)</translation>
 <translation id="883848425547221593">වෙනත් පිටු සලකුණු</translation>
 <translation id="884264119367021077">නැව්ගත ලිපිනය</translation>
 <translation id="884923133447025588">අවලංගු කිරීමේ යාන්ත්‍රණයක් නැත.</translation>

@@ -16,12 +16,15 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_test_util.h"
 #include "net/test/test_with_task_environment.h"
+#include "sql/database.h"
+#include "sql/meta_table.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -233,6 +236,72 @@ TEST_F(SQLitePersistentReportingAndNelStoreTest, CreateDBAndTables) {
   EXPECT_NE(std::string::npos, contents.find("nel_policies"));
   EXPECT_NE(std::string::npos, contents.find("reporting_endpoints"));
   EXPECT_NE(std::string::npos, contents.find("reporting_endpoint_groups"));
+}
+
+TEST_F(SQLitePersistentReportingAndNelStoreTest, TestInvalidMetaTableRecovery) {
+  CreateStore();
+  InitializeStore();
+  base::Time now = base::Time::Now();
+  NetworkErrorLoggingService::NelPolicy policy1 =
+      MakeNelPolicy(url::Origin::Create(GURL("https://www.foo.test")), now);
+  store_->AddNelPolicy(policy1);
+
+  // Close and reopen the database.
+  DestroyStore();
+  CreateStore();
+
+  // Load the stored policy.
+  std::vector<NetworkErrorLoggingService::NelPolicy> policies;
+  LoadNelPolicies(&policies);
+  ASSERT_EQ(1u, policies.size());
+  EXPECT_EQ(policy1.origin, policies[0].origin);
+  EXPECT_EQ(policy1.received_ip_address, policies[0].received_ip_address);
+  EXPECT_EQ(policy1.report_to, policies[0].report_to);
+  EXPECT_TRUE(WithinOneMicrosecond(policy1.expires, policies[0].expires));
+  EXPECT_EQ(policy1.include_subdomains, policies[0].include_subdomains);
+  EXPECT_EQ(policy1.success_fraction, policies[0].success_fraction);
+  EXPECT_EQ(policy1.failure_fraction, policies[0].failure_fraction);
+  EXPECT_TRUE(WithinOneMicrosecond(policy1.last_used, policies[0].last_used));
+  DestroyStore();
+  policies.clear();
+
+  // Now corrupt the meta table.
+  {
+    sql::Database db;
+    ASSERT_TRUE(
+        db.Open(temp_dir_.GetPath().Append(kReportingAndNELStoreFilename)));
+    sql::MetaTable meta_table;
+    meta_table.Init(&db, 1, 1);
+    ASSERT_TRUE(db.Execute("DELETE FROM meta"));
+    db.Close();
+  }
+
+  base::HistogramTester hist_tester;
+
+  // Upon loading, the database should be reset to a good, blank state.
+  CreateStore();
+  LoadNelPolicies(&policies);
+  ASSERT_EQ(0U, policies.size());
+
+  hist_tester.ExpectUniqueSample("ReportingAndNEL.CorruptMetaTable", 1, 1);
+
+  // Verify that, after, recovery, the database persists properly.
+  NetworkErrorLoggingService::NelPolicy policy2 =
+      MakeNelPolicy(url::Origin::Create(GURL("https://www.bar.test")), now);
+  store_->AddNelPolicy(policy2);
+  DestroyStore();
+
+  CreateStore();
+  LoadNelPolicies(&policies);
+  ASSERT_EQ(1u, policies.size());
+  EXPECT_EQ(policy2.origin, policies[0].origin);
+  EXPECT_EQ(policy2.received_ip_address, policies[0].received_ip_address);
+  EXPECT_EQ(policy2.report_to, policies[0].report_to);
+  EXPECT_TRUE(WithinOneMicrosecond(policy2.expires, policies[0].expires));
+  EXPECT_EQ(policy2.include_subdomains, policies[0].include_subdomains);
+  EXPECT_EQ(policy2.success_fraction, policies[0].success_fraction);
+  EXPECT_EQ(policy2.failure_fraction, policies[0].failure_fraction);
+  EXPECT_TRUE(WithinOneMicrosecond(policy2.last_used, policies[0].last_used));
 }
 
 TEST_F(SQLitePersistentReportingAndNelStoreTest, PersistNelPolicy) {

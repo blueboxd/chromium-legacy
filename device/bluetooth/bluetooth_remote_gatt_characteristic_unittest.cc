@@ -152,7 +152,7 @@ class BluetoothRemoteGattCharacteristicTest :
   // these two cases, this small utility function is added.
   bool IsClassicWin() {
 #if defined(OS_WIN)
-    return !GetParam();
+    return !UsesNewBleImplementation();
 #else
     return false;
 #endif
@@ -980,8 +980,8 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0, observer.gatt_characteristic_value_changed_count());
-// TODO(https://crbug.com/699694): Remove this #if once the bug on Windows is
-// fixed.
+  // TODO(https://crbug.com/699694): Remove this #if once the bug on Windows is
+  // fixed.
   if (IsClassicWin()) {
     EXPECT_FALSE(observer.last_gatt_characteristic_id().empty());
     EXPECT_TRUE(observer.last_gatt_characteristic_uuid().IsValid());
@@ -4767,20 +4767,19 @@ TEST_F(BluetoothRemoteGattCharacteristicTest, ExtraDidDiscoverDescriptorsCall) {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    BluetoothRemoteGattCharacteristicTestWinrt,
-    ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         BluetoothRemoteGattCharacteristicTestWinrt,
+                         ::testing::ValuesIn(kBluetoothTestWinrtParamAll));
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     BluetoothRemoteGattCharacteristicTestWin32Only,
-    ::testing::Values(false));
+    ::testing::ValuesIn(kBluetoothTestWinrtParamWin32Only));
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     BluetoothRemoteGattCharacteristicTestWinrtOnly,
-    ::testing::Values(true));
+    ::testing::ValuesIn(kBluetoothTestWinrtParamWinrtOnly));
 #endif  // defined(OS_WIN)
 
 }  // namespace device

@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">Sinhala klaviaturası</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> əlçatandır</translation>
 <translation id="2425665904502185219">Ümumi fayl ölçüsü</translation>
+<translation id="2428749644083375155"><ph name="NUMBER_OF_ITEMS" /> element <ph name="FOLDER_NAME" /> qovluğuna kopyalanır</translation>
 <translation id="2448312741937722512">Növ</translation>
 <translation id="2453576648990281505">Fayl artıq mövcuddur</translation>
 <translation id="2464079411014186876">Dondurma</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> seçimə əlavə edildi.</translation>
 <translation id="4582497162516204941">Linux (Beta) ilə quraşdırın</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> üçün nəticələr göstərilir.</translation>
+<translation id="4603392156942865207"><ph name="FILE_NAME" /> faylı <ph name="FOLDER_NAME" /> qovluğuna kopyalanır</translation>
 <translation id="4631887759990505102">Artist</translation>
 <translation id="4656293982926141856">Bu kompüter</translation>
 <translation id="4669606053856530811">"<ph name="SOURCE_NAME" />" bu element onlarla paylaşılmadığı halda, daxil ola bilməyəcəklər.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> həcmində fayllar silinəcək</translation>
+<translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> element <ph name="FOLDER_NAME" /> qovluğuna köçürülür</translation>
 <translation id="509429900233858213">Xəta baş verdi.</translation>
 <translation id="5098629044894065541">İvrit</translation>
 <translation id="5123433949759960244">Basketbol</translation>
@@ -454,6 +457,7 @@
 <translation id="6054173164583630569">Fransız klaviaturası</translation>
 <translation id="6074825444536523002">Google forma</translation>
 <translation id="6096979789310008754">Bütün fayl və qovluqları göstərən axtarış mətni silindi.</translation>
+<translation id="610101264611565198"><ph name="FILE_NAME" /> faylı <ph name="FOLDER_NAME" /> qovluğuna köçürülür</translation>
 <translation id="6111770213269631447">Transliterasiya (namaskar →  নমস্কার)</translation>
 <translation id="6129953537138746214">Boşluq</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> daşınır...</translation>
@@ -537,6 +541,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Quraşdırma uğursuz oldu.</translation>
 <translation id="7040138676081995583">Bununla açın...</translation>
+<translation id="7059566040011178088">Bundan az: <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> element seçilib</translation>
 <translation id="7106346894903675391">Əlavə yaddaş alın...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;Diskdə axtarın&lt;/em&gt;</translation>
@@ -645,6 +650,7 @@
 <translation id="8193175696669055101">Cihaz modeli</translation>
 <translation id="8208580316430297579">Sənət əsəri</translation>
 <translation id="8223479393428528563">Bu faylları oflayn istifadəyə saxlamaq üçün onlayn olun, faylları sağ klikləyin və <ph name="OFFLINE_CHECKBOX_NAME" /> seçimini edin.</translation>
+<translation id="8231972167769262174"><ph name="REMAINING_TIME" /> haqqında</translation>
 <translation id="8249296373107784235">Dayandırın</translation>
 <translation id="8261506727792406068">Silin</translation>
 <translation id="8269755669432358899">Faylların rəy panelini yığcamlaşdırın</translation>

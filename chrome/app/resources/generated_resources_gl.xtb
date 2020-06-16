@@ -509,6 +509,7 @@
 <translation id="1633947793238301227">Desactivar Asistente de Google</translation>
 <translation id="1634783886312010422">Xa cambiaches este contrasinal en <ph name="WEBSITE" />?</translation>
 <translation id="1637224376458524414">Accede a este marcador no iPhone</translation>
+<translation id="1637350598157233081">O contrasinal está gardado neste dispositivo</translation>
 <translation id="1637765355341780467">Produciuse un erro ao abrir o perfil. É posible que algunhas funcións non estean dispoñibles.</translation>
 <translation id="1639239467298939599">Cargando</translation>
 <translation id="163993578339087550"><ph name="SERVICE_NAME" /> quere comprobar se usas un dispositivo Chrome OS compatible.</translation>
@@ -599,6 +600,8 @@
 <translation id="1743970419083351269">Pechar barra de descargas</translation>
 <translation id="1744060673522309905">O dispositivo non se puido vincular ao dominio. Asegúrate de que non superaches o número de dispositivos que se poden engadir.</translation>
 <translation id="1744108098763830590">páxina en segundo plano</translation>
+<translation id="1746901632585754462">Eliminaranse os datos do dispositivo</translation>
+<translation id="1748563609363301860">Podes gardar este contrasinal na túa Conta de Google ou só neste dispositivo</translation>
 <translation id="1750172676754093297">A túa chave de seguranza non pode almacenar impresións dixitais</translation>
 <translation id="1751249301761991853">Personalizar</translation>
 <translation id="1751262127955453661"><ph name="ORIGIN" /> poderá editar os ficheiros de <ph name="FOLDERNAME" /> ata que peches todas as pestanas deste sitio</translation>
@@ -756,6 +759,7 @@
 <translation id="1928696683969751773">Actualizacións</translation>
 <translation id="1929186283613845153">Estase analizando este ficheiro.</translation>
 <translation id="1929546189971853037">Ler o historial de navegación en todos os dispositivos en que inicies sesión</translation>
+<translation id="1930879306590754738">O contrasinal eliminouse deste dispositivo e da túa Conta de Google</translation>
 <translation id="1931152874660185993">Non se instalou ningún compoñente.</translation>
 <translation id="1932098463447129402">Posterior a</translation>
 <translation id="1933809209549026293">Conecta un rato ou teclado. Se estás utilizando un dispositivo Bluetooth, asegúrate de que está preparado para a sincronización.</translation>
@@ -821,6 +825,7 @@
 <translation id="2025891858974379949">Contido inseguro</translation>
 <translation id="202918510990975568">Escribe o contrasinal para configurar a seguranza e o inicio de sesión</translation>
 <translation id="2030455719695904263">Panel táctil</translation>
+<translation id="2031639749079821948">O contrasinal está gardado na túa Conta de Google</translation>
 <translation id="2034346955588403444">Engadir outra rede wifi</translation>
 <translation id="203574396658008164">Activar a toma de notas desde a pantalla de bloqueo</translation>
 <translation id="2037445849770872822">Configurouse a supervisión para esta Conta de Google. Se queres configurar máis controis parentais, selecciona Continuar.
@@ -1660,6 +1665,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3072775339180057696">Queres permitir que o sitio acceda a <ph name="FILE_NAME" />?</translation>
 <translation id="3075874217500066906">É necesario reiniciar o dispositivo para iniciar o proceso de Powerwash. Unha vez efectuado o reinicio, solicitaráseche que confirmes que queres continuar.</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
+<translation id="3076966043108928831">Gardar só neste dispositivo</translation>
 <translation id="3076977359333237641">Elimináronse os teus datos de inicio de sesión</translation>
 <translation id="3080933187214341848">Esta rede non está sincronizada coa túa conta. <ph name="LINK_BEGIN" />Máis información<ph name="LINK_END" /></translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE" /> - <ph name="PAGE_URL" /></translation>
@@ -1825,6 +1831,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3288047731229977326">As extensións que se executan no modo de programador poden danar o ordenador. Se non es programador, deberás desactivar estas extensións que se executan no modo de programador para permanecer seguro.</translation>
 <translation id="3289856944988573801">Para consultar se hai actualizacións, utiliza unha Ethernet ou unha wifi.</translation>
 <translation id="3290356915286466215">Sen protección</translation>
+<translation id="3292264722181603749"><ph name="DOMAIN" /> vai desactivar a depuración de ADB, o cal provocará que se restableza o dispositivo. Antes de reinicialo, fai unha copia de seguranza dos ficheiros.</translation>
 <translation id="3293644607209440645">Enviar esta páxina</translation>
 <translation id="32939749466444286">O contedor de Linux non se iniciou. Téntao de novo.</translation>
 <translation id="3294437725009624529">Invitado</translation>
@@ -2506,6 +2513,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4099874310852108874">Produciuse un erro de rede.</translation>
 <translation id="4100733287846229632">O dispositivo ten pouquísimo espazo restante</translation>
 <translation id="4100853287411968461">Novo límite de tempo de uso da pantalla</translation>
+<translation id="4102906002417106771">Reiniciar para usar a función Powerwash</translation>
 <translation id="4104163789986725820">E&amp;xportar...</translation>
 <translation id="4107048419833779140">Identificar e expulsar dispositivos de almacenamento</translation>
 <translation id="4109135793348361820">Mover ventá a <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
@@ -2655,6 +2663,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4336434711095810371">Borrar todos os datos</translation>
 <translation id="4336979451636460645">Para observar rexistros de rede, consulta: <ph name="DEVICE_LOG_LINK" /></translation>
 <translation id="4340515029017875942"><ph name="ORIGIN" /> quere comunicarse coa aplicación "<ph name="EXTENSION_NAME" />"</translation>
+<translation id="4340575312453649552">Dado que este anuncio utilizaba demasiados recursos para o teu dispositivo, Chrome quitouno.</translation>
 <translation id="434404122609091467">Co teu fornecedor de servizo actual</translation>
 <translation id="4345587454538109430">Configurar...</translation>
 <translation id="4345732373643853732">O servidor non recoñece o nome de usuario</translation>
@@ -2742,6 +2751,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4449948729197510913">O teu nome de usuario pertence á conta de empresa da túa organización. Para rexistrar dispositivos na conta, verifica a propiedade do dominio na consola de administración. Se queres realizar esta verificación, deberás ter privilexios administrativos sobre a conta.</translation>
 <translation id="4449996769074858870">Esta pestana está reproducindo audio.</translation>
 <translation id="4450974146388585462">Diagnosticar</translation>
+<translation id="4451479197788154834">O contrasinal está gardado neste dispositivo e na túa Conta de Google</translation>
 <translation id="4451757071857432900">Bloqueados en sitios que mostran anuncios intrusivos ou enganosos (recomendado)</translation>
 <translation id="4453946976636652378">Fai unha busca en <ph name="SEARCH_ENGINE_NAME" /> ou escribe un URL</translation>
 <translation id="4459169140545916303">Dispositivo activo hai <ph name="DEVICE_LAST_ACTIVATED_TIME" /> días</translation>
@@ -2990,6 +3000,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4804827417948292437">Aguacate</translation>
 <translation id="4807098396393229769">Nome que aparece na tarxeta</translation>
 <translation id="4808667324955055115">Ventás emerxentes bloqueadas:</translation>
+<translation id="4809079943450490359">Instrucións do administrador do teu dispositivo:</translation>
 <translation id="480990236307250886">Abre a páxina de inicio</translation>
 <translation id="4811212958317149293">Exploración automática de teclados de acceso con interruptores</translation>
 <translation id="4811503964269049987">Agrupar a pestana seleccionada</translation>
@@ -3920,6 +3931,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5997337190805127100">Máis información sobre o acceso aos sitios</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultados para "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6002210667729577411">Mover grupo a unha ventá nova</translation>
+<translation id="6002452033851752583">Eliminouse o contrasinal da túa Conta de Google</translation>
 <translation id="6002458620803359783">Voces preferidas</translation>
 <translation id="6006484371116297560">Clásico</translation>
 <translation id="6007240208646052708">A busca por voz no teu idioma non está dispoñible.</translation>
@@ -5084,6 +5096,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7503191893372251637">Tipo de certificado de Netscape</translation>
 <translation id="7503985202154027481">Conservarase un rexistro da túa visita a este sitio na túa chave de seguranza.</translation>
 <translation id="750509436279396091">Abrir cartafol de descargas</translation>
+<translation id="7506093026325926984">Este contrasinal gardarase neste dispositivo</translation>
 <translation id="7506541170099744506">O teu <ph name="DEVICE_TYPE" /> inscribiuse correctamente para a xestión de empresas.</translation>
 <translation id="7507207699631365376">Consulta a <ph name="BEGIN_LINK" />Política de privacidade<ph name="END_LINK" /> deste fornecedor</translation>
 <translation id="7507930499305566459">Certificado de resposta de estado</translation>
@@ -5163,6 +5176,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="761763866592998929">Modo ambiente</translation>
 <translation id="7621382409404463535">Produciuse un erro no sistema e non se puido gardar a configuración do dispositivo.</translation>
 <translation id="7622114377921274169">Cargando.</translation>
+<translation id="7622903810087708234">Detalles do contrasinal</translation>
 <translation id="7624337243375417909">desactivouse o bloqueo de maiúsculas</translation>
 <translation id="7625568159987162309">Ver permisos e datos almacenados dos sitios</translation>
 <translation id="7628201176665550262">Taxa de actualización</translation>
@@ -5245,6 +5259,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7712836429117959503">Extensión descoñecida co código de identificación <ph name="EXTENSION_ID" /></translation>
 <translation id="7714307061282548371">Permítense as cookies de <ph name="DOMAIN" /></translation>
 <translation id="7714464543167945231">Certificado</translation>
+<translation id="7716648931428307506">Selecciona onde queres gardar o contrasinal</translation>
 <translation id="7716781361494605745">URL de política de autoridade de certificación de Netscape</translation>
 <translation id="7717014941119698257">Descargando: <ph name="STATUS" /></translation>
 <translation id="7717845620320228976">Buscar actualizacións</translation>
@@ -5260,6 +5275,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7737115349420013392">Vinculando co dispositivo (<ph name="DEVICE_NAME" />)...</translation>
 <translation id="7737238973539693982">Eliminar Linux (beta)</translation>
 <translation id="7740996059027112821">Estándar</translation>
+<translation id="774377079771918250">Escolle onde gardar o contido</translation>
 <translation id="7744047395460924128">Ver o teu historial de impresión</translation>
 <translation id="7744192722284567281">O contrasinal viuse implicado nunha violación da seguranza dos datos</translation>
 <translation id="7750228210027921155">Pantalla superposta</translation>
@@ -5329,6 +5345,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="782057141565633384">C&amp;opiar enderezo do vídeo</translation>
 <translation id="7824864914877854148">Non se puido completar a copia de seguranza debido a un erro</translation>
 <translation id="782590969421016895">Usar páxinas actuais</translation>
+<translation id="7826249772873145665">Desactivouse a depuración de ADB</translation>
 <translation id="7826254698725248775">Identificador de dispositivos en conflito.</translation>
 <translation id="7826346148677309647">Podes buscar máis aplicacións para o teu dispositivo en Play Store.</translation>
 <translation id="7826790948326204519"><ph name="BEGIN_H3" />Funcións de depuración<ph name="END_H3" />
@@ -5527,6 +5544,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8044899503464538266">Lento</translation>
 <translation id="8045253504249021590">Detívose a sincronización a través do Panel de control de Google.</translation>
 <translation id="8045923671629973368">Introduce o código da aplicación ou o URL de almacenamento web.</translation>
+<translation id="8047242494569930800">Mover á Conta de Google</translation>
 <translation id="804786196054284061">Contrato de licenza de usuario final</translation>
 <translation id="8049705080247101012">Google marcou a extensión "<ph name="EXTENSION_NAME" />" como maliciosa e impediuse a instalación</translation>
 <translation id="8049948037269924837">Desprazamento inverso do panel táctil</translation>
@@ -5667,6 +5685,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8226619461731305576">Cola</translation>
 <translation id="8226742006292257240">A continuación atópase o contrasinal TPM xerado aleatoriamente que se asignou ao teu ordenador:</translation>
 <translation id="8227119283605456246">Anexar ficheiro</translation>
+<translation id="8229943166551236192">Eliminaranse os datos do dispositivo dentro de 24 horas</translation>
 <translation id="8230134520748321204">Queres gardar o contrasinal de <ph name="ORIGIN" />?</translation>
 <translation id="8234795456569844941">Axuda aos nosos enxeñeiros a solucionar este problema. Explícanos o que sucedeu antes de que recibises a mensaxe de erro do perfil.</translation>
 <translation id="8236917170563564587">Mellor compartir esta pestana</translation>
@@ -5719,6 +5738,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8274924778568117936">Non apagues nin peches o dispositivo <ph name="DEVICE_TYPE" /> ata que a actualización finalice. O <ph name="DEVICE_TYPE" /> reiniciarase tras finalizar a instalación.</translation>
 <translation id="8275038454117074363">Importar</translation>
 <translation id="8275080796245127762">Chamar desde o teu dispositivo</translation>
+<translation id="8275339871947079271">Ao mover o contrasinal á túa Conta de Google, poderás acceder a el de forma segura sempre que teñas a sesión iniciada</translation>
 <translation id="8276560076771292512">Baleirar a caché e cargar de novo desde cero</translation>
 <translation id="8281886186245836920">Omitir</translation>
 <translation id="8283475148136688298">Código de autenticación rexeitado durante a conexión con "<ph name="DEVICE_NAME" />".</translation>
@@ -5775,6 +5795,7 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8357388086258943206">Produciuse un erro ao instalar Linux</translation>
 <translation id="8358685469073206162">Queres restaurar as páxinas?</translation>
 <translation id="8358912028636606457">A emisión do audio da pestana non é compatible con este dispositivo.</translation>
+<translation id="835951711479681002">Gardar na túa Conta de Google</translation>
 <translation id="8363095875018065315">estable</translation>
 <translation id="8363142353806532503">Bloqueouse o micrófono</translation>
 <translation id="8363763184161554204">concedeuse o permiso: <ph name="PERMISSION" /></translation>
@@ -5931,9 +5952,11 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="857943718398505171">Permitido (recomendado)</translation>
 <translation id="8581809080475256101">Preme para avanzar e acceder ao menú contextual para ver o historial</translation>
 <translation id="8584280235376696778">Abrir &amp;vídeo na pestana nova</translation>
+<translation id="8584427708066927472">Eliminouse o contrasinal deste dispositivo</translation>
 <translation id="8585480574870650651">Quitar Crostini</translation>
 <translation id="8588866096426746242">Mostrar estatísticas do perfil</translation>
 <translation id="8588868914509452556"><ph name="WINDOW_TITLE" />: enviando contido de RV a un visor</translation>
+<translation id="8589316013260923499"><ph name="DOMAIN" /> desactivou a depuración de ADB. Non se poden instalar externamente aplicacións novas.</translation>
 <translation id="8590375307970699841">Configurar actualizacións automáticas</translation>
 <translation id="8591783563402255548">1 segundo</translation>
 <translation id="8592141010104017453">Non mostrar ningunha notificación</translation>

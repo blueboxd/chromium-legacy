@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">Сингал пернетақтасы</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> қолжетімді</translation>
 <translation id="2425665904502185219">Барлық файлдар мөлшері</translation>
+<translation id="2428749644083375155"><ph name="NUMBER_OF_ITEMS" /> элемент <ph name="FOLDER_NAME" /> қалтасына көшірілуде.</translation>
 <translation id="2448312741937722512">Түрі</translation>
 <translation id="2453576648990281505">Файл бұрыннан бар</translation>
 <translation id="2464079411014186876">Балмұздақ</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> таңдалғандар тізіміне қосылды.</translation>
 <translation id="4582497162516204941">Linux (Бета) пакетін орнату</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> бойынша нәтижелер көрсетілуде.</translation>
+<translation id="4603392156942865207"><ph name="FILE_NAME" /> <ph name="FOLDER_NAME" /> қалтасына көшірілуде.</translation>
 <translation id="4631887759990505102">Орындаушы</translation>
 <translation id="4656293982926141856">Осы компьютер</translation>
 <translation id="4669606053856530811">Бұл файлдар "<ph name="SOURCE_NAME" />" мүшелерімен бөлісілмейтін болса, олар кіру рұқсатынан айырылады</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">Контраст</translation>
 <translation id="5068919226082848014">Пицца</translation>
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> файл жойылады.</translation>
+<translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> элемент <ph name="FOLDER_NAME" /> қалтасына тасымалдануда.</translation>
 <translation id="509429900233858213">Қате орын алды.</translation>
 <translation id="5098629044894065541">иврит</translation>
 <translation id="5123433949759960244">Баскетбол</translation>
@@ -454,6 +457,7 @@
 <translation id="6054173164583630569">Француз пернетақтасы</translation>
 <translation id="6074825444536523002">Google пішіні</translation>
 <translation id="6096979789310008754">Ізделген мәтін өшірілді. Барлық файл мен қалта көрсетілуде.</translation>
+<translation id="610101264611565198"><ph name="FILE_NAME" /> файлы <ph name="FOLDER_NAME" /> қалтасына тасымалдануда</translation>
 <translation id="6111770213269631447">Транслитерация (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Бос орын</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> тасымалдануда…</translation>
@@ -537,6 +541,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Орнату сәтсіз аяқталды.</translation>
 <translation id="7040138676081995583">Ашу әдісі…</translation>
+<translation id="7059566040011178088">Қалды: <ph name="REMAINING_TIME" /> уақытқа жетпейді.</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> элемент таңдалды</translation>
 <translation id="7106346894903675391">Қосымша жад сатып алу…</translation>
 <translation id="7126604456862387217">"&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;" – &lt;em&gt;Drive ішінен іздеу&lt;/em&gt;</translation>
@@ -647,6 +652,7 @@
 <translation id="8193175696669055101">Құрылғы үлгісі</translation>
 <translation id="8208580316430297579">Өнер туындысы</translation>
 <translation id="8223479393428528563">Бұл файлдарды желіден тыс сақтау үшін желіге қайта қосылып, файлдарды тінтуірдің оң жағымен басыңыз және <ph name="OFFLINE_CHECKBOX_NAME" /> опциясын таңдаңыз.</translation>
+<translation id="8231972167769262174"><ph name="REMAINING_TIME" /> туралы</translation>
 <translation id="8249296373107784235">Доғару</translation>
 <translation id="8261506727792406068">Жою</translation>
 <translation id="8269755669432358899">Файлдар туралы пікір панельдерін жию</translation>

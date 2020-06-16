@@ -163,6 +163,7 @@
 <translation id="2323763861024343754">網站儲存空間資料量</translation>
 <translation id="2328985652426384049">無法登入</translation>
 <translation id="234265804618409743">無法開啟攝錄機。發生錯誤。</translation>
+<translation id="2345671828921229300">如要搜尋，請按住字詞</translation>
 <translation id="2349710944427398404">Chrome 使用的資料總量，包括帳戶、書籤和已儲存的設定</translation>
 <translation id="2353636109065292463">檢查互聯網連線</translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -170,6 +171,7 @@
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="2394602618534698961">您下載的檔案會在這裡顯示</translation>
 <translation id="2407481962792080328">登入 Google 帳戶時，系統會啟用此功能</translation>
+<translation id="2407674018644220013">要將「<ph name="APP_NAME" />」設定為預設瀏覽器嗎？</translation>
 <translation id="2410754283952462441">選擇帳戶</translation>
 <translation id="2414886740292270097">灰暗</translation>
 <translation id="2426805022920575512">選擇其他帳戶</translation>
@@ -179,6 +181,7 @@
 
 輕觸並按住字詞即可搜尋。如要修正搜尋，請調整選取的字詞長度。如要編輯搜尋，請開啟面板、輕按圖示以在新分頁中開啟，然後在搜尋框中進行變更。</translation>
 <translation id="246532703174860178">分享</translation>
+<translation id="2479148705183875116">前往「設定」</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2494974097748878569">Chrome 的「Google 助理」</translation>
 <translation id="2496180316473517155">瀏覽記錄</translation>
@@ -289,6 +292,7 @@
 <translation id="3350687908700087792">關閉所有無痕式分頁</translation>
 <translation id="3353615205017136254">此簡易版網頁由 Google 提供。輕按「載入原始網頁」按鈕即可載入原始版本網頁。</translation>
 <translation id="3367813778245106622">如要開始同步處理，請重新登入</translation>
+<translation id="337236281855091893">如要搜尋，請按住 (而非輕觸) 字詞</translation>
 <translation id="3373979091428520308">如要將此頁面分享至另一部裝置，請在另一部裝置的 Chrome 設定中開啟同步功能</translation>
 <translation id="3374023511497244703">您的書籤、記錄、密碼及其他 Chrome 資料將不會同步至您的 Google 帳戶。</translation>
 <translation id="3384347053049321195">分享圖片</translation>
@@ -564,6 +568,7 @@
 <translation id="5686790454216892815">檔案名稱過長</translation>
 <translation id="5694049548840660018">鬆輕返回首頁</translation>
 <translation id="569536719314091526">透過「更多選項」掣，將呢個網頁翻譯成任何語言</translation>
+<translation id="570347048394355941">切換至分頁</translation>
 <translation id="572328651809341494">最近開啟的分頁</translation>
 <translation id="5726692708398506830">放大網頁中的所有內容</translation>
 <translation id="5748802427693696783">已切換至標準分頁</translation>
@@ -617,6 +622,7 @@
 <translation id="6140912465461743537">國家/地區</translation>
 <translation id="614940544461990577">建議做法：</translation>
 <translation id="6154478581116148741">在「設定」中開啟螢幕鎖定功能，即可從此裝置匯出您的密碼</translation>
+<translation id="6157392216611456285">選擇 <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">節省 <ph name="PERCENT" /> 的數據用量</translation>
 <translation id="6192333916571137726">下載檔案</translation>
 <translation id="6201345951596836663">已複製連結</translation>
@@ -641,6 +647,7 @@
 <translation id="6341580099087024258">詢問儲存檔案的地方</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 個地址}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 和另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 個地址}}</translation>
 <translation id="6364438453358674297">從記錄中移除建議項目嗎？</translation>
+<translation id="6366047038980456022"><ph name="APP_NAME" /> 具備強大的智能功能和非凡速度，讓您盡情在網絡世界中工作、創作和探索</translation>
 <translation id="6369229450655021117">您可以在此進行網絡搜尋、與朋友分享內容，以及瀏覽打開的頁面</translation>
 <translation id="6378173571450987352">詳情：依使用數據量排序</translation>
 <translation id="6379829913050047669">「<ph name="APP_NAME" />」將在 Chrome 中開啟。繼續即表示您同意《<ph name="BEGIN_LINK1" />Google 服務條款<ph name="END_LINK1" />》以及 <ph name="BEGIN_LINK2" />Google Chrome 和 Chrome 作業系統的《附加服務條款》<ph name="END_LINK2" />。</translation>
@@ -692,6 +699,7 @@
 <translation id="6671495933530132209">複製圖片</translation>
 <translation id="6676840375528380067">要清除此裝置上的 Chrome 資料嗎？</translation>
 <translation id="6689172468748959065">個人檔案相片</translation>
+<translation id="6691888250440401212">1. 選擇 <ph name="APP_NAME" />\n2。輕按 [設定為預設]</translation>
 <translation id="6697492270171225480">找不到網頁時，顯示類似的網頁建議</translation>
 <translation id="6698801883190606802">管理同步資料</translation>
 <translation id="6699370405921460408">Google 伺服器會優化您瀏覽的網頁。</translation>
@@ -895,6 +903,7 @@
 <translation id="8364299278605033898">查看熱門網站</translation>
 <translation id="8368027906805972958">不明或不支援的裝置 (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">傳送訊息</translation>
+<translation id="8407396331882458341">1. 選擇 <ph name="APP_NAME" />\n2。輕按 [一律]</translation>
 <translation id="8413126021676339697">顯示完整記錄</translation>
 <translation id="8425213833346101688">變更</translation>
 <translation id="8427875596167638501">預覽分頁喺畫面下半部分顯示</translation>
@@ -921,6 +930,7 @@
 <translation id="8555836665334561807">使用 Wi-Fi 時</translation>
 <translation id="8558485628462305855">如要觀看擴張實境內容，請先更新 ARCore</translation>
 <translation id="8559990750235505898">詢問是否將網頁內容翻譯成其他語言</translation>
+<translation id="8561196567344536112">1. 前往「設定」\n2。輕按 [瀏覽器應用程式]\n3。選擇 <ph name="APP_NAME" /></translation>
 <translation id="8562452229998620586">已儲存的密碼會顯示在這裡。</translation>
 <translation id="8569404424186215731">自 <ph name="DATE" />起</translation>
 <translation id="8571213806525832805">過去 4 週</translation>

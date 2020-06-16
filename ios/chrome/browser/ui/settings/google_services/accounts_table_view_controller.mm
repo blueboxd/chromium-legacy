@@ -605,6 +605,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
       UMA_HISTOGRAM_BOOLEAN("Signin.UserRequestedWipeDataOnSignout",
                             forceClearData);
     }
+    if (forceClearData) {
+      base::RecordAction(base::UserMetricsAction(
+          "Signin_SignoutClearData_FromAccountListSettings"));
+    } else {
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Signout_FromAccountListSettings"));
+    }
   }
 }
 

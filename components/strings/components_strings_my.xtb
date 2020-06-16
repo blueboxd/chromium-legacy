@@ -81,6 +81,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />သင့်ကွတ်ကီးများကို ရှင်းလင်းကြည့်ပါ<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">သင်၏ 'လုံခြုံသော DNS' ဆက်တင်များကို စစ်ဆေးပါ</translation>
 <translation id="1307966114820526988">ရပ်ဆိုင်းထားသော ဝန်ဆောင်မှုများ</translation>
+<translation id="1310581832770023220">ဤဖောင်ရှိဒေတာများကို လုံခြုံမှုမရှိသော ချိတ်ဆက်မှုမှတစ်ဆင့် ပို့နေသည်</translation>
 <translation id="131405271941274527">သင့်ဖုန်းကို NFC စက်တစ်ခုအပေါ် တို့လိုက်သည့်အခါ <ph name="URL" /> သည် အချက်အလက် ပို့ခြင်းနှင့် လက်ခံခြင်းတို့ ပြုလုပ်လိုသည်</translation>
 <translation id="1314509827145471431">ညာဘက်တွင် တွဲချုပ်ရန်</translation>
 <translation id="1320233736580025032">Prc1 (စာအိတ်)</translation>
@@ -386,6 +387,7 @@
 <translation id="2544644783021658368">စာရွက်စာတမ်း တစ်ခုတည်း</translation>
 <translation id="254947805923345898">မူဝါဒတန်ဖိုး မမှန်ကန်ပါ။</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> သည်မမှန်ကန်သည့် တုံ့ပြန်မှုကို ပို့ခဲ့ပါသည်။</translation>
+<translation id="2552295903035773204">ယခုမှစ၍ ကတ်များကို အတည်ပြရန် ဖုန်းမျက်နှာပြင် လော့ခ်ကို အသုံးပြုရန်</translation>
 <translation id="2553853292994445426">သင်၏ လုံခြုံသော DNS ဆက်တင်များကို စစ်ဆေးပါ။ ချိတ်ဆက်၍မရသည့် လုံခြုံသော DNS ဆာဗာကို သင်စီစဉ်သတ်မှတ်ထားခြင်း ဖြစ်နိုင်သည်။</translation>
 <translation id="2556876185419854533">&amp;တည်းဖြတ်မှုကို ပြန်လုပ်ရန်</translation>
 <translation id="257674075312929031">အုပ်စု</translation>
@@ -1443,6 +1445,7 @@
 <translation id="7138472120740807366">ပို့ရန် နည်းလမ်း</translation>
 <translation id="7139724024395191329">ယေမီရိတ်</translation>
 <translation id="714064300541049402">ဘေး ၂ ပုံ အလျားလိုက် အရွှေ့</translation>
+<translation id="7147693119324090759">မည်သို့ပင်ဖြစ်စေ ပေးပို့ရန်</translation>
 <translation id="7152423860607593928">နံပါတ်-၁၄ (စာအိတ်)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> နှင့် နောက်ထပ် <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ခု}other{<ph name="PAYMENT_METHOD_PREVIEW" /> နှင့် နောက်ထပ် <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ခု}}</translation>
 <translation id="7153618581592392745">လာဗင်ဒါ</translation>
@@ -1520,6 +1523,7 @@
 <translation id="7416351320495623771">စကားဝှက်များ စီမံရန်…</translation>
 <translation id="7419106976560586862">ပရိုဖိုင် လမ်းကြောင်း</translation>
 <translation id="7437289804838430631">အဆက်အသွယ် အချက်အလက်ကို ထည့်ရန်</translation>
+<translation id="743897106051685947">မူရင်း</translation>
 <translation id="7438976808740265764">Flash Player ကို ၂၀၂၀ ဒီဇင်ဘာ နောက်ပိုင်းတွင် ပံ့ပိုးတော့မည်မဟုတ်ပါ။</translation>
 <translation id="7440140511386898319">အော့ဖ်လိုင်းတွင် စူးစမ်းလေ့လာခြင်း</translation>
 <translation id="7441627299479586546">မှားယွင်းသည့် ပေါ်လစီ အကြောင်းအရာ</translation>
@@ -1531,6 +1535,7 @@
 <translation id="7473891865547856676">မလို ကျေးဇူးပဲ</translation>
 <translation id="7481312909269577407">ရှေ့သို့</translation>
 <translation id="7485870689360869515">ဒေတာ မတွေ့ရပါ။</translation>
+<translation id="7488762544858401571">တည်းဖြတ်ထားသည်</translation>
 <translation id="7495290002932347110">ဝဘ်ဆိုက် သို့မဟုတ် အက်ပ်ရှိ ဒေတာပေါက်ကြားမှုက သင့်စကားဝှက်ကို ဖော်ထုတ်ခဲ့ပါသည်။ သိမ်းထားသည့် သင့်စကားဝှက်များကို စစ်ဆေးပြီး <ph name="ORIGIN" /> တွင် သင်၏စကားဝှက်ကို ယခုပြောင်းရန် Chrome က အကြံပြုပါသည်။</translation>
 <translation id="7498234416455752244">ဆက်လက်တည်းဖြတ်ရန်</translation>
 <translation id="7503664977220660814">လှည့်ဖြားတတ်သော ဝဘ်ဆိုက်တစ်ခုတွင် သင့်စကားဝှက်ကို ထည့်လိုက်ပါသည်။ ယခု ဤစကားဝှက်ကို သင်အသုံးပြုထားသည့် <ph name="WEBSITE_1" />၊ <ph name="WEBSITE_2" /> နှင့် အခြားသောဝဘ်ဆိုက်များအတွက် သင်သိမ်းဆည်းထားသည့် စကားဝှက်များကို စစ်ဆေးရန် Chromium က အကြံပြုသည်။</translation>
@@ -1614,6 +1619,7 @@
 <translation id="7770259615151589601">သတ်မှတ်ထားသော အရှည်</translation>
 <translation id="7773005668374414287">တူညီသည့်အစဉ်ဖြင့် အပေါ်လှန်ထားရန်</translation>
 <translation id="777702478322588152">နယ်​မြေ</translation>
+<translation id="7791011319128895129">မထွက်သေးပါ</translation>
 <translation id="7791196057686275387">စည်းရန်</translation>
 <translation id="7791543448312431591">ထည့်ရန်</translation>
 <translation id="7798389633136518089">မူဝါဒကို cloud အရင်းအမြစ်တစ်ခုက သတ်မှတ်ထားခြင်း မဟုတ်သည့်အတွက် လျစ်လျူရှုထားသည်။</translation>
@@ -1750,6 +1756,7 @@
 <translation id="8355270400102541638">စက်တွင်း ရပ်တန့်သွားမှု အခြေအနေ-</translation>
 <translation id="8363502534493474904">လေယာဉ်ပျံမုဒ်ကို ပိတ်နေသည်</translation>
 <translation id="8364627913115013041">မသတ်မှတ်ရသေး</translation>
+<translation id="8367477997601443248">လုံခြုံမှုမရှိသောဖောင်</translation>
 <translation id="8368476060205742148">Google Play ဝန်ဆောင်မှုများ</translation>
 <translation id="8371889962595521444">စိတ်ကြိုက် ပင်မအသိအမှတ်ပြုလက်မှတ်များ</translation>
 <translation id="8380941800586852976">အန္တရာယ်ရှိသော</translation>
@@ -1832,6 +1839,7 @@
 <translation id="8805819170075074995">စာရင်းထည့်သွင်းမှု "<ph name="LANGUAGE_ID" />"- SpellcheckLanguage မူဝါဒတွင်လည်း ပါဝင်နေသောကြောင့် ထည့်သွင်းမှုကို လျစ်လျူရှုထားသည်။</translation>
 <translation id="8807160976559152894">တစ်မျက်နှာအပြီး ဖြတ်ထုတ်ရန်</translation>
 <translation id="8820817407110198400">စာညှပ်များ</translation>
+<translation id="8831512686168463822">ဤဖောင်ကို လုံခြုံမှုမရှိသော ချိတ်ဆက်မှုမှနေ၍ ပေးပို့နေပြီး ၎င်းကို ဤဝဘ်ဆိုက်သို့ ပို့လိုက်သည့်အခါ သင့်အချက်အလက်များ (ဥပမာ စကားဝှက်၊ မက်ဆေ့ဂျ် သို့မဟုတ် ခရက်ဒစ်ကတ်များ) ပေါက်ကြားနိုင်သည်။</translation>
 <translation id="883848425547221593">အခြား စာညှပ်များ</translation>
 <translation id="884264119367021077">ပို့ဆောင်ရမည့် လိပ်စာ</translation>
 <translation id="884923133447025588">ရုတ်သိမ်းခြင်း စက်ကိရိယာ မတွေ့ပါ။</translation>

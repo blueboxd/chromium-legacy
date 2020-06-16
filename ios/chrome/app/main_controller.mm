@@ -697,10 +697,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (void)stopChromeMain {
-  // This code is per-window.
-
   // Teardown UI state that is associated with scenes.
-  [self.sceneController teardownUI];
+  for (SceneState* sceneState in self.appState.connectedScenes) {
+    sceneState.activationLevel = SceneActivationLevelUnattached;
+  }
   // End of per-window code.
 
   OmahaService::Stop();

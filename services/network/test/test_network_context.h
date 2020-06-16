@@ -226,6 +226,7 @@ class TestNetworkContext : public mojom::NetworkContext {
       bool allow_credentials,
       const net::NetworkIsolationKey& network_isolation_key) override {}
   void CreateP2PSocketManager(
+      const net::NetworkIsolationKey& network_isolation_key,
       mojo::PendingRemote<mojom::P2PTrustedSocketManagerClient> client,
       mojo::PendingReceiver<mojom::P2PTrustedSocketManager>
           trusted_socket_manager,

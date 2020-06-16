@@ -75,12 +75,7 @@ void AppendArgsJustAfterProgram(base::CommandLine& cmd,
   argv.insert(argv.begin() + 1, args.begin(), args.end());
 }
 
-// Fill in test environment to the keys_file. The format is json.
-// We need the system information to determine whether a new screenshot
-// is good or not. All the information that can affect the output of pixels
-// should be filled in. Eg: operating system, graphics card, processor
-// architecture, screen resolution, etc.
-bool FillInTestEnvironment(const base::FilePath& keys_file) {
+void FillInSystemEnvironment(base::Value::DictStorage& ds) {
   std::string processor = "unknown";
 #if defined(ARCH_CPU_X86)
   processor = "x86";
@@ -90,10 +85,27 @@ bool FillInTestEnvironment(const base::FilePath& keys_file) {
   LOG(WARNING) << "Unknown Processor.";
 #endif
 
-  base::Value::DictStorage ds;
   ds["system"] =
       std::make_unique<base::Value>(SkiaGoldPixelDiff::GetPlatform());
   ds["processor"] = std::make_unique<base::Value>(processor);
+}
+
+// TODO(crbug.com/1081962) Support grace period.
+// Set ignore to true. When the test fails, Skia Gold will not make
+// comment on Gerrit.
+void FillInGracePeriod(base::Value::DictStorage& ds) {
+  ds["ignore"] = std::make_unique<base::Value>("1");
+}
+
+// Fill in test environment to the keys_file. The format is json.
+// We need the system information to determine whether a new screenshot
+// is good or not. All the information that can affect the output of pixels
+// should be filled in. Eg: operating system, graphics card, processor
+// architecture, screen resolution, etc.
+bool FillInTestEnvironment(const base::FilePath& keys_file) {
+  base::Value::DictStorage ds;
+  FillInSystemEnvironment(ds);
+  FillInGracePeriod(ds);
   base::Value root(std::move(ds));
   std::string content;
   base::JSONWriter::Write(root, &content);

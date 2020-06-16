@@ -15,8 +15,6 @@ import static org.mockito.Mockito.when;
 
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.MediumTest;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -27,6 +25,8 @@ import androidx.fragment.app.Fragment;
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceScreen;
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.MediumTest;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 

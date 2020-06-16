@@ -233,6 +233,7 @@ void MetricsLog::RecordCoreSystemProfile(
 void MetricsLog::RecordHistogramDelta(const std::string& histogram_name,
                                       const base::HistogramSamples& snapshot) {
   DCHECK(!closed_);
+  samples_count_ += snapshot.TotalCount();
   EncodeHistogramDelta(histogram_name, snapshot, &uma_proto_);
 }
 

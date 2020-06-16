@@ -80,8 +80,8 @@ bool CanvasRenderingContextHost::Is3d() const {
   return RenderingContext() && RenderingContext()->Is3d();
 }
 
-bool CanvasRenderingContextHost::Is2d() const {
-  return RenderingContext() && RenderingContext()->Is2d();
+bool CanvasRenderingContextHost::IsRenderingContext2D() const {
+  return RenderingContext() && RenderingContext()->IsRenderingContext2D();
 }
 
 CanvasResourceProvider*
@@ -183,7 +183,7 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider3D() {
 
 void CanvasRenderingContextHost::CreateCanvasResourceProvider2D(
     RasterModeHint hint) {
-  DCHECK(Is2d());
+  DCHECK(IsRenderingContext2D());
   base::WeakPtr<CanvasResourceDispatcher> dispatcher =
       GetOrCreateResourceDispatcher()
           ? GetOrCreateResourceDispatcher()->GetWeakPtr()

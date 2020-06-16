@@ -18,7 +18,6 @@ import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -66,6 +65,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.KeyboardNavigationListener;
+import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
@@ -162,9 +162,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     private boolean mDelayingTabSwitcherAnimation;
 
     private TabSwitcherDrawable mTabSwitcherAnimationTabStackDrawable;
-    private Drawable mTabSwitcherAnimationMenuDrawable;
-    private Drawable mTabSwitcherAnimationMenuBadgeDarkDrawable;
-    private Drawable mTabSwitcherAnimationMenuBadgeLightDrawable;
     // Value that determines the amount of transition from the normal toolbar mode to TabSwitcher
     // mode.  0 = entirely in normal mode and 1.0 = entirely in TabSwitcher mode.  In between values
     // can be used for animating between the two view modes.
@@ -500,7 +497,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         onHomeButtonUpdate(HomepageManager.isHomepageEnabled()
                 || BottomToolbarConfiguration.isBottomToolbarEnabled());
 
-        setTabSwitcherAnimationMenuDrawable();
         updateVisualsForLocationBarState();
     }
 
@@ -1236,7 +1232,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
      * mode of the toolbar on top of the TabSwitcher mode version of it.  We do this by
      * drawing all of the browsing mode views on top of the android view.
      */
-    private void drawTabSwitcherAnimationOverlay(Canvas canvas, float animationProgress) {
+    @VisibleForTesting
+    void drawTabSwitcherAnimationOverlay(Canvas canvas, float animationProgress) {
         if (!isNativeLibraryReady()) return;
 
         float floatAlpha = 1 - animationProgress;
@@ -1320,33 +1317,12 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         }
 
         // Draw the menu button if necessary.
-        final ImageButton menuButton = getMenuButton();
-        if (menuButton != null && !isShowingAppMenuUpdateBadge()
-                && mTabSwitcherAnimationMenuDrawable != null && mUrlExpansionPercent != 1f) {
-            mTabSwitcherAnimationMenuDrawable.setBounds(menuButton.getPaddingLeft(),
-                    menuButton.getPaddingTop(),
-                    menuButton.getWidth() - menuButton.getPaddingRight(),
-                    menuButton.getHeight() - menuButton.getPaddingBottom());
+        final MenuButton menuButton = (MenuButton) getMenuButtonWrapper();
+        if (menuButton != null) {
+            canvas.save();
             translateCanvasToView(mToolbarButtonsContainer, menuButton, canvas);
-            mTabSwitcherAnimationMenuDrawable.setAlpha(rgbAlpha);
-            int color = useLight() ? mLightModeDefaultColor : mDarkModeDefaultColor;
-            mTabSwitcherAnimationMenuDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
-            mTabSwitcherAnimationMenuDrawable.draw(canvas);
-        }
-
-        // Draw the menu badge if necessary.
-        Drawable badgeDrawable = useLight() ? mTabSwitcherAnimationMenuBadgeLightDrawable
-                                            : mTabSwitcherAnimationMenuBadgeDarkDrawable;
-
-        final View menuBadge = getMenuBadge();
-        if (menuBadge != null && isShowingAppMenuUpdateBadge() && badgeDrawable != null
-                && mUrlExpansionPercent != 1f) {
-            badgeDrawable.setBounds(menuBadge.getPaddingLeft(), menuBadge.getPaddingTop(),
-                    menuBadge.getWidth() - menuBadge.getPaddingRight(),
-                    menuBadge.getHeight() - menuBadge.getPaddingBottom());
-            translateCanvasToView(mToolbarButtonsContainer, menuBadge, canvas);
-            badgeDrawable.setAlpha(rgbAlpha);
-            badgeDrawable.draw(canvas);
+            menuButton.drawTabSwitcherAnimationOverlay(canvas, rgbAlpha);
+            canvas.restore();
         }
 
         mLightDrawablesUsedForLastTextureCapture = useLight();
@@ -2579,9 +2555,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     void removeAppMenuUpdateBadge(boolean animate) {
         if (getMenuBadge() == null) return;
         super.removeAppMenuUpdateBadge(animate);
-
-        mTabSwitcherAnimationMenuBadgeDarkDrawable = null;
-        mTabSwitcherAnimationMenuBadgeLightDrawable = null;
     }
 
     @Override
@@ -2779,14 +2752,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         mOptionalButtonAnimator = null;
         mOptionalButton.setAlpha(1.f);
         mOptionalButton.setTranslationX(0);
-    }
-
-    private void setTabSwitcherAnimationMenuDrawable() {
-        mTabSwitcherAnimationMenuDrawable =
-                ApiCompatibilityUtils
-                        .getDrawable(getResources(), R.drawable.ic_more_vert_24dp_on_dark_bg)
-                        .mutate();
-        ((BitmapDrawable) mTabSwitcherAnimationMenuDrawable).setGravity(Gravity.CENTER);
     }
 
     /**

@@ -1138,6 +1138,15 @@ class PortTest(LoggingTestCase):
             port.is_slow_wpt_test(
                 'external/wpt/html/dom/elements/global-attributes/dir_auto-EN-L.html'
             ))
+        self.assertFalse(
+            port.is_slow_wpt_test(
+                'external/wpt/css/css-pseudo/idlharness.html'))
+
+    def test_is_slow_wpt_test_idlharness_with_dcheck(self):
+        port = self.make_port(with_tests=True)
+        PortTest._add_manifest_to_mock_file_system(port)
+        port.host.filesystem.write_text_file(port._build_path('args.gn'),
+                                             'dcheck_always_on=true\n')
         # We always consider idlharness tests slow, even if they aren't marked
         # such in the manifest. See https://crbug.com/1047818
         self.assertTrue(

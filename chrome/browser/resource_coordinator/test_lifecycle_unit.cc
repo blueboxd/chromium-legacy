@@ -65,21 +65,9 @@ int TestLifecycleUnit::GetEstimatedMemoryFreedOnDiscardKB() const {
   return 0;
 }
 
-bool TestLifecycleUnit::CanFreeze(DecisionDetails* decision_details) const {
-  return false;
-}
-
 bool TestLifecycleUnit::CanDiscard(mojom::LifecycleUnitDiscardReason reason,
                                    DecisionDetails* decision_details) const {
   return can_discard_;
-}
-
-bool TestLifecycleUnit::Freeze() {
-  return false;
-}
-
-bool TestLifecycleUnit::Unfreeze() {
-  return false;
 }
 
 bool TestLifecycleUnit::Discard(LifecycleUnitDiscardReason discard_reason) {

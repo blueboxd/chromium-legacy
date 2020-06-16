@@ -41,7 +41,7 @@ using TestMakeCredentialTaskCallback =
 
 class FidoMakeCredentialTaskTest : public testing::Test {
  public:
-  FidoMakeCredentialTaskTest() {}
+  FidoMakeCredentialTaskTest() = default;
 
   std::unique_ptr<MakeCredentialTask> CreateMakeCredentialTask(
       FidoDevice* device) {
@@ -117,7 +117,8 @@ TEST_F(FidoMakeCredentialTaskTest, FallbackToU2fRegisterSuccess) {
 
 TEST_F(FidoMakeCredentialTaskTest, DefaultToU2fWhenClientPinSet) {
   AuthenticatorGetInfoResponse device_info(
-      {ProtocolVersion::kCtap2, ProtocolVersion::kU2f}, kTestDeviceAaguid);
+      {ProtocolVersion::kCtap2, ProtocolVersion::kU2f},
+      {Ctap2Version::kCtap2_0}, kTestDeviceAaguid);
   AuthenticatorSupportedOptions options;
   options.client_pin_availability =
       AuthenticatorSupportedOptions::ClientPinAvailability::kSupportedAndPinSet;
@@ -138,7 +139,8 @@ TEST_F(FidoMakeCredentialTaskTest, DefaultToU2fWhenClientPinSet) {
 
 TEST_F(FidoMakeCredentialTaskTest, EnforceClientPinWhenUserVerificationSet) {
   AuthenticatorGetInfoResponse device_info(
-      {ProtocolVersion::kCtap2, ProtocolVersion::kU2f}, kTestDeviceAaguid);
+      {ProtocolVersion::kCtap2, ProtocolVersion::kU2f},
+      {Ctap2Version::kCtap2_0}, kTestDeviceAaguid);
   AuthenticatorSupportedOptions options;
   options.client_pin_availability =
       AuthenticatorSupportedOptions::ClientPinAvailability::kSupportedAndPinSet;

@@ -58,7 +58,6 @@ struct CORE_EXPORT InspectorHighlightConfig {
   bool show_styles;
   bool show_rulers;
   bool show_extension_lines;
-  bool show_accessibility_info;
 
   String selector_list;
   ColorFormat color_format;
@@ -131,7 +130,6 @@ class CORE_EXPORT InspectorHighlight {
   std::unique_ptr<protocol::ListValue> grid_info_;
   bool show_rulers_;
   bool show_extension_lines_;
-  bool show_accessibility_info_;
   float scale_;
   ColorFormat color_format_;
 };

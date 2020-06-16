@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Prihláste sa na webe</translation>
 <translation id="1509960214886564027">Funkcie na mnohých weboch môžu zlyhávať</translation>
 <translation id="152234381334907219">Nikdy neukladať</translation>
+<translation id="1535268707340844072">V dôsledku vášho aktuálneho nastavenia nemusia niektoré weby fungovať. Ak chcete spravovať súbory cookie pre všetky weby, prejdite do <ph name="BEGIN_LINK" />Nastavení súborov cookie<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Adresa 1</translation>
 <translation id="1545749641540134597">Naskenovať kód QR</translation>
 <translation id="1552525382687785070">Synchronizáciu zakázal správca</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Aktívne pred <ph name="DAYS" /> dňami</translation>
 <translation id="2074131957428911366">Položky, ktoré chcete synchronizovať, môžete vybrať v <ph name="BEGIN_LINK" />nastaveniach<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Späť</translation>
+<translation id="2081417079511601293">Blokovať tretie strany v režime inkognito</translation>
 <translation id="209018056901015185">Vyžiadať stránky pre počítač</translation>
 <translation id="2103075008456228677">Otvoriť history.google.com</translation>
 <translation id="2116625576999540962">Počet presunutých položiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">Otvoriť na novej karte</translation>
 <translation id="3037605927509011580">Aj, chyba!</translation>
 <translation id="3112556859945124369">Označiť…</translation>
+<translation id="3131206671572504478">Blokovať všetky</translation>
 <translation id="3153862085237805241">Uložiť kartu</translation>
 <translation id="3157684681743766797">Označiť všetko…</translation>
 <translation id="3161291298470460782">Touto akciou sa odhlásite, vypnete synchronizáciu a vymažete všetky údaje Chromu z tohto zariadenia. Synchronizované údaje zostanú vo vašom účte Google.</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">Klepnutím zmeníte jazyk.</translation>
 <translation id="441868831736628555">Oznámenie o ochrane súkromia</translation>
 <translation id="4454246407045105932">Pridanie jazyka</translation>
+<translation id="4469418912670346607">Pokračovať v nastavovaní</translation>
 <translation id="4476574785019001431">Nastavenia</translation>
 <translation id="4496373720959965247">Pridajte karty a prepínajte medzi stránkami</translation>
 <translation id="4508750114462689118">Zavrieť propagáciu prihlásenia</translation>
@@ -300,6 +304,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="4805759445554688327">Neplatné číslo karty</translation>
 <translation id="4818522717893377262">Pridať jazyk…</translation>
 <translation id="481968316161811770">Súbory cookie, údaje webu</translation>
+<translation id="4826218269716039351">Blokovať tretie strany</translation>
 <translation id="4833786495304741580">Automaticky odosiela Googlu štatistiky o používaní a správy o zlyhaní.</translation>
 <translation id="4840495572919996524">Záložky, história, heslá a ďalší obsah sa už nebudú synchronizovať do vášho účtu Google.</translation>
 <translation id="4854345657858711387">Nastavenie vstupného kódu</translation>
@@ -345,6 +350,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="54401264925851789">Informácie o zabezpečení stránky</translation>
 <translation id="5443952882982198570">Kreditné karty</translation>
 <translation id="5457907402803865181">Chyba pri synchronizovaní hesiel.</translation>
+<translation id="5489208564673669003">Ak chcete spravovať súbory cookie pre všetky weby, prejdite do <ph name="BEGIN_LINK" />Nastavení súborov cookie<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Odhlásiť sa a vymazať údaje z tohto zariadenia</translation>
 <translation id="5525269841082836315">Vytv. prístup. frázu</translation>
 <translation id="5548760955356983418">Funkcia Handoff umožňuje začať prehliadanie webových stránok na tomto zariadení a potom jednoducho pokračovať na počítači Mac. Aktuálne otvorené stránky sa zobrazia v doku na počítači Mac.
@@ -432,6 +438,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="6418346271604475326">Príprava PDF</translation>
 <translation id="6426067060178468363">Povoliť súbory cookie</translation>
 <translation id="6434591244308415567">Vyskytla sa chyba. Skúste to znova neskôr.</translation>
+<translation id="6439338047467462846">Povoliť všetky</translation>
 <translation id="6445051938772793705">Krajina</translation>
 <translation id="6445981559479772097">Správa sa odoslala.</translation>
 <translation id="6447842834002726250">Súbory cookie</translation>
@@ -439,6 +446,7 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="6476800141292307438">Stránka sa prekladá do jazyka <ph name="LANGUAGE" />. Možnosti nájdete v dolnej časti obrazovky.</translation>
 <translation id="648164694371393720">Chyba overenia</translation>
 <translation id="6482629121755362506">Počet odstránených položiek: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="651505212789431520">Chcete zrušiť synchronizáciu? Môžete ju kedykoľvek zapnúť v Nastaveniach.</translation>
 <translation id="6561262006871132942">Priblížiť</translation>
 <translation id="6610002944194042868">Možnosti prekladu</translation>
 <translation id="6628106477656132239">Neplatný dátum vypršania platnosti</translation>

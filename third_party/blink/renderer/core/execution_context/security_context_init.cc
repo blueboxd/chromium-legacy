@@ -9,8 +9,7 @@
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/execution_context/window_agent.h"
-#include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/feature_policy/document_policy_parser.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
@@ -26,7 +25,6 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
 namespace {
@@ -58,18 +56,16 @@ DocumentPolicy::ParsedDocumentPolicy FilterByOriginTrial(
 
 // This is the constructor used by RemoteSecurityContext
 SecurityContextInit::SecurityContextInit()
-    : SecurityContextInit(nullptr, nullptr, nullptr) {}
+    : SecurityContextInit(nullptr, nullptr) {}
 
 // This constructor is used for non-Document contexts (i.e., workers and tests).
 // This does a simpler check than Documents to set secure_context_mode_. This
 // is only sufficient until there are APIs that are available in workers or
 // worklets that require a privileged context test that checks ancestors.
 SecurityContextInit::SecurityContextInit(scoped_refptr<SecurityOrigin> origin,
-                                         OriginTrialContext* origin_trials,
-                                         Agent* agent)
+                                         OriginTrialContext* origin_trials)
     : security_origin_(std::move(origin)),
       origin_trials_(origin_trials),
-      agent_(agent),
       secure_context_mode_(security_origin_ &&
                                    security_origin_->IsPotentiallyTrustworthy()
                                ? SecureContextMode::kSecureContext
@@ -81,6 +77,12 @@ SecurityContextInit::SecurityContextInit(const DocumentInit& initializer)
     : csp_(initializer.GetContentSecurityPolicy()),
       sandbox_flags_(initializer.GetSandboxFlags()),
       security_origin_(initializer.GetDocumentOrigin()) {
+  // Derive possibly a new security origin that contains the agent cluster id.
+  if (auto* context = initializer.GetExecutionContext()) {
+    security_origin_ = security_origin_->GetOriginForAgentCluster(
+        context->GetAgent()->cluster_id());
+  }
+
   // The secure context state is based on the origin.
   InitializeSecureContextMode(initializer);
 
@@ -93,9 +95,6 @@ SecurityContextInit::SecurityContextInit(const DocumentInit& initializer)
 
   // Initialize document policy.
   InitializeDocumentPolicy(initializer);
-
-  // Initialize the agent. Depends on security origin.
-  InitializeAgent(initializer);
 }
 
 bool SecurityContextInit::FeaturePolicyFeatureObserved(
@@ -348,34 +347,6 @@ void SecurityContextInit::InitializeOriginTrials(
   origin_trials_->AddTokens(
       security_origin_.get(),
       secure_context_mode_ == SecureContextMode::kSecureContext, *tokens);
-}
-
-void SecurityContextInit::InitializeAgent(const DocumentInit& initializer) {
-  // If we are allowed to share our document with other windows then we need
-  // to look at the window agent factory, otherwise we should create our own
-  // window agent.
-  auto* context = initializer.GetExecutionContext();
-  LocalFrame* frame =
-      context ? To<LocalDOMWindow>(context)->GetFrame() : nullptr;
-  if (frame) {
-    // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
-    // dynamically change.
-    bool has_potential_universal_access_privilege =
-        !frame->GetSettings()->GetWebSecurityEnabled() ||
-        frame->GetSettings()->GetAllowUniversalAccessFromFileURLs();
-    agent_ = frame->window_agent_factory().GetAgentForOrigin(
-        has_potential_universal_access_privilege,
-        V8PerIsolateData::MainThreadIsolate(), security_origin_.get());
-  } else {
-    // ContextDocument is null only for Documents created in unit tests.
-    // In that case, use a throw away WindowAgent.
-    agent_ = MakeGarbageCollected<WindowAgent>(
-        V8PerIsolateData::MainThreadIsolate());
-  }
-
-  // Derive possibly a new security origin that contains the cluster id.
-  security_origin_ =
-      security_origin_->GetOriginForAgentCluster(agent_->cluster_id());
 }
 
 }  // namespace blink

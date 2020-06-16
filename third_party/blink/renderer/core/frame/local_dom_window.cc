@@ -69,6 +69,7 @@
 #include "third_party/blink/renderer/core/events/hash_change_event.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/pop_state_event.h"
+#include "third_party/blink/renderer/core/execution_context/agent_metrics_collector.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
@@ -226,9 +227,9 @@ static void UntrackAllBeforeUnloadEventListeners(LocalDOMWindow* dom_window) {
       blink::mojom::SuddenTerminationDisablerType::kBeforeUnloadHandler);
 }
 
-LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
+LocalDOMWindow::LocalDOMWindow(LocalFrame& frame, WindowAgent* agent)
     : DOMWindow(frame),
-      ExecutionContext(V8PerIsolateData::MainThreadIsolate()),
+      ExecutionContext(V8PerIsolateData::MainThreadIsolate(), agent),
       visualViewport_(MakeGarbageCollected<DOMVisualViewport>(this)),
       should_print_when_finished_loading_(false),
       input_method_controller_(
@@ -627,6 +628,8 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
   DCHECK_EQ(init.GetFrame(), GetFrame());
   DCHECK(!document_ || !document_->IsActive());
 
+  bool is_first_document = !document_;
+
   // Explicitly null document_ here so that it is always null when Document's
   // constructor is running. This ensures that no code running from the
   // constructor obeserves a situation where dom_window_->document() is a
@@ -637,6 +640,12 @@ Document* LocalDOMWindow::InstallNewDocument(const DocumentInit& init) {
 
   if (!GetFrame())
     return document_;
+
+  if (is_first_document) {
+    GetAgent()->AttachContext(this);
+    if (auto* agent_metrics = GetFrame()->GetPage()->GetAgentMetricsCollector())
+      agent_metrics->DidAttachWindow(*this);
+  }
 
   GetFrame()->GetScriptController().UpdateDocument();
   document_->GetViewportData().UpdateViewportDescription();
@@ -786,12 +795,18 @@ MediaQueryList* LocalDOMWindow::matchMedia(const String& media) {
 }
 
 void LocalDOMWindow::FrameDestroyed() {
+  // Some unit tests manually call FrameDestroyed(). Don't run it a second time.
+  if (!GetFrame())
+    return;
   // In the Reset() case, this Document::Shutdown() early-exits because it was
   // already called earlier in the commit process.
   // TODO(japhet): Can we merge this function and Reset()? At least, this
   // function should be renamed to Detach(), since in the Reset() case the frame
   // is not being destroyed.
   document()->Shutdown();
+  GetAgent()->DetachContext(this);
+  if (auto* agent_metrics = GetFrame()->GetPage()->GetAgentMetricsCollector())
+    agent_metrics->DidDetachWindow(*this);
   NotifyContextDestroyed();
   RemoveAllEventListeners();
   DisconnectFromFrame();
@@ -943,12 +958,11 @@ Navigator* LocalDOMWindow::navigator() const {
 void LocalDOMWindow::SchedulePostMessage(
     MessageEvent* event,
     scoped_refptr<const SecurityOrigin> target,
-    Document* source) {
+    LocalDOMWindow* source) {
   // Allowing unbounded amounts of messages to build up for a suspended context
   // is problematic; consider imposing a limit or other restriction if this
   // surfaces often as a problem (see crbug.com/587012).
-  std::unique_ptr<SourceLocation> location =
-      SourceLocation::Capture(source->GetExecutionContext());
+  std::unique_ptr<SourceLocation> location = SourceLocation::Capture(source);
   GetTaskRunner(TaskType::kPostedMessage)
       ->PostTask(
           FROM_HERE,

@@ -15,9 +15,9 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-namespace ash {
-class ArcCustomTab;
-}  // namespace ash
+namespace arc {
+class CustomTab;
+}  // namespace arc
 
 class Browser;
 
@@ -26,7 +26,7 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession,
                              public TabStripModelObserver {
  public:
   static mojo::PendingRemote<arc::mojom::CustomTabSession> Create(
-      std::unique_ptr<ash::ArcCustomTab> custom_tab,
+      std::unique_ptr<arc::CustomTab> custom_tab,
       Browser* browser);
 
   // arc::mojom::CustomTabSession:
@@ -34,7 +34,7 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession,
 
  private:
   friend class CustomTabSessionImplTest;
-  CustomTabSessionImpl(std::unique_ptr<ash::ArcCustomTab> custom_tab,
+  CustomTabSessionImpl(std::unique_ptr<arc::CustomTab> custom_tab,
                        Browser* browser);
   ~CustomTabSessionImpl() override;
 
@@ -61,7 +61,7 @@ class CustomTabSessionImpl : public arc::mojom::CustomTabSession,
   Browser* browser_;
 
   // The custom tab object.
-  std::unique_ptr<ash::ArcCustomTab> custom_tab_;
+  std::unique_ptr<arc::CustomTab> custom_tab_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

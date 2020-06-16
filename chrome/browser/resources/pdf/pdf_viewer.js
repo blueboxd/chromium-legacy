@@ -697,11 +697,6 @@ export class PDFViewer {
    * @private
    */
   handleStrings_(strings) {
-    const stringsDictionary =
-        /** @type {{ textdirection: string, language: string }} */ (strings);
-    document.documentElement.dir = stringsDictionary.textdirection;
-    document.documentElement.lang = stringsDictionary.language;
-
     loadTimeData.data = strings;
 
     // Predefined zoom factors to be used when zooming in/out. These are in

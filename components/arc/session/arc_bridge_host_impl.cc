@@ -7,7 +7,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/public/cpp/arc_notifications_host_initializer.h"
+#include "ash/public/cpp/external_arc/message_center/arc_notification_manager.h"
+#include "ash/public/cpp/message_center/arc_notifications_host_initializer.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "components/arc/mojom/accessibility_helper.mojom.h"
@@ -237,9 +238,11 @@ void ArcBridgeHostImpl::OnNetInstanceReady(
 
 void ArcBridgeHostImpl::OnNotificationsInstanceReady(
     mojo::PendingRemote<mojom::NotificationsInstance> notifications_remote) {
-  // Forward notification instance to ash.
-  ash::ArcNotificationsHostInitializer::Get()->SetArcNotificationsInstance(
-      std::move(notifications_remote));
+  // Forward notification instance to ash by injecting ArcNotificationManager.
+  auto manager = std::make_unique<ash::ArcNotificationManager>();
+  manager->SetInstance(std::move(notifications_remote));
+  ash::ArcNotificationsHostInitializer::Get()
+      ->SetArcNotificationManagerInstance(std::move(manager));
 }
 
 void ArcBridgeHostImpl::OnObbMounterInstanceReady(

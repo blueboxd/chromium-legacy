@@ -143,7 +143,7 @@ class SafeBrowsingTriggeredPopupBlockerTest
     safe_browsing::ThreatMetadata metadata;
     metadata.subresource_filter_match
         [safe_browsing::SubresourceFilterType::ABUSIVE] = level;
-    fake_safe_browsing_database()->AddBlacklistedUrl(
+    fake_safe_browsing_database()->AddBlocklistedUrl(
         url, safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER, metadata);
   }
 

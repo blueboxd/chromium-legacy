@@ -1126,7 +1126,7 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="267596348720209223">Especifica la codificación de caracteres admitida por el proveedor de búsqueda. Las codificaciones son nombres de páginas de códigos, como UTF-8, GB2312 e ISO-8859-1. Se prueban en el orden dado. Esta política es opcional. Si no se configura, se usará el valor predeterminado, que es UTF-8. Esta política solo se respeta si la política "DefaultSearchProviderEnabled" está habilitada.</translation>
 <translation id="2678503605767349615">Certificados de cliente obligatorios en todo el dispositivo</translation>
 <translation id="268577405881275241">Habilitar la función del proxy de compresión de datos</translation>
-<translation id="2691668238491124549">Si estableces esta política (solo recomendadas), se moverán al principio de la lista las configuraciones regionales recomendadas para una sesión administrada, en el orden en el que aparecen en la política. De forma predeterminada, estará seleccionada la primera configuración regional recomendada.
+<translation id="2691668238491124549">Si estableces esta política (como solo recomendadas), se moverán al principio de la lista las configuraciones regionales recomendadas para una sesión administrada, en el orden en el que aparecen en la política. De forma predeterminada, estará seleccionada la primera configuración regional recomendada.
 
       Si no estableces la política, se seleccionará de forma predeterminada la configuración regional actual de la IU.
 

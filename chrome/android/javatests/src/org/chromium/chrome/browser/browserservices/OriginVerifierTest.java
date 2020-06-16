@@ -4,10 +4,10 @@
 
 package org.chromium.chrome.browser.browserservices;
 
-import android.support.test.filters.SmallTest;
 import android.util.Pair;
 
 import androidx.browser.customtabs.CustomTabsService;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

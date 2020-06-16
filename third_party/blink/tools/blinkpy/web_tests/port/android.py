@@ -355,7 +355,7 @@ class AndroidPort(base.Port):
         return {}
 
     def expected_test(self, _):
-      return
+        return
 
     def get_platform_tags(self):
         tags = {'android'}
@@ -370,11 +370,11 @@ class AndroidPort(base.Port):
         return super(AndroidPort, self).additional_driver_flags() + \
             self._driver_details.additional_command_line_flags(use_breakpad=not self.get_option('disable_breakpad'))
 
-    def default_timeout_ms(self):
+    def _default_timeout_ms(self):
         # Android platform has less computing power than desktop platforms.
         # Using 10 seconds allows us to pass most slow tests which are not
         # marked as slow tests on desktop platforms.
-        return 10 * 1000
+        return 10000
 
     def driver_stop_timeout(self):
         # The driver doesn't respond to closing stdin, so we might as well stop the driver immediately.

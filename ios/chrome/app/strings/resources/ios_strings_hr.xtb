@@ -470,6 +470,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="681368974849482173">Stavka je stvorena</translation>
 <translation id="6831043979455480757">Prevedi</translation>
 <translation id="6851516051005285358">Zatraži web-lokaciju za računala</translation>
+<translation id="6856384753476268833">Pod upravljanjem vaše organizacije.</translation>
 <translation id="6858855187367714033">Skenirano</translation>
 <translation id="6859944681507688231">Da biste skenirali QR kôd ili kreditnu karticu, omogućite kameru u postavkama.</translation>
 <translation id="6873263987691478642">Podijeljeni prikaz</translation>
@@ -548,6 +549,7 @@ Budući da vašim računom upravlja <ph name="HOSTED_DOMAIN" />, vaši podaci iz
 <translation id="7856733331829174190">Preuzimanje nije moguće</translation>
 <translation id="7859704718976024901">Povijest pregledavanja</translation>
 <translation id="7887198238286927132">Da bi zaštitio vašu privatnost, Chrome neće automatski popuniti ovo polje.</translation>
+<translation id="791251013315685175">Uređajem upravlja <ph name="COMPANY" /></translation>
 <translation id="7918293828610777738">Vaš popis za čitanje dostupan je offline. Da biste dodali stranicu na popis za čitanje, dodirnite <ph name="SHARE_OPENING_ICON" />, a zatim <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Izvoz zaporki...</translation>

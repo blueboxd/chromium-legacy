@@ -158,10 +158,8 @@ class LaserSegment {
 // LaserPointerView
 LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
                                    base::TimeDelta presentation_delay,
-                                   base::TimeDelta stationary_point_delay,
-                                   aura::Window* container)
-    : FastInkView(container, fast_ink::FastInkHost::PresentationCallback()),
-      laser_points_(life_duration),
+                                   base::TimeDelta stationary_point_delay)
+    : laser_points_(life_duration),
       predicted_laser_points_(life_duration),
       presentation_delay_(presentation_delay),
       stationary_timer_(FROM_HERE,
@@ -170,6 +168,18 @@ LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
                                             base::Unretained(this))) {}
 
 LaserPointerView::~LaserPointerView() = default;
+
+// static
+views::UniqueWidgetPtr LaserPointerView::Create(
+    base::TimeDelta life_duration,
+    base::TimeDelta presentation_delay,
+    base::TimeDelta stationary_point_delay,
+    aura::Window* container) {
+  return fast_ink::FastInkView::CreateWidgetWithContents(
+      base::WrapUnique(new LaserPointerView(life_duration, presentation_delay,
+                                            stationary_point_delay)),
+      container);
+}
 
 void LaserPointerView::AddNewPoint(const gfx::PointF& new_point,
                                    const base::TimeTicks& new_time) {

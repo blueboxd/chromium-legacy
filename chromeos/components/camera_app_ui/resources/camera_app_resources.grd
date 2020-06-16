@@ -17,6 +17,7 @@
       <structure name="IDR_CAMERA_ASYNC_WRITER_JS" file="src/js/models/async_writer.js" type="chrome_html" />
       <structure name="IDR_CAMERA_BACKGROUND_JS" file="src/js/background.js" type="chrome_html" />
       <structure name="IDR_CAMERA_BACKGROUND_OPS_JS" file="src/js/background_ops.js" type="chrome_html" />
+      <structure name="IDR_CAMERA_BROWSER_PROXY_INTERFACE_JS" file="src/js/browser_proxy/browser_proxy_interface.js" type="chrome_html" />
       <structure name="IDR_CAMERA_CAMERA3_DEVICE_INFO_JS" file="src/js/device/camera3_device_info.js" type="chrome_html" />
       <structure name="IDR_CAMERA_CAMERA_INTENT_JS" file="src/js/views/camera_intent.js" type="chrome_html" />
       <structure name="IDR_CAMERA_CAMERA_JS" file="src/js/views/camera.js" type="chrome_html" />
@@ -63,20 +64,24 @@
       <structure name="IDR_CAMERA_VIEW_JS" file="src/js/views/view.js" type="chrome_html" />
       <structure name="IDR_CAMERA_WAITABLE_EVENT_JS" file="src/js/waitable_event.js" type="chrome_html" />
       <structure name="IDR_CAMERA_WARNING_JS" file="src/js/views/warning.js" type="chrome_html" />
-      <structure name="IDR_CAMERA_WEBUI_BROWSER_PROXY" file="src/js/browser_proxy/webui_browser_proxy.js" type="chrome_html" />
+      <structure name="IDR_CAMERA_WEBUI_BROWSER_PROXY_JS" file="src/js/browser_proxy/webui_browser_proxy.js" type="chrome_html" />
     </structures>
     <includes>
       <!-- Mojo Lite Bindings -->
-      <include name="IDR_CAMERA_CAMERA_INTENT_MOJOM_LITE_JS"
-          file="${root_gen_dir}/components/arc/mojom/camera_intent.mojom-lite.js"
+      <include name="IDR_CAMERA_CAMERA_APP_HELPER_MOJOM_LITE_JS"
+          file="${root_gen_dir}/chromeos/components/camera_app_ui/camera_app_helper.mojom-lite.js"
           use_base_dir="false"
           type="BINDATA"/>
-      <include name="IDR_CAMERA_IMAGE_CAPTURE_MOJOM_LITE_JS"
-          file="${root_gen_dir}/media/capture/mojom/image_capture.mojom-lite.js"
+      <include name="IDR_CAMERA_CAMERA_APP_MOJOM_LITE_JS"
+          file="${root_gen_dir}/media/capture/video/chromeos/mojom/camera_app.mojom-lite.js"
           use_base_dir="false"
           type="BINDATA"/>
       <include name="IDR_CAMERA_CAMERA_COMMON_MOJOM_LITE_JS"
           file="${root_gen_dir}/media/capture/video/chromeos/mojom/camera_common.mojom-lite.js"
+          use_base_dir="false"
+          type="BINDATA"/>
+      <include name="IDR_CAMERA_CAMERA_INTENT_MOJOM_LITE_JS"
+          file="${root_gen_dir}/components/arc/mojom/camera_intent.mojom-lite.js"
           use_base_dir="false"
           type="BINDATA"/>
       <include name="IDR_CAMERA_CAMERA_METADATA_MOJOM_LITE_JS"
@@ -87,8 +92,24 @@
           file="${root_gen_dir}/media/capture/video/chromeos/mojom/camera_metadata_tags.mojom-lite.js"
           use_base_dir="false"
           type="BINDATA"/>
-      <include name="IDR_CAMERA_APP_MOJOM_LITE_JS"
-          file="${root_gen_dir}/media/capture/video/chromeos/mojom/camera_app.mojom-lite.js"
+      <include name="IDR_CAMERA_GEOMETRY_MOJOM_LITE_JS"
+          file="${root_gen_dir}/ui/gfx/geometry/mojom/geometry.mojom-lite.js"
+          use_base_dir="false"
+          type="BINDATA"/>
+      <include name="IDR_CAMERA_IDLE_MANAGER_MOJOM_LITE_JS"
+          file="${root_gen_dir}/third_party/blink/public/mojom/idle/idle_manager.mojom-lite.js"
+          use_base_dir="false"
+          type="BINDATA"/>
+      <include name="IDR_CAMERA_IMAGE_CAPTURE_MOJOM_LITE_JS"
+          file="${root_gen_dir}/media/capture/mojom/image_capture.mojom-lite.js"
+          use_base_dir="false"
+          type="BINDATA"/>
+      <include name="IDR_CAMERA_RANGE_MOJOM_LITE_JS"
+          file="${root_gen_dir}/ui/gfx/range/mojom/range.mojom-lite.js"
+          use_base_dir="false"
+          type="BINDATA"/>
+      <include name="IDR_CAMERA_TIME_MOJOM_LITE_JS"
+          file="${root_gen_dir}/mojo/public/mojom/base/time.mojom-lite.js"
           use_base_dir="false"
           type="BINDATA"/>
 
@@ -135,6 +156,7 @@
       <include name="IDR_CAMERA_CAMERA_MODE_PHOTO_SVG" file="src/images/camera_mode_photo.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_FOCUS_AIM_SVG" file="src/images/camera_focus_aim.svg" type="BINDATA" />
       <include name="IDR_CAMERA_CAMERA_BUTTON_SETTINGS_SVG" file="src/images/camera_button_settings.svg" type="BINDATA" />
+      <include name="IDR_CAMERA_CAMERA_INTENT_PLAY_VIDEO_SVG" file="src/images/camera_intent_play_video.svg" type="BINDATA" />
     </includes>
   </release>
 </grit>

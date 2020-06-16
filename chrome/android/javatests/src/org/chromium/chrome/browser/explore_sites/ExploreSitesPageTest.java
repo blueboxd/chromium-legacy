@@ -11,11 +11,11 @@ import static org.hamcrest.Matchers.instanceOf;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.SystemClock;
-import android.support.test.filters.SmallTest;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.contrib.RecyclerViewActions;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.AfterClass;

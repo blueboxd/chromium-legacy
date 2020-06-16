@@ -796,6 +796,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                         completion:nil];
       break;
     case ItemTypeAccount:
+      base::RecordAction(base::UserMetricsAction("Settings.MyAccount"));
       controller = [[AccountsTableViewController alloc] initWithBrowser:_browser
                                               closeSettingsOnAddAccount:NO];
       break;

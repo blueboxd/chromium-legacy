@@ -73,8 +73,8 @@ ClientSideDetectionService::ClientSideDetectionService(Profile* profile)
                                          : nullptr) {
   profile_ = profile;
 
-  // profile_ can be null in unit tests
-  if (!profile_)
+  // |profile_| and |url_loader_factory_| can be null in unit tests
+  if (!profile_ || !url_loader_factory_)
     return;
 
   pref_change_registrar_.Init(profile_->GetPrefs());
@@ -82,6 +82,9 @@ ClientSideDetectionService::ClientSideDetectionService(Profile* profile)
       prefs::kSafeBrowsingEnabled,
       base::Bind(&ClientSideDetectionService::OnPrefsUpdated,
                  base::Unretained(this)));
+
+  // Do an initial check of the prefs.
+  OnPrefsUpdated();
 }
 
 ClientSideDetectionService::ClientSideDetectionService(

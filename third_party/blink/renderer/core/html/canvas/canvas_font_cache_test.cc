@@ -36,7 +36,7 @@ CanvasRenderingContext* CanvasFontCacheTest::Context2D() const {
   // If the following check fails, perhaps you forgot to call createContext
   // in your test?
   EXPECT_NE(nullptr, CanvasElement().RenderingContext());
-  EXPECT_TRUE(CanvasElement().RenderingContext()->Is2d());
+  EXPECT_TRUE(CanvasElement().RenderingContext()->IsRenderingContext2D());
   return CanvasElement().RenderingContext();
 }
 

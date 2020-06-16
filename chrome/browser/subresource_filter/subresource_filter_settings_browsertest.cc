@@ -58,7 +58,7 @@ class SubresourceFilterSettingsBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
-                       ContentSettingsWhitelist_DoNotActivate) {
+                       ContentSettingsAllowlist_DoNotActivate) {
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
@@ -70,7 +70,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
   content::WebContentsConsoleObserver console_observer(web_contents());
   console_observer.SetPattern(kActivationConsoleMessage);
 
-  // Simulate an explicity whitelisting via content settings.
+  // Simulate an explicitly allowlisting via content settings.
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   settings_map->SetContentSettingDefaultScope(
@@ -79,12 +79,12 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
-  // No message for whitelisted url.
+  // No message for allowlisted url.
   EXPECT_TRUE(console_observer.messages().empty());
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
-                       ContentSettingsWhitelistGlobal_DoNotActivate) {
+                       ContentSettingsAllowlistGlobal_DoNotActivate) {
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
@@ -133,7 +133,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
-  // No message for whitelisted url.
+  // No message for allowlisted url.
   EXPECT_TRUE(console_observer.messages().empty());
 
   // Since the policy change can take effect without browser restart, verify
@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
-                       ContentSettingsWhitelistViaReload_DoNotActivate) {
+                       ContentSettingsAllowlistViaReload_DoNotActivate) {
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
-  // Whitelist via a reload.
+  // Allowlist via a reload.
   content::TestNavigationObserver navigation_observer(web_contents(), 1);
   ChromeSubresourceFilterClient::FromWebContents(web_contents())
       ->OnReloadRequested();
@@ -190,7 +190,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
-                       ContentSettingsWhitelistViaReload_WhitelistIsByDomain) {
+                       ContentSettingsAllowlistViaReload_AllowlistIsByDomain) {
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
@@ -199,7 +199,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
-  // Whitelist via a reload.
+  // Allowlist via a reload.
   content::TestNavigationObserver navigation_observer(web_contents(), 1);
   ChromeSubresourceFilterClient::FromWebContents(web_contents())
       ->OnReloadRequested();
@@ -207,13 +207,13 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
 
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
-  // Another navigation to the same domain should be whitelisted too.
+  // Another navigation to the same domain should be allowlisted too.
   ui_test_utils::NavigateToURL(
       browser(),
       GetTestUrl("subresource_filter/frame_with_included_script.html?query"));
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
-  // A cross site blacklisted navigation should stay activated, however.
+  // A cross site blocklisted navigation should stay activated, however.
   GURL a_url(embedded_test_server()->GetURL(
       "a.com", "/subresource_filter/frame_with_included_script.html"));
   ConfigureAsPhishingURL(a_url);
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
       "a.com", "/subresource_filter/frame_with_included_script.html"));
   GURL b_url(embedded_test_server()->GetURL(
       "b.com", "/subresource_filter/frame_with_included_script.html"));
-  // Test utils only support one blacklisted site at a time.
+  // Test utils only support one blocklisted site at a time.
   // TODO(csharrison): Add support for more than one URL.
   ConfigureAsPhishingURL(a_url);
 

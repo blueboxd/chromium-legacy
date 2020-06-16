@@ -7,9 +7,10 @@ package org.chromium.chrome.browser.push_messaging;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.os.Bundle;
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.MediumTest;
 import android.util.Pair;
+
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;

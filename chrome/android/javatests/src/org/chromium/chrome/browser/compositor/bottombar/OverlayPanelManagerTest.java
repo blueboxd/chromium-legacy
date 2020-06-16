@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.compositor.bottombar;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

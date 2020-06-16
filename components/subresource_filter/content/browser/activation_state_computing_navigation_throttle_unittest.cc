@@ -81,22 +81,22 @@ class ActivationStateComputingNavigationThrottleTest
 
   void InitializeRuleset() {
     std::vector<proto::UrlRule> rules;
-    rules.push_back(testing::CreateWhitelistRuleForDocument(
-        "whitelisted.com", proto::ACTIVATION_TYPE_DOCUMENT,
-        {"allow-child-to-be-whitelisted.com",
-         "whitelisted-generic-with-disabled-child.com"}));
+    rules.push_back(testing::CreateAllowlistRuleForDocument(
+        "allowlisted.com", proto::ACTIVATION_TYPE_DOCUMENT,
+        {"allow-child-to-be-allowlisted.com",
+         "allowlisted-generic-with-disabled-child.com"}));
 
-    rules.push_back(testing::CreateWhitelistRuleForDocument(
-        "whitelisted-generic.com", proto::ACTIVATION_TYPE_GENERICBLOCK,
-        {"allow-child-to-be-whitelisted.com"}));
+    rules.push_back(testing::CreateAllowlistRuleForDocument(
+        "allowlisted-generic.com", proto::ACTIVATION_TYPE_GENERICBLOCK,
+        {"allow-child-to-be-allowlisted.com"}));
 
-    rules.push_back(testing::CreateWhitelistRuleForDocument(
-        "whitelisted-generic-with-disabled-child.com",
+    rules.push_back(testing::CreateAllowlistRuleForDocument(
+        "allowlisted-generic-with-disabled-child.com",
         proto::ACTIVATION_TYPE_GENERICBLOCK,
-        {"allow-child-to-be-whitelisted.com"}));
+        {"allow-child-to-be-allowlisted.com"}));
 
-    rules.push_back(testing::CreateWhitelistRuleForDocument(
-        "whitelisted-always.com", proto::ACTIVATION_TYPE_DOCUMENT));
+    rules.push_back(testing::CreateAllowlistRuleForDocument(
+        "allowlisted-always.com", proto::ACTIVATION_TYPE_DOCUMENT));
 
     ASSERT_NO_FATAL_FAILURE(test_ruleset_creator_.CreateRulesetWithRules(
         rules, &test_ruleset_pair_));
@@ -290,13 +290,13 @@ TEST_P(ActivationStateComputingThrottleMainFrameTest,
 }
 
 TEST_P(ActivationStateComputingThrottleMainFrameTest,
-       WhitelistDoesNotApply_CausesActivation) {
+       AllowlistDoesNotApply_CausesActivation) {
   NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://allow-child-to-be-whitelisted.com/"),
+      GURL("http://allow-child-to-be-allowlisted.com/"),
       mojom::ActivationLevel::kEnabled);
 
   NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://whitelisted.com/"), mojom::ActivationLevel::kEnabled);
+      GURL("http://allowlisted.com/"), mojom::ActivationLevel::kEnabled);
 
   mojom::ActivationState state = last_activation_state();
   EXPECT_FALSE(state.filtering_disabled_for_document);
@@ -305,9 +305,9 @@ TEST_P(ActivationStateComputingThrottleMainFrameTest,
 }
 
 TEST_P(ActivationStateComputingThrottleMainFrameTest,
-       Whitelisted_DisablesFiltering) {
+       Allowlisted_DisablesFiltering) {
   NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://whitelisted-always.com/"), mojom::ActivationLevel::kEnabled);
+      GURL("http://allowlisted-always.com/"), mojom::ActivationLevel::kEnabled);
 
   mojom::ActivationState state = last_activation_state();
   EXPECT_TRUE(state.filtering_disabled_for_document);
@@ -333,12 +333,12 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, Activate) {
 }
 
 TEST_P(ActivationStateComputingThrottleSubFrameTest,
-       WhitelistDoesNotApply_CausesActivation) {
+       AllowlistDoesNotApply_CausesActivation) {
   NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://disallows-child-to-be-whitelisted.com/"),
+      GURL("http://disallows-child-to-be-allowlisted.com/"),
       mojom::ActivationLevel::kEnabled);
 
-  CreateSubframeAndInitTestNavigation(GURL("http://whitelisted.com/"),
+  CreateSubframeAndInitTestNavigation(GURL("http://allowlisted.com/"),
                                       last_committed_frame_host(),
                                       last_activation_state());
   SimulateStartAndExpectToProceed();
@@ -351,12 +351,12 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest,
 }
 
 TEST_P(ActivationStateComputingThrottleSubFrameTest,
-       Whitelisted_DisableDocumentFiltering) {
+       Allowlisted_DisableDocumentFiltering) {
   NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://allow-child-to-be-whitelisted.com/"),
+      GURL("http://allow-child-to-be-allowlisted.com/"),
       mojom::ActivationLevel::kEnabled);
 
-  CreateSubframeAndInitTestNavigation(GURL("http://whitelisted.com/"),
+  CreateSubframeAndInitTestNavigation(GURL("http://allowlisted.com/"),
                                       last_committed_frame_host(),
                                       last_activation_state());
   SimulateStartAndExpectToProceed();
@@ -369,12 +369,12 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest,
 }
 
 TEST_P(ActivationStateComputingThrottleSubFrameTest,
-       Whitelisted_DisablesGenericRules) {
+       Allowlisted_DisablesGenericRules) {
   NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://allow-child-to-be-whitelisted.com/"),
+      GURL("http://allow-child-to-be-allowlisted.com/"),
       mojom::ActivationLevel::kEnabled);
 
-  CreateSubframeAndInitTestNavigation(GURL("http://whitelisted-generic.com/"),
+  CreateSubframeAndInitTestNavigation(GURL("http://allowlisted-generic.com/"),
                                       last_committed_frame_host(),
                                       last_activation_state());
   SimulateStartAndExpectToProceed();
@@ -436,10 +436,10 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest,
 
 TEST_P(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated) {
   NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://allow-child-to-be-whitelisted.com/"),
+      GURL("http://allow-child-to-be-allowlisted.com/"),
       mojom::ActivationLevel::kEnabled);
 
-  CreateSubframeAndInitTestNavigation(GURL("http://whitelisted.com"),
+  CreateSubframeAndInitTestNavigation(GURL("http://allowlisted.com"),
                                       last_committed_frame_host(),
                                       last_activation_state());
   SimulateStartAndExpectToProceed();
@@ -459,11 +459,11 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated) {
 
 TEST_P(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated2) {
   NavigateAndCommitMainFrameWithPageActivationState(
-      GURL("http://allow-child-to-be-whitelisted.com/"),
+      GURL("http://allow-child-to-be-allowlisted.com/"),
       mojom::ActivationLevel::kEnabled);
 
   CreateSubframeAndInitTestNavigation(
-      GURL("http://whitelisted-generic-with-disabled-child.com/"),
+      GURL("http://allowlisted-generic-with-disabled-child.com/"),
       last_committed_frame_host(), last_activation_state());
   SimulateStartAndExpectToProceed();
   SimulateCommitAndExpectToProceed();
@@ -472,7 +472,7 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated2) {
   EXPECT_FALSE(state.filtering_disabled_for_document);
   EXPECT_TRUE(state.generic_blocking_rules_disabled);
 
-  CreateSubframeAndInitTestNavigation(GURL("http://whitelisted.com/"),
+  CreateSubframeAndInitTestNavigation(GURL("http://allowlisted.com/"),
                                       last_committed_frame_host(),
                                       last_activation_state());
   SimulateStartAndExpectToProceed();

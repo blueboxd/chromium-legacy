@@ -41,6 +41,12 @@ class NotificationSource;
 class RenderProcessHost;
 }
 
+#if defined(OS_WIN)
+namespace extensions {
+class LanguageSettingsPrivateApiTestDelayInit;
+}
+#endif  // defined(OS_WIN)
+
 // Encapsulates the browser side spellcheck service. There is one of these per
 // profile and each is created by the SpellCheckServiceFactory.  The
 // SpellcheckService maintains any per-profile information about spellcheck.
@@ -116,9 +122,6 @@ class SpellcheckService : public KeyedService,
   // Returns the instance of the custom dictionary.
   SpellcheckCustomDictionary* GetCustomDictionary();
 
-  // Starts the process of loading the Hunspell dictionaries.
-  void LoadHunspellDictionaries();
-
   // Returns the instance of the vector of Hunspell dictionaries.
   const std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>&
   GetHunspellDictionaries();
@@ -152,6 +155,9 @@ class SpellcheckService : public KeyedService,
   void OnHunspellDictionaryDownloadFailure(
       const std::string& language) override;
 
+  // One-time initialization of dictionaries if needed.
+  void InitializeDictionaries(base::OnceClosure done);
+
 #if defined(OS_WIN)
   // Callback for spellcheck_platform::RetrieveSpellcheckLanguages. Populates
   // map of preferred languages to available platform dictionaries then
@@ -171,6 +177,9 @@ class SpellcheckService : public KeyedService,
     return platform_spell_checker_.get();
   }
 
+  // Indicates whether dictionaries have been loaded initially.
+  bool dictionaries_loaded() const { return dictionaries_loaded_; }
+
   // Allows tests to override how SpellcheckService binds its interface
   // receiver, instead of going through a RenderProcessHost by default.
   using SpellCheckerBinder = base::RepeatingCallback<void(
@@ -182,9 +191,17 @@ class SpellcheckService : public KeyedService,
 #if defined(OS_WIN)
   FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceWindowsHybridBrowserTest,
                            WindowsHybridSpellcheck);
-  FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceWindowsDictionaryMappingUnitTest,
-                           CheckMappings);
+  FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceWindowsHybridBrowserTestDelayInit,
+                           WindowsHybridSpellcheckDelayInit);
+  friend class SpellcheckServiceHybridUnitTestBase;
+  friend class SpellcheckServiceHybridUnitTestDelayInitBase;
+  friend class extensions::LanguageSettingsPrivateApiTestDelayInit;
 #endif  // defined(OS_WIN)
+
+  // Starts the process of loading the dictionaries (Hunspell and platform). Can
+  // be called multiple times in a browser session if spellcheck settings
+  // change.
+  void LoadDictionaries();
 
   // Parses a full BCP47 language tag to return just the language subtag,
   // optionally with a hyphen and script subtag appended.
@@ -239,6 +256,9 @@ class SpellcheckService : public KeyedService,
       bool normalize_for_spellcheck = true) const;
 
 #if defined(OS_WIN)
+  // Initializes the platform spell checker.
+  void InitializePlatformSpellchecker();
+
   // Records statistics about spell check support for the user's Chrome locales.
   void RecordChromeLocalesStats();
 
@@ -261,6 +281,11 @@ class SpellcheckService : public KeyedService,
   // system.
   std::string GetSupportedWindowsDictionaryLanguage(
       const std::string& accept_language) const;
+
+  // Test-only method for adding fake list of platform spellcheck languages
+  // before calling InitializeDictionaries().
+  void AddSpellcheckLanguagesForTesting(
+      const std::vector<std::string>& languages);
 #endif  // defined(OS_WIN)
 
   // WindowsSpellChecker must be created before the dictionary instantiation and
@@ -286,7 +311,14 @@ class SpellcheckService : public KeyedService,
   // with the difference that only language packs installed on the system
   // with spellchecker support are included.
   std::map<std::string, std::string> windows_spellcheck_dictionary_map_;
+
+  // Callback passed as argument to InitializeDictionaries, and invoked when
+  // the dictionaries are loaded for the first time.
+  base::OnceClosure dictionaries_loaded_callback_;
 #endif  // defined(OS_WIN)
+
+  // Flag indicating dictionaries have been loaded initially.
+  bool dictionaries_loaded_ = false;
 
   base::WeakPtrFactory<SpellcheckService> weak_ptr_factory_{this};
 

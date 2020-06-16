@@ -17,8 +17,9 @@ import static org.chromium.net.TestUrlRequestCallback.ResponseStep.ON_CANCELED;
 import android.content.Context;
 import android.os.ConditionVariable;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.support.test.runner.AndroidJUnit4;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Before;

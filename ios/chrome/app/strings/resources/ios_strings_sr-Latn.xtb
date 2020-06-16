@@ -470,6 +470,7 @@ Podaci su šifrovani pomoću pristupne fraze za sinhronizaciju <ph name="TIME" 
 <translation id="681368974849482173">Stavka je napravljena</translation>
 <translation id="6831043979455480757">Prevedi</translation>
 <translation id="6851516051005285358">Zahtevaj sajt za računar</translation>
+<translation id="6856384753476268833">Ovim upravlja organizacija.</translation>
 <translation id="6858855187367714033">Skenirano</translation>
 <translation id="6859944681507688231">Da biste skenirali QR kôd ili kreditnu karticu, omogućite kameru u podešavanjima.</translation>
 <translation id="6873263987691478642">Podeljeni prikaz</translation>
@@ -548,6 +549,7 @@ Pošto vašim nalogom upravlja <ph name="HOSTED_DOMAIN" />, Chrome podaci će s
 <translation id="7856733331829174190">Preuzimanje nije uspelo</translation>
 <translation id="7859704718976024901">Istorija pregledanja</translation>
 <translation id="7887198238286927132">Radi zaštite privatnosti Chrome neće automatski popunjavati ovo polje.</translation>
+<translation id="791251013315685175">Ovim upravlja <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Lista za čitanje je dostupna oflajn. Da biste dodali stranicu na listu za čitanje, dodirnite <ph name="SHARE_OPENING_ICON" />, pa <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Izvezi lozinke…</translation>

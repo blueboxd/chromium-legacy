@@ -268,8 +268,8 @@ class DeviceCloudPolicyManagerChromeOSTest
     PolicyBundle bundle;
     bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .Set(key::kDeviceMetricsReportingEnabled, POLICY_LEVEL_MANDATORY,
-             POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-             std::make_unique<base::Value>(false), nullptr);
+             POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD, base::Value(false),
+             nullptr);
     EXPECT_TRUE(manager_->policies().Equals(bundle));
   }
 

@@ -5,7 +5,8 @@
 package org.chromium.weblayer.test;
 
 import android.net.Uri;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;

@@ -6,6 +6,7 @@
 
 #include <fuchsia/ui/gfx/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
+#include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <limits>
 
 #include "base/bind_helpers.h"
@@ -562,6 +563,16 @@ void FrameImpl::MaybeStartCastStreaming(
 }
 
 void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
+  scenic::ViewRefPair view_ref_pair = scenic::ViewRefPair::New();
+  CreateViewWithViewRef(std::move(view_token),
+                        std::move(view_ref_pair.control_ref),
+                        std::move(view_ref_pair.view_ref));
+}
+
+void FrameImpl::CreateViewWithViewRef(
+    fuchsia::ui::views::ViewToken view_token,
+    fuchsia::ui::views::ViewRefControl control_ref,
+    fuchsia::ui::views::ViewRef view_ref) {
   if (IsHeadless()) {
     LOG(WARNING) << "CreateView() called on a HEADLESS Context.";
     CloseAndDestroyFrame(ZX_ERR_INVALID_ARGS);
@@ -571,7 +582,10 @@ void FrameImpl::CreateView(fuchsia::ui::views::ViewToken view_token) {
   // If a View to this Frame is already active then disconnect it.
   DestroyWindowTreeHost();
 
-  InitWindowTreeHost(std::move(view_token));
+  scenic::ViewRefPair view_ref_pair;
+  view_ref_pair.control_ref = std::move(control_ref);
+  view_ref_pair.view_ref = std::move(view_ref);
+  InitWindowTreeHost(std::move(view_token), std::move(view_ref_pair));
 
   fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager =
       base::fuchsia::ComponentContextForCurrentProcess()
@@ -787,7 +801,8 @@ void FrameImpl::EnableHeadlessRendering() {
     return;
   }
 
-  InitWindowTreeHost(fuchsia::ui::views::ViewToken());
+  scenic::ViewRefPair view_ref_pair = scenic::ViewRefPair::New();
+  InitWindowTreeHost(fuchsia::ui::views::ViewToken(), std::move(view_ref_pair));
 
   gfx::Rect bounds(kHeadlessWindowSize);
   if (semantics_manager_for_test_) {
@@ -813,11 +828,12 @@ void FrameImpl::DisableHeadlessRendering() {
   DestroyWindowTreeHost();
 }
 
-void FrameImpl::InitWindowTreeHost(fuchsia::ui::views::ViewToken view_token) {
+void FrameImpl::InitWindowTreeHost(fuchsia::ui::views::ViewToken view_token,
+                                   scenic::ViewRefPair view_ref_pair) {
   DCHECK(!window_tree_host_);
 
   window_tree_host_ = std::make_unique<FrameWindowTreeHost>(
-      std::move(view_token), web_contents_.get());
+      std::move(view_token), std::move(view_ref_pair), web_contents_.get());
   window_tree_host_->InitHost();
   root_window()->AddPreTargetHandler(&event_filter_);
 

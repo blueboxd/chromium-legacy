@@ -10,7 +10,6 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/chromeos/policy/app_install_event_log_uploader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 
@@ -33,7 +32,7 @@ base::FilePath GetLogFilePath(const Profile& profile) {
 
 ArcAppInstallEventLogManager::ArcAppInstallEventLogManager(
     LogTaskRunnerWrapper* log_task_runner_wrapper,
-    AppInstallEventLogUploader* uploader,
+    ArcAppInstallEventLogUploader* uploader,
     Profile* profile)
     : InstallEventLogManagerBase(log_task_runner_wrapper, profile),
       uploader_(uploader) {
@@ -89,14 +88,14 @@ void ArcAppInstallEventLogManager::GetAndroidId(
 }
 
 void ArcAppInstallEventLogManager::SerializeForUpload(
-    AppInstallEventLogUploader::Delegate::SerializationCallback callback) {
+    ArcAppInstallEventLogUploader::Delegate::SerializationCallback callback) {
   base::PostTaskAndReplyWithResult(
       log_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ArcAppInstallEventLogManager::ArcLog::Serialize,
                      base::Unretained(log_.get())),
       base::BindOnce(
           &ArcAppInstallEventLogManager::LogUpload::OnSerializeLogDone<
-              AppInstallEventLogUploader::Delegate::SerializationCallback,
+              ArcAppInstallEventLogUploader::Delegate::SerializationCallback,
               em::AppInstallReportRequest>,
           app_log_upload_->log_weak_factory_.GetWeakPtr(),
           std::move(callback)));

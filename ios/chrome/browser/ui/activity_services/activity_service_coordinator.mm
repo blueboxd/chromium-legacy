@@ -49,9 +49,22 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 
 @property(nonatomic, strong) UIActivityViewController* viewController;
 
+// Current sharing scenario.
+@property(nonatomic, readonly, assign) ActivityScenario scenario;
+
 @end
 
 @implementation ActivityServiceCoordinator
+
+- (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
+                                   browser:(Browser*)browser
+                                  scenario:(ActivityScenario)scenario {
+  if (self = [super initWithBaseViewController:baseViewController
+                                       browser:browser]) {
+    _scenario = scenario;
+  }
+  return self;
+}
 
 #pragma mark - Public methods
 
@@ -67,6 +80,9 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
       [[ActivityServiceMediator alloc] initWithHandler:self.handler
                                            prefService:browserState->GetPrefs()
                                          bookmarkModel:bookmarkModel];
+
+  [self.mediator shareStartedWithScenario:self.scenario];
+
   if (self.image) {
     [self shareImage];
   } else {
@@ -114,10 +130,9 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
     }
 
     // Delegate post-activity processing to the mediator.
-    [strongSelf.mediator shareFinishedWithActivityType:activityType
-                                             completed:completed
-                                         returnedItems:returnedItems
-                                                 error:activityError];
+    [strongSelf.mediator shareFinishedWithScenario:strongSelf.scenario
+                                      activityType:activityType
+                                         completed:completed];
 
     // Signal the presentation provider that our scenario is over.
     [strongSelf.presentationProvider activityServiceDidEndPresenting];

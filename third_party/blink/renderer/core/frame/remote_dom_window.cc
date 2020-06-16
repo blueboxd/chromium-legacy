@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/core/frame/remote_dom_window.h"
 
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -34,7 +34,7 @@ void RemoteDOMWindow::FrameDetached() {
 void RemoteDOMWindow::SchedulePostMessage(
     MessageEvent* event,
     scoped_refptr<const SecurityOrigin> target,
-    Document* source) {
+    LocalDOMWindow* source) {
   // To match same-process behavior, the IPC to forward postMessage
   // cross-process should only be sent after the current script finishes
   // running, to preserve relative ordering of IPCs.  See
@@ -55,7 +55,7 @@ void RemoteDOMWindow::SchedulePostMessage(
 void RemoteDOMWindow::ForwardPostMessage(
     MessageEvent* event,
     scoped_refptr<const SecurityOrigin> target,
-    Document* source) {
+    LocalDOMWindow* source) {
   // If the target frame was detached after the message was scheduled,
   // don't deliver the message.
   if (!GetFrame())
@@ -63,7 +63,7 @@ void RemoteDOMWindow::ForwardPostMessage(
 
   base::Optional<base::UnguessableToken> agent_cluster;
   if (event->IsLockedToAgentCluster())
-    agent_cluster = source->GetExecutionContext()->GetAgentClusterID();
+    agent_cluster = source->GetAgentClusterID();
   GetFrame()->ForwardPostMessage(event, agent_cluster, std::move(target),
                                  source->GetFrame());
 }

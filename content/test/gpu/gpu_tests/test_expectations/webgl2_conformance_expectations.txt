@@ -10,7 +10,9 @@
 #         nvidia nvidia-0xf02 nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm qualcomm-adreno-(tm)-540 ]
 # tags: [ debug ]
-# tags: [ intel_lt_25.20.100.6444 intel_lt_25.20.100.6577 mesa_lt_19.1.2 ]
+# tags: [ intel_lt_25.20.100.6444 intel_lt_25.20.100.6577
+#         intel_lt_26.20.100.7870 intel_lt_26.20.100.8141
+#         mesa_lt_19.1 mesa_lt_19.1.2 ]
 # tags: [ no-asan asan ]
 # results: [ Failure RetryOnFailure Skip ]
 
@@ -71,14 +73,9 @@ crbug.com/1082455 [ win ] conformance2/renderbuffers/multisampled-depth-renderbu
 crbug.com/1082455 [ linux ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
 crbug.com/1082455 [ android ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
 crbug.com/1082455 [ mac no-passthrough ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]
-crbug.com/1082525 conformance/more/functions/readPixelsBadArgs.html [ Failure ]
-crbug.com/1082525 conformance/more/functions/texImage2DHTML.html [ RetryOnFailure ]
-crbug.com/1082525 conformance/more/functions/texSubImage2DHTML.html [ RetryOnFailure ]
-crbug.com/1083100 conformance/textures/misc/origin-clean-conformance.html [ Skip ]
 crbug.com/1082533 [ mac intel ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
 crbug.com/1082533 [ win vulkan passthrough ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
 crbug.com/1018028 [ win vulkan ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
-crbug.com/1082565 [ win intel opengl passthrough ] conformance/canvas/webgl-to-2d-canvas.html [ Failure ]
 
 crbug.com/953120 conformance/programs/program-handling.html [ Failure ]
 
@@ -124,9 +121,10 @@ crbug.com/792210 [ nvidia ] conformance/glsl/bugs/in-parameter-passed-as-inout-a
 # Win failures     #
 ####################
 
-crbug.com/1081973 [ win ] conformance2/textures/misc/compressed-tex-image.html [ Failure ]
-crbug.com/angleproject/4417 [ win ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
-crbug.com/angleproject/4417 [ win ] conformance2/rendering/framebuffer-render-to-layer-angle-issue.html [ Failure ]
+crbug.com/1081973 [ win opengl passthrough ] conformance2/textures/misc/compressed-tex-image.html [ Failure ]
+crbug.com/1081973 [ win vulkan passthrough ] conformance2/textures/misc/compressed-tex-image.html [ Failure ]
+crbug.com/angleproject/4417 [ win d3d11 ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
+crbug.com/angleproject/4417 [ win d3d11 ] conformance2/rendering/framebuffer-render-to-layer-angle-issue.html [ Failure ]
 
 # Intel flaky issues
 crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-bounds-index-buffers-after-copying.html [ RetryOnFailure ]
@@ -140,11 +138,9 @@ crbug.com/angleproject/2994 [ opengl win passthrough intel ] conformance2/textur
 crbug.com/1042246 [ opengl win passthrough intel ] conformance2/extensions/ext-texture-norm16.html [ Skip ]
 
 # Intel driver issues
-crbug.com/602688 [ opengl win passthrough intel ] conformance2/glsl3/vector-dynamic-indexing.html [ Failure ]
+crbug.com/602688 [ win intel opengl passthrough intel_lt_26.20.100.7870 ] conformance2/glsl3/vector-dynamic-indexing.html [ Failure ]
+crbug.com/1082565 [ win intel opengl passthrough intel_lt_26.20.100.8141 ] conformance/canvas/webgl-to-2d-canvas.html [ Failure ]
 
-# Passthrough command decoder / Windows / OpenGL / Intel
-# Recent regressions on passthrough command decoder
-crbug.com/1048861 [ opengl win passthrough intel ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
 # This case causes no-over-optimization-on-uniform-array fail.
 crbug.com/884210 [ opengl win passthrough intel ] conformance/ogles/GL/gl_FragCoord/gl_FragCoord_001_to_003.html [ Skip ]
 
@@ -176,7 +172,6 @@ crbug.com/1000354 [ win opengles ] conformance2/extensions/ext-texture-norm16.ht
 
 # Windows only.
 crbug.com/736926 [ win ] conformance2/textures/svg_image/tex-2d-rgb565-rgb-unsigned_short_5_6_5.html [ RetryOnFailure ]
-crbug.com/angleproject/2291 [ win no-use-gl ] conformance2/rendering/framebuffer-texture-changing-base-level.html [ Failure ]
 crbug.com/angleproject/3033 [ win no-passthrough ] conformance2/textures/misc/generate-mipmap-with-large-base-level.html [ Failure ]
 crbug.com/angleproject/1465 [ win no-use-gl ] conformance2/glsl3/tricky-loop-conditions.html [ Failure ]
 
@@ -655,13 +650,17 @@ crbug.com/1078988 [ catalina no-passthrough intel ] deqp/functional/gles3/frameb
 # Linux failures   #
 ####################
 
-crbug.com/1081973 [ linux ] conformance2/textures/misc/compressed-tex-image.html [ Failure ]
-crbug.com/1060012 [ linux ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
-crbug.com/angleproject/4417 [ linux ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
-crbug.com/angleproject/4242 [ linux intel ] conformance2/glsl3/matrix-row-major-dynamic-indexing.html [ Failure ]
+crbug.com/1081973 [ linux opengl passthrough ] conformance2/textures/misc/compressed-tex-image.html [ Failure ]
+crbug.com/1060012 [ linux no-passthrough ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
+crbug.com/angleproject/4417 [ linux no-passthrough ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
+crbug.com/1081978 [ linux intel opengl passthrough ] conformance2/textures/misc/tex-3d-size-limit.html [ Failure ]
 
-# Intel driver issues
+# Mesa issues
+# Driver tag doesn't work on the passthrough command decoder because the detected driver version is ANGLE's version.
 crbug.com/950552 [ linux intel mesa_lt_19.1.2 ] conformance2/textures/misc/tex-base-level-bug.html [ Failure ]
+crbug.com/1084864 [ linux intel opengl passthrough ] conformance2/rendering/blitframebuffer-filter-outofbounds.html [ Failure ]
+crbug.com/angleproject/4242 [ linux intel opengl passthrough ] conformance2/glsl3/matrix-row-major-dynamic-indexing.html [ Failure ]
+crbug.com/angleproject/4242 [ linux intel no-passthrough mesa_lt_19.1 ] conformance2/glsl3/matrix-row-major-dynamic-indexing.html [ Failure ]
 
 # Linux only.
 crbug.com/905006 [ linux nvidia ] conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html [ Failure ]
@@ -796,6 +795,9 @@ crbug.com/1022410 [ android qualcomm ] conformance2/transform_feedback/switching
 crbug.com/1027125 [ android qualcomm ] deqp/functional/gles3/negativetextureapi.html [ Failure ]
 crbug.com/1092734 [ android qualcomm-adreno-(tm)-540 passthrough ] conformance2/textures/webgl_canvas/tex-2d-rgb565-rgb-unsigned_short_5_6_5.html [ Failure ]
 crbug.com/1092734 [ android qualcomm-adreno-(tm)-540 passthrough ] conformance2/textures/webgl_canvas/tex-2d-rgb565-rgb-unsigned_byte.html [ Failure ]
+crbug.com/1095679 [ android qualcomm-adreno-(tm)-540 no-passthrough ] conformance/textures/canvas/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ RetryOnFailure ]
+crbug.com/1095679 [ android qualcomm-adreno-(tm)-540 no-passthrough ] conformance2/textures/canvas/tex-2d-rgb10_a2-rgba-unsigned_int_2_10_10_10_rev.html [ RetryOnFailure ]
+
 
 # This test is failing on Android Pixel 2 and 3 (Qualcomm)
 # Seems to be an OpenGL ES bug.
@@ -830,8 +832,6 @@ crbug.com/angleproject/3753 [ android opengles ] conformance/textures/misc/textu
 
 crbug.com/1037958 [ mac amd-0x679e ] conformance2/transform_feedback/switching-objects.html [ RetryOnFailure ]
 crbug.com/1082003 [ android opengles no-passthrough qualcomm ] deqp/functional/gles3/fragdepth.html [ RetryOnFailure ]
-
-crbug.com/1081978 [ linux passthrough ] conformance2/textures/misc/tex-3d-size-limit.html [ Failure ]
 
 # Conflicting expectations to test that the
 # "Expectations have no collisions" unittest works.

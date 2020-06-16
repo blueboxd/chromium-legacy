@@ -470,6 +470,7 @@ Dataene dine er kryptert med passordfrasen din for synkronisering <ph name="TIME
 <translation id="681368974849482173">Elementet er opprettet</translation>
 <translation id="6831043979455480757">Oversett</translation>
 <translation id="6851516051005285358">Be om datamaskinversjonen av nettstedet</translation>
+<translation id="6856384753476268833">Administreres av organisasjonen din.</translation>
 <translation id="6858855187367714033">Skannet</translation>
 <translation id="6859944681507688231">For å skanne QR-koder eller kredittkort, slå på kameraet i innstillingene.</translation>
 <translation id="6873263987691478642">Delt visning</translation>
@@ -548,6 +549,7 @@ Fordi kontoen din administreres av <ph name="HOSTED_DOMAIN" />, slettes Chrome-d
 <translation id="7856733331829174190">Kunne ikke laste ned</translation>
 <translation id="7859704718976024901">Nettleserlogg</translation>
 <translation id="7887198238286927132">For å beskytte personvernet ditt fyller ikke Chrome automatisk ut dette feltet.</translation>
+<translation id="791251013315685175">Administreres av <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Leselisten din er tilgjengelig uten nett. Du kan legge til sider i leselisten ved å trykke på <ph name="SHARE_OPENING_ICON" /> og deretter <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Eksportér passord</translation>

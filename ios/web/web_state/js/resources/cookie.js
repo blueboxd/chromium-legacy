@@ -6,6 +6,8 @@
  */
 goog.provide('__crWeb.cookie');
 
+goog.require('__crWeb.message');
+
 /* Beginning of anonymous namespace. */
 (function() {
 
@@ -36,6 +38,8 @@ if (cookiesAllowed(state)) {
   return;
 }
 
+var brokenOverrides = [];
+
 function addOverride(object, descriptorObject, propertyName, getter, setter) {
   var original =
       Object.getOwnPropertyDescriptor(descriptorObject, propertyName);
@@ -49,7 +53,7 @@ function addOverride(object, descriptorObject, propertyName, getter, setter) {
     }
     Object.defineProperty(object, propertyName, propertyDescriptor);
   } else {
-    // TODO(crbug.com/1082151): Track this occurrence.
+    brokenOverrides.push(propertyName);
   }
 }
 
@@ -75,4 +79,10 @@ addOverride(window, window, 'sessionStorage', function() {
           'Access is denied for this document',
       'SecurityError');
 }, null);
+
+if (brokenOverrides.length > 0) {
+  __gCrWeb.message.invokeOnHost(
+      {'command': 'cookie.error', 'brokenOverrides': brokenOverrides});
+}
+
 }());

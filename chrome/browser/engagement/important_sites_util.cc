@@ -366,7 +366,7 @@ void PopulateInfoMapWithBookmarks(
 // used to warn about clearing data for installed apps can be excluded from the
 // Android build.
 #if !defined(OS_ANDROID)
-void PopulateInfoMapWithInstalled(
+void PopulateInfoMapWithInstalledEngagedInTimePeriod(
     browsing_data::TimePeriod time_period,
     Profile* profile,
     std::map<std::string, ImportantDomainInfo>* output) {
@@ -490,7 +490,8 @@ ImportantSitesUtil::GetInstalledRegisterableDomains(
     size_t max_results) {
   std::vector<ImportantDomainInfo> installed_domains;
   std::map<std::string, ImportantDomainInfo> installed_app_info;
-  PopulateInfoMapWithInstalled(time_period, profile, &installed_app_info);
+  PopulateInfoMapWithInstalledEngagedInTimePeriod(time_period, profile,
+                                                  &installed_app_info);
 
   std::unordered_set<std::string> excluded_domains =
       GetBlacklistedImportantDomains(profile);

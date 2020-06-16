@@ -20,7 +20,6 @@
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/policy/app_install_event_log_uploader.h"
 #include "chrome/browser/chromeos/policy/arc_app_install_event_log.h"
 #include "chrome/browser/chromeos/policy/install_event_log_util.h"
 #include "chrome/browser/profiles/reporting_util.h"
@@ -302,7 +301,7 @@ class ArcAppInstallEventLogManagerTest : public testing::Test {
       disable_purge_for_testing_;
   TestingProfile profile_;
   MockCloudPolicyClient cloud_policy_client_;
-  AppInstallEventLogUploader uploader_;
+  ArcAppInstallEventLogUploader uploader_;
   std::unique_ptr<base::ScopedMockTimeMessageLoopTaskRunner>
       scoped_main_task_runner_;
 

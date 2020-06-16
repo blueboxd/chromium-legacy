@@ -10,13 +10,19 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Canvas;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import androidx.annotation.DrawableRes;
+import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -52,6 +58,8 @@ public class MenuButton extends FrameLayout implements TintObserver {
 
     /** A provider that notifies components when the theme color changes.*/
     private ThemeColorProvider mThemeColorProvider;
+    private BitmapDrawable mMenuImageButtonAnimationDrawable;
+    private BitmapDrawable mUpdateBadgeAnimationDrawable;
 
     public MenuButton(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -96,12 +104,37 @@ public class MenuButton extends FrameLayout implements TintObserver {
     }
 
     private void updateImageResources() {
+        mMenuImageButtonAnimationDrawable = (BitmapDrawable) mMenuImageButton.getDrawable()
+                                                    .mutate()
+                                                    .getConstantState()
+                                                    .newDrawable();
+
+        mMenuImageButtonAnimationDrawable.setBounds(mMenuImageButton.getPaddingLeft(),
+                mMenuImageButton.getPaddingTop(),
+                mMenuImageButton.getWidth() - mMenuImageButton.getPaddingRight(),
+                mMenuImageButton.getHeight() - mMenuImageButton.getPaddingBottom());
+        mMenuImageButtonAnimationDrawable.setGravity(Gravity.CENTER);
+        int color = ToolbarColors.getThemedToolbarIconTint(getContext(), mUseLightDrawables)
+                            .getDefaultColor();
+        mMenuImageButtonAnimationDrawable.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+
+        // As an optimization, don't re-calculate drawable state for the update badge unless we
+        // intend to actually show it.
         MenuButtonState buttonState = UpdateMenuItemHelper.getInstance().getUiState().buttonState;
         if (buttonState == null) return;
         @DrawableRes
         int drawable = mUseLightDrawables ? buttonState.lightBadgeIcon : buttonState.darkBadgeIcon;
         mUpdateBadgeView.setImageDrawable(
                 ApiCompatibilityUtils.getDrawable(getResources(), drawable));
+        mUpdateBadgeAnimationDrawable = (BitmapDrawable) mUpdateBadgeView.getDrawable()
+                                                .mutate()
+                                                .getConstantState()
+                                                .newDrawable();
+        mUpdateBadgeAnimationDrawable.setBounds(mUpdateBadgeView.getPaddingLeft(),
+                mUpdateBadgeView.getPaddingTop(),
+                mUpdateBadgeView.getWidth() - mUpdateBadgeView.getPaddingRight(),
+                mUpdateBadgeView.getHeight() - mUpdateBadgeView.getPaddingBottom());
+        mUpdateBadgeAnimationDrawable.setGravity(Gravity.CENTER);
     }
 
     /**
@@ -265,6 +298,18 @@ public class MenuButton extends FrameLayout implements TintObserver {
         mThemeColorProvider.addTintObserver(this);
     }
 
+    /**
+     * Draws the current visual state of this component for the purposes of rendering the tab
+     * switcher animation, setting the alpha to fade the view by the appropriate amount.
+     * @param canvas Canvas to draw to.
+     * @param alpha Integer (0-255) alpha level to draw at.
+     */
+    public void drawTabSwitcherAnimationOverlay(Canvas canvas, int alpha) {
+        Drawable drawable = getTabSwitcherAnimationDrawable();
+        drawable.setAlpha(alpha);
+        drawable.draw(canvas);
+    }
+
     @Override
     public void onTintChanged(ColorStateList tintList, boolean useLight) {
         ApiCompatibilityUtils.setImageTintList(mMenuImageButton, tintList);
@@ -277,6 +322,16 @@ public class MenuButton extends FrameLayout implements TintObserver {
             mThemeColorProvider.removeTintObserver(this);
             mThemeColorProvider = null;
         }
+    }
+
+    @VisibleForTesting
+    Drawable getTabSwitcherAnimationDrawable() {
+        if (mUpdateBadgeAnimationDrawable == null && mMenuImageButtonAnimationDrawable == null) {
+            updateImageResources();
+        }
+
+        return isShowingAppMenuUpdateBadge() ? mUpdateBadgeAnimationDrawable
+                                             : mMenuImageButtonAnimationDrawable;
     }
 
     /**

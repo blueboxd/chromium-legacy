@@ -13,31 +13,6 @@ import org.chromium.components.browser_ui.site_settings.SiteSettingsPrefClient;
  */
 public class ChromeSiteSettingsPrefClient implements SiteSettingsPrefClient {
     @Override
-    public boolean getBlockThirdPartyCookies() {
-        return PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES);
-    }
-
-    @Override
-    public void setBlockThirdPartyCookies(boolean newValue) {
-        PrefServiceBridge.getInstance().setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, newValue);
-    }
-
-    @Override
-    public boolean isBlockThirdPartyCookiesManaged() {
-        return PrefServiceBridge.getInstance().isManagedPreference(Pref.BLOCK_THIRD_PARTY_COOKIES);
-    }
-
-    @Override
-    public int getCookieControlsMode() {
-        return PrefServiceBridge.getInstance().getInteger(Pref.COOKIE_CONTROLS_MODE);
-    }
-
-    @Override
-    public void setCookieControlsMode(int newValue) {
-        PrefServiceBridge.getInstance().setInteger(Pref.COOKIE_CONTROLS_MODE, newValue);
-    }
-
-    @Override
     public boolean getEnableQuietNotificationPermissionUi() {
         return PrefServiceBridge.getInstance().getBoolean(
                 Pref.ENABLE_QUIET_NOTIFICATION_PERMISSION_UI);

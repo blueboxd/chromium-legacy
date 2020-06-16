@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NEARBY_SHARING_NEARBY_CONNECTIONS_MANAGER_H_
 
 #include <stdint.h>
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
@@ -17,7 +18,7 @@
 // A wrapper around the Nearby Connections mojo API.
 class NearbyConnectionsManager {
  public:
-  using Payload = location::nearby::connections::mojom::Payload;
+  using PayloadPtr = location::nearby::connections::mojom::PayloadPtr;
   using ConnectionsStatus = location::nearby::connections::mojom::Status;
   using ConnectionsCallback =
       base::OnceCallback<void(ConnectionsStatus status)>;
@@ -79,7 +80,7 @@ class NearbyConnectionsManager {
   virtual void StopDiscovery() = 0;
 
   // Conntects to remote |endpoint_id| through Nearby Connections.
-  virtual NearbyConnection Connect(
+  virtual std::unique_ptr<NearbyConnection> Connect(
       std::vector<uint8_t> endpoint_info,
       const std::string& endpoint_id,
       base::Optional<std::vector<uint8_t>> bluetooth_mac_address,
@@ -93,7 +94,7 @@ class NearbyConnectionsManager {
   // |listener| remains valid until kSuccess/kFailure/kCancelled is invoked with
   // OnStatusUpdate.
   virtual void Send(const std::string& endpoint_id,
-                    Payload payload,
+                    PayloadPtr payload,
                     PayloadStatusListener* listener,
                     ConnectionsCallback callback) = 0;
 
@@ -105,7 +106,7 @@ class NearbyConnectionsManager {
       PayloadStatusListener* listener) = 0;
 
   // Gets the payload associated with |payload_id| if available.
-  virtual base::Optional<Payload> GetIncomingPayload(int64_t payload_id) = 0;
+  virtual PayloadPtr GetIncomingPayload(int64_t payload_id) = 0;
 
   // Cancels a Payload currently in-flight to or from remote endpoints.
   virtual void Cancel(int64_t payload_id, ConnectionsCallback callback) = 0;

@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">ปิด</translation>
 <translation id="6119846243427417423">เปิดใช้งาน</translation>
 <translation id="6129953537138746214">ช่องว่าง</translation>
+<translation id="6134259848159370930">ค้นหาอุปกรณ์ แอป การตั้งค่า และเว็บ</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/วินาที</translation>
 <translation id="6156262341071374681">แสดงแอปทั้งหมด</translation>
 <translation id="6165508094623778733">ดูข้อมูลเพิ่มเติม</translation>
+<translation id="6166852626429024716">ค้นหาอุปกรณ์ แอป การตั้งค่า เว็บ...</translation>
 <translation id="6264365405983206840">เลือก&amp;ทั้งหมด</translation>
 <translation id="6351032674660237738">คำแนะนำเกี่ยวกับแอป</translation>
 <translation id="6364916375976753737">เลื่อนทางซ้าย</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623">ไฟล์ <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">แสดงชั้นวางเสมอ</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/วินาที</translation>
+<translation id="8685326675965865247">ค้นหาอุปกรณ์ แอป การตั้งค่า และเว็บ ใช้แป้นลูกศรเพื่อไปยังส่วนต่างๆ ของแอป</translation>
 <translation id="8725488761726303204">และอีก <ph name="NUMBER" /> รายการ</translation>
 <translation id="8730621377337864115">เสร็จสิ้น</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 ชม.}other{# ชม.}}</translation>

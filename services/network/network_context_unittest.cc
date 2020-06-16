@@ -29,6 +29,7 @@
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
@@ -378,6 +379,19 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(TestProxyLookupClient);
+};
+
+class MockP2PTrustedSocketManagerClient
+    : public mojom::P2PTrustedSocketManagerClient {
+ public:
+  MockP2PTrustedSocketManagerClient() = default;
+  ~MockP2PTrustedSocketManagerClient() override = default;
+
+  // mojom::P2PTrustedSocketManagerClient:
+  void InvalidSocketPortRangeRequested() override {}
+  void DumpPacket(const std::vector<uint8_t>& packet_header,
+                  uint64_t packet_length,
+                  bool incoming) override {}
 };
 
 class NetworkContextTest : public testing::Test {
@@ -1260,6 +1274,85 @@ TEST_F(NetworkContextTest, HostResolutionFailure) {
   EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, client.completion_status().error_code);
   EXPECT_EQ(net::ERR_DNS_TIMED_OUT,
             client.completion_status().resolve_error_info.error);
+}
+
+// Test the P2PSocketManager::GetHostAddress() works and uses the correct
+// NetworkIsolationKey.
+TEST_F(NetworkContextTest, P2PHostResolution) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      net::features::kSplitHostCacheByNetworkIsolationKey);
+
+  const char kHostname[] = "foo.test.";
+  net::IPAddress ip_address;
+  ASSERT_TRUE(ip_address.AssignFromIPLiteral("1.2.3.4"));
+  net::NetworkIsolationKey network_isolation_key =
+      net::NetworkIsolationKey::CreateTransient();
+  net::MockCachingHostResolver host_resolver;
+  std::unique_ptr<net::TestURLRequestContext> url_request_context =
+      std::make_unique<net::TestURLRequestContext>(
+          true /* delay_initialization */);
+  url_request_context->set_host_resolver(&host_resolver);
+  host_resolver.rules()->AddRule(kHostname, ip_address.ToString());
+  url_request_context->Init();
+
+  network_context_remote_.reset();
+  std::unique_ptr<NetworkContext> network_context =
+      std::make_unique<NetworkContext>(
+          network_service_.get(),
+          network_context_remote_.BindNewPipeAndPassReceiver(),
+          url_request_context.get(),
+          std::vector<std::string>() /* cors_exempt_header_list */);
+
+  MockP2PTrustedSocketManagerClient client;
+  mojo::Receiver<network::mojom::P2PTrustedSocketManagerClient> receiver(
+      &client);
+
+  mojo::Remote<mojom::P2PTrustedSocketManager> trusted_socket_manager;
+  mojo::Remote<mojom::P2PSocketManager> socket_manager;
+  network_context_remote_->CreateP2PSocketManager(
+      network_isolation_key, receiver.BindNewPipeAndPassRemote(),
+      trusted_socket_manager.BindNewPipeAndPassReceiver(),
+      socket_manager.BindNewPipeAndPassReceiver());
+
+  base::RunLoop run_loop;
+  std::vector<net::IPAddress> results;
+  socket_manager->GetHostAddress(
+      kHostname, false /* enable_mdns */,
+      base::BindLambdaForTesting(
+          [&](const std::vector<net::IPAddress>& addresses) {
+            EXPECT_EQ(std::vector<net::IPAddress>{ip_address}, addresses);
+            run_loop.Quit();
+          }));
+  run_loop.Run();
+
+  // Check that the URL in kHostname is in the HostCache, with
+  // |network_isolation_key|.
+  const net::HostPortPair kHostPortPair = net::HostPortPair(kHostname, 0);
+  net::HostResolver::ResolveHostParameters params;
+  params.source = net::HostResolverSource::LOCAL_ONLY;
+  std::unique_ptr<net::HostResolver::ResolveHostRequest> request1 =
+      host_resolver.CreateRequest(kHostPortPair, network_isolation_key,
+                                  net::NetLogWithSource(), params);
+  net::TestCompletionCallback callback1;
+  int result = request1->Start(callback1.callback());
+  EXPECT_EQ(net::OK, callback1.GetResult(result));
+
+  // Check that the hostname is not in the DNS cache for other possible NIKs.
+  const url::Origin kDestinationOrigin =
+      url::Origin::Create(GURL(base::StringPrintf("https://%s", kHostname)));
+  const net::NetworkIsolationKey kOtherNiks[] = {
+      net::NetworkIsolationKey(),
+      net::NetworkIsolationKey(kDestinationOrigin /* top_frame_origin */,
+                               kDestinationOrigin /* frame_origin */)};
+  for (const auto& other_nik : kOtherNiks) {
+    std::unique_ptr<net::HostResolver::ResolveHostRequest> request2 =
+        host_resolver.CreateRequest(kHostPortPair, other_nik,
+                                    net::NetLogWithSource(), params);
+    net::TestCompletionCallback callback2;
+    int result = request2->Start(callback2.callback());
+    EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, callback2.GetResult(result));
+  }
 }
 
 // Test that valid referrers are allowed, while invalid ones result in errors.

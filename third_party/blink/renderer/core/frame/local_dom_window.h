@@ -75,6 +75,7 @@ class TrustedTypePolicyFactory;
 class V8FrameRequestCallback;
 class V8IdleRequestCallback;
 class V8VoidFunction;
+class WindowAgent;
 
 enum PageTransitionEventPersistence {
   kPageTransitionEventNotPersisted = 0,
@@ -100,7 +101,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   static LocalDOMWindow* From(const ScriptState*);
 
-  explicit LocalDOMWindow(LocalFrame&);
+  explicit LocalDOMWindow(LocalFrame&, WindowAgent*);
   ~LocalDOMWindow() override;
 
   LocalFrame* GetFrame() const { return To<LocalFrame>(DOMWindow::GetFrame()); }
@@ -391,7 +392,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // Protected DOMWindow overrides.
   void SchedulePostMessage(MessageEvent*,
                            scoped_refptr<const SecurityOrigin> target,
-                           Document* source) override;
+                           LocalDOMWindow* source) override;
 
  private:
   // Intentionally private to prevent redundant checks when the type is

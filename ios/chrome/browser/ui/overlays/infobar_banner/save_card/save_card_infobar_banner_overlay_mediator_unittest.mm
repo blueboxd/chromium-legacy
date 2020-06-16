@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/overlays/public/infobar_banner/infobar_banner_overlay_responses.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_card_infobar_banner_overlay_request_config.h"
+#import "ios/chrome/browser/overlays/public/infobar_modal/save_card_infobar_modal_overlay_responses.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_request_callback_installer.h"
 #import "ios/chrome/browser/ui/infobars/banners/test/fake_infobar_banner_consumer.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
@@ -29,15 +30,15 @@
 #endif
 
 using save_card_infobar_overlays::SaveCardBannerRequestConfig;
+using save_card_infobar_overlays::SaveCardMainAction;
 
 // Test fixture for SaveCardInfobarBannerOverlayMediator.
 class SaveCardInfobarBannerOverlayMediatorTest : public PlatformTest {
  public:
   SaveCardInfobarBannerOverlayMediatorTest()
-      : callback_installer_(
-            &callback_receiver_,
-            {InfobarBannerShowModalResponse::ResponseSupport(),
-             InfobarBannerMainActionResponse::ResponseSupport()}) {
+      : callback_installer_(&callback_receiver_,
+                            {InfobarBannerShowModalResponse::ResponseSupport(),
+                             SaveCardMainAction::ResponseSupport()}) {
     feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
                                    {kInfobarUIRebootOnlyiOS13});
   }
@@ -163,7 +164,6 @@ TEST_F(SaveCardInfobarBannerOverlayMediatorTest, PresentModalWhenUploadOff) {
 
   EXPECT_CALL(
       callback_receiver_,
-      DispatchCallback(request.get(),
-                       InfobarBannerMainActionResponse::ResponseSupport()));
+      DispatchCallback(request.get(), SaveCardMainAction::ResponseSupport()));
   [mediator bannerInfobarButtonWasPressed:nil];
 }

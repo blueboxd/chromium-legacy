@@ -1,3 +1,14 @@
+# src/content is a large and complex component. In general, files should be in
+# subdirectories that have specific owners who are the experts in reviewing that
+# code. Top level content/OWNERS are reviewers who are qualified to review
+# changes across all of content and are responsible for its architecture. They
+# will defer to subdirectory owners as needed. As such we expect that a
+# content/OWNER has made substantial contributions to content/ in the recent
+# past, specifically both in the browser and renderer subdirectories as they
+# encapsulate the main architecture, and demonstrated overall knowledge of the
+# content architecture by doing code reviews for changes that affect different
+# parts of content even before being a content/OWNER.
+
 alexmos@chromium.org
 avi@chromium.org
 clamy@chromium.org

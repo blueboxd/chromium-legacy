@@ -90,7 +90,7 @@ struct TrustedUrlRequestParams {
   // Observer which should be notified when this URLRequest reads or writes
   // a cookie. If this is set to non-null, the observer passed to
   // URLLoaderFactory will be ignored.
-  CookieAccessObserver? cookie_observer;
+  pending_remote<CookieAccessObserver>? cookie_observer;
 };
 
 // Typemapped to network::ResourceRequest.

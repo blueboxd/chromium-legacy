@@ -277,7 +277,7 @@ def _get_overview_console_view_key_fn(console_name):
   return key_fn
 
 
-def _sort_consoles(ctx):
+def _sort_console_entries(ctx):
   milo = ctx.output['luci-milo.cfg']
   consoles = []
   for console in milo.consoles:
@@ -288,9 +288,8 @@ def _sort_consoles(ctx):
     if key_fn:
       console.builders = sorted(console.builders, key_fn)
     consoles.append(console)
-  milo.consoles = sorted(consoles, lambda c: c.id)
 
-lucicfg.generator(_sort_consoles)
+lucicfg.generator(_sort_console_entries)
 
 
 def ordering(*, short_names=None, categories=None):

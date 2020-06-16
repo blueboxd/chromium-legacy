@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.display_cutout;
 
-import android.support.test.filters.LargeTest;
+import androidx.test.filters.LargeTest;
 
 import org.junit.Rule;
 import org.junit.Test;

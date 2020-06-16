@@ -155,7 +155,6 @@ class OutOfProcessInstance : public pp::Instance,
   // Helper functions for implementing PPP_PDF.
   void RotateClockwise();
   void RotateCounterclockwise();
-  void SetTwoUpView(bool enable_two_up_view);
 
   // Creates a file name for saving a PDF file, given the source URL. Exposed
   // for testing.
@@ -164,12 +163,14 @@ class OutOfProcessInstance : public pp::Instance,
  private:
   // Message handlers.
   void HandleBackgroundColorChangedMessage(const pp::VarDictionary& dict);
+  void HandleDisplayAnnotations(const pp::VarDictionary& dict);
   void HandleGetNamedDestinationMessage(const pp::VarDictionary& dict);
   void HandleGetPasswordCompleteMessage(const pp::VarDictionary& dict);
   void HandleGetSelectedTextMessage();
   void HandleLoadPreviewPageMessage(const pp::VarDictionary& dict);
   void HandlePrintMessage(const pp::VarDictionary& dict);
   void HandleResetPrintPreviewModeMessage(const pp::VarDictionary& dict);
+  void HandleSetTwoUpViewMessage(const pp::VarDictionary& dict);
   void HandleViewportMessage(const pp::VarDictionary& dict);
 
   void ResetRecentlySentFindUpdate(int32_t);

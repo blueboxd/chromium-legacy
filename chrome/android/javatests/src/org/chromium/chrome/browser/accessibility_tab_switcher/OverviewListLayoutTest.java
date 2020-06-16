@@ -6,10 +6,11 @@ package org.chromium.chrome.browser.accessibility_tab_switcher;
 
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.test.filters.MediumTest;
 
 import com.google.android.material.tabs.TabLayout;
 

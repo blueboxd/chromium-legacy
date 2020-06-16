@@ -25,7 +25,7 @@ class MessageBox {
 
   // ResultCallback will be invoked with Result::Cancel if the user closes the
   // MessageBox without clicking on any buttons.
-  typedef base::Callback<void(Result)> ResultCallback;
+  typedef base::OnceCallback<void(Result)> ResultCallback;
 
   MessageBox(const base::string16& title_label,
              const base::string16& message_label,

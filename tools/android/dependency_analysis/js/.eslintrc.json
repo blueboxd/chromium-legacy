@@ -19,6 +19,7 @@
             "ArrowFunctionExpression": true,
             "FunctionExpression": true
         }
-    }]
+    }],
+    "arrow-parens": ["warn", "as-needed"]
   }
 }

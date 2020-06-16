@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <array>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -402,7 +403,7 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
   std::vector<ProtocolVersion> versions = {ProtocolVersion::kCtap2};
   if (config.u2f_support) {
     versions.emplace_back(ProtocolVersion::kU2f);
-    u2f_device_.reset(new VirtualU2fDevice(NewReferenceToState()));
+    u2f_device_ = std::make_unique<VirtualU2fDevice>(NewReferenceToState());
   }
   Init(std::move(versions));
 
@@ -430,6 +431,9 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
           UserVerificationAvailability::kSupportedButNotConfigured;
     }
     options.supports_uv_token = config.uv_token_support;
+    if (options.supports_uv_token) {
+      DCHECK(base::Contains(config.ctap2_versions, Ctap2Version::kCtap2_1));
+    }
   }
 
   if (config.resident_key_support) {
@@ -600,8 +604,8 @@ base::WeakPtr<FidoDevice> VirtualCtap2Device::GetWeakPtr() {
 }
 
 void VirtualCtap2Device::Init(std::vector<ProtocolVersion> versions) {
-  device_info_ =
-      AuthenticatorGetInfoResponse(std::move(versions), kDeviceAaguid);
+  device_info_ = AuthenticatorGetInfoResponse(
+      std::move(versions), config_.ctap2_versions, kDeviceAaguid);
   device_info_->algorithms = {
       static_cast<int32_t>(CoseAlgorithmIdentifier::kEs256),
       static_cast<int32_t>(CoseAlgorithmIdentifier::kEdDSA),

@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.explore_sites;
 
 import static org.junit.Assert.assertEquals;
 
-import android.support.test.filters.SmallTest;
 import android.util.Pair;
 
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

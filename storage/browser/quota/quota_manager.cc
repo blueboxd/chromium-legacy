@@ -289,8 +289,6 @@ class QuotaManager::UsageAndQuotaInfoGatherer : public QuotaTask {
     if (host_quota > temp_pool_free_space) {
       if (is_unlimited_) {
         host_quota = available_space_ + host_usage_;
-      } else if (!base::FeatureList::IsEnabled(features::kStaticHostQuota)) {
-        host_quota = temp_pool_free_space + host_usage_;
       }
     }
 

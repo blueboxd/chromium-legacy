@@ -3702,7 +3702,7 @@ def _CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
   if input_api.platform != 'linux2':
     return []
   is_android = _ParseGclientArgs().get('checkout_android', 'false') == 'true'
-  pydeps_files = _ALL_PYDEPS_FILES if is_android else _GENERIC_PYDEPS_FILES
+  pydeps_to_check = _ALL_PYDEPS_FILES if is_android else _GENERIC_PYDEPS_FILES
   results = []
   # First, check for new / deleted .pydeps.
   for f in input_api.AffectedFiles(include_deletes=True):
@@ -3725,9 +3725,22 @@ def _CheckPydepsNeedsUpdating(input_api, output_api, checker_for_tests=None):
   if results:
     return results
 
-  checker = checker_for_tests or PydepsChecker(input_api, pydeps_files)
+  checker = checker_for_tests or PydepsChecker(input_api, _ALL_PYDEPS_FILES)
+  affected_pydeps = set(checker.ComputeAffectedPydeps())
+  affected_android_pydeps = affected_pydeps.intersection(
+      set(_ANDROID_SPECIFIC_PYDEPS_FILES))
+  if affected_android_pydeps and not is_android:
+    results.append(output_api.PresubmitPromptOrNotify(
+        'You have changed python files that may affect pydeps for android\n'
+        'specific scripts. However, the relevant presumbit check cannot be\n'
+        'run because you are not using an Android checkout. To validate that\n'
+        'the .pydeps are correct, re-run presubmit in an Android checkout, or\n'
+        'use the android-internal-presubmit optional trybot.\n'
+        'Possibly stale pydeps files:\n{}'.format(
+            '\n'.join(affected_android_pydeps))))
 
-  for pydep_path in checker.ComputeAffectedPydeps():
+  affected_pydeps_to_check = affected_pydeps.intersection(set(pydeps_to_check))
+  for pydep_path in affected_pydeps_to_check:
     try:
       result = checker.DetermineIfStale(pydep_path)
       if result:

@@ -15,10 +15,12 @@ InfoCollectionGpuServiceImpl::InfoCollectionGpuServiceImpl(
     scoped_refptr<base::SingleThreadTaskRunner> main_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     const gpu::DevicePerfInfo& device_perf_info,
+    const gpu::GPUInfo::GPUDevice& gpu_device,
     mojo::PendingReceiver<mojom::InfoCollectionGpuService> pending_receiver)
     : main_runner_(std::move(main_runner)),
       io_runner_(std::move(io_runner)),
-      device_perf_info_(device_perf_info) {
+      device_perf_info_(device_perf_info),
+      gpu_device_(gpu_device) {
   DCHECK(!io_runner_->BelongsToCurrentThread());
   DCHECK(main_runner_->BelongsToCurrentThread());
 
@@ -59,7 +61,8 @@ void InfoCollectionGpuServiceImpl::
   DCHECK(main_runner_->BelongsToCurrentThread());
 
   gpu::Dx12VulkanVersionInfo dx12_vulkan_version_info;
-  gpu::RecordGpuSupportedRuntimeVersionHistograms(&dx12_vulkan_version_info);
+  gpu::RecordGpuSupportedRuntimeVersionHistograms(gpu_device_,
+                                                  &dx12_vulkan_version_info);
 
   io_runner_->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), dx12_vulkan_version_info,

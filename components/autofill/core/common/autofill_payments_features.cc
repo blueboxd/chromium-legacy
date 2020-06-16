@@ -74,6 +74,11 @@ const base::Feature kAutofillEnableFixedPaymentsBubbleLogging{
 const base::Feature kAutofillEnableGoogleIssuedCard{
     "AutofillEnableGoogleIssuedCard", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// When enabled, offer data will be retrieved during downstream and shown in
+// the dropdown list.
+const base::Feature kAutofillEnableOffersInDownstream{
+    "kAutofillEnableOffersInDownstream", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // When enabled, all payments related bubbles will not be dismissed upon page
 // navigation.
 const base::Feature kAutofillEnableStickyPaymentsBubble{

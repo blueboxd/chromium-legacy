@@ -123,8 +123,7 @@ base::Optional<SkYUVColorSpace> GetSkYUVColorSpace(const avifImage* image) {
 // media::PaintCanvasVideoRenderer uses the JPEG matrix coefficients for all
 // full-range YUV color spaces, but we want to use the JPEG matrix coefficients
 // only for full-range BT.601 YUV.
-bool IsColorSpaceSupportedByPCVR(const avifImage* image,
-                                 bool premultiply_alpha) {
+bool IsColorSpaceSupportedByPCVR(const avifImage* image) {
   base::Optional<SkYUVColorSpace> yuv_color_space = GetSkYUVColorSpace(image);
   if (!yuv_color_space)
     return false;
@@ -133,14 +132,11 @@ bool IsColorSpaceSupportedByPCVR(const avifImage* image,
   // libyuv supports the alpha channel only with the I420 pixel format, which is
   // 8-bit YUV 4:2:0 with kRec601_SkYUVColorSpace. libavif reports monochrome
   // 4:0:0 as AVIF_PIXEL_FORMAT_YUV420 with null U and V planes, so we need to
-  // check for genuine YUV 4:2:0, not monochrome 4:0:0. Since
-  // media::PaintCanvasVideoRenderer calls libyuv::I420AlphaToARGB() with
-  // attenuate=1 to enable RGB premultiplication by alpha, we need to check
-  // premultiply_alpha.
+  // check for genuine YUV 4:2:0, not monochrome 4:0:0.
   const bool is_mono = !image->yuvPlanes[AVIF_CHAN_U];
   return image->depth == 8 && image->yuvFormat == AVIF_PIXEL_FORMAT_YUV420 &&
          !is_mono && *yuv_color_space == kRec601_SkYUVColorSpace &&
-         image->alphaRange == AVIF_RANGE_FULL && premultiply_alpha;
+         image->alphaRange == AVIF_RANGE_FULL;
 }
 
 media::VideoPixelFormat AvifToVideoPixelFormat(avifPixelFormat fmt, int depth) {
@@ -560,7 +556,7 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image, ImageFrame* buffer) {
   uint32_t* rgba_8888 = buffer->GetAddr(0, 0);
   // Call media::PaintCanvasVideoRenderer (PCVR) if the color space is
   // supported.
-  if (IsColorSpaceSupportedByPCVR(image, premultiply_alpha)) {
+  if (IsColorSpaceSupportedByPCVR(image)) {
     // Create temporary frame wrapping the YUVA planes.
     scoped_refptr<media::VideoFrame> frame;
     auto pixel_format = AvifToVideoPixelFormat(image->yuvFormat, image->depth);
@@ -592,7 +588,8 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image, ImageFrame* buffer) {
     //
     // https://bugs.chromium.org/p/libyuv/issues/detail?id=845
     media::PaintCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
-        frame.get(), rgba_8888, frame->visible_rect().width() * 4);
+        frame.get(), rgba_8888, frame->visible_rect().width() * 4,
+        premultiply_alpha);
     return true;
   }
 

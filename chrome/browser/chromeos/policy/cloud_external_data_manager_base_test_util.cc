@@ -74,7 +74,7 @@ std::string ConstructExternalDataPolicy(
 
 void SetExternalDataReference(CloudPolicyCore* core,
                               const std::string& policy,
-                              std::unique_ptr<base::DictionaryValue> metadata) {
+                              base::DictionaryValue metadata) {
   CloudPolicyStore* store = core->store();
   ASSERT_TRUE(store);
   PolicyMap policy_map;

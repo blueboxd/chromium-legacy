@@ -109,13 +109,12 @@ TEST_P(HomeScreenControllerTest,
 }
 
 TEST_P(HomeScreenControllerTest, ShowLauncherHistograms) {
-  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-
-  auto window = CreateTestWindow();
-
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  auto window = CreateTestWindow();
   base::HistogramTester tester;
   tester.ExpectTotalCount(kHomescreenAnimationHistogram, 0);
 
@@ -129,7 +128,16 @@ TEST_P(HomeScreenControllerTest, ShowLauncherHistograms) {
   GetEventGenerator()->ReleaseKey(ui::KeyboardCode::VKEY_BROWSER_SEARCH, 0);
 
   std::move(waiter).Run();
-  ASSERT_FALSE(window->layer()->GetAnimator()->is_animating());
+
+  // If window drag from shelf is disabled, the active window is minimized using
+  // different animation, and in that case the window might still be animating.
+  if (!IsWindowDragFromShelfEnabled()) {
+    ASSERT_TRUE(window->layer()->GetAnimator()->is_animating());
+    ShellTestApi().WaitForWindowFinishAnimating(window.get());
+  } else {
+    ASSERT_FALSE(window->layer()->GetAnimator()->is_animating());
+  }
+
   tester.ExpectTotalCount(kHomescreenAnimationHistogram, 1);
 }
 

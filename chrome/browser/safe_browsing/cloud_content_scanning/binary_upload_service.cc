@@ -425,7 +425,7 @@ void BinaryUploadService::RecordRequestMetrics(
 BinaryUploadService::Request::Data::Data() = default;
 
 BinaryUploadService::Request::Request(Callback callback, GURL url)
-    : callback_(std::move(callback)), url_(url) {}
+    : use_legacy_proto_(true), callback_(std::move(callback)), url_(url) {}
 
 BinaryUploadService::Request::~Request() = default;
 
@@ -441,27 +441,60 @@ void BinaryUploadService::Request::set_request_malware_scan(
 }
 
 void BinaryUploadService::Request::set_fcm_token(const std::string& token) {
-  deep_scanning_request_.set_fcm_notification_token(token);
+  if (use_legacy_proto_)
+    deep_scanning_request_.set_fcm_notification_token(token);
+  else
+    content_analysis_request_.set_fcm_notification_token(token);
 }
 
 void BinaryUploadService::Request::set_device_token(const std::string& token) {
-  deep_scanning_request_.set_dm_token(token);
+  if (use_legacy_proto_)
+    deep_scanning_request_.set_dm_token(token);
+  else
+    content_analysis_request_.set_device_token(token);
 }
 
 void BinaryUploadService::Request::set_request_token(const std::string& token) {
-  deep_scanning_request_.set_request_token(token);
+  if (use_legacy_proto_)
+    deep_scanning_request_.set_request_token(token);
+  else
+    content_analysis_request_.set_request_token(token);
 }
 
 void BinaryUploadService::Request::set_filename(const std::string& filename) {
-  deep_scanning_request_.set_filename(filename);
+  if (use_legacy_proto_)
+    deep_scanning_request_.set_filename(filename);
+  else
+    content_analysis_request_.mutable_request_data()->set_filename(filename);
 }
 
 void BinaryUploadService::Request::set_digest(const std::string& digest) {
-  deep_scanning_request_.set_digest(digest);
+  if (use_legacy_proto_)
+    deep_scanning_request_.set_digest(digest);
+  else
+    content_analysis_request_.mutable_request_data()->set_digest(digest);
 }
 
 void BinaryUploadService::Request::clear_dlp_scan_request() {
   deep_scanning_request_.clear_dlp_scan_request();
+}
+
+void BinaryUploadService::Request::set_analysis_connector(
+    enterprise_connectors::AnalysisConnector connector) {
+  content_analysis_request_.set_analysis_connector(connector);
+}
+
+void BinaryUploadService::Request::set_url(const std::string& url) {
+  content_analysis_request_.mutable_request_data()->set_url(url);
+}
+
+void BinaryUploadService::Request::set_csd(ClientDownloadRequest csd) {
+  *content_analysis_request_.mutable_request_data()->mutable_csd() =
+      std::move(csd);
+}
+
+void BinaryUploadService::Request::add_tag(const std::string& tag) {
+  content_analysis_request_.add_tags(tag);
 }
 
 void BinaryUploadService::Request::FinishRequest(

@@ -4,7 +4,7 @@
 
 package org.chromium.components.browser_ui.site_settings;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

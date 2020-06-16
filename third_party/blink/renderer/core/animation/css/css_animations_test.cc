@@ -245,8 +245,8 @@ class CSSAnimationsCompositorSyncTest : public CSSAnimationsTest {
 
   void VerifyCompositorTimeOffset(double expected_value) {
     cc::KeyframeModel* keyframe_model = GetCompositorKeyframeForOpacity();
-    EXPECT_NEAR(expected_value, keyframe_model->time_offset().InSecondsF(),
-                kTolerance);
+    EXPECT_NEAR(expected_value, keyframe_model->time_offset().InMillisecondsF(),
+                kTimeToleranceMilliseconds);
   }
 
   base::TimeDelta CompositorIterationTime() {
@@ -291,7 +291,7 @@ TEST_F(CSSAnimationsCompositorSyncTest, UpdatePlaybackRate) {
   // The time offset tells the compositor where to seek into the animation, and
   // is calculated as follows:
   // time_offset = current_time / playback_rate = 0.5 / 0.5 = 1.0.
-  VerifyCompositorTimeOffset(1.0);
+  VerifyCompositorTimeOffset(1000);
   VerifyCompositorIterationTime(500);
   VerifyCompositorOpacity(0.5);
 
@@ -301,7 +301,7 @@ TEST_F(CSSAnimationsCompositorSyncTest, UpdatePlaybackRate) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_NEAR(0.25, element_->GetComputedStyle()->Opacity(), kTolerance);
   EXPECT_EQ(post_update_compositor_group, animation->CompositorGroup());
-  VerifyCompositorTimeOffset(1.0);
+  VerifyCompositorTimeOffset(1000);
   VerifyCompositorIterationTime(750);
   VerifyCompositorOpacity(0.25);
 }
@@ -327,7 +327,7 @@ TEST_F(CSSAnimationsCompositorSyncTest, Reverse) {
 
   // Verify updates to cc Keyframe model.
   VerifyCompositorPlaybackRate(-1.0);
-  VerifyCompositorTimeOffset(0.5);
+  VerifyCompositorTimeOffset(500);
   VerifyCompositorIterationTime(500);
   VerifyCompositorOpacity(0.5);
 

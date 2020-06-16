@@ -97,8 +97,11 @@ gfx::PresentationFeedback SanitizePresentationFeedback(
   // therefore the timestamp can be slightly in the future in comparison with
   // base::TimeTicks::Now(). Such presentation feedbacks should not be rejected.
   // See https://crbug.com/1040178
+  // Sometimes we snap the feedback's time stamp to the nearest vsync, and that
+  // can be offset by one vsync-internal. These feedback has kVSync set.
   const auto allowed_delta_from_future =
-      ((feedback.flags & gfx::PresentationFeedback::kHWClock) != 0)
+      ((feedback.flags & (gfx::PresentationFeedback::kHWClock |
+                          gfx::PresentationFeedback::kVSync)) != 0)
           ? kAllowedDeltaFromFuture
           : base::TimeDelta();
   if (feedback.timestamp > now + allowed_delta_from_future) {

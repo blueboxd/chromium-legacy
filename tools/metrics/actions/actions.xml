@@ -8602,6 +8602,18 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="IOS.NTP.Doodle.Tapped">
+  <owner>gambard@chromium.org</owner>
+  <owner>justincohen@chromium.org</owner>
+  <description>
+    Recorded when the user is tapping the doodle on the NTP. There is also a
+    histogram (NewTabPageActioniOS::doodle), but histograms are not recorded in
+    Breadcrumbs. iOS Breadcrumbs attaches steps the user performed in the app to
+    crash logs. These steps can help debug causes of crashes when the stack
+    doesn't provide enough information.
+  </description>
+</action>
+
 <action name="IOS.PageZoom.ZoomIn">
   <owner>rkgibson@google.com</owner>
   <owner>gambard@chromium.org</owner>
@@ -19741,6 +19753,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Settings.MyAccount">
+  <owner>jlebel@chromium.org</owner>
+  <owner>fernandex@chromium.org</owner>
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded when the user taps on the account item in the settings. Recorded
+    for iOS only.
+  </description>
+</action>
+
 <action name="Settings.SafetyCheck.ManagePasswords">
   <owner>rainhard@chromium.org</owner>
   <owner>andzaytsev@google.com</owner>
@@ -19943,6 +19965,14 @@ should be able to be added at any place in this file.
   <description>
     The bottom row was horizontally scrolled. Recorded only once per open share
     sheet.
+  </description>
+</action>
+
+<action name="SharingHubAndroid.CopyTextSelected">
+  <owner>sophey@chromium.org</owner>
+  <owner>src/components/send_tab_to_self/OWNERS</owner>
+  <description>
+    The &quot;Copy Text&quot; option was selected in the sharing hub.
   </description>
 </action>
 
@@ -21895,6 +21925,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Signout_FromAccountListSettings">
+  <owner>jlebel@chromium.org</owner>
+  <owner>fernandex@chromium.org</owner>
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded when the user signs out from the Account list view. Recorded for
+    iOS only.
+  </description>
+</action>
+
 <action name="Signin_Signout_FromUserMenu">
   <owner>droger@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
@@ -21903,6 +21943,16 @@ should be able to be added at any place in this file.
     Recorded when the user is signed into Chrome, but not syncing, and clicks
     the sign out button in the user menu. This is only recorded when Desktop
     Identity Consistency is enabled.
+  </description>
+</action>
+
+<action name="Signin_SignoutClearData_FromAccountListSettings">
+  <owner>jlebel@chromium.org</owner>
+  <owner>fernandex@chromium.org</owner>
+  <owner>msarda@chromium.org</owner>
+  <description>
+    Recorded when the user signs out and delete user data, from the Account list
+    view. Recorded for iOS only.
   </description>
 </action>
 
@@ -25485,6 +25535,8 @@ should be able to be added at any place in this file.
   <suffix name="NewTab" label="For NewTab feature."/>
   <suffix name="NewTabPageButton" label="For NewTabPageButton feature."/>
   <suffix name="NewTabTip" label="For NewTabTip feature."/>
+  <suffix name="PasswordsAccountStorage"
+      label="For PasswordsAccountStorage feature."/>
   <suffix name="PreviewsOmniboxUI"
       label="For the Previews UI in the Android Omnibox feature."/>
   <suffix name="QuietNotificationPrompts"

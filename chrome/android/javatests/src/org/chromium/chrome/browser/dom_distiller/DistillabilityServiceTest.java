@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.dom_distiller;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

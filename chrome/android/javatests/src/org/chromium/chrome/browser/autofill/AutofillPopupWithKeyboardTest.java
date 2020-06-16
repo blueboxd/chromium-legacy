@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.autofill;
 
-import android.support.test.filters.MediumTest;
 import android.view.ViewGroup;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

@@ -4,10 +4,11 @@
 
 package org.chromium.chrome.browser.init;
 
-import android.support.test.filters.SmallTest;
 import android.support.test.rule.ActivityTestRule;
 import android.view.View;
 import android.widget.FrameLayout;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Rule;
 import org.junit.Test;

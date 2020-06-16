@@ -11,10 +11,12 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.MathUtils;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
 
@@ -50,6 +52,8 @@ public class InfoBarContainerView extends SwipableOverlayView {
     /** Parent view that contains the InfoBarContainerLayout. */
     private ViewGroup mParentView;
 
+    private final TabImpl mTab;
+
     /** Animation used to snap the container to the nearest state if scroll direction changes. */
     private Animator mScrollDirectionChangeAnimation;
 
@@ -66,8 +70,9 @@ public class InfoBarContainerView extends SwipableOverlayView {
      * @param isTablet Whether this view is displayed on tablet or not.
      */
     InfoBarContainerView(@NonNull Context context,
-            @NonNull ContainerViewObserver containerViewObserver, boolean isTablet) {
+            @NonNull ContainerViewObserver containerViewObserver, TabImpl tab, boolean isTablet) {
         super(context, null);
+        mTab = tab;
         mContainerViewObserver = containerViewObserver;
 
         // TODO(newt): move this workaround into the infobar views if/when they're scrollable.
@@ -116,13 +121,6 @@ public class InfoBarContainerView extends SwipableOverlayView {
     }
 
     @Override
-    protected boolean shouldConsumeScroll(int scrollOffsetY, int scrollExtentY) {
-        // TODO(crbug.com/1025620): Determine if any custom logic is needed here to support
-        // interaction with the bottom toolbar.
-        return true;
-    }
-
-    @Override
     protected void runUpEventAnimation(boolean visible) {
         if (mScrollDirectionChangeAnimation != null) mScrollDirectionChangeAnimation.cancel();
         super.runUpEventAnimation(visible);
@@ -136,8 +134,21 @@ public class InfoBarContainerView extends SwipableOverlayView {
     // View implementation.
     @Override
     public void setTranslationY(float translationY) {
-        super.setTranslationY(translationY);
-        float shownFraction = getHeight() > 0 ? 1f - (translationY / getHeight()) : 0;
+        int contentHeightDelta =
+                mTab.getBrowser().getViewController().getBottomContentHeightDelta();
+
+        // Push the infobar container up by any delta caused by the bottom toolbar while ensuring
+        // that it does not ascend beyond the top of the bottom toolbar nor descend beyond its own
+        // height.
+        float newTranslationY = MathUtils.clamp(
+                translationY - contentHeightDelta, -contentHeightDelta, getHeight());
+
+        super.setTranslationY(newTranslationY);
+
+        float shownFraction = 0;
+        if (getHeight() > 0) {
+            shownFraction = contentHeightDelta > 0 ? 1f : 1f - (translationY / getHeight());
+        }
         mContainerViewObserver.onShownRatioChanged(shownFraction);
     }
 
@@ -171,7 +182,8 @@ public class InfoBarContainerView extends SwipableOverlayView {
      * Adds this class to the parent view {@link #mParentView}.
      */
     void addToParentView() {
-        super.addToParentView(mParentView);
+        super.addToParentView(mParentView,
+                mTab.getBrowser().getViewController().getDesiredInfoBarContainerViewIndex());
     }
 
     /**
@@ -215,9 +227,16 @@ public class InfoBarContainerView extends SwipableOverlayView {
         mScrollDirectionChangeAnimation.start();
     }
 
+    @Override
+    // Ensure that this view's custom layout params are passed when adding it to its parent.
+    public ViewGroup.MarginLayoutParams createLayoutParams() {
+        return (ViewGroup.MarginLayoutParams) getLayoutParams();
+    }
+
     private void updateLayoutParams(Context context, boolean isTablet) {
-        LayoutParams lp = new LayoutParams(
-                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, Gravity.BOTTOM);
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+                LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+        lp.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         int topMarginDp = isTablet ? TOP_MARGIN_TABLET_DP : TOP_MARGIN_PHONE_DP;
         lp.topMargin = DisplayUtil.dpToPx(DisplayAndroid.getNonMultiDisplay(context), topMarginDp);
         setLayoutParams(lp);

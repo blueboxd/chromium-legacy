@@ -157,7 +157,6 @@
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_resize_event.h"
 #include "third_party/blink/renderer/core/events/visual_viewport_scroll_event.h"
-#include "third_party/blink/renderer/core/execution_context/agent_metrics_collector.h"
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/feature_policy/dom_document_policy.h"
@@ -877,9 +876,6 @@ Document::Document(const DocumentInit& initializer,
   liveDocumentSet().insert(this);
 #endif
 
-  if (GetFrame() && GetFrame()->GetPage()->GetAgentMetricsCollector())
-    GetFrame()->GetPage()->GetAgentMetricsCollector()->DidAttachDocument(*this);
-
   // We will use Loader() as UseCounter after initialization.
   use_counter_during_construction_ = nullptr;
 }
@@ -1038,10 +1034,6 @@ SecureContextMode Document::GetSecureContextMode() const {
 
 void Document::SetReferrerPolicy(network::mojom::ReferrerPolicy policy) {
   GetExecutionContext()->SetReferrerPolicy(policy);
-}
-
-Agent* Document::GetAgent() const {
-  return GetSecurityContext().GetAgent();
 }
 
 OriginTrialContext* Document::GetOriginTrialContext() const {
@@ -3129,10 +3121,6 @@ void Document::Initialize() {
   // ExecutionContextLifecycleObserver::contextDestroyed wouldn't be fired.
   network_state_observer_ =
       MakeGarbageCollected<NetworkStateObserver>(GetExecutionContext());
-
-  // Check for dom_window_ so we only attach documents with its own scheduler.
-  if (dom_window_)
-    GetAgent()->AttachDocument(this);
 }
 
 void Document::Shutdown() {
@@ -3279,15 +3267,6 @@ void Document::Shutdown() {
     media_query_matcher_->DocumentDetached();
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kStopped);
-  // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
-  CHECK(!View()->IsAttached());
-
-  // Check for GetFrame() so we only detach documents with its own scheduler.
-  // TODO(bokan): Can this happen? |GetFrame()| is dereferenced above and
-  // CHECKed at top.
-  if (GetFrame())
-    GetAgent()->DetachDocument(this);
-
   // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
   CHECK(!View()->IsAttached());
 
@@ -8397,10 +8376,6 @@ LazyLoadImageObserver& Document::EnsureLazyLoadImageObserver() {
         MakeGarbageCollected<LazyLoadImageObserver>(*this);
   }
   return *lazy_load_image_observer_;
-}
-
-WindowAgent& Document::GetWindowAgent() {
-  return *static_cast<WindowAgent*>(GetAgent());
 }
 
 void Document::IncrementNumberOfCanvases() {

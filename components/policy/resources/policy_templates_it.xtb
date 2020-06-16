@@ -579,6 +579,28 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se la piattaforma supporta le notifiche relative ai criteri, il ritardo dell'aggiornamento verrà impostato su 24 ore (vengono ignorati tutti i valori predefiniti e il valore di questo criterio) perché è previsto che le notifiche relative ai criteri forzino l'aggiornamento automatico quando cambiano i criteri, rendendo superflui aggiornamenti più frequenti.</translation>
 <translation id="2024476116966025075">Configura il nome di dominio richiesto per i client di accesso remoto</translation>
+<translation id="2024821084720338323">Se viene attivata la funzionalità di <ph name="PRODUCT_NAME" />, i timer di JavaScript nelle schede in background vengono limitati e coalizzati in modo aggressivo ed eseguiti in non più di uno per volta dopo che la pagina è stata in background per almeno cinque minuti.
+
+          Si tratta di una funzione conforme agli standard web, ma potrebbe causare interruzioni della funzionalità
+          su alcuni siti web, facendo sì che determinate azioni vengano ritardate anche fino a un
+          minuto. Tuttavia, comporta un significativo risparmio della batteria e della CPU, se
+          attivata. Per ulteriori dettagli, visita il sito https://bit.ly/30b1XR4.
+
+          Se il criterio viene attivato, la funzionalità viene attivata forzatamente e
+          gli utenti non possono modificarla.
+
+          Se il criterio viene disattivato, la funzionalità viene disattivata forzatamente e
+          gli utenti non possono modificarla.
+
+          Se il criterio non viene configurato, la funzionalità viene controllata dalla sua stessa
+          logica interna, che può essere configurata manualmente dagli utenti.
+
+          Questo criterio viene applicato per processo del renderer, con il valore più
+          recente dell'impostazione del criterio attivo all'inizio di un processo del renderer. È necessario
+          un riavvio completo per garantire che tutte le schede caricate ricevano un'impostazione del criterio
+          coerente. I processi possono essere eseguiti in sicurezza con
+          valori diversi di questo criterio.
+          </translation>
 <translation id="2030905906517501646">Parola chiave del provider di ricerca predefinito</translation>
 <translation id="203096360153626918">Questa norma non ha effetto sulle app Android, che saranno in grado di entrare in modalità a schermo intero anche se la norma viene impostata su <ph name="FALSE" />.</translation>
 <translation id="2040479044912658454">Modalità rasterizzazione stampa</translation>
@@ -622,6 +644,12 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Visita il sito https://developers.google.com/safe-browsing per ulteriori informazioni sulla funzionalità Navigazione sicura.</translation>
 <translation id="2127599828444728326">Consenti notifiche su questi siti</translation>
 <translation id="2131902621292742709">Ritardo oscuramento schermo in caso di utilizzo della batteria</translation>
+<translation id="2132424782557550556">Configura i criteri del reporting su cloud.
+
+      Se il criterio <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> non viene configurato o viene disattivato, questi criteri vengono ignorati.
+
+      I criteri vengono applicati solo se il computer è registrato con <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> per <ph name="PRODUCT_NAME" />.
+      I criteri vengono sempre applicati per <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2134437727173969994">Consenti blocco dello schermo</translation>
 <translation id="2137064848866899664">Se la norma viene impostata, ogni schermo viene ruotato secondo l'orientamento specificato, a ogni riavvio e la prima volta che viene collegato in seguito alla modifica della norma. Dopo aver eseguito l'accesso, gli utenti possono modificare la rotazione dello schermo tramite la pagina delle impostazioni ma, al successivo riavvio, la loro impostazione viene sostituita dal valore della norma.
 
@@ -751,6 +779,15 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se imposti questa norma, gli utenti non possono cambiarla o sostituirla. Potranno, però, attivare/disattivare una tastiera sullo schermo di accessibilità che ha la precedenza sulla tastiera virtuale controllata da questa norma. Leggi la norma |VirtualKeyboardEnabled| per il controllo della tastiera sullo schermo di accessibilità.
 
       Se questa norma non viene impostata, la tastiera sullo schermo viene inizialmente disattivata ma può essere attivata dall'utente in qualsiasi momento. Potrebbero anche essere utilizzate regole euristiche per stabilire quando visualizzare la tastiera.</translation>
+<translation id="2289265947759479962">Questo criterio consente di stabilire se segnalare o meno le informazioni sulla versione, ad esempio la versione del sistema operativo, la piattaforma e l'architettura del sistema operativo, la versione di <ph name="PRODUCT_NAME" /> e il canale di <ph name="PRODUCT_NAME" />.
+
+      Se il criterio <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> non viene configurato o viene disattivato, viene ignorato.
+
+      Se il criterio non viene configurato o viene impostato su Vero, le informazioni sulla versione vengono raccolte.
+      Se il criterio viene impostato su Falso, le informazioni sulla versione non vengono raccolte.
+
+      Questo criterio viene applicato soltanto se il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> per <ph name="PRODUCT_NAME" />.
+      Questo criterio viene sempre applicato per <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> può utilizzare un servizio web Google per correggere gli errori di ortografia. Se questa impostazione è abilitata, il servizio viene sempre utilizzato. Se questa impostazione è disabilitata, il servizio non viene mai utilizzato.
 
       Il controllo ortografico può essere comunque effettuato utilizzando un dizionario scaricato; questa norma controlla soltanto l'utilizzo del servizio online.
@@ -1187,6 +1224,14 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Le verifiche automatiche degli aggiornamenti non verranno bloccate da questa norma, ma potrebbero essere bloccate da altre norme. Questa funzionalità è attiva solo sui dispositivi Chrome configurati come kiosk ad avvio automatico. Gli altri dispositivi non risulteranno limitati da questa norma.</translation>
 <translation id="2823870601012066791">Posizione del Registro di sistema di Windows per client <ph name="PRODUCT_OS_NAME" />:</translation>
 <translation id="2824715612115726353">Attiva modalità di navigazione in incognito</translation>
+<translation id="2829975392104323514">Questo criterio consente di stabilire se segnalare o meno le informazioni che possono essere utilizzate per identificare i computer, come il nome del computer e gli indirizzi di rete.
+
+      Se il criterio <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> non viene configurato o viene disattivato, viene ignorato.
+
+      Se il criterio non viene configurato o viene impostato su Vero, le informazioni che possono essere utilizzate per identificare i computer vengono raccolte.
+      Se il criterio viene impostato su Falso, le informazioni che possono essere utilizzate per identificare i computer non vengono raccolte.
+
+      Questo criterio viene applicato soltanto se il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> per <ph name="PRODUCT_NAME" />.</translation>
 <translation id="2836621397261130126">Controlla se l'approvazione della norma KDC viene rispettata per decidere se delegare i ticket <ph name="KERBEROS" />.
 
           Se questa norma viene impostata su true, l'autenticazione HTTP rispetta l'approvazione da parte della norma KDC, ad esempio Chrome delega solo le credenziali se il KDC imposta <ph name="OK_AS_DELEGATE" /> su un ticket di servizio. Per ulteriori informazioni, visita la pagina https://tools.ietf.org/html/rfc5896.html. Il servizio deve corrispondere anche alla norma "AuthNegotiateDelegateWhitelist".
@@ -1863,6 +1908,16 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 
       Se la norma non viene impostata, il protocollo SPDY sarà disponibile.</translation>
 <translation id="3891357445869647828">Abilita JavaScript</translation>
+<translation id="3892015543543011887">Questo criterio controlla le richieste di installazione delle estensioni di <ph name="PRODUCT_NAME" />, consentendo agli utenti di inviare alla Console di amministrazione Google le richieste per l'approvazione.
+
+      Se il criterio <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> non viene configurato o viene disattivato, questo criterio viene ignorato e le richieste di installazione delle estensioni non vengono create né caricate.
+      Se il criterio non viene configurato o viene disattivato, le richieste di installazione delle estensioni non vengono create né caricate.
+      Se il criterio viene attivato, le richieste di installazione delle estensioni vengono create e caricate nella Console di amministrazione Google.
+
+      Le richieste di installazione delle estensioni vengono create quando gli utenti tentano di installare un'estensione non autorizzata da <ph name="EXTENSION_INSTALL_WHITELIST" /> o <ph name="EXTENSION_SETTINGS" />.
+
+      Questo criterio viene applicato soltanto se il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> per <ph name="PRODUCT_NAME" />.
+      Questo criterio viene sempre applicato per <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3895557476567727016">Consente di configurare la directory predefinita da usare in <ph name="PRODUCT_NAME" /> per il download dei file.
 
       Se questa norma viene impostata, verrà cambiata la directory predefinita in cui vengono scaricati i file in <ph name="PRODUCT_NAME" />. Questa norma non è obbligatoria, pertanto l'utente potrà cambiare la directory.
@@ -2296,7 +2351,15 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
       Se la norma viene lasciata senza impostazione, per impostazione predefinita la norma sarà disattivata per gli utenti gestiti dall'azienda, mentre sarà attiva per gli utenti non gestiti.</translation>
 <translation id="4555850956567117258">Attivazione dell'attestazione da remoto per l'utente</translation>
 <translation id="4557134566541205630">URL pagina Nuova scheda provider di ricerca predefinito</translation>
+<translation id="4562165737444703281">Consenti agli utenti di [attivare/configurare] il port forwarding in Crostini</translation>
 <translation id="4567137030726189378">Consenti l'utilizzo degli Strumenti per sviluppatori</translation>
+<translation id="4567818663772614440">Questo criterio consente di controllare il reporting su cloud di <ph name="PRODUCT_NAME" />, che consente di caricare informazioni sul funzionamento del browser nella Console di amministrazione Google.
+
+      Se il criterio non viene configurato o viene impostato su Falso, i dati non vengono raccolti o caricati.
+      Se il criterio viene impostato su Vero, i dati vengono raccolti e caricati nella Console di amministrazione Google.
+
+      Per <ph name="PRODUCT_NAME" />, questo criterio viene applicato soltanto se il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" />.
+      Per <ph name="PRODUCT_OS_NAME" />, questo criterio viene sempre applicato.</translation>
 <translation id="4578265298946081589">Non riavviare all'uscita dell'utente.</translation>
 <translation id="4578912515887794133">Se questa impostazione viene attivata, l'host di accesso remoto confronta il nome dell'utente locale (a cui è associato l'host) con il nome dell'Account Google registrato come proprietario dell'host (ad es. "mariorossi" se l'host è di proprietà dell'Account Google "mariorossi@example.com").  L'host di accesso remoto non viene avviato se il nome del proprietario dell'host non coincide con quello dell'utente locale a cui è associato l'host.  La norma RemoteAccessHostMatchUsername deve essere utilizzata insieme a RemoteAccessHostDomain per far sì che l'Account Google del proprietario dell'host sia associato a un dominio specifico (ad es. "example.com").
 
@@ -2604,6 +2667,15 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se disattivi questa impostazione o non la imposti, vengono recuperate soltanto le voci dell'elenco dell'origine con la massima priorità e tutte le altre origini risultano in conflitto, ma vengono ignorate.</translation>
 <translation id="5141670636904227950">Impostazione tipo di ingrandimento dello schermo predefinito attivato nella schermata di accesso</translation>
 <translation id="5142301680741828703">Visualizza sempre i seguenti schemi di URL in <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="514870861066611127">Questo criterio consente di stabilire se segnalare o meno le informazioni che possono essere utilizzate per identificare gli utenti, ad esempio i dati di accesso al sistema operativo, i dati di accesso del profilo <ph name="PRODUCT_NAME" />, il nome del profilo <ph name="PRODUCT_NAME" />, il percorso del profilo <ph name="PRODUCT_NAME" /> e il percorso eseguibile di <ph name="PRODUCT_NAME" />.
+
+      Se il criterio <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> non viene configurato o viene disattivato, viene ignorato.
+
+      Se il criterio non viene configurato o viene impostato su Vero, le informazioni che possono essere utilizzate per identificare gli utenti vengono raccolte.
+      Se il criterio viene impostato su Falso, le informazioni che possono essere utilizzate per identificare gli utenti non vengono raccolte.
+
+      Questo criterio viene applicato soltanto se il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> per <ph name="PRODUCT_NAME" />.
+      Questo criterio viene sempre applicato per <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5148753489738115745">Consente di specificare dei parametri aggiuntivi da utilizzare quando <ph name="PRODUCT_FRAME_NAME" /> avvia <ph name="PRODUCT_NAME" />.
 
 Se questa norma non viene impostata viene utilizzata la riga di comando predefinita.</translation>
@@ -2812,6 +2884,11 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
       Se imposti il criterio, gli utenti non possono modificarlo. Se il criterio non è impostato, la tastiera sullo schermo è disattivata all'inizio, ma gli utenti possono attivarla in qualsiasi momento.</translation>
 <translation id="537786648513450280">Controlla l'utilizzo delle app Android di fonti non attendibili per il dispositivo</translation>
 <translation id="5378985487213287085">Permette di stabilire se consentire o meno la visualizzazione di notifiche desktop nei siti web. La visualizzazione di notifiche desktop può essere consentita o negata per impostazione predefinita oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera visualizzare le notifiche desktop. Se questa norma non viene impostata, verrà utilizzato il valore "AskNotifications", che potrà essere modificato dagli utenti.</translation>
+<translation id="5379858577608862519">Consente di specificare se il port forwarding nei contenitori Crostini è consentito.
+
+      Se il criterio viene impostato su Vero o se non viene configurato, gli utenti potranno configurare il port forwarding nei loro contenitori Crostini.
+
+      Se il criterio viene impostato su Falso, il port forwarding nei contenitori Crostini viene disattivato.</translation>
 <translation id="538108065117008131">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i seguenti tipi di contenuto.</translation>
 <translation id="538768040137709073">Consente di attivare la funzione Appunti condivisi che permette agli utenti di inviare messaggi tra computer desktop Chrome e un dispositivo Android quando la sincronizzazione è attivata e l'utente ha effettuato l'accesso.
 
@@ -3066,6 +3143,13 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5679540979548648200">Impedisci agli utenti di questo dispositivo di utilizzare il processo sideload ADB e forza la funzione Powerwash del dispositivo se tale processo è stato attivato in precedenza</translation>
 <translation id="5689430183304951538">Dimensioni predefinite delle pagine di stampa</translation>
 <translation id="5693469654327063861">Consenti migrazione dei dati</translation>
+<translation id="5695209488612697377">Consente di attivare l'utilizzo di un provider di ricerca predefinito nel menu contestuale.
+
+          Se il criterio viene disattivato, la voce del menu contestuale di ricerca che si basa sul tuo provider di ricerca predefinito non è disponibile.
+
+          Se il criterio viene attivato o se non viene configurato, la voce del menu contestuale per il tuo provider di ricerca predefinito è disponibile.
+
+          Il valore del criterio viene applicato solo se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> viene attivato e non altrimenti.</translation>
 <translation id="5697306356229823047">Segnala utenti dispositivo</translation>
 <translation id="5699487516670033016">Consente di specificare la durata in ore della cache. La cache viene utilizzata per velocizzare l'accesso. Contiene dati generali (nome del gruppo di lavoro e così via) riguardo alle aree di autenticazione delle affiliate, come le aree di autenticazione ritenute attendibili dall'area di autenticazione della macchina. Nessun dato specifico dell'utente o delle aree di autenticazione delle affiliate viene memorizzato nella cache. Se il dispositivo viene riavviato, la cache viene svuotata.
 
@@ -3176,6 +3260,14 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="585270638818921943">Impedisci all'utente di usare app Android di fonti non attendibili</translation>
+<translation id="5854749508571554984">Questo criterio viene applicato soltanto se il dispositivo ha raggiunto la fine del ciclo di vita e non rispetta la versione minima consentita di <ph name="PRODUCT_NAME" /> impostata tramite il criterio <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />.
+
+      Se il criterio viene impostato su una stringa non vuota:
+      Se il tempo di avviso menzionato nel criterio <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> è scaduto, questo messaggio viene mostrato nella schermata di accesso quando il dispositivo è bloccato per tutti gli utenti che eseguono l'accesso.
+      Se il tempo di avviso menzionato nel criterio <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> non è scaduto, questo messaggio viene mostrato nella pagina Impostazioni dopo che gli utenti avranno eseguito l'accesso.
+
+      Se il criterio non viene configurato o se viene lasciato vuoto, il messaggio predefinito di fine del ciclo di vita viene mostrato agli utenti in entrambi i casi citati.
+      Il messaggio di fine del ciclo di vita deve essere composto da un testo normale, senza alcuna formattazione. Non sono consentiti markup. </translation>
 <translation id="5855010364142818361">Questo criterio consente di gestire i parametri della riga di comando per il passaggio a Chrome da Internet Explorer.
 
       Se il componente aggiuntivo "Supporto dei browser precedenti" per Internet Explorer non è installato, questo criterio non viene applicato.
@@ -3271,6 +3363,15 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
        Valori validi: • 0 = disattivata• 1 = attivata• 2 = riquadro d'ingrandimento ancorato attivato
 
           Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> sostituisce questo criterio.</translation>
+<translation id="6015281292796053435">Questo criterio consente di stabilire se segnalare o meno le informazioni di Navigazione sicura, incluso il numero dell'avviso di Navigazione sicura e il numero del relativo click-through.
+
+      Se il criterio <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> non viene configurato o viene disattivato, viene ignorato.
+
+      Se il criterio non viene configurato o viene impostato su Vero, i dati di Navigazione sicura vengono raccolti.
+      Se il criterio viene impostato su Falso, i dati di Navigazione sicura non vengono raccolti.
+
+      Questo criterio viene applicato soltanto se il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> per <ph name="PRODUCT_NAME" />.
+      Questo criterio viene sempre applicato per <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="6017568866726630990">Mostra la finestra di dialogo di stampa del sistema invece dell'anteprima di stampa.
 
       Se l'impostazione è attivata, <ph name="PRODUCT_NAME" /> aprirà la finestra di dialogo di stampa del sistema invece dell'anteprima di stampa integrata quando un utente richiede la stampa di una pagina.
@@ -3879,6 +3980,7 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
       Se il criterio è impostato su <ph name="BR_UNDER_USER_CONTROL" />, agli utenti viene chiesto di utilizzare il backup e ripristino. Se gli utenti attivano il backup e ripristino, i dati delle app Android vengono caricati sui server di backup di Android e ripristinati durante la reinstallazione delle app.
 
       Dopo la configurazione iniziale, gli utenti possono attivare o disattivare il backup e ripristino.</translation>
+<translation id="6993687707842131236">Configura il messaggio di fine del ciclo di vita per il criterio MinimumChromeVersionEnforced</translation>
 <translation id="6994082778848658360">Consente di specificare in che modo è possibile usare l'hardware degli elementi di sicurezza su scheda per fornire l'autenticazione a due fattori, se compatibile con questa funzione. Il tasto di accensione del computer viene usato per rilevare la presenza fisica dell'utente.
 
        Se selezioni l'opzione "Disabilitata", non viene fornita l'autenticazione a due fattori.
@@ -4533,6 +4635,7 @@ Nota. Attualmente i riavvii automatici vengono attivati soltanto durante la visu
       Se questa norma viene disattivata o non viene impostata, saranno utilizzati solo i normali profili locali.
 
       La norma <ph name="SYNC_DISABLED_POLICY_NAME" /> consente di disattivare la sincronizzazione di tutti i dati e sostituisce la norma <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />.</translation>
+<translation id="8011935490612940798">Controlla la funzionalità di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="802147957407376460">Ruota lo schermo di 0°</translation>
 <translation id="8027265928215448940">Elenco di impostazioni per i servizi dei connettori di Chrome Enterprise da applicare al connettore di Enterprise <ph name="ON_FILE_DOWNLOADED_ENTERPRISE_CONNECTOR" />, che si attiva quando un file viene scaricato in Chrome.
 
@@ -4555,6 +4658,15 @@ Se disattivi questa impostazione, gli utenti non potranno utilizzare la funzione
 
 Se attivi questa impostazione o non imposti un valore, la funzione Compilazione automatica potrà essere gestita dagli utenti, che potranno quindi configurare i profili di Compilazione automatica e attivare o disattivare a propria scelta questa funzione.</translation>
 <translation id="8044493735196713914">Indicazione modalità di avvio dispositivo</translation>
+<translation id="8049769137921877885">Questo criterio consente di stabilire se segnalare o meno i dati del criterio e l'orario del relativo recupero.
+
+      Se il criterio <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> non viene configurato o viene disattivato, viene ignorato.
+
+      Se il criterio non viene configurato o viene impostato su Vero, i dati del criterio e l'orario del relativo recupero vengono raccolti.
+      Se il criterio viene impostato su Falso, i dati del criterio e l'orario del relativo recupero non vengono raccolti.
+
+      Questo criterio viene applicato soltanto se il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> per <ph name="PRODUCT_NAME" />.
+      Questo criterio viene sempre applicato per <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8050080920415773384">Stampa nativa</translation>
 <translation id="8053580360728293758">Consente di eseguire l'override della modalità di stampa a colori predefinita. Se la modalità non è disponibile, questa norma viene ignorata.</translation>
 <translation id="8057841287222359526">Consente di impostare un elenco di funzionalità di <ph name="PRODUCT_OS_NAME" /> da disattivare.
@@ -4734,6 +4846,7 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8357681633047935212">Limita la durata di una sessione utente</translation>
 <translation id="8359734107661430198">Attiva l'API ExampleDeprecatedFeature valida fino al 02/09/2008</translation>
 <translation id="8367209241899435947">Attiva Chrome Software Cleaner su Windows</translation>
+<translation id="8367473200119029349">Reporting su cloud</translation>
 <translation id="8369602308428138533">Ritardo disattivazione schermo in caso di utilizzo di CA</translation>
 <translation id="8371178326720637170">Consente alle estensioni gestite di utilizzare l'API Enterprise Hardware Platform</translation>
 <translation id="8380490658357556620">Attiva l'utilizzo dei relay server quando i client remoti tentano di stabilire una connessione con il computer.
@@ -4983,6 +5096,15 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 
       Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
 <translation id="8736538322216687231">Imponi livello minimo della Modalità con restrizioni di YouTube</translation>
+<translation id="8745669971728319820">Questo criterio consente di stabilire se segnalare o meno le informazioni relative a estensioni e plug-in.
+
+      Se il criterio <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> non viene configurato o viene disattivato, viene ignorato.
+
+      Se il criterio non viene configurato o viene impostato su Vero, le informazioni relative a estensioni e plug-in vengono raccolte.
+      Se il criterio viene impostato su Falso, le informazioni relative a estensioni e plug-in non vengono raccolte.
+
+      Questo criterio viene applicato soltanto se il computer viene registrato con il criterio <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> per <ph name="PRODUCT_NAME" />.
+      Questo criterio viene sempre applicato per <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="8749370016497832113">Consente di eliminare la cronologia del browser e la cronologia dei download in <ph name="PRODUCT_NAME" /> e impedisce agli utenti di modificare questa impostazione.
 
       Tieni presente che anche quando questa norma è disattivata, non è garantita la memorizzazione della cronologia di navigazione e della cronologia dei download: gli utenti potrebbero essere in grado di modificare o eliminare direttamente i file dei database delle cronologie e il browser stesso potrebbe far scadere o archiviare alcuni o tutti gli elementi della cronologia in qualsiasi momento.
@@ -5153,6 +5275,7 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="8970205333161758602">Eliminazione del messaggio di richiesta di turndown di <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8976248126101463034">Consenti l'autenticazione Gnubby per gli host di accesso remoto</translation>
 <translation id="8976531594979650914">Usa stampante di sistema come predefinita</translation>
+<translation id="8977192934280677167">Consenti l'accesso alla ricerca del menu contestuale al provider di ricerca predefinito</translation>
 <translation id="8992176907758534924">Non consentire la visualizzazione di immagini nei siti</translation>
 <translation id="9010080992450148617">Attiva invio download a Google per scansione approfondita per utenti iscritti al programma di protezione avanzata</translation>
 <translation id="9013875414788074110">Durante l'accesso, <ph name="PRODUCT_OS_NAME" /> può eseguire l'autenticazione con un server (online) o utilizzando una password memorizzata nella cache (offline).

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="1001307489511021749">앱, 설정 및 기타 맞춤설정이 내 Google 계정으로 로그인된 모든 Chrome OS 기기에서 동기화됩니다.</translation>
 <translation id="1003088604756913841">새 <ph name="APP" /> 창에서 링크 열기</translation>
 <translation id="1004218526896219317">사이트 액세스</translation>
 <translation id="1005274289863221750">마이크와 카메라 사용</translation>
@@ -526,6 +527,7 @@
 <translation id="164936512206786300">블루투스 기기 페어링 해제</translation>
 <translation id="1650371550981945235">입력 옵션 표시</translation>
 <translation id="1651008383952180276">동일한 암호를 두 번 입력해야 합니다.</translation>
+<translation id="1652326691684645429">Nearby 공유 사용</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Google 클라우드 프린트에 프린터를 추가하여 어디서나 인쇄하세요.}other{Google 클라우드 프린트에 프린터 #개를 추가하여 어디서나 인쇄하세요.}}</translation>
 <translation id="1656528038316521561">배경 불투명도</translation>
 <translation id="1657406563541664238">사용 통계 및 비정상 종료 보고서가 Google로 자동 전송되게 하여 <ph name="PRODUCT_NAME" /> 개선에 도움 주기</translation>
@@ -1634,6 +1636,7 @@
 <translation id="3022978424994383087">인식하지 못했습니다.</translation>
 <translation id="3023464535986383522">텍스트 읽어주기</translation>
 <translation id="3024374909719388945">24시간 단위 사용</translation>
+<translation id="3027296729579831126">Nearby 공유 사용 설정</translation>
 <translation id="3029466929721441205">실행기에 스타일러스 도구 표시</translation>
 <translation id="3031417829280473749">X 요원</translation>
 <translation id="3031557471081358569">가져올 항목 선택:</translation>
@@ -1733,6 +1736,7 @@
 <translation id="3162853326462195145">학교 계정</translation>
 <translation id="3162899666601560689">사이트에서 사용자의 로그인 상태를 유지하거나 장바구니에 담긴 상품을 기억하는 등 탐색 환경을 개선하기 위해 쿠키를 사용할 수 있습니다.</translation>
 <translation id="3163201441334626963">공급업체 <ph name="VENDOR_ID" />의 알 수 없는 제품 <ph name="PRODUCT_ID" /></translation>
+<translation id="3163254451837720982">다음 서비스는 데이터를 안전하게 보관하는 데 도움을 줍니다. 이러한 기능은 언제든지 사용 중지할 수 있습니다.</translation>
 <translation id="3164329792803560526">이 탭을 <ph name="APP_NAME" /> 앱과 공유하는 중</translation>
 <translation id="3165390001037658081">일부 이동통신사는 이 기능을 차단할 수도 있습니다.</translation>
 <translation id="316652501498554287">G Suite for Education 계정</translation>
@@ -2912,6 +2916,7 @@
 <translation id="4673442866648850031">스타일러스가 분리되면 스타일러스 도구가 열립니다.</translation>
 <translation id="4677772697204437347">GPU 메모리</translation>
 <translation id="4680105648806843642">이 페이지가 음소거됨</translation>
+<translation id="4681453295291708042">Nearby 공유 사용 중지</translation>
 <translation id="4681930562518940301">새 탭에서 원본 이미지 열기</translation>
 <translation id="4682551433947286597">로그인 화면에 배경화면이 표시됩니다.</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" />%(기본)</translation>
@@ -3722,6 +3727,7 @@
 <translation id="5739017626473506901"><ph name="USER_NAME" />님이 학교 계정을 추가할 수 있도록 로그인하세요.</translation>
 <translation id="5739235828260127894">확인을 기다리는 중입니다. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">아주 크게</translation>
+<translation id="5740328398383587084">Nearby 공유</translation>
 <translation id="574104302965107104">화면 미러링</translation>
 <translation id="574209121243317957">높낮이</translation>
 <translation id="5746169159649715125">PDF로 저장</translation>
@@ -4658,6 +4664,7 @@
 <translation id="6965978654500191972">기기</translation>
 <translation id="696780070563539690">사이트에서 사용자의 다양한 사이트 탐색 활동 정보를 이용해 광고 맞춤설정 등의 작업을 하기 위해 쿠키를 사용할 수 없습니다.</translation>
 <translation id="6968288415730398122">비밀번호를 입력하여 화면 잠금을 설정하세요.</translation>
+<translation id="6969047215179982698">Nearby 공유 사용 중지</translation>
 <translation id="6970480684834282392">시작 유형</translation>
 <translation id="6970856801391541997">특정 페이지 인쇄</translation>
 <translation id="6972180789171089114">오디오/비디오</translation>
@@ -4827,6 +4834,7 @@
 <translation id="7171259390164035663">등록하지 않음</translation>
 <translation id="7171559745792467651">다른 기기의 앱 설치</translation>
 <translation id="7172470549472604877">{NUM_TABS,plural, =1{새 그룹에 탭 추가}other{새 그룹에 탭 추가}}</translation>
+<translation id="7173852404388239669">나만의 <ph name="DEVICE_TYPE" /> 만들기</translation>
 <translation id="7174199383876220879">New! 음악, 동영상 등의 항목을 제어할 수 있습니다.</translation>
 <translation id="7175037578838465313"><ph name="NAME" /> 설정</translation>
 <translation id="7175353351958621980">로드 위치:</translation>
@@ -5115,6 +5123,7 @@
 <translation id="7552846755917812628">다음 도움말을 확인해 보세요.</translation>
 <translation id="7553012839257224005">Linux 컨테이너 확인 중</translation>
 <translation id="7553242001898162573">비밀번호를 입력해 주세요.</translation>
+<translation id="7554475479213504905">무시하고 새로고침 및 표시</translation>
 <translation id="7554791636758816595">새 탭</translation>
 <translation id="7556033326131260574">Smart Lock이 계정을 인증하지 못했습니다. 잠금 해제하려면 비밀번호를 입력하세요.</translation>
 <translation id="7556242789364317684">안타깝게도 <ph name="SHORT_PRODUCT_NAME" />에서 설정을 복구할 수 없습니다. 오류를 해결하려면 <ph name="SHORT_PRODUCT_NAME" />에서 Powerwash를 사용하여 기기를 재설정해야 합니다.</translation>

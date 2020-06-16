@@ -429,7 +429,6 @@ class GpuImageDecodeCacheTest
   }
 
   PaintImage CreateBitmapImageInternal(const gfx::Size& size) {
-    DCHECK(!do_yuv_decode_);
     return CreateBitmapImage(size, color_type_);
   }
 
@@ -2925,6 +2924,20 @@ TEST_P(GpuImageDecodeCacheTest, GetBorderlineLargeDecodedImageForDraw) {
   EXPECT_FALSE(cache->DiscardableIsLockedForTesting(draw_image));
 
   cache->DrawWithImageFinished(draw_image, decoded_draw_image);
+  cache->UnrefImage(draw_image);
+}
+
+TEST_P(GpuImageDecodeCacheTest, OutOfRasterDecodeForBitmaps) {
+  auto cache = CreateCache();
+
+  PaintImage image = CreateBitmapImageInternal(GetNormalImageSize());
+  DrawImage draw_image = CreateDrawImageInternal(image);
+  ImageDecodeCache::TaskResult result =
+      cache->GetOutOfRasterDecodeTaskForImageAndRef(draw_image);
+  EXPECT_TRUE(result.need_unref);
+  EXPECT_FALSE(result.task);
+  EXPECT_FALSE(result.is_at_raster_decode);
+  EXPECT_FALSE(result.can_do_hardware_accelerated_decode);
   cache->UnrefImage(draw_image);
 }
 

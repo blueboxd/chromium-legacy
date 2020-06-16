@@ -314,6 +314,8 @@ test("device_unittests") {
       "bluetooth/test/fake_gatt_device_services_result_winrt.h",
       "bluetooth/test/fake_gatt_read_result_winrt.cc",
       "bluetooth/test/fake_gatt_read_result_winrt.h",
+      "bluetooth/test/fake_gatt_session_winrt.cc",
+      "bluetooth/test/fake_gatt_session_winrt.h",
       "bluetooth/test/fake_gatt_value_changed_event_args_winrt.cc",
       "bluetooth/test/fake_gatt_value_changed_event_args_winrt.h",
       "bluetooth/test/fake_gatt_write_result_winrt.cc",

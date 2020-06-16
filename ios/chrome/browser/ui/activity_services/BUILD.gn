@@ -2,37 +2,28 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("activity_services_ui") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "activity_type_util.h",
-    "activity_type_util.mm",
-  ]
-  deps = [
-    "//base",
-    "//ios/chrome/app/strings:ios_strings",
-    "//ui/base",
-  ]
-  libs = [ "UIKit.framework" ]
-}
-
 source_set("activity_services") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "activity_scenario.h",
     "activity_service_coordinator.h",
     "activity_service_coordinator.mm",
+    "activity_service_histograms.h",
+    "activity_service_histograms.mm",
     "activity_service_mediator.h",
     "activity_service_mediator.mm",
+    "activity_type_util.h",
+    "activity_type_util.mm",
     "canonical_url_retriever.h",
     "canonical_url_retriever.mm",
   ]
   deps = [
-    ":activity_services_ui",
     "//base",
     "//components/bookmarks/browser",
     "//components/bookmarks/common",
     "//components/prefs",
     "//components/ui_metrics",
+    "//ios/chrome/app/strings:ios_strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
@@ -62,7 +53,6 @@ source_set("unit_tests") {
   ]
   deps = [
     ":activity_services",
-    ":activity_services_ui",
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/browser",

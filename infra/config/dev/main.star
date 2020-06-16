@@ -8,6 +8,7 @@
 
 luci.project(
     name = 'chromium',
+    dev = True,
     buildbucket = 'cr-buildbucket-dev.appspot.com',
     logdog = 'luci-logdog-dev.appspot.com',
     milo = 'luci-milo-dev.appspot.com',

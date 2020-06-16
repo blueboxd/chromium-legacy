@@ -152,10 +152,12 @@
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="6119846243427417423">aktiviraj</translation>
 <translation id="6129953537138746214">Presledek</translation>
+<translation id="6134259848159370930">Iščite v napravi, aplikacijah, nastavitvah in spletu.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Razširitev na vse aplikacije</translation>
 <translation id="6165508094623778733">Več o tem</translation>
+<translation id="6166852626429024716">Iščite v napravi, aplikacijah, nastavitvah, spletu …</translation>
 <translation id="6264365405983206840">Izberi &amp;vse</translation>
 <translation id="6351032674660237738">PREDLOGI ZA APLIKACIJE</translation>
 <translation id="6364916375976753737">Pomik levo</translation>
@@ -230,6 +232,7 @@
 <translation id="8602707065186045623">Datoteka <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Polica je vedno prikazana</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8685326675965865247">Iščite v napravi, aplikacijah, nastavitvah in spletu. S puščičnimi tipkami se pomikajte po aplikacijah.</translation>
 <translation id="8725488761726303204">in še <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Končano</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}one{# h}two{# h}few{# h}other{# h}}</translation>

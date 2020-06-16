@@ -23,13 +23,10 @@ namespace printing_manager {
 namespace {
 void AddPrintManagementStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
-      {"completionStatusFailed", IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_FAILED},
       {"completionStatusCanceled",
        IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_CANCELED},
       {"completionStatusPrinted",
        IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_PRINTED},
-      {"completionStatusUnknownError",
-       IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_UNKNOWN_ERROR},
       {"fileNameColumn", IDS_PRINT_MANAGEMENT_FILE_NAME_COLUMN},
       {"printerNameColumn", IDS_PRINT_MANAGEMENT_PRINTER_NAME_COLUMN},
       {"dateColumn", IDS_PRINT_MANAGEMENT_DATE_COLUMN},
@@ -48,6 +45,17 @@ void AddPrintManagementStrings(content::WebUIDataSource* html_source) {
        IDS_PRINT_MANAGEMENT_PRINTED_PAGES_PROGRESS_FRACTION},
       {"completePrintJobLabel", IDS_PRINT_MANAGEMENT_COMPLETED_JOB_ARIA_LABEL},
       {"ongoingPrintJobLabel", IDS_PRINT_MANAGEMENT_ONGOING_JOB_ARIA_LABEL},
+      {"paperJam", IDS_PRINT_MANAGEMENT_PAPER_JAM_ERROR_STATUS},
+      {"outOfPaper", IDS_PRINT_MANAGEMENT_OUT_OF_PAPER_ERROR_STATUS},
+      {"outOfInk", IDS_PRINT_MANAGEMENT_OUT_OF_INK_ERROR_STATUS},
+      {"doorOpen", IDS_PRINT_MANAGEMENT_DOOR_OPEN_ERROR_STATUS},
+      {"printerUnreachable",
+       IDS_PRINT_MANAGEMENT_PRINTER_UNREACHABLE_ERROR_STATUS},
+      {"trayMissing", IDS_PRINT_MANAGEMENT_TRAY_MISSING_ERROR_STATUS},
+      {"outputFull", IDS_PRINT_MANAGEMENT_OUTPUT_FULL_ERROR_STATUS},
+      {"stopped", IDS_PRINT_MANAGEMENT_STOPPED_ERROR_STATUS},
+      {"filterFailed", IDS_PRINT_MANAGEMENT_FILTERED_FAILED_ERROR_STATUS},
+      {"unknownPrinterError", IDS_PRINT_MANAGEMENT_UNKNOWN_ERROR_STATUS},
   };
 
   for (const auto& str : kLocalizedStrings) {

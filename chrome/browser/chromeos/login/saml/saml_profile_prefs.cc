@@ -23,7 +23,7 @@ namespace chromeos {
 void RegisterSamlProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(prefs::kSAMLOfflineSigninTimeLimit,
                                 kDefaultSAMLOfflineSigninTimeLimit);
-  registry->RegisterInt64Pref(prefs::kSAMLLastGAIASignInTime, 0);
+  registry->RegisterTimePref(prefs::kSAMLLastGAIASignInTime, base::Time());
 
   registry->RegisterBooleanPref(prefs::kSamlInSessionPasswordChangeEnabled,
                                 kDefaultSamlInSessionPasswordChangeEnabled);

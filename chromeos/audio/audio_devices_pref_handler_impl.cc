@@ -99,17 +99,26 @@ double AudioDevicesPrefHandlerImpl::GetOutputVolumeValue(
   if (!device)
     return kDefaultOutputVolumePercent;
   else
-    return GetVolumeGainPrefValue(*device);
+    return GetOutputVolumePrefValue(*device);
 }
 
 double AudioDevicesPrefHandlerImpl::GetInputGainValue(
     const AudioDevice* device) {
   DCHECK(device);
-  return GetVolumeGainPrefValue(*device);
+  return GetInputGainPrefValue(*device);
 }
 
 void AudioDevicesPrefHandlerImpl::SetVolumeGainValue(
     const AudioDevice& device, double value) {
+  // TODO(baileyberro): Refactor public interface to use two explicit methods.
+  device.is_input ? SetInputGainPrefValue(device, value)
+                  : SetOutputVolumePrefValue(device, value);
+}
+
+void AudioDevicesPrefHandlerImpl::SetOutputVolumePrefValue(
+    const AudioDevice& device,
+    double value) {
+  DCHECK(!device.is_input);
   // Use this opportunity to remove device record under deprecated device ID,
   // if one exists.
   if (device.stable_device_id_version == 2) {
@@ -119,6 +128,25 @@ void AudioDevicesPrefHandlerImpl::SetVolumeGainValue(
   device_volume_settings_->SetDouble(GetDeviceIdString(device), value);
 
   SaveDevicesVolumePref();
+}
+
+void AudioDevicesPrefHandlerImpl::SetInputGainPrefValue(
+    const AudioDevice& device,
+    double value) {
+  DCHECK(device.is_input);
+
+  const std::string device_id = GetDeviceIdString(device);
+
+  // Use this opportunity to remove input device record from
+  // |device_volume_settings_|.
+  // TODO(baileyberro): Remove this check in M94.
+  if (device_volume_settings_->HasKey(device_id)) {
+    device_volume_settings_->Remove(device_id, nullptr);
+    SaveDevicesVolumePref();
+  }
+
+  device_gain_settings_->SetDouble(device_id, value);
+  SaveDevicesGainPref();
 }
 
 bool AudioDevicesPrefHandlerImpl::GetMuteValue(const AudioDevice& device) {
@@ -148,7 +176,7 @@ void AudioDevicesPrefHandlerImpl::SetMuteValue(const AudioDevice& device,
 void AudioDevicesPrefHandlerImpl::SetDeviceActive(const AudioDevice& device,
                                                   bool active,
                                                   bool activate_by_user) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  auto dict = std::make_unique<base::DictionaryValue>();
   dict->SetBoolean(kActiveKey, active);
   if (active)
     dict->SetBoolean(kActivateByUserKey, activate_by_user);
@@ -206,14 +234,28 @@ void AudioDevicesPrefHandlerImpl::RemoveAudioPrefObserver(
   observers_.RemoveObserver(observer);
 }
 
-double AudioDevicesPrefHandlerImpl::GetVolumeGainPrefValue(
+double AudioDevicesPrefHandlerImpl::GetOutputVolumePrefValue(
     const AudioDevice& device) {
+  DCHECK(!device.is_input);
   std::string device_id_str = GetDeviceIdString(device);
   if (!device_volume_settings_->HasKey(device_id_str))
     MigrateDeviceVolumeGainSettings(device_id_str, device);
 
   double value;
   device_volume_settings_->GetDouble(device_id_str, &value);
+
+  return value;
+}
+
+double AudioDevicesPrefHandlerImpl::GetInputGainPrefValue(
+    const AudioDevice& device) {
+  DCHECK(device.is_input);
+  std::string device_id_str = GetDeviceIdString(device);
+  if (!device_gain_settings_->HasKey(device_id_str))
+    SetInputGainPrefValue(device, kDefaultInputGainPercent);
+
+  double value;
+  device_gain_settings_->GetDouble(device_id_str, &value);
 
   return value;
 }
@@ -228,14 +270,16 @@ double AudioDevicesPrefHandlerImpl::GetDeviceDefaultOutputVolume(
 
 AudioDevicesPrefHandlerImpl::AudioDevicesPrefHandlerImpl(
     PrefService* local_state)
-    : device_mute_settings_(new base::DictionaryValue()),
-      device_volume_settings_(new base::DictionaryValue()),
-      device_state_settings_(new base::DictionaryValue()),
+    : device_mute_settings_(std::make_unique<base::DictionaryValue>()),
+      device_volume_settings_(std::make_unique<base::DictionaryValue>()),
+      device_gain_settings_(std::make_unique<base::DictionaryValue>()),
+      device_state_settings_(std::make_unique<base::DictionaryValue>()),
       local_state_(local_state) {
   InitializePrefObservers();
 
   LoadDevicesMutePref();
   LoadDevicesVolumePref();
+  LoadDevicesGainPref();
   LoadDevicesStatePref();
 }
 
@@ -274,6 +318,20 @@ void AudioDevicesPrefHandlerImpl::SaveDevicesVolumePref() {
                                    prefs::kAudioDevicesVolumePercent);
   dict_update->Clear();
   dict_update->MergeDictionary(device_volume_settings_.get());
+}
+
+void AudioDevicesPrefHandlerImpl::LoadDevicesGainPref() {
+  const base::DictionaryValue* gain_prefs =
+      local_state_->GetDictionary(prefs::kAudioDevicesGainPercent);
+  if (gain_prefs)
+    device_gain_settings_.reset(gain_prefs->DeepCopy());
+}
+
+void AudioDevicesPrefHandlerImpl::SaveDevicesGainPref() {
+  DictionaryPrefUpdate dict_update(local_state_,
+                                   prefs::kAudioDevicesGainPercent);
+  dict_update->Clear();
+  dict_update->MergeDictionary(device_gain_settings_.get());
 }
 
 void AudioDevicesPrefHandlerImpl::LoadDevicesStatePref() {
@@ -317,14 +375,12 @@ void AudioDevicesPrefHandlerImpl::MigrateDeviceMuteSettings(
 void AudioDevicesPrefHandlerImpl::MigrateDeviceVolumeGainSettings(
     const std::string& device_key,
     const AudioDevice& device) {
+  DCHECK(!device.is_input);
   if (!MigrateDeviceIdInSettings(device_volume_settings_.get(), device_key,
                                  device)) {
     // If there was no recorded value for deprecated device ID, use value from
-    // global vloume pref. For input devices, use the DefaultInputGainPercent
-    // rather than the kAudioVolumePercent.
-    double old_volume =
-        device.is_input ? kDefaultInputGainPercent
-                        : local_state_->GetDouble(prefs::kAudioVolumePercent);
+    // global vloume pref.
+    double old_volume = local_state_->GetDouble(prefs::kAudioVolumePercent);
     device_volume_settings_->SetDouble(device_key, old_volume);
   }
   SaveDevicesVolumePref();
@@ -338,6 +394,7 @@ void AudioDevicesPrefHandlerImpl::NotifyAudioPolicyChange() {
 // static
 void AudioDevicesPrefHandlerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kAudioDevicesVolumePercent);
+  registry->RegisterDictionaryPref(prefs::kAudioDevicesGainPercent);
   registry->RegisterDictionaryPref(prefs::kAudioDevicesMute);
   registry->RegisterDictionaryPref(prefs::kAudioDevicesState);
 

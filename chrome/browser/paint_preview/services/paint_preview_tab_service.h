@@ -90,6 +90,8 @@ class PaintPreviewTabService : public PaintPreviewBaseService {
   void AuditArtifactsAndroid(
       JNIEnv* env,
       const base::android::JavaParamRef<jintArray>& j_tab_ids);
+  jboolean IsCacheInitializedAndroid(JNIEnv* env);
+  base::android::ScopedJavaLocalRef<jstring> GetPathAndroid(JNIEnv* env);
 
   base::android::ScopedJavaGlobalRef<jobject> GetJavaRef() { return java_ref_; }
 #endif  // defined(OS_ANDROID)

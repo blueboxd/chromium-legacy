@@ -15,10 +15,7 @@
 #include "ui/base/cursor/cursor_size.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/display/display.h"
-
-namespace cursor {
-class CursorView;
-}
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace ash {
 
@@ -117,7 +114,7 @@ class ASH_EXPORT CursorWindowController {
 
   std::unique_ptr<aura::Window> cursor_window_;
   std::unique_ptr<CursorWindowDelegate> delegate_;
-  std::unique_ptr<cursor::CursorView> cursor_view_;
+  views::UniqueWidgetPtr cursor_view_widget_;
 
   const bool is_cursor_motion_blur_enabled_;
 

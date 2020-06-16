@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Σύνδεση στον ιστότοπο</translation>
 <translation id="1509960214886564027">Μπορεί να παρουσιαστούν προβλήματα στις λειτουργίες πολλών ιστοτόπων.</translation>
 <translation id="152234381334907219">Δεν έγινε ποτέ αποθήκευση</translation>
+<translation id="1535268707340844072">Η τρέχουσα ρύθμιση ενδέχεται να προκαλέσει προβλήματα σε ορισμένους ιστοτόπους. Για να διαχειριστείτε τα cookie για όλους τους ιστοτόπους, ανατρέξτε στις <ph name="BEGIN_LINK" />Ρυθμίσεις cookie<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Διεύθυνση 1</translation>
 <translation id="1545749641540134597">Σάρωση κωδικού QR</translation>
 <translation id="1552525382687785070">Ο συγχρονισμός έχει απενεργοποιηθεί από τον διαχειριστή σας</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Ενεργή <ph name="DAYS" /> ημέρες πριν</translation>
 <translation id="2074131957428911366">Μπορείτε πάντα να επιλέξετε τα στοιχεία που θέλετε να συγχρονίσετε στις <ph name="BEGIN_LINK" />ρυθμίσεις<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Αναίρεση</translation>
+<translation id="2081417079511601293">Αποκλεισμός cookie τρίτου μέρους στην Ανώνυμη περιήγηση</translation>
 <translation id="209018056901015185">Αίτηση ιστότ. για υπολογ.</translation>
 <translation id="2103075008456228677">Ανοίξτε το history.google.com</translation>
 <translation id="2116625576999540962">Μετακινήθηκαν <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">Άνοιγμα σε Νέα Καρτέλα</translation>
 <translation id="3037605927509011580">Όπα! Κάτι πήγε στραβά!</translation>
 <translation id="3112556859945124369">Επισήμανση…</translation>
+<translation id="3131206671572504478">Αποκλεισμός όλων</translation>
 <translation id="3153862085237805241">Αποθήκευση κάρτας</translation>
 <translation id="3157684681743766797">Επισήμανση όλων…</translation>
 <translation id="3161291298470460782">Με αυτήν την ενέργεια θα αποσυνδεθείτε, θα απενεργοποιηθεί ο συγχρονισμός και θα διαγραφούν όλα τα δεδομένα του Chrome από αυτήν τη συσκευή. Τα συγχρονισμένα δεδομένα θα διατηρηθούν στον Λογαριασμό σας Google.</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">Πατήστε για αλλαγή γλώσσας.</translation>
 <translation id="441868831736628555">Σημείωση απορρήτου</translation>
 <translation id="4454246407045105932">Προσθήκη γλώσσας</translation>
+<translation id="4469418912670346607">Συνέχεια ρύθμισης</translation>
 <translation id="4476574785019001431">Ρυθμίσεις</translation>
 <translation id="4496373720959965247">Προσθέστε καρτέλες και κάντε εναλλαγή μεταξύ σελίδων</translation>
 <translation id="4508750114462689118">Κλείσιμο προσφοράς σύνδεσης</translation>
@@ -300,6 +304,7 @@
 <translation id="4805759445554688327">Μη έγκυρος αριθμός κάρτας</translation>
 <translation id="4818522717893377262">Προσθήκη γλώσσας…</translation>
 <translation id="481968316161811770">Cookie, δεδομένα ιστότοπου</translation>
+<translation id="4826218269716039351">Αποκλεισμός cookie τρίτους μέρους</translation>
 <translation id="4833786495304741580">Αποστέλλει αυτόματα στατιστικά στοιχεία χρήσης και αναφορές σφαλμάτων στην Google.</translation>
 <translation id="4840495572919996524">Οι σελιδοδείκτες, το ιστορικό, οι κωδικοί πρόσβασης και άλλα στοιχεία δεν θα συγχρονίζονται πλέον με τον Λογαριασμό σας Google.</translation>
 <translation id="4854345657858711387">Ορισμός κωδικού πρόσβασης</translation>
@@ -345,6 +350,7 @@
 <translation id="54401264925851789">Πληροφορίες ασφάλειας σελίδας</translation>
 <translation id="5443952882982198570">Πιστωτικές κάρτες</translation>
 <translation id="5457907402803865181">Σφάλμα κατά τον συγχρονισμό των κωδικών πρόσβασης.</translation>
+<translation id="5489208564673669003">Για να διαχειριστείτε τα cookie για όλους τους ιστοτόπους, ανατρέξτε στις <ph name="BEGIN_LINK" />Ρυθμίσεις cookie<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Αποσύνδεση και διαγραφή δεδομένων από αυτήν τη συσκευή</translation>
 <translation id="5525269841082836315">Δημ. φράσης πρόσβ.</translation>
 <translation id="5548760955356983418">Το Handoff σάς δίνει τη δυνατότητα να ξεκινήσετε την περιήγηση σε έναν ιστότοπο σε αυτήν τη συσκευή και, στη συνέχεια, να συνεχίσετε εύκολα σε Mac. Ο ιστότοπος που είναι ανοικτός αυτήν τη στιγμή θα εμφανίζεται στο Dock του Mac.
@@ -432,6 +438,7 @@
 <translation id="6418346271604475326">Προετοιμασία PDF</translation>
 <translation id="6426067060178468363">Αποδοχή cookie</translation>
 <translation id="6434591244308415567">Παρουσιάστηκε ένα σφάλμα. Δοκιμάστε ξανά αργότερα.</translation>
+<translation id="6439338047467462846">Να επιτρέπονται όλα</translation>
 <translation id="6445051938772793705">Χώρα
 </translation>
 <translation id="6445981559479772097">Το μήνυμα εστάλη.</translation>
@@ -440,6 +447,7 @@
 <translation id="6476800141292307438">Μετάφραση της σελίδας σε <ph name="LANGUAGE" />. Οι επιλογές είναι διαθέσιμες κοντά στο κάτω μέρος της οθόνης.</translation>
 <translation id="648164694371393720">Σφάλμα ελέγχου ταυτότητας</translation>
 <translation id="6482629121755362506">Διαγράφηκαν <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> στοιχεία</translation>
+<translation id="651505212789431520">Ακύρωση συγχρονισμού; Μπορείτε να ενεργοποιήσετε τον συγχρονισμό ανά πάσα στιγμή στις Ρυθμίσεις.</translation>
 <translation id="6561262006871132942">Μεγέθυνση</translation>
 <translation id="6610002944194042868">Μετάφραση επιλογών</translation>
 <translation id="6628106477656132239">Μη έγκυρη ημερομηνία λήξης</translation>

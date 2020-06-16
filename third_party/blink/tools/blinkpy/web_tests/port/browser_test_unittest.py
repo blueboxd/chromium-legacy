@@ -42,16 +42,7 @@ class _BrowserTestTestCaseMixin(object):
             self.driver_name_endswith))
 
     def test_default_timeout_ms(self):
-        self.assertEqual(
-            self.make_port(
-                options=optparse.Values({
-                    'configuration': 'Release'
-                })).default_timeout_ms(), self.timeout_ms)
-        self.assertEqual(
-            self.make_port(
-                options=optparse.Values({
-                    'configuration': 'Debug'
-                })).default_timeout_ms(), 3 * self.timeout_ms)
+        self.assertEqual(self.make_port().timeout_ms(), self.timeout_ms)
 
     def test_driver_type(self):
         self.assertTrue(
@@ -82,7 +73,7 @@ class BrowserTestLinuxTest(_BrowserTestTestCaseMixin,
     os_name = 'linux'
     os_version = 'trusty'
     driver_name_endswith = 'browser_tests'
-    timeout_ms = 10 * 1000
+    timeout_ms = 10000
 
 
 class BrowserTestWinTest(_BrowserTestTestCaseMixin,
@@ -92,7 +83,7 @@ class BrowserTestWinTest(_BrowserTestTestCaseMixin,
     os_name = 'win'
     os_version = 'win7'
     driver_name_endswith = 'browser_tests.exe'
-    timeout_ms = 20 * 1000
+    timeout_ms = 20000
 
 
 class BrowserTestMacTest(_BrowserTestTestCaseMixin,
@@ -102,7 +93,7 @@ class BrowserTestMacTest(_BrowserTestTestCaseMixin,
     port_name = 'mac'
     port_maker = browser_test.BrowserTestMacPort
     driver_name_endswith = 'browser_tests'
-    timeout_ms = 20 * 1000
+    timeout_ms = 20000
 
     def test_driver_path(self):
         test_port = self.make_port(

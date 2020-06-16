@@ -25,6 +25,7 @@ source_set("lib") {
     "//components/autofill/core/common",
     "//components/crash/core/common",
     "//components/gwp_asan/buildflags",
+    "//components/metrics",
     "//components/safe_browsing/android:safe_browsing_api_handler",
     "//components/services/heap_profiling/public/cpp",
     "//components/spellcheck:buildflags",

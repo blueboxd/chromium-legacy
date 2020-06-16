@@ -81,6 +81,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Паспрабуйце выдаліць файлы cookie<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">Праверце налады абароненай DNS</translation>
 <translation id="1307966114820526988">Састарэлыя функцыі</translation>
+<translation id="1310581832770023220">Даныя з гэтай формы перадаюцца па неабароненым падключэнні</translation>
 <translation id="131405271941274527">Сайт <ph name="URL" /> запытвае доступ на абмен інфармацыяй, калі вы націсканнем выбіраеце свой тэлефон на прыладзе NFC</translation>
 <translation id="1314509827145471431">Пераплёт справа</translation>
 <translation id="1320233736580025032">Prc1 (канверт)</translation>
@@ -384,6 +385,7 @@
 <translation id="2544644783021658368">Адзіны дакумент</translation>
 <translation id="254947805923345898">Значэнне палітыкі несапраўднае.</translation>
 <translation id="255002559098805027">Хост <ph name="HOST_NAME" /> адправіў няправільны адказ.</translation>
+<translation id="2552295903035773204">Выкарыстоўваць блакіроўку экрана для пацвярджэння картак</translation>
 <translation id="2553853292994445426">Праверце налады абароненай DNS. Магчыма, вы наладзілі абаронены сервер DNS, з якім не ўдаецца злучыцца.</translation>
 <translation id="2556876185419854533">&amp;Адрабіць змену</translation>
 <translation id="257674075312929031">Група</translation>
@@ -1443,6 +1445,7 @@
 <translation id="7138472120740807366">Спосаб дастаўкі</translation>
 <translation id="7139724024395191329">Эмірат</translation>
 <translation id="714064300541049402">Зрух відарыса па восі X, бок 2</translation>
+<translation id="7147693119324090759">Адправіць усё роўна</translation>
 <translation id="7152423860607593928">Number-14 (канверт)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> і яшчэ <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Бледна-ліловы</translation>
@@ -1520,6 +1523,7 @@
 <translation id="7416351320495623771">Кіраваць паролямі…</translation>
 <translation id="7419106976560586862">Шлях да профілю</translation>
 <translation id="7437289804838430631">Дадаць кантактную інфармацыю</translation>
+<translation id="743897106051685947">Арыгінал</translation>
 <translation id="7438976808740265764">Са снежня 2020 г. Flash Player падтрымлівацца не будзе.</translation>
 <translation id="7440140511386898319">Даступна для прагляду ў пазасеткавым рэжыме</translation>
 <translation id="7441627299479586546">Няправільны суб'ект палітыкі</translation>
@@ -1531,6 +1535,7 @@
 <translation id="7473891865547856676">Не, дзякуй</translation>
 <translation id="7481312909269577407">Далей</translation>
 <translation id="7485870689360869515">Даныя не знойдзены.</translation>
+<translation id="7488762544858401571">Зменены дакумент</translation>
 <translation id="7495290002932347110">У выніку ўцечкі даных на сайце або ў праграме ваш пароль быў раскрыты. Chrome рэкамендуе праверыць захаваныя паролі і неадкладна змяніць пароль на сайце <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Рэдагаваць далей</translation>
 <translation id="7503664977220660814">Вы толькі што ўвялі свой пароль на сайце, вядомым падманнымі паводзінамі. Chromium рэкамендуе праверыць захаваныя паролі на сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> і на іншых сайтах, дзе выкарыстоўваецца гэты пароль.</translation>
@@ -1614,6 +1619,7 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">У тым жа парадку, рабочым бокам уверх</translation>
 <translation id="777702478322588152">Прэфектура</translation>
+<translation id="7791011319128895129">Не апублікавана</translation>
 <translation id="7791196057686275387">Стос</translation>
 <translation id="7791543448312431591">Дадаць</translation>
 <translation id="7798389633136518089">Не прымяняецца, паколькі палітыка не вызначана з воблака.</translation>
@@ -1750,6 +1756,7 @@
 <translation id="8355270400102541638">Лакальны ідэнтыфікатар збою:</translation>
 <translation id="8363502534493474904">Выключыць рэжым палёту</translation>
 <translation id="8364627913115013041">Не зададзена</translation>
+<translation id="8367477997601443248">Небяспечная форма</translation>
 <translation id="8368476060205742148">Сэрвісы Google Play</translation>
 <translation id="8371889962595521444">Карыстальніцкія каранёвыя сертыфікаты</translation>
 <translation id="8380941800586852976">Небяспечна</translation>
@@ -1832,6 +1839,7 @@
 <translation id="8805819170075074995">Элемент спіса "<ph name="LANGUAGE_ID" />": запіс ігнаруецца, бо ён уключаны і ў палітыку "SpellcheckLanguage".</translation>
 <translation id="8807160976559152894">Абрэзка пасля кожнай старонкі</translation>
 <translation id="8820817407110198400">Закладкі</translation>
+<translation id="8831512686168463822">Гэта форма будзе перададзена па неабароненым падключэнні, таму звесткі пра вас (напрыклад, паролі, паведамленні або нумары крэдытных картак) пры іх адпраўцы на гэты сайт могуць быць раскрыты.</translation>
 <translation id="883848425547221593">Іншыя закладкі</translation>
 <translation id="884264119367021077">Адрас дастаўкі</translation>
 <translation id="884923133447025588">Механізм адклікання не знойдзены.</translation>

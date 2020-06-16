@@ -313,18 +313,11 @@ Try tapping the mic to ask me anything.
       </message>
 
       <!-- Print Management App -->
-      <!-- TODO(crbug/1067465): Update with finalized copies of the strings -->
-      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_FAILED" desc="Displayed text status if the print job failed." translateable="false">
-        Failed
-      </message>
-      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_CANCELED" desc="Displayed text status if the print job was canceled." translateable="false">
+      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_CANCELED" desc="Displayed text status if the print job was canceled.">
         Canceled
       </message>
-      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_PRINTED" desc="Displayed text status if the print job was printed succesfully." translateable="false">
+      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_PRINTED" desc="Displayed text status if the print job was printed succesfully.">
         Printed
-      </message>
-      <message name="IDS_PRINT_MANAGEMENT_COMPLETION_STATUS_UNKNOWN_ERROR" desc="Displayed text status if the print job had an unknown error." translateable="false">
-        Unknown Error
       </message>
       <message name="IDS_PRINT_MANAGEMENT_FILE_NAME_COLUMN" desc="The label for the column header that displays the file name of the print job.">
         File name
@@ -370,6 +363,36 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_PRINT_MANAGEMENT_ONGOING_JOB_ARIA_LABEL" desc="The aria label that describes an ongoing print job that includes the print job documenet title, printer name, creation time, and ongoing status.">
         <ph name="DOCUMENT_TITLE">$1<ex>my_essay.doc</ex></ph>, <ph name="PRINTER_NAME">$2<ex>canon 6450</ex></ph>, <ph name="CREATION_TIME">$3<ex>February 8, 2020</ex></ph>, <ph name="PRINTED_PAGE_NUMBER">$4<ex>5</ex></ph> out of <ph name="TOTAL_PAGE_NUMBER">$5<ex>7</ex></ph>
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_PAPER_JAM_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because of a printer paper jam.">
+        Failed - Paper jam
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_OUT_OF_PAPER_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job faied because their printer is out out of paper.">
+        Failed - Out of paper
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_OUT_OF_INK_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer is out of ink.">
+        Failed - Out of ink
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_DOOR_OPEN_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer door is open.">
+        Failed - Door open
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_PRINTER_UNREACHABLE_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer is unreachable.">
+        Failed - Printer unreachable
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_TRAY_MISSING_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer's tray is missing.">
+        Failed - Tray missing
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_OUTPUT_FULL_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer's output is full .">
+        Failed - Output full
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_STOPPED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer has stopped the print job.">
+        Failed - Stopped
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_FILTERED_FAILED_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed because their printer's filter has failed.">
+        Failed - Filter failed
+      </message>
+      <message name="IDS_PRINT_MANAGEMENT_UNKNOWN_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed due to an unknown error.">
+        Failed - Unknown error
       </message>
     </messages>
   </release>

@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="6119846243427417423">activa</translation>
 <translation id="6129953537138746214">Espai</translation>
+<translation id="6134259848159370930">Cerca al dispositiu, en aplicacions, a la configuració i al web.</translation>
 <translation id="6135826906199951471">Supr</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Amplia a totes les aplicacions</translation>
 <translation id="6165508094623778733">Més informació</translation>
+<translation id="6166852626429024716">Cerca al dispositiu, en aplicacions, a la configuració i al web...</translation>
 <translation id="6264365405983206840">Selecciona-ho &amp;tot</translation>
 <translation id="6351032674660237738">SUGGERIMENTS D'APLICACIONS</translation>
 <translation id="6364916375976753737">Desplaçament a l'esquerra</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623">Fitxer <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">El prestatge es mostra sempre</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8685326675965865247">Fes cerques al dispositiu, en aplicacions, a la configuració i al web. Fes servir les tecles de fletxa per navegar per les aplicacions.</translation>
 <translation id="8725488761726303204">i <ph name="NUMBER" /> més</translation>
 <translation id="8730621377337864115">Fet</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}other{# h}}</translation>

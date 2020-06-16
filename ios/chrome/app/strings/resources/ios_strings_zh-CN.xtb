@@ -462,6 +462,7 @@
 <translation id="681368974849482173">书签已创建</translation>
 <translation id="6831043979455480757">翻译</translation>
 <translation id="6851516051005285358">请求切换到桌面版网站</translation>
+<translation id="6856384753476268833">由贵单位管理。</translation>
 <translation id="6858855187367714033">已扫描</translation>
 <translation id="6859944681507688231">要扫描二维码或信用卡，请在设置中允许该应用使用相机。</translation>
 <translation id="6873263987691478642">拆分视图</translation>
@@ -540,6 +541,7 @@
 <translation id="7856733331829174190">无法下载</translation>
 <translation id="7859704718976024901">浏览记录</translation>
 <translation id="7887198238286927132">为保护您的隐私，Chrome 不会自动填充此字段。</translation>
+<translation id="791251013315685175">由<ph name="COMPANY" />管理。</translation>
 <translation id="7918293828610777738">您的阅读清单支持离线访问。要将某个网页添加到该清单中，请依次点按 <ph name="SHARE_OPENING_ICON" /> 和“<ph name="READ_LATER_TEXT" />”。</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">导出密码…</translation>

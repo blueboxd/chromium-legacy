@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.contextmenu;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.support.test.filters.LargeTest;
 import android.view.View;
+
+import androidx.test.filters.LargeTest;
 
 import org.junit.Rule;
 import org.junit.Test;

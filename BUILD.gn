@@ -1109,6 +1109,9 @@ if (!is_ios) {
       "//third_party/blink/web_tests/resources/",
       "//third_party/blink/web_tests/wpt_internal/",
       "//third_party/pywebsocket3/src/mod_pywebsocket/",
+
+      # Needed by run_web_tests.py to detect DCHECK build.
+      "$root_out_dir/args.gn",
     ]
 
     if (is_win) {

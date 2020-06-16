@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">ورود به سیستم وب‌سایت</translation>
 <translation id="1509960214886564027">ویژگی‌های بسیاری از سایت‌ها ممکن است درست کار نکنند</translation>
 <translation id="152234381334907219">هرگز ذخیره نمی‌شود</translation>
+<translation id="1535268707340844072">ممکن است تنظیم فعلی موجب خرابی برخی از سایت‌ها شود. برای مدیریت کردن کوکی‌ها برای همه سایت‌ها، به <ph name="BEGIN_LINK" />تنظیمات کوکی‌ها<ph name="END_LINK" /> بروید.</translation>
 <translation id="1540800554400757039">آدرس ۱</translation>
 <translation id="1545749641540134597">‏اسکن کد QR</translation>
 <translation id="1552525382687785070">سرپرستتان همگام‌سازی را غیرفعال کرده است</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">آخرین فعالیت: <ph name="DAYS" /> روز قبل</translation>
 <translation id="2074131957428911366">هرزمان خواستید می‌توانید مواردی را که می‌خواهید همگام‌سازی شود در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> انتخاب کنید.</translation>
 <translation id="2079545284768500474">لغو</translation>
+<translation id="2081417079511601293">کوکی‌های شخص ثالث در «حالت ناشناس» می‌شود</translation>
 <translation id="209018056901015185">درخواست سایت دسک‌تاپ</translation>
 <translation id="2103075008456228677">‏باز کردن history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> مورد منتقل شدند</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">باز کردن در برگهٔ جدید</translation>
 <translation id="3037605927509011580">اوه، نه!</translation>
 <translation id="3112556859945124369">علامت‌گذاری...</translation>
+<translation id="3131206671572504478">مسدود کردن همه</translation>
 <translation id="3153862085237805241">ذخیره کردن کارت</translation>
 <translation id="3157684681743766797">علامت‌گذاری همه...</translation>
 <translation id="3161291298470460782">‏با این کار، از سیستم خارج می‌شوید، همگام‌سازی خاموش می‌شود، و همه داده‌های Chrome از این دستگاه پاک می‌شود. داده‌های همگام‌سازی‌شده در «حساب Google» شما باقی خواهد ماند.</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">برای تغییر زبان، ضربه بزنید.</translation>
 <translation id="441868831736628555">اعلامیه حریم خصوصی</translation>
 <translation id="4454246407045105932">افزودن زبان</translation>
+<translation id="4469418912670346607">ادامه راه‌اندازی</translation>
 <translation id="4476574785019001431">تنظیمات</translation>
 <translation id="4496373720959965247">برگه اضافه کنید و بین صفحه‌ها جابه‌جا شوید</translation>
 <translation id="4508750114462689118">بستن تبلیغ ورود به سیستم</translation>
@@ -300,6 +304,7 @@
 <translation id="4805759445554688327">شماره کارت نامعتبر است</translation>
 <translation id="4818522717893377262">افزودن زبان...</translation>
 <translation id="481968316161811770">کوکی‌ها، داده‌های سایت</translation>
+<translation id="4826218269716039351">مسدود کردن کوکی‌های شخص ثالث</translation>
 <translation id="4833786495304741580">‏به‌طور خودکار آمار کاربرد و گزارش‌های خرابی را به Google ارسال می‌کند.</translation>
 <translation id="4840495572919996524">‏نشانک‌ها، سابقه، گذرواژه‌ها و سایر موارد، دیگر با حساب Google شما همگام‌سازی نمی‌شود.</translation>
 <translation id="4854345657858711387">تنظیم گذرنویسه</translation>
@@ -345,6 +350,7 @@
 <translation id="54401264925851789">اطلاعات امنیتی صفحه</translation>
 <translation id="5443952882982198570">کارت‌های اعتباری</translation>
 <translation id="5457907402803865181">خطا در همگام‌سازی گذرواژه‌ها.</translation>
+<translation id="5489208564673669003">برای مدیریت کردن کوکی‌ها برای همه سایت‌ها، به <ph name="BEGIN_LINK" />تنظیمات کوکی‌ها<ph name="END_LINK" /> بروید.</translation>
 <translation id="5508435575041083207">خروج از سیستم و پاک کردن داده‌ها در این دستگاه</translation>
 <translation id="5525269841082836315">ایجاد عبارت عبور</translation>
 <translation id="5548760955356983418">‏با Handoff می‌توانید شروع به مرور وب‌سایت در این دستگاه کنید و سپس به‌آسانی در دستگاه Mac خود به مرور ادامه دهید. وب‌سایتی که اکنون باز است در Dock (لنگرگاه) شما در Mac نمایان می‌شود.
@@ -432,6 +438,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6418346271604475326">‏آماده‌سازی PDF</translation>
 <translation id="6426067060178468363">مجاز کردن کوکی‌ها</translation>
 <translation id="6434591244308415567">خطایی روی داد. بعداً دوباره امتحان کنید.</translation>
+<translation id="6439338047467462846">همه مجاز</translation>
 <translation id="6445051938772793705">کشور</translation>
 <translation id="6445981559479772097">پیام ارسال شد.</translation>
 <translation id="6447842834002726250">کوکی‌ها</translation>
@@ -439,6 +446,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6476800141292307438">ترجمه صفحه به <ph name="LANGUAGE" />. گزینه‌ها در نزدیک پایین صفحه نمایش در دسترس هستند.</translation>
 <translation id="648164694371393720">خطای احراز هویت</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> مورد حذف شد</translation>
+<translation id="651505212789431520">همگام‌سازی لغو شود؟ هرزمان خواستید می‌توانید همگام‌سازی را در «تنظیمات» روشن کنید.</translation>
 <translation id="6561262006871132942">بزرگ کردن</translation>
 <translation id="6610002944194042868">گزینه‌های ترجمه</translation>
 <translation id="6628106477656132239">تاریخ انقضا نامعتبر است</translation>

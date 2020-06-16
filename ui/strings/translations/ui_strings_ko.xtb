@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6119846243427417423">활성화</translation>
 <translation id="6129953537138746214">Space</translation>
+<translation id="6134259848159370930">기기, 앱, 설정, 웹에서 검색하세요.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" />B/s</translation>
 <translation id="6156262341071374681">펼쳐서 모든 앱 보기</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
+<translation id="6166852626429024716">기기, 앱, 설정, 웹에서 검색...</translation>
 <translation id="6264365405983206840">모두 선택(&amp;A)</translation>
 <translation id="6351032674660237738">앱 추천</translation>
 <translation id="6364916375976753737">왼쪽으로 스크롤</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> 파일(.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">실행기 항상 표시</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" />KB/초</translation>
+<translation id="8685326675965865247">기기, 앱, 설정, 웹에서 검색합니다. 앱에서 탐색하려면 화살표 키를 사용하세요.</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" />개</translation>
 <translation id="8730621377337864115">완료</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1시간}other{#시간}}</translation>

@@ -9,8 +9,8 @@
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
@@ -54,33 +54,33 @@ AgentMetricsCollector::~AgentMetricsCollector() {
   ReportMetrics();
 }
 
-void AgentMetricsCollector::DidAttachDocument(const Document& doc) {
+void AgentMetricsCollector::DidAttachWindow(const LocalDOMWindow& window) {
   ReportMetrics();
 
-  AgentToDocumentsMap::AddResult result =
-      agent_to_documents_map_.insert(doc.GetAgent(), nullptr);
+  AgentToWindowsMap::AddResult result =
+      agent_to_windows_map_.insert(window.GetAgent(), nullptr);
   if (result.is_new_entry)
-    result.stored_value->value = MakeGarbageCollected<DocumentSet>();
+    result.stored_value->value = MakeGarbageCollected<WindowSet>();
 
-  result.stored_value->value->insert(&doc);
+  result.stored_value->value->insert(&window);
 
   ReportToBrowser();
 }
 
-void AgentMetricsCollector::DidDetachDocument(const Document& doc) {
+void AgentMetricsCollector::DidDetachWindow(const LocalDOMWindow& window) {
   ReportMetrics();
 
-  auto agent_itr = agent_to_documents_map_.find(doc.GetAgent());
-  DCHECK(agent_itr != agent_to_documents_map_.end());
+  auto agent_itr = agent_to_windows_map_.find(window.GetAgent());
+  DCHECK(agent_itr != agent_to_windows_map_.end());
 
-  DocumentSet& documents = *agent_itr->value.Get();
-  auto document_itr = documents.find(&doc);
-  DCHECK(document_itr != documents.end());
+  WindowSet& windows = *agent_itr->value.Get();
+  auto window_itr = windows.find(&window);
+  DCHECK(window_itr != windows.end());
 
-  documents.erase(document_itr);
+  windows.erase(window_itr);
 
-  if (documents.IsEmpty())
-    agent_to_documents_map_.erase(agent_itr);
+  if (windows.IsEmpty())
+    agent_to_windows_map_.erase(agent_itr);
 
   ReportToBrowser();
 }
@@ -118,19 +118,19 @@ void AgentMetricsCollector::ReportMetrics() {
 void AgentMetricsCollector::AddTimeToTotalAgents(int time_delta_to_add) {
   DEFINE_STATIC_LOCAL(LinearHistogram, agents_per_renderer_histogram,
                       (kAgentsPerRendererByTimeHistogram, 1, 100, 101));
-  agents_per_renderer_histogram.CountMany(agent_to_documents_map_.size(),
+  agents_per_renderer_histogram.CountMany(agent_to_windows_map_.size(),
                                           time_delta_to_add);
 }
 
 void AgentMetricsCollector::ReportToBrowser() {
   Vector<String> agents;
-  for (const auto& kv : agent_to_documents_map_) {
-    const Member<DocumentSet>& doc_set = kv.value;
+  for (const auto& kv : agent_to_windows_map_) {
+    const Member<WindowSet>& window_set = kv.value;
 
     String tuple_origin;
-    DCHECK(!doc_set->IsEmpty());
-    const auto& doc = *doc_set->begin();
-    auto* security_origin = doc->GetSecurityOrigin();
+    DCHECK(!window_set->IsEmpty());
+    const auto& window = *window_set->begin();
+    auto* security_origin = window->GetSecurityOrigin();
     if (security_origin && !security_origin->IsOpaque() &&
         !security_origin->IsLocal()) {
       // We shouldn't ever host multiple tuple-origins in an Agent. However,
@@ -172,7 +172,7 @@ AgentMetricsCollector::GetAgentMetricsCollectorHost() {
 }
 
 void AgentMetricsCollector::Trace(Visitor* visitor) const {
-  visitor->Trace(agent_to_documents_map_);
+  visitor->Trace(agent_to_windows_map_);
   visitor->Trace(agent_metrics_collector_host_);
 }
 

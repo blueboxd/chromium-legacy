@@ -6,10 +6,9 @@ package org.chromium.chrome.browser.autofill.settings;
 
 import static com.google.common.truth.Truth.assertThat;
 
-import android.support.test.filters.MediumTest;
-
 import androidx.preference.Preference;
 import androidx.preference.PreferenceScreen;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

@@ -32,4 +32,9 @@ void TranslateWaiter::OnPageTranslated(const std::string& original_lang,
     run_loop_.Quit();
 }
 
+void TranslateWaiter::OnIsPageTranslatedChanged(content::WebContents* source) {
+  if (wait_event_ == WaitEvent::kIsPageTranslatedChanged)
+    run_loop_.Quit();
+}
+
 }  // namespace translate

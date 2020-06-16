@@ -32,6 +32,7 @@ struct VideoInputDeviceCapabilities {
   string group_id;
   array<media.mojom.VideoCaptureFormat> formats;
   FacingMode facing_mode;
+  bool pan_tilt_zoom_supported;
 };
 
 struct AudioInputDeviceCapabilities {

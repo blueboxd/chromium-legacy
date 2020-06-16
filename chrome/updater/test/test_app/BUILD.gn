@@ -66,10 +66,10 @@ source_set("app_sources") {
 
   if (is_mac) {
     sources += [
-      "//chrome/updater/server/mac/service_protocol.h",
-      "//chrome/updater/server/mac/service_protocol.mm",
-      "//chrome/updater/server/mac/update_service_wrappers.h",
-      "//chrome/updater/server/mac/update_service_wrappers.mm",
+      "//chrome/updater/app/server/mac/service_protocol.h",
+      "//chrome/updater/app/server/mac/service_protocol.mm",
+      "//chrome/updater/app/server/mac/update_service_wrappers.h",
+      "//chrome/updater/app/server/mac/update_service_wrappers.mm",
     ]
 
     deps += [ "//chrome/updater/mac:xpc_names" ]
@@ -79,7 +79,7 @@ source_set("app_sources") {
 
   if (is_win) {
     deps += [
-      "//chrome/updater/server/win:updater_idl_idl",
+      "//chrome/updater/app/server/win:updater_idl_idl",
       "//chrome/updater/win:base",
     ]
   }

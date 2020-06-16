@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">Teclado cingalés</translation>
 <translation id="240770291734945588">Espazo dispoñible: <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="2425665904502185219">Tamaño total dos ficheiros</translation>
+<translation id="2428749644083375155">Copiando <ph name="NUMBER_OF_ITEMS" /> elementos en <ph name="FOLDER_NAME" /></translation>
 <translation id="2448312741937722512">Tipo</translation>
 <translation id="2453576648990281505">O ficheiro xa existe</translation>
 <translation id="2464079411014186876">Xeado</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346">Engadiuse <ph name="ENTRY_NAME" /> á selección.</translation>
 <translation id="4582497162516204941">Instalar con Linux (beta)</translation>
 <translation id="4594543368593301662">Mostrando resultados para <ph name="SEARCH_TERM" />.</translation>
+<translation id="4603392156942865207">Copiando <ph name="FILE_NAME" /> en <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Artista</translation>
 <translation id="4656293982926141856">Este ordenador</translation>
 <translation id="4669606053856530811">Os membros de "<ph name="SOURCE_NAME" />" perderán o acceso a menos que estes elementos se compartan con eles.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">Contraste</translation>
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5081517858322016911">Volume de ficheiros que se eliminará: <ph name="TOTAL_FILE_SIZE" /></translation>
+<translation id="508423945471810158">Movendo <ph name="NUMBER_OF_ITEMS" /> elementos a <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Produciuse un erro.</translation>
 <translation id="5098629044894065541">Hebreo</translation>
 <translation id="5123433949759960244">Baloncesto</translation>
@@ -454,6 +457,7 @@
 <translation id="6054173164583630569">Teclado francés</translation>
 <translation id="6074825444536523002">Formulario de Google</translation>
 <translation id="6096979789310008754">Texto de busca borrado, mostrando todos os ficheiros e cartafoles.</translation>
+<translation id="610101264611565198">Movendo <ph name="FILE_NAME" /> a <ph name="FOLDER_NAME" /></translation>
 <translation id="6111770213269631447">Transliteración (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Espazo</translation>
 <translation id="6133173853026656527">Movendo <ph name="FILE_NAME" />...</translation>
@@ -537,6 +541,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Non se puido efectuar a instalación.</translation>
 <translation id="7040138676081995583">Abrir con...</translation>
+<translation id="7059566040011178088">Menos de <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> elementos seleccionados</translation>
 <translation id="7106346894903675391">Comprar máis almacenamento...</translation>
 <translation id="7126604456862387217">"&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;": &lt;em&gt;buscar en Drive&lt;/em&gt;</translation>
@@ -647,6 +652,7 @@
 <translation id="8193175696669055101">Modelo do dispositivo</translation>
 <translation id="8208580316430297579">Material gráfico</translation>
 <translation id="8223479393428528563">Para gardar estes ficheiros para o uso sen conexión, accede en liña, fai clic co botón dereito nos ficheiros e selecciona a opción <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8231972167769262174">Aproximadamente <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Cancelar</translation>
 <translation id="8261506727792406068">Eliminar</translation>
 <translation id="8269755669432358899">Contraer paneis de comentarios de ficheiros</translation>

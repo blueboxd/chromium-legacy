@@ -46,6 +46,7 @@ GPU_EXPORT bool CollectContextGraphicsInfo(GPUInfo* gpu_info);
 // Collect the DirectX Disagnostics information about the attached displays.
 GPU_EXPORT bool GetDxDiagnostics(DxDiagNode* output);
 GPU_EXPORT void RecordGpuSupportedRuntimeVersionHistograms(
+    const gpu::GPUInfo::GPUDevice& gpu_device,
     Dx12VulkanVersionInfo* dx12_vulkan_version_info);
 
 // Iterate through all adapters and create a hardware D3D11 device on each

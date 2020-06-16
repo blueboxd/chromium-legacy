@@ -72,6 +72,7 @@ class SafeBrowsingService {
   void CreateURLLoaderFactoryForIO(
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver);
   void StopDBManagerOnIOThread();
+  void SetSafeBrowsingDisabledOnIOThread(bool disabled);
 
   // The UI manager handles showing interstitials. Accessed on both UI and IO
   // thread.

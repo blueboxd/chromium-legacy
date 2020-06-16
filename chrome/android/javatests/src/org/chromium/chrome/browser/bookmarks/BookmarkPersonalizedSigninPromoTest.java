@@ -21,7 +21,8 @@ import static org.mockito.Mockito.verify;
 import android.accounts.Account;
 import android.app.Activity;
 import android.content.Context;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Before;

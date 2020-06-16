@@ -56,9 +56,9 @@ class IndexingToolTest : public ::testing::Test {
     rules.push_back(testing::CreateSuffixRule("disallowed2.png"));
     rules.push_back(testing::CreateSuffixRule("disallowed3.png"));
     rules.push_back(
-        testing::CreateWhitelistSuffixRule("whitelist/disallowed1.png"));
+        testing::CreateAllowlistSuffixRule("allowlist/disallowed1.png"));
     rules.push_back(
-        testing::CreateWhitelistSuffixRule("whitelist/disallowed2.png"));
+        testing::CreateAllowlistSuffixRule("allowlist/disallowed2.png"));
 
     ASSERT_NO_FATAL_FAILURE(test_ruleset_creator_.CreateRulesetWithRules(
         rules, &test_ruleset_pair_));

@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">ចូលទៅ​គេហទំព័រ</translation>
 <translation id="1509960214886564027">មុខងារ​នៅលើ​គេហទំព័រ​ជាច្រើន​អាចដំណើរការមិន​ត្រឹមត្រូវ</translation>
 <translation id="152234381334907219">កុំរក្សាទុក</translation>
+<translation id="1535268707340844072">ការកំណត់បច្ចុប្បន្នរបស់អ្នកអាចធ្វើឱ្យគេហទំព័រមួយចំនួនខូច។ ដើម្បីគ្រប់គ្រងខូគីសម្រាប់គេហទំព័រទាំងអស់ សូមមើល<ph name="BEGIN_LINK" />ការកំណត់ខូគី<ph name="END_LINK" />។</translation>
 <translation id="1540800554400757039">អាសយដ្ឋាន 1</translation>
 <translation id="1545749641540134597">ស្កេនកូដ QR</translation>
 <translation id="1552525382687785070">ការធ្វើ​សមកាលកម្ម​ត្រូវបាន​បិទដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">ដំណើរការ <ph name="DAYS" /> ថ្ងៃ​មុន</translation>
 <translation id="2074131957428911366">អ្នកអាចជ្រើសរើស​អ្វីដែលត្រូវធ្វើសមកាលកម្ម​នៅក្នុង<ph name="BEGIN_LINK" />ការកំណត់<ph name="END_LINK" />បានជានិច្ច។</translation>
 <translation id="2079545284768500474">បកក្រោយ</translation>
+<translation id="2081417079511601293">ទប់ស្កាត់ខូគីភាគីទីបីនៅក្នុងមុខងារឯកជន</translation>
 <translation id="209018056901015185">ស្នើសុំគេហទំព័រដេស៍ថប</translation>
 <translation id="2103075008456228677">បើក history.google.com</translation>
 <translation id="2116625576999540962">ធាតុ <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ត្រូវបានផ្លាស់ទី។</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">បើកនៅក្នុងផ្ទាំងថ្មី</translation>
 <translation id="3037605927509011580">អូយ ទក់!</translation>
 <translation id="3112556859945124369">សម្គាល់…</translation>
+<translation id="3131206671572504478">ទប់ស្កាត់​​ទាំង​អស់</translation>
 <translation id="3153862085237805241">រក្សាទុក​បណ្ណ</translation>
 <translation id="3157684681743766797">សម្គាល់ទាំងអស់…</translation>
 <translation id="3161291298470460782">ការធ្វើបែបនេះនឹងនាំអ្នកចេញពីគណនី បិទសមកាលកម្ម និងសម្អាតទិន្នន័យ Chrome ទាំងអស់​ចេញពីឧបករណ៍នេះ។ ទិន្នន័យ​ដែលអ្នកបានធ្វើសមកាលកម្ម​នឹងនៅតែមាននៅក្នុងគណនី Google របស់អ្នកដដែល។</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">ចុចដើម្បី​ប្ដូរភាសា។</translation>
 <translation id="441868831736628555">ការជូនដំណឹងឯកជនភាព</translation>
 <translation id="4454246407045105932">បញ្ចូល​ភាសា</translation>
+<translation id="4469418912670346607">បន្តរៀបចំ</translation>
 <translation id="4476574785019001431">ការកំណត់</translation>
 <translation id="4496373720959965247">បញ្ចូល​ផ្ទាំង រួច​ប្តូរ​ឆ្លាស់​រវាង​ទំព័រនានា</translation>
 <translation id="4508750114462689118">បិទការផ្សព្វផ្សាយនៃការចូលគណនី</translation>
@@ -300,6 +304,7 @@
 <translation id="4805759445554688327">លេខកាត​មិនត្រឹមត្រូវ</translation>
 <translation id="4818522717893377262">បញ្ចូល​ភាសា...</translation>
 <translation id="481968316161811770">ខុកឃី ទិន្នន័យគេហទំព័រ</translation>
+<translation id="4826218269716039351">ទប់ស្កាត់ខូគីភាគីទីបី</translation>
 <translation id="4833786495304741580">ផ្ញើស្ថិតិ​ប្រើប្រាស់ និង​របាយការណ៍អំពី​ការគាំង​ទៅ Google ដោយ​ស្វ័យប្រវត្តិ។</translation>
 <translation id="4840495572919996524">ចំណាំ​ ប្រវត្តិ ​ពាក្យសម្ងាត់ និងអ្វីៗ​ជាច្រើន​ទៀត​របស់អ្នកនឹងមិន​ធ្វើ​សម​កាល​កម្មទៅក្នុងគណនី​ Google របស់អ្នកទៀតទេ។</translation>
 <translation id="4854345657858711387">កំណត់​លេខ​កូដ​សម្ងាត់</translation>
@@ -345,6 +350,7 @@
 <translation id="54401264925851789">ព័ត៌មានសុវត្ថិភាពទំព័រ</translation>
 <translation id="5443952882982198570">បណ្ណឥណទាន</translation>
 <translation id="5457907402803865181">មានបញ្ហា​ក្នុងការ​ធ្វើសមកាលកម្ម​ពាក្យសម្ងាត់​។</translation>
+<translation id="5489208564673669003">ដើម្បីគ្រប់គ្រងខូគីសម្រាប់គេហទំព័រទាំងអស់ សូមមើល<ph name="BEGIN_LINK" />ការកំណត់ខូគី<ph name="END_LINK" />។</translation>
 <translation id="5508435575041083207">ចេញពីគណនី និងសម្អាតទិន្នន័យចេញ​ពីឧបករណ៍នេះ</translation>
 <translation id="5525269841082836315">បង្កើតឃ្លាសម្ងាត់</translation>
 <translation id="5548760955356983418">Handoff អនុញ្ញាតឲ្យអ្នកចាប់ផ្តើមរុករកគេហទំព័រលើឧបករណ៍នេះ ហើយបន្តប្រើប្រាស់យ៉ាងងាយស្រួលនៅលើឧបករណ៍ Mac របស់អ្នក។ គេហទំព័រដែលបើកពេលបច្ចុប្បន្ននឹងបង្ហាញលើរបារកម្មវិធីនៃឧបករណ៍ Mac របស់អ្នក។
@@ -432,6 +438,7 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="6418346271604475326">កំពុងរៀបចំ PDF</translation>
 <translation id="6426067060178468363">អនុញ្ញាត​ខូគី</translation>
 <translation id="6434591244308415567">មានបញ្ហា​កើត​ឡើង។ ព្យាយាម​ម្តង​ទៀត​នៅ​ពេល​ក្រោយ។</translation>
+<translation id="6439338047467462846">អនុញ្ញាត​ទាំងអស់</translation>
 <translation id="6445051938772793705">ប្រទេស</translation>
 <translation id="6445981559479772097">បានផ្ញើសារ។</translation>
 <translation id="6447842834002726250">ខុកឃី</translation>
@@ -439,6 +446,7 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="6476800141292307438">កំពុងបកប្រែទំព័រ​ទៅភាសា<ph name="LANGUAGE" />។ ជម្រើសមាននៅជិត​ផ្នែកខាងក្រោមបំផុតរបស់​អេក្រង់។</translation>
 <translation id="648164694371393720">មាន​បញ្ហា​ក្នុង​ការ​ផ្ទៀងផ្ទាត់</translation>
 <translation id="6482629121755362506">ធាតុ <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ត្រូវបានលុប</translation>
+<translation id="651505212789431520">បោះបង់សមកាលកម្មឬ? អ្នកអាចបើក​សមកាលកម្ម​បានគ្រប់ពេល​នៅក្នុងការកំណត់។</translation>
 <translation id="6561262006871132942">ពង្រីក</translation>
 <translation id="6610002944194042868">ជម្រើស​បកប្រែ</translation>
 <translation id="6628106477656132239">កាលបរិច្ឆេទ​ផុតកំណត់មិន​ត្រឹមត្រូវ</translation>
@@ -462,6 +470,7 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="681368974849482173">ធាតុត្រូវបានបង្កើត</translation>
 <translation id="6831043979455480757">បកប្រែ</translation>
 <translation id="6851516051005285358">ស្នើគេហទំព័រសម្រាប់​កុំព្យូទ័រ</translation>
+<translation id="6856384753476268833">គ្រប់គ្រងដោយ​ស្ថាប័ន​របស់អ្នក​។</translation>
 <translation id="6858855187367714033">បានស្កេន</translation>
 <translation id="6859944681507688231">ដើម្បីស្កេនកូដ QR ឬបណ្ណឥណទាន សូមបើកកាមេរ៉ានៅក្នុងការកំណត់។</translation>
 <translation id="6873263987691478642">ទិដ្ឋភាពបំបែក</translation>
@@ -540,6 +549,7 @@ Handoff ត្រូវបើកដំណើរការនៅក្នុងផ
 <translation id="7856733331829174190">មិន​អាច​ទាញ​យកបាន​ទេ</translation>
 <translation id="7859704718976024901">ប្រវត្តិរុករក</translation>
 <translation id="7887198238286927132">ដើម្បី​ការពារ​ឯកជនភាព​របស់អ្នក Chrome នឹងមិន​បំពេញ​កន្លែងបញ្ចូល​នេះដោយស្វ័យ​ប្រវត្តិទេ។</translation>
+<translation id="791251013315685175">គ្រប់គ្រង​ដោយ <ph name="COMPANY" />។</translation>
 <translation id="7918293828610777738">បញ្ជី​អាន​របស់អ្នក​អាច​ប្រើបាន​ពេលគ្មានអ៊ីធឺណិត។ ដើម្បី​បញ្ចូល​ទំព័រ​ទៅ​ក្នុង​បញ្ជី​អាន​របស់អ្នក សូមចុច <ph name="SHARE_OPENING_ICON" />  បន្ទាប់មក <ph name="READ_LATER_TEXT" /> ។</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">នាំចេញ​ពាក្យ​សម្ងាត់...</translation>

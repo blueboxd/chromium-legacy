@@ -22,6 +22,7 @@ class TranslateWaiter : ContentTranslateDriver::Observer {
   enum class WaitEvent {
     kLanguageDetermined,
     kPageTranslated,
+    kIsPageTranslatedChanged
   };
 
   TranslateWaiter(ContentTranslateDriver* translate_driver,
@@ -37,6 +38,7 @@ class TranslateWaiter : ContentTranslateDriver::Observer {
   void OnPageTranslated(const std::string& original_lang,
                         const std::string& translated_lang,
                         TranslateErrors::Type error_type) override;
+  void OnIsPageTranslatedChanged(content::WebContents* source) override;
 
  private:
   WaitEvent wait_event_;

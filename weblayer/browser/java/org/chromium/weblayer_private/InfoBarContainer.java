@@ -88,27 +88,18 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
     }
 
     // TODO(crbug.com/1025620): Observe WebContents to reset the state of the InfoBarContainer when
-    // the user navigates, a la //chrome's observing of Tab here. Additionally, notify infobar
-    // container when activity is changed.
+    // the user navigates, a la //chrome's observing of Tab here.
 
-    /**
-     * Adds/removes the {@link InfoBarContainer} when the tab's view is attached/detached. This is
-     * mostly to ensure the infobars are not shown in tab switcher overview mode.
-     */
-    private final View.OnAttachStateChangeListener mAttachedStateListener =
-            new View.OnAttachStateChangeListener() {
-                @Override
-                public void onViewDetachedFromWindow(View v) {
-                    if (mInfoBarContainerView == null) return;
-                    mInfoBarContainerView.removeFromParentView();
-                }
+    public void onTabDidGainActive() {
+        initializeContainerView(mTab.getBrowser().getContext());
+        updateWebContents();
+        mInfoBarContainerView.addToParentView();
+    }
 
-                @Override
-                public void onViewAttachedToWindow(View v) {
-                    if (mInfoBarContainerView == null) return;
-                    mInfoBarContainerView.addToParentView();
-                }
-            };
+    public void onTabDidLoseActive() {
+        mInfoBarContainerView.removeFromParentView();
+        destroyContainerView();
+    }
 
     /** The list of all InfoBars in this container, regardless of whether they've been shown yet. */
     private final ArrayList<InfoBar> mInfoBars = new ArrayList<>();
@@ -154,24 +145,13 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
     private boolean mIsHidden;
 
     /**
-     * The view that {@link Tab#getView()} returns.  It will be null when the {@link Tab} is
-     * detached from a {@link ChromeActivity}.
-     */
-    private @Nullable View mTabView;
-
-    /**
      * The view for this {@link InfoBarContainer}. It will be null when the {@link Tab} is detached
      * from a {@link ChromeActivity}.
      */
     private @Nullable InfoBarContainerView mInfoBarContainerView;
 
     InfoBarContainer(TabImpl tab) {
-        // TODO(crbug.com/1025620): Determine if this is the correct View to use here.
-        mTabView = tab.getBrowser().getViewAndroidDelegateContainerView();
         mTab = tab;
-
-        Context context = tab.getBrowser().getContext();
-        if (context != null) initializeContainerView(context);
 
         // Chromium's InfoBarContainer may add an InfoBar immediately during this initialization
         // call, so make sure everything in the InfoBarContainer is completely ready beforehand.
@@ -198,6 +178,7 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
      * Sets the parent {@link ViewGroup} that contains the {@link InfoBarContainer}.
      */
     public void setParentView(ViewGroup parent) {
+        assert mTab.getBrowser().getActiveTab() == mTab;
         if (mInfoBarContainerView != null) mInfoBarContainerView.setParentView(parent);
     }
 
@@ -384,11 +365,6 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
                         mNativeInfoBarContainer, InfoBarContainer.this, webContents);
             }
         }
-
-        if (mTabView != null) mTabView.removeOnAttachStateChangeListener(mAttachedStateListener);
-        // TODO(crbug.com/1025620): Determine if this is the correct View to use here.
-        mTabView = mTab.getBrowser().getViewAndroidDelegateContainerView();
-        if (mTabView != null) mTabView.addOnAttachStateChangeListener(mAttachedStateListener);
     }
 
     private void initializeContainerView(Context chromeActivity) {
@@ -396,7 +372,7 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
                 != null
             : "ChromeActivity should not be null when initializing InfoBarContainerView";
         mInfoBarContainerView = new InfoBarContainerView(chromeActivity, mContainerViewObserver,
-                /*isTablet=*/!mTab.getBrowser().isWindowOnSmallDevice());
+                mTab, /*isTablet=*/!mTab.getBrowser().isWindowOnSmallDevice());
 
         mInfoBarContainerView.addOnAttachStateChangeListener(
                 new View.OnAttachStateChangeListener() {
@@ -412,8 +388,7 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
                 });
 
         mInfoBarContainerView.setHidden(mIsHidden);
-        // TODO(crbug.com/1025620): Determine the correct View to set as the parent.
-        // setParentView(mTab.getBrowser().getViewController().getView());
+        setParentView(mTab.getBrowser().getViewController().getInfoBarContainerParentView());
 
         mTab.getBrowser().getWindowAndroid().getKeyboardDelegate().addKeyboardVisibilityListener(
                 this);
@@ -432,11 +407,6 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
 
         mTab.getBrowser().getWindowAndroid().getKeyboardDelegate().removeKeyboardVisibilityListener(
                 this);
-
-        if (mTabView != null) {
-            mTabView.removeOnAttachStateChangeListener(mAttachedStateListener);
-            mTabView = null;
-        }
     }
 
     @Override

@@ -57,7 +57,7 @@ namespace remoting {
 class SharedMemoryImpl : public webrtc::SharedMemory {
  public:
   static std::unique_ptr<SharedMemoryImpl>
-  Create(size_t size, int id, const base::Closure& on_deleted_callback) {
+  Create(size_t size, int id, base::OnceClosure on_deleted_callback) {
     webrtc::SharedMemory::Handle handle = webrtc::SharedMemory::kInvalidHandle;
 #if defined(OS_WIN)
     // webrtc::ScreenCapturer uses webrtc::SharedMemory::handle() only on
@@ -91,12 +91,12 @@ class SharedMemoryImpl : public webrtc::SharedMemory {
       return nullptr;
     // The SharedMemoryImpl ctor is private, so std::make_unique can't be
     // used.
-    return base::WrapUnique(new SharedMemoryImpl(std::move(read_only_region),
-                                                 std::move(mapping), handle, id,
-                                                 on_deleted_callback));
+    return base::WrapUnique(
+        new SharedMemoryImpl(std::move(read_only_region), std::move(mapping),
+                             handle, id, std::move(on_deleted_callback)));
   }
 
-  ~SharedMemoryImpl() override { on_deleted_callback_.Run(); }
+  ~SharedMemoryImpl() override { std::move(on_deleted_callback_).Run(); }
 
   const base::ReadOnlySharedMemoryRegion& region() const { return region_; }
 
@@ -105,9 +105,9 @@ class SharedMemoryImpl : public webrtc::SharedMemory {
                    base::WritableSharedMemoryMapping mapping,
                    webrtc::SharedMemory::Handle handle,
                    int id,
-                   const base::Closure& on_deleted_callback)
+                   base::OnceClosure on_deleted_callback)
       : SharedMemory(mapping.memory(), mapping.size(), handle, id),
-        on_deleted_callback_(on_deleted_callback)
+        on_deleted_callback_(std::move(on_deleted_callback))
 #if defined(OS_WIN)
         ,
         writable_handle_(handle)
@@ -117,7 +117,7 @@ class SharedMemoryImpl : public webrtc::SharedMemory {
     mapping_ = std::move(mapping);
   }
 
-  base::Closure on_deleted_callback_;
+  base::OnceClosure on_deleted_callback_;
   base::ReadOnlySharedMemoryRegion region_;
   base::WritableSharedMemoryMapping mapping_;
 #if defined(OS_WIN)
@@ -160,7 +160,7 @@ void DesktopSessionClipboardStub::InjectClipboardEvent(
 
 class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
  public:
-  typedef base::Callback<void(std::unique_ptr<IPC::Message> message)>
+  typedef base::RepeatingCallback<void(std::unique_ptr<IPC::Message> message)>
       SendMessageCallback;
 
   SharedMemoryFactoryImpl(const SendMessageCallback& send_message_callback)
@@ -168,13 +168,13 @@ class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
 
   std::unique_ptr<webrtc::SharedMemory> CreateSharedMemory(
       size_t size) override {
-    base::Closure release_buffer_callback = base::Bind(
+    base::OnceClosure release_buffer_callback = base::BindOnce(
         send_message_callback_,
         base::Passed(
             std::make_unique<ChromotingDesktopNetworkMsg_ReleaseSharedBuffer>(
                 next_shared_buffer_id_)));
     std::unique_ptr<SharedMemoryImpl> buffer = SharedMemoryImpl::Create(
-        size, next_shared_buffer_id_, release_buffer_callback);
+        size, next_shared_buffer_id_, std::move(release_buffer_callback));
     if (buffer) {
       // |next_shared_buffer_id_| starts from 1 and incrementing it by 2 makes
       // sure it is always odd and therefore zero is never used as a valid

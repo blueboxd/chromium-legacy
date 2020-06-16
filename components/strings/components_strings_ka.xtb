@@ -81,6 +81,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />ცადეთ თქვენი ქუქი-ჩანაწერების გასუფთავება<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">შეამოწმეთ თქვენი დაცული DNS-ის პარამეტრები</translation>
 <translation id="1307966114820526988">მოძველებული ფუნქციები</translation>
+<translation id="1310581832770023220">ამ ფორმაში მითითებული მონაცემები იგზავნება დაუცველი კავშირის მეშვეობით</translation>
 <translation id="131405271941274527"><ph name="URL" /> ითხოვს ინფორმაციის გაგზავნას/მიღებას NFC მოწყობილობაზე თქვენს ტელეფონზე შეხებისას</translation>
 <translation id="1314509827145471431">აკინძვა მარჯვნივ</translation>
 <translation id="1320233736580025032">Prc1 (კონვერტი)</translation>
@@ -380,6 +381,7 @@
 <translation id="2544644783021658368">ერთი დოკუმენტი</translation>
 <translation id="254947805923345898">წესების მნიშვნელობა არასწორია.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" />-მა არასწორი პასუხი გამოაგზავნა.</translation>
+<translation id="2552295903035773204">ამიერიდან ბარათების დასადასტურებლად ეკრანის დაბლოკვის მეთოდის გამოყენება</translation>
 <translation id="2553853292994445426">შეამოწმეთ თქვენი დაცული DNS-ის პარამეტრები. შესაძლოა, კონფიგურირებული გქონდეთ დაცული DNS სერვერი, რომელთანაც დაკავშირება ვერ ხერხდება.</translation>
 <translation id="2556876185419854533">რედაქტირების &amp;მოქმედების გაუქმება</translation>
 <translation id="257674075312929031">ჯგუფი</translation>
@@ -1433,6 +1435,7 @@
 <translation id="7138472120740807366">მიწოდების მეთოდი</translation>
 <translation id="7139724024395191329">ემირატი</translation>
 <translation id="714064300541049402">მხარე 2 — სურათის წანაცვლება X ღერძზე</translation>
+<translation id="7147693119324090759">მაინც გადაგზავნა</translation>
 <translation id="7152423860607593928">Number-14 (კონვერტი)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> და <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> სხვა}other{<ph name="PAYMENT_METHOD_PREVIEW" /> და <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> სხვა}}</translation>
 <translation id="7153618581592392745">ლავანდისფერი</translation>
@@ -1509,6 +1512,7 @@
 <translation id="7416351320495623771">პაროლების მართვა…</translation>
 <translation id="7419106976560586862">პროფილის მისამართი</translation>
 <translation id="7437289804838430631">საკონტაქტო ინფორმაციის დამატება</translation>
+<translation id="743897106051685947">ორიგინალი</translation>
 <translation id="7438976808740265764">Flash Player აღარ იქნება მხარდაჭერილი 2020 წლის დეკემბრის შემდეგ.</translation>
 <translation id="7440140511386898319">გაეცანით კონტენტს, სანამ ხაზგარეშე რეჟიმში ხართ</translation>
 <translation id="7441627299479586546">პოლიტიკის თემა არასწორია</translation>
@@ -1520,6 +1524,7 @@
 <translation id="7473891865547856676">არა, გმადლობთ</translation>
 <translation id="7481312909269577407">გადამისამართება</translation>
 <translation id="7485870689360869515">მონაცემები ვერ მოიძებნა.</translation>
+<translation id="7488762544858401571">რედაქტირებული</translation>
 <translation id="7495290002932347110">ერთ-ერთი საიტიდან ან აპიდან მოხდა მონაცემების, მათ შორის თქვენი პაროლის, გაჟონვა. გირჩევთ, შეამოწმოთ თქვენი შენახული პაროლები და ახლავე შეცვალოთ პაროლი <ph name="ORIGIN" />-ზე.</translation>
 <translation id="7498234416455752244">რედაქტირების გაგრძელება</translation>
 <translation id="7503664977220660814">თქვენ ეს-ესაა შეიყვანეთ პაროლი შეცდომაში შემყვან საიტზე. Chromium გირჩევთ, შეამოწმოთ შენახული პაროლები <ph name="WEBSITE_1" />-ისთვის, <ph name="WEBSITE_2" />-ისა და სხვა საიტებისთვის, სადაც ამჟამად იმავე პაროლს იყენებთ.</translation>
@@ -1603,6 +1608,7 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">იგივე მიმდევრობა ნაბეჭდი მხარით აღმა</translation>
 <translation id="777702478322588152">პრეფექტურა</translation>
+<translation id="7791011319128895129">გამოუცემელი</translation>
 <translation id="7791196057686275387">შეფუთვა</translation>
 <translation id="7791543448312431591">დამატება</translation>
 <translation id="7798389633136518089">იგნორირებულია, რადგან წესები ჯერ არ არის დაყენებული ღრუბლოვანი წყაროდან.</translation>
@@ -1739,6 +1745,7 @@
 <translation id="8355270400102541638">ავარიულად გათიშვის ადგილობრივი კონტექსტი:</translation>
 <translation id="8363502534493474904">თვითმფრინავის რეჟიმის გამორთვა</translation>
 <translation id="8364627913115013041">არ არის დაყენებული.</translation>
+<translation id="8367477997601443248">დაუცველი ფორმა</translation>
 <translation id="8368476060205742148">Google Play Services</translation>
 <translation id="8371889962595521444">მორგებული ძირეული სერტიფიკატები</translation>
 <translation id="8380941800586852976">სახიფათო</translation>
@@ -1821,6 +1828,7 @@
 <translation id="8805819170075074995">სიის ჩანაწერი „<ph name="LANGUAGE_ID" />“: ჩანაწერი იგნორირებულია, ვინაიდან მას შეიცავს „SpellcheckLanguage“ წესებიც.</translation>
 <translation id="8807160976559152894">შემოჭრა თითოეული გვერდის შემდეგ</translation>
 <translation id="8820817407110198400">სანიშნეები</translation>
+<translation id="8831512686168463822">ამ ფორმის გადაგზავნა ხდება დაუცველი კავშირის მეშვეობით, რაც ნიშნავს, რომ ამ საიტისთვის მისი გაგზავნის შემთხვევაში შეიძლება გამჟღავნდეს თქვენი ინფორმაცია (მაგალითად, პაროლები, შეტყობინებები ან საკრედიტო ბარათების მონაცემები).</translation>
 <translation id="883848425547221593">სხვა სანიშნეები</translation>
 <translation id="884264119367021077">მიწოდების მისამართი</translation>
 <translation id="884923133447025588">გაუქმების მექანიზმის პოვნა ვერ მოხერხდა.</translation>

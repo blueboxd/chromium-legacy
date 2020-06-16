@@ -496,13 +496,16 @@ SharedImageBackingGLTexture::~SharedImageBackingGLTexture() = default;
 
 SharedImageBackingGLCommon::~SharedImageBackingGLCommon() {
   if (IsPassthrough()) {
-    if (!have_context())
-      passthrough_texture_->MarkContextLost();
-    passthrough_texture_.reset();
+    if (passthrough_texture_) {
+      if (!have_context())
+        passthrough_texture_->MarkContextLost();
+      passthrough_texture_.reset();
+    }
   } else {
-    DCHECK(texture_);
-    texture_->RemoveLightweightRef(have_context());
-    texture_ = nullptr;
+    if (texture_) {
+      texture_->RemoveLightweightRef(have_context());
+      texture_ = nullptr;
+    }
   }
 }
 
@@ -993,16 +996,22 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     image->SetColorSpace(color_space);
 
   viz::ResourceFormat format = viz::GetResourceFormat(buffer_format);
-
-  gl::GLApi* api = gl::g_current_gl_context;
-  ScopedRestoreTexture scoped_restore(api, target);
-
   const bool for_framebuffer_attachment =
       (usage & (SHARED_IMAGE_USAGE_RASTER |
                 SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
+  const bool is_rgb_emulation = (usage & SHARED_IMAGE_USAGE_RGB_EMULATION) != 0;
+
+  auto result = std::make_unique<SharedImageBackingGLImage>(
+      image, mailbox, format, size, color_space, usage, attribs,
+      use_passthrough_);
+
+  // Create the service GL texture only after the GLImage and backing have
+  // been allocated.
+  // TODO(https://crbug.com/1092155): Do this lazily.
+  gl::GLApi* api = gl::g_current_gl_context;
+  ScopedRestoreTexture scoped_restore(api, target);
   GLuint service_id = MakeTextureAndSetParameters(
       api, target, for_framebuffer_attachment && texture_usage_angle_);
-  bool is_rgb_emulation = usage & SHARED_IMAGE_USAGE_RGB_EMULATION;
 
   gles2::Texture::ImageState image_state = gles2::Texture::UNBOUND;
   if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
@@ -1023,9 +1032,6 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
     image_state = gles2::Texture::COPIED;
   }
 
-  auto result = std::make_unique<SharedImageBackingGLImage>(
-      image, mailbox, format, size, color_space, usage, attribs,
-      use_passthrough_);
   SharedImageBackingGLCommon::InitializeGLTextureParams params;
   params.target = target;
   params.internal_format =
@@ -1256,14 +1262,9 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
     }
   }
 
-  gl::GLApi* api = gl::g_current_gl_context;
-  ScopedRestoreTexture scoped_restore(api, target);
-
   const bool for_framebuffer_attachment =
       (usage & (SHARED_IMAGE_USAGE_RASTER |
                 SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
-  GLuint service_id = MakeTextureAndSetParameters(
-      api, target, for_framebuffer_attachment && texture_usage_angle_);
 
   scoped_refptr<gl::GLImage> image;
   // TODO(piman): We pretend the texture was created in an ES2 context, so that
@@ -1289,13 +1290,30 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
     // The allocated image should not require copy.
     if (!image || image->ShouldBindOrCopy() != gl::GLImage::BIND) {
       LOG(ERROR) << "CreateSharedImage: Failed to create bindable image";
-      api->glDeleteTexturesFn(1, &service_id);
       return nullptr;
     }
     level_info_internal_format = image->GetInternalFormat();
     if (color_space.IsValid())
       image->SetColorSpace(color_space);
   }
+
+  std::unique_ptr<SharedImageBackingGLCommon> result;
+  if (image) {
+    result = std::make_unique<SharedImageBackingGLImage>(
+        image, mailbox, format, size, color_space, usage, attribs,
+        use_passthrough_);
+  } else {
+    result = std::make_unique<SharedImageBackingGLTexture>(
+        mailbox, format, size, color_space, usage, use_passthrough_);
+  }
+
+  // Create the service GL texture only after the GLImage and backing have
+  // been allocated.
+  // TODO(https://crbug.com/1092155): Do this lazily.
+  gl::GLApi* api = gl::g_current_gl_context;
+  ScopedRestoreTexture scoped_restore(api, target);
+  GLuint service_id = MakeTextureAndSetParameters(
+      api, target, for_framebuffer_attachment && texture_usage_angle_);
 
   if (image) {
     if (!image->BindTexImage(target)) {
@@ -1334,15 +1352,6 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
                            pixel_data.data());
   }
 
-  std::unique_ptr<SharedImageBackingGLCommon> result;
-  if (image) {
-    result = std::make_unique<SharedImageBackingGLImage>(
-        image, mailbox, format, size, color_space, usage, attribs,
-        use_passthrough_);
-  } else {
-    result = std::make_unique<SharedImageBackingGLTexture>(
-        mailbox, format, size, color_space, usage, use_passthrough_);
-  }
   SharedImageBackingGLCommon::InitializeGLTextureParams params;
   params.target = target;
   params.internal_format = level_info_internal_format;

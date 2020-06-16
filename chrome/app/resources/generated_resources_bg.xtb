@@ -279,7 +279,7 @@
 <translation id="1347975661240122359">Актуализацията ще започне, когато нивото на батерията достигне <ph name="BATTERY_LEVEL" />%.</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: „<ph name="NETWORK_NAME" />“</translation>
 <translation id="1353980523955420967">PPD файлът не може да бъде намерен. Уверете се, че вашият Chromebook е онлайн, и опитайте отново.</translation>
-<translation id="1354045473509304750">Използването и местенето на камерата ви от <ph name="HOST" /> да продължат да са разрешени</translation>
+<translation id="1354045473509304750">Използването и местенето на камерата ви от <ph name="HOST" /> продължават да са разрешени</translation>
 <translation id="1355466263109342573">Приставката <ph name="PLUGIN_NAME" /> е блокирана</translation>
 <translation id="1358741672408003399">Правопис и граматика</translation>
 <translation id="1359923111303110318">Устройството ви може да бъде отключвано чрез Smart Lock. Натиснете Enter, за да потвърдите.</translation>
@@ -3536,7 +3536,7 @@
 <translation id="5499313591153584299">Този файл може да навреди на компютъра ви.</translation>
 <translation id="5500709606820808700">Проверката на безопасността бе изпълнена днес</translation>
 <translation id="5502500733115278303">Импортирани от Firefox</translation>
-<translation id="5503982651688210506">Използването и местенето на камерата ви и използването на микрофона ви от <ph name="HOST" /> да продължат да са разрешени</translation>
+<translation id="5503982651688210506">Използването и местенето на камерата ви и използването на микрофона ви от <ph name="HOST" /> продължават да са разрешени</translation>
 <translation id="5505264765875738116">Сайтовете не могат да извеждат подкани за изпращане на известия</translation>
 <translation id="5505307013568720083">Няма мастило</translation>
 <translation id="5507756662695126555">Невъзможност за отричане</translation>

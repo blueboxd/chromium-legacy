@@ -9,9 +9,9 @@
 #include <set>
 #include <string>
 
-#include "chrome/browser/chromeos/policy/app_install_event_log_uploader.h"
 #include "chrome/browser/chromeos/policy/app_install_event_logger.h"
 #include "chrome/browser/chromeos/policy/arc_app_install_event_log.h"
+#include "chrome/browser/chromeos/policy/arc_app_install_event_log_uploader.h"
 #include "chrome/browser/chromeos/policy/install_event_log_manager.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
@@ -19,18 +19,18 @@ class Profile;
 
 namespace policy {
 // Owns an |ArcAppInstallEventLog| for log storage and an
-// |AppInstallEventLogger| for log collection. The |AppInstallEventUploader| is
-// passed to the constructor and must outlive |this|.
+// |AppInstallEventLogger| for log collection. The |ArcAppInstallEventUploader|
+// is passed to the constructor and must outlive |this|.
 class ArcAppInstallEventLogManager
     : public InstallEventLogManagerBase,
       public AppInstallEventLogger::Delegate,
-      public AppInstallEventLogUploader::Delegate {
+      public ArcAppInstallEventLogUploader::Delegate {
  public:
   // All accesses to the |profile|'s app push-install event log file must use
   // the same |log_task_runner_wrapper| to ensure correct I/O serialization.
   // |uploader| must outlive |this|.
   ArcAppInstallEventLogManager(LogTaskRunnerWrapper* log_task_runner_wrapper,
-                               AppInstallEventLogUploader* uploader,
+                               ArcAppInstallEventLogUploader* uploader,
                                Profile* profile);
 
   // Posts a task to |log_task_runner_| that stores the log to file and destroys
@@ -53,9 +53,9 @@ class ArcAppInstallEventLogManager
   void GetAndroidId(
       AppInstallEventLogger::Delegate::AndroidIdCallback) const override;
 
-  // AppInstallEventLogUploader::Delegate:
+  // ArcAppInstallEventLogUploader::Delegate:
   void SerializeForUpload(
-      AppInstallEventLogUploader::Delegate::SerializationCallback callback)
+      ArcAppInstallEventLogUploader::Delegate::SerializationCallback callback)
       override;
   void OnUploadSuccess() override;
 
@@ -95,7 +95,7 @@ class ArcAppInstallEventLogManager
   };
 
   // Uploads logs to the server.
-  AppInstallEventLogUploader* const uploader_;
+  ArcAppInstallEventLogUploader* const uploader_;
 
   // Helper that owns the log store. Once created, must only be accessed via
   // |log_task_runner_|. Outlives |this| and ensures the extension log is stored

@@ -53,7 +53,8 @@ interface TestMessageTarget {
   Flatten(array<TestStruct> values) => (array<int32> values);
   FlattenUnions(array<TestUnion> unions) => (array<int32> x, array<int32> s);
 
-  RequestSubinterface(Subinterface& request, SubinterfaceClient client);
+  RequestSubinterface(pending_receiver<Subinterface> receiver,
+                      pending_remote<SubinterfaceClient> client);
 };
 
 interface Subinterface {

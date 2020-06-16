@@ -21,26 +21,22 @@ void LaserPointerControllerTestApi::SetEnabled(bool enabled) {
 }
 
 bool LaserPointerControllerTestApi::IsShowingLaserPointer() const {
-  return instance_->laser_pointer_view_ != nullptr;
+  return !!instance_->laser_pointer_view_widget_;
 }
 
 bool LaserPointerControllerTestApi::IsFadingAway() const {
   return IsShowingLaserPointer() &&
-         !instance_->laser_pointer_view_->fadeout_done_.is_null();
+         !instance_->GetLaserPointerView()->fadeout_done_.is_null();
 }
 
 const fast_ink::FastInkPoints& LaserPointerControllerTestApi::laser_points()
     const {
-  return instance_->laser_pointer_view_->laser_points_;
+  return instance_->GetLaserPointerView()->laser_points_;
 }
 
 const fast_ink::FastInkPoints&
 LaserPointerControllerTestApi::predicted_laser_points() const {
-  return instance_->laser_pointer_view_->predicted_laser_points_;
-}
-
-LaserPointerView* LaserPointerControllerTestApi::laser_pointer_view() const {
-  return instance_->laser_pointer_view_.get();
+  return instance_->GetLaserPointerView()->predicted_laser_points_;
 }
 
 }  // namespace ash

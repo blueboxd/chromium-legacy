@@ -79,7 +79,7 @@ Polymer({
     /** @private */
     isButtonHidden_: {
       type: Boolean,
-      computed: 'computeIsButtonHidden_(status, isSignedOut_)',
+      computed: 'computeIsButtonHidden_(status, isSignedOut_, isInitialStatus)',
     },
 
     /** @private {SyncPrefs} */
@@ -500,6 +500,7 @@ Polymer({
   computeIsButtonHidden_() {
     switch (this.status.state) {
       case CheckState.IDLE:
+        return this.isInitialStatus;  // Only a native IDLE state allows checks.
       case CheckState.CANCELED:
       case CheckState.RUNNING:
       case CheckState.OFFLINE:

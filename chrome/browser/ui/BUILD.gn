@@ -2809,6 +2809,8 @@ static_library("ui") {
       "views/accessibility/caption_bubble.h",
       "views/accessibility/caption_bubble_controller_views.cc",
       "views/accessibility/caption_bubble_controller_views.h",
+      "views/accessibility/caption_bubble_model.cc",
+      "views/accessibility/caption_bubble_model.h",
       "views/accessibility/invert_bubble_view.cc",
       "views/accessibility/invert_bubble_view.h",
       "views/accessibility/non_accessible_image_view.cc",

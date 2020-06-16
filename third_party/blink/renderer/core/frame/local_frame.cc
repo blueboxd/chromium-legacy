@@ -1847,8 +1847,7 @@ void LocalFrame::UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) {
 }
 
 const base::UnguessableToken& LocalFrame::GetAgentClusterId() const {
-  return GetDocument() ? GetDocument()->GetWindowAgent().cluster_id()
-                       : base::UnguessableToken::Null();
+  return DomWindow()->GetAgentClusterID();
 }
 
 mojom::blink::ReportingServiceProxy* LocalFrame::GetReportingService() {

@@ -76,6 +76,7 @@
       'Deterministic Android (dbg)': 'android_debug_bot',
 
       'android-arm64-proguard-rel': 'android_release_bot_minimal_symbols_arm64_webview_google',
+      'android-binary-size-generator': 'android_binary_size',
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
       'android-cronet-arm-rel': 'android_cronet_release_bot_minimal_symbols_arm_no_neon',
       'android-cronet-arm64-dbg': 'android_cronet_debug_static_bot_arm64',
@@ -668,17 +669,17 @@
       # release trybots must *not* enable dchecks, because that could
       # cause them to produce different baselines than the release
       # waterfall bots, and run_web_tests.py can't handle that (by design).
-      'linux-blink-rel': 'release_bot_minimal_symbols',
-      'linux-blink-optional-highdpi-rel': 'release_bot_minimal_symbols',
-      'mac10.10-blink-rel': 'gpu_tests_release_bot_minimal_symbols',
-      'mac10.11-blink-rel': 'gpu_tests_release_bot_minimal_symbols',
-      'mac10.12-blink-rel': 'gpu_tests_release_bot_minimal_symbols',
-      'mac10.13-blink-rel': 'gpu_tests_release_bot_minimal_symbols',
-      'mac10.13_retina-blink-rel': 'gpu_tests_release_bot_minimal_symbols',
-      'mac10.14-blink-rel': 'gpu_tests_release_bot_minimal_symbols',
-      'mac10.15-blink-rel': 'gpu_tests_release_bot_minimal_symbols_no_nacl',
-      'win7-blink-rel': 'gpu_tests_release_bot_x86_minimal_symbols',
-      'win10-blink-rel': 'gpu_tests_release_bot_x86_minimal_symbols',
+      'linux-blink-rel': 'release_bot_blink_minimal_symbols',
+      'linux-blink-optional-highdpi-rel': 'release_bot_blink_minimal_symbols',
+      'mac10.10-blink-rel': 'release_bot_blink_minimal_symbols',
+      'mac10.11-blink-rel': 'release_bot_blink_minimal_symbols',
+      'mac10.12-blink-rel': 'release_bot_blink_minimal_symbols',
+      'mac10.13-blink-rel': 'release_bot_blink_minimal_symbols',
+      'mac10.13_retina-blink-rel': 'release_bot_blink_minimal_symbols',
+      'mac10.14-blink-rel': 'release_bot_blink_minimal_symbols',
+      'mac10.15-blink-rel': 'release_bot_blink_minimal_symbols_no_nacl',
+      'win7-blink-rel': 'release_bot_blink_x86_minimal_symbols',
+      'win10-blink-rel': 'release_bot_blink_x86_minimal_symbols',
     },
 
     'tryserver.chromium.android': {
@@ -2115,6 +2116,17 @@
 
     'release_bot_blink_minimal_symbols': [
       'release_bot_blink', 'minimal_symbols',
+    ],
+
+    'release_bot_blink_minimal_symbols_no_nacl': [
+      'release_bot_blink',
+      'minimal_symbols',
+      'disable_nacl',
+    ],
+
+
+    'release_bot_blink_x86_minimal_symbols': [
+      'release_bot_blink', 'x86', 'minimal_symbols',
     ],
 
     'release_bot_enable_blink_heap_verification_dcheck_always_on': [

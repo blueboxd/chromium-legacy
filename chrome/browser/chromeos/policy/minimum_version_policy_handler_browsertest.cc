@@ -57,10 +57,13 @@ const char kNewVersion[] = "99999.4.2";
 const int kNoWarning = 0;
 const int kShortWarningInDays = 2;
 const int kLongWarningInDays = 10;
+const int kVeryLongWarningInDays = 100;
 constexpr base::TimeDelta kShortWarning =
     base::TimeDelta::FromDays(kShortWarningInDays);
 constexpr base::TimeDelta kLongWarning =
     base::TimeDelta::FromDays(kLongWarningInDays);
+constexpr base::TimeDelta kVeryLongWarning =
+    base::TimeDelta::FromDays(kVeryLongWarningInDays);
 const char kPublicSessionId[] = "demo@example.com";
 const char kUpdateRequiredNotificationId[] = "policy.update_required";
 const char kWifiServicePath[] = "/service/wifi2";
@@ -263,7 +266,7 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, CriticalUpdateInSession) {
 }
 
 IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, NonCriticalUpdateGoodNetwork) {
-  // Login the user into the session and mark as managed.
+  // Login the user into the session.
   Login();
 
   // Check deadline timer is not running and local state is not set.
@@ -323,17 +326,81 @@ IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, NonCriticalUpdateGoodNetwork) {
   EXPECT_TRUE(GetMinimumVersionPolicyHandler()->GetState());
 
   // Simulate update installed from update_engine_client and check that timer
-  // and the local state is reset.
+  // is reset but local state is not.
   update_engine::StatusResult status;
   status.set_current_operation(update_engine::Operation::UPDATED_NEED_REBOOT);
   status.set_new_version("99999.9");
   fake_update_engine_client_->set_default_status(status);
   fake_update_engine_client_->NotifyObserversThatStatusChanged(status);
+  EXPECT_FALSE(
+      GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
+  EXPECT_TRUE(GetMinimumVersionPolicyHandler()->GetState());
+  EXPECT_FALSE(prefs->GetTime(prefs::kUpdateRequiredTimerStartTime).is_null());
+
+  // New policy after update is downloaded does not restart the timer but just
+  // updates the local state with longer warning period.
+  base::Value requirement_very_long_warning(base::Value::Type::LIST);
+  requirement_very_long_warning.Append(
+      CreateRequirement(kNewVersion, kVeryLongWarningInDays, kNoWarning));
+  SetDevicePolicyAndWaitForSettingChange(requirement_very_long_warning);
+  EXPECT_EQ(prefs->GetTime(prefs::kUpdateRequiredTimerStartTime),
+            timer_start_time);
+  EXPECT_EQ(prefs->GetTimeDelta(prefs::kUpdateRequiredWarningPeriod),
+            kVeryLongWarning);
+  EXPECT_FALSE(
+      GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
+  EXPECT_TRUE(GetMinimumVersionPolicyHandler()->GetState());
+}
+
+IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest, DeviceUpdateStatusChange) {
+  // Login the user into the session.
+  Login();
+
+  // Create and set policy value with warning time.
+  base::Value requirement_short_warning(base::Value::Type::LIST);
+  requirement_short_warning.Append(
+      CreateRequirement(kNewVersion, kShortWarningInDays, kShortWarningInDays));
+  SetDevicePolicyAndWaitForSettingChange(requirement_short_warning);
+
+  // Policy handler starts the deadline timer.
+  EXPECT_TRUE(
+      GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
+  EXPECT_TRUE(GetMinimumVersionPolicyHandler()->GetState());
+
+  // Simulate channel switch rollback from update_engine_client and check that
+  // timer is not reset.
+  update_engine::StatusResult rollback_status;
+  rollback_status.set_current_operation(
+      update_engine::Operation::UPDATED_NEED_REBOOT);
+  rollback_status.set_will_powerwash_after_reboot(true);
+  fake_update_engine_client_->set_default_status(rollback_status);
+  fake_update_engine_client_->NotifyObserversThatStatusChanged(rollback_status);
+
+  EXPECT_TRUE(
+      GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
+  EXPECT_TRUE(GetMinimumVersionPolicyHandler()->GetState());
+
+  // Simulate enterprise rollback from update_engine_client and check that timer
+  // is not reset.
+  rollback_status.set_is_enterprise_rollback(true);
+  fake_update_engine_client_->set_default_status(rollback_status);
+  fake_update_engine_client_->NotifyObserversThatStatusChanged(rollback_status);
+
+  EXPECT_TRUE(
+      GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
+  EXPECT_TRUE(GetMinimumVersionPolicyHandler()->GetState());
+
+  // Simulate update installed from update_engine_client and check that timer is
+  // reset.
+  update_engine::StatusResult update_status;
+  update_status.set_current_operation(
+      update_engine::Operation::UPDATED_NEED_REBOOT);
+  fake_update_engine_client_->set_default_status(update_status);
+  fake_update_engine_client_->NotifyObserversThatStatusChanged(update_status);
 
   EXPECT_FALSE(
       GetMinimumVersionPolicyHandler()->IsDeadlineTimerRunningForTesting());
-  EXPECT_FALSE(GetMinimumVersionPolicyHandler()->GetState());
-  EXPECT_TRUE(prefs->GetTime(prefs::kUpdateRequiredTimerStartTime).is_null());
+  EXPECT_TRUE(GetMinimumVersionPolicyHandler()->GetState());
 }
 
 IN_PROC_BROWSER_TEST_F(MinimumVersionPolicyTest,

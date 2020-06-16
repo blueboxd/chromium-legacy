@@ -11,7 +11,7 @@
 #include <string>
 #include <tuple>
 
-#include "ash/system/message_center/arc/arc_notification_surface_manager.h"
+#include "ash/public/cpp/external_arc/message_center/arc_notification_surface_manager.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_service.h"

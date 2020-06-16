@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.offlinepages.prefetch;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.Uri;
-import android.support.test.filters.MediumTest;
 import android.util.Base64;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;

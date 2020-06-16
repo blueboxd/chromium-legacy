@@ -1218,39 +1218,6 @@ TEST_F(QuotaManagerTest, GetQuotaLowAvailableDiskSpace) {
   EXPECT_EQ(kPerHostQuota, quota());
 }
 
-TEST_F(QuotaManagerTest,
-       GetQuotaLowAvailableDiskSpace_StaticHostQuotaDisabled) {
-  // This test is the same as the previous but with the kStaticHostQuota Finch
-  // feature disabled.
-  // Simulating a low available disk space scenario by making
-  // kMustRemainAvailable 64KB less than GetAvailableDiskSpaceForTest(), which
-  // means there is 64KB of storage quota that can be used before triggering
-  // the low available space logic branch in quota_manager.cc. From the
-  // perspective of QuotaManager, there are 64KB of free space in the temporary
-  // pool, so it should return (64KB + usage) as quota since the sum is less
-  // than the default host quota.
-  scoped_feature_list_.InitAndDisableFeature(features::kStaticHostQuota);
-  static const MockOriginData kData[] = {
-      {"http://foo.com/", kTemp, 100000},
-      {"http://unlimited/", kTemp, 4000000},
-  };
-
-  CreateAndRegisterClient(kData, QuotaClientType::kFileSystem);
-
-  const int kPoolSize = 10000000;
-  const int kPerHostQuota = kPoolSize / 5;
-  const int kMustRemainAvailable =
-      static_cast<int>(GetAvailableDiskSpaceForTest() - 65536);
-  SetQuotaSettings(kPoolSize, kPerHostQuota, kMustRemainAvailable);
-
-  GetUsageAndQuotaForWebApps(ToOrigin("http://foo.com/"), kTemp);
-  task_environment_.RunUntilIdle();
-  EXPECT_EQ(QuotaStatusCode::kOk, status());
-  EXPECT_EQ(100000, usage());
-  EXPECT_GT(kPerHostQuota, quota());
-  EXPECT_EQ(65536 + usage(), quota());
-}
-
 TEST_F(QuotaManagerTest, GetSyncableQuota) {
   CreateAndRegisterClient(base::span<MockOriginData>(),
                           QuotaClientType::kFileSystem);

@@ -19,10 +19,10 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.test.mock.MockPackageManager;
 
 import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

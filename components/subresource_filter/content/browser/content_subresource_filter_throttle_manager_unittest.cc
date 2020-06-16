@@ -182,8 +182,8 @@ class ContentSubresourceFilterThrottleManagerTest
 
     // Initialize the ruleset dealer.
     std::vector<proto::UrlRule> rules;
-    rules.push_back(testing::CreateWhitelistRuleForDocument(
-        "whitelist.com", proto::ACTIVATION_TYPE_DOCUMENT,
+    rules.push_back(testing::CreateAllowlistRuleForDocument(
+        "allowlist.com", proto::ACTIVATION_TYPE_DOCUMENT,
         {"page-with-activation.com"}));
     rules.push_back(testing::CreateSuffixRule("disallowed.html"));
     ASSERT_NO_FATAL_FAILURE(test_ruleset_creator_.CreateRulesetWithRules(
@@ -690,7 +690,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest, ActivationPropagation) {
   EXPECT_EQ(1, disallowed_notification_count());
 }
 
-// Ensure activation propagates through whitelisted documents.
+// Ensure activation propagates through allowlisted documents.
 // crbug.com/1010000: crashes on win
 #if defined(OS_WIN)
 #define MAYBE_ActivationPropagation2 DISABLED_ActivationPropagation2
@@ -703,7 +703,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
 
   // Navigate a subframe that is not filtered, but should still activate.
-  CreateSubframeWithTestNavigation(GURL("https://whitelist.com"), main_rfh());
+  CreateSubframeWithTestNavigation(GURL("https://allowlist.com"), main_rfh());
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
             SimulateStartAndGetResult(navigation_simulator()));
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -712,7 +712,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
       navigation_simulator()->GetFinalRenderFrameHost();
   ExpectActivationSignalForFrame(subframe1, true /* expect_activation */);
 
-  // Navigate a sub-subframe that is not filtered due to the whitelist.
+  // Navigate a sub-subframe that is not filtered due to the allowlist.
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/disallowed.html"), subframe1);
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -725,7 +725,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
 
   EXPECT_EQ(0, disallowed_notification_count());
 
-  // An identical series of events that don't match whitelist rules cause
+  // An identical series of events that don't match allowlist rules cause
   // filtering.
   CreateSubframeWithTestNavigation(GURL("https://average-joe.com"), main_rfh());
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
@@ -736,7 +736,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
       navigation_simulator()->GetFinalRenderFrameHost();
   ExpectActivationSignalForFrame(subframe3, true /* expect_activation */);
 
-  // Navigate a sub-subframe that is not filtered due to the whitelist.
+  // Navigate a sub-subframe that is not filtered due to the allowlist.
   CreateSubframeWithTestNavigation(
       GURL("https://www.example.com/disallowed.html"), subframe3);
   EXPECT_EQ(content::NavigationThrottle::BLOCK_REQUEST_AND_COLLAPSE,
@@ -798,7 +798,7 @@ TEST_F(ContentSubresourceFilterThrottleManagerTest, LogActivation) {
                            1);
 
   // Navigate a subframe that is not filtered, but should still activate.
-  CreateSubframeWithTestNavigation(GURL("https://whitelist.com"), main_rfh());
+  CreateSubframeWithTestNavigation(GURL("https://allowlist.com"), main_rfh());
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
             SimulateStartAndGetResult(navigation_simulator()));
   EXPECT_EQ(content::NavigationThrottle::PROCEED,

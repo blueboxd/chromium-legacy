@@ -63,6 +63,10 @@ std::string GetEnterpriseDomainName() {
       ->GetEnterpriseDisplayDomain();
 }
 
+BuildState* GetBuildState() {
+  return g_browser_process->GetBuildState();
+}
+
 }  // namespace
 
 const char MinimumVersionPolicyHandler::kChromeVersion[] = "chrome_version";
@@ -125,7 +129,7 @@ MinimumVersionPolicyHandler::MinimumVersionPolicyHandler(
 }
 
 MinimumVersionPolicyHandler::~MinimumVersionPolicyHandler() {
-  g_browser_process->GetBuildState()->RemoveObserver(this);
+  GetBuildState()->RemoveObserver(this);
   StopObservingNetwork();
 }
 
@@ -216,9 +220,11 @@ void MinimumVersionPolicyHandler::OnPolicyChanged() {
       requirements_met_ = false;
       FetchEolInfo();
     }
-  } else if (state_) {
+  } else {
     // Update is not required as the requirements of all of the configs in the
-    // policy are satisfied by the current chrome version.
+    // policy are satisfied by the current chrome version. We could also reach
+    // here at the time of login if the device was rebooted to apply the
+    // downloaded update, in which case it is needed to reset the local state.
     HandleUpdateNotRequired();
   }
 }
@@ -239,12 +245,20 @@ void MinimumVersionPolicyHandler::Reset() {
   eol_reached_ = false;
   update_required_deadline_timer_.Stop();
   notification_timer_.Stop();
-  g_browser_process->GetBuildState()->RemoveObserver(this);
+  GetBuildState()->RemoveObserver(this);
   state_.reset();
   HideNotification();
   notification_handler_.reset();
   ResetLocalState();
   StopObservingNetwork();
+}
+
+void MinimumVersionPolicyHandler::ResetOnUpdateCompleted() {
+  update_required_deadline_timer_.Stop();
+  notification_timer_.Stop();
+  GetBuildState()->RemoveObserver(this);
+  HideNotification();
+  notification_handler_.reset();
 }
 
 void MinimumVersionPolicyHandler::FetchEolInfo() {
@@ -329,6 +343,14 @@ void MinimumVersionPolicyHandler::HandleUpdateRequired(
   if (deadline > previous_deadline)
     UpdateLocalState(warning_time);
 
+  // The device has already downloaded the update in-session and waiting for
+  // reboot to apply it.
+  if (GetBuildState()->update_type() == BuildState::UpdateType::kNormalUpdate) {
+    // TODO(https://crbug.com/1048607): May be adjust relaunch notification
+    // timer as per new deadline.
+    return;
+  }
+
   StartDeadlineTimer(deadline);
   if (!eol_reached_)
     StartObservingUpdate();
@@ -363,7 +385,7 @@ void MinimumVersionPolicyHandler::StartDeadlineTimer(base::Time deadline) {
 }
 
 void MinimumVersionPolicyHandler::StartObservingUpdate() {
-  auto* build_state = g_browser_process->GetBuildState();
+  auto* build_state = GetBuildState();
   if (!build_state->HasObserver(this))
     build_state->AddObserver(this);
 }
@@ -432,10 +454,10 @@ void MinimumVersionPolicyHandler::ShowAndScheduleNotification(
 }
 
 void MinimumVersionPolicyHandler::OnUpdate(const BuildState* build_state) {
-  // Reset the state if new version is greater or equal the required version.
-  // Hide update required screen if it is shown.
-  if (build_state->installed_version()->CompareTo(state_->version()) >= 0)
-    HandleUpdateNotRequired();
+  // If the device has been successfully updated, the relaunch notifications
+  // will reboot it for applying the updates.
+  if (build_state->update_type() == BuildState::UpdateType::kNormalUpdate)
+    ResetOnUpdateCompleted();
 }
 
 void MinimumVersionPolicyHandler::HideNotification() const {
@@ -453,6 +475,8 @@ void MinimumVersionPolicyHandler::DefaultNetworkChanged(
 }
 
 void MinimumVersionPolicyHandler::StopObservingNetwork() {
+  if (!chromeos::NetworkHandler::IsInitialized())
+    return;
   chromeos::NetworkStateHandler* network_state_handler =
       chromeos::NetworkHandler::Get()->network_state_handler();
   network_state_handler->RemoveObserver(this, FROM_HERE);

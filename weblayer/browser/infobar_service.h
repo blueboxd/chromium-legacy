@@ -29,6 +29,10 @@ class InfoBarService : public infobars::ContentInfoBarManager,
   InfoBarService(const InfoBarService&) = delete;
   InfoBarService& operator=(const InfoBarService&) = delete;
 
+  // InfoBarManager:
+  std::unique_ptr<infobars::InfoBar> CreateConfirmInfoBar(
+      std::unique_ptr<ConfirmInfoBarDelegate> delegate) override;
+
  protected:
   explicit InfoBarService(content::WebContents* web_contents);
 

@@ -158,7 +158,7 @@ TEST_F(ShelfWidgetTest, LauncherInitiallySized) {
       shelf_widget->hotseat_widget()->GetWindowBoundsInScreen().width();
   const int margins = ShelfConfig::Get()->control_button_edge_spacing(
                           true /* is_primary_axis_edge */) +
-                      ShelfConfig::Get()->app_icon_group_margin();
+                      2 * ShelfConfig::Get()->app_icon_group_margin();
   EXPECT_EQ(status_width, total_width - nav_width - hotseat_width - margins);
 }
 
@@ -205,7 +205,7 @@ TEST_F(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
       shelf_widget1->hotseat_widget()->GetWindowBoundsInScreen().width();
   const int margins = ShelfConfig::Get()->control_button_edge_spacing(
                           true /* is_primary_axis_edge */) +
-                      ShelfConfig::Get()->app_icon_group_margin();
+                      2 * ShelfConfig::Get()->app_icon_group_margin();
 
   const int total_width2 =
       screen_util::GetDisplayBoundsWithShelf(shelf_widget2->GetNativeWindow())

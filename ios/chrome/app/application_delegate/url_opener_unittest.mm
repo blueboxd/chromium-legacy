@@ -356,3 +356,35 @@ TEST_F(URLOpenerTest, VerifyLaunchOptionsWithBadURL) {
   // Test.
   EXPECT_OCMOCK_VERIFY(startupInformationMock);
 }
+
+// Tests URL is not opened if the FRE is presented.
+TEST_F(URLOpenerTest, PresentingFirstRunUI) {
+  // Setup.
+  NSURL* url = [NSURL URLWithString:@"chromium://www.google.com"];
+  NSDictionary* launchOptions = @{
+    UIApplicationLaunchOptionsURLKey : url,
+    UIApplicationLaunchOptionsSourceApplicationKey : @"com.apple.mobilesafari"
+  };
+  URLOpenerParams* urlOpenerParams =
+      [[URLOpenerParams alloc] initWithLaunchOptions:launchOptions];
+  id tabOpenerMock = [OCMockObject mockForProtocol:@protocol(TabOpening)];
+  id startupInformationMock =
+      [OCMockObject mockForProtocol:@protocol(StartupInformation)];
+  [[[startupInformationMock expect] andReturnValue:@YES]
+      isPresentingFirstRunUI];
+
+  id appStateMock = [OCMockObject mockForClass:[AppState class]];
+  [[appStateMock expect] launchFromURLHandled:NO];
+
+  // Action.
+  [URLOpener handleLaunchOptions:urlOpenerParams
+               applicationActive:NO
+                       tabOpener:tabOpenerMock
+              startupInformation:startupInformationMock
+                        appState:appStateMock];
+
+  // Test.
+  EXPECT_OCMOCK_VERIFY(tabOpenerMock);
+  EXPECT_OCMOCK_VERIFY(startupInformationMock);
+  EXPECT_OCMOCK_VERIFY(appStateMock);
+}

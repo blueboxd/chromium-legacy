@@ -1181,7 +1181,7 @@
 <translation id="247051149076336810">கோப்புப் பகிர்வு URL</translation>
 <translation id="2470702053775288986">ஆதரிக்கப்படாத நீட்டிப்புகள் முடக்கப்பட்டன</translation>
 <translation id="2473195200299095979">இந்தப் பக்கத்தை மொழிபெயர்</translation>
-<translation id="2474848500897222119"><ph name="PRINTER_NAME" />ல் மை தீர்ந்துவிட்டது</translation>
+<translation id="2474848500897222119"><ph name="PRINTER_NAME" /> இல் மை தீர்ந்துவிட்டது</translation>
 <translation id="2475982808118771221">ஒரு பிழை ஏற்பட்டது</translation>
 <translation id="2476578072172137802">தள அமைப்புகள்</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" க்கான மீடியா-கோப்பு அனுமதிகள்</translation>
@@ -3048,7 +3048,7 @@
 <translation id="4864369630010738180">உள்நுழைகிறீர்கள்...</translation>
 <translation id="4864805589453749318">பள்ளிக் கணக்கைச் சேர்க்க அனுமதி வழங்கும் பெற்றோரைத் தேர்ந்தெடுக்கவும்.</translation>
 <translation id="486635084936119914">பதிவிறக்கிய பின்னர், சில கோப்பு வகைகளைத் தானாகவே திறக்கும்</translation>
-<translation id="4869213010169296107"><ph name="PRINTER_NAME" />ல் டிரே இல்லை</translation>
+<translation id="4869213010169296107"><ph name="PRINTER_NAME" /> இல் டிரே இல்லை</translation>
 <translation id="4869289251183233431">உங்கள் சாதனத்தில் சேமிப்பகம் குறைவாக உள்ளது. <ph name="APP_NAME" /> ஆப்ஸைப் பயன்படுத்த குறைந்தபட்சம் <ph name="MINIMUM_SPACE" /> சேமிப்பகம் தேவை. எனினும் <ph name="RECOMMENDED_SPACE" />க்கும் அதிக சேமிப்பகத்தைக் காலியாக வைத்திருப்பது சிறந்தது. சேமிப்பகத்தை அதிகரிக்க, சாதனத்திலிருந்து கோப்புகளை நீக்கவும்.</translation>
 <translation id="48704129375571883">கூடுதல் அம்சங்களைச் சேர்</translation>
 <translation id="4870758487381879312">உள்ளமைவுத் தகவலைப் பெற நிர்வாகி வழங்கிய கடவுச்சொல்லை உள்ளிடவும்</translation>
@@ -3463,7 +3463,7 @@
 <translation id="5417312524372586921">உலாவித் தீம்கள்</translation>
 <translation id="5419405654816502573">Voice match</translation>
 <translation id="5420438158931847627">உரை மற்றும் படங்களின் கூர்மையைத் தீர்மானிக்கிறது</translation>
-<translation id="5421498071721257877"><ph name="PRINTER_NAME" />ல் சாதனப் பிழை உள்ளது</translation>
+<translation id="5421498071721257877"><ph name="PRINTER_NAME" /> இல் சாதனப் பிழை உள்ளது</translation>
 <translation id="5422221874247253874">ஆக்சஸ் பாயிண்ட்</translation>
 <translation id="5422781158178868512">வெளிப்புற சேகரிப்பு சாதனத்தை அறிய முடியவில்லை. மன்னிக்கவும்.</translation>
 <translation id="5423505005476604112">Crostini</translation>
@@ -3537,7 +3537,7 @@
 <translation id="5499313591153584299">இந்தக் கோப்பு உங்கள் கம்ப்யூட்டருக்குத் தீங்கு விளைவிக்கலாம்.</translation>
 <translation id="5500709606820808700">பாதுகாப்புச் சரிபார்ப்பு இன்று மேற்கொள்ளப்பட்டது</translation>
 <translation id="5502500733115278303">Firefox இலிருந்து இறக்குமதி செய்யப்பட்டது</translation>
-<translation id="5503982651688210506">உங்கள் கேமராவைப் பயன்படுத்தவும் நகர்த்தவும் உங்கள் மைக்ரோஃபோனைப் பயன்படுத்தவும் <ph name="HOST" /> ஐத் தொடர்ந்து அனுமதி</translation>
+<translation id="5503982651688210506">கேமராவைப் பயன்படுத்தவும் நகர்த்தவும் உங்கள் மைக்ரோஃபோனைப் பயன்படுத்தவும் <ph name="HOST" /> ஐத் தொடர்ந்து அனுமதி</translation>
 <translation id="5505264765875738116">அறிவிப்புகளை அனுப்புவதற்கான அனுமதியைத் தளங்களால் கோர இயலாது</translation>
 <translation id="5505307013568720083">மை தீர்ந்துவிட்டது</translation>
 <translation id="5507756662695126555">மறுக்கப்படாதவை</translation>
@@ -3814,7 +3814,7 @@
 <translation id="5852137567692933493">மீண்டும் தொடங்கி, பவர்வாஷ் செய்க</translation>
 <translation id="5854912040170951372">ஸ்லைஸ்</translation>
 <translation id="5855267860608268405">தெரிந்த வைஃபை நெட்வொர்க்குகள்</translation>
-<translation id="5855310969323666289"><ph name="PRINTER_NAME" />ன் மூடி திறந்திருக்கிறது</translation>
+<translation id="5855310969323666289"><ph name="PRINTER_NAME" /> இன் மூடி திறந்திருக்கிறது</translation>
 <translation id="5855643921295613558">0.6 வினாடிகள்</translation>
 <translation id="5856721540245522153">பிழைத் திருத்த அம்சங்களை இயக்குதல்</translation>
 <translation id="5857090052475505287">புதிய கோப்புறை</translation>
@@ -3844,7 +3844,7 @@
 <translation id="5877064549588274448">சேனல் மாற்றப்பட்டது. மாற்றங்களைச் செயல்படுத்த உங்கள் சாதனத்தை மீண்டும் தொடங்கவும்.</translation>
 <translation id="5877584842898320529">தேர்ந்தெடுத்த பிரிண்டர் இல்லை அல்லது சரியாக நிறுவப்படவில்லை.<ph name="BR" /> பிரிண்டரைச் சரிபார்க்கவும் அல்லது மற்றொரு பிரிண்டரைத் தேர்ந்தெடுக்கவும்.</translation>
 <translation id="5882919346125742463">தெரிந்த நெட்வொர்க்குகள்</translation>
-<translation id="5883716097305842571"><ph name="PRINTER_NAME" />ல் பிரிண்ட் வெளியே வரும் டிரே கிட்டத்தட்ட நிரம்பிவிட்டது</translation>
+<translation id="5883716097305842571"><ph name="PRINTER_NAME" /> இல் பிரிண்ட் வெளியே வரும் டிரே கிட்டத்தட்ட நிரம்பிவிட்டது</translation>
 <translation id="5884474295213649357">இந்தத் தாவல் USB சாதனத்துடன் இணைக்கப்பட்டுள்ளது.</translation>
 <translation id="5886009770935151472">விரல் 1</translation>
 <translation id="5889282057229379085">அதிகபட்ச எண்ணிக்கையிலான இடைப்பட்ட CAகள்: <ph name="NUM_INTERMEDIATE_CA" /></translation>
@@ -4812,7 +4812,7 @@
 <translation id="7128151990937044829">அறிவிப்புகள் தடுக்கப்படும்போது முகவரிப் பட்டியில் இண்டிக்கேட்டர் ஒன்றைக் காட்டு</translation>
 <translation id="7131040479572660648">உங்கள் தரவை <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> மற்றும் <ph name="WEBSITE_3" /> இல் படித்தல்</translation>
 <translation id="713122686776214250">பக்&amp;கத்தைச் சேர்...</translation>
-<translation id="7131379856697962078"><ph name="PRINTER_NAME" />ல் பிரிண்ட் வெளியே வரும் டிரே நிரம்பிவிட்டது</translation>
+<translation id="7131379856697962078"><ph name="PRINTER_NAME" /> இல் பிரிண்ட் வெளியே வரும் டிரே நிரம்பிவிட்டது</translation>
 <translation id="7133578150266914903">உங்கள் நிர்வாகி இந்தச் சாதனத்தை மீட்டமைக்கிறார் (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">உரையைச் சிறிதாக்குக </translation>
 <translation id="7135729336746831607">புளூடூத்தை இயக்கவா?</translation>
@@ -4831,7 +4831,7 @@
 <translation id="7152478047064750137">இந்த நீட்டிப்பிற்குச் சிறப்பு அனுமதிகள் தேவையில்லை</translation>
 <translation id="7154130902455071009">உங்கள் தொடக்கப் பக்கத்தை இதற்கு மாற்றவும்: <ph name="START_PAGE" /></translation>
 <translation id="7155171745945906037">கேமரா அல்லது கோப்பிலிருக்கும் படம்</translation>
-<translation id="715657691234357425"><ph name="PRINTER_NAME" />ல் தாள் குறைவாக உள்ளது</translation>
+<translation id="715657691234357425"><ph name="PRINTER_NAME" /> இல் தாள் குறைவாக உள்ளது</translation>
 <translation id="7165320105431587207">நெட்வொர்க் உள்ளமைவு தோல்வியடைந்தது</translation>
 <translation id="716640248772308851">தேர்வுசெய்யப்பட்ட இடங்களில் உள்ள படங்கள், வீடியோ மற்றும் ஒலி கோப்புகள் ஆகியவற்றை "<ph name="EXTENSION" />" ஆல் படிக்க முடியும்.</translation>
 <translation id="7167486101654761064">&amp;எப்போதும் இந்த வகை கோப்புகளைத் திற</translation>
@@ -5161,7 +5161,7 @@
 <translation id="7598466960084663009">கம்ப்யூட்டரை மீண்டும் தொடங்கு</translation>
 <translation id="7599527631045201165">சாதனப் பெயர் மிக நீளமாக உள்ளது. மீண்டும் முயல, சிறிய பெயரை உள்ளிடவும்.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> ஐ எப்போதும் மொழிபெயர்க்க வேண்டாம்</translation>
-<translation id="7601297144931396972"><ph name="PRINTER_NAME" />ல் தாள் சிக்கிக் கொண்டது</translation>
+<translation id="7601297144931396972"><ph name="PRINTER_NAME" /> இல் தாள் சிக்கிக் கொண்டது</translation>
 <translation id="760197030861754408">இணைக்க, <ph name="LANDING_PAGE" />க்குச் செல்லவும்.</translation>
 <translation id="7602079150116086782">பிற சாதனங்களின் தாவல்கள் எதுவுமில்லை</translation>
 <translation id="7602173054665172958">அச்சுப் பணி நிர்வாகம்</translation>
@@ -5614,7 +5614,7 @@
           இதில் Google Payயிலுள்ள கட்டண முறைகளும் முகவரிகளும் சேர்க்கப்படவில்லை.</translation>
 <translation id="81238879832906896">மஞ்சள் வெள்ளை மலர்</translation>
 <translation id="8124313775439841391">நிர்வகிக்கப்படும் ONC</translation>
-<translation id="8127535217699822294"><ph name="PRINTER_NAME" />ல் தாள் தீர்ந்துவிட்டது</translation>
+<translation id="8127535217699822294"><ph name="PRINTER_NAME" /> இல் தாள் தீர்ந்துவிட்டது</translation>
 <translation id="813082847718468539">தள விவரங்களைக் காண்க</translation>
 <translation id="8131740175452115882">உறுதிப்படுத்து</translation>
 <translation id="8133676275609324831">கோப்புறையில் &amp;காண்பி</translation>
@@ -5714,7 +5714,7 @@
 <translation id="8254954272268479918">Linuxஸை (பீட்டா) நிறுத்து</translation>
 <translation id="8255451560461371599">பின்புலம் இல்லை</translation>
 <translation id="8256319818471787266">ஸ்பார்க்கி</translation>
-<translation id="8256417822772703842"><ph name="PRINTER_NAME" />ல் மை குறைவாக உள்ளது</translation>
+<translation id="8256417822772703842"><ph name="PRINTER_NAME" /> இல் மை குறைவாக உள்ளது</translation>
 <translation id="8257950718085972371">கேமரா அணுகலைத் தொடர்ந்து தடு</translation>
 <translation id="8259239505248583312">தொடங்குக</translation>
 <translation id="8260126382462817229">மீண்டும் உள்நுழையவும்</translation>

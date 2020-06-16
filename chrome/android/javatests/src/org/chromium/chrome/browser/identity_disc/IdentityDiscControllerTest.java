@@ -17,10 +17,10 @@ import static org.hamcrest.Matchers.not;
 
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
-import android.support.test.filters.MediumTest;
 import android.view.View;
 
 import androidx.test.espresso.matcher.ViewMatchers;
+import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matchers;
 import org.junit.After;

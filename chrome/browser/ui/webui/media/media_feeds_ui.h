@@ -40,6 +40,9 @@ class MediaFeedsUI : public ui::MojoWebUIController,
   void SetSafeSearchEnabledPref(
       bool value,
       SetSafeSearchEnabledPrefCallback callback) override;
+  void SetBackgroundFetchingPref(
+      bool value,
+      SetBackgroundFetchingPrefCallback callback) override;
 
  private:
   media_history::MediaHistoryKeyedService* GetMediaHistoryService();

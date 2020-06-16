@@ -12116,8 +12116,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, VisibilityFrameDepthTest) {
   EXPECT_EQ(0u, popup_process->GetFrameDepth());
 }
 
+// Flaky on multiple platforms (crbug.com/1094562).
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       FrameViewportIntersectionTestSimple) {
+                       DISABLED_FrameViewportIntersectionTestSimple) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c),d,e(f))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

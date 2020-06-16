@@ -55,8 +55,9 @@
 
 namespace blink {
 
-ExecutionContext::ExecutionContext(v8::Isolate* isolate)
+ExecutionContext::ExecutionContext(v8::Isolate* isolate, Agent* agent)
     : isolate_(isolate),
+      agent_(agent),
       circular_sequential_id_(0),
       in_dispatch_error_event_(false),
       lifecycle_state_(mojom::FrameLifecycleState::kRunning),
@@ -334,6 +335,7 @@ void ExecutionContext::RemoveURLFromMemoryCache(const KURL& url) {
 }
 
 void ExecutionContext::Trace(Visitor* visitor) const {
+  visitor->Trace(agent_);
   visitor->Trace(public_url_manager_);
   visitor->Trace(pending_exceptions_);
   visitor->Trace(csp_delegate_);

@@ -81,6 +81,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Кукилериңизди тазалап көрүңүз<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">Коопсуз DNS жөндөөлөрүңүздү текшериңиз</translation>
 <translation id="1307966114820526988">Жоюлган функциялар</translation>
+<translation id="1310581832770023220">Бул формада көрсөтүлгөн маалымат кооптуу туташуу аркылуу жөнөтүлүп жатат</translation>
 <translation id="131405271941274527">NFC түзмөгүндө телефонуңузду таптаганда <ph name="URL" /> маалыматты жөнөтүүгө жана алууга уруксат сурап жатат</translation>
 <translation id="1314509827145471431">Оң жагын байлоо</translation>
 <translation id="1320233736580025032">Prc1 (Конверт)</translation>
@@ -384,6 +385,7 @@
 <translation id="2544644783021658368">Жалгыз документ</translation>
 <translation id="254947805923345898">Саясаттын мааниси туура эмес көрсөтүлдү.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> сайты жараксыз жооп жөнөттү.</translation>
+<translation id="2552295903035773204">Мындан ары карталарды ырастоо үчүн экрандын кулпусун колдонуңуз</translation>
 <translation id="2553853292994445426">Коопсуз DNS жөндөөлөрүңүздү текшериңиз. Коопсуз DNS серверин жөндөп койсоңуз керек, андыктан туташпай жатат.</translation>
 <translation id="2556876185419854533">Түзөтүүнү &amp;жасабоо</translation>
 <translation id="257674075312929031">Топ</translation>
@@ -1443,6 +1445,7 @@
 <translation id="7138472120740807366">Жеткирүү ыкмасы</translation>
 <translation id="7139724024395191329">Эмират</translation>
 <translation id="714064300541049402">2-тараптын X сүрөтүн жылдыруу</translation>
+<translation id="7147693119324090759">Баары бир тапшырылсын</translation>
 <translation id="7152423860607593928">Number-14 (Конверт)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> жана дагы <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ыкма}other{<ph name="PAYMENT_METHOD_PREVIEW" /> жана дагы <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ыкма}}</translation>
 <translation id="7153618581592392745">Ач сыя</translation>
@@ -1519,6 +1522,7 @@
 <translation id="7416351320495623771">Сырсөздөрдү башкаруу…</translation>
 <translation id="7419106976560586862">Профиль жолу</translation>
 <translation id="7437289804838430631">Байланыш маалыматын кошуу</translation>
+<translation id="743897106051685947">Түпнуска</translation>
 <translation id="7438976808740265764">2020-жылдын декабрь айынан кийин Flash Player иштебей калат.</translation>
 <translation id="7440140511386898319">Оффлайн режиминде окуу</translation>
 <translation id="7441627299479586546">Туура эмес саясат темасы</translation>
@@ -1530,6 +1534,7 @@
 <translation id="7473891865547856676">Жок, рахмат</translation>
 <translation id="7481312909269577407">Багыттоо</translation>
 <translation id="7485870689360869515">Дайындар табылган жок.</translation>
+<translation id="7488762544858401571">Түзөтүлдү</translation>
 <translation id="7495290002932347110">Сайттагы же колдонмодогу сырсөзүңүздү кимдир-бирөө билип алды. Сакталган сырсөздөрүңүздү текшерип коюңуз же <ph name="ORIGIN" /> сайтында колдонгон сырсөзүңүздү өзгөртүңүз.</translation>
 <translation id="7498234416455752244">Түзөтүүнү улантуу</translation>
 <translation id="7503664977220660814">Сырсөзүңүздү жаңы эле адаштыруучу сайтта киргиздиңиз. Chromium <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> жана башка сайттарда колдонгон ушул жана сакталган сырсөздөрүңүздү текшерүүнү сунуштайт.</translation>
@@ -1613,6 +1618,7 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Ошол эле иретте алдыңкы бетин өйдө каратып</translation>
 <translation id="777702478322588152">Префектура</translation>
+<translation id="7791011319128895129">Чыга элек</translation>
 <translation id="7791196057686275387">Таңуу</translation>
 <translation id="7791543448312431591">Кошуу</translation>
 <translation id="7798389633136518089">Этибарга алынган жок, анткени саясат булут булагынан коюлган жок.</translation>
@@ -1749,6 +1755,7 @@
 <translation id="8355270400102541638">Компьютердин бузулуу идентификатору:</translation>
 <translation id="8363502534493474904">Учак режимин өчүрүп көрүңүз</translation>
 <translation id="8364627913115013041">Коюлган эмес.</translation>
+<translation id="8367477997601443248">Кооптуу форма</translation>
 <translation id="8368476060205742148">Google Play кызматтары</translation>
 <translation id="8371889962595521444">Ыңгайлаштырылган негизги тастыктамалар</translation>
 <translation id="8380941800586852976">Коркунучтуу</translation>
@@ -1831,6 +1838,7 @@
 <translation id="8805819170075074995">Тизмедеги жазуу "<ph name="LANGUAGE_ID" />": SpellcheckLanguage саясатында камтылгандыктан, киргизүү этибарга алынган жок.</translation>
 <translation id="8807160976559152894">Ар бир барактан кийин кыркуу</translation>
 <translation id="8820817407110198400">Кыстармалар</translation>
+<translation id="8831512686168463822">Бул форма кооптуу туташуу аркылуу тапшырылып жатат. Маалыматыңыз (мисалы, сырсөздөр, билдирүүлөр же насыя карталары) ушул сайтка жөнөтүлгөндө ачык көрүнүп калышы мүмкүн.</translation>
 <translation id="883848425547221593">Башка кыстармалар</translation>
 <translation id="884264119367021077">Жеткирүү дареги</translation>
 <translation id="884923133447025588">Жоюу механизми табылган жок.</translation>

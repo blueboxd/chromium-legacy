@@ -55,22 +55,25 @@ strip ./xcodebuild/{Debug,Release}/content_shell.app/Contents/MacOS/content_shel
 
 TODO: mention `testing/xvfb.py`
 
-The test runner script is in
-`third_party/blink/tools/run_web_tests.py`.
+The test runner script is in `third_party/blink/tools/run_web_tests.py`.
 
 To specify which build directory to use (e.g. out/Default, out/Release,
 out/Debug) you should pass the `-t` or `--target` parameter. For example, to
 use the build in `out/Default`, use:
 
 ```bash
-python third_party/blink/tools/run_web_tests.py -t Default
+third_party/blink/tools/run_web_tests.py -t Default
 ```
 
 For Android (if your build directory is `out/android`):
 
 ```bash
-python third_party/blink/tools/run_web_tests.py -t android --android
+third_party/blink/tools/run_web_tests.py -t android --android
 ```
+
+*** promo
+Windows users need to use `third_party/blink/tools/run_web_tests.bat` instead.
+***
 
 Tests marked as `[ Skip ]` in
 [TestExpectations](../../third_party/blink/web_tests/TestExpectations)
@@ -97,13 +100,13 @@ arguments to `run_web_tests.py` relative to the web test directory
 use:
 
 ```bash
-python third_party/blink/tools/run_web_tests.py fast/forms
+third_party/blink/tools/run_web_tests.py fast/forms
 ```
 
 Or you could use the following shorthand:
 
 ```bash
-python third_party/blink/tools/run_web_tests.py fast/fo\*
+third_party/blink/tools/run_web_tests.py fast/fo\*
 ```
 
 *** promo
@@ -111,7 +114,7 @@ Example: To run the web tests with a debug build of `content_shell`, but only
 test the SVG tests and run pixel tests, you would run:
 
 ```bash
-[python] third_party/blink/tools/run_web_tests.py -t Default svg
+third_party/blink/tools/run_web_tests.py -t Default svg
 ```
 ***
 
@@ -143,7 +146,7 @@ for more details of running `content_shell`.
 To see a complete list of arguments supported, run:
 
 ```bash
-python third_party/blink/tools/run_web_tests.py --help
+third_party/blink/tools/run_web_tests.py --help
 ```
 
 *** note
@@ -217,7 +220,7 @@ There are two ways to run web tests with additional command-line arguments:
 * Using `--additional-driver-flag`:
 
   ```bash
-  python run_web_tests.py --additional-driver-flag=--blocking-repaint
+  third_party/blink/tools/run_web_tests.py --additional-driver-flag=--blocking-repaint
   ```
 
   This tells the test harness to pass `--blocking-repaint` to the
@@ -382,10 +385,10 @@ tips for finding the problem.
       spacing or box sizes are often unimportant, especially around fonts and
       form controls. Differences in wording of JS error messages are also
       usually acceptable.
-    * `python run_web_tests.py path/to/your/test.html` produces a page listing
-      all test results. Those which fail their expectations will include links
-      to the expected result, actual result, and diff. These results are saved
-      to `$root_build_dir/layout-test-results`.
+    * `third_party/blink/tools/run_web_tests.py path/to/your/test.html` produces
+      a page listing all test results. Those which fail their expectations will
+      include links to the expected result, actual result, and diff. These
+      results are saved to `$root_build_dir/layout-test-results`.
         * Alternatively the `--results-directory=path/for/output/` option allows
           you to specify an alternative directory for the output to be saved to.
     * If you're still sure it's correct, rebaseline the test (see below).
@@ -428,8 +431,7 @@ tips for finding the problem.
 To run the server manually to reproduce/debug a failure:
 
 ```bash
-cd src/third_party/blink/tools
-python run_blink_httpd.py
+third_party/blink/tools/run_blink_httpd.py
 ```
 
 The web tests are served from `http://127.0.0.1:8000/`. For example, to
@@ -540,8 +542,7 @@ read on.
 ***
 
 ```bash
-cd src/third_party/blink
-python tools/run_web_tests.py --reset-results foo/bar/test.html
+third_party/blink/tools/run_web_tests.py --reset-results foo/bar/test.html
 ```
 
 If there are current expectation files for `web_tests/foo/bar/test.html`,
@@ -563,8 +564,7 @@ Though we prefer the Rebaseline Tool to local rebaselining, the Rebaseline Tool
 doesn't support rebaselining flag-specific expectations.
 
 ```bash
-cd src/third_party/blink
-python tools/run_web_tests.py --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
+third_party/blink/tools/run_web_tests.py --additional-driver-flag=--enable-flag --reset-results foo/bar/test.html
 ```
 *** promo
 You can use `--flag-specific=config` as a shorthand of

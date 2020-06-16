@@ -10,7 +10,8 @@ import static org.junit.Assert.assertTrue;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;

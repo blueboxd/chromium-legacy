@@ -83,6 +83,11 @@ void MediaFeedsUI::GetDebugInformation(GetDebugInformationCallback callback) {
   info->safe_search_pref_value =
       GetProfile()->GetPrefs()->GetBoolean(prefs::kMediaFeedsSafeSearchEnabled);
 
+  info->background_fetching_feature_enabled =
+      base::FeatureList::IsEnabled(media::kMediaFeedsBackgroundFetching);
+  info->background_fetching_pref_value = GetProfile()->GetPrefs()->GetBoolean(
+      prefs::kMediaFeedsBackgroundFetching);
+
   std::move(callback).Run(std::move(info));
 }
 
@@ -90,6 +95,15 @@ void MediaFeedsUI::SetSafeSearchEnabledPref(
     bool value,
     SetSafeSearchEnabledPrefCallback callback) {
   GetProfile()->GetPrefs()->SetBoolean(prefs::kMediaFeedsSafeSearchEnabled,
+                                       value);
+
+  std::move(callback).Run();
+}
+
+void MediaFeedsUI::SetBackgroundFetchingPref(
+    bool value,
+    SetBackgroundFetchingPrefCallback callback) {
+  GetProfile()->GetPrefs()->SetBoolean(prefs::kMediaFeedsBackgroundFetching,
                                        value);
 
   std::move(callback).Run();

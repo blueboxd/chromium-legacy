@@ -60,6 +60,10 @@ class TranslateCompactInfoBar
   void OnTranslateInfoBarDelegateDestroyed(
       translate::TranslateInfoBarDelegate* delegate) override;
 
+  // Instructs the Java infobar to select the button corresponding to
+  // |action_type|.
+  void SelectButtonForTesting(ActionType action_type);
+
  private:
   // InfoBarAndroid:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(

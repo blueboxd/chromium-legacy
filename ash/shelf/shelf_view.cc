@@ -2206,18 +2206,18 @@ void ShelfView::DestroyScopedDisplay() {
 int ShelfView::CalculateAppIconsLayoutOffset() const {
   const ScrollableShelfView* scrollable_shelf_view =
       shelf_->hotseat_widget()->scrollable_shelf_view();
-  const gfx::Insets& extra_padding_insets =
-      scrollable_shelf_view->extra_padding_insets();
+  const gfx::Insets& edge_padding_insets =
+      scrollable_shelf_view->edge_padding_insets();
 
   // Paddings are within the shelf view. It makes sure that |shelf_view_|'s
   // bounds are not changed by adding/removing the shelf icon under the same
   // layout strategy.
   const int horizontal_inset = scrollable_shelf_view->ShouldAdaptToRTL()
-                                   ? extra_padding_insets.right()
-                                   : extra_padding_insets.left();
+                                   ? edge_padding_insets.right()
+                                   : edge_padding_insets.left();
 
   return shelf_->IsHorizontalAlignment() ? horizontal_inset
-                                         : extra_padding_insets.top();
+                                         : edge_padding_insets.top();
 }
 
 }  // namespace ash

@@ -38,6 +38,7 @@ android_library("java") {
     "java/src/org/chromium/components/infobars/InfoBarControlLayout.java",
     "java/src/org/chromium/components/infobars/InfoBarInteractionHandler.java",
     "java/src/org/chromium/components/infobars/InfoBarLayout.java",
+    "java/src/org/chromium/components/infobars/InfoBarMessageView.java",
   ]
   deps = [
     ":java_resources",

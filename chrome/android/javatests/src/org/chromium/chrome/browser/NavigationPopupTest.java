@@ -5,12 +5,13 @@
 package org.chromium.chrome.browser;
 
 import android.graphics.Bitmap;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.ListPopupWindow;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

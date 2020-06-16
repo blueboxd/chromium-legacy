@@ -45,22 +45,36 @@ bool IsSurfaceControl(TextureOwner::Mode mode) {
 }
 }  // namespace
 
+// This class is safe to be created/destroyed on different threads. This is made
+// sure by destruction happening on correct thread. This class is not thread
+// safe to be used concurrently on multiple thraeads.
 class ImageReaderGLOwner::ScopedHardwareBufferImpl
     : public base::android::ScopedHardwareBufferFenceSync {
  public:
-  ScopedHardwareBufferImpl(scoped_refptr<ImageReaderGLOwner> texture_owner,
+  ScopedHardwareBufferImpl(base::WeakPtr<ImageReaderGLOwner> texture_owner,
                            AImage* image,
                            base::android::ScopedHardwareBufferHandle handle,
                            base::ScopedFD fence_fd)
       : base::android::ScopedHardwareBufferFenceSync(std::move(handle),
                                                      std::move(fence_fd)),
         texture_owner_(std::move(texture_owner)),
-        image_(image) {
+        image_(image),
+        task_runner_(base::ThreadTaskRunnerHandle::Get()) {
     DCHECK(image_);
     texture_owner_->RegisterRefOnImage(image_);
   }
+
   ~ScopedHardwareBufferImpl() override {
-    texture_owner_->ReleaseRefOnImage(image_, std::move(read_fence_));
+    if (task_runner_->RunsTasksInCurrentSequence()) {
+      if (texture_owner_) {
+        texture_owner_->ReleaseRefOnImage(image_, std::move(read_fence_));
+      }
+    } else {
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&gpu::ImageReaderGLOwner::ReleaseRefOnImage,
+                         texture_owner_, image_, std::move(read_fence_)));
+    }
   }
 
   void SetReadFence(base::ScopedFD fence_fd, bool has_context) final {
@@ -72,8 +86,9 @@ class ImageReaderGLOwner::ScopedHardwareBufferImpl
 
  private:
   base::ScopedFD read_fence_;
-  scoped_refptr<ImageReaderGLOwner> texture_owner_;
+  base::WeakPtr<ImageReaderGLOwner> texture_owner_;
   AImage* image_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };
 
 ImageReaderGLOwner::ImageReaderGLOwner(
@@ -305,7 +320,7 @@ ImageReaderGLOwner::GetAHardwareBuffer() {
     return nullptr;
 
   return std::make_unique<ScopedHardwareBufferImpl>(
-      this, current_image_ref_->image(),
+      weak_factory_.GetWeakPtr(), current_image_ref_->image(),
       base::android::ScopedHardwareBufferHandle::Create(buffer),
       current_image_ref_->GetReadyFence());
 }

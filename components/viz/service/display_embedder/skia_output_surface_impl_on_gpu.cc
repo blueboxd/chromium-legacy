@@ -26,6 +26,7 @@
 #include "components/viz/service/display/texture_deleter.h"
 #include "components/viz/service/display_embedder/direct_context_provider.h"
 #include "components/viz/service/display_embedder/image_context_impl.h"
+#include "components/viz/service/display_embedder/output_presenter_gl.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "components/viz/service/display_embedder/skia_output_device_buffer_queue.h"
 #include "components/viz/service/display_embedder/skia_output_device_gl.h"
@@ -1527,7 +1528,9 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForGL() {
       if (gl_surface_->IsSurfaceless()) {
         std::unique_ptr<SkiaOutputDeviceBufferQueue> onscreen_device =
             std::make_unique<SkiaOutputDeviceBufferQueue>(
-                gl_surface_, dependency_, memory_tracker_.get(),
+                std::make_unique<OutputPresenterGL>(gl_surface_, dependency_,
+                                                    memory_tracker_.get()),
+                dependency_, memory_tracker_.get(),
                 did_swap_buffer_complete_callback_);
         supports_alpha_ = onscreen_device->supports_alpha();
         output_device_ = std::move(onscreen_device);
@@ -1591,12 +1594,14 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForVulkan() {
           memory_tracker_.get(), did_swap_buffer_complete_callback_);
     }
 #else
-    auto output_device = SkiaOutputDeviceBufferQueue::Create(
-        dependency_, memory_tracker_.get(), did_swap_buffer_complete_callback_);
-    if (output_device) {
+    auto output_presenter =
+        OutputPresenterGL::Create(dependency_, memory_tracker_.get());
+    if (output_presenter) {
       // TODO(https://crbug.com/1012401): don't depend on GL.
-      gl_surface_ = output_device->gl_surface();
-      output_device_ = std::move(output_device);
+      gl_surface_ = output_presenter->gl_surface();
+      output_device_ = std::make_unique<SkiaOutputDeviceBufferQueue>(
+          std::move(output_presenter), dependency_, memory_tracker_.get(),
+          did_swap_buffer_complete_callback_);
     } else {
       auto output_device = SkiaOutputDeviceVulkan::Create(
           vulkan_context_provider_, dependency_->GetSurfaceHandle(),

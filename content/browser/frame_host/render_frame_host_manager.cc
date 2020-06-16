@@ -506,8 +506,9 @@ void RenderFrameHostManager::UnloadOldFrame(
         DeleteRenderFrameProxyHost(it.second->GetSiteInstance());
 
       // Ensures RenderViewHosts are not reused while they are in the cache.
-      for (RenderViewHostImpl* rvh : old_render_view_hosts)
+      for (RenderViewHostImpl* rvh : old_render_view_hosts) {
         rvh->EnterBackForwardCache();
+      }
 
       auto entry = std::make_unique<BackForwardCacheImpl::Entry>(
           std::move(old_render_frame_host), std::move(old_proxy_hosts),

@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
-import android.support.test.filters.LargeTest;
 
 import androidx.annotation.NonNull;
+import androidx.test.filters.LargeTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

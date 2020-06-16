@@ -12,6 +12,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
 #include "components/paint_preview/common/file_stream.h"
 #include "components/paint_preview/common/serial_utils.h"
@@ -427,6 +428,7 @@ TEST(PaintPreviewCompositorTest, TestInvalidRootFrame) {
 }
 
 TEST(PaintPreviewCompositorTest, TestComposite) {
+  base::test::TaskEnvironment task_environment;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   PaintPreviewCompositorImpl compositor(mojo::NullReceiver(),
@@ -462,12 +464,14 @@ TEST(PaintPreviewCompositorTest, TestComposite) {
       kRootFrameID, rect, 2,
       base::BindOnce(&BitmapCallbackImpl,
                      mojom::PaintPreviewCompositor::Status::kSuccess, bitmap));
+  task_environment.RunUntilIdle();
 
   compositor.BitmapForFrame(
       base::UnguessableToken::Create(), rect, 2,
       base::BindOnce(&BitmapCallbackImpl,
                      mojom::PaintPreviewCompositor::Status::kCompositingFailure,
                      bitmap));
+  task_environment.RunUntilIdle();
 }
 
 }  // namespace paint_preview

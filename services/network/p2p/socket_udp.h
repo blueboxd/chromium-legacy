@@ -58,7 +58,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) P2PSocketUdp : public P2PSocket {
   void Init(const net::IPEndPoint& local_address,
             uint16_t min_port,
             uint16_t max_port,
-            const P2PHostAndIPEndPoint& remote_address) override;
+            const P2PHostAndIPEndPoint& remote_address,
+            const net::NetworkIsolationKey& network_isolation_key) override;
 
   // mojom::P2PSocket implementation:
   void Send(const std::vector<int8_t>& data,

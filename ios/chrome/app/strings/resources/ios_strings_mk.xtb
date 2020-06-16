@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Најавете се на веб-сајтот</translation>
 <translation id="1509960214886564027">Функциите на многу сајтови може да не функционираат</translation>
 <translation id="152234381334907219">Никогаш не зачувувај лозинки</translation>
+<translation id="1535268707340844072">Вашата тековна поставка може да предизвика падови кај некои сајтови. За да управувате со колачињата за сите сајтови, погледнете ги <ph name="BEGIN_LINK" />Поставките за колачиња<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Адреса 1</translation>
 <translation id="1545749641540134597">Скенирајте QR код</translation>
 <translation id="1552525382687785070">Администраторот ја оневозможил синхронизацијата</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Активен пред <ph name="DAYS" /> дена</translation>
 <translation id="2074131957428911366">Секогаш може да изберете што да синхронизирате во <ph name="BEGIN_LINK" />Поставки<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Врати</translation>
+<translation id="2081417079511601293">Се блокираат колачиња од трети страни во режимот „Инкогнито“</translation>
 <translation id="209018056901015185">Барај десктоп-локација</translation>
 <translation id="2103075008456228677">Отвори ја history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ставки се преместени</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">Отвори во нова картичка</translation>
 <translation id="3037605927509011580">По ѓаволите!</translation>
 <translation id="3112556859945124369">Означи…</translation>
+<translation id="3131206671572504478">Се блокираат сите</translation>
 <translation id="3153862085237805241">Зачувај ја картичката</translation>
 <translation id="3157684681743766797">Означи ги сите…</translation>
 <translation id="3161291298470460782">Со ова ќе се одјавите, ќе се исклучи синхронизацијата и сите податоци од Chrome ќе се избришат од уредов. Синхронизираните податоци ќе останат во вашата сметка на Google.</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">Допрете за да го смените јазикот.</translation>
 <translation id="441868831736628555">Известување за приватност</translation>
 <translation id="4454246407045105932">Додајте јазик</translation>
+<translation id="4469418912670346607">Продолжете со поставувањето</translation>
 <translation id="4476574785019001431">Поставки</translation>
 <translation id="4496373720959965247">Додавајте картички и префрлајте меѓу страници</translation>
 <translation id="4508750114462689118">Затвори ја промоцијата за најавување</translation>
@@ -300,6 +304,7 @@
 <translation id="4805759445554688327">Погрешен број на картичка</translation>
 <translation id="4818522717893377262">Додај јазик…</translation>
 <translation id="481968316161811770">Колачиња, податоци</translation>
+<translation id="4826218269716039351">Се блокираат колачиња од трети страни</translation>
 <translation id="4833786495304741580">Автоматски испраќа статистика за користењето и извештаи за падовите во Google.</translation>
 <translation id="4840495572919996524">Обележувачите, историјата, лозинките и другo веќе нема да се синхронизираат со сметката на Google.</translation>
 <translation id="4854345657858711387">Поставете лозинка</translation>
@@ -345,6 +350,7 @@
 <translation id="54401264925851789">Безбедносни информации за страницата</translation>
 <translation id="5443952882982198570">Кредитни картички</translation>
 <translation id="5457907402803865181">Грешка при синхронизирање на лозинките.</translation>
+<translation id="5489208564673669003">За да управувате со колачињата за сите сајтови, погледнете ги <ph name="BEGIN_LINK" />Поставките за колачиња<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Одјави се и избриши ги податоците од уредов</translation>
 <translation id="5525269841082836315">Создај пристапна фраза</translation>
 <translation id="5548760955356983418">Handoff ви овозможува да започнете со прелистување на веб-локација на уредот и потоа лесно да продолжите на Mac. Моментално отворената веб-локација ќе се појави во Dock на Mac.
@@ -432,6 +438,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="6418346271604475326">Се подготвува PDF</translation>
 <translation id="6426067060178468363">Дозволете колачиња</translation>
 <translation id="6434591244308415567">Грешка. Обидете се повторно подоцна.</translation>
+<translation id="6439338047467462846">Дозволени се сите</translation>
 <translation id="6445051938772793705">Земја</translation>
 <translation id="6445981559479772097">Пораката е испратена.</translation>
 <translation id="6447842834002726250">Колачиња</translation>
@@ -439,6 +446,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="6476800141292307438">Страницата се преведува на <ph name="LANGUAGE" />. Достапни се опции на дното на екранот.</translation>
 <translation id="648164694371393720">Грешка при проверката</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ставки се избришани</translation>
+<translation id="651505212789431520">Да се откаже синхронизацијата? Може да ја вклучите синхронизацијата во секое време во „Поставки“.</translation>
 <translation id="6561262006871132942">Зумирај</translation>
 <translation id="6610002944194042868">Опции за „Преведи“</translation>
 <translation id="6628106477656132239">Погрешен рок на важност</translation>

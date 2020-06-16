@@ -262,6 +262,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
 
     } else if (item.Type() == NGInlineItem::kControl) {
       PlaceControlItem(item, *line_info, &item_result, box);
+      has_logical_text_items = true;
     } else if (item.Type() == NGInlineItem::kOpenTag) {
       box = HandleOpenTag(item, item_result, &line_box_, box_states_);
     } else if (item.Type() == NGInlineItem::kCloseTag) {
@@ -480,11 +481,10 @@ NGLineHeightMetrics NGInlineLayoutAlgorithm::ComputeAnnotationOverflow(
   bool has_under_emphasis = false;
   for (const NGLogicalLineItem& item : line_box_) {
     if (item.HasInFlowFragment()) {
-      content_block_start =
-          std::min(content_block_start, item.Offset().block_offset);
-      content_block_end =
-          std::max(content_block_end,
-                   item.Offset().block_offset + item.Size().block_size);
+      if (!item.IsControl()) {
+        content_block_start = std::min(content_block_start, item.BlockOffset());
+        content_block_end = std::max(content_block_end, item.BlockEndOffset());
+      }
       if (const auto* style = item.Style()) {
         if (style->GetTextEmphasisMark() != TextEmphasisMark::kNone) {
           if (style->GetTextEmphasisLineLogicalSide() == LineLogicalSide::kOver)
@@ -583,13 +583,10 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
   if (UNLIKELY(quirks_mode_ && !box->HasMetrics()))
     box->EnsureTextMetrics(*item.Style(), baseline_type_);
 
-  NGTextFragmentBuilder text_builder(ConstraintSpace().GetWritingMode());
-  text_builder.SetItem(line_info.ItemsData().text_content, item,
-                       std::move(item_result->shape_result),
-                       item_result->TextOffset(),
-                       {item_result->inline_size, box->text_height});
-  line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
-                     item_result->inline_size, item.BidiLevel());
+  line_box_.AddChild(item, std::move(item_result->shape_result),
+                     item_result->TextOffset(), box->text_top,
+                     item_result->inline_size, box->text_height,
+                     item.BidiLevel());
 }
 
 void NGInlineLayoutAlgorithm::PlaceHyphen(const NGInlineItemResult& item_result,

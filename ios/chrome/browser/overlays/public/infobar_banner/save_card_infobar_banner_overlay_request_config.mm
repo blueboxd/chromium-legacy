@@ -34,6 +34,9 @@ SaveCardBannerRequestConfig::SaveCardBannerRequestConfig(
           infobar_->delegate());
   message_text_ = delegate->GetMessageText();
   card_label_ = delegate->card_label();
+  cardholder_name_ = delegate->cardholder_name();
+  expiration_date_month_ = delegate->expiration_date_month();
+  expiration_date_year_ = delegate->expiration_date_year();
   button_label_text_ =
       delegate->upload()
           ? l10n_util::GetStringUTF16(IDS_IOS_AUTOFILL_SAVE_ELLIPSIS)

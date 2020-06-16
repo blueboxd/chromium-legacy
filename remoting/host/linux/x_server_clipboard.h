@@ -28,8 +28,8 @@ class XServerClipboard {
   // the types listed in remoting/base/constants.h.
   // |data| is the clipboard data from the associated X event, encoded with the
   // specified MIME-type.
-  typedef base::Callback<void(const std::string& mime_type,
-                              const std::string& data)>
+  typedef base::RepeatingCallback<void(const std::string& mime_type,
+                                       const std::string& data)>
       ClipboardChangedCallback;
 
   XServerClipboard();

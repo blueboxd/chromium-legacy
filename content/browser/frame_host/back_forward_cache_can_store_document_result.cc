@@ -123,6 +123,8 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
              "bfcache";
     case Reason::kHaveInnerContents:
       return "RenderFrameHost has inner WebContents attached";
+    case Reason::kTimeoutPuttingInCache:
+      return "Timed out while waiting for page to acknowledge freezing";
   }
 }
 

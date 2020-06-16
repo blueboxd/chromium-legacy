@@ -67,6 +67,9 @@ const char* const kPersistentPrefsAllowlist[] = {
     metrics::prefs::kStabilityRendererHangCount,
     metrics::prefs::kStabilityRendererLaunchCount,
     metrics::prefs::kUninstallMetricsPageLoadCount,
+    // Unsent logs metadata.
+    metrics::prefs::kMetricsInitialLogsMetadata,
+    metrics::prefs::kMetricsOngoingLogsMetadata,
     // Current and past country codes, to filter variations studies by country.
     variations::prefs::kVariationsCountry,
     variations::prefs::kVariationsPermanentConsistencyCountry,

@@ -3433,7 +3433,7 @@
 
       If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will use the provided directory regardless whether the user has specified the '--user-data-dir' flag or not. To avoid data loss or other unexpected errors this policy should not be set to a directory used for other purposes, because <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> manages its contents.
 
-      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+      See https://support.google.com/chrome/a?p=Supported_directory_variables for a list of variables that can be used.
 
       If this policy is left not set the default profile path will be used and the user will be able to override it with the '--user-data-dir' command line flag.''',
       'label': '''Set user data directory''',
@@ -6977,7 +6977,7 @@
 
       If you set this policy, <ph name="PRODUCT_FRAME_NAME">$3<ex>Google Chrome Frame</ex></ph> will use the provided directory.
 
-      See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
+      See https://support.google.com/chrome/a?p=Supported_directory_variables for a list of variables that can be used.
 
       If this setting is left not set the default profile directory will be used.''',
       'label': '''Set user data directory''',
@@ -12162,7 +12162,7 @@
       'tags': [],
       'desc': '''Configuring this policy allows to specify which variations are allowed to be applied in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      Variations provide a means for offering modifications to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> without shipping a new version of the browser by selectively enabling or disabling already existing features.
+      Variations provide a means for offering modifications to <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> without shipping a new version of the browser by selectively enabling or disabling already existing features. See https://support.google.com/chrome/a?p=Manage_the_Chrome_variations_framework for more information.
 
       Setting the <ph name="VARIATIONS_ENABLED_OPTION_NAME">VariationsEnabled</ph> (value 0), or leaving the policy not set allows all variations to be applied to the browser.
 
@@ -12207,7 +12207,7 @@
       'tags': [],
       'desc': '''Configuring this policy allows to specify which variations are allowed to be applied on an enterprise-managed <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> device.
 
-      Variations provide a means for offering modifications to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> without shipping a new version  by selectively enabling or disabling already existing features.
+      Variations provide a means for offering modifications to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> without shipping a new version  by selectively enabling or disabling already existing features. See https://support.google.com/chrome/a?p=Manage_the_Chrome_variations_framework for more information.
 
       Setting the <ph name="VARIATIONS_ENABLED_OPTION_NAME">VariationsEnabled</ph> (value 0), or leaving the policy not set allows all variations to be applied to <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
 
@@ -21702,7 +21702,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenDomainAutoComplete': 'login_screen_domain_auto_complete.login_screen_domain_auto_complete',
     'DeviceLoginScreenLocales': 'login_screen_locales.login_screen_locales',
     'DeviceLoginScreenInputMethods': 'login_screen_input_methods.login_screen_input_methods',
-    'DeviceLoginScreenSystemInfoEnforced': 'device_login_screen_system_info_enforced.enabled',
+    'DeviceLoginScreenSystemInfoEnforced': 'device_login_screen_system_info_enforced.value',
     'DeviceShowNumericKeyboardForPassword' : 'device_show_numeric_keyboard_for_password.value',
     'DeviceSamlLoginAuthenticationType': 'saml_login_authentication_type.saml_login_authentication_type',
     'DeviceDataRoamingEnabled': 'data_roaming_enabled.data_roaming_enabled',

@@ -25,6 +25,17 @@ Polymer({
         return loadTimeData.getBoolean('showPluginVmCameraPermissions');
       },
     },
+
+    /**
+     * Whether the microphone permissions should be shown.
+     * @private {boolean}
+     */
+    showMicrophonePermissions_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('showPluginVmMicrophonePermissions');
+      },
+    },
   },
 
   attached() {

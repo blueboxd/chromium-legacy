@@ -4,15 +4,22 @@
 
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_impl.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
+#include "chrome/browser/nearby_sharing/nearby_sharing_prefs.h"
+#include "components/prefs/pref_service.h"
 
 NearbySharingServiceImpl::NearbySharingServiceImpl(
+    PrefService* prefs,
     Profile* profile,
     std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager)
-    : profile_(profile),
+    : prefs_(prefs),
+      profile_(profile),
       nearby_connections_manager_(std::move(nearby_connections_manager)) {
+  DCHECK(prefs_);
   DCHECK(profile_);
+  DCHECK(nearby_connections_manager_);
 
   NearbyProcessManager& process_manager = NearbyProcessManager::GetInstance();
   nearby_process_observer_.Add(&process_manager);
@@ -22,6 +29,12 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
     // NearbyConnectionsMojom from |process_manager|:
     // process_manager.GetOrStartNearbyConnections(profile_)
   }
+
+  pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Add(
+      prefs::kNearbySharingEnabledPrefName,
+      base::BindRepeating(&NearbySharingServiceImpl::OnEnabledPrefChanged,
+                          base::Unretained(this)));
 }
 
 NearbySharingServiceImpl::~NearbySharingServiceImpl() = default;
@@ -104,5 +117,20 @@ void NearbySharingServiceImpl::OnNearbyProcessStopped() {
   if (process_manager.IsActiveProfile(profile_)) {
     // TODO(crbug.com/1084576): Check if process should be running and restart
     // it after a delay.
+  }
+}
+
+bool NearbySharingServiceImpl::IsEnabled() {
+  return prefs_->GetBoolean(prefs::kNearbySharingEnabledPrefName);
+}
+
+void NearbySharingServiceImpl::OnEnabledPrefChanged() {
+  if (IsEnabled()) {
+    VLOG(1) << __func__ << ": Nearby sharing enabled!";
+  } else {
+    VLOG(1) << __func__ << ": Nearby sharing disabled!";
+    // TODO(crbug/1084647): Stop advertising.
+    // TODO(crbug/1085067): Stop discovery.
+    nearby_connections_manager_->Shutdown();
   }
 }

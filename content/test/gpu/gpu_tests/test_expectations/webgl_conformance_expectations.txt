@@ -14,8 +14,7 @@
 # tags: [ no-passthrough passthrough ]
 # tags: [ webgl-version-1 ]
 # tags: [ intel_lt_25.20.100.6444 intel_lt_25.20.100.6577
-#         intel_lt_26.20.100.7000 intel_lt_26.20.100.7323
-#         mesa_eq_18.0.5 ]
+#         intel_lt_26.20.100.7000 intel_lt_26.20.100.7323 intel_lt_26.20.100.8141 ]
 # tags: [ no-asan asan ]
 # results: [ Failure RetryOnFailure Skip ]
 
@@ -93,12 +92,8 @@ crbug.com/867718 [ win d3d9 ] WebglExtension_EXT_disjoint_timer_query [ Failure 
 crbug.com/1081973 conformance/buffers/buffer-data-and-buffer-sub-data.html [ Failure ]
 crbug.com/1082533 [ mac intel ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
 crbug.com/1082533 [ win vulkan passthrough ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
-crbug.com/1082525 conformance/more/functions/readPixelsBadArgs.html [ Failure ]
-crbug.com/1082525 conformance/more/functions/texImage2DHTML.html [ RetryOnFailure ]
-crbug.com/1082525 conformance/more/functions/texSubImage2DHTML.html [ RetryOnFailure ]
-crbug.com/1083100 conformance/textures/misc/origin-clean-conformance.html [ Skip ]
-crbug.com/1018028 [ win vulkan ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
-crbug.com/1082565 [ win intel opengl passthrough ] conformance/canvas/webgl-to-2d-canvas.html [ Failure ]
+crbug.com/1082533 [ linux vulkan passthrough ] conformance/textures/misc/texture-copying-and-deletion.html [ Failure ]
+crbug.com/1018028 [ win vulkan nvidia ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
 
 # Need to implement new error semantics
 # https://github.com/KhronosGroup/WebGL/pull/2607
@@ -135,15 +130,13 @@ crbug.com/772037 [ win7 release amd d3d11 passthrough ] conformance/extensions/o
 crbug.com/angleproject/3930 [ vulkan passthrough ] conformance/textures/misc/copy-tex-image-and-sub-image-2d.html [ Failure ]
 crbug.com/angleproject/2914 [ vulkan passthrough ] conformance/textures/misc/texture-copying-feedback-loops.html [ Failure ]
 crbug.com/angleproject/4684 [ vulkan passthrough ] conformance/textures/misc/texture-mips.html [ Failure ]
-crbug.com/1063472 [ intel vulkan passthrough ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
-crbug.com/1063472 [ intel vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc-srgb.html [ Failure ]
-crbug.com/1063472 [ intel vulkan passthrough ] conformance/extensions/webgl-compressed-texture-s3tc.html [ Failure ]
 
 ####################
 # Win failures     #
 ####################
 
-crbug.com/1081973 [ win ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
+crbug.com/1081973 [ win opengl passthrough ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
+crbug.com/1081973 [ win vulkan passthrough ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
 
 # Intel flaky issues
 crbug.com/825338 [ win intel d3d11 ] conformance/extensions/oes-texture-float-with-video.html [ RetryOnFailure ]
@@ -154,6 +147,7 @@ crbug.com/1023745 [ win intel d3d9 passthrough ] conformance2/textures/image_bit
 crbug.com/854100 [ win intel opengl passthrough intel_lt_25.20.100.6577 ] conformance/glsl/variables/gl-pointcoord.html [ Failure ]
 crbug.com/angleproject/2909 [ win intel vulkan passthrough intel_lt_26.20.100.7000 ] conformance/ogles/GL/faceforward/faceforward_001_to_006.html [ Failure ]
 crbug.com/angleproject/2722 [ win intel vulkan passthrough intel_lt_26.20.100.7323 ] conformance/rendering/clipping-wide-points.html [ Failure ]
+crbug.com/1082565 [ win intel opengl passthrough intel_lt_26.20.100.8141 ] conformance/canvas/webgl-to-2d-canvas.html [ Failure ]
 
 # This is an OpenGL driver bug on Intel platform and it is fixed in
 # Intel Driver 25.20.100.6444.
@@ -363,11 +357,10 @@ crbug.com/1059760 [ mac asan ] conformance/textures/video/* [ RetryOnFailure ]
 # Linux failures   #
 ####################
 
-crbug.com/1081973 [ linux ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
+crbug.com/1081973 [ linux opengl passthrough ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
+crbug.com/1081973 [ linux vulkan passthrough ] conformance/textures/misc/compressed-tex-image.html [ Failure ]
 
 # Linux / Vulkan / Passthrough command decoder
-crbug.com/angleproject/3469 [ linux vulkan passthrough intel ] conformance/extensions/webgl-draw-buffers.html [ Failure ]
-crbug.com/1021428 [ linux vulkan passthrough intel ] conformance/rendering/rendering-sampling-feedback-loop.html [ Failure ]
 crbug.com/1021428 [ linux vulkan passthrough intel ] WebglExtension_EXT_shader_texture_lod [ Failure ]
 crbug.com/1021428 [ linux vulkan passthrough intel ] WebglExtension_WEBGL_depth_texture [ Failure ]
 

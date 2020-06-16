@@ -31,7 +31,6 @@ struct CONTENT_EXPORT RecordContentToVisibleTimeRequest {
 
   RecordContentToVisibleTimeRequest(base::TimeTicks event_start_time,
                                     base::Optional<bool> destination_is_loaded,
-                                    base::Optional<bool> destination_is_frozen,
                                     bool show_reason_tab_switching,
                                     bool show_reason_unoccluded,
                                     bool show_reason_bfcache_restore);
@@ -43,8 +42,6 @@ struct CONTENT_EXPORT RecordContentToVisibleTimeRequest {
   base::TimeTicks event_start_time = base::TimeTicks();
   // Indicates if the destination tab is loaded when initiating the tab switch.
   base::Optional<bool> destination_is_loaded;
-  // Indicates if the destination tab is frozen when initiating the tab switch.
-  base::Optional<bool> destination_is_frozen;
   // If |show_reason_tab_switching| is true, web contents has become visible
   // because of tab switching.
   bool show_reason_tab_switching = false;

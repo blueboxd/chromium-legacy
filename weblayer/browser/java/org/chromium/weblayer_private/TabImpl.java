@@ -111,6 +111,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
     private boolean mWaitingForMatchRects;
     private InterceptNavigationDelegateClientImpl mInterceptNavigationDelegateClient;
     private InterceptNavigationDelegateImpl mInterceptNavigationDelegate;
+    private InfoBarContainer mInfoBarContainer;
 
     private boolean mPostContainerViewInitDone;
 
@@ -232,6 +233,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         mInterceptNavigationDelegateClient.initializeWithDelegate(mInterceptNavigationDelegate);
         sTabMap.put(mId, this);
 
+        mInfoBarContainer = new InfoBarContainer(this);
         mAccessibilityObserver = (boolean enabled) -> {
             setBrowserControlsVisibilityConstraint(ImplControlsVisibilityReason.ACCESSIBILITY,
                     enabled ? BrowserControlsState.SHOWN : BrowserControlsState.BOTH);
@@ -342,6 +344,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         assert mBrowser != null;
         TabImplJni.get().setBrowserControlsContainerViews(
                 mNativeTab, topControlsContainerViewHandle, bottomControlsContainerViewHandle);
+        mInfoBarContainer.onTabDidGainActive();
         updateWebContentsVisibility();
     }
 
@@ -351,6 +354,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
     public void onDidLoseActive() {
         hideFindInPageUiAndNotifyClient();
         updateWebContentsVisibility();
+        mInfoBarContainer.onTabDidLoseActive();
         TabImplJni.get().setBrowserControlsContainerViews(mNativeTab, 0, 0);
     }
 

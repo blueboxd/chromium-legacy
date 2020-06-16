@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/scheduler.h"
 
+#include "components/viz/service/display_embedder/output_presenter_gl.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "components/viz/test/test_gpu_service_holder.h"
@@ -223,15 +224,17 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
 
     std::unique_ptr<SkiaOutputDeviceBufferQueue> onscreen_device =
         std::make_unique<SkiaOutputDeviceBufferQueue>(
-            gl_surface_, dependency_.get(), memory_tracker_.get(),
-            present_callback, shared_image_usage);
+            std::make_unique<OutputPresenterGL>(gl_surface_, dependency_.get(),
+                                                memory_tracker_.get(),
+                                                shared_image_usage),
+            dependency_.get(), memory_tracker_.get(), present_callback);
 
     output_device_ = std::move(onscreen_device);
   }
 
   void TearDownOnGpu() override { output_device_.reset(); }
 
-  using Image = SkiaOutputDeviceBufferQueue::Image;
+  using Image = OutputPresenter::Image;
 
   const std::vector<std::unique_ptr<Image>>& images() {
     return output_device_->images_;
@@ -280,11 +283,15 @@ class SkiaOutputDeviceBufferQueueTest : public TestOnGpu {
               (size_t)CountBuffers());
   }
 
-  Image* PaintAndSchedulePrimaryPlane() {
-    // Call Begin/EndPaint to ensusre the image is initialized before use.
+  Image* PaintPrimaryPlane() {
     std::vector<GrBackendSemaphore> end_semaphores;
     output_device_->BeginPaint(&end_semaphores);
     output_device_->EndPaint();
+    return current_image();
+  }
+
+  Image* PaintAndSchedulePrimaryPlane() {
+    PaintPrimaryPlane();
     SchedulePrimaryPlane();
     return current_image();
   }
@@ -331,7 +338,7 @@ TEST_F_GPU(SkiaOutputDeviceBufferQueueTest, MultipleGetCurrentBufferCalls) {
   output_device_->Reshape(screen_size, 1.0f, gfx::ColorSpace(), kDefaultFormat,
                           gfx::OVERLAY_TRANSFORM_NONE);
   EXPECT_NE(0U, memory_tracker().GetSize());
-  EXPECT_NE(PaintAndSchedulePrimaryPlane(), nullptr);
+  EXPECT_NE(PaintPrimaryPlane(), nullptr);
   EXPECT_NE(0U, memory_tracker().GetSize());
   EXPECT_EQ(3, CountBuffers());
   auto* fb = current_image();

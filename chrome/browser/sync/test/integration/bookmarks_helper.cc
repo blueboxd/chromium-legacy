@@ -1298,9 +1298,10 @@ bool ServerBookmarksEqualityChecker::IsExitConditionSatisfied(
     if (it != expected.end()) {
       expected.erase(it);
     } else {
-      ADD_FAILURE() << "Could not find expected bookmark with title '"
-                    << actual_specifics.legacy_canonicalized_title()
-                    << "' and URL '" << actual_specifics.url() << "'";
+      *os << "Could not find expected bookmark with title '"
+          << actual_specifics.legacy_canonicalized_title() << "' and URL '"
+          << actual_specifics.url() << "'";
+      return false;
     }
   }
 

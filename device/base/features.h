@@ -15,6 +15,7 @@ namespace device {
 #if defined(OS_WIN)
 DEVICE_BASE_EXPORT extern const base::Feature kNewUsbBackend;
 DEVICE_BASE_EXPORT extern const base::Feature kNewBLEWinImplementation;
+DEVICE_BASE_EXPORT extern const base::Feature kNewBLEGattSessionHandling;
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_VR)

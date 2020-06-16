@@ -7,6 +7,7 @@
 
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/fidl/cpp/binding_set.h>
+#include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <lib/zx/channel.h>
 
 #include <list>
@@ -134,7 +135,8 @@ class FrameImpl : public fuchsia::web::Frame,
 
   // Initializes WindowTreeHost for the view with the specified |view_token|.
   // |view_token| may be uninitialized in headless mode.
-  void InitWindowTreeHost(fuchsia::ui::views::ViewToken view_token);
+  void InitWindowTreeHost(fuchsia::ui::views::ViewToken view_token,
+                          scenic::ViewRefPair view_ref_pair);
 
   // Destroys the WindowTreeHost along with its view or other associated
   // resources.
@@ -159,6 +161,9 @@ class FrameImpl : public fuchsia::web::Frame,
 
   // fuchsia::web::Frame implementation.
   void CreateView(fuchsia::ui::views::ViewToken view_token) override;
+  void CreateViewWithViewRef(fuchsia::ui::views::ViewToken view_token,
+                             fuchsia::ui::views::ViewRefControl control_ref,
+                             fuchsia::ui::views::ViewRef view_ref) override;
   void GetMediaPlayer(fidl::InterfaceRequest<fuchsia::media::sessions2::Player>
                           player) override;
   void GetNavigationController(

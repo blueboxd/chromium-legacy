@@ -24,7 +24,7 @@ namespace remoting {
 // thread safe.
 class ScopedXErrorHandler {
  public:
-  typedef base::Callback<void(Display*, XErrorEvent*)> Handler;
+  typedef base::RepeatingCallback<void(Display*, XErrorEvent*)> Handler;
 
   explicit ScopedXErrorHandler(const Handler& handler);
   ~ScopedXErrorHandler();

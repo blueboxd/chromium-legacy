@@ -396,8 +396,8 @@ Session::Session(
                                               base::Unretained(this))),
       gpu_channel_host_(nullptr) {
   DCHECK(resource_provider_);
-  mirror_settings_.SetResolutionContraints(max_resolution.width(),
-                                           max_resolution.height());
+  mirror_settings_.SetResolutionConstraints(max_resolution.width(),
+                                            max_resolution.height());
   resource_provider_->GetNetworkContext(
       network_context_.BindNewPipeAndPassReceiver());
 

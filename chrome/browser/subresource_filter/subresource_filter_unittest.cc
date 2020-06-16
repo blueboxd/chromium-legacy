@@ -51,7 +51,7 @@ TEST_F(SubresourceFilterTest, DeactivateUrl_ClearsSiteMetadata) {
 
   EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
 
-  RemoveURLFromBlacklist(url);
+  RemoveURLFromBlocklist(url);
 
   // Navigate to |url| again and expect the site metadata to clear.
   SimulateNavigateAndCommit(url, main_rfh());
@@ -84,19 +84,19 @@ TEST_F(SubresourceFilterTest, ActivationToDryRun_ClearsSiteMetadata) {
   EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
 }
 
-TEST_F(SubresourceFilterTest, ExplicitWhitelisting_ShouldNotClearMetadata) {
+TEST_F(SubresourceFilterTest, ExplicitAllowlisting_ShouldNotClearMetadata) {
   GURL url("https://a.test");
   ConfigureAsSubresourceFilterOnlyURL(url);
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
 
-  // Simulate explicit whitelisting and reload.
-  GetSettingsManager()->WhitelistSite(url);
+  // Simulate explicit allowlisting and reload.
+  GetSettingsManager()->AllowlistSite(url);
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
 
   // Should not have cleared the metadata, since the site is still on the SB
-  // blacklist.
+  // blocklist.
   EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
 }
 
@@ -146,16 +146,16 @@ TEST_F(SubresourceFilterTest, RefreshMetadataOnActivation) {
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(main_rfh()));
   EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
 
-  // Whitelist via content settings.
-  GetSettingsManager()->WhitelistSite(url);
+  // Allowlist via content settings.
+  GetSettingsManager()->AllowlistSite(url);
 
-  // Remove from blacklist, will delete the metadata. Note that there is still
+  // Remove from blocklist, will delete the metadata. Note that there is still
   // an exception in content settings.
-  RemoveURLFromBlacklist(url);
+  RemoveURLFromBlocklist(url);
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));
 
-  // Site re-added to the blacklist. Should not activate due to whitelist, but
+  // Site re-added to the blocklist. Should not activate due to allowlist, but
   // there should be page info / site details.
   ConfigureAsSubresourceFilterOnlyURL(url);
   SimulateNavigateAndCommit(url, main_rfh());
@@ -269,7 +269,7 @@ TEST_F(SubresourceFilterTest, NotifySafeBrowsing) {
         safe_browsing::SBThreatType::SB_THREAT_TYPE_SUBRESOURCE_FILTER;
     safe_browsing::ThreatMetadata metadata;
     metadata.subresource_filter_match = test_case.match;
-    fake_safe_browsing_database()->AddBlacklistedUrl(url, threat_type,
+    fake_safe_browsing_database()->AddBlocklistedUrl(url, threat_type,
                                                      metadata);
     SimulateNavigateAndCommit(url, main_rfh());
     bool warning = false;
@@ -293,7 +293,7 @@ TEST_F(SubresourceFilterTest, WarningSite_NoMetadata) {
       safe_browsing::SubresourceFilterLevel::WARN;
   auto threat_type =
       safe_browsing::SBThreatType::SB_THREAT_TYPE_SUBRESOURCE_FILTER;
-  fake_safe_browsing_database()->AddBlacklistedUrl(url, threat_type, metadata);
+  fake_safe_browsing_database()->AddBlocklistedUrl(url, threat_type, metadata);
 
   SimulateNavigateAndCommit(url, main_rfh());
   EXPECT_EQ(nullptr, GetSettingsManager()->GetSiteMetadata(url));

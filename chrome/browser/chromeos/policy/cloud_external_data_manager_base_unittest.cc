@@ -73,12 +73,10 @@ class CloudExternalDataManagerBaseTest : public testing::Test {
 
   void SetUpExternalDataManager();
 
-  std::unique_ptr<base::DictionaryValue> ConstructMetadata(
-      const std::string& url,
-      const std::string& hash);
-  void SetExternalDataReference(
-      const std::string& policy,
-      std::unique_ptr<base::DictionaryValue> metadata);
+  base::Value ConstructMetadata(const std::string& url,
+                                const std::string& hash);
+  void SetExternalDataReference(const std::string& policy,
+                                base::Value metadata);
 
   ExternalDataFetcher::FetchCallback ConstructFetchCallback(int id);
   void ResetCallbackData();
@@ -120,10 +118,9 @@ void CloudExternalDataManagerBaseTest::SetUp() {
   SetUpExternalDataManager();
 
   // Set |kStringPolicy| to a string value.
-  cloud_policy_store_.policy_map_.Set(
-      kStringPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-      POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(std::string()),
-      nullptr);
+  cloud_policy_store_.policy_map_.Set(kStringPolicy, POLICY_LEVEL_MANDATORY,
+                                      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                                      base::Value(std::string()), nullptr);
   // Make |k10BytePolicy| reference 10 bytes of external data.
   SetExternalDataReference(
       k10BytePolicy,
@@ -162,19 +159,19 @@ void CloudExternalDataManagerBaseTest::SetUpExternalDataManager() {
   external_data_manager_->SetPolicyStore(&cloud_policy_store_);
 }
 
-std::unique_ptr<base::DictionaryValue>
-CloudExternalDataManagerBaseTest::ConstructMetadata(const std::string& url,
-                                                    const std::string& hash) {
-  std::unique_ptr<base::DictionaryValue> metadata(new base::DictionaryValue);
-  metadata->SetKey("url", base::Value(url));
-  metadata->SetKey("hash",
-                   base::Value(base::HexEncode(hash.c_str(), hash.size())));
+base::Value CloudExternalDataManagerBaseTest::ConstructMetadata(
+    const std::string& url,
+    const std::string& hash) {
+  base::Value metadata(base::Value::Type::DICTIONARY);
+  metadata.SetStringKey("url", url);
+  metadata.SetStringKey("hash", base::HexEncode(hash.c_str(), hash.size()));
   return metadata;
 }
 
 void CloudExternalDataManagerBaseTest::SetExternalDataReference(
     const std::string& policy,
-    std::unique_ptr<base::DictionaryValue> metadata) {
+    base::Value metadata) {
+  DCHECK(metadata.is_dict());
   cloud_policy_store_.policy_map_.Set(
       policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
       std::move(metadata),

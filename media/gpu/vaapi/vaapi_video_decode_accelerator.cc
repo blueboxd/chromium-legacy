@@ -458,11 +458,25 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
             "The visible rectangle is not contained by the picture size",
             UNREADABLE_INPUT, );
         VLOGF(2) << "Decoder requesting a new set of surfaces";
+        size_t required_num_of_pictures = decoder_->GetRequiredNumOfPictures();
+        if (buffer_allocation_mode_ == BufferAllocationMode::kNone &&
+            profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX) {
+          // For H.264, the decoder might request too few pictures. In
+          // BufferAllocationMode::kNone, this can cause us to do a lot of busy
+          // work waiting for picture buffers to come back from the client (see
+          // crbug.com/910986#c32). This is a workaround to increase the
+          // likelihood that we don't have to wait on buffers to come back from
+          // the client. |kNumOfPics| is picked to mirror the value returned by
+          // VP9Decoder::GetRequiredNumOfPictures().
+          constexpr size_t kMinNumOfPics = 13u;
+          required_num_of_pictures =
+              std::max(kMinNumOfPics, required_num_of_pictures);
+        }
         task_runner_->PostTask(
             FROM_HERE,
             base::BindOnce(
                 &VaapiVideoDecodeAccelerator::InitiateSurfaceSetChange,
-                weak_this_, decoder_->GetRequiredNumOfPictures(), pic_size,
+                weak_this_, required_num_of_pictures, pic_size,
                 decoder_->GetNumReferenceFrames(), visible_rect));
         // We'll get rescheduled once ProvidePictureBuffers() finishes.
         return;
@@ -1158,12 +1172,11 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
   // On Gemini Lake, Kaby Lake and later we can pass to libva the client's
   // PictureBuffers to decode onto, which skips the use of the Vpp unit and its
   // associated format reconciliation copy, avoiding all internal buffer
-  // allocations.  This only works for VP8 and VP9: H264 GetNumReferenceFrames()
-  // depends on the bitstream and sometimes it's not enough to cover the amount
-  // of frames needed by the client pipeline (see b/133733739).
+  // allocations.
   // TODO(crbug.com/911754): Enable for VP9 Profile 2.
   if (IsGeminiLakeOrLater() &&
-      (profile_ == VP9PROFILE_PROFILE0 || profile_ == VP8PROFILE_ANY)) {
+      (profile_ == VP9PROFILE_PROFILE0 || profile_ == VP8PROFILE_ANY ||
+       (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX))) {
     // Add one to the reference frames for the one being currently egressed, and
     // an extra allocation for both |client_| and |decoder_|, see
     // crrev.com/c/1576560.
@@ -1177,13 +1190,6 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
   // GetRequiredNumOfPictures() internally, we can allocate just |decoder_|s
   // GetNumReferenceFrames() + 1. Moreover, we also request the |client_| to
   // allocate less than the usual |decoder_|s GetRequiredNumOfPictures().
-
-  // Another +1 is experimentally needed for high-to-high resolution changes.
-  // TODO(mcasas): Figure out why and why only H264, see crbug.com/912295 and
-  // http://crrev.com/c/1363807/9/media/gpu/h264_decoder.cc#1449.
-  if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX)
-    return BufferAllocationMode::kReduced;
-
   return BufferAllocationMode::kSuperReduced;
 }
 

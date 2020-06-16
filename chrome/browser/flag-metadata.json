@@ -295,6 +295,11 @@
     "expiry_milestone": 92
   },
   {
+    "name": "autofill-enable-offers-in-downstream",
+    "owners": [ "fiorito@google.com", "siyua" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "autofill-enable-sticky-payments-bubble",
     "owners": [ "siyua" ],
     "expiry_milestone": 90
@@ -3643,6 +3648,11 @@
     "expiry_milestone": 87
   },
   {
+    "name": "pluginvm-show-microphone-permissions",
+    "owners": [ "dtor"],
+    "expiry_milestone": 87
+  },
+  {
     "name": "pointer-support",
     "owners": [ "noyau" ],
     "expiry_milestone": 85
@@ -3942,12 +3952,12 @@
   {
     "name": "sharing-peer-connection-receiver",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 88
   },
   {
     "name": "sharing-peer-connection-sender",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 88
   },
   {
     "name": "sharing-prefer-vapid",

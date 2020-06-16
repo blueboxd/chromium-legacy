@@ -91,7 +91,7 @@ class SubresourceFilterAbusiveTest
     metadata.subresource_filter_match = GetMatch(abusive_level_, bas_level_);
     auto threat_type =
         safe_browsing::SBThreatType::SB_THREAT_TYPE_SUBRESOURCE_FILTER;
-    fake_safe_browsing_database()->AddBlacklistedUrl(url, threat_type,
+    fake_safe_browsing_database()->AddBlocklistedUrl(url, threat_type,
                                                      metadata);
   }
 

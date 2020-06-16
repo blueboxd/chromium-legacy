@@ -2093,9 +2093,15 @@ TEST_F(BluetoothTest, DiscoverConnectedLowEnergyDeviceTwice) {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-INSTANTIATE_TEST_SUITE_P(All, BluetoothTestWinrt, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         BluetoothTestWinrt,
+                         ::testing::ValuesIn(kBluetoothTestWinrtParamAll));
 
-INSTANTIATE_TEST_SUITE_P(All, BluetoothTestWinrtOnly, ::testing::Values(true));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    BluetoothTestWinrtOnly,
+    ::testing::ValuesIn(kBluetoothTestWinrtParamWinrtOnly));
+
 #endif  // defined(OS_WIN)
 
 }  // namespace device

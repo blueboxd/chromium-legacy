@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PAGE_LIFECYCLE_STATE_MANAGER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PAGE_LIFECYCLE_STATE_MANAGER_H_
 
+#include "content/browser/renderer_host/input/one_shot_timeout_monitor.h"
 #include "content/common/content_export.h"
 #include "content/public/common/page_visibility_state.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -40,7 +41,9 @@ class CONTENT_EXPORT PageLifecycleStateManager {
   // lifecycle state saved in this instance.
   blink::mojom::PageLifecycleStatePtr CalculatePageLifecycleState();
 
-  void OnLifecycleChangedAck();
+  void OnPageLifecycleChangedAck(
+      blink::mojom::PageLifecycleStatePtr acknowledged_state);
+  void OnBackForwardCacheTimeout();
 
   // This represents the frozen state set by |SetIsFrozen|, which corresponds to
   // WebContents::SetPageFrozen.  Effective frozen state, i.e. per-page frozen
@@ -60,10 +63,13 @@ class CONTENT_EXPORT PageLifecycleStateManager {
 
   // This is the per-page state computed based on web contents / tab lifecycle
   // states, i.e. |is_set_frozen_called_|, |is_in_back_forward_cache_| and
-  // |web_contents_visibility_|. This should be only set in
-  // |SendUpdatesToRendererIfNeeded|.
+  // |web_contents_visibility_|.
+  blink::mojom::PageLifecycleStatePtr last_acknowledged_state_;
+
+  // This is the per-page state that is sent to renderer most lately.
   blink::mojom::PageLifecycleStatePtr last_state_sent_to_renderer_;
 
+  std::unique_ptr<OneShotTimeoutMonitor> back_forward_cache_timeout_monitor_;
   // NOTE: This must be the last member.
   base::WeakPtrFactory<PageLifecycleStateManager> weak_ptr_factory_{this};
 };

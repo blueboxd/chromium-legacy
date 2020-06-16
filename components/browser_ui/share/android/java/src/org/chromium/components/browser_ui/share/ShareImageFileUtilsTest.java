@@ -17,9 +17,9 @@ import android.net.Uri;
 import android.os.Environment;
 import android.os.Looper;
 import android.provider.MediaStore;
-import android.support.test.filters.SmallTest;
 
 import androidx.core.util.ObjectsCompat;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Test;

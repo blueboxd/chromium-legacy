@@ -7,10 +7,10 @@ package org.chromium.components.browser_ui.widget.promo;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.view.View;
 
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

@@ -13,11 +13,14 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync_bookmarks/bookmark_specifics_conversions.h"
+#include "components/sync_bookmarks/switches.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
 #include "components/undo/bookmark_undo_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -774,6 +777,59 @@ TEST_F(BookmarkModelObserverImplTest, ShouldCommitLocalFaviconChange) {
               Ne(initial_favicon_hash));
   EXPECT_THAT(bookmark_tracker()->GetEntitiesWithLocalChanges(kMaxEntries),
               ElementsAre(HasBookmarkNode(bookmark_node)));
+}
+
+TEST_F(BookmarkModelObserverImplTest,
+       ShouldNudgeForCommitOnFaviconLoadAfterRestart) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      switches::kSyncDoNotCommitBookmarksWithoutFavicon);
+
+  const GURL kBookmarkUrl("http://www.url.com");
+  const GURL kIconUrl("http://www.url.com/favicon.ico");
+  const SkColor kColor = SK_ColorRED;
+
+  // Simulate work after restart. Add a new bookmark to a model and its
+  // specifics to the tracker without loading favicon.
+  bookmark_model()->RemoveObserver(observer());
+
+  // Add a new node with specifics and mark it unsynced.
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model()->bookmark_bar_node();
+  const bookmarks::BookmarkNode* bookmark_node = bookmark_model()->AddURL(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16("title"),
+      kBookmarkUrl);
+
+  sync_pb::EntitySpecifics specifics =
+      CreateSpecificsFromBookmarkNode(bookmark_node, bookmark_model(),
+                                      /*force_favicon_load=*/false,
+                                      /*include_guid=*/true);
+  const gfx::Image favicon_image = CreateTestImage(kColor);
+  scoped_refptr<base::RefCountedMemory> favicon_bytes =
+      favicon_image.As1xPNGBytes();
+  specifics.mutable_bookmark()->set_favicon(favicon_bytes->front(),
+                                            favicon_bytes->size());
+  specifics.mutable_bookmark()->set_icon_url(kIconUrl.spec());
+
+  const SyncedBookmarkTracker::Entity* entity = bookmark_tracker()->Add(
+      bookmark_node, "id", /*server_version=*/1, base::Time::Now(),
+      syncer::UniquePosition::InitialPosition(
+          syncer::UniquePosition::RandomSuffix())
+          .ToProto(),
+      specifics);
+  bookmark_tracker()->IncrementSequenceNumber(entity);
+
+  // Restore state.
+  bookmark_model()->AddObserver(observer());
+
+  // Currently there is the unsynced |entity| which has no loaded favicon.
+  ASSERT_FALSE(bookmark_node->is_favicon_loaded());
+  ASSERT_TRUE(entity->IsUnsynced());
+
+  EXPECT_CALL(*nudge_for_commit_closure(), Run());
+  bookmark_model()->GetFavicon(bookmark_node);
+  ASSERT_TRUE(bookmark_client()->SimulateFaviconLoaded(kBookmarkUrl, kIconUrl,
+                                                       SK_ColorRED));
 }
 
 TEST_F(BookmarkModelObserverImplTest,

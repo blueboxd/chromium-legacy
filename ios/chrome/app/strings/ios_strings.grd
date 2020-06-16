@@ -836,6 +836,9 @@ Because your account is managed by <ph name="HOSTED_DOMAIN">$1<ex>google.com</ex
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_SYNC_ENCRYPTION_FIX_NOW" desc="Title button to ask the user to reauthenticate. Syncing of encrypted types (e.g. passwords) is blocked until the user completes the reauth flow.">
         Fix now.
       </message>
+      <message name="IDS_IOS_HELP_ACCESSIBILITY_LABEL" desc="Used as the accessibility label read by screen readers for a Help button. [iOS only]">
+        Help
+      </message>
       <message name="IDS_IOS_HISTORY_EMPTY_MESSAGE" desc="Message shown on the History screen when there are no History entries, explaining the purpose of the History screen.">
           You can see the pages you've visited or clear them from your history
       </message>

@@ -16,6 +16,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kAssistPersonalInfoEnabled[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioDevicesMute[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kAudioDevicesGainPercent[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kAudioDevicesVolumePercent[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioMute[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kAudioOutputAllowed[];

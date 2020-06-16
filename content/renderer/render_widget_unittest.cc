@@ -29,7 +29,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/fake_render_widget_host.h"
 #include "content/public/test/mock_render_thread.h"
-#include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_widget_delegate.h"
@@ -61,10 +60,9 @@
 using testing::_;
 
 namespace blink {
-namespace mojom {
 
-bool operator==(const DidOverscrollParams& lhs,
-                const DidOverscrollParams& rhs) {
+bool operator==(const InputHandlerProxy::DidOverscrollParams& lhs,
+                const InputHandlerProxy::DidOverscrollParams& rhs) {
   return lhs.accumulated_overscroll == rhs.accumulated_overscroll &&
          lhs.latest_overscroll_delta == rhs.latest_overscroll_delta &&
          lhs.current_fling_velocity == rhs.current_fling_velocity &&
@@ -72,7 +70,6 @@ bool operator==(const DidOverscrollParams& lhs,
          lhs.overscroll_behavior == rhs.overscroll_behavior;
 }
 
-}  // namespace mojom
 }  // namespace blink
 
 namespace cc {
@@ -98,54 +95,6 @@ enum {
   PASSIVE_LISTENER_UMA_ENUM_COUNT
 };
 
-class MockWidgetInputHandlerHost : public blink::mojom::WidgetInputHandlerHost {
- public:
-  MockWidgetInputHandlerHost() {}
-  MOCK_METHOD1(SetTouchActionFromMain, void(cc::TouchAction));
-
-  MOCK_METHOD3(SetWhiteListedTouchAction,
-               void(cc::TouchAction,
-                    uint32_t,
-                    blink::mojom::InputEventResultState));
-
-  MOCK_METHOD1(DidOverscroll, void(blink::mojom::DidOverscrollParamsPtr));
-
-  MOCK_METHOD0(DidStopFlinging, void());
-
-  MOCK_METHOD0(DidStartScrollingViewport, void());
-
-  MOCK_METHOD0(ImeCancelComposition, void());
-
-  MOCK_METHOD2(ImeCompositionRangeChanged,
-               void(const gfx::Range&, const std::vector<gfx::Rect>&));
-
-  MOCK_METHOD1(SetMouseCapture, void(bool));
-
-  MOCK_METHOD0(UnlockMouse, void());
-
-  MOCK_METHOD4(
-      RequestMouseLock,
-      void((bool,
-            bool,
-            bool,
-            blink::mojom::WidgetInputHandlerHost::RequestMouseLockCallback)));
-
-  MOCK_METHOD2(
-      RequestMouseLockChange,
-      void((bool,
-            blink::mojom::WidgetInputHandlerHost::RequestMouseLockCallback)));
-
-  mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost>
-  BindNewPipeAndPassRemote() {
-    return receiver_.BindNewPipeAndPassRemote();
-  }
-
- private:
-  mojo::Receiver<blink::mojom::WidgetInputHandlerHost> receiver_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(MockWidgetInputHandlerHost);
-};
-
 // Since std::unique_ptr isn't copyable we can't use the
 // MockCallback template.
 class MockHandledEventCallback {
@@ -154,19 +103,20 @@ class MockHandledEventCallback {
   MOCK_METHOD4_T(Run,
                  void(blink::mojom::InputEventResultState,
                       const ui::LatencyInfo&,
-                      blink::mojom::DidOverscrollParams* overscroll,
+                      blink::InputHandlerProxy::DidOverscrollParams*,
                       base::Optional<cc::TouchAction>));
 
-  HandledEventCallback GetCallback() {
+  blink::WebWidget::HandledEventCallback GetCallback() {
     return base::BindOnce(&MockHandledEventCallback::HandleCallback,
                           base::Unretained(this));
   }
 
  private:
-  void HandleCallback(blink::mojom::InputEventResultState ack_state,
-                      const ui::LatencyInfo& latency_info,
-                      blink::mojom::DidOverscrollParamsPtr overscroll,
-                      base::Optional<cc::TouchAction> touch_action) {
+  void HandleCallback(
+      blink::mojom::InputEventResultState ack_state,
+      const ui::LatencyInfo& latency_info,
+      std::unique_ptr<blink::InputHandlerProxy::DidOverscrollParams> overscroll,
+      base::Optional<cc::TouchAction> touch_action) {
     Run(ack_state, latency_info, overscroll.get(), touch_action);
   }
 
@@ -208,28 +158,18 @@ class InteractiveRenderWidget : public RenderWidget {
 
   void Init(blink::WebWidget* widget, const ScreenInfo& screen_info) {
     Initialize(base::NullCallback(), widget, screen_info);
-
-    mock_input_handler_host_ = std::make_unique<MockWidgetInputHandlerHost>();
-
-    widget_input_handler_manager_->AddInterface(
-        mojo::PendingReceiver<blink::mojom::WidgetInputHandler>(),
-        mock_input_handler_host_->BindNewPipeAndPassRemote());
   }
 
   using RenderWidget::Close;
 
   void SendInputEvent(const blink::WebInputEvent& event,
-                      HandledEventCallback callback) {
-    HandleInputEvent(
+                      blink::WebWidget::HandledEventCallback callback) {
+    GetWebWidget()->ProcessInputEventSynchronously(
         blink::WebCoalescedInputEvent(event.Clone(), {}, {}, ui::LatencyInfo()),
         std::move(callback));
   }
 
   IPC::TestSink* sink() { return &sink_; }
-
-  MockWidgetInputHandlerHost* mock_input_handler_host() {
-    return mock_input_handler_host_.get();
-  }
 
   const viz::LocalSurfaceIdAllocation& local_surface_id_allocation_from_parent()
       const {
@@ -260,7 +200,6 @@ class InteractiveRenderWidget : public RenderWidget {
 
  private:
   IPC::TestSink sink_;
-  std::unique_ptr<MockWidgetInputHandlerHost> mock_input_handler_host_;
   static int next_routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(InteractiveRenderWidget);
@@ -425,7 +364,7 @@ TEST_F(RenderWidgetExternalWidgetUnittest, CursorChange) {
       .WillOnce(::testing::Return(blink::WebInputEventResult::kNotHandled));
   widget()->SendInputEvent(blink::SyntheticWebMouseEventBuilder::Build(
                                blink::WebInputEvent::Type::kMouseLeave),
-                           HandledEventCallback());
+                           base::DoNothing());
   render_widget_host()->widget_host_receiver_for_testing().FlushForTesting();
   EXPECT_EQ(set_cursor_interceptor->set_cursor_count(), 1);
 
@@ -450,7 +389,7 @@ TEST_F(RenderWidgetExternalWidgetUnittest, EventOverscroll) {
   scroll.data.scroll_update.delta_y = 10;
   MockHandledEventCallback handled_event;
 
-  blink::mojom::DidOverscrollParams expected_overscroll;
+  blink::InputHandlerProxy::DidOverscrollParams expected_overscroll;
   expected_overscroll.latest_overscroll_delta = gfx::Vector2dF(0, 10);
   expected_overscroll.accumulated_overscroll = gfx::Vector2dF(0, 10);
   expected_overscroll.causal_event_viewport_point = gfx::PointF(-10, 0);
@@ -480,25 +419,25 @@ TEST_F(RenderWidgetExternalWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
       .WillRepeatedly(
           ::testing::Return(blink::WebInputEventResult::kNotHandled));
 
-  widget()->SendInputEvent(touch, HandledEventCallback());
+  widget()->SendInputEvent(touch, base::DoNothing());
   histogram_tester().ExpectBucketCount(EVENT_LISTENER_RESULT_HISTOGRAM,
                                        PASSIVE_LISTENER_UMA_ENUM_CANCELABLE, 1);
 
   touch.dispatch_type = blink::WebInputEvent::DispatchType::kEventNonBlocking;
-  widget()->SendInputEvent(touch, HandledEventCallback());
+  widget()->SendInputEvent(touch, base::DoNothing());
   histogram_tester().ExpectBucketCount(EVENT_LISTENER_RESULT_HISTOGRAM,
                                        PASSIVE_LISTENER_UMA_ENUM_UNCANCELABLE,
                                        1);
 
   touch.dispatch_type =
       blink::WebInputEvent::DispatchType::kListenersNonBlockingPassive;
-  widget()->SendInputEvent(touch, HandledEventCallback());
+  widget()->SendInputEvent(touch, base::DoNothing());
   histogram_tester().ExpectBucketCount(EVENT_LISTENER_RESULT_HISTOGRAM,
                                        PASSIVE_LISTENER_UMA_ENUM_PASSIVE, 1);
 
   touch.dispatch_type =
       blink::WebInputEvent::DispatchType::kListenersForcedNonBlockingDueToFling;
-  widget()->SendInputEvent(touch, HandledEventCallback());
+  widget()->SendInputEvent(touch, base::DoNothing());
   histogram_tester().ExpectBucketCount(
       EVENT_LISTENER_RESULT_HISTOGRAM,
       PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING, 1);
@@ -507,7 +446,7 @@ TEST_F(RenderWidgetExternalWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
   touch.touch_start_or_first_touch_move = true;
   touch.dispatch_type =
       blink::WebInputEvent::DispatchType::kListenersForcedNonBlockingDueToFling;
-  widget()->SendInputEvent(touch, HandledEventCallback());
+  widget()->SendInputEvent(touch, base::DoNothing());
   histogram_tester().ExpectBucketCount(
       EVENT_LISTENER_RESULT_HISTOGRAM,
       PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING, 2);
@@ -518,7 +457,7 @@ TEST_F(RenderWidgetExternalWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
       .WillOnce(
           ::testing::Return(blink::WebInputEventResult::kHandledSuppressed));
   touch.dispatch_type = blink::WebInputEvent::DispatchType::kBlocking;
-  widget()->SendInputEvent(touch, HandledEventCallback());
+  widget()->SendInputEvent(touch, base::DoNothing());
   histogram_tester().ExpectBucketCount(EVENT_LISTENER_RESULT_HISTOGRAM,
                                        PASSIVE_LISTENER_UMA_ENUM_SUPPRESSED, 1);
 
@@ -528,7 +467,7 @@ TEST_F(RenderWidgetExternalWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
       .WillOnce(
           ::testing::Return(blink::WebInputEventResult::kHandledApplication));
   touch.dispatch_type = blink::WebInputEvent::DispatchType::kBlocking;
-  widget()->SendInputEvent(touch, HandledEventCallback());
+  widget()->SendInputEvent(touch, base::DoNothing());
   histogram_tester().ExpectBucketCount(
       EVENT_LISTENER_RESULT_HISTOGRAM,
       PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED, 1);
@@ -553,7 +492,7 @@ TEST_F(RenderWidgetExternalWidgetUnittest, SendElasticOverscrollForTouchpad) {
   EXPECT_CALL(*mock_web_external_widget_client(), HandleInputEvent(_))
       .Times(testing::AnyNumber());
 
-  widget()->SendInputEvent(scroll, HandledEventCallback());
+  widget()->SendInputEvent(scroll, base::DoNothing());
 }
 
 // Ensures that the compositor thread gets sent the gesture event & overscroll
@@ -576,7 +515,7 @@ TEST_F(RenderWidgetExternalWidgetUnittest,
   EXPECT_CALL(*mock_web_external_widget_client(), HandleInputEvent(_))
       .Times(testing::AnyNumber());
 
-  widget()->SendInputEvent(scroll, HandledEventCallback());
+  widget()->SendInputEvent(scroll, base::DoNothing());
 }
 
 // Tests that if a RenderWidget is auto-resized, it requests a new

@@ -4100,7 +4100,7 @@ TEST_P(QuicStreamFactoryTest, MigrateToProbingSocket) {
 
   // Cause the connection to report path degrading to the session.
   // Session will start to probe the alternate network.
-  session->connection()->OnPathDegradingTimeout();
+  session->connection()->OnPathDegradingDetected();
 
   // Next connectivity probe is scheduled to be sent in 2 *
   // kDefaultRTTMilliSecs.
@@ -4292,7 +4292,7 @@ void QuicStreamFactoryTestBase::TestMigrationOnPathDegrading(
 
   // Cause the connection to report path degrading to the session.
   // Session will start to probe the alternate network.
-  session->connection()->OnPathDegradingTimeout();
+  session->connection()->OnPathDegradingDetected();
 
   // Next connectivity probe is scheduled to be sent in 2 *
   // kDefaultRTTMilliSecs.
@@ -4466,7 +4466,7 @@ TEST_P(QuicStreamFactoryTest, PortMigrationProbingReceivedStatelessReset) {
 
   // Cause the connection to report path degrading to the session.
   // Session will start to probe a different port.
-  session->connection()->OnPathDegradingTimeout();
+  session->connection()->OnPathDegradingDetected();
 
   // Next connectivity probe is scheduled to be sent in 2 *
   // kDefaultRTTMilliSecs.
@@ -4640,7 +4640,7 @@ void QuicStreamFactoryTestBase::TestSimplePortMigrationOnPathDegrading() {
 
   // Cause the connection to report path degrading to the session.
   // Session will start to probe a different port.
-  session->connection()->OnPathDegradingTimeout();
+  session->connection()->OnPathDegradingDetected();
 
   // Next connectivity probe is scheduled to be sent in 2 *
   // kDefaultRTTMilliSecs.
@@ -4812,7 +4812,7 @@ TEST_P(QuicStreamFactoryTest, MultiplePortMigrationsExceedsMaxLimit) {
 
     // Cause the connection to report path degrading to the session.
     // Session will start to probe a different port.
-    session->connection()->OnPathDegradingTimeout();
+    session->connection()->OnPathDegradingDetected();
 
     // Next connectivity probe is scheduled to be sent in 2 *
     // kDefaultRTTMilliSecs.
@@ -4936,7 +4936,7 @@ TEST_P(QuicStreamFactoryTest, GoawayOnPathDegrading) {
 
   // Trigger the connection to report path degrading to the session.
   // Session will mark itself GOAWAY.
-  session->connection()->OnPathDegradingTimeout();
+  session->connection()->OnPathDegradingDetected();
 
   // The connection should still be alive, but marked as going away.
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
@@ -5072,7 +5072,7 @@ TEST_P(QuicStreamFactoryTest, DoNotMigrateToBadSocketOnPathDegrading) {
 
   // Cause the connection to report path degrading to the session.
   // Session will start to probe the alternate network.
-  session->connection()->OnPathDegradingTimeout();
+  session->connection()->OnPathDegradingDetected();
 
   // The connection should still be alive, and not marked as going away.
   EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
@@ -5215,7 +5215,7 @@ void QuicStreamFactoryTestBase::TestMigrateSessionWithDrainingStream(
 
   // Cause the connection to report path degrading to the session.
   // Session should still start to probe the alternate network.
-  session->connection()->OnPathDegradingTimeout();
+  session->connection()->OnPathDegradingDetected();
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
 
   // Next connectivity probe is scheduled to be sent in 2 *
@@ -5386,7 +5386,7 @@ TEST_P(QuicStreamFactoryTest, MigrateOnNewNetworkConnectAfterPathDegrading) {
   // Cause the connection to report path degrading to the session.
   // Due to lack of alternate network, session will not mgirate connection.
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
-  session->connection()->OnPathDegradingTimeout();
+  session->connection()->OnPathDegradingDetected();
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
 
   // Deliver a signal that a alternate network is connected now, this should
@@ -5673,7 +5673,7 @@ TEST_P(QuicStreamFactoryTest, MigrateOnPathDegradingWithNoNewNetwork) {
   // Trigger connection migration on path degrading. Since there are no networks
   // to migrate to, the session will remain on the original network, not marked
   // as going away.
-  session->connection()->OnPathDegradingTimeout();
+  session->connection()->OnPathDegradingDetected();
   EXPECT_TRUE(session->connection()->IsPathDegrading());
 
   EXPECT_TRUE(HasActiveSession(host_port_pair_));
@@ -6325,7 +6325,7 @@ TEST_P(QuicStreamFactoryTest,
 
   // Cause the connection to report path degrading to the session.
   // Session will ignore the signal as handshake is not completed.
-  session->connection()->OnPathDegradingTimeout();
+  session->connection()->OnPathDegradingDetected();
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
 
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
@@ -6387,7 +6387,7 @@ void QuicStreamFactoryTestBase::TestNoAlternateNetworkBeforeHandshake(
 
   // Cause the connection to report path degrading to the session.
   // Session will ignore the signal as handshake is not completed.
-  session->connection()->OnPathDegradingTimeout();
+  session->connection()->OnPathDegradingDetected();
   EXPECT_EQ(0u, task_runner->GetPendingTaskCount());
   EXPECT_FALSE(HasActiveSession(host_port_pair_));
   EXPECT_TRUE(HasActiveJob(host_port_pair_, privacy_mode_));

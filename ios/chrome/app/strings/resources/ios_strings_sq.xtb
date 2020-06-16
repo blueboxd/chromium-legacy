@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Identifikohu në sajtin e uebit</translation>
 <translation id="1509960214886564027">Veçoritë në shumë sajte mund të ndalojnë së funksionuari</translation>
 <translation id="152234381334907219">Nuk u ruajt asnjëherë</translation>
+<translation id="1535268707340844072">Cilësimi yt aktual mund të bëjë që disa sajte të prishen. Për të menaxhuar kukit për të gjitha sajtet, shiko <ph name="BEGIN_LINK" />Cilësimet e kukive<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Adresa 1</translation>
 <translation id="1545749641540134597">Skano kodin QR</translation>
 <translation id="1552525382687785070">Sinkronizimi është çaktivizuar nga administratori</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Aktiv <ph name="DAYS" /> ditë më parë</translation>
 <translation id="2074131957428911366">Mund të zgjedhësh gjithmonë se çfarë do të sinkronizosh te <ph name="BEGIN_LINK" />cilësimet<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Zhbëj</translation>
+<translation id="2081417079511601293">Blloko kukit e palëve të treta në modalitetin "i fshehtë"</translation>
 <translation id="209018056901015185">Kërko sajtin për desktop</translation>
 <translation id="2103075008456228677">Hap history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementë u lëvizën</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">Hape në skedë të re</translation>
 <translation id="3037605927509011580">Ndërprerje aksidentale!</translation>
 <translation id="3112556859945124369">Shëno...</translation>
+<translation id="3131206671572504478">Bllokoji të gjitha</translation>
 <translation id="3153862085237805241">Ruaj kartën</translation>
 <translation id="3157684681743766797">Shëno të gjitha…</translation>
 <translation id="3161291298470460782">Kjo do të të nxjerrë nga llogaria, do të çaktivizojë sinkronizimin dhe do të pastrojë të gjitha të dhënat e Chrome nga kjo pajisje. Të dhënat e tua të sinkronizuara do të mbeten në "Llogarinë tënde të Google".</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">Trokit për ta ndryshuar gjuhën.</translation>
 <translation id="441868831736628555">Njoftim i privatësisë</translation>
 <translation id="4454246407045105932">Shto gjuhën</translation>
+<translation id="4469418912670346607">Vazhdo konfigurimin</translation>
 <translation id="4476574785019001431">Cilësimet</translation>
 <translation id="4496373720959965247">Shto skeda dhe ndërro faqet</translation>
 <translation id="4508750114462689118">Mbyll promocionin për identifikimin</translation>
@@ -300,6 +304,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="4805759445554688327">Numër karte i pavlefshëm</translation>
 <translation id="4818522717893377262">Shto gjuhë...</translation>
 <translation id="481968316161811770">Kukit, të dhënat e sajtit</translation>
+<translation id="4826218269716039351">Blloko kukit e palëve të treta</translation>
 <translation id="4833786495304741580">Dërgon automatikisht te Google statistika të përdorimit dhe raportet e ndërprerjeve aksidentale.</translation>
 <translation id="4840495572919996524">Faqeshënuesit, historiku, fjalëkalimet etj. nuk do të sinkronizohen më në "Llogarinë tënde të Google".</translation>
 <translation id="4854345657858711387">Vendos një kod</translation>
@@ -345,6 +350,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="54401264925851789">Informacioni i sigurisë së faqes</translation>
 <translation id="5443952882982198570">Kartat e kreditit</translation>
 <translation id="5457907402803865181">Gabim gjatë sinkronizimit të fjalëkalimeve.</translation>
+<translation id="5489208564673669003">Për të menaxhuar kukit për të gjitha sajtet, shiko <ph name="BEGIN_LINK" />Cilësimet e kukive<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Dil dhe pastro të dhënat nga kjo pajisje</translation>
 <translation id="5525269841082836315">Krijo fjalëkalim</translation>
 <translation id="5548760955356983418">Handoff të lejon të fillosh të shfletosh një faqe interneti në këtë pajisje dhe pastaj me lehtësi të vazhdosh në kompjuterin tënd Mac. Faqja aktuale e hapur e internetit do të shfaqet në Dock të kompjuterit tënd Mac.
@@ -432,6 +438,7 @@ Të dhënat e tua janë koduar me frazën tënde të kalimit më <ph name="TIME"
 <translation id="6418346271604475326">Po përgatit PDF</translation>
 <translation id="6426067060178468363">Lejo kukit</translation>
 <translation id="6434591244308415567">Ndodhi një gabim. Provo përsëri më vonë.</translation>
+<translation id="6439338047467462846">Lejo të gjitha</translation>
 <translation id="6445051938772793705">Shteti</translation>
 <translation id="6445981559479772097">Mesazhi u dërgua.</translation>
 <translation id="6447842834002726250">Kukit</translation>
@@ -439,6 +446,7 @@ Të dhënat e tua janë koduar me frazën tënde të kalimit më <ph name="TIME"
 <translation id="6476800141292307438">Po përkthen faqen në <ph name="LANGUAGE" />. Opsionet që ofrohen janë pranë fundit të ekranit.</translation>
 <translation id="648164694371393720">Gabim i vërtetimit</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementë u fshinë</translation>
+<translation id="651505212789431520">Të anulohet sinkronizimi? Mund ta aktivizosh sinkronizimin në çdo kohë te "Cilësimet".</translation>
 <translation id="6561262006871132942">Zmadho</translation>
 <translation id="6610002944194042868">Opsionet e "Përkthe"</translation>
 <translation id="6628106477656132239">Datë skadimi e pavlefshme</translation>

@@ -470,6 +470,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="681368974849482173">Atriði búið til</translation>
 <translation id="6831043979455480757">Þýða</translation>
 <translation id="6851516051005285358">Biðja um tölvuvefsvæði</translation>
+<translation id="6856384753476268833">Stjórnað af fyrirtækinu þínu.</translation>
 <translation id="6858855187367714033">Skannað</translation>
 <translation id="6859944681507688231">Kveiktu á myndavélinni í stillingum til að skanna QR-kóða eða kreditkort.</translation>
 <translation id="6873263987691478642">Tvískiptur skjár</translation>
@@ -548,6 +549,7 @@ Gögnin þín voru dulkóðuð með aðgangsorði samstillingar <ph name="TIME" 
 <translation id="7856733331829174190">Tókst ekki að sækja</translation>
 <translation id="7859704718976024901">Vafraferill</translation>
 <translation id="7887198238286927132">Til að tryggja öryggi þitt fyllir Chrome ekki sjálfkrafa út í þennan reit.</translation>
+<translation id="791251013315685175">Stjórnað af <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Leslistinn þinn er tiltækur án nettengingar. Þú bætir síðu við leslistann með því að ýta á <ph name="SHARE_OPENING_ICON" /> og síðan <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Flytja út aðgangsorð...</translation>

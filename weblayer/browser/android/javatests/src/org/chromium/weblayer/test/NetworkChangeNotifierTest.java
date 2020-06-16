@@ -5,7 +5,8 @@
 package org.chromium.weblayer.test;
 
 import android.os.RemoteException;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.json.JSONException;
 import org.junit.Assert;

@@ -56,7 +56,9 @@ syncer::CommitRequestDataList BookmarkLocalChangesBuilder::BuildCommitRequests(
           !node->is_permanent_node() &&
           base::FeatureList::IsEnabled(
               switches::kSyncDoNotCommitBookmarksWithoutFavicon)) {
-        // Force the favicon to be loaded.
+        // Force the favicon to be loaded. The worker will be nudged for commit
+        // in BookmarkModelObserverImpl::BookmarkNodeFaviconChanged() once
+        // favicon is loaded.
         bookmark_model_->GetFavicon(node);
         continue;
       }

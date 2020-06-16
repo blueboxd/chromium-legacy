@@ -7,11 +7,11 @@ package org.chromium.chrome.browser.permissions;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Handler;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.annotation.StringRes;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

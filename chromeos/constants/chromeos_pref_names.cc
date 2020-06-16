@@ -19,8 +19,12 @@ const char kAssistPersonalInfoEnabled[] =
 // audio devices.
 const char kAudioDevicesMute[] = "settings.audio.devices.mute";
 
+// A dictionary pref storing the gain settings for all the currently known
+// audio input devices.
+const char kAudioDevicesGainPercent[] = "settings.audio.devices.gain_percent";
+
 // A dictionary pref storing the volume settings for all the currently known
-// audio devices.
+// audio output devices.
 const char kAudioDevicesVolumePercent[] =
     "settings.audio.devices.volume_percent";
 

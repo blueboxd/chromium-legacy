@@ -282,7 +282,12 @@ SharingWebRtcConnectionHost* SharingServiceHost::CreateConnection(
           std::move(pipes->trusted_socket_manager.remote)));
   DCHECK(result.second);
 
+  // Use a transient NetworkIsolationKey to avoid sharing proxy connections or
+  // DNS cache with anything else. Since these requests aren't at all web
+  // exposed, this should be sufficient to prevent leaking anything with or
+  // between different first party contexts.
   GetNetworkContext()->CreateP2PSocketManager(
+      net::NetworkIsolationKey::CreateTransient(),
       std::move(pipes->socket_manager_client.remote),
       std::move(pipes->trusted_socket_manager.receiver),
       std::move(pipes->socket_manager.receiver));

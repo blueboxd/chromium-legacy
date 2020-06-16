@@ -105,7 +105,7 @@ public class ShareSheetCoordinator {
                         mBottomSheetController, bottomSheet, mPrefServiceBridge, shareParams,
                         mPrintTabCallback, mShareStartTime);
 
-        return chromeProvidedSharingOptionsProvider.createPropertyModels(contentTypes);
+        return chromeProvidedSharingOptionsProvider.getPropertyModels(contentTypes);
     }
 
     @VisibleForTesting

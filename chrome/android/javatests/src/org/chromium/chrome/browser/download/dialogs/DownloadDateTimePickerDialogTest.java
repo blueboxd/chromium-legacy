@@ -10,10 +10,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.TimePicker;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

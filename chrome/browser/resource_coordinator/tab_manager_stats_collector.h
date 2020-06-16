@@ -175,7 +175,6 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
                            HistogramsTabCount);
   FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTest,
                            HistogramsSessionOverlap);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerStatsCollectorTest, PeriodicSamplingWorks);
 
   // Returns true if the browser is currently in more than one session with
   // different types. We do not want to report metrics in this situation to have
@@ -194,15 +193,6 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
 
   // Update session and sequence information for UKM recording.
   void UpdateSessionAndSequence();
-
-  // This is called sometime after startup, and initiates periodic CanFreeze/
-  // CanDiscard metric sampling. It posts a delayed task to
-  // PerformPeriodicSample.
-  void StartPeriodicSampling();
-
-  // This is called when a sample should be taken. First call is via
-  // StartPeriodicSampling and then it posts a delayed task to call itself.
-  void PerformPeriodicSample();
 
   // Helper function for RecordSampledTabData. Records a single UKM entry for
   // the provided DecisionDetails and destination lifecycle state.
@@ -258,9 +248,6 @@ class TabManagerStatsCollector final : public SessionRestoreObserver {
       foreground_contents_switched_to_times_;
 
   BackgroundTabCountStats background_tab_count_stats_;
-
-  // The start time of an ongoing periodic sample.
-  base::TimeTicks sample_start_time_;
 
   base::WeakPtrFactory<TabManagerStatsCollector> weak_factory_{this};
 };

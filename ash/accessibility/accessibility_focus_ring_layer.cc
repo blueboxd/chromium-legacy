@@ -178,7 +178,7 @@ void AccessibilityFocusRingLayer::DrawDashedFocusRing(
   // To keep the dashes properly lined up, we will draw the outside line first,
   // and cover it with the inner line.
   flags.setColor(secondary_color_);
-  flags.setStrokeWidth(2 * kDefaultStrokeWidth);
+  flags.setStrokeWidth(3 * kDefaultStrokeWidth);
 
   path = MakePath(ring_, 0, offset);
   recorder.canvas()->DrawPath(path, flags);

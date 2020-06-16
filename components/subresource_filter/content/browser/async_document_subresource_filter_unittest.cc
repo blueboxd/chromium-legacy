@@ -33,8 +33,8 @@ class AsyncDocumentSubresourceFilterTest : public ::testing::Test {
  protected:
   void SetUp() override {
     std::vector<proto::UrlRule> rules;
-    rules.push_back(testing::CreateWhitelistRuleForDocument(
-        "whitelisted.subframe.com", proto::ACTIVATION_TYPE_GENERICBLOCK,
+    rules.push_back(testing::CreateAllowlistRuleForDocument(
+        "allowlisted.subframe.com", proto::ACTIVATION_TYPE_GENERICBLOCK,
         {"example.com"}));
     rules.push_back(testing::CreateSuffixRule("disallowed.html"));
 
@@ -178,7 +178,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsComputedCorrectly) {
   auto ruleset_handle = CreateRulesetHandle();
 
   AsyncDocumentSubresourceFilter::InitializationParams params(
-      GURL("http://whitelisted.subframe.com"), mojom::ActivationLevel::kEnabled,
+      GURL("http://allowlisted.subframe.com"), mojom::ActivationLevel::kEnabled,
       false);
   params.parent_document_origin =
       url::Origin::Create(GURL("http://example.com"));
@@ -322,11 +322,11 @@ class SubresourceFilterComputeActivationStateTest : public ::testing::Test {
     constexpr int32_t kGenericBlock = proto::ACTIVATION_TYPE_GENERICBLOCK;
 
     std::vector<proto::UrlRule> rules;
-    rules.push_back(testing::CreateWhitelistRuleForDocument(
+    rules.push_back(testing::CreateAllowlistRuleForDocument(
         "child1.com", kDocument, {"parent1.com", "parent2.com"}));
-    rules.push_back(testing::CreateWhitelistRuleForDocument(
+    rules.push_back(testing::CreateAllowlistRuleForDocument(
         "child2.com", kGenericBlock, {"parent1.com", "parent2.com"}));
-    rules.push_back(testing::CreateWhitelistRuleForDocument(
+    rules.push_back(testing::CreateAllowlistRuleForDocument(
         "child3.com", kDocument | kGenericBlock,
         {"parent1.com", "parent2.com"}));
 

@@ -84,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterDevtoolsBrowserTest,
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
 
-  // Should not trigger activation, the URL is not on the blacklist.
+  // Should not trigger activation, the URL is not on the blocklist.
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
@@ -116,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterListInsertingBrowserTest,
                        subresource_filter::ActivationList::BETTER_ADS);
   ResetConfiguration(std::move(config));
 
-  // Should not trigger activation, the URL is not on the blacklist.
+  // Should not trigger activation, the URL is not on the blocklist.
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 

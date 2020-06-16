@@ -82,6 +82,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />សាកល្បងជម្រះខុកឃីរបស់អ្នក<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">ពិនិត្យ​ការកំណត់ DNS សុវត្ថិភាពរបស់អ្នក</translation>
 <translation id="1307966114820526988">មុខងារ​ដែលបាន​បញ្ឈប់</translation>
+<translation id="1310581832770023220">កំពុងផ្ញើ​ទិន្នន័យ​នៅក្នុង​ទម្រង់បែបបទ​នេះ​តាមរយៈ​ការតភ្ជាប់​ដែលគ្មានសុវត្ថិភាព</translation>
 <translation id="131405271941274527"><ph name="URL" /> ចង់ផ្ញើ និង​ទទួលព័ត៌មាន នៅពេល​អ្នកចុច​ទូរសព្ទ​របស់អ្នក នៅលើ​ឧបករណ៍ NFC</translation>
 <translation id="1314509827145471431">ភ្ជាប់​ខាងស្ដាំ</translation>
 <translation id="1320233736580025032">Prc1 (ស្រោម​សំបុត្រ)</translation>
@@ -387,6 +388,7 @@
 <translation id="2544644783021658368">ឯកសារ​តែមួយ</translation>
 <translation id="254947805923345898">តម្លៃ​របស់គោលការណ៍​គ្មានសុពលភាពទេ។</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> បានផ្ញើការឆ្លើយតបដែលមិនត្រឹមត្រូវ</translation>
+<translation id="2552295903035773204">ប្រើ​ការចាក់​សោ​អេក្រង់ ដើម្បីបញ្ជាក់​កាតចាប់ពីពេលនេះតទៅ</translation>
 <translation id="2553853292994445426">ពិនិត្យការកំណត់ DNS សុវត្ថិភាពរបស់អ្នក។ អ្នកប្រហែលជាបាន​កំណត់រចនាសម្ព័ន្ធម៉ាស៊ីនមេ DNS សុវត្ថិភាព ដែលមានបញ្ហាក្នុងការតភ្ជាប់។</translation>
 <translation id="2556876185419854533">បកក្រោយការកែប្រែ</translation>
 <translation id="257674075312929031">ក្រុម</translation>
@@ -1448,6 +1450,7 @@
 <translation id="7138472120740807366">មធ្យោបាយដឹកជញ្ជូនផ្ទាល់</translation>
 <translation id="7139724024395191329">អារ៉ាប់រួម</translation>
 <translation id="714064300541049402">ការប្ដូរ​រូបភាព X នៃចំហៀងទី 2</translation>
+<translation id="7147693119324090759">មិនអីទេ ដាក់បញ្ជូន​ចុះ</translation>
 <translation id="7152423860607593928">Number-14 (ស្រោម​សំបុត្រ)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> និង <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ទៀត}other{<ph name="PAYMENT_METHOD_PREVIEW" /> និង <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ទៀត}}</translation>
 <translation id="7153618581592392745">ឡាវិនឌ័រ</translation>
@@ -1524,6 +1527,7 @@
 <translation id="7416351320495623771">គ្រប់គ្រង​ពាក្យ​សម្ងាត់…</translation>
 <translation id="7419106976560586862">ផ្លូវទម្រង់</translation>
 <translation id="7437289804838430631">បញ្ចូល​ព័ត៌មាន​ទំនាក់ទំនង</translation>
+<translation id="743897106051685947">ដើម</translation>
 <translation id="7438976808740265764">Flash Player នឹង​លែងប្រើបាន​ទៀតហើយ បន្ទាប់ពី​ខែធ្នូ ឆ្នាំ 2020។</translation>
 <translation id="7440140511386898319">រុករកពេលគ្មាន​អ៊ីនធឺណិត</translation>
 <translation id="7441627299479586546">ភាគីគោលការណ៍មិនត្រឹមត្រូវ</translation>
@@ -1535,6 +1539,7 @@
 <translation id="7473891865547856676">ទេ អរគុណ</translation>
 <translation id="7481312909269577407">ទៅមុខ</translation>
 <translation id="7485870689360869515">គ្មានទិន្នន័យត្រូវបានរកឃើញទេ។</translation>
+<translation id="7488762544858401571">បាន​កែ</translation>
 <translation id="7495290002932347110">ការបំពានទិន្នន័យ​នៅលើគេហទំព័រ ឬកម្មវិធី​មួយបានធ្វើឱ្យបែកធ្លាយពាក្យសម្ងាត់របស់អ្នក។ Chrome សូមណែនាំឱ្យ​ពិនិត្យមើល​ពាក្យសម្ងាត់​ដែលអ្នកបានរក្សាទុក និងប្ដូរ​ពាក្យសម្ងាត់​របស់អ្នក​នៅលើ <ph name="ORIGIN" /> ឥឡូវនេះ។</translation>
 <translation id="7498234416455752244">បន្ត​កែសម្រួល</translation>
 <translation id="7503664977220660814">អ្នកទើបតែ​បានបញ្ចូល​ពាក្យសម្ងាត់​របស់អ្នក​នៅលើ​គេហទំព័របញ្ឆោត។ Chromium សូមណែនាំឱ្យ​ពិនិត្យមើល​ពាក្យសម្ងាត់​ដែលអ្នក​បានរក្សាទុក​សម្រាប់ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> និង​គេហទំព័រ​ផ្សេងទៀត ដែលអ្នក​ប្រើ​ពាក្យសម្ងាត់​នេះ​ឥឡូវនេះ​។</translation>
@@ -1619,6 +1624,7 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">ផ្ងារឡើង​តាមលំដាប់​លំដោយដូចគ្នា</translation>
 <translation id="777702478322588152">អាណាខេត្ត</translation>
+<translation id="7791011319128895129">មិនទាន់​ដាក់ចេញ</translation>
 <translation id="7791196057686275387">ចងរមូរ</translation>
 <translation id="7791543448312431591">បន្ថែម</translation>
 <translation id="7798389633136518089">មិនអើពើ ដោយសារ​គោលការណ៍មិនត្រូវបានកំណត់ដោយ​ប្រភព​ពពកទេ។</translation>
@@ -1755,6 +1761,7 @@
 <translation id="8355270400102541638">បរិបទនៃការគាំងមូលដ្ឋាន៖</translation>
 <translation id="8363502534493474904">សូមបិទរបៀបលើយន្តហោះ</translation>
 <translation id="8364627913115013041">មិនបានកំណត់។</translation>
+<translation id="8367477997601443248">ទម្រង់បែបបទ​ដែលគ្មាន​សុវត្ថិភាព</translation>
 <translation id="8368476060205742148">សេវាកម្ម Google Play</translation>
 <translation id="8371889962595521444">វិញ្ញាបនបត្រគោល​ផ្ទាល់ខ្លួន</translation>
 <translation id="8380941800586852976">គ្រោះថ្នាក់</translation>
@@ -1837,6 +1844,7 @@
 <translation id="8805819170075074995">ធាតុបញ្ជី "<ph name="LANGUAGE_ID" />"៖ ធាតុមិនត្រូវបាន​អើពើទេ ដោយសារធាតុនេះ​ក៏ត្រូវបានរួមបញ្ចូល​នៅក្នុងគោលការណ៍ SpellcheckLanguage ផងដែរ។</translation>
 <translation id="8807160976559152894">តម្រឹម​បន្ទាប់ពី​ទំព័រ​នីមួយៗ</translation>
 <translation id="8820817407110198400">ចំណាំ</translation>
+<translation id="8831512686168463822">កំពុង​ដាក់បញ្ជូន​ទម្រង់បែបបទ​នេះ​តាមរយៈ​ការតភ្ជាប់​ដែលគ្មានសុវត្ថិភាព ដែលអាចនឹង​បែកធ្លាយ​ព័ត៌មាន​របស់អ្នក (ឧទាហរណ៍ ពាក្យសម្ងាត់ សារ ឬ​បណ្ណឥណទាន) នៅពេល​ផ្ញើ​វា​ទៅ​គេហទំព័រ​នេះ។</translation>
 <translation id="883848425547221593">ចំណាំផ្សេងទៀត</translation>
 <translation id="884264119367021077">អាសយដ្ឋានដឹកជញ្ជូនទៅ</translation>
 <translation id="884923133447025588">គ្មានយន្តការការបញ្ឈប់សុពលភាពត្រូវបានរកឃើញទេ។</translation>

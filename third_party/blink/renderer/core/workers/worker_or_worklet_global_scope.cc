@@ -183,11 +183,10 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
     std::unique_ptr<WebContentSettingsClient> content_settings_client,
     scoped_refptr<WebWorkerFetchContext> web_worker_fetch_context,
     WorkerReportingProxy& reporting_proxy)
-    : ExecutionContext(isolate),
+    : ExecutionContext(isolate, agent),
       security_context_(
           SecurityContextInit(origin,
-                              MakeGarbageCollected<OriginTrialContext>(),
-                              agent),
+                              MakeGarbageCollected<OriginTrialContext>()),
           SecurityContext::kWorker),
       name_(name),
       parent_devtools_token_(parent_devtools_token),

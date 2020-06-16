@@ -47,7 +47,7 @@ class ReportScheduler;
 
 namespace policy {
 
-class AppInstallEventLogUploader;
+class ArcAppInstallEventLogUploader;
 class CloudExternalDataManager;
 class DeviceManagementService;
 class PolicyOAuth2TokenFetcher;
@@ -147,9 +147,9 @@ class UserCloudPolicyManagerChromeOS
   // is available.
   void EnableWildcardLoginCheck(const std::string& username);
 
-  // Return the AppInstallEventLogUploader used to send app push-install event
-  // logs to the policy server.
-  AppInstallEventLogUploader* GetAppInstallEventLogUploader();
+  // Return the ArcAppInstallEventLogUploader used to send app push-install
+  // event logs to the policy server.
+  ArcAppInstallEventLogUploader* GetAppInstallEventLogUploader();
 
   // ConfigurationPolicyProvider:
   void Shutdown() override;
@@ -257,7 +257,8 @@ class UserCloudPolicyManagerChromeOS
   std::unique_ptr<CloudExternalDataManager> external_data_manager_;
 
   // Helper used to send app push-install event logs to the policy server.
-  std::unique_ptr<AppInstallEventLogUploader> app_install_event_log_uploader_;
+  std::unique_ptr<ArcAppInstallEventLogUploader>
+      app_install_event_log_uploader_;
 
   // Scheduler used to report usage data to DM server periodically.
   std::unique_ptr<enterprise_reporting::ReportScheduler> report_scheduler_;

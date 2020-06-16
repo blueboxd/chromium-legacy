@@ -23,15 +23,12 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
-namespace ash {
-class ArcCustomTab;
-}  // namespace ash
-
 namespace content {
 class WebContents;
 }  // namespace content
 
 namespace arc {
+class CustomTab;
 
 // Implementation of PrintSessionHost interface. Also used by other classes to
 // send print-related messages to ARC.
@@ -42,7 +39,7 @@ class PrintSessionImpl : public mojom::PrintSessionHost,
  public:
   static mojo::PendingRemote<mojom::PrintSessionHost> Create(
       std::unique_ptr<content::WebContents> web_contents,
-      std::unique_ptr<ash::ArcCustomTab> custom_tab,
+      std::unique_ptr<CustomTab> custom_tab,
       mojo::PendingRemote<mojom::PrintSessionInstance> instance);
 
   PrintSessionImpl(const PrintSessionImpl&) = delete;
@@ -54,7 +51,7 @@ class PrintSessionImpl : public mojom::PrintSessionHost,
 
  private:
   PrintSessionImpl(std::unique_ptr<content::WebContents> web_contents,
-                   std::unique_ptr<ash::ArcCustomTab> custom_tab,
+                   std::unique_ptr<CustomTab> custom_tab,
                    mojo::PendingRemote<mojom::PrintSessionInstance> instance,
                    mojo::PendingReceiver<mojom::PrintSessionHost> receiver);
   friend class content::WebContentsUserData<PrintSessionImpl>;

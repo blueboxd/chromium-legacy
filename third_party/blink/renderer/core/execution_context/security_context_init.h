@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
-class Agent;
 class ContentSecurityPolicy;
 class Document;
 class DocumentInit;
@@ -31,9 +30,7 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
 
  public:
   SecurityContextInit();
-  SecurityContextInit(scoped_refptr<SecurityOrigin>,
-                      OriginTrialContext*,
-                      Agent*);
+  SecurityContextInit(scoped_refptr<SecurityOrigin>, OriginTrialContext*);
   explicit SecurityContextInit(const DocumentInit&);
 
   const scoped_refptr<SecurityOrigin>& GetSecurityOrigin() const {
@@ -64,7 +61,6 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
 
   OriginTrialContext* GetOriginTrialContext() const { return origin_trials_; }
 
-  Agent* GetAgent() const { return agent_; }
   SecureContextMode GetSecureContextMode() const {
     DCHECK(secure_context_mode_.has_value());
     return secure_context_mode_.value();
@@ -85,7 +81,6 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   void InitializeFeaturePolicy(const DocumentInit&);
   void InitializeSecureContextMode(const DocumentInit&);
   void InitializeOriginTrials(const DocumentInit&);
-  void InitializeAgent(const DocumentInit&);
 
   ContentSecurityPolicy* csp_ = nullptr;
   network::mojom::blink::WebSandboxFlags sandbox_flags_ =
@@ -101,7 +96,6 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   Frame* parent_frame_ = nullptr;
   ParsedFeaturePolicy container_policy_;
   OriginTrialContext* origin_trials_ = nullptr;
-  Agent* agent_ = nullptr;
   HashSet<mojom::blink::FeaturePolicyFeature> parsed_feature_policies_;
   HashSet<mojom::WebFeature> feature_count_;
   base::Optional<SecureContextMode> secure_context_mode_;

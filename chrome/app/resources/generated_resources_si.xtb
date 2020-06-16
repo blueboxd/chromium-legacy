@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="si">
+<translation id="1001307489511021749">ඔබේ යෙදුම්, සැකසීම්, සහ අනෙකුත් අභිරුචි කිරීම් සියල්ල ඔබේ Google ගිණුම මඟින් පුරනය වී ඇති සියලුම Chrome OS උපාංග අතරින් සමමුහූර්ත කෙරේ.</translation>
 <translation id="1003088604756913841">සබැඳිය නව <ph name="APP" /> කවුළුවක විවෘත කරන්න</translation>
 <translation id="1004218526896219317">වෙබ් අඩවි ප්‍රවේශය</translation>
 <translation id="1005274289863221750">ඔබේ මයික්‍රෆෝනය සහ කැමරාව භාවිතා කරන්න</translation>
@@ -524,6 +525,7 @@
 <translation id="164936512206786300">බ්ලූටූත් උපාංගය යුගලන නොකරන්න</translation>
 <translation id="1650371550981945235">ආදාන විකල්ප පෙන්වන්න</translation>
 <translation id="1651008383952180276">ඔබ එකම මුරවැකිකඩ දෙවරක් ඇතුළු කළ යුතුය</translation>
+<translation id="1652326691684645429">අවට බෙදා ගැනීම සබල කරන්න</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{ඔබට ඕනෑම තැනක සිට මුද්‍රණයට මුද්‍රණ යන්ත්‍රය Google වළාකුළු මුද්‍රණය වෙත එක් කරන්න.}one{ඔබට ඕනෑම තැනක සිට මුද්‍රණයට මුද්‍රණ යන්ත්‍ර # ක් Google වළාකුළු මුද්‍රණය වෙත එක් කරන්න.}other{ඔබට ඕනෑම තැනක සිට මුද්‍රණයට මුද්‍රණ යන්ත්‍ර # ක් Google වළාකුළු මුද්‍රණය වෙත එක් කරන්න.}}</translation>
 <translation id="1656528038316521561">පසුබිම් පාරාන්ධතාව</translation>
 <translation id="1657406563541664238">Google වෙත භාවිත සංඛ්‍යාල්ඛන සහ කඩිනම් වාර්තා ස්වයංක්‍රියව යවා <ph name="PRODUCT_NAME" /> වඩා යහපත් කිරීමට උපකාර වන්න.</translation>
@@ -1636,6 +1638,7 @@
 <translation id="3022978424994383087">එය ලබා ගත්තේ නැත.</translation>
 <translation id="3023464535986383522">කථා කිරීමට තෝරන්න</translation>
 <translation id="3024374909719388945">පැය 24 ඔරලෝසුව භාවිතා කරන්න</translation>
+<translation id="3027296729579831126">අවට බෙදා ගැනීම සක්‍රීය කරන්න</translation>
 <translation id="3029466929721441205">අල්මාරිය තුළ පන්හිඳ මෙවලම් පෙන්වන්න</translation>
 <translation id="3031417829280473749">X ඒජන්ත</translation>
 <translation id="3031557471081358569">අපනයනය කිරීමට අයිතම තෝරන්න:</translation>
@@ -1736,6 +1739,7 @@
 <translation id="3162853326462195145">පාසල් ගිණුම</translation>
 <translation id="3162899666601560689">වෙබ් අඩවි ඔබේ බ්‍රවුස කිරීමේ අත්දැකීම වැඩිදියුණු කිරීමට, උදාහරණයක් වශයෙන්, ඔබව පුරනය කර තබා ගැනීමට හෝ ඔබේ සාප්පු සවාරි කරත්තයේ අයිතම මතක තබා ගැනීමට කුකී භාවිත කළ හැක</translation>
 <translation id="3163201441334626963"><ph name="VENDOR_ID" /> වෙතින් නොදන්නා නිෂ්පාදනය <ph name="PRODUCT_ID" /></translation>
+<translation id="3163254451837720982">පහත සේවා ඔබේ දත්ත ආරක්‍ෂිතව සහ සුරක්‍ෂිතව තබා ගැනීමට උදවු කරයි. ඔබට ඕනෑම වේලාවක මෙම විශේෂාංග අක්‍රිය කළ හැක.</translation>
 <translation id="3164329792803560526">මෙම පටිත්ත <ph name="APP_NAME" /> වෙත බෙදා ගැනීම</translation>
 <translation id="3165390001037658081">සමහර වාහකයන් මෙම විශේෂාංගය අවහිර කළ හැකිය.</translation>
 <translation id="316652501498554287">G Suite for Education ගිණුම්</translation>
@@ -2922,6 +2926,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="4673442866648850031">පන්හිඳ ඉවත් කළ විට පන්හිඳ මෙවලම් විවෘත කරන්න</translation>
 <translation id="4677772697204437347">GPU මතකය</translation>
 <translation id="4680105648806843642">මෙම පිටුවෙහි ශබ්දය නිහඬ කර ඇත</translation>
+<translation id="4681453295291708042">අවට බෙදා ගැනීම අබල කරන්න</translation>
 <translation id="4681930562518940301">මුල් පින්තූරය නව පටිත්තක විවෘත කරන්න</translation>
 <translation id="4682551433947286597">පිරිමේ තිරය මත පෙනෙන බිතුපත්.</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" />% (පෙරනිමි)</translation>
@@ -3734,6 +3739,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="5739017626473506901"><ph name="USER_NAME" /> හට පාසල් ගිණුමක් එක් කිරීමට උදවු කිරීමට පුරන්න</translation>
 <translation id="5739235828260127894">සත්‍යාපනය බලාපොරොත්තුවෙන් <ph name="LINK_BEGIN" />තවත් දැන ගන්න.<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">ඉතා විශාල</translation>
+<translation id="5740328398383587084">අවට බෙදා ගැනීම</translation>
 <translation id="574104302965107104">සංදර්ශක දර්පණය</translation>
 <translation id="574209121243317957">තාරතාව</translation>
 <translation id="5746169159649715125">PDF ලෙස සුරකින්න</translation>
@@ -4669,6 +4675,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="6965978654500191972">උපාංගය</translation>
 <translation id="696780070563539690">විවිධ වෙබ් අඩවි අතරින් ඔබේ බ්‍රවුස් කිරීමේ ක්‍රියාකාරකම් බැලීමට, උදාහරණයක් වශයෙන්, දැන්වීම් පුද්ගලායන කිරීමට වෙබ් අඩවිවලට ඔබේ කුකී භාවිත නොකළ හැක</translation>
 <translation id="6968288415730398122">තිර අගුල වින්‍යාස කිරීමට ඔබගේ මුරපදය ඇතුළු කරන්න</translation>
+<translation id="6969047215179982698">අවට බෙදා ගැනීම අක්‍රිය කරන්න</translation>
 <translation id="6970480684834282392">ස්ටාටප් වර්ගය</translation>
 <translation id="6970856801391541997">නිශ්චිත පිටු මුද්‍රණය කරන්න</translation>
 <translation id="6972180789171089114">ශ්‍රව්‍ය/වීඩියෝ</translation>
@@ -4838,6 +4845,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="7171259390164035663">ඇතුළත් නොවන්න</translation>
 <translation id="7171559745792467651">ඔබේ අනෙකුත් උපාංගවලින් යෙදුම් ස්ථාපනය කරන්න</translation>
 <translation id="7172470549472604877">{NUM_TABS,plural, =1{නව කණ්ඩායමට පටිත්ත එක් කරන්න}one{නව කණ්ඩායමට පටිති එක් කරන්න}other{නව කණ්ඩායමට පටිති එක් කරන්න}}</translation>
+<translation id="7173852404388239669">ඔබේ <ph name="DEVICE_TYPE" /> පුද්ගලායන කරන්න</translation>
 <translation id="7174199383876220879">නව! ඔබේ සංගීත, වීඩියෝ, සහ තවත් ඒවා පාලන කරන්න.</translation>
 <translation id="7175037578838465313"><ph name="NAME" /> වින්‍යාස කරන්න</translation>
 <translation id="7175353351958621980">ප්‍රවේශනය කළේ:</translation>
@@ -5127,6 +5135,7 @@ Linux ස්ථාපනය කිරීම දත්තවලින් <ph name
 <translation id="7552846755917812628">පහත ඉඟි උත්සාහ කරන්න:</translation>
 <translation id="7553012839257224005">ලිනක්ස් භාජනය පරීක්ෂා කිරීම</translation>
 <translation id="7553242001898162573">ඔබේ මුරපදය ඇතුළු කරන්න</translation>
+<translation id="7554475479213504905">කෙසේ වූවත් නැවත පූරණ කර පෙන්වන්න</translation>
 <translation id="7554791636758816595">නව ටැබය</translation>
 <translation id="7556033326131260574">ස්මාට් අගුලට ඔබේ ගිනුම තහවුරු කළ නොහැකි විය. ඇතුළත් වීමට මුරපදය යොදන්න.</translation>
 <translation id="7556242789364317684">අවාසනාවකට, <ph name="SHORT_PRODUCT_NAME" /> හට ඔබේ සැකසුම් ගලවාගත නොහැකි විය. මෙම දෝශය නිවැරදි කිරීමට, <ph name="SHORT_PRODUCT_NAME" /> හට Powerwash භාවිතයෙන් ඔබේ උපාංගය ප්‍රතිසැකසීමට සිදුවේ.</translation>

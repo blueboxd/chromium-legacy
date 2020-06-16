@@ -131,7 +131,7 @@ def _sorted_list_view_impl(ctx, *, console_name):
 _sorted_list_view = lucicfg.rule(impl=_sorted_list_view_impl)
 
 
-def _sort_consoles(ctx):
+def _sort_console_entries(ctx):
   milo = ctx.output['luci-milo.cfg']
   consoles = []
   for console in milo.consoles:
@@ -142,9 +142,8 @@ def _sort_consoles(ctx):
     if node:
       console.builders = sorted(console.builders, lambda b: b.name)
     consoles.append(console)
-  milo.consoles = sorted(consoles, lambda c: c.id)
 
-lucicfg.generator(_sort_consoles)
+lucicfg.generator(_sort_console_entries)
 
 
 def list_view(*, name, **kwargs):

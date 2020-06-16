@@ -11,38 +11,41 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/views/widget/widget.h"
 
 namespace fast_ink {
 
-FastInkView::FastInkView(
-    aura::Window* container,
-    const FastInkHost::PresentationCallback& presentation_callback) {
-  widget_.reset(new views::Widget);
+FastInkView::FastInkView() = default;
+
+FastInkView::~FastInkView() = default;
+
+// static
+views::UniqueWidgetPtr FastInkView::CreateWidgetWithContents(
+    std::unique_ptr<FastInkView> fast_ink_view,
+    aura::Window* container) {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.name = "FastInkOverlay";
   params.accept_events = false;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.parent = container;
   params.layer_type = ui::LAYER_SOLID_COLOR;
 
   aura::Window* root_window = container->GetRootWindow();
-
   gfx::Rect screen_bounds = root_window->GetBoundsInScreen();
-  widget_->Init(std::move(params));
-  widget_->Show();
-  widget_->SetContentsView(this);
-  widget_->SetBounds(screen_bounds);
-  set_owned_by_client();
 
-  host_ = std::make_unique<FastInkHost>(widget_->GetNativeWindow(),
-                                        std::move(presentation_callback));
+  views::UniqueWidgetPtr widget(
+      std::make_unique<views::Widget>(std::move(params)));
+  FastInkView* fast_ink_view_ptr =
+      widget->SetContentsView(std::move(fast_ink_view));
+  widget->SetBounds(screen_bounds);
+  fast_ink_view_ptr->SetFastInkHost(std::make_unique<FastInkHost>(
+      widget->GetNativeWindow(), fast_ink_view_ptr->GetPresentationCallback()));
+  widget->Show();
+  return widget;
 }
 
 FastInkView::ScopedPaint::ScopedPaint(FastInkView* view,
@@ -92,12 +95,18 @@ FastInkView::ScopedPaint::~ScopedPaint() {
   }
 }
 
-FastInkView::~FastInkView() = default;
-
 void FastInkView::UpdateSurface(const gfx::Rect& content_rect,
                                 const gfx::Rect& damage_rect,
                                 bool auto_refresh) {
   host_->UpdateSurface(content_rect, damage_rect, auto_refresh);
+}
+
+FastInkHost::PresentationCallback FastInkView::GetPresentationCallback() {
+  return FastInkHost::PresentationCallback();
+}
+
+void FastInkView::SetFastInkHost(std::unique_ptr<FastInkHost> host) {
+  host_ = std::move(host);
 }
 
 }  // namespace fast_ink

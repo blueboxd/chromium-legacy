@@ -15,27 +15,27 @@
 
 class GURL;
 
-// Database manager that allows any URL to be configured as blacklisted for
+// Database manager that allows any URL to be configured as blocklisted for
 // testing.
 class FakeSafeBrowsingDatabaseManager
     : public safe_browsing::TestSafeBrowsingDatabaseManager {
  public:
   FakeSafeBrowsingDatabaseManager();
 
-  void AddBlacklistedUrl(const GURL& url,
+  void AddBlocklistedUrl(const GURL& url,
                          safe_browsing::SBThreatType threat_type,
                          const safe_browsing::ThreatMetadata& metadata);
-  void AddBlacklistedUrl(const GURL& url,
+  void AddBlocklistedUrl(const GURL& url,
                          safe_browsing::SBThreatType threat_type,
                          safe_browsing::ThreatPatternType pattern_type =
                              safe_browsing::ThreatPatternType::NONE);
-  void RemoveBlacklistedUrl(const GURL& url);
-  void RemoveAllBlacklistedUrls();
+  void RemoveBlocklistedUrl(const GURL& url);
+  void RemoveAllBlocklistedUrls();
 
   void SimulateTimeout();
 
   // If set, will synchronously fail from CheckUrlForSubresourceFilter rather
-  // than posting a task to fail if the URL does not match the blacklist.
+  // than posting a task to fail if the URL does not match the blocklist.
   void set_synchronous_failure() { synchronous_failure_ = true; }
 
  protected:

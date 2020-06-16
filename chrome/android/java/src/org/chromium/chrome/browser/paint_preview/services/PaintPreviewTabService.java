@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.browser.paint_preview.services;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -16,6 +19,9 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.components.paintpreview.browser.NativePaintPreviewServiceProvider;
 import org.chromium.content_public.browser.WebContents;
 
+import java.io.File;
+import java.util.HashSet;
+
 /**
  * The Java-side implementations of paint_preview_tab_service.cc. The C++ side owns and controls
  * the lifecycle of the Java implementation.
@@ -26,6 +32,8 @@ import org.chromium.content_public.browser.WebContents;
 public class PaintPreviewTabService implements NativePaintPreviewServiceProvider {
     private long mNativePaintPreviewTabService;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
+    @VisibleForTesting
+    HashSet<Integer> mPreNativeCache;
 
     private class PaintPreviewTabServiceTabModelSelectorTabObserver
             extends TabModelSelectorTabObserver {
@@ -63,6 +71,9 @@ public class PaintPreviewTabService implements NativePaintPreviewServiceProvider
     @CalledByNative
     private PaintPreviewTabService(long nativePaintPreviewTabService) {
         mNativePaintPreviewTabService = nativePaintPreviewTabService;
+        if (!isNativeCacheInitialized()) {
+            createPreNativeCache(getPath());
+        }
     }
 
     @CalledByNative
@@ -82,6 +93,13 @@ public class PaintPreviewTabService implements NativePaintPreviewServiceProvider
      */
     public boolean hasCaptureForTab(int tabId) {
         if (mNativePaintPreviewTabService == 0) return false;
+
+        if (mPreNativeCache != null) {
+            if (!isNativeCacheInitialized()) {
+                return mPreNativeCache.contains(tabId);
+            }
+            mPreNativeCache = null;
+        }
 
         return PaintPreviewTabServiceJni.get().hasCaptureForTabAndroid(
                 mNativePaintPreviewTabService, tabId);
@@ -107,6 +125,45 @@ public class PaintPreviewTabService implements NativePaintPreviewServiceProvider
         }
 
         if (runAudit) auditArtifacts(tabIds);
+    }
+
+    private boolean isNativeCacheInitialized() {
+        if (mNativePaintPreviewTabService == 0) return false;
+
+        return PaintPreviewTabServiceJni.get().isCacheInitializedAndroid(
+                mNativePaintPreviewTabService);
+    }
+
+    private String getPath() {
+        if (mNativePaintPreviewTabService == 0) return "";
+
+        return PaintPreviewTabServiceJni.get().getPathAndroid(mNativePaintPreviewTabService);
+    }
+
+    @VisibleForTesting
+    void createPreNativeCache(String rootPath) {
+        mPreNativeCache = new HashSet<Integer>();
+
+        assert rootPath != null;
+        assert !rootPath.isEmpty();
+
+        String[] childPaths;
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            File rootDir = new File(rootPath);
+            childPaths = rootDir.list();
+        }
+
+        // It is possible there are no captures.
+        if (childPaths == null) return;
+
+        // All children will have the name format # or #.zip.
+        for (String childName : childPaths) {
+            // Strip extension if present.
+            if (childName.indexOf(".") > 0) {
+                childName = childName.substring(0, childName.lastIndexOf("."));
+            }
+            mPreNativeCache.add(Integer.parseInt(childName));
+        }
     }
 
     private void captureTab(Tab tab, Callback<Boolean> successCallback) {
@@ -140,5 +197,7 @@ public class PaintPreviewTabService implements NativePaintPreviewServiceProvider
         void tabClosedAndroid(long nativePaintPreviewTabService, int tabId);
         boolean hasCaptureForTabAndroid(long nativePaintPreviewTabService, int tabId);
         void auditArtifactsAndroid(long nativePaintPreviewTabService, int[] activeTabIds);
+        boolean isCacheInitializedAndroid(long nativePaintPreviewTabService);
+        String getPathAndroid(long nativePaintPreviewTabService);
     }
 }

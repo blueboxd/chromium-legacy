@@ -12,8 +12,9 @@ import static org.junit.Assert.fail;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matchers;
 import org.junit.Before;

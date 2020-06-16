@@ -81,6 +81,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />अपनी कुकी साफ़ करके देखें<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">अपने सुरक्षित डीएनएस की सेटिंग की जांच करें</translation>
 <translation id="1307966114820526988">बंद की गई सुविधाएं</translation>
+<translation id="1310581832770023220">इस फ़ॉर्म में डेटा, असुरक्षित कनेक्शन की मदद से भेजा जा रहा है</translation>
 <translation id="131405271941274527">किसी NFC डिवाइस में आपके फ़ोन पर टैप किए जाने पर, <ph name="URL" /> जानकारी भेजना और पाना चाहता है</translation>
 <translation id="1314509827145471431">दाईं ओर बाइंड</translation>
 <translation id="1320233736580025032">पीआरसी1 (एन्वेलप)</translation>
@@ -384,6 +385,7 @@
 <translation id="2544644783021658368">एक दस्तावेज़</translation>
 <translation id="254947805923345898">नीति का मान मान्य नहीं है.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ने एक गलत जवाब भेजा है.</translation>
+<translation id="2552295903035773204">अब से, कार्ड की पुष्टि करने के लिए स्क्रीन लॉक इस्तेमाल करें</translation>
 <translation id="2553853292994445426">अपने सुरक्षित डीएनएस की सेटिंग की जांच करें. शायद आपने सुरक्षित डीएनएस सर्वर को कॉन्फ़िगर किया होगा, जिससे आप कनेक्ट नहीं हो पा रहे.</translation>
 <translation id="2556876185419854533">&amp;बदलाव को पहले जैसा करें</translation>
 <translation id="257674075312929031">समूह</translation>
@@ -1441,6 +1443,7 @@
 <translation id="7138472120740807366">वितरण का तरीका</translation>
 <translation id="7139724024395191329">अमीरात</translation>
 <translation id="714064300541049402">साइड 2 इमेज X शिफ़्ट</translation>
+<translation id="7147693119324090759">फिर भी सबमिट करें</translation>
 <translation id="7152423860607593928">संख्या-14 (एन्वेलप)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अन्य}one{<ph name="PAYMENT_METHOD_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अन्य}other{<ph name="PAYMENT_METHOD_PREVIEW" /> और <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> अन्य}}</translation>
 <translation id="7153618581592392745">हल्का बैंगनी</translation>
@@ -1517,6 +1520,7 @@
 <translation id="7416351320495623771">पासवर्ड प्रबंधित करें…</translation>
 <translation id="7419106976560586862">प्रोफ़ाइल पाथ</translation>
 <translation id="7437289804838430631">संपर्क जानकारी जोड़ें</translation>
+<translation id="743897106051685947">मूल दस्तावेज़</translation>
 <translation id="7438976808740265764">दिसंबर, 2020 के बाद Flash Player बंद कर दिया जाएगा.</translation>
 <translation id="7440140511386898319">ऑफ़लाइन होने पर खोजें</translation>
 <translation id="7441627299479586546">गलत नीति विषय</translation>
@@ -1528,6 +1532,7 @@
 <translation id="7473891865547856676">नहीं, रहने दें</translation>
 <translation id="7481312909269577407">आगे जाएं</translation>
 <translation id="7485870689360869515">कोई डेटा नहीं मिला</translation>
+<translation id="7488762544858401571">बदलाव किया गया</translation>
 <translation id="7495290002932347110">किसी साइट या ऐप्लिकेशन पर हुए डेटा ब्रीच में आपका पासवर्ड उजागर हो गया है. Chrome का सुझाव है कि आप अपने सेव किए हुए पासवर्ड की जांच करें और <ph name="ORIGIN" /> पर अभी अपना पासवर्ड बदलें.</translation>
 <translation id="7498234416455752244">बदलाव करना जारी रखें</translation>
 <translation id="7503664977220660814">आपने अभी जिस साइट पर अपना पासवर्ड डाला है वह सुरक्षित नहीं है. क्रोमियम, <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> और उन साइटों पर तुरंत जाकर, सेव किए गए पासवर्ड की जांच करने का सुझाव देता है जिन पर आपने इस पासवर्ड का इस्तेमाल किया है.</translation>
@@ -1611,6 +1616,7 @@
 <translation id="7770259615151589601">लंबाई वाला फ़ॉर्मैट</translation>
 <translation id="7773005668374414287">इसी तरह सीधा करके रखें</translation>
 <translation id="777702478322588152">प्रांत</translation>
+<translation id="7791011319128895129">अप्रकाशित</translation>
 <translation id="7791196057686275387">बेल</translation>
 <translation id="7791543448312431591">जोड़ें</translation>
 <translation id="7798389633136518089">नीति को किसी क्लाउड स्रोत के ज़रिए सेट नहीं किया गया है। इसलिए, इसे स्वीकार नहीं किया गया.</translation>
@@ -1747,6 +1753,7 @@
 <translation id="8355270400102541638">स्थानीय खराबी रिपोर्ट से जुड़ी जानकारी:</translation>
 <translation id="8363502534493474904">हवाई जहाज़ मोड बंद करें</translation>
 <translation id="8364627913115013041">सेट नहीं है.</translation>
+<translation id="8367477997601443248">असुरक्षित फ़ॉर्म</translation>
 <translation id="8368476060205742148">Google Play सेवाएं</translation>
 <translation id="8371889962595521444">कस्टम रूट सर्टिफ़िकेट</translation>
 <translation id="8380941800586852976">खतरनाक</translation>
@@ -1830,6 +1837,7 @@
 <translation id="8805819170075074995">सूची एंट्री "<ph name="LANGUAGE_ID" />": एंट्री को अनदेखा किया गया क्योंकि इसे SpellcheckLanguage नीति में भी शामिल किया गया है.</translation>
 <translation id="8807160976559152894">हर एक पेज के बाद ट्रिम करें</translation>
 <translation id="8820817407110198400">बुकमार्क</translation>
+<translation id="8831512686168463822">यह फ़ॉर्म एक असुरक्षित कनेक्शन पर सबमिट किया जा रहा है. इससे आपकी जानकारी (जैसे, पासवर्ड, मैसेज या क्रेडिट कार्ड) साइट पर भेजने के बाद, बिना अनुमति के सार्वजनिक हो सकती है.</translation>
 <translation id="883848425547221593">अन्य बुकमार्क</translation>
 <translation id="884264119367021077">शिपिंग पता</translation>
 <translation id="884923133447025588">कोई निरस्तीकरण प्रक्रिया नहीं पाई गई.</translation>

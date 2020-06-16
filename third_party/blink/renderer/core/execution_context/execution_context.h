@@ -276,7 +276,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
       TaskType) = 0;
 
   v8::Isolate* GetIsolate() const { return isolate_; }
-  Agent* GetAgent() const { return GetSecurityContext().GetAgent(); }
+  Agent* GetAgent() const { return agent_; }
 
   v8::MicrotaskQueue* GetMicrotaskQueue() const;
 
@@ -343,7 +343,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
   bool IsCrossOriginIsolated() const;
 
  protected:
-  explicit ExecutionContext(v8::Isolate* isolate);
+  explicit ExecutionContext(v8::Isolate* isolate, Agent*);
   ~ExecutionContext() override;
 
  private:
@@ -361,6 +361,8 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
       mojom::blink::FeaturePolicyFeature feature) const;
 
   v8::Isolate* const isolate_;
+
+  Member<Agent> agent_;
 
   bool DispatchErrorEventInternal(ErrorEvent*, SanitizeScriptErrors);
 

@@ -32,7 +32,8 @@ struct MODULES_EXPORT VideoInputDeviceCapabilities {
   VideoInputDeviceCapabilities(String device_id,
                                String group_id,
                                Vector<media::VideoCaptureFormat> formats,
-                               media::VideoFacingMode facing_mode);
+                               media::VideoFacingMode facing_mode,
+                               bool pan_tilt_zoom_supported);
   VideoInputDeviceCapabilities();
   VideoInputDeviceCapabilities(VideoInputDeviceCapabilities&& other);
   VideoInputDeviceCapabilities& operator=(VideoInputDeviceCapabilities&& other);
@@ -42,6 +43,7 @@ struct MODULES_EXPORT VideoInputDeviceCapabilities {
   String group_id;
   Vector<media::VideoCaptureFormat> formats;
   media::VideoFacingMode facing_mode;
+  bool pan_tilt_zoom_supported;
 };
 
 struct MODULES_EXPORT VideoDeviceCaptureCapabilities {

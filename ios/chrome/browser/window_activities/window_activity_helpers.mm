@@ -17,12 +17,14 @@
 // Activity types.
 NSString* const kLoadURLActivityType = @"org.chromium.load.url";
 NSString* const kLoadIncognitoURLActivityType = @"org.chromium.load.otr-url";
+NSString* const kMoveTabActivityType = @"org.chromium.move-tab";
 
 // User info keys.
 NSString* const kURLKey = @"LoadParams_URL";
 NSString* const kReferrerURLKey = @"LoadParams_ReferrerURL";
 NSString* const kReferrerPolicyKey = @"LoadParams_ReferrerPolicy";
 NSString* const kOriginKey = @"LoadParams_Origin";
+NSString* const kTabIdentifierKey = @"TabIdentifier";
 
 namespace {
 
@@ -74,9 +76,20 @@ NSUserActivity* ActivityToLoadURL(WindowActivityOrigin origin,
   return activity;
 }
 
+NSUserActivity* ActivityToMoveTab(NSString* tab_id) {
+  NSUserActivity* activity =
+      [[NSUserActivity alloc] initWithActivityType:kMoveTabActivityType];
+  [activity addUserInfoEntriesFromDictionary:@{kTabIdentifierKey : tab_id}];
+  return activity;
+}
+
 bool ActivityIsURLLoad(NSUserActivity* activity) {
   return [activity.activityType isEqualToString:kLoadURLActivityType] ||
          [activity.activityType isEqualToString:kLoadIncognitoURLActivityType];
+}
+
+bool ActivityIsTabMove(NSUserActivity* activity) {
+  return [activity.activityType isEqualToString:kMoveTabActivityType];
 }
 
 UrlLoadParams LoadParamsFromActivity(NSUserActivity* activity) {

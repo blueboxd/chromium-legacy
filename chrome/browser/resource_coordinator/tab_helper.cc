@@ -61,19 +61,6 @@ bool ResourceCoordinatorTabHelper::IsLoaded(content::WebContents* contents) {
   return true;
 }
 
-bool ResourceCoordinatorTabHelper::IsFrozen(content::WebContents* contents) {
-#if !defined(OS_ANDROID)
-  if (resource_coordinator::ResourceCoordinatorTabHelper::FromWebContents(
-          contents)) {
-    auto* tab_lifecycle_unit = resource_coordinator::TabLifecycleUnitSource::
-        GetTabLifecycleUnitExternal(contents);
-    if (tab_lifecycle_unit)
-      return tab_lifecycle_unit->IsFrozen();
-  }
-#endif
-  return false;
-}
-
 void ResourceCoordinatorTabHelper::DidReceiveResponse() {
   TabLoadTracker::Get()->DidReceiveResponse(web_contents());
 }

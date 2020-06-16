@@ -126,6 +126,7 @@
 <translation id="2384596874640104496">Πληκτρολόγιο Σινχάλα</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> διαθέσιμα</translation>
 <translation id="2425665904502185219">Συνολικό μέγεθος αρχείου</translation>
+<translation id="2428749644083375155">Αντιγραφή <ph name="NUMBER_OF_ITEMS" /> στοιχείων στον φάκελο <ph name="FOLDER_NAME" /></translation>
 <translation id="2448312741937722512">Τύπος</translation>
 <translation id="2453576648990281505">Το αρχείο υπάρχει ήδη</translation>
 <translation id="2464079411014186876">Παγωτό</translation>
@@ -306,6 +307,7 @@
 <translation id="4579744207439506346">Το <ph name="ENTRY_NAME" /> προστέθηκε στην επιλογή.</translation>
 <translation id="4582497162516204941">Εγκατάσταση με Linux (beta)</translation>
 <translation id="4594543368593301662">Εμφάνιση αποτελεσμάτων για <ph name="SEARCH_TERM" />.</translation>
+<translation id="4603392156942865207">Αντιγραφή αρχείου <ph name="FILE_NAME" /> στον φάκελο <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Καλλιτέχνης</translation>
 <translation id="4656293982926141856">Αυτός ο υπολογιστής</translation>
 <translation id="4669606053856530811">Τα μέλη του "<ph name="SOURCE_NAME" />" θα χάσουν την πρόσβαση, εκτός εάν αυτά τα στοιχεία είναι κοινόχρηστα για τα συγκεκριμένα μέλη.</translation>
@@ -362,6 +364,7 @@
 <translation id="5061708541166515394">Αντίθεση</translation>
 <translation id="5068919226082848014">Πίτσα</translation>
 <translation id="5081517858322016911">Θα διαγραφούν αρχεία που καταλαμβάνουν συνολικά <ph name="TOTAL_FILE_SIZE" /></translation>
+<translation id="508423945471810158">Μετακίνηση <ph name="NUMBER_OF_ITEMS" /> στοιχείων στον φάκελο <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Παρουσιάστηκε σφάλμα.</translation>
 <translation id="5098629044894065541">Εβραϊκά
 </translation>
@@ -468,6 +471,7 @@
 <translation id="6054173164583630569">Πληκτρολόγιο με γαλλικούς χαρακτήρες</translation>
 <translation id="6074825444536523002">Φόρμα Google</translation>
 <translation id="6096979789310008754">Έγινε κατάργηση του κειμένου αναζήτησης, εμφανίζονται όλα τα αρχεία και οι φάκελοι.</translation>
+<translation id="610101264611565198">Μετακίνηση αρχείου <ph name="FILE_NAME" /> στον φάκελο <ph name="FOLDER_NAME" /></translation>
 <translation id="6111770213269631447">Μεταγραφή (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Κενό</translation>
 <translation id="6133173853026656527">Μετακίνηση αρχείου <ph name="FILE_NAME" />…</translation>
@@ -552,6 +556,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Η εγκατάσταση απέτυχε.</translation>
 <translation id="7040138676081995583">Άνοιγμα με…</translation>
+<translation id="7059566040011178088">Λιγότερο από <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">Έχουν επιλεγεί <ph name="COUNT" /> στοιχεία</translation>
 <translation id="7106346894903675391">Αγοράστε περισσότερο αποθηκευτικό χώρο...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;αναζήτηση Drive&lt;/em&gt;</translation>
@@ -666,6 +671,7 @@
 <translation id="8193175696669055101">Μοντέλο της συσκευής</translation>
 <translation id="8208580316430297579">Έργα τέχνης</translation>
 <translation id="8223479393428528563">Για να αποθηκεύσετε αυτά τα αρχεία για χρήση εκτός σύνδεσης, συνδεθείτε ξανά στο διαδίκτυο, κάντε δεξί κλικ στα αρχεία και ενεργοποιήστε την επιλογή <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8231972167769262174">Περίπου <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Ματαίωση</translation>
 <translation id="8261506727792406068">Διαγραφή</translation>
 <translation id="8269755669432358899">Σύμπτυξη πλαισίων σχολίων αρχείων</translation>

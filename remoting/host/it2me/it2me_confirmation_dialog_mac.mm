@@ -32,7 +32,7 @@
 }
 
 - (id)initWithCallback:
-          (const remoting::It2MeConfirmationDialog::ResultCallback&)callback
+          (remoting::It2MeConfirmationDialog::ResultCallback)callback
               username:(const std::string&)username;
 - (void)show;
 - (void)hide;
@@ -55,7 +55,7 @@ class It2MeConfirmationDialogMac : public It2MeConfirmationDialog {
 
   // It2MeConfirmationDialog implementation.
   void Show(const std::string& remote_user_email,
-            const ResultCallback& callback) override;
+            ResultCallback callback) override;
 
  private:
   void OnDialogAction(Result result);
@@ -82,19 +82,19 @@ It2MeConfirmationDialogMac::~It2MeConfirmationDialogMac() {
 }
 
 void It2MeConfirmationDialogMac::Show(const std::string& remote_user_email,
-                                      const ResultCallback& callback) {
-  result_callback_ = callback;
+                                      ResultCallback callback) {
+  result_callback_ = std::move(callback);
 
   dialog_timer_.Start(FROM_HERE, kDialogTimeout,
                       base::Bind(&It2MeConfirmationDialogMac::OnDialogAction,
                                  base::Unretained(this), Result::CANCEL));
 
-  ResultCallback dialog_action_callback = base::Bind(
+  ResultCallback dialog_action_callback = base::BindOnce(
       &It2MeConfirmationDialogMac::OnDialogAction, base::Unretained(this));
 
   @autoreleasepool {
     controller_.reset([[It2MeConfirmationDialogMacController alloc]
-        initWithCallback:dialog_action_callback
+        initWithCallback:std::move(dialog_action_callback)
                 username:remote_user_email]);
     [controller_ show];
   }
@@ -125,11 +125,11 @@ It2MeConfirmationDialogFactory::Create() {
 @implementation It2MeConfirmationDialogMacController
 
 - (id)initWithCallback:
-          (const remoting::It2MeConfirmationDialog::ResultCallback&)callback
+          (remoting::It2MeConfirmationDialog::ResultCallback)callback
               username:(const std::string&)username {
   if ((self = [super init])) {
     _username = base::UTF8ToUTF16(username);
-    _dialog_action_callback = callback;
+    _dialog_action_callback = std::move(callback);
   }
   return self;
 }

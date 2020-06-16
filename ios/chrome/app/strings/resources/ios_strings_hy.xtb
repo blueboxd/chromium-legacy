@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Մտեք հաշիվ</translation>
 <translation id="1509960214886564027">Շատ կայքերում գործառույթները կարող են չաշխատել։</translation>
 <translation id="152234381334907219">Կայքեր, որոնց համար գաղտնաբառերը երբեք չեն պահվում</translation>
+<translation id="1535268707340844072">Ձեր ընթացիկ կարգավորման պատճառով որոշ կայքեր կարող են չաշխատել։ Բոլոր կայքերի քուքիները կարող եք կառավարել <ph name="BEGIN_LINK" />Քուքիների կարգավորումներ<ph name="END_LINK" /> բաժնում։</translation>
 <translation id="1540800554400757039">Հասցե 1</translation>
 <translation id="1545749641540134597">Սկանավորեք QR-կոդը</translation>
 <translation id="1552525382687785070">Ձեր ադմինիստրատորն անջատել է համաժամացումը</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Ակտիվ է եղել <ph name="DAYS" /> օր առաջ</translation>
 <translation id="2074131957428911366">Ցանկացած ժամանակ կարող եք անցնել <ph name="BEGIN_LINK" />կարգավորումներ<ph name="END_LINK" /> և ընտրել, թե ինչն եք ուզում համաժամացնել:</translation>
 <translation id="2079545284768500474">Հետարկել</translation>
+<translation id="2081417079511601293">Կողմնակի քուքիներն արգելափակված են ինկոգնիտո ռեժիմում</translation>
 <translation id="209018056901015185">Հայցել աշխատասեղանի տարբերակը</translation>
 <translation id="2103075008456228677">Բացել history.google.com էջը</translation>
 <translation id="2116625576999540962">Տեղափոխվել է <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> տարր</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">Բացել նոր ներդիրում</translation>
 <translation id="3037605927509011580">Վա՛յ</translation>
 <translation id="3112556859945124369">Նշել…</translation>
+<translation id="3131206671572504478">Բոլոր քուքիներն արգելափակված են</translation>
 <translation id="3153862085237805241">Պահել քարտը</translation>
 <translation id="3157684681743766797">Նշել բոլորը…</translation>
 <translation id="3161291298470460782">Դուք դուրս կգրվեք հաշվից, համաժամացումը կանջատվի, և Chrome-ի բոլոր տվյալները կջնջվեն այս սարքից։ Համաժամացված տվյալները կպահպանվեն ձեր Google հաշվում։</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">Հպեք՝ լեզուն փոխելու համար։</translation>
 <translation id="441868831736628555">Գաղտնիության ծանուցում</translation>
 <translation id="4454246407045105932">Ավելացնել լեզու</translation>
+<translation id="4469418912670346607">Շարունակել կարգավորումը</translation>
 <translation id="4476574785019001431">Կարգավորումներ</translation>
 <translation id="4496373720959965247">Ավելացրեք ներդիրներ և փոխարկեք էջերի միջև</translation>
 <translation id="4508750114462689118">Փակել մուտք գործելու առաջարկը</translation>
@@ -300,6 +304,7 @@
 <translation id="4805759445554688327">Քարտի համարը սխալ է</translation>
 <translation id="4818522717893377262">Ավելացնել լեզու…</translation>
 <translation id="481968316161811770">Cookie ֆայլեր, կայքի տվյալներ</translation>
+<translation id="4826218269716039351">Կողմնակի քուքիներն արգելափակված են</translation>
 <translation id="4833786495304741580">Ավտոմատ ուղարկում է Google-ին օգտագործման վիճակագրությունը և խափանումների մասին հաշվետվությունները:</translation>
 <translation id="4840495572919996524">Ձեր էջանիշները, պատմությունը, գաղտնաբառերն ու այլ կարգավորումներ կհամաժամացվեն ձեր Google հաշվի հետ:</translation>
 <translation id="4854345657858711387">Սահմանեք անցակոդ</translation>
@@ -345,6 +350,7 @@
 <translation id="54401264925851789">Տեղեկություններ էջի հուսալիության մասին</translation>
 <translation id="5443952882982198570">Վարկային քարտեր</translation>
 <translation id="5457907402803865181">Չհաջողվեց համաժամացնել գաղտնաբառերը։</translation>
+<translation id="5489208564673669003">Բոլոր կայքերի քուքիները կարող եք կառավարել <ph name="BEGIN_LINK" />Քուքիների կարգավորումներ<ph name="END_LINK" /> բաժնում։</translation>
 <translation id="5508435575041083207">Դուրս գրվել և ջնջել տվյալներն այս սարքից</translation>
 <translation id="5525269841082836315">Ստեղծել անցաբառ</translation>
 <translation id="5548760955356983418">Handoff-ը թույլ է տալիս ձեզ սկսել որևէ կայքի դիտարկումը այս սարքում, ապա հեշտությամբ շարունակել այն ձեր Mac սարքում: Ներկայումս բաց կայքը կհայտնվի Mac սարքի Միակցիչում:
@@ -432,6 +438,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="6418346271604475326">PDF-ի պատրաստում</translation>
 <translation id="6426067060178468363">Թույլատրել քուքիները</translation>
 <translation id="6434591244308415567">Սխալ առաջացավ։ Փորձեք ավելի ուշ։</translation>
+<translation id="6439338047467462846">Թույլատրել բոլորը</translation>
 <translation id="6445051938772793705">Երկիր</translation>
 <translation id="6445981559479772097">Հաղորդագրությունն ուղարկվեց:</translation>
 <translation id="6447842834002726250">Cookie ֆայլեր</translation>
@@ -439,6 +446,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="6476800141292307438">Էջը թարգմանվում է <ph name="LANGUAGE" />: Կարգավորումները էկրանի ներքևի հատվածում են:</translation>
 <translation id="648164694371393720">Նույնականացման սխալ</translation>
 <translation id="6482629121755362506">Ջնջվեց <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> տարր</translation>
+<translation id="651505212789431520">Չեղարկե՞լ համաժամացումը Համաժամացումը կարող եք ցանկացած ժամանակ միացնել կարգավորումներում։</translation>
 <translation id="6561262006871132942">Մեծացնել</translation>
 <translation id="6610002944194042868">Թարգմանության կարգավորումներ</translation>
 <translation id="6628106477656132239">Վավերականության ժամկետը սխալ է</translation>

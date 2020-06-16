@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/activity_services/activity_service_mediator.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
@@ -15,6 +16,7 @@
 #import "ios/chrome/browser/ui/activity_services/activities/reading_list_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/request_desktop_or_mobile_site_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/send_tab_to_self_activity.h"
+#import "ios/chrome/browser/ui/activity_services/activity_scenario.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
 #import "ios/chrome/browser/ui/activity_services/data/chrome_activity_image_source.h"
 #import "ios/chrome/browser/ui/activity_services/data/chrome_activity_item_thumbnail_generator.h"
@@ -64,6 +66,7 @@ class ActivityServiceMediatorTest : public PlatformTest {
   id mocked_handler_;
   id mocked_thumbnail_generator_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  base::HistogramTester histograms_tester_;
 
   ActivityServiceMediator* mediator_;
 };
@@ -216,31 +219,47 @@ TEST_F(ActivityServiceMediatorTest, ExcludedActivityTypes_TwoItems) {
   EXPECT_TRUE([expectedSet isEqualToSet:computedExclusion]);
 }
 
+// Tests that successful action completion is wired to log a histogram.
 TEST_F(ActivityServiceMediatorTest, ShareFinished_Success) {
   // Since mocked_handler_ is a strict mock, any call to its methods would make
-  // the test fail. That is our success condition.
+  // the test fail.
   NSString* copyActivityString = @"com.google.chrome.copyActivity";
-  [mediator_ shareFinishedWithActivityType:copyActivityString
-                                 completed:YES
-                             returnedItems:@[]
-                                     error:nil];
+  [mediator_ shareFinishedWithScenario:ActivityScenario::TabShareButton
+                          activityType:copyActivityString
+                             completed:YES];
+
+  // Verify histogram is logged. Values are hardcoded as they are encapsulated
+  // away.
+  const char histogramName[] = "Mobile.Share.TabShareButton.Actions";
+  int copyAction = 3;
+  histograms_tester_.ExpectBucketCount(histogramName, copyAction, 1);
 }
 
 TEST_F(ActivityServiceMediatorTest, ShareFinished_Cancel) {
   // Since mocked_handler_ is a strict mock, any call to its methods would make
   // the test fail. That is our success condition.
   NSString* copyActivityString = @"com.google.chrome.copyActivity";
-  [mediator_ shareFinishedWithActivityType:copyActivityString
-                                 completed:NO
-                             returnedItems:@[]
-                                     error:nil];
+  [mediator_ shareFinishedWithScenario:ActivityScenario::TabShareButton
+                          activityType:copyActivityString
+                             completed:NO];
+
+  // Verify histogram is logged. Values are hardcoded as they are encapsulated
+  // away.
+  const char histogramName[] = "Mobile.Share.TabShareButton.Actions";
+  int cancelAction = 1;
+  histograms_tester_.ExpectBucketCount(histogramName, cancelAction, 1);
 }
 
 TEST_F(ActivityServiceMediatorTest, ShareCancelled) {
   // Since mocked_handler_ is a strict mock, any call to its methods would make
   // the test fail. That is our success condition.
-  [mediator_ shareFinishedWithActivityType:nil
-                                 completed:NO
-                             returnedItems:@[]
-                                     error:nil];
+  [mediator_ shareFinishedWithScenario:ActivityScenario::TabShareButton
+                          activityType:nil
+                             completed:NO];
+
+  // Verify histogram is logged. Values are hardcoded as they are encapsulated
+  // away.
+  const char histogramName[] = "Mobile.Share.TabShareButton.Actions";
+  int cancelAction = 1;
+  histograms_tester_.ExpectBucketCount(histogramName, cancelAction, 1);
 }

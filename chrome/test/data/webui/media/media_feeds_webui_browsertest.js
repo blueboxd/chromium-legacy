@@ -301,7 +301,7 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'ConfigTable', function() {
     return whenConfigTableIsPopulatedForTest();
   });
 
-  test('check config table is loaded', function() {
+  test('check safe search toggle sets safe search pref', function() {
     const configRows =
         Array.from(document.querySelectorAll('#config-table-body td'));
 
@@ -312,12 +312,13 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'ConfigTable', function() {
           'Safe Search Enabled (pref)',
           'Disabled (Toggle)',
         ],
-        configRows.map(x => x.textContent.trim()));
+        configRows.slice(0, 4).map(x => x.textContent.trim()));
 
-    const toggle = document.querySelector('#config-table-body a');
-    toggle.click();
+    const toggle =
+        Array.from(document.querySelectorAll('#config-table-body a'));
+    toggle[0].click();
 
-    return whenConfigTableIsUpdatedForTest().then(() => {
+    return whenConfigTableSafeSearchPrefIsUpdatedForTest().then(() => {
       const configRows =
           Array.from(document.querySelectorAll('#config-table-body td'));
 
@@ -328,9 +329,44 @@ TEST_F('MediaFeedsWebUIBrowserTest', 'ConfigTable', function() {
             'Safe Search Enabled (pref)',
             'Enabled (Toggle)',
           ],
-          configRows.map(x => x.textContent.trim()));
+          configRows.slice(0, 4).map(x => x.textContent.trim()));
     });
   });
+
+  test(
+      'check background fetching toggle sets background fetch pref',
+      function() {
+        const configRows =
+            Array.from(document.querySelectorAll('#config-table-body td'));
+
+        assertDeepEquals(
+            [
+              'Background Fetching Enabled (value)',
+              'Disabled',
+              'Background Fetching Enabled (pref)',
+              'Disabled (Toggle)',
+            ],
+            configRows.slice(4, 8).map(x => x.textContent.trim()));
+
+        const toggle =
+            Array.from(document.querySelectorAll('#config-table-body a'));
+        toggle[1].click();
+
+        return whenConfigTableBackgroundFetchingPrefIsUpdatedForTest().then(
+            () => {
+              const configRows = Array.from(
+                  document.querySelectorAll('#config-table-body td'));
+
+              assertDeepEquals(
+                  [
+                    'Background Fetching Enabled (value)',
+                    'Disabled',
+                    'Background Fetching Enabled (pref)',
+                    'Enabled (Toggle)',
+                  ],
+                  configRows.slice(4, 8).map(x => x.textContent.trim()));
+            });
+      });
 
   mocha.run();
 });

@@ -7,7 +7,6 @@ package org.chromium.components.browser_ui.widget;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -16,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.core.view.ViewCompat;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Test;

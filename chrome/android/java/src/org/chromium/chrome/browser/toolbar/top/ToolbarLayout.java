@@ -383,6 +383,11 @@ public abstract class ToolbarLayout
         return mMenuButtonWrapper;
     }
 
+    @VisibleForTesting
+    void setMenuButtonWrapperForTesting(MenuButton menuButton) {
+        mMenuButtonWrapper = menuButton;
+    }
+
     /**
      * @return The {@link ImageButton} containing the menu button.
      */

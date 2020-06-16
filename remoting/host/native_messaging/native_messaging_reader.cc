@@ -181,10 +181,10 @@ NativeMessagingReader::~NativeMessagingReader() {
 #endif  // defined(OS_WIN)
 }
 
-void NativeMessagingReader::Start(MessageCallback message_callback,
-                                  base::Closure eof_callback) {
+void NativeMessagingReader::Start(const MessageCallback& message_callback,
+                                  base::OnceClosure eof_callback) {
   message_callback_ = message_callback;
-  eof_callback_ = eof_callback;
+  eof_callback_ = std::move(eof_callback);
 
   // base::Unretained is safe since |core_| is only deleted via the
   // DeleteSoon task which is posted from this class's dtor.
@@ -199,7 +199,7 @@ void NativeMessagingReader::InvokeMessageCallback(
 }
 
 void NativeMessagingReader::InvokeEofCallback() {
-  eof_callback_.Run();
+  std::move(eof_callback_).Run();
 }
 
 }  // namespace remoting

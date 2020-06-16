@@ -51,13 +51,14 @@ class FrameWindowTreeHost::WindowParentingClientImpl
 
 FrameWindowTreeHost::FrameWindowTreeHost(
     fuchsia::ui::views::ViewToken view_token,
+    scenic::ViewRefPair view_ref_pair,
     content::WebContents* web_contents)
     : web_contents_(web_contents) {
   CreateCompositor();
 
   ui::PlatformWindowInitProperties properties;
   properties.view_token = std::move(view_token);
-  properties.view_ref_pair = scenic::ViewRefPair::New();
+  properties.view_ref_pair = std::move(view_ref_pair);
   view_ref_ = DupViewRef(properties.view_ref_pair.view_ref);
   CreateAndSetPlatformWindow(std::move(properties));
 

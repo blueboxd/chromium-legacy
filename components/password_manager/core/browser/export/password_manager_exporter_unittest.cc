@@ -153,7 +153,7 @@ TEST_F(PasswordManagerExporterTest, WriteFileFailed) {
       destination_path_.DirName().BaseName().AsUTF8Unsafe());
 
   EXPECT_CALL(mock_write_file_, Run(_, _)).WillOnce(Return(false));
-  EXPECT_CALL(mock_delete_file_, Run(destination_path_, false));
+  EXPECT_CALL(mock_delete_file_, Run(destination_path_));
   EXPECT_CALL(
       mock_on_progress_,
       Run(password_manager::ExportProgressStatus::IN_PROGRESS, IsEmpty()));
@@ -216,7 +216,7 @@ TEST_F(PasswordManagerExporterTest, CancelAfterPasswords) {
 
 TEST_F(PasswordManagerExporterTest, CancelWhileExporting) {
   EXPECT_CALL(mock_write_file_, Run(_, _)).Times(0);
-  EXPECT_CALL(mock_delete_file_, Run(destination_path_, false));
+  EXPECT_CALL(mock_delete_file_, Run(destination_path_));
   EXPECT_CALL(
       mock_on_progress_,
       Run(password_manager::ExportProgressStatus::IN_PROGRESS, IsEmpty()));
@@ -235,7 +235,7 @@ TEST_F(PasswordManagerExporterTest, CancelWhileExporting) {
 // exporting. If they choose to cancel, we should clear the file.
 TEST_F(PasswordManagerExporterTest, CancelAfterExporting) {
   EXPECT_CALL(mock_write_file_, Run(_, _)).WillOnce(Return(true));
-  EXPECT_CALL(mock_delete_file_, Run(destination_path_, false));
+  EXPECT_CALL(mock_delete_file_, Run(destination_path_));
   EXPECT_CALL(
       mock_on_progress_,
       Run(password_manager::ExportProgressStatus::IN_PROGRESS, IsEmpty()));

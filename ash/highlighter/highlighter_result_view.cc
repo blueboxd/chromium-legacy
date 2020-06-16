@@ -165,33 +165,35 @@ void ResultLayer::DrawHorizontalBar(gfx::Canvas& canvas,
 
 }  // namespace
 
-HighlighterResultView::HighlighterResultView(aura::Window* root_window) {
-  widget_ = std::make_unique<views::Widget>();
+HighlighterResultView::HighlighterResultView() = default;
 
+HighlighterResultView::~HighlighterResultView() = default;
+
+// static
+views::UniqueWidgetPtr HighlighterResultView::Create(
+    aura::Window* root_window) {
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.name = "HighlighterResult";
   params.accept_events = false;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.parent =
       Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
   params.layer_type = ui::LAYER_SOLID_COLOR;
 
-  widget_->Init(std::move(params));
-  widget_->Show();
-  widget_->SetContentsView(this);
-  widget_->SetFullscreen(true);
-  set_owned_by_client();
+  auto widget = views::UniqueWidgetPtr(
+      std::make_unique<views::Widget>(std::move(params)));
+  widget->SetContentsView(std::make_unique<HighlighterResultView>());
+  widget->SetFullscreen(true);
+  widget->Show();
+  return widget;
 }
-
-HighlighterResultView::~HighlighterResultView() = default;
 
 void HighlighterResultView::Animate(const gfx::RectF& bounds,
                                     HighlighterGestureType gesture_type,
                                     base::OnceClosure done) {
-  ui::Layer* layer = widget_->GetLayer();
+  ui::Layer* layer = GetWidget()->GetLayer();
 
   base::TimeDelta delay;
   base::TimeDelta duration;
@@ -240,7 +242,7 @@ void HighlighterResultView::Animate(const gfx::RectF& bounds,
 
 void HighlighterResultView::FadeIn(const base::TimeDelta& duration,
                                    base::OnceClosure done) {
-  ui::Layer* layer = widget_->GetLayer();
+  ui::Layer* layer = GetWidget()->GetLayer();
 
   {
     ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
@@ -263,7 +265,7 @@ void HighlighterResultView::FadeIn(const base::TimeDelta& duration,
 }
 
 void HighlighterResultView::FadeOut(base::OnceClosure done) {
-  ui::Layer* layer = widget_->GetLayer();
+  ui::Layer* layer = GetWidget()->GetLayer();
 
   base::TimeDelta duration =
       base::TimeDelta::FromMilliseconds(kResultFadeoutDurationMs);

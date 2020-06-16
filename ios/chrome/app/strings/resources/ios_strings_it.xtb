@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Accedi al sito web</translation>
 <translation id="1509960214886564027">Le funzionalità su molti siti potrebbero non essere disponibili</translation>
 <translation id="152234381334907219">Mai salvate</translation>
+<translation id="1535268707340844072">L'impostazione corrente potrebbe causare il malfunzionamento dei siti. Per gestire i cookie per tutti i siti, vedi le <ph name="BEGIN_LINK" />Impostazioni dei cookie<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Indirizzo 1</translation>
 <translation id="1545749641540134597">Scansiona codice QR</translation>
 <translation id="1552525382687785070">Sincronizzazione disattivata dall'amministratore</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Attivo <ph name="DAYS" /> giorni fa</translation>
 <translation id="2074131957428911366">Puoi scegliere in qualsiasi momento i dati da sincronizzare nelle <ph name="BEGIN_LINK" />impostazioni<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Annulla</translation>
+<translation id="2081417079511601293">Blocca cookie di terze parti in incognito</translation>
 <translation id="209018056901015185">Richiedi sito desktop</translation>
 <translation id="2103075008456228677">Apri la pagina history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementi spostati</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">Apri in un'altra scheda</translation>
 <translation id="3037605927509011580">Uffa!</translation>
 <translation id="3112556859945124369">Segna come…</translation>
+<translation id="3131206671572504478">Blocca tutti</translation>
 <translation id="3153862085237805241">Salva carta</translation>
 <translation id="3157684681743766797">Segna tutti come...</translation>
 <translation id="3161291298470460782">In questo modo il tuo account verrà disconnesso, la sincronizzazione verrà disattivata e tutti i dati di Chrome verranno eliminati da questo dispositivo. I tuoi dati sincronizzati rimarranno nel tuo Account Google.</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">Tocca per modificare la lingua.</translation>
 <translation id="441868831736628555">Informativa sulla privacy</translation>
 <translation id="4454246407045105932">Aggiungi lingua</translation>
+<translation id="4469418912670346607">Continua configurazione</translation>
 <translation id="4476574785019001431">Impostazioni</translation>
 <translation id="4496373720959965247">Aggiungi schede e spostati tra le pagine</translation>
 <translation id="4508750114462689118">Chiudi promo accesso</translation>
@@ -300,6 +304,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="4805759445554688327">Numero di carta non valido</translation>
 <translation id="4818522717893377262">Aggiungi lingua…</translation>
 <translation id="481968316161811770">Cookie, dati dei siti</translation>
+<translation id="4826218269716039351">Blocco dei cookie di terze parti</translation>
 <translation id="4833786495304741580">Invia automaticamente a Google statistiche sull'utilizzo e rapporti sugli arresti anomali.</translation>
 <translation id="4840495572919996524">I preferiti, la cronologia, le password e altre impostazioni non verranno più sincronizzati con il tuo Account Google.</translation>
 <translation id="4854345657858711387">Imposta un passcode</translation>
@@ -345,6 +350,7 @@ Per cambiare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincroniz
 <translation id="54401264925851789">Info sicurezza pagina</translation>
 <translation id="5443952882982198570">Carte di credito</translation>
 <translation id="5457907402803865181">Errore durante la sincronizzazione delle password.</translation>
+<translation id="5489208564673669003">Per gestire i cookie per tutti i siti, vedi le <ph name="BEGIN_LINK" />Impostazioni dei cookie<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Esci e cancella i dati da questo dispositivo</translation>
 <translation id="5525269841082836315">Crea passphrase</translation>
 <translation id="5548760955356983418">Handoff ti consente di iniziare a consultare un sito web su questo dispositivo per poi continuare facilmente sul Mac. Il sito web attualmente aperto verrà visualizzato nel Dock sul Mac.
@@ -432,6 +438,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6418346271604475326">Preparazione del PDF</translation>
 <translation id="6426067060178468363">Consenti cookie</translation>
 <translation id="6434591244308415567">Si è verificato un errore. Riprova più tardi.</translation>
+<translation id="6439338047467462846">Consenti tutti</translation>
 <translation id="6445051938772793705">Paese</translation>
 <translation id="6445981559479772097">Messaggio inviato.</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -439,6 +446,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="6476800141292307438">Traduzione della pagina in <ph name="LANGUAGE" />. Opzioni disponibili nella parte inferiore dello schermo.</translation>
 <translation id="648164694371393720">Errore di autenticazione</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementi eliminati</translation>
+<translation id="651505212789431520">Annullare la sincronizzazione? Puoi attivare la sincronizzazione in qualsiasi momento nelle impostazioni.</translation>
 <translation id="6561262006871132942">Aumenta lo zoom</translation>
 <translation id="6610002944194042868">Opzioni di Traduttore</translation>
 <translation id="6628106477656132239">Data di scadenza non valida</translation>
@@ -462,6 +470,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="681368974849482173">Elemento creato</translation>
 <translation id="6831043979455480757">Traduci</translation>
 <translation id="6851516051005285358">Richiedi sito desktop</translation>
+<translation id="6856384753476268833">Gestito dalla tua organizzazione.</translation>
 <translation id="6858855187367714033">Scansione eseguita</translation>
 <translation id="6859944681507688231">Per eseguire la scansione di un codice QR o di una carta di credito, attiva la fotocamera dalle impostazioni.</translation>
 <translation id="6873263987691478642">Visualizzazione divisa</translation>
@@ -540,6 +549,7 @@ Poiché il tuo account è gestito da <ph name="HOSTED_DOMAIN" />, i tuoi dati di
 <translation id="7856733331829174190">Download non riuscito</translation>
 <translation id="7859704718976024901">Cronologia di navigazione</translation>
 <translation id="7887198238286927132">Per tutelare la tua privacy, Chrome non compilerà automaticamente questo campo.</translation>
+<translation id="791251013315685175">Gestito da <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Il tuo elenco di lettura è disponibile offline. Per aggiungere una pagina all'elenco di lettura, tocca <ph name="SHARE_OPENING_ICON" />, quindi <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Esporta password...</translation>

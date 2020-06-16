@@ -129,13 +129,6 @@ class TabManagerStatsCollector::SwapMetricsDelegate
 
 TabManagerStatsCollector::TabManagerStatsCollector() {
   SessionRestore::AddObserver(this);
-
-  // Post BEST_EFFORT task (which will only run after startup is completed) that
-  // starts the periodic sampling of freezing and discarding stats.
-  content::BrowserThread::PostBestEffortTask(
-      FROM_HERE, base::SequencedTaskRunnerHandle::Get(),
-      base::BindOnce(&TabManagerStatsCollector::StartPeriodicSampling,
-                     weak_factory_.GetWeakPtr()));
 }
 
 TabManagerStatsCollector::~TabManagerStatsCollector() {
@@ -429,55 +422,6 @@ void TabManagerStatsCollector::UpdateSessionAndSequence() {
   // is fine because we do not report any metric when those two overlap.
   ++session_id_;
   sequence_ = 0;
-}
-
-void TabManagerStatsCollector::StartPeriodicSampling() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // Post a first task with a random delay less than the sampling interval.
-  base::TimeDelta delay = base::TimeDelta::FromSeconds(
-      base::RandInt(0, kLowFrequencySamplingInterval.InSeconds()));
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&TabManagerStatsCollector::PerformPeriodicSample,
-                     weak_factory_.GetWeakPtr()),
-      delay);
-}
-
-void TabManagerStatsCollector::PerformPeriodicSample() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  sample_start_time_ = NowTicks();
-
-  // Iterate over the tabs and get their data. The TabManager owns us and
-  // outlives us, so will always exist.
-  LifecycleUnitVector lifecycle_units =
-      g_browser_process->GetTabManager()->GetSortedLifecycleUnits();
-  for (auto* lifecycle_unit : lifecycle_units) {
-    DecisionDetails freeze_decision;
-    lifecycle_unit->CanFreeze(&freeze_decision);
-    RecordDecisionDetails(lifecycle_unit, freeze_decision,
-                          LifecycleUnitState::FROZEN);
-  }
-
-  // Determine when the next sample should run based on when this cycle
-  // started.
-  base::TimeDelta delay =
-      (sample_start_time_ + kLowFrequencySamplingInterval) - NowTicks();
-
-  // In the very unlikely case that the system is so busy that another sample
-  // should already have been taken, then skip a cycle and wait a full sampling
-  // period. This provides rudimentary rate limiting that prevents these samples
-  // from taking up too much time.
-  if (delay <= base::TimeDelta())
-    delay = kLowFrequencySamplingInterval;
-
-  // Schedule the next sample.
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&TabManagerStatsCollector::PerformPeriodicSample,
-                     weak_factory_.GetWeakPtr()),
-      delay);
 }
 
 // static

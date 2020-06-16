@@ -87,6 +87,8 @@ public class ClipboardSuggestionProcessor extends BaseSuggestionViewProcessor {
                     }
                     setSuggestionDrawableState(model,
                             SuggestionDrawableState.Builder.forBitmap(getContext(), bitmap)
+                                    .setUseRoundedCorners(true)
+                                    .setLarge(true)
                                     .build());
                     return;
                 }

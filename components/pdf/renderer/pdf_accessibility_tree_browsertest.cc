@@ -448,6 +448,7 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
       chrome_pdf::features::kAccessiblePDFHighlight);
 
   constexpr uint32_t kHighlightWhiteColor = MakeARGB(255, 255, 255, 255);
+  const char kPopupNoteText[] = "Text Note";
 
   text_runs_.emplace_back(kFirstTextRun);
   text_runs_.emplace_back(kSecondTextRun);
@@ -460,6 +461,7 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
     highlight.text_run_index = 0;
     highlight.text_run_count = 2;
     highlight.color = kHighlightWhiteColor;
+    highlight.note_text = kPopupNoteText;
     page_objects_.highlights.push_back(std::move(highlight));
   }
 
@@ -486,6 +488,7 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
    * ++++ Paragraph
    * ++++++ Highlight
    * ++++++++ Static Text
+   * ++++++++ Note
    */
 
   ui::AXNode* root_node = pdf_accessibility_tree.GetRoot();
@@ -517,12 +520,23 @@ TEST_F(PdfAccessibilityTreeTest, TestHighlightCreation) {
   EXPECT_EQ(kHighlightWhiteColor,
             static_cast<uint32_t>(highlight_node->GetIntAttribute(
                 ax::mojom::IntAttribute::kBackgroundColor)));
-  ASSERT_EQ(1u, highlight_node->children().size());
+  ASSERT_EQ(2u, highlight_node->children().size());
 
   ui::AXNode* static_text_node = highlight_node->children()[0];
   ASSERT_TRUE(static_text_node);
   EXPECT_EQ(ax::mojom::Role::kStaticText, static_text_node->data().role);
   ASSERT_EQ(2u, static_text_node->children().size());
+
+  ui::AXNode* popup_note_node = highlight_node->children()[1];
+  ASSERT_TRUE(popup_note_node);
+  EXPECT_EQ(ax::mojom::Role::kNote, popup_note_node->data().role);
+  EXPECT_EQ(kPopupNoteText, popup_note_node->GetStringAttribute(
+                                ax::mojom::StringAttribute::kName));
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_AX_ROLE_DESCRIPTION_PDF_POPUP_NOTE),
+            popup_note_node->GetStringAttribute(
+                ax::mojom::StringAttribute::kRoleDescription));
+  EXPECT_EQ(gfx::RectF(1.0f, 1.0f, 5.0f, 6.0f),
+            popup_note_node->data().relative_bounds.bounds);
 }
 
 TEST_F(PdfAccessibilityTreeTest, TestTextFieldNodeCreation) {

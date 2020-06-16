@@ -119,7 +119,7 @@ class AsyncDocumentSubresourceFilter {
 
   // Should only be called for main frames. Updates |activation_state_| with the
   // more accurate |updated_page_state|, but retains ruleset specific properties
-  // like document whitelisting. Must be called after initial activation state
+  // like document allowlisting. Must be called after initial activation state
   // is computed.
   //
   // Posts a task to update the state in |core_|, so any calls to

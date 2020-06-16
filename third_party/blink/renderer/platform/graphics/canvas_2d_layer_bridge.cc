@@ -255,14 +255,22 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
     return resource_provider;
   }
 
-  if (layer_ && !IsHibernating() && hint == RasterModeHint::kPreferGPU &&
-      acceleration_mode_ != kDisableAcceleration) {
-    return nullptr;  // re-creation will happen through restore()
-  }
+  // Restore() is tried at most four times in two seconds to recreate the
+  // ResourceProvider before the final attempt, in which a new
+  // Canvas2DLayerBridge is created along with its resource provider.
 
   bool want_acceleration = ShouldAccelerate(hint);
   RasterModeHint adjusted_hint = want_acceleration ? RasterModeHint::kPreferGPU
                                                    : RasterModeHint::kPreferCPU;
+
+  // Re-creation will happen through Restore().
+  // If the Canvas2DLayerBridge has just been created, possibly due to failed
+  // attempts of Restore(), the layer would not exist, therefore, it will not
+  // fall through this clause to try Restore() again
+  if (layer_ && !IsHibernating() &&
+      adjusted_hint == RasterModeHint::kPreferGPU) {
+    return nullptr;
+  }
 
   // We call GetOrCreateCanvasResourceProviderImpl directly here to prevent a
   // circular callstack from HTMLCanvasElement.

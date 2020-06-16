@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/optional.h"
 #include "components/safe_browsing/core/proto/client_model.pb.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -40,8 +41,10 @@ bool GetBlurredImage(const SkBitmap& image,
 std::unique_ptr<SkBitmap> BlockMeanAverage(const SkBitmap& image,
                                            int block_size);
 
-// Returns whether the given |image| is a match for the |target|.
-bool IsVisualMatch(const SkBitmap& image, const VisualTarget& target);
+// Returns whether the given |image| is a match for the |target|. Returns
+// nullopt in the case of no match, and the VisionMatchResult if it is a match.
+base::Optional<VisionMatchResult> IsVisualMatch(const SkBitmap& image,
+                                                const VisualTarget& target);
 
 }  // namespace visual_utils
 }  // namespace safe_browsing

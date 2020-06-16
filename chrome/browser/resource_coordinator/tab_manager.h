@@ -20,8 +20,6 @@
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
-#include "chrome/browser/resource_coordinator/intervention_policy_database.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
@@ -70,8 +68,7 @@ class TabManagerStatsCollector;
 class TabManager : public LifecycleUnitObserver,
                    public LifecycleUnitSourceObserver,
                    public TabLoadTracker::Observer,
-                   public TabStripModelObserver,
-                   public metrics::DesktopSessionDurationTracker::Observer {
+                   public TabStripModelObserver {
  public:
   // Forward declaration of resource coordinator signal observer.
   class ResourceCoordinatorSignalObserver;
@@ -155,10 +152,6 @@ class TabManager : public LifecycleUnitObserver,
   // non-zero only during session restore.
   int restored_tab_count() const { return restored_tab_count_; }
 
-  InterventionPolicyDatabase* intervention_policy_database() {
-    return intervention_policy_database_.get();
-  }
-
   UsageClock* usage_clock() { return &usage_clock_; }
 
   // Returns true if the tab was created by session restore and has not finished
@@ -171,7 +164,6 @@ class TabManager : public LifecycleUnitObserver,
 
  private:
   friend class TabManagerStatsCollectorTest;
-  friend class TabManagerWithTabFreezeEnabledTest;
 
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, AutoDiscardable);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingMode);
@@ -180,7 +172,6 @@ class TabManager : public LifecycleUnitObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, CanOnlyDiscardOnce);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ChildProcessNotifications);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, EnablePageAlmostIdleSignal);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, FreezeTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, InvalidOrEmptyURL);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabDiscardDoneCallback);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsInBackgroundTabOpeningSession);
@@ -217,18 +208,10 @@ class TabManager : public LifecycleUnitObserver,
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, UrgentFastShutdownWithUnloadHandler);
   FRIEND_TEST_ALL_PREFIXES(TabManagerWithExperimentDisabledTest,
                            IsInBackgroundTabOpeningSession);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerWithTabFreezeEnabledTest,
-                           FreezingWhenDiscardingVariationParamDisabled);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerWithTabFreezeEnabledTest,
-                           NoUnfreezeWhenUnfreezingVariationParamDisabled);
 
   // Returns true if the |url| represents an internal Chrome web UI page that
   // can be easily reloaded and hence makes a good choice to discard.
   static bool IsInternalPage(const GURL& url);
-
-  // Makes a request to the WebContents at the specified index to freeze its
-  // page.
-  void FreezeWebContentsAt(int index, TabStripModel* model);
 
   // Pause or resume background tab opening according to memory pressure change
   // if there are pending background tabs.
@@ -268,9 +251,6 @@ class TabManager : public LifecycleUnitObserver,
                             LoadingState new_loading_state) override;
   void OnStopTracking(content::WebContents* web_contents,
                       LoadingState loading_state) override;
-
-  // DesktopSessionDurationTracker::Observer:
-  void OnSessionStarted(base::TimeTicks session_start) override;
 
   // Returns the WebContentsData associated with |contents|. Also takes care of
   // creating one if needed.
@@ -351,36 +331,7 @@ class TabManager : public LifecycleUnitObserver,
   // Returns true if the background tab force load timer is running.
   bool IsForceLoadTimerRunning() const;
 
-  // Schedules a call to PerformStateTransitions() in |delay|. This overrides
-  // any previously scheduled call.
-  void SchedulePerformStateTransitions(base::TimeDelta delay);
-
-  // Performs LifecycleUnit state transitions.
-  //
-  // To avoid reentrancy, this is never called synchronously. When a state
-  // transition should happen in response to an event, an asynchronous call to
-  // this is scheduled via SchedulePerformStateTransitions(base::TimeDelta()).
-  // https://crbug.com/855053
-  void PerformStateTransitions();
-
-  // If |lifecycle_unit| can be frozen, freezes it. Returns the time at which
-  // this should be called again, or TimeTicks::Max() if no further call is
-  // needed. |now| is the current time.
-  base::TimeTicks MaybeFreezeLifecycleUnit(LifecycleUnit* lifecycle_unit,
-                                           base::TimeTicks now);
-
-  // If |lifecycle_unit| has been frozen long enough and a sufficient amount of
-  // time elapsed since the last unfreeze, unfreezes it and returns the time at
-  // which it should be frozen again. If |lifecycle_unit| can't be unfrozen now,
-  // returns the time at which this should be called again. |lifecycle_unit|
-  // must be FROZEN. |now| is the current time.
-  base::TimeTicks MaybeUnfreezeLifecycleUnit(LifecycleUnit* lifecycle_unit,
-                                             base::TimeTicks now);
-
   // LifecycleUnitObserver:
-  void OnLifecycleUnitVisibilityChanged(
-      LifecycleUnit* lifecycle_unit,
-      content::Visibility visibility) override;
   void OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) override;
 
   // LifecycleUnitSourceObserver:
@@ -388,17 +339,6 @@ class TabManager : public LifecycleUnitObserver,
 
   // LifecycleUnits managed by this.
   LifecycleUnitSet lifecycle_units_;
-
-  // Parameters for freezing.
-  TabFreezeParams freeze_params_;
-
-  // Timer to update the state of LifecycleUnits. This is an std::unique_ptr to
-  // allow initialization after mock time is setup in unit tests.
-  std::unique_ptr<base::OneShotTimer> state_transitions_timer_;
-
-  // Callback for |state_transitions_timer_|. Stored in a member to avoid
-  // repetitive binds.
-  const base::RepeatingClosure state_transitions_callback_;
 
   // A listener to global memory pressure events.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
@@ -438,13 +378,6 @@ class TabManager : public LifecycleUnitObserver,
   // Records UMAs for tab and system-related events and properties during
   // session restore.
   std::unique_ptr<TabManagerStatsCollector> stats_collector_;
-
-  // The intervention policy database, should be initialized by
-  // InterventionPolicyDatabaseComponentInstallerPolicy.
-  std::unique_ptr<InterventionPolicyDatabase> intervention_policy_database_;
-
-  // Last time at which a LifecycleUnit was temporarily unfrozen.
-  base::TimeTicks last_unfreeze_time_;
 
   // A clock that advances when Chrome is in use.
   UsageClock usage_clock_;

@@ -35,7 +35,7 @@ def GetFileAndDirName(out_path, pak_dir, resource_path):
   dirname = os.path.join(out_path, dirname)
   return (filename, dirname)
 
-def Unpack(pak_path, out_path):
+def Unpack(pak_path, out_path, pak_base_dir):
   pak_dir = os.path.dirname(pak_path)
   pak_id = os.path.splitext(os.path.basename(pak_path))[0]
 
@@ -62,10 +62,11 @@ def Unpack(pak_path, out_path):
         resource_filenames[res.group(2)] = res.group(1)
   assert resource_filenames
 
+  root_dir = pak_base_dir if pak_base_dir else pak_dir
   # Extract packed files, while preserving directory structure.
   for (resource_id, text) in data.resources.iteritems():
     (filename, dirname) = GetFileAndDirName(
-        out_path, pak_dir, resource_filenames[resource_ids[resource_id]])
+        out_path, root_dir, resource_filenames[resource_ids[resource_id]])
     if not os.path.exists(dirname):
       os.makedirs(dirname)
     with open(os.path.join(dirname, filename), 'w') as file:
@@ -75,10 +76,14 @@ def Unpack(pak_path, out_path):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--pak_file')
+  # The expected reference point/root path for files appearing in the pak file.
+  # If this argument is not provided, the location of the pak file will be used
+  # by default.
+  parser.add_argument('--pak_base_dir')
   parser.add_argument('--out_folder')
   args = parser.parse_args()
 
-  Unpack(args.pak_file, args.out_folder)
+  Unpack(args.pak_file, args.out_folder, args.pak_base_dir)
 
   timestamp_file_path = os.path.join(args.out_folder, _TIMESTAMP_FILENAME)
   with open(timestamp_file_path, 'a'):

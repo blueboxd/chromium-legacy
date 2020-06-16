@@ -304,17 +304,19 @@ std::unique_ptr<SkBitmap> BlockMeanAverage(const SkBitmap& image,
   return target;
 }
 
-bool IsVisualMatch(const SkBitmap& image, const VisualTarget& target) {
+base::Optional<VisionMatchResult> IsVisualMatch(const SkBitmap& image,
+                                                const VisualTarget& target) {
   VisualFeatures::BlurredImage blurred_image;
   if (!GetBlurredImage(image, &blurred_image))
-    return false;
+    return base::nullopt;
   std::string hash = GetHashFromBlurredImage(blurred_image);
   size_t hash_distance;
   bool has_hash_distance = GetHashDistance(hash, target.hash(), &hash_distance);
 
   VisualFeatures::ColorHistogram histogram;
   if (!GetHistogramForImage(image, &histogram))
-    return false;
+    return base::nullopt;
+
   opencv::PointDistribution point_distribution =
       HistogramBinsToPointDistribution(histogram.bins());
   base::Optional<double> color_distance = opencv::EMD(
@@ -337,11 +339,17 @@ bool IsVisualMatch(const SkBitmap& image, const VisualTarget& target) {
     }
 
     if (is_match) {
-      return true;
+      VisionMatchResult result;
+      result.set_matched_target_digest(target.digest());
+      if (has_hash_distance)
+        result.set_vision_matched_phash_score(hash_distance);
+      if (color_distance.has_value())
+        result.set_vision_matched_emd_score(color_distance.value());
+      return result;
     }
   }
 
-  return false;
+  return base::nullopt;
 }
 
 }  // namespace visual_utils

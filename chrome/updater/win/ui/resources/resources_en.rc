@@ -142,5 +142,5 @@ BEGIN
     CTEXT           "",IDC_YES_NO_TEXT,7,17,244,34
 END
 
-1 TYPELIB "chrome/updater/server/win/updater_idl.tlb"
+1 TYPELIB "chrome/updater/app/server/win/updater_idl.tlb"
 

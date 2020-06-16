@@ -144,8 +144,7 @@ TEST_F(SAMLOfflineSigninLimiterTest, NoSAMLDefaultLimit) {
   PrefService* prefs = profile_->GetPrefs();
 
   // Set the time of last login with SAML.
-  prefs->SetInt64(prefs::kSAMLLastGAIASignInTime,
-                  clock_.Now().ToInternalValue());
+  prefs->SetTime(prefs::kSAMLLastGAIASignInTime, clock_.Now());
 
   // Authenticate against GAIA without SAML. Verify that the flag enforcing
   // online login and the time of last login with SAML are cleared.
@@ -192,8 +191,7 @@ TEST_F(SAMLOfflineSigninLimiterTest, NoSAMLNoLimit) {
   prefs->SetInteger(prefs::kSAMLOfflineSigninTimeLimit, -1);
 
   // Set the time of last login with SAML.
-  prefs->SetInt64(prefs::kSAMLLastGAIASignInTime,
-                  clock_.Now().ToInternalValue());
+  prefs->SetTime(prefs::kSAMLLastGAIASignInTime, clock_.Now());
 
   // Authenticate against GAIA without SAML. Verify that the flag enforcing
   // online login and the time of last login with SAML are cleared.
@@ -241,8 +239,7 @@ TEST_F(SAMLOfflineSigninLimiterTest, NoSAMLZeroLimit) {
   prefs->SetInteger(prefs::kSAMLOfflineSigninTimeLimit, 0);
 
   // Set the time of last login with SAML.
-  prefs->SetInt64(prefs::kSAMLLastGAIASignInTime,
-                  clock_.Now().ToInternalValue());
+  prefs->SetTime(prefs::kSAMLLastGAIASignInTime, clock_.Now());
 
   // Authenticate against GAIA without SAML. Verify that the flag enforcing
   // online login and the time of last login with SAML are cleared.
@@ -290,8 +287,7 @@ TEST_F(SAMLOfflineSigninLimiterTest, NoSAMLSetLimitWhileLoggedIn) {
   prefs->SetInteger(prefs::kSAMLOfflineSigninTimeLimit, -1);
 
   // Set the time of last login with SAML.
-  prefs->SetInt64(prefs::kSAMLLastGAIASignInTime,
-                  clock_.Now().ToInternalValue());
+  prefs->SetTime(prefs::kSAMLLastGAIASignInTime, clock_.Now());
 
   // Authenticate against GAIA without SAML. Verify that the flag enforcing
   // online login and the time of last login with SAML are cleared.
@@ -321,8 +317,7 @@ TEST_F(SAMLOfflineSigninLimiterTest, NoSAMLRemoveLimitWhileLoggedIn) {
   PrefService* prefs = profile_->GetPrefs();
 
   // Set the time of last login with SAML.
-  prefs->SetInt64(prefs::kSAMLLastGAIASignInTime,
-                  clock_.Now().ToInternalValue());
+  prefs->SetTime(prefs::kSAMLLastGAIASignInTime, clock_.Now());
 
   // Authenticate against GAIA without SAML. Verify that the flag enforcing
   // online login and the time of last login with SAML are cleared.
@@ -352,8 +347,7 @@ TEST_F(SAMLOfflineSigninLimiterTest, NoSAMLLogInWithExpiredLimit) {
   PrefService* prefs = profile_->GetPrefs();
 
   // Set the time of last login with SAML.
-  prefs->SetInt64(prefs::kSAMLLastGAIASignInTime,
-                  clock_.Now().ToInternalValue());
+  prefs->SetTime(prefs::kSAMLLastGAIASignInTime, clock_.Now());
 
   // Advance time by four weeks.
   clock_.Advance(base::TimeDelta::FromDays(28));  // 4 weeks.
@@ -388,8 +382,8 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLDefaultLimit) {
       .Times(0);
   limiter_->SignedIn(UserContext::AUTH_FLOW_GAIA_WITH_SAML);
 
-  base::Time last_gaia_signin_time = base::Time::FromInternalValue(
-      prefs->GetInt64(prefs::kSAMLLastGAIASignInTime));
+  base::Time last_gaia_signin_time =
+      prefs->GetTime(prefs::kSAMLLastGAIASignInTime);
   EXPECT_EQ(clock_.Now(), last_gaia_signin_time);
 
   // Verify that the timer is running.
@@ -412,8 +406,7 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLDefaultLimit) {
       .Times(0);
   limiter_->SignedIn(UserContext::AUTH_FLOW_GAIA_WITH_SAML);
 
-  last_gaia_signin_time = base::Time::FromInternalValue(
-      prefs->GetInt64(prefs::kSAMLLastGAIASignInTime));
+  last_gaia_signin_time = prefs->GetTime(prefs::kSAMLLastGAIASignInTime);
   EXPECT_EQ(clock_.Now(), last_gaia_signin_time);
 
   // Verify that the timer is running.
@@ -437,8 +430,7 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLDefaultLimit) {
       .Times(0);
   limiter_->SignedIn(UserContext::AUTH_FLOW_OFFLINE);
 
-  last_gaia_signin_time = base::Time::FromInternalValue(
-      prefs->GetInt64(prefs::kSAMLLastGAIASignInTime));
+  last_gaia_signin_time = prefs->GetTime(prefs::kSAMLLastGAIASignInTime);
   EXPECT_EQ(gaia_signin_time, last_gaia_signin_time);
 
   // Verify that the timer is running.
@@ -473,8 +465,8 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLNoLimit) {
       .Times(0);
   limiter_->SignedIn(UserContext::AUTH_FLOW_GAIA_WITH_SAML);
 
-  base::Time last_gaia_signin_time = base::Time::FromInternalValue(
-      prefs->GetInt64(prefs::kSAMLLastGAIASignInTime));
+  base::Time last_gaia_signin_time =
+      prefs->GetTime(prefs::kSAMLLastGAIASignInTime);
   EXPECT_EQ(clock_.Now(), last_gaia_signin_time);
 
   // Verify that no timer is running.
@@ -497,8 +489,7 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLNoLimit) {
       .Times(0);
   limiter_->SignedIn(UserContext::AUTH_FLOW_GAIA_WITH_SAML);
 
-  last_gaia_signin_time = base::Time::FromInternalValue(
-      prefs->GetInt64(prefs::kSAMLLastGAIASignInTime));
+  last_gaia_signin_time = prefs->GetTime(prefs::kSAMLLastGAIASignInTime);
   EXPECT_EQ(clock_.Now(), last_gaia_signin_time);
 
   // Verify that no timer is running.
@@ -522,8 +513,7 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLNoLimit) {
       .Times(0);
   limiter_->SignedIn(UserContext::AUTH_FLOW_OFFLINE);
 
-  last_gaia_signin_time = base::Time::FromInternalValue(
-      prefs->GetInt64(prefs::kSAMLLastGAIASignInTime));
+  last_gaia_signin_time = prefs->GetTime(prefs::kSAMLLastGAIASignInTime);
   EXPECT_EQ(gaia_signin_time, last_gaia_signin_time);
 
   // Verify that no timer is running.
@@ -549,8 +539,8 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLZeroLimit) {
       .InSequence(sequence);
   limiter_->SignedIn(UserContext::AUTH_FLOW_GAIA_WITH_SAML);
 
-  const base::Time last_gaia_signin_time = base::Time::FromInternalValue(
-      prefs->GetInt64(prefs::kSAMLLastGAIASignInTime));
+  const base::Time last_gaia_signin_time =
+      prefs->GetTime(prefs::kSAMLLastGAIASignInTime);
   EXPECT_EQ(clock_.Now(), last_gaia_signin_time);
 }
 
@@ -569,8 +559,8 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLSetLimitWhileLoggedIn) {
       .Times(0);
   limiter_->SignedIn(UserContext::AUTH_FLOW_GAIA_WITH_SAML);
 
-  const base::Time last_gaia_signin_time = base::Time::FromInternalValue(
-      prefs->GetInt64(prefs::kSAMLLastGAIASignInTime));
+  const base::Time last_gaia_signin_time =
+      prefs->GetTime(prefs::kSAMLLastGAIASignInTime);
   EXPECT_EQ(clock_.Now(), last_gaia_signin_time);
 
   // Verify that no timer is running.
@@ -598,8 +588,8 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLRemoveLimit) {
       .Times(0);
   limiter_->SignedIn(UserContext::AUTH_FLOW_GAIA_WITH_SAML);
 
-  const base::Time last_gaia_signin_time = base::Time::FromInternalValue(
-      prefs->GetInt64(prefs::kSAMLLastGAIASignInTime));
+  const base::Time last_gaia_signin_time =
+      prefs->GetTime(prefs::kSAMLLastGAIASignInTime);
   EXPECT_EQ(clock_.Now(), last_gaia_signin_time);
 
   // Verify that the timer is running.
@@ -622,8 +612,7 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLLogInWithExpiredLimit) {
   PrefService* prefs = profile_->GetPrefs();
 
   // Set the time of last login with SAML.
-  prefs->SetInt64(prefs::kSAMLLastGAIASignInTime,
-                  clock_.Now().ToInternalValue());
+  prefs->SetTime(prefs::kSAMLLastGAIASignInTime, clock_.Now());
 
   // Advance time by four weeks.
   clock_.Advance(base::TimeDelta::FromDays(28));  // 4 weeks.
@@ -637,8 +626,8 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLLogInWithExpiredLimit) {
       .Times(0);
   limiter_->SignedIn(UserContext::AUTH_FLOW_GAIA_WITH_SAML);
 
-  const base::Time last_gaia_signin_time = base::Time::FromInternalValue(
-      prefs->GetInt64(prefs::kSAMLLastGAIASignInTime));
+  const base::Time last_gaia_signin_time =
+      prefs->GetTime(prefs::kSAMLLastGAIASignInTime);
   EXPECT_EQ(clock_.Now(), last_gaia_signin_time);
 
   // Verify that the timer is running.
@@ -649,8 +638,7 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLLogInOfflineWithExpiredLimit) {
   PrefService* prefs = profile_->GetPrefs();
 
   // Set the time of last login with SAML.
-  prefs->SetInt64(prefs::kSAMLLastGAIASignInTime,
-                  clock_.Now().ToInternalValue());
+  prefs->SetTime(prefs::kSAMLLastGAIASignInTime, clock_.Now());
 
   // Advance time by four weeks.
   const base::Time gaia_signin_time = clock_.Now();
@@ -665,8 +653,8 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLLogInOfflineWithExpiredLimit) {
       .Times(1);
   limiter_->SignedIn(UserContext::AUTH_FLOW_OFFLINE);
 
-  const base::Time last_gaia_signin_time = base::Time::FromInternalValue(
-      prefs->GetInt64(prefs::kSAMLLastGAIASignInTime));
+  const base::Time last_gaia_signin_time =
+      prefs->GetTime(prefs::kSAMLLastGAIASignInTime);
   EXPECT_EQ(gaia_signin_time, last_gaia_signin_time);
 }
 
@@ -674,8 +662,7 @@ TEST_F(SAMLOfflineSigninLimiterTest, SAMLLimitExpiredWhileSuspended) {
   PrefService* prefs = profile_->GetPrefs();
 
   // Set the time of last login with SAML.
-  prefs->SetInt64(prefs::kSAMLLastGAIASignInTime,
-                  clock_.Now().ToInternalValue());
+  prefs->SetTime(prefs::kSAMLLastGAIASignInTime, clock_.Now());
 
   // Authenticate against GAIA with SAML. Verify that the flag enforcing online
   // login is cleared and the time of last login with SAML is set.

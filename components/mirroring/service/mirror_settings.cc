@@ -125,7 +125,7 @@ FrameSenderConfig MirrorSettings::GetDefaultVideoConfig(
   return config;
 }
 
-void MirrorSettings::SetResolutionContraints(int max_width, int max_height) {
+void MirrorSettings::SetResolutionConstraints(int max_width, int max_height) {
   max_width_ = std::max(max_width, min_width_);
   max_height_ = std::max(max_height, min_height_);
 }

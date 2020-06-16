@@ -34,16 +34,30 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
 using network::mojom::ContentSecurityPolicySource;
 using network::mojom::ContentSecurityPolicyType;
+
+class LocalDOMWindowTest : public PageTestBase {};
+
+TEST_F(LocalDOMWindowTest, AttachExecutionContext) {
+  auto* scheduler = GetFrame().GetFrameScheduler();
+  auto* window = GetFrame().DomWindow();
+  EXPECT_TRUE(
+      window->GetAgent()->event_loop()->IsSchedulerAttachedForTest(scheduler));
+  window->FrameDestroyed();
+  EXPECT_FALSE(
+      window->GetAgent()->event_loop()->IsSchedulerAttachedForTest(scheduler));
+}
 
 // Test fixture parameterized on whether the "IsolatedWorldCSP" feature is
 // enabled.

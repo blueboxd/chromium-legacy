@@ -37,6 +37,7 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
@@ -457,7 +458,8 @@ void RenderViewHostImpl::EnterBackForwardCache() {
   frame_tree->UnregisterRenderViewHost(this);
   is_in_back_forward_cache_ = true;
   page_lifecycle_state_manager_->SetIsInBackForwardCache(
-      is_in_back_forward_cache_, /*navigation_start=*/base::nullopt);
+      is_in_back_forward_cache_,
+      /*navigation_start=*/base::nullopt);
 }
 
 void RenderViewHostImpl::LeaveBackForwardCache(
@@ -468,8 +470,8 @@ void RenderViewHostImpl::LeaveBackForwardCache(
   // guaranteed to be committed, so it should be reused going forward.
   frame_tree->RegisterRenderViewHost(this);
   is_in_back_forward_cache_ = false;
-  page_lifecycle_state_manager_->SetIsInBackForwardCache(false,
-                                                         navigation_start);
+  page_lifecycle_state_manager_->SetIsInBackForwardCache(
+      is_in_back_forward_cache_, navigation_start);
 }
 
 void RenderViewHostImpl::SetVisibility(
@@ -479,6 +481,26 @@ void RenderViewHostImpl::SetVisibility(
 
 void RenderViewHostImpl::SetIsFrozen(bool frozen) {
   page_lifecycle_state_manager_->SetIsFrozen(frozen);
+}
+
+void RenderViewHostImpl::OnBackForwardCacheTimeout() {
+  // TODO(yuzus): Implement a method to get a list of RenderFrameHosts
+  // associated with |this|, instead of iterating through all the
+  // RenderFrameHosts in bfcache.
+  const auto& entries = delegate_->GetFrameTree()
+                            ->controller()
+                            ->GetBackForwardCache()
+                            .GetEntries();
+  for (auto& entry : entries) {
+    for (auto* const rvh : entry->render_view_hosts) {
+      if (rvh == this) {
+        RenderFrameHostImpl* rfh = entry->render_frame_host.get();
+        rfh->EvictFromBackForwardCacheWithReason(
+            BackForwardCacheMetrics::NotRestoredReason::kTimeoutPuttingInCache);
+        break;
+      }
+    }
+  }
 }
 
 bool RenderViewHostImpl::IsRenderViewLive() {

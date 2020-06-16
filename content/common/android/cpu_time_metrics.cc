@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <atomic>
 #include <memory>
 
 #include "base/bind_helpers.h"
@@ -16,8 +17,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/process/process_metrics.h"
+#include "base/sequence_checker.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
+#include "base/task/post_task.h"
 #include "base/task/task_observer.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_id_name_manager.h"
@@ -202,24 +205,56 @@ class ProcessCpuTimeTaskObserver : public base::TaskObserver {
   }
 
   ProcessCpuTimeTaskObserver()
-      : process_metrics_(base::ProcessMetrics::CreateCurrentProcessMetrics()),
+      : task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+             // TODO(eseckler): Consider hooking into process shutdown on
+             // desktop to reduce metric data loss.
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+        process_metrics_(base::ProcessMetrics::CreateCurrentProcessMetrics()),
         process_type_(CurrentProcessType()),
         // The observer is created on the main thread of the process.
-        main_thread_id_(base::PlatformThread::CurrentId()) {}
+        main_thread_id_(base::PlatformThread::CurrentId()) {
+    // Browser and GPU processes have a longer lifetime (don't disappear between
+    // navigations), and typically execute a large number of small main-thread
+    // tasks. For these processes, choose a higher reporting interval.
+    if (process_type_ == ProcessTypeForUma::kBrowser ||
+        process_type_ == ProcessTypeForUma::kGpu) {
+      reporting_interval_ = kReportAfterEveryNTasksPersistentProcess;
+    } else {
+      reporting_interval_ = kReportAfterEveryNTasksOtherProcess;
+    }
+    DETACH_FROM_SEQUENCE(thread_pool_);
+  }
 
   // base::TaskObserver implementation:
   void WillProcessTask(const base::PendingTask& pending_task,
                        bool was_blocked_or_low_priority) override {}
 
   void DidProcessTask(const base::PendingTask& pending_task) override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(main_thread_);
+    // We perform the collection from a background thread. Only schedule another
+    // one after a reasonably large amount of work was executed after the last
+    // collection completed. std::memory_order_relaxed because we only care that
+    // we pick up the change back by the posted task eventually.
+    if (collection_in_progress_.load(std::memory_order_relaxed))
+      return;
+    // PostTask() applies a barrier, so this will be applied before the thread
+    // pool task executes and sets |collection_in_progress_| back to false.
+    collection_in_progress_.store(true, std::memory_order_relaxed);
     task_counter_++;
-    if (task_counter_ == kReportAfterEveryNTasks) {
-      CollectAndReportCpuTime();
+    if (task_counter_ == reporting_interval_) {
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &ProcessCpuTimeTaskObserver::CollectAndReportCpuTimeOnThreadPool,
+              base::Unretained(this)));
       task_counter_ = 0;
     }
   }
 
-  void CollectAndReportCpuTime() {
+  void CollectAndReportCpuTimeOnThreadPool() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(thread_pool_);
+
     // This might overflow. We only care that it is different for each cycle.
     current_cycle_++;
 
@@ -288,6 +323,8 @@ class ProcessCpuTimeTaskObserver : public base::TaskObserver {
       ReportThreadCpuTimeDelta(CpuTimeMetricsThreadType::kUnattributedThread,
                                unattributed_delta);
     }
+
+    collection_in_progress_.store(false, std::memory_order_relaxed);
   }
 
  private:
@@ -317,11 +354,19 @@ class ProcessCpuTimeTaskObserver : public base::TaskObserver {
     return GetThreadTypeFromName(name);
   }
 
-  // Sample CPU time after every 100th task to balance overhead of sampling and
-  // loss at process termination.
-  static constexpr int kReportAfterEveryNTasks = 100;
+  // Sample CPU time after a certain number of main-thread task to balance
+  // overhead of sampling and loss at process termination.
+  static constexpr int kReportAfterEveryNTasksPersistentProcess = 500;
+  static constexpr int kReportAfterEveryNTasksOtherProcess = 100;
 
+  // Accessed on main thread.
+  SEQUENCE_CHECKER(main_thread_);
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   int task_counter_ = 0;
+  int reporting_interval_ = 0;  // set in constructor.
+
+  // Accessed on |task_runner_|.
+  SEQUENCE_CHECKER(thread_pool_);
   uint32_t current_cycle_ = 0;
   std::unique_ptr<base::ProcessMetrics> process_metrics_;
   ProcessTypeForUma process_type_;
@@ -330,6 +375,9 @@ class ProcessCpuTimeTaskObserver : public base::TaskObserver {
   // Stored as instance variable to avoid allocation churn.
   base::ProcessMetrics::CPUUsagePerThread cumulative_thread_times_;
   base::flat_map<base::PlatformThreadId, ThreadDetails> thread_details_;
+
+  // Accessed on both sequences.
+  std::atomic<bool> collection_in_progress_;
 };
 
 }  // namespace
@@ -345,7 +393,8 @@ void SetupCpuTimeMetrics() {
 }
 
 void SampleCpuTimeMetricsForTesting() {
-  ProcessCpuTimeTaskObserver::GetInstance()->CollectAndReportCpuTime();
+  ProcessCpuTimeTaskObserver::GetInstance()
+      ->CollectAndReportCpuTimeOnThreadPool();
 }
 
 }  // namespace content

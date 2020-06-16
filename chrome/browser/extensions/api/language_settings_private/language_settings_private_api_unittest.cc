@@ -100,7 +100,23 @@ class LanguageSettingsPrivateApiTest : public ExtensionServiceTestBase {
   ~LanguageSettingsPrivateApiTest() override = default;
 
  protected:
+  void RunGetLanguageListTest();
+
+  virtual void InitFeatures() {
 #if defined(OS_WIN)
+    // Force Windows hybrid spellcheck to be enabled.
+    feature_list_.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
+#endif  // defined(OS_WIN)
+  }
+
+#if defined(OS_WIN)
+  virtual void AddSpellcheckLanguagesForTesting(
+      const std::vector<std::string>& spellcheck_languages_for_testing) {
+    SpellcheckServiceFactory::GetInstance()
+        ->GetForContext(profile())
+        ->InitWindowsDictionaryLanguages(spellcheck_languages_for_testing);
+  }
+
   base::test::ScopedFeatureList feature_list_;
 #endif  // defined(OS_WIN)
 
@@ -111,10 +127,7 @@ class LanguageSettingsPrivateApiTest : public ExtensionServiceTestBase {
     EventRouterFactory::GetInstance()->SetTestingFactory(
         profile(), base::BindRepeating(&BuildEventRouter));
 
-#if defined(OS_WIN)
-    // Force Windows hybrid spellcheck to be enabled.
-    feature_list_.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
-#endif  // defined(OS_WIN)
+    InitFeatures();
 
     LanguageSettingsPrivateDelegateFactory::GetInstance()->SetTestingFactory(
         profile(), base::BindRepeating(&BuildLanguageSettingsPrivateDelegate));
@@ -171,6 +184,10 @@ TEST_F(LanguageSettingsPrivateApiTest, GetSpellcheckDictionaryStatusesTest) {
 }
 
 TEST_F(LanguageSettingsPrivateApiTest, GetLanguageListTest) {
+  RunGetLanguageListTest();
+}
+
+void LanguageSettingsPrivateApiTest::RunGetLanguageListTest() {
   struct LanguageToTest {
     std::string accept_language;
     std::string windows_dictionary_name;  // Empty string indicates to not use
@@ -238,10 +255,8 @@ TEST_F(LanguageSettingsPrivateApiTest, GetLanguageListTest) {
                << language_to_test.windows_dictionary_name;
     }
   }
-  SpellcheckServiceFactory::GetInstance()
-      ->GetForContext(profile())
-      ->InitWindowsDictionaryLanguages(
-          windows_spellcheck_languages_for_testing);
+
+  AddSpellcheckLanguagesForTesting(windows_spellcheck_languages_for_testing);
 #endif  // defined(OS_WIN)
 
   auto function =
@@ -473,5 +488,35 @@ TEST_F(LanguageSettingsPrivateApiTest, RemoveInputMethodTest) {
 }
 
 #endif  // OS_CHROMEOS
+
+#if defined(OS_WIN)
+class LanguageSettingsPrivateApiTestDelayInit
+    : public LanguageSettingsPrivateApiTest {
+ public:
+  LanguageSettingsPrivateApiTestDelayInit() = default;
+
+ protected:
+  void InitFeatures() override {
+    // Force Windows hybrid spellcheck and delayed initialization of the
+    // spellcheck service to be enabled.
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker,
+                              spellcheck::kWinDelaySpellcheckServiceInit},
+        /*disabled_features=*/{});
+  }
+
+  void AddSpellcheckLanguagesForTesting(
+      const std::vector<std::string>& spellcheck_languages_for_testing)
+      override {
+    SpellcheckServiceFactory::GetInstance()
+        ->GetForContext(profile())
+        ->AddSpellcheckLanguagesForTesting(spellcheck_languages_for_testing);
+  }
+};
+
+TEST_F(LanguageSettingsPrivateApiTestDelayInit, GetLanguageListTest) {
+  RunGetLanguageListTest();
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace extensions

@@ -53,6 +53,9 @@ void SolidColorLayerImpl::AppendSolidQuads(
 
   gfx::Rect visible_quad_rect =
       occlusion_in_layer_space.GetUnoccludedContentRect(visible_layer_rect);
+  if (visible_quad_rect.IsEmpty())
+    return;
+
   auto* quad = render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
   quad->SetNew(shared_quad_state, visible_layer_rect, visible_quad_rect, color,
                force_anti_aliasing_off);

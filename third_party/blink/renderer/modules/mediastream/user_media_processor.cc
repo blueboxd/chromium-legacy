@@ -304,7 +304,8 @@ Vector<blink::VideoInputDeviceCapabilities> ToVideoInputDeviceCapabilities(
   Vector<blink::VideoInputDeviceCapabilities> capabilities;
   for (const auto& capability : input_capabilities) {
     capabilities.emplace_back(capability->device_id, capability->group_id,
-                              capability->formats, capability->facing_mode);
+                              capability->formats, capability->facing_mode,
+                              capability->pan_tilt_zoom_supported);
   }
 
   return capabilities;

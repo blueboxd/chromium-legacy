@@ -186,6 +186,7 @@ RENAME = {
     'CHARINFO': 'CharInfo',
     'COLORITEM': 'ColorItem',
     'COLORMAP': 'ColorMap',
+    'Connection': 'RandRConnection',
     'CP': 'CreatePictureAttribute',
     'CW': 'CreateWindowAttribute',
     'DAMAGE': 'DamageId',
@@ -233,7 +234,7 @@ WRITE_SPECIAL = set([
 ])
 
 
-def adjust_type_case(name):
+def adjust_type_name(name):
     if name in RENAME:
         return RENAME[name]
     # If there's an underscore, then this is either snake case or upper case.
@@ -423,7 +424,7 @@ class GenXproto(FileWriter):
             name[0] = 'x11'
 
         for i in range(1, len(name)):
-            name[i] = adjust_type_case(name[i])
+            name[i] = adjust_type_name(name[i])
         name[-1] += self.type_suffix(t)
         return name
 
@@ -802,7 +803,7 @@ class GenXproto(FileWriter):
         self.undef(enum.name[-1])
         with Indent(
                 self, 'enum class %s : %s {' %
-            (adjust_type_case(enum.name[-1]), self.enum_types[enum.name][0]
+            (adjust_type_name(enum.name[-1]), self.enum_types[enum.name][0]
              if enum.name in self.enum_types else 'int'), '};'):
             bitnames = set([name for name, _ in enum.bits])
             for name, value in enum.values:
@@ -837,7 +838,7 @@ class GenXproto(FileWriter):
     def declare_event(self, event, name):
         event_name = name[-1] + 'Event'
         self.undef(event_name)
-        with Indent(self, 'struct %s {' % adjust_type_case(event_name), '};'):
+        with Indent(self, 'struct %s {' % adjust_type_name(event_name), '};'):
             self.write('static constexpr int type_id = %d;' % event.type_id)
             if len(event.opcodes) == 1:
                 self.write('static constexpr uint8_t opcode = %s;' %
@@ -853,7 +854,7 @@ class GenXproto(FileWriter):
     def declare_container(self, struct, struct_name):
         name = struct_name[-1] + self.type_suffix(struct)
         self.undef(name)
-        with Indent(self, 'struct %s {' % adjust_type_case(name), '};'):
+        with Indent(self, 'struct %s {' % adjust_type_name(name), '};'):
             self.declare_fields(struct.fields)
         self.write()
 
@@ -1114,7 +1115,7 @@ class GenXproto(FileWriter):
     # Perform preprocessing like renaming, reordering, and adding additional
     # data fields.
     def resolve(self):
-        self.class_name = (adjust_type_case(self.module.namespace.ext_name)
+        self.class_name = (adjust_type_name(self.module.namespace.ext_name)
                            if self.module.namespace.is_ext else 'XProto')
 
         self.uniquify_events()
@@ -1441,7 +1442,7 @@ class GenReadEvent(FileWriter):
         if name == ('xcb', 'GeGeneric'):
             return
 
-        name = [adjust_type_case(part) for part in name[1:]]
+        name = [adjust_type_name(part) for part in name[1:]]
         typename = '::'.join(name) + 'Event'
 
         cond, opcode = self.event_condition(event, typename, proto)

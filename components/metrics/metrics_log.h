@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_base.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_service_client.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
@@ -165,6 +166,10 @@ class MetricsLog {
 
   LogType log_type() const { return log_type_; }
 
+  // Returns the number of samples in this log, it is only valid after the
+  // histogram delta is calculated.
+  base::HistogramBase::Count samples_count() const { return samples_count_; }
+
   // Exposed for the sake of mocking/accessing in test code.
   ChromeUserMetricsExtension* UmaProtoForTest() { return &uma_proto_; }
 
@@ -211,6 +216,9 @@ class MetricsLog {
   // True if the environment has already been filled in by a call to
   // RecordEnvironment() or LoadSavedEnvironmentFromPrefs().
   bool has_environment_;
+
+  // The number of samples in this log.
+  base::HistogramBase::Count samples_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MetricsLog);
 };

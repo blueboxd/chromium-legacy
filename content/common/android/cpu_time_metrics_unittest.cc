@@ -6,6 +6,7 @@
 
 #include "base/synchronization/waitable_event.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,6 +24,7 @@ void WorkForOneCpuSec(base::WaitableEvent* event) {
 }
 
 TEST(CpuTimeMetricsTest, RecordsMetrics) {
+  base::test::TaskEnvironment task_environment;
   base::HistogramTester histograms;
   base::Thread thread1("StackSamplingProfiler");
 

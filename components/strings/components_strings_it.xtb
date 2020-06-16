@@ -81,6 +81,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Prova a cancellare i cookie<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">Controlla le impostazioni del sistema DNS sicuro</translation>
 <translation id="1307966114820526988">Funzionalità obsolete</translation>
+<translation id="1310581832770023220">I dati presenti in questo modulo vengono inviati tramite una connessione non sicura</translation>
 <translation id="131405271941274527"><ph name="URL" /> vuole inviare e ricevere informazioni su un dispositivo NFC quando tocchi il tuo telefono</translation>
 <translation id="1314509827145471431">Rilegatura a destra</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
@@ -384,6 +385,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="2544644783021658368">Documento singolo</translation>
 <translation id="254947805923345898">Il valore della norma non è valido.</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ha inviato una risposta non valida.</translation>
+<translation id="2552295903035773204">Usa il blocco schermo per verificare le carte da questo momento in poi</translation>
 <translation id="2553853292994445426">Controlla le impostazioni del sistema DNS sicuro. Potresti avere configurato un server DNS sicuro con il quale non è possibile stabilire connessioni.</translation>
 <translation id="2556876185419854533">&amp;Annulla modifica</translation>
 <translation id="257674075312929031">Gruppo</translation>
@@ -1440,6 +1442,7 @@ In caso contrario l'uso sarà bloccato dalle impostazioni sulla privacy. I conte
 <translation id="7138472120740807366">Metodo di consegna</translation>
 <translation id="7139724024395191329">Emirato</translation>
 <translation id="714064300541049402">Spostamento X lato 2 immagine</translation>
+<translation id="7147693119324090759">Invia comunque</translation>
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> altro}other{<ph name="PAYMENT_METHOD_PREVIEW" /> e altri <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Lavanda</translation>
@@ -1516,6 +1519,7 @@ Ulteriori dettagli:
 <translation id="7416351320495623771">Gestisci password…</translation>
 <translation id="7419106976560586862">Percorso profilo</translation>
 <translation id="7437289804838430631">Aggiungi informazioni di contatto</translation>
+<translation id="743897106051685947">Originale</translation>
 <translation id="7438976808740265764">Flash Player non sarà più supportato dopo dicembre 2020.</translation>
 <translation id="7440140511386898319">Esplora offline</translation>
 <translation id="7441627299479586546">Oggetto del criterio errato</translation>
@@ -1527,6 +1531,7 @@ Ulteriori dettagli:
 <translation id="7473891865547856676">No grazie</translation>
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="7485870689360869515">Nessun dato trovato.</translation>
+<translation id="7488762544858401571">Modificato</translation>
 <translation id="7495290002932347110">A causa di una violazione dei dati su un sito o un'app, la tua password è stata esposta. Chrome ti consiglia di controllare le password che hai salvato e di cambiare subito la password su <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Continua modifica</translation>
 <translation id="7503664977220660814">Hai appena inserito la tua password su un sito ingannevole. Chromium ti consiglia di controllare le password salvate per <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e altri siti su cui utilizzi questa password.</translation>
@@ -1610,6 +1615,7 @@ Ulteriori dettagli:
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Stesso ordine a faccia in su</translation>
 <translation id="777702478322588152">Prefettura</translation>
+<translation id="7791011319128895129">Non pubblicata</translation>
 <translation id="7791196057686275387">Rilegatura</translation>
 <translation id="7791543448312431591">Aggiungi</translation>
 <translation id="7798389633136518089">Ignorato perché il criterio non è stato impostato da un'origine cloud.</translation>
@@ -1746,6 +1752,7 @@ Ulteriori dettagli:
 <translation id="8355270400102541638">Contesto arresto anomalo locale:</translation>
 <translation id="8363502534493474904">Disattivare la modalità aereo</translation>
 <translation id="8364627913115013041">Non impostato.</translation>
+<translation id="8367477997601443248">Invio non sicuro del modulo</translation>
 <translation id="8368476060205742148">Google Play Services</translation>
 <translation id="8371889962595521444">Certificati radice personalizzati</translation>
 <translation id="8380941800586852976">Pericolosa</translation>
@@ -1828,6 +1835,7 @@ Ulteriori dettagli:
 <translation id="8805819170075074995">Voce "<ph name="LANGUAGE_ID" />": voce ignorata perché è inclusa anche nella norma SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Taglia dopo ciascuna pagina</translation>
 <translation id="8820817407110198400">Preferiti</translation>
+<translation id="8831512686168463822">Questo modulo viene inviato tramite una connessione non sicura, che potrebbe esporre le tue informazioni (ad esempio, password, messaggi o carte di credito) quando viene inviato a questo sito.</translation>
 <translation id="883848425547221593">Altri Preferiti</translation>
 <translation id="884264119367021077">Indirizzo di spedizione</translation>
 <translation id="884923133447025588">Nessun sistema di revoca trovato.</translation>

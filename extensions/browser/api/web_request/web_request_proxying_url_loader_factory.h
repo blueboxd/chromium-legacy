@@ -179,6 +179,7 @@ class WebRequestProxyingURLLoaderFactory
     OnHeadersReceivedCallback on_headers_received_callback_;
     mojo::Receiver<network::mojom::TrustedHeaderClient> header_client_receiver_{
         this};
+    bool is_header_client_receiver_paused_ = false;
 
     // If |has_any_extra_headers_listeners_| is set to false and a redirect is
     // in progress, this stores the parameters to FollowRedirect that came from

@@ -5,19 +5,15 @@
 #include "chrome/browser/ui/views/accessibility/caption_bubble_controller_views.h"
 
 #include <memory>
+#include <string>
 
 #include "chrome/browser/accessibility/caption_controller.h"
 #include "chrome/browser/accessibility/caption_controller_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/accessibility/caption_bubble.h"
+#include "chrome/browser/ui/views/accessibility/caption_bubble_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/web_contents.h"
-
-namespace {
-// The caption bubble contains 2 lines of text in its normal size and 4 lines
-// in its expanded size, so the maximum number of lines before truncating is 5.
-constexpr int kMaxLines = 5;
-}  // namespace
 
 namespace captions {
 
@@ -47,15 +43,12 @@ CaptionBubbleControllerViews::CaptionBubbleControllerViews(Browser* browser)
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
   caption_bubble_ = new CaptionBubble(
       browser_view->GetContentsView(), browser_view,
-      base::BindRepeating(
-          &CaptionBubbleControllerViews::OnCaptionBubbleCloseClicked,
-          base::Unretained(this)),
       base::BindOnce(&CaptionBubbleControllerViews::OnCaptionBubbleDestroyed,
                      base::Unretained(this)));
   caption_widget_ =
       views::BubbleDialogDelegateView::CreateBubble(caption_bubble_);
   browser_->tab_strip_model()->AddObserver(this);
-  active_contents_ = browser_->tab_strip_model()->GetActiveWebContents();
+  SetActiveContents(browser_->tab_strip_model()->GetActiveWebContents());
 }
 
 CaptionBubbleControllerViews::~CaptionBubbleControllerViews() {
@@ -65,14 +58,6 @@ CaptionBubbleControllerViews::~CaptionBubbleControllerViews() {
     DCHECK(browser_->tab_strip_model());
     browser_->tab_strip_model()->RemoveObserver(this);
   }
-}
-
-void CaptionBubbleControllerViews::OnCaptionBubbleCloseClicked() {
-  // Hide the caption bubble on the active tab.
-  caption_bubble_models_[active_contents_].close();
-  // TODO(crbug.com/1051150): Ensure that caption bubble disappears on the tab
-  // if it is currently displaying an error message.
-  SetCaptionBubbleText();
 }
 
 void CaptionBubbleControllerViews::OnCaptionBubbleDestroyed() {
@@ -87,37 +72,17 @@ void CaptionBubbleControllerViews::OnCaptionBubbleDestroyed() {
 bool CaptionBubbleControllerViews::OnTranscription(
     const chrome::mojom::TranscriptionResultPtr& transcription_result,
     content::WebContents* web_contents) {
-  if (!caption_bubble_ || caption_bubble_models_[web_contents].is_closed)
+  if (!caption_bubble_ || !caption_bubble_models_.count(web_contents) ||
+      caption_bubble_models_[web_contents]->IsClosed())
     return false;
 
-  std::string& partial_text = caption_bubble_models_[web_contents].partial_text;
-  std::string& final_text = caption_bubble_models_[web_contents].final_text;
+  CaptionBubbleModel* caption_bubble_model =
+      caption_bubble_models_[web_contents].get();
+  caption_bubble_model->SetPartialText(transcription_result->transcription);
 
-  partial_text = transcription_result->transcription;
-  SetCaptionBubbleText();
+  if (transcription_result->is_final)
+    caption_bubble_model->CommitPartialText();
 
-  if (transcription_result->is_final) {
-    // If the first character of partial text isn't a space, add a space before
-    // appending it to final text.
-    // TODO(crbug.com/1055150): This feature is launching for English first.
-    // Make sure spacing is correct for all languages.
-    final_text += partial_text;
-    if (partial_text.size() > 0 &&
-        partial_text.compare(partial_text.size() - 1, 1, " ") != 0) {
-      final_text += " ";
-    }
-
-    // Truncate the final text to kMaxLines lines long.
-    const size_t num_lines = caption_bubble_->GetNumLinesInLabel();
-    if (num_lines > kMaxLines) {
-      DCHECK(base::IsStringASCII(final_text));
-      size_t truncate_index =
-          caption_bubble_->GetTextIndexOfLineInLabel(num_lines - kMaxLines);
-      final_text.erase(0, truncate_index);
-      partial_text.clear();
-      SetCaptionBubbleText();
-    }
-  }
   return true;
 }
 
@@ -131,16 +96,7 @@ void CaptionBubbleControllerViews::OnTabStripModelChanged(
     return;
   if (selection.selected_tabs_were_removed)
     caption_bubble_models_.erase(selection.old_contents);
-
-  active_contents_ = selection.new_contents;
-  SetCaptionBubbleText();
-}
-
-void CaptionBubbleControllerViews::SetCaptionBubbleText() {
-  std::string text;
-  if (active_contents_ && caption_bubble_models_.count(active_contents_))
-    text = caption_bubble_models_[active_contents_].full_text();
-  caption_bubble_->SetText(text);
+  SetActiveContents(selection.new_contents);
 }
 
 void CaptionBubbleControllerViews::UpdateCaptionStyle(
@@ -152,6 +108,21 @@ views::View* CaptionBubbleControllerViews::GetFocusableCaptionBubble() {
   if (caption_widget_ && caption_widget_->IsVisible())
     return caption_bubble_;
   return nullptr;
+}
+
+void CaptionBubbleControllerViews::SetActiveContents(
+    content::WebContents* contents) {
+  active_contents_ = contents;
+  if (!active_contents_) {
+    caption_bubble_->SetModel(nullptr);
+    return;
+  }
+  if (!caption_bubble_models_.count(active_contents_)) {
+    caption_bubble_models_.emplace(
+        active_contents_,
+        std::make_unique<CaptionBubbleModel>(active_contents_));
+  }
+  caption_bubble_->SetModel(caption_bubble_models_[active_contents_].get());
 }
 
 }  // namespace captions

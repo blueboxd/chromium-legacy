@@ -10,6 +10,8 @@ pkasting@chromium.org
 sky@chromium.org
 collinbaker@chromium.org
 corising@chromium.org
+tbergquist@chromium.org
+connily@chromium.org
 
 per-file drag_and_drop_interactive_uitest.*=lukasza@chromium.org
 per-file drag_and_drop_interactive_uitest.*=paulmeyer@chromium.org

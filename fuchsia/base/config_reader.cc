@@ -29,14 +29,14 @@ base::Optional<base::Value> ReadPackageConfig() {
     return base::nullopt;
   }
 
-  base::JSONReader reader;
-  base::Optional<base::Value> parsed = reader.Read(file_content);
-  CHECK(parsed) << "Failed to parse " << path.value() << ": "
-                << reader.GetErrorMessage();
-  CHECK(parsed->is_dict()) << "Config is not a JSON dictinary: "
-                           << path.value();
+  base::JSONReader::ValueWithError parsed =
+      base::JSONReader::ReadAndReturnValueWithError(file_content);
+  CHECK(parsed.value) << "Failed to parse " << path.value() << ": "
+                      << parsed.error_message;
+  CHECK(parsed.value->is_dict())
+      << "Config is not a JSON dictionary: " << path.value();
 
-  return std::move(parsed.value());
+  return std::move(parsed.value);
 }
 
 }  // namespace

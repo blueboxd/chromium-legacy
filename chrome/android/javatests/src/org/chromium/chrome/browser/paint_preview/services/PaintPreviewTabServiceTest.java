@@ -4,11 +4,13 @@
 
 package org.chromium.chrome.browser.paint_preview.services;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
@@ -27,6 +29,7 @@ import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
 /** Tests for the Paint Preview Tab Manager. */
@@ -39,6 +42,9 @@ public class PaintPreviewTabServiceTest {
     @Rule
     public final ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
+
+    @Rule
+    public TemporaryFolder mTemporaryFolder = new TemporaryFolder();
 
     private TabModelSelector mTabModelSelector;
     private TabModel mTabModel;
@@ -87,5 +93,31 @@ public class PaintPreviewTabServiceTest {
         CriteriaHelper.pollUiThread(() -> {
             return !mPaintPreviewTabService.hasCaptureForTab(tabId);
         }, "Paint Preview didn't get deleted.", TIMEOUT_MS, POLLING_INTERVAL_MS);
+    }
+
+    /**
+     * Verifies the early cache is created correctly.
+     */
+    @Test
+    @MediumTest
+    @Feature({"PaintPreview"})
+    public void testEarlyCache() throws Exception {
+        mTemporaryFolder.newFolder("1");
+        mTemporaryFolder.newFile("2.zip");
+        mTemporaryFolder.newFile("6.zip");
+        mTemporaryFolder.newFolder("10");
+
+        HashSet<Integer> expectedFiles = new HashSet<>();
+        expectedFiles.add(1);
+        expectedFiles.add(2);
+        expectedFiles.add(6);
+        expectedFiles.add(10);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mPaintPreviewTabService = PaintPreviewTabServiceFactory.getServiceInstance();
+            mPaintPreviewTabService.createPreNativeCache(mTemporaryFolder.getRoot().getPath());
+        });
+
+        Assert.assertEquals(expectedFiles, mPaintPreviewTabService.mPreNativeCache);
     }
 }

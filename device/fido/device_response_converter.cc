@@ -32,12 +32,21 @@ namespace {
 constexpr size_t kResponseCodeLength = 1;
 
 ProtocolVersion ConvertStringToProtocolVersion(base::StringPiece version) {
-  if (version == kCtap2Version)
+  if (version == kCtap2Version || version == kCtap2_1Version)
     return ProtocolVersion::kCtap2;
   if (version == kU2fVersion)
     return ProtocolVersion::kU2f;
 
   return ProtocolVersion::kUnknown;
+}
+
+Ctap2Version ConvertStringToCtap2Version(base::StringPiece version) {
+  if (version == kCtap2Version)
+    return Ctap2Version::kCtap2_0;
+  if (version == kCtap2_1Version)
+    return Ctap2Version::kCtap2_1;
+
+  return Ctap2Version::kUnknown;
 }
 
 // Converts a CBOR unsigned integer value to a uint32_t. The conversion is
@@ -195,6 +204,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
   }
 
   base::flat_set<ProtocolVersion> protocol_versions;
+  base::flat_set<Ctap2Version> ctap2_versions;
   base::flat_set<base::StringPiece> advertised_protocols;
   for (const auto& version : it->second.GetArray()) {
     if (!version.is_string())
@@ -212,12 +222,11 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       continue;
     }
 
-    if (!protocol_versions.insert(protocol).second) {
-      // A duplicate value will have already caused an error therefore hitting
-      // this suggests that |ConvertStringToProtocolVersion| is non-injective.
-      NOTREACHED();
-      return base::nullopt;
+    if (protocol == ProtocolVersion::kCtap2) {
+      ctap2_versions.insert(ConvertStringToCtap2Version(version_string));
     }
+
+    protocol_versions.insert(protocol);
   }
 
   if (protocol_versions.empty())
@@ -230,7 +239,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
   }
 
   AuthenticatorGetInfoResponse response(
-      std::move(protocol_versions),
+      std::move(protocol_versions), ctap2_versions,
       base::make_span<kAaguidLength>(it->second.GetBytestring()));
 
   AuthenticatorSupportedOptions options;

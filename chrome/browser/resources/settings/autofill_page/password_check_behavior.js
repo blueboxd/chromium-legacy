@@ -41,6 +41,15 @@ export const PasswordCheckBehavior = {
       type: Object,
       value: () => ({state: chrome.passwordsPrivate.PasswordCheckState.IDLE}),
     },
+
+    /**
+     * Stores whether the status was fetched from the backend.
+     * @type {boolean}
+     */
+    isInitialStatus: {
+      type: Boolean,
+      value: true,
+    },
   },
 
   /**
@@ -58,7 +67,10 @@ export const PasswordCheckBehavior = {
 
   /** @override */
   attached() {
-    this.statusChangedListener_ = status => this.status = status;
+    this.statusChangedListener_ = status => {
+      this.status = status;
+      this.isInitialStatus = false;
+    };
     this.leakedCredentialsListener_ = compromisedCredentials => {
       this.updateCompromisedPasswordList(compromisedCredentials);
 

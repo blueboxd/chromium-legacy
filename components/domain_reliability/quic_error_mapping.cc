@@ -368,6 +368,11 @@ const struct QuicErrorMapping {
      "quic.http_duplicate_setting_identifier"},
     {quic::QUIC_HTTP_INVALID_MAX_PUSH_ID, "quic.http_invalid_max_push_id"},
     {quic::QUIC_HTTP_STREAM_LIMIT_TOO_LOW, "quic.http_stream_limit_too_low"},
+    {quic::QUIC_ZERO_RTT_UNRETRANSMITTABLE, "quic.zero_rtt_unretransmittable"},
+    {quic::QUIC_ZERO_RTT_REJECTION_LIMIT_REDUCED,
+     "quic.zero_rtt_rejection_limit_reduced"},
+    {quic::QUIC_ZERO_RTT_RESUMPTION_LIMIT_REDUCED,
+     "quic.zero_rtt_resumption_limit_reduced"},
 
     // QUIC_INVALID_APPLICATION_CLOSE_DATA was code 101. The code has been
     // deprecated, but to keep the assert below happy, there needs to be

@@ -343,9 +343,6 @@ void Page::DocumentDetached(Document* document) {
   if (validation_message_client_)
     validation_message_client_->DocumentDetached(*document);
 
-  if (agent_metrics_collector_)
-    agent_metrics_collector_->DidDetachDocument(*document);
-
   GetChromeClient().DocumentDetached(*document);
 }
 

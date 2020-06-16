@@ -30,7 +30,6 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     private Tab mTab;
     private PaintPreviewTabService mPaintPreviewTabService;
     private PlayerManager mPlayerManager;
-    private Runnable mOnShown;
     private Runnable mOnDismissed;
     private Boolean mInitializing;
 
@@ -60,17 +59,17 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
         // Check if a capture exists. This is a quick check using a cache.
         boolean hasCapture = mPaintPreviewTabService.hasCaptureForTab(mTab.getId());
         mInitializing = hasCapture;
-        if (hasCapture) {
-            mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(),
-                    mPaintPreviewTabService, String.valueOf(mTab.getId()), this::onLinkClicked,
-                    this::removePaintPreview,
-                    () -> TabViewManager.get(mTab).addTabViewProvider(this),
-                    TabThemeColorHelper.getBackgroundColor(mTab), this::removePaintPreview);
-            mOnShown = onShown;
-            mOnDismissed = onDismissed;
-        }
+        if (!hasCapture) return false;
 
-        return hasCapture;
+        mPlayerManager = new PlayerManager(mTab.getUrl(), mTab.getContext(),
+                mPaintPreviewTabService, String.valueOf(mTab.getId()), this::onLinkClicked,
+                this::removePaintPreview, () -> {
+                    mInitializing = false;
+                    onShown.run();
+                }, TabThemeColorHelper.getBackgroundColor(mTab), this::removePaintPreview);
+        mOnDismissed = onDismissed;
+        TabViewManager.get(mTab).addTabViewProvider(this);
+        return true;
     }
 
     /**
@@ -78,7 +77,6 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
      * nothing if there is no view showing.
      */
     private void removePaintPreview() {
-        mOnShown = null;
         mOnDismissed = null;
         mInitializing = false;
         if (mTab == null || mPlayerManager == null) return;
@@ -107,12 +105,6 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
     @Override
     public View getView() {
         return mPlayerManager == null ? null : mPlayerManager.getView();
-    }
-
-    @Override
-    public void onShown() {
-        mInitializing = false;
-        if (mOnShown != null) mOnShown.run();
     }
 
     @Override

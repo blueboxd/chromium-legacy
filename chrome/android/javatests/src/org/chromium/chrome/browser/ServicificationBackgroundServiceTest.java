@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser;
 
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import com.google.android.gms.gcm.TaskParams;
 

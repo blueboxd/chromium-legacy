@@ -18,6 +18,7 @@
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
+#include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "chrome/android/chrome_jni_headers/PaintPreviewTabService_jni.h"
 #endif  // defined(OS_ANDROID)
@@ -174,6 +175,16 @@ void PaintPreviewTabService::AuditArtifactsAndroid(
   std::vector<int> tab_ids;
   base::android::JavaIntArrayToIntVector(env, j_tab_ids, &tab_ids);
   AuditArtifacts(tab_ids);
+}
+
+jboolean PaintPreviewTabService::IsCacheInitializedAndroid(JNIEnv* env) {
+  return static_cast<jboolean>(CacheInitialized());
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+PaintPreviewTabService::GetPathAndroid(JNIEnv* env) {
+  return base::android::ConvertUTF8ToJavaString(
+      env, GetFileManager()->GetPath().AsUTF8Unsafe());
 }
 #endif  // defined(OS_ANDROID)
 

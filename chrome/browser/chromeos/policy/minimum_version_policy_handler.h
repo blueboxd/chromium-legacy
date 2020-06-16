@@ -160,6 +160,10 @@ class MinimumVersionPolicyHandler
   bool IsPolicyApplicable();
   void Reset();
 
+  // Handles post update completed actions like reset timers, hide update
+  // required notification and stop observing build state.
+  void ResetOnUpdateCompleted();
+
   // Handles the state when update is required as per the policy. If on the
   // login screen, update required screen is shown, else the user is logged out
   // if the device is not updated within the given |warning_time|. The

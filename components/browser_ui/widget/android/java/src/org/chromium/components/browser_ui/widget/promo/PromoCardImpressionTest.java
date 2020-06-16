@@ -5,10 +5,11 @@
 package org.chromium.components.browser_ui.widget.promo;
 
 import android.app.Activity;
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Test;

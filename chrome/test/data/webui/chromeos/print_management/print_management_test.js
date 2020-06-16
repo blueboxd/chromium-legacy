@@ -19,6 +19,27 @@ const CompletionStatus = {
 const ActivePrintJobState =
     chromeos.printing.printingManager.mojom.ActivePrintJobState;
 
+const PrinterErrorCode = {
+  NO_ERROR: chromeos.printing.printingManager.mojom.PrinterErrorCode.kNoError,
+  PAPER_JAM: chromeos.printing.printingManager.mojom.PrinterErrorCode.kPaperJam,
+  OUT_OF_PAPER:
+      chromeos.printing.printingManager.mojom.PrinterErrorCode.kOutOfPaper,
+  OUT_OF_INK:
+      chromeos.printing.printingManager.mojom.PrinterErrorCode.kOutOfPaper,
+  DOOR_OPEN: chromeos.printing.printingManager.mojom.PrinterErrorCode.kDoorOpen,
+  PRINTER_UNREACHABLE: chromeos.printing.printingManager.mojom.PrinterErrorCode
+                           .kPrinterUnreachable,
+  TRAY_MISSING:
+      chromeos.printing.printingManager.mojom.PrinterErrorCode.kTrayMissing,
+  OUTPUT_FULL:
+      chromeos.printing.printingManager.mojom.PrinterErrorCode.kOutputFull,
+  STOPPED: chromeos.printing.printingManager.mojom.PrinterErrorCode.kStopped,
+  FILTER_FAILED:
+      chromeos.printing.printingManager.mojom.PrinterErrorCode.kFilterFailed,
+  UNKNOWN_ERROR:
+      chromeos.printing.printingManager.mojom.PrinterErrorCode.kUnknownError,
+};
+
 /**
  * Converts a JS string to mojo_base::mojom::String16 object.
  * @param {string} str
@@ -86,15 +107,13 @@ function createJobEntry(id, title, date, completedInfo, activeInfo) {
 
 /**
  * @param {number} completionStatus
+ * @param {number} printerErrorCode
  * @return {!chromeos.printing.printingManager.mojom.CompletedPrintJobInfo}
  */
-function createCompletedPrintJobInfo(completionStatus) {
-  // TODO(crbug/1053704): Add |printerErrorCode| to param of this function when
-  // printer error codes are used.
+function createCompletedPrintJobInfo(completionStatus, printerErrorCode) {
   let completedInfo = {
     'completionStatus': completionStatus,
-    'printerErrorCode':
-        chromeos.printing.printingManager.mojom.PrinterErrorCode.kNoError,
+    'printerErrorCode': printerErrorCode,
   };
   return completedInfo;
 }
@@ -272,8 +291,8 @@ class FakePrintingMetadataProvider {
       // Create copy of |job| to modify.
       let updatedJob = Object.assign({}, job);
       updatedJob.activePrintJobInfo = null;
-      updatedJob.completedInfo =
-          createCompletedPrintJobInfo(CompletionStatus.PRINTED);
+      updatedJob.completedInfo = createCompletedPrintJobInfo(
+          CompletionStatus.PRINTED, PrinterErrorCode.NO_ERROR);
       // Replace with updated print job.
       const idx =
           this.printJobs_.findIndex(arr_job => arr_job.id === updatedJob.id);
@@ -400,7 +419,8 @@ suite('PrintManagementTest', () => {
   }
 
   test('PrintHistoryListIsSortedReverseChronologically', () => {
-    const completedInfo = createCompletedPrintJobInfo(CompletionStatus.PRINTED);
+    const completedInfo = createCompletedPrintJobInfo(
+        CompletionStatus.PRINTED, PrinterErrorCode.NO_ERROR);
     const expectedArr = [
       createJobEntry(
           'newest', 'titleA',
@@ -443,7 +463,8 @@ suite('PrintManagementTest', () => {
   });
 
   test('ClearAllPrintHistory', () => {
-    const completedInfo = createCompletedPrintJobInfo(CompletionStatus.PRINTED);
+    const completedInfo = createCompletedPrintJobInfo(
+        CompletionStatus.PRINTED, PrinterErrorCode.NO_ERROR);
     const expectedArr = [
       createJobEntry(
           'fileA', 'titleA',
@@ -491,7 +512,8 @@ suite('PrintManagementTest', () => {
   });
 
   test('PrintJobDeletesFromObserver', () => {
-    const completedInfo = createCompletedPrintJobInfo(CompletionStatus.PRINTED);
+    const completedInfo = createCompletedPrintJobInfo(
+        CompletionStatus.PRINTED, PrinterErrorCode.NO_ERROR);
     const expectedArr = [
       createJobEntry(
           'fileA', 'titleA',
@@ -647,7 +669,9 @@ suite('PrintManagementTest', () => {
             /*printedPages=*/ 0, ActivePrintJobState.kStarted));
 
     const expectedPrintJobArr = [createJobEntry(
-        id, title, date, createCompletedPrintJobInfo(CompletionStatus.PRINTED),
+        id, title, date,
+        createCompletedPrintJobInfo(
+            CompletionStatus.PRINTED, PrinterErrorCode.NO_ERROR),
         /*activeInfo=*/ '')];
 
     return initializePrintManagementApp([activeJob])
@@ -684,7 +708,8 @@ suite('PrintManagementTest', () => {
 
     const expectedHistoryList = [createJobEntry(
         kId, kTitle, kTime,
-        createCompletedPrintJobInfo(CompletionStatus.CANCELED))];
+        createCompletedPrintJobInfo(
+            CompletionStatus.CANCELED, PrinterErrorCode.NO_ERROR))];
 
     return initializePrintManagementApp(expectedArr)
         .then(() => {
@@ -790,9 +815,11 @@ suite('PrintJobEntryTest', () => {
   test('initializeJobEntry', () => {
     const expectedTitle = 'title.pdf';
     const expectedStatus = CompletionStatus.PRINTED;
+    const expectedPrinterError = PrinterErrorCode.NO_ERROR;
     const expectedCreationTime = convertToMojoTime(new Date());
 
-    const completedInfo = createCompletedPrintJobInfo(expectedStatus);
+    const completedInfo =
+        createCompletedPrintJobInfo(expectedStatus, expectedPrinterError);
     jobEntryTestElement.jobEntry = createJobEntry(
         /*id=*/ '1', expectedTitle, expectedCreationTime, completedInfo,
         /*activeInfo=*/ null);
@@ -813,6 +840,32 @@ suite('PrintJobEntryTest', () => {
     jobEntryTestElement.set('jobEntry.creationTime', {
       internalValue: convertToMojoTime(new Date('February 5, 2020 03:24:00'))
     });
+    assertEquals(
+        'Feb 5, 2020',
+        jobEntryTestElement.$$('#creationTime').textContent.trim());
+  });
+
+  test('initializeFailedJobEntry', () => {
+    const expectedTitle = 'titleA.doc';
+    // Create a print job with a failed status with error: out of paper.
+    jobEntryTestElement.jobEntry = createJobEntry(
+        /*id=*/ '1', expectedTitle,
+        convertToMojoTime(new Date('February 5, 2020 03:24:00')),
+        createCompletedPrintJobInfo(
+            CompletionStatus.FAILED, PrinterErrorCode.OUT_OF_PAPER),
+        /*activeInfo=*/ null);
+
+    flush();
+
+    // Assert the title, creation time, and status are displayed correctly.
+    assertEquals(
+        expectedTitle, jobEntryTestElement.$$('#jobTitle').textContent.trim());
+    assertEquals(
+        'Failed - Out of paper',
+        jobEntryTestElement.$$('#completionStatus').textContent.trim());
+    // Verify correct icon is shown.
+    assertEquals(
+        'print-management:file-word', jobEntryTestElement.$$('#fileIcon').icon);
     assertEquals(
         'Feb 5, 2020',
         jobEntryTestElement.$$('#creationTime').textContent.trim());

@@ -16,6 +16,7 @@
 #include "url/gurl.h"
 
 namespace paint_preview {
+class PaintPreviewTabService;
 
 // FileManager manages paint preview files associated with a root directory.
 // Typically the root directory is <profile_dir>/paint_previews/<feature>.
@@ -95,6 +96,9 @@ class FileManager : public base::RefCountedThreadSafe<FileManager> {
  private:
   friend class base::RefCountedThreadSafe<FileManager>;
   ~FileManager();
+
+  friend class PaintPreviewTabService;
+  base::FilePath GetPath() const { return root_directory_; }
 
   enum StorageType {
     kNone = 0,

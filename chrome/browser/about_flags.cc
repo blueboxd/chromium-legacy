@@ -1250,20 +1250,6 @@ const FeatureEntry::FeatureVariation kOverscrollHistoryNavigationVariations[] =
       base::size(kOverscrollHistoryNavigationBottomSheet), nullptr}};
 #endif  // defined(OS_ANDROID)
 
-#if !defined(OS_ANDROID)
-const FeatureEntry::FeatureParam kTabFreeze_FreezeNoUnfreeze[] = {
-    {resource_coordinator::kTabFreeze_ShouldPeriodicallyUnfreezeParam,
-     "false"}};
-const FeatureEntry::FeatureParam kTabFreeze_FreezeWithUnfreeze[] = {
-    {resource_coordinator::kTabFreeze_ShouldPeriodicallyUnfreezeParam, "true"}};
-const FeatureEntry::FeatureVariation kTabFreezeVariations[] = {
-    {"Freeze - No Unfreeze", kTabFreeze_FreezeNoUnfreeze,
-     base::size(kTabFreeze_FreezeNoUnfreeze), nullptr},
-    {"Freeze - Unfreeze 10 seconds every 15 minutes",
-     kTabFreeze_FreezeWithUnfreeze, base::size(kTabFreeze_FreezeWithUnfreeze),
-     nullptr}};
-#endif
-
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kExploreSitesExperimental = {
     chrome::android::explore_sites::kExploreSitesVariationParameterName,
@@ -2395,9 +2381,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"show-touch-hud", flag_descriptions::kShowTouchHudName,
      flag_descriptions::kShowTouchHudDescription, kOsCrOS,
      SINGLE_VALUE_TYPE(ash::switches::kAshTouchHud)},
-    {"trim-on-all-frames-frozen", flag_descriptions::kTrimOnFreezeName,
-     flag_descriptions::kTrimOnFreezeDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(performance_manager::features::kTrimOnFreeze)},
     {"trim-on-memory-pressure", flag_descriptions::kTrimOnMemoryPressureName,
      flag_descriptions::kTrimOnMemoryPressureDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(performance_manager::features::kTrimOnMemoryPressure)},
@@ -2660,6 +2643,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPluginVmShowCameraPermissionsName,
      flag_descriptions::kPluginVmShowCameraPermissionsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPluginVmShowCameraPermissions)},
+    {"pluginvm-show-microphone-permissions",
+     flag_descriptions::kPluginVmShowMicrophonePermissionsName,
+     flag_descriptions::kPluginVmShowMicrophonePermissionsDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(
+         chromeos::features::kPluginVmShowMicrophonePermissions)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #if BUILDFLAG(USE_TCMALLOC)
@@ -4194,15 +4182,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"cct-incognito", flag_descriptions::kCCTIncognitoName,
      flag_descriptions::kCCTIncognitoDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kCCTIncognito)},
-#endif
-
-#if !defined(OS_ANDROID)
-    {"proactive-tab-freeze", flag_descriptions::kTabFreezeName,
-     flag_descriptions::kTabFreezeDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         features::kTabFreeze,
-         kTabFreezeVariations,
-         resource_coordinator::kTabFreezeFeatureName)},
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -5763,6 +5742,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNewDragSpecInLauncherDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(app_list_features::kNewDragSpecInLauncher)},
 #endif  // OS_CHROMEOS
+
+    {"autofill-enable-offers-in-downstream",
+     flag_descriptions::kAutofillEnableOffersInDownstreamName,
+     flag_descriptions::kAutofillEnableOffersInDownstreamDescription, kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableOffersInDownstream)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

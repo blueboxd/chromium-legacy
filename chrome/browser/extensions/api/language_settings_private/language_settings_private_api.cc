@@ -188,7 +188,8 @@ std::vector<std::string> GetSortedThirdPartyIMEs(
 
 LanguageSettingsPrivateGetLanguageListFunction::
     LanguageSettingsPrivateGetLanguageListFunction()
-    : chrome_details_(this) {}
+    : chrome_details_(this),
+      language_list_(std::make_unique<base::ListValue>()) {}
 
 LanguageSettingsPrivateGetLanguageListFunction::
     ~LanguageSettingsPrivateGetLanguageListFunction() = default;
@@ -212,7 +213,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
       std::move(spellcheck_languages));
 
   // Build the language list.
-  auto language_list = std::make_unique<base::ListValue>();
+  language_list_->Clear();
 #if defined(OS_CHROMEOS)
   const std::unordered_set<std::string> allowed_ui_locales(
       GetAllowedLanguages(chrome_details_.GetProfile()->GetPrefs()));
@@ -243,7 +244,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
     }
 #endif  // defined(OS_CHROMEOS)
 
-    language_list->Append(language.ToValue());
+    language_list_->Append(language.ToValue());
   }
 
 #if defined(OS_CHROMEOS)
@@ -255,24 +256,53 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
     language.code = chromeos::extension_ime_util::kArcImeLanguage;
     language.display_name =
         l10n_util::GetStringUTF8(IDS_SETTINGS_LANGUAGES_KEYBOARD_APPS);
-    language_list->Append(language.ToValue());
+    language_list_->Append(language.ToValue());
   }
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
   if (spellcheck::UseBrowserSpellChecker()) {
-    SpellcheckService* service =
-        SpellcheckServiceFactory::GetForContext(browser_context());
-    for (auto& language_val : language_list->GetList()) {
-      if (service->UsesWindowsDictionary(*language_val.FindStringKey("code"))) {
-        language_val.SetBoolKey("supportsSpellcheck", new bool(true));
-      }
+    if (!base::FeatureList::IsEnabled(
+            spellcheck::kWinDelaySpellcheckServiceInit)) {
+      // Platform dictionary support already determined at browser startup.
+      UpdateSupportedPlatformDictionaries();
+    } else {
+      // Asynchronously load the dictionaries to determine platform support.
+      SpellcheckService* service =
+          SpellcheckServiceFactory::GetForContext(browser_context());
+      AddRef();  // Balanced in OnDictionariesInitialized
+      service->InitializeDictionaries(
+          base::BindOnce(&LanguageSettingsPrivateGetLanguageListFunction::
+                             OnDictionariesInitialized,
+                         base::Unretained(this)));
+      return RespondLater();
     }
   }
 #endif  // defined(OS_WIN)
 
-  return RespondNow(OneArgument(std::move(language_list)));
+  return RespondNow(OneArgument(std::move(language_list_)));
 }
+
+#if defined(OS_WIN)
+void LanguageSettingsPrivateGetLanguageListFunction::
+    OnDictionariesInitialized() {
+  UpdateSupportedPlatformDictionaries();
+  Respond(OneArgument(std::move(language_list_)));
+  // Matches the AddRef in Run().
+  Release();
+}
+
+void LanguageSettingsPrivateGetLanguageListFunction::
+    UpdateSupportedPlatformDictionaries() {
+  SpellcheckService* service =
+      SpellcheckServiceFactory::GetForContext(browser_context());
+  for (auto& language_val : language_list_->GetList()) {
+    if (service->UsesWindowsDictionary(*language_val.FindStringKey("code"))) {
+      language_val.SetBoolKey("supportsSpellcheck", new bool(true));
+    }
+  }
+}
+#endif  // defined(OS_WIN)
 
 LanguageSettingsPrivateEnableLanguageFunction::
     LanguageSettingsPrivateEnableLanguageFunction()

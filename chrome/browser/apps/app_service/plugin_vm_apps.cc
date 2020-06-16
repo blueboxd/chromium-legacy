@@ -36,7 +36,9 @@ constexpr PermissionInfo permission_infos[] = {
     {app_management::mojom::PluginVmPermissionType::PRINTING,
      plugin_vm::prefs::kPluginVmPrintersAllowed},
     {app_management::mojom::PluginVmPermissionType::CAMERA,
-     plugin_vm::prefs::kPluginVmCameraSharing},
+     plugin_vm::prefs::kPluginVmCameraAllowed},
+    {app_management::mojom::PluginVmPermissionType::MICROPHONE,
+     plugin_vm::prefs::kPluginVmMicrophoneAllowed},
 };
 
 const char* PermissionToPrefName(
@@ -119,7 +121,7 @@ PluginVmApps::PluginVmApps(
       std::make_unique<plugin_vm::PluginVmPolicySubscription>(
           profile_, base::BindRepeating(&PluginVmApps::OnPluginVmAllowedChanged,
                                         base::Unretained(this)));
-  pref_registrar_.Init(profile->GetPrefs());
+  pref_registrar_.Init(profile_->GetPrefs());
   pref_registrar_.Add(
       plugin_vm::prefs::kPluginVmImageExists,
       base::BindRepeating(&PluginVmApps::OnPluginVmConfiguredChanged,

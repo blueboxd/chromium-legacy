@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/fast_ink/fast_ink_pointer_controller.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace ash {
 
@@ -36,9 +37,13 @@ class ASH_EXPORT LaserPointerController
   void DestroyPointerView() override;
   bool CanStartNewGesture(ui::TouchEvent* event) override;
 
-  // |laser_pointer_view_| will only hold an instance when the laser pointer is
-  // enabled and activated (pressed or dragged).
-  std::unique_ptr<LaserPointerView> laser_pointer_view_;
+  // Returns the content view of the |laser_pointer_view_widget_| as a
+  // LaserPointerView*.
+  LaserPointerView* GetLaserPointerView() const;
+
+  // |laser_pointer_view_widget_| will only hold an instance when the laser
+  // pointer is enabled and activated (pressed or dragged).
+  views::UniqueWidgetPtr laser_pointer_view_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(LaserPointerController);
 };

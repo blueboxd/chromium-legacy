@@ -649,6 +649,23 @@ class PdfAccessibilityTreeBuilder {
     return highlight_node;
   }
 
+  ui::AXNodeData* CreatePopupNoteNode(
+      const ppapi::PdfAccessibilityHighlightInfo& highlight) {
+    ui::AXNodeData* popup_note_node =
+        CreateNode(ax::mojom::Role::kNote, ax::mojom::Restriction::kReadOnly,
+                   render_accessibility_, nodes_);
+
+    popup_note_node->AddStringAttribute(
+        ax::mojom::StringAttribute::kRoleDescription,
+        l10n_util::GetStringUTF8(IDS_AX_ROLE_DESCRIPTION_PDF_POPUP_NOTE));
+    popup_note_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                        highlight.note_text);
+    popup_note_node->relative_bounds.bounds =
+        PpFloatRectToGfxRectF(highlight.bounds);
+
+    return popup_note_node;
+  }
+
   ui::AXNodeData* CreateTextFieldNode(
       const ppapi::PdfAccessibilityTextFieldInfo& text_field) {
     ax::mojom::Restriction restriction = text_field.is_read_only
@@ -811,6 +828,11 @@ class PdfAccessibilityTreeBuilder {
     AddTextToObjectNode(highlight.text_run_index, highlight.text_run_count,
                         highlight_node, para_node, previous_on_line_node,
                         text_run_index);
+
+    if (!highlight.note_text.empty()) {
+      ui::AXNodeData* popup_note_node = CreatePopupNoteNode(highlight);
+      highlight_node->child_ids.push_back(popup_note_node->id);
+    }
   }
 
   void AddTextFieldToParaNode(

@@ -136,6 +136,9 @@ extern const char kAutofillEnableCompanyNameDescription[];
 extern const char kAutofillEnableGoogleIssuedCardName[];
 extern const char kAutofillEnableGoogleIssuedCardDescription[];
 
+extern const char kAutofillEnableOffersInDownstreamName[];
+extern const char kAutofillEnableOffersInDownstreamDescription[];
+
 extern const char kAutofillEnableStickyPaymentsBubbleName[];
 extern const char kAutofillEnableStickyPaymentsBubbleDescription[];
 
@@ -2121,6 +2124,9 @@ extern const char kTerminalSystemAppLegacySettingsDescription[];
 
 extern const char kPluginVmShowCameraPermissionsName[];
 extern const char kPluginVmShowCameraPermissionsDescription[];
+
+extern const char kPluginVmShowMicrophonePermissionsName[];
+extern const char kPluginVmShowMicrophonePermissionsDescription[];
 
 extern const char kTrimOnFreezeName[];
 extern const char kTrimOnFreezeDescription[];

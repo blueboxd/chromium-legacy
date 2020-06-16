@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">Жабуу</translation>
 <translation id="6119846243427417423">жандыруу</translation>
 <translation id="6129953537138746214">Боштук</translation>
+<translation id="6134259848159370930">Түзмөктөн, колдонмолордон, жөндөөлөрдөн жана Интернеттен издеңиз.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> Б/сек</translation>
 <translation id="6156262341071374681">Бардык колдонмолорду көрсөтүү</translation>
 <translation id="6165508094623778733">Кошумча маалымат</translation>
+<translation id="6166852626429024716">Түзмөктөн, колдонмолордон, жөндөөлөрдөн жана Интернеттен издеңиз...</translation>
 <translation id="6264365405983206840">&amp;Баарын тандоо</translation>
 <translation id="6351032674660237738">СУНУШТАЛГАН КОЛДОНМОЛОР</translation>
 <translation id="6364916375976753737">Солго сыдырып кароо</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> файл (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Текче ар дайым көрсөтүлүп турат</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> Кб/сек</translation>
+<translation id="8685326675965865247">Түзмөктөн, колдонмолордон, жөндөөлөрдөн жана Интернеттен издеңиз. Колдонмолоруңузда чабыттоо үчүн жебе баскычтарын пайдаланыңыз.</translation>
 <translation id="8725488761726303204">дагы <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Бүттү</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 с.}other{# с.}}</translation>

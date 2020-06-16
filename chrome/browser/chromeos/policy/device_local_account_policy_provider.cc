@@ -57,16 +57,16 @@ DeviceLocalAccountPolicyProvider::Create(
 
     // Force the |ShelfAutoHideBehavior| policy to |Never|, ensuring that the
     // ash shelf does not auto-hide.
-    chrome_policy_overrides->Set(
-        key::kShelfAutoHideBehavior, POLICY_LEVEL_MANDATORY,
-        POLICY_SCOPE_MACHINE, POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
-        std::make_unique<base::Value>("Never"), nullptr);
+    chrome_policy_overrides->Set(key::kShelfAutoHideBehavior,
+                                 POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                                 POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
+                                 base::Value("Never"), nullptr);
     // Force the |ShowLogoutButtonInTray| policy to |true|, ensuring that a big,
     // red logout button is shown in the ash system tray.
     chrome_policy_overrides->Set(key::kShowLogoutButtonInTray,
                                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                                  POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
-                                 std::make_unique<base::Value>(true), nullptr);
+                                 base::Value(true), nullptr);
   }
 
   std::unique_ptr<DeviceLocalAccountPolicyProvider> provider(
@@ -157,7 +157,7 @@ void DeviceLocalAccountPolicyProvider::UpdateFromBroker() {
     for (const auto& policy_override : *chrome_policy_overrides_) {
       const PolicyMap::Entry& entry = policy_override.second;
       chrome_policy.Set(policy_override.first, entry.level, entry.scope,
-                        entry.source, entry.value()->CreateDeepCopy(), nullptr);
+                        entry.source, entry.value()->Clone(), nullptr);
     }
   }
 

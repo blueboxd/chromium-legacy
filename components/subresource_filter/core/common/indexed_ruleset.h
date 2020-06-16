@@ -82,8 +82,8 @@ class RulesetIndexer {
  private:
   flatbuffers::FlatBufferBuilder builder_;
 
-  url_pattern_index::UrlPatternIndexBuilder blacklist_;
-  url_pattern_index::UrlPatternIndexBuilder whitelist_;
+  url_pattern_index::UrlPatternIndexBuilder blocklist_;
+  url_pattern_index::UrlPatternIndexBuilder allowlist_;
   url_pattern_index::UrlPatternIndexBuilder deactivation_;
 
   // Maintains a map of domain vectors to their existing offsets, to avoid
@@ -126,8 +126,8 @@ class IndexedRulesetMatcher {
       bool disable_generic_rules) const;
 
   // Like ShouldDisallowResourceLoad, but returns the matching rule that
-  // determines whether the request should be allowed or not. Whitelist rules
-  // override blacklist rules. If no rule matches, returns nullptr.
+  // determines whether the request should be allowed or not. Allowlist rules
+  // override blocklist rules. If no rule matches, returns nullptr.
   const url_pattern_index::flat::UrlRule* MatchedUrlRule(
       const GURL& url,
       const FirstPartyOrigin& first_party,
@@ -137,8 +137,8 @@ class IndexedRulesetMatcher {
  private:
   const flat::IndexedRuleset* root_;
 
-  url_pattern_index::UrlPatternIndexMatcher blacklist_;
-  url_pattern_index::UrlPatternIndexMatcher whitelist_;
+  url_pattern_index::UrlPatternIndexMatcher blocklist_;
+  url_pattern_index::UrlPatternIndexMatcher allowlist_;
   url_pattern_index::UrlPatternIndexMatcher deactivation_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedRulesetMatcher);

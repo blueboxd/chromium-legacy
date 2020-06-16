@@ -66,6 +66,9 @@ class _RenderingBenchmark(perf_benchmark.PerfBenchmark):
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()
+    # Supplement the base trace categories with "gpu.memory" which records
+    # timings associated with memory ablation experiments.
+    category_filter.AddFilterString('gpu.memory')
     options = timeline_based_measurement.Options(category_filter)
     options.config.chrome_trace_config.EnableUMAHistograms(
         *RENDERING_BENCHMARK_UMA)

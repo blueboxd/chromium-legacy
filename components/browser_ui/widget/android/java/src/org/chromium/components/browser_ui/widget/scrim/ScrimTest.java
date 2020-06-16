@@ -13,12 +13,12 @@ import static org.junit.Assert.assertTrue;
 
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.annotation.ColorInt;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
 import org.junit.Test;

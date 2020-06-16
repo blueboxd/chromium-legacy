@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.site_settings;
 
 import static org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
+import static org.chromium.components.content_settings.PrefNames.BLOCK_THIRD_PARTY_COOKIES;
 
 import android.content.Context;
 import android.content.Intent;
@@ -34,7 +35,6 @@ import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitio
 import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 import org.chromium.chrome.browser.permissions.PermissionTestRule;
 import org.chromium.chrome.browser.permissions.PermissionTestRule.PermissionUpdateWaiter;
-import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsActivity;
@@ -243,8 +243,7 @@ public class SiteSettingsTest {
             websitePreferences.onPreferenceChange(thirdPartyCookies, enabled);
             Assert.assertEquals(
                     "Third-party cookies should be " + (enabled ? "allowed" : "blocked"),
-                    PrefServiceBridge.getInstance().getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES),
-                    enabled);
+                    PrefServiceBridge.getInstance().getBoolean(BLOCK_THIRD_PARTY_COOKIES), enabled);
         });
     }
 
@@ -308,8 +307,7 @@ public class SiteSettingsTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertEquals(
                     "Third Party Cookie Blocking should be " + (expected ? "managed" : "unmanaged"),
-                    PrefServiceBridge.getInstance().isManagedPreference(
-                            Pref.BLOCK_THIRD_PARTY_COOKIES),
+                    PrefServiceBridge.getInstance().isManagedPreference(BLOCK_THIRD_PARTY_COOKIES),
                     expected);
         });
     }

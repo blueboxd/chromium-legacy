@@ -425,6 +425,12 @@ struct DebugInformation {
 
   // The value of the Media Feeds Safe Search checking consent pref.
   bool safe_search_pref_value;
+
+  // Whether the MediaFeedsBackgroundFetching feature is enabled.
+  bool background_fetching_feature_enabled;
+
+  // The value of the Media Feeds background fetching pref.
+  bool background_fetching_pref_value;
 };
 
 // MediaFeedStore allows the Media Feeds WebUI to access data from the Media
@@ -435,6 +441,9 @@ interface MediaFeedsStore {
 
   // Updates the Safe Search checking enabled pref to |value|.
   SetSafeSearchEnabledPref(bool value) => ();
+
+  // Updates the background fetching enabled pref to |value|.
+  SetBackgroundFetchingPref(bool value) => ();
 
   // Gets all the discovered media feeds.
   GetMediaFeeds() => (array<MediaFeed> feeds);

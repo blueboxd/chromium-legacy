@@ -14,7 +14,6 @@
 namespace features {
 
 extern const base::Feature kCustomizedTabLoadTimeout;
-extern const base::Feature kTabFreeze;
 extern const base::Feature kStaggeredBackgroundTabOpening;
 extern const base::Feature kStaggeredBackgroundTabOpeningExperiment;
 extern const base::Feature kTabRanker;
@@ -22,60 +21,6 @@ extern const base::Feature kTabRanker;
 }  // namespace features
 
 namespace resource_coordinator {
-
-// The name of the TabFreeze feature.
-extern const char kTabFreezeFeatureName[];
-
-// The name of the |ShouldPeriodicallyUnfreeze| parameter of the
-// TabFreeze feature.
-extern const char kTabFreeze_ShouldPeriodicallyUnfreezeParam[];
-
-// The name of the |FreezingProtectMediaOnly| parameter of the
-// TabFreeze feature.
-extern const char kTabFreeze_FreezingProtectMediaOnlyParam[];
-
-// Parameters used by the tab freezing feature.
-struct TabFreezeParams {
-  TabFreezeParams();
-  TabFreezeParams(const TabFreezeParams& rhs);
-
-  // Static definition of the different parameters that can be used by this
-  // feature.
-
-  static constexpr base::FeatureParam<bool> kShouldPeriodicallyUnfreeze{
-      &features::kTabFreeze, kTabFreeze_ShouldPeriodicallyUnfreezeParam, false};
-  static constexpr base::FeatureParam<int> kFreezeTimeout{
-      &features::kTabFreeze, "FreezeTimeout",
-      5 * base::Time::kSecondsPerMinute};
-  static constexpr base::FeatureParam<int> kUnfreezeTimeout{
-      &features::kTabFreeze, "UnfreezeTimeout",
-      15 * base::Time::kSecondsPerMinute};
-  static constexpr base::FeatureParam<int> kRefreezeTimeout{
-      &features::kTabFreeze, "RefreezeTimeout", 10};
-
-  static constexpr base::FeatureParam<bool> kFreezingProtectMediaOnly{
-      &features::kTabFreeze, kTabFreeze_FreezingProtectMediaOnlyParam, false};
-
-  // Whether frozen tabs should periodically be unfrozen to update their state.
-  bool should_periodically_unfreeze;
-  // Amount of time a tab must be occluded before it is frozen.
-  base::TimeDelta freeze_timeout;
-  // Amount of time a tab must be unfrozen before it is temporarily unfrozen.
-  base::TimeDelta unfreeze_timeout;
-  // Amount of time that a tab stays unfrozen before being frozen again.
-  base::TimeDelta refreeze_timeout;
-  // Only media tabs are protected from freezing.
-  bool freezing_protect_media_only;
-};
-
-// Gets parameters for the tab freezing feature. This does no parameter
-// validation, and sets the default values if the feature is not enabled.
-TabFreezeParams GetTabFreezeParams();
-
-// Return a static TabFreezeParams object that can be used by all the classes
-// that need one.
-const TabFreezeParams& GetStaticTabFreezeParams();
-TabFreezeParams* GetMutableStaticTabFreezeParamsForTesting();
 
 base::TimeDelta GetTabLoadTimeout(const base::TimeDelta& default_timeout);
 

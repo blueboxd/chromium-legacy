@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-TW">
+<translation id="1001307489511021749">當你使用 Google 帳戶登入後，所有 Chrome 作業系統裝置上的應用程式、設定和其他自訂項目都會保持同步。</translation>
 <translation id="1003088604756913841">在新的「<ph name="APP" />」視窗中開啟連結</translation>
 <translation id="1004218526896219317">網站存取權</translation>
 <translation id="1005274289863221750">使用你的麥克風和相機</translation>
@@ -526,6 +527,7 @@
 <translation id="164936512206786300">取消配對藍牙裝置</translation>
 <translation id="1650371550981945235">顯示輸入選項</translation>
 <translation id="1651008383952180276">你必須輸入兩次相同的通關密語</translation>
+<translation id="1652326691684645429">啟用鄰近分享功能</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{將這台印表機新增至 Google 雲端列印，即可隨時隨地進行列印。}other{將 # 台印表機新增至 Google 雲端列印，即可隨時隨地進行列印。}}</translation>
 <translation id="1656528038316521561">背景不透明度</translation>
 <translation id="1657406563541664238">只要自動傳送使用統計資料及當機報告給 Google，就能助我們一臂之力，讓「<ph name="PRODUCT_NAME" />」更臻完美</translation>
@@ -1633,6 +1635,7 @@
 <translation id="3022978424994383087">無法辨識語音內容。</translation>
 <translation id="3023464535986383522">隨選朗讀</translation>
 <translation id="3024374909719388945">使用 24 小時制時鐘</translation>
+<translation id="3027296729579831126">啟用鄰近分享功能</translation>
 <translation id="3029466929721441205">在檔案櫃中顯示觸控筆工具</translation>
 <translation id="3031417829280473749">特務 X</translation>
 <translation id="3031557471081358569">選取要匯入的項目：</translation>
@@ -1732,6 +1735,7 @@
 <translation id="3162853326462195145">學校帳戶</translation>
 <translation id="3162899666601560689">網站可使用 Cookie 改善瀏覽體驗，例如讓你保持登入狀態，或記住購物車中的商品</translation>
 <translation id="3163201441334626963">供應商 <ph name="VENDOR_ID" /> 提供的不明產品 <ph name="PRODUCT_ID" /></translation>
+<translation id="3163254451837720982">下列服務可協助確保資料安全無虞，你隨時可以停用這些功能。</translation>
 <translation id="3164329792803560526">這個分頁正與 <ph name="APP_NAME" /> 共用</translation>
 <translation id="3165390001037658081">部分電信業者可能會封鎖這項功能。</translation>
 <translation id="316652501498554287">G Suite 教育版帳戶</translation>
@@ -2912,6 +2916,7 @@
 <translation id="4673442866648850031">移除觸控筆時取出觸控筆工具</translation>
 <translation id="4677772697204437347">GPU 記憶體</translation>
 <translation id="4680105648806843642">已將這個網頁設為靜音</translation>
+<translation id="4681453295291708042">停用鄰近分享功能</translation>
 <translation id="4681930562518940301">在新分頁中開啟原始圖片(&amp;I)</translation>
 <translation id="4682551433947286597">登入畫面上顯示的桌布。</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" />% (預設)</translation>
@@ -3722,6 +3727,7 @@
 <translation id="5739017626473506901">登入以協助<ph name="USER_NAME" />新增學校帳戶</translation>
 <translation id="5739235828260127894">等待驗證中。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">非常大</translation>
+<translation id="5740328398383587084">鄰近分享</translation>
 <translation id="574104302965107104">螢幕鏡像</translation>
 <translation id="574209121243317957">音調</translation>
 <translation id="5746169159649715125">另存為 PDF</translation>
@@ -4658,6 +4664,7 @@
 <translation id="6965978654500191972">裝置</translation>
 <translation id="696780070563539690">網站無法使用 Cookie 查看你在各網站的瀏覽活動，也無法提供個人化廣告等服務</translation>
 <translation id="6968288415730398122">如要設定螢幕鎖定，請輸入你的密碼</translation>
+<translation id="6969047215179982698">停用鄰近分享功能</translation>
 <translation id="6970480684834282392">啟動類型</translation>
 <translation id="6970856801391541997">列印特定網頁</translation>
 <translation id="6972180789171089114">音效/影片</translation>
@@ -4827,6 +4834,7 @@
 <translation id="7171259390164035663">不註冊</translation>
 <translation id="7171559745792467651">安裝你其他裝置上的應用程式</translation>
 <translation id="7172470549472604877">{NUM_TABS,plural, =1{將分頁加入新群組}other{將分頁加入新群組}}</translation>
+<translation id="7173852404388239669">打造專屬的「<ph name="DEVICE_TYPE" />」使用體驗</translation>
 <translation id="7174199383876220879">新功能！控管你的音樂、影片等媒體內容</translation>
 <translation id="7175037578838465313">設定「<ph name="NAME" />」</translation>
 <translation id="7175353351958621980">載入來源：</translation>
@@ -5115,6 +5123,7 @@
 <translation id="7552846755917812628">嘗試按照下列提示操作：</translation>
 <translation id="7553012839257224005">正在檢查 Linux 容器</translation>
 <translation id="7553242001898162573">請輸入您的密碼</translation>
+<translation id="7554475479213504905">仍要重新載入及顯示內容</translation>
 <translation id="7554791636758816595">新分頁</translation>
 <translation id="7556033326131260574">Smart Lock 無法驗證您的帳戶，請輸入您的密碼。</translation>
 <translation id="7556242789364317684">很抱歉，<ph name="SHORT_PRODUCT_NAME" /> 無法復原你的設定。如要修正錯誤，<ph name="SHORT_PRODUCT_NAME" /> 必須透過 Powerwash 重設你的裝置。</translation>

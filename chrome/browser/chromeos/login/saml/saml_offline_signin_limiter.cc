@@ -58,8 +58,7 @@ void SAMLOfflineSigninLimiter::SignedIn(UserContext::AuthFlow auth_flow) {
     // expires. If the limit already expired (e.g. because it was set to zero),
     // the flag will be set again immediately.
     user_manager::UserManager::Get()->SaveForceOnlineSignin(account_id, false);
-    prefs->SetInt64(prefs::kSAMLLastGAIASignInTime,
-                    clock_->Now().ToInternalValue());
+    prefs->SetTime(prefs::kSAMLLastGAIASignInTime, clock_->Now());
     const int saml_offline_limit =
         prefs->GetInteger(prefs::kSAMLOfflineSigninTimeLimit);
     UpdateOnlineSigninData(
@@ -113,8 +112,8 @@ void SAMLOfflineSigninLimiter::UpdateLimit() {
   const base::TimeDelta offline_signin_time_limit =
       base::TimeDelta::FromSeconds(
           prefs->GetInteger(prefs::kSAMLOfflineSigninTimeLimit));
-  base::Time last_gaia_signin_time = base::Time::FromInternalValue(
-      prefs->GetInt64(prefs::kSAMLLastGAIASignInTime));
+  base::Time last_gaia_signin_time =
+      prefs->GetTime(prefs::kSAMLLastGAIASignInTime);
   if (offline_signin_time_limit < base::TimeDelta() ||
       last_gaia_signin_time.is_null()) {
     // If no limit is in force, return.
@@ -127,7 +126,7 @@ void SAMLOfflineSigninLimiter::UpdateLimit() {
     // current time.
     NOTREACHED();
     last_gaia_signin_time = now;
-    prefs->SetInt64(prefs::kSAMLLastGAIASignInTime, now.ToInternalValue());
+    prefs->SetTime(prefs::kSAMLLastGAIASignInTime, now);
     UpdateOnlineSigninData(now, offline_signin_time_limit);
   }
 

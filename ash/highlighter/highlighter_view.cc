@@ -8,6 +8,7 @@
 
 #include "ash/highlighter/highlighter_gesture_util.h"
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -78,14 +79,20 @@ const SkColor HighlighterView::kPenColor =
 
 const gfx::SizeF HighlighterView::kPenTipSize(kPenTipWidth, kPenTipHeight);
 
-HighlighterView::HighlighterView(base::TimeDelta presentation_delay,
-                                 aura::Window* container)
-    : FastInkView(container, fast_ink::FastInkHost::PresentationCallback()),
-      points_(base::TimeDelta()),
+HighlighterView::HighlighterView(base::TimeDelta presentation_delay)
+    : points_(base::TimeDelta()),
       predicted_points_(base::TimeDelta()),
       presentation_delay_(presentation_delay) {}
 
 HighlighterView::~HighlighterView() = default;
+
+// static
+views::UniqueWidgetPtr HighlighterView::Create(
+    const base::TimeDelta presentation_delay,
+    aura::Window* container) {
+  return fast_ink::FastInkView::CreateWidgetWithContents(
+      base::WrapUnique(new HighlighterView(presentation_delay)), container);
+}
 
 void HighlighterView::AddNewPoint(const gfx::PointF& point,
                                   const base::TimeTicks& time) {

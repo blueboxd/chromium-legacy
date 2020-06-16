@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="6119846243427417423">aktivera</translation>
 <translation id="6129953537138746214">Blanksteg</translation>
+<translation id="6134259848159370930">Sök på enheten, i appar, inställningar och på webben.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/sek</translation>
 <translation id="6156262341071374681">Utöka till alla appar</translation>
 <translation id="6165508094623778733">Läs mer</translation>
+<translation id="6166852626429024716">Sök på enheten, i appar, inställningar och på webben …</translation>
 <translation id="6264365405983206840">Markera &amp;alla</translation>
 <translation id="6351032674660237738">APPFÖRSLAG</translation>
 <translation id="6364916375976753737">Rulla åt vänster</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" />-fil (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Hyllan visas alltid</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kB/sek</translation>
+<translation id="8685326675965865247">Sök på enheten, i appar, inställningar och på webben. Flytta mellan apparna med piltangenterna.</translation>
 <translation id="8725488761726303204">och <ph name="NUMBER" /> till</translation>
 <translation id="8730621377337864115">Klart</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 tim}other{# tim}}</translation>

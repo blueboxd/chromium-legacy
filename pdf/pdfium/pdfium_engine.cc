@@ -2008,6 +2008,14 @@ void PDFiumEngine::SetTwoUpView(bool enable) {
   ProposeNextDocumentLayout();
 }
 
+void PDFiumEngine::DisplayAnnotations(bool display) {
+  if (render_annots_ == display)
+    return;
+
+  render_annots_ = display;
+  InvalidateAllPages();
+}
+
 void PDFiumEngine::InvalidateAllPages() {
   CancelPaints();
   StopFind();

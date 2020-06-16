@@ -62,6 +62,10 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) AudioDevicesPrefHandlerImpl
   void LoadDevicesMutePref();
   void SaveDevicesMutePref();
 
+  // Load and save methods for the gain preferences for all devices.
+  void LoadDevicesGainPref();
+  void SaveDevicesGainPref();
+
   // Load and save methods for the volume preferences for all devices.
   void LoadDevicesVolumePref();
   void SaveDevicesVolumePref();
@@ -70,8 +74,12 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) AudioDevicesPrefHandlerImpl
   void LoadDevicesStatePref();
   void SaveDevicesStatePref();
 
-  double GetVolumeGainPrefValue(const AudioDevice& device);
+  double GetOutputVolumePrefValue(const AudioDevice& device);
+  double GetInputGainPrefValue(const AudioDevice& device);
   double GetDeviceDefaultOutputVolume(const AudioDevice& device);
+
+  void SetOutputVolumePrefValue(const AudioDevice& device, double value);
+  void SetInputGainPrefValue(const AudioDevice& device, double value);
 
   // Migrates devices state pref for an audio device. Device settings are
   // saved under device stable device ID - this method migrates device state
@@ -102,6 +110,7 @@ class COMPONENT_EXPORT(CHROMEOS_AUDIO) AudioDevicesPrefHandlerImpl
 
   std::unique_ptr<base::DictionaryValue> device_mute_settings_;
   std::unique_ptr<base::DictionaryValue> device_volume_settings_;
+  std::unique_ptr<base::DictionaryValue> device_gain_settings_;
   std::unique_ptr<base::DictionaryValue> device_state_settings_;
 
   PrefService* local_state_;  // not owned

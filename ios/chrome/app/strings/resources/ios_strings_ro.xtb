@@ -470,6 +470,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="681368974849482173">Element creat</translation>
 <translation id="6831043979455480757">Tradu</translation>
 <translation id="6851516051005285358">Solicită site desktop</translation>
+<translation id="6856384753476268833">Gestionat de organizația ta.</translation>
 <translation id="6858855187367714033">Scanat</translation>
 <translation id="6859944681507688231">Pentru a scana un cod QR sau un card de credit, activează camera foto din setări.</translation>
 <translation id="6873263987691478642">Vizualizare împărțită</translation>
@@ -548,6 +549,7 @@ Deoarece contul tău este gestionat de <ph name="HOSTED_DOMAIN" />, datele Chrom
 <translation id="7856733331829174190">Nu s-a putut descărca</translation>
 <translation id="7859704718976024901">Istoricul de navigare</translation>
 <translation id="7887198238286927132">Pentru a-ți proteja confidențialitatea, Chrome nu va completa automat acest câmp.</translation>
+<translation id="791251013315685175">Gestionat de <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Lista de lectură este disponibilă offline. Pentru a adăuga o pagină în lista de lectură, atinge <ph name="SHARE_OPENING_ICON" />, apoi <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportă parolele...</translation>

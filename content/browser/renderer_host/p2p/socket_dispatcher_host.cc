@@ -75,7 +75,11 @@ void P2PSocketDispatcherHost::BindReceiver(
   auto trusted_socket_manager_client = receiver_.BindNewPipeAndPassRemote();
 
   trusted_socket_manager_.reset();
+  // TODO(https://crbug.com/1085022): Make this interface per-frame instead of
+  // per-process, and grab the correct NetworkIsolationKey from the associated
+  // RenderFrameHost.
   rph->GetStoragePartition()->GetNetworkContext()->CreateP2PSocketManager(
+      net::NetworkIsolationKey::Todo(),
       std::move(trusted_socket_manager_client),
       trusted_socket_manager_.BindNewPipeAndPassReceiver(),
       std::move(receiver));

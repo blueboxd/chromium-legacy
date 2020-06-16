@@ -106,7 +106,6 @@ class CompositorAnimationTimeline;
 class ComputedAccessibleNode;
 class DisplayLockDocumentState;
 class ElementIntersectionObserverData;
-class WindowAgent;
 class ComputedStyle;
 class ConsoleMessage;
 class ContextFeatures;
@@ -353,7 +352,6 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsSecureContext(String& error_message) const;
   void SetSecureContextModeForTesting(SecureContextMode);
   void SetReferrerPolicy(network::mojom::ReferrerPolicy);
-  Agent* GetAgent() const;
   OriginTrialContext* GetOriginTrialContext() const;
 
   String addressSpaceForBindings(ScriptState*) const;
@@ -1544,8 +1542,6 @@ class CORE_EXPORT Document : public ContainerNode,
   NavigationInitiatorImpl& NavigationInitiator();
 
   LazyLoadImageObserver& EnsureLazyLoadImageObserver();
-
-  WindowAgent& GetWindowAgent();
 
   void IncrementNumberOfCanvases();
 

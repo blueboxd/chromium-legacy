@@ -28,6 +28,7 @@ class VIZ_SERVICE_EXPORT InfoCollectionGpuServiceImpl
       scoped_refptr<base::SingleThreadTaskRunner> main_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_runner,
       const gpu::DevicePerfInfo& device_perf_info,
+      const gpu::GPUInfo::GPUDevice& gpu_device,
       mojo::PendingReceiver<mojom::InfoCollectionGpuService> pending_receiver);
 
   ~InfoCollectionGpuServiceImpl() override;
@@ -52,6 +53,10 @@ class VIZ_SERVICE_EXPORT InfoCollectionGpuServiceImpl
   // Information related to device perf category, only collected on the second
   // unsandboxed GPU process.
   const gpu::DevicePerfInfo device_perf_info_;
+
+  // The GPU ids and the driver version that was passed down from the browser
+  // process
+  const gpu::GPUInfo::GPUDevice gpu_device_;
 
   // Should only be accessed on the IO thread after creation.
   mojo::Receiver<mojom::InfoCollectionGpuService> receiver_{this};

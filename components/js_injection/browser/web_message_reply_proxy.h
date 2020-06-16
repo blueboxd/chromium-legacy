@@ -17,7 +17,7 @@ class WebMessageReplyProxy {
   virtual void PostMessage(std::unique_ptr<WebMessage> message) = 0;
 
  protected:
-  virtual ~WebMessageReplyProxy() {}
+  virtual ~WebMessageReplyProxy() = default;
 };
 
 }  // namespace js_injection

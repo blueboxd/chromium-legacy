@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/cpp/arc_custom_tab.h"
+#include "components/arc/intent_helper/custom_tab.h"
 #include "components/web_modal/modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents.h"
@@ -14,7 +14,7 @@
 #include "ui/gfx/geometry/size.h"
 
 ArcCustomTabModalDialogHost::ArcCustomTabModalDialogHost(
-    std::unique_ptr<ash::ArcCustomTab> custom_tab,
+    std::unique_ptr<arc::CustomTab> custom_tab,
     content::WebContents* web_contents)
     : custom_tab_(std::move(custom_tab)), web_contents_(web_contents) {
   // Attach any required WebContents helpers. Browser tabs automatically get

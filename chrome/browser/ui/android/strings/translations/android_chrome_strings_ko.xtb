@@ -163,6 +163,7 @@
 <translation id="2323763861024343754">사이트 저장공간</translation>
 <translation id="2328985652426384049">로그인할 수 없음</translation>
 <translation id="234265804618409743">카메라를 열 수 없습니다. 문제가 발생했습니다.</translation>
+<translation id="2345671828921229300">검색하려면 단어를 길게 터치하세요.</translation>
 <translation id="2349710944427398404">계정, 북마크, 저장된 설정 등 Chrome에서 사용한 전체 데이터</translation>
 <translation id="2353636109065292463">인터넷 연결 상태를 확인하세요.</translation>
 <translation id="2359808026110333948">계속</translation>
@@ -289,6 +290,7 @@
 <translation id="3350687908700087792">모든 시크릿 탭 닫기</translation>
 <translation id="3353615205017136254">Google에서 제공하는 라이트 페이지입니다. 원본 페이지를 로드하려면 원본 로드 버튼을 탭하세요.</translation>
 <translation id="3367813778245106622">다시 로그인하여 동기화 시작</translation>
+<translation id="337236281855091893">검색하려면 단어를 탭하는 대신 길게 터치하세요.</translation>
 <translation id="3373979091428520308">이 페이지를 다른 기기로 공유하려면 다른 기기의 Chrome 설정에서 동기화를 사용 설정하세요.</translation>
 <translation id="3374023511497244703">북마크, 방문 기록, 비밀번호 등의 Chrome 데이터가 더 이상 Google 계정과 동기화되지 않습니다.</translation>
 <translation id="3384347053049321195">이미지 공유</translation>
@@ -564,6 +566,7 @@
 <translation id="5686790454216892815">파일 이름이 너무 깁니다.</translation>
 <translation id="5694049548840660018">홈으로 쉽게 돌아가기</translation>
 <translation id="569536719314091526">옵션 더보기 버튼을 눌러 이 페이지를 원하는 언어로 번역하세요</translation>
+<translation id="570347048394355941">탭으로 전환</translation>
 <translation id="572328651809341494">최근 탭</translation>
 <translation id="5726692708398506830">페이지의 모든 항목 확대</translation>
 <translation id="5748802427693696783">일반 탭으로 전환됨</translation>

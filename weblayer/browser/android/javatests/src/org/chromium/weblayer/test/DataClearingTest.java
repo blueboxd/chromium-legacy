@@ -8,9 +8,8 @@ import static org.chromium.content_public.browser.test.util.TestThreadUtils.runO
 import static org.chromium.weblayer.BrowsingDataType.CACHE;
 import static org.chromium.weblayer.BrowsingDataType.COOKIES_AND_SITE_DATA;
 
-import android.support.test.filters.SmallTest;
-
 import androidx.fragment.app.FragmentManager;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Rule;
 import org.junit.Test;

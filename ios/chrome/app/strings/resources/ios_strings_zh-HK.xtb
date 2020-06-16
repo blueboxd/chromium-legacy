@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">登入網站</translation>
 <translation id="1509960214886564027">很多網站的功能可能會無法正常運作</translation>
 <translation id="152234381334907219">永不儲存</translation>
+<translation id="1535268707340844072">您目前的設定可能會導致部分網站無法正常運作。如要管理所有網站的 Cookie，請參閱 <ph name="BEGIN_LINK" />Cookie 設定<ph name="END_LINK" />。</translation>
 <translation id="1540800554400757039">地址 1</translation>
 <translation id="1545749641540134597">掃描二維條碼</translation>
 <translation id="1552525382687785070">您的管理員已停用同步功能</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">曾於 <ph name="DAYS" /> 天前在線</translation>
 <translation id="2074131957428911366">您隨時可在<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />中選擇要同步的資料。</translation>
 <translation id="2079545284768500474">復原</translation>
+<translation id="2081417079511601293">在無痕模式中封鎖第三方 Cookie</translation>
 <translation id="209018056901015185">切換為電腦版網站</translation>
 <translation id="2103075008456228677">開啟 history.google.com</translation>
 <translation id="2116625576999540962">已移動 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">在新分頁中開啟</translation>
 <translation id="3037605927509011580">糟糕！</translation>
 <translation id="3112556859945124369">標示…</translation>
+<translation id="3131206671572504478">全部封鎖</translation>
 <translation id="3153862085237805241">儲存付款卡</translation>
 <translation id="3157684681743766797">標示全部…</translation>
 <translation id="3161291298470460782">此操作會將您登出、關閉同步處理功能，並清除此裝置上的所有 Chrome 資料。但已同步處理的資料會繼續保留在 Google 帳戶中。</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">輕按即可變更語言。</translation>
 <translation id="441868831736628555">隱私權聲明</translation>
 <translation id="4454246407045105932">新增語言</translation>
+<translation id="4469418912670346607">繼續設定</translation>
 <translation id="4476574785019001431">設定</translation>
 <translation id="4496373720959965247">新增標籤並在網頁之間切換</translation>
 <translation id="4508750114462689118">閂登入宣傳元素</translation>
@@ -300,6 +304,7 @@
 <translation id="4805759445554688327">信用卡號碼無效</translation>
 <translation id="4818522717893377262">新增語言…</translation>
 <translation id="481968316161811770">Cookie、網站資料</translation>
+<translation id="4826218269716039351">封鎖第三方 Cookie</translation>
 <translation id="4833786495304741580">自動將使用情況統計和當機報告傳送給 Google。</translation>
 <translation id="4840495572919996524">您的書籤、記錄、密碼及其他設定將不會同步至您的 Google 帳戶。</translation>
 <translation id="4854345657858711387">設定密碼</translation>
@@ -345,6 +350,7 @@
 <translation id="54401264925851789">網頁安全性資料</translation>
 <translation id="5443952882982198570">信用卡</translation>
 <translation id="5457907402803865181">同步處理密碼時發生錯誤。</translation>
+<translation id="5489208564673669003">如要管理所有網站的 Cookie，請參閱 <ph name="BEGIN_LINK" />Cookie 設定<ph name="END_LINK" />。</translation>
 <translation id="5508435575041083207">登出並清除此裝置上的資料</translation>
 <translation id="5525269841082836315">建立通關密語</translation>
 <translation id="5548760955356983418">有了 Handoff，您使用這個裝置開始瀏覽網站後，可輕鬆改用 Mac 繼續瀏覽。目前開啟的網站會自動顯示在 Mac 的 Dock 中。
@@ -432,6 +438,7 @@
 <translation id="6418346271604475326">正在準備 PDF</translation>
 <translation id="6426067060178468363">允許 Cookie</translation>
 <translation id="6434591244308415567">發生錯誤，請稍後再試。</translation>
+<translation id="6439338047467462846">全部允許</translation>
 <translation id="6445051938772793705">國家/地區</translation>
 <translation id="6445981559479772097">訊息已送出。</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -439,6 +446,7 @@
 <translation id="6476800141292307438">將網頁翻譯成<ph name="LANGUAGE" />。翻譯選項喺喺接近畫面底部附近。</translation>
 <translation id="648164694371393720">驗證錯誤</translation>
 <translation id="6482629121755362506">已刪除 <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> 個項目</translation>
+<translation id="651505212789431520">要取消同步處理嗎？您可隨時在「設定」中開啟同步功能。</translation>
 <translation id="6561262006871132942">放大</translation>
 <translation id="6610002944194042868">翻譯選項</translation>
 <translation id="6628106477656132239">到期日無效</translation>
@@ -462,6 +470,7 @@
 <translation id="681368974849482173">項目已建立</translation>
 <translation id="6831043979455480757">翻譯</translation>
 <translation id="6851516051005285358">切換至電腦版網站</translation>
+<translation id="6856384753476268833">由貴機構管理。</translation>
 <translation id="6858855187367714033">已經掃咗瞄</translation>
 <translation id="6859944681507688231">如要掃瞄二維條碼或信用卡，請在設定中啟用相機。</translation>
 <translation id="6873263987691478642">分割檢視</translation>
@@ -540,6 +549,7 @@
 <translation id="7856733331829174190">無法下載</translation>
 <translation id="7859704718976024901">瀏覽記錄</translation>
 <translation id="7887198238286927132">為保障您的私隱，Chrome 不會自動填入此欄位。</translation>
+<translation id="791251013315685175">由「<ph name="COMPANY" />」管理。</translation>
 <translation id="7918293828610777738">閱讀清單現可供離線瀏覽。如要將網頁加入您的閱讀清單，請輕按 <ph name="SHARE_OPENING_ICON" />，然後輕按 [<ph name="READ_LATER_TEXT" />]。</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">匯出密碼…</translation>

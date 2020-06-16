@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.infobar;
 
 import static junit.framework.Assert.assertEquals;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

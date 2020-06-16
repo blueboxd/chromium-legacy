@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/browser/ui/views/accessibility/caption_bubble_model.h"
 #include "ui/native_theme/caption_style.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
@@ -37,29 +38,21 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
  public:
   CaptionBubble(views::View* anchor,
                 BrowserView* browser_view,
-                base::RepeatingCallback<void()> closed_callback,
                 base::OnceClosure destroyed_callback);
   ~CaptionBubble() override;
   CaptionBubble(const CaptionBubble&) = delete;
   CaptionBubble& operator=(const CaptionBubble&) = delete;
 
-  // Set the text of the caption bubble. The bubble displays the last 2 lines.
-  void SetText(const std::string& text);
-
-  // Displays an error if |has_error|, otherwise displays the latest text.
-  void SetHasError(bool has_error);
+  // Sets the caption bubble model currently being used for this caption bubble.
+  // There exists one CaptionBubble per browser, but one CaptionBubbleModel
+  // per tab. A new CaptionBubbleModel is set when the active tab changes. A
+  // CaptionBubbleModel is owned by the CaptionBubbleControllerViews. It is
+  // created when a tab activates and exists for the lifetime of that tab.
+  void SetModel(CaptionBubbleModel* model);
 
   // Changes the caption style of the caption bubble. For now, this only sets
   // the caption text size.
   void UpdateCaptionStyle(base::Optional<ui::CaptionStyle> caption_style);
-
-  // Makes the bubble showable. Will show the bubble if it has text or an error
-  // state, and space to draw.
-  void Show();
-
-  // Hides the bubble. This should be used instead of showing/hiding the widget
-  // directly.
-  void Hide();
 
   // For the provided line index, gets the corresponding rendered line in the
   // label and returns the text position of the first character of that line.
@@ -92,6 +85,16 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
 
  private:
   friend class CaptionBubbleControllerViewsTest;
+  friend class CaptionBubbleModel;
+
+  // Called by CaptionBubbleModel to notify this object that the model's text
+  // has changed. Sets the text of the caption bubble to the model's text.
+  void OnTextChange();
+
+  // Called by CaptionBubbleModel to notify this object that the model's error
+  // state has changed. Makes the caption bubble display an error message if
+  // the model has an error, otherwise displays the latest text.
+  void OnErrorChange();
 
   void UpdateBubbleAndTitleVisibility();
   // The caption bubble manages its own visibility based on whether there's
@@ -99,6 +102,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   void UpdateBubbleVisibility();
   double GetTextScaleFactor();
   void UpdateTextSize();
+  void UpdateContentSize();
 
   // Unowned. Owned by views hierarchy.
   views::Label* label_;
@@ -109,11 +113,9 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   CaptionBubbleFrameView* frame_;
   views::View* content_container_;
 
-  bool has_error_ = false;
-
   base::Optional<ui::CaptionStyle> caption_style_;
+  CaptionBubbleModel* model_ = nullptr;
 
-  base::RepeatingCallback<void()> closed_callback_;
   base::ScopedClosureRunner destroyed_callback_;
 
   // The bubble tries to stay relatively positioned in its parent.
@@ -126,9 +128,6 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
 
   // Whether there's space for the widget to layout within its parent window.
   bool can_layout_ = true;
-
-  // Whether we should show the widget. False if explicitly asked to hide.
-  bool should_show_ = true;
 
   // A reference to the BrowserView holding this bubble. Unowned.
   BrowserView* browser_view_;

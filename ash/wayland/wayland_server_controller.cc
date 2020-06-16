@@ -8,7 +8,7 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/external_arc/keyboard/arc_input_method_surface_manager.h"
-#include "ash/system/message_center/arc/arc_notification_surface_manager_impl.h"
+#include "ash/public/cpp/external_arc/message_center/arc_notification_surface_manager_impl.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"

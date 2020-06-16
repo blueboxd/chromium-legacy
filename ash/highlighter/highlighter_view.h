@@ -10,6 +10,7 @@
 #include "ash/fast_ink/fast_ink_points.h"
 #include "ash/fast_ink/fast_ink_view.h"
 #include "base/time/time.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace aura {
 class Window;
@@ -35,9 +36,12 @@ class HighlighterView : public fast_ink::FastInkView {
   static const SkColor kPenColor;
   static const gfx::SizeF kPenTipSize;
 
-  HighlighterView(const base::TimeDelta presentation_delay,
-                  aura::Window* container);
   ~HighlighterView() override;
+
+  // Function to create a container Widget, initialize |highlighter_view| and
+  // pass ownership as the contents view to the Widget.
+  static views::UniqueWidgetPtr Create(const base::TimeDelta presentation_delay,
+                                       aura::Window* container);
 
   const fast_ink::FastInkPoints& points() const { return points_; }
   bool animating() const { return animation_timer_.get(); }
@@ -50,6 +54,8 @@ class HighlighterView : public fast_ink::FastInkView {
 
  private:
   friend class HighlighterControllerTestApi;
+
+  HighlighterView(const base::TimeDelta presentation_delay);
 
   void FadeOut(const gfx::PointF& pivot,
                HighlighterGestureType gesture_type,

@@ -249,18 +249,10 @@ blink::WebKeyboardEvent WebKeyboardEventBuilder::Build(NSEvent* event,
   if (record_debug_uma) {
     if (ui::EventTypeFromNative(event) == ui::ET_KEY_PRESSED) {
       base::TimeDelta diff = (now - hardware_timestamp).magnitude();
-      if (now > hardware_timestamp) {
-        UMA_HISTOGRAM_CUSTOM_TIMES(
-            "Event.Latency.OS_NO_VALIDATION.POSITIVE.KEY_PRESSED", diff,
-            base::TimeDelta::FromMilliseconds(1),
-            base::TimeDelta::FromSeconds(60), 50);
-
-      } else {
-        UMA_HISTOGRAM_CUSTOM_TIMES(
-            "Event.Latency.OS_NO_VALIDATION.NEGATIVE.KEY_PRESSED", diff,
-            base::TimeDelta::FromMilliseconds(1),
-            base::TimeDelta::FromSeconds(60), 50);
-      }
+      UMA_HISTOGRAM_CUSTOM_TIMES(
+          "Event.Latency.OS_NO_VALIDATION.POSITIVE.KEY_PRESSED", diff,
+          base::TimeDelta::FromMilliseconds(1),
+          base::TimeDelta::FromSeconds(60), 50);
 
       // TODO(bokan) Temporary to debug crbug.com/1039833. We've seen in UMA
       // that we often receive key press events with the OS timestamp differing
@@ -334,18 +326,10 @@ blink::WebMouseEvent WebMouseEventBuilder::Build(
       ui::EventTimeStampFromSeconds([event timestamp]);
   if (ui::EventTypeFromNative(event) == ui::ET_MOUSE_PRESSED) {
     base::TimeDelta diff = (now - hardware_timestamp).magnitude();
-    if (now > hardware_timestamp) {
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          "Event.Latency.OS_NO_VALIDATION.POSITIVE.MOUSE_PRESSED", diff,
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromSeconds(60), 50);
-
-    } else {
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          "Event.Latency.OS_NO_VALIDATION.NEGATIVE.MOUSE_PRESSED", diff,
-          base::TimeDelta::FromMilliseconds(1),
-          base::TimeDelta::FromSeconds(60), 50);
-    }
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "Event.Latency.OS_NO_VALIDATION.POSITIVE.MOUSE_PRESSED", diff,
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
+        50);
   }
   blink::WebInputEvent::Type event_type =
       blink::WebInputEvent::Type::kUndefined;
@@ -460,18 +444,10 @@ blink::WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
   base::TimeTicks hardware_timestamp =
       ui::EventTimeStampFromSeconds([event timestamp]);
   base::TimeDelta diff = (now - hardware_timestamp).magnitude();
-  if (now > hardware_timestamp) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Event.Latency.OS_NO_VALIDATION.POSITIVE.MOUSE_WHEEL", diff,
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
-        50);
-
-  } else {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Event.Latency.OS_NO_VALIDATION.NEGATIVE.MOUSE_WHEEL", diff,
-        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
-        50);
-  }
+  UMA_HISTOGRAM_CUSTOM_TIMES(
+      "Event.Latency.OS_NO_VALIDATION.POSITIVE.MOUSE_WHEEL", diff,
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
+      50);
   blink::WebMouseWheelEvent result(
       blink::WebInputEvent::Type::kMouseWheel, ModifiersFromEvent(event),
       ui::EventTimeStampFromSeconds([event timestamp]));
@@ -701,9 +677,7 @@ blink::WebTouchEvent WebTouchEventBuilder::Build(NSEvent* event, NSView* view) {
     base::TimeTicks hardware_timestamp =
         ui::EventTimeStampFromSeconds([event timestamp]);
     UMA_HISTOGRAM_CUSTOM_TIMES(
-        now > hardware_timestamp
-            ? "Event.Latency.OS.NO_VALIDATION.POSITIVE.TOUCH_PRESSED"
-            : "Event.Latency.OS.NO_VALIDATION.NEGATIVE.TOUCH_PRESSED",
+        "Event.Latency.OS.NO_VALIDATION.POSITIVE.TOUCH_PRESSED",
         (now - hardware_timestamp).magnitude(),
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
         50);

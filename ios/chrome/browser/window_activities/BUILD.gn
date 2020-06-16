@@ -10,7 +10,7 @@ source_set("window_activities") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/browser",
+    "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/url_loading",
     "//ios/web/public/navigation",
     "//net",

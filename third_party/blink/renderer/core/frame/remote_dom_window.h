@@ -32,7 +32,7 @@ class RemoteDOMWindow final : public DOMWindow {
   // Protected DOMWindow overrides:
   void SchedulePostMessage(MessageEvent*,
                            scoped_refptr<const SecurityOrigin> target,
-                           Document* source) override;
+                           LocalDOMWindow* source) override;
 
  private:
   // Intentionally private to prevent redundant checks when the type is
@@ -42,7 +42,7 @@ class RemoteDOMWindow final : public DOMWindow {
 
   void ForwardPostMessage(MessageEvent*,
                           scoped_refptr<const SecurityOrigin> target,
-                          Document* source);
+                          LocalDOMWindow* source);
 };
 
 template <>

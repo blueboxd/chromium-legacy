@@ -8,6 +8,8 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/activity_services/activity_scenario.h"
+
 namespace bookmarks {
 class BookmarkModel;
 }
@@ -57,11 +59,15 @@ class PrefService;
 - (NSSet*)excludedActivityTypesForItems:
     (NSArray<id<ChromeActivityItemSource>>*)items;
 
-// Handles completion of a share action.
-- (void)shareFinishedWithActivityType:(NSString*)activityType
-                            completed:(BOOL)completed
-                        returnedItems:(NSArray*)returnedItems
-                                error:(NSError*)activityError;
+// Handles metric reporting when a sharing |scenario| is initiated.
+- (void)shareStartedWithScenario:(ActivityScenario)scenario;
+
+// Handles completion of a share |scenario| with a given action's
+// |activityType|. The value of |completed| represents whether the activity
+// was completed successfully or not.
+- (void)shareFinishedWithScenario:(ActivityScenario)scenario
+                     activityType:(NSString*)activityType
+                        completed:(BOOL)completed;
 
 @end
 

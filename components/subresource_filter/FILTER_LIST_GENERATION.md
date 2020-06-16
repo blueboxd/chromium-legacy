@@ -87,8 +87,8 @@ An example using [EasyList](https://easylist.to/easylist/easylist.txt) follows:
 3. head -n 1000 ordered_list.txt | cut -d' ' -f2 > smaller_list.txt
 ```
 
-## 4. Append all of the whitelist rules to be safe
-Appends whitelist rules and also deduplicates rules which only differ by their set of affected domains.
+## 4. Append all of the allowlist rules to be safe
+Appends allowlist rules and also deduplicates rules which only differ by their set of affected domains.
 ```sh
 1. grep ^@@ easylist.txt >> smaller_list.txt
 2. sort smaller_list.txt | uniq > deduped_smaller_list.txt

@@ -16,7 +16,6 @@ suite('discards', function() {
       tabUrl: 'http://urlone.com',
       visibility: 0,  // hidden
       state: 0,       // active
-      canFreeze: false,
       isAutoDiscardable: false,
       discardCount: 0,
       utilityRank: 0,
@@ -27,16 +26,13 @@ suite('discards', function() {
       tabUrl: 'http://urltwo.com',
       visibility: 1,  // occluded
       state: 3,       // frozen
-      canFreeze: true,
-      isFrozen: true,
-      isDiscarded: true,
       isAutoDiscardable: true,
       discardCount: 1,
       utilityRank: 1,
       lastActiveSeconds: 1
     };
 
-    ['title', 'tabUrl', 'visibility', 'state', 'canFreeze', 'isAutoDiscardable',
+    ['title', 'tabUrl', 'visibility', 'state', 'isAutoDiscardable',
      'discardCount', 'utilityRank', 'lastActiveSeconds']
         .forEach((sortKey) => {
           assertTrue(compareTabDiscardsInfos(sortKey, dummy1, dummy2) < 0);

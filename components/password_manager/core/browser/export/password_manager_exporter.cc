@@ -51,6 +51,10 @@ bool DefaultWriteFunction(const base::FilePath& file, base::StringPiece data) {
   return base::WriteFile(file, data);
 }
 
+bool DefaultDeleteFunction(const base::FilePath& file) {
+  return base::DeleteFile(file, /*recursive=*/false);
+}
+
 }  // namespace
 
 namespace password_manager {
@@ -63,7 +67,7 @@ PasswordManagerExporter::PasswordManagerExporter(
       on_progress_(std::move(on_progress)),
       last_progress_status_(ExportProgressStatus::NOT_STARTED),
       write_function_(base::BindRepeating(&DefaultWriteFunction)),
-      delete_function_(base::BindRepeating(&base::DeleteFile)),
+      delete_function_(base::BindRepeating(&DefaultDeleteFunction)),
 #if defined(OS_POSIX)
       set_permissions_function_(
           base::BindRepeating(base::SetPosixFilePermissions)),
@@ -191,9 +195,9 @@ void PasswordManagerExporter::Cleanup() {
   // TODO(crbug.com/811779) When Chrome is overwriting an existing file, cancel
   // should restore the file rather than delete it.
   if (!destination_.empty()) {
-    task_runner_->PostTask(FROM_HERE,
-                           base::BindOnce(base::IgnoreResult(delete_function_),
-                                          destination_, false));
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(base::IgnoreResult(delete_function_), destination_));
   }
 }
 

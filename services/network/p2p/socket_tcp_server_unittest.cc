@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "net/base/completion_once_callback.h"
+#include "net/base/network_isolation_key.h"
 #include "services/network/p2p/socket_tcp.h"
 #include "services/network/p2p/socket_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -105,7 +106,8 @@ class P2PSocketTcpServerTest : public testing::Test {
     P2PHostAndIPEndPoint dest;
     dest.ip_address = ParseAddress(kTestIpAddress1, kTestPort1);
 
-    p2p_socket_->Init(ParseAddress(kTestLocalIpAddress, 0), 0, 0, dest);
+    p2p_socket_->Init(ParseAddress(kTestLocalIpAddress, 0), 0, 0, dest,
+                      net::NetworkIsolationKey());
     EXPECT_TRUE(socket_->listening());
     base::RunLoop().RunUntilIdle();
   }

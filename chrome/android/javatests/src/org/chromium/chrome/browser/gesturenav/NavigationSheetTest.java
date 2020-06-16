@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.gesturenav;
 
 import android.graphics.Bitmap;
-import android.support.test.filters.MediumTest;
-import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
 import android.widget.ListView;
+
+import androidx.test.filters.MediumTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

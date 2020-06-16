@@ -7,6 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/overlays/public/infobar_banner/infobar_banner_overlay_responses.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/save_card_infobar_banner_overlay_request_config.h"
+#import "ios/chrome/browser/overlays/public/infobar_modal/save_card_infobar_modal_overlay_responses.h"
 #include "ios/chrome/browser/overlays/public/overlay_response.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_consumer.h"
 #import "ios/chrome/browser/ui/overlays/infobar_banner/infobar_banner_overlay_mediator+consumer_support.h"
@@ -19,6 +20,7 @@
 #endif
 
 using save_card_infobar_overlays::SaveCardBannerRequestConfig;
+using save_card_infobar_overlays::SaveCardMainAction;
 
 @interface SaveCardInfobarBannerOverlayMediator ()
 // The save card banner config from the request.
@@ -52,8 +54,13 @@ using save_card_infobar_overlays::SaveCardBannerRequestConfig;
   }
   // Notify the model layer to perform the infobar's main action before
   // dismissing the banner.
-  [self dispatchResponse:OverlayResponse::CreateWithInfo<
-                             InfobarBannerMainActionResponse>()];
+  [self dispatchResponse:OverlayResponse::CreateWithInfo<SaveCardMainAction>(
+                             base::SysUTF16ToNSString(
+                                 self.config->cardholder_name()),
+                             base::SysUTF16ToNSString(
+                                 self.config->expiration_date_month()),
+                             base::SysUTF16ToNSString(
+                                 self.config->expiration_date_year()))];
   [self dismissOverlay];
 }
 

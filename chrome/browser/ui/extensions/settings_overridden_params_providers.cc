@@ -234,7 +234,7 @@ GetSearchOverriddenParams(Profile* profile) {
   const url_formatter::FormatUrlTypes kFormatRules =
       url_formatter::kFormatUrlOmitTrivialSubdomains |
       url_formatter::kFormatUrlTrimAfterHost |
-      url_formatter::kFormatUrlOmitHTTPS;
+      url_formatter::kFormatUrlOmitHTTP | url_formatter::kFormatUrlOmitHTTPS;
   base::string16 formatted_search_url = url_formatter::FormatUrl(
       search_url, kFormatRules, net::UnescapeRule::SPACES, nullptr, nullptr,
       nullptr);

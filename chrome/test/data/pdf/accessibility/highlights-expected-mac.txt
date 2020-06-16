@@ -4,6 +4,7 @@ AXGroup AXDescription='PDF document containing 1 page'
 ++++++AXGroup
 ++++++++AXButton AXDescription='Hello'
 ++++++++++AXStaticText AXValue='Hello'
+++++++++++AXGroup AXDescription='Text Note'
 ++++++++AXStaticText AXValue=', nice '
 ++++++++AXButton AXDescription='meeting'
 ++++++++++AXStaticText AXValue='meeting'

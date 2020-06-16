@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.customtabs.content;
 import static org.junit.Assert.assertEquals;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Rule;
 import org.junit.Test;

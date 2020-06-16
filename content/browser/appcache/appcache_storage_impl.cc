@@ -353,8 +353,8 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
   std::set<url::Origin> origins;
   database_->FindOriginsWithGroups(&origins);
   for (const url::Origin& origin : origins) {
-    std::vector<blink::mojom::AppCacheInfo>& infos =
-        info_collection_->infos_by_origin[origin];
+    std::vector<blink::mojom::AppCacheInfo> infos;
+
     std::vector<AppCacheDatabase::GroupRecord> groups;
     database_->FindGroupsForOrigin(origin, &groups);
     for (const auto& group : groups) {
@@ -378,6 +378,13 @@ void AppCacheStorageImpl::GetAllInfoTask::Run() {
       info.manifest_scope = cache_record.manifest_scope;
       infos.push_back(info);
     }
+
+    // It's possible that all the origins have a group that is invalid due to
+    // the origin trial.  Ignore these.
+    if (infos.empty())
+      continue;
+
+    info_collection_->infos_by_origin[origin] = std::move(infos);
   }
 }
 

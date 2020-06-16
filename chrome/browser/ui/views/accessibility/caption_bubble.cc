@@ -156,12 +156,10 @@ class CaptionBubbleFrameView : public views::BubbleFrameView {
 
 CaptionBubble::CaptionBubble(views::View* anchor,
                              BrowserView* browser_view,
-                             base::RepeatingCallback<void()> closed_callback,
                              base::OnceClosure destroyed_callback)
     : BubbleDialogDelegateView(anchor,
                                views::BubbleBorder::FLOAT,
                                views::BubbleBorder::Shadow::NO_SHADOW),
-      closed_callback_(std::move(closed_callback)),
       destroyed_callback_(std::move(destroyed_callback)),
       ratio_in_parent_x_(kDefaultRatioInParentX),
       ratio_in_parent_y_(kDefaultRatioInParentY),
@@ -179,7 +177,10 @@ CaptionBubble::CaptionBubble(views::View* anchor,
   SetFocusBehavior(View::FocusBehavior::ALWAYS);
 }
 
-CaptionBubble::~CaptionBubble() = default;
+CaptionBubble::~CaptionBubble() {
+  if (model_)
+    model_->RemoveObserver();
+}
 
 gfx::Rect CaptionBubble::GetBubbleBounds() {
   // Get the height and width of the full bubble using the superclass method.
@@ -426,7 +427,7 @@ void CaptionBubble::OnBlur() {
 // readers without over-verbalizing. Currently it reads the full text when
 // focused and does not announce when text changes.
 void CaptionBubble::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  if (has_error_) {
+  if (model_ && model_->HasError()) {
     node_data->SetName(error_message_->GetText());
     node_data->SetNameFrom(ax::mojom::NameFrom::kContents);
   } else if (label_->GetText().size()) {
@@ -460,28 +461,43 @@ void CaptionBubble::ButtonPressed(views::Button* sender,
     UMA_HISTOGRAM_ENUMERATION(
         "Accessibility.LiveCaptions.Session",
         CaptionController::SessionEvent::kCloseButtonClicked);
-    closed_callback_.Run();
+    if (model_)
+      model_->Close();
   }
 }
 
-void CaptionBubble::SetText(const std::string& text) {
-  label_->SetText(base::ASCIIToUTF16(text));
+void CaptionBubble::SetModel(CaptionBubbleModel* model) {
+  if (model_)
+    model_->RemoveObserver();
+  model_ = model;
+  if (model_)
+    model_->SetObserver(this);
+}
+
+void CaptionBubble::OnTextChange() {
+  DCHECK(model_);
+  label_->SetText(base::ASCIIToUTF16(model_->GetFullText()));
   UpdateBubbleAndTitleVisibility();
 }
 
-void CaptionBubble::SetHasError(bool has_error) {
-  if (has_error_ == has_error)
-    return;
-  has_error_ = has_error;
+void CaptionBubble::OnErrorChange() {
+  DCHECK(model_);
+  bool has_error = model_->HasError();
   label_->SetVisible(!has_error);
+
+  // The error icon height may be different from the line height, so update the
+  // bubble content height accordingly.
+  UpdateContentSize();
   UpdateBubbleAndTitleVisibility();
+
   error_icon_->SetVisible(has_error);
   error_message_->SetVisible(has_error);
 }
 
 void CaptionBubble::UpdateBubbleAndTitleVisibility() {
+  DCHECK(model_);
   // Show the title if there is room for it and no error.
-  title_->SetVisible(!has_error_ &&
+  title_->SetVisible(!model_->HasError() &&
                      label_->GetPreferredSize().height() <
                          kLineHeightDip * kNumLines * GetTextScaleFactor());
   UpdateBubbleVisibility();
@@ -489,14 +505,18 @@ void CaptionBubble::UpdateBubbleAndTitleVisibility() {
 
 void CaptionBubble::UpdateBubbleVisibility() {
   DCHECK(GetWidget());
-  // Show the widget if it can be shown, there is room for it and it has text
-  // or an error to display.
-  if (!should_show_ || !can_layout_) {
+  if (!model_) {
+    // If there is no model set, do not show the bubble.
     if (GetWidget()->IsVisible())
       GetWidget()->Hide();
-  } else if (label_->GetText().size() > 0 || has_error_) {
-    // Only show the widget if it isn't already visible. Always calling
-    // Widget::Show() will mean the widget gets focus each time.
+  } else if (!can_layout_ || model_->IsClosed()) {
+    // Hide the widget if there is no room for it or the model is closed.
+    if (GetWidget()->IsVisible())
+      GetWidget()->Hide();
+  } else if (label_->GetText().size() > 0 || model_->HasError()) {
+    // Show the widget if it has text or an error to display. Only show the
+    // widget if it isn't already visible. Always calling Widget::Show() will
+    // mean the widget gets focus each time.
     if (!GetWidget()->IsVisible())
       GetWidget()->Show();
   } else if (GetWidget()->IsVisible()) {
@@ -510,16 +530,6 @@ void CaptionBubble::UpdateCaptionStyle(
   caption_style_ = caption_style;
   UpdateTextSize();
   SizeToContents();
-}
-
-void CaptionBubble::Show() {
-  should_show_ = true;
-  UpdateBubbleVisibility();
-}
-
-void CaptionBubble::Hide() {
-  should_show_ = false;
-  UpdateBubbleVisibility();
 }
 
 size_t CaptionBubble::GetTextIndexOfLineInLabel(size_t line) const {
@@ -560,10 +570,16 @@ void CaptionBubble::UpdateTextSize() {
   label_->SetLineHeight(kLineHeightDip * textScaleFactor);
   title_->SetLineHeight(kLineHeightDip * textScaleFactor);
   error_message_->SetLineHeight(kLineHeightDip * textScaleFactor);
+  UpdateContentSize();
+}
+
+void CaptionBubble::UpdateContentSize() {
+  double textScaleFactor = GetTextScaleFactor();
 
   int content_height =
-      has_error_ ? kLineHeightDip * textScaleFactor + kErrorImageSizeDip
-                 : kLineHeightDip * kNumLines * textScaleFactor;
+      (model_ && model_->HasError())
+          ? kLineHeightDip * textScaleFactor + kErrorImageSizeDip
+          : kLineHeightDip * kNumLines * textScaleFactor;
   content_container_->SetPreferredSize(
       gfx::Size(kMaxWidthDip, content_height + kVerticalMarginsDip));
   // TODO(crbug.com/1055150): On hover, show/hide the close button. At that

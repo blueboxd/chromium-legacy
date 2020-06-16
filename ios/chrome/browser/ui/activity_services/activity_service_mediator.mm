@@ -23,6 +23,7 @@
 #import "ios/chrome/browser/ui/activity_services/activities/reading_list_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/request_desktop_or_mobile_site_activity.h"
 #import "ios/chrome/browser/ui/activity_services/activities/send_tab_to_self_activity.h"
+#import "ios/chrome/browser/ui/activity_services/activity_service_histograms.h"
 #import "ios/chrome/browser/ui/activity_services/activity_type_util.h"
 #import "ios/chrome/browser/ui/activity_services/data/chrome_activity_image_source.h"
 #import "ios/chrome/browser/ui/activity_services/data/chrome_activity_item_source.h"
@@ -142,19 +143,22 @@
   return mutableSet;
 }
 
-- (void)shareFinishedWithActivityType:(NSString*)activityType
-                            completed:(BOOL)completed
-                        returnedItems:(NSArray*)returnedItems
-                                error:(NSError*)activityError {
-  if (activityType) {
+- (void)shareStartedWithScenario:(ActivityScenario)scenario {
+  RecordScenarioInitiated(scenario);
+}
+
+- (void)shareFinishedWithScenario:(ActivityScenario)scenario
+                     activityType:(NSString*)activityType
+                        completed:(BOOL)completed {
+  if (activityType && completed) {
     activity_type_util::ActivityType type =
         activity_type_util::TypeFromString(activityType);
     activity_type_util::RecordMetricForActivity(type);
-  }
-
-  if (!activityType || !completed) {
+    RecordActivityForScenario(type, scenario);
+  } else {
     // Share action was cancelled.
     base::RecordAction(base::UserMetricsAction("MobileShareMenuCancel"));
+    RecordCancelledScenario(scenario);
   }
 }
 

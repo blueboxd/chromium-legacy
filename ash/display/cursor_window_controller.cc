@@ -261,7 +261,7 @@ void CursorWindowController::SetContainer(aura::Window* container) {
   container_ = container;
   if (!container) {
     cursor_window_.reset();
-    cursor_view_.reset();
+    cursor_view_widget_.reset();
     return;
   }
 
@@ -293,7 +293,7 @@ void CursorWindowController::SetBoundsInScreenAndRotation(
     return;
   bounds_in_screen_ = bounds;
   rotation_ = rotation;
-  if (cursor_view_)
+  if (cursor_view_widget_)
     UpdateCursorView();
   UpdateLocation();
 }
@@ -351,9 +351,10 @@ void CursorWindowController::UpdateCursorImage() {
                                 GetAdjustedBitmap(image_rep), cursor_scale)));
   hot_point_ = gfx::ConvertPointToDIP(cursor_scale, hot_point_);
 
-  if (cursor_view_) {
-    cursor_view_->SetCursorImage(delegate_->cursor_image(), delegate_->size(),
-                                 hot_point_);
+  if (cursor_view_widget_) {
+    static_cast<cursor::CursorView*>(cursor_view_widget_->GetContentsView())
+        ->SetCursorImage(delegate_->cursor_image(), delegate_->size(),
+                         hot_point_);
   }
   if (cursor_window_) {
     cursor_window_->SetBounds(gfx::Rect(delegate_->size()));
@@ -366,22 +367,22 @@ void CursorWindowController::UpdateCursorImage() {
 void CursorWindowController::UpdateCursorVisibility() {
   bool visible = (visible_ && cursor_.type() != ui::mojom::CursorType::kNone);
   if (visible) {
-    if (cursor_view_)
-      cursor_view_->GetWidget()->Show();
+    if (cursor_view_widget_)
+      cursor_view_widget_->Show();
     if (cursor_window_)
       cursor_window_->Show();
   } else {
-    if (cursor_view_)
-      cursor_view_->GetWidget()->Hide();
+    if (cursor_view_widget_)
+      cursor_view_widget_->Hide();
     if (cursor_window_)
       cursor_window_->Hide();
   }
 }
 
 void CursorWindowController::UpdateCursorView() {
-  cursor_view_.reset(new cursor::CursorView(
-      container_, aura::Env::GetInstance()->last_mouse_location(),
-      is_cursor_motion_blur_enabled_));
+  cursor_view_widget_ = cursor::CursorView::Create(
+      aura::Env::GetInstance()->last_mouse_location(),
+      is_cursor_motion_blur_enabled_, container_);
   UpdateCursorImage();
 }
 

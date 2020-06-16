@@ -52,9 +52,9 @@ class UnindexedRulesetTestBuilder {
 
   bool AddUrlRule(const UrlPattern& url_pattern,
                   proto::SourceType source_type,
-                  bool is_whitelist = false) {
+                  bool is_allowlist = false) {
     auto rule = testing::MakeUrlRule(url_pattern);
-    if (is_whitelist)
+    if (is_allowlist)
       rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
     rule.set_source_type(source_type);
 

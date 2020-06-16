@@ -41,7 +41,7 @@ class SubresourceFilterContentSettingsManager
 
   // Only called via direct user action on via the subresource filter UI. Sets
   // the content setting to turn off the subresource filter.
-  void WhitelistSite(const GURL& url);
+  void AllowlistSite(const GURL& url);
 
   // Public for testing.
   std::unique_ptr<base::DictionaryValue> GetSiteMetadata(const GURL& url) const;

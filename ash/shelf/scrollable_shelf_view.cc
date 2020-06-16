@@ -514,7 +514,6 @@ ScrollableShelfView::ScrollableShelfView(ShelfModel* model, Shelf* shelf)
                                 shelf,
                                 /*drag_and_drop_host=*/this,
                                 /*shelf_button_delegate=*/this)),
-      base_padding_(ShelfConfig::Get()->app_icon_group_margin()),
       page_flip_time_threshold_(kShelfPageFlipDelay),
       animation_metrics_reporter_(
           std::make_unique<ScrollableShelfAnimationMetricsReporter>()) {
@@ -638,13 +637,10 @@ bool ScrollableShelfView::NeedUpdateToTargetBounds() const {
 gfx::Rect ScrollableShelfView::GetTargetScreenBoundsOfItemIcon(
     const ShelfID& id) const {
   // Calculates the available space for child views based on the target bounds.
-  const gfx::Insets target_extra_edge_padding =
-      CalculateExtraEdgePadding(/*use_target_bounds=*/true);
-  const gfx::Insets target_base_edge_padding = CalculateBaseEdgePadding();
-  const gfx::Insets target_total_edge_padding =
-      target_extra_edge_padding + target_base_edge_padding;
+  const gfx::Insets target_edge_padding =
+      CalculateEdgePadding(/*use_target_bounds=*/true);
   gfx::Rect target_space = GetAvailableLocalBounds(/*use_target_bounds=*/true);
-  target_space.Inset(target_total_edge_padding);
+  target_space.Inset(target_edge_padding);
 
   const int target_scroll_offset =
       CalculateScrollOffsetForTargetAvailableSpace(target_space);
@@ -652,8 +648,8 @@ gfx::Rect ScrollableShelfView::GetTargetScreenBoundsOfItemIcon(
   gfx::Rect icon_bounds = shelf_view_->view_model()->ideal_bounds(
       shelf_view_->model()->ItemIndexByID(id));
 
-  icon_bounds.Offset(
-      target_total_edge_padding.left() - GetTotalEdgePadding().left(), 0);
+  icon_bounds.Offset(target_edge_padding.left() - edge_padding_insets_.left(),
+                     0);
 
   // Transforms |icon_bounds| from shelf view's coordinates to scrollable shelf
   // view's coordinates manually.
@@ -713,20 +709,53 @@ bool ScrollableShelfView::RequiresScrollingForItemSize(
   return !CanFitAllAppsWithoutScrolling(target_size, icons_preferred_size);
 }
 
-gfx::Insets ScrollableShelfView::GetTotalEdgePadding() const {
-  return extra_padding_insets_ + base_padding_insets_;
-}
-
-gfx::Insets ScrollableShelfView::CalculateTotalEdgePaddingInTargetBounds()
-    const {
-  return CalculateExtraEdgePadding(/*use_target_bounds=*/true) +
-         base_padding_insets_;
-}
-
-void ScrollableShelfView::SetTotalPaddingInsets(
+void ScrollableShelfView::SetEdgePaddingInsets(
     const gfx::Insets& padding_insets) {
-  extra_padding_insets_ = padding_insets - base_padding_insets_;
+  edge_padding_insets_ = padding_insets;
   shelf_view_->LayoutIfAppIconsOffsetUpdates();
+}
+
+gfx::Insets ScrollableShelfView::CalculateEdgePadding(
+    bool use_target_bounds) const {
+  // Tries display centering strategy.
+  const gfx::Insets display_centering_edge_padding =
+      CalculatePaddingForDisplayCentering(use_target_bounds);
+  if (!display_centering_edge_padding.IsEmpty()) {
+    // Returns early if the value is legal.
+    return display_centering_edge_padding;
+  }
+
+  const int icons_size =
+      shelf_view_->GetSizeOfAppButtons(shelf_view_->number_of_visible_apps(),
+                                       shelf_view_->GetButtonSize()) +
+      2 * ShelfConfig::Get()->GetAppIconEndPadding();
+
+  const gfx::Rect available_local_bounds =
+      GetAvailableLocalBounds(use_target_bounds);
+  const int available_size_for_app_icons = GetShelf()->PrimaryAxisValue(
+      available_local_bounds.width(), available_local_bounds.height());
+
+  int gap = CanFitAllAppsWithoutScrolling(available_local_bounds.size(),
+                                          CalculatePreferredSize())
+                ? available_size_for_app_icons - icons_size
+                : 0;  // overflow
+
+  // Calculates the paddings before/after the visible area of scrollable shelf.
+  // |after_padding| being zero ensures that the available space after the
+  // visible area is filled first.
+  const int before_padding = gap;
+  const int after_padding = 0;
+
+  gfx::Insets padding_insets;
+  if (GetShelf()->IsHorizontalAlignment()) {
+    padding_insets =
+        gfx::Insets(/*top=*/0, before_padding, /*bottom=*/0, after_padding);
+  } else {
+    padding_insets =
+        gfx::Insets(before_padding, /*left=*/0, after_padding, /*right=*/0);
+  }
+
+  return padding_insets;
 }
 
 views::View* ScrollableShelfView::GetShelfContainerViewForTest() {
@@ -845,7 +874,6 @@ gfx::Size ScrollableShelfView::CalculatePreferredSize() const {
 
 void ScrollableShelfView::Layout() {
   gfx::Rect shelf_container_bounds = gfx::Rect(size());
-  shelf_container_bounds.Inset(base_padding_insets_);
 
   // Transpose and layout as if it is horizontal.
   const bool is_horizontal = GetShelf()->IsHorizontalAlignment();
@@ -862,10 +890,10 @@ void ScrollableShelfView::Layout() {
   gfx::Rect left_arrow_bounds;
   gfx::Rect right_arrow_bounds;
 
-  const int before_padding = is_horizontal ? extra_padding_insets_.left()
-                                           : extra_padding_insets_.top();
-  const int after_padding = is_horizontal ? extra_padding_insets_.right()
-                                          : extra_padding_insets_.bottom();
+  const int before_padding =
+      is_horizontal ? edge_padding_insets_.left() : edge_padding_insets_.top();
+  const int after_padding = is_horizontal ? edge_padding_insets_.right()
+                                          : edge_padding_insets_.bottom();
 
   // Calculates the bounds of the left arrow button. If the left arrow button
   // should not show, |left_arrow_bounds| should be empty.
@@ -981,14 +1009,14 @@ void ScrollableShelfView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     gradient_layer_delegate_->layer()->SetBounds(layer()->bounds());
   }
 
-  const gfx::Insets old_extra_padding_insets = extra_padding_insets_;
+  const gfx::Insets old_edge_padding_insets = edge_padding_insets_;
   const gfx::Vector2dF old_scroll_offset = scroll_offset_;
 
   // The changed view bounds may lead to update on the available space.
   UpdateAvailableSpaceAndScroll();
 
   // Relayout shelf items if the preferred padding changed.
-  if (old_extra_padding_insets != extra_padding_insets_)
+  if (old_edge_padding_insets != edge_padding_insets_)
     shelf_view_->OnBoundsChanged(shelf_view_->GetBoundsInScreen());
 
   // Avoids calling AdjustOffset() when the scrollable shelf view is
@@ -1402,57 +1430,6 @@ bool ScrollableShelfView::ShouldShowRightArrow() const {
          (layout_strategy_ == kShowButtons);
 }
 
-gfx::Insets ScrollableShelfView::CalculateBaseEdgePadding() const {
-  if (GetShelf()->IsHorizontalAlignment())
-    return gfx::Insets(0, base_padding_, 0, base_padding_);
-  return gfx::Insets(base_padding_, 0, base_padding_, 0);
-}
-
-gfx::Insets ScrollableShelfView::CalculateExtraEdgePadding(
-    bool use_target_bounds) const {
-  // Tries display centering strategy.
-  const gfx::Insets display_centering_edge_padding =
-      CalculatePaddingForDisplayCentering(use_target_bounds);
-  if (!display_centering_edge_padding.IsEmpty()) {
-    // Returns early if the value is legal.
-    return display_centering_edge_padding;
-  }
-
-  const int icons_size =
-      shelf_view_->GetSizeOfAppButtons(shelf_view_->number_of_visible_apps(),
-                                       shelf_view_->GetButtonSize()) +
-      2 * ShelfConfig::Get()->GetAppIconEndPadding();
-
-  const gfx::Rect available_local_bounds =
-      GetAvailableLocalBounds(use_target_bounds);
-  const int available_size_for_app_icons =
-      GetShelf()->PrimaryAxisValue(available_local_bounds.width(),
-                                   available_local_bounds.height()) -
-      2 * base_padding_;
-
-  int gap = CanFitAllAppsWithoutScrolling(available_local_bounds.size(),
-                                          CalculatePreferredSize())
-                ? available_size_for_app_icons - icons_size
-                : 0;  // overflow
-
-  // Calculates the paddings before/after the visible area of scrollable shelf.
-  // |after_padding| being zero ensures that the available space after the
-  // visible area is filled first.
-  const int before_padding = gap;
-  const int after_padding = 0;
-
-  gfx::Insets padding_insets;
-  if (GetShelf()->IsHorizontalAlignment()) {
-    padding_insets =
-        gfx::Insets(/*top=*/0, before_padding, /*bottom=*/0, after_padding);
-  } else {
-    padding_insets =
-        gfx::Insets(before_padding, /*left=*/0, after_padding, /*right=*/0);
-  }
-
-  return padding_insets;
-}
-
 int ScrollableShelfView::GetStatusWidgetSizeOnPrimaryAxis(
     bool use_target_bounds) const {
   const gfx::Size status_widget_size =
@@ -1502,9 +1479,6 @@ gfx::Insets ScrollableShelfView::CalculatePaddingForDisplayCentering(
                     ? screen_bounds.x() - display_bounds.x()
                     : display_bounds.right() - screen_bounds.right(),
                 display_bounds.bottom() - screen_bounds.bottom());
-
-  before_padding -= base_padding_;
-  after_padding -= base_padding_;
 
   // Checks whether there is enough space to ensure |base_padding_|. Returns
   // empty insets if not.
@@ -2026,8 +2000,7 @@ bool ScrollableShelfView::CanFitAllAppsWithoutScrolling(
     const gfx::Size& icons_preferred_size) const {
   const int available_length =
       (GetShelf()->IsHorizontalAlignment() ? available_size.width()
-                                           : available_size.height()) -
-      2 * ShelfConfig::Get()->app_icon_group_margin();
+                                           : available_size.height());
 
   int preferred_length = GetShelf()->IsHorizontalAlignment()
                              ? icons_preferred_size.width()
@@ -2107,13 +2080,11 @@ int ScrollableShelfView::CalculateScrollDistanceAfterAdjustment(
 
 void ScrollableShelfView::UpdateAvailableSpace() {
   if (!is_padding_configured_externally_) {
-    extra_padding_insets_ =
-        CalculateExtraEdgePadding(/*use_target_bounds=*/false);
+    edge_padding_insets_ = CalculateEdgePadding(/*use_target_bounds=*/false);
   }
-  base_padding_insets_ = CalculateBaseEdgePadding();
 
   available_space_ = GetLocalBounds();
-  available_space_.Inset(GetTotalEdgePadding());
+  available_space_.Inset(edge_padding_insets_);
 
   // The hotseat uses |available_space_| to determine where to show its
   // background, so notify it when it is recalculated.

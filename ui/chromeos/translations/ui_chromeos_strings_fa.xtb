@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">صفحه‌کلید سینهالی</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> دردسترس</translation>
 <translation id="2425665904502185219">حجم کل فایل</translation>
+<translation id="2428749644083375155">درحال کپی کردن <ph name="NUMBER_OF_ITEMS" /> مورد در <ph name="FOLDER_NAME" /></translation>
 <translation id="2448312741937722512">نوع</translation>
 <translation id="2453576648990281505">فایل ازقبل موجود است</translation>
 <translation id="2464079411014186876">بستنی</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> به موارد انتخابی اضافه شد.</translation>
 <translation id="4582497162516204941">‏نصب با Linux (بتا)</translation>
 <translation id="4594543368593301662">درحال نمایش نتایج برای <ph name="SEARCH_TERM" />.</translation>
+<translation id="4603392156942865207">درحال کپی کردن <ph name="FILE_NAME" /> در <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">هنرمند</translation>
 <translation id="4656293982926141856">این رایانه</translation>
 <translation id="4669606053856530811">اگر این موارد با اعضای «<ph name="SOURCE_NAME" />» هم‌رسانی نشوند، دسترسی را از دست خواهند داد.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">کنتراست</translation>
 <translation id="5068919226082848014">پیتزا</translation>
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> فایل حذف خواهد شد</translation>
+<translation id="508423945471810158">درحال انتقال <ph name="NUMBER_OF_ITEMS" /> مورد به <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">خطایی روی داد.</translation>
 <translation id="5098629044894065541">عبری</translation>
 <translation id="5123433949759960244">بسکتبال</translation>
@@ -455,6 +458,7 @@
 <translation id="6054173164583630569">صفحه‌کلید فرانسوی</translation>
 <translation id="6074825444536523002">‏فرم Google</translation>
 <translation id="6096979789310008754">نوشتار جستجو پاک شد، همه فایل‌ها و پوشه‌ها نشان داده می‌شود.</translation>
+<translation id="610101264611565198">درحال انتقال <ph name="FILE_NAME" /> به <ph name="FOLDER_NAME" /></translation>
 <translation id="6111770213269631447">‏نویسه‌گردانی (namaskar ← ‏নমস্কার)</translation>
 <translation id="6129953537138746214">فاصله</translation>
 <translation id="6133173853026656527">در حال انتقال <ph name="FILE_NAME" /></translation>
@@ -538,6 +542,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">نصب انجام نشد.</translation>
 <translation id="7040138676081995583">باز کردن با...</translation>
+<translation id="7059566040011178088">کمتر از <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> مورد انتخاب شدند</translation>
 <translation id="7106346894903675391">خرید فضای ذخیره بیشتر...</translation>
 <translation id="7126604456862387217">‏'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;جستجوی Drive&lt;/em&gt;</translation>
@@ -648,6 +653,7 @@
 <translation id="8193175696669055101">مدل دستگاه</translation>
 <translation id="8208580316430297579">کار هنری</translation>
 <translation id="8223479393428528563">برای ذخیره این فایل‌ها جهت استفاده آفلاین، دوباره آنلاین شوید، روی فایل‌ها کلیک راست کنید و گزینه <ph name="OFFLINE_CHECKBOX_NAME" /> را انتخاب کنید.</translation>
+<translation id="8231972167769262174">حدود <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">لغو</translation>
 <translation id="8261506727792406068">حذف</translation>
 <translation id="8269755669432358899">کوچک کردن پانل بازخورد فایل‌ها</translation>

@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ash/system/message_center/arc/arc_notification_manager_delegate.h"
+#include "ash/public/cpp/message_center/arc_notification_manager_delegate.h"
 #include "base/macros.h"
 
 namespace ash {

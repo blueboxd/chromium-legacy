@@ -18,16 +18,16 @@ class TickClock;
 namespace blink {
 
 class Agent;
-class Document;
+class LocalDOMWindow;
 class TimerBase;
 
 // This class tracks agent-related metrics for reporting in TRACE and UMA
-// metrics. It listens for documents being attached/detached to an execution
-// context and tracks which agent these documents are associated with.
+// metrics. It listens for windows being attached/detached to an execution
+// context and tracks which agent these windows are associated with.
 //
 // We report metrics periodically to track how long we spent in any given state.
 // For example, suppose that for 10 seconds a page had just one agent, then an
-// ad frame loads causing a document to load with a second agent. After 5
+// ad frame loads causing a windows to load with a second agent. After 5
 // seconds, the user closes the browser. In this case, we report:
 //
 // Histogram
@@ -35,7 +35,7 @@ class TimerBase;
 // 2 -----O             5
 //
 // We therefore keep track of how much time has elapsed since the previous
-// report. Metrics are reported whenever a document is added or removed, as
+// report. Metrics are reported whenever a windows is added or removed, as
 // well as at a regular interval.
 //
 // This class is based on the metrics tracked in:
@@ -47,8 +47,8 @@ class AgentMetricsCollector final
   AgentMetricsCollector();
   ~AgentMetricsCollector();
 
-  void DidAttachDocument(const Document&);
-  void DidDetachDocument(const Document&);
+  void DidAttachWindow(const LocalDOMWindow&);
+  void DidDetachWindow(const LocalDOMWindow&);
 
   void ReportMetrics();
 
@@ -68,13 +68,12 @@ class AgentMetricsCollector final
   std::unique_ptr<TaskRunnerTimer<AgentMetricsCollector>> reporting_timer_;
   base::TimeTicks time_last_reported_;
 
-  // Keep a map from each agent to all the documents associated with that
-  // agent. When the last document from the set is removed, we delete the key
+  // Keep a map from each agent to all the windows associated with that
+  // agent. When the last window from the set is removed, we delete the key
   // from the map.
-  using DocumentSet = HeapHashSet<WeakMember<const Document>>;
-  using AgentToDocumentsMap =
-      HeapHashMap<WeakMember<Agent>, Member<DocumentSet>>;
-  AgentToDocumentsMap agent_to_documents_map_;
+  using WindowSet = HeapHashSet<WeakMember<const LocalDOMWindow>>;
+  using AgentToWindowsMap = HeapHashMap<WeakMember<Agent>, Member<WindowSet>>;
+  AgentToWindowsMap agent_to_windows_map_;
 
   const base::TickClock* clock_;
 

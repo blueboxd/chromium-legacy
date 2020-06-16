@@ -13,6 +13,11 @@ const base::Feature kNewUsbBackend{"NewUsbBackend",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kNewBLEWinImplementation{"NewBLEWinImplementation",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether a more reliable GATT session handling
+// implementation is used on Windows 10 1709 (RS3) and beyond.
+const base::Feature kNewBLEGattSessionHandling{
+    "NewBLEGattSessionHandling", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_VR)

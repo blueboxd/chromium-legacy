@@ -101,15 +101,12 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   bool RequiresScrollingForItemSize(const gfx::Size& target_size,
                                     int button_size) const;
 
-  // Returns the sum of |base_padding_insets_| and |extra_padding_insets_|.
-  gfx::Insets GetTotalEdgePadding() const;
-
-  // Calculates the sum of the base padding and the extra padding in view's
-  // target bounds.
-  gfx::Insets CalculateTotalEdgePaddingInTargetBounds() const;
-
   // Sets padding insets.
-  void SetTotalPaddingInsets(const gfx::Insets& padding_insets);
+  void SetEdgePaddingInsets(const gfx::Insets& padding_insets);
+
+  // Returns the edge padding insets based on the scrollable shelf view's
+  // target bounds or the current bounds, indicated by |use_target_bounds|.
+  gfx::Insets CalculateEdgePadding(bool use_target_bounds) const;
 
   views::View* GetShelfContainerViewForTest();
   bool ShouldAdjustForTest() const;
@@ -147,8 +144,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   const gfx::Rect& visible_space() const { return visible_space_; }
 
-  const gfx::Insets& extra_padding_insets() const {
-    return extra_padding_insets_;
+  const gfx::Insets& edge_padding_insets() const {
+    return edge_padding_insets_;
   }
 
   void set_is_padding_configured_externally(
@@ -297,14 +294,6 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // arrow buttons' visibility directly.
   bool ShouldShowLeftArrow() const;
   bool ShouldShowRightArrow() const;
-
-  // Returns the padding insets which guarantee the minimum gap between
-  // scrollable shelf and other components (like status area widget).
-  gfx::Insets CalculateBaseEdgePadding() const;
-
-  // Returns the extra padding insets based on the scrollable shelf view's
-  // target bounds or the current bounds, indicated by |use_target_bounds|.
-  gfx::Insets CalculateExtraEdgePadding(bool use_target_bounds) const;
 
   int GetStatusWidgetSizeOnPrimaryAxis(bool use_target_bounds) const;
 
@@ -502,22 +491,13 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   ShelfView* shelf_view_ = nullptr;
 
-  // Defines the empty space between hotseat widget and other shelf components,
-  // such as status area widget. Its value is based on |base_padding_| which is
-  // a constant and shelf alignment.
-  gfx::Insets base_padding_insets_;
-
   // Defines the padding space inside the scrollable shelf. It is decided by the
   // current padding strategy.
-  gfx::Insets extra_padding_insets_;
+  gfx::Insets edge_padding_insets_;
 
-  // Minimum gap between scrollable shelf and other components (like status area
-  // widget) in DIPs.
-  const int base_padding_;
-
-  // Indicates whether |extra_padding_insets_| is configured externally.
-  // Usually |extra_padding_insets_| is calculated by ScrollableShelfView's
-  // member function. However, in some animations, |extra_padding_insets_|
+  // Indicates whether |edge_padding_insets_| is configured externally.
+  // Usually |edge_padding_insets_| is calculated by ScrollableShelfView's
+  // member function. However, in some animations, |edge_padding_insets_|
   // is set by animation progress to ensure the smooth bounds transition.
   bool is_padding_configured_externally_ = false;
 

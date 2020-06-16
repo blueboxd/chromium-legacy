@@ -4,6 +4,7 @@
 
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -528,13 +529,15 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT) {
       SpellcheckServiceFactory::GetInstance()->GetServiceForBrowserContext(
           context,
           false));
-  ASSERT_EQ(NULL, service);
+  ASSERT_EQ(nullptr, service);
 
   // Getting the spellcheck_service will initialize the SpellcheckService
   // object with the corrupted BDICT file created above since the hunspell
   // dictionary is loaded in the SpellcheckService constructor right now.
   // The SpellCheckHost object will send a BDICT_CORRUPTED event.
-  SpellcheckServiceFactory::GetForContext(context);
+  service = SpellcheckServiceFactory::GetForContext(context);
+  ASSERT_NE(nullptr, service);
+  ASSERT_TRUE(service->dictionaries_loaded());
 
   // Check the received event. Also we check if Chrome has successfully deleted
   // the corrupted dictionary. We delete the corrupted dictionary to avoid
@@ -664,6 +667,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTest,
   // The list of Windows spellcheck languages should have been populated by at
   // least one language. This assures that the spellcheck context menu will
   // include Windows spellcheck languages that lack Hunspell support.
+  ASSERT_TRUE(service->dictionaries_loaded());
   ASSERT_FALSE(service->windows_spellcheck_dictionary_map_.empty());
 }
 
@@ -680,6 +684,30 @@ class SpellcheckServiceWindowsHybridBrowserTestDelayInit
         /*disabled_features=*/{});
     InProcessBrowserTest::SetUp();
   }
+
+  void OnDictionariesInitialized() {
+    dictionaries_initialized_received_ = true;
+    if (quit_on_callback_)
+      std::move(quit_on_callback_).Run();
+  }
+
+ protected:
+  void RunUntilCallbackReceived() {
+    if (dictionaries_initialized_received_)
+      return;
+    base::RunLoop run_loop;
+    quit_on_callback_ = run_loop.QuitClosure();
+    run_loop.Run();
+
+    // reset status.
+    dictionaries_initialized_received_ = false;
+  }
+
+ private:
+  bool dictionaries_initialized_received_ = false;
+
+  // Quits the RunLoop on receiving the callback from InitializeDictionaries.
+  base::OnceClosure quit_on_callback_;
 };
 
 IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTestDelayInit,
@@ -697,5 +725,42 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTestDelayInit,
       SpellcheckServiceFactory::GetInstance()->GetServiceForBrowserContext(
           GetContext(), /* create */ false));
   ASSERT_EQ(nullptr, service);
+
+  // Now create the SpellcheckService but don't call InitializeDictionaries().
+  service = static_cast<SpellcheckService*>(
+      SpellcheckServiceFactory::GetInstance()->GetServiceForBrowserContext(
+          GetContext(), /* create */ true));
+
+  ASSERT_NE(nullptr, service);
+
+  // The list of Windows spellcheck languages should not have been populated
+  // yet since InitializeDictionaries() has not been called.
+  ASSERT_FALSE(service->dictionaries_loaded());
+  ASSERT_TRUE(service->windows_spellcheck_dictionary_map_.empty());
+
+  service->InitializeDictionaries(
+      base::BindOnce(&SpellcheckServiceWindowsHybridBrowserTestDelayInit::
+                         OnDictionariesInitialized,
+                     base::Unretained(this)));
+
+  RunUntilCallbackReceived();
+  ASSERT_TRUE(service->dictionaries_loaded());
+  // The list of Windows spellcheck languages should now have been populated.
+  std::map<std::string, std::string>
+      windows_spellcheck_dictionary_map_first_call =
+          service->windows_spellcheck_dictionary_map_;
+  ASSERT_FALSE(windows_spellcheck_dictionary_map_first_call.empty());
+
+  // It should be safe to call InitializeDictionaries again (it should
+  // immediately run the callback).
+  service->InitializeDictionaries(
+      base::BindOnce(&SpellcheckServiceWindowsHybridBrowserTestDelayInit::
+                         OnDictionariesInitialized,
+                     base::Unretained(this)));
+
+  RunUntilCallbackReceived();
+  ASSERT_TRUE(service->dictionaries_loaded());
+  ASSERT_EQ(windows_spellcheck_dictionary_map_first_call,
+            service->windows_spellcheck_dictionary_map_);
 }
 #endif  // defined(OS_WIN)

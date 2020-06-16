@@ -8,10 +8,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
-import android.support.test.filters.SmallTest;
-
 import androidx.preference.CheckBoxPreference;
 import androidx.preference.PreferenceScreen;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Before;

@@ -6,17 +6,17 @@
 
 #include <utility>
 
-#include "ash/public/cpp/arc_custom_tab.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "components/arc/intent_helper/custom_tab.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/window.h"
 
 // static
 mojo::PendingRemote<arc::mojom::CustomTabSession> CustomTabSessionImpl::Create(
-    std::unique_ptr<ash::ArcCustomTab> custom_tab,
+    std::unique_ptr<arc::CustomTab> custom_tab,
     Browser* browser) {
   DCHECK(custom_tab);
 
@@ -28,7 +28,7 @@ mojo::PendingRemote<arc::mojom::CustomTabSession> CustomTabSessionImpl::Create(
 }
 
 CustomTabSessionImpl::CustomTabSessionImpl(
-    std::unique_ptr<ash::ArcCustomTab> custom_tab,
+    std::unique_ptr<arc::CustomTab> custom_tab,
     Browser* browser)
     : browser_(browser),
       custom_tab_(std::move(custom_tab)),

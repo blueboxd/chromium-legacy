@@ -13,27 +13,27 @@
 
 FakeSafeBrowsingDatabaseManager::FakeSafeBrowsingDatabaseManager() {}
 
-void FakeSafeBrowsingDatabaseManager::AddBlacklistedUrl(
+void FakeSafeBrowsingDatabaseManager::AddBlocklistedUrl(
     const GURL& url,
     safe_browsing::SBThreatType threat_type,
     const safe_browsing::ThreatMetadata& metadata) {
   url_to_threat_type_[url] = std::make_pair(threat_type, metadata);
 }
 
-void FakeSafeBrowsingDatabaseManager::AddBlacklistedUrl(
+void FakeSafeBrowsingDatabaseManager::AddBlocklistedUrl(
     const GURL& url,
     safe_browsing::SBThreatType threat_type,
     safe_browsing::ThreatPatternType pattern_type) {
   safe_browsing::ThreatMetadata metadata;
   metadata.threat_pattern_type = pattern_type;
-  AddBlacklistedUrl(url, threat_type, metadata);
+  AddBlocklistedUrl(url, threat_type, metadata);
 }
 
-void FakeSafeBrowsingDatabaseManager::RemoveBlacklistedUrl(const GURL& url) {
+void FakeSafeBrowsingDatabaseManager::RemoveBlocklistedUrl(const GURL& url) {
   url_to_threat_type_.erase(url);
 }
 
-void FakeSafeBrowsingDatabaseManager::RemoveAllBlacklistedUrls() {
+void FakeSafeBrowsingDatabaseManager::RemoveAllBlocklistedUrls() {
   DCHECK(checks_.empty());
   url_to_threat_type_.clear();
 }

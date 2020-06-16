@@ -11,7 +11,8 @@ import static org.chromium.chrome.browser.multiwindow.MultiWindowTestHelper.wait
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;

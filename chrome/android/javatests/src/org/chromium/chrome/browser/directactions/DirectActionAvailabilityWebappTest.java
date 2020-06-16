@@ -7,7 +7,8 @@ import static org.junit.Assert.assertThat;
 
 import android.annotation.TargetApi;
 import android.os.Build;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matchers;
 import org.junit.Rule;

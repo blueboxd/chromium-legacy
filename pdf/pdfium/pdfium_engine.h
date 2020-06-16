@@ -100,6 +100,7 @@ class PDFiumEngine : public PDFEngine,
   void RotateClockwise() override;
   void RotateCounterclockwise() override;
   void SetTwoUpView(bool enable) override;
+  void DisplayAnnotations(bool display) override;
   pp::Size ApplyDocumentLayout(const DocumentLayout::Options& options) override;
   std::string GetSelectedText() override;
   bool CanEditText() override;

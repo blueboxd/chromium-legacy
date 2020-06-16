@@ -8,7 +8,6 @@
 
 #include "apps/launcher.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
-#include "ash/public/cpp/arc_custom_tab.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/keyboard_shortcut_viewer.h"
 #include "ash/public/cpp/shelf_model.h"
@@ -54,6 +53,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/intent_helper/custom_tab.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_observer.h"
 #include "components/url_formatter/url_fixer.h"
@@ -523,7 +523,7 @@ void ChromeNewWindowClient::OpenArcCustomTab(
   }
 
   auto custom_tab =
-      std::make_unique<ash::ArcCustomTab>(arc_window, surface_id, top_margin);
+      std::make_unique<arc::CustomTab>(arc_window, surface_id, top_margin);
   auto web_contents = arc::CreateArcCustomTabWebContents(profile, url);
 
   // |custom_tab_browser| will be destroyed when its tab strip becomes empty,

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_LOGICAL_LINE_ITEM_H_
 
 #include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -106,6 +107,9 @@ struct NGLogicalLineItem {
   bool HasFragment() const {
     return HasInFlowOrFloatingFragment() || HasOutOfFlowFragment();
   }
+  bool IsControl() const {
+    return inline_item && inline_item->Type() == NGInlineItem::kControl;
+  }
   bool CanCreateFragmentItem() const { return HasInFlowOrFloatingFragment(); }
   bool HasBidiLevel() const { return bidi_level != 0xff; }
   bool IsPlaceholder() const { return !HasFragment() && !HasBidiLevel(); }
@@ -123,8 +127,11 @@ struct NGLogicalLineItem {
     }
     return false;
   }
+
   const LogicalOffset& Offset() const { return rect.offset; }
   LayoutUnit InlineOffset() const { return rect.offset.inline_offset; }
+  LayoutUnit BlockOffset() const { return rect.offset.block_offset; }
+  LayoutUnit BlockEndOffset() const { return rect.BlockEndOffset(); }
   const LogicalSize& Size() const { return rect.size; }
   LogicalSize MarginSize() const { return {inline_size, Size().block_size}; }
   const NGPhysicalFragment* PhysicalFragment() const {
@@ -132,6 +139,7 @@ struct NGLogicalLineItem {
       return &layout_result->PhysicalFragment();
     return fragment.get();
   }
+
   TextDirection ResolvedDirection() const {
     // Inline boxes are not leaves that they don't have directions.
     DCHECK(HasBidiLevel() || layout_result->PhysicalFragment().IsInlineBox());

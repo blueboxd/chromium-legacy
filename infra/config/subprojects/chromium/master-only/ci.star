@@ -339,6 +339,15 @@ ci.android_builder(
     ),
 )
 
+ci.android_builder(
+    name = 'android-binary-size-generator',
+    executable = 'recipe:binary_size_generator_tot',
+    console_view_entry = ci.console_view_entry(
+        category = 'builder|other',
+        short_name = 'size',
+    ),
+)
+
 
 ci.android_fyi_builder(
     name = 'android-bfcache-rel',

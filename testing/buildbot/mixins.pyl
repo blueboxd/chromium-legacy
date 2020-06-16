@@ -590,7 +590,7 @@
         'device_os': None,
         'device_type': None,
         'pool': 'chromium.tests.avd.template',
-        'ssd': '1',
+        'machine_type': 'n1-standard-8',
       },
       'named_caches': [
         {
@@ -652,7 +652,7 @@
         'device_os': None,
         'device_type': None,
         'pool': 'chromium.tests.avd.template',
-        'ssd': '1',
+        'machine_type': 'n1-standard-8',
       },
       'named_caches': [
         {

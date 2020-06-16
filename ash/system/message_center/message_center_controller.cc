@@ -9,10 +9,10 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/external_arc/message_center/arc_notification_manager.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/message_center/arc/arc_notification_manager.h"
 #include "ash/system/message_center/arc_notification_manager_delegate_impl.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/fullscreen_notification_blocker.h"
@@ -117,19 +117,17 @@ MessageCenterController::~MessageCenterController() {
   message_center::MessageCenter::Shutdown();
 }
 
-void MessageCenterController::SetArcNotificationsInstance(
-    mojo::PendingRemote<arc::mojom::NotificationsInstance>
-        arc_notification_instance) {
-  if (!arc_notification_manager_) {
-    arc_notification_manager_ = std::make_unique<ArcNotificationManager>(
-        std::make_unique<ArcNotificationManagerDelegateImpl>(),
-        Shell::Get()
-            ->session_controller()
-            ->GetPrimaryUserSession()
-            ->user_info.account_id,
-        message_center::MessageCenter::Get());
-  }
-  arc_notification_manager_->SetInstance(std::move(arc_notification_instance));
+void MessageCenterController::SetArcNotificationManagerInstance(
+    std::unique_ptr<ArcNotificationManagerBase> manager_instance) {
+  CHECK(!arc_notification_manager_);
+  arc_notification_manager_ = std::move(manager_instance);
+  arc_notification_manager_->Init(
+      std::make_unique<ArcNotificationManagerDelegateImpl>(),
+      Shell::Get()
+          ->session_controller()
+          ->GetPrimaryUserSession()
+          ->user_info.account_id,
+      message_center::MessageCenter::Get());
 
   for (auto& observer : observers_)
     observer.OnSetArcNotificationsInstance(arc_notification_manager_.get());

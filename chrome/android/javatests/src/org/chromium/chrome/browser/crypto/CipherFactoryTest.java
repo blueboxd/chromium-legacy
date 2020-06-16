@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.crypto;
 
 import android.os.Bundle;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

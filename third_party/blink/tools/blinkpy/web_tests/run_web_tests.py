@@ -655,7 +655,7 @@ def _set_up_derived_options(port, options, args):
         options.configuration = port.default_configuration()
 
     if not options.time_out_ms:
-        options.time_out_ms = str(port.default_timeout_ms())
+        options.time_out_ms = str(port.timeout_ms())
 
     options.slow_time_out_ms = str(5 * int(options.time_out_ms))
 

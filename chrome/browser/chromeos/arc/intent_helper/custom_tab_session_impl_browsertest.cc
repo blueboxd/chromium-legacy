@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/arc/intent_helper/custom_tab_session_impl.h"
 
-#include "ash/public/cpp/arc_custom_tab.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/arc/arc_util.h"
+#include "components/arc/intent_helper/custom_tab.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/test/exo_test_helper.h"
 #include "components/exo/wm_helper.h"
@@ -56,7 +56,7 @@ class CustomTabSessionImplTest : public InProcessBrowserTest,
 
  protected:
   void CreateAndDestroyCustomTabSession(
-      std::unique_ptr<ash::ArcCustomTab> custom_tab,
+      std::unique_ptr<arc::CustomTab> custom_tab,
       Browser* browser) {
     CustomTabSessionImpl(std::move(custom_tab), browser);
   }
@@ -100,9 +100,9 @@ IN_PROC_BROWSER_TEST_F(CustomTabSessionImplTest,
       test_window.shell_surface()->GetWidget()->GetNativeWindow();
   ASSERT_TRUE(aura_window);
 
-  auto custom_tab = std::make_unique<ash::ArcCustomTab>(aura_window,
-                                                        /* surface_id= */ 0,
-                                                        /* top_margin= */ 0);
+  auto custom_tab = std::make_unique<arc::CustomTab>(aura_window,
+                                                     /* surface_id= */ 0,
+                                                     /* top_margin= */ 0);
 
   auto web_contents = arc::CreateArcCustomTabWebContents(browser()->profile(),
                                                          GURL("http://foo/"));

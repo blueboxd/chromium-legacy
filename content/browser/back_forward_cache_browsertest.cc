@@ -2722,6 +2722,48 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                   "document.visibilitychange", "window.visibilitychange"));
 }
 
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, EvictPageWithInfiniteLoop) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+
+  ExecuteScriptAsync(rfh_a, R"(
+    let i = 0;
+    while (true) { i++; }
+  )");
+
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+  RenderProcessHost* process = rfh_a->GetProcess();
+  RenderProcessHostWatcher destruction_observer(
+      process, RenderProcessHostWatcher::WATCH_FOR_HOST_DESTRUCTION);
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImpl* rfh_b = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
+
+  // rfh_a should be destroyed (not kept in the cache).
+  destruction_observer.Wait();
+  delete_observer_rfh_a.WaitUntilDeleted();
+
+  // rfh_b should still be the current frame.
+  EXPECT_EQ(current_frame_host(), rfh_b);
+  EXPECT_FALSE(delete_observer_rfh_b.deleted());
+
+  // 3) Go back to A.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  ExpectOutcome(BackForwardCacheMetrics::HistoryNavigationOutcome::kNotRestored,
+                FROM_HERE);
+  ExpectNotRestored(
+      {BackForwardCacheMetrics::NotRestoredReason::kTimeoutPuttingInCache},
+      FROM_HERE);
+}
+
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        NavigationCancelledAtWillStartRequest) {
   ASSERT_TRUE(embedded_test_server()->Start());

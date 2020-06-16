@@ -48,13 +48,13 @@ void LaserPointerController::SetEnabled(bool enabled) {
 }
 
 views::View* LaserPointerController::GetPointerView() const {
-  return laser_pointer_view_.get();
+  return laser_pointer_view_widget_->GetContentsView();
 }
 
 void LaserPointerController::CreatePointerView(
     base::TimeDelta presentation_delay,
     aura::Window* root_window) {
-  laser_pointer_view_ = std::make_unique<LaserPointerView>(
+  laser_pointer_view_widget_ = LaserPointerView::Create(
       base::TimeDelta::FromMilliseconds(kPointLifeDurationMs),
       presentation_delay,
       base::TimeDelta::FromMilliseconds(kAddStationaryPointsDelayMs),
@@ -62,16 +62,17 @@ void LaserPointerController::CreatePointerView(
 }
 
 void LaserPointerController::UpdatePointerView(ui::TouchEvent* event) {
-  laser_pointer_view_->AddNewPoint(event->root_location_f(),
-                                   event->time_stamp());
+  LaserPointerView* laser_pointer_view = GetLaserPointerView();
+  laser_pointer_view->AddNewPoint(event->root_location_f(),
+                                  event->time_stamp());
   if (event->type() == ui::ET_TOUCH_RELEASED) {
-    laser_pointer_view_->FadeOut(base::BindOnce(
+    laser_pointer_view->FadeOut(base::BindOnce(
         &LaserPointerController::DestroyPointerView, base::Unretained(this)));
   }
 }
 
 void LaserPointerController::DestroyPointerView() {
-  laser_pointer_view_.reset();
+  laser_pointer_view_widget_.reset();
 }
 
 bool LaserPointerController::CanStartNewGesture(ui::TouchEvent* event) {
@@ -79,6 +80,10 @@ bool LaserPointerController::CanStartNewGesture(ui::TouchEvent* event) {
   if (palette_utils::PaletteContainsPointInScreen(event->root_location()))
     return false;
   return FastInkPointerController::CanStartNewGesture(event);
+}
+
+LaserPointerView* LaserPointerController::GetLaserPointerView() const {
+  return static_cast<LaserPointerView*>(GetPointerView());
 }
 
 }  // namespace ash

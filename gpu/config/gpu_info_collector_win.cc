@@ -261,6 +261,12 @@ void GetGpuSupportedD3D12Version(Dx12VulkanVersionInfo* info) {
   }
 }
 
+// The old graphics drivers are installed to the Windows system directory
+// c:\windows\system32 or SysWOW64. Those versions can be detected without
+// specifying the absolute directory. For a newer version (>= ~2018), this won't
+// work. The newer graphics drivers are located in
+// c:\windows\system32\DriverStore\FileRepository\xxx.infxxx which contains a
+// different number at each installation
 bool BadAMDVulkanDriverVersion() {
   // Both 32-bit and 64-bit dll are broken. If 64-bit doesn't exist,
   // 32-bit dll will be used to detect the AMD Vulkan driver.
@@ -285,6 +291,39 @@ bool BadAMDVulkanDriverVersion() {
   // CompareTo() returns -1, 0, 1 for <, ==, >.
   if (amd_version.CompareTo(kBadAMDVulkanDriverVersion) == -1)
     return true;
+
+  return false;
+}
+
+// Vulkan 1.1 was released by the Khronos Group on March 7, 2018.
+// Blacklist all driver versions without Vulkan 1.1 support and those that cause
+// lots of crashes.
+bool BadGraphicsDriverVersions(const gpu::GPUInfo::GPUDevice& gpu_device) {
+  // GPU Device info is not available in gpu_integration_test.info-collection
+  // with --no-delay-for-dx12-vulkan-info-collection.
+  if (gpu_device.driver_version.empty())
+    return false;
+
+  base::Version driver_version(gpu_device.driver_version);
+  if (!driver_version.IsValid())
+    return true;
+
+  // Intel Vulkan drivers - igvk64.dll
+  // 24.20.100.6025 supports 1.1,  April 30, 2018.
+  // https://www.khronos.org/news/permalink/intel-graphics-driver-for-windows-10-64-bit-with-vulkan-1.1-support-released
+  // TODO (magchen@): constexpr uint32_t kIntelVendorId = 0x8086;
+
+  // AMD Vulkan drivers - amdvlk64.dll
+  // https://raw.githubusercontent.com/GPUOpen-Drivers/amd-vulkan-versions/master/amdversions.xml
+  constexpr uint32_t kAMDVendorId = 0x1002;
+  if (gpu_device.vendor_id == kAMDVendorId) {
+    // 26.20.12028.2 (2019)- number of crashes 1,188,048 as of 5/14/2020.
+    // Returns -1, 0, 1 for <, ==, >.
+    if (driver_version.CompareTo(base::Version("26.20.12028.2")) == 0)
+      return true;
+
+    // TODO (magchen@): 1.1 support detection
+  }
 
   return false;
 }
@@ -370,6 +409,7 @@ bool InitVulkanInstanceProc(
 }
 
 void GetGpuSupportedVulkanVersionAndExtensions(
+    const gpu::GPUInfo::GPUDevice& gpu_device,
     Dx12VulkanVersionInfo* info,
     const std::vector<const char*>& requested_vulkan_extensions,
     std::vector<bool>* extension_support) {
@@ -388,9 +428,16 @@ void GetGpuSupportedVulkanVersionAndExtensions(
   // Skip if the system has an older AMD Vulkan driver amdvlk64.dll or
   // amdvlk32.dll which crashes when vkCreateInstance() is called. This bug has
   // been fixed in the latest AMD driver.
+  // Detected by the file version of amdvlk64.dll.
   if (BadAMDVulkanDriverVersion()) {
     return;
   }
+
+  // Don't collect any info if the graphics vulkan driver is blacklisted or
+  // doesn't support Vulkan 1.1
+  // Detected by the graphic driver version returned by DXGI
+  if (BadGraphicsDriverVersions(gpu_device))
+    return;
 
   // Only supports a version >= 1.1.0.
   if (!InitVulkan(&vulkan_library, &vkGetInstanceProcAddr, &vkCreateInstance,
@@ -475,7 +522,9 @@ void GetGpuSupportedVulkanVersionAndExtensions(
   // base::UnloadNativeLibrary(vulkan_library);
 }
 
-void RecordGpuSupportedRuntimeVersionHistograms(Dx12VulkanVersionInfo* info) {
+void RecordGpuSupportedRuntimeVersionHistograms(
+    const gpu::GPUInfo::GPUDevice& gpu_device,
+    Dx12VulkanVersionInfo* info) {
   // D3D
   GetGpuSupportedD3D12Version(info);
   UMA_HISTOGRAM_BOOLEAN("GPU.SupportsDX12", info->supports_dx12);
@@ -488,7 +537,7 @@ void RecordGpuSupportedRuntimeVersionHistograms(Dx12VulkanVersionInfo* info) {
       "VK_KHR_external_memory_win32", "VK_KHR_external_semaphore_win32",
       "VK_KHR_win32_keyed_mutex"};
   std::vector<bool> extension_support(vulkan_extensions.size(), false);
-  GetGpuSupportedVulkanVersionAndExtensions(info, vulkan_extensions,
+  GetGpuSupportedVulkanVersionAndExtensions(gpu_device, info, vulkan_extensions,
                                             &extension_support);
 
   UMA_HISTOGRAM_BOOLEAN("GPU.SupportsVulkan", info->supports_vulkan);

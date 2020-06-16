@@ -17,6 +17,7 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.components.infobars.InfoBarInteractionHandler;
+import org.chromium.components.infobars.InfoBarLayout;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -129,8 +130,11 @@ public abstract class InfoBar implements InfoBarInteractionHandler, InfoBarUiIte
             createCompactLayoutContent(layout);
             mView = layout;
         } else {
-            // WebLayer supports only compact infobars.
-            assert false;
+            InfoBarLayout layout = new InfoBarLayout(
+                    mContext, this, mIconDrawableId, mIconTintId, mIconBitmap, mMessage);
+            createContent(layout);
+            layout.onContentCreated();
+            mView = layout;
         }
 
         return mView;
@@ -151,6 +155,12 @@ public abstract class InfoBar implements InfoBarInteractionHandler, InfoBarUiIte
     protected boolean usesCompactLayout() {
         return false;
     }
+
+    /**
+     * Prepares the InfoBar for display and adds InfoBar-specific controls to the layout.
+     * @param layout Layout containing all of the controls.
+     */
+    protected void createContent(InfoBarLayout layout) {}
 
     /**
      * Prepares and inserts views into an {@link InfoBarCompactLayout}.

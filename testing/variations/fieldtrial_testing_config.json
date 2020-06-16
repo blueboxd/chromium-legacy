@@ -2497,21 +2497,6 @@
             ]
         }
     ],
-    "ExpandablePaymentHandler": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "ScrollToExpandPaymentHandler"
-                    ]
-                }
-            ]
-        }
-    ],
     "ExpectCTReporting": [
         {
             "platforms": [
@@ -2803,6 +2788,26 @@
                     },
                     "enable_features": [
                         "freeze-background-tab-on-network-idle"
+                    ]
+                }
+            ]
+        }
+    ],
+    "FriendlySettingsHats": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Launched_20200616",
+                    "enable_features": [
+                        "PrivacySettingsRedesign",
+                        "SafeBrowsingEnhancedProtection",
+                        "SyncSetupFriendlySettings"
                     ]
                 }
             ]
@@ -4749,17 +4754,13 @@
             ],
             "experiments": [
                 {
-                    "name": "WithEnhancedExperiment_20200604",
+                    "name": "WithEnhancedExperiment_20200616",
                     "params": {
                         "DefaultInIncognito": "true"
                     },
                     "enable_features": [
                         "ImprovedCookieControls",
-                        "ImprovedCookieControlsForThirdPartyCookieBlocking",
-                        "PasswordCheck",
-                        "PrivacySettingsRedesign",
-                        "SafeBrowsingEnhancedProtection",
-                        "SyncSetupFriendlySettings"
+                        "ImprovedCookieControlsForThirdPartyCookieBlocking"
                     ]
                 }
             ]
@@ -6725,6 +6726,7 @@
                 "android",
                 "android_webview",
                 "chromeos",
+                "ios",
                 "linux",
                 "mac",
                 "windows"
@@ -7077,6 +7079,9 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "NumOfFramesToToggleInterval": "6"
+                    },
                     "enable_features": [
                         "UsePreferredIntervalForVideo"
                     ]

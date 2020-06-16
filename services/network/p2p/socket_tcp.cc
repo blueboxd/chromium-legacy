@@ -79,10 +79,12 @@ void P2PSocketTcpBase::InitAccepted(const net::IPEndPoint& remote_address,
   DoRead();
 }
 
-void P2PSocketTcpBase::Init(const net::IPEndPoint& local_address,
-                            uint16_t min_port,
-                            uint16_t max_port,
-                            const P2PHostAndIPEndPoint& remote_address) {
+void P2PSocketTcpBase::Init(
+    const net::IPEndPoint& local_address,
+    uint16_t min_port,
+    uint16_t max_port,
+    const P2PHostAndIPEndPoint& remote_address,
+    const net::NetworkIsolationKey& network_isolation_key) {
   DCHECK(!socket_);
 
   remote_address_ = remote_address;
@@ -106,10 +108,8 @@ void P2PSocketTcpBase::Init(const net::IPEndPoint& local_address,
   // a problem on multi-homed host.
 
   socket_ = proxy_resolving_socket_factory_->CreateSocket(
-      GURL("https://" + dest_host_port_pair.ToString()),
-      // TODO(https://crbug.com/1021661): Pass in a non-empty
-      // NetworkIsolationKey here.
-      net::NetworkIsolationKey::Todo(), IsTlsClientSocket(type_));
+      GURL("https://" + dest_host_port_pair.ToString()), network_isolation_key,
+      IsTlsClientSocket(type_));
 
   if (IsPseudoTlsClientSocket(type_)) {
     socket_ =

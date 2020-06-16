@@ -149,16 +149,7 @@ class AndroidPortTest(port_testcase.PortTestCase):
 
     # Tests the default timeouts for Android, which are different than the rest of Chromium.
     def test_default_timeout_ms(self):
-        self.assertEqual(
-            self.make_port(
-                options=optparse.Values({
-                    'configuration': 'Release'
-                })).default_timeout_ms(), 10000)
-        self.assertEqual(
-            self.make_port(
-                options=optparse.Values({
-                    'configuration': 'Debug'
-                })).default_timeout_ms(), 10000)
+        self.assertEqual(self.make_port().timeout_ms(), 10000)
 
     def test_path_to_apache_config_file(self):
         port = self.make_port()

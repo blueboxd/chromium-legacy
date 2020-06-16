@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/text.h"
-#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -74,7 +73,6 @@
 #include "third_party/blink/renderer/core/testing/scoped_mock_overlay_scrollbars.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -815,19 +813,6 @@ TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
   EXPECT_EQ(6u, observer.UpdatedCharacterDataRecords()[3]->offset_);
   EXPECT_EQ(4u, observer.UpdatedCharacterDataRecords()[3]->old_length_);
   EXPECT_EQ(3u, observer.UpdatedCharacterDataRecords()[3]->new_length_);
-}
-
-TEST_F(DocumentTest, AttachExecutionContext) {
-  auto* scheduler = GetFrame().GetFrameScheduler();
-  EXPECT_TRUE(
-      GetDocument().GetAgent()->event_loop()->IsSchedulerAttachedForTest(
-          scheduler));
-  Document* doc = GetDocument().implementation().createHTMLDocument("foo");
-  EXPECT_EQ(GetDocument().GetAgent(), doc->GetAgent());
-  GetDocument().Shutdown();
-  EXPECT_FALSE(
-      doc->GetAgent()->event_loop()->IsSchedulerAttachedForTest(scheduler));
-  doc->Shutdown();
 }
 
 // This tests that meta-theme-color can be found correctly

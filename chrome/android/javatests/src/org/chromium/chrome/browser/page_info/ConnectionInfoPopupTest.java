@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.page_info;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Rule;
 import org.junit.Test;

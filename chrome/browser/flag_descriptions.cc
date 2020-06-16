@@ -218,6 +218,12 @@ const char kAutofillEnableGoogleIssuedCardDescription[] =
     "When enabled, Google-issued cards will be available in the autofill "
     "suggestions.";
 
+const char kAutofillEnableOffersInDownstreamName[] =
+    "Enable Autofill offers in downstream";
+const char kAutofillEnableOffersInDownstreamDescription[] =
+    "When enabled, offer data will be retrieved during downstream and shown in "
+    "the dropdown list.";
+
 const char kAutofillEnableStickyPaymentsBubbleName[] =
     "Enable Autofill payments sticky bubbles";
 const char kAutofillEnableStickyPaymentsBubbleDescription[] =
@@ -3913,6 +3919,11 @@ const char kPluginVmShowCameraPermissionsName[] =
     "Show Plugin VM camera permissions";
 const char kPluginVmShowCameraPermissionsDescription[] =
     "Displays camera permissions for Plugin VM in the app settings.";
+
+const char kPluginVmShowMicrophonePermissionsName[] =
+    "Show Plugin VM microphone permissions";
+const char kPluginVmShowMicrophonePermissionsDescription[] =
+    "Displays microphone permissions for Plugin VM in the app settings.";
 
 const char kTetherName[] = "Instant Tethering";
 const char kTetherDescription[] =

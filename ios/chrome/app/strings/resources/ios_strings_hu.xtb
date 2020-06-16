@@ -470,6 +470,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="681368974849482173">Elem létrehozva</translation>
 <translation id="6831043979455480757">Fordítás</translation>
 <translation id="6851516051005285358">Asztali webhely kérése</translation>
+<translation id="6856384753476268833">Az Ön szervezete kezeli.</translation>
 <translation id="6858855187367714033">Beolvasva</translation>
 <translation id="6859944681507688231">QR-kód vagy hitelkártya beolvasásához engedélyezze a kamerát a beállítások között</translation>
 <translation id="6873263987691478642">Osztott nézet</translation>
@@ -548,6 +549,7 @@ Mivel fiókját a(z) <ph name="HOSTED_DOMAIN" /> kezeli, Chrome-adatai törölve
 <translation id="7856733331829174190">Nem sikerült letölteni</translation>
 <translation id="7859704718976024901">Böngészési előzmények</translation>
 <translation id="7887198238286927132">Adatai védelme érdekében a Chrome nem tölti ki automatikusan ezt a mezőt.</translation>
+<translation id="791251013315685175">Kezelő: <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Olvasási listája hozzáférhető offline módban. Ha szeretne hozzáadni oldalakat a listához, koppintson a következőkre: <ph name="SHARE_OPENING_ICON" />, majd <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Jelszavak exportálása…</translation>

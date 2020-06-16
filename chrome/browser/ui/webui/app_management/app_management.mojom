@@ -88,4 +88,5 @@ enum PwaPermissionType {
 enum PluginVmPermissionType {
   PRINTING = 0,
   CAMERA = 1,
+  MICROPHONE = 2,
 };

@@ -18,12 +18,22 @@ bool UseBrowserSpellChecker();
 #if defined(OS_WIN)
 extern const base::Feature kWinUseBrowserSpellChecker;
 
-// If enabled, don't initialize the SpellcheckService on browser launch.
-// Since Chromium already by default initializes the spellcheck service
-// on startup for custom dictionary synchronization, the command line
-// for launching the browser with Windows hybrid spellchecking enabled
-// but no initialization of the spellcheck service is:
+// If the kWinDelaySpellcheckServiceInit feature flag is enabled, don't
+// initialize the spellcheck dictionaries when the SpellcheckService is
+// instantiated. With this flag set: (1) Completing the initialization of the
+// spellcheck service is on-demand, invoked by calling
+// SpellcheckService::InitializeDictionaries with a callback to indicate when
+// the operation completes. (2) The call to create the spellcheck service in
+// ChromeBrowserMainParts::PreMainMessageLoopRunImpl will be skipped. Chromium
+// will still by default instantiate the spellcheck service on startup for
+// custom dictionary synchronization, but will not load Windows spellcheck
+// dictionaries. The command line for launching the browser with Windows hybrid
+// spellchecking enabled but no initialization of the spellcheck service is:
 //    chrome
+//    --enable-features=WinUseBrowserSpellChecker,WinDelaySpellcheckServiceInit
+// and if instantiation of the spellcheck service needs to be completely
+// disabled:
+//     chrome
 //    --enable-features=WinUseBrowserSpellChecker,WinDelaySpellcheckServiceInit
 //    --disable-sync-types="Dictionary"
 extern const base::Feature kWinDelaySpellcheckServiceInit;

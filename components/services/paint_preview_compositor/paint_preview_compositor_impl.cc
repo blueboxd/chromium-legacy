@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/trace_event/trace_event.h"
 #include "components/paint_preview/common/file_stream.h"
@@ -23,6 +25,8 @@ namespace {
 
 base::flat_map<base::UnguessableToken, SkpResult> DeserializeAllFrames(
     base::flat_map<base::UnguessableToken, base::File>* file_map) {
+  TRACE_EVENT0("paint_preview",
+               "PaintPreviewCompositorImpl::DeserializeAllFrames");
   std::vector<std::pair<base::UnguessableToken, SkpResult>> results;
   results.reserve(file_map->size());
 
@@ -49,6 +53,7 @@ base::Optional<PaintPreviewFrame> BuildFrame(
     const base::UnguessableToken& token,
     const PaintPreviewFrameProto& frame_proto,
     const base::flat_map<base::UnguessableToken, SkpResult>& results) {
+  TRACE_EVENT0("paint_preview", "PaintPreviewCompositorImpl::BuildFrame");
   auto it = results.find(token);
   if (it == results.end())
     return base::nullopt;
@@ -76,6 +81,21 @@ base::Optional<PaintPreviewFrame> BuildFrame(
     frame.subframe_clip_rects.push_back(rect);
   }
   return frame;
+}
+
+SkBitmap CreateBitmap(sk_sp<SkPicture> skp,
+                      const gfx::Rect& clip_rect,
+                      float scale_factor) {
+  TRACE_EVENT0("paint_preview", "PaintPreviewCompositorImpl::CreateBitmap");
+  SkBitmap bitmap;
+  bitmap.allocPixels(
+      SkImageInfo::MakeN32Premul(clip_rect.width(), clip_rect.height()));
+  SkCanvas canvas(bitmap);
+  SkMatrix matrix;
+  matrix.setScaleTranslate(scale_factor, scale_factor, -clip_rect.x(),
+                           -clip_rect.y());
+  canvas.drawPicture(skp, &matrix, nullptr);
+  return bitmap;
 }
 
 }  // namespace
@@ -152,17 +172,13 @@ void PaintPreviewCompositorImpl::BitmapForFrame(
     return;
   }
 
-  auto skp = frame_it->second.skp;
-  bitmap.allocPixels(
-      SkImageInfo::MakeN32Premul(clip_rect.width(), clip_rect.height()));
-  SkCanvas canvas(bitmap);
-  SkMatrix matrix;
-  matrix.setScaleTranslate(scale_factor, scale_factor, -clip_rect.x(),
-                           -clip_rect.y());
-  canvas.drawPicture(skp, &matrix, nullptr);
-
-  std::move(callback).Run(mojom::PaintPreviewCompositor::Status::kSuccess,
-                          bitmap);
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::TaskPriority::USER_VISIBLE, base::WithBaseSyncPrimitives()},
+      base::BindOnce(&CreateBitmap, frame_it->second.skp, clip_rect,
+                     scale_factor),
+      base::BindOnce(std::move(callback),
+                     mojom::PaintPreviewCompositor::Status::kSuccess));
 }
 
 void PaintPreviewCompositorImpl::SetRootFrameUrl(const GURL& url) {

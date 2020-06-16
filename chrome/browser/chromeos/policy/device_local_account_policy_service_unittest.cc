@@ -155,7 +155,7 @@ void DeviceLocalAccountPolicyServiceTestBase::SetUp() {
   extension_cache_task_runner_ = new base::TestSimpleTaskRunner;
   expected_policy_map_.Set(key::kSearchSuggestEnabled, POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                           std::make_unique<base::Value>(true), nullptr);
+                           base::Value(true), nullptr);
 
   device_local_account_policy_.payload()
       .mutable_searchsuggestenabled()
@@ -831,11 +831,11 @@ void DeviceLocalAccountPolicyProviderTest::SetUp() {
   expected_policy_map_.Set(key::kShelfAutoHideBehavior, POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_MACHINE,
                            POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
-                           std::make_unique<base::Value>("Never"), nullptr);
+                           base::Value("Never"), nullptr);
   expected_policy_map_.Set(key::kShowLogoutButtonInTray, POLICY_LEVEL_MANDATORY,
                            POLICY_SCOPE_MACHINE,
                            POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE,
-                           std::make_unique<base::Value>(true), nullptr);
+                           base::Value(true), nullptr);
 
   // Policy defaults (for policies not set by admin).
   SetEnterpriseUsersDefaults(&expected_policy_map_);
@@ -912,8 +912,7 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
   expected_policy_bundle
       .Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
       .Set(key::kSearchSuggestEnabled, POLICY_LEVEL_MANDATORY,
-           POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-           std::make_unique<base::Value>(false), nullptr);
+           POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false), nullptr);
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_->policies()));
 
   // Any values set for the |ShelfAutoHideBehavior|, |ShowLogoutButtonInTray|

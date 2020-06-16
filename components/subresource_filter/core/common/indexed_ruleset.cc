@@ -62,7 +62,7 @@ static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 6,
               "also updated RulesetIndexer::kIndexedFormatVersion above.");
 
 RulesetIndexer::RulesetIndexer()
-    : blacklist_(&builder_), whitelist_(&builder_), deactivation_(&builder_) {}
+    : blocklist_(&builder_), allowlist_(&builder_), deactivation_(&builder_) {}
 
 RulesetIndexer::~RulesetIndexer() = default;
 
@@ -75,12 +75,12 @@ bool RulesetIndexer::AddUrlRule(const proto::UrlRule& rule) {
     return false;
 
   if (rule.semantics() == proto::RULE_SEMANTICS_BLACKLIST) {
-    blacklist_.IndexUrlRule(offset);
+    blocklist_.IndexUrlRule(offset);
   } else {
     const auto* flat_rule = flatbuffers::GetTemporaryPointer(builder_, offset);
     DCHECK(flat_rule);
     if (flat_rule->element_types())
-      whitelist_.IndexUrlRule(offset);
+      allowlist_.IndexUrlRule(offset);
     if (flat_rule->activation_types())
       deactivation_.IndexUrlRule(offset);
   }
@@ -89,12 +89,12 @@ bool RulesetIndexer::AddUrlRule(const proto::UrlRule& rule) {
 }
 
 void RulesetIndexer::Finish() {
-  auto blacklist_offset = blacklist_.Finish();
-  auto whitelist_offset = whitelist_.Finish();
+  auto blocklist_offset = blocklist_.Finish();
+  auto allowlist_offset = allowlist_.Finish();
   auto deactivation_offset = deactivation_.Finish();
 
   auto url_rules_index_offset = flat::CreateIndexedRuleset(
-      builder_, blacklist_offset, whitelist_offset, deactivation_offset);
+      builder_, blocklist_offset, allowlist_offset, deactivation_offset);
   builder_.Finish(url_rules_index_offset);
 }
 
@@ -124,8 +124,8 @@ bool IndexedRulesetMatcher::Verify(const uint8_t* buffer,
 
 IndexedRulesetMatcher::IndexedRulesetMatcher(const uint8_t* buffer, size_t size)
     : root_(flat::GetIndexedRuleset(buffer)),
-      blacklist_(root_->blacklist_index()),
-      whitelist_(root_->whitelist_index()),
+      blocklist_(root_->blocklist_index()),
+      allowlist_(root_->allowlist_index()),
       deactivation_(root_->deactivation_index()) {}
 
 bool IndexedRulesetMatcher::ShouldDisableFilteringForDocument(
@@ -162,17 +162,17 @@ const url_pattern_index::flat::UrlRule* IndexedRulesetMatcher::MatchedUrlRule(
     bool disable_generic_rules) const {
   const bool is_third_party = first_party.IsThirdParty(url);
 
-  const url_pattern_index::flat::UrlRule* blacklist_rule =
-      blacklist_.FindMatch(url, first_party.origin(), element_type,
+  const url_pattern_index::flat::UrlRule* blocklist_rule =
+      blocklist_.FindMatch(url, first_party.origin(), element_type,
                            proto::ACTIVATION_TYPE_UNSPECIFIED, is_third_party,
                            disable_generic_rules, FindRuleStrategy::kAny);
-  const url_pattern_index::flat::UrlRule* whitelist_rule = nullptr;
-  if (blacklist_rule) {
-    whitelist_rule =
-        whitelist_.FindMatch(url, first_party.origin(), element_type,
+  const url_pattern_index::flat::UrlRule* allowlist_rule = nullptr;
+  if (blocklist_rule) {
+    allowlist_rule =
+        allowlist_.FindMatch(url, first_party.origin(), element_type,
                              proto::ACTIVATION_TYPE_UNSPECIFIED, is_third_party,
                              disable_generic_rules, FindRuleStrategy::kAny);
-    return whitelist_rule ? whitelist_rule : blacklist_rule;
+    return allowlist_rule ? allowlist_rule : blocklist_rule;
   }
   return nullptr;
 }

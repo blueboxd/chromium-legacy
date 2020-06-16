@@ -23,7 +23,7 @@ proto::UrlRule CreateSuffixRule(base::StringPiece suffix) {
   return rule;
 }
 
-proto::UrlRule CreateWhitelistSuffixRule(base::StringPiece suffix) {
+proto::UrlRule CreateAllowlistSuffixRule(base::StringPiece suffix) {
   proto::UrlRule rule;
   rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
   rule.set_source_type(proto::SOURCE_TYPE_ANY);
@@ -35,7 +35,7 @@ proto::UrlRule CreateWhitelistSuffixRule(base::StringPiece suffix) {
   return rule;
 }
 
-proto::UrlRule CreateWhitelistRuleForDocument(
+proto::UrlRule CreateAllowlistRuleForDocument(
     base::StringPiece pattern,
     int32_t activation_types,
     std::vector<std::string> domains) {

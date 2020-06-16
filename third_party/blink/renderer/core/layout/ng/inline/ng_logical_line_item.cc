@@ -22,10 +22,10 @@ void NGLogicalLineItems::CreateTextFragments(WritingMode writing_mode,
   NGTextFragmentBuilder text_builder(writing_mode);
   for (auto& child : *this) {
     if (const NGInlineItem* inline_item = child.inline_item) {
-      DCHECK(inline_item->Type() == NGInlineItem::kText ||
+      DCHECK((inline_item->Type() == NGInlineItem::kText &&
+              (inline_item->TextType() == NGTextType::kNormal ||
+               inline_item->TextType() == NGTextType::kSymbolMarker)) ||
              inline_item->Type() == NGInlineItem::kControl);
-      DCHECK(inline_item->TextType() == NGTextType::kNormal ||
-             inline_item->TextType() == NGTextType::kSymbolMarker);
       text_builder.SetItem(text_content, *inline_item,
                            std::move(child.shape_result), child.text_offset,
                            child.MarginSize());

@@ -239,9 +239,20 @@ void BookmarkModelObserverImpl::BookmarkNodeFaviconChanged(
   const sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
       node, model, /*force_favicon_load=*/false, entity->has_final_guid());
 
+  // TODO(crbug.com/1094825): implement |base_specifics_hash| similar to
+  // ClientTagBasedModelTypeProcessor.
   if (entity->MatchesFaviconHash(specifics.bookmark().favicon())) {
     // The favicon content didn't actually change, which means this event is
     // almost certainly the result of favicon loading having completed.
+    if (entity->IsUnsynced() &&
+        base::FeatureList::IsEnabled(
+            switches::kSyncDoNotCommitBookmarksWithoutFavicon)) {
+      // When kSyncDoNotCommitBookmarksWithoutFavicon is enabled, nudge for
+      // commit once favicon is loaded. This is needed in case when unsynced
+      // entity was skipped while building commit requests (since favicon wasn't
+      // loaded).
+      nudge_for_commit_closure_.Run();
+    }
     return;
   }
 

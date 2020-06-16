@@ -1518,6 +1518,7 @@ const std::string Converter::kPropertyLookupTable[] = {
     "overscroll-behavior-x",
     "overscroll-behavior-y",
     "animation-timeline",
+    "counter-set",
     "INVALID_PROPERTY",
 };
 

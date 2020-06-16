@@ -582,8 +582,6 @@ bool SQLitePersistentReportingAndNelStore::Backend::CreateDatabaseSchema() {
 base::Optional<int>
 SQLitePersistentReportingAndNelStore::Backend::DoMigrateDatabaseSchema() {
   int cur_version = meta_table()->GetVersionNumber();
-  if (cur_version != 1)
-    return base::nullopt;
 
   // Future database upgrade statements go here.
 

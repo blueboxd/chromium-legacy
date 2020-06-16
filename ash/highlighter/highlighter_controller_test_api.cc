@@ -53,15 +53,15 @@ void HighlighterControllerTestApi::SimulateInterruptedStrokeTimeout() {
 }
 
 bool HighlighterControllerTestApi::IsShowingHighlighter() const {
-  return instance_->highlighter_view_.get();
+  return !!instance_->highlighter_view_widget_;
 }
 
 bool HighlighterControllerTestApi::IsFadingAway() const {
-  return IsShowingHighlighter() && instance_->highlighter_view_->animating();
+  return IsShowingHighlighter() && instance_->GetHighlighterView()->animating();
 }
 
 bool HighlighterControllerTestApi::IsShowingSelectionResult() const {
-  return instance_->result_view_.get();
+  return !!instance_->result_view_widget_;
 }
 
 bool HighlighterControllerTestApi::IsWaitingToResumeStroke() const {
@@ -70,12 +70,12 @@ bool HighlighterControllerTestApi::IsWaitingToResumeStroke() const {
 }
 
 const fast_ink::FastInkPoints& HighlighterControllerTestApi::points() const {
-  return instance_->highlighter_view_->points_;
+  return instance_->GetHighlighterView()->points_;
 }
 
 const fast_ink::FastInkPoints& HighlighterControllerTestApi::predicted_points()
     const {
-  return instance_->highlighter_view_->predicted_points_;
+  return instance_->GetHighlighterView()->predicted_points_;
 }
 
 bool HighlighterControllerTestApi::HandleEnabledStateChangedCalled() {

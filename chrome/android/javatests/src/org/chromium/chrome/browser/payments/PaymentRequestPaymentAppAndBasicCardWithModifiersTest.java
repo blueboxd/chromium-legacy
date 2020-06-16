@@ -8,8 +8,9 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
-import android.support.test.filters.MediumTest;
 import android.widget.Button;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.ClassRule;

@@ -15,7 +15,6 @@
 
 namespace blink {
 
-class Document;
 class InputDeviceCapabilitiesConstants;
 class LocalDOMWindow;
 class Location;
@@ -136,7 +135,7 @@ class CORE_EXPORT DOMWindow : public EventTargetWithInlineData {
 
   virtual void SchedulePostMessage(MessageEvent*,
                                    scoped_refptr<const SecurityOrigin> target,
-                                   Document* source) = 0;
+                                   LocalDOMWindow* source) = 0;
 
   void DisconnectFromFrame() { frame_ = nullptr; }
 

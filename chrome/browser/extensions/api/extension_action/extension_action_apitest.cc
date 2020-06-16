@@ -44,6 +44,15 @@
 namespace extensions {
 namespace {
 
+// A background script that allows for setting the icon dynamically.
+constexpr char kSetIconBackgroundJsTemplate[] =
+    R"(function setIcon(details) {
+           chrome.%s.setIcon(details, () => {
+             chrome.test.assertNoLastError();
+             chrome.test.notifyPass();
+           });
+         })";
+
 // Runs |script| in the background page of the extension with the given
 // |extension_id|, and waits for it to send a test-passed result. This will
 // fail if the test in |script| fails.
@@ -539,13 +548,6 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPICanvasTest, DynamicSetIcon) {
            },
            "background": { "scripts": ["background.js"] }
          })";
-  constexpr char kBackgroundJsTemplate[] =
-      R"(function setIcon(details) {
-           chrome.%s.setIcon(details, () => {
-             chrome.test.assertNoLastError();
-             chrome.test.notifyPass();
-           });
-         })";
 
   std::string blue_icon;
   std::string red_icon;
@@ -561,7 +563,7 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPICanvasTest, DynamicSetIcon) {
   test_dir.WriteManifest(base::StringPrintf(
       kManifestTemplate, GetManifestKeyForActionType(GetParam())));
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
-                     base::StringPrintf(kBackgroundJsTemplate,
+                     base::StringPrintf(kSetIconBackgroundJsTemplate,
                                         GetAPINameForActionType(GetParam())));
   test_dir.WriteFile(FILE_PATH_LITERAL("blue_icon.png"), blue_icon);
   test_dir.WriteFile(FILE_PATH_LITERAL("red_icon.png"), red_icon);
@@ -655,6 +657,71 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPICanvasTest, DynamicSetIcon) {
 
   // TODO(devlin): Add tests for setting icons as a dictionary of
   // { size -> image_data }.
+}
+
+// Tests calling setIcon() from JS with hooks that might cause issues with our
+// custom bindings.
+// Regression test for https://crbug.com/1087948.
+IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetIconWithJavascriptHooks) {
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "JS Fun",
+           "manifest_version": 2,
+           "version": "0.1",
+           "%s": {},
+           "background": { "scripts": ["background.js"] }
+         })";
+
+  std::string blue_icon;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(base::ReadFileToString(
+        test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"), &blue_icon));
+  }
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetManifestKeyForActionType(GetParam())));
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                     base::StringPrintf(kSetIconBackgroundJsTemplate,
+                                        GetAPINameForActionType(GetParam())));
+  test_dir.WriteFile(FILE_PATH_LITERAL("blue_icon.png"), blue_icon);
+
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  ExtensionAction* action = GetExtensionAction(*extension);
+  ASSERT_TRUE(action);
+
+  int tab_id = GetActiveTabId();
+  EXPECT_TRUE(ActionHasDefaultState(*action, tab_id));
+  EnsureActionIsEnabledOnActiveTab(action);
+
+  // Define a setter for objects on the imageData key. This could previously
+  // result in an invalid arguments object being sent to the browser.
+  constexpr char kScript[] =
+      R"(Object.defineProperty(
+             Object.prototype, 'imageData',
+             { set() { console.warn('intercepted set'); } });
+         domAutomationController.send('done');)";
+  std::string result = browsertest_util::ExecuteScriptInBackgroundPage(
+      profile(), extension->id(), kScript);
+  ASSERT_EQ("done", result);
+
+  constexpr char kOnePathScript[] =
+      "setIcon({tabId: %d, path: 'blue_icon.png'});";
+  RunTestAndWaitForSuccess(profile(), extension->id(),
+                           base::StringPrintf(kOnePathScript, tab_id));
+  constexpr char kMultiPathScript[] =
+      R"(setIcon({tabId: %d,
+                  path: {16: 'blue_icon.png', 24: 'blue_icon.png'}});)";
+  RunTestAndWaitForSuccess(profile(), extension->id(),
+                           base::StringPrintf(kMultiPathScript, tab_id));
+  constexpr char kRawImageDataScript[] =
+      R"(setIcon({tabId: %d,
+                  imageData: {width:4,height:4,data:'a'.repeat(64)}});)";
+  RunTestAndWaitForSuccess(profile(), extension->id(),
+                           base::StringPrintf(kRawImageDataScript, tab_id));
 }
 
 // Tests various getter and setter methods.

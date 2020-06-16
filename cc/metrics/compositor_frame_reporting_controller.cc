@@ -263,7 +263,20 @@ void CompositorFrameReportingController::DidNotProduceFrame(
       // BeginMain stage, but the main-thread can make updates, which can be
       // submitted with the next frame.
       stage_reporter->OnDidNotProduceFrame(skip_reason);
-      return;
+      break;
+    }
+  }
+
+  // If the compositor has no updates, and the main-thread has not responded to
+  // the begin-main-frame yet, then it is essentially a dropped frame. To handle
+  // this case, keep the reporter for the main-thread, but recreate a reporter
+  // for the dropped-frame.
+  if (skip_reason == FrameSkippedReason::kWaitingOnMain) {
+    auto reporter = RestoreReporterAtBeginImpl(id);
+    if (reporter) {
+      reporter->OnDidNotProduceFrame(skip_reason);
+      reporter->TerminateFrame(FrameTerminationStatus::kDidNotProduceFrame,
+                               Now());
     }
   }
 }

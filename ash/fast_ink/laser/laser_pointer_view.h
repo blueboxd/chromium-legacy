@@ -8,6 +8,7 @@
 #include "ash/fast_ink/fast_ink_points.h"
 #include "ash/fast_ink/fast_ink_view.h"
 #include "base/timer/timer.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace ash {
 
@@ -16,11 +17,14 @@ namespace ash {
 // trail of lines to help users track.
 class LaserPointerView : public fast_ink::FastInkView {
  public:
-  LaserPointerView(base::TimeDelta life_duration,
-                   base::TimeDelta presentation_delay,
-                   base::TimeDelta stationary_point_delay,
-                   aura::Window* container);
   ~LaserPointerView() override;
+
+  // Function to create a container Widget, initialize |cursor_view| and
+  // pass ownership as the contents view to the Widget.
+  static views::UniqueWidgetPtr Create(base::TimeDelta life_duration,
+                                       base::TimeDelta presentation_delay,
+                                       base::TimeDelta stationary_point_delay,
+                                       aura::Window* container);
 
   void AddNewPoint(const gfx::PointF& new_point,
                    const base::TimeTicks& new_time);
@@ -28,6 +32,10 @@ class LaserPointerView : public fast_ink::FastInkView {
 
  private:
   friend class LaserPointerControllerTestApi;
+
+  LaserPointerView(base::TimeDelta life_duration,
+                   base::TimeDelta presentation_delay,
+                   base::TimeDelta stationary_point_delay);
 
   void AddPoint(const gfx::PointF& point, const base::TimeTicks& time);
   void ScheduleUpdateBuffer();

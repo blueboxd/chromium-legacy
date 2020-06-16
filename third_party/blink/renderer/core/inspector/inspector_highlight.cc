@@ -331,11 +331,11 @@ std::unique_ptr<protocol::DictionaryValue> BuildElementInfo(Element* element) {
   element_info->setString("nodeWidth", String::Number(bounding_box->width()));
   element_info->setString("nodeHeight", String::Number(bounding_box->height()));
 
+  element_info->setBoolean("showAccessibilityInfo", true);
   element_info->setBoolean("isKeyboardFocusable",
                            element->IsKeyboardFocusable());
   element_info->setString("accessibleName", element->computedName());
   element_info->setString("accessibleRole", element->computedRole());
-
   return element_info;
 }
 
@@ -653,7 +653,6 @@ InspectorHighlightConfig::InspectorHighlightConfig()
       show_styles(false),
       show_rulers(false),
       show_extension_lines(false),
-      show_accessibility_info(true),
       color_format(ColorFormat::HEX) {}
 
 InspectorHighlight::InspectorHighlight(float scale)
@@ -680,7 +679,6 @@ InspectorHighlight::InspectorHighlight(
     : highlight_paths_(protocol::ListValue::create()),
       show_rulers_(highlight_config.show_rulers),
       show_extension_lines_(highlight_config.show_extension_lines),
-      show_accessibility_info_(highlight_config.show_accessibility_info),
       scale_(1.f),
       color_format_(highlight_config.color_format) {
   DCHECK(!DisplayLockUtilities::NearestLockedExclusiveAncestor(*node));
@@ -702,10 +700,6 @@ InspectorHighlight::InspectorHighlight(
 
   if (element_info_ && is_locked_ancestor)
     element_info_->setString("isLockedAncestor", "true");
-  if (element_info_) {
-    element_info_->setBoolean("showAccessibilityInfo",
-                              show_accessibility_info_);
-  }
   if (append_distance_info)
     AppendDistanceInfo(node);
 }
@@ -908,7 +902,6 @@ std::unique_ptr<protocol::DictionaryValue> InspectorHighlight::AsProtocolValue()
   object->setValue("paths", highlight_paths_->clone());
   object->setBoolean("showRulers", show_rulers_);
   object->setBoolean("showExtensionLines", show_extension_lines_);
-  object->setBoolean("showAccessibilityInfo", show_accessibility_info_);
   switch (color_format_) {
     case ColorFormat::RGB:
       object->setString("colorFormat", "rgb");

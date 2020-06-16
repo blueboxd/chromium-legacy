@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.autofill.settings;
 
-import android.support.test.filters.MediumTest;
 import android.view.KeyEvent;
 import android.widget.EditText;
 
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

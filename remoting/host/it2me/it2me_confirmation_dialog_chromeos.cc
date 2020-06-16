@@ -25,7 +25,7 @@ class It2MeConfirmationDialogChromeOS : public It2MeConfirmationDialog {
 
   // It2MeConfirmationDialog implementation.
   void Show(const std::string& remote_user_email,
-            const ResultCallback& callback) override;
+            ResultCallback callback) override;
 
  private:
   // Handles result from |message_box_|.
@@ -42,9 +42,9 @@ It2MeConfirmationDialogChromeOS::It2MeConfirmationDialogChromeOS() = default;
 It2MeConfirmationDialogChromeOS::~It2MeConfirmationDialogChromeOS() = default;
 
 void It2MeConfirmationDialogChromeOS::Show(const std::string& remote_user_email,
-                                           const ResultCallback& callback) {
+                                           ResultCallback callback) {
   DCHECK(!remote_user_email.empty());
-  callback_ = callback;
+  callback_ = std::move(callback);
 
   message_box_ = std::make_unique<MessageBox>(
       l10n_util::GetStringUTF16(IDS_MODE_IT2ME),
@@ -54,8 +54,8 @@ void It2MeConfirmationDialogChromeOS::Show(const std::string& remote_user_email,
           base::UTF8ToUTF16(remote_user_email)),
       l10n_util::GetStringUTF16(IDS_SHARE_CONFIRM_DIALOG_CONFIRM),
       l10n_util::GetStringUTF16(IDS_SHARE_CONFIRM_DIALOG_DECLINE),
-      base::Bind(&It2MeConfirmationDialogChromeOS::OnMessageBoxResult,
-                 base::Unretained(this)));
+      base::BindOnce(&It2MeConfirmationDialogChromeOS::OnMessageBoxResult,
+                     base::Unretained(this)));
 }
 
 void It2MeConfirmationDialogChromeOS::OnMessageBoxResult(

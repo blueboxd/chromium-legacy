@@ -379,7 +379,7 @@ public class ContentView extends FrameLayout
 
     @Nullable
     private EventForwarder getEventForwarder() {
-        return hasValidWebContents() ? mWebContents.getEventForwarder() : null;
+        return webContentsAttached() ? mWebContents.getEventForwarder() : null;
     }
 
     private ViewEventSink getViewEventSink() {
@@ -528,6 +528,10 @@ public class ContentView extends FrameLayout
 
     private boolean hasValidWebContents() {
         return mWebContents != null && !mWebContents.isDestroyed();
+    }
+
+    private boolean webContentsAttached() {
+        return hasValidWebContents() && mWebContents.getTopLevelNativeWindow() != null;
     }
 
     /**

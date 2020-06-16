@@ -1164,7 +1164,12 @@ ImageDecodeCache::TaskResult GpuImageDecodeCache::GetTaskForImageAndRefInternal(
     task = GetImageDecodeTaskAndRef(draw_image, tracing_info, task_type);
   }
 
-  return TaskResult(task,
+  if (task) {
+    return TaskResult(task,
+                      image_data->decode.can_do_hardware_accelerated_decode());
+  }
+
+  return TaskResult(true /* needs_unref */, false /* is_at_raster_decode */,
                     image_data->decode.can_do_hardware_accelerated_decode());
 }
 

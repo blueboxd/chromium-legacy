@@ -110,14 +110,62 @@ class BluetoothTestWin : public BluetoothTestBase,
 // Defines common test fixture name. Use TEST_F(BluetoothTest, YourTestName).
 typedef BluetoothTestWin BluetoothTest;
 
+struct BluetoothTestWinrtParam {
+  // The feature state of |kNewBLEWinImplementation|.
+  bool new_ble_implementation_enabled;
+  // The feature state of |kNewBLEGattSessionHandling|.
+  bool new_gatt_session_handling_enabled;
+
+  friend std::ostream& operator<<(std::ostream& os,
+                                  const BluetoothTestWinrtParam& p) {
+    return os << "{new_ble_implementation_enabled="
+              << p.new_ble_implementation_enabled
+              << ", new_gatt_session_handling_enabled="
+              << p.new_gatt_session_handling_enabled << "}";
+  }
+};
+
+constexpr BluetoothTestWinrtParam kBluetoothTestWinrtParamAll[] = {
+    {false, false},
+    {false, true},
+    {true, false},
+    {true, true},
+};
+
+constexpr BluetoothTestWinrtParam kBluetoothTestWinrtParamWinrtOnly[] = {
+    {true, false},
+    {true, true},
+};
+
+constexpr BluetoothTestWinrtParam kBluetoothTestWinrtParamWin32Only[] = {
+    {false, false},
+    {false, true},
+};
+
 // This test suite represents tests that should run with the new BLE
 // implementation both enabled and disabled. This requires declaring tests
 // in the following way: TEST_P(BluetoothTestWinrt, YourTestName).
-class BluetoothTestWinrt : public BluetoothTestWin,
-                           public ::testing::WithParamInterface<bool> {
+//
+// Test suites inheriting from this class should be instantiated as
+//
+// INSTANTIATE_TEST_SUITE_P(
+//     All, FooTestSuiteWinrt,
+//     ::testing::ValuesIn(
+//         <kBluetoothTestWinrtParamWin32Only |
+//          kBluetoothTestWinrtParamWinrtOnly |
+//          kBluetoothTestWinrtParamAll>));
+//
+// depending on whether they should run only the old or new implementation or
+// both.
+class BluetoothTestWinrt
+    : public BluetoothTestWin,
+      public ::testing::WithParamInterface<BluetoothTestWinrtParam> {
  public:
   BluetoothTestWinrt();
   ~BluetoothTestWinrt() override;
+
+  bool UsesNewBleImplementation() const;
+  bool UsesNewGattSessionHandling() const;
 
   // Simulate a fake adapter whose power status cannot be
   // controlled because of a Windows Privacy setting.
@@ -200,7 +248,8 @@ class BluetoothTestWinrt : public BluetoothTestWin,
       BluetoothRemoteGattService::GattErrorCode error_code) override;
   void DeleteDevice(BluetoothDevice* device) override;
 
-  void OnFakeBluetoothDeviceConnectGattCalled();
+  void OnFakeBluetoothDeviceConnectGattAttempt();
+  void OnFakeBluetoothDeviceGattServiceDiscoveryAttempt();
   void OnFakeBluetoothGattDisconnect();
   void OnFakeBluetoothCharacteristicReadValue();
   void OnFakeBluetoothCharacteristicWriteValue(std::vector<uint8_t> value);

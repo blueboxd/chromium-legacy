@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_piece.h"
 #include "chrome/renderer/safe_browsing/features.h"
+#include "components/safe_browsing/content/password_protection/visual_utils.h"
 #include "components/safe_browsing/core/proto/client_model.pb.h"
 
 namespace {
@@ -82,6 +83,21 @@ double Scorer::ComputeScore(const FeatureMap& features) const {
     logodds += ComputeRuleScore(model_.rule(i), features);
   }
   return LogOdds2Prob(logodds);
+}
+
+bool Scorer::GetMatchingVisualTargets(const SkBitmap& bitmap,
+                                      ClientPhishingRequest* request) const {
+  bool has_match = false;
+  for (const VisualTarget& target : model_.vision_model().targets()) {
+    base::Optional<VisionMatchResult> result =
+        visual_utils::IsVisualMatch(bitmap, target);
+    if (result.has_value()) {
+      *request->add_vision_match() = result.value();
+      has_match = true;
+    }
+  }
+
+  return has_match;
 }
 
 int Scorer::model_version() const {

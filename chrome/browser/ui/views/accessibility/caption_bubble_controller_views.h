@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_CAPTION_BUBBLE_CONTROLLER_VIEWS_H_
 #define CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_CAPTION_BUBBLE_CONTROLLER_VIEWS_H_
 
-#include <string>
+#include <memory>
 #include <unordered_map>
 
 #include "chrome/browser/ui/caption_bubble_controller.h"
@@ -19,20 +19,7 @@ class Widget;
 namespace captions {
 
 class CaptionBubble;
-
-struct CaptionBubbleModel {
-  std::string final_text;
-  std::string partial_text;
-  bool is_closed = false;
-
-  void close() {
-    final_text.clear();
-    partial_text.clear();
-    is_closed = true;
-  }
-
-  std::string full_text() { return final_text + partial_text; }
-};
+class CaptionBubbleModel;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Caption Bubble Controller for Views
@@ -75,15 +62,12 @@ class CaptionBubbleControllerViews : public CaptionBubbleController,
       const TabStripSelectionChange& selection) override;
 
   // A callback passed to the CaptionBubble which is called when the
-  // CaptionBubble close button is clicked.
-  void OnCaptionBubbleCloseClicked();
-
-  // A callback passed to the CaptionBubble which is called when the
   // CaptionBubble is destroyed.
   void OnCaptionBubbleDestroyed();
 
-  // Sets the caption bubble text to the text belonging to the active tab.
-  void SetCaptionBubbleText();
+  // Sets the active contents to the given web contents, and creates a new
+  // CaptionBubbleModel for that contents if one does not already exist.
+  void SetActiveContents(content::WebContents* contents);
 
   CaptionBubble* caption_bubble_;
   views::Widget* caption_widget_;
@@ -92,12 +76,10 @@ class CaptionBubbleControllerViews : public CaptionBubbleController,
   // The web contents corresponding to the active tab.
   content::WebContents* active_contents_;
 
-  // Stores web contents that have received transcription, mapped to their
-  // corresponding caption bubble texts. Store the partial texts as well as the
-  // final texts in order to show the latest partial text to a user when they
-  // switch back to the tab in case the speech service has not sent a final
-  // transcription in a while.
-  std::unordered_map<content::WebContents*, CaptionBubbleModel>
+  // A map of web contents and their corresponding CaptionBubbleModel. New
+  // entries are added to this map when a previously un-activated web contents
+  // is activated.
+  std::unordered_map<content::WebContents*, std::unique_ptr<CaptionBubbleModel>>
       caption_bubble_models_;
 };
 }  // namespace captions

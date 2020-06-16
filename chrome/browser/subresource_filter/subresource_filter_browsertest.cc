@@ -358,15 +358,15 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   ConfigureAsPhishingURL(url);
 
   // Disallow loading subframe documents that in turn would end up loading
-  // included_script.js, unless the document is loaded from a whitelisted
+  // included_script.js, unless the document is loaded from an allowlisted
   // domain. This enables the third part of this test disallowing a load only
   // after the first redirect.
-  const char kWhitelistedDomain[] = "whitelisted.com";
+  const char kAllowlistedDomain[] = "allowlisted.com";
   proto::UrlRule rule = testing::CreateSuffixRule("included_script.html");
-  proto::UrlRule whitelist_rule = testing::CreateSuffixRule(kWhitelistedDomain);
-  whitelist_rule.set_anchor_right(proto::ANCHOR_TYPE_NONE);
-  whitelist_rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
-  ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules({rule, whitelist_rule}));
+  proto::UrlRule allowlist_rule = testing::CreateSuffixRule(kAllowlistedDomain);
+  allowlist_rule.set_anchor_right(proto::ANCHOR_TYPE_NONE);
+  allowlist_rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
+  ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules({rule, allowlist_rule}));
 
   ui_test_utils::NavigateToURL(browser(), url);
 
@@ -400,7 +400,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   GURL disallowed_subdocument_url(
       GetTestUrl("subresource_filter/frame_with_included_script.html"));
   GURL redirect_to_disallowed_subdocument_url(embedded_test_server()->GetURL(
-      kWhitelistedDomain,
+      kAllowlistedDomain,
       "/server-redirect?" + disallowed_subdocument_url.spec()));
   NavigateFrame(kSubframeNames[0], redirect_to_disallowed_subdocument_url);
 
@@ -610,7 +610,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       CrossSiteSubFrameActivationWithoutWhitelist) {
+                       CrossSiteSubFrameActivationWithoutAllowlist) {
   GURL a_url(embedded_test_server()->GetURL(
       "a.com", "/subresource_filter/frame_cross_site_set.html"));
   ConfigureAsPhishingURL(a_url);
@@ -622,13 +622,13 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       CrossSiteSubFrameActivationWithWhitelist) {
+                       CrossSiteSubFrameActivationWithAllowlist) {
   GURL a_url(embedded_test_server()->GetURL(
       "a.com", "/subresource_filter/frame_cross_site_set.html"));
   ConfigureAsPhishingURL(a_url);
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetWithRules({testing::CreateSuffixRule("included_script.js"),
-                           testing::CreateWhitelistRuleForDocument("c.com")}));
+                           testing::CreateAllowlistRuleForDocument("c.com")}));
   ui_test_utils::NavigateToURL(browser(), a_url);
   ExpectParsedScriptElementLoadedStatusInFrames(
       std::vector<const char*>{"b", "d"}, {false, true});

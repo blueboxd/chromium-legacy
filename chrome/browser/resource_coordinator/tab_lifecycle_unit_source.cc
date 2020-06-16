@@ -16,7 +16,6 @@
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
-#include "chrome/browser/resource_coordinator/tracing_lifecycle_unit_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -87,42 +86,6 @@ class TabLifecycleStateObserver
       TabLifecycleUnitSource::OnLifecycleStateChanged(contents, state);
   }
 
-  static void OnOriginTrialFreezePolicyChangedImpl(
-      const WebContentsProxy& contents_proxy,
-      performance_manager::mojom::InterventionPolicy policy) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    // If the web contents is still alive then dispatch to the actual
-    // implementation in TabLifecycleUnitSource.
-    if (auto* contents = contents_proxy.Get()) {
-      TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(contents,
-                                                               policy);
-    }
-  }
-
-  static void OnPageIsHoldingWebLockChangedImpl(
-      const WebContentsProxy& contents_proxy,
-      bool is_holding_weblock) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    // If the web contents is still alive then dispatch to the actual
-    // implementation in TabLifecycleUnitSource.
-    if (auto* contents = contents_proxy.Get()) {
-      TabLifecycleUnitSource::OnIsHoldingWebLockChanged(contents,
-                                                        is_holding_weblock);
-    }
-  }
-
-  static void OnPageIsHoldingIndexedDBLockChangedImpl(
-      const WebContentsProxy& contents_proxy,
-      bool is_holding_indexeddb_lock) {
-    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    // If the web contents is still alive then dispatch to the actual
-    // implementation in TabLifecycleUnitSource.
-    if (auto* contents = contents_proxy.Get()) {
-      TabLifecycleUnitSource::OnIsHoldingIndexedDBLockChanged(
-          contents, is_holding_indexeddb_lock);
-    }
-  }
-
   // performance_manager::PageNode::ObserverDefaultImpl::
   void OnPageLifecycleStateChanged(const PageNode* page_node) override {
     // Forward the notification over to the UI thread.
@@ -131,36 +94,6 @@ class TabLifecycleStateObserver
         base::BindOnce(&TabLifecycleStateObserver::OnLifecycleStateChangedImpl,
                        page_node->GetContentsProxy(),
                        page_node->GetLifecycleState()));
-  }
-
-  void OnPageOriginTrialFreezePolicyChanged(
-      const PageNode* page_node) override {
-    // Forward the notification over to the UI thread.
-    content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &TabLifecycleStateObserver::OnOriginTrialFreezePolicyChangedImpl,
-            page_node->GetContentsProxy(),
-            page_node->GetOriginTrialFreezePolicy()));
-  }
-
-  void OnPageIsHoldingWebLockChanged(const PageNode* page_node) override {
-    // Forward the notification over to the UI thread.
-    content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &TabLifecycleStateObserver::OnPageIsHoldingWebLockChangedImpl,
-            page_node->GetContentsProxy(), page_node->IsHoldingWebLock()));
-  }
-
-  void OnPageIsHoldingIndexedDBLockChanged(const PageNode* page_node) override {
-    // Forward the notification over to the UI thread.
-    content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &TabLifecycleStateObserver::OnPageIsHoldingIndexedDBLockChangedImpl,
-            page_node->GetContentsProxy(),
-            page_node->IsHoldingIndexedDBLock()));
   }
 
   void OnPassedToGraph(Graph* graph) override {
@@ -175,15 +108,11 @@ class TabLifecycleStateObserver
 };
 
 TabLifecycleUnitSource::TabLifecycleUnitSource(
-    InterventionPolicyDatabase* intervention_policy_database,
     UsageClock* usage_clock)
     : browser_tab_strip_tracker_(this, nullptr),
-      intervention_policy_database_(intervention_policy_database),
       usage_clock_(usage_clock) {
   // In unit tests, tabs might already exist when TabLifecycleUnitSource is
   // instantiated. No TabLifecycleUnit is created for these tabs.
-
-  DCHECK(intervention_policy_database_);
 
   BrowserList::AddObserver(this);
   browser_tab_strip_tracker_.Init();
@@ -229,27 +158,6 @@ void TabLifecycleUnitSource::SetFocusedTabStripModelForTesting(
 
 void TabLifecycleUnitSource::SetMemoryLimitEnterprisePolicyFlag(bool enabled) {
   memory_limit_enterprise_policy_ = enabled;
-}
-
-void TabLifecycleUnitSource::OnFirstLifecycleUnitCreated() {
-  // In production builds monitor the policy override of the lifecycles feature.
-  // This class owns the monitor so it is okay to use base::Unretained. Note
-  // that tests often don't have a local_state pref service available.
-  if (!g_browser_process->local_state())
-    return;
-
-  tab_freezing_enabled_enterprise_preference_monitor_ =
-      std::make_unique<TabFreezingEnabledPreferenceMonitor>(
-          g_browser_process->local_state(),
-          base::BindRepeating(
-              &TabLifecycleUnitSource::SetTabLifecyclesEnterprisePolicy,
-              base::Unretained(this)));
-}
-
-void TabLifecycleUnitSource::OnAllLifecycleUnitsDestroyed() {
-  // This needs to be freed before shutdown as PrefChangeRegistrars can't exist
-  // at shutdown. Tear it down when there are no more tabs being monitored.
-  tab_freezing_enabled_enterprise_preference_monitor_.reset();
 }
 
 // static
@@ -325,29 +233,6 @@ void TabLifecycleUnitSource::OnTabInserted(TabStripModel* tab_strip_model,
 
     // Add a self-owned observers to record metrics and trace events.
     lifecycle_unit->AddObserver(new DiscardMetricsLifecycleUnitObserver());
-    lifecycle_unit->AddObserver(new TracingLifecycleUnitObserver());
-
-    auto page_node =
-        performance_manager::PerformanceManager::GetPageNodeForWebContents(
-            contents);
-
-    performance_manager::PerformanceManager::CallOnGraph(
-        FROM_HERE,
-        base::BindOnce(
-            [](base::WeakPtr<performance_manager::PageNode> page_node,
-               scoped_refptr<base::SingleThreadTaskRunner> runner) {
-              if (!page_node)
-                return;
-              runner->PostTask(
-                  FROM_HERE,
-                  base::BindOnce(
-                      &TabLifecycleUnitSource::SetInitialStateFromPageNodeData,
-                      page_node->GetContentsProxy(),
-                      page_node->GetOriginTrialFreezePolicy(),
-                      page_node->IsHoldingWebLock(),
-                      page_node->IsHoldingIndexedDBLock()));
-            },
-            std::move(page_node), base::ThreadTaskRunnerHandle::Get()));
 
     NotifyLifecycleUnitCreated(lifecycle_unit);
   }
@@ -442,93 +327,6 @@ void TabLifecycleUnitSource::OnLifecycleStateChanged(
   // navigation.
   if (lifecycle_unit)
     lifecycle_unit->UpdateLifecycleState(state);
-}
-
-// static
-void TabLifecycleUnitSource::SetInitialStateFromPageNodeData(
-    const performance_manager::WebContentsProxy& contents_proxy,
-    performance_manager::mojom::InterventionPolicy origin_trial_policy,
-    bool is_holding_weblock,
-    bool is_holding_indexeddb_lock) {
-  if (!contents_proxy.Get())
-    return;
-  TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(contents_proxy.Get());
-  DCHECK(lifecycle_unit);
-  lifecycle_unit->SetInitialStateFromPageNodeData(
-      origin_trial_policy, is_holding_weblock, is_holding_indexeddb_lock);
-}
-
-// static
-void TabLifecycleUnitSource::OnOriginTrialFreezePolicyChanged(
-    content::WebContents* web_contents,
-    performance_manager::mojom::InterventionPolicy policy) {
-  TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(web_contents);
-
-  // Some WebContents aren't attached to a tab, so there is no corresponding
-  // TabLifecycleUnit.
-  // TODO(fdoray): This may want to filter for the navigation_id.
-  if (lifecycle_unit)
-    lifecycle_unit->UpdateOriginTrialFreezePolicy(policy);
-}
-
-// static
-void TabLifecycleUnitSource::OnIsHoldingWebLockChanged(
-    content::WebContents* web_contents,
-    bool is_holding_weblock) {
-  TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(web_contents);
-
-  // Some WebContents aren't attached to a tab, so there is no corresponding
-  // TabLifecycleUnit.
-  if (lifecycle_unit)
-    lifecycle_unit->SetIsHoldingWebLock(is_holding_weblock);
-}
-
-// static
-void TabLifecycleUnitSource::OnIsHoldingIndexedDBLockChanged(
-    content::WebContents* web_contents,
-    bool is_holding_indexeddb_lock) {
-  TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(web_contents);
-
-  // Some WebContents aren't attached to a tab, so there is no corresponding
-  // TabLifecycleUnit.
-  if (lifecycle_unit)
-    lifecycle_unit->SetIsHoldingIndexedDBLock(is_holding_indexeddb_lock);
-}
-
-void TabLifecycleUnitSource::SetTabLifecyclesEnterprisePolicy(bool enabled) {
-  tab_freezing_enabled_enterprise_policy_ = enabled;
-}
-
-TabFreezingEnabledPreferenceMonitor::TabFreezingEnabledPreferenceMonitor(
-    PrefService* pref_service,
-    OnPreferenceChangedCallback callback)
-    : pref_service_(pref_service), callback_(callback) {
-  // Create a registrar to track changes to the setting.
-  pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
-  pref_change_registrar_->Init(pref_service_);
-  pref_change_registrar_->Add(
-      prefs::kTabFreezingEnabled,
-      base::BindRepeating(&TabFreezingEnabledPreferenceMonitor::GetPref,
-                          base::Unretained(this)));
-
-  // Do an initial check of the value.
-  GetPref();
-}
-
-TabFreezingEnabledPreferenceMonitor::~TabFreezingEnabledPreferenceMonitor() =
-    default;
-
-void TabFreezingEnabledPreferenceMonitor::GetPref() {
-  bool enabled = true;
-
-  // If the preference is set to false by enterprise policy then disable the
-  // lifecycles feature.
-  const PrefService::Preference* pref =
-      pref_service_->FindPreference(prefs::kTabFreezingEnabled);
-  if (pref->IsManaged() && !pref->GetValue()->GetBool())
-    enabled = false;
-
-  callback_.Run(enabled);
 }
 
 }  // namespace resource_coordinator

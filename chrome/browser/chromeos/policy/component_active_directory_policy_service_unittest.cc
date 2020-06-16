@@ -111,10 +111,10 @@ class ComponentActiveDirectoryPolicyServiceTest : public testing::Test {
 
     expected_policy_.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                          POLICY_SOURCE_ACTIVE_DIRECTORY,
-                         std::make_unique<base::Value>("disabled"), nullptr);
+                         base::Value("disabled"), nullptr);
     expected_policy_.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-                         POLICY_SOURCE_ACTIVE_DIRECTORY,
-                         std::make_unique<base::Value>("maybe"), nullptr);
+                         POLICY_SOURCE_ACTIVE_DIRECTORY, base::Value("maybe"),
+                         nullptr);
 
     chromeos::SessionManagerClient::InitializeFakeInMemory();
 
@@ -335,33 +335,33 @@ TEST_F(ComponentActiveDirectoryPolicyServiceTest, ConvertsTypes) {
   expected_policy_.Clear();
   expected_policy_.Set("BooleanAsString", POLICY_LEVEL_MANDATORY,
                        POLICY_SCOPE_USER, POLICY_SOURCE_ACTIVE_DIRECTORY,
-                       std::make_unique<base::Value>(true), nullptr);
+                       base::Value(true), nullptr);
 
   expected_policy_.Set("BooleanAsInteger", POLICY_LEVEL_MANDATORY,
                        POLICY_SCOPE_USER, POLICY_SOURCE_ACTIVE_DIRECTORY,
-                       std::make_unique<base::Value>(true), nullptr);
+                       base::Value(true), nullptr);
 
   expected_policy_.Set("IntegerAsString", POLICY_LEVEL_MANDATORY,
                        POLICY_SCOPE_USER, POLICY_SOURCE_ACTIVE_DIRECTORY,
-                       std::make_unique<base::Value>(1), nullptr);
+                       base::Value(1), nullptr);
 
   expected_policy_.Set("NumberAsString", POLICY_LEVEL_MANDATORY,
                        POLICY_SCOPE_USER, POLICY_SOURCE_ACTIVE_DIRECTORY,
-                       std::make_unique<base::Value>(1.5), nullptr);
+                       base::Value(1.5), nullptr);
 
   expected_policy_.Set("NumberAsInteger", POLICY_LEVEL_MANDATORY,
                        POLICY_SCOPE_USER, POLICY_SOURCE_ACTIVE_DIRECTORY,
-                       std::make_unique<base::Value>(1.0), nullptr);
+                       base::Value(1.0), nullptr);
 
-  auto list = std::make_unique<base::ListValue>();
-  list->Append(base::Value("One"));
-  list->Append(base::Value("Two"));
+  base::Value list(base::Value::Type::LIST);
+  list.Append("One");
+  list.Append("Two");
   expected_policy_.Set("ListAsSubkeys", POLICY_LEVEL_MANDATORY,
                        POLICY_SCOPE_USER, POLICY_SOURCE_ACTIVE_DIRECTORY,
                        std::move(list), nullptr);
 
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetKey("Key", base::Value("Value"));
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("Key", "Value");
   expected_policy_.Set("DictionaryAsJsonString", POLICY_LEVEL_MANDATORY,
                        POLICY_SCOPE_USER, POLICY_SOURCE_ACTIVE_DIRECTORY,
                        std::move(dict), nullptr);
@@ -378,8 +378,8 @@ TEST_F(ComponentActiveDirectoryPolicyServiceTest, IgnoresValuesNotInSchema) {
 
   expected_policy_.Clear();
   expected_policy_.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                       POLICY_SOURCE_ACTIVE_DIRECTORY,
-                       std::make_unique<base::Value>("published"), nullptr);
+                       POLICY_SOURCE_ACTIVE_DIRECTORY, base::Value("published"),
+                       nullptr);
   // "Undeclared Name" is expected to be missing since it's not in the schema.
 
   StorePolicy(kTestUserAccountId, login_manager::POLICY_DOMAIN_EXTENSIONS,

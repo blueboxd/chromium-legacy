@@ -27,6 +27,8 @@
 
 namespace cc {
 
+using ThreadType = FrameSequenceMetrics::ThreadType;
+
 // In the |TRACKER_TRACE_STREAM|, we mod the numbers such as frame sequence
 // number, or frame token, such that the debug string is not too long.
 constexpr int kDebugStrMod = 1000;
@@ -422,7 +424,6 @@ void FrameSequenceTracker::ReportFramePresented(
 
   uint32_t impl_frames_produced = 0;
   uint32_t main_frames_produced = 0;
-  metrics()->AdvanceTrace(feedback.timestamp);
 
   const bool was_presented = !feedback.failed();
   if (was_presented && submitted_frame_since_last_presentation) {
@@ -431,6 +432,9 @@ void FrameSequenceTracker::ReportFramePresented(
         << TRACKER_DCHECK_MSG;
     ++impl_throughput().frames_produced;
     ++impl_frames_produced;
+    if (metrics()->GetEffectiveThread() == ThreadType::kCompositor) {
+      metrics()->AdvanceTrace(feedback.timestamp);
+    }
   }
 
   if (was_presented) {
@@ -447,6 +451,9 @@ void FrameSequenceTracker::ReportFramePresented(
           << TRACKER_DCHECK_MSG;
       ++main_throughput().frames_produced;
       ++main_frames_produced;
+      if (metrics()->GetEffectiveThread() == ThreadType::kMain) {
+        metrics()->AdvanceTrace(feedback.timestamp);
+      }
     }
 
     if (impl_frames_produced > 0) {

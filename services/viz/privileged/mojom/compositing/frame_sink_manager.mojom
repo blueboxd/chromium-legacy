@@ -41,7 +41,8 @@ struct RootCompositorFrameSinkParams {
   pending_associated_receiver<DisplayPrivate> display_private;
   pending_remote<DisplayClient> display_client;
 
-  associated ExternalBeginFrameController&? external_begin_frame_controller;
+  pending_associated_receiver<ExternalBeginFrameController>?
+      external_begin_frame_controller;
 };
 
 // The FrameSinkManager interface is a privileged interface that allows the

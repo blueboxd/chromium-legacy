@@ -236,7 +236,7 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
     if (!output_info)
       continue;
 
-    if (output_info->connection != x11::RandR::Connection::Connected)
+    if (output_info->connection != x11::RandR::RandRConnection::Connected)
       continue;
 
     bool is_primary_display = (output_id == primary_display_id);
@@ -362,7 +362,7 @@ base::TimeDelta GetPrimaryDisplayRefreshIntervalFromXrandr() {
     if (!output_info)
       continue;
 
-    if (output_info->connection != x11::RandR::Connection::Connected) {
+    if (output_info->connection != x11::RandR::RandRConnection::Connected) {
       // If the primary monitor is disconnected, then start over and choose the
       // first connected monitor instead.
       if (!disconnected_primary) {

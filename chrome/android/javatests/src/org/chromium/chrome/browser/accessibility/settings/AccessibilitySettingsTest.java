@@ -12,9 +12,9 @@ import android.app.Instrumentation;
 import android.content.IntentFilter;
 import android.provider.Settings;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 
 import androidx.preference.Preference;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

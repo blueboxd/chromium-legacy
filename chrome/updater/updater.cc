@@ -21,15 +21,15 @@
 #include "components/crash/core/common/crash_key.h"
 
 #if defined(OS_WIN)
-#include "chrome/updater/server/win/server.h"
-#include "chrome/updater/server/win/service_main.h"
+#include "chrome/updater/app/server/win/server.h"
+#include "chrome/updater/app/server/win/service_main.h"
 #include "chrome/updater/win/install_app.h"
 #endif
 
 #if defined(OS_MACOSX)
+#include "chrome/updater/app/server/mac/server.h"
 #include "chrome/updater/mac/setup/app_swap.h"
 #include "chrome/updater/mac/setup/install_app.h"
-#include "chrome/updater/server/mac/server.h"
 #endif
 
 // Instructions For Windows.

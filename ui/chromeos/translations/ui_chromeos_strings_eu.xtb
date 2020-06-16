@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">Teklatu sinhaldarra</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> erabilgarri</translation>
 <translation id="2425665904502185219">Fitxategiaren tamaina guztira</translation>
+<translation id="2428749644083375155"><ph name="NUMBER_OF_ITEMS" /> elementu <ph name="FOLDER_NAME" /> karpetan kopiatzen</translation>
 <translation id="2448312741937722512">Mota</translation>
 <translation id="2453576648990281505">Fitxategia lehendik dago</translation>
 <translation id="2464079411014186876">Izozkia</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346">Gehitu da <ph name="ENTRY_NAME" /> hautapenean.</translation>
 <translation id="4582497162516204941">Instalatu Linux (Beta) erabilita</translation>
 <translation id="4594543368593301662">"<ph name="SEARCH_TERM" />" bilaketaren emaitzak daude ikusgai.</translation>
+<translation id="4603392156942865207"><ph name="FILE_NAME" /> <ph name="FOLDER_NAME" /> karpetara kopiatzen</translation>
 <translation id="4631887759990505102">Artista</translation>
 <translation id="4656293982926141856">Ordenagailu hau</translation>
 <translation id="4669606053856530811">Haiekin partekatu ezean, fitxategietarako sarbidea galduko dute "<ph name="SOURCE_NAME" />" unitateko kideek.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">Kontrastea</translation>
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5081517858322016911">Fitxategiei dagozkien <ph name="TOTAL_FILE_SIZE" /> ezabatuko dira</translation>
+<translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> elementu <ph name="FOLDER_NAME" /> karpetara eramaten</translation>
 <translation id="509429900233858213">Errore bat gertatu da.</translation>
 <translation id="5098629044894065541">Hebrearra</translation>
 <translation id="5123433949759960244">Saskibaloiko baloia</translation>
@@ -454,6 +457,7 @@
 <translation id="6054173164583630569">Teklatu frantsesa</translation>
 <translation id="6074825444536523002">Google inprimakia</translation>
 <translation id="6096979789310008754">Garbitu da bilaketa-testua. Fitxategi eta karpeta guztiak daude ikusgai.</translation>
+<translation id="610101264611565198"><ph name="FILE_NAME" /> <ph name="FOLDER_NAME" /> karpetara eramaten</translation>
 <translation id="6111770213269631447">Transliterazioa (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Zuriunea</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> mugitzen…</translation>
@@ -537,6 +541,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Ezin izan da instalatu.</translation>
 <translation id="7040138676081995583">Ireki honekin…</translation>
+<translation id="7059566040011178088"><ph name="REMAINING_TIME" /> baino gutxiago</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> elementu hautatu dira</translation>
 <translation id="7106346894903675391">Erosi memoria gehiago…</translation>
 <translation id="7126604456862387217">"&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;" - &lt;em&gt;bilatu Drive-n&lt;/em&gt;</translation>
@@ -647,6 +652,7 @@
 <translation id="8193175696669055101">Gailuaren modeloa</translation>
 <translation id="8208580316430297579">Azala</translation>
 <translation id="8223479393428528563">Fitxategi horiek gordetzeko eta konexiorik gabe erabili ahal izateko, konekta zaitez berriro, egin klik eskuineko botoiarekin fitxategien gainean eta hautatu <ph name="OFFLINE_CHECKBOX_NAME" /> aukera.</translation>
+<translation id="8231972167769262174"><ph name="REMAINING_TIME" /> inguru</translation>
 <translation id="8249296373107784235">Utzi bertan behera</translation>
 <translation id="8261506727792406068">Ezabatu</translation>
 <translation id="8269755669432358899">Tolestu fitxategien oharren panelak</translation>

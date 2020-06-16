@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.omnibox;
 import android.content.res.Resources;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.annotation.UiThreadTest;
-import android.support.test.filters.MediumTest;
 import android.support.test.rule.UiThreadTestRule;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;

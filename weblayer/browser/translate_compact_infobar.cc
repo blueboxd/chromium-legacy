@@ -223,4 +223,10 @@ void TranslateCompactInfoBar::OnTranslateInfoBarDelegateDestroyed(
   GetDelegate()->RemoveObserver(this);
 }
 
+void TranslateCompactInfoBar::SelectButtonForTesting(ActionType action_type) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_TranslateCompactInfoBar_selectTabForTesting(env, GetJavaInfoBar(),
+                                                   action_type);
+}
+
 }  // namespace weblayer

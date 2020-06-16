@@ -415,7 +415,7 @@ TEST_F(BluetoothRemoteGattServiceTest, MAYBE_SimulateGattServiceRemove) {
   SimulateGattServiceRemoved(device->GetGattService(removed_service));
   base::RunLoop().RunUntilIdle();
 #if defined(OS_WIN)
-  if (!GetParam()) {
+  if (!UsesNewBleImplementation()) {
     // The GattServicesRemoved event is not implemented for WinRT.
     EXPECT_EQ(1, observer.gatt_service_removed_count());
   }
@@ -597,10 +597,9 @@ TEST_F(BluetoothRemoteGattServiceTest, ExtraDidDiscoverCharacteristicsCall) {
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    BluetoothRemoteGattServiceTestWinrt,
-    ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         BluetoothRemoteGattServiceTestWinrt,
+                         ::testing::ValuesIn(kBluetoothTestWinrtParamAll));
 #endif  // defined(OS_WIN)
 
 }  // namespace device

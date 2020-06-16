@@ -17,7 +17,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
-#include "chrome/updater/server/win/updater_idl.h"
+#include "chrome/updater/app/server/win/updater_idl.h"
 #include "chrome/updater/util.h"
 #include "chrome/updater/win/task_scheduler.h"
 

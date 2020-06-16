@@ -7,12 +7,16 @@
 
 #include <memory>
 
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/nearby_sharing/nearby_process_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class NearbyConnectionsManager;
+
+class PrefService;
 class Profile;
 
 class NearbySharingServiceImpl : public NearbySharingService,
@@ -20,6 +24,7 @@ class NearbySharingServiceImpl : public NearbySharingService,
                                  public NearbyProcessManager::Observer {
  public:
   explicit NearbySharingServiceImpl(
+      PrefService* prefs,
       Profile* profile,
       std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager);
   ~NearbySharingServiceImpl() override;
@@ -59,8 +64,13 @@ class NearbySharingServiceImpl : public NearbySharingService,
   void OnNearbyProcessStopped() override;
 
  private:
+  bool IsEnabled();
+  void OnEnabledPrefChanged();
+
+  PrefService* prefs_;
   Profile* profile_;
   std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager_;
+  PrefChangeRegistrar pref_change_registrar_;
   ScopedObserver<NearbyProcessManager, NearbyProcessManager::Observer>
       nearby_process_observer_{this};
 };

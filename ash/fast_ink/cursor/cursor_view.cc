@@ -5,6 +5,7 @@
 #include "ash/fast_ink/cursor/cursor_view.h"
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -56,14 +57,9 @@ gfx::Vector2dF InterpolateBetween(const gfx::Vector2dF& start,
 ////////////////////////////////////////////////////////////////////////////////
 // CursorView, public:
 
-CursorView::CursorView(aura::Window* container,
-                       const gfx::Point& initial_location,
+CursorView::CursorView(const gfx::Point& initial_location,
                        bool is_motion_blur_enabled)
-    : fast_ink::FastInkView(
-          container,
-          base::BindRepeating(&CursorView::DidPresentCompositorFrame,
-                              base::Unretained(this))),
-      is_motion_blur_enabled_(is_motion_blur_enabled),
+    : is_motion_blur_enabled_(is_motion_blur_enabled),
       ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       paint_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
           {base::TaskPriority::USER_BLOCKING,
@@ -97,6 +93,22 @@ CursorView::~CursorView() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
 
   ui::CursorController::GetInstance()->RemoveCursorObserver(this);
+}
+
+// static
+views::UniqueWidgetPtr CursorView::Create(const gfx::Point& initial_location,
+                                          bool is_motion_blur_enabled,
+                                          aura::Window* container) {
+  return fast_ink::FastInkView::CreateWidgetWithContents(
+      base::WrapUnique(
+          new CursorView(initial_location, is_motion_blur_enabled)),
+      container);
+}
+
+fast_ink::FastInkHost::PresentationCallback
+CursorView::GetPresentationCallback() {
+  return base::BindRepeating(&CursorView::DidPresentCompositorFrame,
+                             base::Unretained(this));
 }
 
 void CursorView::SetCursorImage(const gfx::ImageSkia& cursor_image,

@@ -86,7 +86,7 @@ TEST_F(QRGeneratorCoordinatorTest, Done_DispatchesCommand) {
   EXPECT_TRUE([net::NSURLWithGURL(test_url_) isEqual:viewController.pageURL]);
 
   // Mimick click on done button.
-  [viewController.actionHandler confirmationAlertDone];
+  [viewController.actionHandler confirmationAlertDismissAction];
 
   // Callback should've gotten invoked.
   [mock_qr_generation_commands_handler_ verify];

@@ -897,11 +897,11 @@ IN_PROC_BROWSER_TEST_F(AdsPageLoadMetricsObserverBrowserTest,
 IN_PROC_BROWSER_TEST_F(
     AdsPageLoadMetricsObserverBrowserTest,
     FrameCreatedByAdScriptNavigatedToAllowListRule_NotRecorddedAsAd) {
-  // Whitelist rules are only checked if there is a matching blacklist rule.
+  // Allowlist rules are only checked if there is a matching blocklist rule.
   SetRulesetWithRules(
       {subresource_filter::testing::CreateSuffixRule("ad_iframe_writer.js"),
        subresource_filter::testing::CreateSuffixRule("ixel.png"),
-       subresource_filter::testing::CreateWhitelistSuffixRule("xel.png")});
+       subresource_filter::testing::CreateAllowlistSuffixRule("xel.png")});
   base::HistogramTester histogram_tester;
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -923,8 +923,8 @@ IN_PROC_BROWSER_TEST_F(
   // Re-navigate to record histograms.
   ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL));
 
-  // There should be no observed ads because the ad iframe was navigated to a
-  // whitelist rule.
+  // There should be no observed ads because the ad iframe was navigated to an
+  // allowlist rule.
   histogram_tester.ExpectUniqueSample(
       "PageLoad.Clients.Ads.FrameCounts.AdFrames.Total", 0, 1);
   histogram_tester.ExpectUniqueSample(

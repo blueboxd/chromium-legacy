@@ -18,10 +18,11 @@ import static org.junit.Assert.assertNotNull;
 
 import static org.chromium.content_public.browser.test.util.TestThreadUtils.runOnUiThreadBlocking;
 
-import android.support.test.filters.MediumTest;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Test;

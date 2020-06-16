@@ -524,11 +524,13 @@ VideoInputDeviceCapabilities::VideoInputDeviceCapabilities(
     String device_id,
     String group_id,
     Vector<media::VideoCaptureFormat> formats,
-    media::VideoFacingMode facing_mode)
+    media::VideoFacingMode facing_mode,
+    bool pan_tilt_zoom_supported)
     : device_id(std::move(device_id)),
       group_id(std::move(group_id)),
       formats(std::move(formats)),
-      facing_mode(facing_mode) {}
+      facing_mode(facing_mode),
+      pan_tilt_zoom_supported(pan_tilt_zoom_supported) {}
 
 VideoInputDeviceCapabilities::VideoInputDeviceCapabilities(
     VideoInputDeviceCapabilities&& other) = default;

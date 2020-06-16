@@ -12,9 +12,10 @@ import static org.mockito.Mockito.verify;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Rect;
-import android.support.test.filters.SmallTest;
 import android.view.WindowInsets;
 import android.widget.LinearLayout;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
 import org.junit.Test;

@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser;
 
-import android.support.test.filters.MediumTest;
 import android.text.TextUtils;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

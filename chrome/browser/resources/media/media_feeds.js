@@ -21,9 +21,16 @@ function whenConfigTableIsPopulatedForTest() {
   return mediaFeedsConfigTableIsPopulatedResolver.promise;
 }
 
-const mediaFeedsConfigTableIsUpdatedResolver = new PromiseResolver();
-function whenConfigTableIsUpdatedForTest() {
-  return mediaFeedsConfigTableIsUpdatedResolver.promise;
+const mediaFeedsConfigTableSafeSearchPrefIsUpdatedResolver =
+    new PromiseResolver();
+function whenConfigTableSafeSearchPrefIsUpdatedForTest() {
+  return mediaFeedsConfigTableSafeSearchPrefIsUpdatedResolver.promise;
+}
+
+const mediaFeedsConfigTableBackgroundFetchingPrefIsUpdatedResolver =
+    new PromiseResolver();
+function whenConfigTableBackgroundFetchingPrefIsUpdatedForTest() {
+  return mediaFeedsConfigTableBackgroundFetchingPrefIsUpdatedResolver.promise;
 }
 
 (function() {
@@ -562,8 +569,25 @@ function renderConfigTable(info) {
       () => {
         store.setSafeSearchEnabledPref(!info.safeSearchPrefValue).then(() => {
           updateConfigTable().then(
-              () => mediaFeedsConfigTableIsUpdatedResolver.resolve());
+              () => mediaFeedsConfigTableSafeSearchPrefIsUpdatedResolver
+                        .resolve());
         });
+      }));
+
+  configTableBody.appendChild(createConfigRow(
+      'Background Fetching Enabled (value)',
+      formatFeatureFlag(info.backgroundFetchingFeatureEnabled)));
+
+  configTableBody.appendChild(createConfigRowWithToggle(
+      'Background Fetching Enabled (pref)',
+      formatFeatureFlag(info.backgroundFetchingPrefValue), () => {
+        store.setBackgroundFetchingPref(!info.backgroundFetchingPrefValue)
+            .then(() => {
+              updateConfigTable().then(
+                  () =>
+                      mediaFeedsConfigTableBackgroundFetchingPrefIsUpdatedResolver
+                          .resolve());
+            });
       }));
 }
 

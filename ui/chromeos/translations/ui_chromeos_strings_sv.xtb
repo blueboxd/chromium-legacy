@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">Sinhalesiskt tangentbord</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> tillgängligt</translation>
 <translation id="2425665904502185219">Total filstorlek</translation>
+<translation id="2428749644083375155"><ph name="NUMBER_OF_ITEMS" /> objekt kopieras till <ph name="FOLDER_NAME" /></translation>
 <translation id="2448312741937722512">Typ</translation>
 <translation id="2453576648990281505">Filen finns redan</translation>
 <translation id="2464079411014186876">Glass</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> har lagts till som markerad.</translation>
 <translation id="4582497162516204941">Installera med Linux (beta)</translation>
 <translation id="4594543368593301662">Visar resultat för <ph name="SEARCH_TERM" />.</translation>
+<translation id="4603392156942865207"><ph name="FILE_NAME" /> kopieras till <ph name="FOLDER_NAME" /></translation>
 <translation id="4631887759990505102">Artist</translation>
 <translation id="4656293982926141856">Den här datorn</translation>
 <translation id="4669606053856530811">De som använder <ph name="SOURCE_NAME" /> förlorar åtkomsten till objekten såvida de inte delas med dem.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5081517858322016911">Filer på sammanlagt <ph name="TOTAL_FILE_SIZE" /> tas bort</translation>
+<translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> objekt flyttas till <ph name="FOLDER_NAME" /></translation>
 <translation id="509429900233858213">Det har uppstått ett fel.</translation>
 <translation id="5098629044894065541">hebreiska</translation>
 <translation id="5123433949759960244">Basketboll</translation>
@@ -455,6 +458,7 @@
 <translation id="6054173164583630569">Franskt tangentbord</translation>
 <translation id="6074825444536523002">Formulär från Google</translation>
 <translation id="6096979789310008754">Söktexten har tagits bort och alla filer och mappar visas.</translation>
+<translation id="610101264611565198"><ph name="FILE_NAME" /> flyttas till <ph name="FOLDER_NAME" /></translation>
 <translation id="6111770213269631447">Translitterering (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Blanksteg</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> flyttas ...</translation>
@@ -538,6 +542,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Installationen misslyckades.</translation>
 <translation id="7040138676081995583">Öppna med ...</translation>
+<translation id="7059566040011178088">Mindre än <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> markerade objekt</translation>
 <translation id="7106346894903675391">Köp mer lagringsutrymme ...</translation>
 <translation id="7126604456862387217">&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt; – &lt;em&gt;sök i Drive&lt;/em&gt;</translation>
@@ -648,6 +653,7 @@
 <translation id="8193175696669055101">Enhetsmodell</translation>
 <translation id="8208580316430297579">Konst</translation>
 <translation id="8223479393428528563">Om du vill spara filerna och använda dem offline ansluter du till internet igen, högerklickar på filerna och väljer alternativet <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
+<translation id="8231972167769262174">Om <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Avbryt</translation>
 <translation id="8261506727792406068">Radera</translation>
 <translation id="8269755669432358899">Komprimera panel med information om filåtgärder</translation>

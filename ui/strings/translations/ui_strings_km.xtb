@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">បិទ</translation>
 <translation id="6119846243427417423">ធ្វើសកម្មភាព</translation>
 <translation id="6129953537138746214">ដកឃ្លា</translation>
+<translation id="6134259848159370930">ស្វែងរក​ឧបករណ៍ កម្មវិធី ការកំណត់ និង​បណ្ដាញ​របស់អ្នក​។</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/វិនាទី</translation>
 <translation id="6156262341071374681">ពង្រីកទៅកម្មវិធីទាំងអស់</translation>
 <translation id="6165508094623778733">ស្វែងយល់​បន្ថែម</translation>
+<translation id="6166852626429024716">ស្វែងរក​ឧបករណ៍ កម្មវិធី ការកំណត់ បណ្ដាញ​របស់អ្នក...</translation>
 <translation id="6264365405983206840">ជ្រើសរើសទាំងអស់</translation>
 <translation id="6351032674660237738">ការណែនាំកម្មវិធី</translation>
 <translation id="6364916375976753737">ទាញទៅឆ្វេង</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ឯកសារ (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">បង្ហាញធ្នើ​ជានិច្ច</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/វិនាទី</translation>
+<translation id="8685326675965865247">ស្វែងរក​ឧបករណ៍ កម្មវិធី ការកំណត់ និង​បណ្ដាញ​របស់អ្នក។ សូមប្រើ​គ្រាប់ចុច​ព្រួញ ដើម្បីរុករក​កម្មវិធី​របស់អ្នក។</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> ទៀត</translation>
 <translation id="8730621377337864115">រួចរាល់</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 ម៉}other{# ម៉}}</translation>

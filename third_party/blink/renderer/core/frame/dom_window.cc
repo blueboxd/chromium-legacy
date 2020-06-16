@@ -228,8 +228,8 @@ String DOMWindow::CrossDomainAccessErrorMessage(
   // access. See https://crbug.com/601629.
   DCHECK(GetFrame()->IsRemoteFrame() ||
          !active_origin->CanAccess(target_origin) ||
-         (local_dom_window && accessing_window->document()->GetAgent() !=
-                                  local_dom_window->document()->GetAgent()));
+         (local_dom_window &&
+          accessing_window->GetAgent() != local_dom_window->GetAgent()));
 
   String message = "Blocked a frame with origin \"" +
                    active_origin->ToString() +
@@ -529,7 +529,7 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
       GetFrame()->Client()->TransferUserActivationFrom(source->GetFrame());
   }
 
-  SchedulePostMessage(event, std::move(target), source_document);
+  SchedulePostMessage(event, std::move(target), source);
 }
 
 void DOMWindow::Trace(Visitor* visitor) const {

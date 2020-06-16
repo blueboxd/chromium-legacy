@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_LANGUAGE_SETTINGS_PRIVATE_LANGUAGE_SETTINGS_PRIVATE_API_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "extensions/browser/extension_function.h"
@@ -26,8 +27,15 @@ class LanguageSettingsPrivateGetLanguageListFunction
   // ExtensionFunction overrides.
   ResponseAction Run() override;
 
+#if defined(OS_WIN)
+  void OnDictionariesInitialized();
+  void UpdateSupportedPlatformDictionaries();
+#endif  // defined(OS_WIN)
+
  private:
   ChromeExtensionFunctionDetails chrome_details_;
+
+  std::unique_ptr<base::ListValue> language_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageSettingsPrivateGetLanguageListFunction);
 };

@@ -10,6 +10,7 @@
 #include "base/timer/timer.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "ui/events/ozone/chromeos/cursor_controller.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -27,10 +28,11 @@ class CursorView : public fast_ink::FastInkView,
                    public viz::DelayBasedTimeSourceClient,
                    public ui::CursorController::CursorObserver {
  public:
-  CursorView(aura::Window* container,
-             const gfx::Point& initial_location,
-             bool is_motion_blur_enabled);
   ~CursorView() override;
+
+  static views::UniqueWidgetPtr Create(const gfx::Point& initial_location,
+                                       bool is_motion_blur_enabled,
+                                       aura::Window* container);
 
   void SetCursorLocation(const gfx::Point& new_location);
   void SetCursorImage(const gfx::ImageSkia& cursor_image,
@@ -43,7 +45,13 @@ class CursorView : public fast_ink::FastInkView,
   // viz::DelayBasedTimeSourceClient overrides:
   void OnTimerTick() override;
 
+  // fast_ink::FastInkView override.
+  fast_ink::FastInkHost::PresentationCallback GetPresentationCallback()
+      override;
+
  private:
+  CursorView(const gfx::Point& initial_location, bool is_motion_blur_enabled);
+
   void StationaryOnPaintThread();
   gfx::Rect CalculateCursorRectOnPaintThread() const;
   void SetActiveOnPaintThread(bool active);

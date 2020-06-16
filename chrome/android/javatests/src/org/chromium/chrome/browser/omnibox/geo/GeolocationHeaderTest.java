@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.omnibox.geo;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.SystemClock;
-import android.support.test.filters.SmallTest;
 import android.util.Base64;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

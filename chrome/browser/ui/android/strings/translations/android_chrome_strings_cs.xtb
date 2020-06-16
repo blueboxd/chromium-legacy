@@ -170,6 +170,7 @@ Vyhledávání spustíte klepnutím na libovolné slovo. Chcete-li vyhledáván�
 <translation id="2387895666653383613">Zvětšení/zmenšení textu</translation>
 <translation id="2394602618534698961">Zde se zobrazují stažené soubory</translation>
 <translation id="2407481962792080328">Když se přihlásíte k účtu Google, je tato funkce zapnutá</translation>
+<translation id="2407674018644220013">Nastavit aplikaci <ph name="APP_NAME" /> jako výchozí?</translation>
 <translation id="2410754283952462441">Vyberte účet</translation>
 <translation id="2414886740292270097">Tmavé</translation>
 <translation id="2426805022920575512">Vybrat jiný účet</translation>
@@ -179,6 +180,7 @@ Vyhledávání spustíte klepnutím na libovolné slovo. Chcete-li vyhledáván�
 
 Vyhledávání spustíte podržením libovolného slova. Vyhledávání můžete zpřesnit tím, že vyberete více či méně slov. Chcete-li vyhledávání upravit, otevřete panel, otevřete novou kartu klepnutím na ikonu a ve vyhledávacím poli proveďte změny.</translation>
 <translation id="246532703174860178">Sdílet</translation>
+<translation id="2479148705183875116">Přejít do Nastavení</translation>
 <translation id="2482878487686419369">Oznámení</translation>
 <translation id="2494974097748878569">Asistent Google v Chromu</translation>
 <translation id="2496180316473517155">Historie procházení</translation>
@@ -617,6 +619,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="6140912465461743537">Země/Region</translation>
 <translation id="614940544461990577">Zkuste:</translation>
 <translation id="6154478581116148741">Chcete-li z tohoto zařízení exportovat svá hesla, zapněte v Nastavení zámek obrazovky</translation>
+<translation id="6157392216611456285">Vyberte <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">Úspora dat: <ph name="PERCENT" /></translation>
 <translation id="6192333916571137726">Stáhnout soubor</translation>
 <translation id="6201345951596836663">Odkaz byl zkopírován</translation>
@@ -641,6 +644,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6341580099087024258">Zeptat se, kam se soubory mají uložit</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> další}few{<ph name="SHIPPING_ADDRESS_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> další}many{<ph name="SHIPPING_ADDRESS_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> další}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> a <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> dalších}}</translation>
 <translation id="6364438453358674297">Odstranit návrh z historie?</translation>
+<translation id="6366047038980456022"><ph name="APP_NAME" /> vám vždy nabídne chytré nástroje, zabezpečení a rychlost k tomu, co právě potřebujete</translation>
 <translation id="6369229450655021117">Odsud můžete vyhledávat na webu, sdílet obsah s přáteli a zobrazovat otevřené stránky.</translation>
 <translation id="6378173571450987352">Podrobnosti: Seřazeno podle množství využitých dat</translation>
 <translation id="6379829913050047669">Aplikace <ph name="APP_NAME" /> se otevře v Chromu. Pokračováním vyjadřujete souhlas se <ph name="BEGIN_LINK1" />smluvními podmínkami společnosti Google<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />dodatečnými smluvními podmínkami prohlížeče Chrome a systému Chrome OS<ph name="END_LINK2" />.</translation>
@@ -692,6 +696,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6671495933530132209">Zkopírovat obrázek</translation>
 <translation id="6676840375528380067">Vymazat z tohoto zařízení data prohlížeče Chrome?</translation>
 <translation id="6689172468748959065">Profilové fotky</translation>
+<translation id="6691888250440401212">1. Vyberte <ph name="APP_NAME" />\n2. Klepněte na Nastavit jako výchozí</translation>
 <translation id="6697492270171225480">Zobrazovat návrhy podobných stránek, když stránku nelze najít</translation>
 <translation id="6698801883190606802">Správa synchronizovaných dat</translation>
 <translation id="6699370405921460408">Servery Google budou navštěvované stránky optimalizovat.</translation>
@@ -895,6 +900,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8364299278605033898">Zobrazit populární weby</translation>
 <translation id="8368027906805972958">Neznámé nebo nepodporované zařízení (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">Odeslat zprávu</translation>
+<translation id="8407396331882458341">1. Vyberte <ph name="APP_NAME" />\n2. Klepněte na Vždy</translation>
 <translation id="8413126021676339697">Zobrazit celou historii</translation>
 <translation id="8425213833346101688">Změnit</translation>
 <translation id="8427875596167638501">Karta náhledu je otevřená na půlce</translation>
@@ -921,6 +927,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="8555836665334561807">Přes Wi-Fi</translation>
 <translation id="8558485628462305855">Chcete-li zobrazit obsah pro rozšířenou realitu, aktualizujte ARCore</translation>
 <translation id="8559990750235505898">Nabízet překlad stránek v jiných jazycích</translation>
+<translation id="8561196567344536112">1. Přejděte do Nastavení\n2. Klepněte na Prohlížeč\n3. Vyberte <ph name="APP_NAME" /></translation>
 <translation id="8562452229998620586">Zde se zobrazí uložená hesla.</translation>
 <translation id="8569404424186215731">od <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Poslední 4 týdny</translation>

@@ -73,15 +73,6 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
     : context_(context) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-  // The Windows spell checker must be created before the dictionaries are
-  // initialized.
-  if (spellcheck::WindowsVersionSupportsSpellchecker()) {
-    platform_spell_checker_ = std::make_unique<WindowsSpellChecker>(
-        base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()}));
-  }
-#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-
   PrefService* prefs = user_prefs::UserPrefs::Get(context);
   pref_change_registrar_.Init(prefs);
   StringListPrefMember dictionaries_pref;
@@ -160,22 +151,21 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   custom_dictionary_->AddObserver(this);
   custom_dictionary_->Load();
 
-  registrar_.Add(this,
-                 content::NOTIFICATION_RENDERER_PROCESS_CREATED,
+  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllSources());
 
 #if defined(OS_WIN)
-  if (spellcheck::UseBrowserSpellChecker() && platform_spell_checker()) {
-    spellcheck_platform::RetrieveSpellcheckLanguages(
-        platform_spell_checker(),
-        base::BindOnce(&SpellcheckService::InitWindowsDictionaryLanguages,
-                       GetWeakPtr()));
-  } else {
-#endif  // defined(OS_WIN)
-    LoadHunspellDictionaries();
-#if defined(OS_WIN)
+  if (spellcheck::UseBrowserSpellChecker() &&
+      base::FeatureList::IsEnabled(
+          spellcheck::kWinDelaySpellcheckServiceInit)) {
+    // If initialization of the spellcheck service is on-demand, it is up to the
+    // instantiator of the spellcheck service to call InitializeDictionaries
+    // with a callback.
+    return;
   }
 #endif  // defined(OS_WIN)
+
+  InitializeDictionaries(base::DoNothing());
 }
 
 SpellcheckService::~SpellcheckService() {
@@ -386,7 +376,7 @@ SpellcheckCustomDictionary* SpellcheckService::GetCustomDictionary() {
   return custom_dictionary_.get();
 }
 
-void SpellcheckService::LoadHunspellDictionaries() {
+void SpellcheckService::LoadDictionaries() {
   hunspell_dictionaries_.clear();
 
   PrefService* prefs = user_prefs::UserPrefs::Get(context_);
@@ -441,7 +431,26 @@ void SpellcheckService::LoadHunspellDictionaries() {
 
 #if defined(OS_WIN)
   RecordSpellcheckLocalesStats();
+
+#if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+  if (base::FeatureList::IsEnabled(
+          spellcheck::kWinDelaySpellcheckServiceInit) &&
+      spellcheck::UseBrowserSpellChecker()) {
+    // Only want to fire the callback on first call to LoadDictionaries
+    // originating from InitializeDictionaries, since supported platform
+    // dictionaries are cached throughout the browser session and not
+    // dynamically updated. LoadDictionaries can be called multiple times in a
+    // browser session, even before InitializeDictionaries is called, e.g. when
+    // language settings are changed.
+    if (!dictionaries_loaded() && dictionaries_loaded_callback_) {
+      dictionaries_loaded_ = true;
+      std::move(dictionaries_loaded_callback_).Run();
+    }
+    return;
+  }
+#endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #endif  // defined(OS_WIN)
+  dictionaries_loaded_ = true;
 }
 
 const std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>&
@@ -506,6 +515,41 @@ void SpellcheckService::OnHunspellDictionaryDownloadSuccess(
 
 void SpellcheckService::OnHunspellDictionaryDownloadFailure(
     const std::string& language) {
+}
+
+void SpellcheckService::InitializeDictionaries(base::OnceClosure done) {
+  // The dictionaries only need to be initialized once.
+  if (dictionaries_loaded()) {
+    std::move(done).Run();
+    return;
+  }
+
+#if defined(OS_WIN)
+  dictionaries_loaded_callback_ = std::move(done);
+  // Need to initialize the platform spellchecker in order to record platform
+  // locale stats even if the platform spellcheck feature is disabled.
+  InitializePlatformSpellchecker();
+#endif  // defined(OS_WIN)
+
+  PrefService* prefs = user_prefs::UserPrefs::Get(context_);
+  DCHECK(prefs);
+
+  // Instantiates Metrics object for spellchecking to use.
+  StartRecordingMetrics(
+      prefs->GetBoolean(spellcheck::prefs::kSpellCheckEnable));
+
+#if defined(OS_WIN)
+  if (spellcheck::UseBrowserSpellChecker() && platform_spell_checker()) {
+    spellcheck_platform::RetrieveSpellcheckLanguages(
+        platform_spell_checker(),
+        base::BindOnce(&SpellcheckService::InitWindowsDictionaryLanguages,
+                       GetWeakPtr()));
+    return;
+  }
+#endif  // defined(OS_WIN)
+
+  // Using Hunspell.
+  LoadDictionaries();
 }
 
 #if defined(OS_WIN)
@@ -591,7 +635,7 @@ void SpellcheckService::InitWindowsDictionaryLanguages(
     }
   }
 
-  // No need to call LoadHunspellDictionaries() as when the ListPrefUpdate
+  // No need to call LoadDictionaries() as when the ListPrefUpdate
   // object goes out of scope, the preference change handler will do this.
 }
 
@@ -716,7 +760,7 @@ void SpellcheckService::InitForAllRenderers() {
 void SpellcheckService::OnSpellCheckDictionariesChanged() {
   // If there are hunspell dictionaries, then fire off notifications to the
   // renderers after the dictionaries are finished loading.
-  LoadHunspellDictionaries();
+  LoadDictionaries();
 
   // If there are no hunspell dictionaries to load, then immediately let the
   // renderers know the new state.
@@ -777,6 +821,19 @@ std::vector<std::string> SpellcheckService::GetNormalizedAcceptLanguages(
 }
 
 #if defined(OS_WIN)
+void SpellcheckService::InitializePlatformSpellchecker() {
+  // The Windows spell checker must be created before the dictionaries are
+  // initialized. Note it is instantiated even if only Hunspell is being used
+  // since metrics on the availability of Windows platform language packs are
+  // being recorded. Thus method should only be called once, except in test
+  // code.
+  if (!platform_spell_checker() &&
+      spellcheck::WindowsVersionSupportsSpellchecker()) {
+    platform_spell_checker_ = std::make_unique<WindowsSpellChecker>(
+        base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()}));
+  }
+}
+
 void SpellcheckService::RecordSpellcheckLocalesStats() {
   if (spellcheck::WindowsVersionSupportsSpellchecker() && metrics_ &&
       platform_spell_checker() && !hunspell_dictionaries_.empty()) {
@@ -818,5 +875,14 @@ std::string SpellcheckService::GetSupportedWindowsDictionaryLanguage(
     spellcheck_language = it->second;
 
   return spellcheck_language;
+}
+
+void SpellcheckService::AddSpellcheckLanguagesForTesting(
+    const std::vector<std::string>& languages) {
+  InitializePlatformSpellchecker();
+  if (platform_spell_checker()) {
+    spellcheck_platform::AddSpellcheckLanguagesForTesting(
+        platform_spell_checker(), languages);
+  }
 }
 #endif  // defined(OS_WIN)

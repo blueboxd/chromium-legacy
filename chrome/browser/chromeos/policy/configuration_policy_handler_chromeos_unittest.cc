@@ -67,11 +67,10 @@ TEST_F(ScreenMagnifierPolicyHandlerTest, Default) {
 
 TEST_F(ScreenMagnifierPolicyHandlerTest, Disabled) {
   policy_.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
-              POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              std::make_unique<base::Value>(0), nullptr);
+              POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(0), nullptr);
   handler_.ApplyPolicySettings(policy_, &prefs_);
 
-  const base::Value* enabled = NULL;
+  const base::Value* enabled = nullptr;
   EXPECT_TRUE(prefs_.GetValue(ash::prefs::kAccessibilityScreenMagnifierEnabled,
                               &enabled));
   ASSERT_TRUE(enabled);
@@ -80,11 +79,10 @@ TEST_F(ScreenMagnifierPolicyHandlerTest, Disabled) {
 
 TEST_F(ScreenMagnifierPolicyHandlerTest, Enabled) {
   policy_.Set(key::kScreenMagnifierType, POLICY_LEVEL_MANDATORY,
-              POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-              std::make_unique<base::Value>(1), nullptr);
+              POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(1), nullptr);
   handler_.ApplyPolicySettings(policy_, &prefs_);
 
-  const base::Value* enabled = NULL;
+  const base::Value* enabled = nullptr;
   EXPECT_TRUE(prefs_.GetValue(ash::prefs::kAccessibilityScreenMagnifierEnabled,
                               &enabled));
   ASSERT_TRUE(enabled);
@@ -101,8 +99,8 @@ TEST(ExternalDataPolicyHandlerTest, Empty) {
 TEST(ExternalDataPolicyHandlerTest, WrongType) {
   PolicyMap policy_map;
   policy_map.Set(key::kUserAvatarImage, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(false), nullptr);
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+                 nullptr);
   PolicyErrorMap errors;
   EXPECT_FALSE(ExternalDataPolicyHandler(key::kUserAvatarImage)
                    .CheckPolicySettings(policy_map, &errors));
@@ -110,8 +108,8 @@ TEST(ExternalDataPolicyHandlerTest, WrongType) {
 }
 
 TEST(ExternalDataPolicyHandlerTest, MissingURL) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("hash", "1234567890123456789012345678901234567890");
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("hash", "1234567890123456789012345678901234567890");
   PolicyMap policy_map;
   policy_map.Set(key::kUserAvatarImage, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, std::move(dict),
@@ -123,9 +121,9 @@ TEST(ExternalDataPolicyHandlerTest, MissingURL) {
 }
 
 TEST(ExternalDataPolicyHandlerTest, InvalidURL) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("url", "http://");
-  dict->SetString("hash", "1234567890123456789012345678901234567890");
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("url", "http://");
+  dict.SetStringKey("hash", "1234567890123456789012345678901234567890");
   PolicyMap policy_map;
   policy_map.Set(key::kUserAvatarImage, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, std::move(dict),
@@ -137,8 +135,8 @@ TEST(ExternalDataPolicyHandlerTest, InvalidURL) {
 }
 
 TEST(ExternalDataPolicyHandlerTest, MissingHash) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("url", "http://localhost/");
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("url", "http://localhost/");
   PolicyMap policy_map;
   policy_map.Set(key::kUserAvatarImage, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, std::move(dict),
@@ -150,9 +148,9 @@ TEST(ExternalDataPolicyHandlerTest, MissingHash) {
 }
 
 TEST(ExternalDataPolicyHandlerTest, InvalidHash) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("url", "http://localhost/");
-  dict->SetString("hash", "1234");
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("url", "http://localhost/");
+  dict.SetStringKey("hash", "1234");
   PolicyMap policy_map;
   policy_map.Set(key::kUserAvatarImage, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, std::move(dict),
@@ -164,9 +162,9 @@ TEST(ExternalDataPolicyHandlerTest, InvalidHash) {
 }
 
 TEST(ExternalDataPolicyHandlerTest, Valid) {
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetString("url", "http://localhost/");
-  dict->SetString(
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("url", "http://localhost/");
+  dict.SetStringKey(
       "hash",
       "1234567890123456789012345678901234567890123456789012345678901234");
   PolicyMap policy_map;
@@ -229,8 +227,8 @@ TEST(NetworkConfigurationPolicyHandlerTest, ValidONC) {
 
   PolicyMap policy_map;
   policy_map.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(kTestONC), nullptr);
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(kTestONC),
+                 nullptr);
   std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -241,8 +239,8 @@ TEST(NetworkConfigurationPolicyHandlerTest, ValidONC) {
 TEST(NetworkConfigurationPolicyHandlerTest, WrongType) {
   PolicyMap policy_map;
   policy_map.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(false), nullptr);
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+                 nullptr);
   std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -254,8 +252,8 @@ TEST(NetworkConfigurationPolicyHandlerTest, JSONParseError) {
   const std::string kTestONC("I'm not proper JSON!");
   PolicyMap policy_map;
   policy_map.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(kTestONC), nullptr);
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(kTestONC),
+                 nullptr);
   std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -280,8 +278,8 @@ TEST(NetworkConfigurationPolicyHandlerTest, Sanitization) {
 
   PolicyMap policy_map;
   policy_map.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(kTestONC), nullptr);
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(kTestONC),
+                 nullptr);
   std::unique_ptr<NetworkConfigurationPolicyHandler> handler(
       NetworkConfigurationPolicyHandler::CreateForUserPolicy());
   PolicyErrorMap errors;
@@ -296,41 +294,39 @@ TEST(NetworkConfigurationPolicyHandlerTest, Sanitization) {
 }
 
 TEST(PinnedLauncherAppsPolicyHandler, PrefTranslation) {
-  base::ListValue list;
+  base::Value list(base::Value::Type::LIST);
   PolicyMap policy_map;
   PrefValueMap prefs;
   base::ListValue expected_pinned_apps;
-  base::Value* value = NULL;
+  base::Value* value = nullptr;
   PinnedLauncherAppsPolicyHandler handler;
 
   policy_map.Set(key::kPinnedLauncherApps, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, list.CreateDeepCopy(),
-                 nullptr);
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kPolicyPinnedLauncherApps, &value));
   EXPECT_EQ(expected_pinned_apps, *value);
 
   // Extension IDs are OK.
   base::Value entry1("abcdefghijklmnopabcdefghijklmnop");
-  auto entry1_dict = std::make_unique<base::DictionaryValue>();
-  entry1_dict->Set(kPinnedAppsPrefAppIDKey, entry1.CreateDeepCopy());
+  base::Value entry1_dict(base::Value::Type::DICTIONARY);
+  entry1_dict.SetKey(kPinnedAppsPrefAppIDKey, entry1.Clone());
   expected_pinned_apps.Append(std::move(entry1_dict));
-  list.Append(entry1.CreateDeepCopy());
+  list.Append(entry1.Clone());
 
   // Android appds are OK.
   base::Value entry2("com.google.android.gm");
-  auto entry2_dict = std::make_unique<base::DictionaryValue>();
-  entry2_dict->Set(kPinnedAppsPrefAppIDKey, entry2.CreateDeepCopy());
+  auto entry2_dict = base::Value(base::Value::Type::DICTIONARY);
+  entry2_dict.SetKey(kPinnedAppsPrefAppIDKey, entry2.Clone());
   expected_pinned_apps.Append(std::move(entry2_dict));
-  list.Append(entry2.CreateDeepCopy());
+  list.Append(entry2.Clone());
 
   // Anything else is not OK.
   base::Value entry3("invalid");
-  list.Append(entry3.CreateDeepCopy());
+  list.Append(entry3.Clone());
 
   policy_map.Set(key::kPinnedLauncherApps, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, list.CreateDeepCopy(),
-                 nullptr);
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, list.Clone(), nullptr);
   prefs.Clear();
   handler.ApplyPolicySettings(policy_map, &prefs);
   EXPECT_TRUE(prefs.GetValue(prefs::kPolicyPinnedLauncherApps, &value));
@@ -347,11 +343,10 @@ TEST_F(LoginScreenPowerManagementPolicyHandlerTest, Empty) {
 
 TEST_F(LoginScreenPowerManagementPolicyHandlerTest, ValidPolicy) {
   PolicyMap policy_map;
-  policy_map.Set(
-      key::kDeviceLoginScreenPowerManagement, POLICY_LEVEL_MANDATORY,
-      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-      base::JSONReader::ReadDeprecated(kLoginScreenPowerManagementPolicy),
-      nullptr);
+  policy_map.Set(key::kDeviceLoginScreenPowerManagement, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+                 base::JSONReader::Read(kLoginScreenPowerManagementPolicy),
+                 nullptr);
   LoginScreenPowerManagementPolicyHandler handler(chrome_schema_);
   PolicyErrorMap errors;
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
@@ -361,8 +356,8 @@ TEST_F(LoginScreenPowerManagementPolicyHandlerTest, ValidPolicy) {
 TEST_F(LoginScreenPowerManagementPolicyHandlerTest, WrongType) {
   PolicyMap policy_map;
   policy_map.Set(key::kDeviceLoginScreenPowerManagement, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(false), nullptr);
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+                 nullptr);
   LoginScreenPowerManagementPolicyHandler handler(chrome_schema_);
   PolicyErrorMap errors;
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
@@ -389,8 +384,8 @@ TEST(ArcServicePolicyHandlerTest, DisabledByDefault) {
 TEST(ArcServicePolicyHandlerTest, UnderUserControlWhenWrongType) {
   PolicyMap policy_map;
   policy_map.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(false), nullptr);
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+                 nullptr);
   SetEnterpriseUsersDefaults(&policy_map);
   ArcServicePolicyHandler handler(key::kArcBackupRestoreServiceEnabled,
                                   arc::prefs::kArcBackupRestoreEnabled);
@@ -402,8 +397,8 @@ TEST(ArcServicePolicyHandlerTest, UnderUserControlWhenWrongType) {
 TEST(ArcServicePolicyHandlerTest, UnderUserControlWhenOutOfRange) {
   PolicyMap policy_map;
   policy_map.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(3), nullptr);
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(3),
+                 nullptr);
   SetEnterpriseUsersDefaults(&policy_map);
   ArcServicePolicyHandler handler(key::kArcBackupRestoreServiceEnabled,
                                   arc::prefs::kArcBackupRestoreEnabled);
@@ -414,11 +409,10 @@ TEST(ArcServicePolicyHandlerTest, UnderUserControlWhenOutOfRange) {
 
 TEST(ArcServicePolicyHandlerTest, DisabledByPolicy) {
   PolicyMap policy_map;
-  policy_map.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(
-                     static_cast<int>(ArcServicePolicyValue::kDisabled)),
-                 nullptr);
+  policy_map.Set(
+      key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
+      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+      base::Value(static_cast<int>(ArcServicePolicyValue::kDisabled)), nullptr);
   SetEnterpriseUsersDefaults(&policy_map);
   ArcServicePolicyHandler handler(key::kArcBackupRestoreServiceEnabled,
                                   arc::prefs::kArcBackupRestoreEnabled);
@@ -435,11 +429,11 @@ TEST(ArcServicePolicyHandlerTest, DisabledByPolicy) {
 
 TEST(ArcServicePolicyHandlerTest, UnderUserControlByPolicy) {
   PolicyMap policy_map;
-  policy_map.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(static_cast<int>(
-                     ArcServicePolicyValue::kUnderUserControl)),
-                 nullptr);
+  policy_map.Set(
+      key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
+      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+      base::Value(static_cast<int>(ArcServicePolicyValue::kUnderUserControl)),
+      nullptr);
   SetEnterpriseUsersDefaults(&policy_map);
   ArcServicePolicyHandler handler(key::kArcBackupRestoreServiceEnabled,
                                   arc::prefs::kArcBackupRestoreEnabled);
@@ -456,8 +450,7 @@ TEST(ArcServicePolicyHandlerTest, EnabledByPolicy) {
   PolicyMap policy_map;
   policy_map.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(
-                     static_cast<int>(ArcServicePolicyValue::kEnabled)),
+                 base::Value(static_cast<int>(ArcServicePolicyValue::kEnabled)),
                  nullptr);
   SetEnterpriseUsersDefaults(&policy_map);
   ArcServicePolicyHandler handler(key::kArcBackupRestoreServiceEnabled,
@@ -477,8 +470,7 @@ TEST(ArcServicePolicyHandlerTest, NotOverridingAnotherPolicy) {
   PolicyMap policy_map;
   policy_map.Set(key::kArcBackupRestoreServiceEnabled, POLICY_LEVEL_MANDATORY,
                  POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(
-                     static_cast<int>(ArcServicePolicyValue::kEnabled)),
+                 base::Value(static_cast<int>(ArcServicePolicyValue::kEnabled)),
                  nullptr);
   SetEnterpriseUsersDefaults(&policy_map);
   ArcServicePolicyHandler handler(key::kArcBackupRestoreServiceEnabled,
@@ -518,11 +510,11 @@ TEST(EcryptfsMigrationStrategyPolicyHandlerTest, Empty) {
 
 TEST(EcryptfsMigrationStrategyPolicyHandlerTest, ValidPolicy) {
   PolicyMap policy_map;
-  policy_map.Set(key::kEcryptfsMigrationStrategy, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(
-                     static_cast<int>(apu::EcryptfsMigrationAction::kMigrate)),
-                 nullptr);
+  policy_map.Set(
+      key::kEcryptfsMigrationStrategy, POLICY_LEVEL_MANDATORY,
+      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+      base::Value(static_cast<int>(apu::EcryptfsMigrationAction::kMigrate)),
+      nullptr);
   EcryptfsMigrationStrategyPolicyHandler handler;
   PolicyErrorMap errors;
   EXPECT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
@@ -532,8 +524,8 @@ TEST(EcryptfsMigrationStrategyPolicyHandlerTest, ValidPolicy) {
 TEST(EcryptfsMigrationStrategyPolicyHandlerTest, WrongType) {
   PolicyMap policy_map;
   policy_map.Set(key::kEcryptfsMigrationStrategy, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(false), nullptr);
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(false),
+                 nullptr);
   EcryptfsMigrationStrategyPolicyHandler handler;
   PolicyErrorMap errors;
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
@@ -543,8 +535,8 @@ TEST(EcryptfsMigrationStrategyPolicyHandlerTest, WrongType) {
 TEST(EcryptfsMigrationStrategyPolicyHandlerTest, OutOfRange) {
   PolicyMap policy_map;
   policy_map.Set(key::kEcryptfsMigrationStrategy, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                 std::make_unique<base::Value>(6), nullptr);
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(6),
+                 nullptr);
   EcryptfsMigrationStrategyPolicyHandler handler;
   PolicyErrorMap errors;
   EXPECT_FALSE(handler.CheckPolicySettings(policy_map, &errors));
@@ -570,7 +562,7 @@ TEST(EcryptfsMigrationStrategyPolicyHandlerTest, SupportedValue) {
   for (const auto& test_policy_value : test_policy_values) {
     policy_map.Set(key::kEcryptfsMigrationStrategy, POLICY_LEVEL_MANDATORY,
                    POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                   test_policy_value.CreateDeepCopy(), nullptr);
+                   test_policy_value.Clone(), nullptr);
     ASSERT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
     EXPECT_TRUE(errors.empty());
     handler.ApplyPolicySettings(policy_map, &prefs);
@@ -597,7 +589,7 @@ TEST(EcryptfsMigrationStrategyPolicyHandlerTest, ObsoleteValue) {
   for (const auto& test_policy_value : test_policy_values) {
     policy_map.Set(key::kEcryptfsMigrationStrategy, POLICY_LEVEL_MANDATORY,
                    POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                   test_policy_value.CreateDeepCopy(), nullptr);
+                   test_policy_value.Clone(), nullptr);
     ASSERT_TRUE(handler.CheckPolicySettings(policy_map, &errors));
     EXPECT_TRUE(errors.empty());
     handler.ApplyPolicySettings(policy_map, &prefs);

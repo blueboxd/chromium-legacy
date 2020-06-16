@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/scriptable_document_parser.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
+#include "third_party/blink/renderer/core/execution_context/window_agent_factory.h"
 #include "third_party/blink/renderer/core/feature_policy/document_policy_parser.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -1652,9 +1653,18 @@ void DocumentLoader::InstallNewDocument(
   // LocalDOMWindow to the Document that results from the network load. See also
   // Document::IsSecureTransitionTo.
   if (global_object_reuse_policy_ != GlobalObjectReusePolicy::kUseExisting) {
+    // TODO(keishi): Also check if AllowUniversalAccessFromFileURLs might
+    // dynamically change.
+    bool has_potential_universal_access_privilege =
+        !frame_->GetSettings()->GetWebSecurityEnabled() ||
+        frame_->GetSettings()->GetAllowUniversalAccessFromFileURLs();
+    auto* agent = frame_->window_agent_factory().GetAgentForOrigin(
+        has_potential_universal_access_privilege,
+        V8PerIsolateData::MainThreadIsolate(), init.GetDocumentOrigin().get());
+
     if (frame_->GetDocument())
       frame_->GetDocument()->RemoveAllEventListenersRecursively();
-    frame_->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*frame_));
+    frame_->SetDOMWindow(MakeGarbageCollected<LocalDOMWindow>(*frame_, agent));
     if (origin_policy_.has_value()) {
       // Convert from WebVector<WebString> to WTF::Vector<WTF::String>
       Vector<String> ids;

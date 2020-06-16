@@ -29,9 +29,13 @@ const char kPluginVmImageExists[] = "plugin_vm.image_exists";
 // A boolean preference indicating whether Plugin VM is allowed to use printers.
 const char kPluginVmPrintersAllowed[] = "plugin_vm.printers_allowed";
 
-// A boolean preference indicating whether the camera should be shared with
-// PluginVm.
-const char kPluginVmCameraSharing[] = "plugin_vm.camera_sharing";
+// A boolean preference indicating whether Plugin VM is allowed to access the
+// camera.
+const char kPluginVmCameraAllowed[] = "plugin_vm.camera_allowed";
+
+// A boolean preference indicating whether Plugin VM is allowed to access the
+// microphone.
+const char kPluginVmMicrophoneAllowed[] = "plugin_vm.microphone_allowed";
 
 // A string preference that specifies PluginVm licensing user id.
 const char kPluginVmUserId[] = "plugin_vm.user_id";
@@ -53,7 +57,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   // TODO(crbug.com/1066760): For convenience this currently defaults to true,
   // but we'll need to revisit before launch.
   registry->RegisterBooleanPref(kPluginVmPrintersAllowed, true);
-  registry->RegisterBooleanPref(kPluginVmCameraSharing, false);
+  registry->RegisterBooleanPref(kPluginVmCameraAllowed, false);
+  registry->RegisterBooleanPref(kPluginVmMicrophoneAllowed, false);
   registry->RegisterStringPref(kPluginVmUserId, std::string());
   registry->RegisterBooleanPref(kPluginVmDataCollectionAllowed, false);
 

@@ -21,6 +21,9 @@ constexpr CGFloat kStackViewSpacingAfterIllustration = 37;
   self.customSpacingAfterImage = kStackViewSpacingAfterIllustration;
 
   self.helpButtonAvailable = YES;
+  self.helpButtonAccessibilityLabel = NSLocalizedString(
+      @"IDS_IOS_CREDENTIAL_PROVIDER_HELP_ACCESSIBILITY_LABEL", @"Help.");
+
   self.primaryActionAvailable = YES;
   NSString* titleString =
       NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_CONSENT_TITLE",
@@ -35,6 +38,7 @@ constexpr CGFloat kStackViewSpacingAfterIllustration = 37;
   self.titleString = titleString;
   self.subtitleString = subtitleString;
   self.primaryActionString = primaryActionString;
+  self.dismissBarButtonSystemItem = UIBarButtonSystemItemCancel;
 #if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
     self.pointerInteractionEnabled = YES;

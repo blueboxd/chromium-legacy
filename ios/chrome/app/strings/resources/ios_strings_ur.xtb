@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">ویب سائٹ میں سائن ان کریں</translation>
 <translation id="1509960214886564027">بہت سی سائٹس پر خصوصیات میں خلل ہو سکتا ہے</translation>
 <translation id="152234381334907219">کبھی محفوظ نہیں ہوئے</translation>
+<translation id="1535268707340844072">آپ کی موجودہ ترتیب کچھ سائٹس کو توڑنے کی وجہ بن سکتی ہے۔ سبھی سائٹس کی خاطر کوکیز کا نظم کرنے کے لیے، <ph name="BEGIN_LINK" />کوکی کی ترتیبات<ph name="END_LINK" /> دیکھیں۔</translation>
 <translation id="1540800554400757039">پتہ 1</translation>
 <translation id="1545749641540134597">‏QR کوڈ اسکین کریں</translation>
 <translation id="1552525382687785070">مطابقت پذیری کو آپ کے منتظم نے غیر فعال کر دیا ہے</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212"><ph name="DAYS" /> دن پہلے فعال تھا</translation>
 <translation id="2074131957428911366">آپ <ph name="BEGIN_LINK" />ترتیبات<ph name="END_LINK" /> میں کسی بھی وقت اس بات کا انتخاب کر سکتے ہیں کہ کس چیز کی مطابقت پذیری کرنی ہے۔</translation>
 <translation id="2079545284768500474">کالعدم کریں</translation>
+<translation id="2081417079511601293">پوشیدگی وضع میں فریق ثالث کو مسدود کریں</translation>
 <translation id="209018056901015185">ڈیسک ٹاپ سائٹ کی درخواست کریں</translation>
 <translation id="2103075008456228677">‏history.google.com کھولیں</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> آئٹمز منتقل کر دیے گئے</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">نئے ٹیب میں کھولیں</translation>
 <translation id="3037605927509011580">ارے، رکیں!</translation>
 <translation id="3112556859945124369">نشان زد کریں…</translation>
+<translation id="3131206671572504478">سبھی کو مسدود کریں</translation>
 <translation id="3153862085237805241">کارڈ محفوظ کریں</translation>
 <translation id="3157684681743766797">سبھی کو نشان زد کریں…</translation>
 <translation id="3161291298470460782">‏یہ آپ کو سائن آؤٹ، مطابقت پذیری کو آف اور اس آلہ سے تمام Chrome ڈیٹا کو صاف کر دے گا۔ آپ کا مطابقت پذیر ڈیٹا آپ کے Google اکاؤنٹ میں رہے گا۔</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">زبان تبدیل کرنے کے لیے تھپتھپائیں۔</translation>
 <translation id="441868831736628555">رازداری نوٹس</translation>
 <translation id="4454246407045105932">زبان شامل کریں</translation>
+<translation id="4469418912670346607">سیٹ اپ جاری رکھیں</translation>
 <translation id="4476574785019001431">ترتیبات</translation>
 <translation id="4496373720959965247">ٹیبز شامل کریں اور صفحات کے درمیان سوئچ کریں</translation>
 <translation id="4508750114462689118">سائن ان پرومو بند کریں</translation>
@@ -300,6 +304,7 @@
 <translation id="4805759445554688327">کارڈ نمبر غلط ہے</translation>
 <translation id="4818522717893377262">زبان شامل کریں...</translation>
 <translation id="481968316161811770">کوکیز، سائٹ کا ڈیٹا</translation>
+<translation id="4826218269716039351">فریق ثالث مسدود کریں</translation>
 <translation id="4833786495304741580">‏Google کو خودکار طور پر استعمال کے اعداد و شمار اور کریش رپورٹس بھیجتی ہے۔</translation>
 <translation id="4840495572919996524">‏آپ کے بُک مارکس، سرگزشت، پاس ورڈز وغیرہ کی اب آپ کے Google اکاؤنٹ کے ساتھ مطابقت پذیری نہیں کی جائے گی۔</translation>
 <translation id="4854345657858711387">ایک پاس کوڈ سیٹ کریں</translation>
@@ -345,6 +350,7 @@
 <translation id="54401264925851789">صفحہ کی سیکیورٹی کی معلومات</translation>
 <translation id="5443952882982198570">کریڈٹ کارڈز</translation>
 <translation id="5457907402803865181">پاس ورڈز کی مطابقت پذیری کرنے میں خرابی۔</translation>
+<translation id="5489208564673669003">سبھی سائٹس کی خاطر کوکیز کا نظم کرنے کے لیے، <ph name="BEGIN_LINK" />کوکی کی ترتیبات<ph name="END_LINK" /> دیکھیں۔</translation>
 <translation id="5508435575041083207">اس آلہ سے سائن آؤٹ کریں اور ڈیٹا صاف کریں</translation>
 <translation id="5525269841082836315">پاس فریز بنائیں</translation>
 <translation id="5548760955356983418">‏Handoff آپ کو اس آلہ پر کسی ویب سائٹ کی براؤزنگ شروع کرنے اور پھر آسانی سےآپ کے Mac پر جاری رکھنے دیتا ہے۔ موجودہ کھلی ویب سائٹ آپ کے Mac کے ڈاک میں ظاہر ہوگی۔
@@ -432,6 +438,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="6418346271604475326">‏PDF تیار ہو رہی ہے</translation>
 <translation id="6426067060178468363">کوکیز کی اجازت دیں</translation>
 <translation id="6434591244308415567">ایک خرابی پیش آ گئی۔ بعد میں دوبارہ کوشش کریں۔</translation>
+<translation id="6439338047467462846">سبھی کو اجازت دیں</translation>
 <translation id="6445051938772793705">ملک</translation>
 <translation id="6445981559479772097">پیغام بھیج دیا گیا۔</translation>
 <translation id="6447842834002726250">کوکیز</translation>
@@ -439,6 +446,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="6476800141292307438">صفحہ کا <ph name="LANGUAGE" /> میں ترجمہ کیا جا رہا ہے۔ اسکرین کے نچلے حصے کے قریب اختیارات دستیاب ہیں۔</translation>
 <translation id="648164694371393720">توثیق کی خرابی</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> آئٹم کو حذف کر دیا گیا</translation>
+<translation id="651505212789431520">مطابقت پذیری منسوخ کریں؟ آپ ترتیبات میں کسی بھی وقت مطابقت پذیری کو آن کر سکتے ہیں۔</translation>
 <translation id="6561262006871132942">زوم ان کریں</translation>
 <translation id="6610002944194042868">ترجمہ کے اختیارات</translation>
 <translation id="6628106477656132239">میعاد ختم ہونے کی تاریخ غلط ہے</translation>

@@ -9,7 +9,6 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 
-import androidx.annotation.IntDef;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.Callback;
@@ -33,22 +32,18 @@ import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.Toast;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
  * Provides {@code PropertyModel}s of Chrome-provided sharing options.
  */
 // TODO(crbug/1022172): Should be package-protected once modularization is complete.
-public class ChromeProvidedSharingOptionsProvider {
+class ChromeProvidedSharingOptionsProvider {
     private final Activity mActivity;
     private final Supplier<Tab> mTabProvider;
     private final BottomSheetController mBottomSheetController;
@@ -57,14 +52,14 @@ public class ChromeProvidedSharingOptionsProvider {
     private final ShareParams mShareParams;
     private final Callback<Tab> mPrintTabCallback;
     private final long mShareStartTime;
+    private final List<FirstPartyOption> mOrderedFirstPartyOptions;
     private ScreenshotCoordinator mScreenshotCoordinator;
-    private Map<Integer, Set<Integer>> mSharingOptionToContentTypes;
 
     /**
      * Constructs a new {@link ChromeProvidedSharingOptionsProvider}.
      *
-     * @param activity              The current {@link Activity}.
-     * @param tabProvider           Supplier for the current activity tab.
+     * @param activity The current {@link Activity}.
+     * @param tabProvider Supplier for the current activity tab.
      * @param bottomSheetController The {@link BottomSheetController} for the current activity.
      * @param bottomSheetContent The {@link ShareSheetBottomSheetContent} for the current
      * activity.
@@ -86,64 +81,67 @@ public class ChromeProvidedSharingOptionsProvider {
         mShareParams = shareParams;
         mPrintTabCallback = printTab;
         mShareStartTime = shareStartTime;
-        mSharingOptionToContentTypes = createSharingOptionToContentTypesMap();
+        mOrderedFirstPartyOptions = new ArrayList<>();
+        initializeFirstPartyOptionsInOrder();
     }
 
     /**
-     * Returns a {@link Map} from {@link SharingOption}s to a set of {@link ContentType}s that it
-     * should be shown for.
+     * Encapsulates a {@link PropertyModel} and the {@link ContentType}s it should be shown for.
      */
-    private static Map<Integer, Set<Integer>> createSharingOptionToContentTypesMap() {
-        Map<Integer, Set<Integer>> sharingOptionToContentTypes = new HashMap<>();
-        sharingOptionToContentTypes.put(SharingOption.SCREENSHOT,
-                new HashSet<>(Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.IMAGE)));
-        sharingOptionToContentTypes.put(SharingOption.COPY_LINK,
-                new HashSet<>(Arrays.asList(
-                        ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE)));
-        sharingOptionToContentTypes.put(SharingOption.SEND_TAB_TO_SELF,
-                new HashSet<>(Arrays.asList(
-                        ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE)));
-        sharingOptionToContentTypes.put(SharingOption.QR_CODE,
-                new HashSet<>(Arrays.asList(
-                        ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE)));
-        sharingOptionToContentTypes.put(
-                SharingOption.PRINT, new HashSet<>(Arrays.asList(ContentType.LINK_PAGE_VISIBLE)));
-        return sharingOptionToContentTypes;
+    private static class FirstPartyOption {
+        private final PropertyModel mPropertyModel;
+        private final Collection<Integer> mContentTypes;
+
+        FirstPartyOption(PropertyModel propertyModel, Collection<Integer> contentTypes) {
+            mPropertyModel = propertyModel;
+            mContentTypes = contentTypes;
+        }
+
+        PropertyModel getPropertyModel() {
+            return mPropertyModel;
+        }
+
+        Collection<Integer> getContentTypes() {
+            return mContentTypes;
+        }
     }
 
     /**
-     * Returns a list of {@link PropertyModel}s that should be shown given the {@code contentTypes}
-     * being shared.
+     * Returns an ordered list of {@link PropertyModel}s that should be shown given the {@code
+     * contentTypes} being shared.
      *
      * @param contentTypes a {@link Set} of {@link ContentType}.
      * @return a list of {@link PropertyModel}s.
      */
-    List<PropertyModel> createPropertyModels(Set<Integer> contentTypes) {
-        ArrayList<PropertyModel> propertyModels = new ArrayList<>();
-        if (!Collections.disjoint(
-                    mSharingOptionToContentTypes.get(SharingOption.SCREENSHOT), contentTypes)
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_SCREENSHOT)) {
-            propertyModels.add(createScreenshotPropertyModel());
-        }
-        if (!Collections.disjoint(
-                    mSharingOptionToContentTypes.get(SharingOption.COPY_LINK), contentTypes)) {
-            propertyModels.add(createCopyLinkPropertyModel());
-        }
-        if (!Collections.disjoint(mSharingOptionToContentTypes.get(SharingOption.SEND_TAB_TO_SELF),
-                    contentTypes)) {
-            propertyModels.add(createSendTabToSelfPropertyModel());
-        }
-        if (!Collections.disjoint(
-                    mSharingOptionToContentTypes.get(SharingOption.QR_CODE), contentTypes)
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_QRCODE)) {
-            propertyModels.add(createQrCodePropertyModel());
-        }
-        if (!Collections.disjoint(
-                    mSharingOptionToContentTypes.get(SharingOption.PRINT), contentTypes)
-                && mPrefServiceBridge.getBoolean(Pref.PRINTING_ENABLED)) {
-            propertyModels.add(createPrintingPropertyModel());
+    List<PropertyModel> getPropertyModels(Set<Integer> contentTypes) {
+        List<PropertyModel> propertyModels = new ArrayList<>();
+        for (FirstPartyOption firstPartyOption : mOrderedFirstPartyOptions) {
+            if (!Collections.disjoint(contentTypes, firstPartyOption.getContentTypes())) {
+                propertyModels.add(firstPartyOption.getPropertyModel());
+            }
         }
         return propertyModels;
+    }
+
+    /**
+     * Creates all enabled {@link FirstPartyOption}s and adds them to {@code
+     * mOrderedFirstPartyOptions} in the order they should appear.
+     */
+    private void initializeFirstPartyOptionsInOrder() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_SCREENSHOT)) {
+            mOrderedFirstPartyOptions.add(createScreenshotFirstPartyOption());
+        }
+        mOrderedFirstPartyOptions.add(createCopyLinkFirstPartyOption());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15)) {
+            mOrderedFirstPartyOptions.add(createCopyTextFirstPartyOption());
+        }
+        mOrderedFirstPartyOptions.add(createSendTabToSelfFirstPartyOption());
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_QRCODE)) {
+            mOrderedFirstPartyOptions.add(createQrCodeFirstPartyOption());
+        }
+        if (mPrefServiceBridge.getBoolean(Pref.PRINTING_ENABLED)) {
+            mOrderedFirstPartyOptions.add(createPrintingFirstPartyOption());
+        }
     }
 
     /**
@@ -162,8 +160,8 @@ public class ChromeProvidedSharingOptionsProvider {
         }
     };
 
-    private PropertyModel createScreenshotPropertyModel() {
-        return ShareSheetPropertyModelBuilder.createPropertyModel(
+    private FirstPartyOption createScreenshotFirstPartyOption() {
+        PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(mActivity, R.drawable.screenshot),
                 mActivity.getResources().getString(R.string.sharing_screenshot),
                 (shareParams)
@@ -174,18 +172,22 @@ public class ChromeProvidedSharingOptionsProvider {
                             System.currentTimeMillis() - mShareStartTime);
                     mScreenshotCoordinator =
                             new ScreenshotCoordinator(mActivity, mTabProvider.get());
-                    // Capture a screenshot once the bottom sheet is fully hidden. The observer
-                    // will then remove itself.
+                    // Capture a screenshot once the bottom sheet is fully hidden. The
+                    // observer will then remove itself.
                     mBottomSheetController.addObserver(mSheetObserver);
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
                 },
                 /*isFirstParty=*/true);
+        return new FirstPartyOption(
+                propertyModel, Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.IMAGE));
     }
 
-    private PropertyModel createCopyLinkPropertyModel() {
-        return ShareSheetPropertyModelBuilder.createPropertyModel(
+    private FirstPartyOption createCopyLinkFirstPartyOption() {
+        PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(mActivity, R.drawable.ic_content_copy_black),
-                mActivity.getResources().getString(R.string.sharing_copy_url), (shareParams) -> {
+                mActivity.getResources().getString(R.string.sharing_copy_url),
+                (shareParams)
+                        -> {
                     RecordUserAction.record("SharingHubAndroid.CopyURLSelected");
                     RecordHistogram.recordMediumTimesHistogram(
                             "Sharing.SharingHubAndroid.TimeToShare",
@@ -195,14 +197,36 @@ public class ChromeProvidedSharingOptionsProvider {
                             Context.CLIPBOARD_SERVICE);
                     clipboard.setPrimaryClip(
                             ClipData.newPlainText(mShareParams.getTitle(), mShareParams.getUrl()));
-                    Toast toast =
-                            Toast.makeText(mActivity, R.string.link_copied, Toast.LENGTH_SHORT);
-                    toast.show();
-                }, /*isFirstParty=*/true);
+                    Toast.makeText(mActivity, R.string.link_copied, Toast.LENGTH_SHORT).show();
+                },
+                /*isFirstParty=*/true);
+        return new FirstPartyOption(propertyModel,
+                Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE));
     }
 
-    private PropertyModel createSendTabToSelfPropertyModel() {
-        return ShareSheetPropertyModelBuilder.createPropertyModel(
+    private FirstPartyOption createCopyTextFirstPartyOption() {
+        PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
+                AppCompatResources.getDrawable(mActivity, R.drawable.ic_content_copy_black),
+                mActivity.getResources().getString(R.string.sharing_copy_text),
+                (shareParams)
+                        -> {
+                    RecordUserAction.record("SharingHubAndroid.CopyTextSelected");
+                    RecordHistogram.recordMediumTimesHistogram(
+                            "Sharing.SharingHubAndroid.TimeToShare",
+                            System.currentTimeMillis() - mShareStartTime);
+                    mBottomSheetController.hideContent(mBottomSheetContent, true);
+                    ClipboardManager clipboard = (ClipboardManager) mActivity.getSystemService(
+                            Context.CLIPBOARD_SERVICE);
+                    clipboard.setPrimaryClip(
+                            ClipData.newPlainText(mShareParams.getTitle(), mShareParams.getText()));
+                    Toast.makeText(mActivity, R.string.text_copied, Toast.LENGTH_SHORT).show();
+                },
+                /*isFirstParty=*/true);
+        return new FirstPartyOption(propertyModel, Collections.singleton(ContentType.TEXT));
+    }
+
+    private FirstPartyOption createSendTabToSelfFirstPartyOption() {
+        PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(mActivity, R.drawable.send_tab),
                 mActivity.getResources().getString(R.string.send_tab_to_self_share_activity_title),
                 (shareParams)
@@ -220,10 +244,12 @@ public class ChromeProvidedSharingOptionsProvider {
                             mBottomSheetController, mTabProvider.get().getWebContents());
                 },
                 /*isFirstParty=*/true);
+        return new FirstPartyOption(propertyModel,
+                Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE));
     }
 
-    private PropertyModel createQrCodePropertyModel() {
-        return ShareSheetPropertyModelBuilder.createPropertyModel(
+    private FirstPartyOption createQrCodeFirstPartyOption() {
+        PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(mActivity, R.drawable.qr_code),
                 mActivity.getResources().getString(R.string.qr_code_share_icon_label),
                 (currentActivity)
@@ -237,10 +263,12 @@ public class ChromeProvidedSharingOptionsProvider {
                     qrCodeCoordinator.show();
                 },
                 /*isFirstParty=*/true);
+        return new FirstPartyOption(propertyModel,
+                Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE));
     }
 
-    private PropertyModel createPrintingPropertyModel() {
-        return ShareSheetPropertyModelBuilder.createPropertyModel(
+    private FirstPartyOption createPrintingFirstPartyOption() {
+        PropertyModel propertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
                 AppCompatResources.getDrawable(mActivity, R.drawable.sharing_print),
                 mActivity.getResources().getString(R.string.print_share_activity_title),
                 (currentActivity)
@@ -253,16 +281,7 @@ public class ChromeProvidedSharingOptionsProvider {
                     mPrintTabCallback.onResult(mTabProvider.get());
                 },
                 /*isFirstParty=*/true);
-    }
-
-    @IntDef({SharingOption.SCREENSHOT, SharingOption.COPY_LINK, SharingOption.SEND_TAB_TO_SELF,
-            SharingOption.QR_CODE, SharingOption.PRINT})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface SharingOption {
-        int SCREENSHOT = 0;
-        int COPY_LINK = 1;
-        int SEND_TAB_TO_SELF = 2;
-        int QR_CODE = 3;
-        int PRINT = 4;
+        return new FirstPartyOption(
+                propertyModel, Collections.singleton(ContentType.LINK_PAGE_VISIBLE));
     }
 }

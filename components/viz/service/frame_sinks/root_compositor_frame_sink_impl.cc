@@ -64,7 +64,7 @@ RootCompositorFrameSinkImpl::Create(
   bool hw_support_for_multiple_refresh_rates = false;
   bool wants_vsync_updates = false;
 
-  if (params->external_begin_frame_controller.is_pending()) {
+  if (params->external_begin_frame_controller) {
     auto owned_external_begin_frame_source_mojo =
         std::make_unique<ExternalBeginFrameSourceMojo>(
             frame_sink_manager,

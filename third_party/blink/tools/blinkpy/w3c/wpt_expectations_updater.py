@@ -776,7 +776,6 @@ class WPTExpectationsUpdater(object):
         Returns: A list of web test files that have been deleted.
         """
         if self.options.clean_up_affected_tests_only:
-            deleted_tests = set()
             # TODO(robertma): Improve Git.changed_files so that we can use
             # it here.
             paths = set(self.git.run(

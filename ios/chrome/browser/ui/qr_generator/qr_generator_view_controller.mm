@@ -39,6 +39,10 @@ const CGFloat kQRCodeImageSize = 200.0;
   self.primaryActionAvailable = YES;
   self.primaryActionString = l10n_util::GetNSString(IDS_IOS_SHARE_BUTTON_LABEL);
 
+  self.helpButtonAvailable = YES;
+  self.helpButtonAccessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_HELP_ACCESSIBILITY_LABEL);
+
   self.alwaysShowImage = YES;
   self.primaryActionBarButtonStyle = UIBarButtonSystemItemAction;
 

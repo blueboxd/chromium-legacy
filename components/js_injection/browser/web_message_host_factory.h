@@ -19,7 +19,7 @@ class WebMessageReplyProxy;
 // AddWebMessageHostFactory().
 class WebMessageHostFactory {
  public:
-  virtual ~WebMessageHostFactory() {}
+  virtual ~WebMessageHostFactory() = default;
 
   // Creates a WebMessageHost for the specified page. |proxy| is valid for
   // the life of the host and may be used to send messages back to the page.

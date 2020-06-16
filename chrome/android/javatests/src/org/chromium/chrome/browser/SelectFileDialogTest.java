@@ -9,7 +9,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.provider.MediaStore;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

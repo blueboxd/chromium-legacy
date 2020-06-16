@@ -4,9 +4,9 @@
 
 #include <memory>
 
-#include "ash/public/cpp/arc_notifications_host_initializer.h"
-#include "ash/system/message_center/arc/arc_notification_manager.h"
-#include "ash/system/message_center/arc/arc_notification_manager_delegate.h"
+#include "ash/public/cpp/external_arc/message_center/arc_notification_manager.h"
+#include "ash/public/cpp/message_center/arc_notification_manager_delegate.h"
+#include "ash/public/cpp/message_center/arc_notifications_host_initializer.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -652,8 +652,8 @@ class AppNotificationsArcNotificationTest
     run_loop.Run();
 
     StartInstance();
-
-    arc_notification_manager_ = std::make_unique<ash::ArcNotificationManager>(
+    arc_notification_manager_ = std::make_unique<ash::ArcNotificationManager>();
+    arc_notification_manager_->Init(
         std::make_unique<FakeArcNotificationManagerDelegate>(),
         EmptyAccountId(), message_center::MessageCenter::Get());
 

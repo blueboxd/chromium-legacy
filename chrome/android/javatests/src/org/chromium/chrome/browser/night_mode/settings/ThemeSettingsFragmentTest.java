@@ -8,9 +8,10 @@ import static org.chromium.chrome.browser.flags.ChromeFeatureList.DARKEN_WEBSITE
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_DARKEN_WEBSITES_ENABLED;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING;
 
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.LinearLayout;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

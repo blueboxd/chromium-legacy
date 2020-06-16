@@ -11,7 +11,8 @@ import static org.chromium.chrome.browser.partnercustomizations.BasePartnerBrows
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;

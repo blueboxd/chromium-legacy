@@ -69,7 +69,7 @@ UrlRule::~UrlRule() = default;
 UrlRule& UrlRule::operator=(const UrlRule&) = default;
 
 bool UrlRule::operator==(const UrlRule& other) const {
-  return is_whitelist == other.is_whitelist &&
+  return is_allowlist == other.is_allowlist &&
          is_third_party == other.is_third_party &&
          match_case == other.match_case && type_mask == other.type_mask &&
          domains == other.domains &&
@@ -81,7 +81,7 @@ url_pattern_index::proto::UrlRule UrlRule::ToProtobuf() const {
   url_pattern_index::proto::UrlRule result;
 
   result.set_semantics(
-      is_whitelist ? url_pattern_index::proto::RULE_SEMANTICS_WHITELIST
+      is_allowlist ? url_pattern_index::proto::RULE_SEMANTICS_WHITELIST
                    : url_pattern_index::proto::RULE_SEMANTICS_BLACKLIST);
   switch (is_third_party) {
     case TriState::DONT_CARE:
@@ -143,7 +143,7 @@ CssRule::~CssRule() = default;
 CssRule& CssRule::operator=(const CssRule&) = default;
 
 bool CssRule::operator==(const CssRule& other) const {
-  return is_whitelist == other.is_whitelist && domains == other.domains &&
+  return is_allowlist == other.is_allowlist && domains == other.domains &&
          css_selector == other.css_selector;
 }
 
@@ -151,7 +151,7 @@ url_pattern_index::proto::CssRule CssRule::ToProtobuf() const {
   url_pattern_index::proto::CssRule result;
 
   result.set_semantics(
-      is_whitelist ? url_pattern_index::proto::RULE_SEMANTICS_WHITELIST
+      is_allowlist ? url_pattern_index::proto::RULE_SEMANTICS_WHITELIST
                    : url_pattern_index::proto::RULE_SEMANTICS_BLACKLIST);
 
   for (const std::string& domain : domains) {

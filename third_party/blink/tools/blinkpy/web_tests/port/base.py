@@ -377,19 +377,36 @@ class Port(object):
     def default_smoke_test_only(self):
         return False
 
-    def default_timeout_ms(self):
-        timeout_ms = 6 * 1000
+    def _default_timeout_ms(self):
+        return 6000
+
+    def timeout_ms(self):
+        timeout_ms = self._default_timeout_ms()
         if self.get_option('configuration') == 'Debug':
             # Debug is usually 2x-3x slower than Release.
             return 3 * timeout_ms
+        if self._build_has_dcheck_always_on():
+            # Release with DCHECK is also slower than pure Release.
+            return 2 * timeout_ms
         return timeout_ms
+
+    @memoized
+    def _build_has_dcheck_always_on(self):
+        args_gn_file = self._build_path('args.gn')
+        if not self._filesystem.exists(args_gn_file):
+            _log.error('Unable to find %s', args_gn_file)
+            return False
+        contents = self._filesystem.read_text_file(args_gn_file)
+        return bool(
+            re.search(r'^\s*dcheck_always_on\s*=\s*true\s*(#.*)?$', contents,
+                      re.MULTILINE))
 
     def driver_stop_timeout(self):
         """Returns the amount of time in seconds to wait before killing the process in driver.stop()."""
         # We want to wait for at least 3 seconds, but if we are really slow, we
         # want to be slow on cleanup as well (for things like ASAN, Valgrind, etc.)
         return (3.0 * float(self.get_option('time_out_ms', '0')) /
-                self.default_timeout_ms())
+                self._default_timeout_ms())
 
     def default_batch_size(self):
         """Returns the default batch size to use for this port."""
@@ -971,10 +988,8 @@ class Port(object):
         # amount of JavaScript they use (most web_tests run very little JS).
         # This causes flaky timeouts for a lot of them, as a 0.5-1s test becomes
         # close to the default 6s timeout.
-        #
-        # Since we can't detect DCHECK being enabled, we instead always consider
-        # idlharness tests to be slow. See https://crbug.com/1047818
-        if self.is_wpt_idlharness_test(test_file):
+        if (self.is_wpt_idlharness_test(test_file)
+                and self._build_has_dcheck_always_on()):
             return True
 
         match = self.WPT_REGEX.match(test_file)

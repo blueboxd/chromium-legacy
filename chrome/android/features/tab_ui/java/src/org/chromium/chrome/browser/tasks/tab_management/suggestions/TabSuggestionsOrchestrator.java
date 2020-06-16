@@ -97,7 +97,8 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
         }
     }
 
-    private List<TabSuggestion> aggregateResults(List<TabSuggestion> tabSuggestions) {
+    @VisibleForTesting
+    protected static List<TabSuggestion> aggregateResults(List<TabSuggestion> tabSuggestions) {
         List<TabSuggestion> aggregated = new LinkedList<>();
         for (TabSuggestion tabSuggestion : tabSuggestions) {
             switch (tabSuggestion.getAction()) {
@@ -118,7 +119,7 @@ public class TabSuggestionsOrchestrator implements TabSuggestions, Destroyable {
             }
         }
         // TODO(crbug.com/1085452): Sort the suggestion based on priority.
-        Collections.shuffle(aggregated);
+        Collections.sort(aggregated, (t1, t2) -> Integer.compare(t1.getAction(), t2.getAction()));
         return aggregated;
     }
 

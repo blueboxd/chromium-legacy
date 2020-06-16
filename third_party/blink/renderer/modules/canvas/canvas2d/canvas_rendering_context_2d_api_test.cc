@@ -46,7 +46,7 @@ CanvasRenderingContext2D* CanvasRenderingContext2DAPITest::Context2D() const {
   // If the following check fails, perhaps you forgot to call createContext
   // in your test?
   EXPECT_NE(nullptr, CanvasElement().RenderingContext());
-  EXPECT_TRUE(CanvasElement().RenderingContext()->Is2d());
+  EXPECT_TRUE(CanvasElement().RenderingContext()->IsRenderingContext2D());
   return static_cast<CanvasRenderingContext2D*>(
       CanvasElement().RenderingContext());
 }
@@ -318,7 +318,7 @@ void ResetCanvasForAccessibilityRectTest(Document& document) {
   canvas->GetCanvasRenderingContext(canvas_type, attributes);
 
   EXPECT_NE(nullptr, canvas->RenderingContext());
-  EXPECT_TRUE(canvas->RenderingContext()->Is2d());
+  EXPECT_TRUE(canvas->RenderingContext()->IsRenderingContext2D());
 }
 
 TEST_F(CanvasRenderingContext2DAPITest, AccessibilityRectTestForAddHitRegion) {

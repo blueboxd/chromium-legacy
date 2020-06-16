@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
 #import "ios/chrome/browser/store_kit/store_kit_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
+#import "ios/chrome/browser/ui/activity_services/activity_scenario.h"
 #import "ios/chrome/browser/ui/activity_services/activity_service_coordinator.h"
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/alert_coordinator/repost_form_coordinator.h"
@@ -523,7 +524,8 @@
 - (void)sharePage {
   self.activityServiceCoordinator = [[ActivityServiceCoordinator alloc]
       initWithBaseViewController:self.viewController
-                         browser:self.browser];
+                         browser:self.browser
+                        scenario:ActivityScenario::TabShareButton];
   self.activityServiceCoordinator.positionProvider =
       [self.viewController activityServicePositioner];
   self.activityServiceCoordinator.presentationProvider = self;

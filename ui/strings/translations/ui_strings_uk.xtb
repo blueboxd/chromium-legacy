@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="6119846243427417423">активувати</translation>
 <translation id="6129953537138746214">Пробіл</translation>
+<translation id="6134259848159370930">Шукайте на пристрої, в додатках, налаштуваннях та Інтернеті.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> б/сек.</translation>
 <translation id="6156262341071374681">Розгорнути всі додатки</translation>
 <translation id="6165508094623778733">Докладніше</translation>
+<translation id="6166852626429024716">Шукайте на пристрої, в додатках, налаштуваннях та Інтернеті…</translation>
 <translation id="6264365405983206840">Вибрати &amp;всі</translation>
 <translation id="6351032674660237738">ПРОПОЗИЦІЇ ДОДАТКІВ</translation>
 <translation id="6364916375976753737">Прокрутка вліво</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623">файл <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Полицю завжди видно</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> КБ/сек.</translation>
+<translation id="8685326675965865247">Шукайте на пристрої, у додатках, налаштуваннях та Інтернеті. Натискайте клавіші зі стрілками, щоб переходити між додатками.</translation>
 <translation id="8725488761726303204">і ще <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 год}one{# год}few{# год}many{# год}other{# год}}</translation>

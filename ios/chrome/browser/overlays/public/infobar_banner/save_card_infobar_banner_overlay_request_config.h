@@ -28,6 +28,17 @@ class SaveCardBannerRequestConfig
   // The label for the card.
   base::string16 card_label() const { return card_label_; }
 
+  // The card holder name of the card.
+  base::string16 cardholder_name() const { return cardholder_name_; }
+
+  // The expiration month of the card.
+  base::string16 expiration_date_month() const {
+    return expiration_date_month_;
+  }
+
+  // The expiration year of the card.
+  base::string16 expiration_date_year() const { return expiration_date_year_; }
+
   // The button label text.
   base::string16 button_label_text() const { return button_label_text_; }
 
@@ -49,6 +60,9 @@ class SaveCardBannerRequestConfig
   // Configuration data extracted from |infobar_|'s save card delegate.
   base::string16 message_text_;
   base::string16 card_label_;
+  base::string16 cardholder_name_;
+  base::string16 expiration_date_month_;
+  base::string16 expiration_date_year_;
   base::string16 button_label_text_;
   NSString* icon_image_name_ = nil;
   bool should_upload_credentials_ = false;

@@ -20,13 +20,12 @@ namespace blink {
 
 NullExecutionContext::NullExecutionContext(
     OriginTrialContext* origin_trial_context)
-    : ExecutionContext(v8::Isolate::GetCurrent()),
+    : ExecutionContext(
+          v8::Isolate::GetCurrent(),
+          MakeGarbageCollected<Agent>(v8::Isolate::GetCurrent(),
+                                      base::UnguessableToken::Null())),
       security_context_(
-          SecurityContextInit(
-              nullptr /* origin */,
-              origin_trial_context,
-              MakeGarbageCollected<Agent>(v8::Isolate::GetCurrent(),
-                                          base::UnguessableToken::Null())),
+          SecurityContextInit(nullptr /* origin */, origin_trial_context),
           SecurityContext::kWindow),
       scheduler_(scheduler::CreateDummyFrameScheduler()) {
   if (origin_trial_context)

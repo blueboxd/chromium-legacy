@@ -4,7 +4,7 @@
 
 package org.chromium.weblayer.test;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.json.JSONObject;
 import org.junit.Assert;

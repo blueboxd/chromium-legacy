@@ -33,10 +33,10 @@ class FilterTool {
   ~FilterTool();
 
   // Checks the ruleset for a request with document origin |document_origin|,
-  // sub-resource request |url|, and |type|. If a blacklist rule matches the
-  // request, it is considered the match. If multiple blacklist rules match,
-  // one is arbitrarily chosen as the match. If a blacklist rule matches and a
-  // whitelist rule matches, a whitelist rule is the match. The output is
+  // sub-resource request |url|, and |type|. If a blocklist rule matches the
+  // request, it is considered the match. If multiple blocklist rules match,
+  // one is arbitrarily chosen as the match. If a blocklist rule matches and a
+  // allowlist rule matches, an allowlist rule is the match. The output is
   // written to |output_| in a space- delimited line. The first column is
   // either BLOCKED or ALLOWED. The second is any matching rule. The following
   // columns are the input arguments.

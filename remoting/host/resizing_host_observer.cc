@@ -12,6 +12,8 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/time/default_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "remoting/host/desktop_resizer.h"
 #include "remoting/host/screen_resolution.h"
 
@@ -122,7 +124,7 @@ ResizingHostObserver::ResizingHostObserver(
     bool restore)
     : desktop_resizer_(std::move(desktop_resizer)),
       restore_(restore),
-      now_function_(base::Bind(base::TimeTicks::Now)) {}
+      clock_(base::DefaultTickClock::GetInstance()) {}
 
 ResizingHostObserver::~ResizingHostObserver() {
   if (restore_)
@@ -133,7 +135,7 @@ void ResizingHostObserver::SetScreenResolution(
     const ScreenResolution& resolution) {
   // Get the current time. This function is called exactly once for each call
   // to SetScreenResolution to simplify the implementation of unit-tests.
-  base::TimeTicks now = now_function_.Run();
+  base::TimeTicks now = clock_->NowTicks();
 
   if (resolution.IsEmpty()) {
     RestoreScreenResolution();
@@ -181,9 +183,8 @@ void ResizingHostObserver::SetScreenResolution(
   previous_resize_time_ = now;
 }
 
-void ResizingHostObserver::SetNowFunctionForTesting(
-    const base::Callback<base::TimeTicks(void)>& now_function) {
-  now_function_ = now_function;
+void ResizingHostObserver::SetClockForTesting(const base::TickClock* clock) {
+  clock_ = clock;
 }
 
 void ResizingHostObserver::RestoreScreenResolution() {

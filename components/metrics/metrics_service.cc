@@ -452,10 +452,6 @@ void MetricsService::ClearSavedStabilityMetrics() {
   delegating_provider_.ClearSavedStabilityMetrics();
 }
 
-void MetricsService::PushExternalLog(const std::string& log) {
-  log_store()->StoreLog(log, MetricsLog::ONGOING_LOG);
-}
-
 bool MetricsService::StageCurrentLogForTest() {
   CloseCurrentLog();
 

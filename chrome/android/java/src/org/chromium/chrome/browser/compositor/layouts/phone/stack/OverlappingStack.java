@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayoutBase;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimation.OverviewAnimationType;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.ui.base.LocalizationUtils;
 
 /**
@@ -624,6 +625,14 @@ public class OverlappingStack extends Stack {
 
     @Override
     public float getMaxTabHeight() {
+        // TODO(crbug.com/1095698): Rework when the stack enter animation is created so that we can
+        // remove this feature specific fix.
+        // When conditional tab strip is enabled, the bottom browser control height should be 0
+        // eventually when overview mode is visible. Hence, we pre-acknowledge the fact and assume
+        // the bottom control height to be 0 here so that the animation is correctly set up.
+        if (TabUiFeatureUtilities.isConditionalTabStripEnabled()) {
+            return mLayout.getHeight() - mLayout.getTopBrowserControlsHeight();
+        }
         return mLayout.getHeightMinusBrowserControls();
     }
 

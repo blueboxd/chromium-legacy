@@ -14,7 +14,6 @@ class FastInkPoints;
 namespace ash {
 
 class LaserPointerController;
-class LaserPointerView;
 
 // An api for testing the LaserPointerController class.
 class LaserPointerControllerTestApi {
@@ -27,7 +26,6 @@ class LaserPointerControllerTestApi {
   bool IsFadingAway() const;
   const fast_ink::FastInkPoints& laser_points() const;
   const fast_ink::FastInkPoints& predicted_laser_points() const;
-  LaserPointerView* laser_pointer_view() const;
 
  private:
   LaserPointerController* instance_;

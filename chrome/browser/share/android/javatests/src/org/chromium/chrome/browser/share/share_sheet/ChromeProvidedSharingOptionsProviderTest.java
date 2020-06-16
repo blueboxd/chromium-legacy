@@ -36,7 +36,6 @@ import org.chromium.ui.test.util.DummyUiActivity;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Tests {@link ChromeProvidedSharingOptionsProvider}.
@@ -55,33 +54,24 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     private Activity mActivity;
     private ChromeProvidedSharingOptionsProvider mChromeProvidedSharingOptionsProvider;
-    private static Set<Integer> sAllContentTypes =
-            ImmutableSet.of(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE,
-                    ContentType.TEXT, ContentType.IMAGE, ContentType.OTHER_FILE_TYPE);
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mActivity = mActivityTestRule.getActivity();
-        mChromeProvidedSharingOptionsProvider = new ChromeProvidedSharingOptionsProvider(mActivity,
-                /*activityTabProvider=*/null, /*bottomSheetController=*/null,
-                new ShareSheetBottomSheetContent(mActivity), mPrefServiceBridge,
-                /*shareParams=*/null,
-                /*TabPrinterDelegate=*/null,
-                /*shareStartTime=*/0);
-
-        // Return false to indicate printing is disabled.
-        Mockito.when(mPrefServiceBridge.getBoolean(anyString())).thenReturn(false);
     }
 
     @Test
     @MediumTest
     @Features.EnableFeatures(
             {ChromeFeatureList.CHROME_SHARE_SCREENSHOT, ChromeFeatureList.CHROME_SHARE_QRCODE})
+    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARING_HUB_V15})
     public void
     createPropertyModels_screenshotQrCodeEnabled_includesBoth() {
+        setUpChromeProvidedSharingOptionsProviderTest(/*printingEnabled=*/false);
         List<PropertyModel> propertyModels =
-                mChromeProvidedSharingOptionsProvider.createPropertyModels(sAllContentTypes);
+                mChromeProvidedSharingOptionsProvider.getPropertyModels(
+                        ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES);
 
         Assert.assertEquals("Incorrect number of property models.", 4, propertyModels.size());
         assertModelsAreInTheRightOrder(propertyModels,
@@ -95,12 +85,14 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     @Test
     @MediumTest
-    @Features.DisableFeatures(
-            {ChromeFeatureList.CHROME_SHARE_SCREENSHOT, ChromeFeatureList.CHROME_SHARE_QRCODE})
+    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT,
+            ChromeFeatureList.CHROME_SHARE_QRCODE, ChromeFeatureList.CHROME_SHARING_HUB_V15})
     public void
     createPropertyModels_screenshotQrCodeDisabled_doesNotIncludeEither() {
+        setUpChromeProvidedSharingOptionsProviderTest(/*printingEnabled=*/false);
         List<PropertyModel> propertyModels =
-                mChromeProvidedSharingOptionsProvider.createPropertyModels(sAllContentTypes);
+                mChromeProvidedSharingOptionsProvider.getPropertyModels(
+                        ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES);
 
         Assert.assertEquals("Incorrect number of property models.", 2, propertyModels.size());
         assertModelsAreInTheRightOrder(propertyModels,
@@ -112,14 +104,14 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     @Test
     @MediumTest
-    @Features.DisableFeatures(
-            {ChromeFeatureList.CHROME_SHARE_SCREENSHOT, ChromeFeatureList.CHROME_SHARE_QRCODE})
+    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARE_SCREENSHOT,
+            ChromeFeatureList.CHROME_SHARE_QRCODE, ChromeFeatureList.CHROME_SHARING_HUB_V15})
     public void
     createPropertyModels_printingEnabled_includesPrinting() {
-        Mockito.when(mPrefServiceBridge.getBoolean(anyString())).thenReturn(true);
-
+        setUpChromeProvidedSharingOptionsProviderTest(/*printingEnabled=*/true);
         List<PropertyModel> propertyModels =
-                mChromeProvidedSharingOptionsProvider.createPropertyModels(sAllContentTypes);
+                mChromeProvidedSharingOptionsProvider.getPropertyModels(
+                        ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES);
 
         Assert.assertEquals("Incorrect number of property models.", 3, propertyModels.size());
         assertModelsAreInTheRightOrder(propertyModels,
@@ -132,14 +124,32 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
     @Test
     @MediumTest
-    @Features.EnableFeatures(
+    @Features.EnableFeatures({ChromeFeatureList.CHROME_SHARING_HUB_V15})
+    @Features.DisableFeatures(
             {ChromeFeatureList.CHROME_SHARE_SCREENSHOT, ChromeFeatureList.CHROME_SHARE_QRCODE})
     public void
-    createPropertyModels_filtersByContentType() {
-        Mockito.when(mPrefServiceBridge.getBoolean(anyString())).thenReturn(true);
-
+    createPropertyModels_sharingHub15Enabled_includesCopyText() {
+        setUpChromeProvidedSharingOptionsProviderTest(/*printingEnabled=*/false);
         List<PropertyModel> propertyModels =
-                mChromeProvidedSharingOptionsProvider.createPropertyModels(
+                mChromeProvidedSharingOptionsProvider.getPropertyModels(
+                        ImmutableSet.of(ContentType.TEXT));
+
+        Assert.assertEquals("Incorrect number of property models.", 1, propertyModels.size());
+        assertModelsAreInTheRightOrder(propertyModels,
+                ImmutableList.of(mActivity.getResources().getString(R.string.sharing_copy_text)));
+        assertModelsAreFirstParty(propertyModels);
+    }
+
+    @Test
+    @MediumTest
+    @Features.EnableFeatures(
+            {ChromeFeatureList.CHROME_SHARE_SCREENSHOT, ChromeFeatureList.CHROME_SHARE_QRCODE})
+    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARING_HUB_V15})
+    public void
+    createPropertyModels_filtersByContentType() {
+        setUpChromeProvidedSharingOptionsProviderTest(/*printingEnabled=*/true);
+        List<PropertyModel> propertyModels =
+                mChromeProvidedSharingOptionsProvider.getPropertyModels(
                         ImmutableSet.of(ContentType.LINK_PAGE_NOT_VISIBLE));
 
         Assert.assertEquals("Incorrect number of property models.", 3, propertyModels.size());
@@ -155,12 +165,12 @@ public class ChromeProvidedSharingOptionsProviderTest {
     @MediumTest
     @Features.EnableFeatures(
             {ChromeFeatureList.CHROME_SHARE_SCREENSHOT, ChromeFeatureList.CHROME_SHARE_QRCODE})
+    @Features.DisableFeatures({ChromeFeatureList.CHROME_SHARING_HUB_V15})
     public void
     createPropertyModels_multipleTypes_filtersByContentType() {
-        Mockito.when(mPrefServiceBridge.getBoolean(anyString())).thenReturn(true);
-
+        setUpChromeProvidedSharingOptionsProviderTest(/*printingEnabled=*/true);
         List<PropertyModel> propertyModels =
-                mChromeProvidedSharingOptionsProvider.createPropertyModels(
+                mChromeProvidedSharingOptionsProvider.getPropertyModels(
                         ImmutableSet.of(ContentType.LINK_PAGE_NOT_VISIBLE, ContentType.IMAGE));
 
         Assert.assertEquals("Incorrect number of property models.", 4, propertyModels.size());
@@ -171,6 +181,17 @@ public class ChromeProvidedSharingOptionsProviderTest {
                                 R.string.send_tab_to_self_share_activity_title),
                         mActivity.getResources().getString(R.string.qr_code_share_icon_label)));
         assertModelsAreFirstParty(propertyModels);
+    }
+
+    private void setUpChromeProvidedSharingOptionsProviderTest(boolean printingEnabled) {
+        Mockito.when(mPrefServiceBridge.getBoolean(anyString())).thenReturn(printingEnabled);
+
+        mChromeProvidedSharingOptionsProvider = new ChromeProvidedSharingOptionsProvider(mActivity,
+                /*activityTabProvider=*/null, /*bottomSheetController=*/null,
+                new ShareSheetBottomSheetContent(mActivity), mPrefServiceBridge,
+                /*shareParams=*/null,
+                /*TabPrinterDelegate=*/null,
+                /*shareStartTime=*/0);
     }
 
     private void assertModelsAreInTheRightOrder(

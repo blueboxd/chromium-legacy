@@ -701,7 +701,7 @@ const char kSAMLOfflineSigninTimeLimit[] = "saml.offline_signin_time_limit";
 // against GAIA: If GAIA redirects to a SAML IdP, the preference is set to the
 // current time. If GAIA performs the authentication itself, the preference is
 // cleared. The time is expressed as the serialization obtained from
-// base::Time::ToInternalValue().
+// PrefService::SetTime().
 const char kSAMLLastGAIASignInTime[] = "saml.last_gaia_sign_in_time";
 
 // The total number of seconds that the machine has spent sitting on the

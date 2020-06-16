@@ -21,12 +21,13 @@ import static org.hamcrest.Matchers.not;
 
 import android.app.Activity;
 import android.content.res.Resources;
-import android.support.test.filters.MediumTest;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
+import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;

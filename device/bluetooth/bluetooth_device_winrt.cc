@@ -32,26 +32,30 @@ namespace {
 
 using ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus;
 using ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus_Connected;
+using ABI::Windows::Devices::Bluetooth::BluetoothError;
+using ABI::Windows::Devices::Bluetooth::BluetoothError_Success;
 using ABI::Windows::Devices::Bluetooth::BluetoothLEDevice;
-using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-    GattCommunicationStatus;
-using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-    GattCommunicationStatus_Success;
-using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-    GattDeviceServicesResult;
-using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
-    IGattDeviceServicesResult;
-using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice2;
-using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice3;
+using ABI::Windows::Devices::Bluetooth::IBluetoothDeviceId;
+using ABI::Windows::Devices::Bluetooth::IBluetoothDeviceIdStatics;
 using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice;
+using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice2;
+using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice4;
 using ABI::Windows::Devices::Bluetooth::IBluetoothLEDeviceStatics;
-using ABI::Windows::Devices::Enumeration::DevicePairingResultStatus;
-using ABI::Windows::Devices::Enumeration::IDeviceInformation2;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::GattSession;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattSessionStatus;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattSessionStatus_Active;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattSessionStatus_Closed;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::IGattSession;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    IGattSessionStatics;
 using ABI::Windows::Devices::Enumeration::IDeviceInformation;
+using ABI::Windows::Devices::Enumeration::IDeviceInformation2;
 using ABI::Windows::Devices::Enumeration::IDeviceInformationCustomPairing;
-using ABI::Windows::Devices::Enumeration::IDeviceInformationPairing2;
 using ABI::Windows::Devices::Enumeration::IDeviceInformationPairing;
-using ABI::Windows::Devices::Enumeration::IDevicePairingRequestedEventArgs;
+using ABI::Windows::Devices::Enumeration::IDeviceInformationPairing2;
 using ABI::Windows::Foundation::IAsyncOperation;
 using ABI::Windows::Foundation::IClosable;
 using Microsoft::WRL::ComPtr;
@@ -118,7 +122,26 @@ void CloseDevice(ComPtr<IBluetoothLEDevice> ble_device) {
 
   hr = closable->Close();
   if (FAILED(hr)) {
-    BLUETOOTH_LOG(DEBUG) << "IClosable::close() failed: "
+    BLUETOOTH_LOG(DEBUG) << "IClosable::Close() failed: "
+                         << logging::SystemErrorCodeToString(hr);
+  }
+}
+
+void CloseGattSession(ComPtr<IGattSession> gatt_session) {
+  if (!gatt_session)
+    return;
+
+  ComPtr<IClosable> closable;
+  HRESULT hr = gatt_session.As(&closable);
+  if (FAILED(hr)) {
+    BLUETOOTH_LOG(DEBUG) << "As IClosable failed: "
+                         << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  hr = closable->Close();
+  if (FAILED(hr)) {
+    BLUETOOTH_LOG(DEBUG) << "IClosable::Close() failed: "
                          << logging::SystemErrorCodeToString(hr);
   }
 }
@@ -126,6 +149,15 @@ void CloseDevice(ComPtr<IBluetoothLEDevice> ble_device) {
 void RemoveConnectionStatusHandler(IBluetoothLEDevice* ble_device,
                                    EventRegistrationToken token) {
   HRESULT hr = ble_device->remove_ConnectionStatusChanged(token);
+  if (FAILED(hr)) {
+    BLUETOOTH_LOG(DEBUG) << "Removing ConnectionStatus Handler failed: "
+                         << logging::SystemErrorCodeToString(hr);
+  }
+}
+
+void RemoveGattSessionStatusHandler(IGattSession* gatt_session,
+                                    EventRegistrationToken token) {
+  HRESULT hr = gatt_session->remove_SessionStatusChanged(token);
   if (FAILED(hr)) {
     BLUETOOTH_LOG(DEBUG) << "Removing ConnectionStatus Handler failed: "
                          << logging::SystemErrorCodeToString(hr);
@@ -161,6 +193,7 @@ BluetoothDeviceWinrt::BluetoothDeviceWinrt(BluetoothAdapterWinrt* adapter,
 }
 
 BluetoothDeviceWinrt::~BluetoothDeviceWinrt() {
+  CloseGattSession(gatt_session_);
   CloseDevice(ble_device_);
   ClearEventRegistrations();
 }
@@ -241,14 +274,15 @@ bool BluetoothDeviceWinrt::IsPaired() const {
 }
 
 bool BluetoothDeviceWinrt::IsConnected() const {
-  return IsGattConnected();
+  return ble_device_ &&
+         connection_status_ == BluetoothConnectionStatus_Connected;
 }
 
 bool BluetoothDeviceWinrt::IsGattConnected() const {
-  if (!ble_device_)
-    return false;
+  if (!observe_gatt_session_status_change_events_)
+    return IsConnected();
 
-  return connection_status_;
+  return gatt_session_ && gatt_session_status_ == GattSessionStatus_Active;
 }
 
 bool BluetoothDeviceWinrt::IsConnectable() const {
@@ -426,10 +460,7 @@ void BluetoothDeviceWinrt::CreateGattConnectionImpl(
     BLUETOOTH_LOG(DEBUG)
         << "GetBluetoothLEDeviceStaticsActivationFactory failed: "
         << logging::SystemErrorCodeToString(hr);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&BluetoothDeviceWinrt::DidFailToConnectGatt,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  ConnectErrorCode::ERROR_FAILED));
+    NotifyGattConnectFailure();
     return;
   }
 
@@ -444,44 +475,52 @@ void BluetoothDeviceWinrt::CreateGattConnectionImpl(
     BLUETOOTH_LOG(DEBUG)
         << "BluetoothLEDevice::FromBluetoothAddressAsync failed: "
         << logging::SystemErrorCodeToString(hr);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&BluetoothDeviceWinrt::DidFailToConnectGatt,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  ConnectErrorCode::ERROR_FAILED));
+    NotifyGattConnectFailure();
     return;
   }
 
-  target_uuid_ = std::move(service_uuid);
   hr = base::win::PostAsyncResults(
       std::move(from_bluetooth_address_op),
-      base::BindOnce(&BluetoothDeviceWinrt::OnFromBluetoothAddress,
-                     weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &BluetoothDeviceWinrt::OnBluetoothLEDeviceFromBluetoothAddress,
+          weak_ptr_factory_.GetWeakPtr()));
 
   if (FAILED(hr)) {
     BLUETOOTH_LOG(DEBUG) << "PostAsyncResults failed: "
                          << logging::SystemErrorCodeToString(hr);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&BluetoothDeviceWinrt::DidFailToConnectGatt,
-                                  weak_ptr_factory_.GetWeakPtr(),
-                                  ConnectErrorCode::ERROR_FAILED));
+    NotifyGattConnectFailure();
     return;
   }
 
-  pending_on_from_bluetooth_address_ = true;
+  target_uuid_ = std::move(service_uuid);
+  pending_gatt_service_discovery_start_ = true;
+}
+
+void BluetoothDeviceWinrt::NotifyGattConnectFailure() {
+  // Reset |pending_gatt_service_discovery_start_| so that
+  // UpgradeToFullDiscovery() doesn't mistakenly believe GATT discovery is
+  // imminent and therefore avoids starting one itself.
+  pending_gatt_service_discovery_start_ = false;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&BluetoothDeviceWinrt::DidFailToConnectGatt,
+                                weak_ptr_factory_.GetWeakPtr(),
+                                ConnectErrorCode::ERROR_FAILED));
 }
 
 void BluetoothDeviceWinrt::UpgradeToFullDiscovery() {
   // |CreateGattConnectionImpl| has been called previously but having a specific
   // |target_uuid_| was too optimistic and now a complete enumeration of
   // services is needed.
-  DCHECK(pending_on_from_bluetooth_address_ || connection_status_);
   target_uuid_.reset();
 
-  if (pending_on_from_bluetooth_address_) {
-    // |OnFromBluetoothAddress| hasn't been called yet. Updating |target_uuid_|
-    // will be sufficient to change the discovery that will be started.
+  if (pending_gatt_service_discovery_start_) {
+    // There is an imminent call to StartDiscovery(). Resetting |target_uuid_|
+    // now will be sufficient to change the discovery that will be started.
     return;
   }
+
+  DCHECK(ble_device_);
+  DCHECK(!observe_gatt_session_status_change_events_ || IsGattConnected());
 
   // Restart discovery.
   StartGattDiscovery();
@@ -494,6 +533,7 @@ void BluetoothDeviceWinrt::DisconnectGatt() {
   // remaining references, so that the OS disconnects.
   // Reference:
   // - https://docs.microsoft.com/en-us/windows/uwp/devices-sensors/gatt-client
+  CloseGattSession(gatt_session_);
   CloseDevice(ble_device_);
   ClearGattServices();
 
@@ -511,13 +551,20 @@ HRESULT BluetoothDeviceWinrt::GetBluetoothLEDeviceStaticsActivationFactory(
       RuntimeClass_Windows_Devices_Bluetooth_BluetoothLEDevice>(statics);
 }
 
-void BluetoothDeviceWinrt::OnFromBluetoothAddress(
+HRESULT BluetoothDeviceWinrt::GetGattSessionStaticsActivationFactory(
+    IGattSessionStatics** statics) const {
+  return base::win::GetActivationFactory<
+      IGattSessionStatics,
+      RuntimeClass_Windows_Devices_Bluetooth_GenericAttributeProfile_GattSession>(
+      statics);
+}
+
+void BluetoothDeviceWinrt::OnBluetoothLEDeviceFromBluetoothAddress(
     ComPtr<IBluetoothLEDevice> ble_device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  pending_on_from_bluetooth_address_ = false;
   if (!ble_device) {
     BLUETOOTH_LOG(DEBUG) << "Getting Device From Bluetooth Address failed.";
-    DidFailToConnectGatt(ConnectErrorCode::ERROR_FAILED);
+    NotifyGattConnectFailure();
     return;
   }
 
@@ -532,40 +579,168 @@ void BluetoothDeviceWinrt::OnFromBluetoothAddress(
       base::BindRepeating(&BluetoothDeviceWinrt::OnConnectionStatusChanged,
                           weak_ptr_factory_.GetWeakPtr()));
 
-  // For paired devices the OS immediately establishes a GATT connection after
-  // the first advertisement. In this case our handler is registered too late to
-  // catch the initial connection changed event, and we need to perform an
-  // explicit check ourselves.
-  if (IsGattConnected())
-    DidConnectGatt();
-
-  gatt_services_changed_token_ = AddTypedEventHandler(
-      ble_device_.Get(), &IBluetoothLEDevice::add_GattServicesChanged,
-      base::BindRepeating(&BluetoothDeviceWinrt::OnGattServicesChanged,
-                          weak_ptr_factory_.GetWeakPtr()));
-
-  // Initiating the GATT discovery will result in a GATT connection attempt as
-  // well and triggers OnConnectionStatusChanged on success.
-  StartGattDiscovery();
-
   name_changed_token_ = AddTypedEventHandler(
       ble_device_.Get(), &IBluetoothLEDevice::add_NameChanged,
       base::BindRepeating(&BluetoothDeviceWinrt::OnNameChanged,
                           weak_ptr_factory_.GetWeakPtr()));
+
+  if (!observe_gatt_session_status_change_events_) {
+    // GattSession SessionStatusChanged events can not be observed on
+    // 1703 (RS2) because BluetoothLEDevice::GetDeviceId() is not
+    // available. Instead, initiate GATT discovery which should result
+    // in a GATT connection attempt as well and trigger
+    // OnConnectionStatusChanged on success.
+    if (IsGattConnected()) {
+      DidConnectGatt();
+    }
+    StartGattDiscovery();
+    return;
+  }
+
+  // Next, obtain a GattSession so we can tell the OS to maintain a GATT
+  // connection with |ble_device_|.
+
+  // BluetoothLEDevice::GetDeviceId()
+  ComPtr<IBluetoothLEDevice4> ble_device_4;
+  HRESULT hr = ble_device_.As(&ble_device_4);
+  if (FAILED(hr)) {
+    BLUETOOTH_LOG(DEBUG) << "Obtaining IBluetoothLEDevice4 failed: "
+                         << logging::SystemErrorCodeToString(hr);
+    NotifyGattConnectFailure();
+    return;
+  }
+  ComPtr<IBluetoothDeviceId> bluetooth_device_id;
+  hr = ble_device_4->get_BluetoothDeviceId(&bluetooth_device_id);
+  if (FAILED(hr)) {
+    BLUETOOTH_LOG(DEBUG) << "BluetoothDeviceId::FromId failed: "
+                         << logging::SystemErrorCodeToString(hr);
+    NotifyGattConnectFailure();
+    return;
+  }
+
+  // GattSession::FromDeviceIdAsync()
+  IGattSessionStatics* gatt_session_statics = nullptr;
+  hr = GetGattSessionStaticsActivationFactory(&gatt_session_statics);
+  if (FAILED(hr)) {
+    BLUETOOTH_LOG(DEBUG) << "GetGattSessionStaticsActivationFactory() failed: "
+                         << logging::SystemErrorCodeToString(hr);
+    NotifyGattConnectFailure();
+    return;
+  }
+  ComPtr<IAsyncOperation<GattSession*>> gatt_session_from_device_id_async_op;
+  hr = gatt_session_statics->FromDeviceIdAsync(
+      bluetooth_device_id.Get(), &gatt_session_from_device_id_async_op);
+  if (FAILED(hr)) {
+    BLUETOOTH_LOG(DEBUG) << "GattSession::FromDeviceId failed: "
+                         << logging::SystemErrorCodeToString(hr);
+    NotifyGattConnectFailure();
+    return;
+  }
+  hr = base::win::PostAsyncResults(
+      std::move(gatt_session_from_device_id_async_op),
+      base::BindOnce(&BluetoothDeviceWinrt::OnGattSessionFromDeviceId,
+                     weak_ptr_factory_.GetWeakPtr()));
+  if (FAILED(hr)) {
+    BLUETOOTH_LOG(DEBUG) << "PostAsyncResults failed: "
+                         << logging::SystemErrorCodeToString(hr);
+    NotifyGattConnectFailure();
+    return;
+  }
+}
+
+void BluetoothDeviceWinrt::OnGattSessionFromDeviceId(
+    ComPtr<IGattSession> gatt_session) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(observe_gatt_session_status_change_events_);
+
+  if (!gatt_session) {
+    BLUETOOTH_LOG(DEBUG) << "Getting GattSession failed";
+    NotifyGattConnectFailure();
+    return;
+  }
+
+  gatt_session_ = std::move(gatt_session);
+
+  // Tell the OS to automatically establish and maintain a GATT connection.
+  HRESULT hr = gatt_session_->put_MaintainConnection(true);
+  if (FAILED(hr)) {
+    BLUETOOTH_LOG(DEBUG) << "Setting GattSession.MaintainConnection failed: "
+                         << logging::SystemErrorCodeToString(hr);
+    NotifyGattConnectFailure();
+    return;
+  }
+
+  // Observe GattSessionStatus changes.
+  gatt_session_->get_SessionStatus(&gatt_session_status_);
+  gatt_session_status_changed_token_ = AddTypedEventHandler(
+      gatt_session_.Get(), &IGattSession::add_SessionStatusChanged,
+      base::BindRepeating(&BluetoothDeviceWinrt::OnGattSessionStatusChanged,
+                          weak_ptr_factory_.GetWeakPtr()));
+
+  // Check whether we missed the initial GattSessionStatus change notification
+  // because the OS had already established a connection.
+  if (IsGattConnected()) {
+    DidConnectGatt();
+    StartGattDiscovery();
+  }
+}
+
+void BluetoothDeviceWinrt::OnGattSessionStatusChanged(
+    IGattSession* gatt_session,
+    ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+        IGattSessionStatusChangedEventArgs* event_args) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(observe_gatt_session_status_change_events_);
+  DCHECK_EQ(gatt_session_.Get(), gatt_session);
+
+  GattSessionStatus old_status = gatt_session_status_;
+  event_args->get_Status(&gatt_session_status_);
+
+  BluetoothError error;
+  event_args->get_Error(&error);
+  BLUETOOTH_LOG(DEBUG) << "OnGattSessionStatusChanged() status="
+                       << gatt_session_status_ << ", error=" << error;
+
+  if (pending_gatt_service_discovery_start_ &&
+      error != BluetoothError_Success) {
+    NotifyGattConnectFailure();
+    return;
+  }
+
+  // Spurious status change notifications may occur.
+  if (old_status == gatt_session_status_) {
+    return;
+  }
+
+  if (IsGattConnected()) {
+    DidConnectGatt();
+    StartGattDiscovery();
+  } else {
+    gatt_discoverer_.reset();
+    ClearGattServices();
+    DidDisconnectGatt();
+  }
 }
 
 void BluetoothDeviceWinrt::OnConnectionStatusChanged(
     IBluetoothLEDevice* ble_device,
     IInspectable* object) {
-  BluetoothConnectionStatus new_status;
-  ble_device->get_ConnectionStatus(&new_status);
-  // Windows sometimes returns a status changed event with a status that has
-  // not changed.
-  if (new_status == connection_status_)
-    return;
-
-  connection_status_ = new_status;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  BluetoothConnectionStatus old_status = connection_status_;
+  ble_device->get_ConnectionStatus(&connection_status_);
+  BLUETOOTH_LOG(DEBUG) << "OnConnectionStatusChanged() status="
+                       << connection_status_;
+
+  // Spurious status change notifications may occur.
+  if (old_status == connection_status_) {
+    return;
+  }
+
+  if (observe_gatt_session_status_change_events_) {
+    return;
+  }
+
   if (IsGattConnected()) {
     DidConnectGatt();
   } else {
@@ -577,15 +752,23 @@ void BluetoothDeviceWinrt::OnConnectionStatusChanged(
 
 void BluetoothDeviceWinrt::OnGattServicesChanged(IBluetoothLEDevice* ble_device,
                                                  IInspectable* object) {
+  BLUETOOTH_LOG(DEBUG) << "OnGattServicesChanged()";
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // Note: We don't clear out |gatt_services_| here, as we don't want to break
+  // TODO(crbug/1085596): This event fires once for every newly discovered GATT
+  // service. Hence, the initial GATT service discovery aborts and restarts
+  // itself here once for every service discovered, which is unnecessary and
+  // slow.
+
+  // We don't clear out |gatt_services_| here, as we don't want to break
   // existing references to Gatt Services that did not change.
   device_uuids_.ClearServiceUUIDs();
+
   SetGattServicesDiscoveryComplete(false);
   adapter_->NotifyDeviceChanged(this);
   if (IsGattConnected()) {
     // In order to stop a potential ongoing GATT discovery, the GattDiscoverer
     // is reset and a new discovery is initiated.
+    BLUETOOTH_LOG(DEBUG) << "Discovering GATT services anew";
     StartGattDiscovery();
   }
 }
@@ -597,6 +780,14 @@ void BluetoothDeviceWinrt::OnNameChanged(IBluetoothLEDevice* ble_device,
 }
 
 void BluetoothDeviceWinrt::StartGattDiscovery() {
+  BLUETOOTH_LOG(DEBUG) << "StartGattDiscovery()";
+  pending_gatt_service_discovery_start_ = false;
+  if (!gatt_services_changed_token_) {
+    gatt_services_changed_token_ = AddTypedEventHandler(
+        ble_device_.Get(), &IBluetoothLEDevice::add_GattServicesChanged,
+        base::BindRepeating(&BluetoothDeviceWinrt::OnGattServicesChanged,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
   gatt_discoverer_ =
       std::make_unique<BluetoothGattDiscovererWinrt>(ble_device_, target_uuid_);
   gatt_discoverer_->StartGattDiscovery(
@@ -605,9 +796,11 @@ void BluetoothDeviceWinrt::StartGattDiscovery() {
 }
 
 void BluetoothDeviceWinrt::OnGattDiscoveryComplete(bool success) {
+  BLUETOOTH_LOG(DEBUG) << "OnGattDiscoveryComplete() success=" << success;
   if (!success) {
-    if (!IsGattConnected())
-      DidFailToConnectGatt(ConnectErrorCode::ERROR_FAILED);
+    if (!IsGattConnected()) {
+      NotifyGattConnectFailure();
+    }
     gatt_discoverer_.reset();
     return;
   }
@@ -659,6 +852,11 @@ void BluetoothDeviceWinrt::ClearEventRegistrations() {
   if (connection_changed_token_) {
     RemoveConnectionStatusHandler(ble_device_.Get(),
                                   *connection_changed_token_);
+  }
+
+  if (gatt_session_status_changed_token_) {
+    RemoveGattSessionStatusHandler(gatt_session_.Get(),
+                                   *gatt_session_status_changed_token_);
   }
 
   if (gatt_services_changed_token_) {

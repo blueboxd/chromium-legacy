@@ -70,7 +70,7 @@ class FakeIt2MeConfirmationDialog : public It2MeConfirmationDialog {
 
   // It2MeConfirmationDialog implementation.
   void Show(const std::string& remote_user_email,
-            const ResultCallback& callback) override;
+            ResultCallback callback) override;
 
  private:
   FakeIt2MeConfirmationDialog();
@@ -91,11 +91,11 @@ FakeIt2MeConfirmationDialog::FakeIt2MeConfirmationDialog(
 FakeIt2MeConfirmationDialog::~FakeIt2MeConfirmationDialog() = default;
 
 void FakeIt2MeConfirmationDialog::Show(const std::string& remote_user_email,
-                                       const ResultCallback& callback) {
+                                       ResultCallback callback) {
   EXPECT_STREQ(remote_user_email_.c_str(), remote_user_email.c_str());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, dialog_result_));
+      FROM_HERE, base::BindOnce(std::move(callback), dialog_result_));
 }
 
 class FakeIt2MeDialogFactory : public It2MeConfirmationDialogFactory {

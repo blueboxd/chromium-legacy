@@ -1442,7 +1442,8 @@ message Property {
     OVERSCROLL_BEHAVIOR_X = 553;
     OVERSCROLL_BEHAVIOR_Y = 554;
     ANIMATION_TIMELINE = 555;
-    INVALID_PROPERTY = 556;
+    COUNTER_SET = 556;
+    INVALID_PROPERTY = 557;
   }
   required NameId name_id = 1;
 }

@@ -83,7 +83,7 @@
 
 #pragma mark - ConfirmationAlertActionHandler
 
-- (void)confirmationAlertDone {
+- (void)confirmationAlertDismissAction {
   NSError* error =
       [[NSError alloc] initWithDomain:ASExtensionErrorDomain
                                  code:ASExtensionErrorCodeUserCanceled

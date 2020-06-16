@@ -87,14 +87,6 @@ TEST_F(LifecycleUnitBaseTest, SetStateUpdatesTime) {
   EXPECT_EQ(first_state_change_time, lifecycle_unit.GetStateChangeTime());
   test_clock_.Advance(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(first_state_change_time, lifecycle_unit.GetStateChangeTime());
-
-  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
-  base::TimeTicks second_state_change_time = NowTicks();
-  lifecycle_unit.SetState(LifecycleUnitState::FROZEN,
-                          LifecycleUnitStateChangeReason::BROWSER_INITIATED);
-  EXPECT_EQ(second_state_change_time, lifecycle_unit.GetStateChangeTime());
-  test_clock_.Advance(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(second_state_change_time, lifecycle_unit.GetStateChangeTime());
 }
 
 // Verify that observers are notified when the state changes and when the

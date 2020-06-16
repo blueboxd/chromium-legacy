@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">Loka</translation>
 <translation id="6119846243427417423">virkja</translation>
 <translation id="6129953537138746214">Bil</translation>
+<translation id="6134259848159370930">Leitaðu í tækinu þínu, forritum, stillingum og á netinu.</translation>
 <translation id="6135826906199951471">Delete</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> b/sek.</translation>
 <translation id="6156262341071374681">Fara í öll forrit</translation>
 <translation id="6165508094623778733">Frekari upplýsingar</translation>
+<translation id="6166852626429024716">Leitaðu í tækinu þínu, forritum, stillingum, á vefnum...</translation>
 <translation id="6264365405983206840">Velja &amp;allt</translation>
 <translation id="6351032674660237738">TILLÖGUR AÐ FORRITUM</translation>
 <translation id="6364916375976753737">Fletta til vinstri</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> skrá (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Hilla alltaf sýnileg</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kB/sek.</translation>
+<translation id="8685326675965865247">Leitaðu í tækinu þínu, forritum, stillingum og á vefnum. Notaðu örvatakkana til að fletta í gegnum forritin þín.</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> í viðbót</translation>
 <translation id="8730621377337864115">Lokið</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1k}one{#k}other{#k}}</translation>

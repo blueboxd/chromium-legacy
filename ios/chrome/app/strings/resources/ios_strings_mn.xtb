@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Вэб сайтад нэвтрэх</translation>
 <translation id="1509960214886564027">Олон сайтын онцлогууд ажиллахгүй байж болзошгүй</translation>
 <translation id="152234381334907219">Огт хадгалаагүй</translation>
+<translation id="1535268707340844072">Таны одоогийн тохиргоо зарим сайтыг гэмтэхэд хүргэж болзошгүй. Бүх сайтын күүкийг удирдахын тулд <ph name="BEGIN_LINK" />Күүкиний тохиргоог<ph name="END_LINK" /> харна уу.</translation>
 <translation id="1540800554400757039">Хаяг 1</translation>
 <translation id="1545749641540134597">Хурдан хариу үйлдлийн кодыг скан хийх</translation>
 <translation id="1552525382687785070">Таны админ синк хийхийг идэвхгүй болгосон байна</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212"><ph name="DAYS" /> өдрийн өмнөөс идэвхтэй</translation>
 <translation id="2074131957428911366">Та синк хийх зүйлээ хүссэн үедээ <ph name="BEGIN_LINK" />тохиргооноос<ph name="END_LINK" /> сонгож болно.</translation>
 <translation id="2079545284768500474">Буцаах</translation>
+<translation id="2081417079511601293">Гуравдагч талын күүкийг зөвхөн Нууцлалтай горимд блоклосон</translation>
 <translation id="209018056901015185">Дэлгэцийн сайтын хүсэлт</translation>
 <translation id="2103075008456228677">History.google.com-г нээх</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> зүйлүүдийг зөөсөн байна</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">Шинэ цонхонд нээ</translation>
 <translation id="3037605927509011580">Aw, Snap!</translation>
 <translation id="3112556859945124369">Тэмдэглэх...</translation>
+<translation id="3131206671572504478">Бүх күүкийг блоклосон</translation>
 <translation id="3153862085237805241">Картыг хадгалах</translation>
 <translation id="3157684681743766797">Бүгдийг тэмдэглэх...</translation>
 <translation id="3161291298470460782">Ингэснээр таныг гаргаж, синк хийхийг унтраах бөгөөд Chrome-н бүх өгөгдлийг энэ төхөөрөмжөөс устгана. Таны cинк хийсэн өгөгдөл Google Бүртгэлд тань үлдэнэ.</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">Хэл солихын тулд товшино уу.</translation>
 <translation id="441868831736628555">Нууцлалын мэдэгдэл</translation>
 <translation id="4454246407045105932">Хэл нэмэх</translation>
+<translation id="4469418912670346607">Тохируулгыг үргэлжлүүлэх</translation>
 <translation id="4476574785019001431">Тохиргоо</translation>
 <translation id="4496373720959965247">Чихтэй хуудас нэмэх болон хуудас хооронд шилжүүлэх</translation>
 <translation id="4508750114462689118">Нэвтрэх сурталчилгааг хаах</translation>
@@ -299,6 +303,7 @@
 <translation id="4805759445554688327">Картын дугаар буруу байна</translation>
 <translation id="4818522717893377262">Хэл нэмэх</translation>
 <translation id="481968316161811770">Күүки, Сайтын өгөгдөл</translation>
+<translation id="4826218269716039351">Гуравдагч талын күүкийг блоклосон</translation>
 <translation id="4833786495304741580">Хэрэглээний статистик мэдээ болон гэмтлийн тайланг Google-д автоматаар илгээдэг.</translation>
 <translation id="4840495572919996524">Таны хавчуурга, түүх, нууц үг болон бусад зүйлийг таны Google Бүртгэлд цаашид синк хийхгүй.</translation>
 <translation id="4854345657858711387">Нууц код тохируулах</translation>
@@ -344,6 +349,7 @@
 <translation id="54401264925851789">Хуудасны аюулгүй байдалтай холбоотой мэдээлэл</translation>
 <translation id="5443952882982198570">Кредит картууд</translation>
 <translation id="5457907402803865181">Нууц үгийг синк хийхэд алдаа гарлаа.</translation>
+<translation id="5489208564673669003">Бүх сайтын күүкийг удирдахын тулд <ph name="BEGIN_LINK" />Күүкиний тохиргоог<ph name="END_LINK" /> харна уу.</translation>
 <translation id="5508435575041083207">Гарч, энэ төхөөрөмжөөс өгөгдлийг устгах</translation>
 <translation id="5525269841082836315">Нэвтрэх үгийг үүсгэх</translation>
 <translation id="5548760955356983418">Handoff нь танд энэ төхөөрөмж дээр вэб хуудсыг ачаалж, дараа нь Mac дээр хялбархан үргэжлүүлэн ажиллах боломжийг олгодог. Одоо нээлттэй байгаа вэбсайт таны Mac-ийн Dock дотор гарч ирнэ.
@@ -431,6 +437,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="6418346271604475326">PDF форматыг бэлдэж байна</translation>
 <translation id="6426067060178468363">Күүкиг зөвшөөрөх</translation>
 <translation id="6434591244308415567">Алдаа гарлаа. Дараа дахин оролдоно уу.</translation>
+<translation id="6439338047467462846">Бүгдийг зөвшөөрөх</translation>
 <translation id="6445051938772793705">Улс</translation>
 <translation id="6445981559479772097">Зурвас илгээгдсэн.</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -438,6 +445,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="6476800141292307438">Хуудсыг <ph name="LANGUAGE" /> руу орчуулж байна. Дэлгэцийн доод хэсгийн ойролцоо сонголт хийх боломжтой.</translation>
 <translation id="648164694371393720">Нотолгооны алдаа</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> зүйлс сонгогдсон байна</translation>
+<translation id="651505212789431520">Синк хийхийг цуцлах уу? Та синкийг хүссэн үедээ тохиргоонд асааж болно.</translation>
 <translation id="6561262006871132942">Томруулах</translation>
 <translation id="6610002944194042868">Орчуулах сонголт</translation>
 <translation id="6628106477656132239">Дуусах огноо буруу байна</translation>
@@ -461,6 +469,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="681368974849482173">Үүссэн зүйл</translation>
 <translation id="6831043979455480757">Хөрвүүлэх</translation>
 <translation id="6851516051005285358">Дэлгэцийн сайтын хүсэлт тавих</translation>
+<translation id="6856384753476268833">Танай байгууллагаас удирддаг.</translation>
 <translation id="6858855187367714033">Скан хийсэн</translation>
 <translation id="6859944681507688231">Хурдан хариу үйлдлийн код эсвэл кредит картыг скан хийхийн тулд тохиргоо хэсгээс камерыг идэвхжүүлнэ үү.</translation>
 <translation id="6873263987691478642">Хувааж харах</translation>
@@ -539,6 +548,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="7856733331829174190">Татаж чадсангүй</translation>
 <translation id="7859704718976024901">Хайлтын түүх</translation>
 <translation id="7887198238286927132">Таны нууцлалыг хамгаалахын тулд Chrome энэ талбарыг автоматаар бөглөхгүй.</translation>
+<translation id="791251013315685175"><ph name="COMPANY" />-с удирддаг.</translation>
 <translation id="7918293828610777738">Таны унших жагсаалт офлайнаар боломжтой байна. Унших жагсаалтдаа хуудас нэмэхийн тулд <ph name="SHARE_OPENING_ICON" />-г, дараа нь <ph name="READ_LATER_TEXT" />-г товшино уу.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Нууц үгийг экспортлох...</translation>

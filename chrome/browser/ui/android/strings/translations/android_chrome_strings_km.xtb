@@ -163,6 +163,7 @@
 <translation id="2323763861024343754">ទំហំផ្ទុកទិន្នន័យ</translation>
 <translation id="2328985652426384049">មិនអាចចូលបានទេ</translation>
 <translation id="234265804618409743">មិនអាចបើក​កាមេរ៉ា​របស់អ្នក​បានទេ។ មានអ្វីមួយខុសប្រក្រតី។</translation>
+<translation id="2345671828921229300">ដើម្បី​ស្វែងរក សូមចុច​ពាក្យណាមួយ​ឱ្យជាប់</translation>
 <translation id="2349710944427398404">ទិន្នន័យសរុបដែលបានប្រើដោយ Chrome ដោយរាប់បញ្ចូលទាំងគណនី ចំណាំ និងការកំណត់ដែលបានរក្សាទុក</translation>
 <translation id="2353636109065292463">កំពុងពិនិត្យមើល​ការតភ្ជាប់អ៊ីនធឺណិត​របស់អ្នក</translation>
 <translation id="2359808026110333948">បន្ត</translation>
@@ -170,6 +171,7 @@
 <translation id="2387895666653383613">ការសម្រួលមាត្រដ្ឋានអត្ថបទ</translation>
 <translation id="2394602618534698961">ឯកសារ​ដែលអ្នកទាញយក​បង្ហាញ​នៅទីនេះ</translation>
 <translation id="2407481962792080328">នៅពេលអ្នក​ចូលគណនី Google របស់អ្នក មុខងារនេះ​ត្រូវបានបើក</translation>
+<translation id="2407674018644220013">កំណត់​ <ph name="APP_NAME" /> ជាលំនាំដើម​របស់អ្នកឬ?</translation>
 <translation id="2410754283952462441">ជ្រើសរើស​គណនី</translation>
 <translation id="2414886740292270097">ងងឹត</translation>
 <translation id="2426805022920575512">ជ្រើសរើស​គណនី​ផ្សេងទៀត</translation>
@@ -179,6 +181,7 @@
 
 ចុចពាក្យ​ណាមួយ​ឱ្យជាប់ ដើម្បី​ស្វែងរក។ ដើម្បី​កែលម្អ​ការស្វែងរក​របស់អ្នក សូម​ជ្រើសរើស​ពាក្យច្រើន ឬតិច។ ដើម្បីកែ​ការស្វែងរក​របស់អ្នក សូម​បើកផ្ទាំង រួចចុច​រូបតំណាង​ដើម្បី​បើកនៅក្នុង​ផ្ទាំងថ្មី បន្ទាប់មក​ធ្វើការផ្លាស់ប្ដូរ​របស់អ្នក​នៅក្នុង​ប្រអប់​ស្វែងរក។</translation>
 <translation id="246532703174860178">ចែករំលែក</translation>
+<translation id="2479148705183875116">ចូលទៅកាន់ការកំណត់</translation>
 <translation id="2482878487686419369">ការជូនដំណឹង</translation>
 <translation id="2494974097748878569">Google ជំនួយការនៅក្នុង Chrome</translation>
 <translation id="2496180316473517155">ប្រវត្តិរុករក</translation>
@@ -289,6 +292,7 @@
 <translation id="3350687908700087792">បិទផ្ទាំងអនាមិកទាំងអស់</translation>
 <translation id="3353615205017136254">ទំព័រស្រាល​ដែល​ផ្ដល់​ដោយ Google ។ សូម​ចុចប៊ូតុង​ផ្ទុក​ទំព័រដើម ​ដើម្បីផ្ទុក​ទំព័រ​ដើម។</translation>
 <translation id="3367813778245106622">ចូលគណនីម្តងទៀតដើម្បីចាប់ផ្តើមសមកាលកម្ម</translation>
+<translation id="337236281855091893">ដើម្បី​ស្វែងរក សូម​ចុច​ពាក្យណាមួយ​ឱ្យជាប់​ជំនួសឱ្យ​ការចុច​ពាក្យនោះ</translation>
 <translation id="3373979091428520308">ដើម្បី​ចែករំលែក​ទំព័រនេះជាមួយឧបករណ៍​ផ្សេង សូមបើក​សមកាលកម្មនៅក្នុងការកំណត់ Chrome នៅលើឧបករណ៍​ផ្សេងទៀត</translation>
 <translation id="3374023511497244703">ចំណាំ​ ប្រវត្តិ ​ពាក្យសម្ងាត់ និងទិន្នន័យ Chrome ផ្សេងទៀត​របស់អ្នកនឹងមិន​ធ្វើ​សម​កាល​កម្មទៅក្នុងគណនី​ Google របស់អ្នកទៀតទេ</translation>
 <translation id="3384347053049321195">ចែករំលែករូបភាព</translation>
@@ -564,6 +568,7 @@
 <translation id="5686790454216892815">ឈ្មោះ​ឯកសារ​វែងពេក</translation>
 <translation id="5694049548840660018">ត្រឡប់ទៅ​ទំព័រដើមវិញ​បានយ៉ាង​ងាយស្រួល</translation>
 <translation id="569536719314091526">បកប្រែ​ទំព័រនេះ​ទៅជាភាសា​ណាមួយពី​ប៊ូតុងជម្រើស​ច្រើនទៀត</translation>
+<translation id="570347048394355941">ប្ដូរ​ទៅ​ផ្ទាំង</translation>
 <translation id="572328651809341494">ផ្ទាំងកន្លងទៅថ្មីៗ</translation>
 <translation id="5726692708398506830">ធ្វើឲ្យអ្វីគ្រប់យ៉ាងនៅលើទំព័រនេះធំជាងមុន</translation>
 <translation id="5748802427693696783">បានប្តូរទៅផ្ទាំងស្តង់ដារ</translation>
@@ -617,6 +622,7 @@
 <translation id="6140912465461743537">ប្រទេស/តំបន់៖</translation>
 <translation id="614940544461990577">សាកល្បង៖</translation>
 <translation id="6154478581116148741">បើកការ​ចាក់សោ​អេក្រង់​នៅក្នុង​ការកំណត់ ដើម្បី​នាំពាក្យ​សម្ងាត់​របស់អ្នកចេញ​ពី​ឧបករណ៍​នេះ</translation>
+<translation id="6157392216611456285">ជ្រើសរើស​ <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">សន្សំសំចៃទិន្នន័យបាន <ph name="PERCENT" /></translation>
 <translation id="6192333916571137726">ទាញ​យក​ឯកសារ</translation>
 <translation id="6201345951596836663">បានចម្លង​តំណ</translation>
@@ -641,6 +647,7 @@
 <translation id="6341580099087024258">សួររក​កន្លែងដែលត្រូវរក្សាទុក​ឯកសារ</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ទៀត}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 និង <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> ទៀត}}</translation>
 <translation id="6364438453358674297">យកការផ្តល់យោបល់ចេញពីប្រវត្តិ?</translation>
+<translation id="6366047038980456022"><ph name="APP_NAME" /> មានមុខងារឆ្លាតវៃ និងល្បឿនដែលអ្នកត្រូវការ ដើម្បីបំពេញកិច្ចការ បង្កើត និងរុករកនៅលើអ៊ីនធឺណិតដោយសុវត្ថិភាព</translation>
 <translation id="6369229450655021117">នៅចំណុចនេះ អ្នកអាចស្វែង​រកបណ្តាញ ចែករំលែក​ជាមួយមិត្តភ័ក្តិ និងមើលទំព័រ​ដែលបានបើក</translation>
 <translation id="6378173571450987352">ព័ត៌មាន​លម្អិត៖ ​តម្រៀប​តាមទំហំ​ទិន្នន័យ​ដែលបានប្រើប្រាស់</translation>
 <translation id="6379829913050047669"><ph name="APP_NAME" /> នឹងបើកនៅក្នុង Chrome។ ប្រសិនបើបន្ត មានន័យថាអ្នកយល់ព្រមតាម<ph name="BEGIN_LINK1" />លក្ខខណ្ឌប្រើប្រាស់ Google<ph name="END_LINK1" /> និង<ph name="BEGIN_LINK2" />លក្ខខណ្ឌប្រើប្រាស់បន្ថែមរបស់ Google Chrome និង Chrome OS<ph name="END_LINK2" />។</translation>
@@ -692,6 +699,7 @@
 <translation id="6671495933530132209">ចម្លងរូបភាព</translation>
 <translation id="6676840375528380067">សម្អាតទិន្នន័យ​ Chrome ​របស់អ្នកពី​ឧបករណ៍នេះមែនទេ?</translation>
 <translation id="6689172468748959065">រូបថត​កម្រង​ព័ត៌មាន</translation>
+<translation id="6691888250440401212">1. ជ្រើសរើស <ph name="APP_NAME" />\n2. ចុច “កំណត់ជាលំនាំដើម”</translation>
 <translation id="6697492270171225480">បង្ហាញ​ការណែនាំ​សម្រាប់​ទំព័រ​ស្រដៀង​គ្នា នៅ​ពេល​មិនអាច​រកឃើញទំព័រ</translation>
 <translation id="6698801883190606802">គ្រប់គ្រងទិន្នន័យដែលបានធ្វើសមកាលកម្ម</translation>
 <translation id="6699370405921460408">ម៉ាស៊ីនមេ Google នឹងបង្កើនប្រសិទ្ធភាពទំព័រដែលអ្នកចូលមើល។</translation>
@@ -895,6 +903,7 @@
 <translation id="8364299278605033898">មើល​គេហទំព័រ​ពេញនិយម</translation>
 <translation id="8368027906805972958">ឧបករណ៍ដែល​មិនស្គាល់ ឬ​មិនអាច​ប្រើបាន (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">ផ្ញើ​សារ</translation>
+<translation id="8407396331882458341">1. ជ្រើសរើស <ph name="APP_NAME" />\n2. ចុច "ជានិច្ច"</translation>
 <translation id="8413126021676339697">បង្ហាញប្រវត្តិពេញលេញ</translation>
 <translation id="8425213833346101688">ប្តូរ</translation>
 <translation id="8427875596167638501">ផ្ទាំងមើលសាកល្បងបានបើក​ពាក់កណ្ដាល</translation>
@@ -921,6 +930,7 @@
 <translation id="8555836665334561807">តាមរយៈ Wi-Fi</translation>
 <translation id="8558485628462305855">ដើម្បី​មើលខ្លឹមសារ AR សូមដំឡើងជំនាន់ ARCore</translation>
 <translation id="8559990750235505898">ផ្តល់ជូន​ការ​បកប្រែ​ទំព័រ​ជាភាសា​ផ្សេងទៀត</translation>
+<translation id="8561196567344536112">1. ចូលទៅកាន់ការកំណត់\n2. ចុច “រុករកកម្មវិធី”\n3. ជ្រើសរើស​ <ph name="APP_NAME" /></translation>
 <translation id="8562452229998620586">ពាក្យសម្ងាត់ដែលបានរក្សាទុកលេចឡើងទីនេះ។</translation>
 <translation id="8569404424186215731">ចាប់តាំងពីថ្ងៃទី <ph name="DATE" /></translation>
 <translation id="8571213806525832805">4 សប្តាហ៍មុន</translation>

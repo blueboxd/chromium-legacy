@@ -34,6 +34,10 @@ build_recipe(
 )
 
 build_recipe(
+    name = 'recipe:binary_size_generator_tot',
+)
+
+build_recipe(
     name = 'recipe:binary_size_trybot',
 )
 

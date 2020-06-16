@@ -6,6 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/grit/browser_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -116,6 +117,9 @@ void AddPdfViewerStrings(base::Value* dict) {
   };
   for (const auto& resource : kPdfResources)
     dict->SetStringKey(resource.name, l10n_util::GetStringUTF16(resource.id));
+
+  webui::SetLoadTimeDataDefaults(g_browser_process->GetApplicationLocale(),
+                                 static_cast<base::DictionaryValue*>(dict));
 }
 
 }  // namespace

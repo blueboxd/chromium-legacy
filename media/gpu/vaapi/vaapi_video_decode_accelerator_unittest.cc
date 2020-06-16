@@ -37,10 +37,10 @@ struct TestParams {
 constexpr int32_t kBitstreamId = 123;
 constexpr size_t kInputSize = 256;
 
-constexpr size_t kNumPictures = 4;
+constexpr size_t kNumPictures = 14;
 const gfx::Size kPictureSize(64, 48);
 
-constexpr size_t kNewNumPictures = 3;
+constexpr size_t kNewNumPictures = 13;
 const gfx::Size kNewPictureSize(64, 48);
 
 MATCHER_P2(IsExpectedDecoderBuffer, data_size, decrypt_config, "") {
@@ -488,6 +488,7 @@ TEST_P(VaapiVideoDecodeAcceleratorTest,
 
 constexpr TestParams kTestCases[] = {
     {H264PROFILE_MIN, false /* decode_using_client_picture_buffers */},
+    {H264PROFILE_MIN, true /* decode_using_client_picture_buffers */},
     {VP8PROFILE_MIN, false /* decode_using_client_picture_buffers */},
     {VP9PROFILE_MIN, false /* decode_using_client_picture_buffers */},
     {VP9PROFILE_MIN, true /* decode_using_client_picture_buffers */}};

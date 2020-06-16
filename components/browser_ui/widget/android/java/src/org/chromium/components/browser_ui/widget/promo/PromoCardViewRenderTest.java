@@ -6,13 +6,13 @@ package org.chromium.components.browser_ui.widget.promo;
 
 import android.app.Activity;
 import android.graphics.drawable.Drawable;
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Rule;
 import org.junit.Test;

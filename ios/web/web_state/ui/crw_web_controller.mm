@@ -41,6 +41,7 @@
 #import "ios/web/security/crw_cert_verification_controller.h"
 #import "ios/web/security/crw_ssl_status_updater.h"
 #import "ios/web/web_state/page_viewport_state.h"
+#import "ios/web/web_state/ui/cookie_blocking_error_logger.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
 #import "ios/web/web_state/ui/crw_context_menu_delegate.h"
 #import "ios/web/web_state/ui/crw_swipe_recognizer_provider.h"
@@ -143,6 +144,9 @@ NSString* const kScriptMessageName = @"crwebinvoke";
 
   // Manager for window.error message.
   std::unique_ptr<web::JsWindowErrorManager> _jsWindowErrorManager;
+
+  // Logger for cookie;.error message.
+  std::unique_ptr<web::CookieBlockingErrorLogger> _cookieBlockingErrorLogger;
 }
 
 // The WKNavigationDelegate handler class.
@@ -295,6 +299,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
     _faviconManager = std::make_unique<web::FaviconManager>(_webStateImpl);
     _jsWindowErrorManager =
         std::make_unique<web::JsWindowErrorManager>(_webStateImpl);
+    _cookieBlockingErrorLogger =
+        std::make_unique<web::CookieBlockingErrorLogger>(_webStateImpl);
     [[NSNotificationCenter defaultCenter]
         addObserver:self
            selector:@selector(orientationDidChange)

@@ -70,13 +70,13 @@ class SubresourceFilterIndexedRulesetTest : public ::testing::Test {
         MakeUrlRule(UrlPattern(url_pattern, testing::kSubstring)));
   }
 
-  bool AddSimpleWhitelistRule(base::StringPiece url_pattern) {
+  bool AddSimpleAllowlistRule(base::StringPiece url_pattern) {
     auto rule = MakeUrlRule(UrlPattern(url_pattern, testing::kSubstring));
     rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
     return AddUrlRule(rule);
   }
 
-  bool AddSimpleWhitelistRule(base::StringPiece url_pattern,
+  bool AddSimpleAllowlistRule(base::StringPiece url_pattern,
                               int32_t activation_types) {
     auto rule = MakeUrlRule(UrlPattern(url_pattern, testing::kSubstring));
     rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
@@ -120,7 +120,7 @@ TEST_F(SubresourceFilterIndexedRulesetTest, NoRuleApplies) {
   EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy("http://example.com?filter_not"));
 }
 
-TEST_F(SubresourceFilterIndexedRulesetTest, SimpleBlacklist) {
+TEST_F(SubresourceFilterIndexedRulesetTest, SimpleBlocklist) {
   ASSERT_TRUE(AddSimpleRule("?param="));
   Finish();
 
@@ -129,21 +129,21 @@ TEST_F(SubresourceFilterIndexedRulesetTest, SimpleBlacklist) {
             GetLoadPolicy("http://example.org?param=image1"));
 }
 
-TEST_F(SubresourceFilterIndexedRulesetTest, SimpleWhitelist) {
-  ASSERT_TRUE(AddSimpleWhitelistRule("example.com/?filter_out="));
+TEST_F(SubresourceFilterIndexedRulesetTest, SimpleAllowlist) {
+  ASSERT_TRUE(AddSimpleAllowlistRule("example.com/?filter_out="));
   Finish();
 
   // This should not return EXPLICITLY_ALLOW because there is no corresponding
-  // blacklist rule for the whitelist rule. To optimize speed, whitelist rules
-  // are only checked if a rule was matched with a blacklist rule.
+  // blocklist rule for the allowlist rule. To optimize speed, allowlist rules
+  // are only checked if a rule was matched with a blocklist rule.
   EXPECT_EQ(LoadPolicy::ALLOW,
             GetLoadPolicy("https://example.com?filter_out=true"));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest,
-       SimpleWhitelistWithMatchingBlacklist) {
+       SimpleAllowlistWithMatchingBlocklist) {
   ASSERT_TRUE(AddSimpleRule("example.com/?filter_out="));
-  ASSERT_TRUE(AddSimpleWhitelistRule("example.com/?filter_out="));
+  ASSERT_TRUE(AddSimpleAllowlistRule("example.com/?filter_out="));
   Finish();
 
   EXPECT_EQ(LoadPolicy::EXPLICITLY_ALLOW,
@@ -232,22 +232,22 @@ TEST_F(SubresourceFilterIndexedRulesetTest, PercentEncodedDomain) {
   EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy(kUrl, "http://,.com"));
 }
 
-TEST_F(SubresourceFilterIndexedRulesetTest, SimpleBlacklistAndWhitelist) {
+TEST_F(SubresourceFilterIndexedRulesetTest, SimpleBlocklistAndAllowlist) {
   ASSERT_TRUE(AddSimpleRule("?filter="));
-  ASSERT_TRUE(AddSimpleWhitelistRule("whitelisted.com/?filter="));
+  ASSERT_TRUE(AddSimpleAllowlistRule("allowlisted.com/?filter="));
   Finish();
 
   EXPECT_EQ(LoadPolicy::DISALLOW,
-            GetLoadPolicy("http://blacklisted.com?filter=on"));
+            GetLoadPolicy("http://blocklisted.com?filter=on"));
   EXPECT_EQ(LoadPolicy::EXPLICITLY_ALLOW,
-            GetLoadPolicy("https://whitelisted.com/?filter=on"));
-  EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy("https://notblacklisted.com"));
+            GetLoadPolicy("https://allowlisted.com/?filter=on"));
+  EXPECT_EQ(LoadPolicy::ALLOW, GetLoadPolicy("https://notblocklisted.com"));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest,
-       OneBlacklistAndOneDeactivationRule) {
+       OneBlocklistAndOneDeactivationRule) {
   ASSERT_TRUE(AddSimpleRule("example.com"));
-  ASSERT_TRUE(AddSimpleWhitelistRule("example.com", testing::kDocument));
+  ASSERT_TRUE(AddSimpleAllowlistRule("example.com", testing::kDocument));
   Finish();
 
   EXPECT_TRUE(ShouldDeactivate("https://example.com", "", testing::kDocument));
@@ -272,7 +272,7 @@ TEST_F(SubresourceFilterIndexedRulesetTest, MatchingNoRuleApplies) {
   EXPECT_FALSE(MatchingRule("http://example.com?filter_not"));
 }
 
-TEST_F(SubresourceFilterIndexedRulesetTest, MatchingSimpleBlacklist) {
+TEST_F(SubresourceFilterIndexedRulesetTest, MatchingSimpleBlocklist) {
   ASSERT_TRUE(AddSimpleRule("?param="));
   Finish();
 
@@ -280,28 +280,28 @@ TEST_F(SubresourceFilterIndexedRulesetTest, MatchingSimpleBlacklist) {
   EXPECT_TRUE(MatchingRule("http://example.org?param=image1"));
 }
 
-TEST_F(SubresourceFilterIndexedRulesetTest, MatchingSimpleWhitelist) {
-  ASSERT_TRUE(AddSimpleWhitelistRule("example.com/?filter_out="));
+TEST_F(SubresourceFilterIndexedRulesetTest, MatchingSimpleAllowlist) {
+  ASSERT_TRUE(AddSimpleAllowlistRule("example.com/?filter_out="));
   Finish();
 
   EXPECT_FALSE(MatchingRule("https://example.com?filter_out=true"));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest,
-       MatchingSimpleBlacklistAndWhitelist) {
+       MatchingSimpleBlocklistAndAllowlist) {
   ASSERT_TRUE(AddSimpleRule("?filter="));
-  ASSERT_TRUE(AddSimpleWhitelistRule("whitelisted.com/?filter="));
+  ASSERT_TRUE(AddSimpleAllowlistRule("allowlisted.com/?filter="));
   Finish();
 
-  EXPECT_TRUE(MatchingRule("http://blacklisted.com?filter=on"));
-  EXPECT_TRUE(MatchingRule("https://whitelisted.com?filter=on"));
-  EXPECT_FALSE(MatchingRule("https://notblacklisted.com"));
+  EXPECT_TRUE(MatchingRule("http://blocklisted.com?filter=on"));
+  EXPECT_TRUE(MatchingRule("https://allowlisted.com?filter=on"));
+  EXPECT_FALSE(MatchingRule("https://notblocklisted.com"));
 }
 
 TEST_F(SubresourceFilterIndexedRulesetTest,
-       MatchingOneBlacklistAndOneDeactivationRule) {
+       MatchingOneBlocklistAndOneDeactivationRule) {
   ASSERT_TRUE(AddSimpleRule("example.com"));
-  ASSERT_TRUE(AddSimpleWhitelistRule("example.com", testing::kDocument));
+  ASSERT_TRUE(AddSimpleAllowlistRule("example.com", testing::kDocument));
   Finish();
   EXPECT_TRUE(MatchingRule("https://example.com"));
   EXPECT_FALSE(MatchingRule("https://xample.com"));

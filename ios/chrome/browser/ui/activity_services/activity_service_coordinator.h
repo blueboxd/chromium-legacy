@@ -5,14 +5,24 @@
 #ifndef IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_ACTIVITY_SERVICE_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_ACTIVITY_SERVICES_ACTIVITY_SERVICE_COORDINATOR_H_
 
+#import "ios/chrome/browser/ui/activity_services/activity_scenario.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @protocol ActivityServicePositioner;
 @protocol ActivityServicePresentation;
+class Browser;
 
 // ActivityServiceCoordinator provides a public interface for the share
 // menu feature.
 @interface ActivityServiceCoordinator : ChromeCoordinator
+
+- (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
+                                   browser:(Browser*)browser
+                                  scenario:(ActivityScenario)scenario
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithBaseViewController:(UIViewController*)baseViewController
+                                   browser:(Browser*)browser NS_UNAVAILABLE;
 
 // Provider of the share action location.
 @property(nonatomic, readwrite, weak) id<ActivityServicePositioner>

@@ -5,11 +5,11 @@
 package org.chromium.chrome.browser.notifications.settings;
 
 import android.os.Build;
-import android.support.test.filters.SmallTest;
 
 import androidx.fragment.app.Fragment;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

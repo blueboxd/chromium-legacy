@@ -20,9 +20,9 @@ import static org.chromium.chrome.browser.notifications.NotificationConstants.NO
 import static org.chromium.chrome.browser.notifications.NotificationConstants.NOTIFICATION_ID_TWA_DISCLOSURE_SUBSEQUENT;
 
 import android.content.Intent;
-import android.support.test.filters.MediumTest;
 
 import androidx.test.espresso.Espresso;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

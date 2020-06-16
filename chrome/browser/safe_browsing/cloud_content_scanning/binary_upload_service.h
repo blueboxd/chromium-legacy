@@ -19,7 +19,9 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/safe_browsing/core/proto/csd.pb.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -82,6 +84,9 @@ class BinaryUploadService : public KeyedService {
   // Callbacks used to pass along the results of scanning. The response protos
   // will only be populated if the result is SUCCESS.
   using Callback = base::OnceCallback<void(Result, DeepScanningClientResponse)>;
+  using ContentAnalysisCallback =
+      base::OnceCallback<void(Result,
+                              enterprise_connectors::ContentAnalysisResponse)>;
 
   // A class to encapsulate the a request for upload. This class will provide
   // all the functionality needed to generate a DeepScanningRequest, and
@@ -136,20 +141,35 @@ class BinaryUploadService : public KeyedService {
     void set_request_dlp_scan(DlpDeepScanningClientRequest dlp_request);
     void set_request_malware_scan(
         MalwareDeepScanningClientRequest malware_request);
+    void set_request_token(const std::string& token);
+    void clear_dlp_scan_request();
+
+    // Methods for modifying the ContentAnalysisRequest.
+    void set_analysis_connector(
+        enterprise_connectors::AnalysisConnector connector);
+    void set_url(const std::string& url);
+    void set_csd(ClientDownloadRequest csd);
+    void add_tag(const std::string& tag);
+
+    // Methods for modifying either internal proto requests.
     void set_fcm_token(const std::string& token);
     void set_device_token(const std::string& token);
-    void set_request_token(const std::string& token);
     void set_filename(const std::string& filename);
     void set_digest(const std::string& digest);
-    void clear_dlp_scan_request();
 
     // Finish the request, with the given |result| and |response| from the
     // server.
     void FinishRequest(Result result, DeepScanningClientResponse response);
 
    private:
+    const bool use_legacy_proto_;
+
     DeepScanningClientRequest deep_scanning_request_;
     Callback callback_;
+
+    enterprise_connectors::ContentAnalysisRequest content_analysis_request_;
+    ContentAnalysisCallback content_analysis_callback_;
+
     GURL url_;
   };
 

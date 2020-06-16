@@ -248,7 +248,7 @@ CompositorFrameReporter::CopyReporterAtBeginImplStage() const {
   if (stage_history_.empty() ||
       stage_history_.front().stage_type !=
           StageType::kBeginImplFrameToSendBeginMainFrame ||
-      !did_finish_impl_frame()) {
+      (!did_finish_impl_frame() && !did_not_produce_frame_time_.has_value())) {
     return nullptr;
   }
   auto new_reporter = std::make_unique<CompositorFrameReporter>(

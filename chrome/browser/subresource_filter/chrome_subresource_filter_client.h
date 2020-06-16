@@ -46,7 +46,7 @@ enum class SubresourceFilterAction {
 
   // Logged when the user presses "Always allow ads" scoped to a particular
   // site. Does not count manual changes to content settings.
-  kWhitelistedSite = 4,
+  kAllowlistedSite = 4,
 
   // Logged when a devtools message arrives notifying us to force activation in
   // this web contents.
@@ -97,7 +97,7 @@ class ChromeSubresourceFilterClient
 
  private:
   friend class content::WebContentsUserData<ChromeSubresourceFilterClient>;
-  void WhitelistByContentSettings(const GURL& url);
+  void AllowlistByContentSettings(const GURL& url);
   void ShowUI(const GURL& url);
 
   std::unique_ptr<subresource_filter::ContentSubresourceFilterThrottleManager>

@@ -50,7 +50,7 @@ class SubresourceFilterTestHarness : public ChromeRenderViewHostTestHarness {
 
   ChromeSubresourceFilterClient* GetClient();
 
-  void RemoveURLFromBlacklist(const GURL& url);
+  void RemoveURLFromBlocklist(const GURL& url);
 
   SubresourceFilterContentSettingsManager* GetSettingsManager();
 

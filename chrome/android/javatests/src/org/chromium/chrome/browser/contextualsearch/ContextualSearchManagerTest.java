@@ -21,8 +21,6 @@ import android.graphics.Point;
 import android.os.Build;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.LargeTest;
-import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -30,6 +28,8 @@ import android.view.ViewConfiguration;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.test.filters.LargeTest;
+import androidx.test.filters.SmallTest;
 
 import com.google.common.collect.ImmutableMap;
 

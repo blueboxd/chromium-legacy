@@ -35,18 +35,18 @@ class StubIt2MeConfirmationDialog : public It2MeConfirmationDialog {
 
   void ReportResult(Result result) {
     ASSERT_TRUE(task_runner_->BelongsToCurrentThread());
-    callback_.Run(result);
+    std::move(callback_).Run(result);
   }
 
   MOCK_METHOD0(OnShow, void());
 
   // It2MeConfirmationDialog implementation.
   void Show(const std::string& remote_user_email,
-            const ResultCallback& callback) override {
+            ResultCallback callback) override {
     EXPECT_TRUE(callback_.is_null());
     EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
     EXPECT_EQ(remote_user_email.compare(kTestEmailAddress), 0);
-    callback_ = callback;
+    callback_ = std::move(callback);
     OnShow();
   }
 

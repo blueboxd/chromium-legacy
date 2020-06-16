@@ -9,13 +9,13 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.StrictMode;
 import android.provider.MediaStore;
-import android.support.test.filters.LargeTest;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.widget.Button;
 
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.filters.LargeTest;
 
 import org.junit.Assert;
 import org.junit.Before;

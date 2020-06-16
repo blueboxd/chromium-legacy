@@ -258,7 +258,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   String ColorSpaceAsString() const override;
   CanvasPixelFormat PixelFormat() const override;
 
-  bool Is2d() const override { return true; }
+  bool IsRenderingContext2D() const override { return true; }
   bool IsComposited() const override;
   bool IsAccelerated() const override;
   bool IsOriginTopLeft() const override;

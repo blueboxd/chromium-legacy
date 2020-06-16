@@ -80,7 +80,9 @@ class P2PSocketManager::DnsRequest {
   DnsRequest(net::HostResolver* host_resolver, bool enable_mdns)
       : resolver_(host_resolver), enable_mdns_(enable_mdns) {}
 
-  void Resolve(const std::string& host_name, DoneCallback done_callback) {
+  void Resolve(const std::string& host_name,
+               const net::NetworkIsolationKey& network_isolation_key,
+               DoneCallback done_callback) {
     DCHECK(!done_callback.is_null());
 
     host_name_ = host_name;
@@ -108,7 +110,7 @@ class P2PSocketManager::DnsRequest {
       parameters.source = net::HostResolverSource::MULTICAST_DNS;
 #endif  // ENABLE_MDNS
     }
-    request_ = resolver_->CreateRequest(host, net::NetworkIsolationKey::Todo(),
+    request_ = resolver_->CreateRequest(host, network_isolation_key,
                                         net::NetLogWithSource(), parameters);
 
     int result = request_->Start(base::BindOnce(
@@ -145,6 +147,7 @@ class P2PSocketManager::DnsRequest {
 };
 
 P2PSocketManager::P2PSocketManager(
+    const net::NetworkIsolationKey& network_isolation_key,
     mojo::PendingRemote<mojom::P2PTrustedSocketManagerClient>
         trusted_socket_manager_client,
     mojo::PendingReceiver<mojom::P2PTrustedSocketManager>
@@ -154,6 +157,7 @@ P2PSocketManager::P2PSocketManager(
     net::URLRequestContext* url_request_context)
     : delete_callback_(std::move(delete_callback)),
       url_request_context_(url_request_context),
+      network_isolation_key_(network_isolation_key),
       network_list_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
       trusted_socket_manager_client_(std::move(trusted_socket_manager_client)),
@@ -287,7 +291,7 @@ void P2PSocketManager::GetHostAddress(
   DnsRequest* request_ptr = request.get();
   dns_requests_.insert(std::move(request));
   request_ptr->Resolve(
-      host_name,
+      host_name, network_isolation_key_,
       base::BindOnce(&P2PSocketManager::OnAddressResolved,
                      base::Unretained(this), request_ptr, std::move(callback)));
 }
@@ -328,7 +332,7 @@ void P2PSocketManager::CreateSocket(
   // Init() may call SocketManager::DestroySocket(), so it must be called after
   // adding the socket to |sockets_|.
   socket_ptr->Init(local_address, port_range.min_port, port_range.max_port,
-                   remote_address);
+                   remote_address, network_isolation_key_);
 }
 
 void P2PSocketManager::StartRtpDump(bool incoming, bool outgoing) {

@@ -14,7 +14,7 @@ struct WebMessage;
 // Represents the browser side of a WebMessage channel.
 class WebMessageHost {
  public:
-  virtual ~WebMessageHost() {}
+  virtual ~WebMessageHost() = default;
 
   virtual void OnPostMessage(std::unique_ptr<WebMessage> message) = 0;
 };

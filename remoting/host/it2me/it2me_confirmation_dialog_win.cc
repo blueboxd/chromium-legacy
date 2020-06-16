@@ -65,7 +65,7 @@ class It2MeConfirmationDialogWin : public It2MeConfirmationDialog {
 
   // It2MeConfirmationDialog implementation.
   void Show(const std::string& remote_user_email,
-            const ResultCallback& callback) override;
+            ResultCallback callback) override;
 
  private:
   // Tracks whether the dialog was in the foreground the last time we checked.
@@ -81,9 +81,9 @@ It2MeConfirmationDialogWin::It2MeConfirmationDialogWin() {}
 It2MeConfirmationDialogWin::~It2MeConfirmationDialogWin() {}
 
 void It2MeConfirmationDialogWin::Show(const std::string& remote_user_email,
-                                      const ResultCallback& callback) {
+                                      ResultCallback callback) {
   DCHECK(!remote_user_email.empty());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   // Default to a cancelled state.  We only accept the connection if the user
   // explicitly allows it.
@@ -95,14 +95,14 @@ void It2MeConfirmationDialogWin::Show(const std::string& remote_user_email,
   HMODULE resource_module = GetModuleHandle(L"remoting_core.dll");
   if (resource_module == nullptr) {
     PLOG(ERROR) << "GetModuleHandle() failed";
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
 
   base::string16 title_text;
   if (!LoadStringResource(resource_module, IDS_PRODUCT_NAME, &title_text)) {
     LOG(ERROR) << "Failed to load title text for confirmation dialog.";
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
 
@@ -111,7 +111,7 @@ void It2MeConfirmationDialogWin::Show(const std::string& remote_user_email,
                           IDS_SHARE_CONFIRM_DIALOG_MESSAGE_WITH_USERNAME,
                           &message_text)) {
     LOG(ERROR) << "Failed to load message text for confirmation dialog.";
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
   message_text = base::i18n::MessageFormatter::FormatWithNumberedArgs(
@@ -121,7 +121,7 @@ void It2MeConfirmationDialogWin::Show(const std::string& remote_user_email,
   if (!LoadStringResource(resource_module, IDS_SHARE_CONFIRM_DIALOG_CONFIRM,
                           &share_button_text)) {
     LOG(ERROR) << "Failed to load share button text for confirmation dialog.";
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
 
@@ -129,7 +129,7 @@ void It2MeConfirmationDialogWin::Show(const std::string& remote_user_email,
   if (!LoadStringResource(resource_module, IDS_SHARE_CONFIRM_DIALOG_DECLINE,
                           &decline_button_text)) {
     LOG(ERROR) << "Failed to load decline button text for confirmation dialog.";
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
 
@@ -161,7 +161,7 @@ void It2MeConfirmationDialogWin::Show(const std::string& remote_user_email,
       LOG(ERROR) << "TaskDialogIndirect() Failed: 0x" << std::hex << hr;
     }
 
-    callback.Run(result);
+    std::move(callback).Run(result);
     return;
   }
 
@@ -170,7 +170,7 @@ void It2MeConfirmationDialogWin::Show(const std::string& remote_user_email,
     result = Result::OK;
   }
 
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 HRESULT CALLBACK

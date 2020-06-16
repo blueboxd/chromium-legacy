@@ -9,6 +9,7 @@
 #include <lib/fidl/cpp/binding_set.h>
 #include <lib/fit/function.h>
 #include <lib/sys/cpp/component_context.h>
+#include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <utility>
 
 #include "base/bind.h"
@@ -128,6 +129,16 @@ void WebComponent::CreateView(
     zx::eventpair view_token_value,
     fidl::InterfaceRequest<fuchsia::sys::ServiceProvider> incoming_services,
     fidl::InterfaceHandle<fuchsia::sys::ServiceProvider> outgoing_services) {
+  scenic::ViewRefPair view_ref_pair = scenic::ViewRefPair::New();
+  CreateViewWithViewRef(std::move(view_token_value),
+                        std::move(view_ref_pair.control_ref),
+                        std::move(view_ref_pair.view_ref));
+}
+
+void WebComponent::CreateViewWithViewRef(
+    zx::eventpair view_token_value,
+    fuchsia::ui::views::ViewRefControl control_ref,
+    fuchsia::ui::views::ViewRef view_ref) {
   DCHECK(frame_);
   if (view_is_bound_) {
     LOG(ERROR) << "CreateView() called more than once.";
@@ -137,7 +148,8 @@ void WebComponent::CreateView(
 
   fuchsia::ui::views::ViewToken view_token;
   view_token.value = std::move(view_token_value);
-  frame_->CreateView(std::move(view_token));
+  frame_->CreateViewWithViewRef(std::move(view_token), std::move(control_ref),
+                                std::move(view_ref));
 
   view_is_bound_ = true;
 }

@@ -28,9 +28,9 @@ import static org.mockito.Mockito.when;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.test.filters.MediumTest;
 
 import androidx.test.espresso.action.ViewActions;
+import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matcher;
 import org.junit.Rule;

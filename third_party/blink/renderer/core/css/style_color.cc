@@ -8,6 +8,34 @@
 
 namespace blink {
 
+StyleColor::StyleColor() : color_keyword_(CSSValueID::kCurrentcolor) {}
+
+StyleColor::StyleColor(Color color)
+    : color_(color), color_keyword_(CSSValueID::kInvalid) {}
+
+StyleColor::StyleColor(CSSValueID keyword) : color_keyword_(keyword) {}
+
+StyleColor StyleColor::CurrentColor() {
+  return StyleColor();
+}
+
+bool StyleColor::IsCurrentColor() const {
+  return color_keyword_ == CSSValueID::kCurrentcolor;
+}
+
+Color StyleColor::GetColor() const {
+  DCHECK(!IsCurrentColor());
+  return color_;
+}
+
+Color StyleColor::Resolve(Color current_color) const {
+  return IsCurrentColor() ? current_color : color_;
+}
+
+bool StyleColor::HasAlpha() const {
+  return !IsCurrentColor() && color_.HasAlpha();
+}
+
 Color StyleColor::ColorFromKeyword(CSSValueID keyword,
                                    WebColorScheme color_scheme) {
   if (const char* value_name = getValueName(keyword)) {
@@ -49,6 +77,16 @@ bool StyleColor::IsColorKeyword(CSSValueID id) {
 bool StyleColor::IsSystemColor(CSSValueID id) {
   return (id >= CSSValueID::kActiveborder && id <= CSSValueID::kWindowtext) ||
          id == CSSValueID::kMenu;
+}
+
+bool operator==(const StyleColor& a, const StyleColor& b) {
+  if (a.IsCurrentColor() || b.IsCurrentColor())
+    return a.IsCurrentColor() && b.IsCurrentColor();
+  return a.GetColor() == b.GetColor();
+}
+
+bool operator!=(const StyleColor& a, const StyleColor& b) {
+  return !(a == b);
 }
 
 }  // namespace blink

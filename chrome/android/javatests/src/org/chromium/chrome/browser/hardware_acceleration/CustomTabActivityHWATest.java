@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.hardware_acceleration;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Rule;
 import org.junit.Test;

@@ -117,9 +117,9 @@ class HomeAndExtendedTransitionAnimation : public ui::LayerAnimationElement {
         /*is_padding_configured_externally=*/true);
 
     // Save initial and target padding insets.
-    initial_padding_insets_ = scrollable_shelf_view->GetTotalEdgePadding();
+    initial_padding_insets_ = scrollable_shelf_view->edge_padding_insets();
     target_padding_insets_ =
-        scrollable_shelf_view->CalculateTotalEdgePaddingInTargetBounds();
+        scrollable_shelf_view->CalculateEdgePadding(/*use_target_bounds=*/true);
 
     // Save initial opacity.
     start_opacity_ = hotseat_widget_->GetNativeView()->layer()->opacity();
@@ -147,7 +147,7 @@ class HomeAndExtendedTransitionAnimation : public ui::LayerAnimationElement {
         tweened, initial_padding_insets_.right(),
         target_padding_insets_.right()));
     ScrollableShelfView* scrollable_shelf_view = GetScrollableShelfView();
-    scrollable_shelf_view->SetTotalPaddingInsets(insets_in_animation_progress);
+    scrollable_shelf_view->SetEdgePaddingInsets(insets_in_animation_progress);
 
     // Update hotseat widget opacity.
     delegate->SetOpacityFromAnimation(
@@ -162,7 +162,7 @@ class HomeAndExtendedTransitionAnimation : public ui::LayerAnimationElement {
                                      target_hotseat_background_in_screen_);
     gfx::Rect widget_bounds_in_progress = hotseat_background_in_progress;
     widget_bounds_in_progress.Inset(
-        -scrollable_shelf_view->GetTotalEdgePadding());
+        -scrollable_shelf_view->edge_padding_insets());
 
     // Update hotseat widget bounds.
     delegate->SetBoundsFromAnimation(widget_bounds_in_progress,
@@ -671,15 +671,21 @@ void HotseatWidget::CalculateTargetBounds() {
   gfx::Point hotseat_origin;
   int hotseat_width;
   int hotseat_height;
+
+  // The minimum gap between hotseat widget and other shelf components including
+  // the status area widget and shelf navigation widget (or the edge of display,
+  // if the shelf navigation widget does not show).
+  const int group_margin = ShelfConfig::Get()->app_icon_group_margin();
+
   if (shelf_->IsHorizontalAlignment()) {
     hotseat_width = shelf_bounds.width() - nav_bounds.size().width() -
-                    horizontal_edge_spacing -
-                    ShelfConfig::Get()->app_icon_group_margin() -
+                    horizontal_edge_spacing - 2 * group_margin -
                     status_size.width();
     int hotseat_x =
         base::i18n::IsRTL()
-            ? nav_bounds.x() - horizontal_edge_spacing - hotseat_width
-            : nav_bounds.right() + horizontal_edge_spacing;
+            ? nav_bounds.x() - horizontal_edge_spacing - group_margin -
+                  hotseat_width
+            : nav_bounds.right() + horizontal_edge_spacing + group_margin;
     if (hotseat_target_state != HotseatState::kShownHomeLauncher &&
         hotseat_target_state != HotseatState::kShownClamshell) {
       // Give the hotseat more space if it is shown outside of the shelf.
@@ -690,12 +696,12 @@ void HotseatWidget::CalculateTargetBounds() {
         gfx::Point(hotseat_x, CalculateHotseatYInScreen(hotseat_target_state));
     hotseat_height = GetHotseatSize();
   } else {
-    hotseat_origin = gfx::Point(shelf_bounds.x(),
-                                nav_bounds.bottom() + vertical_edge_spacing);
+    hotseat_origin =
+        gfx::Point(shelf_bounds.x(),
+                   nav_bounds.bottom() + vertical_edge_spacing + group_margin);
     hotseat_width = shelf_bounds.width();
     hotseat_height = shelf_bounds.height() - nav_bounds.size().height() -
-                     vertical_edge_spacing -
-                     ShelfConfig::Get()->app_icon_group_margin() -
+                     vertical_edge_spacing - 2 * group_margin -
                      status_size.height();
   }
   target_bounds_ =

@@ -257,7 +257,7 @@
 
 #pragma mark - ConfirmationAlertActionHandler
 
-- (void)confirmationAlertDone {
+- (void)confirmationAlertDismissAction {
   // Finish the extension. There is no recovery from the stale credentials
   // state.
   [self exitWithErrorCode:ASExtensionErrorCodeFailed];

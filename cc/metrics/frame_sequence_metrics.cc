@@ -141,6 +141,8 @@ FrameSequenceMetrics::ThreadType FrameSequenceMetrics::GetEffectiveThread()
       return ThreadType::kSlower;
 
     case FrameSequenceTrackerType::kCustom:
+      return ThreadType::kMain;
+
     case FrameSequenceTrackerType::kMaxType:
       NOTREACHED();
   }
@@ -149,6 +151,8 @@ FrameSequenceMetrics::ThreadType FrameSequenceMetrics::GetEffectiveThread()
 
 void FrameSequenceMetrics::Merge(
     std::unique_ptr<FrameSequenceMetrics> metrics) {
+  // Merging custom trackers are not supported.
+  DCHECK_NE(type_, FrameSequenceTrackerType::kCustom);
   DCHECK_EQ(type_, metrics->type_);
   DCHECK_EQ(GetEffectiveThread(), metrics->GetEffectiveThread());
   impl_throughput_.Merge(metrics->impl_throughput_);
@@ -199,6 +203,9 @@ void FrameSequenceMetrics::ReportMetrics() {
   DCHECK_LE(impl_throughput_.frames_produced, impl_throughput_.frames_expected);
   DCHECK_LE(main_throughput_.frames_produced, main_throughput_.frames_expected);
 
+  // Terminates |trace_data_| for all types of FrameSequenceTracker.
+  trace_data_.Terminate();
+
   if (type_ == FrameSequenceTrackerType::kCustom) {
     DCHECK(!custom_reporter_.is_null());
     std::move(custom_reporter_).Run(std::move(main_throughput_));
@@ -210,7 +217,6 @@ void FrameSequenceMetrics::ReportMetrics() {
     return;
   }
 
-  trace_data_.Terminate();
   ComputeAggregatedThroughput();
 
   // Report the throughput metrics.

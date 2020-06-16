@@ -19,7 +19,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
@@ -33,6 +32,7 @@ import org.chromium.components.content_settings.CookieControlsEnforcement;
 import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.content_settings.CookieControlsStatus;
+import org.chromium.components.content_settings.PrefNames;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -102,7 +102,7 @@ public class CookieControlsBridgeTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Set CookieControlsMode Pref to Off
             PrefServiceBridge.getInstance().setInteger(
-                    Pref.COOKIE_CONTROLS_MODE, CookieControlsMode.OFF);
+                    PrefNames.COOKIE_CONTROLS_MODE, CookieControlsMode.OFF);
         });
         int currentCallCount = mCallbackHelper.getCallCount();
 
@@ -131,7 +131,7 @@ public class CookieControlsBridgeTest {
     public void testCookieBridgeWith3PCookiesEnabled() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setInteger(
-                    Pref.COOKIE_CONTROLS_MODE, CookieControlsMode.BLOCK_THIRD_PARTY);
+                    PrefNames.COOKIE_CONTROLS_MODE, CookieControlsMode.BLOCK_THIRD_PARTY);
         });
         int currentCallCount = mCallbackHelper.getCallCount();
 
@@ -160,7 +160,7 @@ public class CookieControlsBridgeTest {
     public void testCookieBridgeWithChangingBlockedCookiesCount() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setInteger(
-                    Pref.COOKIE_CONTROLS_MODE, CookieControlsMode.BLOCK_THIRD_PARTY);
+                    PrefNames.COOKIE_CONTROLS_MODE, CookieControlsMode.BLOCK_THIRD_PARTY);
             // Block all cookies
             WebsitePreferenceBridge.setCategoryEnabled(
                     Profile.getLastUsedRegularProfile(), ContentSettingsType.COOKIES, false);
@@ -198,7 +198,7 @@ public class CookieControlsBridgeTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Set CookieControlsMode Pref to IncognitoOnly
             PrefServiceBridge.getInstance().setInteger(
-                    Pref.COOKIE_CONTROLS_MODE, CookieControlsMode.INCOGNITO_ONLY);
+                    PrefNames.COOKIE_CONTROLS_MODE, CookieControlsMode.INCOGNITO_ONLY);
         });
         int currentCallCount = mCallbackHelper.getCallCount();
 

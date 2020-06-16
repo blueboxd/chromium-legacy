@@ -8,11 +8,11 @@ import android.content.ComponentName;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 import androidx.browser.trusted.TrustedWebActivityCallback;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

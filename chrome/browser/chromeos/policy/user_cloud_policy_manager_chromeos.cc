@@ -24,7 +24,7 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_impl.h"
-#include "chrome/browser/chromeos/policy/app_install_event_log_uploader.h"
+#include "chrome/browser/chromeos/policy/arc_app_install_event_log_uploader.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/policy_oauth2_token_fetcher.h"
 #include "chrome/browser/chromeos/policy/remote_commands/user_commands_factory_chromeos.h"
@@ -266,7 +266,7 @@ void UserCloudPolicyManagerChromeOS::Connect(
   }
 
   app_install_event_log_uploader_ =
-      std::make_unique<AppInstallEventLogUploader>(client(), profile_);
+      std::make_unique<ArcAppInstallEventLogUploader>(client(), profile_);
 }
 
 void UserCloudPolicyManagerChromeOS::OnAccessTokenAvailable(
@@ -333,7 +333,7 @@ void UserCloudPolicyManagerChromeOS::EnableWildcardLoginCheck(
   wildcard_username_ = username;
 }
 
-AppInstallEventLogUploader*
+ArcAppInstallEventLogUploader*
 UserCloudPolicyManagerChromeOS::GetAppInstallEventLogUploader() {
   return app_install_event_log_uploader_.get();
 }

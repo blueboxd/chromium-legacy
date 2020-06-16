@@ -25,6 +25,9 @@
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/find_in_page/find_tab_helper.h"
 #include "components/find_in_page/find_types.h"
+#include "components/js_injection/browser/js_communication_host.h"
+#include "components/js_injection/browser/web_message_host.h"
+#include "components/js_injection/browser/web_message_host_factory.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_result.h"
@@ -52,6 +55,7 @@
 #include "weblayer/browser/host_content_settings_map_factory.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/browser/infobar_service.h"
+#include "weblayer/browser/js_communication/web_message_host_factory_wrapper.h"
 #include "weblayer/browser/navigation_controller_impl.h"
 #include "weblayer/browser/page_load_metrics_initialize.h"
 #include "weblayer/browser/password_manager_driver_factory.h"
@@ -64,6 +68,8 @@
 #include "weblayer/browser/weblayer_features.h"
 #include "weblayer/common/isolated_world_ids.h"
 #include "weblayer/public/fullscreen_delegate.h"
+#include "weblayer/public/js_communication/web_message.h"
+#include "weblayer/public/js_communication/web_message_host_factory.h"
 #include "weblayer/public/new_tab_delegate.h"
 #include "weblayer/public/tab_observer.h"
 
@@ -280,6 +286,10 @@ TabImpl::TabImpl(ProfileImpl* profile,
 
   navigation_controller_ = std::make_unique<NavigationControllerImpl>(this);
 
+#if defined(OS_ANDROID)
+  InfoBarService::CreateForWebContents(web_contents_.get());
+#endif
+
   find_in_page::FindTabHelper::CreateForWebContents(web_contents_.get());
   GetFindTabHelper()->AddObserver(this);
 
@@ -440,6 +450,26 @@ void TabImpl::SetData(const std::map<std::string, std::string>& data) {
 
 const std::map<std::string, std::string>& TabImpl::GetData() {
   return data_;
+}
+
+base::string16 TabImpl::AddWebMessageHostFactory(
+    std::unique_ptr<WebMessageHostFactory> factory,
+    const base::string16& js_object_name,
+    const std::vector<std::string>& allowed_origin_rules) {
+  if (!js_communication_host_) {
+    js_communication_host_ =
+        std::make_unique<js_injection::JsCommunicationHost>(
+            web_contents_.get());
+  }
+  return js_communication_host_->AddWebMessageHostFactory(
+      std::make_unique<WebMessageHostFactoryWrapper>(std::move(factory)),
+      js_object_name, allowed_origin_rules);
+}
+
+void TabImpl::RemoveWebMessageHostFactory(
+    const base::string16& js_object_name) {
+  if (js_communication_host_)
+    js_communication_host_->RemoveWebMessageHostFactory(js_object_name);
 }
 
 void TabImpl::ExecuteScriptWithUserGestureForTests(

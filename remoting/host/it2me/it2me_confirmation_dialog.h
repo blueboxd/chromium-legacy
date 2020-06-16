@@ -23,14 +23,14 @@ class It2MeConfirmationDialog {
     CANCEL
   };
 
-  typedef base::Callback<void(Result)> ResultCallback;
+  typedef base::OnceCallback<void(Result)> ResultCallback;
 
   virtual ~It2MeConfirmationDialog() {}
 
   // Shows the dialog. |callback| will be called with the user's selection.
   // |callback| will not be called if the dialog is destroyed.
   virtual void Show(const std::string& remote_user_email,
-                    const ResultCallback& callback) = 0;
+                    ResultCallback callback) = 0;
 };
 
 class It2MeConfirmationDialogFactory {

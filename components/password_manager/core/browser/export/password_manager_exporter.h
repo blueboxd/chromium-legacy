@@ -32,8 +32,7 @@ class PasswordManagerExporter {
                                    const std::string&)>;
   using WriteCallback =
       base::RepeatingCallback<bool(const base::FilePath&, base::StringPiece)>;
-  using DeleteCallback =
-      base::RepeatingCallback<bool(const base::FilePath&, bool)>;
+  using DeleteCallback = base::RepeatingCallback<bool(const base::FilePath&)>;
   using SetPosixFilePermissionsCallback =
       base::RepeatingCallback<bool(const base::FilePath&, int)>;
 

@@ -34,6 +34,8 @@ static_library("arc") {
     "intent_helper/arc_intent_helper_bridge.h",
     "intent_helper/arc_intent_helper_observer.h",
     "intent_helper/control_camera_app_delegate.h",
+    "intent_helper/custom_tab.cc",
+    "intent_helper/custom_tab.h",
     "intent_helper/factory_reset_delegate.h",
     "intent_helper/intent_constants.cc",
     "intent_helper/intent_constants.h",
@@ -231,6 +233,7 @@ static_library("arc_base") {
 
   deps = [
     "//ash/public/cpp",
+    "//ash/public/cpp/external_arc",
     "//base",
     "//chromeos/constants",
     "//chromeos/cryptohome",

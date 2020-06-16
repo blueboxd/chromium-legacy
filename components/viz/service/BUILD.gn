@@ -330,6 +330,10 @@ viz_source_set("gpu_service_dependencies") {
   sources = [
     "display_embedder/image_context_impl.cc",
     "display_embedder/image_context_impl.h",
+    "display_embedder/output_presenter.cc",
+    "display_embedder/output_presenter.h",
+    "display_embedder/output_presenter_gl.cc",
+    "display_embedder/output_presenter_gl.h",
     "display_embedder/skia_output_device.cc",
     "display_embedder/skia_output_device.h",
     "display_embedder/skia_output_device_buffer_queue.cc",

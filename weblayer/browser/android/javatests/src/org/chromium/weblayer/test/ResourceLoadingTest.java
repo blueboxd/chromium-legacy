@@ -6,11 +6,12 @@ package org.chromium.weblayer.test;
 
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
-import android.support.test.filters.SmallTest;
 import android.util.TypedValue;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

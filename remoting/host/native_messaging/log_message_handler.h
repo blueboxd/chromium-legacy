@@ -25,7 +25,8 @@ namespace remoting {
 // over a Native Messaging channel.
 class LogMessageHandler {
  public:
-  typedef base::Callback<void(std::unique_ptr<base::Value> message)> Delegate;
+  typedef base::RepeatingCallback<void(std::unique_ptr<base::Value> message)>
+      Delegate;
 
   explicit LogMessageHandler(const Delegate& delegate);
   ~LogMessageHandler();

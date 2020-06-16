@@ -534,6 +534,18 @@ public class TranslateCompactInfoBar extends InfoBar
         return mParent != null ? mParent.getWidth() : 0;
     }
 
+    @CalledByNative
+    // Selects the tab corresponding to |actionType| to simulate the user pressing on this tab.
+    private void selectTabForTesting(int actionType) {
+        if (actionType == ActionType.TRANSLATE) {
+            mTabLayout.getTabAt(TARGET_TAB_INDEX).select();
+        } else if (actionType == ActionType.TRANSLATE_SHOW_ORIGINAL) {
+            mTabLayout.getTabAt(SOURCE_TAB_INDEX).select();
+        } else {
+            assert false;
+        }
+    }
+
     @NativeMethods
     interface Natives {
         void applyStringTranslateOption(long nativeTranslateCompactInfoBar,

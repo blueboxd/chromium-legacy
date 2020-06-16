@@ -17,9 +17,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/version.h"
+#import "chrome/updater/app/server/mac/service_protocol.h"
+#import "chrome/updater/app/server/mac/update_service_wrappers.h"
 #import "chrome/updater/mac/setup/info_plist.h"
-#import "chrome/updater/server/mac/service_protocol.h"
-#import "chrome/updater/server/mac/update_service_wrappers.h"
 #include "chrome/updater/test/test_app/test_app_version.h"
 
 namespace {

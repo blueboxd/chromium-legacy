@@ -501,15 +501,6 @@ TEST_F(MetricsServiceTest, SplitRotation) {
   task_runner_->RunPendingTasks();
   EXPECT_TRUE(client.uploader()->is_uploading());
   EXPECT_EQ(1U, task_runner_->NumPendingTasks());
-  // Uploader should reschedule when there is another log available.
-  service.PushExternalLog("Blah");
-  client.uploader()->CompleteUpload(200);
-  EXPECT_FALSE(client.uploader()->is_uploading());
-  EXPECT_EQ(2U, task_runner_->NumPendingTasks());
-  // Upload should start.
-  task_runner_->RunPendingTasks();
-  EXPECT_TRUE(client.uploader()->is_uploading());
-  EXPECT_EQ(1U, task_runner_->NumPendingTasks());
 }
 
 TEST_F(MetricsServiceTest, LastLiveTimestamp) {

@@ -5,7 +5,8 @@
 package org.chromium.components.sync.notifier;
 
 import android.accounts.Account;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 

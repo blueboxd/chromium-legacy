@@ -96,6 +96,10 @@ function verifyImageData(imageData) {
  *   The callback function to be called in case of an error.
  */
 function setIcon(details, callback, failureCallback) {
+  // NOTE: |details| should already have gone through API argument validation,
+  // and, as part of that, will be a null-proto'd object. As such, it's safer
+  // to directly access and manipulate fields.
+
   // Note that iconIndex is actually deprecated, and only available to the
   // pageAction API.
   // TODO(kalman): Investigate whether this is for the pageActions API, and if
@@ -108,7 +112,7 @@ function setIcon(details, callback, failureCallback) {
   if ('imageData' in details) {
     if (smellsLikeImageData(details.imageData)) {
       var imageData = details.imageData;
-      details.imageData = {};
+      details.imageData = {__proto__: null};
       details.imageData[imageData.width.toString()] = imageData;
     } else if (typeof details.imageData == 'object' &&
                Object.getOwnPropertyNames(details.imageData).length !== 0) {
@@ -125,7 +129,7 @@ function setIcon(details, callback, failureCallback) {
 
   if ('path' in details) {
     if (typeof details.path == 'object') {
-      details.imageData = {};
+      details.imageData = {__proto__: null};
       var detailKeyCount = 0;
       for (var iconSize in details.path) {
         ++detailKeyCount;
@@ -138,7 +142,7 @@ function setIcon(details, callback, failureCallback) {
       if (detailKeyCount == 0)
         throw new Error('The path property must not be empty.');
     } else if (typeof details.path == 'string') {
-      details.imageData = {};
+      details.imageData = {__proto__: null};
       loadImagePath(details.path, function(imageData) {
         details.imageData[imageData.width.toString()] = imageData;
         delete details.path;

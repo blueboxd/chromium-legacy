@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">ৱেবছাইটত ছাইন ইন কৰক</translation>
 <translation id="1509960214886564027">বহুতো ছাইটৰ সুবিধাসমূহ ব্যাহত হ’ব পাৰে</translation>
 <translation id="152234381334907219">কেতিয়াও ছেভ কৰা নহয়</translation>
+<translation id="1535268707340844072">আপোনাৰ বৰ্তমানৰ ছেটিংটোৱে কিছুমান ছাইটৰ বাবে সমস্যাৰ সৃষ্টি কৰিব পাৰে। সকলো ছাইটৰ কুকিসমূহ পৰিচালনা কৰিবলৈ <ph name="BEGIN_LINK" />কুকিৰ ছেটিংসমূহ<ph name="END_LINK" /> চাওক।</translation>
 <translation id="1540800554400757039">ঠিকনা ১</translation>
 <translation id="1545749641540134597">কিউআৰ ক’ড স্কেন কৰক</translation>
 <translation id="1552525382687785070">আপোনাৰ প্ৰশাসকে ছিংক অক্ষম কৰিছে</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212"><ph name="DAYS" />দিনৰ পূৰ্বে সক্ৰিয় আছিল</translation>
 <translation id="2074131957428911366">আপুনি কি ছিংক কৰিব লাগে সেয়া <ph name="BEGIN_LINK" />ছেটিংসমূহ<ph name="END_LINK" />-লৈ গৈ যেতিয়াই মন যায় তেতিয়াই সলনি কৰিব পাৰে।</translation>
 <translation id="2079545284768500474">আনডু কৰক</translation>
+<translation id="2081417079511601293">ইনক’গনিট’ত তৃতীয় পক্ষক অৱৰোধ কৰক</translation>
 <translation id="209018056901015185">ডেস্কটপ ছাইটৰ বাবে অনুৰোধ কৰক</translation>
 <translation id="2103075008456228677">history.google.com খোলক</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />টা বস্তু স্থানান্তৰ কৰা হ’ল</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">নতুন টেবত খোলক</translation>
 <translation id="3037605927509011580">আমি দুঃখিত!</translation>
 <translation id="3112556859945124369">চিহ্নিত কৰক…</translation>
+<translation id="3131206671572504478">সকলো অৱৰোধ কৰক</translation>
 <translation id="3153862085237805241">কাৰ্ড ছেভ কৰক</translation>
 <translation id="3157684681743766797">সকলো চিহ্নিত কৰক…</translation>
 <translation id="3161291298470460782">এই কাৰ্যই আপোনাক ছাইন আউট কৰাব, ছিংক অফ কৰিব আৰু আপোনাৰ ডিভাইচটোৰ পৰা সকলো Chrome ডেটা মচিব। আপোনাৰ ছিংক কৰা ডেটা আপোনাৰ Google একাউণ্টত থাকিব।</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">ভাষা সলনি কৰিবলৈ টিপক।</translation>
 <translation id="441868831736628555">গোপনীয়তাৰ জাননী</translation>
 <translation id="4454246407045105932">ভাষা যোগ কৰক</translation>
+<translation id="4469418912670346607">ছেটআপ কৰাটো অব্যাহত ৰাখক</translation>
 <translation id="4476574785019001431">ছেটিংসমূহ</translation>
 <translation id="4496373720959965247">টেব যোগ কৰক আৰু পৃষ্ঠাবোৰৰ মাজত সালসলনি কৰক</translation>
 <translation id="4508750114462689118">ছাইন প্ৰ’ম’ বন্ধ কৰক</translation>
@@ -300,6 +304,7 @@
 <translation id="4805759445554688327">কার্ডৰ নম্বৰ অমান্য</translation>
 <translation id="4818522717893377262">ভাষা যোগ কৰক...</translation>
 <translation id="481968316161811770">কুকি, ছাইটৰ ডেটা</translation>
+<translation id="4826218269716039351">তৃতীয় পক্ষক অৱৰোধ কৰক</translation>
 <translation id="4833786495304741580">Googleলৈ স্বয়ংক্ৰিয়ভাৱে ব্যৱহাৰৰ পৰিসংখ্যা আৰু ক্ৰেশ্ব ৰিপ’ৰ্ট পঠিয়ায়</translation>
 <translation id="4840495572919996524">আপোনাৰ বুকমাৰ্ক, ইতিহাস, পাছৱৰ্ড আৰু অধিক আপোনাৰ Google একাউণ্টৰ সৈতে আৰু ছিংক হৈ নাথাকিব।</translation>
 <translation id="4854345657858711387">পাছক'ড ছেট কৰক</translation>
@@ -345,6 +350,7 @@
 <translation id="54401264925851789">পৃষ্ঠাৰ সুৰক্ষাৰ তথ্য</translation>
 <translation id="5443952882982198570">ক্ৰেডিট কাৰ্ড</translation>
 <translation id="5457907402803865181">পাছৱৰ্ডসমূহ ছিংক কৰাত আসোঁৱাহ হৈছে।</translation>
+<translation id="5489208564673669003">সকলো ছাইটৰ কুকিসমূহ পৰিচালনা কৰিবলৈ <ph name="BEGIN_LINK" />কুকিৰ ছেটিংসমূহ<ph name="END_LINK" /> চাওক।</translation>
 <translation id="5508435575041083207">ছাইন আউট কৰক আৰু এই ডিভাইচটোৰ পৰা ডেটা মচক</translation>
 <translation id="5525269841082836315">পাছফ্ৰেজ সৃষ্টি কৰক</translation>
 <translation id="5548760955356983418">Handoff সুবিধাটোৱে এই ডিভাইচটোত এটা ৱেবছাইট ব্ৰাউজ কৰা আৰম্ভ কৰি সেইটো ছাইটৰ বাকীখিনি আপোনাৰ Macত ব্ৰাউজ কৰাৰ সুবিধা আগবঢ়ায়। বৰ্তমান খোল খাই থকা ৱেবছাইটসমূহ আপোনাৰ Macৰ Dockত দেখা পোৱা যাব।
@@ -432,6 +438,7 @@
 <translation id="6418346271604475326">PDF সাজু কৰি থকা হৈছে</translation>
 <translation id="6426067060178468363">কুকিসমূহৰ অনুমতি দিয়ক</translation>
 <translation id="6434591244308415567">আসোঁৱাহ হৈছে। পিছত আকৌ চেষ্টা কৰক।</translation>
+<translation id="6439338047467462846">সকলোকে অনুমতি দিয়ক</translation>
 <translation id="6445051938772793705">দেশ</translation>
 <translation id="6445981559479772097">বাৰ্তা পঠিওৱা হ’ল৷</translation>
 <translation id="6447842834002726250">কুকীসমূহ</translation>
@@ -439,6 +446,7 @@
 <translation id="6476800141292307438">এই পৃষ্ঠাটো <ph name="LANGUAGE" />লৈ অনুবাদ কৰি থকা হৈছে। বিকল্পসমূহ স্ক্রীণখনৰ একেবাৰে তলৰ কাষত আছে।</translation>
 <translation id="648164694371393720">বিশ্বাসযোগ্যতা প্ৰমাণীকৰণ কৰাত আসোঁৱাহ হৈছে</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> টা সমল মচা হ’ল</translation>
+<translation id="651505212789431520">ছিংক কৰাটো বাতিল কৰিবনে? আপুনি ছেটিংসমূহলৈ গৈ যিকোনো সময়তে ছিংক অন কৰিব পাৰে।</translation>
 <translation id="6561262006871132942">জুম ইন কৰক</translation>
 <translation id="6610002944194042868">অনুবাদৰ বিকল্প</translation>
 <translation id="6628106477656132239">ম্যাদ উকলাৰ তাৰিখটো অমান্য</translation>

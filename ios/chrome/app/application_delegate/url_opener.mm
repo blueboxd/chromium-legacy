@@ -49,6 +49,7 @@ const char* const kUMAMobileSessionStartFromAppsHistogram =
   if (startupInformation.isPresentingFirstRunUI) {
     UMA_HISTOGRAM_ENUMERATION("FirstRun.LaunchSource", [params launchSource],
                               first_run::LAUNCH_SIZE);
+    return NO;
   }
 
   if (applicationActive) {

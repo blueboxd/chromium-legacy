@@ -51,7 +51,9 @@ import java.util.List;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class TabSuggestionsOrchestratorTest {
-    private static final int[] TAB_IDS = {0, 1, 2};
+    private static final int[] TAB_IDS = {0, 1, 2, 3, 4};
+    private static final String GROUPING_PROVIDER = "groupingProvider";
+    private static final String CLOSE_PROVIDER = "closeProvider";
 
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -74,7 +76,8 @@ public class TabSuggestionsOrchestratorTest {
     @Mock
     private ActivityLifecycleDispatcher mDispatcher;
 
-    private static Tab[] sTabs = {mockTab(TAB_IDS[0]), mockTab(TAB_IDS[1]), mockTab(TAB_IDS[2])};
+    private static Tab[] sTabs = {mockTab(TAB_IDS[0]), mockTab(TAB_IDS[1]), mockTab(TAB_IDS[2]),
+            mockTab(TAB_IDS[3]), mockTab(TAB_IDS[4])};
 
     private static Tab mockTab(int id) {
         TabImpl tab = mock(TabImpl.class);
@@ -197,5 +200,25 @@ public class TabSuggestionsOrchestratorTest {
                 tabSuggestionsOrchestrator.mTabSuggestionFeedback.selectedTabIds.size(), 1);
         Assert.assertEquals(
                 (int) tabSuggestionsOrchestrator.mTabSuggestionFeedback.selectedTabIds.get(0), 1);
+    }
+
+    @Test
+    public void testAggregationSorting() {
+        TabSuggestion groupSuggestion =
+                new TabSuggestion(Arrays.asList(TabContext.TabInfo.createFromTab(sTabs[0]),
+                                          TabContext.TabInfo.createFromTab(sTabs[1])),
+                        TabSuggestion.TabSuggestionAction.GROUP, GROUPING_PROVIDER);
+        TabSuggestion closeSuggestion =
+                new TabSuggestion(Arrays.asList(TabContext.TabInfo.createFromTab(sTabs[2]),
+                                          TabContext.TabInfo.createFromTab(sTabs[3]),
+                                          TabContext.TabInfo.createFromTab(sTabs[4])),
+                        TabSuggestion.TabSuggestionAction.CLOSE, CLOSE_PROVIDER);
+        List<TabSuggestion> sortedSuggestions = TabSuggestionsOrchestrator.aggregateResults(
+                Arrays.asList(closeSuggestion, groupSuggestion));
+        // Grouping suggestions should come first
+        Assert.assertEquals(
+                TabSuggestion.TabSuggestionAction.GROUP, sortedSuggestions.get(0).getAction());
+        Assert.assertEquals(
+                TabSuggestion.TabSuggestionAction.CLOSE, sortedSuggestions.get(1).getAction());
     }
 }

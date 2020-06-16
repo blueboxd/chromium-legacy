@@ -1087,7 +1087,12 @@ class ScrollableShelfViewWithAppScalingTest : public ScrollableShelfViewTest {
 
     // Display should be big enough (width and height are bigger than 600).
     // Otherwise, shelf is in dense mode by default.
-    UpdateDisplay("800x601");
+    // Note that the display width is hard coded. The display width should
+    // ensure that the two-stage scaling is possible to happen. Otherwise,
+    // there may be insufficient space to accommodate shelf icons in
+    // |ShelfConfig::shelf_button_mediate_size_| then hotseat density may switch
+    // from kNormal to kDense directly.
+    UpdateDisplay("820x601");
 
     // App scaling is only used in tablet mode.
     Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
@@ -1114,7 +1119,7 @@ class ScrollableShelfViewWithAppScalingTest : public ScrollableShelfViewTest {
   // So Hotseat widget's width is a constant. Then |kAppCount| is in the range
   // of [1, (hotseat width) / (shelf button + button spacing) + 1].
   // So we can get |kAppCount| in that range manually
-  static constexpr int kAppCount = 9;
+  static constexpr int kAppCount = 10;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;

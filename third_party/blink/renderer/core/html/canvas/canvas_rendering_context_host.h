@@ -102,7 +102,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
       RasterModeHint hint) override;
 
   bool Is3d() const;
-  bool Is2d() const;
+  bool IsRenderingContext2D() const;
   CanvasColorParams ColorParams() const;
 
   // blink::CanvasImageSource

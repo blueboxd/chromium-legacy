@@ -52,9 +52,16 @@ NSUserActivity* ActivityToLoadURL(WindowActivityOrigin origin,
 // |url|.
 NSUserActivity* ActivityToLoadURL(WindowActivityOrigin origin, const GURL& url);
 
+// Create a new activity that moves a tab either between browsers, or reorders
+// within a browser.
+NSUserActivity* ActivityToMoveTab(NSString* tab_id);
+
 // true if |activity| is one that indicates a URL load (including loading the
 // new tab page in a new tab).
 bool ActivityIsURLLoad(NSUserActivity* activity);
+
+// true if |activity| is one that indicates a tab move.
+bool ActivityIsTabMove(NSUserActivity* activity);
 
 // The URLLoadParams needed to perform the load defined in |activity|, if any.
 // If |activity| is not a URL load activity, the default UrlLoadParams are

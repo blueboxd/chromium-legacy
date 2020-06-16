@@ -20,6 +20,12 @@ class EditableCombobox;
 class ToggleImageButton;
 }  // namespace views
 
+namespace feature_engagement {
+class Tracker;
+}
+
+class FeaturePromoBubbleView;
+
 // A view offering the user the ability to save or update credentials (depending
 // on |is_update_bubble|) either in the profile and/or account stores. Contains
 // a username and password field, and in case of a saving a destination picker.
@@ -29,7 +35,9 @@ class PasswordSaveUpdateWithAccountStoreView
     : public PasswordBubbleViewBase,
       public views::ButtonListener,
       public views::EditableComboboxListener,
-      public views::ComboboxListener {
+      public views::ComboboxListener,
+      public views::WidgetObserver,
+      public views::AnimatingLayoutManager::Observer {
  public:
   PasswordSaveUpdateWithAccountStoreView(content::WebContents* web_contents,
                                          views::View* anchor_view,
@@ -58,6 +66,9 @@ class PasswordSaveUpdateWithAccountStoreView
   // Used for both the username and password editable comboboxes.
   void OnContentChanged(views::EditableCombobox* editable_combobox) override;
 
+  // views::WidgetObserver:
+  void OnWidgetDestroying(views::Widget* widget) override;
+
   // PasswordBubbleViewBase:
   gfx::Size CalculatePreferredSize() const override;
   views::View* GetInitiallyFocusedView() override;
@@ -70,10 +81,17 @@ class PasswordSaveUpdateWithAccountStoreView
   void AddedToWidget() override;
   void OnThemeChanged() override;
 
+  // views::AnimatingLayoutManager::Observer:
+  void OnLayoutIsAnimatingChanged(views::AnimatingLayoutManager* source,
+                                  bool is_animating) override;
+
   void TogglePasswordVisibility();
   void UpdateUsernameAndPasswordInModel();
   void UpdateBubbleUIElements();
   std::unique_ptr<views::View> CreateFooterView();
+
+  void OpenIPHBubbleIfAppropriate();
+  void CloseIPHBubbleIfOpen();
 
   SaveUpdateWithAccountStoreBubbleController controller_;
 
@@ -90,12 +108,29 @@ class PasswordSaveUpdateWithAccountStoreView
   views::EditableCombobox* password_dropdown_;
   bool are_passwords_revealed_;
 
+  feature_engagement::Tracker* iph_tracker_ = nullptr;
+
+  // Promotional UI that appears next to the |destination_dropdown_|. Owned by
+  // its NativeWidget.
+  FeaturePromoBubbleView* account_storage_promo_ = nullptr;
+
+  // Observes the |account_storage_promo_|'s Widget.  Used to tell whether the
+  // promo is open and get called back when it closes.
+  ScopedObserver<views::Widget, views::WidgetObserver>
+      observed_account_storage_promo_{this};
+
   // Used to add |username_dropdown_| as an observer to the
   // AnimatingLayoutManager. This is needed such that the |username_dropdown_|
   // keeps the dropdown menu closed while the layout is animating.
   std::unique_ptr<ScopedObserver<views::AnimatingLayoutManager,
                                  views::AnimatingLayoutManager::Observer>>
-      observed_animating_layout_;
+      observed_animating_layout_for_username_dropdown_;
+
+  // Used to observe the bubble animation when transitions between Save/Update
+  // states. If appropriate, IPH bubble is is shown st end of the animation.
+  ScopedObserver<views::AnimatingLayoutManager,
+                 views::AnimatingLayoutManager::Observer>
+      observed_animating_layout_for_iph_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_SAVE_UPDATE_WITH_ACCOUNT_STORE_VIEW_H_

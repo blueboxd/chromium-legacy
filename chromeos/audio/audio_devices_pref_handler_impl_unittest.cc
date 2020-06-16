@@ -137,32 +137,33 @@ class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
   }
 
   AudioDevice GetDeviceWithVersion(int version) {
-    return CreateAudioDevice(GetParam() ? kInternalMic : kHeadphone, version);
+    return CreateAudioDevice(IsInputTest() ? kInternalMic : kHeadphone,
+                             version);
   }
 
   std::string GetPresetDeviceDeprecatedPrefKey() {
-    return GetParam() ? kPresetInputDeprecatedPrefKey
-                      : kPresetOutputDeprecatedPrefKey;
+    return IsInputTest() ? kPresetInputDeprecatedPrefKey
+                         : kPresetOutputDeprecatedPrefKey;
   }
 
   AudioDevice GetPresetDeviceWithVersion(int version) {
-    return CreateAudioDevice(GetParam() ? kPresetInput : kPresetOutput,
+    return CreateAudioDevice(IsInputTest() ? kPresetInput : kPresetOutput,
                              version);
   }
 
   AudioDevice GetSecondaryDeviceWithVersion(int version) {
-    return CreateAudioDevice(GetParam() ? kUSBMic : kHDMIOutput, version);
+    return CreateAudioDevice(IsInputTest() ? kUSBMic : kHDMIOutput, version);
   }
 
   AudioDevice GetDeviceWithSpecialCharactersWithVersion(int version) {
-    return CreateAudioDevice(GetParam() ? kInputDeviceWithSpecialCharacters
-                                        : kOutputDeviceWithSpecialCharacters,
+    return CreateAudioDevice(IsInputTest() ? kInputDeviceWithSpecialCharacters
+                                           : kOutputDeviceWithSpecialCharacters,
                              version);
   }
 
   double GetSoundLevelValue(const AudioDevice& device) {
-    return GetParam() ? audio_pref_handler_->GetInputGainValue(&device)
-                      : audio_pref_handler_->GetOutputVolumeValue(&device);
+    return IsInputTest() ? audio_pref_handler_->GetInputGainValue(&device)
+                         : audio_pref_handler_->GetOutputVolumeValue(&device);
   }
 
   void SetSoundLevelValue(const AudioDevice& device, double value) {
@@ -202,9 +203,11 @@ class AudioDevicesPrefHandlerTest : public testing::TestWithParam<bool> {
   }
 
   double GetDefaultSoundLevelValue() {
-    return GetParam() ? AudioDevicesPrefHandler::kDefaultInputGainPercent
-                      : AudioDevicesPrefHandler::kDefaultOutputVolumePercent;
+    return IsInputTest() ? AudioDevicesPrefHandler::kDefaultInputGainPercent
+                         : AudioDevicesPrefHandler::kDefaultOutputVolumePercent;
   }
+
+  bool IsInputTest() const { return GetParam(); }
 
   scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
@@ -265,6 +268,11 @@ TEST_P(AudioDevicesPrefHandlerTest, SoundLevel) {
 }
 
 TEST_P(AudioDevicesPrefHandlerTest, SoundLevelMigratedFromV1StableId) {
+  if (IsInputTest()) {
+    // Input gain does not need to be migrated since a new pref is used.
+    return;
+  }
+
   AudioDevice device_v1 = GetPresetDeviceWithVersion(1);
   AudioDevice device_v2 = GetPresetDeviceWithVersion(2);
 
@@ -285,6 +293,10 @@ TEST_P(AudioDevicesPrefHandlerTest, SoundLevelMigratedFromV1StableId) {
 }
 
 TEST_P(AudioDevicesPrefHandlerTest, SettingV2DeviceSoundLevelRemovesV1Entry) {
+  if (IsInputTest()) {
+    // Input gain does not need to be migrated since a new pref is used.
+    return;
+  }
   AudioDevice device_v1 = GetDeviceWithVersion(1);
   AudioDevice device_v2 = GetDeviceWithVersion(2);
 
@@ -302,7 +314,7 @@ TEST_P(AudioDevicesPrefHandlerTest, SettingV2DeviceSoundLevelRemovesV1Entry) {
 }
 
 TEST_P(AudioDevicesPrefHandlerTest, MigrateFromGlobalSoundLevelPref) {
-  if (GetParam()) {
+  if (IsInputTest()) {
     // For any new input devices, the default volume is set from a constant
     // rather than the default kAudioVolumePercent.
     return;

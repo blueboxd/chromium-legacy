@@ -5,6 +5,7 @@
 package org.chromium.components.paintpreview.player.frame;
 
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.os.Handler;
 import android.view.View;
@@ -38,6 +39,8 @@ import java.util.Map;
  * </ul>
  */
 class PlayerFrameMediator implements PlayerFrameViewDelegate {
+    private static final float MAX_SCALE_FACTOR = 5f;
+
     /** The GUID associated with the frame that this class is representing. */
     private final UnguessableToken mGuid;
     /** The content width inside this frame, at a scale factor of 1. */
@@ -89,11 +92,16 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     final Map<Float, boolean[][]> mRequiredBitmaps = new HashMap<>();
     /** The current scale factor. */
     private float mScaleFactor;
+    private float mInitialScaleFactor;
+    private float mUncommittedScaleFactor = 0f;
+    @VisibleForTesting
+    final Matrix mViewportScaleMatrix = new Matrix();
+    private final Matrix mBitmapScaleMatrix = new Matrix();
 
     /** For swipe-to-refresh logic */
     private OverscrollHandler mOverscrollHandler;
     private boolean mIsOverscrolling = false;
-    private float mOverscrollAmount = 0.0f;
+    private float mOverscrollAmount = 0f;
 
     PlayerFrameMediator(PropertyModel model, PlayerCompositorDelegate compositorDelegate,
             OverScroller scroller, UnguessableToken frameGuid, int contentWidth,
@@ -101,6 +109,7 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         mModel = model;
         mModel.set(PlayerFrameProperties.SUBFRAME_VIEWS, mVisibleSubFrameViews);
         mModel.set(PlayerFrameProperties.SUBFRAME_RECTS, mVisibleSubFrameScaledRects);
+        mModel.set(PlayerFrameProperties.SCALE_MATRIX, mBitmapScaleMatrix);
 
         mCompositorDelegate = compositorDelegate;
         mScroller = scroller;
@@ -123,9 +132,39 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
 
     @Override
     public void setLayoutDimensions(int width, int height) {
+        // Don't trigger a re-draw if we are actively scaling.
+        if (!mBitmapScaleMatrix.isIdentity()) {
+            mViewportRect.set(mViewportRect.left, mViewportRect.top, mViewportRect.left + width,
+                    mViewportRect.top + height);
+            // Set scale factor to 0 so subframes get the correct scale factor on scale completion.
+            mScaleFactor = 0;
+            return;
+        }
+
         // Set initial scale so that content width fits within the layout dimensions.
-        float initialScaleFactor = ((float) width) / ((float) mContentWidth);
-        updateViewportSize(width, height, mScaleFactor == 0f ? initialScaleFactor : mScaleFactor);
+        mInitialScaleFactor = ((float) width) / ((float) mContentWidth);
+        updateViewportSize(
+                width, height, (mScaleFactor == 0f) ? mInitialScaleFactor : mScaleFactor);
+    }
+
+    @Override
+    public void setBitmapScaleMatrix(Matrix matrix) {
+        float[] matrixValues = new float[9];
+        matrix.getValues(matrixValues);
+        mBitmapScaleMatrix.setValues(matrixValues);
+        Matrix childBitmapScaleMatrix = new Matrix();
+        childBitmapScaleMatrix.setScale(
+                matrixValues[Matrix.MSCALE_X], matrixValues[Matrix.MSCALE_Y]);
+        for (View subFrameView : mVisibleSubFrameViews) {
+            ((PlayerFrameView) subFrameView).updateDelegateScaleMatrix(childBitmapScaleMatrix);
+        }
+        mModel.set(PlayerFrameProperties.SCALE_MATRIX, mBitmapScaleMatrix);
+    }
+
+    @Override
+    public void forceRedraw() {
+        mInitialScaleFactor = ((float) mViewportRect.width()) / ((float) mContentWidth);
+        moveViewport(0, 0, (mScaleFactor == 0f) ? mInitialScaleFactor : mScaleFactor);
     }
 
     void updateViewportSize(int width, int height, float scaleFactor) {
@@ -164,16 +203,13 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
             mRequiredBitmaps.put(scaleFactor, requiredBitmaps);
         }
 
-        // If the scale factor is changed, the view should get the correct bitmap matrix.
-        if (scaleFactor != mScaleFactor) {
-            mModel.set(PlayerFrameProperties.BITMAP_MATRIX, mBitmapMatrix.get(scaleFactor));
-            mScaleFactor = scaleFactor;
-        }
-
         // Update mViewportRect and let the view know. PropertyModelChangeProcessor is smart about
         // this and will only update the view if mViewportRect is actually changed.
         mViewportRect.offset(distanceX, distanceY);
-        updateSubFrames();
+        // Keep translations up to date for the viewport matrix so that future scale operations are
+        // correct.
+        mViewportScaleMatrix.postTranslate(-distanceX, -distanceY);
+        updateSubFrames(mViewportRect, scaleFactor);
         mModel.set(PlayerFrameProperties.TILE_DIMENSIONS, tileDimensions);
         mModel.set(PlayerFrameProperties.VIEWPORT, mViewportRect);
 
@@ -187,10 +223,12 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
         // Request bitmaps for tiles inside the view port that don't already have a bitmap.
         final int tileWidth = tileDimensions[0];
         final int tileHeight = tileDimensions[1];
-        final int colStart = mViewportRect.left / tileWidth;
-        final int colEnd = (int) Math.ceil((double) mViewportRect.right / tileWidth);
-        final int rowStart = mViewportRect.top / tileHeight;
-        final int rowEnd = (int) Math.ceil((double) mViewportRect.bottom / tileHeight);
+        final int colStart = Math.max(0, (int) Math.floor((double) mViewportRect.left / tileWidth));
+        final int colEnd = Math.min(requiredBitmaps[0].length,
+                (int) Math.ceil((double) mViewportRect.right / tileWidth));
+        final int rowStart = Math.max(0, (int) Math.floor((double) mViewportRect.top / tileHeight));
+        final int rowEnd = Math.min(requiredBitmaps.length,
+                (int) Math.ceil((double) mViewportRect.bottom / tileHeight));
         for (int col = colStart; col < colEnd; col++) {
             for (int row = rowStart; row < rowEnd; row++) {
                 int tileLeft = col * tileWidth;
@@ -208,17 +246,27 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
                 requestBitmapForAdjacentTiles(tileWidth, tileHeight, row, col, scaleFactor);
             }
         }
+
+        // If the scale factor is changed, the view should get the correct bitmap matrix.
+        // TODO(crbug/1090804): "Double buffer" this such that there is no period where there is a
+        // blank screen between scale finishing and new bitmaps being fetched.
+        if (scaleFactor != mScaleFactor) {
+            mModel.set(PlayerFrameProperties.BITMAP_MATRIX, mBitmapMatrix.get(scaleFactor));
+            mBitmapMatrix.remove(mScaleFactor); // Eagerly free to avoid OOM.
+            mRequiredBitmaps.remove(mScaleFactor);
+            mScaleFactor = scaleFactor;
+        }
     }
 
-    private void updateSubFrames() {
+    private void updateSubFrames(Rect viewport, float scaleFactor) {
         mVisibleSubFrameViews.clear();
         mVisibleSubFrameScaledRects.clear();
         for (int i = 0; i < mSubFrameRects.size(); i++) {
             Rect subFrameScaledRect = mSubFrameScaledRects.get(i);
-            scaleRect(mSubFrameRects.get(i), subFrameScaledRect, mScaleFactor);
-            if (Rect.intersects(subFrameScaledRect, mViewportRect)) {
-                int transformedLeft = subFrameScaledRect.left - mViewportRect.left;
-                int transformedTop = subFrameScaledRect.top - mViewportRect.top;
+            scaleRect(mSubFrameRects.get(i), subFrameScaledRect, scaleFactor);
+            if (Rect.intersects(subFrameScaledRect, viewport)) {
+                int transformedLeft = subFrameScaledRect.left - viewport.left;
+                int transformedTop = subFrameScaledRect.top - viewport.top;
                 subFrameScaledRect.set(transformedLeft, transformedTop,
                         transformedLeft + subFrameScaledRect.width(),
                         transformedTop + subFrameScaledRect.height());
@@ -285,6 +333,8 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
     private void deleteUnrequiredBitmaps(float scaleFactor) {
         Bitmap[][] bitmapMatrix = mBitmapMatrix.get(scaleFactor);
         boolean[][] requiredBitmaps = mRequiredBitmaps.get(scaleFactor);
+        if (bitmapMatrix == null || requiredBitmaps == null) return;
+
         for (int row = 0; row < bitmapMatrix.length; row++) {
             for (int col = 0; col < bitmapMatrix[row].length; col++) {
                 Bitmap bitmap = bitmapMatrix[row][col];
@@ -362,16 +412,146 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
             validDistanceY = (int) Math.min(distanceY, scaledContentHeight - mViewportRect.bottom);
         }
 
-        if (validDistanceX == 0 && validDistanceY == 0) return false;
+        if (validDistanceX == 0 && validDistanceY == 0) {
+            return false;
+        }
 
         moveViewport(validDistanceX, validDistanceY, mScaleFactor);
         return true;
     }
 
+    /**
+     * How scale for the paint preview player works.
+     *
+     * There are two reference frames:
+     * - The currently loaded bitmaps, which changes as scaling happens.
+     * - The viewport, which is static until scaling is finished.
+     *
+     * During {@link #scaleBy()} the gesture is still ongoing.
+     *
+     * On each scale gesture the |scaleFactor| is applied to |mUncommittedScaleFactor| which
+     * accumulates the scale starting from the currently committed |mScaleFactor|. This is
+     * committed when {@link #scaleFinished()} event occurs. This is for the viewport reference
+     * frame. |mViewportScaleMatrix| also accumulates the transforms to track the translation
+     * behavior.
+     *
+     * |mBitmapScaleMatrix| tracks scaling from the perspective of the bitmaps. This is used to
+     * transform the canvas the bitmaps are painted on such that scaled images can be shown
+     * mid-gesture.
+     *
+     * Each subframe is updated with a new rect based on the interim scale factor and when the
+     * matrix is set in {@link PlayerFrameView#updateMatrix} the subframe matricies are recursively
+     * updated.
+     *
+     * On {@link #scaleFinished()} the gesture is now considered finished.
+     *
+     * The values of |mViewportScaleMatrix| are extracted to get the final translation applied to
+     * the viewport. The transform for the bitmaps (that is |mBitmapScaleMatrix|) is cancelled.
+     *
+     * During {@link #moveViewport()} new bitmaps are requested for the main frame and subframes
+     * to improve quality.
+     *
+     * NOTE: |mViewportScaleMatrix| also need to consume scroll events in order to keep track of
+     * the correct translation.
+     */
     @Override
     public boolean scaleBy(float scaleFactor, float focalPointX, float focalPointY) {
-        // TODO(crbug.com/1020702): Add support for zooming.
-        return false;
+        // This is filtered to only apply to the top level view upstream.
+        if (mUncommittedScaleFactor == 0f) {
+            mUncommittedScaleFactor = mScaleFactor;
+        }
+        mUncommittedScaleFactor *= scaleFactor;
+
+        // Don't scale outside of the acceptable range. The value is still accumulated such that the
+        // continuous gesture feels smooth.
+        if (mUncommittedScaleFactor < mInitialScaleFactor) return true;
+        if (mUncommittedScaleFactor > MAX_SCALE_FACTOR) return true;
+
+        // TODO(crbug/1090804): trigger a fetch of new bitmaps periodically when zooming out.
+
+        mViewportScaleMatrix.postScale(scaleFactor, scaleFactor, focalPointX, focalPointY);
+        mBitmapScaleMatrix.postScale(scaleFactor, scaleFactor, focalPointX, focalPointY);
+
+        float[] viewportScaleMatrixValues = new float[9];
+        mViewportScaleMatrix.getValues(viewportScaleMatrixValues);
+
+        float[] bitmapScaleMatrixValues = new float[9];
+        mBitmapScaleMatrix.getValues(bitmapScaleMatrixValues);
+
+        // It is possible the scale pushed the viewport outside the content bounds. These new values
+        // are forced to be within bounds.
+        final float newX = -1f
+                * Math.max(0f,
+                        Math.min(-viewportScaleMatrixValues[Matrix.MTRANS_X],
+                                mContentWidth * mUncommittedScaleFactor - mViewportRect.width()));
+        final float newY = -1f
+                * Math.max(0f,
+                        Math.min(-viewportScaleMatrixValues[Matrix.MTRANS_Y],
+                                mContentHeight * mUncommittedScaleFactor - mViewportRect.height()));
+        final int newXRounded = Math.abs(Math.round(newX));
+        final int newYRounded = Math.abs(Math.round(newY));
+        updateSubFrames(new Rect(newXRounded, newYRounded, newXRounded + mViewportRect.width(),
+                                newYRounded + mViewportRect.height()),
+                mUncommittedScaleFactor);
+
+        if (newX != viewportScaleMatrixValues[Matrix.MTRANS_X]
+                || newY != viewportScaleMatrixValues[Matrix.MTRANS_Y]) {
+            // This is the delta required to force the viewport to be inside the bounds of the
+            // content.
+            final float deltaX = newX - viewportScaleMatrixValues[Matrix.MTRANS_X];
+            final float deltaY = newY - viewportScaleMatrixValues[Matrix.MTRANS_Y];
+
+            // Directly used the forced bounds of the viewport reference frame for the viewport
+            // scale matrix.
+            viewportScaleMatrixValues[Matrix.MTRANS_X] = newX;
+            viewportScaleMatrixValues[Matrix.MTRANS_Y] = newY;
+            mViewportScaleMatrix.setValues(viewportScaleMatrixValues);
+
+            // For the bitmap matrix we only want the delta as its position will be different as the
+            // coordinates are bitmap relative.
+            bitmapScaleMatrixValues[Matrix.MTRANS_X] += deltaX;
+            bitmapScaleMatrixValues[Matrix.MTRANS_Y] += deltaY;
+            mBitmapScaleMatrix.setValues(bitmapScaleMatrixValues);
+        }
+        setBitmapScaleMatrix(mBitmapScaleMatrix);
+
+        return true;
+    }
+
+    @Override
+    public boolean scaleFinished(float scaleFactor, float focalPointX, float focalPointY) {
+        // Remove the bitmap scaling to avoid issues when new bitmaps are requested.
+        // TODO(crbug/1090804): Defer clearing this so that double buffering can occur.
+        mBitmapScaleMatrix.reset();
+        setBitmapScaleMatrix(mBitmapScaleMatrix);
+
+        final float finalScaleFactor =
+                Math.max(mInitialScaleFactor, Math.min(mUncommittedScaleFactor, MAX_SCALE_FACTOR));
+        mUncommittedScaleFactor = 0f;
+
+        float[] matrixValues = new float[9];
+        mViewportScaleMatrix.getValues(matrixValues);
+        final float newX = Math.max(0f,
+                Math.min(-matrixValues[Matrix.MTRANS_X],
+                        mContentWidth * finalScaleFactor - mViewportRect.width()));
+        final float newY = Math.max(0f,
+                Math.min(-matrixValues[Matrix.MTRANS_Y],
+                        mContentHeight * finalScaleFactor - mViewportRect.height()));
+        matrixValues[Matrix.MTRANS_X] = -newX;
+        matrixValues[Matrix.MTRANS_Y] = -newY;
+        matrixValues[Matrix.MSCALE_X] = finalScaleFactor;
+        matrixValues[Matrix.MSCALE_Y] = finalScaleFactor;
+        mViewportScaleMatrix.setValues(matrixValues);
+        final int newXRounded = Math.round(newX);
+        final int newYRounded = Math.round(newY);
+        mViewportRect.set(newXRounded, newYRounded, newXRounded + mViewportRect.width(),
+                newYRounded + mViewportRect.height());
+        moveViewport(0, 0, finalScaleFactor);
+        for (View subFrameView : mVisibleSubFrameViews) {
+            ((PlayerFrameView) subFrameView).forceRedraw();
+        }
+
+        return true;
     }
 
     @Override
@@ -436,16 +616,21 @@ class PlayerFrameMediator implements PlayerFrameViewDelegate {
          */
         @Override
         public void onResult(Bitmap result) {
-            assert mBitmapMatrix.get(mRequestScaleFactor) != null;
+            Bitmap[][] bitmapMatrix = mBitmapMatrix.get(mRequestScaleFactor);
+            boolean[][] requiredBitmaps = mRequiredBitmaps.get(mRequestScaleFactor);
+            if (bitmapMatrix == null || requiredBitmaps == null) {
+                result.recycle();
+                return;
+            }
+
             assert mBitmapMatrix.get(mRequestScaleFactor)[mRequestRow][mRequestCol] == null;
             assert mPendingBitmapRequests.get(mRequestScaleFactor)[mRequestRow][mRequestCol];
 
             mPendingBitmapRequests.get(mScaleFactor)[mRequestRow][mRequestCol] = false;
-            if (mRequiredBitmaps.get(mRequestScaleFactor)[mRequestRow][mRequestCol]) {
-                mBitmapMatrix.get(mScaleFactor)[mRequestRow][mRequestCol] = result;
+            if (requiredBitmaps[mRequestRow][mRequestCol]) {
+                bitmapMatrix[mRequestRow][mRequestCol] = result;
                 if (PlayerFrameMediator.this.mScaleFactor == mRequestScaleFactor) {
-                    mModel.set(
-                            PlayerFrameProperties.BITMAP_MATRIX, mBitmapMatrix.get(mScaleFactor));
+                    mModel.set(PlayerFrameProperties.BITMAP_MATRIX, bitmapMatrix);
                 }
             } else {
                 result.recycle();

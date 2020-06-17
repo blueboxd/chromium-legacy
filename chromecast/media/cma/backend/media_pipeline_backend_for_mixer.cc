@@ -9,6 +9,7 @@
 #include <limits>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chromecast/base/task_runner_impl.h"

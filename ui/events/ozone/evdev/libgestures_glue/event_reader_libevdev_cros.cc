@@ -9,6 +9,7 @@
 #include <linux/input.h>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"

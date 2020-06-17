@@ -2,9 +2,11 @@
 
 This document gives the best practices on how to use histograms in code and how
 to document the histograms for the dashboards.  There are three general types
-of histograms: enumerated histograms, count histograms (for arbitrary numbers),
-and sparse histograms (for anything when the precision is important over a wide
-range and/or the range is not possible to specify a priori).
+of histograms: [enumerated histograms](#Enum-Histograms),
+[count histograms](#Count-Histograms) (for arbitrary numbers), and
+[sparse histograms](#When-To-Use-Sparse-Histograms) (for anything when the
+precision is important over a wide range and/or the range is not possible to
+specify a priori).
 
 [TOC]
 
@@ -149,6 +151,28 @@ or:
 
 ```c++
 UmaHistogramEnumeration("NewTabPageAction", action);
+```
+
+Logging histograms from Java should look similar:
+
+```java
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+@IntDef({NewTabPageAction.USE_OMNIBOX, NewTabPageAction.CLICK_TITLE,
+        NewTabPageAction.OPEN_BOOKMARK})
+private @interface NewTabPageAction {
+    int USE_OMNIBOX = 0;
+    int CLICK_TITLE = 1;
+    // int USE_SEARCHBOX = 2;  // no longer used, combined into omnibox
+    int OPEN_BOOKMARK = 3;
+    int COUNT = 4;
+}
+
+// Using a helper function is optional, but avoids some boilerplate.
+private static void logNewTabPageAction(@NewTabPageAction int action) {
+    RecordHistogram.recordEnumeratedHistogram(
+            "NewTabPageAction", action, NewTabPageAction.COUNT);
+}
 ```
 
 #### Legacy Enums
@@ -494,11 +518,11 @@ If the histogram is being replaced by a new version:
 
 * Note in the `<obsolete>` message the name of the replacement histogram.
 
-* Make sure the descriptions of the original and replacement histogram 
-  are different.  It's never appropriate for them to be identical.  Either 
-  the old description was wrong, and it should be revised to explain what 
-  it actually measured, or the old histogram was measuring something not 
-  as useful as the replacement, in which case the new histogram is 
+* Make sure the descriptions of the original and replacement histogram
+  are different.  It's never appropriate for them to be identical.  Either
+  the old description was wrong, and it should be revised to explain what
+  it actually measured, or the old histogram was measuring something not
+  as useful as the replacement, in which case the new histogram is
   measuring something different and needs to have a new description.
 
 A changelist that marks a histogram as obsolete should be reviewed by all

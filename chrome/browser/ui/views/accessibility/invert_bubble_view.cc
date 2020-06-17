@@ -157,6 +157,8 @@ void InvertBubbleView::OpenLink(const std::string& url,
 
 void MaybeShowInvertBubbleView(BrowserView* browser_view) {
   Browser* browser = browser_view->browser();
+  if (browser->profile()->IsIncognitoProfile())
+    return;
   PrefService* pref_service = browser->profile()->GetPrefs();
   views::View* anchor =
       browser_view->toolbar_button_provider()->GetAppMenuButton();

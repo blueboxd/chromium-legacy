@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <linux/input.h>
 
+#include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/ozone/evdev/device_event_dispatcher_evdev.h"

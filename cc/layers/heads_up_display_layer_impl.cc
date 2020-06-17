@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"

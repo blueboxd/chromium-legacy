@@ -17,7 +17,7 @@
 
 namespace {
 
-const double kTolerance = 1e-6;
+const double kTolerance = 1e-5;
 
 const double kTimeToleranceMilliseconds = 0.1;
 }

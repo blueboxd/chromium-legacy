@@ -291,6 +291,11 @@ TEST_F(LabelTest, TextProperty) {
   EXPECT_EQ(test_text, label()->GetText());
 }
 
+TEST_F(LabelTest, TextStyleProperty) {
+  label()->SetTextStyle(views::style::STYLE_DISABLED);
+  EXPECT_EQ(views::style::STYLE_DISABLED, label()->GetTextStyle());
+}
+
 TEST_F(LabelTest, ColorProperty) {
   SkColor color = SkColorSetARGB(20, 40, 10, 5);
   label()->SetAutoColorReadabilityEnabled(false);

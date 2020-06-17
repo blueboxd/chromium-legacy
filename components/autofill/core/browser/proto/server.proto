@@ -156,6 +156,9 @@ message AutofillRandomizedFormMetadata {
   }
   // Titles of form's buttons. Example: <input type="submit" value="XXXXX">
   repeated ButtonTitle button_title = 5;
+
+  // Hash of the clear form URL, not randomized.
+  optional fixed32 checksum_for_url = 6;
 }
 
 // The collection of autofill field metadata to be sent using randomization.

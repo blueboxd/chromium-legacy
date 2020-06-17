@@ -52,9 +52,8 @@ class Response(object):
 
     .. attribute:: status
 
-       Status tuple (code, message). Can be set to an integer in which case the
-       message part is filled in automatically, or a tuple (code, message) in
-       which case code is an int and message is a text or binary string.
+       Status tuple (code, message). Can be set to an integer, in which case the
+       message part is filled in automatically, or a tuple.
 
     .. attribute:: headers
 
@@ -93,13 +92,7 @@ class Response(object):
             if len(value) != 2:
                 raise ValueError
             else:
-                code = int(value[0])
-                message = value[1]
-                # Only call str() if message is not a string type, so that we
-                # don't get `str(b"foo") == "b'foo'"` in Python 3.
-                if not isinstance(message, (binary_type, text_type)):
-                    message = str(message)
-                self._status = (code, message)
+                self._status = (int(value[0]), str(value[1]))
         else:
             self._status = (int(value), None)
 
@@ -680,8 +673,8 @@ class ResponseWriter(object):
                 message = response_codes[code][0]
             else:
                 message = ''
-        self.write(b"%s %d %s\r\n" %
-                   (isomorphic_encode(self._response.request.protocol_version), code, isomorphic_encode(message)))
+        self.write("%s %d %s\r\n" %
+                   (self._response.request.protocol_version, code, message))
         self._status_written = True
 
     def write_header(self, name, value):

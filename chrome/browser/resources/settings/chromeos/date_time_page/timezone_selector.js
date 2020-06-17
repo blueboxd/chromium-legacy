@@ -24,6 +24,15 @@ Polymer({
     },
 
     /**
+     * True if the account is supervised and doesn't get parent access code
+     * verification.
+     */
+    shouldDisableTimeZoneGeoSelector: {
+      type: Boolean,
+      notify: true,
+    },
+
+    /**
      * Initialized with the current time zone so the menu displays the
      * correct value. The full option list is fetched lazily if necessary by
      * maybeGetTimeZoneList_.

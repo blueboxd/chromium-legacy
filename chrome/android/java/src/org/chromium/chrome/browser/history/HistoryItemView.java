@@ -20,13 +20,15 @@ import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper.DefaultFaviconHelper;
 import org.chromium.chrome.browser.ui.favicon.FaviconUtils;
 import org.chromium.chrome.browser.ui.favicon.IconType;
 import org.chromium.chrome.browser.ui.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 
 /**
  * The SelectableItemView for items displayed in the browsing history UI.
@@ -155,9 +157,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
      */
     public void setRemoveButtonVisible(boolean visible) {
         mRemoveButtonVisible = visible;
-        if (!PrefServiceBridge.getInstance().getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY)) {
-            return;
-        }
+        if (!getPrefService().getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY)) return;
 
         mRemoveButton.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
     }
@@ -185,7 +185,7 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
 
     private void updateRemoveButtonVisibility() {
         int removeButtonVisibility =
-                !PrefServiceBridge.getInstance().getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY)
+                !getPrefService().getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY)
                 ? View.GONE
                 : mRemoveButtonVisible ? View.VISIBLE : View.INVISIBLE;
         mRemoveButton.setVisibility(removeButtonVisibility);
@@ -198,5 +198,9 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
     @VisibleForTesting
     View getRemoveButtonForTests() {
         return mRemoveButton;
+    }
+
+    private PrefService getPrefService() {
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 }

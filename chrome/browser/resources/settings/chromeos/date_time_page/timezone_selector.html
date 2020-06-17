@@ -24,7 +24,8 @@
       <settings-dropdown-menu pref="{{prefs.cros.system.timezone}}"
           label="$i18n{timeZone}"
           menu-options="[[timeZoneList_]]"
-          disabled="[[prefs.generated.resolve_timezone_by_geolocation_on_off.value]]">
+          disabled="[[prefs.generated.resolve_timezone_by_geolocation_on_off.value ||
+          shouldDisableTimeZoneGeoSelector]]">
       </settings-dropdown-menu>
     </template>
     <template is="dom-if" restamp
@@ -34,7 +35,8 @@
             label="$i18n{timeZone}"
             menu-options="[[timeZoneList_]]"
             hidden="[[isUserTimeZoneSelectorHidden_(prefs.settings.timezone,
-                prefs.generated.resolve_timezone_by_geolocation_on_off.value)]]">
+                prefs.generated.resolve_timezone_by_geolocation_on_off.value)]]"
+            disabled="[[shouldDisableTimeZoneGeoSelector]]">
         </settings-dropdown-menu>
         <settings-dropdown-menu id="systemTimezoneSelector"
             pref="{{prefs.cros.system.timezone}}"

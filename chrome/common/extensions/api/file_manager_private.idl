@@ -1104,23 +1104,23 @@ interface Functions {
   // Returns list of available providers.
   static void getProviders(GetProvidersCallback callback);
 
-  // Requests adding a new provided file system. If not possible, then an error
-  // via chrome.runtime.lastError is returned.
+  // Requests adding a new provided file system. On failure, sets
+  // $(ref:runtime.lastError).
   static void addProvidedFileSystem(DOMString provider_id,
                                     SimpleCallback callback);
 
-  // Requests configuring an existing volume. If not possible, then returns
-  // an error via chrome.runtime.lastError.
+  // Requests configuring an existing volume. On failure, sets
+  // $(ref:runtime.lastError).
   static void configureVolume(DOMString volumeId, SimpleCallback callback);
 
-  // Requests list of custom actions for the specified entries. If not possible,
-  // then an error via chrome.runtime.lastError is returned.
+  // Requests list of custom actions for the specified entries. On failure, sets
+  // $(ref:runtime.lastError).
   [nocompile]
   static void getCustomActions([instanceof=Entry] object[] entries,
                                GetCustomActionsCallback callback);
 
-  // Executes a custom action for a set of entries. If not possible, then an
-  // error via chrome.runtime.lastError is returned.
+  // Executes a custom action for a set of entries. On failure, sets
+  // $(ref:runtime.lastError).
   [nocompile]
   static void executeCustomAction([instanceof=Entry] object[] entries,
                                   DOMString actionId,

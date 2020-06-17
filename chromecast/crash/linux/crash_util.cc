@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chromecast/base/path_utils.h"

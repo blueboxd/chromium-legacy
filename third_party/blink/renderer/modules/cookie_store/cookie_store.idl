@@ -21,9 +21,9 @@
 
   // https://wicg.github.io/cookie-store/explainer.html#the-modifications-api
   [CallWith=ScriptState, Measure, RaisesException] Promise<void> set(
-      USVString name, USVString value, optional CookieStoreSetOptions options = {});
+      USVString name, USVString value);
   [CallWith=ScriptState, Measure, RaisesException] Promise<void> set(
-      CookieStoreSetExtraOptions options);
+      CookieInit cookieInit);
   [CallWith=ScriptState, ImplementedAs=Delete, Measure, RaisesException]
   Promise<void> delete(USVString name);
   [CallWith=ScriptState, ImplementedAs=Delete, Measure, RaisesException]

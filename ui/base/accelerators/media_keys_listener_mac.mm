@@ -11,6 +11,7 @@
 #include <IOKit/hidsystem/ev_keymap.h>
 
 #include "base/containers/flat_set.h"
+#include "base/logging.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/accelerators/system_media_controls_media_keys_listener.h"
 

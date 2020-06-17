@@ -4,6 +4,9 @@
 
 #include "ui/ozone/platform/wayland/host/shell_popup_wrapper.h"
 
+#include "base/check_op.h"
+#include "base/notreached.h"
+
 namespace ui {
 
 constexpr uint32_t kAnchorDefaultWidth = 1;

@@ -4,6 +4,8 @@
 
 #include "chromecast/browser/tts/tts_platform_stub.h"
 
+#include "base/logging.h"
+
 namespace chromecast {
 
 bool TtsPlatformImplStub::PlatformImplAvailable() {

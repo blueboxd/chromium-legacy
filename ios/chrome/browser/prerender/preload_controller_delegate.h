@@ -16,9 +16,6 @@
 // This web state will be replaced on successful preload.
 - (web::WebState*)webStateToReplace;
 
-// Should preload controller request a desktop site.
-- (BOOL)preloadShouldUseDesktopUserAgent;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_PRERENDER_PRELOAD_CONTROLLER_DELEGATE_H_

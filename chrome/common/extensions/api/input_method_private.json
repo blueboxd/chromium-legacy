@@ -571,7 +571,7 @@
             "type": "function",
             "name": "callback",
             "optional": true,
-            "description": "Called when the operation completes with a boolean indicating if the text was accepted or not. On failure, chrome.runtime.lastError is set.",
+            "description": "Called when the operation completes with a boolean indicating if the text was accepted or not. On failure, $(ref:runtime.lastError) is set.",
             "parameters": [
               {
                 "name": "success",

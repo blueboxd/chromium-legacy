@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/containers/span.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/x/x11_util.h"

@@ -21,8 +21,12 @@ android_library("java") {
 }
 
 android_library_factory("factory_java") {
+  # These deps will be inherited by the resulting android_library target.
   deps = [ ":java" ]
-  sources = [ "java/src/org/chromium/chrome/browser/ui/appmenu/AppMenuCoordinatorFactory.java" ]
+
+  # This internal file will be replaced by a generated file so the resulting
+  # android_library target does not actually depend on this internal file.
+  sources = [ "//chrome/browser/ui/android/appmenu/internal/java/src/org/chromium/chrome/browser/ui/appmenu/AppMenuCoordinatorFactory.java" ]
 }
 
 android_resources("java_resources") {

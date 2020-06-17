@@ -8,6 +8,9 @@
 #include "Availability.h"
 #include "base/feature_list.h"
 
+// Feature to open tab switcher after sliding down the toolbar.
+extern const base::Feature kExpandedTabStrip;
+
 // Feature to take snapshots using |-drawViewHierarchy:|.
 extern const base::Feature kSnapshotDrawView;
 

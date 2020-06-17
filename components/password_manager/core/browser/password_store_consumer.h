@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 
 namespace autofill {
@@ -18,6 +20,7 @@ namespace password_manager {
 
 struct FieldInfo;
 struct InteractionsStats;
+class PasswordStore;
 
 // Reads from the PasswordStore are done asynchronously on a separate
 // thread. PasswordStoreConsumer provides the virtual callback method, which is
@@ -32,6 +35,15 @@ class PasswordStoreConsumer {
   // |results|.
   virtual void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) = 0;
+
+  // Like OnGetPasswordStoreResults(), but also receives the originating
+  // PasswordStore as a parameter. This is useful for consumers that query both
+  // the profile-scoped and the account-scoped store.
+  // The default implementation simply calls OnGetPasswordStoreResults(), so
+  // consumers that don't care about the store can just ignore this.
+  virtual void OnGetPasswordStoreResultsFrom(
+      scoped_refptr<PasswordStore> store,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results);
 
   // Called when the GetSiteStats() request is finished, with the associated
   // site statistics.

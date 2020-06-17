@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "base/logging.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia_source.h"
 

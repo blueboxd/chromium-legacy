@@ -15,6 +15,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
@@ -185,6 +186,8 @@ void WebAppInstallFinalizer::FinalizeInstall(
     web_app->SetUserDisplayMode(web_app_info.open_as_window
                                     ? DisplayMode::kStandalone
                                     : DisplayMode::kBrowser);
+    if (options.locally_installed)
+      web_app->SetInstallTime(base::Time::Now());
   }
 
   // `WebApp::chromeos_data` has a default value already. Only override if the

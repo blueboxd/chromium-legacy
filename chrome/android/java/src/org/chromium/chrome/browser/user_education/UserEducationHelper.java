@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.user_education;
 
 import android.app.Activity;
+import android.os.Handler;
 import android.view.View;
 
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
@@ -38,8 +39,11 @@ import org.chromium.ui.widget.ViewRectProvider;
  */
 public class UserEducationHelper {
     private final Activity mActivity;
-    public UserEducationHelper(Activity activity) {
+    private final Handler mHandler;
+
+    public UserEducationHelper(Activity activity, Handler handler) {
         mActivity = activity;
+        mHandler = handler;
     }
 
     /**
@@ -76,7 +80,7 @@ public class UserEducationHelper {
                 new TextBubble(mActivity, anchorView, contentString, accessibilityString, true,
                         rectProvider, ChromeAccessibilityUtil.get().isAccessibilityEnabled());
         textBubble.setDismissOnTouchInteraction(iphCommand.dismissOnTouch);
-        textBubble.addOnDismissListener(() -> anchorView.getHandler().postDelayed(() -> {
+        textBubble.addOnDismissListener(() -> mHandler.postDelayed(() -> {
             tracker.dismissed(featureName);
             iphCommand.onDismissCallback.run();
             if (iphCommand.shouldHighlight) {

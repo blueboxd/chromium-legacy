@@ -4079,38 +4079,36 @@ TEST_F(NavigationControllerTest, PostThenReplaceStateThenReload) {
   contents()->SetDelegate(delegate.get());
 
   // Submit a form.
-  GURL url("http://foo");
-  FrameHostMsg_DidCommitProvisionalLoad_Params params;
-  params.nav_entry_id = 0;
-  params.did_create_new_entry = true;
-  params.url = url;
-  params.origin = url::Origin::Create(url);
-  params.transition = ui::PAGE_TRANSITION_FORM_SUBMIT;
-  params.gesture = NavigationGestureUser;
-  params.page_state = PageState::CreateFromURL(url);
-  params.method = "POST";
-  params.post_id = 2;
-  main_test_rfh()->SendRendererInitiatedNavigationRequest(url, false);
-  main_test_rfh()->PrepareForCommit();
-  contents()->GetMainFrame()->SendNavigateWithParams(&params, false);
+  auto simulator = NavigationSimulatorImpl::CreateRendererInitiated(
+      GURL("http://foo"), main_test_rfh());
+  simulator->SetIsFormSubmission(true);
+  simulator->SetIsPostWithId(123);
+  simulator->Commit();
+
+  // Now reload. We should show repost warning dialog.
+  {
+    NavigationControllerImpl::ScopedShowRepostDialogForTesting show_repost;
+    controller_impl().Reload(ReloadType::NORMAL, true);
+  }
+  const int expected_repost_form_warning_count = 1;
+  EXPECT_EQ(expected_repost_form_warning_count,
+            delegate->repost_form_warning_count());
 
   // history.replaceState() is called.
   GURL replace_url("http://foo#foo");
-  params.nav_entry_id = 0;
-  params.did_create_new_entry = false;
-  params.url = replace_url;
-  params.origin = url::Origin::Create(replace_url);
-  params.transition = ui::PAGE_TRANSITION_LINK;
-  params.gesture = NavigationGestureUser;
-  params.page_state = PageState::CreateFromURL(replace_url);
-  params.method = "GET";
-  params.post_id = -1;
-  contents()->GetMainFrame()->SendNavigateWithParams(&params, true);
+  simulator = NavigationSimulatorImpl::CreateRendererInitiated(
+      GURL("http://foo#foo"), main_test_rfh());
+  simulator->set_did_create_new_entry(false);
+  simulator->Commit();
 
   // Now reload. replaceState overrides the POST, so we should not show a
   // repost warning dialog.
-  controller_impl().Reload(ReloadType::NORMAL, true);
-  EXPECT_EQ(0, delegate->repost_form_warning_count());
+  {
+    NavigationControllerImpl::ScopedShowRepostDialogForTesting show_repost;
+    controller_impl().Reload(ReloadType::NORMAL, true);
+  }
+  EXPECT_EQ(expected_repost_form_warning_count,
+            delegate->repost_form_warning_count());
 }
 
 TEST_F(NavigationControllerTest, UnreachableURLGivesErrorPage) {

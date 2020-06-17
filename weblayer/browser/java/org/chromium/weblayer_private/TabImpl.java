@@ -26,7 +26,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.autofill.AutofillActionModeCallback;
 import org.chromium.components.autofill.AutofillProvider;
-import org.chromium.components.autofill.AutofillProviderImpl;
 import org.chromium.components.browser_ui.http_auth.LoginPrompt;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
@@ -291,7 +290,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
                     // Set up |mAutofillProvider| to operate in the new Context. It's safe to assume
                     // the context won't change unless it is first nulled out, since the fragment
                     // must be detached before it can be reattached to a new Context.
-                    mAutofillProvider = new AutofillProviderImpl(
+                    mAutofillProvider = new AutofillProvider(
                             mBrowser.getContext(), mBrowser.getAutofillView(), "WebLayer");
                     TabImplJni.get().onAutofillProviderChanged(mNativeTab, mAutofillProvider);
                 }

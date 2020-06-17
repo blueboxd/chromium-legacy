@@ -10,6 +10,6 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 // Corresponds to display::DisplayConfigurationParams.
 struct DisplayConfigurationParams {
   int64 id;
-  display.mojom.DisplayMode mode;
   gfx.mojom.Point origin;
+  display.mojom.DisplayMode? mode;
 };

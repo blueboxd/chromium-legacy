@@ -64,6 +64,7 @@ class FullscreenControlHost;
 class InfoBarContainerView;
 class LocationBarView;
 class StatusBubbleViews;
+class TabGroupsIPHController;
 class TabStrip;
 class TabStripRegionView;
 class ToolbarButtonProvider;
@@ -877,6 +878,8 @@ class BrowserView : public BrowserWindow,
   bool interactive_resize_in_progress_ = false;
 
   std::unique_ptr<AccessibilityFocusHighlight> accessibility_focus_highlight_;
+
+  std::unique_ptr<TabGroupsIPHController> tab_groups_iph_controller_;
 
   mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_{
       this};

@@ -4,11 +4,86 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_ruby_utils.h"
 
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_logical_line_item.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_container_fragment.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
+
+// TODO(layout-dev): Using ScrollableOverflow() is same as legacy
+// LayoutRubyRun. However its result is not good with some fonts/platforms.
+// See crbug.com/1082087.
+LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
+                                     LayoutUnit default_value) {
+  const ComputedStyle& container_style = container.Style();
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    if (!container.Items())
+      return default_value;
+    NGInlineCursor cursor(*container.Items());
+    cursor.MoveToLastLine();
+    const auto* line_item = cursor.CurrentItem();
+    if (!line_item)
+      return default_value;
+    DCHECK_EQ(line_item->Type(), NGFragmentItem::kLine);
+    DCHECK(line_item->LineBoxFragment());
+    PhysicalRect line_rect =
+        line_item->LineBoxFragment()->ScrollableOverflowForLine(
+            container, container_style, *line_item, cursor);
+    return container.ConvertChildToLogical(line_rect).BlockEndOffset();
+  }
+
+  const NGPhysicalLineBoxFragment* last_line = nullptr;
+  PhysicalOffset last_line_offset;
+  for (const auto& child_link : container.PostLayoutChildren()) {
+    if (const auto* maybe_line =
+            DynamicTo<NGPhysicalLineBoxFragment>(*child_link)) {
+      last_line = maybe_line;
+      last_line_offset = child_link.offset;
+    }
+  }
+  if (!last_line)
+    return default_value;
+  PhysicalRect line_rect =
+      last_line->ScrollableOverflow(container, container_style);
+  line_rect.Move(last_line_offset);
+  return container.ConvertChildToLogical(line_rect).BlockEndOffset();
+}
+
+// TODO(layout-dev): Using ScrollableOverflow() is same as legacy
+// LayoutRubyRun. However its result is not good with some fonts/platforms.
+// See crbug.com/1082087.
+LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
+                                   LayoutUnit default_value) {
+  const ComputedStyle& container_style = container.Style();
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    if (!container.Items())
+      return default_value;
+    NGInlineCursor cursor(*container.Items());
+    cursor.MoveToFirstLine();
+    const auto* line_item = cursor.CurrentItem();
+    if (!line_item)
+      return default_value;
+    DCHECK_EQ(line_item->Type(), NGFragmentItem::kLine);
+    DCHECK(line_item->LineBoxFragment());
+    PhysicalRect line_rect =
+        line_item->LineBoxFragment()->ScrollableOverflowForLine(
+            container, container_style, *line_item, cursor);
+    return container.ConvertChildToLogical(line_rect).offset.block_offset;
+  }
+
+  for (const auto& child_link : container.PostLayoutChildren()) {
+    if (const auto* line = DynamicTo<NGPhysicalLineBoxFragment>(*child_link)) {
+      PhysicalRect line_rect =
+          line->ScrollableOverflow(container, container_style);
+      line_rect.Move(child_link.offset);
+      return container.ConvertChildToLogical(line_rect).offset.block_offset;
+    }
+  }
+  return default_value;
+}
 
 // See LayoutRubyRun::GetOverhang().
 NGAnnotationOverhang GetOverhang(const NGInlineItemResult& item) {
@@ -140,6 +215,89 @@ LayoutUnit CommitPendingEndOverhang(NGLineInfo* line_info) {
   atomic_inline_item.inline_size -= end_overhang;
   atomic_inline_item.pending_end_overhang = LayoutUnit();
   return end_overhang;
+}
+
+NGLineHeightMetrics ComputeAnnotationOverflow(
+    const NGLogicalLineItems& logical_line,
+    const NGLineHeightMetrics& line_box_metrics,
+    LayoutUnit line_block_start,
+    const ComputedStyle& line_style) {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGRubyEnabled());
+  // Min/max position of content without line-height.
+  LayoutUnit content_block_start = line_block_start + line_box_metrics.ascent;
+  LayoutUnit content_block_end = content_block_start;
+
+  // Min/max position of annotations.
+  LayoutUnit annotation_block_start = content_block_start;
+  LayoutUnit annotation_block_end = content_block_start;
+
+  const LayoutUnit line_block_end =
+      line_block_start + line_box_metrics.LineHeight();
+  bool has_over_emphasis = false;
+  bool has_under_emphasis = false;
+  for (const NGLogicalLineItem& item : logical_line) {
+    if (item.HasInFlowFragment()) {
+      if (!item.IsControl()) {
+        content_block_start = std::min(content_block_start, item.BlockOffset());
+        content_block_end = std::max(content_block_end, item.BlockEndOffset());
+      }
+      if (const auto* style = item.Style()) {
+        if (style->GetTextEmphasisMark() != TextEmphasisMark::kNone) {
+          if (style->GetTextEmphasisLineLogicalSide() == LineLogicalSide::kOver)
+            has_over_emphasis = true;
+          else
+            has_under_emphasis = true;
+        }
+      }
+    }
+
+    // Accumulate |AnnotationOverflow| from ruby runs. All ruby run items have
+    // |layout_result|.
+    const NGLayoutResult* layout_result = item.layout_result.get();
+    if (!layout_result)
+      continue;
+    LayoutUnit overflow = layout_result->AnnotationOverflow();
+    if (IsFlippedLinesWritingMode(line_style.GetWritingMode()))
+      overflow = -overflow;
+    if (overflow < LayoutUnit()) {
+      annotation_block_start = std::min(
+          annotation_block_start, item.rect.offset.block_offset + overflow);
+    } else if (overflow > LayoutUnit()) {
+      const LayoutUnit block_end =
+          item.rect.offset.block_offset +
+          layout_result->PhysicalFragment()
+              .Size()
+              .ConvertToLogical(line_style.GetWritingMode())
+              .block_size;
+      annotation_block_end =
+          std::max(annotation_block_end, block_end + overflow);
+    }
+  }
+
+  // Probably this is an empty line. We should secure font-size space.
+  const LayoutUnit font_size(line_style.ComputedFontSize());
+  if (content_block_end - content_block_start < font_size) {
+    LayoutUnit half_leading = (line_box_metrics.LineHeight() - font_size) / 2;
+    half_leading = half_leading.ClampNegativeToZero();
+    content_block_start = line_block_start + half_leading;
+    content_block_end = line_block_end - half_leading;
+  }
+
+  // Don't provide annotation space if text-emphasis exists.
+  // TODO(layout-dev): If the text-emphasis is in
+  // [line_block_start, line_block_end], this line can provide annotation space.
+  if (has_over_emphasis)
+    content_block_start = line_block_start;
+  if (has_under_emphasis)
+    content_block_end = line_block_end;
+
+  const LayoutUnit content_or_annotation_block_start =
+      std::min(content_block_start, annotation_block_start);
+  const LayoutUnit content_or_annotation_block_end =
+      std::max(content_block_end, annotation_block_end);
+  return NGLineHeightMetrics(
+      line_block_start - content_or_annotation_block_start,
+      content_or_annotation_block_end - line_block_end);
 }
 
 }  // namespace blink

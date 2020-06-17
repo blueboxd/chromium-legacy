@@ -10,6 +10,8 @@
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/public/web_state_user_data.h"
 
+@protocol CRWWebViewScrollViewProxyObserver;
+
 namespace web {
 class WebState;
 }  // namespace web
@@ -38,6 +40,13 @@ extern const char kBreadcrumbInfobarRemoved[];
 // Name of OnInfoBarReplaced event
 // (see infobars::InfoBarManager::Observer::OnInfoBarReplaced).
 extern const char kBreadcrumbInfobarReplaced[];
+
+// Name of Scroll event, logged when web contents scroll view finishes
+// scrolling.
+extern const char kBreadcrumbScroll[];
+
+// Name of Zoom event, logged when web contents scroll view finishes zooming.
+extern const char kBreadcrumbZoom[];
 
 // Constants below represent metadata for breadcrumb events.
 
@@ -138,9 +147,16 @@ class BreadcrumbManagerTabHelper
   // is received.
   int sequentially_replaced_infobars_ = 0;
 
+  // A counter which is incremented for each scroll event. This value is reset
+  // when any other event is logged.
+  int sequentially_scrolled_ = 0;
+
   // Manages this object as an observer of infobars.
   ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
       infobar_observer_;
+
+  // Allows observing Objective-C object for Scroll and Zoom events.
+  __strong id<CRWWebViewScrollViewProxyObserver> scroll_observer_;
 
   WEB_STATE_USER_DATA_KEY_DECL();
 };

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "chromeos/dbus/oobe_config/oobe_config.pb.h"
 #include "dbus/bus.h"

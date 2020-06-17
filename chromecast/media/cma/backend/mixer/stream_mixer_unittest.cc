@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
 #include "base/run_loop.h"

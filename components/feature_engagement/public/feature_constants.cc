@@ -16,6 +16,8 @@ const base::Feature kIPHDummyFeature{"IPH_Dummy",
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
+const base::Feature kIPHDesktopTabGroupsNewGroupFeature{
+    "IPH_DesktopTabGroupsNewGroup", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHFocusModeFeature{"IPH_FocusMode",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHGlobalMediaControlsFeature{

@@ -9,6 +9,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/check_op.h"
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPath.h"

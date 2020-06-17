@@ -194,6 +194,7 @@ TEST_P(BadSslResponseTest, ReadFromSessionCertificateStorage) {
                        status:net::CERT_STATUS_AUTHORITY_INVALID];
   session_storage.certPolicyCacheStorage.certificateStorages =
       [NSSet setWithObject:cert_storage];
+  session_storage.userAgentType = UserAgentType::MOBILE;
 
   WebState::CreateParams params(GetBrowserState());
   std::unique_ptr<WebState> web_state =

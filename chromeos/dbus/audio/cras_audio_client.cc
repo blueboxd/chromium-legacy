@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/format_macros.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/audio/fake_cras_audio_client.h"

@@ -20,7 +20,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_types.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -66,7 +65,6 @@ class NetworkStateHelper;
 class ExistingUserController : public LoginDisplay::Delegate,
                                public content::NotificationObserver,
                                public LoginPerformer::Delegate,
-                               public KioskAppManagerObserver,
                                public UserSessionManagerDelegate,
                                public user_manager::UserManager::Observer {
  public:
@@ -132,9 +130,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // KioskAppManagerObserver overrides.
-  void OnKioskAppsSettingsChanged() override;
-
   // Set a delegate that we will pass AuthStatusConsumer events to.
   // Used for testing.
   void set_login_status_consumer(AuthStatusConsumer* consumer) {
@@ -168,14 +163,12 @@ class ExistingUserController : public LoginDisplay::Delegate,
   void LoginAsGuest();
   void LoginAsPublicSession(const UserContext& user_context);
   void LoginAsKioskApp(KioskAppId kiosk_app_id);
-  // Retrieve public session and ARC kiosk auto-login policy and update the
+  // Retrieve public session auto-login policy and update the
   // timer.
   void ConfigureAutoLogin();
 
   // Trigger public session auto-login.
   void OnPublicSessionAutoLoginTimerFire();
-  // Trigger ARC kiosk auto-login.
-  void OnArcKioskAutoLoginTimerFire();
 
   // LoginPerformer::Delegate implementation:
   void OnAuthFailure(const AuthFailure& error) override;
@@ -350,9 +343,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // AccountId for public session auto-login.
   AccountId public_session_auto_login_account_id_ = EmptyAccountId();
-
-  // AccountId for ARC kiosk auto-login.
-  AccountId arc_kiosk_auto_login_account_id_ = EmptyAccountId();
 
   // Used to execute login operations.
   std::unique_ptr<LoginPerformer> login_performer_;

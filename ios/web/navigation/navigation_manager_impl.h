@@ -95,12 +95,10 @@ class NavigationManagerImpl : public NavigationManager {
   // item is the same as the current item, this does nothing. |referrer| may be
   // nil if there isn't one. The item starts out as pending, and will be lost
   // unless |-commitPendingItem| is called.
-  virtual void AddPendingItem(
-      const GURL& url,
-      const web::Referrer& referrer,
-      ui::PageTransition navigation_type,
-      NavigationInitiationType initiation_type,
-      UserAgentOverrideOption user_agent_override_option) = 0;
+  virtual void AddPendingItem(const GURL& url,
+                              const web::Referrer& referrer,
+                              ui::PageTransition navigation_type,
+                              NavigationInitiationType initiation_type) = 0;
 
   // Commits the pending item, if any.
   // TODO(crbug.com/936933): Remove this method.
@@ -220,12 +218,6 @@ class NavigationManagerImpl : public NavigationManager {
 
   // TODO(crbug.com/738020): Remove legacy code and merge
   // WKBasedNavigationManager into this class after the navigation experiment.
-
-  // Applies the user agent override to |pending_item|, or inherits the user
-  // agent of |inherit_from| if |user_agent_override_option| is INHERIT.
-  void UpdatePendingItemUserAgentType(UserAgentOverrideOption override_option,
-                                      const NavigationItem* inherit_from,
-                                      NavigationItem* pending_item);
 
   // Must be called by subclasses before restoring |item_count| navigation
   // items.

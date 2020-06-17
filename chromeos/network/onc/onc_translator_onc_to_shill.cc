@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/network/client_cert_util.h"

@@ -11,6 +11,7 @@
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_web_contents_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
@@ -19,8 +20,11 @@ namespace payments {
 class ServiceWorkerPaymentAppTest : public testing::Test,
                                     public PaymentRequestSpec::Observer {
  public:
-  ServiceWorkerPaymentAppTest() {}
-  ~ServiceWorkerPaymentAppTest() override {}
+  ServiceWorkerPaymentAppTest() {
+    web_contents_ =
+        test_web_contents_factory_.CreateWebContents(&browser_context_);
+  }
+  ~ServiceWorkerPaymentAppTest() override = default;
 
  protected:
   const SkBitmap* icon_bitmap() const { return icon_bitmap_; }
@@ -112,7 +116,7 @@ class ServiceWorkerPaymentAppTest : public testing::Test,
 
     icon_bitmap_ = stored_app->icon.get();
     app_ = std::make_unique<ServiceWorkerPaymentApp>(
-        &browser_context_, GURL("https://testmerchant.com"),
+        web_contents_, GURL("https://testmerchant.com"),
         GURL("https://testmerchant.com/bobpay"), spec_.get(),
         std::move(stored_app), /*is_incognito=*/false,
         /*show_processing_spinner=*/base::DoNothing());
@@ -131,6 +135,8 @@ class ServiceWorkerPaymentAppTest : public testing::Test,
  private:
   content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext browser_context_;
+  content::TestWebContentsFactory test_web_contents_factory_;
+  content::WebContents* web_contents_;
 
   std::unique_ptr<PaymentRequestSpec> spec_;
   std::unique_ptr<ServiceWorkerPaymentApp> app_;

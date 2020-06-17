@@ -10,6 +10,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 
 #include "base/command_line.h"
 #include "base/environment.h"

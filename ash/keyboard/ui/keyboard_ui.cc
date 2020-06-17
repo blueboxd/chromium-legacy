@@ -6,6 +6,7 @@
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/unguessable_token.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/input_method.h"

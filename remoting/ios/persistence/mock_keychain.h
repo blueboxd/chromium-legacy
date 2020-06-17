@@ -8,6 +8,7 @@
 #include "remoting/ios/persistence/keychain.h"
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace remoting {

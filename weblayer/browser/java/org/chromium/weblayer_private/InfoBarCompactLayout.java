@@ -28,6 +28,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.components.infobars.InfoBarInteractionHandler;
+import org.chromium.components.infobars.InfoBarLayout;
 import org.chromium.components.infobars.InfoBarMessageView;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.widget.ChromeImageButton;
@@ -103,8 +104,13 @@ public class InfoBarCompactLayout extends LinearLayout implements View.OnClickLi
      * @param iconBitmap Raw {@link Bitmap} to use instead of a resource.
      */
     private void prepareIcon(int iconResourceId, @ColorRes int iconTintId, Bitmap iconBitmap) {
-        // TODO(crbug.com/1025620): Port over //chrome's impl of prepareIcon(). This will require
-        // porting //chrome's InfoBarLayout.createIconView() into this file.
+        ImageView iconView =
+                InfoBarLayout.createIconView(getContext(), iconResourceId, iconTintId, iconBitmap);
+        if (iconView != null) {
+            LinearLayout.LayoutParams iconParams =
+                    new LinearLayout.LayoutParams(mIconWidth, mCompactInfoBarSize);
+            addView(iconView, iconParams);
+        }
     }
 
     /**

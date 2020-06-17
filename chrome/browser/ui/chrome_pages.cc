@@ -315,7 +315,7 @@ void ShowHistory(Browser* browser) {
 void ShowDownloads(Browser* browser) {
   base::RecordAction(UserMetricsAction("ShowDownloads"));
   if (browser->window() && browser->window()->IsDownloadShelfVisible())
-    browser->window()->GetDownloadShelf()->Close(DownloadShelf::USER_ACTION);
+    browser->window()->GetDownloadShelf()->Close();
 
   ShowSingletonTabOverwritingNTP(
       browser,

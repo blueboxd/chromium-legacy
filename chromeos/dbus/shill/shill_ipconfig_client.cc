@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/fake_shill_ipconfig_client.h"

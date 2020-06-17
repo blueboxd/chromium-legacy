@@ -5,6 +5,7 @@
 #include "chromeos/dbus/dlcservice/fake_dlcservice_client.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 namespace chromeos {

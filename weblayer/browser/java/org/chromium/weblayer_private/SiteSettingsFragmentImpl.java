@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewGroup;
 import android.view.Window;
 
@@ -21,6 +22,7 @@ import androidx.fragment.app.FragmentHostCallback;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
+import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.browser_ui.site_settings.SingleCategorySettings;
 import org.chromium.components.browser_ui.site_settings.SingleWebsiteSettings;
 import org.chromium.components.browser_ui.site_settings.SiteSettings;
@@ -273,6 +275,24 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
                 throw new RuntimeException("Failed to create Site Settings Fragment", e);
             }
         }
+
+        root.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View view) {
+                // Add the shadow scroll listener here once the View is attached to the Window.
+                SiteSettingsPreferenceFragment preferenceFragment =
+                        (SiteSettingsPreferenceFragment) mFragmentController
+                                .getSupportFragmentManager()
+                                .findFragmentByTag(FRAGMENT_TAG);
+                ViewGroup listView = preferenceFragment.getListView();
+                listView.getViewTreeObserver().addOnScrollChangedListener(
+                        SettingsUtils.getShowShadowOnScrollListener(
+                                listView, view.findViewById(R.id.shadow)));
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {}
+        });
         return root;
     }
 

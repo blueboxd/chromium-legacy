@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"

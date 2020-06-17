@@ -70,7 +70,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -89,7 +89,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -108,7 +108,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -131,7 +131,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -150,7 +150,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -169,7 +169,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "idempotent": false,
@@ -189,7 +189,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -208,7 +208,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -229,7 +229,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "idempotent": false,
@@ -249,7 +249,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -268,7 +268,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -292,7 +292,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -311,7 +311,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -330,7 +330,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -349,7 +349,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -368,7 +368,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -390,7 +390,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -409,7 +409,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -428,7 +428,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -457,7 +457,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
@@ -480,7 +480,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -499,7 +499,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -518,7 +518,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -537,7 +537,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -556,7 +556,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -575,7 +575,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -594,7 +594,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -613,7 +613,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -648,7 +648,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -677,7 +677,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "idempotent": false,
@@ -705,7 +705,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "idempotent": false,
@@ -739,7 +739,7 @@
             {
               "kvm": "1",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm.template"
+              "pool": "chromium.tests.cros.vm"
             }
           ],
           "idempotent": false,
@@ -779,7 +779,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "chrome-cros-dut.template"
+              "pool": "chrome-cros-dut"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -801,7 +801,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "chrome-cros-dut.template"
+              "pool": "chrome-cros-dut"
             }
           ],
           "idempotent": false,
@@ -824,7 +824,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "chrome-cros-dut.template"
+              "pool": "chrome-cros-dut"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -855,7 +855,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "chrome-cros-dut.template"
+              "pool": "chrome-cros-dut"
             }
           ],
           "idempotent": false,
@@ -885,7 +885,7 @@
             {
               "device_type": "kevin",
               "os": "ChromeOS",
-              "pool": "chrome-cros-dut.template"
+              "pool": "chrome-cros-dut"
             }
           ],
           "idempotent": false,

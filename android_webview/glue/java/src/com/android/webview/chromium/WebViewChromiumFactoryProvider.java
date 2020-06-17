@@ -55,7 +55,6 @@ import org.chromium.base.library_loader.NativeLibraries;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.components.autofill.AutofillProvider;
-import org.chromium.components.autofill.AutofillProviderImpl;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
 import org.chromium.components.embedder_support.application.FirebaseConfig;
 import org.chromium.content_public.browser.LGEmailActionModeWorkaround;
@@ -630,7 +629,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
     AutofillProvider createAutofillProvider(Context context, ViewGroup containerView) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return null;
-        return new AutofillProviderImpl(context, containerView, "Android WebView");
+        return new AutofillProvider(context, containerView, "Android WebView");
     }
 
     void startYourEngines(boolean onMainThread) {

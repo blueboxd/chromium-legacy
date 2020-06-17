@@ -128,6 +128,10 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     local_data->set_last_launch_time(
         syncer::TimeToProtoTime(web_app.last_launch_time()));
   }
+  if (!web_app.install_time().is_null()) {
+    local_data->set_install_time(
+        syncer::TimeToProtoTime(web_app.install_time()));
+  }
 
   if (web_app.chromeos_data().has_value()) {
     auto& chromeos_data = web_app.chromeos_data().value();
@@ -292,6 +296,9 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   if (local_data.has_last_launch_time()) {
     web_app->SetLastLaunchTime(
         syncer::ProtoTimeToTime(local_data.last_launch_time()));
+  }
+  if (local_data.has_install_time()) {
+    web_app->SetInstallTime(syncer::ProtoTimeToTime(local_data.install_time()));
   }
 
   // Parse sync_data from sync proto.

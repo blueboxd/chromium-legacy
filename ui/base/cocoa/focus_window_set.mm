@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/check.h"
 #include "ui/base/cocoa/focus_window_set.h"
 
 namespace ui {

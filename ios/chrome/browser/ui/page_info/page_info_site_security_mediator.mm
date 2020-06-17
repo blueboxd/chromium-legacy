@@ -6,13 +6,13 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#import "components/content_settings/core/common/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/ssl_errors/error_info.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_google_chrome_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/page_info/page_info_site_security_description.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -77,7 +77,7 @@ NSString* BuildMessage(NSArray<NSString*>* messageComponents) {
 
   if (offlinePage) {
     dataHolder.siteURL =
-        base::FeatureList::IsEnabled(kPageInfoRefactoring)
+        base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls)
             ? l10n_util::GetNSString(IDS_IOS_PAGE_INFO_OFFLINE_PAGE_LABEL)
             : l10n_util::GetNSString(IDS_IOS_PAGE_INFO_OFFLINE_TITLE);
     dataHolder.message = l10n_util::GetNSString(IDS_IOS_PAGE_INFO_OFFLINE_PAGE);
@@ -89,7 +89,7 @@ NSString* BuildMessage(NSArray<NSString*>* messageComponents) {
 
   if (URL.SchemeIs(kChromeUIScheme)) {
     dataHolder.siteURL =
-        base::FeatureList::IsEnabled(kPageInfoRefactoring)
+        base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls)
             ? l10n_util::GetNSString(IDS_IOS_PAGE_INFO_CHROME_PAGE_LABEL)
             : base::SysUTF8ToNSString(URL.spec());
     dataHolder.message = l10n_util::GetNSString(IDS_PAGE_INFO_INTERNAL_PAGE);
@@ -119,7 +119,8 @@ NSString* BuildMessage(NSArray<NSString*>* messageComponents) {
       dataHolder.iconImageName = kSecurityIconNotSecure;
     }
 
-    if (base::FeatureList::IsEnabled(kPageInfoRefactoring)) {
+    if (base::FeatureList::IsEnabled(
+            content_settings::kImprovedCookieControls)) {
       dataHolder.message =
           [NSString stringWithFormat:@"%@ BEGIN_LINK %@ END_LINK",
                                      l10n_util::GetNSString(
@@ -147,7 +148,8 @@ NSString* BuildMessage(NSArray<NSString*>* messageComponents) {
 
     NSString* certificateDetails = BuildCertificateDetailString(status, URL);
 
-    if (base::FeatureList::IsEnabled(kPageInfoRefactoring)) {
+    if (base::FeatureList::IsEnabled(
+            content_settings::kImprovedCookieControls)) {
       dataHolder.message = BuildMessage(@[
         [NSString stringWithFormat:@"%@ BEGIN_LINK %@ END_LINK",
                                    l10n_util::GetNSString(
@@ -191,7 +193,8 @@ NSString* BuildMessage(NSArray<NSString*>* messageComponents) {
       dataHolder.legacyImage = [UIImage imageNamed:@"page_info_info"];
       dataHolder.iconImageName = kSecurityIconNotSecure;
     }
-    if (base::FeatureList::IsEnabled(kPageInfoRefactoring)) {
+    if (base::FeatureList::IsEnabled(
+            content_settings::kImprovedCookieControls)) {
       dataHolder.message = BuildMessage(@[
         [NSString stringWithFormat:@"%@ BEGIN_LINK %@ END_LINK",
                                    l10n_util::GetNSString(
@@ -215,7 +218,7 @@ NSString* BuildMessage(NSArray<NSString*>* messageComponents) {
       l10n_util::GetNSString(IDS_IOS_PAGE_INFO_SECURITY_STATUS_SECURE);
   dataHolder.legacyImage = [UIImage imageNamed:@"page_info_good"];
   dataHolder.iconImageName = kSecurityIconSecure;
-  if (base::FeatureList::IsEnabled(kPageInfoRefactoring)) {
+  if (base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls)) {
     dataHolder.message = BuildMessage(@[
       [NSString
           stringWithFormat:@"%@ BEGIN_LINK %@ END_LINK",

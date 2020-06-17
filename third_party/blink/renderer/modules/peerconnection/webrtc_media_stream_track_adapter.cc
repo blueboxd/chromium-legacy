@@ -267,10 +267,10 @@ void WebRtcMediaStreamTrackAdapter::
 
   if (remote_audio_track_adapter_) {
     remote_audio_track_adapter_->Initialize();
-    web_track_ = *remote_audio_track_adapter_->web_track();
+    web_track_ = remote_audio_track_adapter_->track();
   } else {
     remote_video_track_adapter_->Initialize();
-    web_track_ = *remote_video_track_adapter_->web_track();
+    web_track_ = remote_video_track_adapter_->track();
   }
   is_initialized_ = true;
 }

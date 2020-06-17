@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/demo/renderer_factory.h"

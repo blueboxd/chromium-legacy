@@ -31,7 +31,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
@@ -653,15 +652,6 @@ void ExistingUserController::Observe(
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::BindOnce(&TransferHttpAuthCaches),
       base::TimeDelta::FromMilliseconds(kAuthCacheTransferDelayMs));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// ExistingUserController, KioskAppManagerObserver
-// implementation:
-//
-
-void ExistingUserController::OnKioskAppsSettingsChanged() {
-  ConfigureAutoLogin();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1603,27 +1593,12 @@ void ExistingUserController::ConfigureAutoLogin() {
     public_session_auto_login_account_id_ = EmptyAccountId();
   }
 
-  arc_kiosk_auto_login_account_id_ =
-      ArcKioskAppManager::Get()->GetAutoLaunchAccountId();
-  const user_manager::User* arc_kiosk_user =
-      user_manager::UserManager::Get()->FindUser(
-          arc_kiosk_auto_login_account_id_);
-  if (!arc_kiosk_user ||
-      arc_kiosk_user->GetType() != user_manager::USER_TYPE_ARC_KIOSK_APP ||
-      KioskAppLaunchError::Get() != KioskAppLaunchError::NONE) {
-    arc_kiosk_auto_login_account_id_ = EmptyAccountId();
-    VLOG(2) << "ARC Kiosk autologin user not found";
-  }
-
   if (!cros_settings_->GetInteger(kAccountsPrefDeviceLocalAccountAutoLoginDelay,
                                   &auto_login_delay_)) {
     auto_login_delay_ = 0;
   }
 
-  if (arc_kiosk_auto_login_account_id_.is_valid()) {
-    // Kiosks are not interrupted by update required screen.
-    StartAutoLoginTimer();
-  } else if (show_update_required_screen) {
+  if (show_update_required_screen) {
     // Update required screen overrides public session auto login.
     StopAutoLoginTimer();
     ShowUpdateRequiredScreen();
@@ -1649,16 +1624,6 @@ void ExistingUserController::OnPublicSessionAutoLoginTimerFire() {
   signin_specifics.is_auto_login = true;
   Login(UserContext(user_manager::USER_TYPE_PUBLIC_ACCOUNT,
                     public_session_auto_login_account_id_),
-        signin_specifics);
-}
-
-void ExistingUserController::OnArcKioskAutoLoginTimerFire() {
-  CHECK(arc_kiosk_auto_login_account_id_.is_valid());
-  VLOG(2) << "ARC kiosk autologin fired";
-  SigninSpecifics signin_specifics;
-  signin_specifics.is_auto_login = true;
-  Login(UserContext(user_manager::USER_TYPE_ARC_KIOSK_APP,
-                    arc_kiosk_auto_login_account_id_),
         signin_specifics);
 }
 
@@ -1693,12 +1658,10 @@ void ExistingUserController::ResyncUserData() {
 
 void ExistingUserController::StartAutoLoginTimer() {
   if (is_login_in_progress_ ||
-      (!public_session_auto_login_account_id_.is_valid() &&
-       !arc_kiosk_auto_login_account_id_.is_valid())) {
+      !public_session_auto_login_account_id_.is_valid()) {
     VLOG(2) << "Not starting autologin timer, because:";
     VLOG_IF(2, is_login_in_progress_) << "* Login is in process;";
-    VLOG_IF(2, (!public_session_auto_login_account_id_.is_valid() &&
-                !arc_kiosk_auto_login_account_id_.is_valid()))
+    VLOG_IF(2, !public_session_auto_login_account_id_.is_valid())
         << "* No valid autologin account;";
     return;
   }
@@ -1712,22 +1675,12 @@ void ExistingUserController::StartAutoLoginTimer() {
   if (!auto_login_timer_)
     auto_login_timer_.reset(new base::OneShotTimer);
 
-  if (public_session_auto_login_account_id_.is_valid()) {
-    VLOG(2) << "Public session autologin will be fired in " << auto_login_delay_
-            << "ms";
-    auto_login_timer_->Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(auto_login_delay_),
-        base::BindOnce(
-            &ExistingUserController::OnPublicSessionAutoLoginTimerFire,
-            weak_factory_.GetWeakPtr()));
-  } else {
-    VLOG(2) << "ARC kiosk autologin will be fired in " << auto_login_delay_
-            << "ms";
-    auto_login_timer_->Start(
-        FROM_HERE, base::TimeDelta::FromMilliseconds(auto_login_delay_),
-        base::BindOnce(&ExistingUserController::OnArcKioskAutoLoginTimerFire,
-                       weak_factory_.GetWeakPtr()));
-  }
+  VLOG(2) << "Public session autologin will be fired in " << auto_login_delay_
+          << "ms";
+  auto_login_timer_->Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(auto_login_delay_),
+      base::BindOnce(&ExistingUserController::OnPublicSessionAutoLoginTimerFire,
+                     weak_factory_.GetWeakPtr()));
 }
 
 gfx::NativeWindow ExistingUserController::GetNativeWindow() const {

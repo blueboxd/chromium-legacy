@@ -47,6 +47,8 @@ class AppRegistrarObserver : public base::CheckedObserver {
                                             bool is_disabled) {}
   virtual void OnWebAppLastLaunchTimeChanged(const AppId& app_id,
                                              const base::Time& time) {}
+  virtual void OnWebAppInstallTimeChanged(const AppId& app_id,
+                                          const base::Time& time) {}
 };
 
 }  // namespace web_app

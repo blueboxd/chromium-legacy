@@ -9,6 +9,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "dbus/message.h"
 

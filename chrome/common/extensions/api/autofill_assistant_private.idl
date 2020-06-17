@@ -12,7 +12,7 @@
 // and can be executed via <code>performAction</code>.
 namespace autofillAssistantPrivate {
   // Success or error of a function call will be communicated by setting
-  // chrome.runtime.lastError.
+  // $(ref:runtime.lastError).
   callback VoidCallback = void ();
 
   dictionary ActionObject {

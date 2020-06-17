@@ -31,8 +31,18 @@ class MultiStoreFormFetcher : public FormFetcherImpl {
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
+  void OnGetPasswordStoreResultsFrom(
+      scoped_refptr<PasswordStore> store,
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
  private:
+  // HttpPasswordStoreMigrator::Consumer:
+  void ProcessMigratedForms(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> forms) override;
+
+  void AggregatePasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results);
+
   // Splits |results| into |federated_|, |non_federated_|,
   // |is_blacklisted_in_profile_store_| and |is_blacklisted_in_account_store_|.
   void SplitResults(

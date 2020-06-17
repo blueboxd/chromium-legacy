@@ -11,6 +11,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/debug/crash_logging.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"

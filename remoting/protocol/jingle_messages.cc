@@ -5,6 +5,7 @@
 #include "remoting/protocol/jingle_messages.h"
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "remoting/base/constants.h"
 #include "remoting/base/name_value_map.h"

@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_breaker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_truncator.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_ruby_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_outside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
@@ -386,8 +387,9 @@ void NGInlineLayoutAlgorithm::CreateLine(
   NGLineHeightMetrics annotation_metrics = NGLineHeightMetrics::Zero();
   if (Node().HasRuby() &&
       !RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    annotation_metrics = ComputeAnnotationOverflow(
-        line_box_metrics, -line_box_metrics.ascent, line_info->LineStyle());
+    annotation_metrics = ComputeAnnotationOverflow(line_box_, line_box_metrics,
+                                                   -line_box_metrics.ascent,
+                                                   line_info->LineStyle());
   }
 
   // Create box fragments if needed. After this point forward, |line_box_| is a
@@ -421,7 +423,7 @@ void NGInlineLayoutAlgorithm::CreateLine(
   if (Node().HasRuby() &&
       RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
     annotation_metrics = ComputeAnnotationOverflow(
-        line_box_metrics, LayoutUnit(), line_info->LineStyle());
+        line_box_, line_box_metrics, LayoutUnit(), line_info->LineStyle());
   }
   LayoutUnit annotation_block_start;
   LayoutUnit annotation_block_end;
@@ -452,96 +454,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
     container_builder_.SetAnnotationOverflow(annotation_block_end);
   else if (annotation_block_end < LayoutUnit())
     container_builder_.SetBlockEndAnnotationSpace(-annotation_block_end);
-}
-
-// Return value:
-//   .ascent > 0: The amount of annotation overflow at the line-top side
-//   .ascent < 0: The amount of annotation space which the next line at the
-//                line-top side can consume.
-//   .descent > 0: The amount of annotation overflow at the line-bottom side.
-//   .descent < 0: The amount of annotation space which the next line at the
-//                 line-bottom side can consume.
-NGLineHeightMetrics NGInlineLayoutAlgorithm::ComputeAnnotationOverflow(
-    const NGLineHeightMetrics& line_box_metrics,
-    LayoutUnit line_block_start,
-    const ComputedStyle& line_style) {
-  DCHECK(Node().HasRuby());
-  DCHECK(RuntimeEnabledFeatures::LayoutNGRubyEnabled());
-  // Min/max position of content without line-height.
-  LayoutUnit content_block_start = line_block_start + line_box_metrics.ascent;
-  LayoutUnit content_block_end = content_block_start;
-
-  // Min/max position of annotations.
-  LayoutUnit annotation_block_start = content_block_start;
-  LayoutUnit annotation_block_end = content_block_start;
-
-  const LayoutUnit line_block_end =
-      line_block_start + line_box_metrics.LineHeight();
-  bool has_over_emphasis = false;
-  bool has_under_emphasis = false;
-  for (const NGLogicalLineItem& item : line_box_) {
-    if (item.HasInFlowFragment()) {
-      if (!item.IsControl()) {
-        content_block_start = std::min(content_block_start, item.BlockOffset());
-        content_block_end = std::max(content_block_end, item.BlockEndOffset());
-      }
-      if (const auto* style = item.Style()) {
-        if (style->GetTextEmphasisMark() != TextEmphasisMark::kNone) {
-          if (style->GetTextEmphasisLineLogicalSide() == LineLogicalSide::kOver)
-            has_over_emphasis = true;
-          else
-            has_under_emphasis = true;
-        }
-      }
-    }
-
-    // Accumulate |AnnotationOverflow| from ruby runs. All ruby run items have
-    // |layout_result|.
-    const NGLayoutResult* layout_result = item.layout_result.get();
-    if (!layout_result)
-      continue;
-    LayoutUnit overflow = layout_result->AnnotationOverflow();
-    if (IsFlippedLinesWritingMode(line_style.GetWritingMode()))
-      overflow = -overflow;
-    if (overflow < LayoutUnit()) {
-      annotation_block_start = std::min(
-          annotation_block_start, item.rect.offset.block_offset + overflow);
-    } else if (overflow > LayoutUnit()) {
-      const LayoutUnit block_end =
-          item.rect.offset.block_offset +
-          layout_result->PhysicalFragment()
-              .Size()
-              .ConvertToLogical(line_style.GetWritingMode())
-              .block_size;
-      annotation_block_end =
-          std::max(annotation_block_end, block_end + overflow);
-    }
-  }
-
-  // Probably this is an empty line. We should secure font-size space.
-  const LayoutUnit font_size(line_style.ComputedFontSize());
-  if (content_block_end - content_block_start < font_size) {
-    LayoutUnit half_leading = (line_box_metrics.LineHeight() - font_size) / 2;
-    half_leading = half_leading.ClampNegativeToZero();
-    content_block_start = line_block_start + half_leading;
-    content_block_end = line_block_end - half_leading;
-  }
-
-  // Don't provide annotation space if text-emphasis exists.
-  // TODO(layout-dev): If the text-emphasis is in
-  // [line_block_start, line_block_end], this line can provide annotation space.
-  if (has_over_emphasis)
-    content_block_start = line_block_start;
-  if (has_under_emphasis)
-    content_block_end = line_block_end;
-
-  const LayoutUnit content_or_annotation_block_start =
-      std::min(content_block_start, annotation_block_start);
-  const LayoutUnit content_or_annotation_block_end =
-      std::max(content_block_end, annotation_block_end);
-  return NGLineHeightMetrics(
-      line_block_start - content_or_annotation_block_start,
-      content_or_annotation_block_end - line_block_end);
 }
 
 void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,

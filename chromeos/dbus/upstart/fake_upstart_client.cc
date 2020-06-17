@@ -5,6 +5,7 @@
 #include "chromeos/dbus/upstart/fake_upstart_client.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/authpolicy/fake_authpolicy_client.h"
 #include "chromeos/dbus/kerberos/fake_kerberos_client.h"

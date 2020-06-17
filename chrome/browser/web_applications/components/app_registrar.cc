@@ -78,6 +78,12 @@ void AppRegistrar::NotifyWebAppLastLaunchTimeChanged(const AppId& app_id,
     observer.OnWebAppLastLaunchTimeChanged(app_id, time);
 }
 
+void AppRegistrar::NotifyWebAppInstallTimeChanged(const AppId& app_id,
+                                                  const base::Time& time) {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppInstallTimeChanged(app_id, time);
+}
+
 void AppRegistrar::NotifyWebAppProfileWillBeDeleted(const AppId& app_id) {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnWebAppProfileWillBeDeleted(app_id);

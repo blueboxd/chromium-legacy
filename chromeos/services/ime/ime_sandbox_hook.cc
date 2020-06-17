@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "build/buildflag.h"
 #include "chromeos/services/ime/constants.h"
 #include "chromeos/services/ime/public/cpp/buildflags.h"

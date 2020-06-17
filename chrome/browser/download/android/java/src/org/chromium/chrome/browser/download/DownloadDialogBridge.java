@@ -19,7 +19,9 @@ import org.chromium.chrome.browser.download.dialogs.DownloadLocationDialogContro
 import org.chromium.chrome.browser.download.dialogs.DownloadLocationDialogCoordinator;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -219,14 +221,14 @@ public class DownloadDialogBridge implements DownloadLocationDialogController,
      */
     @DownloadPromptStatus
     public static int getPromptForDownloadAndroid() {
-        return PrefServiceBridge.getInstance().getInteger(Pref.PROMPT_FOR_DOWNLOAD_ANDROID);
+        return getPrefService().getInteger(Pref.PROMPT_FOR_DOWNLOAD_ANDROID);
     }
 
     /**
      * @param status New status to update the prompt for download preference.
      */
     public static void setPromptForDownloadAndroid(@DownloadPromptStatus int status) {
-        PrefServiceBridge.getInstance().setInteger(Pref.PROMPT_FOR_DOWNLOAD_ANDROID, status);
+        getPrefService().setInteger(Pref.PROMPT_FOR_DOWNLOAD_ANDROID, status);
     }
 
     /**
@@ -234,7 +236,7 @@ public class DownloadDialogBridge implements DownloadLocationDialogController,
      */
     @DownloadLaterPromptStatus
     public static int getDownloadLaterPromptStatus() {
-        return PrefServiceBridge.getInstance().getInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS);
+        return getPrefService().getInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS);
     }
 
     /**
@@ -242,7 +244,11 @@ public class DownloadDialogBridge implements DownloadLocationDialogController,
      * @param status New status to update the download later prmopt status.
      */
     public static void setDownloadLaterPromptStatus(@DownloadLaterPromptStatus int status) {
-        PrefServiceBridge.getInstance().setInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS, status);
+        getPrefService().setInteger(Pref.DOWNLOAD_LATER_PROMPT_STATUS, status);
+    }
+
+    private static PrefService getPrefService() {
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 
     @NativeMethods

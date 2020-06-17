@@ -19,6 +19,8 @@
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/security/security_style.h"
 #include "ios/web/public/security/ssl_status.h"
+#import "ios/web/public/ui/crw_web_view_proxy.h"
+#import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -35,7 +37,16 @@ bool IsNptUrl(const GURL& url) {
 bool IsGoogleUrl(const GURL& url) {
   return url.host() == "google.com" || url.host() == "www.google.com";
 }
+
+// Returns true if event that was sequentially emitted |count| times should be
+// logged. Some events (f.e. infobars replacements or scrolling) are emitted
+// sequentially multiple times. Logging each event will pollute breadcrumbs, so
+// this throttling function decides if event should be logged.
+bool ShouldLogRepeatedEvent(int count) {
+  return count == 1 || count == 2 || count == 5 || count == 20 ||
+         count == 100 || count == 200;
 }
+}  // namespace
 
 const char kBreadcrumbDidStartNavigation[] = "StartNav";
 const char kBreadcrumbDidFinishNavigation[] = "FinishNav";
@@ -45,6 +56,9 @@ const char kBreadcrumbDidChangeVisibleSecurityState[] = "SecurityChange";
 const char kBreadcrumbInfobarAdded[] = "AddInfobar";
 const char kBreadcrumbInfobarRemoved[] = "RemoveInfobar";
 const char kBreadcrumbInfobarReplaced[] = "ReplaceInfobar";
+
+const char kBreadcrumbScroll[] = "Scroll";
+const char kBreadcrumbZoom[] = "Zoom";
 
 const char kBreadcrumbAuthenticationBroken[] = "#broken";
 const char kBreadcrumbDownload[] = "#download";
@@ -57,22 +71,76 @@ const char kBreadcrumbPageLoadFailure[] = "#failure";
 const char kBreadcrumbRendererInitiatedByUser[] = "#renderer-user";
 const char kBreadcrumbRendererInitiatedByScript[] = "#renderer-script";
 
+using LoggingBlock = void (^)(const std::string& event);
+
+// Observes scroll and zoom events and executes LoggingBlock.
+@interface BreadcrumbScrollingObserver
+    : NSObject <CRWWebViewScrollViewProxyObserver>
+- (instancetype)initWithLoggingBlock:(LoggingBlock)loggingBlock;
+@end
+@implementation BreadcrumbScrollingObserver {
+  LoggingBlock _loggingBlock;
+}
+
+- (instancetype)initWithLoggingBlock:(LoggingBlock)loggingBlock {
+  if (self = [super init]) {
+    _loggingBlock = [loggingBlock copy];
+  }
+  return self;
+}
+
+- (void)webViewScrollViewDidEndDragging:
+            (CRWWebViewScrollViewProxy*)webViewScrollViewProxy
+                         willDecelerate:(BOOL)decelerate {
+  _loggingBlock(kBreadcrumbScroll);
+}
+
+- (void)webViewScrollViewDidEndZooming:
+            (CRWWebViewScrollViewProxy*)webViewScrollViewProxy
+                               atScale:(CGFloat)scale {
+  _loggingBlock(kBreadcrumbZoom);
+}
+
+@end
+
 BreadcrumbManagerTabHelper::BreadcrumbManagerTabHelper(web::WebState* web_state)
     : web_state_(web_state),
       infobar_manager_(InfoBarManagerImpl::FromWebState(web_state)),
       infobar_observer_(this) {
-  DCHECK(web_state_);
   web_state_->AddObserver(this);
 
   static int next_unique_id = 1;
   unique_id_ = next_unique_id++;
 
   infobar_observer_.Add(infobar_manager_);
+
+  scroll_observer_ = [[BreadcrumbScrollingObserver alloc]
+      initWithLoggingBlock:^(const std::string& event) {
+        if (event == kBreadcrumbScroll) {
+          sequentially_scrolled_++;
+          if (ShouldLogRepeatedEvent(sequentially_scrolled_)) {
+            LogEvent(base::StringPrintf("%s %d", kBreadcrumbScroll,
+                                        sequentially_scrolled_));
+          }
+        } else {
+          LogEvent(event);
+        }
+      }];
+  [[web_state->GetWebViewProxy() scrollViewProxy] addObserver:scroll_observer_];
 }
 
 BreadcrumbManagerTabHelper::~BreadcrumbManagerTabHelper() = default;
 
 void BreadcrumbManagerTabHelper::LogEvent(const std::string& event) {
+  bool is_scroll_event = event.find(kBreadcrumbScroll) != std::string::npos;
+  if (!is_scroll_event) {
+    // |sequentially_scrolled_| is incremented for each scroll event and reset
+    // here when non-scrolling event is logged. The user can scroll multiple
+    // times and |sequentially_scrolled_| will allow to throttle the logs to
+    // avoid polluting breadcrumbs.
+    sequentially_scrolled_ = 0;
+  }
+
   ChromeBrowserState* chrome_browser_state =
       ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
   std::string event_log =
@@ -194,6 +262,10 @@ void BreadcrumbManagerTabHelper::RenderProcessGone(web::WebState* web_state) {
 
 void BreadcrumbManagerTabHelper::WebStateDestroyed(web::WebState* web_state) {
   web_state->RemoveObserver(this);
+
+  [[web_state->GetWebViewProxy() scrollViewProxy]
+      removeObserver:scroll_observer_];
+  scroll_observer_ = nil;
 }
 
 void BreadcrumbManagerTabHelper::OnInfoBarAdded(infobars::InfoBar* infobar) {
@@ -224,12 +296,7 @@ void BreadcrumbManagerTabHelper::OnInfoBarReplaced(
     infobars::InfoBar* new_infobar) {
   sequentially_replaced_infobars_++;
 
-  if (sequentially_replaced_infobars_ == 1 ||
-      sequentially_replaced_infobars_ == 2 ||
-      sequentially_replaced_infobars_ == 5 ||
-      sequentially_replaced_infobars_ == 20 ||
-      sequentially_replaced_infobars_ == 100 ||
-      sequentially_replaced_infobars_ == 200) {
+  if (ShouldLogRepeatedEvent(sequentially_replaced_infobars_)) {
     LogEvent(base::StringPrintf("%s%d %d", kBreadcrumbInfobarReplaced,
                                 new_infobar->delegate()->GetIdentifier(),
                                 sequentially_replaced_infobars_));

@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "components/sync/engine_impl/syncer_util.h"
-#include "components/sync/syncable/directory_cryptographer.h"
+#include "components/sync/nigori/cryptographer.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/nigori_handler.h"
 #include "components/sync/syncable/nigori_util.h"
@@ -519,11 +519,11 @@ void GetCommitIdsForType(syncable::BaseTransaction* trans,
 
   ModelTypeSet encrypted_types;
   bool passphrase_missing = false;
-  const DirectoryCryptographer* cryptographer =
-      dir->GetNigoriHandler()->GetDirectoryCryptographer(trans);
+  const Cryptographer* cryptographer =
+      dir->GetNigoriHandler()->GetCryptographer(trans);
   if (cryptographer) {
     encrypted_types = dir->GetNigoriHandler()->GetEncryptedTypes(trans);
-    passphrase_missing = cryptographer->has_pending_keys();
+    passphrase_missing = cryptographer->CanEncrypt();
   }
 
   // We filter out all unready entries from the set of unsynced handles. This

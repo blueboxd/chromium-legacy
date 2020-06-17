@@ -12,6 +12,7 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/session/session_observer.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"

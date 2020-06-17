@@ -22,6 +22,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_icon_source.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
@@ -969,6 +970,8 @@ void AppLauncherHandler::HandleInstallAppLocally(const base::ListValue* args) {
 
   web_app_provider_->registry_controller().SetAppIsLocallyInstalled(app_id,
                                                                     true);
+  web_app_provider_->registry_controller().SetAppInstallTime(app_id,
+                                                             base::Time::Now());
   web_app::AppShortcutManager& shortcut_manager =
       web_app_provider_->shortcut_manager();
   if (shortcut_manager.CanCreateShortcuts()) {

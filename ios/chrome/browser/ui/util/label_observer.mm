@@ -6,6 +6,7 @@
 
 #import <objc/runtime.h>
 
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -35,6 +35,7 @@ android_resources("weblayer_resources") {
     "//components/infobars/android:java_resources",
     "//components/page_info/android:java_resources",
     "//components/permissions/android:java_resources",
+    "//components/translate/content/android:java_resources",
     "//third_party/android_deps:com_google_android_material_material_java",
     "//weblayer:components_java_strings",
   ]

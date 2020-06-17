@@ -96,7 +96,7 @@ public class SplitAvailabilityLogger {
      * @param moduleName The module name.
      */
     public void storeRequestStart(String moduleName) {
-        assert !mInstallTimesMap.containsKey(moduleName);
+        // Ignore previously failed requests (orphan keys).
         boolean moduleRequested = storeModuleRequested(moduleName, ONDEMAND_REQ_PREV);
         mInstallTimesMap.put(moduleName, new InstallTimes(moduleRequested));
     }

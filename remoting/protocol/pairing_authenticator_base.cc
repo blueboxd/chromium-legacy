@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "remoting/base/constants.h"
 #include "remoting/protocol/channel_authenticator.h"
 

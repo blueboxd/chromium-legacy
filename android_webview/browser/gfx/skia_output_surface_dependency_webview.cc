@@ -10,6 +10,7 @@
 #include "android_webview/browser/gfx/task_forwarding_sequence.h"
 #include "android_webview/browser/gfx/task_queue_web_view.h"
 #include "base/callback_helpers.h"
+#include "base/logging.h"
 
 namespace android_webview {
 

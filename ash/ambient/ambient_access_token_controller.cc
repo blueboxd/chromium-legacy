@@ -4,10 +4,8 @@
 
 #include "ash/ambient/ambient_access_token_controller.h"
 
-#include <algorithm>
-#include <utility>
-
 #include "ash/public/cpp/ambient/ambient_client.h"
+#include "base/logging.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
 

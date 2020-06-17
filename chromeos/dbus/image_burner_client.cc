@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"

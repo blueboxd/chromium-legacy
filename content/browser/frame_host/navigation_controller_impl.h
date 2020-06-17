@@ -335,6 +335,8 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, SingleDuplicate);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ManyDuplicates);
   FRIEND_TEST_ALL_PREFIXES(TimeSmoother, ClockBackwardsJump);
+  FRIEND_TEST_ALL_PREFIXES(NavigationControllerTest,
+                           PostThenReplaceStateThenReload);
 
   // Defines possible actions that are returned by
   // DetermineActionForHistoryNavigation().
@@ -357,6 +359,23 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
     // times and |high_water_mark_| is the last.
     base::Time low_water_mark_;
     base::Time high_water_mark_;
+  };
+
+  // The repost dialog is suppressed during testing. However, it should be shown
+  // in some tests. This allows a test to elect to allow the repost dialog to
+  // show for a scoped duration.
+  class CONTENT_EXPORT ScopedShowRepostDialogForTesting {
+   public:
+    ScopedShowRepostDialogForTesting();
+    ~ScopedShowRepostDialogForTesting();
+
+    ScopedShowRepostDialogForTesting(const ScopedShowRepostDialogForTesting&) =
+        delete;
+    ScopedShowRepostDialogForTesting& operator=(
+        const ScopedShowRepostDialogForTesting&) = delete;
+
+   private:
+    const bool was_disallowed_;
   };
 
   // Navigates in session history to the given index. If

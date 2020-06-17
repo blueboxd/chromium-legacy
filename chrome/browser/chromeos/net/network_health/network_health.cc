@@ -68,6 +68,7 @@ mojom::NetworkPtr CreateNetwork(
   if (net_prop) {
     net->state = ConnectionStateToNetworkState(net_prop->connection_state);
     net->name = net_prop->name;
+    net->guid = net_prop->guid;
   } else {
     net->state = DeviceStateToNetworkState(device_prop->device_state);
   }

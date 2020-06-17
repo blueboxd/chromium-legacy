@@ -345,10 +345,6 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
               : PasswordBubbleControllerBase::DisplayReason::kUserAction),
       is_update_bubble_(controller_.state() ==
                         password_manager::ui::PENDING_PASSWORD_UPDATE_STATE),
-
-      username_dropdown_(nullptr),
-      password_view_button_(nullptr),
-      password_dropdown_(nullptr),
       are_passwords_revealed_(
           controller_.are_passwords_revealed_when_bubble_is_opened()) {
   DCHECK(controller_.state() == password_manager::ui::PENDING_PASSWORD_STATE ||

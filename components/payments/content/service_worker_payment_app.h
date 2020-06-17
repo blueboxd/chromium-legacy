@@ -13,13 +13,13 @@
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/web_app_manifest.h"
 #include "content/public/browser/stored_payment_app.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_handler_host.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 namespace content {
-class BrowserContext;
 class WebContents;
 }  // namespace content
 
@@ -32,12 +32,13 @@ namespace payments {
 class PaymentHandlerHost;
 
 // Represents a service worker based payment app.
-class ServiceWorkerPaymentApp : public PaymentApp {
+class ServiceWorkerPaymentApp : public PaymentApp,
+                                public content::WebContentsObserver {
  public:
   // This constructor is used for a payment app that has been installed in
   // Chrome.
   ServiceWorkerPaymentApp(
-      content::BrowserContext* browser_context,
+      content::WebContents* web_contents,
       const GURL& top_origin,
       const GURL& frame_origin,
       const PaymentRequestSpec* spec,
@@ -128,7 +129,6 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   //    invoked.
   void OnPaymentAppIdentity(const url::Origin& origin, int64_t registration_id);
 
-  content::BrowserContext* browser_context_;
   GURL top_origin_;
   GURL frame_origin_;
   const PaymentRequestSpec* spec_;
@@ -157,7 +157,6 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   // Below variables are used for installable ServiceWorkerPaymentApp
   // specifically.
   bool needs_installation_;
-  content::WebContents* web_contents_;
   std::unique_ptr<WebAppInstallationInfo> installable_web_app_info_;
   std::string installable_enabled_method_;
 

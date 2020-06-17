@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "remoting/base/rsa_key_pair.h"

@@ -4,6 +4,7 @@
 
 #include "ui/gl/buffer_format_utils.h"
 
+#include "base/notreached.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace gl {

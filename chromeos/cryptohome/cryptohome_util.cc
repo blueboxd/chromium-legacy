@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/constants/cryptohome_key_delegate_constants.h"
 #include "chromeos/dbus/cryptohome/key.pb.h"

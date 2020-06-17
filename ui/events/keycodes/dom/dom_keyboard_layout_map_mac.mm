@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <string>
 
+#include "base/check_op.h"
 #include "base/mac/foundation_util.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"

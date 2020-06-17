@@ -394,6 +394,9 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PRINT_MANAGEMENT_UNKNOWN_ERROR_STATUS" desc="The error status displayed next to a print job to indicate to users that their print job failed due to an unknown error.">
         Failed - Unknown error
       </message>
+      <message name="IDS_PRINT_MANAGEMENT_NO_PRINT_JOBS_IN_PROGRESS_MESSAGE" desc="The message shown to users if they do not have any print jobs in progress i.e. being printed.">
+        No print jobs in progress
+      </message>
     </messages>
   </release>
 </grit>

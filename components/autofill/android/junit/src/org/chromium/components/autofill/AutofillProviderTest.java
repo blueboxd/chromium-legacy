@@ -31,11 +31,11 @@ import org.chromium.ui.display.DisplayAndroid;
 import java.util.ArrayList;
 
 /**
- * The unit tests for AutofillProviderImpl.
+ * The unit tests for AutofillProvider.
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-public class AutofillProviderImplTest {
+public class AutofillProviderTest {
     private static final float EXPECTED_DIP_SCALE = 2;
     private static final int SCROLL_X = 15;
     private static final int SCROLL_Y = 155;
@@ -46,7 +46,7 @@ public class AutofillProviderImplTest {
     private WindowAndroid mWindowAndroid;
     private WebContents mWebContents;
     private ViewGroup mContainerView;
-    private AutofillProviderImpl mAutofillProvider;
+    private AutofillProvider mAutofillProvider;
     private DisplayAndroid mDisplayAndroid;
 
     @Before
@@ -57,8 +57,7 @@ public class AutofillProviderImplTest {
         mDisplayAndroid = Mockito.mock(DisplayAndroid.class);
         mWebContents = Mockito.mock(WebContents.class);
         mContainerView = Mockito.mock(ViewGroup.class);
-        mAutofillProvider =
-                new AutofillProviderImpl(mContext, mContainerView, "AutofillProviderImplTest");
+        mAutofillProvider = new AutofillProvider(mContext, mContainerView, "AutofillProviderTest");
         mAutofillProvider.setWebContents(mWebContents);
 
         when(mWebContents.getTopLevelNativeWindow()).thenReturn(mWindowAndroid);

@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
+import org.chromium.components.location.LocationUtils;
 import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Coordinates;
@@ -80,11 +81,20 @@ public class PortalsTest {
     @Before
     public void setUp() {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
+        // Some devices have geolocation disabled, so override LocationUtils to always show
+        // geolocation as enabled to prevent flakes in the permissions tests.
+        LocationUtils.setFactory(() -> new LocationUtils() {
+            @Override
+            public boolean isSystemLocationSettingEnabled() {
+                return true;
+            }
+        });
     }
 
     @After
     public void tearDown() {
         mTestServer.stopAndDestroyServer();
+        LocationUtils.setFactory(null);
     }
 
     private class TabContentsSwapObserver extends EmptyTabObserver {

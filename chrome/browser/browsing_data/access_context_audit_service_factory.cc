@@ -23,17 +23,17 @@ AccessContextAuditServiceFactory::GetInstance() {
 
 AccessContextAuditService* AccessContextAuditServiceFactory::GetForProfile(
     Profile* profile) {
-  if (profile->IsOffTheRecord() ||
-      !base::FeatureList::IsEnabled(
-          features::kClientStorageAccessContextAuditing))
-    return nullptr;
-
   return static_cast<AccessContextAuditService*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 KeyedService* AccessContextAuditServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  if (context->IsOffTheRecord() ||
+      !base::FeatureList::IsEnabled(
+          features::kClientStorageAccessContextAuditing))
+    return nullptr;
+
   std::unique_ptr<AccessContextAuditService> context_audit_service(
       new AccessContextAuditService());
   if (!context_audit_service->Init(

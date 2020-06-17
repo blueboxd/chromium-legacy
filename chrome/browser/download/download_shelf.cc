@@ -197,19 +197,17 @@ void DownloadShelf::AddDownload(DownloadUIModelPtr model) {
 }
 
 void DownloadShelf::Open() {
-  if (is_hidden_) {
+  if (is_hidden_)
     should_show_on_unhide_ = true;
-    return;
-  }
-  DoOpen();
+  else
+    DoOpen();
 }
 
-void DownloadShelf::Close(CloseReason reason) {
-  if (is_hidden_) {
+void DownloadShelf::Close() {
+  if (is_hidden_)
     should_show_on_unhide_ = false;
-    return;
-  }
-  DoClose(reason);
+  else
+    DoClose();
 }
 
 void DownloadShelf::Hide() {

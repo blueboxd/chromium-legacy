@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/network/geolocation_handler.h"
 #include "chromeos/network/network_handler.h"

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include <windows.h>
 
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/scoped_native_library.h"
 
@@ -116,8 +117,8 @@ bool FindBinary(BYTE* binary_to_find,
                 BYTE* address_start,
                 DWORD max_distance,
                 intptr_t* out_offset) {
-  assert(size_to_match <= max_distance);
-  assert(size_to_match > 0);
+  DCHECK(size_to_match <= max_distance);
+  DCHECK(size_to_match > 0);
 
   BYTE* max_byte = address_start + max_distance - size_to_match;
   BYTE* temp_ptr = address_start;

@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ui/views/chrome_typography_provider.h"
 
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/platform_font.h"
@@ -31,6 +33,7 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
   constexpr int kTouchableLabelSize = 14;
   constexpr int kBodyTextLargeSize = 13;
   constexpr int kDefaultSize = 12;
+  constexpr int kStatusSize = 10;
 
   std::string typeface;
   int size_delta = kDefaultSize - gfx::PlatformFont::kDefaultBaseFontSize;
@@ -53,13 +56,17 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
       size_delta =
           kTouchableLabelSize - gfx::PlatformFont::kDefaultBaseFontSize;
       break;
+    case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
     case CONTEXT_BODY_TEXT_LARGE:
     case CONTEXT_TAB_HOVER_CARD_TITLE:
-    case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
+    case CONTEXT_DOWNLOAD_SHELF:
       size_delta = kBodyTextLargeSize - gfx::PlatformFont::kDefaultBaseFontSize;
       break;
     case CONTEXT_HEADLINE:
       size_delta = kHeadlineSize - gfx::PlatformFont::kDefaultBaseFontSize;
+      break;
+    case CONTEXT_DOWNLOAD_SHELF_STATUS:
+      size_delta = kStatusSize - gfx::PlatformFont::kDefaultBaseFontSize;
       break;
     default:
       break;
@@ -74,10 +81,11 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
     // Limit emphasizing text to contexts where it's obviously correct. If you
     // hit this DCHECK, ensure it's sane and UX-approved to extend it to your
     // new case (e.g. don't add CONTEXT_BUTTON_MD).
-    DCHECK(context == CONTEXT_BODY_TEXT_LARGE ||
-           context == CONTEXT_BODY_TEXT_SMALL ||
+    DCHECK(context == views::style::CONTEXT_LABEL ||
            context == views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT ||
-           context == views::style::CONTEXT_LABEL);
+           context == CONTEXT_BODY_TEXT_LARGE ||
+           context == CONTEXT_BODY_TEXT_SMALL ||
+           context == CONTEXT_DOWNLOAD_SHELF);
     font_weight = gfx::Font::Weight::SEMIBOLD;
   }
 
@@ -103,6 +111,25 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
   // Body text styles are the same as for labels.
   if (context == CONTEXT_BODY_TEXT_LARGE || context == CONTEXT_BODY_TEXT_SMALL)
     context = views::style::CONTEXT_LABEL;
+
+  if (context == CONTEXT_DOWNLOAD_SHELF ||
+      (context == CONTEXT_DOWNLOAD_SHELF_STATUS &&
+       style == views::style::STYLE_DISABLED)) {
+    // TODO(pkasting): Instead of reusing COLOR_BOOKMARK_TEXT, use dedicated
+    // values.
+    const auto* theme_provider = view.GetThemeProvider();
+    if (!theme_provider)
+      return gfx::kPlaceholderColor;
+    const SkColor base_color =
+        theme_provider->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT);
+    // TODO(pkasting): Should use some way of dimming text that's as analogous
+    // as possible to e.g. enabled vs. disabled labels.
+    const SkColor dimmed_color = SkColorSetA(base_color, 0xC7);
+    if (style == views::style::STYLE_DISABLED)
+      return dimmed_color;
+    if (context == CONTEXT_DOWNLOAD_SHELF)
+      return base_color;
+  }
 
   // Monospaced styles have the same colors as their normal counterparts.
   if (style == STYLE_PRIMARY_MONOSPACED) {
@@ -184,10 +211,11 @@ int ChromeTypographyProvider::GetLineHeight(int context, int style) const {
       return kButtonAbsoluteHeight;
     case views::style::CONTEXT_DIALOG_TITLE:
       return title_height;
-    case CONTEXT_BODY_TEXT_LARGE:
-    case CONTEXT_TAB_HOVER_CARD_TITLE:
     case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
     case views::style::CONTEXT_TABLE_ROW:
+    case CONTEXT_BODY_TEXT_LARGE:
+    case CONTEXT_TAB_HOVER_CARD_TITLE:
+    case CONTEXT_DOWNLOAD_SHELF:
       return body_large_height;
     case CONTEXT_HEADLINE:
       return headline_height;

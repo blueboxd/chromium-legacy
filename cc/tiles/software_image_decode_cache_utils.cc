@@ -5,6 +5,7 @@
 #include "cc/tiles/software_image_decode_cache_utils.h"
 
 #include <algorithm>
+#include <sstream>
 #include <utility>
 
 #include "base/atomic_sequence_num.h"

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "ui/events/event.h"
 #include "ui/events/event_modifiers.h"
 #include "ui/events/event_utils.h"

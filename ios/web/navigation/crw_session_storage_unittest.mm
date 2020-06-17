@@ -53,7 +53,8 @@ BOOL SessionStoragesAreEqual(CRWSessionStorage* session1,
   return ItemStorageListsAreEqual(items1, items2) &&
          session1.hasOpener == session2.hasOpener &&
          session1.lastCommittedItemIndex == session2.lastCommittedItemIndex &&
-         UserDataAreEqual(session1.userData, session2.userData);
+         UserDataAreEqual(session1.userData, session2.userData) &&
+         session1.userAgentType == session2.userAgentType;
 }
 }  // namespace
 
@@ -84,6 +85,7 @@ class CRWNSessionStorageTest : public PlatformTest {
         new web::SerializableUserDataImpl(
             @{ @"key" : @"value" }));
     [session_storage_ setSerializableUserData:std::move(user_data)];
+    [session_storage_ setUserAgentType:web::UserAgentType::DESKTOP];
   }
 
  protected:

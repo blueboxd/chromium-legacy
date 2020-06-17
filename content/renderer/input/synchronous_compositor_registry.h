@@ -5,16 +5,15 @@
 #ifndef CONTENT_RENDERER_INPUT_SYNCHRONOUS_COMPOSITOR_REGISTRY_H_
 #define CONTENT_RENDERER_INPUT_SYNCHRONOUS_COMPOSITOR_REGISTRY_H_
 
+#include "content/renderer/input/synchronous_layer_tree_frame_sink.h"
+
 namespace content {
-class SynchronousLayerTreeFrameSink;
 
 class SynchronousCompositorRegistry {
  public:
   virtual void RegisterLayerTreeFrameSink(
-      int routing_id,
       SynchronousLayerTreeFrameSink* layer_tree_frame_sink) = 0;
   virtual void UnregisterLayerTreeFrameSink(
-      int routing_id,
       SynchronousLayerTreeFrameSink* layer_tree_frame_sink) = 0;
 
  protected:

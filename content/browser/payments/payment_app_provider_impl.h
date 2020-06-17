@@ -25,7 +25,7 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
   // Should be accessed only on the UI thread.
   void GetAllPaymentApps(BrowserContext* browser_context,
                          GetAllPaymentAppsCallback callback) override;
-  void InvokePaymentApp(BrowserContext* browser_context,
+  void InvokePaymentApp(WebContents* web_contents,
                         int64_t registration_id,
                         const url::Origin& sw_origin,
                         payments::mojom::PaymentRequestEventDataPtr event_data,
@@ -42,21 +42,21 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
       const SupportedDelegations& supported_delegations,
       RegistrationIdCallback registration_id_callback,
       InvokePaymentAppCallback callback) override;
-  void CanMakePayment(BrowserContext* browser_context,
+  void CanMakePayment(WebContents* web_contents,
                       int64_t registration_id,
                       const url::Origin& sw_origin,
                       const std::string& payment_request_id,
                       payments::mojom::CanMakePaymentEventDataPtr event_data,
                       CanMakePaymentCallback callback) override;
-  void AbortPayment(BrowserContext* browser_context,
+  void AbortPayment(WebContents* web_contents,
                     int64_t registration_id,
                     const url::Origin& sw_origin,
                     const std::string& payment_request_id,
                     AbortCallback callback) override;
   void SetOpenedWindow(WebContents* web_contents) override;
-  void CloseOpenedWindow(BrowserContext* browser_context) override;
+  void CloseOpenedWindow() override;
   void OnClosingOpenedWindow(
-      BrowserContext* browser_context,
+      WebContents* web_contents,
       payments::mojom::PaymentEventResponseType reason) override;
   bool IsValidInstallablePaymentApp(const GURL& manifest_url,
                                     const GURL& sw_js_url,
@@ -78,9 +78,7 @@ class CONTENT_EXPORT PaymentAppProviderImpl : public PaymentAppProvider {
     ~PaymentHandlerWindowObserver() override;
   };
 
-  // Map to maintain at most one opened window per browser context.
-  std::map<BrowserContext*, std::unique_ptr<PaymentHandlerWindowObserver>>
-      payment_handler_windows_;
+  std::unique_ptr<PaymentHandlerWindowObserver> payment_handler_window_;
 };
 
 }  // namespace content

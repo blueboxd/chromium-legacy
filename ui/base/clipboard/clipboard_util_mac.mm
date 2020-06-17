@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "base/notreached.h"
 
 namespace ui {
 

@@ -17,6 +17,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_model.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -526,16 +527,8 @@ void Combobox::ButtonPressed(Button* sender, const ui::Event& event) {
 
   // TODO(hajimehoshi): Fix the problem that the arrow button blinks when
   // cliking this while the dropdown menu is opened.
-  const base::TimeDelta delta = base::TimeTicks::Now() - closed_time_;
-  if (delta <= kMinimumTimeBetweenButtonClicks)
-    return;
-
-  ui::MenuSourceType source_type = ui::MENU_SOURCE_MOUSE;
-  if (event.IsKeyEvent())
-    source_type = ui::MENU_SOURCE_KEYBOARD;
-  else if (event.IsGestureEvent() || event.IsTouchEvent())
-    source_type = ui::MENU_SOURCE_TOUCH;
-  ShowDropDownMenu(source_type);
+  if ((base::TimeTicks::Now() - closed_time_) > kMinimumTimeBetweenButtonClicks)
+    ShowDropDownMenu(ui::GetMenuSourceTypeForEvent(event));
 }
 
 void Combobox::OnComboboxModelChanged(ui::ComboboxModel* model) {

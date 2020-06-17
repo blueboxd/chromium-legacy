@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/logging.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"

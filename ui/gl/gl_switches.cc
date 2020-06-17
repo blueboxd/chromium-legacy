@@ -141,6 +141,10 @@ const char kEnableDirectCompositionVideoOverlays[] =
 const char kDisableDirectCompositionVideoOverlays[] =
     "disable-direct-composition-video-overlays";
 
+// Initialize the GPU process using the adapter with the specified LUID. This is
+// only used on Windows, as LUID is a Windows specific structure.
+const char kUseAdapterLuid[] = "use-adapter-luid";
+
 // This is the list of switches passed from this file that are passed from the
 // GpuProcessHost to the GPU Process. Add your switch to this list if you need
 // to read it in the GPU process, else don't add it.

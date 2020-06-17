@@ -3,9 +3,14 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<FrameLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/site_settings_container">
-</FrameLayout>
+    android:layout_height="match_parent">
+  <FrameLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:id="@+id/site_settings_container">
+  </FrameLayout>
+  <include layout="@layout/settings_action_bar_shadow" />
+</RelativeLayout>

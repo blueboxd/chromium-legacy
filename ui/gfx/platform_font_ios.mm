@@ -9,6 +9,7 @@
 #include <cmath>
 
 #import "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/ports/SkTypeface_mac.h"

@@ -7,6 +7,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/containers/queue.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "ui/display/manager/display_util.h"

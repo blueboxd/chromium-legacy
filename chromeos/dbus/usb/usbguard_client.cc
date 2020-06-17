@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/usb/fake_usbguard_client.h"
 #include "chromeos/dbus/usb/usbguard_observer.h"

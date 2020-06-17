@@ -60,10 +60,10 @@ class ServiceWorkerPaymentAppCreator {
 
     for (auto& installed_app : apps) {
       auto app = std::make_unique<ServiceWorkerPaymentApp>(
-          delegate_->GetWebContents()->GetBrowserContext(),
-          delegate_->GetTopOrigin(), delegate_->GetFrameOrigin(),
-          delegate_->GetSpec(), std::move(installed_app.second),
-          delegate_->IsOffTheRecord(), show_processing_spinner);
+          delegate_->GetWebContents(), delegate_->GetTopOrigin(),
+          delegate_->GetFrameOrigin(), delegate_->GetSpec(),
+          std::move(installed_app.second), delegate_->IsOffTheRecord(),
+          show_processing_spinner);
       app->ValidateCanMakePayment(base::BindOnce(
           &ServiceWorkerPaymentAppCreator::OnSWPaymentAppValidated,
           weak_ptr_factory_.GetWeakPtr()));

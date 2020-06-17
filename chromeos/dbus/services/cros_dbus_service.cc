@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "dbus/bus.h"

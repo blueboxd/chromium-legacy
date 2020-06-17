@@ -90,7 +90,7 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // DownloadShelf:
   void DoAddDownload(DownloadUIModel::DownloadUIModelPtr download) override;
   void DoOpen() override;
-  void DoClose(CloseReason reason) override;
+  void DoClose() override;
   void DoHide() override;
   void DoUnhide() override;
 

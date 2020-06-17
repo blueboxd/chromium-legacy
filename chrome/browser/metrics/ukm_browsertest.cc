@@ -1003,7 +1003,8 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogsOpenerSource) {
 
 // ChromeOS doesn't have the concept of sign-out so this test doesn't make sense
 // there.
-#if !defined(OS_CHROMEOS)
+// Flaky on Android: https://crbug.com/1096047.
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 // Make sure that UKM is disabled when the profile signs out of Sync.
 // Keep in sync with testSingleSyncSignout in ios/chrome/browser/metrics/
 // ukm_egtest.mm.
@@ -1027,7 +1028,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleSyncSignoutCheck) {
   harness->service()->GetUserSettings()->SetSyncRequested(false);
   ClosePlatformBrowser(browser);
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 // ChromeOS doesn't have the concept of sign-out so this test doesn't make sense
 // there. Android doesn't have multiple profiles.

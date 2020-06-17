@@ -36,9 +36,9 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.components.prefs.PrefService;
 
 /**
  * Unit tests for {@link StreamLifecycleManager}.
@@ -53,7 +53,7 @@ public class NtpStreamLifecycleManagerTest {
     @Mock
     private Stream mStream;
     @Mock
-    private PrefServiceBridge mPrefServiceBridge;
+    private PrefService mPrefService;
 
     private NtpStreamLifecycleManager mNtpStreamLifecycleManager;
 
@@ -61,10 +61,10 @@ public class NtpStreamLifecycleManagerTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        // Initialize a test instance for PrefServiceBridge.
-        when(mPrefServiceBridge.getBoolean(anyString())).thenReturn(true);
-        doNothing().when(mPrefServiceBridge).setBoolean(anyString(), anyBoolean());
-        PrefServiceBridge.setInstanceForTesting(mPrefServiceBridge);
+        // Initialize a test instance for PrefService.
+        when(mPrefService.getBoolean(anyString())).thenReturn(true);
+        doNothing().when(mPrefService).setBoolean(anyString(), anyBoolean());
+        NtpStreamLifecycleManager.setPrefServiceForTesting(mPrefService);
 
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.CREATED);
         mNtpStreamLifecycleManager = new NtpStreamLifecycleManager(mStream, mActivity, mTab);
@@ -73,7 +73,7 @@ public class NtpStreamLifecycleManagerTest {
 
     @After
     public void tearDown() {
-        PrefServiceBridge.setInstanceForTesting(null);
+        NtpStreamLifecycleManager.setPrefServiceForTesting(null);
     }
 
     @Test
@@ -104,7 +104,7 @@ public class NtpStreamLifecycleManagerTest {
     @SmallTest
     public void testShow_ArticlesNotVisible() {
         // Verify that onShow is not called when articles are set hidden by the user.
-        when(mPrefServiceBridge.getBoolean(Pref.ARTICLES_LIST_VISIBLE)).thenReturn(false);
+        when(mPrefService.getBoolean(Pref.ARTICLES_LIST_VISIBLE)).thenReturn(false);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.STARTED);
         when((mTab).isHidden()).thenReturn(false);
         when(mTab.isUserInteractable()).thenReturn(true);
@@ -112,7 +112,7 @@ public class NtpStreamLifecycleManagerTest {
         verify(mStream, times(0)).onShow();
 
         // Verify that onShow is called when articles are set shown by the user.
-        when(mPrefServiceBridge.getBoolean(Pref.ARTICLES_LIST_VISIBLE)).thenReturn(true);
+        when(mPrefService.getBoolean(Pref.ARTICLES_LIST_VISIBLE)).thenReturn(true);
         mNtpStreamLifecycleManager.getTabObserverForTesting().onShown(mTab, FROM_NEW);
         verify(mStream, times(1)).onShow();
 

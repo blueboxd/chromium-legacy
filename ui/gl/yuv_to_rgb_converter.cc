@@ -4,6 +4,7 @@
 
 #include "ui/gl/yuv_to_rgb_converter.h"
 
+#include "base/notreached.h"
 #include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/color_transform.h"

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/native_library.h"
 #include "gpu/vulkan/init/vulkan_factory.h"
 #include "gpu/vulkan/vulkan_device_queue.h"

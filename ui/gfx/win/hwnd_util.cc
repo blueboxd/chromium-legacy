@@ -5,6 +5,7 @@
 #include "ui/gfx/win/hwnd_util.h"
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/win/win_util.h"
 #include "ui/gfx/geometry/rect.h"

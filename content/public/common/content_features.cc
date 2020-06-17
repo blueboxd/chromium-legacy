@@ -266,7 +266,7 @@ const base::Feature kInstalledApp{"InstalledApp",
 
 // Allow Windows specific implementation for the GetInstalledRelatedApps API.
 const base::Feature kInstalledAppProvider{"InstalledAppProvider",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Show warning about clearing data from installed apps in the clear browsing
 // data flow. The warning will be shown in a second dialog.

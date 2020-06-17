@@ -117,6 +117,7 @@
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_focus_helper.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_groups_iph_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
@@ -510,6 +511,9 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   tabstrip_ = tab_strip_region_view_->AddTabStrip(std::make_unique<TabStrip>(
       std::move(tabstrip_controller)));  // Takes ownership.
   tabstrip_controller_ptr->InitFromModel(tabstrip_);
+
+  tab_groups_iph_controller_ =
+      std::make_unique<TabGroupsIPHController>(browser_.get());
 
   // Create WebViews early so |webui_tab_strip_| can observe their size.
   auto devtools_web_view =

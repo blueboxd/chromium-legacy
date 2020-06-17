@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_ui_data.h"

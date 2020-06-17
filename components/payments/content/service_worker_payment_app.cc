@@ -18,7 +18,6 @@
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/method_strings.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -30,7 +29,7 @@ namespace payments {
 // Service worker payment app provides icon through bitmap, so set 0 as invalid
 // resource Id.
 ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
-    content::BrowserContext* browser_context,
+    content::WebContents* web_contents,
     const GURL& top_origin,
     const GURL& frame_origin,
     const PaymentRequestSpec* spec,
@@ -38,7 +37,7 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
     bool is_incognito,
     const base::RepeatingClosure& show_processing_spinner)
     : PaymentApp(0, PaymentApp::Type::SERVICE_WORKER_APP),
-      browser_context_(browser_context),
+      content::WebContentsObserver(web_contents),
       top_origin_(top_origin),
       frame_origin_(frame_origin),
       spec_(spec),
@@ -48,9 +47,8 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
       show_processing_spinner_(show_processing_spinner),
       can_make_payment_result_(false),
       has_enrolled_instrument_result_(false),
-      needs_installation_(false),
-      web_contents_(nullptr) {
-  DCHECK(browser_context_);
+      needs_installation_(false) {
+  DCHECK(web_contents);
   DCHECK(top_origin_.is_valid());
   DCHECK(frame_origin_.is_valid());
   DCHECK(spec_);
@@ -71,7 +69,7 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
     bool is_incognito,
     const base::RepeatingClosure& show_processing_spinner)
     : PaymentApp(0, PaymentApp::Type::SERVICE_WORKER_APP),
-      browser_context_(web_contents->GetBrowserContext()),
+      content::WebContentsObserver(web_contents),
       top_origin_(top_origin),
       frame_origin_(frame_origin),
       spec_(spec),
@@ -81,11 +79,9 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
       can_make_payment_result_(false),
       has_enrolled_instrument_result_(false),
       needs_installation_(true),
-      web_contents_(web_contents),
       installable_web_app_info_(std::move(installable_payment_app_info)),
       installable_enabled_method_(enabled_method) {
-  DCHECK(browser_context_);
-  DCHECK(web_contents_);
+  DCHECK(web_contents);
   DCHECK(top_origin_.is_valid());
   DCHECK(frame_origin_.is_valid());
   DCHECK(spec_);
@@ -135,7 +131,7 @@ void ServiceWorkerPaymentApp::ValidateCanMakePayment(
   }
 
   content::PaymentAppProvider::GetInstance()->CanMakePayment(
-      browser_context_, stored_payment_app_info_->registration_id,
+      web_contents(), stored_payment_app_info_->registration_id,
       url::Origin::Create(stored_payment_app_info_->scope),
       *spec_->details().id, std::move(event_data),
       base::BindOnce(&ServiceWorkerPaymentApp::OnCanMakePaymentEventResponded,
@@ -213,7 +209,7 @@ void ServiceWorkerPaymentApp::InvokePaymentApp(Delegate* delegate) {
 
   if (needs_installation_) {
     content::PaymentAppProvider::GetInstance()->InstallAndInvokePaymentApp(
-        web_contents_, CreatePaymentRequestEventData(),
+        web_contents(), CreatePaymentRequestEventData(),
         installable_web_app_info_->name,
         installable_web_app_info_->icon == nullptr
             ? SkBitmap()
@@ -233,7 +229,7 @@ void ServiceWorkerPaymentApp::InvokePaymentApp(Delegate* delegate) {
         url::Origin::Create(stored_payment_app_info_->scope);
     OnPaymentAppIdentity(sw_origin, stored_payment_app_info_->registration_id);
     content::PaymentAppProvider::GetInstance()->InvokePaymentApp(
-        browser_context_, stored_payment_app_info_->registration_id, sw_origin,
+        web_contents(), stored_payment_app_info_->registration_id, sw_origin,
         CreatePaymentRequestEventData(),
         base::BindOnce(&ServiceWorkerPaymentApp::OnPaymentAppInvoked,
                        weak_ptr_factory_.GetWeakPtr()));
@@ -245,7 +241,7 @@ void ServiceWorkerPaymentApp::InvokePaymentApp(Delegate* delegate) {
 void ServiceWorkerPaymentApp::OnPaymentAppWindowClosed() {
   delegate_ = nullptr;
   content::PaymentAppProvider::GetInstance()->OnClosingOpenedWindow(
-      browser_context_,
+      web_contents(),
       mojom::PaymentEventResponseType::PAYMENT_HANDLER_WINDOW_CLOSING);
 }
 
@@ -597,7 +593,7 @@ void ServiceWorkerPaymentApp::OnPaymentDetailsNotUpdated() {
 void ServiceWorkerPaymentApp::AbortPaymentApp(
     base::OnceCallback<void(bool)> abort_callback) {
   content::PaymentAppProvider::GetInstance()->AbortPayment(
-      browser_context_, registration_id_,
+      web_contents(), registration_id_,
       stored_payment_app_info_
           ? url::Origin::Create(stored_payment_app_info_->scope)
           : url::Origin::Create(GURL(installable_web_app_info_->sw_scope)),

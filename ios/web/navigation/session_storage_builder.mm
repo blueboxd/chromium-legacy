@@ -67,6 +67,8 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
   web::GetWebClient()->AddSerializableData(user_data_manager, web_state);
   [session_storage
       setSerializableUserData:user_data_manager->CreateSerializableUserData()];
+  session_storage.userAgentType =
+      web_state->GetUserAgentForSessionRestoration();
 
   return session_storage;
 }
@@ -102,6 +104,7 @@ void SessionStorageBuilder::ExtractSessionState(
   web_state->certificate_policy_cache_ = std::move(cert_policy_cache);
   web::SerializableUserDataManager::FromWebState(web_state)
       ->AddSerializableUserData(storage.userData);
+  web_state->SetUserAgent(storage.userAgentType);
 }
 
 }  // namespace web

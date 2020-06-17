@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "base/logging.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "third_party/khronos/GLES2/gl2.h"

@@ -9,7 +9,8 @@
 Polymer({
   is: 'timezone-subpage',
 
-  behaviors: [PrefsBehavior],
+  behaviors:
+      [PrefsBehavior, WebUIListenerBehavior, settings.RouteObserverBehavior],
 
   properties: {
     /**
@@ -19,6 +20,34 @@ Polymer({
       type: String,
       notify: true,
     },
+  },
+
+  /** @private {?settings.TimeZoneBrowserProxy} */
+  browserProxy_: null,
+
+  /** @override */
+  created() {
+    this.browserProxy_ = settings.TimeZoneBrowserProxyImpl.getInstance();
+  },
+
+  /**
+   * settings.RouteObserverBehavior
+   * Called when the timezone subpage is hit. Child accounts need parental
+   * approval to modify their timezone, this method starts this process on the
+   * C++ side, and timezone setting will be disable. Once it is complete the
+   * 'access-code-validation-complete' event is triggered which invokes
+   * enableTimeZoneSetting_.
+   * @param {!settings.Route} newRoute
+   * @protected
+   */
+  currentRouteChanged(newRoute) {
+    if (this.shouldAskForParentAccessCode_(newRoute)) {
+      this.disableTimeZoneSetting_();
+      this.addWebUIListener(
+          'access-code-validation-complete',
+          this.enableTimeZoneSetting_.bind(this));
+      this.browserProxy_.showParentAccessForTimeZone();
+    }
   },
 
   /**
@@ -60,6 +89,45 @@ Polymer({
           loadTimeData.getString('setTimeZoneAutomaticallyWithAllLocationInfo')
     });
     return result;
+  },
+
+  /**
+   * @param {!settings.Route} route
+   * @private
+   */
+  shouldAskForParentAccessCode_(route) {
+    return route === settings.routes.DATETIME_TIMEZONE_SUBPAGE &&
+        loadTimeData.getBoolean('isChild');
+  },
+
+  /**
+   * Enables all dropdowns and radio buttons.
+   * @private
+   */
+  enableTimeZoneSetting_() {
+    const radios = this.root.querySelectorAll('controlled-radio-button');
+    for (const radio of radios) {
+      radio.disabled = false;
+    }
+    this.$.timezoneSelector.shouldDisableTimeZoneGeoSelector = false;
+    const pref =
+        this.getPref('generated.resolve_timezone_by_geolocation_method_short');
+    if (pref.value !== settings.TimeZoneAutoDetectMethod.DISABLED) {
+      this.$.timeZoneResolveMethodDropdown.disabled = false;
+    }
+  },
+
+  /**
+   * Disables all dropdowns and radio buttons.
+   * @private
+   */
+  disableTimeZoneSetting_() {
+    this.$.timeZoneResolveMethodDropdown.disabled = true;
+    this.$.timezoneSelector.shouldDisableTimeZoneGeoSelector = true;
+    const radios = this.root.querySelectorAll('controlled-radio-button');
+    for (const radio of radios) {
+      radio.disabled = true;
+    }
   },
 
 });

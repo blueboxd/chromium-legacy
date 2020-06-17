@@ -123,8 +123,7 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
     [fake_wk_list_ setCurrentURL:base::SysUTF8ToNSString(item_url_spec)];
     nav_manager_.AddPendingItem(
         GURL(item_url_spec), Referrer(), ui::PAGE_TRANSITION_LINK,
-        web::NavigationInitiationType::BROWSER_INITIATED,
-        NavigationManager::UserAgentOverrideOption::INHERIT);
+        web::NavigationInitiationType::BROWSER_INITIATED);
     nav_manager_.CommitPendingItem();
   }
 

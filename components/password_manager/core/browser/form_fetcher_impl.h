@@ -98,6 +98,12 @@ class FormFetcherImpl : public FormFetcher,
   // non-federated matches.
   std::vector<std::unique_ptr<autofill::PasswordForm>> federated_;
 
+  // Indicates whether HTTP passwords should be migrated to HTTPS.
+  const bool should_migrate_http_passwords_;
+
+  // Does the actual migration.
+  std::unique_ptr<HttpPasswordStoreMigrator> http_migrator_;
+
  private:
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
@@ -138,12 +144,6 @@ class FormFetcherImpl : public FormFetcher,
   // Consumers of the fetcher, all are assumed to either outlive |this| or
   // remove themselves from the list during their destruction.
   base::ObserverList<FormFetcher::Consumer> consumers_;
-
-  // Indicates whether HTTP passwords should be migrated to HTTPS.
-  const bool should_migrate_http_passwords_;
-
-  // Does the actual migration.
-  std::unique_ptr<HttpPasswordStoreMigrator> http_migrator_;
 
   DISALLOW_COPY_AND_ASSIGN(FormFetcherImpl);
 };

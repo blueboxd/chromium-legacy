@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 
 #include "base/feature_list.h"
-#import "base/logging.h"
+#import "base/notreached.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"

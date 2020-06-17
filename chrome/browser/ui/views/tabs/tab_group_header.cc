@@ -292,6 +292,13 @@ void TabGroupHeader::ShowContextMenuForViewImpl(
 }
 
 int TabGroupHeader::CalculateWidth() const {
+  // If the tab group is collapsed, we want the right margin of the title to
+  // match the left margin. The left margin is always the group stroke inset.
+  // Using these values also guarantees the chip aligns with the collapsed
+  // stroke.
+  if (tab_strip_->controller()->IsGroupCollapsed(group().value()))
+    return title_chip_->width() + 2 * TabGroupUnderline::GetStrokeInset();
+
   // We don't want tabs to visually overlap group headers, so we add that space
   // to the width to compensate. We don't want to actually remove the overlap
   // during layout however; that would cause an the margin to be visually uneven

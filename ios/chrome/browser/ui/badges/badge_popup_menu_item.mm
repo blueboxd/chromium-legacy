@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/badges/badge_popup_menu_item.h"
 
-#import "base/logging.h"
+#include <ostream>
+
+#import "base/notreached.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"

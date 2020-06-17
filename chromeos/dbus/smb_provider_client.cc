@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"

@@ -5,6 +5,7 @@
 #import "ios/web/security/wk_web_view_security_util.h"
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_ios.h"

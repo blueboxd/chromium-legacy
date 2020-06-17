@@ -4,6 +4,7 @@
 
 #import "ios/web/web_state/ui/crw_wk_ui_handler.h"
 
+#include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/wk_navigation_action_util.h"
 #import "ios/web/navigation/wk_navigation_util.h"

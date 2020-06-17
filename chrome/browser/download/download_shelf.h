@@ -30,21 +30,6 @@ using DownloadUIModelPtr = DownloadUIModel::DownloadUIModelPtr;
 // implementations.
 class DownloadShelf {
  public:
-  // Reason for closing download shelf.
-  enum CloseReason {
-    // Closing the shelf automatically. E.g.: all remaining downloads in the
-    // shelf have been opened, last download in shelf was removed, or the
-    // browser is switching to full-screen mode.
-    AUTOMATIC,
-
-    // Closing shelf due to a user selection. E.g.: the user clicked on the
-    // 'close' button on the download shelf, or the shelf is being closed as a
-    // side-effect of the user opening the downloads page.
-    USER_ACTION
-  };
-
-  // Download progress animations ----------------------------------------------
-
   // Size of the space used for the progress indicator.
   static constexpr int kProgressIndicatorSize = 25;
 
@@ -90,7 +75,7 @@ class DownloadShelf {
   void Open();
 
   // Closes the shelf.
-  void Close(CloseReason reason);
+  void Close();
 
   // Hides the shelf. This closes the shelf if it is currently showing.
   void Hide();
@@ -107,7 +92,7 @@ class DownloadShelf {
  protected:
   virtual void DoAddDownload(DownloadUIModelPtr download) = 0;
   virtual void DoOpen() = 0;
-  virtual void DoClose(CloseReason reason) = 0;
+  virtual void DoClose() = 0;
   virtual void DoHide() = 0;
   virtual void DoUnhide() = 0;
 

@@ -10,6 +10,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/app_list_controller_impl.h"
+#include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
@@ -25,7 +26,7 @@
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
-#include "ui/compositor/animation_metrics_reporter.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
@@ -108,17 +109,6 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 
  private:
   aura::Window* tab_cycler_;
-};
-
-// Reporter of fade-in animation smoothness.
-class FadeInAnimationMetricsReporter : public ui::AnimationMetricsReporter {
- public:
-  FadeInAnimationMetricsReporter() = default;
-  ~FadeInAnimationMetricsReporter() override = default;
-
-  void Report(int value) override {
-    UMA_HISTOGRAM_PERCENTAGE(kShowAnimationSmoothness, value);
-  }
 };
 
 }  // namespace
@@ -215,8 +205,7 @@ class WindowCycleItemView : public WindowMiniView {
 
 // A view that shows a collection of windows the user can tab through.
 class WindowCycleView : public views::WidgetDelegateView,
-                        public ui::ImplicitAnimationObserver,
-                        public ui::AnimationMetricsReporter {
+                        public ui::ImplicitAnimationObserver {
  public:
   explicit WindowCycleView(const WindowCycleList::WindowList& windows) {
     DCHECK(!windows.empty());
@@ -284,8 +273,13 @@ class WindowCycleView : public views::WidgetDelegateView,
     ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
     settings.SetTransitionDuration(kFadeInDuration);
     settings.AddObserver(this);
-    settings.SetAnimationMetricsReporter(&fade_in_reporter_);
     settings.CacheRenderSurface();
+    ui::AnimationThroughputReporter reporter(
+        settings.GetAnimator(),
+        metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+          UMA_HISTOGRAM_PERCENTAGE(kShowAnimationSmoothness, smoothness);
+        })));
+
     layer()->SetOpacity(1.f);
   }
 
@@ -380,11 +374,20 @@ class WindowCycleView : public views::WidgetDelegateView,
 
     // Enable animations only after the first Layout() pass.
     std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
+    base::Optional<ui::AnimationThroughputReporter> reporter;
     if (!first_layout) {
       settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
           mirror_container_->layer()->GetAnimator());
       settings->SetTransitionDuration(kContainerSlideDuration);
-      settings->SetAnimationMetricsReporter(this);
+      reporter.emplace(
+          settings->GetAnimator(),
+          metrics_util::ForSmoothness(base::BindRepeating([](int smoothness) {
+            // Reports animation metrics when the mirror container, which holds
+            // all the preview views slides along the x-axis. This can happen
+            // while tabbing through windows, if the window cycle ui spans the
+            // length of the display.
+            UMA_HISTOGRAM_PERCENTAGE(kContainerAnimationSmoothness, smoothness);
+          })));
     }
     mirror_container_->SetBoundsRect(container_bounds);
 
@@ -414,14 +417,6 @@ class WindowCycleView : public views::WidgetDelegateView,
     occlusion_tracker_pauser_.reset();
   }
 
-  // ui::AnimationMetricsReporter:
-  void Report(int value) override {
-    // Reports animation metrics when the mirror container, which holds all the
-    // preview views slides along the x-axis. This can happen while tabbing
-    // through windows, if the window cycle ui spans the length of the display.
-    UMA_HISTOGRAM_PERCENTAGE(kContainerAnimationSmoothness, value);
-  }
-
  private:
   std::map<aura::Window*, WindowCycleItemView*> window_view_map_;
   views::View* mirror_container_ = nullptr;
@@ -431,9 +426,6 @@ class WindowCycleView : public views::WidgetDelegateView,
   // performance heavy elements not created yet. These elements will be created
   // once onscreen to improve fade in performance, then removed from this set.
   base::flat_set<WindowCycleItemView*> no_previews_set_;
-
-  // Records the animation smoothness of the fade in animation.
-  FadeInAnimationMetricsReporter fade_in_reporter_;
 
   // Used for preventng occlusion state computations for the duration of the
   // fade in animation.

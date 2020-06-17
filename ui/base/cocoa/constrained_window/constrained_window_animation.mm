@@ -11,6 +11,7 @@
 #include "base/location.h"
 #import "base/mac/foundation_util.h"
 #include "base/native_library.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "ui/gfx/animation/tween.h"
 

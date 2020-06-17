@@ -47,8 +47,8 @@ target(link_target_type, "renderer") {
     "accessibility/render_accessibility_impl.h",
     "accessibility/render_accessibility_manager.cc",
     "accessibility/render_accessibility_manager.h",
-    "android/synchronous_layer_tree_frame_sink.cc",
-    "android/synchronous_layer_tree_frame_sink.h",
+    "android/synchronous_layer_tree_frame_sink_impl.cc",
+    "android/synchronous_layer_tree_frame_sink_impl.h",
     "browser_exposed_renderer_interfaces.cc",
     "browser_exposed_renderer_interfaces.h",
     "categorized_worker_pool.cc",
@@ -425,6 +425,7 @@ target(link_target_type, "renderer") {
       "input/synchronous_compositor_proxy.cc",
       "input/synchronous_compositor_proxy.h",
       "input/synchronous_compositor_registry.h",
+      "input/synchronous_layer_tree_frame_sink.h",
 
       # Add back the Linux file which Android shares.
       "render_view_linux.cc",

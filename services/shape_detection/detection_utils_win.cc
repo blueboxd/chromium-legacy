@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "base/win/winrt_storage_util.h"

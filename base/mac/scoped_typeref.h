@@ -51,10 +51,10 @@ struct ScopedTypeRefTraits;
 template<typename T, typename Traits = ScopedTypeRefTraits<T>>
 class ScopedTypeRef {
  public:
-  typedef T element_type;
+  using element_type = T;
 
   explicit constexpr ScopedTypeRef(
-      T object = Traits::InvalidValue(),
+      element_type object = Traits::InvalidValue(),
       base::scoped_policy::OwnershipPolicy policy = base::scoped_policy::ASSUME)
       : object_(object) {
     if (object_ && policy == base::scoped_policy::RETAIN)
@@ -92,12 +92,12 @@ class ScopedTypeRef {
   // This is to be used only to take ownership of objects that are created
   // by pass-by-pointer create functions. To enforce this, require that the
   // object be reset to NULL before this may be used.
-  T* InitializeInto() WARN_UNUSED_RESULT {
+  element_type* InitializeInto() WARN_UNUSED_RESULT {
     DCHECK(!object_);
     return &object_;
   }
 
-  void reset(T object = Traits::InvalidValue(),
+  void reset(element_type object = Traits::InvalidValue(),
              base::scoped_policy::OwnershipPolicy policy =
                  base::scoped_policy::ASSUME) {
     if (object && policy == base::scoped_policy::RETAIN)
@@ -107,16 +107,16 @@ class ScopedTypeRef {
     object_ = object;
   }
 
-  bool operator==(T that) const { return object_ == that; }
+  bool operator==(const element_type& that) const { return object_ == that; }
 
-  bool operator!=(T that) const { return object_ != that; }
+  bool operator!=(const element_type& that) const { return object_ != that; }
 
-  operator T() const { return object_; }
+  operator element_type() const { return object_; }
 
-  T get() const { return object_; }
+  element_type get() const { return object_; }
 
   void swap(ScopedTypeRef& that) {
-    T temp = that.object_;
+    element_type temp = that.object_;
     that.object_ = object_;
     object_ = temp;
   }
@@ -124,14 +124,14 @@ class ScopedTypeRef {
   // ScopedTypeRef<>::release() is like std::unique_ptr<>::release.  It is NOT
   // a wrapper for Release().  To force a ScopedTypeRef<> object to call
   // Release(), use ScopedTypeRef<>::reset().
-  T release() WARN_UNUSED_RESULT {
-    T temp = object_;
+  element_type release() WARN_UNUSED_RESULT {
+    element_type temp = object_;
     object_ = Traits::InvalidValue();
     return temp;
   }
 
  private:
-  T object_;
+  element_type object_;
 };
 
 }  // namespace base

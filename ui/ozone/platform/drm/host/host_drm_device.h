@@ -67,7 +67,6 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
   // Services needed by DrmDisplayHost
   bool GpuConfigureNativeDisplay(const display::DisplayConfigurationParams&
                                      display_config_params) override;
-  bool GpuDisableNativeDisplay(int64_t display_id) override;
   bool GpuGetHDCPState(int64_t display_id) override;
   bool GpuSetHDCPState(int64_t display_id, display::HDCPState state) override;
   bool GpuSetColorMatrix(int64_t display_id,
@@ -97,7 +96,6 @@ class HostDrmDevice : public base::RefCountedThreadSafe<HostDrmDevice>,
                                          bool success) const;
 
   void GpuRefreshNativeDisplaysCallback(MovableDisplaySnapshots displays) const;
-  void GpuDisableNativeDisplayCallback(int64_t display_id, bool success) const;
   void GpuTakeDisplayControlCallback(bool success) const;
   void GpuRelinquishDisplayControlCallback(bool success) const;
   void GpuGetHDCPStateCallback(int64_t display_id,

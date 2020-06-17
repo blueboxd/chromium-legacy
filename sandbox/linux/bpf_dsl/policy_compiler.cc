@@ -10,6 +10,7 @@
 #include <sys/syscall.h>
 
 #include <limits>
+#include <ostream>
 
 #include "base/check_op.h"
 #include "base/stl_util.h"

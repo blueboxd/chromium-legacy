@@ -25,7 +25,6 @@ const char kRestoreNavigationItemCount[] = "IOS.RestoreNavigationItemCount";
 NavigationManager::WebLoadParams::WebLoadParams(const GURL& url)
     : url(url),
       transition_type(ui::PAGE_TRANSITION_LINK),
-      user_agent_override_option(UserAgentOverrideOption::INHERIT),
       is_renderer_initiated(false),
       post_data(nil) {}
 
@@ -36,7 +35,6 @@ NavigationManager::WebLoadParams::WebLoadParams(const WebLoadParams& other)
       virtual_url(other.virtual_url),
       referrer(other.referrer),
       transition_type(other.transition_type),
-      user_agent_override_option(other.user_agent_override_option),
       is_renderer_initiated(other.is_renderer_initiated),
       extra_headers([other.extra_headers copy]),
       post_data([other.post_data copy]) {}
@@ -48,7 +46,6 @@ NavigationManager::WebLoadParams& NavigationManager::WebLoadParams::operator=(
   referrer = other.referrer;
   is_renderer_initiated = other.is_renderer_initiated;
   transition_type = other.transition_type;
-  user_agent_override_option = other.user_agent_override_option;
   extra_headers = [other.extra_headers copy];
   post_data = [other.post_data copy];
 
@@ -71,47 +68,6 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedNonRedirectedItem(
   }
 
   return nullptr;
-}
-
-void NavigationManagerImpl::UpdatePendingItemUserAgentType(
-    UserAgentOverrideOption user_agent_override_option,
-    const NavigationItem* inherit_from_item,
-    NavigationItem* pending_item) {
-  DCHECK(pending_item);
-
-  // |user_agent_override_option| must be INHERIT if |pending_item|'s
-  // UserAgentType is NONE, as requesting a desktop or mobile user agent should
-  // be disabled for app-specific URLs.
-  DCHECK(pending_item->GetUserAgentForInheritance() != UserAgentType::NONE ||
-         user_agent_override_option == UserAgentOverrideOption::INHERIT);
-
-  // Newly created pending items are created with UserAgentType::NONE for native
-  // pages or UserAgentType::MOBILE or UserAgentType::DESKTOP for non-native
-  // pages.  If the pending item's URL is non-native, check which user agent
-  // type it should be created with based on |user_agent_override_option|.
-  if (pending_item->GetUserAgentForInheritance() == UserAgentType::NONE)
-    return;
-
-  switch (user_agent_override_option) {
-    case UserAgentOverrideOption::DESKTOP:
-      pending_item->SetUserAgentType(UserAgentType::DESKTOP);
-      break;
-    case UserAgentOverrideOption::MOBILE:
-      pending_item->SetUserAgentType(UserAgentType::MOBILE);
-      break;
-    case UserAgentOverrideOption::INHERIT: {
-      // Propagate the last committed non-native item's UserAgentType if there
-      // is one, otherwise keep the default value, which is mobile.
-      DCHECK(!inherit_from_item ||
-             inherit_from_item->GetUserAgentForInheritance() !=
-                 UserAgentType::NONE);
-      if (inherit_from_item) {
-        pending_item->SetUserAgentType(
-            inherit_from_item->GetUserAgentForInheritance());
-      }
-      break;
-    }
-  }
 }
 
 NavigationManagerImpl::NavigationManagerImpl()
@@ -276,7 +232,7 @@ void NavigationManagerImpl::LoadURLWithParams(
           ? NavigationInitiationType::RENDERER_INITIATED
           : NavigationInitiationType::BROWSER_INITIATED;
   AddPendingItem(params.url, params.referrer, params.transition_type,
-                 initiation_type, params.user_agent_override_option);
+                 initiation_type);
 
   // Mark pending item as created from hash change if necessary. This is needed
   // because window.hashchange message may not arrive on time.
@@ -402,17 +358,8 @@ void NavigationManagerImpl::ReloadWithUserAgentType(
   params.referrer = item_to_reload->GetReferrer();
   params.transition_type = ui::PAGE_TRANSITION_RELOAD;
 
-  switch (user_agent_type) {
-    case UserAgentType::DESKTOP:
-      params.user_agent_override_option = UserAgentOverrideOption::DESKTOP;
-      break;
-    case UserAgentType::MOBILE:
-      params.user_agent_override_option = UserAgentOverrideOption::MOBILE;
-      break;
-    case UserAgentType::AUTOMATIC:
-    case UserAgentType::NONE:
-      NOTREACHED();
-  }
+  delegate_->SetWebStateUserAgent(user_agent_type);
+  item_to_reload->SetUserAgentType(user_agent_type);
 
   LoadURLWithParams(params);
 }
@@ -499,7 +446,7 @@ NavigationItem* NavigationManagerImpl::GetLastCommittedItemWithUserAgentType()
        index >= 0; index--) {
     NavigationItem* item = GetItemAtIndex(index);
     if (wk_navigation_util::URLNeedsUserAgentType(item->GetURL())) {
-      DCHECK_NE(item->GetUserAgentForInheritance(), UserAgentType::NONE);
+      DCHECK_NE(item->GetUserAgentType(), UserAgentType::NONE);
       return item;
     }
   }

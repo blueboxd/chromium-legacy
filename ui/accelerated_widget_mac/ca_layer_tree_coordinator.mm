@@ -6,6 +6,7 @@
 
 #import <AVFoundation/AVFoundation.h>
 
+#include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/base/cocoa/animation_utils.h"

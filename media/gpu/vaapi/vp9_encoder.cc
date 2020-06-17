@@ -156,13 +156,6 @@ bool VP9Encoder::Initialize(const VideoEncodeAccelerator::Config& config,
     DVLOGF(1) << "Input visible size could not be empty";
     return false;
   }
-  // 4:2:0 format has to be 2-aligned.
-  if ((config.input_visible_size.width() % 2 != 0) ||
-      (config.input_visible_size.height() % 2 != 0)) {
-    DVLOGF(1) << "The pixel sizes are not even: "
-              << config.input_visible_size.ToString();
-    return false;
-  }
 
   accelerator_->set_bitrate_control(ave_config.bitrate_control);
   visible_size_ = config.input_visible_size;

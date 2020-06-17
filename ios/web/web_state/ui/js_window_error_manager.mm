@@ -4,6 +4,7 @@
 
 #import "ios/web/web_state/ui/js_window_error_manager.h"
 
+#include "base/logging.h"
 #import "base/values.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 

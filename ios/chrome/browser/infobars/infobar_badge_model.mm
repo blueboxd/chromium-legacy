@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/infobars/infobar_badge_model.h"
 
-#import "base/logging.h"
+#import "base/check_op.h"
 #include "ios/chrome/browser/ui/badges/badge_type_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

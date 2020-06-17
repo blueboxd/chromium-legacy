@@ -67,12 +67,6 @@ const Cryptographer* FakeSyncEncryptionHandler::GetCryptographer(
   return cryptographer_.get();
 }
 
-const DirectoryCryptographer*
-FakeSyncEncryptionHandler::GetDirectoryCryptographer(
-    const syncable::BaseTransaction* const trans) const {
-  return nullptr;
-}
-
 ModelTypeSet FakeSyncEncryptionHandler::GetEncryptedTypes(
     const syncable::BaseTransaction* const trans) const {
   return encrypted_types_;

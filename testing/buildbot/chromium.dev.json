@@ -31,8 +31,7 @@
               "device_os": "LMY48M",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
-              "os": "Android",
-              "pool": "chromium.tests.template"
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -79,8 +78,7 @@
               "device_os": "LMY48M",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
-              "os": "Android",
-              "pool": "chromium.tests.template"
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -128,8 +126,7 @@
               "device_os": "LMY48M",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
-              "os": "Android",
-              "pool": "chromium.tests.template"
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -177,8 +174,7 @@
               "device_os": "LMY48M",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
-              "os": "Android",
-              "pool": "chromium.tests.template"
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -226,8 +222,7 @@
               "device_os": "LMY48M",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
-              "os": "Android",
-              "pool": "chromium.tests.template"
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -275,8 +270,7 @@
               "device_os": "LMY48M",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
-              "os": "Android",
-              "pool": "chromium.tests.template"
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -328,8 +322,7 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android",
-              "pool": "chromium.tests.template"
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -376,8 +369,7 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android",
-              "pool": "chromium.tests.template"
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -425,8 +417,7 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android",
-              "pool": "chromium.tests.template"
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -474,8 +465,7 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android",
-              "pool": "chromium.tests.template"
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -523,8 +513,7 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android",
-              "pool": "chromium.tests.template"
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -572,8 +561,7 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android",
-              "pool": "chromium.tests.template"
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -621,8 +609,7 @@
               "device_os": "MMB29Q",
               "device_os_type": "userdebug",
               "device_type": "bullhead",
-              "os": "Android",
-              "pool": "chromium.tests.template"
+              "os": "Android"
             }
           ],
           "expiration": 10800,
@@ -656,8 +643,7 @@
           "dimension_sets": [
             {
               "cores": "2",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
@@ -675,8 +661,7 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
@@ -695,8 +680,7 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
@@ -714,8 +698,7 @@
           "dimension_sets": [
             {
               "cores": "2",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
@@ -733,8 +716,7 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
@@ -752,8 +734,7 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
@@ -771,8 +752,7 @@
           "dimension_sets": [
             {
               "cores": "2",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
@@ -794,8 +774,7 @@
           "dimension_sets": [
             {
               "cores": "2",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
@@ -813,8 +792,7 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com",
@@ -833,8 +811,7 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
@@ -852,8 +829,7 @@
           "dimension_sets": [
             {
               "cores": "2",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
@@ -871,8 +847,7 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
@@ -890,8 +865,7 @@
           "dimension_sets": [
             {
               "cores": "8",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
@@ -909,8 +883,7 @@
           "dimension_sets": [
             {
               "cores": "2",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.template"
+              "os": "Ubuntu-16.04"
             }
           ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
@@ -929,11 +902,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -946,11 +914,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
@@ -963,11 +926,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
@@ -980,11 +938,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "interactive_ui_tests",
@@ -997,11 +950,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "net_unittests",
@@ -1014,11 +962,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "unit_tests",
@@ -1035,11 +978,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -1052,11 +990,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
@@ -1069,11 +1002,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
@@ -1086,11 +1014,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "interactive_ui_tests",
@@ -1103,11 +1026,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "net_unittests",
@@ -1120,11 +1038,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "unit_tests",
@@ -1141,11 +1054,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -1158,11 +1066,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_browsertests",
@@ -1175,11 +1078,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "content_unittests",
@@ -1192,11 +1090,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "interactive_ui_tests",
@@ -1209,11 +1102,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "net_unittests",
@@ -1226,11 +1114,6 @@
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "pool": "chromium.tests.template"
-            }
-          ],
           "service_account": "chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "unit_tests",

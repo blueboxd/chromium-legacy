@@ -9,6 +9,7 @@
 #include <process.h>
 #include <stdint.h>
 
+#include "base/logging.h"
 #include "base/win/windows_version.h"
 #include "sandbox/win/src/crosscall_client.h"
 #include "sandbox/win/src/handle_closer_agent.h"

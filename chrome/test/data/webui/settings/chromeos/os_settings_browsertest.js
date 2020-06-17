@@ -558,6 +558,7 @@ var OSSettingsDateTimePageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       'date_time_page_tests.js',
     ]);
   }

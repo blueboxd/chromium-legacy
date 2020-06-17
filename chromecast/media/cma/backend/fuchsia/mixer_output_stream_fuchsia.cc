@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/fuchsia/default_context.h"
+#include "base/logging.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/time/time.h"
 #include "chromecast/base/chromecast_switches.h"

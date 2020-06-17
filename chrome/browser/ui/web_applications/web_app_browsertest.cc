@@ -592,6 +592,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, MenuOptionsOutsideInstalledPwaScope) {
 }
 
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, InstallInstallableSite) {
+  base::Time before_install_time = base::Time::Now();
   base::UserActionTester user_action_tester;
   NavigateToURLAndWait(browser(), GetInstallableAppURL());
 
@@ -603,6 +604,10 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, InstallInstallableSite) {
   // Installed PWAs should launch in their own window.
   EXPECT_EQ(provider->registrar().GetAppUserDisplayMode(app_id),
             blink::mojom::DisplayMode::kStandalone);
+
+  // Installed PWAs should have install time set.
+  EXPECT_TRUE(provider->registrar().GetAppInstallTime(app_id) >=
+              before_install_time);
 
   EXPECT_EQ(1, user_action_tester.GetActionCount("InstallWebAppFromMenu"));
   EXPECT_EQ(0, user_action_tester.GetActionCount("CreateShortcut"));

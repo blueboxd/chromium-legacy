@@ -10,6 +10,7 @@
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/public/cpp/app_menu_constants.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/compositor/compositor.h"

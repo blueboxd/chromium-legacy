@@ -11,6 +11,7 @@
 #include "base/android/jni_string.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/data_pack.h"

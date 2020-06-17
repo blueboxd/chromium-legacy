@@ -95,8 +95,8 @@ content::WebContents* GetWebContentsFromId(
     return nullptr;
   Profile* profile = Profile::FromBrowserContext(browser_context);
   Profile* incognito_profile =
-      include_incognito && profile->HasOffTheRecordProfile()
-          ? profile->GetOffTheRecordProfile()
+      include_incognito && profile->HasPrimaryOTRProfile()
+          ? profile->GetPrimaryOTRProfile()
           : nullptr;
   for (auto* target_browser : *BrowserList::GetInstance()) {
     if (target_browser->profile() == profile ||

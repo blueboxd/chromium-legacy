@@ -252,6 +252,7 @@ static const char* const kSwitchNames[] = {
     switches::kUseGpuInTests,
     switches::kV,
     switches::kVModule,
+    switches::kUseAdapterLuid,
 #if defined(OS_MACOSX)
     service_manager::switches::kEnableSandboxLogging,
     switches::kDisableAVFoundationOverlays,
@@ -1072,6 +1073,7 @@ GpuProcessKind GpuProcessHost::kind() {
   return kind_;
 }
 
+// Atomically shut down the GPU process with a normal termination status.
 void GpuProcessHost::ForceShutdown() {
   // This is only called on the IO thread so no race against the constructor
   // for another GpuProcessHost.

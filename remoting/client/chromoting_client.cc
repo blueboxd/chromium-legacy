@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "remoting/base/capabilities.h"
 #include "remoting/base/constants.h"
 #include "remoting/client/client_context.h"

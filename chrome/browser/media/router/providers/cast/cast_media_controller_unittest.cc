@@ -267,7 +267,8 @@ TEST_F(CastMediaControllerTest, SendNextTrackRequest) {
   SetSessionAndMediaStatus();
   EXPECT_CALL(activity_, SendMediaRequestToReceiver(_))
       .WillOnce([](const CastInternalMessage& cast_message) {
-        EXPECT_EQ("QUEUE_NEXT", cast_message.v2_message_type());
+        EXPECT_EQ("QUEUE_UPDATE", cast_message.v2_message_type());
+        EXPECT_EQ(1, cast_message.v2_message_body().FindKey("jump")->GetInt());
         VerifySessionAndMediaSessionIds(cast_message.v2_message_body());
         return 0;
       });
@@ -278,7 +279,8 @@ TEST_F(CastMediaControllerTest, SendPreviousTrackRequest) {
   SetSessionAndMediaStatus();
   EXPECT_CALL(activity_, SendMediaRequestToReceiver(_))
       .WillOnce([](const CastInternalMessage& cast_message) {
-        EXPECT_EQ("QUEUE_PREV", cast_message.v2_message_type());
+        EXPECT_EQ("QUEUE_UPDATE", cast_message.v2_message_type());
+        EXPECT_EQ(-1, cast_message.v2_message_body().FindKey("jump")->GetInt());
         VerifySessionAndMediaSessionIds(cast_message.v2_message_body());
         return 0;
       });

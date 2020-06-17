@@ -5,6 +5,7 @@
 #include "chromecast/common/cast_resource_delegate.h"
 
 #include "base/files/file_path.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "ui/gfx/image/image.h"
 

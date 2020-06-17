@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_atomic.h"
 
+#include "base/logging.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
 

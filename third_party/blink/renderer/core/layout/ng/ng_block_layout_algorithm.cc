@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_ruby_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/list/ng_unpositioned_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_child_iterator.h"
@@ -57,82 +58,6 @@ bool HasLineEvenIfEmpty(LayoutBox* box) {
   if (!AreNGBlockFlowChildrenInline(block_flow))
     return false;
   return NGInlineNode(block_flow).HasLineEvenIfEmpty();
-}
-
-// Returns the logical bottom offset of the last line text, relative to
-// |container| origin. This is used to decide ruby annotation box position.
-//
-// TODO(layout-dev): Using ScrollableOverflow() is same as legacy
-// LayoutRubyRun. However its result is not good with some fonts/platforms.
-LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
-                                     LayoutUnit default_value) {
-  const ComputedStyle& container_style = container.Style();
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    if (!container.Items())
-      return default_value;
-    NGInlineCursor cursor(*container.Items());
-    cursor.MoveToLastLine();
-    const auto* line_item = cursor.CurrentItem();
-    if (!line_item)
-      return default_value;
-    DCHECK_EQ(line_item->Type(), NGFragmentItem::kLine);
-    DCHECK(line_item->LineBoxFragment());
-    PhysicalRect line_rect =
-        line_item->LineBoxFragment()->ScrollableOverflowForLine(
-            container, container_style, *line_item, cursor);
-    return container.ConvertChildToLogical(line_rect).BlockEndOffset();
-  }
-
-  const NGPhysicalLineBoxFragment* last_line = nullptr;
-  PhysicalOffset last_line_offset;
-  for (const auto& child_link : container.PostLayoutChildren()) {
-    if (const auto* maybe_line =
-            DynamicTo<NGPhysicalLineBoxFragment>(*child_link)) {
-      last_line = maybe_line;
-      last_line_offset = child_link.offset;
-    }
-  }
-  if (!last_line)
-    return default_value;
-  PhysicalRect line_rect =
-      last_line->ScrollableOverflow(container, container_style);
-  line_rect.Move(last_line_offset);
-  return container.ConvertChildToLogical(line_rect).BlockEndOffset();
-}
-
-// Returns the logical top offset of the first line text, relative to
-// |container| origin. This is used to decide ruby annotation box position.
-//
-// TODO(layout-dev): Using ScrollableOverflow() is same as legacy
-// LayoutRubyRun. However its result is not good with some fonts/platforms.
-LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
-                                   LayoutUnit default_value) {
-  const ComputedStyle& container_style = container.Style();
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    if (!container.Items())
-      return default_value;
-    NGInlineCursor cursor(*container.Items());
-    cursor.MoveToFirstLine();
-    const auto* line_item = cursor.CurrentItem();
-    if (!line_item)
-      return default_value;
-    DCHECK_EQ(line_item->Type(), NGFragmentItem::kLine);
-    DCHECK(line_item->LineBoxFragment());
-    PhysicalRect line_rect =
-        line_item->LineBoxFragment()->ScrollableOverflowForLine(
-            container, container_style, *line_item, cursor);
-    return container.ConvertChildToLogical(line_rect).offset.block_offset;
-  }
-
-  for (const auto& child_link : container.PostLayoutChildren()) {
-    if (const auto* line = DynamicTo<NGPhysicalLineBoxFragment>(*child_link)) {
-      PhysicalRect line_rect =
-          line->ScrollableOverflow(container, container_style);
-      line_rect.Move(child_link.offset);
-      return container.ConvertChildToLogical(line_rect).offset.block_offset;
-    }
-  }
-  return default_value;
 }
 
 inline scoped_refptr<const NGLayoutResult> LayoutBlockChild(

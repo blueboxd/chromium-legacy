@@ -123,7 +123,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_OnClosingPaymentAppWindow(
       content::WebContents::FromJavaWebContents(jweb_contents);
 
   content::PaymentAppProvider::GetInstance()->OnClosingOpenedWindow(
-      web_contents->GetBrowserContext(),
+      web_contents,
       static_cast<payments::mojom::PaymentEventResponseType>(reason));
 }
 

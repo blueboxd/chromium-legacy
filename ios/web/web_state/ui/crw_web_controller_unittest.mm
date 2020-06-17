@@ -1245,10 +1245,9 @@ TEST_F(ScriptExecutionTest, UserScriptOnAppSpecificPage) {
   // Change last committed URL to app-specific URL.
   NavigationManagerImpl& nav_manager =
       [web_controller() webStateImpl]->GetNavigationManagerImpl();
-  nav_manager.AddPendingItem(
-      GURL(kTestAppSpecificURL), Referrer(), ui::PAGE_TRANSITION_TYPED,
-      NavigationInitiationType::BROWSER_INITIATED,
-      NavigationManager::UserAgentOverrideOption::INHERIT);
+  nav_manager.AddPendingItem(GURL(kTestAppSpecificURL), Referrer(),
+                             ui::PAGE_TRANSITION_TYPED,
+                             NavigationInitiationType::BROWSER_INITIATED);
   nav_manager.CommitPendingItem();
 
   NSError* error = nil;

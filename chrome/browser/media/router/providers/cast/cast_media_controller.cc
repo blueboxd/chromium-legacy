@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
+#include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/enum_table.h"
 
 using cast_channel::V2MessageType;
@@ -17,6 +18,9 @@ using cast_channel::V2MessageType;
 namespace media_router {
 
 namespace {
+
+constexpr int kQueuePrevJumpValue = -1;
+constexpr int kQueueNextJumpValue = 1;
 
 void SetIfValid(std::string* out, const base::Value* value) {
   if (value && value->is_string())
@@ -119,15 +123,23 @@ void CastMediaController::Seek(base::TimeDelta time) {
 void CastMediaController::NextTrack() {
   if (session_id_.empty())
     return;
-  activity_->SendMediaRequestToReceiver(*CastInternalMessage::From(
-      CreateMediaRequest(V2MessageType::kQueueNext)));
+  // We do not use |kQueueNext| because not all receiver apps support it.
+  // See crbug.com/1078601.
+  base::Value request = CreateMediaRequest(V2MessageType::kQueueUpdate);
+  request.SetIntPath("message.jump", kQueueNextJumpValue);
+  activity_->SendMediaRequestToReceiver(
+      *CastInternalMessage::From(std::move(request)));
 }
 
 void CastMediaController::PreviousTrack() {
   if (session_id_.empty())
     return;
-  activity_->SendMediaRequestToReceiver(*CastInternalMessage::From(
-      CreateMediaRequest(V2MessageType::kQueuePrev)));
+  // We do not use |kQueuePrev| because not all receiver apps support it.
+  // See crbug.com/1078601.
+  base::Value request = CreateMediaRequest(V2MessageType::kQueueUpdate);
+  request.SetIntPath("message.jump", kQueuePrevJumpValue);
+  activity_->SendMediaRequestToReceiver(
+      *CastInternalMessage::From(std::move(request)));
 }
 
 void CastMediaController::SetSession(const CastSession& session) {

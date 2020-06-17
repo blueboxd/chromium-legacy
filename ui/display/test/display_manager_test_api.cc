@@ -7,6 +7,7 @@
 #include <cstdarg>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout_builder.h"

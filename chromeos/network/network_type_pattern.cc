@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/tether_constants.h"

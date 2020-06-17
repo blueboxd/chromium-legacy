@@ -170,7 +170,7 @@
   'chrome-swarming-pool': {
     'swarming': {
       'dimensions': {
-        'pool': 'chrome.tests.template',
+        'pool': 'chrome.tests',
       },
     },
   },
@@ -184,7 +184,7 @@
       'dimensions': {
         'kvm': '1',
         'os': 'Ubuntu-16.04',
-        'pool': 'chromium.tests.cros.vm.template',
+        'pool': 'chromium.tests.cros.vm',
       },
     },
   },
@@ -193,16 +193,7 @@
       'dimensions': {
         'os': 'ChromeOS',
         'device_type': 'kevin',
-        'pool': 'chrome-cros-dut.template',
-      },
-    },
-  },
-  # TODO(crbug.com/812428): Remove this mixin after all test pools have migrated
-  # to using templates.
-  'chromium-template-pool': {
-    'swarming': {
-      'dimensions': {
-        'pool': 'chromium.tests.template',
+        'pool': 'chrome-cros-dut',
       },
     },
   },
@@ -262,9 +253,7 @@
   'gpu_pool': {
     'swarming': {
       'dimensions': {
-         # TODO(crbug.com/812428): Remove the ".template" bit once the old pool
-         # has been migrated to using templates.
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -334,7 +323,7 @@
       'dimensions': {
         'gpu': '1002:6613',
         'os': 'Ubuntu',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -343,7 +332,7 @@
       'dimensions': {
         'gpu': '8086:1912',
         'os': 'Ubuntu',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       }
     }
   },
@@ -353,7 +342,7 @@
       'dimensions': {
         'gpu': '8086:5912-19.0.2',
         'os': 'Ubuntu-19.04',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -362,7 +351,7 @@
       'dimensions': {
         'gpu': '8086:5912-19.0.2',
         'os': 'Ubuntu-19.04',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       }
     }
   },
@@ -371,7 +360,7 @@
       'dimensions': {
         'gpu': '8086:3e92-19.0.8',
         'os': 'Ubuntu-19.04',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
       # Same long expiration as win10_intel_uhd_630_stable due to capacity.
       # TODO(https://crbug.com/986939): Remove this when more devices
@@ -384,7 +373,7 @@
       'dimensions': {
         'gpu': '10de:1cb3-418.56',
         'os': 'Ubuntu-19.04',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -393,7 +382,7 @@
       'dimensions': {
         'gpu': '10de:1cb3-418.56',
         'os': 'Ubuntu-19.04',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       }
     }
   },
@@ -505,7 +494,7 @@
           'gpu': '1002:6821',
           'hidpi': '1',
           'os': 'Mac',
-          'pool': 'chromium.tests.gpu.template',
+          'pool': 'chromium.tests.gpu',
         }
       ],
     },
@@ -515,7 +504,7 @@
       'dimensions': {
         'gpu': '1002:679e',
         'os': 'Mac-10.12.6',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -526,7 +515,7 @@
         'gpu': '1002:6821',
         'hidpi': '1',
         'os': 'Mac-10.13.6',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -536,7 +525,7 @@
         'gpu': '1002:6821',
         'hidpi': '1',
         'os': 'Mac-10.14.6',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -547,7 +536,7 @@
         'gpu': '10de:0fe9',
         'hidpi': '1',
         'os': 'Mac-10.14.6',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -557,7 +546,7 @@
         'gpu': '10de:0fe9',
         'hidpi': '1',
         'os': 'Mac-10.14.6',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -589,7 +578,7 @@
       'dimensions': {
         'device_os': None,
         'device_type': None,
-        'pool': 'chromium.tests.avd.template',
+        'pool': 'chromium.tests.avd',
         'machine_type': 'n1-standard-8',
       },
       'named_caches': [
@@ -651,8 +640,8 @@
       'dimensions': {
         'device_os': None,
         'device_type': None,
-        'pool': 'chromium.tests.avd.template',
         'machine_type': 'n1-standard-8',
+        'pool': 'chromium.tests.avd',
       },
       'named_caches': [
         {
@@ -687,6 +676,11 @@
     '$mixin_append': {
       'args': [
         '--git-revision=${got_revision}',
+        # BREAK GLASS IN CASE OF EMERGENCY
+        # Uncommenting this argument will bypass all interactions with Skia
+        # Gold in any tests that use it. This is meant as a temporary
+        # emergency stop in case of a Gold outage that's affecting the bots.
+        # '--bypass-skia-gold-functionality',
       ],
       'precommit_args': [
         '--gerrit-issue=${patch_issue}',
@@ -739,7 +733,7 @@
         {
           'gpu': '8086:5912-24.20.100.6286',
           'os': 'Windows-10-17134',
-          'pool': 'chromium.tests.gpu.template',
+          'pool': 'chromium.tests.gpu',
         },
       ],
     },
@@ -749,7 +743,7 @@
       'dimensions': {
         'gpu': '1002:699f',
         'os': 'Windows-10',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -758,7 +752,7 @@
       'dimensions': {
         'gpu': '8086:5912-26.20.100.7870|8086:5912-26.20.100.8141|8086:3e92-26.20.100.8141',
         'os': 'Windows-10',
-        'pool': 'chromium.tests.gpu.experimental.template',
+        'pool': 'chromium.tests.gpu.experimental',
       },
     },
   },
@@ -767,7 +761,7 @@
       'dimensions': {
         'gpu': '8086:5912-24.20.100.6286',
         'os': 'Windows-10',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -776,7 +770,7 @@
       'dimensions': {
         'gpu': '8086:3e92-24.20.100.6286',
         'os': 'Windows-10',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
       # ~50% of the WebGL2 conformance tests time out with the default
       # 1 hour expiration, but the last shard times out with a 3 hour
@@ -791,7 +785,7 @@
       'dimensions': {
         'gpu': '10de:2184',
         'os': 'Windows-10',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -800,7 +794,7 @@
       'dimensions': {
         'gpu': '10de:1cb3-26.21.14.3102',
         'os': 'Windows-10',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -809,7 +803,7 @@
       'dimensions': {
         'gpu': '10de:1cb3-26.21.14.3102',
         'os': 'Windows-10',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -822,7 +816,7 @@
         {
           'gpu': '10de:1cb3-26.21.14.3102',
           'os': 'Windows-10',
-          'pool': 'chromium.tests.gpu.template',
+          'pool': 'chromium.tests.gpu',
         },
       ],
     },
@@ -839,7 +833,7 @@
       'dimensions': {
         'gpu': '1002:6613',
         'os': 'Windows-2008ServerR2-SP1',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },
@@ -848,7 +842,7 @@
       'dimensions': {
         'gpu': '10de:1cb3-24.21.14.1195',
         'os': 'Windows-2008ServerR2-SP1',
-        'pool': 'chromium.tests.gpu.template',
+        'pool': 'chromium.tests.gpu',
       },
     },
   },

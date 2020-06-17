@@ -8,6 +8,7 @@
 #include <winioctl.h>
 #include <wlanapi.h>
 
+#include "base/logging.h"
 #include "base/memory/free_deleter.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"

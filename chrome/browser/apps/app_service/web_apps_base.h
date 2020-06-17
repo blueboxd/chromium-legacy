@@ -134,7 +134,6 @@ class WebAppsBase : public apps::PublisherBase,
   void OnAppRegistrarDestroyed() override;
   void OnWebAppLocallyInstalledStateChanged(const web_app::AppId& app_id,
                                             bool is_locally_installed) override;
-  // TODO(loyso): Implement app->last_launch_time field for the new system.
 
   void SetShowInFields(apps::mojom::AppPtr& app,
                        const web_app::WebApp* web_app);

@@ -7,6 +7,7 @@
 #import <CoreWLAN/CoreWLAN.h>
 #import <Foundation/Foundation.h>
 
+#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

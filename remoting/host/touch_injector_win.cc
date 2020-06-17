@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/native_library.h"
+#include "base/notreached.h"
 #include "remoting/proto/event.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"

@@ -625,6 +625,11 @@ class ExtensionPrefs : public KeyedService {
   void SetDNRUseActionCountAsBadgeText(const ExtensionId& extension_id,
                                        bool use_action_count_as_badge_text);
 
+  // Migrates the disable reasons extension pref for extensions that were
+  // disabled due to a deprecated reason.
+  // TODO(archanasimha): Remove this around M89.
+  void MigrateDeprecatedDisableReasons();
+
   // Looks to see if the Youtube extension is installed, and removes the
   // FROM_BOOKMARK flag from it's creation flags.
   // TODO(dmurph): Remove this in m90.

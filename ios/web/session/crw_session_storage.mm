@@ -4,6 +4,8 @@
 
 #import "ios/web/public/session/crw_session_storage.h"
 
+#include "ios/web/common/features.h"
+#import "ios/web/navigation/nscoder_util.h"
 #import "ios/web/public/session/crw_session_certificate_policy_cache_storage.h"
 #import "ios/web/public/session/serializable_user_data_manager.h"
 
@@ -20,6 +22,7 @@ NSString* const kCertificatePolicyCacheStorageDeprecatedKey =
 NSString* const kItemStoragesKey = @"entries";
 NSString* const kHasOpenerKey = @"openedByDOM";
 NSString* const kLastCommittedItemIndexKey = @"lastCommittedItemIndex";
+NSString* const kUserAgentKey = @"userAgentKey";
 
 // Deprecated, used for backward compatibility.
 // TODO(crbug.com/708795): Remove this key.
@@ -36,11 +39,6 @@ NSString* const kLastCommittedItemIndexDeprecatedKey =
 @end
 
 @implementation CRWSessionStorage
-
-@synthesize hasOpener = _hasOpener;
-@synthesize lastCommittedItemIndex = _lastCommittedItemIndex;
-@synthesize itemStorages = _itemStorages;
-@synthesize certPolicyCacheStorage = _certPolicyCacheStorage;
 
 #pragma mark - Accessors
 
@@ -86,6 +84,19 @@ NSString* const kLastCommittedItemIndexDeprecatedKey =
     }
     _userData = web::SerializableUserData::Create();
     _userData->Decode(decoder);
+    if ([decoder containsValueForKey:kUserAgentKey]) {
+      std::string userAgentDescription =
+          web::nscoder_util::DecodeString(decoder, kUserAgentKey);
+      _userAgentType =
+          web::GetUserAgentTypeWithDescription(userAgentDescription);
+    } else {
+      // Prior to M85, the UserAgent wasn't stored.
+      if (web::features::UseWebClientDefaultUserAgent()) {
+        _userAgentType = web::UserAgentType::AUTOMATIC;
+      } else {
+        _userAgentType = web::UserAgentType::MOBILE;
+      }
+    }
   }
   return self;
 }
@@ -99,6 +110,8 @@ NSString* const kLastCommittedItemIndexDeprecatedKey =
                forKey:kCertificatePolicyCacheStorageKey];
   if (_userData)
     _userData->Encode(coder);
+  web::nscoder_util::EncodeString(
+      coder, kUserAgentKey, web::GetUserAgentTypeDescription(_userAgentType));
 }
 
 @end

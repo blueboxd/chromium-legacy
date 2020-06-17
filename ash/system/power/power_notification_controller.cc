@@ -11,6 +11,7 @@
 #include "ash/system/power/battery_notification.h"
 #include "ash/system/power/dual_role_notification.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/message_center/message_center.h"

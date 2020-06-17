@@ -37,7 +37,7 @@
             {
               'kvm': '1',
               'os': 'Ubuntu-16.04',
-              'pool': 'chrome.tests.cros-vm.template',
+              'pool': 'chrome.tests.cros-vm',
             },
           ],
         },
@@ -54,7 +54,7 @@
             {
               'kvm': '1',
               'os': 'Ubuntu-16.04',
-              'pool': 'chrome.tests.cros-vm.template',
+              'pool': 'chrome.tests.cros-vm',
             },
           ],
         },
@@ -72,7 +72,7 @@
             {
               'kvm': '1',
               'os': 'Ubuntu-16.04',
-              'pool': 'chrome.tests.cros-vm.template',
+              'pool': 'chrome.tests.cros-vm',
             },
           ],
         },
@@ -90,7 +90,7 @@
             {
               'os': 'ChromeOS',
               'device_type': 'eve',
-              'pool': 'luci.chrome.cros-dut.template',
+              'pool': 'luci.chrome.cros-dut',
             },
           ],
         },
@@ -108,7 +108,7 @@
             {
               'os': 'ChromeOS',
               'device_type': 'kevin',
-              'pool': 'luci.chrome.cros-dut.template',
+              'pool': 'luci.chrome.cros-dut',
             },
           ],
         },
@@ -1578,7 +1578,6 @@
     'machines': {
       'android-lollipop-arm-rel-swarming': {
         'mixins': [
-          'chromium-template-pool',
           'lollipop',
           'hammerhead',
         ],
@@ -1591,9 +1590,6 @@
         'os_type': 'android',
       },
       'android-marshmallow-arm64-rel-swarming': {
-        'mixins': [
-          'chromium-template-pool',
-        ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_android_gtests',
         },
@@ -1612,7 +1608,6 @@
       'linux-rel-swarming': {
         'mixins': [
           'linux-xenial',
-          'chromium-template-pool',
         ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_linux_gtests',
@@ -1621,32 +1616,22 @@
       'linux-rel-swarming-staging': {
         'mixins': [
           'linux-xenial',
-          'chromium-template-pool',
         ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_linux_gtests',
         },
       },
       'mac-rel-swarming': {
-        'mixins': [
-          'chromium-template-pool',
-        ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_desktop_gtests',
         },
       },
       'win-rel-swarming': {
-        'mixins': [
-          'chromium-template-pool',
-        ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_desktop_gtests',
         },
       },
       'win-rel-swarming-staging': {
-        'mixins': [
-          'chromium-template-pool',
-        ],
         'test_suites': {
            'gtest_tests': 'chromium_swarm_desktop_gtests',
         },
@@ -2296,7 +2281,7 @@
               'gpu': '1002:6821',
               'hidpi': '1',
               'os': 'Mac-10.13.6',
-              'pool': 'chromium.tests.gpu.template',
+              'pool': 'chromium.tests.gpu',
             },
           ],
         },
@@ -3916,7 +3901,7 @@
           {
             'gpu': '10de:1cb3-23.21.14.1195',
             'os': 'Windows-2008ServerR2-SP1',
-            'pool': 'chromium.tests.gpu.template',
+            'pool': 'chromium.tests.gpu',
           },
         ],
       },
@@ -3935,7 +3920,7 @@
           {
             'gpu': '10de:1cb3-23.21.14.1195',
             'os': 'Windows-2008ServerR2-SP1',
-            'pool': 'chromium.tests.gpu.template',
+            'pool': 'chromium.tests.gpu',
           },
         ],
       }
@@ -4255,7 +4240,7 @@
               'gpu': '1002:6821',
               'hidpi': '1',
               'os': 'Mac-10.13.6',
-              'pool': 'chromium.tests.gpu.template',
+              'pool': 'chromium.tests.gpu',
             }
           ],
         },

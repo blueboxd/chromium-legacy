@@ -127,6 +127,12 @@ base::Time TestAppRegistrar::GetAppLastLaunchTime(const AppId& app_id) const {
   NOTIMPLEMENTED();
   return base::Time();
 }
+
+base::Time TestAppRegistrar::GetAppInstallTime(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return base::Time();
+}
+
 std::vector<WebApplicationIconInfo> TestAppRegistrar::GetAppIconInfos(
     const AppId& app_id) const {
   NOTIMPLEMENTED();

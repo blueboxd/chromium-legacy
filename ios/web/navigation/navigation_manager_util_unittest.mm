@@ -52,10 +52,9 @@ TEST_F(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
           /*web_state=*/nullptr, GURL::EmptyGURL(),
           /*has_user_gesture=*/false, ui::PAGE_TRANSITION_TYPED,
           /*is_renderer_initiated=*/false);
-  manager_->AddPendingItem(
-      GURL("http://chromium.org"), Referrer(), ui::PAGE_TRANSITION_TYPED,
-      web::NavigationInitiationType::BROWSER_INITIATED,
-      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  manager_->AddPendingItem(GURL("http://chromium.org"), Referrer(),
+                           ui::PAGE_TRANSITION_TYPED,
+                           web::NavigationInitiationType::BROWSER_INITIATED);
   NavigationItem* item = manager_->GetPendingItem();
   int unique_id = item->GetUniqueID();
   context->SetNavigationItemUniqueID(item->GetUniqueID());
@@ -72,10 +71,9 @@ TEST_F(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
 
   // Commit another navigation so that the current item is updated.  This allows
   // for removing the item with |unique_id|.
-  manager_->AddPendingItem(
-      GURL("http://test.org"), Referrer(), ui::PAGE_TRANSITION_TYPED,
-      web::NavigationInitiationType::BROWSER_INITIATED,
-      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+  manager_->AddPendingItem(GURL("http://test.org"), Referrer(),
+                           ui::PAGE_TRANSITION_TYPED,
+                           web::NavigationInitiationType::BROWSER_INITIATED);
   manager_->CommitPendingItem();
   manager_->RemoveItemAtIndex(0);
   EXPECT_FALSE(GetCommittedItemWithUniqueID(manager_.get(), unique_id));

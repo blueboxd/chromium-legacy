@@ -32,6 +32,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
@@ -1096,20 +1097,24 @@ void ShowLoginWizard(OobeScreenId first_screen) {
   bool show_app_launch_splash_screen =
       (first_screen == AppLaunchSplashScreenView::kScreenId);
   if (show_app_launch_splash_screen) {
-    const std::string& auto_launch_app_id =
-        KioskAppManager::Get()->GetAutoLaunchApp();
-    const bool auto_launch = true;
     // Manages its own lifetime. See ShutdownDisplayHost().
     auto* display_host = new LoginDisplayHostWebUI();
-    if (!auto_launch_app_id.empty()) {
-      display_host->StartKiosk(KioskAppId::ForChromeApp(auto_launch_app_id),
-                               auto_launch);
-    } else {
-      display_host->StartKiosk(
-          KioskAppId::ForWebApp(
-              WebKioskAppManager::Get()->GetAutoLaunchAccountId()),
-          auto_launch);
-    }
+
+    KioskAppId kiosk_app_id;
+    const std::string& chrome_kiosk_app_id =
+        KioskAppManager::Get()->GetAutoLaunchApp();
+    const AccountId& web_kiosk_account_id =
+        WebKioskAppManager::Get()->GetAutoLaunchAccountId();
+    const AccountId& arc_kiosk_account_id =
+        ArcKioskAppManager::Get()->GetAutoLaunchAccountId();
+    if (!chrome_kiosk_app_id.empty())
+      kiosk_app_id = KioskAppId::ForChromeApp(chrome_kiosk_app_id);
+    else if (web_kiosk_account_id.is_valid())
+      kiosk_app_id = KioskAppId::ForWebApp(web_kiosk_account_id);
+    else if (arc_kiosk_account_id.is_valid())
+      kiosk_app_id = KioskAppId::ForArcApp(arc_kiosk_account_id);
+
+    display_host->StartKiosk(kiosk_app_id, /* auto_launch */ true);
     return;
   }
 

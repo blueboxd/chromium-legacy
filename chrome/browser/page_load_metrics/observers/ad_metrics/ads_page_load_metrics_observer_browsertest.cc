@@ -1825,6 +1825,8 @@ IN_PROC_BROWSER_TEST_F(
       web_contents(), "iframe1",
       embedded_test_server()->GetURL(
           "a.com", "/ads_observer/expensive_animation_frame.html?delay=0"));
+  // After navigation, the RenderFrameHost may change.
+  frame1 = content::FrameMatchingPredicate(web_contents(), frame1_pred);
   WaitForRAF(&message_queue1);
   EXPECT_EQ(frame1->GetProcess(),
             content::FrameMatchingPredicate(web_contents(), frame1_pred)

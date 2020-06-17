@@ -470,6 +470,7 @@ void PopulateRandomizedFormMetadata(const RandomizedEncoder& encoder,
     EncodeRandomizedValue(encoder, form_signature, kNullFieldSignature,
                           RandomizedEncoder::FORM_URL, full_source_url,
                           metadata->mutable_url());
+    metadata->set_checksum_for_url(StrToHash32Bit(full_source_url));
   }
 }
 

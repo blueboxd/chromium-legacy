@@ -143,18 +143,6 @@ bool HostDrmDevice::GpuConfigureNativeDisplay(
   return true;
 }
 
-bool HostDrmDevice::GpuDisableNativeDisplay(int64_t id) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
-  if (!IsConnected())
-    return false;
-  auto callback =
-      base::BindOnce(&HostDrmDevice::GpuDisableNativeDisplayCallback, this);
-
-  drm_device_->DisableNativeDisplay(id, std::move(callback));
-
-  return true;
-}
-
 bool HostDrmDevice::GpuTakeDisplayControl() {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   if (!IsConnected())
@@ -273,12 +261,6 @@ void HostDrmDevice::GpuRefreshNativeDisplaysCallback(
     MovableDisplaySnapshots displays) const {
   DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
   display_manager_->GpuHasUpdatedNativeDisplays(std::move(displays));
-}
-
-void HostDrmDevice::GpuDisableNativeDisplayCallback(int64_t display_id,
-                                                    bool success) const {
-  DCHECK_CALLED_ON_VALID_THREAD(on_ui_thread_);
-  display_manager_->GpuConfiguredDisplay(display_id, success);
 }
 
 void HostDrmDevice::GpuTakeDisplayControlCallback(bool success) const {

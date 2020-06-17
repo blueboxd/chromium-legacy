@@ -5,6 +5,7 @@
 #include "ppapi/proxy/raw_var_data.h"
 
 #include "base/containers/stack.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/stl_util.h"

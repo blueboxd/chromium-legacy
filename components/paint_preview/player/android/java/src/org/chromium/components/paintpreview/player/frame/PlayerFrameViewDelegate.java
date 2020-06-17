@@ -4,6 +4,8 @@
 
 package org.chromium.components.paintpreview.player.frame;
 
+import android.graphics.Matrix;
+
 /**
  * Used by {@link PlayerFrameView} to delegate view events to {@link PlayerFrameMediator}.
  */
@@ -12,6 +14,17 @@ interface PlayerFrameViewDelegate {
      * Called on layout with the attributed width and height.
      */
     void setLayoutDimensions(int width, int height);
+
+    /**
+     * Called to set the bitmap scale matrix for this frame.
+     */
+    void setBitmapScaleMatrix(Matrix matrix);
+
+    /**
+     * Triggers a redraw if one is needed.
+     */
+    void forceRedraw();
+
     /**
      * Called when a scroll gesture is performed.
      * @param distanceX Horizontal scroll values in pixels.
@@ -19,11 +32,18 @@ interface PlayerFrameViewDelegate {
      * @return Whether this scroll event was consumed.
      */
     boolean scrollBy(float distanceX, float distanceY);
+
     /**
      * Called when a scale gesture is performed.
      * @return Whether this scale event was consumed.
      */
     boolean scaleBy(float scaleFactor, float focalPointX, float focalPointY);
+
+    /**
+     * Called when a scale gesture is finished.
+     * @return Whether this scale event was consumed.
+     */
+    boolean scaleFinished(float scaleFactor, float focalPointX, float focalPointY);
 
     /**
      * Called when a single tap gesture is performed.

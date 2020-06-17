@@ -310,6 +310,7 @@ TEST_F(WebStateTest, RestoreLargeSession) {
   WebState::CreateParams params(GetBrowserState());
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
+  session_storage.userAgentType = UserAgentType::MOBILE;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
   web_state->SetKeepRenderProcessAlive(true);
   WebState* web_state_ptr = web_state.get();
@@ -413,6 +414,7 @@ TEST_F(WebStateTest, CallStopDuringSessionRestore) {
   WebState::CreateParams params(GetBrowserState());
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
+  session_storage.userAgentType = UserAgentType::MOBILE;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
   web_state->SetKeepRenderProcessAlive(true);
   WebState* web_state_ptr = web_state.get();
@@ -457,6 +459,7 @@ TEST_F(WebStateTest, CallLoadURLWithParamsDuringSessionRestore) {
   WebState::CreateParams params(GetBrowserState());
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
+  session_storage.userAgentType = UserAgentType::MOBILE;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
   web_state->SetKeepRenderProcessAlive(true);
   WebState* web_state_ptr = web_state.get();
@@ -511,6 +514,7 @@ TEST_F(WebStateTest, CallReloadDuringSessionRestore) {
   WebState::CreateParams params(GetBrowserState());
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
+  session_storage.userAgentType = UserAgentType::MOBILE;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
   web_state->SetKeepRenderProcessAlive(true);
   WebState* web_state_ptr = web_state.get();
@@ -556,6 +560,7 @@ TEST_F(WebStateTest, RestorePageTitles) {
   WebState::CreateParams params(GetBrowserState());
   CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
   session_storage.itemStorages = item_storages;
+  session_storage.userAgentType = UserAgentType::MOBILE;
   auto web_state = WebState::CreateWithStorageSession(params, session_storage);
   web_state->SetKeepRenderProcessAlive(true);
   NavigationManager* navigation_manager = web_state->GetNavigationManager();

@@ -82,6 +82,7 @@ paddedGrid{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
@@ -89,10 +90,10 @@ paddedGrid{
     "className": ".grid.padded.fixed",
     "nodeWidth": "175",
     "nodeHeight": "1130",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   },
   "gridInfo": [
     {
@@ -310,6 +311,7 @@ nestedGrid{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
@@ -317,10 +319,10 @@ nestedGrid{
     "className": ".grid",
     "nodeWidth": "100",
     "nodeHeight": "1000",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   },
   "gridInfo": [
     {

@@ -16,6 +16,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "components/viz/common/features.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "gpu/config/gpu_finch_features.h"

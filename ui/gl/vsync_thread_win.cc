@@ -5,6 +5,7 @@
 #include "ui/gl/vsync_thread_win.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
 #include "ui/gl/gl_angle_util_win.h"

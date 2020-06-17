@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/services/device_sync/cryptauth_key.h"
 #include "chromeos/services/device_sync/proto/cryptauth_common.pb.h"

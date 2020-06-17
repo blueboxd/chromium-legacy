@@ -275,10 +275,7 @@ js_library("passwords_section") {
 
 js_library("passwords_device_section") {
   deps = [
-    ":merge_exceptions_store_copies_behavior",
     ":merge_passwords_store_copies_behavior",
-    ":multi_store_exception_entry",
-    ":multi_store_id_handler",
     ":multi_store_password_ui_entry",
     ":password_list_item",
     ":password_manager_proxy",

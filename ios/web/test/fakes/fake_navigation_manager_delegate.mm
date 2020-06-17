@@ -27,6 +27,8 @@ void FakeNavigationManagerDelegate::OnNavigationItemCommitted(
 WebState* FakeNavigationManagerDelegate::GetWebState() {
   return web_state_;
 }
+void FakeNavigationManagerDelegate::SetWebStateUserAgent(
+    UserAgentType user_agent_type) {}
 id<CRWWebViewNavigationProxy>
 FakeNavigationManagerDelegate::GetWebViewNavigationProxy() const {
   return test_web_view_;

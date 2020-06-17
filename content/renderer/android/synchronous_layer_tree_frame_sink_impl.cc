@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/android/synchronous_layer_tree_frame_sink.h"
+#include "content/renderer/android/synchronous_layer_tree_frame_sink_impl.h"
 
 #include <vector>
 
@@ -100,7 +100,7 @@ class SoftwareCompositorFrameSinkClient
 
 }  // namespace
 
-class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
+class SynchronousLayerTreeFrameSinkImpl::SoftwareOutputSurface
     : public viz::OutputSurface {
  public:
   SoftwareOutputSurface(std::unique_ptr<SoftwareDevice> software_device)
@@ -133,20 +133,19 @@ class SynchronousLayerTreeFrameSink::SoftwareOutputSurface
   gpu::MemoryTracker* GetMemoryTracker() override { return nullptr; }
 };
 
-base::TimeDelta SynchronousLayerTreeFrameSink::StubDisplayClient::
+base::TimeDelta SynchronousLayerTreeFrameSinkImpl::StubDisplayClient::
     GetPreferredFrameIntervalForFrameSinkId(
         const viz::FrameSinkId& id,
         viz::mojom::CompositorFrameSinkType* type) {
   return viz::BeginFrameArgs::MinInterval();
 }
 
-SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
+SynchronousLayerTreeFrameSinkImpl::SynchronousLayerTreeFrameSinkImpl(
     scoped_refptr<viz::ContextProvider> context_provider,
     scoped_refptr<viz::RasterContextProvider> worker_context_provider,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     IPC::Sender* sender,
-    int routing_id,
     uint32_t layer_tree_frame_sink_id,
     std::unique_ptr<viz::BeginFrameSource> synthetic_begin_frame_source,
     SynchronousCompositorRegistry* registry,
@@ -155,11 +154,10 @@ SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
         compositor_frame_sink_remote,
     mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient>
         client_receiver)
-    : cc::LayerTreeFrameSink(std::move(context_provider),
-                             std::move(worker_context_provider),
-                             std::move(compositor_task_runner),
-                             gpu_memory_buffer_manager),
-      routing_id_(routing_id),
+    : SynchronousLayerTreeFrameSink(std::move(context_provider),
+                                    std::move(worker_context_provider),
+                                    std::move(compositor_task_runner),
+                                    gpu_memory_buffer_manager),
       layer_tree_frame_sink_id_(layer_tree_frame_sink_id),
       registry_(registry),
       sender_(sender),
@@ -177,14 +175,15 @@ SynchronousLayerTreeFrameSink::SynchronousLayerTreeFrameSink(
       gpu::MemoryAllocation::CUTOFF_ALLOW_NICE_TO_HAVE;
 }
 
-SynchronousLayerTreeFrameSink::~SynchronousLayerTreeFrameSink() = default;
+SynchronousLayerTreeFrameSinkImpl::~SynchronousLayerTreeFrameSinkImpl() =
+    default;
 
-void SynchronousLayerTreeFrameSink::SetSyncClient(
+void SynchronousLayerTreeFrameSinkImpl::SetSyncClient(
     SynchronousLayerTreeFrameSinkClient* compositor) {
   sync_client_ = compositor;
 }
 
-bool SynchronousLayerTreeFrameSink::BindToClient(
+bool SynchronousLayerTreeFrameSinkImpl::BindToClient(
     cc::LayerTreeFrameSinkClient* sink_client) {
   DCHECK(CalledOnValidThread());
   if (!cc::LayerTreeFrameSink::BindToClient(sink_client))
@@ -212,9 +211,9 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
 
   client_->SetMemoryPolicy(memory_policy_);
   client_->SetTreeActivationCallback(base::BindRepeating(
-      &SynchronousLayerTreeFrameSink::DidActivatePendingTree,
+      &SynchronousLayerTreeFrameSinkImpl::DidActivatePendingTree,
       base::Unretained(this)));
-  registry_->RegisterLayerTreeFrameSink(routing_id_, this);
+  registry_->RegisterLayerTreeFrameSink(this);
 
   software_frame_sink_client_ =
       std::make_unique<SoftwareCompositorFrameSinkClient>();
@@ -255,7 +254,7 @@ bool SynchronousLayerTreeFrameSink::BindToClient(
   return true;
 }
 
-void SynchronousLayerTreeFrameSink::DetachFromClient() {
+void SynchronousLayerTreeFrameSinkImpl::DetachFromClient() {
   DCHECK(CalledOnValidThread());
   client_->SetBeginFrameSource(nullptr);
   // Destroy the begin frame source on the same thread it was bound on.
@@ -263,7 +262,7 @@ void SynchronousLayerTreeFrameSink::DetachFromClient() {
   external_begin_frame_source_ = nullptr;
   if (sync_client_)
     sync_client_->SinkDestroyed();
-  registry_->UnregisterLayerTreeFrameSink(routing_id_, this);
+  registry_->UnregisterLayerTreeFrameSink(this);
   client_->SetTreeActivationCallback(base::RepeatingClosure());
   root_support_.reset();
   child_support_.reset();
@@ -278,13 +277,13 @@ void SynchronousLayerTreeFrameSink::DetachFromClient() {
   cc::LayerTreeFrameSink::DetachFromClient();
 }
 
-void SynchronousLayerTreeFrameSink::SetLocalSurfaceId(
+void SynchronousLayerTreeFrameSinkImpl::SetLocalSurfaceId(
     const viz::LocalSurfaceId& local_surface_id) {
   DCHECK(CalledOnValidThread());
   local_surface_id_ = local_surface_id;
 }
 
-void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
+void SynchronousLayerTreeFrameSinkImpl::SubmitCompositorFrame(
     viz::CompositorFrame frame,
     bool hit_test_data_changed,
     bool show_hit_test_borders) {
@@ -418,14 +417,14 @@ void SynchronousLayerTreeFrameSink::SubmitCompositorFrame(
   did_submit_frame_ = true;
 }
 
-void SynchronousLayerTreeFrameSink::DidNotProduceFrame(
+void SynchronousLayerTreeFrameSinkImpl::DidNotProduceFrame(
     const viz::BeginFrameAck& ack) {
   // We do not call CompositorFrameSink::DidNotProduceFrame here because
   // submission of frame depends on DemandDraw calls. DidNotProduceFrame will be
   // called there or during OnBeginFrame as fallback.
 }
 
-void SynchronousLayerTreeFrameSink::DidAllocateSharedBitmap(
+void SynchronousLayerTreeFrameSinkImpl::DidAllocateSharedBitmap(
     base::ReadOnlySharedMemoryRegion region,
     const viz::SharedBitmapId& id) {
   // Webview does not use software compositing (other than resourceless draws,
@@ -433,20 +432,20 @@ void SynchronousLayerTreeFrameSink::DidAllocateSharedBitmap(
   NOTREACHED();
 }
 
-void SynchronousLayerTreeFrameSink::DidDeleteSharedBitmap(
+void SynchronousLayerTreeFrameSinkImpl::DidDeleteSharedBitmap(
     const viz::SharedBitmapId& id) {
   // Webview does not use software compositing (other than resourceless draws,
   // but this is called for software /resources/).
   NOTREACHED();
 }
 
-void SynchronousLayerTreeFrameSink::Invalidate(bool needs_draw) {
+void SynchronousLayerTreeFrameSinkImpl::Invalidate(bool needs_draw) {
   DCHECK(CalledOnValidThread());
   if (sync_client_)
     sync_client_->Invalidate(needs_draw);
 }
 
-void SynchronousLayerTreeFrameSink::DemandDrawHw(
+void SynchronousLayerTreeFrameSinkImpl::DemandDrawHw(
     const gfx::Size& viewport_size,
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
@@ -459,7 +458,7 @@ void SynchronousLayerTreeFrameSink::DemandDrawHw(
   InvokeComposite(gfx::Transform(), gfx::Rect(viewport_size));
 }
 
-void SynchronousLayerTreeFrameSink::DemandDrawSw(SkCanvas* canvas) {
+void SynchronousLayerTreeFrameSinkImpl::DemandDrawSw(SkCanvas* canvas) {
   DCHECK(CalledOnValidThread());
   DCHECK(canvas);
   DCHECK(!current_sw_canvas_);
@@ -480,12 +479,12 @@ void SynchronousLayerTreeFrameSink::DemandDrawSw(SkCanvas* canvas) {
   InvokeComposite(transform, viewport);
 }
 
-void SynchronousLayerTreeFrameSink::WillSkipDraw() {
+void SynchronousLayerTreeFrameSinkImpl::WillSkipDraw() {
   client_->OnDraw(gfx::Transform(), gfx::Rect(), in_software_draw_,
                   true /*skip_draw*/);
 }
 
-void SynchronousLayerTreeFrameSink::InvokeComposite(
+void SynchronousLayerTreeFrameSinkImpl::InvokeComposite(
     const gfx::Transform& transform,
     const gfx::Rect& viewport) {
   did_submit_frame_ = false;
@@ -507,7 +506,7 @@ void SynchronousLayerTreeFrameSink::InvokeComposite(
   }
 }
 
-void SynchronousLayerTreeFrameSink::ReclaimResources(
+void SynchronousLayerTreeFrameSinkImpl::ReclaimResources(
     uint32_t layer_tree_frame_sink_id,
     const std::vector<viz::ReturnedResource>& resources) {
   // Ignore message if it's a stale one coming from a different output surface
@@ -517,7 +516,7 @@ void SynchronousLayerTreeFrameSink::ReclaimResources(
   client_->ReclaimResources(resources);
 }
 
-void SynchronousLayerTreeFrameSink::SetMemoryPolicy(size_t bytes_limit) {
+void SynchronousLayerTreeFrameSinkImpl::SetMemoryPolicy(size_t bytes_limit) {
   DCHECK(CalledOnValidThread());
   bool became_zero = memory_policy_.bytes_limit_when_visible && !bytes_limit;
   bool became_non_zero =
@@ -539,14 +538,14 @@ void SynchronousLayerTreeFrameSink::SetMemoryPolicy(size_t bytes_limit) {
   }
 }
 
-void SynchronousLayerTreeFrameSink::DidActivatePendingTree() {
+void SynchronousLayerTreeFrameSinkImpl::DidActivatePendingTree() {
   DCHECK(CalledOnValidThread());
   if (sync_client_)
     sync_client_->DidActivatePendingTree();
   DeliverMessages();
 }
 
-void SynchronousLayerTreeFrameSink::DeliverMessages() {
+void SynchronousLayerTreeFrameSinkImpl::DeliverMessages() {
   std::vector<std::unique_ptr<IPC::Message>> messages;
   std::unique_ptr<FrameSwapMessageQueue::SendMessageScope> send_message_scope =
       frame_swap_message_queue_->AcquireSendMessageScope();
@@ -556,16 +555,16 @@ void SynchronousLayerTreeFrameSink::DeliverMessages() {
   }
 }
 
-bool SynchronousLayerTreeFrameSink::Send(IPC::Message* message) {
+bool SynchronousLayerTreeFrameSinkImpl::Send(IPC::Message* message) {
   DCHECK(CalledOnValidThread());
   return sender_->Send(message);
 }
 
-bool SynchronousLayerTreeFrameSink::CalledOnValidThread() const {
+bool SynchronousLayerTreeFrameSinkImpl::CalledOnValidThread() const {
   return thread_checker_.CalledOnValidThread();
 }
 
-void SynchronousLayerTreeFrameSink::DidReceiveCompositorFrameAck(
+void SynchronousLayerTreeFrameSinkImpl::DidReceiveCompositorFrameAck(
     const std::vector<viz::ReturnedResource>& resources) {
   DCHECK(CalledOnValidThread());
   DCHECK(viz_frame_submission_enabled_);
@@ -575,7 +574,7 @@ void SynchronousLayerTreeFrameSink::DidReceiveCompositorFrameAck(
   // (or not happen at all) for WebView.
 }
 
-void SynchronousLayerTreeFrameSink::OnBeginFrame(
+void SynchronousLayerTreeFrameSinkImpl::OnBeginFrame(
     const viz::BeginFrameArgs& args,
     const viz::FrameTimingDetailsMap& timing_details) {
   DCHECK(viz_frame_submission_enabled_);
@@ -591,18 +590,18 @@ void SynchronousLayerTreeFrameSink::OnBeginFrame(
   }
 }
 
-void SynchronousLayerTreeFrameSink::ReclaimResources(
+void SynchronousLayerTreeFrameSinkImpl::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
   DCHECK(CalledOnValidThread());
   DCHECK(viz_frame_submission_enabled_);
   client_->ReclaimResources(resources);
 }
 
-void SynchronousLayerTreeFrameSink::OnBeginFramePausedChanged(bool paused) {
+void SynchronousLayerTreeFrameSinkImpl::OnBeginFramePausedChanged(bool paused) {
   DCHECK(viz_frame_submission_enabled_);
 }
 
-void SynchronousLayerTreeFrameSink::OnNeedsBeginFrames(
+void SynchronousLayerTreeFrameSinkImpl::OnNeedsBeginFrames(
     bool needs_begin_frames) {
   needs_begin_frames_ = needs_begin_frames;
   if (sync_client_) {
@@ -610,7 +609,7 @@ void SynchronousLayerTreeFrameSink::OnNeedsBeginFrames(
   }
 }
 
-void SynchronousLayerTreeFrameSink::DidPresentCompositorFrame(
+void SynchronousLayerTreeFrameSinkImpl::DidPresentCompositorFrame(
     const viz::FrameTimingDetailsMap& timing_details) {
   DCHECK(!viz_frame_submission_enabled_ || timing_details.empty());
 
@@ -620,13 +619,13 @@ void SynchronousLayerTreeFrameSink::DidPresentCompositorFrame(
     client_->DidPresentCompositorFrame(pair.first, pair.second);
 }
 
-void SynchronousLayerTreeFrameSink::BeginFrame(
+void SynchronousLayerTreeFrameSinkImpl::BeginFrame(
     const viz::BeginFrameArgs& args) {
   if (external_begin_frame_source_)
     external_begin_frame_source_->OnBeginFrame(args);
 }
 
-void SynchronousLayerTreeFrameSink::SetBeginFrameSourcePaused(bool paused) {
+void SynchronousLayerTreeFrameSinkImpl::SetBeginFrameSourcePaused(bool paused) {
   if (external_begin_frame_source_)
     external_begin_frame_source_->OnSetBeginFrameSourcePaused(paused);
 }

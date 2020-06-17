@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include "base/logging.h"
 
 #if defined(__NR_userfaultfd)
 #define HAS_USERFAULTFD

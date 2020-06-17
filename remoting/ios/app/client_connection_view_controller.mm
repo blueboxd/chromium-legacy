@@ -10,6 +10,9 @@
 #import <MaterialComponents/MaterialCollections.h>
 #import <MaterialComponents/MaterialSnackbar.h>
 
+#include "base/logging.h"
+#include "base/strings/sys_string_conversions.h"
+#include "remoting/base/string_resources.h"
 #import "remoting/ios/app/help_and_feedback.h"
 #import "remoting/ios/app/host_view_controller.h"
 #import "remoting/ios/app/pin_entry_view.h"
@@ -21,8 +24,6 @@
 #import "remoting/ios/facade/remoting_authentication.h"
 #import "remoting/ios/facade/remoting_service.h"
 #import "remoting/ios/session/remoting_client.h"
-#include "base/strings/sys_string_conversions.h"
-#include "remoting/base/string_resources.h"
 #include "remoting/protocol/client_authentication_config.h"
 #include "ui/base/l10n/l10n_util.h"
 

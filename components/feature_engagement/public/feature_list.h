@@ -115,6 +115,8 @@ DEFINE_VARIATION_PARAM(kIPHBadgedTranslateManualTriggerFeature,
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
+DEFINE_VARIATION_PARAM(kIPHDesktopTabGroupsNewGroupFeature,
+                       "IPH_DesktopTabGroupsNewGroup");
 DEFINE_VARIATION_PARAM(kIPHFocusModeFeature, "IPH_FocusMode");
 DEFINE_VARIATION_PARAM(kIPHGlobalMediaControls, "IPH_GlobalMediaControls");
 DEFINE_VARIATION_PARAM(kIPHPasswordsAccountStorageFeature,
@@ -180,6 +182,7 @@ constexpr flags_ui::FeatureEntry::FeatureVariation
         VARIATION_ENTRY(kIPHBadgedTranslateManualTriggerFeature),
 #elif defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
+        VARIATION_ENTRY(kIPHDesktopTabGroupsNewGroupFeature),
         VARIATION_ENTRY(kIPHFocusModeFeature),
         VARIATION_ENTRY(kIPHGlobalMediaControls),
         VARIATION_ENTRY(kIPHReopenTabFeature),

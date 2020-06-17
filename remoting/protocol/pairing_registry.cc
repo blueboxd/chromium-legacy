@@ -13,6 +13,7 @@
 #include "base/guid.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"

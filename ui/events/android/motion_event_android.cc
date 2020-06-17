@@ -9,6 +9,7 @@
 #include <cmath>
 
 #include "base/android/jni_android.h"
+#include "base/notreached.h"
 #include "base/numerics/math_constants.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"

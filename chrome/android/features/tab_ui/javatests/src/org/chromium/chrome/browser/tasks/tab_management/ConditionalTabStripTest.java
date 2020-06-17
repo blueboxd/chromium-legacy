@@ -460,6 +460,7 @@ public class ConditionalTabStripTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1094998")
     public void testStrip_InfoBarOptOut() throws Exception {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         for (int i = 0; i < 3; i++) {
@@ -507,6 +508,7 @@ public class ConditionalTabStripTest {
 
     @Test
     @MediumTest
+    @DisableIf.Build(supported_abis_includes = "x86", message = "https://crbug.com/1094998")
     public void testStrip_InfoBarOptIn() throws Exception {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         for (int i = 0; i < 3; i++) {

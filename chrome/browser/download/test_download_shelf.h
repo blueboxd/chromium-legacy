@@ -33,7 +33,7 @@ class TestDownloadShelf : public DownloadShelf {
  protected:
   void DoAddDownload(DownloadUIModelPtr download) override;
   void DoOpen() override;
-  void DoClose(CloseReason reason) override;
+  void DoClose() override;
   void DoHide() override;
   void DoUnhide() override;
   base::TimeDelta GetTransientDownloadShowDelay() override;

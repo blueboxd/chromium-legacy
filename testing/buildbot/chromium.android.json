@@ -32908,7 +32908,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -32967,7 +32967,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33026,7 +33026,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33085,7 +33085,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33144,7 +33144,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33203,7 +33203,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33262,7 +33262,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33321,7 +33321,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33381,7 +33381,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33441,7 +33441,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33500,7 +33500,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33559,7 +33559,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33618,7 +33618,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33678,7 +33678,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33737,7 +33737,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33797,7 +33797,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33856,7 +33856,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33915,7 +33915,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -33982,7 +33982,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34052,7 +34052,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34112,7 +34112,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34173,7 +34173,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34232,7 +34232,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34293,7 +34293,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34356,7 +34356,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34417,7 +34417,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34480,7 +34480,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34540,7 +34540,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34600,7 +34600,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34659,7 +34659,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34718,7 +34718,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34777,7 +34777,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34836,7 +34836,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34895,7 +34895,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -34954,7 +34954,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35016,7 +35016,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35075,7 +35075,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35134,7 +35134,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35193,7 +35193,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35252,7 +35252,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35311,7 +35311,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35370,7 +35370,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35429,7 +35429,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35488,7 +35488,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35547,7 +35547,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35607,7 +35607,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35666,7 +35666,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35725,7 +35725,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35784,7 +35784,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35843,7 +35843,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35902,7 +35902,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -35961,7 +35961,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36021,7 +36021,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36082,7 +36082,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36141,7 +36141,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36200,7 +36200,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36259,7 +36259,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36318,7 +36318,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36377,7 +36377,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36436,7 +36436,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36495,7 +36495,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36554,7 +36554,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36613,7 +36613,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36672,7 +36672,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36732,7 +36732,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36792,7 +36792,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36851,7 +36851,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36910,7 +36910,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -36969,7 +36969,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -37028,7 +37028,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -37087,7 +37087,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -37151,7 +37151,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -37212,7 +37212,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -37276,7 +37276,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -37336,7 +37336,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
@@ -37395,7 +37395,7 @@
               "device_type": null,
               "machine_type": "n1-standard-8",
               "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.avd.template"
+              "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [

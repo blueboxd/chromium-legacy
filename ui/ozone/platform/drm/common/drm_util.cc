@@ -18,6 +18,7 @@
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/util/display_util.h"

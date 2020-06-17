@@ -9,21 +9,27 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/memory/singleton.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "build/build_config.h"
 #include "content/browser/xr/xr_utils.h"
 #include "content/public/browser/device_service.h"
+#include "content/public/browser/gpu_data_manager.h"
+#include "content/public/browser/gpu_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "device/base/features.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "device/vr/orientation/orientation_device_provider.h"
 #include "device/vr/public/cpp/vr_device_provider.h"
+#include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
+#include "ui/gl/gl_switches.h"
 
 #if !defined(OS_ANDROID)
 #include "content/browser/xr/service/isolated_device_provider.h"
@@ -311,10 +317,84 @@ void XRRuntimeManagerImpl::SupportsSession(
 }
 
 void XRRuntimeManagerImpl::MakeXrCompatible() {
-  // TODO(http://crbug.com/792657): Restart GPU on correct adapter if needed.
+  auto* runtime = GetImmersiveVrRuntime();
+  if (!runtime) {
+    // WebXR spec: if there's no device, xr compatible is false.
+    for (VRServiceImpl* service : services_)
+      service->OnMakeXrCompatibleComplete(
+          device::mojom::XrCompatibleResult::kNotCompatible);
+    return;
+  }
+
+  if (!IsInitializedOnCompatibleAdapter(runtime)) {
+#if defined(OS_WIN)
+    base::Optional<LUID> luid = runtime->GetLuid();
+    // IsInitializedOnCompatibleAdapter should have returned true if the
+    // runtime doesn't specify a LUID.
+    DCHECK(luid && (luid->HighPart != 0 || luid->LowPart != 0));
+
+    // Add the XR compatible adapter LUID to the browser command line.
+    // GpuProcessHost::LaunchGpuProcess passes this to the GPU process.
+    std::string luid_string = base::NumberToString(luid->HighPart) + "," +
+                              base::NumberToString(luid->LowPart);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kUseAdapterLuid, luid_string);
+
+    // Get notified when the new GPU process sends back its GPUInfo. This
+    // indicates that the GPU process has finished initializing and the GPUInfo
+    // contains the LUID of the active adapter.
+    content::GpuDataManager::GetInstance()->AddObserver(this);
+
+    content::KillGpuProcess();
+    return;
+#else
+    // MakeXrCompatible is not yet supported on other platforms so
+    // IsInitializedOnCompatibleAdapter should have returned true.
+    NOTREACHED();
+#endif
+  }
+
   for (VRServiceImpl* service : services_)
     service->OnMakeXrCompatibleComplete(
         device::mojom::XrCompatibleResult::kAlreadyCompatible);
+}
+
+bool XRRuntimeManagerImpl::IsInitializedOnCompatibleAdapter(
+    BrowserXRRuntimeImpl* runtime) {
+#if defined(OS_WIN)
+  base::Optional<LUID> luid = runtime->GetLuid();
+  if (luid && (luid->HighPart != 0 || luid->LowPart != 0)) {
+    LUID active_luid =
+        content::GpuDataManager::GetInstance()->GetGPUInfo().active_gpu().luid;
+    return active_luid.HighPart == luid->HighPart &&
+           active_luid.LowPart == luid->LowPart;
+  }
+#endif
+
+  return true;
+}
+
+void XRRuntimeManagerImpl::OnGpuInfoUpdate() {
+  content::GpuDataManager::GetInstance()->RemoveObserver(this);
+
+  device::mojom::XrCompatibleResult xr_compatible_result;
+  auto* runtime = GetImmersiveVrRuntime();
+
+  if (runtime && IsInitializedOnCompatibleAdapter(runtime)) {
+    xr_compatible_result =
+        device::mojom::XrCompatibleResult::kCompatibleAfterRestart;
+  } else {
+    // We can still be incompatible after restarting if either:
+    //  1. The runtime has been removed (usually means the VR headset was
+    //     unplugged) since the GPU process restart was triggered. Per the WebXR
+    //     spec, if there is no device, xr compatible is false.
+    //  2. The GPU process is still not using the correct GPU after restarting.
+    xr_compatible_result =
+        device::mojom::XrCompatibleResult::kNotCompatibleAfterRestart;
+  }
+
+  for (VRServiceImpl* service : services_)
+    service->OnMakeXrCompatibleComplete(xr_compatible_result);
 }
 
 XRRuntimeManagerImpl::XRRuntimeManagerImpl(XRProviderList providers)

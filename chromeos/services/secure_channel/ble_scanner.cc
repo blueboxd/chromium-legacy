@@ -5,6 +5,7 @@
 #include "chromeos/services/secure_channel/ble_scanner.h"
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 

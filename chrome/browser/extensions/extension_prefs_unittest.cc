@@ -141,6 +141,35 @@ class ExtensionPrefsExtensionState : public ExtensionPrefsTest {
 };
 TEST_F(ExtensionPrefsExtensionState, ExtensionState) {}
 
+// Tests the migration of a deprecated disable reason.
+class ExtensionPrefsDeprecatedDisableReason : public ExtensionPrefsTest {
+ public:
+  void Initialize() override {
+    extension1_ = prefs_.AddExtension("test1");
+    int disable_reasons = disable_reason::DEPRECATED_DISABLE_UNKNOWN_FROM_SYNC;
+    prefs()->SetExtensionDisabled(extension1_->id(), disable_reasons);
+    extension2_ = prefs_.AddExtension("test2");
+    disable_reasons |= disable_reason::DISABLE_PERMISSIONS_INCREASE;
+    prefs()->SetExtensionDisabled(extension2_->id(), disable_reasons);
+    prefs()->MigrateDeprecatedDisableReasons();
+  }
+
+  void Verify() override {
+    EXPECT_EQ(prefs()->GetDisableReasons(extension1_->id()),
+              disable_reason::DISABLE_USER_ACTION);
+    // Verify that if an extension has a disable reason in addition to the
+    // deprecated reason, we don't add the user action disable reason.
+    EXPECT_EQ(prefs()->GetDisableReasons(extension2_->id()),
+              disable_reason::DISABLE_PERMISSIONS_INCREASE);
+  }
+
+ private:
+  scoped_refptr<Extension> extension1_;
+  scoped_refptr<Extension> extension2_;
+};
+
+TEST_F(ExtensionPrefsDeprecatedDisableReason, MigrateExtensionState) {}
+
 class ExtensionPrefsEscalatePermissions : public ExtensionPrefsTest {
  public:
   void Initialize() override {

@@ -786,10 +786,6 @@ int ExtensionPrefs::GetDisableReasons(const std::string& extension_id) const {
   int value = -1;
   if (ReadPrefAsInteger(extension_id, kPrefDisableReasons, &value) &&
       value >= 0) {
-    // TODO(crbug.com/860198): After we've gotten rid of the migration code for
-    // DEPRECATED_DISABLE_UNKNOWN_FROM_SYNC, we should maybe filter it out here
-    // just to be sure:
-    // value = value & ~disable_reason::DEPRECATED_DISABLE_UNKNOWN_FROM_SYNC;
     return value;
   }
   return disable_reason::DISABLE_NONE;
@@ -1968,6 +1964,8 @@ ExtensionPrefs::ExtensionPrefs(
   MigrateToNewExternalUninstallPref();
 
   MigrateYoutubeOffBookmarkApps();
+
+  MigrateDeprecatedDisableReasons();
 }
 
 AppSorting* ExtensionPrefs::app_sorting() const {
@@ -2246,6 +2244,27 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
 
   for (auto& observer : observer_list_)
     observer.OnExtensionRegistered(extension_id, install_time, is_enabled);
+}
+
+void ExtensionPrefs::MigrateDeprecatedDisableReasons() {
+  std::unique_ptr<ExtensionsInfo> extensions_info(GetInstalledExtensionsInfo());
+
+  for (const auto& info : *extensions_info) {
+    const ExtensionId& extension_id = info->extension_id;
+    int disable_reasons = GetDisableReasons(extension_id);
+    if ((disable_reasons &
+         disable_reason::DEPRECATED_DISABLE_UNKNOWN_FROM_SYNC) == 0)
+      continue;
+    disable_reasons &= ~disable_reason::DEPRECATED_DISABLE_UNKNOWN_FROM_SYNC;
+    if (disable_reasons == 0) {
+      // We don't know exactly why the extension was disabled, but we don't
+      // want to just suddenly re-enable it. Default to disabling it by the
+      // user (which was most likely for coming in from sync, and is
+      // reversible).
+      disable_reasons = disable_reason::DISABLE_USER_ACTION;
+    }
+    ReplaceDisableReasons(extension_id, disable_reasons);
+  }
 }
 
 void ExtensionPrefs::MigrateYoutubeOffBookmarkApps() {

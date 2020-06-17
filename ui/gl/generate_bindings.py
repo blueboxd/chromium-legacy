@@ -3661,6 +3661,7 @@ def GenerateMockBindingsSource(file, functions, set_name):
 
 #include <string.h>
 
+#include "base/notreached.h"
 #include "ui/gl/%s_mock.h"
 
 namespace {

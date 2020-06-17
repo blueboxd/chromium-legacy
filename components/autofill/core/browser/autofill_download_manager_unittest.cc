@@ -2007,6 +2007,8 @@ TEST_P(AutofillUploadTest, RichMetadata) {
     EXPECT_TRUE(upload.randomized_form_metadata().has_id());
     EXPECT_TRUE(upload.randomized_form_metadata().has_name());
     EXPECT_TRUE(upload.randomized_form_metadata().has_url());
+    ASSERT_TRUE(upload.randomized_form_metadata().has_checksum_for_url());
+    EXPECT_EQ(upload.randomized_form_metadata().checksum_for_url(), 3608731642);
     EXPECT_EQ(3, upload.field_size());
     for (const auto& f : upload.field()) {
       ASSERT_TRUE(f.has_randomized_field_metadata());

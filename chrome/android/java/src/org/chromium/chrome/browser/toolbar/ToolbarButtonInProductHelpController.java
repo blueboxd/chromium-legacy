@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 package org.chromium.chrome.browser.toolbar;
 
+import android.os.Handler;
+
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -47,12 +49,13 @@ public class ToolbarButtonInProductHelpController
     private final ScreenshotMonitor mScreenshotMonitor;
     private AppMenuHandler mAppMenuHandler;
     private UserEducationHelper mUserEducationHelper;
+    private final Handler mHandler = new Handler();
 
     public ToolbarButtonInProductHelpController(final ChromeActivity activity,
             AppMenuCoordinator appMenuCoordinator, ActivityLifecycleDispatcher lifecycleDispatcher,
             ActivityTabProvider tabProvider) {
         mActivity = activity;
-        mUserEducationHelper = new UserEducationHelper(mActivity);
+        mUserEducationHelper = new UserEducationHelper(mActivity, mHandler);
         mScreenshotMonitor = new ScreenshotMonitor(this);
         lifecycleDispatcher.register(this);
         mPageLoadObserver = new ActivityTabTabObserver(tabProvider) {

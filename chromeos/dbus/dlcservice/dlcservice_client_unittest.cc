@@ -328,6 +328,30 @@ TEST_F(DlcserviceClientTest, InstallProgressTest) {
   EXPECT_EQ(1u, counter.load());
 }
 
+TEST_F(DlcserviceClientTest, InstallProgressSkipUnheldDlcIdsTest) {
+  EXPECT_CALL(*mock_proxy_.get(), DoCallMethodWithErrorResponse(_, _, _))
+      .WillOnce(Return());
+  std::atomic<size_t> counter{0};
+  DlcserviceClient::InstallCallback install_callback = base::BindOnce(
+      [](const DlcserviceClient::InstallResult& install_result) {});
+  DlcserviceClient::ProgressCallback progress_callback = base::BindRepeating(
+      [](decltype(counter)* counter, double) { ++*counter; }, &counter);
+
+  client_->Install({"foo"}, std::move(install_callback),
+                   std::move(progress_callback));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, counter.load());
+
+  dlcservice::DlcState dlc_state;
+  dlc_state.set_id("bar-is-not-foo");
+  dlc_state.set_state(dlcservice::DlcState::INSTALLING);
+  auto signal = CreateSignal(dlc_state);
+
+  client_->DlcStateChangedForTest(signal.get());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, counter.load());
+}
+
 TEST_F(DlcserviceClientTest, InstallBusyStatusTest) {
   dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
                                dlcservice::kInstallMethod);

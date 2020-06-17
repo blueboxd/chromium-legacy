@@ -89,6 +89,12 @@
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_D3D_REFERENCE_ANGLE 0x320C
 #endif /* EGL_ANGLE_platform_angle_d3d */
 
+#ifndef EGL_ANGLE_platform_angle_d3d_luid
+#define EGL_ANGLE_platform_angle_d3d_luid 1
+#define EGL_PLATFORM_ANGLE_D3D_LUID_HIGH_ANGLE 0x34A0
+#define EGL_PLATFORM_ANGLE_D3D_LUID_LOW_ANGLE 0x34A1
+#endif /* EGL_ANGLE_platform_angle_d3d_luid */
+
 #ifndef EGL_ANGLE_platform_angle_d3d11on12
 #define EGL_ANGLE_platform_angle_d3d11on12 1
 #define EGL_PLATFORM_ANGLE_D3D11ON12_ANGLE 0x3488
@@ -288,6 +294,30 @@ EGLDisplay GetPlatformANGLEDisplay(
 
   display_attribs.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
   display_attribs.push_back(static_cast<EGLAttrib>(platform_type));
+
+  if (platform_type == EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE) {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    if (command_line->HasSwitch(switches::kUseAdapterLuid)) {
+      // If the LUID is specified, the format is <high part>,<low part>. Split
+      // and add them to the EGL_ANGLE_platform_angle_d3d_luid ext attributes.
+      std::string luid =
+          command_line->GetSwitchValueASCII(switches::kUseAdapterLuid);
+      size_t comma = luid.find(',');
+      if (comma != std::string::npos) {
+        int32_t high;
+        uint32_t low;
+        if (!base::StringToInt(luid.substr(0, comma), &high) ||
+            !base::StringToUint(luid.substr(comma + 1), &low))
+          return EGL_NO_DISPLAY;
+
+        display_attribs.push_back(EGL_PLATFORM_ANGLE_D3D_LUID_HIGH_ANGLE);
+        display_attribs.push_back(high);
+
+        display_attribs.push_back(EGL_PLATFORM_ANGLE_D3D_LUID_LOW_ANGLE);
+        display_attribs.push_back(low);
+      }
+    }
+  }
 
   GLDisplayEglUtil::GetInstance()->GetPlatformExtraDisplayAttribs(
       platform_type, &display_attribs);

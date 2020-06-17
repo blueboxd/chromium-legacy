@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/badges/badge_button_factory.h"
 
-#import "base/logging.h"
+#include <ostream>
+
+#import "base/notreached.h"
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
 #import "ios/chrome/browser/ui/badges/badge_delegate.h"

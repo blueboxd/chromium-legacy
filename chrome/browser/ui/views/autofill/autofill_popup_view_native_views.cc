@@ -948,8 +948,14 @@ void AutofillPopupRowView::SetSelected(bool is_selected) {
     return;
 
   is_selected_ = is_selected;
-  if (is_selected)
+  if (is_selected) {
+    // Before firing the selection event, ensure that focus appears to be
+    // within the popup. This is helpful for ATs on some platforms,
+    // specifically on Windows, where selection events in a list are mapped
+    // to focus events. Without this call, the focus appears to be in content.
+    GetViewAccessibility().SetPopupFocusOverride();
     NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  }
   RefreshStyle();
 }
 
@@ -1021,8 +1027,10 @@ void AutofillPopupViewNativeViews::VisibilityChanged(View* starting_from,
   // any focus events outside of the menu, including a focus event on
   // the form control itself.
   if (!is_visible) {
-    if (is_ax_menu_start_event_fired_)
+    if (is_ax_menu_start_event_fired_) {
       NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
+      GetViewAccessibility().EndPopupFocusOverride();
+    }
     is_ax_menu_start_event_fired_ = false;
   }
 }

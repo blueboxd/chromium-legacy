@@ -4,6 +4,8 @@
 
 #include "pdf/pdfium/pdfium_permissions.h"
 
+#include "base/notreached.h"
+
 namespace chrome_pdf {
 
 // static

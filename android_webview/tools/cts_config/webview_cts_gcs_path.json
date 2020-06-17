@@ -71,6 +71,22 @@
           {
             "match": "android.webkit.cts.WebViewTest#testLoadDataWithBaseUrl",
             "_bug_id": "crbug.com/900915"
+          },
+          {
+            "match": "android.webkit.cts.WebChromeClientTest#testBlockWindowsSync",
+            "_bug_id": "crbug.com/1096140"
+          },
+          {
+            "match": "android.webkit.cts.WebChromeClientTest#testWindows",
+            "_bug_id": "crbug.com/1096140"
+          },
+          {
+            "match": "android.webkit.cts.WebChromeClientTest#testBlockWindowsAsync",
+            "_bug_id": "crbug.com/1096140"
+          },
+          {
+            "match": "android.webkit.cts.WebSettingsTest#testIframesWhenAccessFromFileURLsEnabled",
+            "_bug_id": "crbug.com/1096140"
           }
         ]
       },
@@ -156,6 +172,22 @@
           {
             "match": "android.webkit.cts.WebViewTest#testLoadDataWithBaseUrl",
             "_bug_id": "crbug.com/900915"
+          },
+          {
+            "match": "android.webkit.cts.WebChromeClientTest#testBlockWindowsSync",
+            "_bug_id": "crbug.com/1096140"
+          },
+          {
+            "match": "android.webkit.cts.WebChromeClientTest#testWindows",
+            "_bug_id": "crbug.com/1096140"
+          },
+          {
+            "match": "android.webkit.cts.WebChromeClientTest#testBlockWindowsAsync",
+            "_bug_id": "crbug.com/1096140"
+          },
+          {
+            "match": "android.webkit.cts.WebSettingsTest#testIframesWhenAccessFromFileURLsEnabled",
+            "_bug_id": "crbug.com/1096140"
           }
         ]
       },

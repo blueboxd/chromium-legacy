@@ -1563,7 +1563,7 @@ ExtensionFunction::ResponseAction DownloadsSetShelfEnabledFunction::Run() {
            (current_service == incognito_service)) &&
           browser->window()->IsDownloadShelfVisible() &&
           !current_service->IsShelfEnabled())
-        browser->window()->GetDownloadShelf()->Close(DownloadShelf::AUTOMATIC);
+        browser->window()->GetDownloadShelf()->Close();
     }
   }
 

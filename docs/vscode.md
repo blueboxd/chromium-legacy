@@ -330,6 +330,12 @@ to the listed hostname. It has you choose a folder - use the 'src' folder root.
 This will open a new VSCode window in 'Remote' mode. ***Now you can install
 extensions specifically for your remote connection, like vscode-clangd, etc.***
 
+#### Chromebooks
+
+For Googlers, [here](http://go/vscode/remote_development_via_web) are
+Google-specific instructions for setting up remote development on chromebooks
+without using Crostini.
+
 #### Windows & SSH
 This currently is difficult on Windows because VSCode remote tools assumes
 'sshd' is installed, which isn't the case on Windows. If someone figures out

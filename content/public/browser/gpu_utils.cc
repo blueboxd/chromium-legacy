@@ -41,6 +41,12 @@ void StopGpuProcessImpl(base::OnceClosure callback,
     std::move(callback).Run();
 }
 
+void KillGpuProcessImpl(content::GpuProcessHost* host) {
+  if (host) {
+    host->ForceShutdown();
+  }
+}
+
 }  // namespace
 
 namespace content {
@@ -129,6 +135,11 @@ void StopGpuProcess(base::OnceClosure callback) {
                      base::BindOnce(RunTaskOnTaskRunner,
                                     base::ThreadTaskRunnerHandle::Get(),
                                     std::move(callback))));
+}
+
+void KillGpuProcess() {
+  GpuProcessHost::CallOnIO(GPU_PROCESS_KIND_SANDBOXED, false /* force_create */,
+                           base::BindOnce(&KillGpuProcessImpl));
 }
 
 gpu::GpuChannelEstablishFactory* GetGpuChannelEstablishFactory() {

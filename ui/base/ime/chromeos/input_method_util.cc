@@ -13,6 +13,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"

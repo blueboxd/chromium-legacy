@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "remoting/host/security_key/security_key_ipc_client.h"
 #include "remoting/host/security_key/security_key_ipc_constants.h"
 #include "remoting/host/security_key/security_key_message_reader_impl.h"

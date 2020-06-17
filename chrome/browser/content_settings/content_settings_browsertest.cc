@@ -317,8 +317,9 @@ class CookieSettingsTest
         browser->tab_strip_model()->GetActiveWebContents(),
         "async function doSet() {"
         "  await window.cookieStore.set("
-        "      'name', 'Good', "
-        "       { expires: Date.now() + 3600*1000,"
+        "       { name: 'name',"
+        "         value: 'Good',"
+        "         expires: Date.now() + 3600*1000,"
         "         sameSite: 'none' });"
         "  window.domAutomationController.send(true);"
         "}"
@@ -954,8 +955,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest, CookieStore) {
       async function cookieHandler(e) {
         try {
           await cookieStore.set(
-              e.data, 'value',
-              { expires: Date.now() + 3600*1000,
+              { name: e.data,
+                value: 'value',
+                expires: Date.now() + 3600*1000,
                 sameSite: 'none' });
         } finally {
           e.source.postMessage('set executed for ' + e.data);

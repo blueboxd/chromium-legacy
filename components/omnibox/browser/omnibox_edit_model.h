@@ -401,6 +401,9 @@ class OmniboxEditModel {
   // Also resets the popup to the initial state.
   void RevertTemporaryTextAndPopup();
 
+  // Returns whether to prevent elision of the display URL.
+  bool ShouldPreventElision() const;
+
  private:
   friend class OmniboxControllerTest;
   FRIEND_TEST_ALL_PREFIXES(OmniboxEditModelTest, ConsumeCtrlKey);

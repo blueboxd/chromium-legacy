@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"

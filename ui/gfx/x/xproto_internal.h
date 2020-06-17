@@ -20,6 +20,7 @@
 #include <type_traits>
 
 #include "base/component_export.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/xproto_types.h"

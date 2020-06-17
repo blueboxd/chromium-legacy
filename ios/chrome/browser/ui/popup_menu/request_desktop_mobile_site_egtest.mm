@@ -172,15 +172,9 @@ class UserAgentResponseProvider : public web::DataResponseProvider {
       performAction:grey_tap()];
 
   // Verify that desktop user agent propagates.
-  if (@available(iOS 13, *)) {
-    [ChromeEarlGreyUI openToolsMenu];
-    [RequestMobileButton() assertWithMatcher:grey_notNil()];
-    [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
-  } else {
-    [ChromeEarlGreyUI openToolsMenu];
-    [RequestDesktopButton() assertWithMatcher:grey_notNil()];
-    [ChromeEarlGrey waitForWebStateContainingText:kMobileSiteLabel];
-  }
+  [ChromeEarlGreyUI openToolsMenu];
+  [RequestMobileButton() assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebStateContainingText:kDesktopSiteLabel];
 }
 
 // Tests that requesting desktop site of a page works and desktop user agent

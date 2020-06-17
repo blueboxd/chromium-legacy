@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"

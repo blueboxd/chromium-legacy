@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/ranges.h"
 #include "base/time/time.h"

@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/trace_event/traced_value.h"
 #include "base/values.h"
 #include "cc/paint/filter_operation.h"

@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "components/metal_util/hdr_copier_layer.h"
 #include "third_party/skia/include/core/SkColor.h"

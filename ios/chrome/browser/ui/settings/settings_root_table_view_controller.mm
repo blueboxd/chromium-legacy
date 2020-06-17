@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
 #import "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/settings/bar_button_activity_indicator.h"

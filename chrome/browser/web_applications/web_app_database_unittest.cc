@@ -107,9 +107,14 @@ class WebAppDatabaseTest : public WebAppTest {
     app->SetUserDisplayMode((suffix & 1) ? DisplayMode::kBrowser
                                          : DisplayMode::kStandalone);
 
+    // 2*suffix time to make it different from install time
     const base::Time last_launch_time =
-        base::Time::UnixEpoch() + base::TimeDelta::FromMilliseconds(suffix);
+        base::Time::UnixEpoch() + 2 * base::TimeDelta::FromMilliseconds(suffix);
     app->SetLastLaunchTime(last_launch_time);
+
+    const base::Time install_time =
+        base::Time::UnixEpoch() + base::TimeDelta::FromMilliseconds(suffix);
+    app->SetInstallTime(install_time);
 
     const DisplayMode display_modes[4] = {
         DisplayMode::kBrowser, DisplayMode::kMinimalUi,
@@ -342,6 +347,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->file_handlers().empty());
   EXPECT_TRUE(app->additional_search_terms().empty());
   EXPECT_TRUE(app->last_launch_time().is_null());
+  EXPECT_TRUE(app->install_time().is_null());
   controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
@@ -378,6 +384,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->scope().is_empty());
   EXPECT_FALSE(app_copy->theme_color().has_value());
   EXPECT_TRUE(app_copy->last_launch_time().is_null());
+  EXPECT_TRUE(app_copy->install_time().is_null());
   EXPECT_TRUE(app_copy->icon_infos().empty());
   EXPECT_TRUE(app_copy->downloaded_icon_sizes().empty());
   EXPECT_FALSE(app_copy->is_in_sync_install());

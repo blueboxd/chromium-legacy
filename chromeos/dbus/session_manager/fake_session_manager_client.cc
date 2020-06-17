@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/path_service.h"

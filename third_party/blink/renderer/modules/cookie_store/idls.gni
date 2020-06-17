@@ -11,11 +11,10 @@ modules_idl_files = [
 
 modules_dictionary_idl_files = [
   "cookie_change_event_init.idl",
+  "cookie_init.idl",
   "cookie_list_item.idl",
   "cookie_store_delete_options.idl",
   "cookie_store_get_options.idl",
-  "cookie_store_set_extra_options.idl",
-  "cookie_store_set_options.idl",
   "extendable_cookie_change_event_init.idl",
 ]
 

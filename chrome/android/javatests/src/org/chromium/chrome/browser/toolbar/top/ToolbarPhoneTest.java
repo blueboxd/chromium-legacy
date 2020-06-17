@@ -9,7 +9,7 @@ import static org.mockito.Mockito.verify;
 
 import android.graphics.Canvas;
 
-import androidx.test.filters.SmallTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -55,7 +55,7 @@ public class ToolbarPhoneTest {
     }
 
     @Test
-    @SmallTest
+    @MediumTest
     public void testDrawTabSwitcherAnimation_menuButtonDrawn() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mToolbar.drawTabSwitcherAnimationOverlay(mCanvas, 0);

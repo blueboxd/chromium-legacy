@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "remoting/base/grpc_support/grpc_async_request.h"

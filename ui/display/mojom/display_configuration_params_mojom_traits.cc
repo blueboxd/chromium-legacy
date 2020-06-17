@@ -7,15 +7,6 @@
 namespace mojo {
 
 // static
-std::unique_ptr<display::DisplayMode>
-StructTraits<display::mojom::DisplayConfigurationParamsDataView,
-             display::DisplayConfigurationParams>::
-    mode(const display::DisplayConfigurationParams& display_config_params) {
-  return (display_config_params.mode) ? display_config_params.mode->Clone()
-                                      : std::unique_ptr<display::DisplayMode>{};
-}
-
-// static
 bool StructTraits<display::mojom::DisplayConfigurationParamsDataView,
                   display::DisplayConfigurationParams>::
     Read(display::mojom::DisplayConfigurationParamsDataView data,
@@ -24,7 +15,7 @@ bool StructTraits<display::mojom::DisplayConfigurationParamsDataView,
   if (!data.ReadOrigin(&origin))
     return false;
 
-  std::unique_ptr<display::DisplayMode> mode;
+  base::Optional<std::unique_ptr<display::DisplayMode>> mode;
   if (!data.ReadMode(&mode))
     return false;
 

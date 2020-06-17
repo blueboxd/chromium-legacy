@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/wayland/host/shell_object_factory.h"
 
+#include "base/logging.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/xdg_popup_wrapper_impl.h"
 #include "ui/ozone/platform/wayland/host/xdg_surface_wrapper_impl.h"

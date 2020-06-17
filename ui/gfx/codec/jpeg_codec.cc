@@ -7,6 +7,7 @@
 #include <setjmp.h>
 
 #include <memory>
+#include <ostream>
 
 #include "base/notreached.h"
 #include "third_party/skia/include/core/SkBitmap.h"

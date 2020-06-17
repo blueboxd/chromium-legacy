@@ -4,20 +4,17 @@
 
 #include "base/test/gtest_links.h"
 
+#include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 
 TEST(GtestLinksTest, AddInvalidLink) {
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
-  EXPECT_DEATH(AddLinkToTestResult("unique_link", "invalid`"), "");
-#endif
+  EXPECT_DCHECK_DEATH(AddLinkToTestResult("unique_link", "invalid`"));
 }
 
 TEST(GtestLinksTest, AddInvalidName) {
-#if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
-  EXPECT_DEATH(AddLinkToTestResult("invalid-name", "http://google.com"), "");
-#endif
+  EXPECT_DCHECK_DEATH(AddLinkToTestResult("invalid-name", "http://google.com"));
 }
 
 TEST(GtestLinksTest, AddValidLink) {

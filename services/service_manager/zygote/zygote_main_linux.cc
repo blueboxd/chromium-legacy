@@ -20,6 +20,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/rand_util.h"

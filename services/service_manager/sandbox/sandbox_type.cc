@@ -8,6 +8,7 @@
 
 #include "base/check.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/notreached.h"
 #include "services/service_manager/sandbox/features.h"
 #include "services/service_manager/sandbox/switches.h"

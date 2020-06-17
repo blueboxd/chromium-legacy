@@ -144,6 +144,16 @@ class VIEWS_EXPORT ViewAccessibility {
   // native accessibility object associated with this view.
   gfx::NativeViewAccessible GetFocusedDescendant();
 
+  // Call when this is the active descendant of a popup view that temporarily
+  // takes over focus. It is only necessary to use this for menus like autofill,
+  // where the actual focus is in content.
+  // When the popup closes, call EndPopupFocusOverride().
+  virtual void SetPopupFocusOverride();
+
+  // Call when popup closes, if it used SetPopupFocusOverride().
+  virtual void EndPopupFocusOverride();
+
+  // Call when a menu closes, to restore focus to where it was previously.
   virtual void FireFocusAfterMenuClose();
 
   // Used for testing. Allows a test to watch accessibility events.

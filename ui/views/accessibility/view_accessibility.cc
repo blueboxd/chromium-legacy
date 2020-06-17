@@ -234,6 +234,10 @@ void ViewAccessibility::OverrideFocus(AXVirtualView* virtual_view) {
   }
 }
 
+void ViewAccessibility::SetPopupFocusOverride() {}
+
+void ViewAccessibility::EndPopupFocusOverride() {}
+
 void ViewAccessibility::OverrideRole(const ax::mojom::Role role) {
   DCHECK(IsValidRoleForViews(role)) << "Invalid role for Views.";
   custom_data_.role = role;

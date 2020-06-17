@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/containers/adapters.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"

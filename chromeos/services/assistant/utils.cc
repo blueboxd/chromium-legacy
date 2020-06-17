@@ -156,6 +156,8 @@ std::string CreateLibAssistantConfig(
   else
     config.SetStringPath("internal.transport_type", "HTTP");
 
+  config.SetBoolPath("internal.enable_on_device_assistant_tts_as_text", true);
+
   // Finally add in the server uri override.
   if (s3_server_uri_override) {
     config.SetStringPath("testing.s3_grpc_server_uri",

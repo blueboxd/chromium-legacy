@@ -8,6 +8,7 @@
 #include <linux/input.h>
 #include <stddef.h>
 
+#include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/events/devices/stylus_state.h"
 #include "ui/events/event.h"

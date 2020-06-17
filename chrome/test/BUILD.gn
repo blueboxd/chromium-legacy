@@ -1553,6 +1553,7 @@ if (!is_android) {
       sources += [
         "../browser/policy/cloud/user_policy_signin_service_browsertest.cc",
         "../browser/signin/dice_browsertest.cc",
+        "../browser/signin/dice_web_signin_interceptor_browsertest.cc",
         "../browser/unified_consent/unified_consent_browsertest.cc",
       ]
       if (is_win) {
@@ -5459,6 +5460,7 @@ test("unit_tests") {
       "../browser/ui/views/tabs/fake_base_tab_strip_controller.cc",
       "../browser/ui/views/tabs/fake_base_tab_strip_controller.h",
       "../browser/ui/views/tabs/stacked_tab_strip_layout_unittest.cc",
+      "../browser/ui/views/tabs/tab_groups_iph_controller_unittest.cc",
       "../browser/ui/views/tabs/tab_strip_layout_unittest.cc",
       "../browser/ui/views/tabs/tab_strip_unittest.cc",
       "../browser/ui/views/tabs/tab_unittest.cc",

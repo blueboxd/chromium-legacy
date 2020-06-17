@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/ui/overlays/infobar_banner/translate/translate_infobar_banner_overlay_mediator.h"
 
+#include <ostream>
+
+#include "base/notreached.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/infobar_banner_overlay_responses.h"
 #import "ios/chrome/browser/overlays/public/infobar_banner/translate_infobar_banner_overlay_request_config.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_consumer.h"

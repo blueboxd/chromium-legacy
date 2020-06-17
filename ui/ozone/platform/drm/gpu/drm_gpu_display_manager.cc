@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/logging.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"

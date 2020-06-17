@@ -36,6 +36,8 @@ class BookmarkAppRegistryController : public web_app::AppRegistryController {
                                 bool is_locally_installed) override;
   void SetAppLastLaunchTime(const web_app::AppId& app_id,
                             const base::Time& time) override;
+  void SetAppInstallTime(const web_app::AppId& app_id,
+                         const base::Time& time) override;
   web_app::WebAppSyncBridge* AsWebAppSyncBridge() override;
 
  private:

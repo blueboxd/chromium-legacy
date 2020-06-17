@@ -4,6 +4,8 @@
 
 #import "ios/web/web_state/ui/cookie_blocking_error_logger.h"
 
+#include "base/check.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #import "base/values.h"
 #import "ios/web/public/js_messaging/web_frame.h"

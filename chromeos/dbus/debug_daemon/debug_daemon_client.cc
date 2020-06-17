@@ -21,6 +21,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/posix/eintr_wrapper.h"

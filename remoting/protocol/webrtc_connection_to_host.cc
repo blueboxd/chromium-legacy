@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "jingle/glue/thread_wrapper.h"
 #include "remoting/base/constants.h"

@@ -5,6 +5,7 @@
 #include "android_webview/browser/gfx/gpu_service_web_view.h"
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/gpu_utils.h"
 #include "gpu/command_buffer/service/mailbox_manager_factory.h"

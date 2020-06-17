@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/strcat.h"

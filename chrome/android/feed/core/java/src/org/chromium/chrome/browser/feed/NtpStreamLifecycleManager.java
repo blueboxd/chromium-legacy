@@ -12,21 +12,25 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.chrome.browser.feed.shared.stream.Stream;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 
 /**
  * Manages the lifecycle of a {@link Stream} associated with a Tab in an Activity.
  */
-public final class NtpStreamLifecycleManager extends StreamLifecycleManager {
+public class NtpStreamLifecycleManager extends StreamLifecycleManager {
     /** Key for the Stream instance state that may be stored in a navigation entry. */
     private static final String STREAM_SAVED_INSTANCE_STATE_KEY = "StreamSavedInstanceState";
+
+    private static PrefService sPrefServiceForTesting;
 
     /** The {@link Tab} that {@link #mStream} is attached to. */
     private final Tab mTab;
@@ -84,16 +88,14 @@ public final class NtpStreamLifecycleManager extends StreamLifecycleManager {
     protected boolean canShow() {
         // We don't call Stream#onShow to prevent feed services from being warmed up if the user
         // has opted out from article suggestions during the previous session.
-        return super.canShow()
-                && PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE)
+        return super.canShow() && getPrefService().getBoolean(Pref.ARTICLES_LIST_VISIBLE)
                 && !mTab.isHidden();
     }
 
     /** @return Whether the {@link Stream} can be activated. */
     @Override
     protected boolean canActivate() {
-        return super.canActivate()
-                && PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE)
+        return super.canActivate() && getPrefService().getBoolean(Pref.ARTICLES_LIST_VISIBLE)
                 && mTab.isUserInteractable();
     }
 
@@ -146,5 +148,15 @@ public final class NtpStreamLifecycleManager extends StreamLifecycleManager {
     @VisibleForTesting
     TabObserver getTabObserverForTesting() {
         return mTabObserver;
+    }
+
+    private PrefService getPrefService() {
+        if (sPrefServiceForTesting != null) return sPrefServiceForTesting;
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
+    }
+
+    @VisibleForTesting
+    static void setPrefServiceForTesting(PrefService prefServiceForTesting) {
+        sPrefServiceForTesting = prefServiceForTesting;
     }
 }

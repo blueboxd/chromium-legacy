@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"

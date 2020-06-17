@@ -21,6 +21,7 @@
 #include "content/browser/xr/service/browser_xr_runtime_impl.h"
 #include "content/browser/xr/service/vr_service_impl.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/browser/xr_integration_client.h"
 #include "content/public/browser/xr_runtime_manager.h"
 #include "device/vr/public/mojom/vr_service.mojom-forward.h"
@@ -33,7 +34,8 @@ class XRRuntimeManagerTest;
 // instances.
 class CONTENT_EXPORT XRRuntimeManagerImpl
     : public XRRuntimeManager,
-      public base::RefCounted<XRRuntimeManagerImpl> {
+      public base::RefCounted<XRRuntimeManagerImpl>,
+      public content::GpuDataManagerObserver {
  public:
   friend base::RefCounted<XRRuntimeManagerImpl>;
   static constexpr auto kRefCountPreference =
@@ -75,6 +77,9 @@ class CONTENT_EXPORT XRRuntimeManagerImpl
 
   void MakeXrCompatible();
 
+  // content::GpuDataManagerObserver
+  void OnGpuInfoUpdate() override;
+
   // XRRuntimeManager implementation
   BrowserXRRuntimeImpl* GetRuntime(device::mojom::XRDeviceId id) override;
   void ForEachRuntime(
@@ -104,6 +109,8 @@ class CONTENT_EXPORT XRRuntimeManagerImpl
                   device::mojom::XRDeviceDataPtr device_data,
                   mojo::PendingRemote<device::mojom::XRRuntime> runtime);
   void RemoveRuntime(device::mojom::XRDeviceId id);
+
+  bool IsInitializedOnCompatibleAdapter(BrowserXRRuntimeImpl* runtime);
 
   // Gets the system default immersive-vr runtime if available.
   BrowserXRRuntimeImpl* GetImmersiveVrRuntime();

@@ -4,9 +4,11 @@
 
 #import "ios/chrome/credential_provider_extension/password_util.h"
 
+#include <ostream>
+
 #import <Security/Security.h>
 
-#import "base/logging.h"
+#import "base/check.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

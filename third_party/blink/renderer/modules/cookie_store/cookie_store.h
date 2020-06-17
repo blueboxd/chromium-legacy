@@ -22,10 +22,9 @@
 
 namespace blink {
 
+class CookieInit;
 class CookieStoreDeleteOptions;
 class CookieStoreGetOptions;
-class CookieStoreSetOptions;
-class CookieStoreSetExtraOptions;
 class ExceptionState;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -54,13 +53,10 @@ class CookieStore final : public EventTargetWithInlineData,
                     ExceptionState&);
 
   ScriptPromise set(ScriptState*,
-                    const CookieStoreSetExtraOptions*,
-                    ExceptionState&);
-  ScriptPromise set(ScriptState*,
                     const String& name,
                     const String& value,
-                    const CookieStoreSetOptions*,
                     ExceptionState&);
+  ScriptPromise set(ScriptState*, const CookieInit*, ExceptionState&);
   ScriptPromise Delete(ScriptState*, const String& name, ExceptionState&);
   ScriptPromise Delete(ScriptState*,
                        const CookieStoreDeleteOptions*,
@@ -120,9 +116,7 @@ class CookieStore final : public EventTargetWithInlineData,
           backend_result);
 
   // Common code in CookieStore::delete and CookieStore::set.
-  ScriptPromise DoWrite(ScriptState*,
-                        const CookieStoreSetExtraOptions*,
-                        ExceptionState&);
+  ScriptPromise DoWrite(ScriptState*, const CookieInit*, ExceptionState&);
 
   static void OnSetCanonicalCookieResult(ScriptPromiseResolver*,
                                          bool backend_result);

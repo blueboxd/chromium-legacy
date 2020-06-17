@@ -45,7 +45,6 @@ NavigationItemImpl::NavigationItemImpl()
     : unique_id_(GetUniqueIDInConstructor()),
       transition_type_(ui::PAGE_TRANSITION_LINK),
       user_agent_type_(UserAgentType::NONE),
-      user_agent_type_inheritance_(UserAgentType::NONE),
       is_created_from_push_state_(false),
       has_state_been_replaced_(false),
       is_created_from_hash_change_(false),
@@ -53,12 +52,6 @@ NavigationItemImpl::NavigationItemImpl()
       should_skip_serialization_(false),
       navigation_initiation_type_(web::NavigationInitiationType::NONE),
       is_untrusted_(false) {
-  if (features::UseWebClientDefaultUserAgent()) {
-    // TODO(crbug.com/1025227): Once it is enabled by default, move it to the
-    // default constructor.
-    user_agent_type_ = UserAgentType::AUTOMATIC;
-    user_agent_type_inheritance_ = UserAgentType::AUTOMATIC;
-  }
 }
 
 NavigationItemImpl::~NavigationItemImpl() {
@@ -77,7 +70,6 @@ NavigationItemImpl::NavigationItemImpl(const NavigationItemImpl& item)
       ssl_(item.ssl_),
       timestamp_(item.timestamp_),
       user_agent_type_(item.user_agent_type_),
-      user_agent_type_inheritance_(item.user_agent_type_inheritance_),
       http_request_headers_([item.http_request_headers_ mutableCopy]),
       serialized_state_object_([item.serialized_state_object_ copy]),
       is_created_from_push_state_(item.is_created_from_push_state_),
@@ -108,14 +100,6 @@ void NavigationItemImpl::SetURL(const GURL& url) {
   url_ = url;
   cached_display_title_.clear();
   error_retry_state_machine_.SetURL(url);
-  if (!wk_navigation_util::URLNeedsUserAgentType(url)) {
-    SetUserAgentType(UserAgentType::NONE);
-  } else if (GetUserAgentForInheritance() == web::UserAgentType::NONE) {
-    UserAgentType type = features::UseWebClientDefaultUserAgent()
-                             ? UserAgentType::AUTOMATIC
-                             : UserAgentType::MOBILE;
-    SetUserAgentType(type);
-  }
 }
 
 const GURL& NavigationItemImpl::GetURL() const {
@@ -222,16 +206,7 @@ bool NavigationItemImpl::IsUntrusted() {
   return is_untrusted_;
 }
 
-UserAgentType NavigationItemImpl::GetUserAgentType(
-    id<UITraitEnvironment> web_view) const {
-  if (user_agent_type_ == UserAgentType::AUTOMATIC) {
-    DCHECK(features::UseWebClientDefaultUserAgent());
-    return GetWebClient()->GetDefaultUserAgent(web_view, url_);
-  }
-  return user_agent_type_;
-}
-
-UserAgentType NavigationItemImpl::GetUserAgentForInheritance() const {
+UserAgentType NavigationItemImpl::GetUserAgentType() const {
   return user_agent_type_;
 }
 
@@ -343,8 +318,8 @@ void NavigationItemImpl::RestoreStateFromItem(NavigationItem* other) {
   // might mean that |this| is a next navigation. The page display state and the
   // virtual URL only make sense if it is the same item. The other headers might
   // not make sense after creating a new navigation to the page.
-  if (other->GetUserAgentForInheritance() != UserAgentType::NONE) {
-    SetUserAgentType(other->GetUserAgentForInheritance());
+  if (other->GetUserAgentType() != UserAgentType::NONE) {
+    SetUserAgentType(other->GetUserAgentType());
   }
   if (url_ == other->GetURL()) {
     SetPageDisplayState(other->GetPageDisplayState());

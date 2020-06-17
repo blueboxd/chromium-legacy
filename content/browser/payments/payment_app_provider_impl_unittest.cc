@@ -12,8 +12,10 @@
 #include "content/browser/payments/payment_app_content_unittest_base.h"
 #include "content/browser/payments/payment_app_provider_impl.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_web_contents_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
@@ -75,6 +77,9 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
             testing::Return(blink::mojom::PermissionStatus::GRANTED));
     static_cast<TestBrowserContext*>(browser_context())
         ->SetPermissionControllerDelegate(std::move(mock_permission_manager));
+
+    web_contents_ =
+        test_web_contents_factory_.CreateWebContents(browser_context());
   }
   ~PaymentAppProviderTest() override {}
 
@@ -101,7 +106,7 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
                         payments::mojom::PaymentRequestEventDataPtr event_data,
                         PaymentAppProvider::InvokePaymentAppCallback callback) {
     PaymentAppProviderImpl::GetInstance()->InvokePaymentApp(
-        browser_context(), registration_id, sw_origin, std::move(event_data),
+        web_contents_, registration_id, sw_origin, std::move(event_data),
         std::move(callback));
     base::RunLoop().RunUntilIdle();
   }
@@ -112,7 +117,7 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
                       payments::mojom::CanMakePaymentEventDataPtr event_data,
                       PaymentAppProvider::CanMakePaymentCallback callback) {
     PaymentAppProviderImpl::GetInstance()->CanMakePayment(
-        browser_context(), registration_id, sw_origin, payment_request_id,
+        web_contents_, registration_id, sw_origin, payment_request_id,
         std::move(event_data), std::move(callback));
   }
 
@@ -121,18 +126,21 @@ class PaymentAppProviderTest : public PaymentAppContentUnitTestBase {
                     const std::string& payment_request_id,
                     PaymentAppProvider::AbortCallback callback) {
     PaymentAppProviderImpl::GetInstance()->AbortPayment(
-        browser_context(), registration_id, sw_origin, payment_request_id,
+        web_contents_, registration_id, sw_origin, payment_request_id,
         std::move(callback));
   }
 
   void OnClosingOpenedWindow() {
     PaymentAppProviderImpl::GetInstance()->OnClosingOpenedWindow(
-        browser_context(), payments::mojom::PaymentEventResponseType::
-                               PAYMENT_HANDLER_WINDOW_CLOSING);
+        web_contents_, payments::mojom::PaymentEventResponseType::
+                           PAYMENT_HANDLER_WINDOW_CLOSING);
     base::RunLoop().RunUntilIdle();
   }
 
  private:
+  TestWebContentsFactory test_web_contents_factory_;
+  WebContents* web_contents_;
+
   DISALLOW_COPY_AND_ASSIGN(PaymentAppProviderTest);
 };
 

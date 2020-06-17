@@ -108,6 +108,19 @@ int Label::GetTextContext() const {
   return text_context_;
 }
 
+int Label::GetTextStyle() const {
+  return text_style_;
+}
+
+void Label::SetTextStyle(int style) {
+  if (style == text_style_)
+    return;
+
+  text_style_ = style;
+  UpdateColorsFromTheme();
+  OnPropertyChanged(&text_style_, kPropertyEffectsPreferredSizeChanged);
+}
+
 bool Label::GetAutoColorReadabilityEnabled() const {
   return auto_color_readability_enabled_;
 }
@@ -958,7 +971,6 @@ void Label::Init(const base::string16& text,
   full_text_->SetCursorEnabled(false);
   full_text_->SetWordWrapBehavior(gfx::TRUNCATE_LONG_WORDS);
 
-  UpdateColorsFromTheme();
   SetText(text);
 
   // Only selectable labels will get requests to show the context menu, due to
@@ -1110,8 +1122,9 @@ void Label::BuildContextMenuContents() {
 
 BEGIN_METADATA(Label)
 METADATA_PARENT_CLASS(View)
-ADD_PROPERTY_METADATA(Label, bool, AutoColorReadabilityEnabled)
 ADD_PROPERTY_METADATA(Label, base::string16, Text)
+ADD_PROPERTY_METADATA(Label, int, TextStyle)
+ADD_PROPERTY_METADATA(Label, bool, AutoColorReadabilityEnabled)
 ADD_PROPERTY_METADATA(Label, SkColor, EnabledColor)
 ADD_PROPERTY_METADATA(Label, gfx::ElideBehavior, ElideBehavior)
 ADD_PROPERTY_METADATA(Label, SkColor, BackgroundColor)

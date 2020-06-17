@@ -6,7 +6,9 @@
 
 #include <memory>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "ui/events/event.h"
 #include "ui/events/fuchsia/input_event_dispatcher_delegate.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"

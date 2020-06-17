@@ -136,5 +136,9 @@ class PlayerFrameGestureDetector
     }
 
     @Override
-    public void onScaleEnd(ScaleGestureDetector detector) {}
+    public void onScaleEnd(ScaleGestureDetector detector) {
+        assert mCanDetectZoom;
+        mPlayerFrameViewDelegate.scaleFinished(
+                detector.getScaleFactor(), detector.getFocusX(), detector.getFocusY());
+    }
 }

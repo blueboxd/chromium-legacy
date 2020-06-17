@@ -4,6 +4,8 @@
 
 #include "device/fido/cable/cable_discovery_data.h"
 
+#include <cstring>
+
 #include "base/time/time.h"
 #include "crypto/random.h"
 #include "device/fido/fido_parsing_utils.h"

@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"

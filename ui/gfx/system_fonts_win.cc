@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include "base/containers/flat_map.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/trace_event/trace_event.h"

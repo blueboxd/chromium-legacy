@@ -127,7 +127,7 @@
             "type": "function",
             "name": "callback",
             "optional": true,
-            "description": "Called when the item has been created in the browser. If there were any problems creating the item, details will be available in chrome.runtime.lastError.",
+            "description": "Called when the item has been created in the browser. If there were any problems creating the item, details will be available in $(ref:runtime.lastError).",
             "parameters": []
           }
         ]

@@ -8,6 +8,8 @@
 #import <Foundation/Foundation.h>
 #include <memory>
 
+#include "ios/web/common/user_agent.h"
+
 @class CRWSessionCertificatePolicyCacheStorage;
 
 namespace web {
@@ -24,6 +26,7 @@ class SerializableUserData;
 @property(nonatomic, strong)
     CRWSessionCertificatePolicyCacheStorage* certPolicyCacheStorage;
 @property(nonatomic, readonly) web::SerializableUserData* userData;
+@property(nonatomic, assign) web::UserAgentType userAgentType;
 
 // Setter for |userData|.  The receiver takes ownership of |userData|.
 - (void)setSerializableUserData:

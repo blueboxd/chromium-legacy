@@ -1006,7 +1006,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
   if (!visibleItem)
     return web::UserAgentType::NONE;
 
-  return visibleItem->GetUserAgentType(self.webState->GetView());
+  return visibleItem->GetUserAgentType();
 }
 
 #pragma mark - Other private methods

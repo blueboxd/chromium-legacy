@@ -32,6 +32,7 @@
 #include <string>
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/strings/stringize_macros.h"
 #include "google_apis/google_api_keys_mac.h"
 

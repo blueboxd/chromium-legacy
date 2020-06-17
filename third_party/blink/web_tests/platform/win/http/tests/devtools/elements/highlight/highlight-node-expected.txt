@@ -82,16 +82,17 @@ inspectedElement{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "inspectedElement",
     "nodeWidth": "250",
     "nodeHeight": "250",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 inspectedElement with RGB format{
@@ -176,16 +177,17 @@ inspectedElement with RGB format{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "rgb",
   "elementInfo": {
     "tagName": "div",
     "idValue": "inspectedElement",
     "nodeWidth": "250",
     "nodeHeight": "250",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 inspectedElement with HSL format{
@@ -270,16 +272,17 @@ inspectedElement with HSL format{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hsl",
   "elementInfo": {
     "tagName": "div",
     "idValue": "inspectedElement",
     "nodeWidth": "250",
     "nodeHeight": "250",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 
@@ -365,12 +368,13 @@ First text node{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "nodeWidth": "Width within 3px from 28? true",
     "nodeHeight": "Height within 3px from 25? true",
     "tagName": "#text",
-    "showAccessibilityInfo": false
+    "showAccessibilityInfo": true
   }
 }
 
@@ -456,12 +460,13 @@ Second text node{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "nodeWidth": "Width within 3px from 30? true",
     "nodeHeight": "Height within 3px from 24? true",
     "tagName": "#text",
-    "showAccessibilityInfo": false
+    "showAccessibilityInfo": true
   }
 }
 

@@ -240,14 +240,14 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
     file_name_style = STYLE_EMPHASIZED;
 #endif
   auto file_name_label = std::make_unique<views::Label>(
-      ElidedFilename(), views::style::CONTEXT_LABEL, file_name_style);
+      ElidedFilename(), CONTEXT_DOWNLOAD_SHELF, file_name_style);
   file_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   file_name_label->GetViewAccessibility().OverrideIsIgnored(true);
   file_name_label_ = AddChildView(std::move(file_name_label));
 
   auto status_label = std::make_unique<views::Label>(
-      l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING));
-  status_label->SetFontList(status_font_list_);
+      l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING),
+      CONTEXT_DOWNLOAD_SHELF_STATUS);
   status_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   status_label->GetViewAccessibility().OverrideIsIgnored(true);
   status_label_ = AddChildView(std::move(status_label));
@@ -292,13 +292,6 @@ void DownloadItemView::StopDownloadProgress() {
   previous_progress_elapsed_ += base::TimeTicks::Now() - progress_start_time_;
   progress_start_time_ = base::TimeTicks();
   progress_timer_.Stop();
-}
-
-// static
-SkColor DownloadItemView::GetTextColorForThemeProvider(
-    const ui::ThemeProvider* theme) {
-  return theme ? theme->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT)
-               : gfx::kPlaceholderColor;
 }
 
 void DownloadItemView::OnExtractIconComplete(IconLoader::IconSize icon_size,
@@ -533,8 +526,7 @@ void DownloadItemView::Layout() {
     file_name_label_->SetBoundsRect(
         gfx::Rect(mirrored_x, file_name_y, kTextWidth, font_list_.GetHeight()));
 
-    int status_y =
-        file_name_y + font_list_.GetBaseline() + kVerticalTextPadding;
+    int status_y = file_name_y + font_list_.GetHeight();
     bool should_expand_for_status_text =
         (model_->GetDangerType() ==
          download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE);
@@ -557,14 +549,13 @@ void DownloadItemView::UpdateDropdownButton() {
   views::SetImageFromVectorIcon(
       dropdown_button_,
       dropdown_state_ == PUSHED ? kCaretDownIcon : kCaretUpIcon,
-      GetTextColor());
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
 }
 
 gfx::Size DownloadItemView::CalculatePreferredSize() const {
   int width = 0;
   // We set the height to the height of two rows or text plus margins.
-  int child_height = font_list_.GetBaseline() + kVerticalTextPadding +
-                     status_font_list_.GetHeight();
+  int child_height = font_list_.GetHeight() + status_font_list_.GetHeight();
 
   if (IsShowingWarningDialog() || IsShowingMixedContentDialog()) {
     // Width.
@@ -663,12 +654,6 @@ void DownloadItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetDescription(base::string16());
 }
 
-void DownloadItemView::AddedToWidget() {
-  // Only required because OnThemeChanged is not called when a View is added to
-  // a Widget.
-  UpdateDropdownButton();
-}
-
 void DownloadItemView::OnThemeChanged() {
   views::View::OnThemeChanged();
   UpdateColorsFromTheme();
@@ -691,17 +676,9 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
   }
 
   if (sender == dropdown_button_) {
-    // TODO(estade): this is copied from ToolbarActionView but should be shared
-    // one way or another.
-    ui::MenuSourceType type = ui::MENU_SOURCE_NONE;
-    if (event.IsMouseEvent())
-      type = ui::MENU_SOURCE_MOUSE;
-    else if (event.IsKeyEvent())
-      type = ui::MENU_SOURCE_KEYBOARD;
-    else if (event.IsGestureEvent())
-      type = ui::MENU_SOURCE_TOUCH;
     SetDropdownState(PUSHED);
-    ShowContextMenuImpl(dropdown_button_->GetBoundsInScreen(), type);
+    ShowContextMenuImpl(dropdown_button_->GetBoundsInScreen(),
+                        ui::GetMenuSourceTypeForEvent(event));
     return;
   }
 
@@ -791,9 +768,9 @@ void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
 }
 
 int DownloadItemView::GetYForFilenameText() const {
-  int text_height = font_list_.GetBaseline();
+  int text_height = font_list_.GetHeight();
   if (!status_label_->GetText().empty())
-    text_height += kVerticalTextPadding + status_font_list_.GetBaseline();
+    text_height += status_font_list_.GetHeight();
   return (height() - text_height) / 2;
 }
 
@@ -944,18 +921,16 @@ void DownloadItemView::UpdateColorsFromTheme() {
       std::make_unique<SeparatorBorder>(GetThemeProvider()->GetColor(
           ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR)));
 
-  // Use a slightly dimmed version of the base text color.
-  SkColor dimmed_text_color = SkColorSetA(GetTextColor(), 0xC7);
-  file_name_label_->SetEnabledColor(GetEnabled() ? GetTextColor()
-                                                 : dimmed_text_color);
+  file_name_label_->SetTextStyle(GetEnabled() ? views::style::STYLE_PRIMARY
+                                              : views::style::STYLE_DISABLED);
   if (model_->GetDangerType() ==
       download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE) {
-    status_label_->SetEnabledColor(SK_ColorGREEN);
+    status_label_->SetTextStyle(STYLE_GREEN);
   } else if (model_->GetDangerType() ==
              download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_OPENED_DANGEROUS) {
-    status_label_->SetEnabledColor(SK_ColorRED);
+    status_label_->SetTextStyle(STYLE_RED);
   } else {
-    status_label_->SetEnabledColor(dimmed_text_color);
+    status_label_->SetTextStyle(views::style::STYLE_PRIMARY);
   }
   SkColor background_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF);
@@ -993,21 +968,15 @@ void DownloadItemView::ShowContextMenuImpl(const gfx::Rect& rect,
 }
 
 void DownloadItemView::SetDropdownState(State new_state) {
-  // Avoid extra SchedulePaint()s if the state is going to be the same and
-  // |dropdown_button_| has already been initialized.
-  if (dropdown_state_ == new_state &&
-      !dropdown_button_->GetImage(views::Button::STATE_NORMAL).isNull())
-    return;
-
   if (new_state != dropdown_state_) {
     dropdown_button_->AnimateInkDrop(new_state == PUSHED
                                          ? views::InkDropState::ACTIVATED
                                          : views::InkDropState::DEACTIVATED,
                                      nullptr);
+    dropdown_state_ = new_state;
+    UpdateDropdownButton();
+    SchedulePaint();
   }
-  dropdown_state_ = new_state;
-  UpdateDropdownButton();
-  SchedulePaint();
 }
 
 void DownloadItemView::SetMode(Mode mode) {
@@ -1201,6 +1170,7 @@ void DownloadItemView::ShowWarningDialog() {
       model_->GetWarningText(font_list_, kTextWidth);
   auto dangerous_download_label = std::make_unique<views::StyledLabel>(
       dangerous_label, /*listener=*/nullptr);
+  dangerous_download_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
   dangerous_download_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   dangerous_download_label->SetAutoColorReadabilityEnabled(false);
   dangerous_download_label->set_can_process_events_within_subtree(false);
@@ -1309,6 +1279,7 @@ void DownloadItemView::ShowDeepScanningDialog() {
 
   auto deep_scanning_label = std::make_unique<views::StyledLabel>(
       deep_scanning_text, /*listener=*/nullptr);
+  deep_scanning_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
   deep_scanning_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   deep_scanning_label->SetAutoColorReadabilityEnabled(false);
   deep_scanning_label->set_can_process_events_within_subtree(false);
@@ -1605,10 +1576,6 @@ void DownloadItemView::ProgressTimerFired() {
   // when there's an update notified via OnDownloadUpdated().
   if (model_->PercentComplete() < 0)
     SchedulePaint();
-}
-
-SkColor DownloadItemView::GetTextColor() const {
-  return GetTextColorForThemeProvider(GetThemeProvider());
 }
 
 base::string16 DownloadItemView::GetStatusText() const {

@@ -279,7 +279,7 @@ class WPTManifest(object):
         wpt_exec_path = finder.path_from_blink_tools('blinkpy', 'third_party',
                                                      'wpt', 'wpt', 'wpt')
         cmd = [
-            'vpython', wpt_exec_path, 'manifest', '--no-download',
+            'python', wpt_exec_path, 'manifest', '--no-download',
             '--tests-root', dest_path
         ]
 

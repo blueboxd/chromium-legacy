@@ -5,6 +5,7 @@
 #include "ash/public/cpp/shelf_types.h"
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_split.h"
 
 namespace ash {

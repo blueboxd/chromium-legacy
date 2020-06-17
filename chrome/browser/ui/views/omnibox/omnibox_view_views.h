@@ -176,6 +176,9 @@ class OmniboxViewViews : public OmniboxView,
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, RevealOnHover);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest,
                            HideOnInteractionAndRevealOnHover);
+  FRIEND_TEST_ALL_PREFIXES(
+      OmniboxViewViewsTest,
+      HideOnInteractionAndRevealOnHoverWithAlwaysShowFullURLs);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest,
                            HideOnInteractionAfterFocusAndBlur);
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, RevealOnHoverAfterBlur);
@@ -374,7 +377,11 @@ class OmniboxViewViews : public OmniboxView,
   // shouldn't fade if the user is currently editing it) as well as properties
   // of the current text (e.g. extension URLs or non-URLs shouldn't have their
   // paths faded).
-  bool CanFadePath();
+  //
+  // This method does NOT take field trials into account or the "Always show
+  // full URLs" option. Calling code should check field trial state and
+  // model()->ShouldPreventElision() if applicable.
+  bool IsURLEligibleForFading();
 
   // When certain field trials are enabled, the URL's path is shown on page load
   // and faded out when the user interacts with the page. This method resets
@@ -387,6 +394,11 @@ class OmniboxViewViews : public OmniboxView,
   // when the path is eligible to be faded in again (e.g., on mouse exit after a
   // hover that faded the path in).
   void ResetPathFadeInAnimation();
+
+  // Called when the "Always show full URLs" preference is toggled. Updates the
+  // state to hide the path on user interaction and/or reveal the path on hover,
+  // depending on field trial configuration.
+  void OnShouldPreventElisionChanged();
 
   PathFadeAnimation* GetPathFadeInAnimationForTesting();
   PathFadeAnimation* GetPathFadeOutAfterHoverAnimationForTesting();

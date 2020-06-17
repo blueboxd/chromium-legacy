@@ -8,6 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #import "components/autofill/core/browser/keyboard_accessory_metrics_logger.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"

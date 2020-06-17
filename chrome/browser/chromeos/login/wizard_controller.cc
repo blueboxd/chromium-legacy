@@ -34,6 +34,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -1007,6 +1008,8 @@ void WizardController::OnEnrollmentDone() {
     AutoLaunchKioskApp(KioskAppType::CHROME_APP);
   } else if (WebKioskAppManager::Get()->GetAutoLaunchAccountId().is_valid()) {
     AutoLaunchKioskApp(KioskAppType::WEB_APP);
+  } else if (ArcKioskAppManager::Get()->GetAutoLaunchAccountId().is_valid()) {
+    AutoLaunchKioskApp(KioskAppType::ARC_APP);
   } else if (g_browser_process->platform_part()
                  ->browser_policy_connector_chromeos()
                  ->IsEnterpriseManaged()) {
@@ -1647,10 +1650,10 @@ void WizardController::AutoLaunchKioskApp(KioskAppType app_type) {
       break;
     }
     case KioskAppType::ARC_APP:
-      // TODO(crbug.com/1015383): Implement auto launch flow after enrollment
-      // for arc kiosk.
-      NOTREACHED();
-      return;
+      const AccountId account_id =
+          ArcKioskAppManager::Get()->GetAutoLaunchAccountId();
+      kiosk_app_id = KioskAppId::ForArcApp(account_id);
+      break;
   }
 
   // Wait for the |CrosSettings| to become either trusted or permanently

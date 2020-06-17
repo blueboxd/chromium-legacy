@@ -55,7 +55,6 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.components.autofill.AutofillManagerWrapper;
 import org.chromium.components.autofill.AutofillPopup;
 import org.chromium.components.autofill.AutofillProvider;
-import org.chromium.components.autofill.AutofillProviderImpl;
 import org.chromium.components.autofill.AutofillProviderUMA;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.DOMUtils;
@@ -759,7 +758,7 @@ public class AwAutofillTest {
     private int mSubmissionSource;
     private TestAutofillManagerWrapper mTestAutofillManagerWrapper;
     private AwAutofillSessionUMATestHelper mUMATestHelper;
-    private AutofillProviderImpl mAutofillProviderImpl;
+    private AutofillProvider mAutofillProvider;
 
     @Before
     public void setUp() throws Exception {
@@ -772,9 +771,9 @@ public class AwAutofillTest {
                     public AutofillProvider createAutofillProvider(
                             Context context, ViewGroup containerView) {
                         mTestAutofillManagerWrapper = new TestAutofillManagerWrapper(context);
-                        mAutofillProviderImpl = new AutofillProviderImpl(containerView,
+                        mAutofillProvider = new AutofillProvider(containerView,
                                 mTestAutofillManagerWrapper, context, "AwAutofillTest");
-                        return mAutofillProviderImpl;
+                        return mAutofillProvider;
                     }
                 });
         mAwContents = mTestContainerView.getAwContents();
@@ -784,7 +783,7 @@ public class AwAutofillTest {
     @After
     public void tearDown() {
         mWebServer.shutdown();
-        mAutofillProviderImpl = null;
+        mAutofillProvider = null;
     }
 
     @Test
@@ -1785,7 +1784,7 @@ public class AwAutofillTest {
         List<Integer> expectedValues = new ArrayList<>();
 
         // On Android version below P scroll triggers additional
-        // AUTOFILL_VIEW_ENTERED (@see AutofillProviderImpl#onTextFieldDidScroll).
+        // AUTOFILL_VIEW_ENTERED (@see AutofillProvider#onTextFieldDidScroll).
         if (VERSION.SDK_INT < Build.VERSION_CODES.P) {
             expectedValues.add(AUTOFILL_VIEW_ENTERED);
         }
@@ -1914,7 +1913,7 @@ public class AwAutofillTest {
         dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
         pollDatalistPopupShown();
         TouchCommon.singleClickView(
-                mAutofillProviderImpl.getDatalistPopupForTesting().getListView().getChildAt(1));
+                mAutofillProvider.getDatalistPopupForTesting().getListView().getChildAt(1));
         // Verify the selection accepted by renderer.
         pollJavascriptResult("document.getElementById('text2').value;", "\"A2\"");
     }
@@ -1931,7 +1930,7 @@ public class AwAutofillTest {
 
     private void pollDatalistPopupShown() {
         AwActivityTestRule.pollInstrumentationThread(() -> {
-            AutofillPopup popup = mAutofillProviderImpl.getDatalistPopupForTesting();
+            AutofillPopup popup = mAutofillProvider.getDatalistPopupForTesting();
             return popup != null && popup.getListView().getChildCount() > 0;
         });
     }

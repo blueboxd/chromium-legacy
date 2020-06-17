@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/containers/mru_cache.h"
+#include "base/logging.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/memory_pressure_listener.h"
 #include "base/optional.h"

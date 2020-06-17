@@ -851,7 +851,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (!visibleItem)
     return web::UserAgentType::NONE;
 
-  return visibleItem->GetUserAgentType(self.view);
+  return visibleItem->GetUserAgentType();
 }
 
 - (void)setVisible:(BOOL)visible {
@@ -4453,10 +4453,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 }
 
 #pragma mark - PreloadControllerDelegate methods
-
-- (BOOL)preloadShouldUseDesktopUserAgent {
-  return [self userAgentType] == web::UserAgentType::DESKTOP;
-}
 
 - (web::WebState*)webStateToReplace {
   return self.currentWebState;

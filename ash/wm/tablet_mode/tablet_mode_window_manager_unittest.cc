@@ -55,6 +55,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/ime_util_chromeos.h"
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_util.h"
 
@@ -1596,6 +1597,27 @@ TEST_P(TabletModeWindowManagerTest, DontMaximizeTransientChild) {
   EXPECT_NE(rect.size(), parent->bounds().size());
   EXPECT_FALSE(WindowState::Get(child.get())->IsMaximized());
   EXPECT_EQ(rect.size(), child->bounds().size());
+}
+
+TEST_P(TabletModeWindowManagerTest, AllowNormalWindowBoundsChangeByVK) {
+  UpdateDisplay("1200x800");
+  gfx::Rect rect(0, 0, 1200, 600);
+  std::unique_ptr<aura::Window> window(CreateFixedSizeNonMaximizableWindow(
+      aura::client::WINDOW_TYPE_NORMAL, rect));
+  ASSERT_TRUE(CreateTabletModeWindowManager());
+
+  WindowState* window_state = WindowState::Get(window.get());
+  EXPECT_FALSE(window_state->IsMaximized());
+  EXPECT_EQ(WindowStateType::kNormal, window_state->GetStateType());
+  gfx::Rect window_bounds = window->bounds();
+
+  // Simulate VK up.
+  wm::EnsureWindowNotInRect(window.get(), gfx::Rect(0, 600, 1200, 200));
+  EXPECT_NE(window->bounds(), window_bounds);
+
+  // Simulate VK dismissal.
+  wm::RestoreWindowBoundsOnClientFocusLost(window.get());
+  EXPECT_EQ(window->bounds(), window_bounds);
 }
 
 class TabletModeWindowManagerWithoutClamshellSplitViewTest

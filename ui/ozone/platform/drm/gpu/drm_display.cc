@@ -7,6 +7,7 @@
 #include <xf86drmMode.h>
 #include <memory>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/display/types/display_snapshot.h"

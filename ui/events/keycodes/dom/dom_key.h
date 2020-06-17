@@ -7,6 +7,9 @@
 
 #include <stdint.h>
 
+#include <ostream>
+
+#include "base/check.h"
 #include "base/logging.h"
 #include "base/optional.h"
 #include "build/build_config.h"

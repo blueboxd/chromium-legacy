@@ -20,6 +20,10 @@ CONTENT_EXPORT const gpu::GpuPreferences GetGpuPreferencesFromCommandLine();
 
 CONTENT_EXPORT void StopGpuProcess(base::OnceClosure callback);
 
+// Kills the GPU process with a normal termination status.
+// TODO(crbug.com/1095977): Combine with StopGpuProcess
+CONTENT_EXPORT void KillGpuProcess();
+
 CONTENT_EXPORT gpu::GpuChannelEstablishFactory* GetGpuChannelEstablishFactory();
 
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)

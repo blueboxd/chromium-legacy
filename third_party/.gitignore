@@ -233,6 +233,7 @@
 /webgl
 /webgl/src
 /webgpu-cts/src
+/webpagereplay/bin
 /webrtc
 /weston/src
 /widevine/cdm/chromeos

@@ -387,6 +387,27 @@ find the right owner for a test, feel free to TBR your CL to one of the other
 sheriffs on your rotation and kick it into the Blink triage queue (ie: mark the
 bug as Untriaged with component Blink).
 
+#### Skia Gold Outage
+
+This is a special case of a failed test. The following test suites rely on the
+Skia Gold image diffing service:
+
+* `*pixel_skia_gold_test`
+* `*maps_pixel_test`
+* `chrome_public_test_apk`
+* `chrome_public_test_vr_apk`
+* `pixel_browser_tests`
+
+In the unlikely event of a Gold outage, **all** of those suites will begin
+failing with errors related to Gold/`goldctl`. If this occurs, the best way to
+prevent failures from breaking bots is to uncomment the
+`--bypass-skia-gold-functionality` argument in the `skia_gold_test` mixin in
+[`//testing/buildbot/mixins.pyl`][mixins].
+
+This should only be used when you are sure that the failures are caused by an
+outage, as it will cause all pixel tests that use Skia Gold to no longer
+perform any actual pixel testing.
+
 ### Infra Breakage
 
 If a bot turns purple rather than red, that indicates an infra failure of some
@@ -420,3 +441,4 @@ it out.
 [slack #sheriffing]: https://chromium.slack.com/messages/CGJ5WKRUH/
 [slack]: https://chromium.slack.com
 [tree status page]: https://chromium-status.appspot.com/
+[mixins]: https://source.chromium.org/chromium/chromium/src/+/master:testing/buildbot/mixins.pyl

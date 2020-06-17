@@ -29,7 +29,9 @@ import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateInteractionS
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateState;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider.UpdateStatus;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
@@ -218,7 +220,7 @@ public class UpdateMenuItemHelper {
                     UpdateStatusProvider.getInstance().startIntentUpdate(
                             activity, UpdateInteractionSource.FROM_MENU, false /* newTask */);
                     recordItemClickedHistogram(ITEM_CLICKED_INTENT_LAUNCHED);
-                    PrefServiceBridge.getInstance().setBoolean(Pref.CLICKED_UPDATE_MENU_ITEM, true);
+                    getPrefService().setBoolean(Pref.CLICKED_UPDATE_MENU_ITEM, true);
                 } catch (ActivityNotFoundException e) {
                     Log.e(TAG, "Failed to launch Activity for: %s", mStatus.updateUrl);
                     recordItemClickedHistogram(ITEM_CLICKED_INTENT_FAILED);
@@ -247,7 +249,7 @@ public class UpdateMenuItemHelper {
         // If the update menu item is showing because it was forced on through about://flags
         // then mLatestVersion may be null.
         if (mStatus.latestVersion != null) {
-            PrefServiceBridge.getInstance().setString(
+            getPrefService().setString(
                     Pref.LATEST_VERSION_WHEN_CLICKED_UPDATE_MENU_ITEM, mStatus.latestVersion);
         }
 
@@ -292,7 +294,7 @@ public class UpdateMenuItemHelper {
                 // The badge is hidden if the update menu item has been clicked until there is an
                 // even newer version of Chrome available.
                 showBadge |= !TextUtils.equals(
-                        PrefServiceBridge.getInstance().getString(
+                        getPrefService().getString(
                                 Pref.LATEST_VERSION_WHEN_CLICKED_UPDATE_MENU_ITEM),
                         mStatus.latestUnsupportedVersion);
 
@@ -345,7 +347,7 @@ public class UpdateMenuItemHelper {
                 // The badge is hidden if the update menu item has been clicked until there is an
                 // even newer version of Chrome available.
                 showBadge |= !TextUtils.equals(
-                        PrefServiceBridge.getInstance().getString(
+                        getPrefService().getString(
                                 Pref.LATEST_VERSION_WHEN_CLICKED_UPDATE_MENU_ITEM),
                         mStatus.latestUnsupportedVersion);
 
@@ -412,13 +414,17 @@ public class UpdateMenuItemHelper {
     private void recordUpdateHistogram() {
         assert mStatus != null;
 
-        if (PrefServiceBridge.getInstance().getBoolean(Pref.CLICKED_UPDATE_MENU_ITEM)) {
+        if (getPrefService().getBoolean(Pref.CLICKED_UPDATE_MENU_ITEM)) {
             RecordHistogram.recordEnumeratedHistogram(
                     "GoogleUpdate.MenuItem.ActionTakenAfterItemClicked",
                     mStatus.updateState == UpdateState.UPDATE_AVAILABLE ? NOT_UPDATED : UPDATED,
                     UPDATED_BOUNDARY);
-            PrefServiceBridge.getInstance().setBoolean(Pref.CLICKED_UPDATE_MENU_ITEM, false);
+            getPrefService().setBoolean(Pref.CLICKED_UPDATE_MENU_ITEM, false);
         }
+    }
+
+    private static PrefService getPrefService() {
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 
     @VisibleForTesting

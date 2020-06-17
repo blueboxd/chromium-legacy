@@ -60,8 +60,8 @@ import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SiteSuggestion;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
@@ -75,7 +75,9 @@ import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependenciesRule;
 import org.chromium.chrome.test.util.browser.suggestions.mostvisited.FakeMostVisitedSites;
 import org.chromium.components.embedder_support.util.UrlConstants;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.components.signin.test.util.FakeAccountManagerFacade;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -410,7 +412,7 @@ public class FeedNewTabPageTest {
     public void testFeedDisabledByPolicy() throws Exception {
         openNewTabPage();
         final boolean pref = TestThreadUtils.runOnUiThreadBlocking(
-                () -> PrefServiceBridge.getInstance().getBoolean(Pref.ENABLE_SNIPPETS));
+                () -> getPrefService().getBoolean(Pref.ENABLE_SNIPPETS));
 
         // Policy is disabled. Verify the NTP root view contains only the Stream view as child.
         ViewGroup rootView = (ViewGroup) mNtp.getView();
@@ -424,7 +426,7 @@ public class FeedNewTabPageTest {
         // Simulate that policy is enabled. Verify the NTP root view contains only the view for
         // policy as child.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> PrefServiceBridge.getInstance().setBoolean(Pref.ENABLE_SNIPPETS, false));
+                () -> getPrefService().setBoolean(Pref.ENABLE_SNIPPETS, false));
         Assert.assertNotNull(mNtp.getCoordinatorForTesting().getScrollViewForPolicy());
         Assert.assertNull(mNtp.getCoordinatorForTesting().getStreamForTesting());
         Assert.assertEquals(1, rootView.getChildCount());
@@ -446,7 +448,7 @@ public class FeedNewTabPageTest {
         // Simulate that policy is disabled. Verify the NTP root view is the view for policy. We
         // don't re-enable the Feed until the next restart.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> PrefServiceBridge.getInstance().setBoolean(Pref.ENABLE_SNIPPETS, true));
+                () -> getPrefService().setBoolean(Pref.ENABLE_SNIPPETS, true));
         Assert.assertNotNull(ntp2.getCoordinatorForTesting().getScrollViewForPolicy());
         Assert.assertNull(ntp2.getCoordinatorForTesting().getStream());
         Assert.assertEquals(1, rootView2.getChildCount());
@@ -463,7 +465,7 @@ public class FeedNewTabPageTest {
 
         // Reset state.
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> PrefServiceBridge.getInstance().setBoolean(Pref.ENABLE_SNIPPETS, pref));
+                () -> getPrefService().setBoolean(Pref.ENABLE_SNIPPETS, pref));
     }
 
     /**
@@ -483,6 +485,10 @@ public class FeedNewTabPageTest {
 
     private boolean getPreferenceForArticleSectionHeader() throws Exception {
         return TestThreadUtils.runOnUiThreadBlocking(
-                () -> PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE));
+                () -> getPrefService().getBoolean(Pref.ARTICLES_LIST_VISIBLE));
+    }
+
+    private PrefService getPrefService() {
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 }

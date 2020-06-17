@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "remoting/proto/control.pb.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"

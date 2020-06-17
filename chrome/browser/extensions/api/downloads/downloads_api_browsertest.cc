@@ -67,12 +67,6 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/url_request/url_request_slow_download_job.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_job.h"
-#include "net/url_request/url_request_job_factory.h"
-#include "net/url_request/url_request_job_factory_impl.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
@@ -4211,8 +4205,11 @@ IN_PROC_BROWSER_TEST_F(
     // resumed. http://crbug.com/225901
     ui_test_utils::NavigateToURLWithDisposition(
         current_browser(),
-        GURL(net::URLRequestSlowDownloadJob::kUnknownSizeUrl),
-        WindowOpenDisposition::CURRENT_TAB, ui_test_utils::BROWSER_TEST_NONE);
+        // This code used to use a mock class that no longer works, due to the
+        // NetworkService shipping.
+        // TODO(https://crbug.com/700382): Fix or delete this test.
+        GURL(), WindowOpenDisposition::CURRENT_TAB,
+        ui_test_utils::BROWSER_TEST_NONE);
     observer->WaitForFinished();
     EXPECT_EQ(1u, observer->NumDownloadsSeenInState(DownloadItem::IN_PROGRESS));
     DownloadManager::DownloadVector items;
@@ -4249,8 +4246,10 @@ IN_PROC_BROWSER_TEST_F(
   ClearEvents();
   ui_test_utils::NavigateToURLWithDisposition(
       current_browser(),
-      GURL(net::URLRequestSlowDownloadJob::kErrorDownloadUrl),
-      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+      // This code used to use a mock class that no longer works, due to the
+      // NetworkService shipping.
+      // TODO(https://crbug.com/700382): Fix or delete this test.
+      GURL(), WindowOpenDisposition::NEW_BACKGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // Errors caught before filename determination are delayed until after

@@ -568,10 +568,6 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   web::NavigationManager::WebLoadParams loadParams(self.prerenderedURL);
   loadParams.referrer = request->referrer();
   loadParams.transition_type = request->transition();
-  if ([self.delegate preloadShouldUseDesktopUserAgent]) {
-    loadParams.user_agent_override_option =
-        web::NavigationManager::UserAgentOverrideOption::DESKTOP;
-  }
   _webState->SetKeepRenderProcessAlive(true);
   _webState->GetNavigationManager()->LoadURLWithParams(loadParams);
 

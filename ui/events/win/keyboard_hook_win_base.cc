@@ -4,6 +4,8 @@
 
 #include "ui/events/win/keyboard_hook_win_base.h"
 
+#include "base/logging.h"
+
 namespace ui {
 
 KeyboardHookWinBase::KeyboardHookWinBase(

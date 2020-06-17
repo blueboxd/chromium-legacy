@@ -70,7 +70,8 @@ public class ExternalNavigationHandler {
     private static final String TAG = "UrlHandler";
 
     // Enables debug logging on a local build.
-    private static final boolean DEBUG = false;
+    // TODO(jochen): switch this back to false.
+    private static final boolean DEBUG = true;
 
     private static final String WTAI_URL_PREFIX = "wtai://wp/";
     private static final String WTAI_MC_URL_PREFIX = "wtai://wp/mc;";

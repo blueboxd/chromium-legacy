@@ -16,6 +16,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/quota/quota_client_type.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 using blink::mojom::StorageType;
@@ -70,6 +71,7 @@ void AppCacheQuotaClient::GetOriginUsage(const url::Origin& origin,
                                          StorageType type,
                                          GetUsageCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(type, blink::mojom::StorageType::kTemporary);
   DCHECK(!callback.is_null());
 
   if (service_is_destroyed_) {
@@ -81,11 +83,6 @@ void AppCacheQuotaClient::GetOriginUsage(const url::Origin& origin,
     pending_batch_requests_.push_back(base::BindOnce(
         &AppCacheQuotaClient::GetOriginUsage, base::RetainedRef(this), origin,
         type, std::move(callback)));
-    return;
-  }
-
-  if (type != StorageType::kTemporary) {
-    std::move(callback).Run(0);
     return;
   }
 
@@ -112,25 +109,32 @@ void AppCacheQuotaClient::GetOriginUsage(const url::Origin& origin,
 void AppCacheQuotaClient::GetOriginsForType(StorageType type,
                                             GetOriginsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  GetOriginsHelper(type, std::string(), std::move(callback));
+  DCHECK_EQ(type, blink::mojom::StorageType::kTemporary);
+  DCHECK(!callback.is_null());
+
+  GetOriginsHelper(std::string(), std::move(callback));
 }
 
 void AppCacheQuotaClient::GetOriginsForHost(StorageType type,
                                             const std::string& host,
                                             GetOriginsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(type, blink::mojom::StorageType::kTemporary);
   DCHECK(!callback.is_null());
+
   if (host.empty()) {
     std::move(callback).Run(std::set<url::Origin>());
     return;
   }
-  GetOriginsHelper(type, host, std::move(callback));
+  GetOriginsHelper(host, std::move(callback));
 }
 
 void AppCacheQuotaClient::DeleteOriginData(const url::Origin& origin,
                                            StorageType type,
                                            DeletionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(type, blink::mojom::StorageType::kTemporary);
+  DCHECK(!callback.is_null());
 
   if (service_is_destroyed_) {
     std::move(callback).Run(blink::mojom::QuotaStatusCode::kErrorAbort);
@@ -160,6 +164,10 @@ void AppCacheQuotaClient::DeleteOriginData(const url::Origin& origin,
 
 void AppCacheQuotaClient::PerformStorageCleanup(blink::mojom::StorageType type,
                                                 base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(type, blink::mojom::StorageType::kTemporary);
+  DCHECK(!callback.is_null());
+
   std::move(callback).Run();
 }
 
@@ -174,8 +182,7 @@ void AppCacheQuotaClient::DidDeleteAppCachesForOrigin(int rv) {
   RunFront(&pending_serial_requests_);
 }
 
-void AppCacheQuotaClient::GetOriginsHelper(StorageType type,
-                                           const std::string& opt_host,
+void AppCacheQuotaClient::GetOriginsHelper(const std::string& opt_host,
                                            GetOriginsCallback callback) {
   DCHECK(!callback.is_null());
 
@@ -185,14 +192,9 @@ void AppCacheQuotaClient::GetOriginsHelper(StorageType type,
   }
 
   if (!appcache_is_ready_) {
-    pending_batch_requests_.push_back(base::BindOnce(
-        &AppCacheQuotaClient::GetOriginsHelper, base::RetainedRef(this), type,
-        opt_host, std::move(callback)));
-    return;
-  }
-
-  if (type != StorageType::kTemporary) {
-    std::move(callback).Run(std::set<url::Origin>());
+    pending_batch_requests_.push_back(
+        base::BindOnce(&AppCacheQuotaClient::GetOriginsHelper,
+                       base::RetainedRef(this), opt_host, std::move(callback)));
     return;
   }
 

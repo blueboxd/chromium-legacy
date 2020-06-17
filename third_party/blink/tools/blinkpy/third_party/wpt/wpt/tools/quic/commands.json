@@ -1,10 +1,10 @@
 {
-  "serve-quic-transport": {
+  "servequic": {
     "path": "serve.py",
     "script": "run",
     "parser": "get_parser",
     "py3only": true,
-    "help": "Start the QUIC server for WebTransport",
+    "help": "Start the QUIC server",
     "virtualenv": true,
     "requirements": [
       "requirements.txt"

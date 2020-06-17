@@ -57,7 +57,7 @@ TEST_F(NavigationItemTest, Description) {
   EXPECT_TRUE([description containsString:@"originalurl:http://init.test/"]);
   EXPECT_TRUE([description containsString:@"title:Title"]);
   EXPECT_TRUE([description containsString:@"transition:2"]);
-  EXPECT_TRUE([description containsString:@"userAgent:MOBILE"]);
+  EXPECT_TRUE([description containsString:@"userAgent:NONE"]);
   EXPECT_TRUE([description containsString:@"is_create_from_push_state: false"]);
   EXPECT_TRUE([description containsString:@"has_state_been_replaced: false"]);
   EXPECT_TRUE(
@@ -186,29 +186,6 @@ TEST_F(NavigationItemTest, GetTitleForDisplay) {
             base::UTF16ToUTF8(item_->GetTitleForDisplay()));
 }
 
-// Tests that SetURL correctly updates user agent type.
-TEST_F(NavigationItemTest, UpdateUserAgentType) {
-  ASSERT_EQ(UserAgentType::MOBILE, item_->GetUserAgentType(nil));
-
-  // about:blank resets User Agent to NONE.
-  GURL no_user_agent_url(url::kAboutBlankURL);
-  ASSERT_FALSE(wk_navigation_util::URLNeedsUserAgentType(no_user_agent_url));
-  item_->SetURL(no_user_agent_url);
-  EXPECT_EQ(UserAgentType::NONE, item_->GetUserAgentType(nil));
-
-  // Regular HTTP URL resets User Agent to MOBILE.
-  GURL user_agent_url(kItemURLString);
-  ASSERT_TRUE(wk_navigation_util::URLNeedsUserAgentType(user_agent_url));
-  item_->SetURL(user_agent_url);
-  EXPECT_EQ(UserAgentType::MOBILE, item_->GetUserAgentType(nil));
-
-  // Regular HTTP URL does not reset DESKTOP User Agent to MOBILE.
-  item_->SetUserAgentType(UserAgentType::DESKTOP);
-  item_->SetURL(user_agent_url);
-  EXPECT_EQ(UserAgentType::DESKTOP, item_->GetUserAgentType(nil));
-  EXPECT_EQ(UserAgentType::DESKTOP, item_->GetUserAgentForInheritance());
-}
-
 // Tests that RestoreStateFromItem correctly restore the state.
 TEST_F(NavigationItemTest, RestoreState) {
   NavigationItemImpl other_item;
@@ -224,8 +201,7 @@ TEST_F(NavigationItemTest, RestoreState) {
 
   // With a different URL, only the UserAgent should be restored.
   item_->RestoreStateFromItem(&other_item);
-  EXPECT_EQ(other_item.GetUserAgentForInheritance(),
-            item_->GetUserAgentForInheritance());
+  EXPECT_EQ(other_item.GetUserAgentType(), item_->GetUserAgentType());
   EXPECT_NE(other_item.GetPageDisplayState(), item_->GetPageDisplayState());
   EXPECT_NE(other_item.GetVirtualURL(), item_->GetVirtualURL());
 
@@ -237,8 +213,7 @@ TEST_F(NavigationItemTest, RestoreState) {
 
   // Same URL, everything is restored.
   item_->RestoreStateFromItem(&other_item2);
-  EXPECT_EQ(other_item2.GetUserAgentForInheritance(),
-            item_->GetUserAgentForInheritance());
+  EXPECT_EQ(other_item2.GetUserAgentType(), item_->GetUserAgentType());
   EXPECT_EQ(other_item2.GetPageDisplayState(), item_->GetPageDisplayState());
   EXPECT_EQ(other_item2.GetVirtualURL(), item_->GetVirtualURL());
 }

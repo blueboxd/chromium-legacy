@@ -22,12 +22,24 @@ class WebContents;
 }
 
 struct AccountInfo;
+class DiceSignedInProfileCreator;
+class DiceInterceptedSessionStartupHelper;
 class Profile;
 class ProfileAttributesStorage;
 
 // Called after web signed in, after a successful token exchange through Dice.
 // The DiceWebSigninInterceptor may offer the user to create a new profile or
 // switch to another existing profile.
+//
+// Implementation notes: here is how an entire interception flow work for the
+// enterprise or multi-user case:
+// * MaybeInterceptSignin() is called when the new signin happens.
+// * Wait until the account info is downloaded.
+// * Interception UI is shown by the delegate.
+// * If the user approved, a new profile is created and the token is moved from
+//   this profile to the new profile, using DiceSignedInProfileCreator.
+// * At this point, the flow ends in this profile, and continues in the new
+//   profile using DiceInterceptedSessionStartupHelper.
 class DiceWebSigninInterceptor : public KeyedService,
                                  public content::WebContentsObserver,
                                  public signin::IdentityManager::Observer {
@@ -72,6 +84,16 @@ class DiceWebSigninInterceptor : public KeyedService,
                                        bool is_new_account,
                                        bool is_sync_signin);
 
+  // Called after the new profile was created during a signin interception.
+  // The token has been moved to the new profile, but the account is not yet in
+  // the cookies.
+  // |intercepted_contents| may be null if the tab was already closed.
+  // The intercepted web contents belong to the source profile (which is not the
+  // profile attached to this service).
+  void CreateBrowserAfterSigninInterception(
+      CoreAccountId account_id,
+      content::WebContents* intercepted_contents);
+
   // KeyedService:
   void Shutdown() override;
 
@@ -111,9 +133,18 @@ class DiceWebSigninInterceptor : public KeyedService,
   // profile.
   void OnProfileSwitchChoice(bool switch_profile);
 
+  // Called when the new profile is created.
+  void OnNewSignedInProfileCreated(Profile* new_profile);
+
+  // Deletes session_startup_helper_
+  void DeleteSessionStartupHelper();
+
   Profile* const profile_;
   signin::IdentityManager* const identity_manager_;
   std::unique_ptr<Delegate> delegate_;
+
+  // Used in the profile that was created after the interception succeeded.
+  std::unique_ptr<DiceInterceptedSessionStartupHelper> session_startup_helper_;
 
   // Members below are related to the interception in progress.
   bool is_interception_in_progress_ = false;
@@ -123,6 +154,7 @@ class DiceWebSigninInterceptor : public KeyedService,
   // Timeout for the fetch of the extended account info. The signin interception
   // is cancelled if the account info cannot be fetched quickly.
   base::CancelableOnceCallback<void()> on_account_info_update_timeout_;
+  std::unique_ptr<DiceSignedInProfileCreator> dice_signed_in_profile_creator_;
 };
 
 #endif  // CHROME_BROWSER_SIGNIN_DICE_WEB_SIGNIN_INTERCEPTOR_H_

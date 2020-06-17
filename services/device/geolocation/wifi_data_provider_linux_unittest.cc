@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"

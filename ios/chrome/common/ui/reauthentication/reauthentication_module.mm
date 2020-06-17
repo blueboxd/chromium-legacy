@@ -5,7 +5,7 @@
 
 #import <LocalAuthentication/LocalAuthentication.h>
 
-#import "base/logging.h"
+#include "base/check.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

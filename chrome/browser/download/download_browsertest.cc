@@ -4733,7 +4733,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, PerWindowShelf) {
   EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
 
   // Hide the download shelf.
-  browser()->window()->GetDownloadShelf()->Close(DownloadShelf::AUTOMATIC);
+  browser()->window()->GetDownloadShelf()->Close();
   EXPECT_FALSE(browser()->window()->IsDownloadShelfVisible());
 
   // Go to the first tab.

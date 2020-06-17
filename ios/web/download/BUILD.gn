@@ -33,6 +33,7 @@ source_set("download_cookies") {
   visibility = [ ":*" ]
 
   deps = [
+    "//base",
     "//ios/net",
     "//net",
   ]

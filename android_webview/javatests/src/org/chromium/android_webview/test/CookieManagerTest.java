@@ -1269,8 +1269,9 @@ public class CookieManagerTest {
     private String makeCookieStoreSetFragment(String name, String value, String finallyAction) {
         return "try {"
                 + "  await window.cookieStore.set("
-                + "      " + name + ", " + value + ", "
-                + "      { expires: Date.now() + 3600*1000,"
+                + "      { name: " + name + ","
+                + "        value: " + value + ","
+                + "        expires: Date.now() + 3600*1000,"
                 + "        sameSite: 'none' });"
                 + "} finally {"
                 + "  " + finallyAction + "}\n";

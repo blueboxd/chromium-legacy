@@ -13,6 +13,7 @@ include_rules = [
   "+ui",
 
   # For tests.
+  "+components/crash/core/common/objc_zombie.h",
   "+ios/testing",
   "+ios/third_party/earl_grey/src",
   "+ios/third_party/earl_grey2/src/CommonLib",

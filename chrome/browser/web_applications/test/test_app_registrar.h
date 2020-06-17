@@ -57,6 +57,7 @@ class TestAppRegistrar : public AppRegistrar {
   DisplayMode GetAppDisplayMode(const AppId& app_id) const override;
   DisplayMode GetAppUserDisplayMode(const AppId& app_id) const override;
   base::Time GetAppLastLaunchTime(const web_app::AppId& app_id) const override;
+  base::Time GetAppInstallTime(const web_app::AppId& app_id) const override;
   std::vector<WebApplicationIconInfo> GetAppIconInfos(
       const AppId& app_id) const override;
   std::vector<SquareSizePx> GetAppDownloadedIconSizes(

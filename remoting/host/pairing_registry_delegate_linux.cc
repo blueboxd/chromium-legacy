@@ -14,6 +14,7 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "remoting/host/branding.h"

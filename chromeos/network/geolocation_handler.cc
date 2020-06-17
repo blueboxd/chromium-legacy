@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"

@@ -164,6 +164,8 @@ apiBridge.registerCustomHook(function(api) {
 
     if (typeof(expected) !== typeof(actual))
       return false;
+    if (Array.isArray(expected) !== Array.isArray(actual))
+      return false;
 
     if ((actual instanceof ArrayBuffer) && (expected instanceof ArrayBuffer)) {
       if (actual.byteLength != expected.byteLength)

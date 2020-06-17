@@ -255,6 +255,11 @@ const char kEnableSyncUSSNigoriName[] = "Enable USS for sync encryption keys";
 const char kEnableSyncUSSNigoriDescription[] =
     "Enables the new, experimental implementation of sync encryption keys";
 
+const char kExpandedTabStripName[] = "Enable expanded tabstrip";
+const char kExpandedTabStripDescription[] =
+    "Enables the new expanded tabstrip. Activated by swiping down the tabstrip"
+    " or the toolbar";
+
 const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =
     "When enabled, the startup sign-in promo is always displayed when starting "
@@ -374,10 +379,6 @@ const char kImprovedCookieControlsDescription[] =
 const char kPasswordCheckName[] = "Bulk Password Check";
 const char kPasswordCheckDescription[] =
     "Enables the Bulk Password Check feature for signed-in users.";
-
-const char kPageInfoRefactoringName[] = "New design of the page info";
-const char kPageInfoRefactoringDescription[] =
-    "Uses the new design for the page security info.";
 
 #if defined(__IPHONE_13_4)
 const char kPointerSupportName[] = "Enables pointer support on tablets";

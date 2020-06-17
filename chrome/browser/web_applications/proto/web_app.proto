@@ -100,4 +100,8 @@ message WebAppProto {
   // Last time the app is launched.
   // ms since the Unix epoch. See sync/base/time.h.
   optional int64 last_launch_time = 15;
+
+  // Time the app is installed.
+  // ms since the Unix epoch. See sync/base/time.h.
+  optional int64 install_time = 16;
 }

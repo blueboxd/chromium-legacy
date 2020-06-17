@@ -4,6 +4,8 @@
 
 #include "chromeos/components/multidevice/remote_device_ref.h"
 
+#include <sstream>
+
 #include "base/base64.h"
 #include "base/stl_util.h"
 

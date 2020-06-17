@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/process/memory.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "cc/paint/paint_cache.h"

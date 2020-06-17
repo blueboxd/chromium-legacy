@@ -5,6 +5,7 @@
 #include "cc/paint/paint_image.h"
 
 #include <memory>
+#include <sstream>
 
 #include "base/atomic_sequence_num.h"
 #include "base/hash/hash.h"

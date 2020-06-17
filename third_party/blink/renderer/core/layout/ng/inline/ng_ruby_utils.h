@@ -9,8 +9,26 @@
 
 namespace blink {
 
+class ComputedStyle;
 class NGLineInfo;
+class NGLogicalLineItems;
+class NGPhysicalBoxFragment;
 struct NGInlineItemResult;
+struct NGLineHeightMetrics;
+
+// Returns the logical bottom offset of the last line text, relative to
+// |container| origin. This is used to decide ruby annotation box position.
+//
+// See NGBlockLayoutAlgorithm::LayoutRubyText().
+LayoutUnit LastLineTextLogicalBottom(const NGPhysicalBoxFragment& container,
+                                     LayoutUnit default_value);
+
+// Returns the logical top offset of the first line text, relative to
+// |container| origin. This is used to decide ruby annotation box position.
+//
+// See NGBlockLayoutAlgorithm::LayoutRubyText().
+LayoutUnit FirstLineTextLogicalTop(const NGPhysicalBoxFragment& container,
+                                   LayoutUnit default_value);
 
 struct NGAnnotationOverhang {
   LayoutUnit start;
@@ -36,6 +54,21 @@ bool CanApplyStartOverhang(const NGLineInfo& line_info,
 // This function may update a NGInlineItemResult representing RubyRun
 // in |line_info|
 LayoutUnit CommitPendingEndOverhang(NGLineInfo* line_info);
+
+// Compute over/under annotation overflow/space for the specified line.
+//
+// Return value:
+//   .ascent > 0: The amount of annotation overflow at the line-top side
+//   .ascent < 0: The amount of annotation space which the next line at the
+//                line-top side can consume.
+//   .descent > 0: The amount of annotation overflow at the line-bottom side.
+//   .descent < 0: The amount of annotation space which the next line at the
+//                 line-bottom side can consume.
+NGLineHeightMetrics ComputeAnnotationOverflow(
+    const NGLogicalLineItems& logical_line,
+    const NGLineHeightMetrics& line_box_metrics,
+    LayoutUnit line_block_start,
+    const ComputedStyle& line_style);
 
 }  // namespace blink
 

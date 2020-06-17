@@ -257,8 +257,8 @@ TEST_P(FormFetcherImplTest, Empty) {
   Fetch();
   form_fetcher_->AddConsumer(&consumer_);
   EXPECT_CALL(consumer_, OnFetchCompleted);
-  store_consumer()->OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<PasswordForm>>());
+  store_consumer()->OnGetPasswordStoreResultsFrom(
+      mock_store_, std::vector<std::unique_ptr<PasswordForm>>());
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
@@ -273,7 +273,8 @@ TEST_P(FormFetcherImplTest, NonFederated) {
   std::vector<std::unique_ptr<PasswordForm>> results;
   results.push_back(std::make_unique<PasswordForm>(non_federated));
   EXPECT_CALL(consumer_, OnFetchCompleted);
-  store_consumer()->OnGetPasswordStoreResults(std::move(results));
+  store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
+                                                  std::move(results));
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
               UnorderedElementsAre(Pointee(non_federated)));
@@ -291,7 +292,8 @@ TEST_P(FormFetcherImplTest, Federated) {
   results.push_back(std::make_unique<PasswordForm>(federated));
   results.push_back(std::make_unique<PasswordForm>(android_federated));
   EXPECT_CALL(consumer_, OnFetchCompleted);
-  store_consumer()->OnGetPasswordStoreResults(std::move(results));
+  store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
+                                                  std::move(results));
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
   EXPECT_THAT(
@@ -312,7 +314,8 @@ TEST_P(FormFetcherImplTest, Blacklited) {
   results.push_back(std::make_unique<PasswordForm>(blacklisted));
   results.push_back(std::make_unique<PasswordForm>(blacklisted_psl));
   EXPECT_CALL(consumer_, OnFetchCompleted);
-  store_consumer()->OnGetPasswordStoreResults(std::move(results));
+  store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
+                                                  std::move(results));
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
@@ -346,7 +349,8 @@ TEST_P(FormFetcherImplTest, Mixed) {
   results.push_back(std::make_unique<PasswordForm>(non_federated3));
   results.push_back(std::make_unique<PasswordForm>(blacklisted));
   EXPECT_CALL(consumer_, OnFetchCompleted);
-  store_consumer()->OnGetPasswordStoreResults(std::move(results));
+  store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
+                                                  std::move(results));
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(
       form_fetcher_->GetNonFederatedMatches(),
@@ -377,7 +381,8 @@ TEST_P(FormFetcherImplTest, Filtered) {
   results.push_back(std::make_unique<PasswordForm>(non_federated1));
   results.push_back(std::make_unique<PasswordForm>(non_federated2));
   EXPECT_CALL(consumer_, OnFetchCompleted);
-  store_consumer()->OnGetPasswordStoreResults(std::move(results));
+  store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
+                                                  std::move(results));
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   // Expect that nothing got filtered out, since CredentialsFilter no longer
   // filters things out:
@@ -432,7 +437,8 @@ TEST_P(FormFetcherImplTest, Update_Reentrance) {
   // Delivering the first results will trigger the new GetLogins call, because
   // of the Fetch() above.
   EXPECT_CALL(*mock_store_, GetLogins(form_digest_, form_fetcher_.get()));
-  store_consumer()->OnGetPasswordStoreResults(std::move(old_results));
+  store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
+                                                  std::move(old_results));
 
   // Second response from the store should not be ignored.
   PasswordForm form_b = CreateNonFederated();
@@ -445,7 +451,8 @@ TEST_P(FormFetcherImplTest, Update_Reentrance) {
   std::vector<std::unique_ptr<PasswordForm>> results;
   results.push_back(std::make_unique<PasswordForm>(form_b));
   results.push_back(std::make_unique<PasswordForm>(form_c));
-  store_consumer()->OnGetPasswordStoreResults(std::move(results));
+  store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
+                                                  std::move(results));
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
               UnorderedElementsAre(Pointee(form_b), Pointee(form_c)));
 }
@@ -519,14 +526,16 @@ TEST_P(FormFetcherImplTest, DoNotTryToMigrateHTTPPasswordsOnHTTPSites) {
   EXPECT_CALL(*mock_store_, GetLogins(_, _)).Times(0);
   EXPECT_CALL(*mock_store_, AddLogin(_)).Times(0);
   EXPECT_CALL(consumer_, OnFetchCompleted);
-  store_consumer()->OnGetPasswordStoreResults(MakeResults(empty_forms));
+  store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
+                                                  MakeResults(empty_forms));
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
   EXPECT_FALSE(form_fetcher_->IsBlacklisted());
 
   Fetch();
   EXPECT_CALL(consumer_, OnFetchCompleted);
-  store_consumer()->OnGetPasswordStoreResults(MakeResults({http_form}));
+  store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
+                                                  MakeResults({http_form}));
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
               UnorderedElementsAre(Pointee(http_form)));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
@@ -534,8 +543,8 @@ TEST_P(FormFetcherImplTest, DoNotTryToMigrateHTTPPasswordsOnHTTPSites) {
 
   Fetch();
   EXPECT_CALL(consumer_, OnFetchCompleted);
-  store_consumer()->OnGetPasswordStoreResults(
-      MakeResults({http_form, federated_form}));
+  store_consumer()->OnGetPasswordStoreResultsFrom(
+      mock_store_, MakeResults({http_form, federated_form}));
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
               UnorderedElementsAre(Pointee(http_form)));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(),
@@ -582,14 +591,15 @@ TEST_P(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
   base::WeakPtr<PasswordStoreConsumer> migrator_ptr;
   EXPECT_CALL(*mock_store_, GetLogins(http_form_digest, _))
       .WillOnce(WithArg<1>(GetAndAssignWeakPtr(&migrator_ptr)));
-  store_consumer()->OnGetPasswordStoreResults(MakeResults(empty_forms));
+  store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
+                                                  MakeResults(empty_forms));
   ASSERT_TRUE(migrator_ptr);
 
   // Now perform the actual migration.
   EXPECT_CALL(*mock_store_, AddLogin(https_form));
   EXPECT_CALL(consumer_, OnFetchCompleted);
   static_cast<HttpPasswordStoreMigrator*>(migrator_ptr.get())
-      ->OnGetPasswordStoreResults(MakeResults({http_form}));
+      ->OnGetPasswordStoreResultsFrom(mock_store_, MakeResults({http_form}));
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
               UnorderedElementsAre(Pointee(https_form)));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
@@ -600,7 +610,8 @@ TEST_P(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
   EXPECT_CALL(*mock_store_, GetLogins(_, _)).Times(0);
   EXPECT_CALL(*mock_store_, AddLogin(_)).Times(0);
   EXPECT_CALL(consumer_, OnFetchCompleted);
-  store_consumer()->OnGetPasswordStoreResults(MakeResults({https_form}));
+  store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
+                                                  MakeResults({https_form}));
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
               UnorderedElementsAre(Pointee(https_form)));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
@@ -609,8 +620,8 @@ TEST_P(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
   const PasswordForm federated_form = CreateFederated();
   Fetch();
   EXPECT_CALL(consumer_, OnFetchCompleted);
-  store_consumer()->OnGetPasswordStoreResults(
-      MakeResults({https_form, federated_form}));
+  store_consumer()->OnGetPasswordStoreResultsFrom(
+      mock_store_, MakeResults({https_form, federated_form}));
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
               UnorderedElementsAre(Pointee(https_form)));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(),
@@ -658,7 +669,8 @@ TEST_P(FormFetcherImplTest, StateIsWaitingDuringMigration) {
   base::WeakPtr<PasswordStoreConsumer> migrator_ptr;
   EXPECT_CALL(*mock_store_, GetLogins(http_form_digest, _))
       .WillOnce(WithArg<1>(GetAndAssignWeakPtr(&migrator_ptr)));
-  store_consumer()->OnGetPasswordStoreResults(MakeResults(empty_forms));
+  store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
+                                                  MakeResults(empty_forms));
   ASSERT_TRUE(migrator_ptr);
   // While the initial results from PasswordStore arrived to the FormFetcher, it
   // should be still waiting for the migrator.
@@ -667,7 +679,7 @@ TEST_P(FormFetcherImplTest, StateIsWaitingDuringMigration) {
   // Now perform the actual migration.
   EXPECT_CALL(*mock_store_, AddLogin(https_form));
   static_cast<HttpPasswordStoreMigrator*>(migrator_ptr.get())
-      ->OnGetPasswordStoreResults(MakeResults({http_form}));
+      ->OnGetPasswordStoreResultsFrom(mock_store_, MakeResults({http_form}));
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
 }
 
@@ -675,8 +687,8 @@ TEST_P(FormFetcherImplTest, StateIsWaitingDuringMigration) {
 // instance with empty results.
 TEST_P(FormFetcherImplTest, Clone_EmptyResults) {
   Fetch();
-  store_consumer()->OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<PasswordForm>>());
+  store_consumer()->OnGetPasswordStoreResultsFrom(
+      mock_store_, std::vector<std::unique_ptr<PasswordForm>>());
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(mock_store_.get()));
 
   // Clone() should not cause re-fetching from PasswordStore.
@@ -703,7 +715,8 @@ TEST_P(FormFetcherImplTest, Clone_NonEmptyResults) {
   results.push_back(std::make_unique<PasswordForm>(federated));
   results.push_back(std::make_unique<PasswordForm>(android_federated));
 
-  store_consumer()->OnGetPasswordStoreResults(std::move(results));
+  store_consumer()->OnGetPasswordStoreResultsFrom(mock_store_,
+                                                  std::move(results));
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
               UnorderedElementsAre(Pointee(non_federated)));
   EXPECT_THAT(
@@ -738,8 +751,8 @@ TEST_P(FormFetcherImplTest, Clone_NonEmptyResults) {
 TEST_P(FormFetcherImplTest, Clone_Stats) {
   Fetch();
   // Pass empty results to make the state NOT_WAITING.
-  store_consumer()->OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<PasswordForm>>());
+  store_consumer()->OnGetPasswordStoreResultsFrom(
+      mock_store_, std::vector<std::unique_ptr<PasswordForm>>());
   std::vector<InteractionsStats> stats(1);
   store_consumer()->OnGetSiteStatistics(std::move(stats));
 
@@ -750,8 +763,8 @@ TEST_P(FormFetcherImplTest, Clone_Stats) {
 TEST_P(FormFetcherImplTest, Clone_Compromised) {
   Fetch();
   // Pass empty results to make the state NOT_WAITING.
-  store_consumer()->OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<PasswordForm>>());
+  store_consumer()->OnGetPasswordStoreResultsFrom(
+      mock_store_, std::vector<std::unique_ptr<PasswordForm>>());
   const std::vector<CompromisedCredentials> credentials = {
       {form_digest_.signon_realm, base::ASCIIToUTF16("username_value"),
        base::Time::FromTimeT(1), CompromiseType::kLeaked}};
@@ -769,8 +782,8 @@ TEST_P(FormFetcherImplTest, RemoveConsumer) {
   form_fetcher_->AddConsumer(&consumer_);
   form_fetcher_->RemoveConsumer(&consumer_);
   EXPECT_CALL(consumer_, OnFetchCompleted).Times(0);
-  store_consumer()->OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<PasswordForm>>());
+  store_consumer()->OnGetPasswordStoreResultsFrom(
+      mock_store_, std::vector<std::unique_ptr<PasswordForm>>());
 }
 
 // Check that destroying the fetcher while notifying its consumers is handled
@@ -793,7 +806,8 @@ TEST_P(FormFetcherImplTest, DestroyFetcherFromConsumer) {
 
   EXPECT_CALL(consumer_, OnFetchCompleted).Times(0);
   static_cast<PasswordStoreConsumer*>(form_fetcher)
-      ->OnGetPasswordStoreResults(std::vector<std::unique_ptr<PasswordForm>>());
+      ->OnGetPasswordStoreResultsFrom(
+          mock_store_, std::vector<std::unique_ptr<PasswordForm>>());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "ui/events/base_event_utils.h"
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"

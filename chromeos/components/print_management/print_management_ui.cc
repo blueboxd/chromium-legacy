@@ -56,6 +56,8 @@ void AddPrintManagementStrings(content::WebUIDataSource* html_source) {
       {"stopped", IDS_PRINT_MANAGEMENT_STOPPED_ERROR_STATUS},
       {"filterFailed", IDS_PRINT_MANAGEMENT_FILTERED_FAILED_ERROR_STATUS},
       {"unknownPrinterError", IDS_PRINT_MANAGEMENT_UNKNOWN_ERROR_STATUS},
+      {"noPrintJobInProgress",
+       IDS_PRINT_MANAGEMENT_NO_PRINT_JOBS_IN_PROGRESS_MESSAGE},
   };
 
   for (const auto& str : kLocalizedStrings) {

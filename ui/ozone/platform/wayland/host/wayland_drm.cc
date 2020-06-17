@@ -8,6 +8,7 @@
 #include <xf86drm.h>
 
 #include "base/files/scoped_file.h"
+#include "base/logging.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"

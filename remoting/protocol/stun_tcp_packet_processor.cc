@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "base/sys_byteorder.h"
 #include "net/base/io_buffer.h"
 #include "third_party/webrtc/media/base/rtp_utils.h"

@@ -110,8 +110,8 @@ void DrmThread::Init() {
   device_manager_ =
       std::make_unique<DrmDeviceManager>(std::move(device_generator_));
   screen_manager_ = std::make_unique<ScreenManager>();
-  display_manager_.reset(
-      new DrmGpuDisplayManager(screen_manager_.get(), device_manager_.get()));
+  display_manager_ = std::make_unique<DrmGpuDisplayManager>(
+      screen_manager_.get(), device_manager_.get());
 
   DCHECK(task_runner())
       << "DrmThread::Init -- thread doesn't have a task_runner";
@@ -330,18 +330,17 @@ void DrmThread::ConfigureNativeDisplay(
     base::OnceCallback<void(int64_t, bool)> callback) {
   TRACE_EVENT0("drm", "DrmThread::ConfigureNativeDisplay");
 
-  std::move(callback).Run(
-      display_config_params.id,
-      display_manager_->ConfigureDisplay(display_config_params.id,
-                                         *display_config_params.mode,
-                                         display_config_params.origin));
-}
-
-void DrmThread::DisableNativeDisplay(
-    int64_t id,
-    base::OnceCallback<void(int64_t, bool)> callback) {
-  TRACE_EVENT0("drm", "DrmThread::DisableNativeDisplay");
-  std::move(callback).Run(id, display_manager_->DisableDisplay(id));
+  if (display_config_params.mode) {
+    std::move(callback).Run(
+        display_config_params.id,
+        display_manager_->ConfigureDisplay(display_config_params.id,
+                                           *display_config_params.mode.value(),
+                                           display_config_params.origin));
+  } else {
+    std::move(callback).Run(
+        display_config_params.id,
+        display_manager_->DisableDisplay(display_config_params.id));
+  }
 }
 
 void DrmThread::TakeDisplayControl(base::OnceCallback<void(bool)> callback) {

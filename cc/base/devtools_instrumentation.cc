@@ -66,23 +66,34 @@ ScopedImageUploadTask::~ScopedImageUploadTask() {
     return;
 
   auto duration = base::TimeTicks::Now() - start_time_;
+  const char* histogram_name = nullptr;
   switch (image_type_) {
-    case ImageType::kWebP:
-      UmaHistogramCustomMicrosecondsTimes(
-          "Renderer4.ImageUploadTaskDurationUs.WebP", duration, hist_min_,
-          hist_max_, bucket_count_);
+    case ImageType::kAvif:
+      histogram_name = "Renderer4.ImageUploadTaskDurationUs.Avif";
+      break;
+    case ImageType::kBmp:
+      histogram_name = "Renderer4.ImageUploadTaskDurationUs.Bmp";
+      break;
+    case ImageType::kGif:
+      histogram_name = "Renderer4.ImageUploadTaskDurationUs.Gif";
+      break;
+    case ImageType::kIco:
+      histogram_name = "Renderer4.ImageUploadTaskDurationUs.Ico";
       break;
     case ImageType::kJpeg:
-      UmaHistogramCustomMicrosecondsTimes(
-          "Renderer4.ImageUploadTaskDurationUs.Jpeg", duration, hist_min_,
-          hist_max_, bucket_count_);
+      histogram_name = "Renderer4.ImageUploadTaskDurationUs.Jpeg";
+      break;
+    case ImageType::kPng:
+      histogram_name = "Renderer4.ImageUploadTaskDurationUs.Png";
+      break;
+    case ImageType::kWebP:
+      histogram_name = "Renderer4.ImageUploadTaskDurationUs.WebP";
       break;
     case ImageType::kOther:
-      UmaHistogramCustomMicrosecondsTimes(
-          "Renderer4.ImageUploadTaskDurationUs.Other", duration, hist_min_,
-          hist_max_, bucket_count_);
-      break;
+      histogram_name = "Renderer4.ImageUploadTaskDurationUs.Other";
   }
+  UmaHistogramCustomMicrosecondsTimes(histogram_name, duration, hist_min_,
+                                      hist_max_, bucket_count_);
 }
 
 ScopedImageDecodeTask::ScopedImageDecodeTask(const void* image_ptr,
@@ -104,23 +115,36 @@ ScopedImageDecodeTask::~ScopedImageDecodeTask() {
     return;
 
   auto duration = base::TimeTicks::Now() - start_time_;
+  const char* histogram_name = nullptr;
   switch (image_type_) {
-    case ImageType::kWebP:
-      RecordMicrosecondTimesUmaByDecodeType(
-          "Renderer4.ImageDecodeTaskDurationUs.WebP", duration, hist_min_,
-          hist_max_, bucket_count_, decode_type_);
+    case ImageType::kAvif:
+      histogram_name = "Renderer4.ImageDecodeTaskDurationUs.Avif";
+      break;
+    case ImageType::kBmp:
+      histogram_name = "Renderer4.ImageDecodeTaskDurationUs.Bmp";
+      break;
+    case ImageType::kGif:
+      histogram_name = "Renderer4.ImageDecodeTaskDurationUs.Gif";
+      break;
+    case ImageType::kIco:
+      histogram_name = "Renderer4.ImageDecodeTaskDurationUs.Ico";
       break;
     case ImageType::kJpeg:
-      RecordMicrosecondTimesUmaByDecodeType(
-          "Renderer4.ImageDecodeTaskDurationUs.Jpeg", duration, hist_min_,
-          hist_max_, bucket_count_, decode_type_);
+      histogram_name = "Renderer4.ImageDecodeTaskDurationUs.Jpeg";
+      break;
+    case ImageType::kPng:
+      histogram_name = "Renderer4.ImageDecodeTaskDurationUs.Png";
+      break;
+    case ImageType::kWebP:
+      histogram_name = "Renderer4.ImageDecodeTaskDurationUs.WebP";
       break;
     case ImageType::kOther:
-      RecordMicrosecondTimesUmaByDecodeType(
-          "Renderer4.ImageDecodeTaskDurationUs.Other", duration, hist_min_,
-          hist_max_, bucket_count_, decode_type_);
+      histogram_name = "Renderer4.ImageDecodeTaskDurationUs.Other";
       break;
   }
+  RecordMicrosecondTimesUmaByDecodeType(histogram_name, duration, hist_min_,
+                                        hist_max_, bucket_count_, decode_type_);
+
   switch (task_type_) {
     case kInRaster:
       RecordMicrosecondTimesUmaByDecodeType(

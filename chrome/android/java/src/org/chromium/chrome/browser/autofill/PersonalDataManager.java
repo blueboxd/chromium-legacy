@@ -16,7 +16,9 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.settings.AutofillEditorBase;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
@@ -1001,14 +1003,14 @@ public class PersonalDataManager {
      * @return Whether the Autofill feature for Profiles (addresses) is enabled.
      */
     public static boolean isAutofillProfileEnabled() {
-        return PrefServiceBridge.getInstance().getBoolean(Pref.AUTOFILL_PROFILE_ENABLED);
+        return getPrefService().getBoolean(Pref.AUTOFILL_PROFILE_ENABLED);
     }
 
     /**
      * @return Whether the Autofill feature for Credit Cards is enabled.
      */
     public static boolean isAutofillCreditCardEnabled() {
-        return PrefServiceBridge.getInstance().getBoolean(Pref.AUTOFILL_CREDIT_CARD_ENABLED);
+        return getPrefService().getBoolean(Pref.AUTOFILL_CREDIT_CARD_ENABLED);
     }
 
     /**
@@ -1016,7 +1018,7 @@ public class PersonalDataManager {
      * @param enable True to disable profile Autofill, false otherwise.
      */
     public static void setAutofillProfileEnabled(boolean enable) {
-        PrefServiceBridge.getInstance().setBoolean(Pref.AUTOFILL_PROFILE_ENABLED, enable);
+        getPrefService().setBoolean(Pref.AUTOFILL_PROFILE_ENABLED, enable);
     }
 
     /**
@@ -1024,15 +1026,14 @@ public class PersonalDataManager {
      * @param enable True to disable credit card Autofill, false otherwise.
      */
     public static void setAutofillCreditCardEnabled(boolean enable) {
-        PrefServiceBridge.getInstance().setBoolean(Pref.AUTOFILL_CREDIT_CARD_ENABLED, enable);
+        getPrefService().setBoolean(Pref.AUTOFILL_CREDIT_CARD_ENABLED, enable);
     }
 
     /**
      * @return Whether the Autofill feature for FIDO authentication is enabled.
      */
     public static boolean isAutofillCreditCardFidoAuthEnabled() {
-        return PrefServiceBridge.getInstance().getBoolean(
-                Pref.AUTOFILL_CREDIT_CARD_FIDO_AUTH_ENABLED);
+        return getPrefService().getBoolean(Pref.AUTOFILL_CREDIT_CARD_FIDO_AUTH_ENABLED);
     }
 
     /**
@@ -1042,8 +1043,7 @@ public class PersonalDataManager {
      * @param enable True to enable credit card FIDO authentication, false otherwise.
      */
     public static void setAutofillCreditCardFidoAuthEnabled(boolean enable) {
-        PrefServiceBridge.getInstance().setBoolean(
-                Pref.AUTOFILL_CREDIT_CARD_FIDO_AUTH_ENABLED, enable);
+        getPrefService().setBoolean(Pref.AUTOFILL_CREDIT_CARD_FIDO_AUTH_ENABLED, enable);
     }
 
     /**
@@ -1097,6 +1097,10 @@ public class PersonalDataManager {
      */
     public static long getRequestTimeoutMS() {
         return DateUtils.SECOND_IN_MILLIS * sRequestTimeoutSeconds;
+    }
+
+    private static PrefService getPrefService() {
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 
     @NativeMethods

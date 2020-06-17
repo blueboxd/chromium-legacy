@@ -221,9 +221,11 @@ void ChromeOSVersionCallback(const std::string& version) {
 bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line) {
   KioskAppManager* app_manager = KioskAppManager::Get();
   WebKioskAppManager* web_app_manager = WebKioskAppManager::Get();
+  ArcKioskAppManager* arc_app_manager = ArcKioskAppManager::Get();
   return command_line.HasSwitch(switches::kLoginManager) &&
          (app_manager->IsAutoLaunchEnabled() ||
-          web_app_manager->GetAutoLaunchAccountId().is_valid()) &&
+          web_app_manager->GetAutoLaunchAccountId().is_valid() ||
+          arc_app_manager->GetAutoLaunchAccountId().is_valid()) &&
          KioskAppLaunchError::Get() == KioskAppLaunchError::NONE;
 }
 

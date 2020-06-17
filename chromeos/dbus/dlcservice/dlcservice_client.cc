@@ -223,19 +223,12 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
   void SendProgress(double progress) {
     VLOG(2) << "Install in progress: " << progress;
-    if (progress_callback_holder_.has_value())
-      progress_callback_holder_.value().Run(progress);
+    DCHECK(progress_callback_holder_.has_value());
+    progress_callback_holder_.value().Run(progress);
   }
 
   void SendCompleted(const dlcservice::DlcState& dlc_state) {
-    if (!install_callback_holder_.has_value() || !dlc_id_holder_.has_value())
-      return;
-
-    if (dlc_id_holder_ != dlc_state.id()) {
-      // We are not interested in this DLC. Some other process might be
-      // installing it.
-      return;
-    }
+    DCHECK(install_callback_holder_.has_value());
 
     if (dlc_state.state() == dlcservice::DlcState::NOT_INSTALLED) {
       LOG(ERROR) << "Failed to install DLC " << dlc_state.id()
@@ -268,6 +261,11 @@ class DlcserviceClientImpl : public DlcserviceClient {
     for (Observer& observer : observers_) {
       observer.OnDlcStateChanged(dlc_state);
     }
+
+    // We are not interested in this DLC. Some other process might be
+    // installing it.
+    if (!dlc_id_holder_.has_value() || dlc_id_holder_ != dlc_state.id())
+      return;
 
     switch (dlc_state.state()) {
       case dlcservice::DlcState::NOT_INSTALLED:

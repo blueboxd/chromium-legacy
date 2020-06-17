@@ -91,6 +91,9 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
       web_frames_manager_(*this),
       interstitial_(nullptr),
       created_with_opener_(params.created_with_opener),
+      user_agent_type_(features::UseWebClientDefaultUserAgent()
+                           ? UserAgentType::AUTOMATIC
+                           : UserAgentType::MOBILE),
       weak_factory_(this) {
   navigation_manager_ = std::make_unique<WKBasedNavigationManagerImpl>();
 
@@ -424,6 +427,23 @@ void WebStateImpl::CloseWebState() {
   if (delegate_) {
     delegate_->CloseWebState(this);
   }
+}
+
+UserAgentType WebStateImpl::GetUserAgentForNextNavigation(const GURL& url) {
+  if (user_agent_type_ == UserAgentType::AUTOMATIC) {
+    UIView* container =
+        GetWebViewContainer() ? GetWebViewContainer() : GetView();
+    return GetWebClient()->GetDefaultUserAgent(container, url);
+  }
+  return user_agent_type_;
+}
+
+UserAgentType WebStateImpl::GetUserAgentForSessionRestoration() const {
+  return user_agent_type_;
+}
+
+void WebStateImpl::SetUserAgent(UserAgentType user_agent) {
+  user_agent_type_ = user_agent;
 }
 
 void WebStateImpl::OnAuthRequired(
@@ -895,6 +915,10 @@ void WebStateImpl::OnNavigationItemCommitted(NavigationItem* item) {
 
 WebState* WebStateImpl::GetWebState() {
   return this;
+}
+
+void WebStateImpl::SetWebStateUserAgent(UserAgentType user_agent_type) {
+  SetUserAgent(user_agent_type);
 }
 
 id<CRWWebViewNavigationProxy> WebStateImpl::GetWebViewNavigationProxy() const {

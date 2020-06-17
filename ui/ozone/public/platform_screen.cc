@@ -4,7 +4,7 @@
 
 #include "ui/ozone/public/platform_screen.h"
 
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace ui {
 

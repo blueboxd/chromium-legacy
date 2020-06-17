@@ -138,7 +138,7 @@ void DownloadShelfView::DoAddDownload(
 }
 
 void DownloadShelfView::MouseMovedOutOfHost() {
-  Close(AUTOMATIC);
+  Close();
 }
 
 void DownloadShelfView::RemoveDownloadView(View* view) {
@@ -149,7 +149,7 @@ void DownloadShelfView::RemoveDownloadView(View* view) {
   RemoveChildView(view);
   delete view;
   if (download_views_.empty())
-    Close(AUTOMATIC);
+    Close();
   else if (CanAutoClose())
     mouse_watcher_.Start(GetWidget()->GetNativeWindow());
   Layout();
@@ -322,7 +322,7 @@ void DownloadShelfView::UpdateColorsFromTheme() {
 
   views::SetImageFromVectorIcon(
       close_button_, vector_icons::kCloseRoundedIcon,
-      DownloadItemView::GetTextColorForThemeProvider(GetThemeProvider()));
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
 }
 
 void DownloadShelfView::AddedToWidget() {
@@ -337,7 +337,7 @@ void DownloadShelfView::OnThemeChanged() {
 void DownloadShelfView::ButtonPressed(
     views::Button* button, const ui::Event& event) {
   if (button == close_button_)
-    Close(USER_ACTION);
+    Close();
   else if (button == show_all_view_)
     chrome::ShowDownloads(browser_);
   else
@@ -357,7 +357,7 @@ void DownloadShelfView::DoOpen() {
   shelf_animation_.Show();
 }
 
-void DownloadShelfView::DoClose(CloseReason reason) {
+void DownloadShelfView::DoClose() {
   parent_->SetDownloadShelfVisible(false);
   shelf_animation_.Hide();
 }

@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chromeos/dbus/biod/fake_biod_client.h"

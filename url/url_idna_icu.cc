@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <ostream>
+
 #include "base/check_op.h"
 #include "base/no_destructor.h"
 #include "third_party/icu/source/common/unicode/uidna.h"

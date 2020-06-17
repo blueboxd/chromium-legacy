@@ -53,8 +53,6 @@ class FakeSyncEncryptionHandler : public KeystoreKeysHandler,
       const syncable::BaseTransaction* const trans) const override;
   const Cryptographer* GetCryptographer(
       const syncable::BaseTransaction* const trans) const override;
-  const DirectoryCryptographer* GetDirectoryCryptographer(
-      const syncable::BaseTransaction* const trans) const override;
   ModelTypeSet GetEncryptedTypes(
       const syncable::BaseTransaction* const trans) const override;
   PassphraseType GetPassphraseType(

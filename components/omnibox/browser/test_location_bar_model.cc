@@ -66,3 +66,7 @@ bool TestLocationBarModel::ShouldDisplayURL() const {
 bool TestLocationBarModel::IsOfflinePage() const {
   return offline_page_;
 }
+
+bool TestLocationBarModel::ShouldPreventElision() const {
+  return should_prevent_elision_;
+}

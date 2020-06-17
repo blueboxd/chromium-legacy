@@ -10,6 +10,7 @@
 
 #include <string.h>
 
+#include "base/notreached.h"
 #include "ui/gl/egl_mock.h"
 
 namespace {

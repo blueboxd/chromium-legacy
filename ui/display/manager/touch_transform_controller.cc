@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"

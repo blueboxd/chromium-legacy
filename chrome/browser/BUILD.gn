@@ -4744,6 +4744,8 @@ static_library("browser") {
 
   if (enable_dice_support) {
     sources += [
+      "signin/dice_intercepted_session_startup_helper.cc",
+      "signin/dice_intercepted_session_startup_helper.h",
       "signin/dice_response_handler.cc",
       "signin/dice_response_handler.h",
       "signin/dice_signed_in_profile_creator.cc",

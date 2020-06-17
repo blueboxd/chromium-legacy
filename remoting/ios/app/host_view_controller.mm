@@ -12,6 +12,12 @@
 
 #import <MaterialComponents/MaterialButtons.h>
 
+#include "base/logging.h"
+#include "base/strings/sys_string_conversions.h"
+#include "remoting/base/string_resources.h"
+#include "remoting/client/chromoting_client_runtime.h"
+#include "remoting/client/gesture_interpreter.h"
+#include "remoting/client/input/keyboard_interpreter.h"
 #import "remoting/ios/app/help_and_feedback.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/settings/remoting_settings_view_controller.h"
@@ -24,11 +30,6 @@
 #import "remoting/ios/mdc/MDCActionImageView.h"
 #import "remoting/ios/persistence/remoting_preferences.h"
 #import "remoting/ios/session/remoting_client.h"
-#include "base/strings/sys_string_conversions.h"
-#include "remoting/base/string_resources.h"
-#include "remoting/client/chromoting_client_runtime.h"
-#include "remoting/client/gesture_interpreter.h"
-#include "remoting/client/input/keyboard_interpreter.h"
 #include "ui/base/l10n/l10n_util.h"
 
 static const CGFloat kFabInset = 15.f;

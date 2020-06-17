@@ -362,7 +362,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -392,7 +392,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -422,7 +422,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -452,7 +452,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -491,7 +491,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -530,7 +530,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -561,7 +561,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -591,7 +591,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -623,7 +623,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -655,7 +655,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -690,7 +690,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -720,7 +720,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -750,7 +750,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -780,7 +780,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -819,7 +819,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -858,7 +858,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -889,7 +889,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -919,7 +919,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -951,7 +951,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -983,7 +983,7 @@
             {
               "gpu": "10de:1cb3-418.56",
               "os": "Ubuntu-19.04",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -1684,7 +1684,7 @@
             {
               "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -1714,7 +1714,7 @@
             {
               "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -1744,7 +1744,7 @@
             {
               "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -1774,7 +1774,7 @@
             {
               "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -1813,7 +1813,7 @@
             {
               "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -1852,7 +1852,7 @@
             {
               "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -1883,7 +1883,7 @@
             {
               "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -1913,7 +1913,7 @@
             {
               "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -1945,7 +1945,7 @@
             {
               "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,
@@ -1977,7 +1977,7 @@
             {
               "gpu": "10de:1cb3-26.21.14.3102",
               "os": "Windows-10",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "idempotent": false,

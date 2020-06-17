@@ -52,6 +52,12 @@ enum ChromeTextContext {
 
   // ToolbarButton label
   CONTEXT_TOOLBAR_BUTTON,
+
+  // Most text in the download shelf.  Usually 13pt.
+  CONTEXT_DOWNLOAD_SHELF,
+
+  // Status labels in the download shelf.  Usually 10pt.
+  CONTEXT_DOWNLOAD_SHELF_STATUS,
 };
 
 enum ChromeTextStyle {

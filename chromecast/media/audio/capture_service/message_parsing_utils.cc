@@ -11,6 +11,7 @@
 
 #include "base/big_endian.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "chromecast/media/audio/capture_service/packet_header.h"
 #include "media/base/limits.h"
 

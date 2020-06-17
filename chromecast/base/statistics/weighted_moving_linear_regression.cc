@@ -7,6 +7,7 @@
 #include <math.h>
 #include <algorithm>
 
+#include "base/check_op.h"
 #include "base/logging.h"
 
 namespace chromecast {

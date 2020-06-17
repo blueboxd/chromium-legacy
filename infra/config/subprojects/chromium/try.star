@@ -122,6 +122,7 @@ try_.chromium_android_builder(
 
 try_.chromium_android_builder(
     name = 'android-pie-arm64-dbg',
+    goma_jobs = goma.jobs.J300,
     tryjob = try_.job(
         location_regexp = [
             '.+/[+]/chrome/android/features/vr/.+',

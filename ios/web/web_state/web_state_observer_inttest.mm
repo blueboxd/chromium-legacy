@@ -83,6 +83,7 @@ CRWSessionStorage* GetTestSessionStorage(const GURL& testUrl) {
   CRWNavigationItemStorage* item = [[CRWNavigationItemStorage alloc] init];
   [item setURL:testUrl];
   [result setItemStorages:@[ item ]];
+  result.userAgentType = UserAgentType::MOBILE;
   return result;
 }
 

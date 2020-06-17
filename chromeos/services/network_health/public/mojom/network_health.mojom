@@ -34,9 +34,10 @@ enum NetworkState {
 // Contains information for a single network connection and underlying
 // network technology e.g WiFi.
 struct Network {
-
   chromeos.network_config.mojom.NetworkType type;
   NetworkState state;
+  // The unique identifier for the network when a network service exists.
+  string? guid;
   // The user facing name of the network if available.
   string? name;
   // Optional string for the network's mac_address.

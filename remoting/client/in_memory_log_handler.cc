@@ -6,6 +6,7 @@
 
 #include "base/check.h"
 #include "base/containers/ring_buffer.h"
+#include "base/logging.h"
 #include "base/synchronization/lock.h"
 
 namespace remoting {

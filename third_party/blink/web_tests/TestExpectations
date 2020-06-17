@@ -4622,7 +4622,6 @@ crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/StyleSheet/css-inse
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/gesture-tapHighlight-shadow-tree.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/import-rule-in-shadow-tree-needs-document-style-recalc.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/scrollbar.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/svg-style-in-shadow-tree.xhtml [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/text-node-in-shadow.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/custom-pseudo-scope.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/dynamically-created-shadow-root.html [ Skip ]

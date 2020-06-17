@@ -6,6 +6,7 @@
 
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "ipc/ipc_mojo_handle_attachment.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 

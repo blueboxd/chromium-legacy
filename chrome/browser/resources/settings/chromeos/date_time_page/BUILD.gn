@@ -8,6 +8,7 @@ js_type_check("closure_compile") {
   deps = [
     ":date_time_page",
     ":date_time_types",
+    ":timezone_browser_proxy",
     ":timezone_selector",
     ":timezone_subpage",
   ]
@@ -17,7 +18,6 @@ js_library("date_time_page") {
   deps = [
     ":date_time_types",
     ":timezone_selector",
-    ":timezone_subpage",
     "..:os_route",
     "../..:router",
     "../../prefs:prefs_behavior",
@@ -30,6 +30,10 @@ js_library("date_time_page") {
 }
 
 js_library("date_time_types") {
+  deps = [ "//ui/webui/resources/js:cr" ]
+}
+
+js_library("timezone_browser_proxy") {
   deps = [ "//ui/webui/resources/js:cr" ]
 }
 
@@ -46,6 +50,7 @@ js_library("timezone_selector") {
 js_library("timezone_subpage") {
   deps = [
     ":date_time_types",
+    ":timezone_browser_proxy",
     ":timezone_selector",
     "../../prefs:prefs_behavior",
     "//ui/webui/resources/js:cr",
@@ -58,6 +63,7 @@ js_library("timezone_subpage") {
 #  deps = [
 #    ":date_time_page.m",
 #    ":date_time_types.m",
+#    ":timezone_browser_proxy.m",
 #    ":timezone_selector.m",
 #    ":timezone_subpage.m"
 #  ]
@@ -77,6 +83,14 @@ js_library("date_time_types.m") {
     # TODO: Fill those in.
   ]
   extra_deps = [ ":date_time_types_module" ]
+}
+
+js_library("timezone_browser_proxy.m") {
+  sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/date_time_page/timezone_browser_proxy.m.js" ]
+  deps = [
+    # TODO: Fill those in.
+  ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("timezone_selector.m") {
@@ -101,6 +115,7 @@ group("polymer3_elements") {
   public_deps = [
     ":date_time_page_module",
     ":date_time_types_module",
+    ":modulize",
     ":timezone_selector_module",
     ":timezone_subpage_module",
   ]
@@ -128,4 +143,10 @@ polymer_modulizer("timezone_subpage") {
   js_file = "timezone_subpage.js"
   html_file = "timezone_subpage.html"
   html_type = "dom-module"
+}
+
+import("//ui/webui/resources/tools/js_modulizer.gni")
+
+js_modulizer("modulize") {
+  input_files = [ "timezone_browser_proxy.js" ]
 }

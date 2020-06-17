@@ -573,10 +573,7 @@ url::Origin GetOriginForURLLoaderFactoryUnchecked(
 
 url::Origin GetOriginForURLLoaderFactory(
     NavigationRequest* navigation_request) {
-  // Return a safe opaque origin when there is no |navigation_request| (e.g.
-  // when RFHI::CommitNavigation is called via RFHI::NavigateToInterstitialURL).
-  if (!navigation_request)
-    return url::Origin();
+  DCHECK(navigation_request);
 
   // GetOriginForURLLoaderFactory should only be called at the ReadyToCommit
   // time, when the RFHI to commit the navigation is already known.
@@ -6321,9 +6318,20 @@ void RenderFrameHostImpl::FailedNavigation(
 
   // Error page will commit in an opaque origin.
   //
+  // The precursor of the opaque origin can be set arbitrarily, because:
+  // 1) we expect that the error page will not issue network requests
+  // 2) network::VerifyRequestInitiatorLock doesn't compare precursors
+  // This observation lets us improve debuggability by using a hardcoded
+  // precursor below.
+  // TODO(lukasza): https://crbug.com/1056949: Stop using error.page.invalid as
+  // the precursor (once https://crbug.com/1056949 is debugged OR once
+  // network::VerifyRequestInitiatorLock starts to compare precursors).
+  //
   // TODO(lukasza): https://crbug.com/888079: Use this origin when committing
   // later on.
-  url::Origin origin = url::Origin();
+  url::Origin error_page_origin =
+      url::Origin::Create(GURL("https://error.page.invalid"))
+          .DeriveNewOpaqueOrigin();
   isolation_info_ = net::IsolationInfo::CreateTransient();
 
   std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
@@ -6331,7 +6339,8 @@ void RenderFrameHostImpl::FailedNavigation(
   mojo::PendingRemote<network::mojom::URLLoaderFactory> default_factory_remote;
   bool bypass_redirect_checks = CreateNetworkServiceDefaultFactoryAndObserve(
       CreateURLLoaderFactoryParamsForMainWorld(
-          origin, mojo::Clone(navigation_request->client_security_state()),
+          error_page_origin,
+          mojo::Clone(navigation_request->client_security_state()),
           /*coep_reporter=*/mojo::NullRemote(),
           network::mojom::TrustTokenRedemptionPolicy::kForbid),
       default_factory_remote.InitWithNewPipeAndPassReceiver());

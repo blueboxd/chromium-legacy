@@ -7,12 +7,14 @@
 namespace display {
 
 DisplayConfigurationParams::DisplayConfigurationParams() = default;
-
 DisplayConfigurationParams::DisplayConfigurationParams(
     int64_t id,
     gfx::Point origin,
-    std::unique_ptr<display::DisplayMode> pmode)
-    : id(id), origin(origin), mode(std::move(pmode)) {}
+    const display::DisplayMode* pmode)
+    : id(id), origin(origin) {
+  if (pmode)
+    mode = pmode->Clone();
+}
 
 DisplayConfigurationParams::~DisplayConfigurationParams() = default;
 

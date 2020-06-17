@@ -487,7 +487,7 @@ class TestImporterTest(LoggingTestCase):
             MOCK_WEB_TESTS + 'external/wpt/MANIFEST.json', '{}')
         importer._generate_manifest()
         self.assertEqual(host.executive.calls, [[
-            'vpython',
+            'python',
             '/mock-checkout/third_party/blink/tools/blinkpy/third_party/wpt/wpt/wpt',
             'manifest',
             '--no-download',

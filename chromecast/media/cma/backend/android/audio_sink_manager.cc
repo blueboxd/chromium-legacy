@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "chromecast/media/cma/backend/android/audio_sink_android.h"
 

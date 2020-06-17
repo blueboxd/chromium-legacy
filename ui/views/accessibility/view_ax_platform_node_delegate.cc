@@ -122,9 +122,6 @@ struct ViewAXPlatformNodeDelegate::ChildWidgetsResult {
   bool is_tab_modal_showing;
 };
 
-// static
-int ViewAXPlatformNodeDelegate::menu_depth_ = 0;
-
 ViewAXPlatformNodeDelegate::ViewAXPlatformNodeDelegate(View* view)
     : ViewAccessibility(view) {
   ax_platform_node_ = ui::AXPlatformNode::Create(this);
@@ -140,13 +137,21 @@ ViewAXPlatformNodeDelegate::ViewAXPlatformNodeDelegate(View* view)
 
 ViewAXPlatformNodeDelegate::~ViewAXPlatformNodeDelegate() {
   if (ui::AXPlatformNode::GetPopupFocusOverride() == GetNativeObject())
-    ui::AXPlatformNode::SetPopupFocusOverride(nullptr);
+    EndPopupFocusOverride();
   ax_platform_node_->Destroy();
 }
 
 gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetNativeObject() const {
   DCHECK(ax_platform_node_);
   return ax_platform_node_->GetNativeViewAccessible();
+}
+
+void ViewAXPlatformNodeDelegate::SetPopupFocusOverride() {
+  ui::AXPlatformNode::SetPopupFocusOverride(GetNativeObject());
+}
+
+void ViewAXPlatformNodeDelegate::EndPopupFocusOverride() {
+  ui::AXPlatformNode::SetPopupFocusOverride(nullptr);
 }
 
 void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
@@ -161,16 +166,15 @@ void ViewAXPlatformNodeDelegate::NotifyAccessibilityEvent(
 
   // Some events have special handling.
   switch (event_type) {
-    case ax::mojom::Event::kMenuStart:
-      OnMenuStart();
-      break;
-    case ax::mojom::Event::kMenuEnd:
-      OnMenuEnd();
-      break;
-    case ax::mojom::Event::kSelection: {
-      ax::mojom::Role role = GetData().role;
-      if (menu_depth_ && (ui::IsMenuItem(role) || ui::IsListItem(role)))
-        OnMenuItemActive();
+    case ax::mojom::Event::kFocus: {
+      if (ui::AXPlatformNode::GetPopupFocusOverride()) {
+        DCHECK_EQ(ui::AXPlatformNode::GetPopupFocusOverride(),
+                  GetNativeObject())
+            << "If the popup focus override is on, then the kFocus event must "
+               "match it. Most likely the popup has closed, but did not call "
+               "ViewAccessibility::FireFocusAfterMenuClose(), and focus has "
+               "now moved on.";
+      }
       break;
     }
     case ax::mojom::Event::kFocusContext: {
@@ -201,27 +205,6 @@ void ViewAXPlatformNodeDelegate::AnnounceText(const base::string16& text) {
   ax_platform_node_->AnnounceText(text);
 }
 #endif
-
-void ViewAXPlatformNodeDelegate::OnMenuItemActive() {
-  // When a native menu is shown and has an item selected, treat it and the
-  // currently selected item as focused, even though the actual focus is in the
-  // browser's currently focused textfield.
-  ui::AXPlatformNode::SetPopupFocusOverride(
-      ax_platform_node_->GetNativeViewAccessible());
-}
-
-void ViewAXPlatformNodeDelegate::OnMenuStart() {
-  ++menu_depth_;
-}
-
-void ViewAXPlatformNodeDelegate::OnMenuEnd() {
-  // When a native menu is hidden, restore accessibility focus to the current
-  // focus in the document.
-  if (menu_depth_ >= 1)
-    --menu_depth_;
-  if (menu_depth_ == 0)
-    ui::AXPlatformNode::SetPopupFocusOverride(nullptr);
-}
 
 void ViewAXPlatformNodeDelegate::FireFocusAfterMenuClose() {
   ui::AXPlatformNodeBase* focused_node =

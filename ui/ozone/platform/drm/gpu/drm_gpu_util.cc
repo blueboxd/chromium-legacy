@@ -9,6 +9,7 @@
 #include <xf86drmMode.h>
 
 #include "base/files/scoped_file.h"
+#include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"

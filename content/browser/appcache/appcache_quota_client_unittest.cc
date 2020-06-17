@@ -21,7 +21,6 @@ using blink::mojom::StorageType;
 
 // Declared to shorten the line lengths.
 static const StorageType kTemp = StorageType::kTemporary;
-static const StorageType kPerm = StorageType::kPersistent;
 
 // Base class for our test fixtures.
 class AppCacheQuotaClientTest : public testing::Test {
@@ -192,15 +191,10 @@ TEST_F(AppCacheQuotaClientTest, EmptyService) {
   Call_NotifyAppCacheReady(client);
 
   EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kTemp));
-  EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kPerm));
   EXPECT_TRUE(GetOriginsForType(client, kTemp).empty());
-  EXPECT_TRUE(GetOriginsForType(client, kPerm).empty());
   EXPECT_TRUE(GetOriginsForHost(client, kTemp, kOriginA.host()).empty());
-  EXPECT_TRUE(GetOriginsForHost(client, kPerm, kOriginA.host()).empty());
   EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk,
             DeleteOriginData(client, kTemp, kOriginA));
-  EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk,
-            DeleteOriginData(client, kPerm, kOriginA));
 
   Call_NotifyAppCacheDestroyed(client);
   Call_OnQuotaManagerDestroyed(client);
@@ -212,15 +206,10 @@ TEST_F(AppCacheQuotaClientTest, NoService) {
   Call_NotifyAppCacheDestroyed(client);
 
   EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kTemp));
-  EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kPerm));
   EXPECT_TRUE(GetOriginsForType(client, kTemp).empty());
-  EXPECT_TRUE(GetOriginsForType(client, kPerm).empty());
   EXPECT_TRUE(GetOriginsForHost(client, kTemp, kOriginA.host()).empty());
-  EXPECT_TRUE(GetOriginsForHost(client, kPerm, kOriginA.host()).empty());
   EXPECT_EQ(blink::mojom::QuotaStatusCode::kErrorAbort,
             DeleteOriginData(client, kTemp, kOriginA));
-  EXPECT_EQ(blink::mojom::QuotaStatusCode::kErrorAbort,
-            DeleteOriginData(client, kPerm, kOriginA));
 
   Call_OnQuotaManagerDestroyed(client);
 }
@@ -231,7 +220,7 @@ TEST_F(AppCacheQuotaClientTest, GetOriginUsage) {
 
   SetUsageMapEntry(kOriginA, 1000);
   EXPECT_EQ(1000, GetOriginUsage(client, kOriginA, kTemp));
-  EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kPerm));
+  EXPECT_EQ(0, GetOriginUsage(client, kOriginB, kTemp));
 
   Call_NotifyAppCacheDestroyed(client);
   Call_OnQuotaManagerDestroyed(client);
@@ -261,9 +250,6 @@ TEST_F(AppCacheQuotaClientTest, GetOriginsForHost) {
   EXPECT_EQ(1ul, origins.size());
   EXPECT_TRUE(origins.find(kOriginOther) != origins.end());
 
-  origins = GetOriginsForHost(client, kPerm, kOriginA.host());
-  EXPECT_TRUE(origins.empty());
-
   Call_NotifyAppCacheDestroyed(client);
   Call_OnQuotaManagerDestroyed(client);
 }
@@ -273,7 +259,6 @@ TEST_F(AppCacheQuotaClientTest, GetOriginsForType) {
   Call_NotifyAppCacheReady(client);
 
   EXPECT_TRUE(GetOriginsForType(client, kTemp).empty());
-  EXPECT_TRUE(GetOriginsForType(client, kPerm).empty());
 
   SetUsageMapEntry(kOriginA, 1000);
   SetUsageMapEntry(kOriginB, 10);
@@ -283,8 +268,6 @@ TEST_F(AppCacheQuotaClientTest, GetOriginsForType) {
   EXPECT_TRUE(origins.find(kOriginA) != origins.end());
   EXPECT_TRUE(origins.find(kOriginB) != origins.end());
 
-  EXPECT_TRUE(GetOriginsForType(client, kPerm).empty());
-
   Call_NotifyAppCacheDestroyed(client);
   Call_OnQuotaManagerDestroyed(client);
 }
@@ -292,12 +275,6 @@ TEST_F(AppCacheQuotaClientTest, GetOriginsForType) {
 TEST_F(AppCacheQuotaClientTest, DeleteOriginData) {
   auto client = CreateClient();
   Call_NotifyAppCacheReady(client);
-
-  // Perm deletions are short circuited in the Client and
-  // should not reach the AppCacheServiceImpl.
-  EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk,
-            DeleteOriginData(client, kPerm, kOriginA));
-  EXPECT_EQ(0, mock_service_.delete_called_count());
 
   EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk,
             DeleteOriginData(client, kTemp, kOriginA));
@@ -320,15 +297,14 @@ TEST_F(AppCacheQuotaClientTest, PendingRequests) {
   SetUsageMapEntry(kOriginB, 10);
   SetUsageMapEntry(kOriginOther, 500);
 
-  // Queue up some reqeusts.
-  AsyncGetOriginUsage(client, kOriginA, kPerm);
+  // Queue up some requests.
+  AsyncGetOriginUsage(client, kOriginA, kTemp);
   AsyncGetOriginUsage(client, kOriginB, kTemp);
-  AsyncGetOriginsForType(client, kPerm);
+  AsyncGetOriginsForType(client, kTemp);
   AsyncGetOriginsForType(client, kTemp);
   AsyncGetOriginsForHost(client, kTemp, kOriginA.host());
   AsyncGetOriginsForHost(client, kTemp, kOriginOther.host());
   AsyncDeleteOriginData(client, kTemp, kOriginA);
-  AsyncDeleteOriginData(client, kPerm, kOriginA);
   AsyncDeleteOriginData(client, kTemp, kOriginB);
 
   EXPECT_EQ(0, num_get_origin_usage_completions_);
@@ -344,7 +320,7 @@ TEST_F(AppCacheQuotaClientTest, PendingRequests) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, num_get_origin_usage_completions_);
   EXPECT_EQ(4, num_get_origins_completions_);
-  EXPECT_EQ(3, num_delete_origins_completions_);
+  EXPECT_EQ(2, num_delete_origins_completions_);
 
   // They should be serviced in order requested.
   EXPECT_EQ(10, usage_);
@@ -362,15 +338,14 @@ TEST_F(AppCacheQuotaClientTest, DestroyServiceWithPending) {
   SetUsageMapEntry(kOriginB, 10);
   SetUsageMapEntry(kOriginOther, 500);
 
-  // Queue up some reqeusts prior to being ready.
-  AsyncGetOriginUsage(client, kOriginA, kPerm);
+  // Queue up some requests prior to being ready.
+  AsyncGetOriginUsage(client, kOriginA, kTemp);
   AsyncGetOriginUsage(client, kOriginB, kTemp);
-  AsyncGetOriginsForType(client, kPerm);
+  AsyncGetOriginsForType(client, kTemp);
   AsyncGetOriginsForType(client, kTemp);
   AsyncGetOriginsForHost(client, kTemp, kOriginA.host());
   AsyncGetOriginsForHost(client, kTemp, kOriginOther.host());
   AsyncDeleteOriginData(client, kTemp, kOriginA);
-  AsyncDeleteOriginData(client, kPerm, kOriginA);
   AsyncDeleteOriginData(client, kTemp, kOriginB);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, num_get_origin_usage_completions_);
@@ -383,7 +358,7 @@ TEST_F(AppCacheQuotaClientTest, DestroyServiceWithPending) {
   // All should have been aborted and called completion.
   EXPECT_EQ(2, num_get_origin_usage_completions_);
   EXPECT_EQ(4, num_get_origins_completions_);
-  EXPECT_EQ(3, num_delete_origins_completions_);
+  EXPECT_EQ(2, num_delete_origins_completions_);
   EXPECT_EQ(0, usage_);
   EXPECT_TRUE(origins_.empty());
   EXPECT_EQ(blink::mojom::QuotaStatusCode::kErrorAbort, delete_status_);
@@ -398,15 +373,14 @@ TEST_F(AppCacheQuotaClientTest, DestroyQuotaManagerWithPending) {
   SetUsageMapEntry(kOriginB, 10);
   SetUsageMapEntry(kOriginOther, 500);
 
-  // Queue up some reqeusts prior to being ready.
-  AsyncGetOriginUsage(client, kOriginA, kPerm);
+  // Queue up some requests prior to being ready.
+  AsyncGetOriginUsage(client, kOriginA, kTemp);
   AsyncGetOriginUsage(client, kOriginB, kTemp);
-  AsyncGetOriginsForType(client, kPerm);
+  AsyncGetOriginsForType(client, kTemp);
   AsyncGetOriginsForType(client, kTemp);
   AsyncGetOriginsForHost(client, kTemp, kOriginA.host());
   AsyncGetOriginsForHost(client, kTemp, kOriginOther.host());
   AsyncDeleteOriginData(client, kTemp, kOriginA);
-  AsyncDeleteOriginData(client, kPerm, kOriginA);
   AsyncDeleteOriginData(client, kTemp, kOriginB);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, num_get_origin_usage_completions_);

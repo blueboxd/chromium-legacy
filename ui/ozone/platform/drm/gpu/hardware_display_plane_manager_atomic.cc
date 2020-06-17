@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/files/platform_file.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/gfx/gpu_fence.h"

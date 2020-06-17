@@ -7,6 +7,7 @@ package org.chromium.components.paintpreview.player.frame;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.view.MotionEvent;
 import android.view.View;
@@ -28,6 +29,7 @@ class PlayerFrameView extends FrameLayout {
     private PlayerFrameViewDelegate mDelegate;
     private List<View> mSubFrameViews;
     private List<Rect> mSubFrameRects;
+    private Matrix mScaleMatrix;
 
     /**
      * @param context Used for initialization.
@@ -72,6 +74,47 @@ class PlayerFrameView extends FrameLayout {
     void updateViewPort(int left, int top, int right, int bottom) {
         mBitmapPainter.updateViewPort(left, top, right, bottom);
 
+        layoutSubframes();
+    }
+
+    void updateBitmapMatrix(Bitmap[][] bitmapMatrix) {
+        mBitmapPainter.updateBitmapMatrix(bitmapMatrix);
+    }
+
+    void updateTileDimensions(int[] tileDimensions) {
+        mBitmapPainter.updateTileDimensions(tileDimensions);
+    }
+
+    void updateScaleMatrix(Matrix matrix) {
+        mScaleMatrix = matrix;
+        if (mScaleMatrix.isIdentity()) return;
+
+        postInvalidate();
+        layoutSubframes();
+    }
+
+    void updateDelegateScaleMatrix(Matrix matrix) {
+        mDelegate.setBitmapScaleMatrix(matrix);
+    }
+
+    void forceRedraw() {
+        mDelegate.forceRedraw();
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        canvas.save();
+        canvas.setMatrix(mScaleMatrix);
+        mBitmapPainter.onDraw(canvas);
+        canvas.restore();
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return mGestureDetector.onTouchEvent(event) || super.onTouchEvent(event);
+    }
+
+    private void layoutSubframes() {
         // Remove all views if there are no sub-frames.
         if (mSubFrameViews == null || mSubFrameRects == null) {
             removeAllViews();
@@ -96,23 +139,5 @@ class PlayerFrameView extends FrameLayout {
                 --i;
             }
         }
-    }
-
-    void updateBitmapMatrix(Bitmap[][] bitmapMatrix) {
-        mBitmapPainter.updateBitmapMatrix(bitmapMatrix);
-    }
-
-    void updateTileDimensions(int[] tileDimensions) {
-        mBitmapPainter.updateTileDimensions(tileDimensions);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas) {
-        mBitmapPainter.onDraw(canvas);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        return mGestureDetector.onTouchEvent(event) || super.onTouchEvent(event);
     }
 }

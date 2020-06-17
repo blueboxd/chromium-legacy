@@ -4,6 +4,8 @@
 
 #include "cc/trees/image_animation_controller.h"
 
+#include <sstream>
+
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"

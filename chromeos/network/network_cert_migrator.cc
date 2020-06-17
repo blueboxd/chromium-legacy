@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "chromeos/network/client_cert_util.h"

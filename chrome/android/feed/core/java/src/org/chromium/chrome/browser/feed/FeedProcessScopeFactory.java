@@ -24,8 +24,9 @@ import org.chromium.chrome.browser.feed.library.common.time.SystemClockImpl;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipSupportedApi;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 
 /** Holds singleton {@link ProcessScope} and some of the scope's host implementations. */
 public class FeedProcessScopeFactory {
@@ -130,8 +131,7 @@ public class FeedProcessScopeFactory {
         // subscriber to  this pref change event might check in with this method, and we cannot
         // assume who will be called first. See https://crbug.com/896468.
         if (!sEverDisabledForPolicy) {
-            sEverDisabledForPolicy =
-                    !PrefServiceBridge.getInstance().getBoolean(Pref.ENABLE_SNIPPETS);
+            sEverDisabledForPolicy = !getPrefService().getBoolean(Pref.ENABLE_SNIPPETS);
         }
         return !sEverDisabledForPolicy;
     }
@@ -141,8 +141,7 @@ public class FeedProcessScopeFactory {
                 && sFeedAppLifecycle == null && sFeedLoggingBridge == null;
         if (!isFeedProcessEnabled()) return;
 
-        sArticlesVisibleDuringSession =
-                PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
+        sArticlesVisibleDuringSession = getPrefService().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
         sPrefChangeRegistrar = new PrefChangeRegistrar();
         sPrefChangeRegistrar.addObserver(
                 Pref.ENABLE_SNIPPETS, FeedProcessScopeFactory::articlesEnabledPrefChange);
@@ -271,7 +270,7 @@ public class FeedProcessScopeFactory {
     static boolean areArticlesVisibleDuringSession() {
         // Skip the native call if sArticlesVisibleDuringSession is already true to reduce overhead.
         if (!sArticlesVisibleDuringSession
-                && PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE)) {
+                && getPrefService().getBoolean(Pref.ARTICLES_LIST_VISIBLE)) {
             sArticlesVisibleDuringSession = true;
         }
 
@@ -280,7 +279,7 @@ public class FeedProcessScopeFactory {
 
     private static void articlesEnabledPrefChange() {
         // Cannot assume this is called because of an actual change. May be going from true to true.
-        if (!PrefServiceBridge.getInstance().getBoolean(Pref.ENABLE_SNIPPETS)) {
+        if (!getPrefService().getBoolean(Pref.ENABLE_SNIPPETS)) {
             // There have been quite a few crashes/bugs that happen when code does not correctly
             // handle the scenario where Feed suddenly becomes disabled and the above getters start
             // returning nulls. Having this log a warning helps diagnose this pattern from the
@@ -289,6 +288,10 @@ public class FeedProcessScopeFactory {
             sEverDisabledForPolicy = true;
             destroy();
         }
+    }
+
+    private static PrefService getPrefService() {
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 
     /** Clears out all static state. */

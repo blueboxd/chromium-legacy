@@ -28,6 +28,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/wm/core/ime_util_chromeos.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -161,6 +162,16 @@ bool IsTopWindow(aura::Window* window) {
 bool IsSnapped(WindowStateType state) {
   return state == WindowStateType::kLeftSnapped ||
          state == WindowStateType::kRightSnapped;
+}
+
+// Returns true if the bounds change of |window| is from VK request and can be
+// allowed by the current window's state.
+bool BoundsChangeIsFromVKAndAllowed(aura::Window* window) {
+  if (!window->GetProperty(wm::kVirtualKeyboardRestoreBoundsKey))
+    return false;
+  WindowStateType state_type = WindowState::Get(window)->GetStateType();
+  return state_type == WindowStateType::kNormal ||
+         state_type == WindowStateType::kDefault;
 }
 
 }  // namespace
@@ -329,7 +340,8 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
 
       if (window_util::IsDraggingTabs(window_state->window()) ||
           IsTabDraggingSourceWindow(window_state->window()) ||
-          TabDragDropDelegate::IsSourceWindowForDrag(window_state->window())) {
+          TabDragDropDelegate::IsSourceWindowForDrag(window_state->window()) ||
+          BoundsChangeIsFromVKAndAllowed(window_state->window())) {
         // If the window is the current tab-dragged window or the current tab-
         // dragged window's source window, we may need to update its bounds
         // during dragging.

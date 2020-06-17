@@ -39,6 +39,7 @@ class LocationBarModelImpl : public LocationBarModel {
   base::string16 GetSecureAccessibilityText() const override;
   bool ShouldDisplayURL() const override;
   bool IsOfflinePage() const override;
+  bool ShouldPreventElision() const override;
 
  private:
   base::string16 GetFormattedURL(

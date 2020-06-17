@@ -17,6 +17,6 @@ promise_test(async t => {
 promise_test(async t => {
   await promise_rejects_js(t, TypeError,
       cookieStore.set('cookie-name', 'cookie-value'));
-}, `cookieStore.set(name, value, options) throws an exception`);
+}, `cookieStore.set(name, value) throws an exception`);
 
 </script>

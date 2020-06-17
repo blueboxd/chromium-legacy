@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/observer_list_types.h"
 

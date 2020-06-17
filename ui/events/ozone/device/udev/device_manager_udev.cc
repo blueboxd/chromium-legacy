@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"

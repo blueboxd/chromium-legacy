@@ -46,10 +46,6 @@ class ImageSkia;
 class SlideAnimation;
 }
 
-namespace ui {
-class ThemeProvider;
-}
-
 namespace views {
 class ImageButton;
 class Label;
@@ -74,9 +70,6 @@ class DownloadItemView : public views::View,
   void UpdateDownloadProgress();
   void StartDownloadProgress();
   void StopDownloadProgress();
-
-  // Returns the base color for text on this download item, based on |theme|.
-  static SkColor GetTextColorForThemeProvider(const ui::ThemeProvider* theme);
 
   void OnExtractIconComplete(IconLoader::IconSize icon_size, gfx::Image icon);
 
@@ -119,7 +112,6 @@ class DownloadItemView : public views::View,
  protected:
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
-  void AddedToWidget() override;
   void OnThemeChanged() override;
 
  private:
@@ -139,9 +131,6 @@ class DownloadItemView : public views::View,
   };
 
   static constexpr int kTextWidth = 140;
-
-  // Vertical padding between filename and status text.
-  static constexpr int kVerticalTextPadding = 1;
 
   static constexpr int kTooltipMaxWidth = 800;
 

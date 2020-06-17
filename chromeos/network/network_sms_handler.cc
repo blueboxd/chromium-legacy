@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/modem_messaging_client.h"

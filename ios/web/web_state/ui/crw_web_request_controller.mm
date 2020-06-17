@@ -333,8 +333,7 @@ enum class BackForwardNavigationType {
     self.navigationManagerImpl->AddPendingItem(
         requestURL, referrer, transition,
         rendererInitiated ? web::NavigationInitiationType::RENDERER_INITIATED
-                          : web::NavigationInitiationType::BROWSER_INITIATED,
-        web::NavigationManager::UserAgentOverrideOption::INHERIT);
+                          : web::NavigationInitiationType::BROWSER_INITIATED);
     item =
         self.navigationManagerImpl->GetPendingItemInCurrentOrRestoredSession();
   }
@@ -514,35 +513,6 @@ enum class BackForwardNavigationType {
   // crbug.com/577793).
   DCHECK_GT(CGRectGetWidth(self.webView.frame), 0.0);
   DCHECK_GT(CGRectGetHeight(self.webView.frame), 0.0);
-
-  // If the current item uses a different user agent from that is currently used
-  // in the web view, update |customUserAgent| property, which will be used by
-  // the next request sent by this web view.
-  web::UserAgentType itemUserAgentType =
-      self.currentNavItem->GetUserAgentType(self.webView);
-
-  if (itemUserAgentType == web::UserAgentType::NONE &&
-      web::GetWebClient()->IsAppSpecificURL(
-          self.currentNavItem->GetVirtualURL())) {
-    // In case the URL to be loaded is a WebUI URL and the user agent is nil,
-    // get the mobile user agent.
-    itemUserAgentType = web::UserAgentType::MOBILE;
-  }
-
-  if (@available(iOS 13, *)) {
-  } else {
-    // On iOS 13, this is done in
-    // webView:decidePolicyForNavigationAction:preferences:decisionHandler:. As
-    // the method only exists for iOS 13, this check still need to be there for
-    // iOS 12.
-    if (itemUserAgentType != web::UserAgentType::NONE) {
-      NSString* userAgentString = base::SysUTF8ToNSString(
-          web::GetWebClient()->GetUserAgent(itemUserAgentType));
-      if (![self.webView.customUserAgent isEqualToString:userAgentString]) {
-        self.webView.customUserAgent = userAgentString;
-      }
-    }
-  }
 
   web::WKBackForwardListItemHolder* holder =
       self.navigationHandler.currentBackForwardListItemHolder;

@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_transition_driver.h"
 
+#include "base/check_op.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_animator.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_banner_presentation_controller.h"

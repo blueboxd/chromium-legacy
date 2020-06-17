@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/hash/md5.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"

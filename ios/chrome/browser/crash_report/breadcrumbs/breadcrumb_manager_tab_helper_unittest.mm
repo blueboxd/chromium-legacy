@@ -21,9 +21,12 @@
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/ui/crw_web_view_proxy.h"
+#import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -54,6 +57,14 @@ class BreadcrumbManagerTabHelperTest : public PlatformTest {
         std::make_unique<web::TestNavigationManager>());
     InfoBarManagerImpl::CreateForWebState(&second_web_state_);
 
+    CRWWebViewScrollViewProxy* scroll_view_proxy =
+        [[CRWWebViewScrollViewProxy alloc] init];
+    scroll_view_ = [[UIScrollView alloc] init];
+    [scroll_view_proxy setScrollView:scroll_view_];
+    id web_view_proxy_mock = OCMProtocolMock(@protocol(CRWWebViewProxy));
+    [[[web_view_proxy_mock stub] andReturn:scroll_view_proxy] scrollViewProxy];
+    first_web_state_.SetWebViewProxy(web_view_proxy_mock);
+
     BreadcrumbManagerTabHelper::CreateForWebState(&first_web_state_);
   }
 
@@ -62,6 +73,7 @@ class BreadcrumbManagerTabHelperTest : public PlatformTest {
   web::TestWebState first_web_state_;
   web::TestWebState second_web_state_;
   BreadcrumbManagerKeyedService* breadcrumb_service_;
+  UIScrollView* scroll_view_ = nil;
 };
 
 // Tests that the identifier returned for a WebState is unique.
@@ -610,4 +622,51 @@ TEST_F(BreadcrumbManagerTabHelperTest, SequentialInfobarReplacements) {
                          InfoBarDelegate::InfoBarIdentifier::TEST_INFOBAR, 200);
   EXPECT_NE(std::string::npos, events.back().find(expected_event))
       << events.back();
+}
+
+// Tests Zoom event.
+TEST_F(BreadcrumbManagerTabHelperTest, Zoom) {
+  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
+
+  [scroll_view_.delegate scrollViewDidEndZooming:scroll_view_
+                                        withView:nil
+                                         atScale:0];
+
+  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  ASSERT_EQ(1ul, events.size());
+  EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbZoom))
+      << events.back();
+}
+
+// Tests Scroll event.
+TEST_F(BreadcrumbManagerTabHelperTest, Scroll) {
+  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
+
+  [scroll_view_.delegate scrollViewDidEndDragging:scroll_view_
+                                   willDecelerate:YES];
+
+  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  ASSERT_EQ(1ul, events.size());
+  EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbScroll))
+      << events.back();
+}
+
+// Tests batching sequential Scroll events.
+TEST_F(BreadcrumbManagerTabHelperTest, MultipleScrolls) {
+  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
+
+  for (int scroll = 0; scroll < 500; scroll++) {
+    [scroll_view_.delegate scrollViewDidEndDragging:scroll_view_
+                                     willDecelerate:YES];
+  }
+
+  // Scrolling 500 times should only log breadcrumbs on the 1st, 2nd, 5th, 20th,
+  // 100th and 200th time.
+  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  ASSERT_EQ(6ul, events.size());
+
+  // The events should contain the number of times the info has been replaced.
+  // Validate the last one, which occurs at the 200th scroll completion.
+  std::string expected = base::StringPrintf("%s %d", kBreadcrumbScroll, 200);
+  EXPECT_NE(std::string::npos, events.back().find(expected)) << events.back();
 }

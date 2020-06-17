@@ -3527,6 +3527,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   // Fill in the password and submit the form.  This shouldn't bring up a save
   // password prompt and shouldn't result in a renderer kill.
   SubmitInjectedPasswordForm(WebContents(), frame, submit_url);
+  // After navigation, the RenderFrameHost may change.
+  frame = ChildFrameAt(WebContents()->GetMainFrame(), 0);
   EXPECT_TRUE(frame->IsRenderFrameLive());
   EXPECT_EQ(submit_url, frame->GetLastCommittedURL());
   EXPECT_FALSE(prompt_observer->IsSavePromptAvailable());

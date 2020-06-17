@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ppapi/shared_impl/callback_tracker.h"
 #include "ppapi/shared_impl/id_assignment.h"

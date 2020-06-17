@@ -4,6 +4,7 @@
 
 #include "ash/public/cpp/fps_counter.h"
 
+#include "base/logging.h"
 #include "ui/compositor/compositor.h"
 
 namespace ash {

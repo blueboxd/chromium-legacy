@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/threading/sequenced_task_runner_handle.h"

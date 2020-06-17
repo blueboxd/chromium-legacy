@@ -96,6 +96,7 @@ class AppRegistrar {
   virtual DisplayMode GetAppUserDisplayMode(const AppId& app_id) const = 0;
 
   virtual base::Time GetAppLastLaunchTime(const AppId& app_id) const = 0;
+  virtual base::Time GetAppInstallTime(const AppId& app_id) const = 0;
 
   // Returns the "icons" field from the app manifest, use |AppIconManager| to
   // load icon bitmap data.
@@ -165,6 +166,8 @@ class AppRegistrar {
   void NotifyWebAppDisabledStateChanged(const AppId& app_id, bool is_disabled);
   void NotifyWebAppLastLaunchTimeChanged(const AppId& app_id,
                                          const base::Time& time);
+  void NotifyWebAppInstallTimeChanged(const AppId& app_id,
+                                      const base::Time& time);
 
  protected:
   Profile* profile() const { return profile_; }

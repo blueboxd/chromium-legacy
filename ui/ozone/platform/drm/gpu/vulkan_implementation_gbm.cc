@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/native_library.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_image.h"

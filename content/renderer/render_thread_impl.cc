@@ -150,7 +150,7 @@
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
-#include "content/renderer/android/synchronous_layer_tree_frame_sink.h"
+#include "content/renderer/android/synchronous_layer_tree_frame_sink_impl.h"
 #include "content/renderer/media/android/stream_texture_factory.h"
 #include "media/base/android/media_codec_util.h"
 #endif
@@ -1827,11 +1827,10 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
         std::move(render_frame_metadata_observer_remote));
 
     std::move(callback).Run(
-        std::make_unique<SynchronousLayerTreeFrameSink>(
+        std::make_unique<SynchronousLayerTreeFrameSinkImpl>(
             std::move(context_provider), std::move(worker_context_provider),
             compositor_task_runner_, GetGpuMemoryBufferManager(),
-            sync_message_filter(), render_widget->routing_id(),
-            g_next_layer_tree_frame_sink_id++,
+            sync_message_filter(), g_next_layer_tree_frame_sink_id++,
             std::move(params.synthetic_begin_frame_source),
             render_widget->widget_input_handler_manager()
                 ->GetSynchronousCompositorRegistry(),

@@ -180,6 +180,7 @@ circle{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
@@ -187,10 +188,10 @@ circle{
     "className": ".float.circle",
     "nodeWidth": "128",
     "nodeHeight": "128",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 insetSimpleRound{
@@ -373,6 +374,7 @@ insetSimpleRound{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
@@ -380,10 +382,10 @@ insetSimpleRound{
     "className": ".float.insetSimpleRound",
     "nodeWidth": "128",
     "nodeHeight": "128",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 insetComplexRound{
@@ -590,6 +592,7 @@ insetComplexRound{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
@@ -597,10 +600,10 @@ insetComplexRound{
     "className": ".float.insetComplexRound",
     "nodeWidth": "128",
     "nodeHeight": "128",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 ellipse{
@@ -783,6 +786,7 @@ ellipse{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
@@ -790,10 +794,10 @@ ellipse{
     "className": ".float.ellipse",
     "nodeWidth": "128",
     "nodeHeight": "80",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 contentBox{
@@ -1000,6 +1004,7 @@ contentBox{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
@@ -1007,10 +1012,10 @@ contentBox{
     "className": ".float.contentBox",
     "nodeWidth": "176",
     "nodeHeight": "160",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 polygon{
@@ -1110,6 +1115,7 @@ polygon{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
@@ -1117,10 +1123,10 @@ polygon{
     "className": ".float.polygon",
     "nodeWidth": "128",
     "nodeHeight": "128",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 raster{
@@ -1553,6 +1559,7 @@ raster{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
@@ -1560,10 +1567,10 @@ raster{
     "className": ".float.raster",
     "nodeWidth": "128",
     "nodeHeight": "128",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 

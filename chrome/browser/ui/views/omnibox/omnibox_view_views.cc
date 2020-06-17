@@ -244,7 +244,8 @@ OmniboxViewViews::OmniboxViewViews(OmniboxEditController* controller,
         location_bar_view_->browser()->profile()->GetPrefs());
     pref_change_registrar_.Add(
         omnibox::kPreventUrlElisionsInOmnibox,
-        base::BindRepeating(&OmniboxViewViews::Update, base::Unretained(this)));
+        base::BindRepeating(&OmniboxViewViews::OnShouldPreventElisionChanged,
+                            base::Unretained(this)));
   }
 }
 
@@ -275,8 +276,10 @@ void OmniboxViewViews::Init() {
     // Initialize the popup view using the same font.
     popup_view_.reset(
         new OmniboxPopupContentsView(this, model(), location_bar_view_));
-    if (OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction())
+    if (OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() &&
+        !model()->ShouldPreventElision()) {
       Observe(location_bar_view_->GetWebContents());
+    }
 
     // Set whether the text should be used to improve typing suggestions.
     SetShouldDoLearning(!location_bar_view_->profile()->IsOffTheRecord());
@@ -342,7 +345,8 @@ void OmniboxViewViews::OnTabChanged(content::WebContents* web_contents) {
   // When the tab is changed, reshow the path in case it had previously been
   // hidden by a user interaction (when certain field trials are enabled).
   ResetToHideOnInteraction();
-  if (OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
+  if (OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() &&
+      !model()->ShouldPreventElision()) {
     Observe(web_contents);
   }
 }
@@ -396,17 +400,18 @@ void OmniboxViewViews::EmphasizeURLComponents() {
   UpdateTextStyle(text, text_is_url, model()->client()->GetSchemeClassifier());
 
   // Only fade the path when everything but the host is de-emphasized.
-  if (delayed_path_fade_out_animation_ && CanFadePath()) {
+  if (delayed_path_fade_out_animation_ && IsURLEligibleForFading()) {
     // Whenever the text changes, EmphasizeURLComponents is called again, and
     // the animation is reset with a new |path_bounds|.
     delayed_path_fade_out_animation_->Start(GetPathBounds());
   }
 
   if (OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() &&
-      !OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
+      !OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() &&
+      !model()->ShouldPreventElision()) {
     // If reveal-on-hover is enabled and hide-on-interaction is disabled, hide
     // the path now.
-    if (CanFadePath())
+    if (IsURLEligibleForFading())
       SetPathColor(SK_ColorTRANSPARENT);
   }
 }
@@ -644,7 +649,8 @@ void OmniboxViewViews::OnThemeChanged() {
       GetThemeProvider(), OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
   set_placeholder_text_color(dimmed_text_color);
 
-  if (OmniboxFieldTrial::IsHidePathQueryRefEnabled()) {
+  if (OmniboxFieldTrial::IsHidePathQueryRefEnabled() &&
+      !model()->ShouldPreventElision()) {
     // The animation only applies when the path is dimmed to begin with.
 
     if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
@@ -1141,10 +1147,11 @@ void OmniboxViewViews::OnMouseMoved(const ui::MouseEvent& event) {
     location_bar_view_->OnOmniboxHovered(true);
 
   if (!OmniboxFieldTrial::IsHidePathQueryRefEnabled() ||
-      !OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover()) {
+      !OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() ||
+      model()->ShouldPreventElision()) {
     return;
   }
-  if (!CanFadePath())
+  if (!IsURLEligibleForFading())
     return;
   if (path_fade_out_after_hover_animation_)
     path_fade_out_after_hover_animation_->Stop();
@@ -1159,10 +1166,11 @@ void OmniboxViewViews::OnMouseExited(const ui::MouseEvent& event) {
     location_bar_view_->OnOmniboxHovered(false);
 
   if (!OmniboxFieldTrial::IsHidePathQueryRefEnabled() ||
-      !OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover()) {
+      !OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() ||
+      model()->ShouldPreventElision()) {
     return;
   }
-  if (!CanFadePath())
+  if (!IsURLEligibleForFading())
     return;
 
   // When hide-on-interaction is enabled, we don't want to fade the path in or
@@ -1587,11 +1595,12 @@ void OmniboxViewViews::OnBlur() {
 
   // When the relevant field trial is enabled, reset state so that the path will
   // be hidden upon interaction with the page.
-  if (OmniboxFieldTrial::IsHidePathQueryRefEnabled()) {
+  if (OmniboxFieldTrial::IsHidePathQueryRefEnabled() &&
+      !model()->ShouldPreventElision()) {
     if (OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() &&
         !OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
       ResetPathFadeInAnimation();
-      if (CanFadePath())
+      if (IsURLEligibleForFading())
         SetPathColor(SK_ColorTRANSPARENT);
     } else if (OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
       ResetToHideOnInteraction();
@@ -1617,12 +1626,16 @@ bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
 
 void OmniboxViewViews::DidFinishNavigation(
     content::NavigationHandle* navigation) {
-  if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction())
+  if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() ||
+      model()->ShouldPreventElision()) {
     return;
+  }
+
   if (navigation->IsSameDocument() || !navigation->IsInMainFrame()) {
     // If we've already finished fading out the path, make sure the path is not
     // re-shown for same-document or subframe navigations.
-    if (CanFadePath() && path_fade_out_after_interaction_animation_ &&
+    if (IsURLEligibleForFading() &&
+        path_fade_out_after_interaction_animation_ &&
         path_fade_out_after_interaction_animation_->HasStarted() &&
         !path_fade_out_after_interaction_animation_->IsAnimating()) {
       SetPathColor(SK_ColorTRANSPARENT);
@@ -1636,12 +1649,14 @@ void OmniboxViewViews::DidFinishNavigation(
 
 void OmniboxViewViews::DidGetUserInteraction(
     const blink::WebInputEvent::Type type) {
-  if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction())
+  if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() ||
+      model()->ShouldPreventElision()) {
     return;
+  }
 
   // This path fade-out animation should only run once per navigation. It is
   // recreated for the next navigation in DidFinishNavigation.
-  if (CanFadePath() &&
+  if (IsURLEligibleForFading() &&
       !path_fade_out_after_interaction_animation_->HasStarted()) {
     path_fade_out_after_interaction_animation_->Start(GetPathBounds());
   }
@@ -2134,7 +2149,7 @@ gfx::Range OmniboxViewViews::GetPathBounds() {
   return gfx::Range(host.end(), text.size());
 }
 
-bool OmniboxViewViews::CanFadePath() {
+bool OmniboxViewViews::IsURLEligibleForFading() {
   if (HasFocus() || model()->user_input_in_progress())
     return false;
   if (!model()->CurrentTextIsURL())
@@ -2151,8 +2166,10 @@ bool OmniboxViewViews::CanFadePath() {
 }
 
 void OmniboxViewViews::ResetToHideOnInteraction() {
-  if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction())
+  if (!OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() ||
+      model()->ShouldPreventElision()) {
     return;
+  }
   // Delete the fade-in animation; it'll get recreated in
   // DidGetUserInteraction() if reveal-on-hover is enabled. We don't want to
   // fade in the path while it's already showing.
@@ -2162,7 +2179,7 @@ void OmniboxViewViews::ResetToHideOnInteraction() {
   path_fade_out_after_interaction_animation_ =
       std::make_unique<PathFadeAnimation>(this, dimmed_text_color,
                                           SK_ColorTRANSPARENT, 0);
-  if (CanFadePath()) {
+  if (IsURLEligibleForFading()) {
     SetPathColor(GetOmniboxColor(GetThemeProvider(),
                                  OmniboxPart::LOCATION_BAR_TEXT_DIMMED));
   }
@@ -2170,11 +2187,41 @@ void OmniboxViewViews::ResetToHideOnInteraction() {
 
 void OmniboxViewViews::ResetPathFadeInAnimation() {
   DCHECK(OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover());
+  DCHECK(!model()->ShouldPreventElision());
   const SkColor dimmed_text_color = GetOmniboxColor(
       GetThemeProvider(), OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
   path_fade_in_animation_ = std::make_unique<PathFadeAnimation>(
       this, SK_ColorTRANSPARENT, dimmed_text_color,
       OmniboxFieldTrial::RevealPathQueryRefOnHoverThresholdMs());
+}
+
+void OmniboxViewViews::OnShouldPreventElisionChanged() {
+  if (!OmniboxFieldTrial::IsHidePathQueryRefEnabled())
+    return;
+  SkColor dimmed_text_color = GetOmniboxColor(
+      GetThemeProvider(), OmniboxPart::LOCATION_BAR_TEXT_DIMMED);
+  if (model()->ShouldPreventElision()) {
+    delayed_path_fade_out_animation_.reset();
+    path_fade_in_animation_.reset();
+    path_fade_out_after_hover_animation_.reset();
+    path_fade_out_after_interaction_animation_.reset();
+    if (IsURLEligibleForFading()) {
+      SetPathColor(dimmed_text_color);
+    }
+    return;
+  }
+  if (OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction()) {
+    if (location_bar_view_)
+      Observe(location_bar_view_->GetWebContents());
+    ResetToHideOnInteraction();
+  } else if (OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover()) {
+    if (IsURLEligibleForFading()) {
+      SetPathColor(SK_ColorTRANSPARENT);
+    }
+    ResetPathFadeInAnimation();
+    path_fade_out_after_hover_animation_ = std::make_unique<PathFadeAnimation>(
+        this, dimmed_text_color, SK_ColorTRANSPARENT, 0);
+  }
 }
 
 OmniboxViewViews::PathFadeAnimation*

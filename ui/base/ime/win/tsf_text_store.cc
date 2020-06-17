@@ -11,6 +11,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/numerics/ranges.h"
 #include "base/win/scoped_variant.h"
 #include "ui/base/ime/text_input_client.h"

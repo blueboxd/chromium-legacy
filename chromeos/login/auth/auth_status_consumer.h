@@ -9,6 +9,7 @@
 
 #include "base/component_export.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/net_errors.h"

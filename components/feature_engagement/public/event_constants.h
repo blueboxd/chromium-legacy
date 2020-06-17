@@ -24,6 +24,11 @@ extern const char kNewTabOpened[];
 // Desktop
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
+// A new tab was opened when 5 (or more) tabs were already open.
+extern const char kSixthTabOpened[];
+// The user made a new tab group.
+extern const char kTabGroupCreated[];
+
 // All conditions for reopen closed tab IPH were met. Since this IPH needs to
 // track user events (opening/closing tabs, focusing the omnibox, etc) on the
 // second level, it must be done manually.

@@ -51,10 +51,7 @@ interface DrmDevice {
   // Instructs the GPU to abandon a DRM device.
   RemoveGraphicsDevice(mojo_base.mojom.FilePath path);
 
-  // Instructs the GPU to disable a DRM device.
-  DisableNativeDisplay(int64 display_id) => (int64 display_id, bool success);
-
-  // Configures a DRM display returning true on success.
+  // Configures (Enables/Disables) a DRM display, returning true on success.
   ConfigureNativeDisplay(
       display.mojom.DisplayConfigurationParams display_config_params) =>
       (int64 display_id, bool success);

@@ -58,7 +58,7 @@ bool IsTimezoneAutomaticDetectionUserEditable() {
 
   if (IsSystemTimezoneAutomaticDetectionManaged()) {
     return GetSystemTimezoneAutomaticDetectionPolicyValue() ==
-        enterprise_management::SystemTimezoneProto::USERS_DECIDE;
+           enterprise_management::SystemTimezoneProto::USERS_DECIDE;
   }
 
   return true;
@@ -156,7 +156,7 @@ void DateTimeHandler::HandleShowParentAccessForTimeZone(
       base::BindOnce(&DateTimeHandler::OnParentAccessValidation,
                      weak_ptr_factory_.GetWeakPtr()),
       ash::ParentAccessRequestReason::kChangeTimezone, false /* extra_dimmer */,
-      base::Time());
+      base::Time::Now());
 }
 
 void DateTimeHandler::OnParentAccessValidation(bool success) {
@@ -166,10 +166,9 @@ void DateTimeHandler::OnParentAccessValidation(bool success) {
 
 void DateTimeHandler::NotifyTimezoneAutomaticDetectionPolicy() {
   bool managed = !IsTimezoneAutomaticDetectionUserEditable();
-  bool force_enabled = managed &&
-                       g_browser_process->platform_part()
-                           ->GetTimezoneResolverManager()
-                           ->ShouldApplyResolvedTimezone();
+  bool force_enabled = managed && g_browser_process->platform_part()
+                                      ->GetTimezoneResolverManager()
+                                      ->ShouldApplyResolvedTimezone();
 
   FireWebUIListener("time-zone-auto-detect-policy", base::Value(managed),
                     base::Value(force_enabled));

@@ -69780,6 +69780,28 @@ Full version information for the fingerprint enum values:
   <int value="4" label="Seed import failed - invalid response date string"/>
 </enum>
 
+<enum name="VariationsHeadersRequestContextCategory">
+  <int value="0" label="First party: Request intiated by browser."/>
+  <int value="1"
+      label="First party: Request initiated by internal Chrome page."/>
+  <int value="2"
+      label="First party: Request initiated by Google-associated page."/>
+  <int value="3"
+      label="First party: Request initiated by a Google-associated sub-frame
+             on a Google-associated page."/>
+  <int value="4"
+      label="Third party: Request initiated by non-Google-associated page
+             (request initiator)."/>
+  <int value="5" label="Third party: No TrustedParams."/>
+  <int value="6" label="Third party: No IsolationInfo."/>
+  <int value="7"
+      label="Third party: Request initiated by a sub-frame on a
+             non-Google-associated page."/>
+  <int value="8"
+      label="Third party: Request initiated by non-Google-associated page
+             (frame origin)."/>
+</enum>
+
 <enum name="VariationsHeadersURLValidationResult">
   <int value="0" label="Rejected: Invalid URL."/>
   <int value="1" label="Rejected: Not https. (Deprecated)"/>

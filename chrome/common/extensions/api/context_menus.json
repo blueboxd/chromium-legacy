@@ -30,7 +30,7 @@
       {
         "name": "create",
         "type": "function",
-        "description": "Creates a new context menu item. If an error occurs during creation, it may not be detected until the creation callback fires; details will be in <code>chrome.runtime.lastError</code>.",
+        "description": "Creates a new context menu item. If an error occurs during creation, it may not be detected until the creation callback fires; details will be in $(ref:runtime.lastError).",
         "returns": {
           "choices": [
             { "type": "integer" },
@@ -125,7 +125,7 @@
             "type": "function",
             "name": "callback",
             "optional": true,
-            "description": "Called when the item has been created in the browser. If an error occurs during creation, details will be available in <code>chrome.runtime.lastError</code>.",
+            "description": "Called when the item has been created in the browser. If an error occurs during creation, details will be available in $(ref:runtime.lastError).",
             "parameters": []
           }
         ]

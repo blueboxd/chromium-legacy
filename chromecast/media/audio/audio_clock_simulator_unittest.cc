@@ -5,6 +5,7 @@
 #include <cmath>
 #include <tuple>
 
+#include "base/check_op.h"
 #include "base/logging.h"
 #include "chromecast/media/audio/audio_clock_simulator.h"
 #include "testing/gmock/include/gmock/gmock.h"

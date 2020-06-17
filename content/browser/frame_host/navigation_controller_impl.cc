@@ -533,6 +533,17 @@ base::Time NavigationControllerImpl::TimeSmoother::GetSmoothedTime(
   return t;
 }
 
+NavigationControllerImpl::ScopedShowRepostDialogForTesting::
+    ScopedShowRepostDialogForTesting()
+    : was_disallowed_(g_check_for_repost) {
+  g_check_for_repost = true;
+}
+
+NavigationControllerImpl::ScopedShowRepostDialogForTesting::
+    ~ScopedShowRepostDialogForTesting() {
+  g_check_for_repost = was_disallowed_;
+}
+
 NavigationControllerImpl::NavigationControllerImpl(
     NavigationControllerDelegate* delegate,
     BrowserContext* browser_context)

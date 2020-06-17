@@ -8,6 +8,7 @@
 
 #include "ash/app_list/model/app_list_item.h"
 #include "base/guid.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 
 namespace ash {

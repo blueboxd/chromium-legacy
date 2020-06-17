@@ -524,6 +524,8 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, Subframe) {
   NavigateFrameToURL(frame, manual_subframe);
   ASSERT_TRUE(HistoryContainsURL(manual_subframe));
 
+  // After navigation, the current RenderFrameHost may change.
+  frame = rfh_grabber.render_frame_host();
   // Page-initiated location.replace subframe navigations should not show up in
   // history.
   std::string script = "location.replace('form.html')";

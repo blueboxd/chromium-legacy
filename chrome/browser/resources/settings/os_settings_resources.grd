@@ -1101,6 +1101,12 @@
       <structure name="IDR_OS_SETTINGS_DATE_TIME_TYPES_JS"
                  file="chromeos/date_time_page/date_time_types.js"
                  compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_TIMEZONE_BROWSER_PROXY_JS"
+                 file="chromeos/date_time_page/timezone_browser_proxy.js"
+                 compress="false" type="chrome_html" />
+      <structure name="IDR_OS_SETTINGS_TIMEZONE_BROWSER_PROXY_HTML"
+                 file="chromeos/date_time_page/timezone_browser_proxy.html"
+                 compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_TIMEZONE_SELECTOR_HTML"
                  file="chromeos/date_time_page/timezone_selector.html"
                  compress="false" type="chrome_html" />

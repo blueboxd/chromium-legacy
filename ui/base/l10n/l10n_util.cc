@@ -45,6 +45,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "base/logging.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #endif  // OS_WIN
 

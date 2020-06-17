@@ -5,6 +5,7 @@
 #import "ios/web/navigation/crw_js_navigation_handler.h"
 
 #include "base/json/string_escape.h"
+#include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/history_state_util.h"
 #import "ios/web/js_messaging/crw_js_injector.h"
@@ -181,7 +182,7 @@ GURL URLEscapedForHistory(const GURL& url) {
   if (currentIndex > 0) {
     web::NavigationItem* previousItem =
         self.navigationManagerImpl->GetItemAtIndex(currentIndex - 1);
-    web::UserAgentType userAgent = previousItem->GetUserAgentForInheritance();
+    web::UserAgentType userAgent = previousItem->GetUserAgentType();
     if (userAgent != web::UserAgentType::NONE) {
       navItem->SetUserAgentType(userAgent);
     }

@@ -182,6 +182,14 @@ base::Time BookmarkAppRegistrar::GetAppLastLaunchTime(
              : base::Time();
 }
 
+base::Time BookmarkAppRegistrar::GetAppInstallTime(
+    const web_app::AppId& app_id) const {
+  const Extension* extension = GetBookmarkAppDchecked(app_id);
+  return extension ? extensions::ExtensionPrefs::Get(profile())->GetInstallTime(
+                         extension->id())
+                   : base::Time();
+}
+
 std::vector<WebApplicationIconInfo> BookmarkAppRegistrar::GetAppIconInfos(
     const web_app::AppId& app_id) const {
   std::vector<WebApplicationIconInfo> result;

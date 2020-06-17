@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/optional.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_types_export.h"
 #include "ui/gfx/geometry/point.h"
@@ -17,12 +18,12 @@ struct DISPLAY_TYPES_EXPORT DisplayConfigurationParams {
   DisplayConfigurationParams();
   DisplayConfigurationParams(int64_t id,
                              gfx::Point origin,
-                             std::unique_ptr<display::DisplayMode> pmode);
+                             const display::DisplayMode* pmode);
   ~DisplayConfigurationParams();
 
-  int64_t id;
-  gfx::Point origin;
-  std::unique_ptr<display::DisplayMode> mode;
+  int64_t id = 0;
+  gfx::Point origin = gfx::Point();
+  base::Optional<std::unique_ptr<display::DisplayMode>> mode = base::nullopt;
 };
 
 }  // namespace display

@@ -39,7 +39,7 @@ namespace enterprise.reportingPrivate {
   interface Functions {
 
     // Uploads the status of Chrome browser to the admin console by sending
-    // request to the DMServer. Sets runtime.lastError on failure.
+    // request to the DMServer. Sets $(ref:runtime.lastError) on failure.
     static void uploadChromeDesktopReport(
         object report,
         optional DoneCallback callback);
@@ -52,12 +52,12 @@ namespace enterprise.reportingPrivate {
     // can be used to encrypt the data stored with |setDeviceData|.
     static void getPersistentSecret(GetPersistentSecretCallback callback);
 
-    // Gets the device data for |id|. Sets runtime.lastError on failure.
+    // Gets the device data for |id|. Sets $(ref:runtime.lastError) on failure.
     static void getDeviceData(DOMString id, GetDeviceDataCallback callback);
 
-    // Sets the device data for |id|. Sets runtime.lastError on failure. If the
-    // |data| parameter is undefined and there is already data associated with
-    // |id| it will be cleared.
+    // Sets the device data for |id|. Sets $(ref:runtime.lastError) on failure.
+    // If the |data| parameter is undefined and there is already data
+    // associated with |id| it will be cleared.
     static void setDeviceData(DOMString id,
              optional ArrayBuffer data,
              optional DoneCallback callback);

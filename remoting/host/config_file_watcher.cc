@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path_watcher.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"

@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "remoting/base/grpc_support/grpc_async_unary_request.h"
 #include "remoting/base/grpc_support/grpc_authenticated_executor.h"
 #include "remoting/base/grpc_support/grpc_channel.h"

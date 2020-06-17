@@ -4,6 +4,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "services/device/device_service_jni_headers/DeviceFeatureList_jni.h"
 #include "services/device/public/cpp/device_features.h"

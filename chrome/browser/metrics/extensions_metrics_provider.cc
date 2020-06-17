@@ -235,8 +235,6 @@ std::vector<ExtensionInstallProto::DisableReason> GetDisableReasons(
        ExtensionInstallProto::UNSUPPORTED_REQUIREMENT},
       {extensions::disable_reason::DISABLE_SIDELOAD_WIPEOUT,
        ExtensionInstallProto::SIDELOAD_WIPEOUT},
-      {extensions::disable_reason::DEPRECATED_DISABLE_UNKNOWN_FROM_SYNC,
-       ExtensionInstallProto::UNKNOWN_FROM_SYNC},
       {extensions::disable_reason::DISABLE_NOT_VERIFIED,
        ExtensionInstallProto::NOT_VERIFIED},
       {extensions::disable_reason::DISABLE_GREYLIST,
@@ -258,6 +256,10 @@ std::vector<ExtensionInstallProto::DisableReason> GetDisableReasons(
   };
 
   int disable_reasons = prefs->GetDisableReasons(id);
+  DCHECK_EQ(
+      0, disable_reasons &
+             extensions::disable_reason::DEPRECATED_DISABLE_UNKNOWN_FROM_SYNC)
+      << "Encountered bad disable reason: " << disable_reasons;
   std::vector<ExtensionInstallProto::DisableReason> reasons;
   for (const auto& entry : disable_reason_map) {
     int mask = static_cast<int>(entry.disable_reason);

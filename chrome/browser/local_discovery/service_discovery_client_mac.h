@@ -15,19 +15,15 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace base {
 class Thread;
 }
 
-namespace local_discovery {
+@class NetServiceBrowser;
+@class NetServiceResolver;
 
-template <class T>
-class ServiceDiscoveryThreadDeleter {
- public:
-  inline void operator()(T* t) { t->DeleteSoon(); }
-};
+namespace local_discovery {
 
 // Implementation of ServiceDiscoveryClient that uses the Bonjour SDK.
 // https://developer.apple.com/library/mac/documentation/Networking/Conceptual/
@@ -37,6 +33,8 @@ class ServiceDiscoveryClientMac : public ServiceDiscoverySharedClient {
   ServiceDiscoveryClientMac();
 
  private:
+  friend class ServiceDiscoveryClientMacTest;
+
   ~ServiceDiscoveryClientMac() override;
 
   // ServiceDiscoveryClient implementation.
@@ -60,42 +58,6 @@ class ServiceDiscoveryClientMac : public ServiceDiscoverySharedClient {
 
 class ServiceWatcherImplMac : public ServiceWatcher {
  public:
-  class NetServiceBrowserContainer {
-   public:
-    NetServiceBrowserContainer(
-        const std::string& service_type,
-        ServiceWatcher::UpdatedCallback callback,
-        scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner);
-    ~NetServiceBrowserContainer();
-
-    void Start();
-    void DiscoverNewServices();
-
-    void OnServicesUpdate(ServiceWatcher::UpdateType update,
-                          const std::string& service);
-
-    void DeleteSoon();
-
-   private:
-    void StartOnDiscoveryThread();
-    void DiscoverOnDiscoveryThread();
-
-    bool IsOnServiceDiscoveryThread() {
-      return base::ThreadTaskRunnerHandle::Get() ==
-             service_discovery_runner_.get();
-    }
-
-    std::string service_type_;
-    ServiceWatcher::UpdatedCallback callback_;
-
-    scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;
-    scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner_;
-
-    base::scoped_nsobject<id> delegate_;
-    base::scoped_nsobject<NSNetServiceBrowser> browser_;
-    base::WeakPtrFactory<NetServiceBrowserContainer> weak_factory_;
-  };
-
   ServiceWatcherImplMac(
       const std::string& service_type,
       ServiceWatcher::UpdatedCallback callback,
@@ -112,57 +74,28 @@ class ServiceWatcherImplMac : public ServiceWatcher {
   void SetActivelyRefreshServices(bool actively_refresh_services) override;
   std::string GetServiceType() const override;
 
-  std::string service_type_;
-  ServiceWatcher::UpdatedCallback callback_;
-  bool started_;
+  void StartOnDiscoveryThread(
+      ServiceWatcher::UpdatedCallback callback,
+      scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
+  void DiscoverOnDiscoveryThread();
 
-  std::unique_ptr<NetServiceBrowserContainer,
-                  ServiceDiscoveryThreadDeleter<NetServiceBrowserContainer>>
-      container_;
-  base::WeakPtrFactory<ServiceWatcherImplMac> weak_factory_;
+  // These members should only be accessed on the object creator's sequence.
+  const std::string service_type_;
+  ServiceWatcher::UpdatedCallback callback_;
+  bool started_ = false;
+
+  scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner_;
+  // |browser_| lives on the |service_discovery_runner_|. It is released
+  // by move()ing it to StopServiceBrowser().
+  base::scoped_nsobject<NetServiceBrowser> browser_;
+
+  base::WeakPtrFactory<ServiceWatcherImplMac> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWatcherImplMac);
 };
 
 class ServiceResolverImplMac : public ServiceResolver {
  public:
-  class NetServiceContainer {
-   public:
-    NetServiceContainer(
-        const std::string& service_name,
-        ServiceResolver::ResolveCompleteCallback callback,
-        scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner);
-
-    virtual ~NetServiceContainer();
-
-    void StartResolving();
-
-    void OnResolveUpdate(RequestStatus);
-
-    void SetServiceForTesting(base::scoped_nsobject<NSNetService> service);
-
-    void DeleteSoon();
-
-   private:
-    void StartResolvingOnDiscoveryThread();
-
-    bool IsOnServiceDiscoveryThread() {
-      return base::ThreadTaskRunnerHandle::Get() ==
-             service_discovery_runner_.get();
-    }
-
-    const std::string service_name_;
-    ServiceResolver::ResolveCompleteCallback callback_;
-
-    scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;
-    scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner_;
-
-    base::scoped_nsobject<id> delegate_;
-    base::scoped_nsobject<NSNetService> service_;
-    ServiceDescription service_description_;
-    base::WeakPtrFactory<NetServiceContainer> weak_factory_;
-  };
-
   ServiceResolverImplMac(
       const std::string& service_name,
       ServiceResolver::ResolveCompleteCallback callback,
@@ -170,28 +103,36 @@ class ServiceResolverImplMac : public ServiceResolver {
 
   ~ServiceResolverImplMac() override;
 
-  // Testing methods.
-  NetServiceContainer* GetContainerForTesting();
-
  private:
-
   void StartResolving() override;
   std::string GetName() const override;
 
   void OnResolveComplete(RequestStatus status,
                          const ServiceDescription& description);
 
+  void StartResolvingOnDiscoveryThread(
+      ServiceResolver::ResolveCompleteCallback callback,
+      scoped_refptr<base::SingleThreadTaskRunner> callback_runner);
+  void StopResolving();
+
+  // These members should only be accessed on the object creator's sequence.
   const std::string service_name_;
   ServiceResolver::ResolveCompleteCallback callback_;
-  bool has_resolved_;
+  bool has_resolved_ = false;
 
-  std::unique_ptr<NetServiceContainer,
-                  ServiceDiscoveryThreadDeleter<NetServiceContainer>>
-      container_;
-  base::WeakPtrFactory<ServiceResolverImplMac> weak_factory_;
+  scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner_;
+  // |resolver_| lives on the |service_discovery_runner_|. It is released
+  // by move()ing it to StopServiceResolver().
+  base::scoped_nsobject<NetServiceResolver> resolver_;
+
+  base::WeakPtrFactory<ServiceResolverImplMac> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceResolverImplMac);
 };
+
+// Parses the data out of the |service|, updating the |description| with the
+// results.
+void ParseNetService(NSNetService* service, ServiceDescription& description);
 
 }  // namespace local_discovery
 

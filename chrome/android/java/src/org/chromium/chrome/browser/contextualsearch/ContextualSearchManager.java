@@ -39,7 +39,6 @@ import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -59,6 +58,8 @@ import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.feature_engagement.TriggerState;
 import org.chromium.components.navigation_interception.NavigationParams;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -1776,7 +1777,7 @@ public class ContextualSearchManager
      * @return Whether the Contextual Search feature was disabled by the user explicitly.
      */
     public static boolean isContextualSearchDisabled() {
-        return PrefServiceBridge.getInstance()
+        return getPrefService()
                 .getString(Pref.CONTEXTUAL_SEARCH_ENABLED)
                 .equals(CONTEXTUAL_SEARCH_DISABLED);
     }
@@ -1785,7 +1786,7 @@ public class ContextualSearchManager
      * @return Whether the Contextual Search feature is disabled by policy.
      */
     public static boolean isContextualSearchDisabledByPolicy() {
-        return PrefServiceBridge.getInstance().isManagedPreference(Pref.CONTEXTUAL_SEARCH_ENABLED)
+        return getPrefService().isManagedPreference(Pref.CONTEXTUAL_SEARCH_ENABLED)
                 && isContextualSearchDisabled();
     }
 
@@ -1794,15 +1795,19 @@ public class ContextualSearchManager
      *         user).
      */
     public static boolean isContextualSearchUninitialized() {
-        return PrefServiceBridge.getInstance().getString(Pref.CONTEXTUAL_SEARCH_ENABLED).isEmpty();
+        return getPrefService().getString(Pref.CONTEXTUAL_SEARCH_ENABLED).isEmpty();
     }
 
     /**
      * @param enabled Whether Contextual Search should be enabled.
      */
     public static void setContextualSearchState(boolean enabled) {
-        PrefServiceBridge.getInstance().setString(Pref.CONTEXTUAL_SEARCH_ENABLED,
+        getPrefService().setString(Pref.CONTEXTUAL_SEARCH_ENABLED,
                 enabled ? CONTEXTUAL_SEARCH_ENABLED : CONTEXTUAL_SEARCH_DISABLED);
+    }
+
+    private static PrefService getPrefService() {
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 
     // ============================================================================================

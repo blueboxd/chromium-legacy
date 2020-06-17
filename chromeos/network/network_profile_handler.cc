@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"

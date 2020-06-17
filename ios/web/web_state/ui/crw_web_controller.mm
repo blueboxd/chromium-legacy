@@ -940,6 +940,22 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       web::WKNavigationState::FINISHED)
     return;
 
+  web::NavigationItem* pendingOrCommittedItem =
+      self.navigationManagerImpl->GetPendingItem();
+  if (!pendingOrCommittedItem)
+    pendingOrCommittedItem = self.navigationManagerImpl->GetLastCommittedItem();
+  if (pendingOrCommittedItem) {
+    // This stores the UserAgent that was used to load the item.
+    if (pendingOrCommittedItem->GetUserAgentType() ==
+            web::UserAgentType::NONE &&
+        web::wk_navigation_util::URLNeedsUserAgentType(
+            pendingOrCommittedItem->GetURL())) {
+      pendingOrCommittedItem->SetUserAgentType(
+          self.webStateImpl->GetUserAgentForNextNavigation(
+              pendingOrCommittedItem->GetURL()));
+    }
+  }
+
   // Restore allowsBackForwardNavigationGestures once restoration is complete.
   if (!self.navigationManagerImpl->IsRestoreSessionInProgress()) {
     if (_webView.allowsBackForwardNavigationGestures !=
@@ -1414,7 +1430,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
           : web::UserAgentType::MOBILE;
   web::NavigationItem* item = self.currentNavItem;
   web::UserAgentType userAgentType =
-      item ? item->GetUserAgentType(_containerView) : defaultUserAgent;
+      item ? item->GetUserAgentType() : defaultUserAgent;
   if (userAgentType == web::UserAgentType::AUTOMATIC) {
     userAgentType =
         web::GetWebClient()->GetDefaultUserAgent(_containerView, GURL());

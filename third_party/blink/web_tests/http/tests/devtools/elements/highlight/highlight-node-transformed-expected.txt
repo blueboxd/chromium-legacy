@@ -82,16 +82,17 @@ div{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
     "idValue": "div",
     "nodeWidth": "100",
     "nodeHeight": "80",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 

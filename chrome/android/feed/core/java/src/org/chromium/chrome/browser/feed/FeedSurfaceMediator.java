@@ -30,7 +30,7 @@ import org.chromium.chrome.browser.ntp.cards.promo.HomepagePromoController.Homep
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
@@ -40,9 +40,11 @@ import org.chromium.chrome.browser.suggestions.SuggestionsMetrics;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenu;
 import org.chromium.components.browser_ui.widget.listmenu.ListMenuItemProperties;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.prefs.PrefService;
 import org.chromium.components.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -180,8 +182,7 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
         };
         stream.addOnContentChangedListener(mStreamContentChangedListener);
 
-        boolean suggestionsVisible =
-                PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
+        boolean suggestionsVisible = getPrefService().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
 
         if (mHasHeader) {
             mSectionHeader = new SectionHeader(getSectionHeaderText(suggestionsVisible),
@@ -288,8 +289,7 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
 
     /** Update whether the section header should be expanded and its text contents. */
     private void updateSectionHeader() {
-        boolean suggestionsVisible =
-                PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
+        boolean suggestionsVisible = getPrefService().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
         if (mSectionHeader.isExpanded() != suggestionsVisible) mSectionHeader.toggleHeader();
 
         mSectionHeader.setHeaderText(getSectionHeaderText(mSectionHeader.isExpanded()));
@@ -310,8 +310,7 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
      * expand icon on the section header view.
      */
     private void onSectionHeaderToggled() {
-        PrefServiceBridge.getInstance().setBoolean(
-                Pref.ARTICLES_LIST_VISIBLE, mSectionHeader.isExpanded());
+        getPrefService().setBoolean(Pref.ARTICLES_LIST_VISIBLE, mSectionHeader.isExpanded());
         mCoordinator.getStream().setStreamContentVisibility(mSectionHeader.isExpanded());
         // TODO(huayinz): Update the section header view through a ModelChangeProcessor.
         mCoordinator.getSectionHeaderView().updateVisuals();
@@ -391,6 +390,10 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
      */
     boolean getTouchEnabled() {
         return mTouchEnabled;
+    }
+
+    private PrefService getPrefService() {
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 
     // TouchEnabledDelegate interface.

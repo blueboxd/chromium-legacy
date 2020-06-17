@@ -182,7 +182,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'f5cd604cb9d002ae6bd17da48d93e9d6d96afdd3',
+  'skia_revision': '1443609db494f642d1a8302948fc194546ba82b2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'cac292283bfa951d65a870b5a46136eff3963d0c',
+  'devtools_frontend_revision': '99f100357776465a70ad5b6455bb60b49cd58615',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -340,7 +340,7 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:fbe7aec770944d17c9f3006f6cbb5c19e8cd43ea',
+  'gn_version': 'git_revision:db55efd4bccc863849e396df094b754b31cb7d4b',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
@@ -1119,7 +1119,7 @@ deps = {
   },
 
   'src/third_party/libunwindstack': {
-      'url': Var('chromium_git') + '/chromium/src/third_party/libunwindstack.git' + '@' + '046920fc491aba67c6f6a750b4be7b835cff4e5b',
+      'url': Var('chromium_git') + '/chromium/src/third_party/libunwindstack.git' + '@' + '11659d420a71e7323b379ea8781f07c6f384bc7e',
       'condition': 'checkout_android',
   },
 
@@ -1524,7 +1524,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@20aa34ea8ddcd10ba290475f0d8c303721821f10',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e2fbb30f588ef629766400ffb2bba64c70a94162',
     'condition': 'checkout_src_internal',
   },
 

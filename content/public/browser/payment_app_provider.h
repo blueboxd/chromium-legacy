@@ -54,7 +54,7 @@ class CONTENT_EXPORT PaymentAppProvider {
   virtual void GetAllPaymentApps(BrowserContext* browser_context,
                                  GetAllPaymentAppsCallback callback) = 0;
   virtual void InvokePaymentApp(
-      BrowserContext* browser_context,
+      WebContents* web_contents,
       int64_t registration_id,
       const url::Origin& sw_origin,
       payments::mojom::PaymentRequestEventDataPtr event_data,
@@ -72,13 +72,13 @@ class CONTENT_EXPORT PaymentAppProvider {
       RegistrationIdCallback registration_id_callback,
       InvokePaymentAppCallback callback) = 0;
   virtual void CanMakePayment(
-      BrowserContext* browser_context,
+      WebContents* web_contents,
       int64_t registration_id,
       const url::Origin& sw_origin,
       const std::string& payment_request_id,
       payments::mojom::CanMakePaymentEventDataPtr event_data,
       CanMakePaymentCallback callback) = 0;
-  virtual void AbortPayment(BrowserContext* browser_context,
+  virtual void AbortPayment(WebContents* web_contents,
                             int64_t registration_id,
                             const url::Origin& sw_origin,
                             const std::string& payment_request_id,
@@ -89,12 +89,12 @@ class CONTENT_EXPORT PaymentAppProvider {
   // previously opened window in the same browser context will be closed after
   // calling this interface.
   virtual void SetOpenedWindow(WebContents* web_contents) = 0;
-  virtual void CloseOpenedWindow(BrowserContext* browser_context) = 0;
+  virtual void CloseOpenedWindow() = 0;
 
   // Notify the opened payment handler window is closing or closed by user so as
   // to abort payment request.
   virtual void OnClosingOpenedWindow(
-      BrowserContext* browser_context,
+      WebContents* web_contents,
       payments::mojom::PaymentEventResponseType reason) = 0;
 
   // Check whether given |sw_js_url| from |manifest_url| is allowed to register

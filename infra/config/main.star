@@ -9,9 +9,12 @@
 load('//project.star', 'master_only_exec')
 
 lucicfg.check_version(
-    min = '1.15.0',
+    min = '1.15.1',
     message = 'Update depot_tools',
 )
+
+luci.builder.defaults.resultdb.set(resultdb.settings(enable=False))
+
 
 # Enable LUCI Realms support.
 lucicfg.enable_experiment('crbug.com/1085650')

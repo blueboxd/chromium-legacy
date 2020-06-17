@@ -208,8 +208,7 @@ class SelfDeleteInstaller
       return;
 
     if (success && web_contents() != nullptr) {
-      std::move(callback_).Run(web_contents()->GetBrowserContext(),
-                               registration_id_);
+      std::move(callback_).Run(web_contents(), registration_id_);
     } else {
       std::move(callback_).Run(nullptr, -1);
     }

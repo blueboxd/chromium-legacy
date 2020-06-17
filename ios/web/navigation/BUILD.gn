@@ -57,8 +57,6 @@ source_set("navigation") {
     "navigation_item_impl_list.mm",
     "navigation_item_storage_builder.h",
     "navigation_item_storage_builder.mm",
-    "nscoder_util.h",
-    "nscoder_util.mm",
     "serializable_user_data_manager_impl.h",
     "serializable_user_data_manager_impl.mm",
     "session_storage_builder.h",
@@ -86,6 +84,7 @@ source_set("core") {
     "//base",
     "//components/url_formatter:url_formatter",
     "//ios/web/common:features",
+    "//ios/web/common:user_agent",
     "//ios/web/navigation:wk_navigation_util",
     "//ios/web/public",
     "//ios/web/public/deprecated:deprecated_navigation_util",
@@ -119,6 +118,8 @@ source_set("wk_navigation_util") {
   ]
 
   sources = [
+    "nscoder_util.h",
+    "nscoder_util.mm",
     "wk_navigation_util.h",
     "wk_navigation_util.mm",
   ]

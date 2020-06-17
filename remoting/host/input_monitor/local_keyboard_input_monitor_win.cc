@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/input_monitor/local_input_monitor_win.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"

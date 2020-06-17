@@ -97,11 +97,6 @@ const Cryptographer* NigoriHandlerProxy::GetCryptographer(
   return cryptographer_.get();
 }
 
-const DirectoryCryptographer* NigoriHandlerProxy::GetDirectoryCryptographer(
-    const syncable::BaseTransaction* const trans) const {
-  return nullptr;
-}
-
 ModelTypeSet NigoriHandlerProxy::GetEncryptedTypes(
     const syncable::BaseTransaction* const trans) const {
   DCHECK_EQ(user_share_->directory.get(), trans->directory());

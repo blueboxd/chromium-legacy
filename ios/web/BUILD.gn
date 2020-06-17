@@ -45,6 +45,7 @@ source_set("web") {
     "//ios/web/favicon",
     "//ios/web/init",
     "//ios/web/navigation",
+    "//ios/web/navigation:wk_navigation_util",
     "//ios/web/net",
     "//ios/web/public",
     "//ios/web/public/security",

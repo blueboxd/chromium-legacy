@@ -5,6 +5,7 @@
 #include "ui/gfx/gpu_fence.h"
 
 #include "base/logging.h"
+#include "base/notreached.h"
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 #include <sync/sync.h>

@@ -55,6 +55,7 @@ source_set("test_support") {
     ":test_constants",
     "//base",
     "//base/test:test_support",
+    "//components/crash/core/common",
     "//ios/testing:verify_custom_webkit",
     "//ios/web",
     "//ios/web/common:web_view_creation_util",

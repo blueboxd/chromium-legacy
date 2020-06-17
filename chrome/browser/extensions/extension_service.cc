@@ -1461,23 +1461,6 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
       GrantPermissions(extension);
   }
 
-  // TODO(crbug.com/860198): Before M48, extensions that came to us from sync in
-  // a disabled state got assigned disable_reason::DISABLE_UNKNOWN_FROM_SYNC.
-  // That reason isn't used anymore since the actual disable reason(s) are now
-  // synced. This code is here to migrate any existing old state.
-  if (disable_reasons & disable_reason::DEPRECATED_DISABLE_UNKNOWN_FROM_SYNC) {
-    // Remove the disable_reason::DEPRECATED_DISABLE_UNKNOWN_FROM_SYNC
-    // reason.
-    disable_reasons &= ~disable_reason::DEPRECATED_DISABLE_UNKNOWN_FROM_SYNC;
-    extension_prefs_->RemoveDisableReason(
-        extension->id(), disable_reason::DEPRECATED_DISABLE_UNKNOWN_FROM_SYNC);
-    // If there was no privilege increase, it was likely disabled by the user.
-    // (If there *was* a privilege increase, we'll add an appropriate reason
-    // later on, so nothing needs to be done here.)
-    if (!is_privilege_increase)
-      disable_reasons |= disable_reason::DISABLE_USER_ACTION;
-  }
-
   bool previously_disabled =
       extension_prefs_->IsExtensionDisabled(extension->id());
   // TODO(devlin): Is the |is_extension_loaded| check needed here?

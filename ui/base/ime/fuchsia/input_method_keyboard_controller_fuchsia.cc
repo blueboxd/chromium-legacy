@@ -7,9 +7,10 @@
 #include <lib/sys/cpp/component_context.h>
 #include <utility>
 
+#include "base/check.h"
 #include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace ui {
 

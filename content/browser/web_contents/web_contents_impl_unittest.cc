@@ -2035,6 +2035,9 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
   EXPECT_TRUE(observer.is_loading());
   EXPECT_TRUE(observer.did_receive_response());
 
+  // After navigation, the RenderFrameHost may change.
+  subframe = static_cast<TestRenderFrameHost*>(
+      contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
   // Navigate the frame again, this time using LoadURLWithParams. This causes
   // RenderFrameHost to call into WebContents::DidStartLoading, which starts
   // the spinner.

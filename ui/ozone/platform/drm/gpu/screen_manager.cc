@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/files/platform_file.h"
+#include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/display/types/display_snapshot.h"

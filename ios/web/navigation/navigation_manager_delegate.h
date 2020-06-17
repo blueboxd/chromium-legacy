@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "ios/web/common/user_agent.h"
 
 @protocol CRWWebViewNavigationProxy;
 @class WKBackForwardListItem;
@@ -55,6 +56,9 @@ class NavigationManagerDelegate {
 
   // Returns the WebState associated with this delegate.
   virtual WebState* GetWebState() = 0;
+
+  // Sets the UserAgent that should be used by the WebState.
+  virtual void SetWebStateUserAgent(UserAgentType user_agent_type) = 0;
 
   // Returns a CRWWebViewNavigationProxy protocol that can be used to access
   // navigation related functions on the main WKWebView.

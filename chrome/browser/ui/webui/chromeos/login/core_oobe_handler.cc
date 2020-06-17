@@ -376,13 +376,15 @@ void CoreOobeHandler::HandleSetDeviceRequisition(
 }
 
 void CoreOobeHandler::HandleSkipToLoginForTesting() {
-  if (WizardController::default_controller())
+  WizardController* controller = WizardController::default_controller();
+  if (controller && controller->is_initialized())
     WizardController::default_controller()->SkipToLoginForTesting();
 }
 
 void CoreOobeHandler::HandleSkipToUpdateForTesting() {
-  if (WizardController::default_controller())
-    WizardController::default_controller()->SkipToUpdateForTesting();
+  WizardController* controller = WizardController::default_controller();
+  if (controller && controller->is_initialized())
+    controller->SkipToUpdateForTesting();
 }
 
 void CoreOobeHandler::HandleToggleResetScreen() {

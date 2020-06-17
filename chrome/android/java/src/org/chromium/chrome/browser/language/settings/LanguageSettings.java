@@ -13,12 +13,14 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 
 /**
  * Settings fragment that displays information about Chrome languages, which allow users to
@@ -43,15 +45,14 @@ public class LanguageSettings
 
         ChromeSwitchPreference translateSwitch =
                 (ChromeSwitchPreference) findPreference(TRANSLATE_SWITCH_KEY);
-        boolean isTranslateEnabled =
-                PrefServiceBridge.getInstance().getBoolean(Pref.OFFER_TRANSLATE_ENABLED);
+        boolean isTranslateEnabled = getPrefService().getBoolean(Pref.OFFER_TRANSLATE_ENABLED);
         translateSwitch.setChecked(isTranslateEnabled);
 
         translateSwitch.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 boolean enabled = (boolean) newValue;
-                PrefServiceBridge.getInstance().setBoolean(Pref.OFFER_TRANSLATE_ENABLED, enabled);
+                getPrefService().setBoolean(Pref.OFFER_TRANSLATE_ENABLED, enabled);
                 mLanguageListPref.notifyPrefChanged();
                 LanguagesManager.recordAction(enabled ? LanguagesManager.LanguageSettingsActionType
                                                                 .ENABLE_TRANSLATE_GLOBALLY
@@ -61,8 +62,7 @@ public class LanguageSettings
             }
         });
         translateSwitch.setManagedPreferenceDelegate((ChromeManagedPreferenceDelegate) preference
-                -> PrefServiceBridge.getInstance().isManagedPreference(
-                        Pref.OFFER_TRANSLATE_ENABLED));
+                -> getPrefService().isManagedPreference(Pref.OFFER_TRANSLATE_ENABLED));
         LanguagesManager.recordImpression(LanguagesManager.LanguageSettingsPageType.PAGE_MAIN);
     }
 
@@ -90,5 +90,9 @@ public class LanguageSettings
         Intent intent = settingsLauncher.createSettingsActivityIntent(
                 getActivity(), AddLanguageFragment.class.getName());
         startActivityForResult(intent, REQUEST_CODE_ADD_LANGUAGES);
+    }
+
+    private PrefService getPrefService() {
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 }

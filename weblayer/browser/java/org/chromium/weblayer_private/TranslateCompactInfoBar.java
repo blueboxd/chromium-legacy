@@ -124,9 +124,7 @@ public class TranslateCompactInfoBar extends InfoBar
     TranslateCompactInfoBar(int initialStep, String sourceLanguageCode, String targetLanguageCode,
             boolean alwaysTranslate, boolean triggeredFromMenu, String[] languages,
             String[] languageCodes, int[] hashCodes, int tabTextColor) {
-        // TODO(crbug.com/1025620): Add support for icons to WebLayer's infobars and supply
-        // translate icon.
-        super(0, 0, null, null);
+        super(R.drawable.infobar_translate_compact, 0, null, null);
 
         mInitialStep = initialStep;
         mDefaultTextColor = tabTextColor;

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/files/file.h"
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 
 namespace printing {

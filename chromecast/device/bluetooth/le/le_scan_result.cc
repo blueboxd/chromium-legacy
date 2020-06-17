@@ -4,6 +4,7 @@
 
 #include "chromecast/device/bluetooth/le/le_scan_result.h"
 
+#include "base/logging.h"
 #include "chromecast/device/bluetooth/bluetooth_util.h"
 
 namespace chromecast {

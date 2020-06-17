@@ -2500,6 +2500,11 @@
     "expiry_milestone": 88
   },
   {
+    "name": "expanded-tab-strip",
+    "owners": [ "mouraroberto@google.com", "gambard" ],
+    "expiry_milestone": 90
+  },
+  {
     "name": "expensive-background-timer-throttling",
     "owners": [ "altimin" ],
     "expiry_milestone": 76
@@ -3541,11 +3546,6 @@
     "name": "page-info-performance-hints",
     "owners": [ "jds" ],
     "expiry_milestone": 90
-  },
-  {
-    "name": "page-info-refactoring",
-    "owners": [ "ewannpv", "gambard" ],
-    "expiry_milestone": 88
   },
   {
     "name": "page-info-version-2",

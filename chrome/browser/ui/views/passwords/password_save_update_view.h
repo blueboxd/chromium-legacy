@@ -74,13 +74,13 @@ class PasswordSaveUpdateView : public PasswordBubbleViewBase,
   // Different promo dialogs that helps the user get access to credentials
   // across devices. One of these are non-null when the promotion dialog is
   // active.
-  PasswordSignInPromoView* sign_in_promo_;
+  PasswordSignInPromoView* sign_in_promo_ = nullptr;
 
-  views::EditableCombobox* username_dropdown_;
-  views::ToggleImageButton* password_view_button_;
+  views::EditableCombobox* username_dropdown_ = nullptr;
+  views::ToggleImageButton* password_view_button_ = nullptr;
 
   // The view for the password value.
-  views::EditableCombobox* password_dropdown_;
+  views::EditableCombobox* password_dropdown_ = nullptr;
 
   bool are_passwords_revealed_;
 };

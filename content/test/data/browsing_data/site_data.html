@@ -34,8 +34,9 @@
   }
 
   function setCookieStore() {
-    cookieStore.set('cookie-name', 'cookie-value', {sameSite: 'none'})
-      .then(success_).catch(failure_);
+    cookieStore.set({
+      name: 'cookie-name', value: 'cookie-value', sameSite: 'none'
+    }).then(success_).catch(failure_);
   }
 
   function hasCookieStore() {

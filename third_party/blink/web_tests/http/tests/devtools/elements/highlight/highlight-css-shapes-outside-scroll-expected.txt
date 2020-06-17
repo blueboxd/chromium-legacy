@@ -180,6 +180,7 @@ circle{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
@@ -187,10 +188,10 @@ circle{
     "className": ".float.circle",
     "nodeWidth": "128",
     "nodeHeight": "128",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 circle{
@@ -373,6 +374,7 @@ circle{
   ],
   "showRulers": true,
   "showExtensionLines": true,
+  "showAccessibilityInfo": true,
   "colorFormat": "hex",
   "elementInfo": {
     "tagName": "div",
@@ -380,10 +382,10 @@ circle{
     "className": ".float.circle",
     "nodeWidth": "128",
     "nodeHeight": "128",
-    "showAccessibilityInfo": true,
     "isKeyboardFocusable": false,
     "accessibleName": "",
-    "accessibleRole": "generic"
+    "accessibleRole": "generic",
+    "showAccessibilityInfo": true
   }
 }
 

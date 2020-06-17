@@ -147,9 +147,6 @@ class DrmThread : public base::Thread,
       base::OnceCallback<void(MovableDisplaySnapshots)> callback) override;
   void AddGraphicsDevice(const base::FilePath& path, base::File file) override;
   void RemoveGraphicsDevice(const base::FilePath& path) override;
-  void DisableNativeDisplay(
-      int64_t id,
-      base::OnceCallback<void(int64_t, bool)> callback) override;
   void ConfigureNativeDisplay(
       const display::DisplayConfigurationParams& display_config_params,
       base::OnceCallback<void(int64_t, bool)> callback) override;

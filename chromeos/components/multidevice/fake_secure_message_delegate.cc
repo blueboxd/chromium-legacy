@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/hash/md5.h"
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 
 namespace chromeos {

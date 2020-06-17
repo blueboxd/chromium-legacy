@@ -7,6 +7,7 @@
 #include <random>
 
 #include "base/at_exit.h"
+#include "base/logging.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_transform.h"
 #include "ui/gfx/icc_profile.h"

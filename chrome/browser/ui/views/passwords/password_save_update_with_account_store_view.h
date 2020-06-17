@@ -103,11 +103,11 @@ class PasswordSaveUpdateWithAccountStoreView
 
   views::Combobox* destination_dropdown_ = nullptr;
 
-  views::EditableCombobox* username_dropdown_;
-  views::ToggleImageButton* password_view_button_;
+  views::EditableCombobox* username_dropdown_ = nullptr;
+  views::ToggleImageButton* password_view_button_ = nullptr;
 
   // The view for the password value.
-  views::EditableCombobox* password_dropdown_;
+  views::EditableCombobox* password_dropdown_ = nullptr;
   bool are_passwords_revealed_;
 
   feature_engagement::Tracker* iph_tracker_ = nullptr;

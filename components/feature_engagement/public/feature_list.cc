@@ -62,6 +62,7 @@ const base::Feature* const kAllFeatures[] = {
 #endif  // defined(OS_IOS)
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
+    &kIPHDesktopTabGroupsNewGroupFeature,
     &kIPHFocusModeFeature,
     &kIPHGlobalMediaControlsFeature,
     &kIPHPasswordsAccountStorageFeature,

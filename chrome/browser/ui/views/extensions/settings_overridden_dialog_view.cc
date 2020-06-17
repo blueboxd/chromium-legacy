@@ -43,6 +43,12 @@ SettingsOverriddenDialogView::SettingsOverriddenDialogView(
   SetCancelCallback(make_result_callback(DialogResult::kKeepNewSettings));
   SetCloseCallback(make_result_callback(DialogResult::kDialogDismissed));
 
+  // Modals shouldn't show a close button according to the latest style
+  // guidelines. Note the dialog can still be dismissed by user action via the
+  // escape key (in addition to closing automatically if the parent widget
+  // is destroyed).
+  SetShowCloseButton(false);
+
   SettingsOverriddenDialogController::ShowParams show_params =
       controller_->GetShowParams();
 

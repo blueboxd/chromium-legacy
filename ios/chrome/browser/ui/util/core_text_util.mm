@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/check_op.h"
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/util/manual_text_framer.h"
 #import "ios/chrome/browser/ui/util/text_frame.h"

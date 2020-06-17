@@ -978,7 +978,6 @@ webaudio/PeriodicWave/periodicwave-exceptions.html
 webaudio/ScriptProcessor/scriptprocessornode-0-output-channels.html
 webaudio/ScriptProcessor/scriptprocessornode-downmix8-2channel-input.html
 webaudio/WaveShaper/waveshaper-364379.html
-webexposed/custom-elements.html
 webexposed/internal-properties-should-not-be-exposed.html
 webexposed/permissions-attribute.html
 webexposed/web-animations-api.html

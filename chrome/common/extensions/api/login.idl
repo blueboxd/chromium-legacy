@@ -19,7 +19,7 @@ namespace login {
     // |callback|: Note: If the function succeeds, the callback is not
     // guaranteed to be called as the extension will be disabled when the
     // session starts. Use this callback only to handle the failure case by
-    // checking <code>chrome.runtime.lastError</code>.
+    // checking $(ref:runtime.lastError).
     static void launchManagedGuestSession(optional DOMString password,
                                           optional VoidCallback callback);
 
@@ -48,7 +48,7 @@ namespace login {
     // |callback|: Note: If the function succeeds, the callback is not
     // guaranteed to be called as the extension will be disabled when the
     // session starts. Use this callback only to handle the failure case by
-    // checking <code>chrome.runtime.lastError</code>.
+    // checking $(ref:runtime.lastError).
     static void unlockManagedGuestSession(DOMString password,
                                           optional VoidCallback callback);
   };

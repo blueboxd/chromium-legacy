@@ -166,8 +166,7 @@ class WebStateImplTest : public web::WebTest {
     web_state_->GetNavigationManagerImpl().InitializeSession();
     web_state_->GetNavigationManagerImpl().AddPendingItem(
         GURL::EmptyGURL(), web::Referrer(), ui::PAGE_TRANSITION_LINK,
-        NavigationInitiationType::RENDERER_INITIATED,
-        NavigationManager::UserAgentOverrideOption::DESKTOP);
+        NavigationInitiationType::RENDERER_INITIATED);
     web_state_->GetNavigationManagerImpl().CommitPendingItem();
   }
 
@@ -1063,8 +1062,7 @@ TEST_F(WebStateImplTest, ShowAndClearInterstitialWithNoCommittedItems) {
   // Existence of a pending item is a precondition for a transient item.
   web_state_->GetNavigationManagerImpl().AddPendingItem(
       GURL::EmptyGURL(), web::Referrer(), ui::PAGE_TRANSITION_LINK,
-      NavigationInitiationType::BROWSER_INITIATED,
-      NavigationManager::UserAgentOverrideOption::DESKTOP);
+      NavigationInitiationType::BROWSER_INITIATED);
 
   // Show the interstitial.
   ASSERT_FALSE(web_state_->IsShowingWebInterstitial());

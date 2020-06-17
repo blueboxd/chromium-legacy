@@ -68,6 +68,8 @@ class WebApp {
 
   // Represents the last time this app is launched.
   const base::Time& last_launch_time() const { return last_launch_time_; }
+  // Represents the time when this app is installed.
+  const base::Time& install_time() const { return install_time_; }
 
   // Represents the "icons" field in the manifest.
   const std::vector<WebApplicationIconInfo>& icon_infos() const {
@@ -153,6 +155,7 @@ class WebApp {
   void SetAdditionalSearchTerms(
       std::vector<std::string> additional_search_terms);
   void SetLastLaunchTime(const base::Time& time);
+  void SetInstallTime(const base::Time& time);
   void SetSyncData(SyncData sync_data);
 
  private:
@@ -189,6 +192,7 @@ class WebApp {
   apps::FileHandlers file_handlers_;
   std::vector<std::string> additional_search_terms_;
   base::Time last_launch_time_;
+  base::Time install_time_;
   SyncData sync_data_;
 };
 

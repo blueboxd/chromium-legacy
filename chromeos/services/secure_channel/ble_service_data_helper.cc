@@ -5,6 +5,7 @@
 #include "chromeos/services/secure_channel/ble_service_data_helper.h"
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 
 namespace chromeos {

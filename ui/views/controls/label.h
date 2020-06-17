@@ -91,6 +91,11 @@ class VIEWS_EXPORT Label : public View,
   // a value from views::style::TextContext or an enum that extends it.
   int GetTextContext() const;
 
+  // The style of the label.  This is a value from views::style::TextStyle or an
+  // enum that extends it.
+  int GetTextStyle() const;
+  void SetTextStyle(int style);
+
   // Enables or disables auto-color-readability (enabled by default).  If this
   // is enabled, then calls to set any foreground or background color will
   // trigger an automatic mapper that uses color_utils::BlendForMinContrast()
@@ -384,7 +389,7 @@ class VIEWS_EXPORT Label : public View,
   void BuildContextMenuContents();
 
   const int text_context_;
-  const int text_style_;
+  int text_style_;
 
   // An un-elided and single-line RenderText object used for preferred sizing.
   std::unique_ptr<gfx::RenderText> full_text_;

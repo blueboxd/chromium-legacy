@@ -25,6 +25,8 @@ class PlayerFrameViewBinder {
             view.updateSubFrameViews(model.get(PlayerFrameProperties.SUBFRAME_VIEWS));
         } else if (key.equals(PlayerFrameProperties.SUBFRAME_RECTS)) {
             view.updateSubFrameRects(model.get(PlayerFrameProperties.SUBFRAME_RECTS));
+        } else if (key.equals(PlayerFrameProperties.SCALE_MATRIX)) {
+            view.updateScaleMatrix(model.get(PlayerFrameProperties.SCALE_MATRIX));
         }
     }
 }

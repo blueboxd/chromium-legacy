@@ -215,7 +215,7 @@ class Ed25519PrivateKey : public EVPBackedPrivateKey {
         cbor::Writer::Write(cbor::Value(std::move(map))));
 
     std::vector<uint8_t> der_bytes(
-        CBBFunctionToVector<decltype(EVP_marshal_public_key),
+        CBBFunctionToVector<decltype(&EVP_marshal_public_key),
                             EVP_marshal_public_key>(pkey_.get()));
 
     return std::make_unique<PublicKey>(

@@ -8,6 +8,7 @@
 #include "base/files/important_file_writer.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
 

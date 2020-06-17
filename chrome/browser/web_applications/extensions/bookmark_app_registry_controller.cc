@@ -99,6 +99,12 @@ void BookmarkAppRegistryController::SetAppLastLaunchTime(
   registrar_->NotifyWebAppLastLaunchTimeChanged(app_id, time);
 }
 
+// Bookmark apps are deprecated. They don't update install time on local
+// installs.
+void BookmarkAppRegistryController::SetAppInstallTime(
+    const web_app::AppId& app_id,
+    const base::Time& time) {}
+
 web_app::WebAppSyncBridge* BookmarkAppRegistryController::AsWebAppSyncBridge() {
   return nullptr;
 }

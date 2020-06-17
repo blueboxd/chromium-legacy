@@ -85,7 +85,7 @@ class PaymentAppTest : public testing::TestWithParam<RequiredPaymentOptions>,
     }
 
     return std::make_unique<ServiceWorkerPaymentApp>(
-        &browser_context_, GURL("https://testmerchant.com"),
+        web_contents_, GURL("https://testmerchant.com"),
         GURL("https://testmerchant.com/bobpay"), spec_.get(),
         std::move(stored_app), /*is_incognito=*/false,
         /*show_processing_spinner=*/base::DoNothing());

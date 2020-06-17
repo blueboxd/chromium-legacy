@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/time/time.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/chromecast_buildflags.h"

@@ -11,6 +11,7 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
+#import "components/content_settings/core/common/features.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -18,7 +19,6 @@
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
-#import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_action_handler_commands.h"
 #import "ios/chrome/browser/ui/popup_menu/public/cells/popup_menu_item.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_table_view_controller.h"
@@ -90,7 +90,8 @@ using base::UserMetricsAction;
       break;
     case PopupMenuActionSiteInformation:
       RecordAction(UserMetricsAction("MobileMenuSiteInformation"));
-      if (base::FeatureList::IsEnabled(kPageInfoRefactoring)) {
+      if (base::FeatureList::IsEnabled(
+              content_settings::kImprovedCookieControls)) {
         [self.dispatcher showPageInfo];
       } else {
         [self.dispatcher

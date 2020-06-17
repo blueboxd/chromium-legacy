@@ -13,7 +13,7 @@
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/optional.h"
 #include "components/viz/common/frame_timing_details_map.h"
-#include "content/renderer/android/synchronous_layer_tree_frame_sink.h"
+#include "content/renderer/input/synchronous_layer_tree_frame_sink.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -28,8 +28,6 @@ class CompositorFrame;
 }  // namespace viz
 
 namespace content {
-
-class SynchronousLayerTreeFrameSink;
 
 class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
                                    public SynchronousLayerTreeFrameSinkClient,

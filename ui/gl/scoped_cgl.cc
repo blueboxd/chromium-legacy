@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "ui/gl/scoped_cgl.h"
+
+#include <ostream>
+
 #include "base/check_op.h"
 
 namespace gl {

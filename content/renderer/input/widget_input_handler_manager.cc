@@ -118,7 +118,6 @@ class SynchronousCompositorProxyRegistry
   SynchronousCompositorProxy* proxy() { return proxy_.get(); }
 
   void RegisterLayerTreeFrameSink(
-      int routing_id,
       SynchronousLayerTreeFrameSink* layer_tree_frame_sink) override {
     DCHECK(compositor_task_runner_->BelongsToCurrentThread());
     DCHECK_EQ(nullptr, sink_);
@@ -128,7 +127,6 @@ class SynchronousCompositorProxyRegistry
   }
 
   void UnregisterLayerTreeFrameSink(
-      int routing_id,
       SynchronousLayerTreeFrameSink* layer_tree_frame_sink) override {
     DCHECK(compositor_task_runner_->BelongsToCurrentThread());
     DCHECK_EQ(layer_tree_frame_sink, sink_);

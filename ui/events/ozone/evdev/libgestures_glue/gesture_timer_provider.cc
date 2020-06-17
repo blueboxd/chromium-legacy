@@ -6,6 +6,7 @@
 
 #include <gestures/gestures.h>
 
+#include "base/logging.h"
 #include "base/timer/timer.h"
 
 // libgestures requires that this be in the top level namespace.

@@ -7,6 +7,7 @@
 #include <limits.h>
 
 #include <memory>
+#include <ostream>
 #include <vector>
 
 #include "base/check.h"

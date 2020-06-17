@@ -77,9 +77,8 @@ void ApplyCommonFontStyles(int context,
               LocationBarView::GetAvailableTextHeight(),
               ui::TouchUiController::Get()->touch_ui() ? 15 : 14);
       *size_delta = omnibox_primary_delta;
-      if (context == CONTEXT_OMNIBOX_DEEMPHASIZED) {
-        (*size_delta)--;
-      }
+      if (context == CONTEXT_OMNIBOX_DEEMPHASIZED)
+        --*size_delta;
       break;
     }
     case CONTEXT_OMNIBOX_DECORATION: {

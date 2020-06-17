@@ -220,7 +220,7 @@ typedef UnimplementedNativeViewAccessible* NativeViewAccessible;
 const ui::mojom::CursorType kNullCursor =
     static_cast<ui::mojom::CursorType>(-1);
 #else
-const gfx::NativeCursor kNullCursor = static_cast<gfx::NativeCursor>(NULL);
+const gfx::NativeCursor kNullCursor = static_cast<gfx::NativeCursor>(nullptr);
 #endif
 
 // Note: for test_shell we're packing a pointer into the NativeViewId. So, if
@@ -233,7 +233,7 @@ typedef intptr_t NativeViewId;
 // AcceleratedWidget provides a surface to compositors to paint pixels.
 #if defined(OS_WIN)
 typedef HWND AcceleratedWidget;
-constexpr AcceleratedWidget kNullAcceleratedWidget = NULL;
+constexpr AcceleratedWidget kNullAcceleratedWidget = nullptr;
 #elif defined(USE_X11)
 typedef unsigned long AcceleratedWidget;
 constexpr AcceleratedWidget kNullAcceleratedWidget = 0;

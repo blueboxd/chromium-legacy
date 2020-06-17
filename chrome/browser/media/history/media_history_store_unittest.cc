@@ -660,7 +660,7 @@ class MediaHistoryStoreFeedsTest : public MediaHistoryStoreUnitTest {
   media_feeds::MediaFeedsService* GetMediaFeedsService() {
     Profile* profile = GetProfile();
     if (GetParam() == TestState::kIncognito)
-      profile = profile->GetOffTheRecordProfile();
+      profile = profile->GetPrimaryOTRProfile();
 
     return media_feeds::MediaFeedsServiceFactory::GetInstance()->GetForProfile(
         profile);

@@ -31,7 +31,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.preferences.Pref;
-import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
@@ -42,6 +41,8 @@ import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SearchUtils;
 import org.chromium.components.browser_ui.settings.TextMessagePreference;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.text.SpanApplier;
 
 import java.util.Locale;
@@ -427,14 +428,12 @@ public class PasswordSettings
         mSavePasswordsSwitch.setSummaryOn(R.string.text_on);
         mSavePasswordsSwitch.setSummaryOff(R.string.text_off);
         mSavePasswordsSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
-            PrefServiceBridge.getInstance().setBoolean(
-                    Pref.CREDENTIALS_ENABLE_SERVICE, (boolean) newValue);
+            getPrefService().setBoolean(Pref.CREDENTIALS_ENABLE_SERVICE, (boolean) newValue);
             return true;
         });
         mSavePasswordsSwitch.setManagedPreferenceDelegate(
                 (ChromeManagedPreferenceDelegate) preference
-                -> PrefServiceBridge.getInstance().isManagedPreference(
-                        Pref.CREDENTIALS_ENABLE_SERVICE));
+                -> getPrefService().isManagedPreference(Pref.CREDENTIALS_ENABLE_SERVICE));
 
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             getPreferenceScreen().addPreference(mSavePasswordsSwitch);
@@ -445,7 +444,7 @@ public class PasswordSettings
         // (e.g. the switch will say "On" when save passwords is really turned off), so
         // .setChecked() should be called after .addPreference()
         mSavePasswordsSwitch.setChecked(
-                PrefServiceBridge.getInstance().getBoolean(Pref.CREDENTIALS_ENABLE_SERVICE));
+                getPrefService().getBoolean(Pref.CREDENTIALS_ENABLE_SERVICE));
     }
 
     private void createAutoSignInCheckbox() {
@@ -455,16 +454,14 @@ public class PasswordSettings
         mAutoSignInSwitch.setOrder(ORDER_AUTO_SIGNIN_CHECKBOX);
         mAutoSignInSwitch.setSummary(R.string.passwords_auto_signin_description);
         mAutoSignInSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
-            PrefServiceBridge.getInstance().setBoolean(
-                    Pref.CREDENTIALS_ENABLE_AUTOSIGNIN, (boolean) newValue);
+            getPrefService().setBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN, (boolean) newValue);
             return true;
         });
         mAutoSignInSwitch.setManagedPreferenceDelegate((ChromeManagedPreferenceDelegate) preference
-                -> PrefServiceBridge.getInstance().isManagedPreference(
-                        Pref.CREDENTIALS_ENABLE_AUTOSIGNIN));
+                -> getPrefService().isManagedPreference(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN));
         getPreferenceScreen().addPreference(mAutoSignInSwitch);
         mAutoSignInSwitch.setChecked(
-                PrefServiceBridge.getInstance().getBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN));
+                getPrefService().getBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN));
     }
 
     private void displayManageAccountLink() {
@@ -512,6 +509,10 @@ public class PasswordSettings
 
     private Context getStyledContext() {
         return getPreferenceManager().getContext();
+    }
+
+    private PrefService getPrefService() {
+        return UserPrefs.get(Profile.getLastUsedRegularProfile());
     }
 
     @VisibleForTesting

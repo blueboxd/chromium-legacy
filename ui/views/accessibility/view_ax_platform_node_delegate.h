@@ -86,6 +86,9 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   base::Optional<int> GetPosInSet() const override;
   base::Optional<int> GetSetSize() const override;
 
+  void SetPopupFocusOverride() override;
+  void EndPopupFocusOverride() override;
+
  protected:
   explicit ViewAXPlatformNodeDelegate(View* view);
 
@@ -100,18 +103,11 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
 
   ChildWidgetsResult GetChildWidgets() const;
 
-  void OnMenuItemActive();
-  void OnMenuStart();
-  void OnMenuEnd();
-
   // We own this, but it is reference-counted on some platforms so we can't use
   // a unique_ptr. It is destroyed in the destructor.
   ui::AXPlatformNode* ax_platform_node_;
 
   mutable ui::AXNodeData data_;
-
-  // Levels of menu are currently open, e.g. 0: none, 1: top, 2: submenu ...
-  static int32_t menu_depth_;
 };
 
 }  // namespace views

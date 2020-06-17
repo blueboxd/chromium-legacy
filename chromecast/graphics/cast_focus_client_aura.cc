@@ -4,6 +4,7 @@
 
 #include "chromecast/graphics/cast_focus_client_aura.h"
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "ui/aura/window.h"
 

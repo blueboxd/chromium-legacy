@@ -5,6 +5,8 @@
 #ifndef CC_METRICS_FRAME_SEQUENCE_TRACKER_H_
 #define CC_METRICS_FRAME_SEQUENCE_TRACKER_H_
 
+#include <sstream>
+
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"

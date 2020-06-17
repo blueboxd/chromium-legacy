@@ -4,7 +4,8 @@ This document gives the best practices on how to use user actions in code and
 how to document them for the dashboard.  User actions come with only a name and
 a timestamp.  They are best used when you care about a sequence--which actions
 happen in what order.  If you don't care about the order, you should be using
-histograms (likely enumerated histograms).
+[histograms](https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md)
+(likely [enumerated histograms](https://chromium.googlesource.com/chromium/src.git/+/HEAD/tools/metrics/histograms/README.md#Enum-Histograms)).
 
 Often, you want both user actions and histogram logging in your code.  They
 enable different analyses.  They're complementary.
@@ -135,7 +136,7 @@ about the user action description that reveal problems with interpretation of
 the data and call for a different recording strategy.  Two, it allows the user
 action reviewer to easily review the emission code to see if it comports with
 these best practices, and to look for other errors.
- 
+
 ### Understandable to Everyone
 
 User actions descriptions should be understandable to someone not familiar with

@@ -142,54 +142,16 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                         (void (^)(WKNavigationActionPolicy,
                                   WKWebpagePreferences*))decisionHandler
     API_AVAILABLE(ios(13)) {
-  web::NavigationItem* item = nullptr;
-  if (navigationAction.navigationType == WKNavigationTypeBackForward) {
-    // Use the item associated with the back/forward item to have the same user
-    // agent as the one used the first time.
-    item = [[CRWNavigationItemHolder
-        holderForBackForwardListItem:webView.backForwardList.currentItem]
-        navigationItem];
-  } else {
-    // Get the visible item. There is no guarantee that the pending item belongs
-    // to this navigation but it is very likely that it is the case. If there is
-    // no pending item, it is probably a render initiated navigation. Use the
-    // UserAgent of the previous navigation. This will also return the
-    // navigation item of the restoration if a restoration occurs. Request the
-    // pending item explicitly as the visible item might be the committed item
-    // if the pending navigation isn't user triggered.
-    item = self.navigationManagerImpl->GetPendingItem();
-    if (!item)
-      item = self.navigationManagerImpl->GetVisibleItem();
-  }
+  web::UserAgentType userAgentType =
+      [self userAgentForNavigationAction:navigationAction webView:webView];
 
-  // Don't initialize the userAgentType to have compilation error if there is a
-  // code path leaving it uninitialized.
-  web::UserAgentType userAgentType;
-  if (item) {
-    UIView* containerView = self.webStateImpl->GetWebViewContainer();
-    if (!containerView) {
-      containerView = self.webStateImpl->GetView();
-    }
-    userAgentType = item->GetUserAgentType(containerView);
-  } else {
-      // It is possible that there isn't a last committed item, for example if a
-      // new tab is being opened via JavaScript.
-      if (web::features::UseWebClientDefaultUserAgent()) {
-        userAgentType = web::UserAgentType::AUTOMATIC;
-      } else {
-        userAgentType = web::UserAgentType::MOBILE;
-      }
-    if (userAgentType == web::UserAgentType::AUTOMATIC) {
-      userAgentType = web::GetWebClient()->GetDefaultUserAgent(
-          webView, net::GURLWithNSURL(navigationAction.request.URL));
-    }
-  }
-
-  if (item && userAgentType == web::UserAgentType::NONE &&
-      web::GetWebClient()->IsAppSpecificURL(item->GetVirtualURL())) {
-    // In case the URL to be loaded is a WebUI URL and the user agent is nil,
-    // get the mobile user agent.
-    userAgentType = web::UserAgentType::MOBILE;
+  if (navigationAction.navigationType == WKNavigationTypeBackForward &&
+      userAgentType != web::UserAgentType::NONE &&
+      self.webStateImpl->GetUserAgentForSessionRestoration() !=
+          web::UserAgentType::AUTOMATIC) {
+    // When navigating back to a page with a UserAgent that wasn't automatic,
+    // let's reuse this user agent for next navigations.
+    self.webStateImpl->SetUserAgent(userAgentType);
   }
 
   if (userAgentType != web::UserAgentType::NONE) {
@@ -217,6 +179,32 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                     decisionHandler:
                         (void (^)(WKNavigationActionPolicy))decisionHandler {
   [self didReceiveWKNavigationDelegateCallback];
+
+  if (@available(iOS 13, *)) {
+  } else {
+    // As webView:decidePolicyForNavigationAction:preferences:decisionHandler:
+    // is only called for iOS 13, the code is duplicated here to also have it
+    // for iOS 12.
+    web::UserAgentType userAgentType =
+        [self userAgentForNavigationAction:action webView:webView];
+
+    if (action.navigationType == WKNavigationTypeBackForward &&
+        userAgentType != web::UserAgentType::NONE &&
+        self.webStateImpl->GetUserAgentForSessionRestoration() !=
+            web::UserAgentType::AUTOMATIC) {
+      // When navigating back to a page with a UserAgent that wasn't automatic,
+      // let's reuse this user agent for next navigations.
+      self.webStateImpl->SetUserAgent(userAgentType);
+    }
+
+    if (userAgentType != web::UserAgentType::NONE) {
+      NSString* userAgentString = base::SysUTF8ToNSString(
+          web::GetWebClient()->GetUserAgent(userAgentType));
+      if (![webView.customUserAgent isEqualToString:userAgentString]) {
+        webView.customUserAgent = userAgentString;
+      }
+    }
+  }
 
   self.webProcessCrashed = NO;
   if (self.beingDestroyed) {
@@ -1202,6 +1190,44 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
 #pragma mark - Private methods
 
+// Returns the UserAgent that needs to be used for the |navigationAction| from
+// the |webView|.
+- (web::UserAgentType)userAgentForNavigationAction:
+                          (WKNavigationAction*)navigationAction
+                                           webView:(WKWebView*)webView {
+  web::NavigationItem* item = nullptr;
+  web::UserAgentType userAgentType = web::UserAgentType::NONE;
+  if (navigationAction.navigationType == WKNavigationTypeBackForward) {
+    // Use the item associated with the back/forward item to have the same user
+    // agent as the one used the first time.
+    item = [[CRWNavigationItemHolder
+        holderForBackForwardListItem:webView.backForwardList.currentItem]
+        navigationItem];
+    userAgentType = item->GetUserAgentType();
+  } else {
+    // Get the visible item. There is no guarantee that the pending item belongs
+    // to this navigation but it is very likely that it is the case. If there is
+    // no pending item, it is probably a render initiated navigation. Use the
+    // UserAgent of the previous navigation. This will also return the
+    // navigation item of the restoration if a restoration occurs. Request the
+    // pending item explicitly as the visible item might be the committed item
+    // if the pending navigation isn't user triggered.
+    item = self.navigationManagerImpl->GetPendingItem();
+    if (!item)
+      item = self.navigationManagerImpl->GetVisibleItem();
+
+    userAgentType = self.webStateImpl->GetUserAgentForNextNavigation(
+        net::GURLWithNSURL(navigationAction.request.URL));
+  }
+
+  if (item && web::GetWebClient()->IsAppSpecificURL(item->GetVirtualURL())) {
+    // In case of app specific URL, no specificUser Agent needs to be used.
+    // However, to have a custom User Agent and a WKContentMode, use mobile.
+    userAgentType = web::UserAgentType::MOBILE;
+  }
+  return userAgentType;
+}
+
 - (web::NavigationManagerImpl*)navigationManagerImpl {
   return &(self.webStateImpl->GetNavigationManagerImpl());
 }
@@ -1883,8 +1909,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // Create pending item.
   self.navigationManagerImpl->AddPendingItem(
       blockedURL, web::Referrer(), transition,
-      web::NavigationInitiationType::BROWSER_INITIATED,
-      web::NavigationManager::UserAgentOverrideOption::INHERIT);
+      web::NavigationInitiationType::BROWSER_INITIATED);
 
   // Create context.
   std::unique_ptr<web::NavigationContextImpl> context =

@@ -4549,7 +4549,7 @@ void LayoutBlockFlow::RecalcFloatingDescendantsVisualOverflow(
     const NGPhysicalContainerFragment& fragment) {
   DCHECK(fragment.HasFloatingDescendantsForPaint());
 
-  for (const NGLink& child : fragment.Children()) {
+  for (const NGLink& child : fragment.PostLayoutChildren()) {
     if (child->IsFloating()) {
       child->GetMutableLayoutObject()
           ->RecalcNormalFlowChildVisualOverflowIfNeeded();

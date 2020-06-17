@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/third_party/skcms/skcms.h"
 #include "ui/gfx/color_space.h"

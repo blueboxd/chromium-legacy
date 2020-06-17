@@ -23,6 +23,7 @@ class FakeNavigationManagerDelegate : public NavigationManagerDelegate {
   void Reload() override;
   void OnNavigationItemCommitted(NavigationItem* item) override;
   WebState* GetWebState() override;
+  void SetWebStateUserAgent(UserAgentType user_agent_type) override;
   id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override;
   void GoToBackForwardListItem(WKBackForwardListItem* wk_item,
                                NavigationItem* item,

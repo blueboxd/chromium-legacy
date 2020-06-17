@@ -25,8 +25,10 @@ struct StructTraits<display::mojom::DisplayConfigurationParamsDataView,
     return display_configuration_params.origin;
   }
 
-  static std::unique_ptr<display::DisplayMode> mode(
-      const display::DisplayConfigurationParams& display_configuration_params);
+  static const base::Optional<std::unique_ptr<display::DisplayMode>>& mode(
+      const display::DisplayConfigurationParams& display_configuration_params) {
+    return display_configuration_params.mode;
+  }
 
   static bool Read(display::mojom::DisplayConfigurationParamsDataView data,
                    display::DisplayConfigurationParams* out);

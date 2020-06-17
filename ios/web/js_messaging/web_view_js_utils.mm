@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 

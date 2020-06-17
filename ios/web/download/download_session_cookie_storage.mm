@@ -4,6 +4,7 @@
 
 #import "ios/web/download/download_session_cookie_storage.h"
 
+#include "base/notreached.h"
 #include "ios/net/cookies/system_cookie_util.h"
 #import "net/base/mac/url_conversions.h"
 

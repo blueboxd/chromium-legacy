@@ -38,8 +38,7 @@ class WebInterstitialTest : public WebTest {
     web_state_->GetNavigationManagerImpl().AddPendingItem(
         GURL(kTestHostName), Referrer(),
         ui::PageTransition::PAGE_TRANSITION_TYPED,
-        NavigationInitiationType::BROWSER_INITIATED,
-        NavigationManager::UserAgentOverrideOption::INHERIT);
+        NavigationInitiationType::BROWSER_INITIATED);
   }
 
   std::unique_ptr<WebStateImpl> web_state_;

@@ -9,9 +9,11 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "ui/base/resource/resource_handle.h"

@@ -4,6 +4,7 @@
 
 #include "chromeos/components/tether/host_scan_cache_entry.h"
 
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 
 namespace chromeos {

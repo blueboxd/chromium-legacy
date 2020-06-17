@@ -3918,7 +3918,7 @@
             {
               "gpu": "10de:1cb3",
               "os": "Ubuntu",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -5610,7 +5610,7 @@
             {
               "gpu": "10de:1cb3",
               "os": "Ubuntu",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
@@ -12775,7 +12775,7 @@
             {
               "gpu": "10de:1cb3",
               "os": "Ubuntu",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_ANDROID_SYNCHRONOUS_LAYER_TREE_FRAME_SINK_H_
-#define CONTENT_RENDERER_ANDROID_SYNCHRONOUS_LAYER_TREE_FRAME_SINK_H_
+#ifndef CONTENT_RENDERER_ANDROID_SYNCHRONOUS_LAYER_TREE_FRAME_SINK_IMPL_H_
+#define CONTENT_RENDERER_ANDROID_SYNCHRONOUS_LAYER_TREE_FRAME_SINK_IMPL_H_
 
 #include <stddef.h>
 
@@ -26,6 +26,7 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
+#include "content/renderer/input/synchronous_layer_tree_frame_sink.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -54,21 +55,6 @@ namespace content {
 class FrameSwapMessageQueue;
 class SynchronousCompositorRegistry;
 
-class SynchronousLayerTreeFrameSinkClient {
- public:
-  virtual void DidActivatePendingTree() = 0;
-  virtual void Invalidate(bool needs_draw) = 0;
-  virtual void SubmitCompositorFrame(
-      uint32_t layer_tree_frame_sink_id,
-      base::Optional<viz::CompositorFrame> frame,
-      base::Optional<viz::HitTestRegionList> hit_test_region_list) = 0;
-  virtual void SetNeedsBeginFrames(bool needs_begin_frames) = 0;
-  virtual void SinkDestroyed() = 0;
-
- protected:
-  virtual ~SynchronousLayerTreeFrameSinkClient() {}
-};
-
 // Specialization of the output surface that adapts it to implement the
 // content::SynchronousCompositor public API. This class effects an "inversion
 // of control" - enabling drawing to be  orchestrated by the embedding
@@ -77,18 +63,17 @@ class SynchronousLayerTreeFrameSinkClient {
 // |delegate_|) which represent the consumers of the two roles in plays.
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when BindToClient is called.
-class SynchronousLayerTreeFrameSink
-    : public cc::LayerTreeFrameSink,
+class SynchronousLayerTreeFrameSinkImpl
+    : public SynchronousLayerTreeFrameSink,
       public viz::mojom::CompositorFrameSinkClient,
       public viz::ExternalBeginFrameSourceClient {
  public:
-  SynchronousLayerTreeFrameSink(
+  SynchronousLayerTreeFrameSinkImpl(
       scoped_refptr<viz::ContextProvider> context_provider,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       IPC::Sender* sender,
-      int routing_id,
       uint32_t layer_tree_frame_sink_id,
       std::unique_ptr<viz::BeginFrameSource> begin_frame_source,
       SynchronousCompositorRegistry* registry,
@@ -97,9 +82,7 @@ class SynchronousLayerTreeFrameSink
           compositor_frame_sink_remote,
       mojo::PendingReceiver<viz::mojom::CompositorFrameSinkClient>
           client_receiver);
-  ~SynchronousLayerTreeFrameSink() override;
-
-  void SetSyncClient(SynchronousLayerTreeFrameSinkClient* compositor);
+  ~SynchronousLayerTreeFrameSinkImpl() override;
 
   // cc::LayerTreeFrameSink implementation.
   bool BindToClient(cc::LayerTreeFrameSinkClient* sink_client) override;
@@ -114,13 +97,6 @@ class SynchronousLayerTreeFrameSink
   void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
   void Invalidate(bool needs_draw) override;
 
-  // Partial SynchronousCompositor API implementation.
-  void DemandDrawHw(const gfx::Size& viewport_size,
-                    const gfx::Rect& viewport_rect_for_tile_priority,
-                    const gfx::Transform& transform_for_tile_priority);
-  void DemandDrawSw(SkCanvas* canvas);
-  void WillSkipDraw();
-
   // viz::mojom::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
       const std::vector<viz::ReturnedResource>& resources) override;
@@ -133,13 +109,21 @@ class SynchronousLayerTreeFrameSink
   // viz::ExternalBeginFrameSourceClient overrides.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;
 
+  // SynchronousLayerTreeFrameSink overrides.
+  void SetSyncClient(SynchronousLayerTreeFrameSinkClient* compositor) override;
   void DidPresentCompositorFrame(
-      const viz::FrameTimingDetailsMap& timing_details);
-  void BeginFrame(const viz::BeginFrameArgs& args);
-  void SetBeginFrameSourcePaused(bool paused);
-  void SetMemoryPolicy(size_t bytes_limit);
-  void ReclaimResources(uint32_t layer_tree_frame_sink_id,
-                        const std::vector<viz::ReturnedResource>& resources);
+      const viz::FrameTimingDetailsMap& timing_details) override;
+  void BeginFrame(const viz::BeginFrameArgs& args) override;
+  void SetBeginFrameSourcePaused(bool paused) override;
+  void SetMemoryPolicy(size_t bytes_limit) override;
+  void ReclaimResources(
+      uint32_t layer_tree_frame_sink_id,
+      const std::vector<viz::ReturnedResource>& resources) override;
+  void DemandDrawHw(const gfx::Size& viewport_size,
+                    const gfx::Rect& viewport_rect_for_tile_priority,
+                    const gfx::Transform& transform_for_tile_priority) override;
+  void DemandDrawSw(SkCanvas* canvas) override;
+  void WillSkipDraw() override;
 
  private:
   class SoftwareOutputSurface;
@@ -151,11 +135,9 @@ class SynchronousLayerTreeFrameSink
   void DeliverMessages();
   bool CalledOnValidThread() const;
 
-
-  const int routing_id_;
   const uint32_t layer_tree_frame_sink_id_;
-  SynchronousCompositorRegistry* const registry_;         // Not owned.
-  IPC::Sender* const sender_;                             // Not owned.
+  SynchronousCompositorRegistry* const registry_;  // Not owned.
+  IPC::Sender* const sender_;                      // Not owned.
 
   // Not owned.
   SynchronousLayerTreeFrameSinkClient* sync_client_ = nullptr;
@@ -165,7 +147,7 @@ class SynchronousLayerTreeFrameSink
   // process so there is no reason for it to use a SharedBitmapManager.
   viz::ServerSharedBitmapManager shared_bitmap_manager_;
 
-  // Only valid (non-NULL) during a DemandDrawSw() call.
+  // Only valid (non-null) during a DemandDrawSw() call.
   SkCanvas* current_sw_canvas_ = nullptr;
 
   cc::ManagedMemoryPolicy memory_policy_;
@@ -228,9 +210,9 @@ class SynchronousLayerTreeFrameSink
   bool begin_frames_paused_ = false;
   bool needs_begin_frames_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(SynchronousLayerTreeFrameSink);
+  DISALLOW_COPY_AND_ASSIGN(SynchronousLayerTreeFrameSinkImpl);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_ANDROID_SYNCHRONOUS_LAYER_TREE_FRAME_SINK_H_
+#endif  // CONTENT_RENDERER_ANDROID_SYNCHRONOUS_LAYER_TREE_FRAME_SINK_IMPL_H_

@@ -18,7 +18,8 @@ SELECT
 FROM power_per_thread
 WHERE
     ts > (SELECT begin FROM RunStory)
-    AND ts + dur < (SELECT end FROM RunStory);
+    AND ts + dur < (SELECT end FROM RunStory)
+    AND utid != 0;
 
 CREATE VIEW power_cpu_estimate_output AS
 SELECT PowerCpuEstimate(

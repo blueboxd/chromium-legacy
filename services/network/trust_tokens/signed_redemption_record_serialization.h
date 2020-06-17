@@ -9,6 +9,7 @@
 
 #include "base/containers/span.h"
 #include "base/optional.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/time/time.h"
 
 namespace network {

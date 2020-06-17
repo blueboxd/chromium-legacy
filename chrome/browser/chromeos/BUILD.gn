@@ -2465,6 +2465,8 @@ source_set("chromeos") {
     "system_logs/device_event_log_source.h",
     "system_logs/iwlwifi_dump_log_source.cc",
     "system_logs/iwlwifi_dump_log_source.h",
+    "system_logs/network_health_source.cc",
+    "system_logs/network_health_source.h",
     "system_logs/single_debug_daemon_log_source.cc",
     "system_logs/single_debug_daemon_log_source.h",
     "system_logs/single_log_file_log_source.cc",

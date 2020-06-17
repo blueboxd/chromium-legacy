@@ -441,16 +441,10 @@ void EditableCombobox::OnViewBlurred(View* observed_view) {
 
 void EditableCombobox::ButtonPressed(Button* sender, const ui::Event& event) {
   textfield_->RequestFocus();
-  if (menu_runner_ && menu_runner_->IsRunning()) {
+  if (menu_runner_ && menu_runner_->IsRunning())
     CloseMenu();
-    return;
-  }
-  ui::MenuSourceType source_type = ui::MENU_SOURCE_MOUSE;
-  if (event.IsKeyEvent())
-    source_type = ui::MENU_SOURCE_KEYBOARD;
-  else if (event.IsGestureEvent() || event.IsTouchEvent())
-    source_type = ui::MENU_SOURCE_TOUCH;
-  ShowDropDownMenu(source_type);
+  else
+    ShowDropDownMenu(ui::GetMenuSourceTypeForEvent(event));
 }
 
 void EditableCombobox::OnLayoutIsAnimatingChanged(

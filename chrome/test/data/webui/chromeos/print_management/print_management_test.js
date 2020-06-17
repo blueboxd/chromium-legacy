@@ -179,6 +179,7 @@ function getHistoryPrintJobEntries(page) {
  * @return {!Array<!HTMLElement>}
  */
 function getOngoingPrintJobEntries(page) {
+  assertTrue(page.$$('#ongoingEmptyState').hidden);
   const entryList = page.$$('#ongoingList');
   return Array.from(
       entryList.querySelectorAll('print-job-entry:not([hidden])'));
@@ -691,6 +692,20 @@ suite('PrintManagementTest', () => {
         .then(() => {
           flush();
           verifyPrintJobs(expectedPrintJobArr, getHistoryPrintJobEntries(page));
+        });
+  });
+
+  test('OngoingPrintJobEmptyState', () => {
+    return initializePrintManagementApp(/*expectedArr=*/[])
+        .then(() => {
+          return mojoApi_.whenCalled('getPrintJobs');
+        })
+        .then(() => {
+          flush();
+          // Assert that ongoing list is empty and the empty state message is
+          // not hidden.
+          assertTrue(!page.$$('#ongoingList'));
+          assertTrue(!page.$$('#ongoingEmptyState').hidden);
         });
   });
 

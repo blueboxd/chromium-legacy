@@ -8,8 +8,6 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "content/public/renderer/render_frame.h"
-#include "media/base/audio_bus.h"
-#include "media/base/audio_parameters.h"
 #include "media/base/channel_mixer.h"
 #include "media/base/media_switches.h"
 #include "media/mojo/mojom/media_types.mojom.h"
@@ -62,18 +60,6 @@ void ChromeSpeechRecognitionClient::AddAudio(
   }
 }
 
-void ChromeSpeechRecognitionClient::AddAudio(
-    std::unique_ptr<media::AudioBus> audio_bus,
-    int sample_rate,
-    media::ChannelLayout channel_layout) {
-  DCHECK(audio_bus);
-  if (IsSpeechRecognitionAvailable()) {
-    speech_recognition_recognizer_->SendAudioToSpeechRecognitionService(
-        ConvertToAudioDataS16(std::move(audio_bus), sample_rate,
-                              channel_layout));
-  }
-}
-
 bool ChromeSpeechRecognitionClient::IsSpeechRecognitionAvailable() {
   return !is_website_blocked_ && is_browser_requesting_transcription_ &&
          speech_recognition_recognizer_.is_bound() &&
@@ -108,17 +94,17 @@ void ChromeSpeechRecognitionClient::CopyBufferToTempAudioBus(
 }
 
 void ChromeSpeechRecognitionClient::ResetChannelMixer(
-    int frame_count,
-    media::ChannelLayout channel_layout) {
-  if (!monaural_audio_bus_ || frame_count != monaural_audio_bus_->frames()) {
+    const media::AudioBuffer& buffer) {
+  if (!monaural_audio_bus_ ||
+      buffer.frame_count() != monaural_audio_bus_->frames()) {
     monaural_audio_bus_ =
-        media::AudioBus::Create(1 /* channels */, frame_count);
+        media::AudioBus::Create(1 /* channels */, buffer.frame_count());
   }
 
-  if (channel_layout != channel_layout_) {
-    channel_layout_ = channel_layout;
+  if (buffer.channel_layout() != channel_layout_) {
+    channel_layout_ = buffer.channel_layout();
     channel_mixer_ = std::make_unique<media::ChannelMixer>(
-        channel_layout, media::CHANNEL_LAYOUT_MONO);
+        buffer.channel_layout(), media::CHANNEL_LAYOUT_MONO);
   }
 }
 
@@ -139,7 +125,7 @@ ChromeSpeechRecognitionClient::ConvertToAudioDataS16(
   if (buffer->channel_count() > 1 && !is_multichannel_supported_) {
     signed_buffer->channel_count = 1;
     CopyBufferToTempAudioBus(*buffer);
-    ResetChannelMixer(buffer->frame_count(), buffer->channel_layout());
+    ResetChannelMixer(*buffer);
     signed_buffer->data.resize(buffer->frame_count());
     channel_mixer_->Transform(temp_audio_bus_.get(), monaural_audio_bus_.get());
     monaural_audio_bus_->ToInterleaved<media::SignedInt16SampleTypeTraits>(
@@ -162,40 +148,6 @@ ChromeSpeechRecognitionClient::ConvertToAudioDataS16(
   signed_buffer->data.resize(buffer->frame_count() * buffer->channel_count());
   temp_audio_bus_->ToInterleaved<media::SignedInt16SampleTypeTraits>(
       temp_audio_bus_->frames(), &signed_buffer->data[0]);
-
-  return signed_buffer;
-}
-
-media::mojom::AudioDataS16Ptr
-ChromeSpeechRecognitionClient::ConvertToAudioDataS16(
-    std::unique_ptr<media::AudioBus> audio_bus,
-    int sample_rate,
-    media::ChannelLayout channel_layout) {
-  DCHECK_GT(audio_bus->frames(), 0);
-  DCHECK_GT(audio_bus->channels(), 0);
-
-  auto signed_buffer = media::mojom::AudioDataS16::New();
-  signed_buffer->channel_count = audio_bus->channels();
-  signed_buffer->frame_count = audio_bus->frames();
-  signed_buffer->sample_rate = sample_rate;
-
-  // If multichannel audio is not supported by the speech recognition service,
-  // mix the channels into a monaural channel before converting it.
-  if (audio_bus->channels() > 1 && !is_multichannel_supported_) {
-    signed_buffer->channel_count = 1;
-    ResetChannelMixer(audio_bus->frames(), channel_layout);
-    signed_buffer->data.resize(audio_bus->frames());
-
-    channel_mixer_->Transform(audio_bus.get(), monaural_audio_bus_.get());
-    monaural_audio_bus_->ToInterleaved<media::SignedInt16SampleTypeTraits>(
-        monaural_audio_bus_->frames(), &signed_buffer->data[0]);
-
-    return signed_buffer;
-  }
-
-  signed_buffer->data.resize(audio_bus->frames() * audio_bus->channels());
-  audio_bus->ToInterleaved<media::SignedInt16SampleTypeTraits>(
-      audio_bus->frames(), &signed_buffer->data[0]);
 
   return signed_buffer;
 }

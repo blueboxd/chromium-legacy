@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator.h"
 
+#include "base/notreached.h"
 #import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/advanced_settings_signin/advanced_settings_signin_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/signin/trusted_vault_reauthentication/trusted_vault_reauthentication_coordinator.h"

@@ -46204,7 +46204,7 @@
               "gpu": "1002:6821",
               "hidpi": "1",
               "os": "Mac-10.13.6",
-              "pool": "chromium.tests.gpu.template"
+              "pool": "chromium.tests.gpu"
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",

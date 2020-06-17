@@ -21,7 +21,6 @@ class RenderFrame;
 }  // namespace content
 
 namespace media {
-class AudioBus;
 class ChannelMixer;
 }  // namespace media
 
@@ -37,9 +36,6 @@ class ChromeSpeechRecognitionClient
 
   // media::SpeechRecognitionClient
   void AddAudio(scoped_refptr<media::AudioBuffer> buffer) override;
-  void AddAudio(std::unique_ptr<media::AudioBus> audio_bus,
-                int sample_rate,
-                media::ChannelLayout channel_layout) override;
   bool IsSpeechRecognitionAvailable() override;
 
   // Callback executed when the recognizer is bound. Sets the flag indicating
@@ -56,20 +52,13 @@ class ChromeSpeechRecognitionClient
 
   // Called as a response to sending a transcription to the browser.
   void OnTranscriptionCallback(bool success);
-
-  media::mojom::AudioDataS16Ptr ConvertToAudioDataS16(
-      std::unique_ptr<media::AudioBus> audio_bus,
-      int sample_rate,
-      media::ChannelLayout channel_layout);
-
   // Recreates the temporary audio bus if the frame count or channel count
   // changed and reads the frames from the buffer into the temporary audio bus.
   void CopyBufferToTempAudioBus(const media::AudioBuffer& buffer);
 
   // Resets the temporary monaural audio bus and the channel mixer used to
   // combine multiple audio channels.
-  void ResetChannelMixer(int frame_count, media::ChannelLayout channel_layout);
-
+  void ResetChannelMixer(const media::AudioBuffer& buffer);
   bool IsUrlBlocked(const std::string& url) const;
 
   mojo::Remote<media::mojom::SpeechRecognitionContext>
@@ -89,7 +78,6 @@ class ChromeSpeechRecognitionClient
 
   // Whether the browser is still requesting transcriptions.
   bool is_browser_requesting_transcription_ = true;
-
   // The temporary audio bus used to mix multichannel audio into a single
   // channel.
   std::unique_ptr<media::AudioBus> monaural_audio_bus_;

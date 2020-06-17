@@ -32,6 +32,13 @@
     margin-inline-start: 8px;
   }
 
+  #ongoingEmptyState {
+    color: var(--google-grey-600);
+    margin-inline-start: 12px;
+    padding-bottom: 24px;
+    padding-top: 24px;
+  }
+
   h1 {
     font-size: 200%;
     font-weight: 500;
@@ -87,6 +94,10 @@
       </template>
     </iron-list>
   </template>
+
+  <div id="ongoingEmptyState" hidden="[[ongoingPrintJobs_.length]]">
+    [[i18n('noPrintJobInProgress')]]
+  </div>
 
   <template is="dom-if" if="[[printJobs_.length]]" restamp>
     <div id="historyHeaderContainer" class="column-headers flex-center">

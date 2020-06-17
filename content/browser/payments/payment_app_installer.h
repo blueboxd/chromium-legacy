@@ -16,7 +16,6 @@ class GURL;
 
 namespace content {
 
-class BrowserContext;
 class WebContents;
 
 // Installs a web payment app with a default payment instrument and returns
@@ -24,7 +23,7 @@ class WebContents;
 class PaymentAppInstaller {
  public:
   using InstallPaymentAppCallback =
-      base::OnceCallback<void(BrowserContext* browser_context,
+      base::OnceCallback<void(WebContents* web_contents,
                               int64_t registration_id)>;
 
   // Installs the payment app.

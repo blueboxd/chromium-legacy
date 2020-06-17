@@ -4,6 +4,7 @@
 
 #import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
 
+#include "base/logging.h"
 #include "base/values.h"
 #include "ios/components/security_interstitials/ios_security_interstitial_page.h"
 #import "ios/web/public/navigation/navigation_context.h"

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "media/base/audio_buffer.h"
-#include "media/base/audio_bus.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -20,10 +19,6 @@ class MEDIA_EXPORT SpeechRecognitionClient {
   virtual ~SpeechRecognitionClient() = default;
 
   virtual void AddAudio(scoped_refptr<AudioBuffer> buffer) = 0;
-
-  virtual void AddAudio(std::unique_ptr<media::AudioBus> audio_bus,
-                        int sample_rate,
-                        media::ChannelLayout channel_layout) = 0;
 
   virtual bool IsSpeechRecognitionAvailable() = 0;
 };

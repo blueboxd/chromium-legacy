@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/logging.h"
+
 namespace chromecast {
 namespace bindings {
 

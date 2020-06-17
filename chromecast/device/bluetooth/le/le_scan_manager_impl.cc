@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "chromecast/base/bind_to_task_runner.h"
 #include "chromecast/device/bluetooth/bluetooth_util.h"

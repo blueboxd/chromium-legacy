@@ -9,6 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "components/safe_browsing/core/features.h"
 

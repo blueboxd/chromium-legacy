@@ -6,6 +6,8 @@
 
 #include <Cocoa/Cocoa.h>
 
+#include "base/check.h"
+
 namespace remoting {
 
 constexpr int kDefaultScreenDpi = 96;

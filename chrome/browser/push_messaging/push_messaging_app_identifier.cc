@@ -19,18 +19,18 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 
-const char kPushMessagingAppIdentifierPrefix[] = "wp:";
-const char kInstanceIDGuidSuffix[] = "-V2";
+constexpr char kPushMessagingAppIdentifierPrefix[] = "wp:";
+constexpr char kInstanceIDGuidSuffix[] = "-V2";
 
 namespace {
 
 // sizeof is strlen + 1 since it's null-terminated.
-const size_t kPrefixLength = sizeof(kPushMessagingAppIdentifierPrefix) - 1;
-const size_t kGuidSuffixLength = sizeof(kInstanceIDGuidSuffix) - 1;
+constexpr size_t kPrefixLength = sizeof(kPushMessagingAppIdentifierPrefix) - 1;
+constexpr size_t kGuidSuffixLength = sizeof(kInstanceIDGuidSuffix) - 1;
 
 // Ok to use '#' as separator since only the origin of the url is used.
-const char kOriginSWRIdSeparator = '#';
-const size_t kGuidLength = 36;  // "%08X-%04X-%04X-%04X-%012llX"
+constexpr char kOriginSWRIdSeparator = '#';
+constexpr size_t kGuidLength = 36;  // "%08X-%04X-%04X-%04X-%012llX"
 
 std::string MakePrefValue(const GURL& origin,
                           int64_t service_worker_registration_id) {
@@ -248,7 +248,7 @@ void PushMessagingAppIdentifier::DCheckValid() const {
 
   // Optional (origin.spec() + '#')
   if (app_id_.size() != kPrefixLength + kGuidLength) {
-    const size_t suffix_length = 1 /* kOriginSWRIdSeparator */ + kGuidLength;
+    constexpr size_t suffix_length = 1 /* kOriginSWRIdSeparator */ + kGuidLength;
     DCHECK_GT(app_id_.size(), kPrefixLength + suffix_length);
     DCHECK_EQ(origin_, GURL(app_id_.substr(
                            kPrefixLength,

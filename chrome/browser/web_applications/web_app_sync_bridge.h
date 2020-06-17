@@ -76,6 +76,7 @@ class WebAppSyncBridge : public AppRegistryController,
                                 bool is_locally_installed) override;
   void SetAppLastLaunchTime(const AppId& app_id,
                             const base::Time& time) override;
+  void SetAppInstallTime(const AppId& app_id, const base::Time& time) override;
   WebAppSyncBridge* AsWebAppSyncBridge() override;
 
   // An access to read-only registry. Does an upcast to read-only type.

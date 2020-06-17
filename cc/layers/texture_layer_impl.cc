@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_impl.h"

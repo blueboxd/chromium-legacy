@@ -62,12 +62,22 @@ class LabelButtonLabelTest : public ViewsTestBase {
 
   void SetUp() override {
     ViewsTestBase::SetUp();
-    label_ = std::make_unique<TestLabel>(&last_color_);
+
+    widget_ = CreateTestWidget();
+    label_ =
+        widget_->SetContentsView(std::make_unique<TestLabel>(&last_color_));
+    label_->SetAutoColorReadabilityEnabled(false);
+  }
+
+  void TearDown() override {
+    widget_.reset();
+    ViewsTestBase::TearDown();
   }
 
  protected:
-  SkColor last_color_ = SK_ColorCYAN;
-  std::unique_ptr<TestLabel> label_;
+  SkColor last_color_ = gfx::kPlaceholderColor;
+  std::unique_ptr<views::Widget> widget_;
+  TestLabel* label_;
   TestNativeTheme theme1_;
   TestNativeTheme theme2_;
 
@@ -77,16 +87,6 @@ class LabelButtonLabelTest : public ViewsTestBase {
 
 // Test that LabelButtonLabel reacts properly to themed and overridden colors.
 TEST_F(LabelButtonLabelTest, Colors) {
-  // The OnDidSchedulePaint() override won't be called while the base
-  // class is initialized. Not much we can do about that, so give it the first
-  // for free.
-  EXPECT_EQ(SK_ColorCYAN, last_color_);  // Sanity check.
-
-  // At the same time we can check that changing the auto color readability
-  // schedules a paint. Currently it does. Although it technically doesn't need
-  // to since the color isn't actually changing.
-  label_->SetAutoColorReadabilityEnabled(false);
-
   // First one comes from the default theme. This check ensures the SK_ColorRED
   // placeholder initializers were replaced.
   SkColor default_theme_enabled_color =

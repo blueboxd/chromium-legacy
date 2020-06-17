@@ -11,6 +11,7 @@
 
 #include "base/containers/adapters.h"
 #include "base/containers/stack.h"
+#include "base/logging.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer.h"

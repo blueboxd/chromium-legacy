@@ -10,6 +10,7 @@
 #include <sys/mman.h>
 
 #include "third_party/libunwindstack/src/libunwindstack/include/unwindstack/Elf.h"
+#include "third_party/libunwindstack/src/libunwindstack/include/unwindstack/Memory.h"
 #include "third_party/libunwindstack/src/libunwindstack/include/unwindstack/Regs.h"
 
 #include "base/memory/ptr_util.h"
@@ -114,7 +115,7 @@ std::unique_ptr<unwindstack::Maps> NativeUnwinderAndroid::CreateMaps() {
 // static
 std::unique_ptr<unwindstack::Memory>
 NativeUnwinderAndroid::CreateProcessMemory() {
-  return std::make_unique<unwindstack::MemoryLocal>();
+  return unwindstack::Memory::CreateLocalProcessMemory();
 }
 
 void NativeUnwinderAndroid::AddInitialModulesFromMaps(
@@ -175,7 +176,8 @@ UnwindResult NativeUnwinderAndroid::TryUnwind(RegisterContext* thread_context,
     uintptr_t rel_pc = elf->GetRelPc(cur_pc, map_info);
     bool finished = false;
     bool stepped =
-        elf->Step(rel_pc, rel_pc, regs.get(), &stack_memory, &finished);
+        elf->StepIfSignalHandler(rel_pc, regs.get(), &stack_memory) ||
+        elf->Step(rel_pc, regs.get(), &stack_memory, &finished);
     if (stepped && finished)
       return UnwindResult::COMPLETED;
 

@@ -30,8 +30,6 @@ using blink::mojom::StorageType;
 
 // Declared to shorten the line lengths.
 static const StorageType kTemp = StorageType::kTemporary;
-static const StorageType kPerm = StorageType::kPersistent;
-static const StorageType kSync = StorageType::kSyncable;
 
 namespace content {
 
@@ -190,15 +188,11 @@ TEST_F(IndexedDBQuotaClientTest, GetOriginUsage) {
   AddFakeIndexedDB(kOriginA, 6);
   AddFakeIndexedDB(kOriginB, 3);
   EXPECT_EQ(6, GetOriginUsage(client, kOriginA, kTemp));
-  EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kPerm));
   EXPECT_EQ(3, GetOriginUsage(client, kOriginB, kTemp));
-  EXPECT_EQ(0, GetOriginUsage(client, kOriginB, kPerm));
 
   AddFakeIndexedDB(kOriginA, 1000);
   EXPECT_EQ(1000, GetOriginUsage(client, kOriginA, kTemp));
-  EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kPerm));
   EXPECT_EQ(3, GetOriginUsage(client, kOriginB, kTemp));
-  EXPECT_EQ(0, GetOriginUsage(client, kOriginB, kPerm));
 }
 
 TEST_F(IndexedDBQuotaClientTest, GetOriginsForHost) {
@@ -222,7 +216,6 @@ TEST_F(IndexedDBQuotaClientTest, GetOriginsForHost) {
   EXPECT_TRUE(origins.find(kOriginA) != origins.end());
   EXPECT_TRUE(origins.find(kOriginB) != origins.end());
 
-  EXPECT_TRUE(GetOriginsForHost(client, kPerm, kOriginA.host()).empty());
   EXPECT_TRUE(GetOriginsForHost(client, kTemp, kOriginOther.host()).empty());
 }
 
@@ -230,14 +223,11 @@ TEST_F(IndexedDBQuotaClientTest, GetOriginsForType) {
   auto client = base::MakeRefCounted<IndexedDBQuotaClient>(idb_context());
 
   EXPECT_TRUE(GetOriginsForType(client, kTemp).empty());
-  EXPECT_TRUE(GetOriginsForType(client, kPerm).empty());
 
   AddFakeIndexedDB(kOriginA, 1000);
   std::set<url::Origin> origins = GetOriginsForType(client, kTemp);
   EXPECT_EQ(origins.size(), 1ul);
   EXPECT_TRUE(origins.find(kOriginA) != origins.end());
-
-  EXPECT_TRUE(GetOriginsForType(client, kPerm).empty());
 }
 
 TEST_F(IndexedDBQuotaClientTest, DeleteOrigin) {
@@ -253,14 +243,6 @@ TEST_F(IndexedDBQuotaClientTest, DeleteOrigin) {
   EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, delete_status);
   EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kTemp));
   EXPECT_EQ(50, GetOriginUsage(client, kOriginB, kTemp));
-
-  // IndexedDB only supports temporary storage; requests to delete other types
-  // are no-ops, but should not fail.
-  delete_status = DeleteOrigin(client, kOriginA, kPerm);
-  EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, delete_status);
-
-  delete_status = DeleteOrigin(client, kOriginA, kSync);
-  EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, delete_status);
 }
 
 }  // namespace content

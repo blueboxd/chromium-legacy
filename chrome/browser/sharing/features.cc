@@ -4,6 +4,8 @@
 
 #include "chrome/browser/sharing/features.h"
 
+#include "build/build_config.h"
+
 const base::Feature kSharingQRCodeGenerator{"SharingQRCodeGenerator",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -43,5 +45,11 @@ const base::FeatureParam<int> kSharingMessageBridgeTimeoutSeconds = {
 const base::Feature kSharingSendViaSync{"SharingSendViaSync",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kSharingPreferVapid{"SharingPreferVapid",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSharingPreferVapid {
+  "SharingPreferVapid",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(OS_ANDROID)
+};

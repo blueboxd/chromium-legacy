@@ -3700,6 +3700,22 @@ void AXNodeObject::TextChanged() {
   }
 }
 
+AXObject* AXNodeObject::ErrorMessage() const {
+  // Check for aria-errormessage.
+  Element* existing_error_message =
+      GetAOMPropertyOrARIAAttribute(AOMRelationProperty::kErrorMessage);
+  if (existing_error_message)
+    return AXObjectCache().GetOrCreate(existing_error_message);
+
+  // Check for visible validationMessage. This can only be visible for a focused
+  // control. Corollary: if there is a visible validationMessage alert box, then
+  // it is related to the current focus.
+  if (this != AXObjectCache().FocusedObject())
+    return nullptr;
+
+  return AXObjectCache().ValidationMessageObjectIfInvalid();
+}
+
 void AXNodeObject::ComputeAriaOwnsChildren(
     HeapVector<Member<AXObject>>& owned_children) const {
   Vector<String> id_vector;

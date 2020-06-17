@@ -8,12 +8,13 @@
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
+#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
 #include "base/allocator/partition_allocator/partition_oom.h"
 #include "base/allocator/partition_allocator/partition_page.h"
-#include "base/allocator/partition_allocator/partition_root_base.h"
+
 #include "base/check.h"
 #include "build/build_config.h"
 
@@ -39,7 +40,7 @@ char* CommitPages(internal::pool_handle pool, size_t map_size) {
 
 template <bool thread_safe>
 ALWAYS_INLINE PartitionPage<thread_safe>* PartitionDirectMap(
-    PartitionRootBase<thread_safe>* root,
+    PartitionRoot<thread_safe>* root,
     int flags,
     size_t raw_size) {
   size_t size = PartitionBucket<thread_safe>::get_direct_map_size(raw_size);
@@ -221,7 +222,7 @@ NOINLINE void PartitionBucket<thread_safe>::OnFull() {
 
 template <bool thread_safe>
 ALWAYS_INLINE void* PartitionBucket<thread_safe>::AllocNewSlotSpan(
-    PartitionRootBase<thread_safe>* root,
+    PartitionRoot<thread_safe>* root,
     int flags,
     uint16_t num_partition_pages) {
   DCHECK(!(reinterpret_cast<uintptr_t>(root->next_partition_page) %
@@ -491,7 +492,7 @@ bool PartitionBucket<thread_safe>::SetNewActivePage() {
 
 template <bool thread_safe>
 void* PartitionBucket<thread_safe>::SlowPathAlloc(
-    PartitionRootBase<thread_safe>* root,
+    PartitionRoot<thread_safe>* root,
     int flags,
     size_t size,
     bool* is_already_zeroed) {

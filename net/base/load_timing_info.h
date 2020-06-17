@@ -40,6 +40,7 @@ namespace net {
 // service_worker_ready_time
 // service_worker_fetch_start
 // service_worker_respond_with_settled
+// first_early_hints_time
 // receive_headers_start
 // receive_headers_end
 //
@@ -177,6 +178,9 @@ struct NET_EXPORT LoadTimingInfo {
   // (http://www.w3.org/TR/resource-timing/) for Web-surfacing requests.
   base::TimeTicks receive_headers_start;
   base::TimeTicks receive_headers_end;
+
+  // The time that the first 103 Early Hints response is received.
+  base::TimeTicks first_early_hints_time;
 
   // In case the resource was proactively pushed by the server, these are
   // the times that push started and ended. Note that push_end will be null

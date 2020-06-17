@@ -292,6 +292,16 @@ void JSChecker::ExpectEnabledPath(
   ExpectFalse(GetOobeElementPath(element_ids) + ".disabled");
 }
 
+void JSChecker::ExpectInvalidPath(
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectTrue(GetOobeElementPath(element_ids) + ".invalid");
+}
+
+void JSChecker::ExpectValidPath(
+    std::initializer_list<base::StringPiece> element_ids) {
+  ExpectFalse(GetOobeElementPath(element_ids) + ".invalid");
+}
+
 void JSChecker::ExpectHasClass(
     const std::string& css_class,
     std::initializer_list<base::StringPiece> element_ids) {
@@ -322,6 +332,23 @@ void JSChecker::ExpectElementText(
   const std::string element_path = GetOobeElementPath(element_ids);
   const std::string expression = element_path + ".textContent.trim()";
   ExpectEQ(expression, content);
+}
+
+void JSChecker::ExpectElementContainsText(
+    const std::string& content,
+    std::initializer_list<base::StringPiece> element_ids) {
+  const std::string element_path = GetOobeElementPath(element_ids);
+  const std::string expression = element_path + ".textContent.trim()";
+  const std::string message = GetString(expression);
+  EXPECT_TRUE(std::string::npos != message.find(content));
+}
+
+void JSChecker::ExpectElementValue(
+    const std::string& value,
+    std::initializer_list<base::StringPiece> element_ids) {
+  const std::string element_path = GetOobeElementPath(element_ids);
+  const std::string expression = element_path + ".value";
+  ExpectEQ(expression, value);
 }
 
 void JSChecker::ClickOnPath(

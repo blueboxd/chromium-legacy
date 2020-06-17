@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "net/base/io_buffer.h"
+#include "net/base/load_timing_info.h"
 #include "net/base/test_completion_callback.h"
 #include "net/log/net_log_source.h"
 #include "net/spdy/spdy_read_queue.h"
@@ -83,6 +84,10 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   std::string GetResponseHeaderValue(const std::string& name) const;
   bool send_headers_completed() const { return send_headers_completed_; }
 
+  // Returns the load timing info on the stream. This must be called after the
+  // stream is closed in order to get the up-to-date information.
+  const LoadTimingInfo& GetLoadTimingInfo();
+
  protected:
   const base::WeakPtr<SpdyStream>& stream() { return stream_; }
 
@@ -93,6 +98,7 @@ class StreamDelegateBase : public SpdyStream::Delegate {
   bool send_headers_completed_;
   spdy::SpdyHeaderBlock response_headers_;
   SpdyReadQueue received_data_queue_;
+  LoadTimingInfo load_timing_info_;
 };
 
 // Test delegate that does nothing. Used to capture data about the

@@ -135,6 +135,11 @@ extern const char
 extern const char
     kHistogramNavigationTimingFinalLoaderCallbackToNavigationCommitSent[];
 
+// 103 Early Hints metrics for experiment (https://crbug.com/1093693).
+extern const char kHistogramEarlyHintsFirstRequestStartToEarlyHints[];
+extern const char kHistogramEarlyHintsFinalRequestStartToEarlyHints[];
+extern const char kHistogramEarlyHintsEarlyHintsToFinalResponseStart[];
+
 enum FirstMeaningfulPaintStatus {
   FIRST_MEANINGFUL_PAINT_RECORDED,
   FIRST_MEANINGFUL_PAINT_BACKGROUNDED,

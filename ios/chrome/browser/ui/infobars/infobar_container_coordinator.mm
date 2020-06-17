@@ -243,6 +243,9 @@
 }
 
 - (void)infobarManagerWillChange {
+  if (IsInfobarUIRebootEnabled()) {
+    [self dismissInfobarBannerAnimated:NO completion:nil];
+  }
   self.infobarCoordinators = [NSMutableArray array];
   self.infobarCoordinatorsToPresent = [NSMutableArray array];
 }

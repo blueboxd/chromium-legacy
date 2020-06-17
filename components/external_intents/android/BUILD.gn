@@ -29,6 +29,7 @@ android_library("java") {
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_java",
     "//url:gurl_java",
+    "//url:origin_java",
   ]
 }
 

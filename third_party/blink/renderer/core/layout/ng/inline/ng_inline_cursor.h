@@ -315,6 +315,16 @@ class CORE_EXPORT NGInlineCursor {
   PositionWithAffinity PositionForPointInInlineBox(
       const PhysicalOffset& point) const;
 
+  // Returns |PositionWithAffinity| in current position at x-coordinate of
+  // |point_in_container| for horizontal writing mode, or y-coordinate of
+  // |point_in_container| for vertical writing mode.
+  // Note: Even if |point_in_container| is outside of an item of current
+  // position, this function returns boundary position of an item.
+  // Note: This function is used for locating caret at same x/y-coordinate as
+  // previous caret after line up/down.
+  PositionWithAffinity PositionForPointInChild(
+      const PhysicalOffset& point_in_container) const;
+
   // Returns first/last position of |this| line. |this| should be line box.
   PositionWithAffinity PositionForStartOfLine() const;
   PositionWithAffinity PositionForEndOfLine() const;
@@ -459,10 +469,6 @@ class CORE_EXPORT NGInlineCursor {
                                           const ItemsSpan& items);
   wtf_size_t SpanBeginItemIndex() const;
   wtf_size_t SpanIndexFromItemIndex(unsigned index) const;
-
-  PositionWithAffinity PositionForPointInChild(
-      const PhysicalOffset& point,
-      const NGFragmentItem& child_item) const;
 
   NGInlineCursorPosition current_;
 

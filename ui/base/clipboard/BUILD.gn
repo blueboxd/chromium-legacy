@@ -115,13 +115,15 @@ jumbo_component("clipboard") {
   if (use_aura) {
     # Linux clipboard implementations.
     if (is_desktop_linux && !is_chromecast) {
+      sources += [ "clipboard_linux.cc" ]
       if (use_ozone) {
         sources += [
           "clipboard_ozone.cc",
           "clipboard_ozone.h",
         ]
         deps += [ "//ui/base" ]
-      } else if (use_x11) {
+      }
+      if (use_x11) {
         sources += [
           "clipboard_x11.cc",
           "clipboard_x11.h",

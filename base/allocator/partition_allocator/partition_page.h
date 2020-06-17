@@ -81,8 +81,8 @@ struct PartitionPage {
   BASE_EXPORT NOINLINE DeferredUnmap FreeSlowPath() WARN_UNUSED_RESULT;
   ALWAYS_INLINE DeferredUnmap Free(void* ptr) WARN_UNUSED_RESULT;
 
-  void Decommit(PartitionRootBase<thread_safe>* root);
-  void DecommitIfPossible(PartitionRootBase<thread_safe>* root);
+  void Decommit(PartitionRoot<thread_safe>* root);
+  void DecommitIfPossible(PartitionRoot<thread_safe>* root);
 
   // Pointer manipulation functions. These must be static as the input |page|
   // pointer may be the result of an offset calculation and therefore cannot
@@ -236,7 +236,7 @@ ALWAYS_INLINE size_t PartitionPage<thread_safe>::get_raw_size() const {
 template <bool thread_safe>
 ALWAYS_INLINE DeferredUnmap PartitionPage<thread_safe>::Free(void* ptr) {
 #if DCHECK_IS_ON()
-  PartitionRootBase<thread_safe>::FromPage(this)->lock_.AssertAcquired();
+  PartitionRoot<thread_safe>::FromPage(this)->lock_.AssertAcquired();
 
   size_t slot_size = bucket->slot_size;
   const size_t raw_size = get_raw_size();

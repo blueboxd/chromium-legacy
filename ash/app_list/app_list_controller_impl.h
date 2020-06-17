@@ -207,6 +207,9 @@ class ASH_EXPORT AppListControllerImpl : public AppListController,
   bool ShouldShowAssistantPrivacyInfo() const override;
   void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
   void MarkAssistantPrivacyInfoDismissed() override;
+  bool ShouldShowSuggestedContentInfo() const override;
+  void MaybeIncreaseSuggestedContentInfoShownCount() override;
+  void MarkSuggestedContentInfoDismissed() override;
   void OnStateTransitionAnimationCompleted(AppListViewState state) override;
   void OnViewStateChanged(AppListViewState state) override;
 

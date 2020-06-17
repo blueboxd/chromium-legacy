@@ -9,9 +9,34 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/android/chrome_jni_headers/InstalledWebappGeolocationBridge_jni.h"
 #include "chrome/browser/installable/installed_webapp_geolocation_context.h"
 #include "services/device/public/cpp/geolocation/geoposition.h"
+
+namespace {
+
+const char kLocationUpdateHistogramName[] =
+    "TrustedWebActivity.LocationUpdateErrorCode";
+
+// Do not modify or reuse existing entries; they are used in a UMA histogram.
+// Please edit TrustedWebActivityLocationErrorCode in the enums.xml if a value
+// is added.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.browserservices
+enum class LocationUpdateError {
+  // There was no error.
+  kNone = 0,
+  // Geoposition could not be determined, i.e. error from the TWA client app.
+  kLocationError = 1,
+  // Invalid position.
+  kInvalidPosition = 2,
+  // Trusted web activity service not found or does not handle the request.
+  kNoTwa = 3,
+  // NOTE: Add entries only immediately above this line.
+  kMaxValue = kNoTwa
+};
+
+}  // namespace
 
 InstalledWebappGeolocationBridge::InstalledWebappGeolocationBridge(
     mojo::PendingReceiver<Geolocation> receiver,
@@ -143,11 +168,25 @@ void InstalledWebappGeolocationBridge::OnNewLocationAvailable(
   if (has_speed)
     position.speed = speed;
 
+  // If position is invalid, mark it as unavailable.
+  if (!device::ValidateGeoposition(position)) {
+    current_position_.error_code =
+        device::mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;
+    base::UmaHistogramEnumeration(kLocationUpdateHistogramName,
+                                  LocationUpdateError::kInvalidPosition);
+  } else {
+    base::UmaHistogramEnumeration(kLocationUpdateHistogramName,
+                                  LocationUpdateError::kNone);
+  }
+
   OnLocationUpdate(position);
 }
 
 void InstalledWebappGeolocationBridge::OnNewErrorAvailable(JNIEnv* env,
                                                            jstring message) {
+  base::UmaHistogramEnumeration(kLocationUpdateHistogramName,
+                                LocationUpdateError::kLocationError);
+
   device::mojom::Geoposition position_error;
   position_error.error_code =
       device::mojom::Geoposition::ErrorCode::POSITION_UNAVAILABLE;

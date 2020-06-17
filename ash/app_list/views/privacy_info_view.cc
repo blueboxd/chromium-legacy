@@ -46,7 +46,10 @@ gfx::Size PrivacyInfoView::CalculatePreferredSize() const {
 }
 
 int PrivacyInfoView::GetHeightForWidth(int width) const {
-  constexpr int kPreferredHeightDip = 48;
+  // TODO(crbug/1079169): Deduce height using the right sources and remove the
+  // magic number 28.
+  const int kPreferredHeightDip =
+      text_view_->GetHeightForWidth(text_view_->width()) + 28;
   return kPreferredHeightDip;
 }
 
@@ -112,9 +115,9 @@ void PrivacyInfoView::InitLayout() {
   // Text.
   InitText();
 
-  // Spacer.
-  layout_manager->SetFlexForView(
-      row_container_->AddChildView(std::make_unique<views::View>()), 1);
+  // Set flex so that text takes up the right amount of horizontal space between
+  // the info icon and close button.
+  layout_manager->SetFlexForView(text_view_, 1);
 
   // Close button.
   InitCloseButton();

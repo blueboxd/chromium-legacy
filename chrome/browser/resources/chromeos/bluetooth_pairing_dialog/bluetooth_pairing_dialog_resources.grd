@@ -12,15 +12,17 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_BLUETOOTH_PAIRING_DIALOG_HTML"
-               file="bluetooth_pairing_dialog.html"
-               type="chrome_html" />
-      <include name="IDR_BLUETOOTH_PAIRING_DIALOG_CONTAINER_HTML"
-               file="bluetooth_pairing_dialog_container.html"
-               type="chrome_html" />
       <include name="IDR_BLUETOOTH_PAIRING_DIALOG_JS"
-               file="bluetooth_pairing_dialog.js"
+               file="${root_gen_dir}/chrome/browser/resources/chromeos/bluetooth_pairing_dialog/bluetooth_pairing_dialog.js"
+               use_base_dir="false"
+               compress="false"
                type="chrome_html" />
     </includes>
+  <structures>
+    <structure name="IDR_BLUETOOTH_PAIRING_DIALOG_CONTAINER_HTML"
+               file="bluetooth_pairing_dialog_container.html"
+               compress="false"
+               type="chrome_html" />
+  </structures>
   </release>
 </grit>

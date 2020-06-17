@@ -733,7 +733,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void Stop();
 
   // Defines different states the RenderFrameHost can be in during its lifetime
-  // i.e., from point of creation to deletion.
+  // i.e., from point of creation to deletion. See |SetLifecycleState|.
   enum class LifecycleState {
     // This state corresponds to when a speculative RenderFrameHost is created
     // for an ongoing navigation (to new URL) but hasn't been swapped in the
@@ -3082,6 +3082,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameHostImpl);
 };
+
+// Used when DCHECK_STATE_TRANSITION triggers.
+CONTENT_EXPORT std::ostream& operator<<(
+    std::ostream& o,
+    const RenderFrameHostImpl::LifecycleState& s);
 
 }  // namespace content
 

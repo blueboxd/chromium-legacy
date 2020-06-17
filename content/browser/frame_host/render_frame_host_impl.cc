@@ -136,6 +136,7 @@
 #include "content/common/navigation_params_utils.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/common/renderer.mojom.h"
+#include "content/common/state_transitions.h"
 #include "content/common/unfreezable_frame_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -9092,31 +9093,36 @@ void RenderFrameHostImpl::SetLifecycleStateToActive() {
 }
 
 void RenderFrameHostImpl::SetLifecycleState(LifecycleState state) {
-  // Cross-verify that |lifecycle_state_| transition happens correctly.
-  switch (state) {
-    case LifecycleState::kSpeculative:
-      // RenderFrameHost is only set speculative during its creation and no
-      // transitions happen to this state during its lifetime.
-      NOTREACHED();
-      break;
-    case LifecycleState::kActive:
-      DCHECK(lifecycle_state_ == LifecycleState::kSpeculative ||
-             lifecycle_state_ == LifecycleState::kInBackForwardCache)
-          << "Unexpected LifeCycleState " << int(lifecycle_state_);
-      break;
-    case LifecycleState::kInBackForwardCache:
-      DCHECK_EQ(lifecycle_state_, LifecycleState::kActive)
-          << "Unexpected LifeCycleState " << int(lifecycle_state_);
-      break;
-    case LifecycleState::kRunningUnloadHandlers:
-      DCHECK_EQ(lifecycle_state_, LifecycleState::kActive)
-          << "Unexpected LifeCycleState " << int(lifecycle_state_);
-      break;
-    case LifecycleState::kReadyToBeDeleted:
-      DCHECK_NE(lifecycle_state_, LifecycleState::kReadyToBeDeleted)
-          << "Unexpected LifeCycleState " << int(lifecycle_state_);
-      break;
-  }
+#if DCHECK_IS_ON()
+  static const base::NoDestructor<StateTransitions<LifecycleState>>
+      allowed_transitions(
+          // For a graph of state transitions, see
+          // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/render-frame-host-lifecycle-state.png
+          // To update the graph, see the corresponding .gv file.
+
+          // RenderFrameHost is only set speculative during its creation and no
+          // transitions happen to this state during its lifetime.
+          StateTransitions<LifecycleState>({
+              {LifecycleState::kSpeculative,
+               {LifecycleState::kActive, LifecycleState::kReadyToBeDeleted}},
+
+              {LifecycleState::kActive,
+               {LifecycleState::kInBackForwardCache,
+                LifecycleState::kRunningUnloadHandlers,
+                LifecycleState::kReadyToBeDeleted}},
+
+              {LifecycleState::kInBackForwardCache,
+               {LifecycleState::kActive, LifecycleState::kReadyToBeDeleted}},
+
+              {LifecycleState::kRunningUnloadHandlers,
+               {LifecycleState::kReadyToBeDeleted}},
+
+              {LifecycleState::kReadyToBeDeleted, {}},
+          }));
+  DCHECK_STATE_TRANSITION(allowed_transitions, /*old_state=*/lifecycle_state_,
+                          /*new_state*/ state);
+#endif  // DCHECK_IS_ON()
+
   LifecycleState old_state = lifecycle_state_;
   lifecycle_state_ = state;
   // Notify the delegate about change in |lifecycle_state_|.
@@ -9164,6 +9170,11 @@ void RenderFrameHostImpl::CheckSandboxFlags() {
     return;
 
   DCHECK(false);
+}
+
+std::ostream& operator<<(std::ostream& o,
+                         const RenderFrameHostImpl::LifecycleState& s) {
+  return o << LifecycleStateToString(s);
 }
 
 }  // namespace content

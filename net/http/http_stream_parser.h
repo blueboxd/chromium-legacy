@@ -95,6 +95,7 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   int64_t sent_bytes() const { return sent_bytes_; }
 
   base::TimeTicks response_start_time() { return response_start_time_; }
+  base::TimeTicks first_early_hints_time() { return first_early_hints_time_; }
 
   void GetSSLInfo(SSLInfo* ssl_info);
 
@@ -240,6 +241,9 @@ class NET_EXPORT_PRIVATE HttpStreamParser {
   // Time at which the first bytes of the header response are about to be
   // parsed.
   base::TimeTicks response_start_time_;
+
+  // Time at which the first 103 Early Hints response is received.
+  base::TimeTicks first_early_hints_time_;
 
   // Indicates the content length.  If this value is less than zero
   // (and chunked_decoder_ is null), then we must read until the server

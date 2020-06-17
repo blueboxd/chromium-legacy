@@ -6206,14 +6206,6 @@ the Bookmarks menu.">
       <message name="IDS_MEDIA_MENU_NO_DEVICE_TITLE" desc="The title of the media select menu if there is no microphone or camera available on the machine">
         None available
       </message>
-      <if expr="is_android">
-        <message name="IDS_POPUPS_BLOCKED_INFOBAR_BUTTON_SHOW" desc="Pop-up Blocking Show Button [CHAR-LIMIT=32]">
-          Always show
-        </message>
-        <message name="IDS_POPUPS_BLOCKED_INFOBAR_TEXT" desc="Pop-up Blocking Title [CHAR-LIMIT=32] [ICU Syntax]">
-          {NUM_POPUPS,plural,=1{Pop-up blocked} other{# pop-ups blocked}}
-        </message>
-      </if>
 
       <message name="IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL" desc="Label for zoom level list entry for Chrome error pages.">
         (Chrome error pages)

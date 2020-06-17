@@ -115,6 +115,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableHoudini[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableHoudini64[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kEnableNdkTranslation[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kEnableNdkTranslation64[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableRequestTabletSite[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kEnableTouchCalibrationSetting[];

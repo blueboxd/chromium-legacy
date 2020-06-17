@@ -44,6 +44,7 @@ void SendStream::SendFin() {
 }
 
 void SendStream::OnOutgoingStreamAbort() {
+  quic_transport_->AbortStream(stream_id_);
   quic_transport_->ForgetStream(stream_id_);
 }
 

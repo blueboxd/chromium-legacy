@@ -4,6 +4,10 @@
 
 package org.chromium.components.external_intents;
 
+import androidx.annotation.Nullable;
+
+import org.chromium.url.Origin;
+
 /**
  * A container object for passing navigation parameters to {@link ExternalNavigationHandler}.
  */
@@ -53,12 +57,22 @@ public class ExternalNavigationParams {
      */
     private final boolean mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent;
 
+    /**
+     * Whether the navigation is initiated by the renderer.
+     */
+    private boolean mIsRendererInitiated;
+
+    /**
+     * The origin that initiates the navigation, could be null.
+     */
+    private Origin mInitiatorOrigin;
+
     private ExternalNavigationParams(String url, boolean isIncognito, String referrerUrl,
             int pageTransition, boolean isRedirect, boolean appMustBeInForeground,
             RedirectHandler redirectHandler, boolean openInNewTab,
             boolean isBackgroundTabNavigation, boolean isMainFrame, String nativeClientPackageName,
-            boolean hasUserGesture,
-            boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent) {
+            boolean hasUserGesture, boolean shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent,
+            boolean isRendererInitiated, @Nullable Origin initiatorOrigin) {
         mUrl = url;
         mIsIncognito = isIncognito;
         mPageTransition = pageTransition;
@@ -73,6 +87,8 @@ public class ExternalNavigationParams {
         mHasUserGesture = hasUserGesture;
         mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent =
                 shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent;
+        mIsRendererInitiated = isRendererInitiated;
+        mInitiatorOrigin = initiatorOrigin;
     }
 
     /** @return The URL to potentially open externally. */
@@ -149,6 +165,21 @@ public class ExternalNavigationParams {
         return mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent;
     }
 
+    /**
+     * @return Whether the navigation is initiated by renderer.
+     */
+    public boolean isRendererInitiated() {
+        return mIsRendererInitiated;
+    }
+
+    /**
+     * @return The origin that initiates the navigation.
+     */
+    @Nullable
+    public Origin getInitiatorOrigin() {
+        return mInitiatorOrigin;
+    }
+
     /** The builder for {@link ExternalNavigationParams} objects. */
     public static class Builder {
         /** The URL which we are navigating to. */
@@ -195,6 +226,16 @@ public class ExternalNavigationParams {
          * intent launched.
          */
         private boolean mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent;
+
+        /**
+         * Whether the navigation is initiated by the renderer.
+         */
+        private boolean mIsRendererInitiated;
+
+        /**
+         * The origin that initiates the navigation, could be null.
+         */
+        private Origin mInitiatorOrigin;
 
         public Builder(String url, boolean isIncognito) {
             mUrl = url;
@@ -261,12 +302,29 @@ public class ExternalNavigationParams {
             return this;
         }
 
+        /**
+         * Sets whether the navigation is initiated by renderer.
+         */
+        public Builder setIsRendererInitiated(boolean v) {
+            mIsRendererInitiated = v;
+            return this;
+        }
+
+        /**
+         * Sets the origin that initiates the navigation.
+         */
+        public Builder setInitiatorOrigin(@Nullable Origin v) {
+            mInitiatorOrigin = v;
+            return this;
+        }
+
         /** @return A fully constructed {@link ExternalNavigationParams} object. */
         public ExternalNavigationParams build() {
             return new ExternalNavigationParams(mUrl, mIsIncognito, mReferrerUrl, mPageTransition,
                     mIsRedirect, mApplicationMustBeInForeground, mRedirectHandler, mOpenInNewTab,
                     mIsBackgroundTabNavigation, mIsMainFrame, mNativeClientPackageName,
-                    mHasUserGesture, mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent);
+                    mHasUserGesture, mShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent,
+                    mIsRendererInitiated, mInitiatorOrigin);
         }
     }
 }

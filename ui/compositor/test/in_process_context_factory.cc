@@ -126,10 +126,6 @@ class DirectOutputSurface : public viz::OutputSurface {
   gfx::OverlayTransform GetDisplayTransform() override {
     return gfx::OVERLAY_TRANSFORM_NONE;
   }
-  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper()
-      override {
-    return nullptr;
-  }
   gpu::MemoryTracker* GetMemoryTracker() override { return nullptr; }
 
  private:
@@ -326,7 +322,7 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
         std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
             viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
             gpu::kNullSurfaceHandle),
-        renderer_settings_);
+        nullptr, renderer_settings_);
   } else if (use_test_surface_) {
     gfx::SurfaceOrigin surface_origin = gfx::SurfaceOrigin::kBottomLeft;
     display_output_surface = std::make_unique<cc::PixelTestOutputSurface>(
@@ -357,8 +353,15 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
       begin_frame_source.get(), compositor->task_runner().get(),
       display_output_surface->capabilities().max_frames_pending);
 
+  // Normally display will need to take ownership of a
+  // gpu::GpuTaskschedulerhelper in order to keep it alive to share between the
+  // output surface and the overlay processor. In this case the overlay
+  // processor is only a stub, and viz::TestGpuServiceHolder will keep a
+  // gpu::GpuTaskSchedulerHelper alive for output surface to use, so there is no
+  // need to pass in an gpu::GpuTaskSchedulerHelper here.
   data->SetDisplay(std::make_unique<viz::Display>(
       &shared_bitmap_manager_, renderer_settings_, compositor->frame_sink_id(),
+      nullptr /* gpu::GpuTaskSchedulerHelper */,
       std::move(display_output_surface), std::move(overlay_processor),
       std::move(scheduler), compositor->task_runner()));
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source.get(),

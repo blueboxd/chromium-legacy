@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,6 +43,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.Origin;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -1558,7 +1559,7 @@ public class ExternalNavigationHandlerTest {
                 .withHasUserGesture(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
-        Assert.assertTrue(mDelegate.maybeSetUserGestureCalled);
+        Assert.assertTrue(mDelegate.maybeSetRequestMetadataCalled);
         Assert.assertFalse(mDelegate.startIncognitoIntentCalled);
     }
 
@@ -1574,8 +1575,22 @@ public class ExternalNavigationHandlerTest {
                 .withIsIncognito(true)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION,
                         START_INCOGNITO | START_OTHER_ACTIVITY);
-        Assert.assertTrue(mDelegate.maybeSetUserGestureCalled);
+        Assert.assertTrue(mDelegate.maybeSetRequestMetadataCalled);
         Assert.assertTrue(mDelegate.startIncognitoIntentCalled);
+    }
+
+    @Test
+    @SmallTest
+    public void testRendererInitiated() {
+        // IMDB app is installed.
+        mDelegate.add(new IntentActivity("imdb:", INTENT_APP_PACKAGE_NAME));
+
+        checkUrl(INTENT_URL_WITH_FALLBACK_URL)
+                .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
+                .withIsRendererInitiated(true)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+        Assert.assertTrue(mDelegate.maybeSetRequestMetadataCalled);
     }
 
     @Test
@@ -2076,8 +2091,9 @@ public class ExternalNavigationHandlerTest {
         }
 
         @Override
-        public void maybeSetUserGesture(Intent intent) {
-            maybeSetUserGestureCalled = true;
+        public void maybeSetRequestMetadata(Intent intent, boolean hasUserGesture,
+                boolean isRendererInitiated, Origin initiatorOrigin) {
+            maybeSetRequestMetadataCalled = true;
         }
 
         @Override
@@ -2202,7 +2218,7 @@ public class ExternalNavigationHandlerTest {
         public Intent startActivityIntent;
         public boolean startIncognitoIntentCalled;
         public boolean handleIncognitoIntentTargetingSelfCalled;
-        public boolean maybeSetUserGestureCalled;
+        public boolean maybeSetRequestMetadataCalled;
 
         private String mReferrerWebappPackageName;
 
@@ -2242,6 +2258,7 @@ public class ExternalNavigationHandlerTest {
         private boolean mIsBackgroundTabNavigation;
         private boolean mHasUserGesture;
         private RedirectHandler mRedirectHandler;
+        private boolean mIsRendererInitiated;
 
         private ExternalNavigationTestParams(String url) {
             mUrl = url;
@@ -2289,6 +2306,11 @@ public class ExternalNavigationHandlerTest {
             return this;
         }
 
+        public ExternalNavigationTestParams withIsRendererInitiated(boolean isRendererInitiated) {
+            mIsRendererInitiated = isRendererInitiated;
+            return this;
+        }
+
         public void expecting(
                 @OverrideUrlLoadingResult int expectedOverrideResult, int otherExpectation) {
             boolean expectStartIncognito = (otherExpectation & START_INCOGNITO) != 0;
@@ -2312,6 +2334,7 @@ public class ExternalNavigationHandlerTest {
                             .setIsMainFrame(true)
                             .setNativeClientPackageName(mDelegate.getReferrerWebappPackageName())
                             .setHasUserGesture(mHasUserGesture)
+                            .setIsRendererInitiated(mIsRendererInitiated)
                             .build();
             @OverrideUrlLoadingResult
             int result = mUrlHandler.shouldOverrideUrlLoading(params);

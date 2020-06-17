@@ -195,12 +195,23 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   virtual bool ShouldShowAssistantPrivacyInfo() const = 0;
 
   // If the |prefs::kAssistantPrivacyInfoShownInLauncher| value is in the range
-  // of allowed, we will increment this value.
+  // of allowed values, we will increment this value.
   virtual void MaybeIncreaseAssistantPrivacyInfoShownCount() = 0;
 
   // Called when close button in the Assistant privacy info view is pressed to
   // indicate not to show the view any more.
   virtual void MarkAssistantPrivacyInfoDismissed() = 0;
+
+  // Returns true if the Suggested Content privacy info view should be shown.
+  virtual bool ShouldShowSuggestedContentInfo() const = 0;
+
+  // If the |prefs::kSuggestedContentInfoShownInLauncher| value is in the range
+  // of allowed values, we will increment this value.
+  virtual void MaybeIncreaseSuggestedContentInfoShownCount() = 0;
+
+  // Called when close button in the Suggested Content privacy info view is
+  // pressed to indicate not to show the view any more.
+  virtual void MarkSuggestedContentInfoDismissed() = 0;
 
   // Called when the app list view state is updated.
   virtual void OnViewStateChanged(AppListViewState state) = 0;

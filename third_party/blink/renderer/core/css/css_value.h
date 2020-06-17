@@ -176,12 +176,14 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
   bool IsLightDarkValuePair() const {
     return class_type_ == kLightDarkValuePairClass;
   }
+  bool IsIdSelectorValue() const { return class_type_ == kIdSelectorClass; }
 
   bool HasFailedOrCanceledSubresources() const;
   bool MayContainUrl() const;
   void ReResolveUrl(const Document&) const;
 
   bool operator==(const CSSValue&) const;
+  bool operator!=(const CSSValue& o) const { return !(*this == o); }
 
   void FinalizeGarbageCollectedObject();
   void TraceAfterDispatch(blink::Visitor* visitor) const {}
@@ -206,6 +208,7 @@ class CORE_EXPORT CSSValue : public GarbageCollected<CSSValue> {
     kURIClass,
     kValuePairClass,
     kLightDarkValuePairClass,
+    kIdSelectorClass,
 
     // Basic shape classes.
     // TODO(sashab): Represent these as a single subclass, BasicShapeClass.

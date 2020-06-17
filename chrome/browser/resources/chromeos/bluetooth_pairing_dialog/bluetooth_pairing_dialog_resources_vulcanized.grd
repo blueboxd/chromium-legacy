@@ -5,21 +5,21 @@
       <emit emit_type='prepend'></emit>
     </output>
     <output filename="grit/bluetooth_pairing_dialog_resources_map.cc"
-            type="resource_file_map_source" />
+            type="resource_map_source" />
     <output filename="grit/bluetooth_pairing_dialog_resources_map.h"
             type="resource_map_header" />
     <output filename="bluetooth_pairing_dialog_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_BLUETOOTH_PAIRING_DIALOG_VULCANIZED_HTML"
-               file="${root_gen_dir}\chrome\browser\resources\chromeos\bluetooth_pairing_dialog\vulcanized.html"
+      <include name="IDR_BLUETOOTH_PAIRING_DIALOG_CONTAINER_HTML"
+               file="bluetooth_pairing_dialog_container.html"
+               type="chrome_html" />
+      <include name="IDR_BLUETOOTH_PAIRING_DIALOG_ROLLUP_JS"
+               file="${root_gen_dir}\chrome\browser\resources\chromeos\bluetooth_pairing_dialog\bluetooth_pairing_dialog.rollup.js"
                use_base_dir="false"
-               type="BINDATA" />
-      <include name="IDR_BLUETOOTH_PAIRING_DIALOG_CRISPER_JS"
-               file="${root_gen_dir}\chrome\browser\resources\chromeos\bluetooth_pairing_dialog\crisper.js"
-               use_base_dir="false"
-               type="BINDATA" />
+               preprocess="true"
+               type="chrome_html" />
     </includes>
   </release>
 </grit>

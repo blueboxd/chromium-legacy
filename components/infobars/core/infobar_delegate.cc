@@ -100,7 +100,8 @@ HungRendererInfoBarDelegate* InfoBarDelegate::AsHungRendererInfoBarDelegate() {
   return nullptr;
 }
 
-PopupBlockedInfoBarDelegate* InfoBarDelegate::AsPopupBlockedInfoBarDelegate() {
+blocked_content::PopupBlockedInfoBarDelegate*
+InfoBarDelegate::AsPopupBlockedInfoBarDelegate() {
   return nullptr;
 }
 

@@ -118,6 +118,19 @@ class QuicTransport::Stream final {
     MaySendFin();
   }
 
+  void Abort(quic::QuicRstStreamErrorCode code) {
+    auto* stream = incoming_ ? incoming_ : outgoing_;
+    if (!stream) {
+      return;
+    }
+    stream->Reset(code);
+    incoming_ = nullptr;
+    outgoing_ = nullptr;
+    readable_watcher_.Cancel();
+    readable_.reset();
+    MayDisposeLater();
+  }
+
   ~Stream() { transport_->transport_->session()->CloseStream(id_); }
 
  private:
@@ -278,7 +291,7 @@ class QuicTransport::Stream final {
 
   // This must be the last member.
   base::WeakPtrFactory<Stream> weak_factory_{this};
-};
+};  // namespace network
 
 QuicTransport::QuicTransport(
     const GURL& url,
@@ -389,6 +402,18 @@ void QuicTransport::SendFin(uint32_t stream) {
     return;
   }
   it->second->NotifyFinFromClient();
+}
+
+void QuicTransport::AbortStream(uint32_t stream, uint64_t code) {
+  auto it = streams_.find(stream);
+  if (it == streams_.end()) {
+    return;
+  }
+  auto code_to_pass = quic::QuicRstStreamErrorCode::QUIC_STREAM_NO_ERROR;
+  if (code < quic::QuicRstStreamErrorCode::QUIC_STREAM_LAST_ERROR) {
+    code_to_pass = static_cast<quic::QuicRstStreamErrorCode>(code);
+  }
+  it->second->Abort(code_to_pass);
 }
 
 void QuicTransport::OnConnected() {

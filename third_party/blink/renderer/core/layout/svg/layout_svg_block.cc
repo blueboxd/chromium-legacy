@@ -34,7 +34,7 @@
 namespace blink {
 
 LayoutSVGBlock::LayoutSVGBlock(SVGElement* element)
-    : LayoutBlockFlow(element) {}
+    : LayoutBlockFlow(element), needs_transform_update_(true) {}
 
 SVGElement* LayoutSVGBlock::GetElement() const {
   return To<SVGElement>(LayoutObject::GetNode());
@@ -49,6 +49,15 @@ void LayoutSVGBlock::WillBeDestroyed() {
 void LayoutSVGBlock::UpdateFromStyle() {
   LayoutBlockFlow::UpdateFromStyle();
   SetFloating(false);
+}
+
+bool LayoutSVGBlock::UpdateTransformAfterLayout() {
+  if (!needs_transform_update_)
+    return false;
+  local_transform_ =
+      GetElement()->CalculateTransform(SVGElement::kIncludeMotionTransform);
+  needs_transform_update_ = false;
+  return true;
 }
 
 void LayoutSVGBlock::StyleDidChange(StyleDifference diff,

@@ -92,6 +92,9 @@ class MODULES_EXPORT QuicTransport final
   // Forwards a SendFin() message to the mojo interface.
   void SendFin(uint32_t stream_id);
 
+  // Forwards a AbortStream() message to the mojo interface.
+  void AbortStream(uint32_t stream_id);
+
   // Removes the reference to a stream.
   void ForgetStream(uint32_t stream_id);
 

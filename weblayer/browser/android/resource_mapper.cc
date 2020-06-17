@@ -38,6 +38,7 @@ void ConstructMap() {
   (*GetIdMap())[c_id] = resource_id_list[next_id++];
 #define DECLARE_RESOURCE_ID(c_id, java_id) \
   (*GetIdMap())[c_id] = resource_id_list[next_id++];
+#include "components/resources/android/blocked_content_resource_id.h"
 #include "components/resources/android/page_info_resource_id.h"
 #include "components/resources/android/permissions_resource_id.h"
 #undef LINK_RESOURCE_ID

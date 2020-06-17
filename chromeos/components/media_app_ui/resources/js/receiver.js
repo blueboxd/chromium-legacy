@@ -47,7 +47,7 @@ class ReceivedFile {
         /** @type {!DeleteFileResponse} */ (await parentMessagePipe.sendMessage(
             Message.DELETE_FILE, {token: this.token}));
     return deleteResponse.deleteResult;
-    }
+  }
 
   /**
    * @override
@@ -59,7 +59,7 @@ class ReceivedFile {
         /** @type {!RenameFileResponse} */ (await parentMessagePipe.sendMessage(
             Message.RENAME_FILE, {token: this.token, newFilename: newName}));
     return renameResponse.renameResult;
-    }
+  }
 }
 
 /**

@@ -129,6 +129,7 @@ StringView ConsumeUrlAsStringView(CSSParserTokenRange&,
                                   const CSSParserContext&);
 cssvalue::CSSURIValue* ConsumeUrl(CSSParserTokenRange&,
                                   const CSSParserContext&);
+CORE_EXPORT CSSValue* ConsumeIdSelector(CSSParserTokenRange&);
 
 CSSValue* ConsumeColor(CSSParserTokenRange&,
                        const CSSParserContext&,
@@ -232,6 +233,7 @@ CORE_EXPORT bool IsCSSWideKeyword(CSSValueID);
 CORE_EXPORT bool IsCSSWideKeyword(StringView);
 bool IsRevertKeyword(StringView);
 bool IsDefaultKeyword(StringView);
+bool IsHashIdentifier(const CSSParserToken&);
 
 CSSValue* ConsumeScrollOffset(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeSelfPositionOverflowPosition(CSSParserTokenRange&,

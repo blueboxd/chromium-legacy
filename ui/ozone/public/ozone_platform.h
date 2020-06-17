@@ -103,6 +103,30 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
     bool supports_overlays = false;
   };
 
+  // Corresponds to chrome_browser_main_extra_parts.h.
+  //
+  // The browser process' initialization involves several steps -
+  // PreEarlyInitialization, PostMainMessageLoopStart, PostMainMessageLoopRun,
+  // etc. In order to be consistent with that and allow platform specific
+  // initialization steps, the OzonePlatform has three methods - one static
+  // PreEarlyInitialization that is expected to do some early non-ui
+  // initialization (like error handlers that X11 sets), and two non-static
+  // methods - PostMainmessageLoopStart and PostMainMessageLoopRun. The latter
+  // two are supposed to be called on a post start and a post-run of the
+  // MessageLoop. Please note that this methods must be run on the browser' UI
+  // thread.
+  //
+  // Creates OzonePlatform and does pre-early initialization (internally, sets
+  // error handlers if supported so that we can print errors during the browser
+  // process' start up).
+  static void PreEarlyInitialization();
+  // Sets error handlers if supported for the browser process after the message
+  // loop started. It's required to call this so that we can exit cleanly if the
+  // server can exit before we do.
+  virtual void PostMainMessageLoopStart(base::OnceCallback<void()> shutdown_cb);
+  // Resets the error handlers if set.
+  virtual void PostMainMessageLoopRun();
+
   // Initializes the subsystems/resources necessary for the UI process (e.g.
   // events) with additional properties to customize the ozone platform
   // implementation. Ozone will not retain InitParams after returning from
@@ -188,11 +212,16 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   bool single_process() const { return single_process_; }
 
  private:
+  // Optional method for pre-early initialization. In case of X11, sets X11
+  // error handlers so that errors can be caught if early initialization fails.
+  virtual void PreEarlyInitialize();
+
   virtual void InitializeUI(const InitParams& params) = 0;
   virtual void InitializeGPU(const InitParams& params) = 0;
 
   bool initialized_ui_ = false;
   bool initialized_gpu_ = false;
+  bool prearly_initialized_ = false;
 
   bool single_process_ = false;
 

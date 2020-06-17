@@ -113,8 +113,8 @@ void EmitSameSiteCookiesDeprecationWarning(
           root_frame_host, excluded_cookie, cookie_details->url,
           cookie_details->site_for_cookies,
           cookie_details->type == CookieAccessDetails::Type::kRead
-              ? blink::mojom::SameSiteCookieOperation::ReadCookie
-              : blink::mojom::SameSiteCookieOperation::SetCookie,
+              ? blink::mojom::SameSiteCookieOperation::kReadCookie
+              : blink::mojom::SameSiteCookieOperation::kSetCookie,
           cookie_details->devtools_request_id);
     }
     if (!messages_disabled_by_cmdline) {

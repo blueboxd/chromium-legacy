@@ -133,7 +133,7 @@ void DriveQuickAccessProvider::OnFileSystemMounted() {
   // sleep.
   GetQuickAccessItems(
       base::BindOnce(&DriveQuickAccessProvider::StartSearchController,
-                     weak_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void DriveQuickAccessProvider::StartSearchController() {
@@ -187,7 +187,7 @@ void DriveQuickAccessProvider::Start(const base::string16& query) {
           &file_manager::file_tasks::FileTasksNotifier::QueryFileAvailability,
           base::Unretained(file_tasks_notifier_), result_paths,
           base::BindOnce(&DriveQuickAccessProvider::PublishResults,
-                         weak_factory_.GetWeakPtr(), result_paths)));
+                         weak_ptr_factory_.GetWeakPtr(), result_paths)));
 }
 
 void DriveQuickAccessProvider::PublishResults(
@@ -225,6 +225,9 @@ void DriveQuickAccessProvider::PublishResults(
 }
 
 void DriveQuickAccessProvider::AppListShown() {
+  // TODO(crbug.com/1034842): This call is triggered every time the app list is
+  // shown, and sends a query to the backend. We should consider adding
+  // rate-limiting here.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   GetQuickAccessItems(base::DoNothing());
 }
@@ -236,13 +239,14 @@ void DriveQuickAccessProvider::GetQuickAccessItems(
     return;
 
   // Invalidate weak pointers for existing callbacks to the Quick Access API.
-  weak_factory_.InvalidateWeakPtrs();
+  quick_access_weak_ptr_factory_.InvalidateWeakPtrs();
   latest_fetch_start_time_ = base::TimeTicks::Now();
 
   drive_service_->GetQuickAccessItems(
       kMaxItems,
       base::BindOnce(&DriveQuickAccessProvider::OnGetQuickAccessItems,
-                     weak_factory_.GetWeakPtr(), std::move(on_done)));
+                     quick_access_weak_ptr_factory_.GetWeakPtr(),
+                     std::move(on_done)));
 }
 
 void DriveQuickAccessProvider::OnGetQuickAccessItems(
@@ -276,7 +280,7 @@ void DriveQuickAccessProvider::OnGetQuickAccessItems(
         task_runner_.get(), FROM_HERE,
         base::BindOnce(&FilterResults, drive_service_, drive_results),
         base::BindOnce(&DriveQuickAccessProvider::SetResultsCache,
-                       weak_factory_.GetWeakPtr(), std::move(on_done)));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(on_done)));
   }
 }
 

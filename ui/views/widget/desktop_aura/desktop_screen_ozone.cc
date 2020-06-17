@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/desktop_aura/desktop_screen_ozone.h"
 
+#include "build/build_config.h"
 #include "ui/aura/screen_ozone.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
@@ -22,8 +23,13 @@ gfx::NativeWindow DesktopScreenOzone::GetNativeWindowFromAcceleratedWidget(
       widget);
 }
 
+// To avoid multiple definitions when use_x11 && use_ozone is true, disable this
+// factory method for OS_LINUX as Linux has a factory method that decides what
+// screen to use based on IsUsingOzonePlatform feature flag.
+#if !defined(OS_LINUX)
 display::Screen* CreateDesktopScreen() {
   return new DesktopScreenOzone();
 }
+#endif
 
 }  // namespace views

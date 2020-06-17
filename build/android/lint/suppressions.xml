@@ -182,6 +182,7 @@ Still reading?
     <ignore regexp="android_webview/tools/system_webview_shell/apk/res/xml/network_security_config.xml"/>
     <ignore regexp="test"/>
   </issue>
+  <issue id="Instantiatable" severity="ignore"/>
   <issue id="InconsistentArrays" severity="Error">
     <ignore regexp="android_webview/locale_paks.resources.zip/values/locale-paks.xml"/>
     <ignore regexp="chrome/android/chrome_locale_paks.resources.zip/values/locale-paks.xml"/>
@@ -211,6 +212,7 @@ Still reading?
     <ignore regexp="chrome/android/feed/core/java/res/layout/feed_more_button.xml"/>
   </issue>
   <issue id="MissingApplicationIcon" severity="ignore"/>
+  <issue id="MissingClass" severity="ignore"/>
   <issue id="MissingDefaultResource">
     <!-- Only used by ToolbarControlContainer guarded by tablet form-factor. -->
     <ignore regexp="toolbar_background.9.png"/>

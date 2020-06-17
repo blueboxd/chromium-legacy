@@ -68,7 +68,7 @@ class InstantService : public KeyedService,
   bool IsInstantProcess(int process_id) const;
 
   // Adds/Removes InstantService observers.
-  void AddObserver(InstantServiceObserver* observer);
+  virtual void AddObserver(InstantServiceObserver* observer);
   void RemoveObserver(InstantServiceObserver* observer);
 
   // Register prefs associated with the NTP.
@@ -127,7 +127,7 @@ class InstantService : public KeyedService,
   bool ToggleShortcutsVisibility(bool do_notify);
 
   // Invoked to update theme information for the NTP.
-  void UpdateNtpTheme();
+  virtual void UpdateNtpTheme();
 
   // Invoked when a background pref update is received via sync, triggering
   // an update of theme info.

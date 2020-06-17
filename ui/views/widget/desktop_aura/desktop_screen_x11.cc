@@ -178,12 +178,4 @@ float DesktopScreenX11::GetXDisplayScaleFactor() const {
              : 1.0f;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-display::Screen* CreateDesktopScreen() {
-  auto* screen = new DesktopScreenX11;
-  screen->Init();
-  return screen;
-}
-
 }  // namespace views

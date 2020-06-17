@@ -11,10 +11,12 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "content/public/browser/download_manager.h"
 
+class Profile;
+
 // An implementation of DownloadShelf for testing.
 class TestDownloadShelf : public DownloadShelf {
  public:
-  TestDownloadShelf();
+  explicit TestDownloadShelf(Profile* profile);
   ~TestDownloadShelf() override;
 
   // DownloadShelf:

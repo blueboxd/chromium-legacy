@@ -83,7 +83,7 @@ keyboard.onKeyDown_ = function(event) {
   // See crbug.com/543865.
   if (document.activeElement ===
       // eslint-disable-next-line no-restricted-properties
-      document.getElementById('oauth-enroll-auth-view')) {
+      document.getElementById('authView')) {
     return;
   }
 

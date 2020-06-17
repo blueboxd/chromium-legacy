@@ -584,10 +584,8 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, OpenNonSyncCheck) {
 #endif  // !defined(OS_ANDROID)
 
 // Make sure that UKM is disabled when metrics consent is revoked.
-// Keep in sync with testMetricConsent in chrome/android/javatests/src/org/
-// chromium/chrome/browser/sync/UkmTest.java and with testMetricsConsent in
-// ios/chrome/browser/metrics/ukm_egtest.mm.
-#if !defined(OS_ANDROID)
+// Keep in sync with testMetricsConsent in ios/chrome/browser/metrics/
+// ukm_egtest.mm.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
@@ -596,7 +594,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
   std::unique_ptr<ProfileSyncServiceHarness> harness =
       EnableSyncForProfile(profile);
 
-  Browser* sync_browser = CreateBrowser(profile);
+  PlatformBrowser browser = CreatePlatformBrowser(profile);
   EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
   uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
@@ -616,9 +614,8 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
   EXPECT_NE(original_client_id, ukm_test_helper.GetClientId());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
-  CloseBrowserSynchronously(sync_browser);
+  ClosePlatformBrowser(browser);
 }
-#endif  // !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogProtoData) {
@@ -783,16 +780,14 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, NetworkProviderPopulatesSystemProfile) {
 #endif  // !defined(OS_ANDROID)
 
 // Make sure that providing consent doesn't enable UKM when sync is disabled.
-// Keep in sync with consentAddedButNoSyncCheck in chrome/android/javatests/src/
-// org/chromium/chrome/browser/sync/UkmTest.java and with
-// testConsentAddedButNoSync in ios/chrome/browser/metrics/ukm_egtest.mm.
-#if !defined(OS_ANDROID)
+// Keep in sync with testConsentAddedButNoSync in ios/chrome/browser/metrics/
+// ukm_egtest.mm.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(false);
 
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  Browser* browser = CreateBrowser(profile);
+  PlatformBrowser browser = CreatePlatformBrowser(profile);
   EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   metrics_consent.Update(true);
@@ -804,9 +799,8 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
   EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
-  CloseBrowserSynchronously(browser);
+  ClosePlatformBrowser(browser);
 }
-#endif  // !defined(OS_ANDROID)
 
 // Make sure that extension URLs are disabled when an open sync window
 // disables it.
@@ -1008,12 +1002,11 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, LogsOpenerSource) {
 #endif  // !defined(OS_ANDROID)
 
 // ChromeOS doesn't have the concept of sign-out so this test doesn't make sense
-// there. Android has the concept of sign-out and is covered by a Java test.
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+// there.
+#if !defined(OS_CHROMEOS)
 // Make sure that UKM is disabled when the profile signs out of Sync.
-// Keep in sync with singleSyncSignoutCheck in hrome/android/javatests/src/org/
-// chromium/chrome/browser/sync/UkmTest.java and with testSingleSyncSignout in
-// ios/chrome/browser/metrics/ukm_egtest.mm.
+// Keep in sync with testSingleSyncSignout in ios/chrome/browser/metrics/
+// ukm_egtest.mm.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleSyncSignoutCheck) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
@@ -1022,7 +1015,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleSyncSignoutCheck) {
   std::unique_ptr<ProfileSyncServiceHarness> harness =
       EnableSyncForProfile(profile);
 
-  Browser* sync_browser = CreateBrowser(profile);
+  PlatformBrowser browser = CreatePlatformBrowser(profile);
   EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
   uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
@@ -1032,12 +1025,12 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleSyncSignoutCheck) {
   EXPECT_NE(original_client_id, ukm_test_helper.GetClientId());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
-  CloseBrowserSynchronously(sync_browser);
+  ClosePlatformBrowser(browser);
 }
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#endif  // !defined(OS_CHROMEOS)
 
 // ChromeOS doesn't have the concept of sign-out so this test doesn't make sense
-// there. Android has the concept of sign-out and is covered by a Java test.
+// there. Android doesn't have multiple profiles.
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 // Make sure that UKM is disabled when any profile signs out of Sync.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiSyncSignoutCheck) {

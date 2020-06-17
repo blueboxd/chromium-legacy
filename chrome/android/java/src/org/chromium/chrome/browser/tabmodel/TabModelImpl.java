@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.MathUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
@@ -25,6 +27,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.mojom.WindowOpenDisposition;
+import org.chromium.url.Origin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -808,9 +811,9 @@ public class TabModelImpl extends TabModelJniBridge {
     }
 
     @Override
-    public void openNewTab(Tab parent, String url, String initiatorOrigin, String extraHeaders,
-            ResourceRequestBody postData, int disposition, boolean persistParentage,
-            boolean isRendererInitiated) {
+    public void openNewTab(Tab parent, String url, @Nullable Origin initiatorOrigin,
+            String extraHeaders, ResourceRequestBody postData, int disposition,
+            boolean persistParentage, boolean isRendererInitiated) {
         if (parent.isClosing()) return;
 
         boolean incognito = parent.isIncognito();

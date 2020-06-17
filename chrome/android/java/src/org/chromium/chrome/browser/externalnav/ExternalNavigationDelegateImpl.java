@@ -18,6 +18,8 @@ import android.provider.Browser;
 import android.text.TextUtils;
 import android.view.WindowManager.BadTokenException;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
@@ -46,6 +48,7 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.Origin;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.util.List;
@@ -288,10 +291,17 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public void maybeSetUserGesture(Intent intent) {
+    public void maybeSetRequestMetadata(Intent intent, boolean hasUserGesture,
+            boolean isRendererInitiated, @Nullable Origin initiatorOrigin) {
+        if (!hasUserGesture && !isRendererInitiated && initiatorOrigin == null) return;
         // The intent can be used to launch Chrome itself, record the user
-        // gesture here so that it can be used later.
-        IntentWithGesturesHandler.getInstance().onNewIntentWithGesture(intent);
+        // gesture, whether request is renderer initiated and initiator origin here so that it can
+        // be used later.
+        IntentWithRequestMetadataHandler.RequestMetadata metadata =
+                new IntentWithRequestMetadataHandler.RequestMetadata(
+                        hasUserGesture, isRendererInitiated, initiatorOrigin);
+        IntentWithRequestMetadataHandler.getInstance().onNewIntentWithRequestMetadata(
+                intent, metadata);
     }
 
     @Override

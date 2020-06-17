@@ -664,8 +664,6 @@ static_library("ui") {
       "android/color_chooser_dialog_android.cc",
       "android/content_settings/ads_blocked_infobar_delegate.cc",
       "android/content_settings/ads_blocked_infobar_delegate.h",
-      "android/content_settings/popup_blocked_infobar_delegate.cc",
-      "android/content_settings/popup_blocked_infobar_delegate.h",
       "android/context_menu_helper.cc",
       "android/context_menu_helper.h",
       "android/device_dialog/bluetooth_chooser_android.cc",

@@ -15,7 +15,7 @@
 /** @const */ var SCREEN_OOBE_ENABLE_DEBUGGING = 'debugging';
 /** @const */ var SCREEN_OOBE_UPDATE = 'oobe-update';
 /** @const */ var SCREEN_OOBE_RESET = 'reset';
-/** @const */ var SCREEN_OOBE_ENROLLMENT = 'oauth-enrollment';
+/** @const */ var SCREEN_OOBE_ENROLLMENT = 'enterprise-enrollment';
 /** @const */ var SCREEN_OOBE_DEMO_SETUP = 'demo-setup';
 /** @const */ var SCREEN_OOBE_DEMO_PREFERENCES = 'demo-preferences';
 /** @const */ var SCREEN_OOBE_KIOSK_ENABLE = 'kiosk-enable';
@@ -95,8 +95,6 @@ cr.define('cr.ui.login', function() {
   var RESET_AVAILABLE_SCREEN_GROUP = [
     SCREEN_OOBE_NETWORK,
     SCREEN_OOBE_EULA,
-    SCREEN_OOBE_UPDATE,
-    SCREEN_OOBE_ENROLLMENT,
     SCREEN_OOBE_AUTO_ENROLLMENT_CHECK,
     SCREEN_GAIA_SIGNIN,
     SCREEN_ACCOUNT_PICKER,

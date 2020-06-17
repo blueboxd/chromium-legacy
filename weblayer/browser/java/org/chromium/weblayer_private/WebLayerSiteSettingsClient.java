@@ -11,6 +11,8 @@ import androidx.annotation.Nullable;
 import androidx.preference.Preference;
 
 import org.chromium.base.Callback;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory.Type;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsClient;
@@ -26,6 +28,7 @@ import java.util.Set;
 /**
  * A SiteSettingsClient instance that contains WebLayer-specific Site Settings logic.
  */
+@JNINamespace("weblayer")
 public class WebLayerSiteSettingsClient
         implements SiteSettingsClient, ManagedPreferenceDelegate, SiteSettingsHelpClient,
                    SiteSettingsPrefClient, WebappSettingsClient {
@@ -119,6 +122,32 @@ public class WebLayerSiteSettingsClient
     public void launchProtectedContentHelpAndFeedbackActivity(Activity currentActivity) {}
 
     // SiteSettingsPrefClient implementation:
+    // TODO(crbug.com/1071603): Once PrefServiceBridge is componentized we can get rid of the JNI
+    //                          methods here and call PrefServiceBridge directly.
+
+    @Override
+    public boolean getBlockThirdPartyCookies() {
+        return WebLayerSiteSettingsClientJni.get().getBlockThirdPartyCookies(mBrowserContextHandle);
+    }
+    @Override
+    public void setBlockThirdPartyCookies(boolean newValue) {
+        WebLayerSiteSettingsClientJni.get().setBlockThirdPartyCookies(
+                mBrowserContextHandle, newValue);
+    }
+    @Override
+    public boolean isBlockThirdPartyCookiesManaged() {
+        // WebLayer doesn't support managed prefs.
+        return false;
+    }
+
+    @Override
+    public int getCookieControlsMode() {
+        return WebLayerSiteSettingsClientJni.get().getCookieControlsMode(mBrowserContextHandle);
+    }
+    @Override
+    public void setCookieControlsMode(int newValue) {
+        WebLayerSiteSettingsClientJni.get().setCookieControlsMode(mBrowserContextHandle, newValue);
+    }
 
     // The quiet notification UI is a Chrome-specific feature for now.
     @Override
@@ -157,5 +186,14 @@ public class WebLayerSiteSettingsClient
     @Nullable
     public String getNotificationDelegatePackageNameForOrigin(Origin origin) {
         return null;
+    }
+
+    @NativeMethods
+    interface Natives {
+        boolean getBlockThirdPartyCookies(BrowserContextHandle browserContextHandle);
+        void setBlockThirdPartyCookies(BrowserContextHandle browserContextHandle, boolean newValue);
+
+        int getCookieControlsMode(BrowserContextHandle browserContextHandle);
+        void setCookieControlsMode(BrowserContextHandle browserContextHandle, int newValue);
     }
 }

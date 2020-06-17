@@ -41,7 +41,6 @@
 // <include src="oobe_screen_enable_debugging.js">
 // <include src="oobe_screen_eula.js">
 // <include src="oobe_screen_network.js">
-// <include src="oobe_screen_oauth_enrollment.js">
 // <include src="multi_tap_detector.js">
 // <include src="web_view_helper.js">
 
@@ -60,7 +59,6 @@ cr.define('cr.ui.Oobe', function() {
       login.EnableDebuggingScreen.register();
       login.AutolaunchScreen.register();
       login.AccountPickerScreen.register();
-      login.OAuthEnrollmentScreen.register();
       login.ErrorMessageScreen.register();
       login.SyncConsentScreen.register();
       login.ArcTermsOfServiceScreen.register();

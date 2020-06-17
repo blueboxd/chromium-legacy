@@ -32,7 +32,6 @@
 #include "chrome/browser/search/chrome_colors/chrome_colors_factory.h"
 #include "chrome/browser/search/chrome_colors/chrome_colors_service.h"
 #include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_provider_logos/logo_service_factory.h"
@@ -242,11 +241,13 @@ NewTabPageHandler::NewTabPageHandler(
         pending_page_handler,
     mojo::PendingRemote<new_tab_page::mojom::Page> pending_page,
     Profile* profile,
+    InstantService* instant_service,
     content::WebContents* web_contents,
+    NTPUserDataLogger* logger,
     const base::Time& ntp_navigation_start_time)
     : chrome_colors_service_(
           chrome_colors::ChromeColorsFactory::GetForProfile(profile)),
-      instant_service_(InstantServiceFactory::GetForProfile(profile)),
+      instant_service_(instant_service),
       ntp_background_service_(
           NtpBackgroundServiceFactory::GetForProfile(profile)),
       logo_service_(LogoServiceFactory::GetForProfile(profile)),
@@ -263,7 +264,7 @@ NewTabPageHandler::NewTabPageHandler(
           BitmapFetcherServiceFactory::GetForBrowserContext(profile)),
       web_contents_(web_contents),
       ntp_navigation_start_time_(ntp_navigation_start_time),
-      logger_(NTPUserDataLogger::GetOrCreateFromWebContents(web_contents)),
+      logger_(logger),
       page_{std::move(pending_page)},
       receiver_{this, std::move(pending_page_handler)} {
   CHECK(instant_service_);

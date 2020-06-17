@@ -9,11 +9,13 @@ import android.content.Intent;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.Origin;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -133,8 +135,12 @@ public interface ExternalNavigationDelegate {
      */
     void maybeAdjustInstantAppExtras(Intent intent, boolean isIntentToInstantApp);
 
-    /** Invoked for intents with user gestures and records the user gesture if desired. */
-    void maybeSetUserGesture(Intent intent);
+    /**
+     * Invoked for intents with request metadata such as user gesture, whether request is renderer
+     * initiated and the initiator origin. Records the information if desired.
+     */
+    void maybeSetRequestMetadata(Intent intent, boolean hasUserGesture, boolean isRendererInitiated,
+            @Nullable Origin initiatorOrigin);
 
     /**
      * Records the pending incognito URL if desired. Called only if the

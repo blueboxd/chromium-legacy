@@ -428,8 +428,7 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // in progress it will be interrupted.
   void StartAnimationForState(AppListViewState new_state);
 
-  void MaybeIncreaseAssistantPrivacyInfoRowShownCount(
-      AppListViewState new_state);
+  void MaybeIncreasePrivacyInfoRowShownCounts(AppListViewState new_state);
 
   // Applies a bounds animation on this views layer.
   void ApplyBoundsAnimation(AppListViewState target_state,

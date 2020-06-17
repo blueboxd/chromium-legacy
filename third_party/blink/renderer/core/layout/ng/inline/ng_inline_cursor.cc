@@ -860,14 +860,14 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineBox(
     }
 
     if (const PositionWithAffinity child_position =
-            descendants.PositionForPointInChild(point, *child_item))
+            descendants.PositionForPointInChild(point))
       return child_position;
   }
 
   if (closest_child_after) {
     descendants.MoveTo(closest_child_after);
     if (const PositionWithAffinity child_position =
-            descendants.PositionForPointInChild(point, *closest_child_after))
+            descendants.PositionForPointInChild(point))
       return child_position;
     // TODO(yosin): we should do like "closest_child_before" once we have a
     // case.
@@ -876,7 +876,7 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineBox(
   if (closest_child_before) {
     descendants.MoveTo(closest_child_before);
     if (const PositionWithAffinity child_position =
-            descendants.PositionForPointInChild(point, *closest_child_before))
+            descendants.PositionForPointInChild(point))
       return child_position;
     if (closest_child_before->BoxFragment()) {
       // LayoutViewHitTest.HitTestHorizontal "Top-right corner (outside) of div"
@@ -908,13 +908,18 @@ PositionWithAffinity NGInlineCursor::PositionForPointInInlineBox(
 }
 
 PositionWithAffinity NGInlineCursor::PositionForPointInChild(
-    const PhysicalOffset& point,
-    const NGFragmentItem& child_item) const {
-  DCHECK_EQ(&child_item, CurrentItem());
+    const PhysicalOffset& point_in_container) const {
+  if (auto* paint_fragment = CurrentPaintFragment()) {
+    const PhysicalOffset point_in_child =
+        point_in_container - paint_fragment->OffsetInContainerBlock();
+    return paint_fragment->PositionForPoint(point_in_child);
+  }
+  DCHECK(CurrentItem());
+  const NGFragmentItem& child_item = *CurrentItem();
   switch (child_item.Type()) {
     case NGFragmentItem::kText:
       return child_item.PositionForPointInText(
-          point - child_item.OffsetInContainerBlock(), *this);
+          point_in_container - child_item.OffsetInContainerBlock(), *this);
     case NGFragmentItem::kGeneratedText:
       break;
     case NGFragmentItem::kBox:
@@ -927,7 +932,7 @@ PositionWithAffinity NGInlineCursor::PositionForPointInChild(
         // TODO(xiaochengh): Don't fallback to legacy for NG block layout.
         if (!box_fragment->IsInlineBox()) {
           return child_item.GetLayoutObject()->PositionForPoint(
-              point - child_item.OffsetInContainerBlock());
+              point_in_container - child_item.OffsetInContainerBlock());
         }
       } else {
         // |LayoutInline| used to be culled.

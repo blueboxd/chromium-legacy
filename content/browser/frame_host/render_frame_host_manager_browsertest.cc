@@ -2626,15 +2626,7 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 // try to select files whose paths cannot be converted to WebStrings.  This
 // check is done in the renderer because it is hard to predict which paths will
 // turn into empty WebStrings, and the behavior varies by platform.
-//
-// Crashed on various builders on Android. See http://crbug.com/1094938
-#if defined(OS_ANDROID)
-#define MAYBE_DontSelectInvalidFiles DISABLED_DontSelectInvalidFiles
-#else
-#define MAYBE_DontSelectInvalidFiles DontSelectInvalidFiles
-#endif
-IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
-                       MAYBE_DontSelectInvalidFiles) {
+IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest, DontSelectInvalidFiles) {
   StartServer();
   base::RunLoop run_loop;
 

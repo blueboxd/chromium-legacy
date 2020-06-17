@@ -45,6 +45,15 @@ OzonePlatform::OzonePlatform() {
 OzonePlatform::~OzonePlatform() = default;
 
 // static
+void OzonePlatform::PreEarlyInitialization() {
+  EnsureInstance();
+  if (g_instance->prearly_initialized_)
+    return;
+  g_instance->prearly_initialized_ = true;
+  g_instance->PreEarlyInitialize();
+}
+
+// static
 void OzonePlatform::InitializeForUI(const InitParams& args) {
   EnsureInstance();
   if (g_instance->initialized_ui_)
@@ -114,5 +123,12 @@ void OzonePlatform::AfterSandboxEntry() {
   // This should not be called in single-process mode.
   DCHECK(!single_process_);
 }
+
+void OzonePlatform::PostMainMessageLoopStart(
+    base::OnceCallback<void()> shutdown_cb) {}
+
+void OzonePlatform::PostMainMessageLoopRun() {}
+
+void OzonePlatform::PreEarlyInitialize() {}
 
 }  // namespace ui

@@ -52,6 +52,7 @@ import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
+import org.chromium.url.Origin;
 
 /**
  * Implementation of the interface {@link Tab}. Contains and manages a {@link ContentView}.
@@ -1541,7 +1542,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         void releaseWebContents(long nativeTabAndroid, TabImpl caller);
         void onPhysicalBackingSizeChanged(long nativeTabAndroid, TabImpl caller,
                 WebContents webContents, int width, int height);
-        int loadUrl(long nativeTabAndroid, TabImpl caller, String url, String initiatorOrigin,
+        int loadUrl(long nativeTabAndroid, TabImpl caller, String url, Origin initiatorOrigin,
                 String extraHeaders, ResourceRequestBody postData, int transition,
                 String referrerUrl, int referrerPolicy, boolean isRendererInitiated,
                 boolean shoulReplaceCurrentEntry, boolean hasUserGesture,

@@ -114,11 +114,12 @@ std::string MonotonicTimestamp() {
 ArcBinaryTranslationType IdentifyBinaryTranslationType(
     const StartParams& start_params) {
   const auto* command_line = base::CommandLine::ForCurrentProcess();
-  bool is_houdini_available =
+  const bool is_houdini_available =
       command_line->HasSwitch(chromeos::switches::kEnableHoudini) ||
       command_line->HasSwitch(chromeos::switches::kEnableHoudini64);
-  bool is_ndk_translation_available =
-      command_line->HasSwitch(chromeos::switches::kEnableNdkTranslation);
+  const bool is_ndk_translation_available =
+      command_line->HasSwitch(chromeos::switches::kEnableNdkTranslation) ||
+      command_line->HasSwitch(chromeos::switches::kEnableNdkTranslation64);
 
   if (!is_houdini_available && !is_ndk_translation_available)
     return ArcBinaryTranslationType::NONE;

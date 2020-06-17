@@ -1169,15 +1169,17 @@ void AppListView::ConvertAppListStateToFullscreenEquivalent(
   }
 }
 
-void AppListView::MaybeIncreaseAssistantPrivacyInfoRowShownCount(
+void AppListView::MaybeIncreasePrivacyInfoRowShownCounts(
     AppListViewState new_state) {
   AppListStateTransitionSource transition =
       GetAppListStateTransitionSource(new_state);
   switch (transition) {
     case kPeekingToHalf:
     case kFullscreenAllAppsToFullscreenSearch:
-      if (app_list_main_view()->contents_view()->IsShowingSearchResults())
+      if (app_list_main_view()->contents_view()->IsShowingSearchResults()) {
         delegate_->MaybeIncreaseAssistantPrivacyInfoShownCount();
+        delegate_->MaybeIncreaseSuggestedContentInfoShownCount();
+      }
       break;
     default:
       break;
@@ -1604,7 +1606,7 @@ void AppListView::SetState(AppListViewState new_state) {
     SetIsInDrag(false);
   SetChildViewsForStateTransition(new_state_override);
   StartAnimationForState(new_state_override);
-  MaybeIncreaseAssistantPrivacyInfoRowShownCount(new_state_override);
+  MaybeIncreasePrivacyInfoRowShownCounts(new_state_override);
   RecordStateTransitionForUma(new_state_override);
   model_->SetStateFullscreen(new_state_override);
   if (delegate_)

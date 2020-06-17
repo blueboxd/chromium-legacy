@@ -1680,6 +1680,39 @@ TEST(HttpStreamParser, ReceivedBytesIncludesContinueHeader) {
   EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
 }
 
+// Test that "early hints" HTTP header is counted as "received_bytes".
+// 103 Early Hints hasn't been implemented yet and should be ignored, but we
+// collect timing information for the experiment (https://crbug.com/1093693).
+TEST(HttpStreamParser, EarlyHints) {
+  std::string status103 = "HTTP/1.1 103 Early Hints\r\n\r\n";
+  std::string headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Length: 7\r\n\r\n";
+  int64_t headers_size = status103.size() + headers.size();
+  std::string body = "content";
+  std::string response = headers + body;
+
+  SimpleGetRunner get_runner;
+  get_runner.AddRead(status103);
+  get_runner.AddRead(response);
+  get_runner.SetupParserAndSendRequest();
+  get_runner.ReadHeaders();
+  EXPECT_EQ(103, get_runner.response_info()->headers->response_code());
+  int64_t status103_size = status103.size();
+  EXPECT_EQ(status103_size, get_runner.parser()->received_bytes());
+  get_runner.ReadHeaders();
+  EXPECT_EQ(200, get_runner.response_info()->headers->response_code());
+  EXPECT_EQ(headers_size, get_runner.parser()->received_bytes());
+  int64_t response_size = headers_size + body.size();
+  int body_size = body.size();
+  int read_lengths[] = {body_size, 0};
+  get_runner.ReadBody(body_size, read_lengths);
+  EXPECT_EQ(response_size, get_runner.parser()->received_bytes());
+
+  // Make sure the timing of the Early Hints response is captured.
+  EXPECT_FALSE(get_runner.parser()->first_early_hints_time().is_null());
+}
+
 // Test that an HttpStreamParser can be read from after it's received headers
 // and data structures owned by its owner have been deleted.  This happens
 // when a ResponseBodyDrainer is used.

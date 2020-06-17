@@ -40,7 +40,7 @@ WebString FilePathToWebString(const base::FilePath& path) {
     return WebString();
 
 #if defined(OS_POSIX)
-  return WebString::FromUTF8(path.AsUTF8Unsafe());
+  return WebString::FromUTF8(path.value());
 #else
   return WebString::FromUTF16(path.AsUTF16Unsafe());
 #endif

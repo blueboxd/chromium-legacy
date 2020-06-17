@@ -19,6 +19,7 @@
 #include "ash/app_list/views/search_result_list_view.h"
 #include "ash/app_list/views/search_result_page_anchored_dialog.h"
 #include "ash/app_list/views/search_result_tile_item_list_view.h"
+#include "ash/app_list/views/suggested_content_info_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/view_shadow.h"
@@ -175,9 +176,12 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate,
       views::BoxLayout::Orientation::kVertical, gfx::Insets(), 0));
 
   if (view_delegate_->ShouldShowAssistantPrivacyInfo()) {
-    assistant_privacy_info_view_ =
-        new AssistantPrivacyInfoView(view_delegate_, this);
-    contents_view_->AddChildView(assistant_privacy_info_view_);
+    assistant_privacy_info_view_ = contents_view_->AddChildView(
+        std::make_unique<AssistantPrivacyInfoView>(view_delegate_, this));
+  }
+  if (view_delegate_->ShouldShowSuggestedContentInfo()) {
+    suggested_content_info_view_ = contents_view_->AddChildView(
+        std::make_unique<SuggestedContentInfoView>(view_delegate_, this));
   }
 
   view_shadow_ =
@@ -289,11 +293,18 @@ void SearchResultPageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void SearchResultPageView::ReorderSearchResultContainers() {
   int view_offset = 0;
+
+  // Show at most one privacy notice, with priority given to Assistant.
   if (assistant_privacy_info_view_) {
     const bool show_privacy_info =
         view_delegate_->ShouldShowAssistantPrivacyInfo();
     view_offset = show_privacy_info ? 1 : 0;
     assistant_privacy_info_view_->SetVisible(show_privacy_info);
+  } else if (suggested_content_info_view_) {
+    const bool show_suggested_content_info =
+        view_delegate_->ShouldShowSuggestedContentInfo();
+    view_offset = show_suggested_content_info ? 1 : 0;
+    suggested_content_info_view_->SetVisible(show_suggested_content_info);
   }
 
   // Sort the result container views by their score.

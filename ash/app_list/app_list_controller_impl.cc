@@ -56,6 +56,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -123,6 +124,36 @@ void SetAssistantPrivacyInfoDismissed() {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   prefs->SetBoolean(prefs::kAssistantPrivacyInfoDismissedInLauncher, true);
+}
+
+int GetSuggestedContentInfoShownCount() {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  return prefs->GetInteger(prefs::kSuggestedContentInfoShownInLauncher);
+}
+
+void SetSuggestedContentInfoShownCount(int count) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  prefs->SetInteger(prefs::kSuggestedContentInfoShownInLauncher, count);
+}
+
+bool IsSuggestedContentInfoDismissed() {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  return prefs->GetBoolean(prefs::kSuggestedContentInfoDismissedInLauncher);
+}
+
+void SetSuggestedContentInfoDismissed() {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  prefs->SetBoolean(prefs::kSuggestedContentInfoDismissedInLauncher, true);
+}
+
+bool IsSuggestedContentEnabled() {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  return prefs->GetBoolean(chromeos::prefs::kSuggestedContentEnabled);
 }
 
 // Gets the MRU window shown over the applist when in tablet mode.
@@ -201,6 +232,12 @@ void AppListControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kAssistantPrivacyInfoShownInLauncher, 0);
   registry->RegisterBooleanPref(
       prefs::kAssistantPrivacyInfoDismissedInLauncher, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterIntegerPref(
+      prefs::kSuggestedContentInfoShownInLauncher, 0,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kSuggestedContentInfoDismissedInLauncher, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
 }
 
@@ -1358,6 +1395,39 @@ void AppListControllerImpl::MaybeIncreaseAssistantPrivacyInfoShownCount() {
 void AppListControllerImpl::MarkAssistantPrivacyInfoDismissed() {
   // User dismissed the privacy info view. Will not show the view again.
   SetAssistantPrivacyInfoDismissed();
+}
+
+bool AppListControllerImpl::ShouldShowSuggestedContentInfo() const {
+  if (!base::FeatureList::IsEnabled(
+          chromeos::features::kSuggestedContentToggle)) {
+    return false;
+  }
+
+  if (!IsSuggestedContentEnabled()) {
+    // Don't show if user has interacted with the setting already.
+    SetSuggestedContentInfoDismissed();
+    return false;
+  }
+
+  if (IsSuggestedContentInfoDismissed()) {
+    return false;
+  }
+
+  const int count = GetSuggestedContentInfoShownCount();
+  constexpr int kThresholdToShow = 3;
+  return count >= 0 && count <= kThresholdToShow;
+}
+
+void AppListControllerImpl::MaybeIncreaseSuggestedContentInfoShownCount() {
+  if (!ShouldShowAssistantPrivacyInfo() && ShouldShowSuggestedContentInfo()) {
+    const int count = GetSuggestedContentInfoShownCount();
+    SetSuggestedContentInfoShownCount(count + 1);
+  }
+}
+
+void AppListControllerImpl::MarkSuggestedContentInfoDismissed() {
+  // User dismissed the privacy info view. Will not show the view again.
+  SetSuggestedContentInfoDismissed();
 }
 
 void AppListControllerImpl::OnStateTransitionAnimationCompleted(

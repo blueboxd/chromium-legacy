@@ -185,6 +185,7 @@ import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.widget.Toast;
+import org.chromium.url.Origin;
 import org.chromium.webapk.lib.client.WebApkNavigationClient;
 import org.chromium.webapk.lib.client.WebApkValidator;
 
@@ -1439,7 +1440,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             @Override
             public void processUrlViewIntent(String url, String referer, String headers,
                     @TabOpenType int tabOpenType, String externalAppId, int tabIdToBringToFront,
-                    boolean hasUserGesture, Intent intent) {}
+                    boolean hasUserGesture, boolean isRendererInitiated,
+                    @Nullable Origin initiatorOrigin, Intent intent) {}
         };
     }
 

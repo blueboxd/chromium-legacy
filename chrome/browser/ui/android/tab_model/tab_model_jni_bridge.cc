@@ -119,11 +119,9 @@ void TabModelJniBridge::HandlePopupNavigation(TabAndroid* parent,
   ScopedJavaLocalRef<jstring> jurl(ConvertUTF8ToJavaString(env, url.spec()));
   ScopedJavaLocalRef<jstring> jheaders(
       ConvertUTF8ToJavaString(env, params->extra_headers));
-  ScopedJavaLocalRef<jstring> jinitiator_origin;
-  if (params->initiator_origin) {
-    jinitiator_origin =
-        ConvertUTF8ToJavaString(env, params->initiator_origin->Serialize());
-  }
+  ScopedJavaLocalRef<jobject> jinitiator_origin =
+      params->initiator_origin ? params->initiator_origin->CreateJavaObject()
+                               : nullptr;
   ScopedJavaLocalRef<jobject> jpost_data =
       content::ConvertResourceRequestBodyToJavaObject(env, params->post_data);
   Java_TabModelJniBridge_openNewTab(

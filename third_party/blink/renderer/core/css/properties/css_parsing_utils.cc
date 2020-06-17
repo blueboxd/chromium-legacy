@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_line_names_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
+#include "third_party/blink/renderer/core/css/css_id_selector_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_image_set_value.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
@@ -1088,6 +1089,14 @@ cssvalue::CSSURIValue* ConsumeUrl(CSSParserTokenRange& range,
   AtomicString url_string(url.ToString());
   return MakeGarbageCollected<cssvalue::CSSURIValue>(
       url_string, context.CompleteURL(url_string));
+}
+
+CSSValue* ConsumeIdSelector(CSSParserTokenRange& range) {
+  if (!IsHashIdentifier(range.Peek()))
+    return nullptr;
+  auto token = range.ConsumeIncludingWhitespace();
+  return MakeGarbageCollected<cssvalue::CSSIdSelectorValue>(
+      token.Value().ToString());
 }
 
 static int ClampRGBComponent(const CSSPrimitiveValue& value) {
@@ -2595,6 +2604,12 @@ bool IsRevertKeyword(StringView keyword) {
 // https://drafts.csswg.org/css-values-4/#identifier-value
 bool IsDefaultKeyword(StringView keyword) {
   return EqualIgnoringASCIICase(keyword, "default");
+}
+
+// https://drafts.csswg.org/css-syntax/#typedef-hash-token
+bool IsHashIdentifier(const CSSParserToken& token) {
+  return token.GetType() == kHashToken &&
+         token.GetHashTokenType() == kHashTokenId;
 }
 
 CSSValue* ConsumeScrollOffset(CSSParserTokenRange& range,

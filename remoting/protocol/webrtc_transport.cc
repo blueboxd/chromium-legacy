@@ -1015,7 +1015,7 @@ void WebrtcTransport::SendOffer() {
   negotiation_pending_ = false;
 
   webrtc::PeerConnectionInterface::RTCOfferAnswerOptions options;
-  options.offer_to_receive_video = true;
+  options.offer_to_receive_video = false;
   options.offer_to_receive_audio = false;
   options.ice_restart = want_ice_restart_;
   peer_connection()->CreateOffer(

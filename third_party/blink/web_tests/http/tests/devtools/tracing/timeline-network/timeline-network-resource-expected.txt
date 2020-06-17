@@ -26,7 +26,6 @@ ResourceReceiveResponse Properties:
         fromServiceWorker : false
         mimeType : "text/html"
         requestId : <string>
-        responseTime : <number>
         statusCode : 200
         timing : <object>
     }
@@ -79,7 +78,6 @@ ResourceReceiveResponse Properties:
         fromServiceWorker : false
         mimeType : "application/x-javascript"
         requestId : <string>
-        responseTime : <number>
         statusCode : 200
         timing : <object>
     }

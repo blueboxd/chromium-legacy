@@ -5,6 +5,9 @@
 #include "chrome/browser/ui/blocked_content/chrome_popup_navigation_delegate.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/content_settings/chrome_content_settings_utils.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "components/blocked_content/popup_navigation_delegate.h"
@@ -14,8 +17,8 @@
 #include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/ui/android/content_settings/popup_blocked_infobar_delegate.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#include "components/blocked_content/android/popup_blocked_infobar_delegate.h"
 #endif
 
 ChromePopupNavigationDelegate::ChromePopupNavigationDelegate(
@@ -66,7 +69,16 @@ void ChromePopupNavigationDelegate::OnPopupBlocked(
 #if defined(OS_ANDROID)
   // Should replace existing popup infobars, with an updated count of how many
   // popups have been blocked.
-  PopupBlockedInfoBarDelegate::Create(web_contents,
-                                      total_popups_blocked_on_page);
+  if (blocked_content::PopupBlockedInfoBarDelegate::Create(
+          InfoBarService::FromWebContents(web_contents),
+          total_popups_blocked_on_page,
+          HostContentSettingsMapFactory::GetForProfile(
+              web_contents->GetBrowserContext()),
+          base::BindOnce(
+              &content_settings::RecordPopupsAction,
+              content_settings::POPUPS_ACTION_CLICKED_ALWAYS_SHOW_ON_MOBILE))) {
+    content_settings::RecordPopupsAction(
+        content_settings::POPUPS_ACTION_DISPLAYED_INFOBAR_ON_MOBILE);
+  }
 #endif
 }

@@ -922,6 +922,12 @@ int HttpStreamParser::HandleReadHeaderResult(int result) {
         // tunnel.
         response_header_start_offset_ = std::string::npos;
         response_body_length_ = -1;
+        // Record the timing of the 103 Early Hints response for the experiment
+        // (https://crbug.com/1093693).
+        if (response_->headers->response_code() == 103 &&
+            first_early_hints_time_.is_null()) {
+          first_early_hints_time_ = response_start_time_;
+        }
         // Now waiting for the second set of headers to be read.
       } else {
         // Only set keep-alive based on final set of headers.

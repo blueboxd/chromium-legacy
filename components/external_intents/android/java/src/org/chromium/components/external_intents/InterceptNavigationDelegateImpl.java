@@ -180,7 +180,9 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
                 .setIsMainFrame(navigationParams.isMainFrame)
                 .setHasUserGesture(navigationParams.hasUserGesture)
                 .setShouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent(
-                        shouldCloseTab && navigationParams.isMainFrame);
+                        shouldCloseTab && navigationParams.isMainFrame)
+                .setIsRendererInitiated(navigationParams.isRendererInitiated)
+                .setInitiatorOrigin(navigationParams.initiatorOrigin);
     }
 
     /**

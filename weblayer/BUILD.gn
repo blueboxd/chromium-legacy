@@ -483,6 +483,7 @@ source_set("weblayer_lib_base") {
       "browser/weblayer_factory_impl_android.h",
       "browser/weblayer_impl_android.cc",
       "browser/weblayer_impl_android.h",
+      "browser/weblayer_site_settings_client.cc",
       "browser/webrtc/media_stream_manager.cc",
       "browser/webrtc/media_stream_manager.h",
       "common/crash_reporter/crash_keys.cc",

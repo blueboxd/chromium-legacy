@@ -6,7 +6,6 @@
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_ADDRESS_POOL_MANAGER_H_
 
 #include <bitset>
-#include <memory>
 
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/atomicops.h"
@@ -49,8 +48,12 @@ class BASE_EXPORT AddressPoolManager {
 
   class Pool {
    public:
-    Pool(uintptr_t ptr, size_t length);
+    Pool();
     ~Pool();
+
+    void Initialize(uintptr_t ptr, size_t length);
+    bool IsInitialized();
+    void Reset();
 
     uintptr_t FindChunk(size_t size);
     void FreeChunk(uintptr_t address, size_t size);
@@ -63,26 +66,23 @@ class BASE_EXPORT AddressPoolManager {
     static constexpr size_t kMaxBits = kMaxSupportedSize / kSuperPageSize;
     base::Lock lock_;
     std::bitset<kMaxBits> alloc_bitset_ GUARDED_BY(lock_);
-
-    const size_t total_bits_;
-    const uintptr_t address_begin_;
-#if DCHECK_IS_ON()
-    const uintptr_t address_end_;
-#endif
-
     // An index of a bit in the bitset before which we know for sure there all
     // 1s. This is a best-effort hint in the sense that there still may be lots
     // of 1s after this index, but at least we know there is no point in
     // starting the search before it.
-    size_t bit_hint_;
+    size_t bit_hint_ GUARDED_BY(lock_);
 
-    DISALLOW_COPY_AND_ASSIGN(Pool);
+    size_t total_bits_ = 0;
+    uintptr_t address_begin_ = 0;
+#if DCHECK_IS_ON()
+    uintptr_t address_end_ = 0;
+#endif
   };
 
   ALWAYS_INLINE Pool* GetPool(pool_handle handle);
 
   static constexpr size_t kNumPools = 2;
-  std::unique_ptr<Pool> pools_[kNumPools];
+  Pool pools_[kNumPools];
 
   friend class NoDestructor<AddressPoolManager>;
   DISALLOW_COPY_AND_ASSIGN(AddressPoolManager);

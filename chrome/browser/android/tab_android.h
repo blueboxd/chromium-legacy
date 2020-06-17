@@ -137,7 +137,7 @@ class TabAndroid {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& url,
-      const base::android::JavaParamRef<jstring>& j_initiator_origin,
+      const base::android::JavaParamRef<jobject>& j_initiator_origin,
       const base::android::JavaParamRef<jstring>& j_extra_headers,
       const base::android::JavaParamRef<jobject>& j_post_data,
       jint page_transition,

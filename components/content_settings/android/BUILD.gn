@@ -45,9 +45,3 @@ java_cpp_enum("content_settings_enums_javagen") {
   ]
   visibility = [ ":*" ]  # Depend on through :content_settings_enums_java
 }
-
-java_cpp_strings("java_pref_names_srcjar") {
-  sources = [ "//components/content_settings/core/common/pref_names.cc" ]
-
-  template = "java_templates/PrefNames.java.tmpl"
-}

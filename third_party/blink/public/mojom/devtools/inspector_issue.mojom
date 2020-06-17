@@ -40,9 +40,9 @@ struct BlockedByResponseIssueDetails {
 };
 
 enum MixedContentResolutionStatus {
-  MixedContentBlocked,
-  MixedContentAutomaticallyUpgraded,
-  MixedContentWarning,
+  kMixedContentBlocked,
+  kMixedContentAutomaticallyUpgraded,
+  kMixedContentWarning,
 };
 
 struct MixedContentIssueDetails {
@@ -55,30 +55,30 @@ struct MixedContentIssueDetails {
 };
 
 enum SameSiteCookieOperation {
-  SetCookie, ReadCookie
+  kSetCookie, kReadCookie
 };
 
 enum SameSiteCookieExclusionReason {
-  ExcludeSameSiteUnspecifiedTreatedAsLax,
-  ExcludeSameSiteNoneInsecure,
+  kExcludeSameSiteUnspecifiedTreatedAsLax,
+  kExcludeSameSiteNoneInsecure,
 };
 
 enum SameSiteCookieWarningReason {
-  WarnSameSiteUnspecifiedCrossSiteContext,
-  WarnSameSiteNoneInsecure,
-  WarnSameSiteUnspecifiedLaxAllowUnsafe,
-  WarnSameSiteStrictLaxDowngradeStrict,
-  WarnSameSiteStrictCrossDowngradeStrict,
-  WarnSameSiteStrictCrossDowngradeLax,
-  WarnSameSiteLaxCrossDowngradeStrict,
-  WarnSameSiteLaxCrossDowngradeLax,
+  kWarnSameSiteUnspecifiedCrossSiteContext,
+  kWarnSameSiteNoneInsecure,
+  kWarnSameSiteUnspecifiedLaxAllowUnsafe,
+  kWarnSameSiteStrictLaxDowngradeStrict,
+  kWarnSameSiteStrictCrossDowngradeStrict,
+  kWarnSameSiteStrictCrossDowngradeLax,
+  kWarnSameSiteLaxCrossDowngradeStrict,
+  kWarnSameSiteLaxCrossDowngradeLax,
 };
 
 // Specific information about |kSameSiteCookieIssue| type issues.
 struct SameSiteCookieIssueDetails {
   AffectedCookie cookie;
-  array<SameSiteCookieExclusionReason> exclusionReason;
-  array<SameSiteCookieWarningReason> warningReason;
+  array<SameSiteCookieExclusionReason> exclusion_reason;
+  array<SameSiteCookieWarningReason> warning_reason;
   SameSiteCookieOperation operation;
   url.mojom.Url? site_for_cookies;
   url.mojom.Url? cookie_url;
@@ -88,7 +88,7 @@ struct SameSiteCookieIssueDetails {
 // A collection of optional fields that may store additional data depending
 // on the issue code.
 struct InspectorIssueDetails {
-  SameSiteCookieIssueDetails? sameSiteCookieIssueDetails;
+  SameSiteCookieIssueDetails? samesite_cookie_issue_details;
   MixedContentIssueDetails? mixed_content_issue_details;
   BlockedByResponseIssueDetails? blocked_by_response_issue_details;
 };

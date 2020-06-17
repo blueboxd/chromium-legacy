@@ -6,16 +6,18 @@
 
 namespace navigation_interception {
 
-NavigationParams::NavigationParams(const GURL& url,
-                                   const content::Referrer& referrer,
-                                   bool has_user_gesture,
-                                   bool is_post,
-                                   ui::PageTransition transition_type,
-                                   bool is_redirect,
-                                   bool is_external_protocol,
-                                   bool is_main_frame,
-                                   bool is_renderer_initiated,
-                                   const GURL& base_url_for_data_url)
+NavigationParams::NavigationParams(
+    const GURL& url,
+    const content::Referrer& referrer,
+    bool has_user_gesture,
+    bool is_post,
+    ui::PageTransition transition_type,
+    bool is_redirect,
+    bool is_external_protocol,
+    bool is_main_frame,
+    bool is_renderer_initiated,
+    const GURL& base_url_for_data_url,
+    const base::Optional<url::Origin>& initiator_origin)
     : url_(url),
       referrer_(referrer),
       has_user_gesture_(has_user_gesture),
@@ -25,7 +27,8 @@ NavigationParams::NavigationParams(const GURL& url,
       is_external_protocol_(is_external_protocol),
       is_main_frame_(is_main_frame),
       is_renderer_initiated_(is_renderer_initiated),
-      base_url_for_data_url_(base_url_for_data_url) {}
+      base_url_for_data_url_(base_url_for_data_url),
+      initiator_origin_(initiator_origin) {}
 
 NavigationParams::~NavigationParams() = default;
 

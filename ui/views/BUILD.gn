@@ -785,7 +785,8 @@ jumbo_component("views") {
           "widget/desktop_aura/desktop_window_tree_host_win.cc",
         ]
         deps += [ "//ui/events:dom_keyboard_layout" ]
-      } else if (use_ozone) {
+      }
+      if (use_ozone) {
         public += [ "widget/desktop_aura/desktop_screen_ozone.h" ]
         sources += [
           "widget/desktop_aura/desktop_drag_drop_client_ozone.cc",
@@ -797,6 +798,7 @@ jumbo_component("views") {
         public += [ "widget/desktop_aura/desktop_window_tree_host_linux.h" ]
         sources += [
           "style/platform_style_linux.cc",
+          "widget/desktop_aura/desktop_screen_linux.cc",
           "widget/desktop_aura/desktop_window_tree_host_linux.cc",
           "widget/desktop_aura/window_event_filter_linux.cc",
           "widget/desktop_aura/window_event_filter_linux.h",

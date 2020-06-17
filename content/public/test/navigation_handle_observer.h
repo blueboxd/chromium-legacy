@@ -6,6 +6,7 @@
 #define CONTENT_PUBLIC_TEST_NAVIGATION_HANDLE_OBSERVER_H_
 
 #include "base/macros.h"
+#include "content/public/browser/navigation_handle_timing.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -42,6 +43,10 @@ class NavigationHandleObserver : public WebContentsObserver {
   }
   base::TimeTicks navigation_start() { return navigation_start_; }
 
+  const NavigationHandleTiming& navigation_handle_timing() {
+    return navigation_handle_timing_;
+  }
+
  private:
   // A reference to the NavigationHandle so this class will track only
   // one navigation at a time. It is set at DidStartNavigation and cleared
@@ -64,6 +69,7 @@ class NavigationHandleObserver : public WebContentsObserver {
   base::Optional<net::AuthChallengeInfo> auth_challenge_info_;
   net::ResolveErrorInfo resolve_error_info_;
   base::TimeTicks navigation_start_;
+  NavigationHandleTiming navigation_handle_timing_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleObserver);
 };

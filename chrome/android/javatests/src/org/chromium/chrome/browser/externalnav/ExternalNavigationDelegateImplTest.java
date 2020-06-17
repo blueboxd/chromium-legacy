@@ -26,6 +26,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationParams;
+import org.chromium.url.Origin;
 
 /**
  * Instrumentation tests for {@link ExternalNavigationHandler}.
@@ -79,6 +80,20 @@ import org.chromium.components.external_intents.ExternalNavigationParams;
         }
 
         private boolean mWasAutofillAssistantStarted;
+    }
+
+    private static class MockOrigin extends Origin {};
+
+    public void maybeSetAndGetRequestMetadata(ExternalNavigationDelegateImpl delegate,
+            Intent intent, boolean hasUserGesture, boolean isRendererInitiated,
+            Origin initiatorOrigin) {
+        delegate.maybeSetRequestMetadata(
+                intent, hasUserGesture, isRendererInitiated, initiatorOrigin);
+        IntentWithRequestMetadataHandler.RequestMetadata metadata =
+                IntentWithRequestMetadataHandler.getInstance().getRequestMetadataAndClear(intent);
+        Assert.assertEquals(hasUserGesture, metadata.hasUserGesture());
+        Assert.assertEquals(isRendererInitiated, metadata.isRendererInitiated());
+        Assert.assertEquals(initiatorOrigin, metadata.getInitiatorOrigin());
     }
 
     @Rule
@@ -169,7 +184,7 @@ import org.chromium.components.external_intents.ExternalNavigationParams;
 
     @Test
     @SmallTest
-    public void testMaybeSetUserGesture() {
+    public void maybeSetRequestMetadata() {
         ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
                 mActivityTestRule.getActivity().getActivityTab());
 
@@ -177,8 +192,14 @@ import org.chromium.components.external_intents.ExternalNavigationParams;
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
 
-        delegate.maybeSetUserGesture(intent);
-        Assert.assertTrue(IntentWithGesturesHandler.getInstance().getUserGestureAndClear(intent));
+        delegate.maybeSetRequestMetadata(intent, false, false, null);
+        Assert.assertNull(
+                IntentWithRequestMetadataHandler.getInstance().getRequestMetadataAndClear(intent));
+
+        maybeSetAndGetRequestMetadata(delegate, intent, true, true, null);
+        maybeSetAndGetRequestMetadata(delegate, intent, true, false, null);
+        maybeSetAndGetRequestMetadata(delegate, intent, false, true, null);
+        maybeSetAndGetRequestMetadata(delegate, intent, false, false, new MockOrigin());
     }
 
     @Test

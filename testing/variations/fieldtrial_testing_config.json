@@ -6991,19 +6991,16 @@
             ]
         }
     ],
-    "UnidoOnSignInV2": [
+    "UnidoPreferSync": [
         {
             "platforms": [
-                "android",
-                "android_weblayer"
+                "android"
             ],
             "experiments": [
                 {
-                    "name": "Enabled_2020-05-13",
-                    "enable_features": [
-                        "SharingPreferVapid",
-                        "SharingSendViaSync",
-                        "SyncDeviceInfoInTransportMode"
+                    "name": "Enabled",
+                    "disable_features": [
+                        "SharingPreferVapid"
                     ]
                 }
             ]

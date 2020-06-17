@@ -138,6 +138,7 @@ bool HttpBasicStream::GetLoadTimingInfo(
   }
 
   load_timing_info->receive_headers_start = parser()->response_start_time();
+  load_timing_info->first_early_hints_time = parser()->first_early_hints_time();
   return true;
 }
 

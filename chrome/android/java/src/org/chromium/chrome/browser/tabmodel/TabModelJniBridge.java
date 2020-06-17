@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.tabmodel;
 
 import android.os.SystemClock;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -16,6 +18,7 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ResourceRequestBody;
+import org.chromium.url.Origin;
 
 /**
  * Bridges between the C++ and Java {@link TabModel} interfaces.
@@ -133,7 +136,7 @@ public abstract class TabModelJniBridge implements TabModel {
             Tab parent, boolean incognito, WebContents webContents);
 
     @CalledByNative
-    protected abstract void openNewTab(Tab parent, String url, String initiatorOrigin,
+    protected abstract void openNewTab(Tab parent, String url, @Nullable Origin initiatorOrigin,
             String extraHeaders, ResourceRequestBody postData, int disposition,
             boolean persistParentage, boolean isRendererInitiated);
 

@@ -8,6 +8,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.url.Origin;
 
 import java.nio.ByteBuffer;
 
@@ -53,7 +54,7 @@ public class WebContentsStateBridge {
      * @return ByteBuffer that represents a state representing a single pending URL.
      */
     public static ByteBuffer createSingleNavigationStateAsByteBuffer(String url, String referrerUrl,
-            int referrerPolicy, String initiatorOrigin, boolean isIncognito) {
+            int referrerPolicy, @Nullable Origin initiatorOrigin, boolean isIncognito) {
         return WebContentsStateBridgeJni.get().createSingleNavigationStateAsByteBuffer(
                 url, referrerUrl, referrerPolicy, initiatorOrigin, isIncognito);
     }
@@ -95,7 +96,7 @@ public class WebContentsStateBridge {
         ByteBuffer getContentsStateAsByteBuffer(Tab tab);
         ByteBuffer deleteNavigationEntries(ByteBuffer state, int saveStateVersion, long predicate);
         ByteBuffer createSingleNavigationStateAsByteBuffer(String url, String referrerUrl,
-                int referrerPolicy, String initiatorOrigin, boolean isIncognito);
+                int referrerPolicy, Origin initiatorOrigin, boolean isIncognito);
         String getDisplayTitleFromByteBuffer(ByteBuffer state, int savedStateVersion);
         String getVirtualUrlFromByteBuffer(ByteBuffer state, int savedStateVersion);
         void createHistoricalTab(ByteBuffer state, int savedStateVersion);

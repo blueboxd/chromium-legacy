@@ -241,6 +241,10 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   void SelectionChanged() final;
   void TextChanged() override;
 
+  // The aria-errormessage object or native object from a validationMessage
+  // alert.
+  AXObject* ErrorMessage() const override;
+
   // Position in set and Size of set
   int PosInSet() const override;
   int SetSize() const override;

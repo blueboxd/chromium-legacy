@@ -81,8 +81,6 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
            LayoutSVGBlock::IsOfType(type);
   }
 
-  void SetNeedsTransformUpdate() override { needs_transform_update_ = true; }
-
   PaintLayerType LayerTypeRequired() const override;
 
   bool CreatesNewFormattingContext() const final {
@@ -101,8 +99,6 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
                             LayoutUnit logical_top,
                             LogicalExtentComputedValues&) const override;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
-
-  bool needs_transform_update_;
 };
 
 template <>

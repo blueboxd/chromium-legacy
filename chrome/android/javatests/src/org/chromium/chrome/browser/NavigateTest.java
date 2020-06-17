@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
@@ -40,6 +41,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
+import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
@@ -52,7 +54,9 @@ import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.ServerCertificate;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.url.Origin;
 
+import java.net.URL;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
@@ -539,6 +543,68 @@ public class NavigateTest {
         } finally {
             webServer.shutdown();
         }
+    }
+
+    /**
+     * Test that if the browser launches a renderer initiated intent towards itself,
+     * the url load will be renderer initiated and has the correct origin.
+     * @throws Exception
+     */
+    @Test
+    @MediumTest
+    @Feature({"Navigation"})
+    public void testRendererInitiatedIntentNavigate() throws Exception {
+        final String finalUrl =
+                mTestServer.getURL("/chrome/test/data/android/renderer_initiated/final.html");
+        // The launched intent will have the following format:
+        // android-app://package_name/xx.xx.xx.xx:xxxx/testDirs/final.html.
+        final String intentUrl = "android-app://"
+                + ContextUtils.getApplicationContext().getPackageName() + "/"
+                + finalUrl.replace("://", "/");
+
+        // The second page will launch the |intentUrl| to load |finalUrl|.
+        final String secondUrl = mTestServer.getURL(
+                "/chrome/test/data/android/renderer_initiated/renderer_initiated.html?replace_text="
+                + Base64.encodeToString(ApiCompatibilityUtils.getBytesUtf8("URL"), Base64.URL_SAFE)
+                + ":"
+                + Base64.encodeToString(
+                        ApiCompatibilityUtils.getBytesUtf8(intentUrl), Base64.URL_SAFE));
+
+        // Passing |secondUrl| to the first page, so that clicking on the link will trigger the
+        // renderer initiated intent.ss
+        final String firstUrl =
+                mTestServer.getURL("/chrome/test/data/android/renderer_initiated/first.html"
+                        + "?replace_text="
+                        + Base64.encodeToString(
+                                ApiCompatibilityUtils.getBytesUtf8("PARAM_URL"), Base64.URL_SAFE)
+                        + ":"
+                        + Base64.encodeToString(
+                                ApiCompatibilityUtils.getBytesUtf8(secondUrl), Base64.URL_SAFE));
+
+        navigateAndObserve(firstUrl, firstUrl);
+        mActivityTestRule.assertWaitForPageScaleFactorMatch(0.5f);
+
+        TabObserver onPageLoadStartedObserver = new EmptyTabObserver() {
+            @Override
+            public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
+                tab.removeObserver(this);
+                // Check that the final URL will be loaded properly, and the navigation
+                // is renderer initiated and has the correct origin.
+                Assert.assertEquals(finalUrl, params.getUrl());
+                Assert.assertEquals(true, params.getIsRendererInitiated());
+                try {
+                    URL url = new URL(finalUrl);
+                    Origin origin = params.getInitiatorOrigin();
+                    Assert.assertEquals(url.getHost(), origin.getHost());
+                } catch (Exception e) {
+                    Assert.fail("Cannot parse URL:" + finalUrl);
+                }
+            }
+        };
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        tab.addObserver(onPageLoadStartedObserver);
+        DOMUtils.clickNode(tab.getWebContents(), "rendererInitiated");
+        ChromeTabUtils.waitForTabPageLoaded(tab, finalUrl);
     }
 
     private String getTabUrlOnUIThread(final Tab tab) {

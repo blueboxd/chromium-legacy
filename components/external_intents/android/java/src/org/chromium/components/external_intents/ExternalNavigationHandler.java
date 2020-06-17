@@ -875,7 +875,8 @@ public class ExternalNavigationHandler {
                     AiaIntent.SERP, AiaIntent.NUM_ENTRIES);
         }
 
-        if (params.hasUserGesture()) mDelegate.maybeSetUserGesture(targetIntent);
+        mDelegate.maybeSetRequestMetadata(targetIntent, params.hasUserGesture(),
+                params.isRendererInitiated(), params.getInitiatorOrigin());
     }
 
     private @OverrideUrlLoadingResult int handleExternalIncognitoIntent(Intent targetIntent,

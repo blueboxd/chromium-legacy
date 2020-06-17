@@ -8,6 +8,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.components.embedder_support.util.UrlUtilities;
@@ -19,6 +21,7 @@ import org.chromium.components.external_intents.ExternalNavigationParams;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.Origin;
 
 /**
  * WebLayer's implementation of the {@link ExternalNavigationDelegate}.
@@ -154,7 +157,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     // This is relevant only if the intent ends up being handled by this app, which does not happen
     // for WebLayer.
-    public void maybeSetUserGesture(Intent intent) {}
+    public void maybeSetRequestMetadata(Intent intent, boolean hasUserGesture,
+            boolean isRendererInitiated, @Nullable Origin initiatorOrigin) {}
 
     @Override
     // This is relevant only if the intent ends up being handled by this app, which does not happen

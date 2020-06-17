@@ -17,6 +17,7 @@
 #include "components/blocked_content/popup_blocker.h"
 #include "components/blocked_content/popup_blocker_tab_helper.h"
 #include "components/blocked_content/popup_navigation_delegate.h"
+#include "components/blocked_content/test/test_popup_navigation_delegate.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/browser/test_tab_specific_content_settings_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -45,24 +46,6 @@
 namespace blocked_content {
 const char kNumBlockedHistogram[] =
     "ContentSettings.Popups.StrongBlocker.NumBlocked";
-
-class TestPopupNavigationDelegate : public PopupNavigationDelegate {
- public:
-  explicit TestPopupNavigationDelegate(const GURL& url) : url_(url) {}
-  content::RenderFrameHost* GetOpener() override { return nullptr; }
-  bool GetOriginalUserGesture() override { return true; }
-  const GURL& GetURL() override { return url_; }
-  NavigateResult NavigateWithGesture(
-      const blink::mojom::WindowFeatures& window_features,
-      base::Optional<WindowOpenDisposition> updated_disposition) override {
-    return NavigateResult{nullptr, WindowOpenDisposition::UNKNOWN};
-  }
-  void OnPopupBlocked(content::WebContents* web_contents,
-                      int num_blocked) override {}
-
- private:
-  const GURL url_;
-};
 
 class SafeBrowsingTriggeredPopupBlockerTest
     : public content::RenderViewHostTestHarness,
@@ -245,7 +228,8 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
       blink::TriggeringEventInfo::kFromUntrustedEvent;
 
   MaybeBlockPopup(web_contents(), nullptr,
-                  std::make_unique<TestPopupNavigationDelegate>(popup_url),
+                  std::make_unique<TestPopupNavigationDelegate>(
+                      popup_url, nullptr /* result_holder */),
                   &params, blink::mojom::WindowFeatures(), settings_map());
 
   EXPECT_EQ(1u, PopupBlockerTabHelper::FromWebContents(web_contents())
@@ -269,7 +253,8 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
   params.triggering_event_info = blink::TriggeringEventInfo::kFromTrustedEvent;
 
   MaybeBlockPopup(web_contents(), nullptr,
-                  std::make_unique<TestPopupNavigationDelegate>(popup_url),
+                  std::make_unique<TestPopupNavigationDelegate>(
+                      popup_url, nullptr /* result_holder */),
                   &params, blink::mojom::WindowFeatures(), settings_map());
 
   EXPECT_EQ(0u, PopupBlockerTabHelper::FromWebContents(web_contents())

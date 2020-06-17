@@ -47,6 +47,7 @@
 #include "third_party/blink/renderer/core/css/css_grid_integer_repeat_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_line_names_value.h"
 #include "third_party/blink/renderer/core/css/css_grid_template_areas_value.h"
+#include "third_party/blink/renderer/core/css/css_id_selector_value.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_image_set_value.h"
 #include "third_party/blink/renderer/core/css/css_image_value.h"
@@ -278,6 +279,8 @@ bool CSSValue::operator==(const CSSValue& other) const {
         return CompareCSSValues<CSSInvalidVariableValue>(*this, other);
       case kLightDarkValuePairClass:
         return CompareCSSValues<CSSLightDarkValuePair>(*this, other);
+      case kIdSelectorClass:
+        return CompareCSSValues<cssvalue::CSSIdSelectorValue>(*this, other);
     }
     NOTREACHED();
     return false;
@@ -398,6 +401,8 @@ String CSSValue::CssText() const {
       return To<CSSInvalidVariableValue>(this)->CustomCSSText();
     case kLightDarkValuePairClass:
       return To<CSSLightDarkValuePair>(this)->CustomCSSText();
+    case kIdSelectorClass:
+      return To<cssvalue::CSSIdSelectorValue>(this)->CustomCSSText();
   }
   NOTREACHED();
   return String();
@@ -578,6 +583,9 @@ void CSSValue::FinalizeGarbageCollectedObject() {
     case kLightDarkValuePairClass:
       To<CSSLightDarkValuePair>(this)->~CSSLightDarkValuePair();
       return;
+    case kIdSelectorClass:
+      To<cssvalue::CSSIdSelectorValue>(this)->~CSSIdSelectorValue();
+      return;
   }
   NOTREACHED();
 }
@@ -756,6 +764,9 @@ void CSSValue::Trace(Visitor* visitor) const {
       return;
     case kLightDarkValuePairClass:
       To<CSSLightDarkValuePair>(this)->TraceAfterDispatch(visitor);
+      return;
+    case kIdSelectorClass:
+      To<cssvalue::CSSIdSelectorValue>(this)->TraceAfterDispatch(visitor);
       return;
   }
   NOTREACHED();

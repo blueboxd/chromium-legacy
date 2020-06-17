@@ -2060,22 +2060,6 @@ void AXLayoutObject::TextChanged() {
   AXNodeObject::TextChanged();
 }
 
-AXObject* AXLayoutObject::ErrorMessage() const {
-  // Check for aria-errormessage.
-  Element* existing_error_message =
-      GetAOMPropertyOrARIAAttribute(AOMRelationProperty::kErrorMessage);
-  if (existing_error_message)
-    return AXObjectCache().GetOrCreate(existing_error_message);
-
-  // Check for visible validationMessage. This can only be visible for a focused
-  // control. Corollary: if there is a visible validationMessage alert box, then
-  // it is related to the current focus.
-  if (this != AXObjectCache().FocusedObject())
-    return nullptr;
-
-  return AXObjectCache().ValidationMessageObjectIfInvalid();
-}
-
 // The following is a heuristic used to determine if a
 // <table> should be with ax::mojom::blink::Role::kTable or
 // ax::mojom::blink::Role::kLayoutTable.

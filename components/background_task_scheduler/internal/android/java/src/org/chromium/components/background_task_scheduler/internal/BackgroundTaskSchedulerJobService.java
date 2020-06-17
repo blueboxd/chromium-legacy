@@ -64,18 +64,18 @@ class BackgroundTaskSchedulerJobService implements BackgroundTaskSchedulerDelega
             return TaskInfo.OneOffInfo.getExpirationStatus(
                     scheduleTimeMs, endTimeMs, currentTimeMs);
         } else {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+                // Before Android N, there was no control over when the job will execute within
+                // the given interval. This makes it impossible to check for an expiration time.
+                return false;
+            }
+
             long intervalTimeMs = extras.getLong(BACKGROUND_TASK_INTERVAL_TIME_KEY);
             // Based on the JobInfo documentation, attempting to declare a smaller period than
             // this when scheduling a job will result in a job that is still periodic, but will
             // run with this effective period.
             if (intervalTimeMs < JobInfo.getMinPeriodMillis()) {
                 intervalTimeMs = JobInfo.getMinPeriodMillis();
-            }
-
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-                // Before Android N, there was no control over when the job will execute within
-                // the given interval. This makes it impossible to check for an expiration time.
-                return false;
             }
 
             // Since Android N, there was a minimum of 5 min set for the flex value. This

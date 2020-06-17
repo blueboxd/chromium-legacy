@@ -897,7 +897,7 @@ class CONTENT_EXPORT NavigationRequest
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;
 
   // Updates navigation handle timings.
-  void UpdateNavigationHandleTimingsOnResponseReceived();
+  void UpdateNavigationHandleTimingsOnResponseReceived(bool is_first_response);
   void UpdateNavigationHandleTimingsOnCommitSent();
 
   // Helper function that computes the SiteInfo for |common_params_.url|.

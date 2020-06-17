@@ -264,7 +264,7 @@ cr.define('cr.ui', function() {
         chrome.send('toggleFakeEnrollment');
       });
 
-      waitForOobeScreen('oauth-enrollment', function() {
+      waitForOobeScreen('enterprise-enrollment', function() {
         chrome.send('oauthEnrollCompleteLogin', [username]);
       });
     }

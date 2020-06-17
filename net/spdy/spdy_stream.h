@@ -515,6 +515,8 @@ class NET_EXPORT_PRIVATE SpdyStream {
   base::TimeTicks send_time_;
   base::TimeTicks recv_first_byte_time_;
   base::TimeTicks recv_last_byte_time_;
+  // The time at which the first 103 Early Hints response is received.
+  base::TimeTicks first_early_hints_time_;
 
   // Number of bytes that have been received on this stream, including frame
   // overhead and headers.

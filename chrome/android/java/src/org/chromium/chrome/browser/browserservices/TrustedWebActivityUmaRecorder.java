@@ -207,4 +207,9 @@ public class TrustedWebActivityUmaRecorder {
         RecordHistogram.recordBooleanHistogram(
                 "TrustedWebActivity.LocationPermissionRequestIsGranted", enabled);
     }
+
+    public void recordLocationUpdateError(@LocationUpdateError int error) {
+        RecordHistogram.recordEnumeratedHistogram("TrustedWebActivity.LocationUpdateErrorCode",
+                error, LocationUpdateError.MAX_VALUE + 1);
+    }
 }

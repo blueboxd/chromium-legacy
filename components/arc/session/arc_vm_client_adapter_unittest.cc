@@ -58,7 +58,7 @@ constexpr int64_t kCid = 123;
 
 StartParams GetPopulatedStartParams() {
   StartParams params;
-  params.native_bridge_experiment = true;
+  params.native_bridge_experiment = false;
   params.lcd_density = 240;
   params.arc_file_picker_experiment = true;
   params.play_store_auto_update =
@@ -1098,8 +1098,8 @@ TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNone) {
                      "androidboot.native_bridge=0"));
 }
 
-// Tests that the binary translation type is set to Houdini when only Houdini
-// library is enabled by USE flags.
+// Tests that the binary translation type is set to Houdini when only 32-bit
+// Houdini library is enabled by USE flags.
 TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeHoudini) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv(
       {"", "--enable-houdini"});
@@ -1112,8 +1112,8 @@ TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeHoudini) {
                      "androidboot.native_bridge=libhoudini.so"));
 }
 
-// Tests that the binary translation type is set to Houdini when only Houdini
-// 64-bit library is enabled by USE flags.
+// Tests that the binary translation type is set to Houdini when only 64-bit
+// Houdini library is enabled by USE flags.
 TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeHoudini64) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv(
       {"", "--enable-houdini64"});
@@ -1127,7 +1127,7 @@ TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeHoudini64) {
 }
 
 // Tests that the binary translation type is set to NDK translation when only
-// NDK translation library is enabled by USE flags.
+// 32-bit NDK translation library is enabled by USE flags.
 TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNdkTranslation) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv(
       {"", "--enable-ndk-translation"});
@@ -1140,13 +1140,28 @@ TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNdkTranslation) {
                      "androidboot.native_bridge=libndk_translation.so"));
 }
 
+// Tests that the binary translation type is set to NDK translation when only
+// 64-bit NDK translation library is enabled by USE flags.
+TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNdkTranslation64) {
+  base::CommandLine::ForCurrentProcess()->InitFromArgv(
+      {"", "--enable-ndk-translation64"});
+  StartParams start_params(GetPopulatedStartParams());
+  SetValidUserInfo();
+  StartMiniArcWithParams(true, std::move(start_params));
+  UpgradeArc(true);
+  EXPECT_TRUE(
+      base::Contains(GetTestConciergeClient()->start_arc_vm_request().params(),
+                     "androidboot.native_bridge=libndk_translation.so"));
+}
+
 // Tests that the binary translation type is set to NDK translation when both
 // Houdini and NDK translation libraries are enabled by USE flags, and the
-// parameter start_params.native_bridge_experiment is set.
+// parameter start_params.native_bridge_experiment is set to true.
 TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNativeBridgeExperiment) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv(
       {"", "--enable-houdini", "--enable-ndk-translation"});
   StartParams start_params(GetPopulatedStartParams());
+  start_params.native_bridge_experiment = true;
   SetValidUserInfo();
   StartMiniArcWithParams(true, std::move(start_params));
   UpgradeArc(true);
@@ -1157,7 +1172,7 @@ TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNativeBridgeExperiment) {
 
 // Tests that the binary translation type is set to Houdini when both Houdini
 // and NDK translation libraries are enabled by USE flags, and the parameter
-// start_params.native_bridge_experiment is not set.
+// start_params.native_bridge_experiment is set to false.
 TEST_F(ArcVmClientAdapterTest, BintaryTranslationTypeNoNativeBridgeExperiment) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv(
       {"", "--enable-houdini", "--enable-ndk-translation"});

@@ -13,10 +13,12 @@ struct PartitionPage;
 
 constexpr bool ThreadSafe = true;
 constexpr bool NotThreadSafe = false;
-template <bool thread_safe>
-struct PartitionRootBase;
 
 }  // namespace internal
+
+template <bool thread_safe>
+struct PartitionRoot;
+
 }  // namespace base
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_FORWARD_H_

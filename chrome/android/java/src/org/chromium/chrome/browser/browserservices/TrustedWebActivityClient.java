@@ -403,5 +403,6 @@ public class TrustedWebActivityClient {
         Bundle error = new Bundle();
         error.putString("message", message);
         callback.onExtraCallback(EXTRA_NEW_LOCATION_ERROR_CALLBACK, error);
+        mRecorder.recordLocationUpdateError(LocationUpdateError.NO_TWA);
     }
 }

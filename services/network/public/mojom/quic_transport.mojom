@@ -54,6 +54,9 @@ interface QuicTransport {
   // be able to write any data to the stream, but it may be able to use other
   // functions such as reading data from the stream.
   SendFin(uint32 stream_id);
+
+  // Aborts the stream for |stream_id|.
+  AbortStream(uint32 stream_id, uint64 code);
 };
 
 // A mojo interface for the client of QuicTransport.

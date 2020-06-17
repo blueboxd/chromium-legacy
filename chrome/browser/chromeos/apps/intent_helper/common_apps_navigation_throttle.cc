@@ -274,6 +274,11 @@ bool CommonAppsNavigationThrottle::ShouldDeferNavigation(
   if (apps_for_picker.empty())
     return false;
 
+  if (GetPickerShowState(apps_for_picker, web_contents, url) ==
+      PickerShowState::kOmnibox) {
+    return false;
+  }
+
   IntentPickerTabHelper::LoadAppIcons(
       web_contents, std::move(apps_for_picker),
       base::BindOnce(

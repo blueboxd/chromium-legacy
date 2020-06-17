@@ -172,6 +172,7 @@ import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.widget.Toast;
+import org.chromium.url.Origin;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -1275,7 +1276,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         @Override
         public void processUrlViewIntent(String url, String referer, String headers,
                 @TabOpenType int tabOpenType, String externalAppId, int tabIdToBringToFront,
-                boolean hasUserGesture, Intent intent) {
+                boolean hasUserGesture, boolean isRendererInitiated,
+                @Nullable Origin initiatorOrigin, Intent intent) {
             if (isActivityFinishingOrDestroyed()) {
                 return;
             }
@@ -1299,7 +1301,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         TabModelUtils.setIndex(tabModel, tabToBeClobberedIndex);
                         tabToBeClobbered.reload();
                     } else {
-                        launchIntent(url, referer, headers, externalAppId, true, intent);
+                        launchIntent(url, referer, headers, externalAppId, true,
+                                isRendererInitiated, initiatorOrigin, intent);
                     }
                     logMobileReceivedExternalIntent(externalAppId, intent);
                     int shortcutSource =
@@ -1333,14 +1336,20 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                     Tab currentTab = getActivityTab();
                     if (currentTab != null) {
                         RedirectHandlerTabHelper.updateIntentInTab(currentTab, intent);
-                        currentTab.loadUrl(ChromeTabbedActivity.createLoadUrlParamsForIntent(
-                                url, referer, hasUserGesture, mIntentHandlingTimeMs, intent));
+                        LoadUrlParams loadUrlParams =
+                                ChromeTabbedActivity.createLoadUrlParamsForIntent(url, referer,
+                                        hasUserGesture, mIntentHandlingTimeMs, intent);
+                        loadUrlParams.setIsRendererInitiated(isRendererInitiated);
+                        loadUrlParams.setInitiatorOrigin(initiatorOrigin);
+                        currentTab.loadUrl(loadUrlParams);
                     } else {
-                        launchIntent(url, referer, headers, externalAppId, true, intent);
+                        launchIntent(url, referer, headers, externalAppId, true,
+                                isRendererInitiated, initiatorOrigin, intent);
                     }
                     break;
                 case TabOpenType.REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB:
-                    openNewTab(url, referer, headers, externalAppId, intent, false);
+                    openNewTab(url, referer, headers, externalAppId, isRendererInitiated,
+                            initiatorOrigin, intent, false);
                     break;
                 case TabOpenType.REUSE_TAB_MATCHING_ID_ELSE_NEW_TAB:
                     int tabId = IntentUtils.safeGetIntExtra(
@@ -1360,12 +1369,15 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                                                 referer, hasUserGesture, mIntentHandlingTimeMs,
                                                 intent);
                                 loadUrlParams.setVerbatimHeaders(headers);
+                                loadUrlParams.setIsRendererInitiated(isRendererInitiated);
+                                loadUrlParams.setInitiatorOrigin(initiatorOrigin);
                                 tab.loadUrl(loadUrlParams);
                                 loaded = true;
                             }
                         }
                         if (!loaded) {
-                            openNewTab(url, referer, headers, externalAppId, intent, false);
+                            openNewTab(url, referer, headers, externalAppId, isRendererInitiated,
+                                    initiatorOrigin, intent, false);
                         }
                     }
                     break;
@@ -1375,7 +1387,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         reportNewTabShortcutUsed(false);
                     }
 
-                    openNewTab(url, referer, headers, externalAppId, intent, true);
+                    openNewTab(url, referer, headers, externalAppId, isRendererInitiated,
+                            initiatorOrigin, intent, true);
                     break;
                 case TabOpenType.OPEN_NEW_INCOGNITO_TAB:
                     if (!TextUtils.equals(externalAppId, getPackageName())) {
@@ -1458,9 +1471,11 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
          * @param forceNewTab If not handled by a Custom Tab, forces the new tab to be created.
          */
         private void openNewTab(String url, String referer, String headers, String externalAppId,
-                Intent intent, boolean forceNewTab) {
+                boolean isRendererInitiated, @Nullable Origin initiatorOrigin, Intent intent,
+                boolean forceNewTab) {
             // Create a new tab.
-            launchIntent(url, referer, headers, externalAppId, forceNewTab, intent);
+            launchIntent(url, referer, headers, externalAppId, forceNewTab, isRendererInitiated,
+                    initiatorOrigin, intent);
             logMobileReceivedExternalIntent(externalAppId, intent);
         }
 
@@ -1976,10 +1991,13 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
      * @param externalAppId External app id.
      * @param forceNewTab   Whether to force the URL to be launched in a new tab or to fall
      *                      back to the default behavior for making that determination.
+     * @param isRendererInitiated Whether the intent is originally from browser renderer process.
+     * @param initiatorOrigin Origin that initiates the intent.
      * @param intent        The original intent.
      */
     private Tab launchIntent(String url, String referer, String headers, String externalAppId,
-            boolean forceNewTab, Intent intent) {
+            boolean forceNewTab, boolean isRendererInitiated, @Nullable Origin initiatorOrigin,
+            Intent intent) {
         if (mUIWithNativeInitialized && !NewTabPage.isNTPUrl(url)) {
             mOverviewModeController.hideOverview(false);
             getToolbarManager().finishAnimations();
@@ -1993,6 +2011,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
             loadUrlParams.setIntentReceivedTimestamp(mIntentHandlingTimeMs);
             loadUrlParams.setVerbatimHeaders(headers);
+            loadUrlParams.setIsRendererInitiated(isRendererInitiated);
+            loadUrlParams.setInitiatorOrigin(initiatorOrigin);
             @TabLaunchType
             Integer launchType = IntentHandler.getTabLaunchType(intent);
             if (launchType == null) {

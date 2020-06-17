@@ -1202,7 +1202,7 @@ class SAMLEnrollmentTest : public SamlTest {
 };
 
 SAMLEnrollmentTest::SAMLEnrollmentTest() {
-  gaia_frame_parent_ = "oauth-enroll-auth-view";
+  gaia_frame_parent_ = "authView";
   authenticator_id_ = "$('enterprise-enrollment').authenticator_";
 }
 

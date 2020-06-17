@@ -338,6 +338,14 @@ const char
         "PageLoad.Experimental.NavigationTiming."
         "FinalLoaderCallbackToNavigationCommitSent";
 
+// 103 Early Hints metrics for experiment (https://crbug.com/1093693).
+const char kHistogramEarlyHintsFirstRequestStartToEarlyHints[] =
+    "PageLoad.Experimental.EarlyHints.FirstRequestStartToEarlyHints";
+const char kHistogramEarlyHintsFinalRequestStartToEarlyHints[] =
+    "PageLoad.Experimental.EarlyHints.FinalRequestStartToEarlyHints";
+const char kHistogramEarlyHintsEarlyHintsToFinalResponseStart[] =
+    "PageLoad.Experimental.EarlyHints.EarlyHintsToFinalResponseStart";
+
 }  // namespace internal
 
 CorePageLoadMetricsObserver::CorePageLoadMetricsObserver()
@@ -890,6 +898,30 @@ void CorePageLoadMetricsObserver::RecordNavigationTimingHistograms(
       internal::
           kHistogramNavigationTimingFinalLoaderCallbackToNavigationCommitSent,
       timing.navigation_commit_sent_time - timing.final_loader_callback_time);
+
+  // Record the following intervals for the 103 Early Hints experiment
+  // (https://crbug.com/1093693).
+  // - The first request start to the 103 response,
+  // - The final request start to the 103 response, and the 103 response to the
+  //   final response,
+  // Note that multiple 103 responses can be served per request. These metrics
+  // use the first 103 response as the timing.
+  if (!timing.early_hints_for_first_request_time.is_null()) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramEarlyHintsFirstRequestStartToEarlyHints,
+        timing.first_request_start_time -
+            timing.early_hints_for_first_request_time);
+  }
+  if (!timing.early_hints_for_final_request_time.is_null()) {
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramEarlyHintsFinalRequestStartToEarlyHints,
+        timing.final_request_start_time -
+            timing.early_hints_for_final_request_time);
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramEarlyHintsEarlyHintsToFinalResponseStart,
+        timing.early_hints_for_final_request_time -
+            timing.final_response_start_time);
+  }
 }
 
 // This method records values for metrics that were not recorded during any

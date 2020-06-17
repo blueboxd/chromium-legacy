@@ -10,7 +10,21 @@
 
 namespace blink {
 
-class SelectionModifierTest : public EditingTestBase {};
+class SelectionModifierTest : public EditingTestBase {
+ protected:
+  std::string MoveBackwardByLine(SelectionModifier& modifier) {
+    modifier.Modify(SelectionModifyAlteration::kMove,
+                    SelectionModifyDirection::kBackward,
+                    TextGranularity::kLine);
+    return GetSelectionTextFromBody(modifier.Selection().AsSelection());
+  }
+
+  std::string MoveForwardByLine(SelectionModifier& modifier) {
+    modifier.Modify(SelectionModifyAlteration::kMove,
+                    SelectionModifyDirection::kForward, TextGranularity::kLine);
+    return GetSelectionTextFromBody(modifier.Selection().AsSelection());
+  }
+};
 
 TEST_F(SelectionModifierTest, ExtendForwardByWordNone) {
   SetBodyContent("abc");
@@ -28,6 +42,48 @@ TEST_F(SelectionModifierTest, MoveForwardByWordNone) {
                   SelectionModifyDirection::kForward, TextGranularity::kWord);
   // We should not crash here. See http://crbug.com/832061
   EXPECT_EQ(SelectionInDOMTree(), modifier.Selection().AsSelection());
+}
+
+TEST_F(SelectionModifierTest, MoveByLineHorizontal) {
+  LoadAhem();
+  InsertStyleElement(
+      "p {"
+      "font: 10px/20px Ahem;"
+      "padding: 10px;"
+      "writing-mode: horizontal-tb;"
+      "}");
+  const SelectionInDOMTree selection =
+      SetSelectionTextToBody("<p>ab|c<br>d<br><br>ghi</p>");
+  SelectionModifier modifier(GetFrame(), selection);
+
+  EXPECT_EQ("<p>abc<br>d|<br><br>ghi</p>", MoveForwardByLine(modifier));
+  EXPECT_EQ("<p>abc<br>d<br>|<br>ghi</p>", MoveForwardByLine(modifier));
+  EXPECT_EQ("<p>abc<br>d<br><br>gh|i</p>", MoveForwardByLine(modifier));
+
+  EXPECT_EQ("<p>abc<br>d<br>|<br>ghi</p>", MoveBackwardByLine(modifier));
+  EXPECT_EQ("<p>abc<br>d|<br><br>ghi</p>", MoveBackwardByLine(modifier));
+  EXPECT_EQ("<p>ab|c<br>d<br><br>ghi</p>", MoveBackwardByLine(modifier));
+}
+
+TEST_F(SelectionModifierTest, MoveByLineVertical) {
+  LoadAhem();
+  InsertStyleElement(
+      "p {"
+      "font: 10px/20px Ahem;"
+      "padding: 10px;"
+      "writing-mode: vertical-rl;"
+      "}");
+  const SelectionInDOMTree selection =
+      SetSelectionTextToBody("<p>ab|c<br>d<br><br>ghi</p>");
+  SelectionModifier modifier(GetFrame(), selection);
+
+  EXPECT_EQ("<p>abc<br>d|<br><br>ghi</p>", MoveForwardByLine(modifier));
+  EXPECT_EQ("<p>abc<br>d<br>|<br>ghi</p>", MoveForwardByLine(modifier));
+  EXPECT_EQ("<p>abc<br>d<br><br>gh|i</p>", MoveForwardByLine(modifier));
+
+  EXPECT_EQ("<p>abc<br>d<br>|<br>ghi</p>", MoveBackwardByLine(modifier));
+  EXPECT_EQ("<p>abc<br>d|<br><br>ghi</p>", MoveBackwardByLine(modifier));
+  EXPECT_EQ("<p>ab|c<br>d<br><br>ghi</p>", MoveBackwardByLine(modifier));
 }
 
 TEST_F(SelectionModifierTest, PreviousLineWithDisplayNone) {

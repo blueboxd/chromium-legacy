@@ -188,6 +188,9 @@ ASH_PUBLIC_EXPORT extern const char kUsbPowerShareEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAssistantPrivacyInfoShownInLauncher[];
 ASH_PUBLIC_EXPORT extern const char kAssistantPrivacyInfoDismissedInLauncher[];
 
+ASH_PUBLIC_EXPORT extern const char kSuggestedContentInfoShownInLauncher[];
+ASH_PUBLIC_EXPORT extern const char kSuggestedContentInfoDismissedInLauncher[];
+
 ASH_PUBLIC_EXPORT extern const char kLockScreenMediaControlsEnabled[];
 
 ASH_PUBLIC_EXPORT extern const char kXkbAutoRepeatDelay[];

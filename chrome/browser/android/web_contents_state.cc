@@ -524,7 +524,7 @@ WebContentsState::CreateSingleNavigationStateAsByteBuffer(
     jstring url,
     jstring referrer_url,
     jint referrer_policy,
-    jstring initiator_origin_string,
+    const base::android::JavaParamRef<jobject>& jinitiator_origin,
     jboolean is_off_the_record) {
   content::Referrer referrer;
   if (referrer_url) {
@@ -532,10 +532,10 @@ WebContentsState::CreateSingleNavigationStateAsByteBuffer(
         GURL(base::android::ConvertJavaStringToUTF8(env, referrer_url)),
         content::Referrer::ConvertToPolicy(referrer_policy));
   }
-  // TODO(nasko,tedchoc): https://crbug.com/980641: Don't use String to store
-  // initiator origin, as it is a lossy format.
-  url::Origin initiator_origin = url::Origin::Create(GURL(
-      base::android::ConvertJavaStringToUTF8(env, initiator_origin_string)));
+
+  url::Origin initiator_origin;
+  if (jinitiator_origin)
+    initiator_origin = url::Origin::FromJavaObject(jinitiator_origin);
   std::unique_ptr<content::NavigationEntry> entry(
       content::NavigationController::CreateNavigationEntry(
           GURL(base::android::ConvertJavaStringToUTF8(env, url)), referrer,
@@ -592,7 +592,7 @@ JNI_WebContentsStateBridge_CreateSingleNavigationStateAsByteBuffer(
     const JavaParamRef<jstring>& url,
     const JavaParamRef<jstring>& referrer_url,
     jint referrer_policy,
-    const JavaParamRef<jstring>& initiator_origin,
+    const JavaParamRef<jobject>& initiator_origin,
     jboolean is_off_the_record) {
   return WebContentsState::CreateSingleNavigationStateAsByteBuffer(
       env, url, referrer_url, referrer_policy, initiator_origin,

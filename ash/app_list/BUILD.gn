@@ -94,6 +94,8 @@ component("app_list") {
     "views/search_result_tile_item_view.h",
     "views/search_result_view.cc",
     "views/search_result_view.h",
+    "views/suggested_content_info_view.cc",
+    "views/suggested_content_info_view.h",
     "views/suggestion_chip_container_view.cc",
     "views/suggestion_chip_container_view.h",
     "views/top_icon_animation_view.cc",

@@ -32,7 +32,7 @@
 namespace blink {
 
 LayoutSVGForeignObject::LayoutSVGForeignObject(SVGForeignObjectElement* node)
-    : LayoutSVGBlock(node), needs_transform_update_(true) {}
+    : LayoutSVGBlock(node) {}
 
 LayoutSVGForeignObject::~LayoutSVGForeignObject() = default;
 
@@ -92,12 +92,15 @@ void LayoutSVGForeignObject::UpdateLayout() {
 
   auto* foreign = To<SVGForeignObjectElement>(GetElement());
 
-  bool update_cached_boundaries_in_parents = false;
+  // Update our transform before layout, in case any of our descendants rely on
+  // the transform being somewhat accurate.  The |needs_transform_update_| flag
+  // will be cleared after layout has been performed.
+  // TODO(fs): Remove this. AFAICS in all cases where we ancestors compute some
+  // form of CTM, they stop at their nearest ancestor LayoutSVGRoot, and thus
+  // will not care about this value.
   if (needs_transform_update_) {
     local_transform_ =
         foreign->CalculateTransform(SVGElement::kIncludeMotionTransform);
-    needs_transform_update_ = false;
-    update_cached_boundaries_in_parents = true;
   }
 
   LayoutRect old_viewport = FrameRect();
@@ -110,19 +113,24 @@ void LayoutSVGForeignObject::UpdateLayout() {
   SetX(ElementX());
   SetY(ElementY());
 
-  bool layout_changed = EverHadLayout() && SelfNeedsLayout();
+  const bool layout_changed = EverHadLayout() && SelfNeedsLayout();
   LayoutBlock::UpdateLayout();
   DCHECK(!NeedsLayout());
+  const bool bounds_changed = old_viewport != FrameRect();
 
-  // If our bounds changed, notify the parents.
-  if (!update_cached_boundaries_in_parents)
-    update_cached_boundaries_in_parents = old_viewport != FrameRect();
-  if (update_cached_boundaries_in_parents)
+  bool update_parent_boundaries = bounds_changed;
+  if (UpdateTransformAfterLayout())
+    update_parent_boundaries = true;
+
+  // Notify ancestor about our bounds changing.
+  if (update_parent_boundaries)
     LayoutSVGBlock::SetNeedsBoundariesUpdate();
 
   // Invalidate all resources of this client if our layout changed.
   if (layout_changed)
     SVGResourcesCache::ClientLayoutChanged(*this);
+
+  DCHECK(!needs_transform_update_);
 }
 
 bool LayoutSVGForeignObject::NodeAtPointFromSVG(

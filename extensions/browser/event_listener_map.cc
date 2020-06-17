@@ -96,10 +96,12 @@ bool EventListener::IsLazy() const {
 
 void EventListener::MakeLazy() {
   // A lazy listener neither has a process attached to it nor it has a worker
-  // thread id (if the listener was for a service worker), so reset these values
+  // thread (if the listener was for a service worker), so reset these values
   // below to reflect that.
-  if (is_for_service_worker_)
+  if (is_for_service_worker_) {
     worker_thread_id_ = kMainThreadId;
+    service_worker_version_id_ = blink::mojom::kInvalidServiceWorkerVersionId;
+  }
   process_ = nullptr;
 }
 
@@ -300,7 +302,7 @@ void EventListenerMap::LoadFilteredLazyListeners(
             // https://crbug.com/773103.
             Extension::GetBaseURLFromExtensionId(extension_id),
             blink::mojom::kInvalidServiceWorkerVersionId, kMainThreadId,
-            nullptr));
+            filter->CreateDeepCopy()));
       } else {
         AddListener(EventListener::ForExtension(it.key(), extension_id, nullptr,
                                                 filter->CreateDeepCopy()));

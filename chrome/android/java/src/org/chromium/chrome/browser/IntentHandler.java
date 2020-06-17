@@ -37,7 +37,8 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
-import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
+import org.chromium.chrome.browser.externalnav.IntentWithRequestMetadataHandler;
+import org.chromium.chrome.browser.externalnav.IntentWithRequestMetadataHandler.RequestMetadata;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFactory;
@@ -56,6 +57,7 @@ import org.chromium.content_public.common.Referrer;
 import org.chromium.net.HttpUtil;
 import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.url.Origin;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -320,7 +322,8 @@ public class IntentHandler {
          */
         void processUrlViewIntent(String url, String referer, String headers,
                 @TabOpenType int tabOpenType, String externalAppId, int tabIdToBringToFront,
-                boolean hasUserGesture, Intent intent);
+                boolean hasUserGesture, boolean isRendererInitiated, Origin initiatorOrigin,
+                Intent intent);
 
         void processWebSearchIntent(String query);
     }
@@ -443,8 +446,8 @@ public class IntentHandler {
 
         assert intentHasValidUrl(intent);
         String url = getUrlFromIntent(intent);
-        boolean hasUserGesture =
-                IntentWithGesturesHandler.getInstance().getUserGestureAndClear(intent);
+        RequestMetadata metadata =
+                IntentWithRequestMetadataHandler.getInstance().getRequestMetadataAndClear(intent);
         @TabOpenType
         int tabOpenType = getTabOpenType(intent);
         int tabIdToBringToFront = IntentUtils.safeGetIntExtra(
@@ -465,19 +468,22 @@ public class IntentHandler {
 
         processUrlViewIntent(url, referrerUrl, extraHeaders, tabOpenType,
                 IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID),
-                tabIdToBringToFront, hasUserGesture, intent);
+                tabIdToBringToFront, metadata == null ? false : metadata.hasUserGesture(),
+                metadata == null ? false : metadata.isRendererInitiated(),
+                metadata == null ? null : metadata.getInitiatorOrigin(), intent);
         return true;
     }
 
     private void processUrlViewIntent(String url, String referrerUrl, String extraHeaders,
             @TabOpenType int tabOpenType, String externalAppId, int tabIdToBringToFront,
-            boolean hasUserGesture, Intent intent) {
+            boolean hasUserGesture, boolean isRendererInitiated, Origin initiatorOrigin,
+            Intent intent) {
         extraHeaders = maybeAddAdditionalExtraHeaders(intent, url, extraHeaders);
 
         // TODO(joth): Presumably this should check the action too.
         mDelegate.processUrlViewIntent(url, referrerUrl, extraHeaders, tabOpenType,
                 IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID),
-                tabIdToBringToFront, hasUserGesture, intent);
+                tabIdToBringToFront, hasUserGesture, isRendererInitiated, initiatorOrigin, intent);
         recordExternalIntentSourceUMA(intent);
         recordAppHandlersForIntent(intent);
     }
@@ -658,7 +664,7 @@ public class IntentHandler {
     private void handleMhtmlFileOrContentIntent(final String url, final Intent intent) {
         OfflinePageUtils.getLoadUrlParamsForOpeningMhtmlFileOrContent(url, (loadUrlParams) -> {
             processUrlViewIntent(loadUrlParams.getUrl(), null, loadUrlParams.getVerbatimHeaders(),
-                    TabOpenType.OPEN_NEW_TAB, null, 0, false, intent);
+                    TabOpenType.OPEN_NEW_TAB, null, 0, false, false, null, intent);
         }, Profile.getLastUsedRegularProfile());
     }
 

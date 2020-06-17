@@ -70,10 +70,12 @@ class AbstractLineBox {
         cursor_.Current().Style().GetWritingMode());
     if (!logical_size.block_size)
       return false;
-    // Use |ClosestLeafChildForPoint| to check if there's any leaf child.
-    const bool only_editable_leaves = false;
-    return ClosestLeafChildForPoint(cursor_, PhysicalOffset(),
-                                    only_editable_leaves);
+    for (NGInlineCursor cursor(cursor_); cursor; cursor.MoveToNext()) {
+      const NGInlineCursorPosition& current = cursor.Current();
+      if (current.GetLayoutObject() && current.IsInlineLeaf())
+        return true;
+    }
+    return false;
   }
 
   AbstractLineBox PreviousLine() const {
@@ -119,18 +121,22 @@ class AbstractLineBox {
                           line_direction_point - absolute_block_point.top);
   }
 
-  const LayoutObject* ClosestLeafChildForPoint(
-      const PhysicalOffset& point,
+  PositionWithAffinity PositionForPoint(
+      const PhysicalOffset& point_in_container,
       bool only_editable_leaves) const {
-    DCHECK(!IsNull());
     if (IsOldLayout()) {
-      return GetRootInlineBox().ClosestLeafChildForPoint(
-          GetBlock().FlipForWritingMode(point), only_editable_leaves);
+      const LayoutObject* closest_leaf_child =
+          GetRootInlineBox().ClosestLeafChildForPoint(
+              GetBlock().FlipForWritingMode(point_in_container),
+              only_editable_leaves);
+      if (!closest_leaf_child)
+        return PositionWithAffinity();
+      const Node* node = closest_leaf_child->GetNode();
+      if (node && EditingIgnoresContent(*node))
+        return PositionWithAffinity(Position::InParentBeforeNode(*node));
+      return closest_leaf_child->PositionForPoint(point_in_container);
     }
-    const PhysicalOffset local_physical_point =
-        point - cursor_.Current().OffsetInContainerBlock();
-    return ClosestLeafChildForPoint(cursor_, local_physical_point,
-                                    only_editable_leaves);
+    return PositionForPoint(cursor_, point_in_container, only_editable_leaves);
   }
 
  private:
@@ -180,25 +186,29 @@ class AbstractLineBox {
            HasEditableStyle(*layout_object->GetNode());
   }
 
-  static const LayoutObject* ClosestLeafChildForPoint(
-      const NGInlineCursor& line,
-      const PhysicalOffset& point,
-      bool only_editable_leaves) {
+  static PositionWithAffinity PositionForPoint(const NGInlineCursor& line,
+                                               const PhysicalOffset& point,
+                                               bool only_editable_leaves) {
+    DCHECK(line.Current().IsLineBox());
     const PhysicalSize unit_square(LayoutUnit(1), LayoutUnit(1));
     const LogicalOffset logical_point = point.ConvertToLogical(
         line.Current().Style().GetWritingMode(), line.Current().BaseDirection(),
         line.Current().Size(), unit_square);
     const LayoutUnit inline_offset = logical_point.inline_offset;
-    const LayoutObject* closest_leaf_child = nullptr;
+    NGInlineCursor closest_leaf_child;
     LayoutUnit closest_leaf_distance;
-    NGInlineCursor cursor(line);
-    for (cursor.MoveToNext(); cursor; cursor.MoveToNext()) {
+    for (NGInlineCursor cursor = line.CursorForDescendants(); cursor;
+         cursor.MoveToNext()) {
       if (!cursor.Current().GetLayoutObject())
         continue;
       if (!cursor.Current().IsInlineLeaf())
         continue;
-      if (only_editable_leaves && !IsEditable(cursor))
+      if (only_editable_leaves && !IsEditable(cursor)) {
+        // This condition allows us to move editable to editable with skipping
+        // non-editable element.
+        // [1] editing/selection/modify_move/move_backward_line_table.html
         continue;
+      }
 
       const LogicalRect fragment_logical_rect =
           line.Current().ConvertChildToLogical(
@@ -206,19 +216,28 @@ class AbstractLineBox {
       const LayoutUnit inline_min = fragment_logical_rect.offset.inline_offset;
       const LayoutUnit inline_max = fragment_logical_rect.offset.inline_offset +
                                     fragment_logical_rect.size.inline_size;
-      if (inline_offset >= inline_min && inline_offset < inline_max)
-        return cursor.Current().GetLayoutObject();
+      if (inline_offset >= inline_min && inline_offset < inline_max) {
+        closest_leaf_child = cursor;
+        break;
+      }
 
       const LayoutUnit distance =
           inline_offset < inline_min
               ? inline_min - inline_offset
               : inline_offset - inline_max + LayoutUnit(1);
       if (!closest_leaf_child || distance < closest_leaf_distance) {
-        closest_leaf_child = cursor.Current().GetLayoutObject();
+        closest_leaf_child = cursor;
         closest_leaf_distance = distance;
       }
     }
-    return closest_leaf_child;
+    if (!closest_leaf_child)
+      return PositionWithAffinity();
+    const Node* const node = closest_leaf_child.Current().GetNode();
+    if (!node)
+      return PositionWithAffinity();
+    if (EditingIgnoresContent(*node))
+      return PositionWithAffinity(Position::BeforeNode(*node));
+    return closest_leaf_child.PositionForPointInChild(point);
   }
 
   enum class Type { kNull, kOldLayout, kLayoutNG };
@@ -437,15 +456,9 @@ VisiblePosition SelectionModifier::PreviousLinePosition(
     PhysicalOffset point_in_line =
         line.AbsoluteLineDirectionPointToLocalPointInBlock(
             line_direction_point);
-    const LayoutObject* closest_leaf_child =
-        line.ClosestLeafChildForPoint(point_in_line, IsEditablePosition(p));
-    if (closest_leaf_child) {
-      const Node* node = closest_leaf_child->GetNode();
-      if (node && EditingIgnoresContent(*node))
-        return VisiblePosition::InParentBeforeNode(*node);
-      return CreateVisiblePosition(
-          closest_leaf_child->PositionForPoint(point_in_line));
-    }
+    if (auto position =
+            line.PositionForPoint(point_in_line, IsEditablePosition(p)))
+      return CreateVisiblePosition(position);
   }
 
   // Could not find a previous line. This means we must already be on the first
@@ -507,15 +520,9 @@ VisiblePosition SelectionModifier::NextLinePosition(
     PhysicalOffset point_in_line =
         line.AbsoluteLineDirectionPointToLocalPointInBlock(
             line_direction_point);
-    const LayoutObject* closest_leaf_child =
-        line.ClosestLeafChildForPoint(point_in_line, IsEditablePosition(p));
-    if (closest_leaf_child) {
-      const Node* node = closest_leaf_child->GetNode();
-      if (node && EditingIgnoresContent(*node))
-        return VisiblePosition::InParentBeforeNode(*node);
-      return CreateVisiblePosition(
-          closest_leaf_child->PositionForPoint(point_in_line));
-    }
+    if (auto position =
+            line.PositionForPoint(point_in_line, IsEditablePosition(p)))
+      return CreateVisiblePosition(position);
   }
 
   // Could not find a next line. This means we must already be on the last line.

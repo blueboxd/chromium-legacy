@@ -678,7 +678,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/externalauth/UserRecoverableErrorHandler.java",
   "java/src/org/chromium/chrome/browser/externalauth/VerifiedHandler.java",
   "java/src/org/chromium/chrome/browser/externalnav/ExternalNavigationDelegateImpl.java",
-  "java/src/org/chromium/chrome/browser/externalnav/IntentWithGesturesHandler.java",
+  "java/src/org/chromium/chrome/browser/externalnav/IntentWithRequestMetadataHandler.java",
   "java/src/org/chromium/chrome/browser/feature_engagement/ScreenshotMonitor.java",
   "java/src/org/chromium/chrome/browser/feature_engagement/ScreenshotMonitorDelegate.java",
   "java/src/org/chromium/chrome/browser/feature_engagement/ScreenshotTabObserver.java",

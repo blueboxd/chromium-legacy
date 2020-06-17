@@ -352,7 +352,7 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jstring>& url,
-    const JavaParamRef<jstring>& j_initiator_origin,
+    const JavaParamRef<jobject>& j_initiator_origin,
     const JavaParamRef<jstring>& j_extra_headers,
     const JavaParamRef<jobject>& j_post_data,
     jint page_transition,
@@ -414,8 +414,8 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
           content::Referrer::ConvertToPolicy(referrer_policy));
     }
     if (j_initiator_origin) {
-      load_params.initiator_origin = url::Origin::Create(GURL(
-          base::android::ConvertJavaStringToUTF8(env, j_initiator_origin)));
+      load_params.initiator_origin =
+          url::Origin::FromJavaObject(j_initiator_origin);
     }
     load_params.is_renderer_initiated = is_renderer_initiated;
     load_params.should_replace_current_entry = should_replace_current_entry;

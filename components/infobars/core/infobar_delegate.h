@@ -13,8 +13,11 @@
 
 class ConfirmInfoBarDelegate;
 class HungRendererInfoBarDelegate;
-class PopupBlockedInfoBarDelegate;
 class ThemeInstalledInfoBarDelegate;
+
+namespace blocked_content {
+class PopupBlockedInfoBarDelegate;
+}
 
 #if defined(OS_ANDROID)
 namespace offline_pages {
@@ -256,7 +259,8 @@ class InfoBarDelegate {
   // Type-checking downcast routines:
   virtual ConfirmInfoBarDelegate* AsConfirmInfoBarDelegate();
   virtual HungRendererInfoBarDelegate* AsHungRendererInfoBarDelegate();
-  virtual PopupBlockedInfoBarDelegate* AsPopupBlockedInfoBarDelegate();
+  virtual blocked_content::PopupBlockedInfoBarDelegate*
+  AsPopupBlockedInfoBarDelegate();
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
   virtual translate::TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
 #if defined(OS_ANDROID)

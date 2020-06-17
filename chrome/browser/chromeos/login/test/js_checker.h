@@ -128,6 +128,12 @@ class JSChecker {
   // Expects that the indicated UI element is not disabled.
   void ExpectEnabledPath(std::initializer_list<base::StringPiece> element_ids);
 
+  // Expects that the indicated UI element is invalid.
+  void ExpectInvalidPath(std::initializer_list<base::StringPiece> element_ids);
+
+  // Expects that the indicated UI element is not invalid.
+  void ExpectValidPath(std::initializer_list<base::StringPiece> element_ids);
+
   // Expects that indicated UI element has particular class.
   void ExpectHasClass(const std::string& css_class,
                       std::initializer_list<base::StringPiece> element_ids);
@@ -141,9 +147,19 @@ class JSChecker {
       const std::string& attribute,
       std::initializer_list<base::StringPiece> element_ids);
 
-  // Expect that the indicated UI element has particular text content.
+  // Expect that the indicated UI element has the exact same text content.
   void ExpectElementText(const std::string& content,
                          std::initializer_list<base::StringPiece> element_ids);
+
+  // Expect that the indicated UI element contains particular text content.
+  void ExpectElementContainsText(
+      const std::string& content,
+      std::initializer_list<base::StringPiece> element_ids);
+
+  // Expect that the indicated UI element has the same value attribute (could be
+  // used in elements like input, button, option).
+  void ExpectElementValue(const std::string& value,
+                          std::initializer_list<base::StringPiece> element_ids);
 
   // Fires a native 'click' event on the indicated UI element. Prefer using
   // native 'click' event as it works on both polymer and native UI elements.

@@ -96,6 +96,11 @@ struct StructTraits<network::mojom::LoadTimingInfoDataView,
     return obj.receive_headers_end;
   }
 
+  static base::TimeTicks first_early_hints_time(
+      const net::LoadTimingInfo& obj) {
+    return obj.first_early_hints_time;
+  }
+
   static base::TimeTicks push_start(const net::LoadTimingInfo& obj) {
     return obj.push_start;
   }

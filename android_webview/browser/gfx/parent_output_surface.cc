@@ -132,11 +132,6 @@ gfx::OverlayTransform ParentOutputSurface::GetDisplayTransform() {
   return gfx::OVERLAY_TRANSFORM_NONE;
 }
 
-scoped_refptr<gpu::GpuTaskSchedulerHelper>
-ParentOutputSurface::GetGpuTaskSchedulerHelper() {
-  return nullptr;
-}
-
 gpu::MemoryTracker* ParentOutputSurface::GetMemoryTracker() {
   return nullptr;
 }

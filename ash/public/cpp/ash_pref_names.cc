@@ -522,6 +522,22 @@ const char kAssistantPrivacyInfoShownInLauncher[] =
 const char kAssistantPrivacyInfoDismissedInLauncher[] =
     "ash.launcher.assistant_privacy_info_dismissed";
 
+// An integer pref that specifies how many times the Suggested Content privacy
+// info has been shown in Launcher. This value will increment by one every time
+// when Launcher changes state from Peeking to Half or FullscreenSearch up to a
+// predefined threshold, e.g. six times. If the info has been shown for more
+// than the threshold, do not show the privacy info any more.
+const char kSuggestedContentInfoShownInLauncher[] =
+    "ash.launcher.suggested_content_info_shown";
+
+// A boolean pref that indicates whether the Suggested Content privacy info may
+// be displayed to user. A false value indicates that the info can be displayed
+// if the value of |kSuggestedContentInfoShownInLauncher| is smaller than the
+// predefined threshold. A true value implies that the user has dismissed the
+// info view, and do not show the privacy info any more.
+const char kSuggestedContentInfoDismissedInLauncher[] =
+    "ash.launcher.suggested_content_info_dismissed";
+
 // A boolean pref that indicates whether lock screen media controls are enabled.
 // Controlled by user policy.
 const char kLockScreenMediaControlsEnabled[] =

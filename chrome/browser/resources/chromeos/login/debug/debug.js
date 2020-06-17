@@ -188,7 +188,7 @@ cr.define('cr.ui.login.debug', function() {
       ]
     },
     {
-      id: 'oauth-enrollment',
+      id: 'enterprise-enrollment',
       kind: ScreenKind.NORMAL,
       suffix: 'E',
     },

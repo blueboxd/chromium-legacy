@@ -38,6 +38,31 @@ source_set("blocked_content") {
     "//services/metrics/public/cpp:ukm_builders",
     "//third_party/blink/public/common",
   ]
+  if (is_android) {
+    sources += [
+      "android/popup_blocked_infobar_delegate.cc",
+      "android/popup_blocked_infobar_delegate.h",
+    ]
+    deps += [
+      "//components/infobars/content",
+      "//components/infobars/core",
+      "//components/resources:android_resources",
+      "//components/strings:components_strings_grit",
+    ]
+  }
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test/test_popup_navigation_delegate.cc",
+    "test/test_popup_navigation_delegate.h",
+  ]
+  deps = [
+    ":blocked_content",
+    "//third_party/blink/public/common",
+    "//url",
+  ]
 }
 
 source_set("unit_tests") {
@@ -48,6 +73,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":blocked_content",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/content_settings/browser",
@@ -62,4 +88,8 @@ source_set("unit_tests") {
     "//net:test_support",
     "//testing/gtest",
   ]
+  if (is_android) {
+    sources += [ "android/popup_blocked_infobar_delegate_unittest.cc" ]
+    deps += [ "//components/infobars/content" ]
+  }
 }

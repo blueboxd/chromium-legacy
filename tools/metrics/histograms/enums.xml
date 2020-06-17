@@ -68495,6 +68495,18 @@ Full version information for the fingerprint enum values:
   <int value="3" label="Fallback for Status Bar and content"/>
 </enum>
 
+<enum name="TrustedWebActivityLocationErrorCode">
+  <int value="0" label="No error"/>
+  <int value="1" label="Location Error">
+    Error when getting location from client app.
+  </int>
+  <int value="2" label="Invalid geoposition."/>
+  <int value="3" label="No TWA service.">
+    No Trusted Web Activity service, or the service does not handle the command.
+    Note: this is included in the &quot;Location Error&quot; bracket.
+  </int>
+</enum>
+
 <enum name="TrustedWebActivityPermissionChanged">
   <int value="0" label="Null to False"/>
   <int value="1" label="Null to True"/>
@@ -71247,6 +71259,7 @@ Full version information for the fingerprint enum values:
   <int value="13" label="Policy-install on Chrome OS"/>
   <int value="14" label="System default app on Chrome OS"/>
   <int value="15" label="Install icon in the Omnibox"/>
+  <int value="16" label="Installed from sync"/>
 </enum>
 
 <enum name="WebAppLauncherLaunchResult">

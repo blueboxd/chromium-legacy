@@ -544,8 +544,9 @@ bool MixedContentChecker::ShouldBlockFetch(
   // receive an issue with a devtools_id which it can match to a request.
   CreateMixedContentIssue(
       MainResourceUrlForFrame(mixed_frame), url, request_context, frame,
-      allowed ? mojom::blink::MixedContentResolutionStatus::MixedContentWarning
-              : mojom::blink::MixedContentResolutionStatus::MixedContentBlocked,
+      allowed
+          ? mojom::blink::MixedContentResolutionStatus::kMixedContentWarning
+          : mojom::blink::MixedContentResolutionStatus::kMixedContentBlocked,
       devtools_id);
   return !allowed;
 }
@@ -667,8 +668,9 @@ bool MixedContentChecker::IsWebSocketAllowed(
   CreateMixedContentIssue(
       MainResourceUrlForFrame(mixed_frame), url,
       mojom::blink::RequestContextType::FETCH, frame,
-      allowed ? mojom::blink::MixedContentResolutionStatus::MixedContentWarning
-              : mojom::blink::MixedContentResolutionStatus::MixedContentBlocked,
+      allowed
+          ? mojom::blink::MixedContentResolutionStatus::kMixedContentWarning
+          : mojom::blink::MixedContentResolutionStatus::kMixedContentBlocked,
       base::Optional<String>());
   return allowed;
 }
@@ -742,7 +744,7 @@ bool MixedContentChecker::IsMixedFormAction(
   CreateMixedContentIssue(
       MainResourceUrlForFrame(mixed_frame), url,
       mojom::blink::RequestContextType::FORM, frame,
-      mojom::blink::MixedContentResolutionStatus::MixedContentWarning,
+      mojom::blink::MixedContentResolutionStatus::kMixedContentWarning,
       base::Optional<String>());
 
   return true;
@@ -845,8 +847,8 @@ void MixedContentChecker::MixedContentFound(
   CreateMixedContentIssue(
       main_resource_url, mixed_content_url, request_context, frame,
       was_allowed
-          ? mojom::blink::MixedContentResolutionStatus::MixedContentWarning
-          : mojom::blink::MixedContentResolutionStatus::MixedContentBlocked,
+          ? mojom::blink::MixedContentResolutionStatus::kMixedContentWarning
+          : mojom::blink::MixedContentResolutionStatus::kMixedContentBlocked,
       base::Optional<String>());
   // Reports to the CSP policy.
   ContentSecurityPolicy* policy =
@@ -938,7 +940,7 @@ void MixedContentChecker::UpgradeInsecureRequest(
                                 resource_request.Url(), context,
                                 window->document()->GetFrame(),
                                 mojom::blink::MixedContentResolutionStatus::
-                                    MixedContentAutomaticallyUpgraded,
+                                    kMixedContentAutomaticallyUpgraded,
                                 resource_request.GetDevToolsId());
       }
       resource_request.SetIsAutomaticUpgrade(true);

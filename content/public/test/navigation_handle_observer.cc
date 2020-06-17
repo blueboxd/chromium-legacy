@@ -68,6 +68,8 @@ void NavigationHandleObserver::DidFinishNavigation(
     is_error_ = true;
   }
 
+  navigation_handle_timing_ = navigation_handle->GetNavigationHandleTiming();
+
   handle_ = nullptr;
 }
 

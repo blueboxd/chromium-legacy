@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import static org.chromium.components.content_settings.PrefNames.BLOCK_THIRD_PARTY_COOKIES;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -36,6 +34,7 @@ import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -371,8 +370,8 @@ public class DetachedResourceRequestTest {
         mServer = EmbeddedTestServer.createAndStartHTTPSServer(mContext, ServerCertificate.CERT_OK);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge prefs = PrefServiceBridge.getInstance();
-            Assert.assertFalse(prefs.getBoolean(BLOCK_THIRD_PARTY_COOKIES));
-            prefs.setBoolean(BLOCK_THIRD_PARTY_COOKIES, true);
+            Assert.assertFalse(prefs.getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES));
+            prefs.setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, true);
         });
         final Uri url = Uri.parse(mServer.getURL("/set-cookie?acookie;SameSite=none;Secure"));
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -405,7 +404,7 @@ public class DetachedResourceRequestTest {
         // This isn't blocking third-party cookies by preferences.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge prefs = PrefServiceBridge.getInstance();
-            Assert.assertFalse(prefs.getBoolean(BLOCK_THIRD_PARTY_COOKIES));
+            Assert.assertFalse(prefs.getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES));
         });
 
         // Of the three cookies, only one that's both SameSite=None and Secure
@@ -435,8 +434,8 @@ public class DetachedResourceRequestTest {
         mServer = EmbeddedTestServer.createAndStartServer(mContext);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge prefs = PrefServiceBridge.getInstance();
-            Assert.assertFalse(prefs.getBoolean(BLOCK_THIRD_PARTY_COOKIES));
-            prefs.setBoolean(BLOCK_THIRD_PARTY_COOKIES, true);
+            Assert.assertFalse(prefs.getBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES));
+            prefs.setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, true);
         });
         final Uri url = Uri.parse(mServer.getURL("/set-cookie?acookie"));
         final Uri origin = Uri.parse(Origin.create(url).toString());

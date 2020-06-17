@@ -27,24 +27,14 @@ void DistillerJsRenderFrameObserver::DidStartNavigation(
     const GURL& url,
     base::Optional<blink::WebNavigationType> navigation_type) {
   is_distiller_page_ = url_utils::IsDistilledPage(url);
-  // TODO(crbug.com/1064776): DLOG here and below to debug a flaky test where
-  // the Javascript distiller object does not seem to be injected.
-  DLOG(WARNING) << "DistillerJsRenderFrameObserver::DidStartNavigation is "
-                << (is_distiller_page_ ? "" : "not ") << "distilled page.";
 }
 
 void DistillerJsRenderFrameObserver::DidCreateScriptContext(
     v8::Local<v8::Context> context,
     int32_t world_id) {
-  if (world_id != distiller_isolated_world_id_ || !is_distiller_page_) {
-    DLOG(WARNING) << "DistillerJsRenderFrameObserver::DidCreateScriptContext "
-                     "returning early, is "
-                  << (is_distiller_page_ ? "" : "not ") << "distilled page.";
+  if (world_id != distiller_isolated_world_id_ || !is_distiller_page_)
     return;
-  }
 
-  DLOG(WARNING)
-      << "DistillerJsRenderFrameObserver::DidCreateScriptContext injecting JS.";
   native_javascript_handle_.reset(
       new DistillerNativeJavaScript(render_frame()));
   native_javascript_handle_->AddJavaScriptObjectToFrame(context);

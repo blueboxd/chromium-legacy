@@ -508,7 +508,8 @@ AppsNavigationThrottle::HandleRequest() {
     return content::NavigationThrottle::CANCEL_AND_IGNORE;
 
   // Handles apps that are automatically launched and the navigation needs to be
-  // cancelled.
+  // cancelled. This only applies on the new intent picker system, because we
+  // don't need to defer the navigation to find out preferred app anymore.
   if (ShouldCancelNavigation(handle)) {
     return content::NavigationThrottle::CANCEL_AND_IGNORE;
   }

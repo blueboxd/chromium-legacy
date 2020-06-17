@@ -698,6 +698,152 @@ TEST_P(NGInlineCursorTest, EmptyOutOfFlow) {
   EXPECT_THAT(list, ElementsAre());
 }
 
+TEST_P(NGInlineCursorTest, PositionForPointInChildHorizontalLTR) {
+  LoadAhem();
+  InsertStyleElement(
+      "p {"
+      "direction: ltr;"
+      "font: 10px/20px Ahem;"
+      "padding: 10px;"
+      "writing-mode: horizontal-tb;"
+      "}");
+  NGInlineCursor cursor = SetupCursor("<p id=root>ab</p>");
+  const auto& text = *To<Text>(GetElementById("root")->firstChild());
+  ASSERT_TRUE(cursor.Current().IsLineBox());
+  EXPECT_EQ(PhysicalRect(PhysicalOffset(10, 10), PhysicalSize(20, 20)),
+            cursor.Current().RectInContainerBlock());
+
+  cursor.MoveTo(*text.GetLayoutObject());
+  EXPECT_EQ(PhysicalRect(PhysicalOffset(10, 15), PhysicalSize(20, 10)),
+            cursor.Current().RectInContainerBlock());
+  const PhysicalOffset left_top = cursor.Current().OffsetInContainerBlock();
+
+  EXPECT_EQ(PositionWithAffinity(Position(text, 0)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(-5, 0)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 0)),
+            cursor.PositionForPointInChild(left_top));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 0)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(5, 0)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 1)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(10, 0)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 1)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(15, 0)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 2), TextAffinity::kUpstream),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(20, 0)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 2), TextAffinity::kUpstream),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(25, 0)));
+}
+
+TEST_P(NGInlineCursorTest, PositionForPointInChildHorizontalRTL) {
+  LoadAhem();
+  InsertStyleElement(
+      "p {"
+      "direction: rtl;"
+      "font: 10px/20px Ahem;"
+      "padding: 10px;"
+      "writing-mode: horizontal-tb;"
+      "}");
+  NGInlineCursor cursor = SetupCursor("<p id=root><bdo dir=rtl>AB</bdo></p>");
+  const auto& text =
+      *To<Text>(GetElementById("root")->firstChild()->firstChild());
+  ASSERT_TRUE(cursor.Current().IsLineBox());
+  EXPECT_EQ(PhysicalRect(PhysicalOffset(754, 10), PhysicalSize(20, 20)),
+            cursor.Current().RectInContainerBlock());
+
+  cursor.MoveTo(*text.GetLayoutObject());
+  EXPECT_EQ(PhysicalRect(PhysicalOffset(754, 15), PhysicalSize(20, 10)),
+            cursor.Current().RectInContainerBlock());
+  const PhysicalOffset left_top = cursor.Current().OffsetInContainerBlock();
+
+  EXPECT_EQ(PositionWithAffinity(Position(text, 2), TextAffinity::kUpstream),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(-5, 0)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 2), TextAffinity::kUpstream),
+            cursor.PositionForPointInChild(left_top));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 2), TextAffinity::kUpstream),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(5, 0)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 1)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(10, 0)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 1)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(15, 0)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 0)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(20, 0)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 0)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(25, 0)));
+}
+
+TEST_P(NGInlineCursorTest, PositionForPointInChildVerticalLTR) {
+  LoadAhem();
+  InsertStyleElement(
+      "p {"
+      "direction: ltr;"
+      "font: 10px/20px Ahem;"
+      "padding: 10px;"
+      "writing-mode: vertical-lr;"
+      "}");
+  NGInlineCursor cursor = SetupCursor("<p id=root>ab</p>");
+  const auto& text = *To<Text>(GetElementById("root")->firstChild());
+  ASSERT_TRUE(cursor.Current().IsLineBox());
+  EXPECT_EQ(PhysicalRect(PhysicalOffset(10, 10), PhysicalSize(20, 20)),
+            cursor.Current().RectInContainerBlock());
+
+  cursor.MoveTo(*text.GetLayoutObject());
+  EXPECT_EQ(PhysicalRect(PhysicalOffset(15, 10), PhysicalSize(10, 20)),
+            cursor.Current().RectInContainerBlock());
+  const PhysicalOffset left_top = cursor.Current().OffsetInContainerBlock();
+
+  EXPECT_EQ(PositionWithAffinity(Position(text, 0)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(0, -5)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 0)),
+            cursor.PositionForPointInChild(left_top));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 0)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(0, 5)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 1)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(0, 10)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 1)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(0, 15)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 2), TextAffinity::kUpstream),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(0, 20)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 2), TextAffinity::kUpstream),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(0, 25)));
+}
+
+TEST_P(NGInlineCursorTest, PositionForPointInChildVerticalRTL) {
+  LoadAhem();
+  InsertStyleElement(
+      "p {"
+      "direction: rtl;"
+      "font: 10px/20px Ahem;"
+      "padding: 10px;"
+      "writing-mode: vertical-rl;"
+      "}");
+  NGInlineCursor cursor = SetupCursor("<p id=root><bdo dir=rtl>AB</bdo></p>");
+  const auto& text =
+      *To<Text>(GetElementById("root")->firstChild()->firstChild());
+  ASSERT_TRUE(cursor.Current().IsLineBox());
+  EXPECT_EQ(PhysicalRect(PhysicalOffset(10, 10), PhysicalSize(20, 20)),
+            cursor.Current().RectInContainerBlock());
+
+  cursor.MoveTo(*text.GetLayoutObject());
+  EXPECT_EQ(PhysicalRect(PhysicalOffset(15, 10), PhysicalSize(10, 20)),
+            cursor.Current().RectInContainerBlock());
+  const PhysicalOffset left_top = cursor.Current().OffsetInContainerBlock();
+
+  EXPECT_EQ(PositionWithAffinity(Position(text, 2), TextAffinity::kUpstream),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(0, -5)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 2), TextAffinity::kUpstream),
+            cursor.PositionForPointInChild(left_top));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 2), TextAffinity::kUpstream),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(0, 5)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 1)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(0, 10)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 1)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(0, 15)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 0)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(0, 20)));
+  EXPECT_EQ(PositionWithAffinity(Position(text, 0)),
+            cursor.PositionForPointInChild(left_top + PhysicalOffset(0, 25)));
+}
+
 TEST_P(NGInlineCursorTest, Previous) {
   // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
   InsertStyleElement("b { background: gray; }");

@@ -31,23 +31,19 @@ var INJECTED_WEBVIEW_SCRIPT = String.raw`
 Polymer({
   is: 'enterprise-enrollment',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+
+  EXTERNAL_API: [
+    'doReload',
+    'setAdJoinConfiguration',
+    'setAdJoinParams',
+    'setEnterpriseDomainAndDeviceType',
+    'showAttributePromptStep',
+    'showError',
+    'showStep',
+  ],
 
   properties: {
-    /**
-     * Reference to OOBE screen object.
-     * @type {!{
-     *     onAuthFrameLoaded_: function(),
-     *     onAuthCompleted_: function(string),
-     *     onAdCompleteLogin_: function(string, string, string, string, string),
-     *     onAdUnlockConfiguration_: function(string),
-     *     closeEnrollment_: function(string),
-     *     onAttributesEntered_: function(string, string),
-     * }}
-     */
-    screen: {
-      type: Object,
-    },
 
     /**
      * The current step. This is the last value passed to showStep().
@@ -169,18 +165,6 @@ Polymer({
   isManualEnrollment_: undefined,
 
   /**
-   * An element containing navigation buttons.
-   */
-  navigation_: undefined,
-
-  /**
-   * An element containing UI to join an AD domain.
-   * @type {OfflineAdLoginElement}
-   * @private
-   */
-  offlineAdUi_: undefined,
-
-  /**
    * Value contained in the last received 'backButton' event.
    * @type {boolean}
    * @private
@@ -188,17 +172,18 @@ Polymer({
   lastBackMessageValue_: false,
 
   ready() {
-    this.navigation_ = this.$['oauth-enroll-navigation'];
-    this.offlineAdUi_ = this.$['oauth-enroll-ad-join-ui'];
+    this.initializeLoginScreen('OAuthEnrollmentScreen', {
+      changeRequisitonProhibited: true,
+      resetAllowed: true,
+    });
 
-    let authView = this.$['oauth-enroll-auth-view'];
+    let authView = this.$.authView;
     this.authenticator_ = new cr.login.Authenticator(authView);
 
     // Establish an initial messaging between content script and
     // host script so that content script can message back.
     authView.addEventListener('loadstop', function(e) {
-      e.target.contentWindow.postMessage(
-          'initialMessage', authView.src);
+      e.target.contentWindow.postMessage('initialMessage', authView.src);
     });
 
     // When we get the advancing focus command message from injected content
@@ -215,7 +200,7 @@ Polymer({
                    if (this.currentStep_ != ENROLLMENT_STEP.SIGNIN)
                      return;
                    this.isCancelDisabled = false;
-                   this.screen.onAuthFrameLoaded_();
+                   chrome.send('frameLoadingCompleted');
                  }).bind(this));
 
     this.authenticator_.addEventListener(
@@ -227,22 +212,21 @@ Polymer({
                 loadTimeData.getString('fatalEnrollmentError'), false);
             return;
           }
-          this.screen.onAuthCompleted_(detail.email);
+          chrome.send('oauthEnrollCompleteLogin', [detail.email]);
         }).bind(this));
 
-    this.offlineAdUi_.addEventListener('authCompleted', function(e) {
-      this.offlineAdUi_.disabled = true;
-      this.offlineAdUi_.loading = true;
-      this.screen.onAdCompleteLogin_(
-        e.detail.machine_name,
-        e.detail.distinguished_name,
-        e.detail.encryption_types,
-        e.detail.username,
-        e.detail.password);
+    this.$.adJoinUI.addEventListener('authCompleted', function(e) {
+      this.$.adJoinUI.disabled = true;
+      this.$.adJoinUI.loading = true;
+      chrome.send('oauthEnrollAdCompleteLogin', [
+        e.detail.machine_name, e.detail.distinguished_name,
+        e.detail.encryption_types, e.detail.username, e.detail.password
+      ]);
     }.bind(this));
-    this.offlineAdUi_.addEventListener('unlockPasswordEntered', function(e) {
-      this.offlineAdUi_.disabled = true;
-      this.screen.onAdUnlockConfiguration_(e.detail.unlock_password);
+    this.$.adJoinUI.addEventListener('unlockPasswordEntered', function(e) {
+      this.$.adJoinUI.disabled = true;
+      chrome.send(
+          'oauthEnrollAdUnlockConfiguration', [e.detail.unlock_password]);
     }.bind(this));
 
     this.authenticator_.addEventListener(
@@ -250,7 +234,7 @@ Polymer({
                             var isSAML = this.authenticator_.authFlow ==
                                 cr.login.Authenticator.AuthFlow.SAML;
                             if (isSAML) {
-                              this.$['oauth-saml-notice-message'].textContent =
+                              this.$.samlNoticeMessage.textContent =
                                   loadTimeData.getStringF(
                                       'samlNotice',
                                       this.authenticator_.authDomain);
@@ -265,7 +249,7 @@ Polymer({
     this.authenticator_.addEventListener(
         'backButton', (function(e) {
                         this.lastBackMessageValue_ = !!e.detail;
-                        this.$['oauth-enroll-auth-view'].focus();
+                        this.$.authView.focus();
                         this.updateControlsState();
                       }).bind(this));
 
@@ -291,11 +275,6 @@ Polymer({
           this.showError(
               loadTimeData.getString('fatalEnrollmentError'), false);
         }).bind(this);
-
-    this.$['oauth-enroll-learn-more-link']
-        .addEventListener('click', function(event) {
-          chrome.send('oauthEnrollOnLearnMore');
-        });
   },
 
   /**
@@ -309,7 +288,7 @@ Polymer({
       // simulated tab events will use the webview tab-stops. Simulated tab
       // events created from the webui treat the entire webview as one tab
       // stop. Real tab events do not do this. See crbug.com/543865.
-      this.$['oauth-enroll-auth-view'].addContentScripts([{
+      this.$.authView.addContentScripts([{
         name: 'injectedTabHandler',
         matches: ['http://*/*', 'https://*/*'],
         js: {code: INJECTED_WEBVIEW_SCRIPT},
@@ -339,18 +318,26 @@ Polymer({
     this.isAutoEnroll_ = data.attestationBased;
 
     this.authenticatorDialogDisplayed_ = false;
-    cr.ui.login.invokePolymerMethod(this.offlineAdUi_, 'onBeforeShow');
+    cr.ui.login.invokePolymerMethod(this.$.adJoinUI, 'onBeforeShow');
     if (!this.currentStep_) {
       this.showStep(data.attestationBased ?
           ENROLLMENT_STEP.WORKING : ENROLLMENT_STEP.SIGNIN);
     }
   },
 
+  /**
+   * Initial UI State for screen
+   */
+  getOobeUIInitialState() {
+    return OOBE_UI_STATE.ENROLLMENT;
+  },
+
+
   /*
    * Executed on language change.
    */
   updateLocalizedContent: function() {
-    this.offlineAdUi_.i18nUpdateLocale();
+    this.$.adJoinUI.i18nUpdateLocale();
     this.i18nUpdateLocale();
   },
 
@@ -384,7 +371,7 @@ Polymer({
     if (this.isCancelDisabled)
       return;
     this.isCancelDisabled = true;
-    this.screen.closeEnrollment_('cancel');
+    this.closeEnrollment_('cancel');
   },
 
   /**
@@ -400,17 +387,17 @@ Polymer({
     this.currentStep_ = step;
 
     if (this.isErrorStep_(step)) {
-      this.$['oauth-enroll-error-card'].show();
+      this.$.errorCard.show();
     } else if (step == ENROLLMENT_STEP.SIGNIN) {
-      this.$['oauth-enroll-auth-view'].focus();
+      this.$.authView.focus();
     } else if (step == ENROLLMENT_STEP.SUCCESS) {
-      this.$['oauth-enroll-success-card'].show();
+      this.$.successCard.show();
     } else if (step == ENROLLMENT_STEP.ATTRIBUTE_PROMPT) {
-      this.$['oauth-enroll-attribute-prompt-card'].show();
+      this.$.attributePromptCard.show();
     } else if (step == ENROLLMENT_STEP.AD_JOIN) {
-      this.offlineAdUi_.disabled = false;
-      this.offlineAdUi_.loading = false;
-      this.offlineAdUi_.focus();
+      this.$.adJoinUI.disabled = false;
+      this.$.adJoinUI.loading = false;
+      this.$.adJoinUI.focus();
     }
 
     this.lastBackMessageValue_ = false;
@@ -433,11 +420,11 @@ Polymer({
    * configuration (and not unlocked yet).
    */
   setAdJoinParams(machineName, userName, errorState, showUnlockConfig) {
-    this.offlineAdUi_.disabled = false;
-    this.offlineAdUi_.machineName = machineName;
-    this.offlineAdUi_.userName = userName;
-    this.offlineAdUi_.errorState = errorState;
-    this.offlineAdUi_.unlockPasswordStep = showUnlockConfig;
+    this.$.adJoinUI.disabled = false;
+    this.$.adJoinUI.machineName = machineName;
+    this.$.adJoinUI.userName = userName;
+    this.$.adJoinUI.errorState = errorState;
+    this.$.adJoinUI.unlockPasswordStep = showUnlockConfig;
   },
 
   /**
@@ -445,9 +432,9 @@ Polymer({
    * @param {Array<JoinConfigType>} options
    */
   setAdJoinConfiguration(options) {
-    this.offlineAdUi_.disabled = false;
-    this.offlineAdUi_.setJoinConfigurationOptions(options);
-    this.offlineAdUi_.unlockPasswordStep = false;
+    this.$.adJoinUI.disabled = false;
+    this.$.adJoinUI.setJoinConfigurationOptions(options);
+    this.$.adJoinUI.unlockPasswordStep = false;
   },
 
   /**
@@ -463,7 +450,7 @@ Polymer({
    * |chrome| and launches the device attribute update negotiation.
    */
   submitAttributes_() {
-    this.screen.onAttributesEntered_(this.assetId_, this.deviceLocation_);
+    chrome.send('oauthEnrollAttributes', [this.assetId_, this.deviceLocation_]);
   },
 
   /**
@@ -474,11 +461,22 @@ Polymer({
     if (this.currentStep_ == ENROLLMENT_STEP.SIGNIN) {
       if (this.lastBackMessageValue_) {
         this.lastBackMessageValue_ = false;
-        this.$['oauth-enroll-auth-view'].back();
+        this.$.authView.back();
       } else {
         this.cancel();
       }
     }
+  },
+
+  /**
+   * Shows the learn more dialog.
+   */
+  onLearnMore_() {
+    chrome.send('oauthEnrollOnLearnMore');
+  },
+
+  closeEnrollment_(result) {
+    chrome.send('oauthEnrollClose', [result]);
   },
 
   /**
@@ -496,15 +494,15 @@ Polymer({
    * Updates visibility of navigation buttons.
    */
   updateControlsState() {
-    this.navigation_.refreshVisible = this.isAtTheBeginning() &&
-        this.isManualEnrollment_ === false;
+    this.$.navigation.refreshVisible =
+        this.isAtTheBeginning() && this.isManualEnrollment_ === false;
   },
 
   /**
    * Notifies chrome that enrollment have finished.
    */
   onEnrollmentFinished_() {
-    this.screen.closeEnrollment_('done');
+    this.closeEnrollment_('done');
   },
 
   /**

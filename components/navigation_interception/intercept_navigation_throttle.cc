@@ -122,7 +122,8 @@ NavigationParams InterceptNavigationThrottle::GetNavigationParams(
                           navigation_handle()->GetPageTransition(), is_redirect,
                           navigation_handle()->IsExternalProtocol(), true,
                           navigation_handle()->IsRendererInitiated(),
-                          navigation_handle()->GetBaseURLForDataURL());
+                          navigation_handle()->GetBaseURLForDataURL(),
+                          navigation_handle()->GetInitiatorOrigin());
 }
 
 }  // namespace navigation_interception

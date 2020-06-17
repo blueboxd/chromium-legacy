@@ -111,7 +111,8 @@
               label="[[i18nDynamic(locale, 'adAuthLoginUsername')]]"
               on-keydown="onKeydownUserInput_"
               error-message="[[i18nDynamic(locale, 'adLoginInvalidUsername')]]">
-            <span slot="suffix" hidden="[[domainHidden(userRealm, userName)]]">
+            <span slot="suffix" id="userRealm"
+                hidden="[[domainHidden(userRealm, userName)]]">
               [[userRealm]]
             </span>
           </cr-input>

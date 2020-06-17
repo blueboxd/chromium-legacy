@@ -34,6 +34,8 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/cpp/system/data_pipe.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
@@ -544,6 +546,14 @@ MockServiceWorkerResponseReader::MockServiceWorkerResponseReader()
 
 MockServiceWorkerResponseReader::~MockServiceWorkerResponseReader() {}
 
+mojo::PendingRemote<storage::mojom::ServiceWorkerResourceReader>
+MockServiceWorkerResponseReader::BindNewPipeAndPassRemote(
+    base::OnceClosure disconnect_handler) {
+  auto remote = receiver_.BindNewPipeAndPassRemote();
+  receiver_.set_disconnect_handler(std::move(disconnect_handler));
+  return remote;
+}
+
 void MockServiceWorkerResponseReader::ReadInfo(
     HttpResponseInfoIOBuffer* info_buf,
     net::CompletionOnceCallback callback) {
@@ -561,14 +571,8 @@ void MockServiceWorkerResponseReader::ReadInfo(
   DCHECK(!expected_reads_.empty());
   ExpectedRead expected = expected_reads_.front();
   EXPECT_TRUE(expected.info);
-  if (expected.async) {
-    pending_info_ = info_buf;
-    pending_callback_ = std::move(callback);
-  } else {
-    expected_reads_.pop();
-    info_buf->response_data_size = expected.len;
-    std::move(callback).Run(expected.result);
-  }
+  pending_info_ = info_buf;
+  pending_callback_ = std::move(callback);
 }
 
 void MockServiceWorkerResponseReader::ReadData(
@@ -579,69 +583,105 @@ void MockServiceWorkerResponseReader::ReadData(
   ExpectedRead expected = expected_reads_.front();
   EXPECT_FALSE(expected.info);
   EXPECT_LE(static_cast<int>(expected.len), buf_len);
-  if (expected.async) {
-    pending_callback_ = std::move(callback);
-    pending_buffer_ = buf;
-    pending_buffer_len_ = static_cast<size_t>(buf_len);
-  } else {
-    expected_reads_.pop();
-    if (expected.len > 0) {
-      size_t to_read = std::min(static_cast<size_t>(buf_len), expected.len);
-      memcpy(buf->data(), expected.data, to_read);
-    }
-    std::move(callback).Run(expected.result);
-  }
+  pending_callback_ = std::move(callback);
+  pending_buffer_ = buf;
+  pending_buffer_len_ = static_cast<size_t>(buf_len);
 }
 
-void MockServiceWorkerResponseReader::ExpectReadInfo(size_t len,
-                                                     bool async,
-                                                     int result) {
-  expected_reads_.push(ExpectedRead(len, async, result));
+void MockServiceWorkerResponseReader::ReadResponseHead(
+    storage::mojom::ServiceWorkerResourceReader::ReadResponseHeadCallback
+        callback) {
+  pending_read_response_head_callback_ = std::move(callback);
 }
 
-void MockServiceWorkerResponseReader::ExpectReadInfoOk(size_t len, bool async) {
-  expected_reads_.push(ExpectedRead(len, async, len));
+void MockServiceWorkerResponseReader::ReadData(int64_t,
+                                               ReadDataCallback callback) {
+  DCHECK(!body_.is_valid());
+  mojo::ScopedDataPipeConsumerHandle consumer;
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = expected_max_data_bytes_;
+  mojo::CreateDataPipe(&options, &body_, &consumer);
+  std::move(callback).Run(std::move(std::move(consumer)));
+}
+
+void MockServiceWorkerResponseReader::ExpectReadInfo(size_t len, int result) {
+  expected_reads_.push(ExpectedRead(len, result));
+}
+
+void MockServiceWorkerResponseReader::ExpectReadInfoOk(size_t len) {
+  expected_reads_.push(ExpectedRead(len, len));
 }
 
 void MockServiceWorkerResponseReader::ExpectReadData(const char* data,
                                                      size_t len,
-                                                     bool async,
                                                      int result) {
-  expected_reads_.push(ExpectedRead(data, len, async, result));
+  expected_max_data_bytes_ = std::max(expected_max_data_bytes_, len);
+  expected_reads_.push(ExpectedRead(data, len, result));
 }
 
-void MockServiceWorkerResponseReader::ExpectReadDataOk(const std::string& data,
-                                                       bool async) {
-  expected_reads_.push(
-      ExpectedRead(data.data(), data.size(), async, data.size()));
+void MockServiceWorkerResponseReader::ExpectReadDataOk(
+    const std::string& data) {
+  expected_reads_.push(ExpectedRead(data.data(), data.size(), data.size()));
 }
 
 void MockServiceWorkerResponseReader::ExpectReadOk(
     const std::vector<std::string>& stored_data,
-    const size_t bytes_stored,
-    const bool async) {
-  ExpectReadInfoOk(bytes_stored, async);
+    const size_t bytes_stored) {
+  ExpectReadInfoOk(bytes_stored);
   for (const auto& data : stored_data)
-    ExpectReadDataOk(data, async);
+    ExpectReadDataOk(data);
 }
 
 void MockServiceWorkerResponseReader::CompletePendingRead() {
   DCHECK(!expected_reads_.empty());
   ExpectedRead expected = expected_reads_.front();
   expected_reads_.pop();
-  EXPECT_TRUE(expected.async);
-  if (expected.info) {
-    pending_info_->response_data_size = expected.len;
-  } else {
-    size_t to_read = std::min(pending_buffer_len_, expected.len);
-    if (to_read > 0)
-      memcpy(pending_buffer_->data(), expected.data, to_read);
+
+  // Legacy API calls.
+  // TODO(https://crbug.com/1055677): Remove this when ReadInfo() and legacy
+  // ReadData() are removed.
+  if (pending_callback_) {
+    if (expected.info) {
+      pending_info_->response_data_size = expected.len;
+      std::move(pending_callback_).Run(expected.result);
+    } else {
+      if (expected.len > 0) {
+        size_t to_read =
+            std::min(static_cast<size_t>(pending_buffer_len_), expected.len);
+        memcpy(pending_buffer_->data(), expected.data, to_read);
+      }
+      std::move(pending_callback_).Run(expected.result);
+    }
+    return;
   }
-  pending_info_ = nullptr;
-  pending_buffer_ = nullptr;
-  net::CompletionOnceCallback callback = std::move(pending_callback_);
-  pending_callback_.Reset();
-  std::move(callback).Run(expected.result);
+
+  // Make sure that all messages are received at this point.
+  receiver_.FlushForTesting();
+
+  if (expected.info) {
+    DCHECK(pending_read_response_head_callback_);
+    auto response_head = network::mojom::URLResponseHead::New();
+    response_head->headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.0 200 OK\0\0");
+    response_head->content_length = expected.len;
+    std::move(pending_read_response_head_callback_)
+        .Run(expected.result, std::move(response_head),
+             /*metadata=*/base::nullopt);
+  } else {
+    if (expected.len == 0) {
+      body_.reset();
+    } else {
+      DCHECK(body_.is_valid());
+      EXPECT_TRUE(mojo::BlockingCopyFromString(
+          std::string(expected.data, expected.len), body_));
+    }
+  }
+
+  // Wait until the body is received by the user of the response reader.
+  base::RunLoop().RunUntilIdle();
 }
 
 MockServiceWorkerResponseWriter::MockServiceWorkerResponseWriter()

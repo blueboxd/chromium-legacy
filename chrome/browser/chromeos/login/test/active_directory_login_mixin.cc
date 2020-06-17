@@ -22,43 +22,36 @@ namespace chromeos {
 namespace {
 
 constexpr char kGaiaSigninId[] = "gaia-signin";
-constexpr char kGaiaSigninDialogId[] = "signin-frame-dialog";
 constexpr char kAdOfflineAuthId[] = "offline-ad-auth";
-
-constexpr char kAdMachineInput[] = "machineNameInput";
-constexpr char kAdMoreOptionsButton[] = "moreOptionsBtn";
-constexpr char kAdUserInput[] = "userInput";
-constexpr char kAdPasswordInput[] = "passwordInput";
-constexpr char kAdCredsButton[] = "nextButton";
-constexpr char kAdAutocompleteRealm[] = "$.userInput.querySelector('span')";
-
 constexpr char kPasswordChangeId[] = "active-directory-password-change";
-constexpr char kAdAnimatedPages[] = "animatedPages";
 constexpr char kAdOldPasswordInput[] = "oldPassword";
 constexpr char kAdNewPassword1Input[] = "newPassword";
 constexpr char kAdNewPassword2Input[] = "newPasswordRepeat";
-constexpr char kPasswordChangeFormId[] = "inputForm";
-constexpr char kFormButtonId[] = "button";
 
-constexpr char kNavigationId[] = "navigation";
-constexpr char kCloseButtonId[] = "closeButton";
+const test::UIPath kGaiaSigninDialogId = {kGaiaSigninId, "signin-frame-dialog"};
+const test::UIPath kAdMachineInput = {kGaiaSigninId, kAdOfflineAuthId,
+                                      "machineNameInput"};
+const test::UIPath kAdMoreOptionsButton = {kGaiaSigninId, kAdOfflineAuthId,
+                                           "moreOptionsBtn"};
+const test::UIPath kAdUserInput = {kGaiaSigninId, kAdOfflineAuthId,
+                                   "userInput"};
+const test::UIPath kAdPasswordInput = {kGaiaSigninId, kAdOfflineAuthId,
+                                       "passwordInput"};
+const test::UIPath kAdCredsButton = {kGaiaSigninId, kAdOfflineAuthId,
+                                     "nextButton"};
+const test::UIPath kAdAutocompleteRealm = {kGaiaSigninId, kAdOfflineAuthId,
+                                           "userRealm"};
 
-void ExpectValid(std::initializer_list<base::StringPiece> element_ids,
-                 bool valid) {
-  std::string js = test::GetOobeElementPath(element_ids) + ".invalid";
-  if (valid)
-    test::OobeJS().ExpectFalse(js);
-  else
-    test::OobeJS().ExpectTrue(js);
-}
-
-// Returns string representing element that matches the given selector applied
-// to the specified parent element.
-std::string JSElement(
-    std::initializer_list<base::StringPiece> parent_element_path,
-    const std::string& selector) {
-  return test::GetOobeElementPath(parent_element_path) + "." + selector;
-}
+const test::UIPath kAdAnimatedPages = {kPasswordChangeId, "animatedPages"};
+const test::UIPath kFormButtonId = {kPasswordChangeId, "inputForm", "button"};
+const test::UIPath kCloseButtonId = {kPasswordChangeId, "navigation",
+                                     "closeButton"};
+const test::UIPath kAdOldPasswordInputPath = {kPasswordChangeId,
+                                              kAdOldPasswordInput};
+const test::UIPath kAdNewPassword1InputPath = {kPasswordChangeId,
+                                               kAdNewPassword1Input};
+const test::UIPath kAdNewPassword2InputPath = {kPasswordChangeId,
+                                               kAdNewPassword2Input};
 
 }  // namespace
 
@@ -91,11 +84,11 @@ void ActiveDirectoryLoginMixin::TriggerPasswordChangeScreen() {
       authpolicy::ERROR_PASSWORD_EXPIRED);
   SubmitActiveDirectoryCredentials("any_user@any_realm", "any_password");
   screen_waiter.Wait();
-  TestPasswordChangeError(std::string());
+  TestPasswordChangeNoErrors();
 }
 
 void ActiveDirectoryLoginMixin::ClosePasswordChangeScreen() {
-  test::OobeJS().TapOnPath({kPasswordChangeId, kNavigationId, kCloseButtonId});
+  test::OobeJS().TapOnPath(kCloseButtonId);
 }
 
 // Checks if Active Directory login is visible.
@@ -109,25 +102,15 @@ void ActiveDirectoryLoginMixin::TestLoginVisible() {
   test::OobeJS().CreateVisibilityWaiter(true, ad_screen)->Wait();
 
   // Checks if Gaia signin is hidden.
-  test::OobeJS().ExpectHiddenPath({kGaiaSigninId, kGaiaSigninDialogId});
+  test::OobeJS().ExpectHiddenPath(kGaiaSigninDialogId);
 
-  test::OobeJS().ExpectNE(test::GetOobeElementPath(ad_screen) + ".clientWidth",
-                          0);
-  test::OobeJS().ExpectNE(test::GetOobeElementPath(ad_screen) + ".clientHeight",
-                          0);
-  test::OobeJS().ExpectHiddenPath(
-      {kGaiaSigninId, kAdOfflineAuthId, kAdMachineInput});
-  test::OobeJS().ExpectHiddenPath(
-      {kGaiaSigninId, kAdOfflineAuthId, kAdMoreOptionsButton});
-  test::OobeJS().ExpectVisiblePath(
-      {kGaiaSigninId, kAdOfflineAuthId, kAdUserInput});
-  test::OobeJS().ExpectVisiblePath(
-      {kGaiaSigninId, kAdOfflineAuthId, kAdPasswordInput});
+  test::OobeJS().ExpectPathDisplayed(true, ad_screen);
+  test::OobeJS().ExpectHiddenPath(kAdMachineInput);
+  test::OobeJS().ExpectHiddenPath(kAdMoreOptionsButton);
+  test::OobeJS().ExpectVisiblePath(kAdUserInput);
+  test::OobeJS().ExpectVisiblePath(kAdPasswordInput);
 
-  test::OobeJS().ExpectEQ(
-      JSElement({kGaiaSigninId, kAdOfflineAuthId}, kAdAutocompleteRealm) +
-          ".innerText.trim()",
-      autocomplete_realm_);
+  test::OobeJS().ExpectElementText(autocomplete_realm_, kAdAutocompleteRealm);
 
   EXPECT_TRUE(ash::LoginScreenTestApi::IsLoginShelfShown());
 }
@@ -135,60 +118,50 @@ void ActiveDirectoryLoginMixin::TestLoginVisible() {
 // Checks if Active Directory password change screen is shown.
 void ActiveDirectoryLoginMixin::TestPasswordChangeVisible() {
   // Checks if Gaia signin is hidden.
-  test::OobeJS().ExpectHiddenPath({kGaiaSigninId, kGaiaSigninDialogId});
+  test::OobeJS().ExpectHiddenPath(kGaiaSigninDialogId);
   // Checks if Active Directory signin is visible.
   test::OobeJS().ExpectVisible(kPasswordChangeId);
-  test::OobeJS().ExpectTrue(
-      test::GetOobeElementPath({kPasswordChangeId, kAdAnimatedPages}) +
-      ".selected == 0");
-  test::OobeJS().ExpectVisiblePath(
-      {kPasswordChangeId, kNavigationId, kCloseButtonId});
+  test::OobeJS().ExpectTrue(test::GetOobeElementPath(kAdAnimatedPages) +
+                            ".selected == 0");
+  test::OobeJS().ExpectVisiblePath(kCloseButtonId);
 }
 
 // Checks if user input is marked as invalid.
 void ActiveDirectoryLoginMixin::TestUserError() {
   TestLoginVisible();
-  ExpectValid({kGaiaSigninId, kAdOfflineAuthId, kAdUserInput}, false);
+  test::OobeJS().ExpectInvalidPath(kAdUserInput);
 }
 
 void ActiveDirectoryLoginMixin::SetUserInput(const std::string& value) {
-  test::OobeJS().TypeIntoPath(value,
-                              {kGaiaSigninId, kAdOfflineAuthId, kAdUserInput});
+  test::OobeJS().TypeIntoPath(value, kAdUserInput);
 }
 
 void ActiveDirectoryLoginMixin::TestUserInput(const std::string& value) {
-  test::OobeJS().ExpectEQ(test::GetOobeElementPath(
-                              {kGaiaSigninId, kAdOfflineAuthId, kAdUserInput}) +
-                              ".value",
-                          value);
+  test::OobeJS().ExpectElementValue(value, kAdUserInput);
 }
 
 // Checks if password input is marked as invalid.
 void ActiveDirectoryLoginMixin::TestPasswordError() {
   TestLoginVisible();
-  ExpectValid({kGaiaSigninId, kAdOfflineAuthId, kAdPasswordInput}, false);
+  test::OobeJS().ExpectInvalidPath(kAdPasswordInput);
 }
 
 // Checks that machine, password and user inputs are valid.
 void ActiveDirectoryLoginMixin::TestNoError() {
   TestLoginVisible();
-  ExpectValid({kGaiaSigninId, kAdOfflineAuthId, kAdMachineInput}, true);
-  ExpectValid({kGaiaSigninId, kAdOfflineAuthId, kAdUserInput}, true);
-  ExpectValid({kGaiaSigninId, kAdOfflineAuthId, kAdPasswordInput}, true);
+  test::OobeJS().ExpectValidPath(kAdMachineInput);
+  test::OobeJS().ExpectValidPath(kAdUserInput);
+  test::OobeJS().ExpectValidPath(kAdPasswordInput);
 }
 
 // Checks if autocomplete domain is visible for the user input.
 void ActiveDirectoryLoginMixin::TestDomainVisible() {
-  test::OobeJS().ExpectTrue(
-      "!" + JSElement({kGaiaSigninId, kAdOfflineAuthId}, kAdAutocompleteRealm) +
-      ".hidden");
+  test::OobeJS().ExpectVisiblePath(kAdAutocompleteRealm);
 }
 
 // Checks if autocomplete domain is hidden for the user input.
 void ActiveDirectoryLoginMixin::TestDomainHidden() {
-  test::OobeJS().ExpectTrue(
-      JSElement({kGaiaSigninId, kAdOfflineAuthId}, kAdAutocompleteRealm) +
-      ".hidden");
+  test::OobeJS().ExpectHiddenPath(kAdAutocompleteRealm);
 }
 
 void ActiveDirectoryLoginMixin::TestPasswordChangeNoErrors() {
@@ -214,11 +187,10 @@ void ActiveDirectoryLoginMixin::TestPasswordChangeError(
   TestPasswordChangeVisible();
   for (const char* element :
        {kAdOldPasswordInput, kAdNewPassword1Input, kAdNewPassword2Input}) {
-    std::string js_assertion =
-        test::GetOobeElementPath({kPasswordChangeId, element}) + ".invalid";
     if (element != invalid_element)
-      js_assertion = "!" + js_assertion;
-    test::OobeJS().ExpectTrue(js_assertion);
+      test::OobeJS().ExpectValidPath({kPasswordChangeId, element});
+    else
+      test::OobeJS().ExpectInvalidPath({kPasswordChangeId, element});
   }
 }
 
@@ -226,11 +198,9 @@ void ActiveDirectoryLoginMixin::TestPasswordChangeError(
 void ActiveDirectoryLoginMixin::SubmitActiveDirectoryCredentials(
     const std::string& username,
     const std::string& password) {
-  test::OobeJS().TypeIntoPath(username,
-                              {kGaiaSigninId, kAdOfflineAuthId, kAdUserInput});
-  test::OobeJS().TypeIntoPath(
-      password, {kGaiaSigninId, kAdOfflineAuthId, kAdPasswordInput});
-  test::OobeJS().ClickOnPath({kGaiaSigninId, kAdOfflineAuthId, kAdCredsButton});
+  test::OobeJS().TypeIntoPath(username, kAdUserInput);
+  test::OobeJS().TypeIntoPath(password, kAdPasswordInput);
+  test::OobeJS().ClickOnPath(kAdCredsButton);
 }
 
 // Sets username and password for the Active Directory login and submits it.
@@ -238,14 +208,10 @@ void ActiveDirectoryLoginMixin::SubmitActiveDirectoryPasswordChangeCredentials(
     const std::string& old_password,
     const std::string& new_password1,
     const std::string& new_password2) {
-  test::OobeJS().TypeIntoPath(old_password,
-                              {kPasswordChangeId, kAdOldPasswordInput});
-  test::OobeJS().TypeIntoPath(new_password1,
-                              {kPasswordChangeId, kAdNewPassword1Input});
-  test::OobeJS().TypeIntoPath(new_password2,
-                              {kPasswordChangeId, kAdNewPassword2Input});
-  test::OobeJS().ClickOnPath(
-      {kPasswordChangeId, kPasswordChangeFormId, kFormButtonId});
+  test::OobeJS().TypeIntoPath(old_password, kAdOldPasswordInputPath);
+  test::OobeJS().TypeIntoPath(new_password1, kAdNewPassword1InputPath);
+  test::OobeJS().TypeIntoPath(new_password2, kAdNewPassword2InputPath);
+  test::OobeJS().ClickOnPath(kFormButtonId);
 }
 
 void ActiveDirectoryLoginMixin::SetupActiveDirectoryJSNotifications() {

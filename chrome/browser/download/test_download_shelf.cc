@@ -6,11 +6,10 @@
 
 #include "content/public/browser/download_manager.h"
 
-TestDownloadShelf::TestDownloadShelf()
-    : is_showing_(false), did_add_download_(false), profile_(nullptr) {}
+TestDownloadShelf::TestDownloadShelf(Profile* profile)
+    : is_showing_(false), did_add_download_(false), profile_(profile) {}
 
-TestDownloadShelf::~TestDownloadShelf() {
-}
+TestDownloadShelf::~TestDownloadShelf() = default;
 
 bool TestDownloadShelf::IsShowing() const {
   return is_showing_;

@@ -17,6 +17,7 @@
 #include "build/build_config.h"
 #include "remoting/protocol/video_channel_state_observer.h"
 #include "third_party/webrtc/api/video_codecs/sdp_video_format.h"
+#include "third_party/webrtc/media/base/vp9_profile.h"
 
 #if defined(USE_H264_ENCODER)
 #include "media/video/h264_parser.h"
@@ -235,7 +236,11 @@ WebrtcDummyVideoEncoderFactory::WebrtcDummyVideoEncoderFactory()
     : main_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   formats_.push_back(webrtc::SdpVideoFormat("VP8"));
   formats_.push_back(webrtc::SdpVideoFormat("VP9"));
+  formats_.push_back(
+      webrtc::SdpVideoFormat("VP9", {{webrtc::kVP9FmtpProfileId, "1"}}));
+#if defined(USE_H264_ENCODER)
   formats_.push_back(webrtc::SdpVideoFormat("H264"));
+#endif
 }
 
 WebrtcDummyVideoEncoderFactory::~WebrtcDummyVideoEncoderFactory() {

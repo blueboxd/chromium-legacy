@@ -508,8 +508,8 @@
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
-#if defined(USE_X11)
-#include "chrome/browser/chrome_browser_main_extra_parts_x11.h"
+#if defined(USE_X11) || defined(USE_OZONE)
+#include "chrome/browser/chrome_browser_main_extra_parts_ozone.h"
 #endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
@@ -1358,8 +1358,8 @@ ChromeContentBrowserClient::CreateBrowserMainParts(
   main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
 #endif
 
-#if defined(USE_X11)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsX11());
+#if defined(USE_X11) || defined(USE_OZONE)
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsOzone());
 #endif
 
   main_parts->AddParts(new ChromeBrowserMainExtraPartsPerformanceManager);

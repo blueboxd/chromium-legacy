@@ -30,8 +30,8 @@ pool_handle AddressPoolManager::Add(uintptr_t ptr, size_t length) {
   DCHECK(!((ptr + length) & kSuperPageOffsetMask));
 
   for (pool_handle i = 0; i < base::size(pools_); ++i) {
-    if (!pools_[i]) {
-      pools_[i] = std::make_unique<Pool>(ptr, length);
+    if (!pools_[i].IsInitialized()) {
+      pools_[i].Initialize(ptr, length);
       return i + 1;
     }
   }
@@ -41,38 +41,51 @@ pool_handle AddressPoolManager::Add(uintptr_t ptr, size_t length) {
 
 void AddressPoolManager::ResetForTesting() {
   for (pool_handle i = 0; i < base::size(pools_); ++i)
-    pools_[i].reset();
+    pools_[i].Reset();
 }
 
 void AddressPoolManager::Remove(pool_handle handle) {
-  DCHECK(0 < handle && handle <= kNumPools);
-  pools_[handle - 1].reset();
+  Pool* pool = GetPool(handle);
+  DCHECK(pool->IsInitialized());
+  pool->Reset();
 }
 
 char* AddressPoolManager::Alloc(pool_handle handle, size_t length) {
   Pool* pool = GetPool(handle);
+  DCHECK(pool->IsInitialized());
   return reinterpret_cast<char*>(pool->FindChunk(length));
 }
 
 void AddressPoolManager::Free(pool_handle handle, void* ptr, size_t length) {
   Pool* pool = GetPool(handle);
+  DCHECK(pool->IsInitialized());
   pool->FreeChunk(reinterpret_cast<uintptr_t>(ptr), length);
 }
 
-AddressPoolManager::Pool::Pool(uintptr_t ptr, size_t length)
-    : total_bits_(length / kSuperPageSize),
-      address_begin_(ptr),
-#if DCHECK_IS_ON()
-      address_end_(ptr + length),
-#endif
-      bit_hint_(0) {
-  CHECK_LE(total_bits_, kMaxBits);
+void AddressPoolManager::Pool::Initialize(uintptr_t ptr, size_t length) {
+  CHECK(ptr != 0);
   CHECK(!(ptr & kSuperPageOffsetMask));
   CHECK(!(length & kSuperPageOffsetMask));
+  address_begin_ = ptr;
 #if DCHECK_IS_ON()
+  address_end_ = ptr + length;
   DCHECK_LT(address_begin_, address_end_);
 #endif
+
+  total_bits_ = length / kSuperPageSize;
+  CHECK_LE(total_bits_, kMaxBits);
+
+  base::AutoLock scoped_lock(lock_);
   alloc_bitset_.reset();
+  bit_hint_ = 0;
+}
+
+bool AddressPoolManager::Pool::IsInitialized() {
+  return address_begin_ != 0;
+}
+
+void AddressPoolManager::Pool::Reset() {
+  address_begin_ = 0;
 }
 
 uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
@@ -149,6 +162,7 @@ void AddressPoolManager::Pool::FreeChunk(uintptr_t address, size_t free_size) {
   bit_hint_ = std::min(bit_hint_, beg_bit);
 }
 
+AddressPoolManager::Pool::Pool() = default;
 AddressPoolManager::Pool::~Pool() = default;
 
 AddressPoolManager::AddressPoolManager() = default;
@@ -157,9 +171,7 @@ AddressPoolManager::~AddressPoolManager() = default;
 ALWAYS_INLINE AddressPoolManager::Pool* AddressPoolManager::GetPool(
     pool_handle handle) {
   DCHECK(0 < handle && handle <= kNumPools);
-  Pool* pool = pools_[handle - 1].get();
-  DCHECK(pool);
-  return pool;
+  return &pools_[handle - 1];
 }
 
 #endif  // defined(__LP64__)

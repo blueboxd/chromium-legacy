@@ -23,10 +23,10 @@ import androidx.test.espresso.matcher.ViewMatchers;
 import androidx.test.filters.MediumTest;
 
 import org.hamcrest.Matchers;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
@@ -35,10 +35,9 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
-import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
+import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.common.ContentUrlConstants;
 
@@ -48,33 +47,31 @@ import org.chromium.content_public.common.ContentUrlConstants;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class IdentityDiscControllerTest {
+    private final ChromeTabbedActivityTestRule mActivityTestRule =
+            new ChromeTabbedActivityTestRule();
+
+    private final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
+
+    // Mock sign-in environment needs to be destroyed after ChromeTabbedActivity in case there are
+    // observers registered in the AccountManagerFacade mock.
     @Rule
-    public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
+    public final RuleChain mRuleChain =
+            RuleChain.outerRule(mAccountManagerTestRule).around(mActivityTestRule);
 
     private Tab mTab;
 
     @Before
     public void setUp() {
-        SigninTestUtil.setUpAuthForTesting();
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
         mTab = mActivityTestRule.getActivity().getActivityTab();
         NewTabPageTestUtils.waitForNtpLoaded(mTab);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        // Activity needs to be destroyed before the signin mock environment's reset
-        // TODO(https://crbug.com/1081644): Change this to rule chain in after we
-        // refactor SigninTestUtil into test rule.
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
-        SigninTestUtil.tearDownAuthForTesting();
     }
 
     @Test
     @MediumTest
     public void testIdentityDiscWithNavigation() {
         // User is signed in.
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addAndSignInTestAccount();
         waitForView(allOf(withId(R.id.optional_toolbar_button), isDisplayed()));
 
         // Identity Disc should be hidden on navigation away from NTP.
@@ -97,14 +94,14 @@ public class IdentityDiscControllerTest {
         });
 
         // Identity Disc should be shown on sign-in state change without NTP refresh.
-        SigninTestUtil.addAndSignInTestAccount();
+        mAccountManagerTestRule.addAndSignInTestAccount();
         waitForView(allOf(withId(R.id.optional_toolbar_button), isDisplayed()));
 
         onView(withId(R.id.optional_toolbar_button))
                 .check(matches(
                         withContentDescription(R.string.accessibility_toolbar_btn_identity_disc)));
 
-        SigninTestUtil.removeTestAccount(SigninTestUtil.getCurrentAccount().name);
+        mAccountManagerTestRule.signOut();
         waitForView(allOf(withId(R.id.optional_toolbar_button),
                 withEffectiveVisibility(ViewMatchers.Visibility.GONE)));
     }

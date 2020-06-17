@@ -5524,10 +5524,6 @@ crbug.com/919587 [ Linux ] virtual/threaded/fast/idle-callback/idle_periods.html
 crbug.com/923244 external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure Pass Crash Timeout ]
 # WebRTC Plan B
 crbug.com/920979 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCTrackEvent-fire.html [ Timeout ]
-# WebRTC codec tests - software H.264 not present on webkit bot family
-crbug.com/840659 external/wpt/webrtc/protocol/video-codecs.https.html [ Pass Failure ]
-# In addition, simulcast/h264 has a crash in MSAN.
-crbug.com/1095518 external/wpt/webrtc/simulcast/h264.https.html [ Pass Failure Crash ]
 
 # Mac doesn't support lowLatency/desynchronized Canvas Contexts.
 crbug.com/922218 [ Mac ] fast/canvas-api/canvas-lowlatency-getContext.html [ Failure ]
@@ -6612,6 +6608,7 @@ crbug.com/1066716 http/tests/cache/zero-length-xhr.html [ Pass Timeout ]
 crbug.com/1067533 [ Mac10.10 ] external/wpt/shape-detection/idlharness.https.any.sharedworker.html [ Pass Failure ]
 
 # Temporarily disabled for landing changes to DevTools frontend
+crbug.com/1066595 http/tests/devtools/tracing/timeline-network/timeline-network-resource.js [ Pass Failure ]
 crbug.com/1066579 http/tests/devtools/har-importer.js [ Pass Failure ]
 
 # Flaky test, happens only on Mac 10.13.
@@ -6654,8 +6651,7 @@ crbug.com/1073792 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/eve
 crbug.com/1074129 inspector-protocol/media/media-player.js [ TIMEOUT ]
 
 # Sheriff 2020-04-30
-# When https://crbug.com/1094900 is fixed, don't allow failures.
-crbug.com/1068681 fast/peerconnection/RTCPeerConnection-insertable-streams.html [ Pass Failure Timeout ]
+crbug.com/1068681 fast/peerconnection/RTCPeerConnection-insertable-streams.html [ Pass Timeout ]
 
 # Sheriff 2020-05-04
 crbug.com/952717 [ Debug ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Pass Failure ]

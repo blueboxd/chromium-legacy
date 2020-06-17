@@ -112,6 +112,9 @@ class AppListTestViewDelegate : public AppListViewDelegate,
   bool ShouldShowAssistantPrivacyInfo() const override;
   void MaybeIncreaseAssistantPrivacyInfoShownCount() override;
   void MarkAssistantPrivacyInfoDismissed() override;
+  bool ShouldShowSuggestedContentInfo() const override;
+  void MaybeIncreaseSuggestedContentInfoShownCount() override;
+  void MarkSuggestedContentInfoDismissed() override;
   void OnStateTransitionAnimationCompleted(
       ash::AppListViewState state) override;
   void OnViewStateChanged(AppListViewState state) override;

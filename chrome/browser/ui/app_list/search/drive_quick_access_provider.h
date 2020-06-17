@@ -72,7 +72,13 @@ class DriveQuickAccessProvider : public SearchProvider,
   SEQUENCE_CHECKER(sequence_checker_);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  base::WeakPtrFactory<DriveQuickAccessProvider> weak_factory_{this};
+  // Factory for general use.
+  base::WeakPtrFactory<DriveQuickAccessProvider> weak_ptr_factory_{this};
+  // Factory only for weak pointers for Drive QuickAccess API calls. Using two
+  // factories allows in-flight API calls to be cancelled independently of other
+  // tasks by invalidating only this factory's weak pointers.
+  base::WeakPtrFactory<DriveQuickAccessProvider> quick_access_weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(DriveQuickAccessProvider);
 };

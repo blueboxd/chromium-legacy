@@ -325,6 +325,153 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
         expected_count);
   }
 
+  enum class EarlyHintsPolicy {
+    // Navigation will receive no early hints response.
+    NoHints,
+
+    // Navigation will receive one early hints response.
+    OneHint,
+
+    // Navigation will receive multiple early hints responses.
+    MultipleHints,
+  };
+
+  content::NavigationHandleTiming NavigateWithEarlyHints(
+      EarlyHintsPolicy policy) {
+    auto response =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            embedded_test_server(), "/mock_page.html",
+            /*relative_url_is_prefix=*/true);
+
+    EXPECT_TRUE(embedded_test_server()->Start());
+
+    content::NavigationHandleObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        embedded_test_server()->GetURL("/mock_page.html"));
+
+    browser()->OpenURL(content::OpenURLParams(
+        embedded_test_server()->GetURL("/mock_page.html"), content::Referrer(),
+        WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+    response->WaitForRequest();
+
+    // Serve the Early Hints responses.
+    const char kHttpResponseHeader[] =
+        "HTTP/1.1 103 Early Hints\r\n"
+        "\r\n";
+    switch (policy) {
+      case EarlyHintsPolicy::NoHints:
+        break;
+      case EarlyHintsPolicy::OneHint:
+        response->Send(kHttpResponseHeader);
+        break;
+      case EarlyHintsPolicy::MultipleHints:
+        response->Send(kHttpResponseHeader);
+        response->Send(kHttpResponseHeader);
+        response->Send(kHttpResponseHeader);
+        break;
+    }
+
+    // Serve the main response.
+    const char kMainHttpResponseHeader[] =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/html; charset=utf-8\r\n"
+        "\r\n";
+    response->Send(kMainHttpResponseHeader);
+    response->Done();
+
+    // Wait until the navigation completes.
+    auto waiter = CreatePageLoadMetricsTestWaiter();
+    waiter->AddMinimumCompleteResourcesExpectation(1);
+    waiter->Wait();
+    EXPECT_TRUE(observer.has_committed());
+    VerifyNavigationMetricsCount(1);
+
+    return observer.navigation_handle_timing();
+  }
+
+  content::NavigationHandleTiming RedirectWithEarlyHints(
+      EarlyHintsPolicy policy_for_first_request,
+      EarlyHintsPolicy policy_for_final_request) {
+    auto response1 =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            embedded_test_server(), "/mock_page.html",
+            /*relative_url_is_prefix=*/true);
+    auto response2 =
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            embedded_test_server(), "/mock_page2.html",
+            /*relative_url_is_prefix=*/true);
+
+    EXPECT_TRUE(embedded_test_server()->Start());
+
+    content::NavigationHandleObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        embedded_test_server()->GetURL("/mock_page.html"));
+
+    browser()->OpenURL(content::OpenURLParams(
+        embedded_test_server()->GetURL("/mock_page.html"), content::Referrer(),
+        WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
+    response1->WaitForRequest();
+
+    // Serve the Early Hints responses for the first request.
+    const char kHttpResponseHeader[] =
+        "HTTP/1.1 103 Early Hints\r\n"
+        "\r\n";
+    switch (policy_for_first_request) {
+      case EarlyHintsPolicy::NoHints:
+        break;
+      case EarlyHintsPolicy::OneHint:
+        response1->Send(kHttpResponseHeader);
+        break;
+      case EarlyHintsPolicy::MultipleHints:
+        response1->Send(kHttpResponseHeader);
+        response1->Send(kHttpResponseHeader);
+        response1->Send(kHttpResponseHeader);
+        break;
+    }
+
+    // Serve the redirection response.
+    const char kHttpRedirectResponseHeader[] =
+        "HTTP/1.1 307 Temporary Redirect\r\n"
+        "Location: /mock_page2.html\r\n"
+        "\r\n";
+    response1->Send(kHttpRedirectResponseHeader);
+
+    // Wait for the redirected request.
+    response1->Done();
+    response2->WaitForRequest();
+
+    // Serve the Early Hints responses for the redirected request.
+    switch (policy_for_final_request) {
+      case EarlyHintsPolicy::NoHints:
+        break;
+      case EarlyHintsPolicy::OneHint:
+        response2->Send(kHttpResponseHeader);
+        break;
+      case EarlyHintsPolicy::MultipleHints:
+        response2->Send(kHttpResponseHeader);
+        response2->Send(kHttpResponseHeader);
+        response2->Send(kHttpResponseHeader);
+        break;
+    }
+
+    // Serve the main response.
+    const char kMainHttpResponseHeader[] =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/html; charset=utf-8\r\n"
+        "\r\n";
+    response2->Send(kMainHttpResponseHeader);
+    response2->Done();
+
+    // Wait until the navigation completes.
+    auto waiter = CreatePageLoadMetricsTestWaiter();
+    waiter->AddMinimumCompleteResourcesExpectation(1);
+    waiter->Wait();
+    EXPECT_TRUE(observer.has_committed());
+    VerifyNavigationMetricsCount(1);
+
+    return observer.navigation_handle_timing();
+  }
+
   content::RenderFrameHost* RenderFrameHost() const {
     return browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
   }
@@ -3026,4 +3173,122 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithBackForwardCache,
   histogram_tester_.ExpectBucketCount(
       internal::kHistogramBackForwardCacheEvent,
       internal::PageLoadBackForwardCacheEvent::kRestoreFromBackForwardCache, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, EarlyHints) {
+  content::NavigationHandleTiming timing =
+      NavigateWithEarlyHints(EarlyHintsPolicy::OneHint);
+
+  // There were no redirections, so the first request should be the same as the
+  // final request.
+  EXPECT_FALSE(timing.early_hints_for_first_request_time.is_null());
+  EXPECT_FALSE(timing.early_hints_for_final_request_time.is_null());
+  EXPECT_EQ(timing.early_hints_for_first_request_time,
+            timing.early_hints_for_final_request_time);
+
+  // The timings of the Early Hints response should be recorded.
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsFirstRequestStartToEarlyHints, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsFinalRequestStartToEarlyHints, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsEarlyHintsToFinalResponseStart, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, EarlyHints_NoHints) {
+  content::NavigationHandleTiming timing =
+      NavigateWithEarlyHints(EarlyHintsPolicy::NoHints);
+
+  // No Early Hints responses were received.
+  EXPECT_TRUE(timing.early_hints_for_first_request_time.is_null());
+  EXPECT_TRUE(timing.early_hints_for_final_request_time.is_null());
+
+  // The timings of the Early Hints response should not be recorded.
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsFirstRequestStartToEarlyHints, 0);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsFinalRequestStartToEarlyHints, 0);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsEarlyHintsToFinalResponseStart, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, EarlyHints_MultipleHints) {
+  content::NavigationHandleTiming timing =
+      NavigateWithEarlyHints(EarlyHintsPolicy::MultipleHints);
+
+  // There were no redirections, so the first request should be the same as the
+  // final request.
+  EXPECT_FALSE(timing.early_hints_for_first_request_time.is_null());
+  EXPECT_FALSE(timing.early_hints_for_final_request_time.is_null());
+  EXPECT_EQ(timing.early_hints_for_first_request_time,
+            timing.early_hints_for_final_request_time);
+
+  // The timings of the Early Hints responses should be recorded only one time.
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsFirstRequestStartToEarlyHints, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsFinalRequestStartToEarlyHints, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsEarlyHintsToFinalResponseStart, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       EarlyHints_HintsBeforeRedirection) {
+  content::NavigationHandleTiming timing = RedirectWithEarlyHints(
+      EarlyHintsPolicy::MultipleHints, EarlyHintsPolicy::NoHints);
+
+  // The early hints were served for the first request, but not for the
+  // redirected request.
+  EXPECT_FALSE(timing.early_hints_for_first_request_time.is_null());
+  EXPECT_TRUE(timing.early_hints_for_final_request_time.is_null());
+
+  // The timings of the Early Hints response should be recorded only for the
+  // first request.
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsFirstRequestStartToEarlyHints, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsFinalRequestStartToEarlyHints, 0);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsEarlyHintsToFinalResponseStart, 0);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       EarlyHints_HintsAfterRedirection) {
+  content::NavigationHandleTiming timing = RedirectWithEarlyHints(
+      EarlyHintsPolicy::NoHints, EarlyHintsPolicy::MultipleHints);
+
+  // The early hints were served for the redirected request, but not for the
+  // first request.
+  EXPECT_TRUE(timing.early_hints_for_first_request_time.is_null());
+  EXPECT_FALSE(timing.early_hints_for_final_request_time.is_null());
+
+  // The timings of the Early Hints response should be recorded only for the
+  // redirected request.
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsFirstRequestStartToEarlyHints, 0);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsFinalRequestStartToEarlyHints, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsEarlyHintsToFinalResponseStart, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       EarlyHints_HintsBeforeAndAfterRedirection) {
+  content::NavigationHandleTiming timing = RedirectWithEarlyHints(
+      EarlyHintsPolicy::MultipleHints, EarlyHintsPolicy::MultipleHints);
+
+  // The early hints were served for both the first request and the redirected
+  // request.
+  EXPECT_FALSE(timing.early_hints_for_first_request_time.is_null());
+  EXPECT_FALSE(timing.early_hints_for_final_request_time.is_null());
+  EXPECT_LT(timing.early_hints_for_first_request_time,
+            timing.early_hints_for_final_request_time);
+
+  // The timings of the Early Hints response should be recorded.
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsFirstRequestStartToEarlyHints, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsFinalRequestStartToEarlyHints, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramEarlyHintsEarlyHintsToFinalResponseStart, 1);
 }

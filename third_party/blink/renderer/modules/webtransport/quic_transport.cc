@@ -566,6 +566,10 @@ void QuicTransport::SendFin(uint32_t stream_id) {
   quic_transport_->SendFin(stream_id);
 }
 
+void QuicTransport::AbortStream(uint32_t stream_id) {
+  quic_transport_->AbortStream(stream_id, /*code=*/0);
+}
+
 void QuicTransport::ForgetStream(uint32_t stream_id) {
   stream_map_.erase(stream_id);
 }

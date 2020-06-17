@@ -108,6 +108,7 @@ action("about_credits") {
 if (is_android) {
   source_set("android_resources") {
     sources = [
+      "android/blocked_content_resource_id.h",
       "android/page_info_resource_id.h",
       "android/permissions_resource_id.h",
       "android/theme_resources.h",

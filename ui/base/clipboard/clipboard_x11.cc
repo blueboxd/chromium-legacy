@@ -512,12 +512,6 @@ bool ClipboardX11::X11Details::DispatchXEvent(x11::Event* x11_event) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// Clipboard factory method.
-Clipboard* Clipboard::Create() {
-  return new ClipboardX11;
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // ClipboardX11
 
 ClipboardX11::ClipboardX11() : x11_details_(new X11Details) {

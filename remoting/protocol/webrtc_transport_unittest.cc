@@ -187,6 +187,11 @@ class WebrtcTransportTest : public testing::Test {
         new WebrtcTransport(jingle_glue::JingleThreadWrapper::current(),
                             TransportContext::ForTests(TransportRole::SERVER),
                             &host_event_handler_));
+    // If offer_to_receive_video and offer_to_receive_audio are both false,
+    // there must be a stream present in order to generate a valid SDP offer.
+    host_transport_->peer_connection()->AddTransceiver(
+        cricket::MEDIA_TYPE_VIDEO);
+
     host_authenticator_.reset(new FakeAuthenticator(FakeAuthenticator::ACCEPT));
     host_authenticator_->set_auth_key(kAuthKey);
 

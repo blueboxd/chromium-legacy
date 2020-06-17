@@ -188,6 +188,14 @@ void AppListTestViewDelegate::MaybeIncreaseAssistantPrivacyInfoShownCount() {}
 
 void AppListTestViewDelegate::MarkAssistantPrivacyInfoDismissed() {}
 
+bool AppListTestViewDelegate::ShouldShowSuggestedContentInfo() const {
+  return false;
+}
+
+void AppListTestViewDelegate::MaybeIncreaseSuggestedContentInfoShownCount() {}
+
+void AppListTestViewDelegate::MarkSuggestedContentInfoDismissed() {}
+
 void AppListTestViewDelegate::OnStateTransitionAnimationCompleted(
     ash::AppListViewState state) {}
 

@@ -41,6 +41,7 @@ class Size;
 }
 
 namespace gpu {
+class GpuTaskSchedulerHelper;
 class ScopedAllowScheduleGpuTask;
 }
 
@@ -81,6 +82,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   Display(SharedBitmapManager* bitmap_manager,
           const RendererSettings& settings,
           const FrameSinkId& frame_sink_id,
+          std::unique_ptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
           std::unique_ptr<OutputSurface> output_surface,
           std::unique_ptr<OverlayProcessorInterface> overlay_processor,
           std::unique_ptr<DisplaySchedulerBase> scheduler,
@@ -239,6 +241,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   std::unique_ptr<gpu::ScopedAllowScheduleGpuTask>
       allow_schedule_gpu_task_during_destruction_;
 #endif
+  std::unique_ptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler_;
   std::unique_ptr<OutputSurface> output_surface_;
   SkiaOutputSurface* const skia_output_surface_;
   std::unique_ptr<DisplayDamageTracker> damage_tracker_;

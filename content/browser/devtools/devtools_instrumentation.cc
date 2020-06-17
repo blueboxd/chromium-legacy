@@ -699,12 +699,12 @@ std::vector<blink::mojom::SameSiteCookieExclusionReason> BuildExclusionReasons(
           net::CookieInclusionStatus::
               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX)) {
     exclusion_reasons.push_back(blink::mojom::SameSiteCookieExclusionReason::
-                                    ExcludeSameSiteUnspecifiedTreatedAsLax);
+                                    kExcludeSameSiteUnspecifiedTreatedAsLax);
   }
   if (status.HasExclusionReason(
           net::CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE)) {
     exclusion_reasons.push_back(blink::mojom::SameSiteCookieExclusionReason::
-                                    ExcludeSameSiteNoneInsecure);
+                                    kExcludeSameSiteNoneInsecure);
   }
   return exclusion_reasons;
 }
@@ -716,17 +716,17 @@ std::vector<blink::mojom::SameSiteCookieWarningReason> BuildWarningReasons(
           net::CookieInclusionStatus::
               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT)) {
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
-                                  WarnSameSiteUnspecifiedCrossSiteContext);
+                                  kWarnSameSiteUnspecifiedCrossSiteContext);
   }
   if (status.HasWarningReason(
           net::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE)) {
     warning_reasons.push_back(
-        blink::mojom::SameSiteCookieWarningReason::WarnSameSiteNoneInsecure);
+        blink::mojom::SameSiteCookieWarningReason::kWarnSameSiteNoneInsecure);
   }
   if (status.HasWarningReason(net::CookieInclusionStatus::
                                   WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE)) {
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
-                                  WarnSameSiteUnspecifiedLaxAllowUnsafe);
+                                  kWarnSameSiteUnspecifiedLaxAllowUnsafe);
   }
 
   // If schemeful messages are disabled, don't add a warning for them.
@@ -737,27 +737,27 @@ std::vector<blink::mojom::SameSiteCookieWarningReason> BuildWarningReasons(
   if (status.HasWarningReason(net::CookieInclusionStatus::
                                   WARN_STRICT_LAX_DOWNGRADE_STRICT_SAMESITE)) {
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
-                                  WarnSameSiteStrictLaxDowngradeStrict);
+                                  kWarnSameSiteStrictLaxDowngradeStrict);
   } else if (status.HasWarningReason(
                  net::CookieInclusionStatus::
                      WARN_STRICT_CROSS_DOWNGRADE_STRICT_SAMESITE)) {
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
-                                  WarnSameSiteStrictCrossDowngradeStrict);
+                                  kWarnSameSiteStrictCrossDowngradeStrict);
   } else if (status.HasWarningReason(
                  net::CookieInclusionStatus::
                      WARN_STRICT_CROSS_DOWNGRADE_LAX_SAMESITE)) {
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
-                                  WarnSameSiteStrictCrossDowngradeLax);
+                                  kWarnSameSiteStrictCrossDowngradeLax);
   } else if (status.HasWarningReason(
                  net::CookieInclusionStatus::
                      WARN_LAX_CROSS_DOWNGRADE_STRICT_SAMESITE)) {
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
-                                  WarnSameSiteLaxCrossDowngradeStrict);
+                                  kWarnSameSiteLaxCrossDowngradeStrict);
   } else if (status.HasWarningReason(
                  net::CookieInclusionStatus::
                      WARN_LAX_CROSS_DOWNGRADE_LAX_SAMESITE)) {
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
-                                  WarnSameSiteLaxCrossDowngradeLax);
+                                  kWarnSameSiteLaxCrossDowngradeLax);
   }
 
   return warning_reasons;
@@ -786,7 +786,7 @@ void ReportSameSiteCookieIssue(
   if (!site_for_cookies.IsNull()) {
     optional_site_for_cookies_url = site_for_cookies.RepresentativeUrl();
   }
-  details->sameSiteCookieIssueDetails =
+  details->samesite_cookie_issue_details =
       blink::mojom::SameSiteCookieIssueDetails::New(
           std::move(affected_cookie),
           BuildExclusionReasons(excluded_cookie.status),

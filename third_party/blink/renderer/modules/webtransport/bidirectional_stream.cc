@@ -64,6 +64,7 @@ void BidirectionalStream::SendFin() {
 
 void BidirectionalStream::OnOutgoingStreamAbort() {
   DCHECK(!sent_fin_);
+  quic_transport_->AbortStream(stream_id_);
   quic_transport_->ForgetStream(stream_id_);
   incoming_stream_->Reset();
 }

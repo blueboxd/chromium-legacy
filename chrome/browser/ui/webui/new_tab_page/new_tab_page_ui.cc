@@ -12,6 +12,7 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/search/ntp_user_data_logger.h"
 #include "chrome/browser/ui/search/omnibox_mojo_utils.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
@@ -279,7 +280,9 @@ void NewTabPageUI::CreatePageHandler(
   DCHECK(pending_page.is_valid());
   page_handler_ = std::make_unique<NewTabPageHandler>(
       std::move(pending_page_handler), std::move(pending_page), profile_,
-      web_contents_, navigation_start_time_);
+      instant_service_, web_contents_,
+      NTPUserDataLogger::GetOrCreateFromWebContents(web_contents_),
+      navigation_start_time_);
 }
 
 void NewTabPageUI::NtpThemeChanged(const NtpTheme& theme) {

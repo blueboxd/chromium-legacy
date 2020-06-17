@@ -46,6 +46,7 @@
 #endif
 
 #if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
 #include "ui/events/platform/platform_event_source.h"
 #endif
 
@@ -67,7 +68,8 @@ class ClipboardTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
 #if defined(USE_X11)
-    event_source_ = ClipboardTraits::GetEventSource();
+    if (!features::IsUsingOzonePlatform())
+      event_source_ = ClipboardTraits::GetEventSource();
 #endif
     clipboard_ = ClipboardTraits::Create();
   }

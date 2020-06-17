@@ -1803,7 +1803,8 @@ void NavigationRequest::OnRequestRedirected(
   if (redirect_info.new_method != "POST")
     common_params_->post_data.reset();
 
-  UpdateNavigationHandleTimingsOnResponseReceived();
+  const bool is_first_response = commit_params_->redirects.empty();
+  UpdateNavigationHandleTimingsOnResponseReceived(is_first_response);
 
   // Mark time for the Navigation Timing API.
   if (commit_params_->navigation_timing->redirect_start.is_null()) {
@@ -2133,7 +2134,8 @@ void NavigationRequest::OnResponseStarted(
           ? base::make_optional(appcache_handle_->appcache_host_id())
           : base::nullopt;
 
-  UpdateNavigationHandleTimingsOnResponseReceived();
+  const bool is_first_response = commit_params_->redirects.empty();
+  UpdateNavigationHandleTimingsOnResponseReceived(is_first_response);
 
   // Update fetch start timing. While NavigationRequest updates fetch start
   // timing for redirects, it's not aware of service worker interception so
@@ -3215,26 +3217,37 @@ void NavigationRequest::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {}
 
-void NavigationRequest::UpdateNavigationHandleTimingsOnResponseReceived() {
-  // Skip if the timings are already recorded for redirection etc.
-  if (navigation_handle_timing_->first_request_start_time.is_null()) {
+void NavigationRequest::UpdateNavigationHandleTimingsOnResponseReceived(
+    bool is_first_response) {
+  base::TimeTicks loader_callback_time = base::TimeTicks::Now();
+
+  if (is_first_response) {
+    DCHECK(navigation_handle_timing_->first_request_start_time.is_null());
+    DCHECK(navigation_handle_timing_->first_response_start_time.is_null());
+    DCHECK(navigation_handle_timing_->first_loader_callback_time.is_null());
     navigation_handle_timing_->first_request_start_time =
         response_head_->load_timing.send_start;
-  }
-  if (navigation_handle_timing_->first_response_start_time.is_null()) {
     navigation_handle_timing_->first_response_start_time =
         response_head_->load_timing.receive_headers_start;
-  }
-  base::TimeTicks loader_callback_time = base::TimeTicks::Now();
-  if (navigation_handle_timing_->first_loader_callback_time.is_null())
     navigation_handle_timing_->first_loader_callback_time =
         loader_callback_time;
+  }
 
   navigation_handle_timing_->final_request_start_time =
       response_head_->load_timing.send_start;
   navigation_handle_timing_->final_response_start_time =
       response_head_->load_timing.receive_headers_start;
   navigation_handle_timing_->final_loader_callback_time = loader_callback_time;
+
+  // 103 Early Hints experiment (https://crbug.com/1093693).
+  if (is_first_response) {
+    DCHECK(navigation_handle_timing_->early_hints_for_first_request_time
+               .is_null());
+    navigation_handle_timing_->early_hints_for_first_request_time =
+        response_head_->load_timing.first_early_hints_time;
+  }
+  navigation_handle_timing_->early_hints_for_final_request_time =
+      response_head_->load_timing.first_early_hints_time;
 
   // |navigation_commit_sent_time| will be updated by
   // UpdateNavigationHandleTimingsOnCommitSent() later.

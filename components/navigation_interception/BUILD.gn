@@ -29,7 +29,10 @@ static_library("navigation_interception") {
       "navigation_params_android.cc",
       "navigation_params_android.h",
     ]
-    deps += [ ":jni_headers" ]
+    deps += [
+      ":jni_headers",
+      "//url:origin_android",
+    ]
   }
 }
 

@@ -12,9 +12,10 @@ namespace ash {
 
 using AmbientPhotoViewTest = AmbientAshTestBase;
 
+// TODO(b/158617675): test is flaky.
 // Test that image is scaled to fill full screen when image and display are in
 // the same orientation.
-TEST_F(AmbientPhotoViewTest, ShouldResizeImageToFillFullScreen) {
+TEST_F(AmbientPhotoViewTest, DISABLED_ShouldResizeImageToFillFullScreen) {
   // Start Ambient mode.
   ambient_controller()->Show();
   // Fastforward enough time to update the photo.
@@ -32,9 +33,11 @@ TEST_F(AmbientPhotoViewTest, ShouldResizeImageToFillFullScreen) {
   ambient_controller()->Destroy();
 }
 
+// TODO(b/158617675): test is flaky.
 // Test that image is scaled to fill one direction of the screen when image and
 // display are in different orientations.
-TEST_F(AmbientPhotoViewTest, ShouldResizeImageToFillOneDirectionOfScreen) {
+TEST_F(AmbientPhotoViewTest,
+       DISABLED_ShouldResizeImageToFillOneDirectionOfScreen) {
   // Start Ambient mode.
   ambient_controller()->Show();
   // Fastforward enough time to update the photo.

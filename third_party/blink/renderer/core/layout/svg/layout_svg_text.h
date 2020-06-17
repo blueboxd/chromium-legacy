@@ -39,7 +39,6 @@ class LayoutSVGText final : public LayoutSVGBlock {
   void SetNeedsPositioningValuesUpdate() {
     needs_positioning_values_update_ = true;
   }
-  void SetNeedsTransformUpdate() override { needs_transform_update_ = true; }
   void SetNeedsTextMetricsUpdate() { needs_text_metrics_update_ = true; }
   FloatRect VisualRectInLocalSVGCoordinates() const override;
   FloatRect ObjectBoundingBox() const override;
@@ -97,7 +96,6 @@ class LayoutSVGText final : public LayoutSVGBlock {
 
   bool needs_reordering_ : 1;
   bool needs_positioning_values_update_ : 1;
-  bool needs_transform_update_ : 1;
   bool needs_text_metrics_update_ : 1;
   Vector<LayoutSVGInlineText*> descendant_text_nodes_;
 };

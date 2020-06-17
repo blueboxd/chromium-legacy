@@ -67,7 +67,6 @@ LayoutSVGText::LayoutSVGText(SVGTextElement* node)
     : LayoutSVGBlock(node),
       needs_reordering_(false),
       needs_positioning_values_update_(false),
-      needs_transform_update_(true),
       needs_text_metrics_update_(false) {}
 
 LayoutSVGText::~LayoutSVGText() {
@@ -248,18 +247,18 @@ void LayoutSVGText::UpdateLayout() {
 
   needs_reordering_ = false;
 
-  FloatRect new_boundaries = ObjectBoundingBox();
-  bool bounds_changed = old_boundaries != new_boundaries;
+  const bool bounds_changed = old_boundaries != ObjectBoundingBox();
 
   // Update the transform after laying out. Update if the bounds
   // changed too, since the transform could depend on the bounding
   // box.
-  if (bounds_changed || needs_transform_update_) {
-    local_transform_ =
-        GetElement()->CalculateTransform(SVGElement::kIncludeMotionTransform);
-    needs_transform_update_ = false;
+  if (bounds_changed) {
+    needs_transform_update_ = true;
     update_parent_boundaries = true;
   }
+
+  if (UpdateTransformAfterLayout())
+    update_parent_boundaries = true;
 
   ClearLayoutOverflow();
 

@@ -133,12 +133,13 @@ bool ImageFrame::AllocatePixelData(int new_width,
       std::move(color_space));
   if (pixel_format_ == kRGBA_F16)
     info = info.makeColorType(kRGBA_F16_SkColorType);
-  bitmap_.setInfo(info);
-  bool allocated = bitmap_.tryAllocPixels(allocator_);
-  if (allocated)
+  bool success = bitmap_.setInfo(info);
+  DCHECK(success);
+  success = bitmap_.tryAllocPixels(allocator_);
+  if (success)
     status_ = kFrameInitialized;
 
-  return allocated;
+  return success;
 }
 
 sk_sp<SkImage> ImageFrame::FinalizePixelsAndGetImage() {

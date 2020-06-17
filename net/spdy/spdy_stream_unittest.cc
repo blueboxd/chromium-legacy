@@ -1084,6 +1084,69 @@ TEST_F(SpdyStreamTest, InformationalHeaders) {
   EXPECT_TRUE(data.AllReadDataConsumed());
 }
 
+// 103 Early Hints hasn't been implemented yet, but we collect timing
+// information for the experiment (https://crbug.com/1093693). This tests it.
+TEST_F(SpdyStreamTest, EarlyHints) {
+  spdy::SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
+  AddWrite(req);
+
+  // Serve the early hints.
+  spdy::SpdyHeaderBlock informational_headers;
+  informational_headers[":status"] = "103";
+  spdy::SpdySerializedFrame informational_response(
+      spdy_util_.ConstructSpdyResponseHeaders(
+          1, std::move(informational_headers), false));
+  AddRead(informational_response);
+
+  spdy::SpdySerializedFrame reply(
+      spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+  AddRead(reply);
+
+  spdy::SpdySerializedFrame body(
+      spdy_util_.ConstructSpdyDataFrame(1, kPostBodyStringPiece, true));
+  AddRead(body);
+
+  AddReadEOF();
+
+  SequencedSocketData data(GetReads(), GetWrites());
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  AddSSLSocketData();
+
+  base::WeakPtr<SpdySession> session(CreateDefaultSpdySession());
+
+  base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session, url_, LOWEST, NetLogWithSource());
+  ASSERT_TRUE(stream);
+  EXPECT_EQ(kDefaultUrl, stream->url().spec());
+
+  StreamDelegateDoNothing delegate(stream);
+  stream->SetDelegate(&delegate);
+
+  spdy::SpdyHeaderBlock headers(
+      spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
+  EXPECT_EQ(ERR_IO_PENDING, stream->SendRequestHeaders(std::move(headers),
+                                                       NO_MORE_DATA_TO_SEND));
+
+  EXPECT_THAT(delegate.WaitForClose(), IsOk());
+  EXPECT_EQ("200", delegate.GetResponseHeaderValue(spdy::kHttp2StatusHeader));
+  EXPECT_EQ(std::string(kPostBody, kPostBodyLength),
+            delegate.TakeReceivedData());
+
+  // Check if the timing of the early hints response is captured.
+  const LoadTimingInfo& load_timing_info = delegate.GetLoadTimingInfo();
+  EXPECT_FALSE(load_timing_info.first_early_hints_time.is_null());
+
+  // Finish async network reads and writes.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(data.AllWriteDataConsumed());
+  EXPECT_TRUE(data.AllReadDataConsumed());
+}
+
 TEST_F(SpdyStreamTest, StatusMustBeNumber) {
   spdy::SpdySerializedFrame req(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));

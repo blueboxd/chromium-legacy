@@ -7,8 +7,10 @@
 #include "base/json/json_writer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/bluetooth_dialog_localized_strings_provider.h"
+#include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/bluetooth_pairing_dialog_resources.h"
+#include "chrome/grit/bluetooth_pairing_dialog_resources_map.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
@@ -19,6 +21,14 @@
 namespace chromeos {
 
 namespace {
+
+#if !BUILDFLAG(OPTIMIZE_WEBUI)
+namespace {
+const char kGeneratedPath[] =
+    "@out_folder@/gen/chrome/browser/resources/chromeos/"
+    "bluetooth_pairing_dialog/";
+}
+#endif
 
 constexpr int kBluetoothPairingDialogHeight = 375;
 
@@ -103,17 +113,17 @@ BluetoothPairingDialogUI::BluetoothPairingDialogUI(content::WebUI* web_ui)
 
   AddBluetoothStrings(source);
   source->AddLocalizedString("title", IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE);
-  source->UseStringsJs();
 #if BUILDFLAG(OPTIMIZE_WEBUI)
-  source->SetDefaultResource(IDR_BLUETOOTH_PAIRING_DIALOG_VULCANIZED_HTML);
-  source->AddResourcePath("crisper.js",
-                          IDR_BLUETOOTH_PAIRING_DIALOG_CRISPER_JS);
+  webui::SetupBundledWebUIDataSource(
+      source, "bluetooth_pairing_dialog.js",
+      IDR_BLUETOOTH_PAIRING_DIALOG_ROLLUP_JS,
+      IDR_BLUETOOTH_PAIRING_DIALOG_CONTAINER_HTML);
 #else
-  source->SetDefaultResource(IDR_BLUETOOTH_PAIRING_DIALOG_CONTAINER_HTML);
-  source->AddResourcePath("bluetooth_pairing_dialog.html",
-                          IDR_BLUETOOTH_PAIRING_DIALOG_HTML);
-  source->AddResourcePath("bluetooth_pairing_dialog.js",
-                          IDR_BLUETOOTH_PAIRING_DIALOG_JS);
+  webui::SetupWebUIDataSource(
+      source,
+      base::make_span(kBluetoothPairingDialogResources,
+                      kBluetoothPairingDialogResourcesSize),
+      kGeneratedPath, IDR_BLUETOOTH_PAIRING_DIALOG_CONTAINER_HTML);
 #endif
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }

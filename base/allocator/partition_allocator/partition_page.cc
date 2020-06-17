@@ -8,7 +8,6 @@
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_direct_map_extent.h"
-#include "base/allocator/partition_allocator/partition_root_base.h"
 #include "base/check.h"
 #include "base/feature_list.h"
 #include "base/notreached.h"
@@ -37,8 +36,7 @@ void DecommitPages(void* address, size_t size) {
 template <bool thread_safe>
 ALWAYS_INLINE DeferredUnmap
 PartitionDirectUnmap(PartitionPage<thread_safe>* page) {
-  PartitionRootBase<thread_safe>* root =
-      PartitionRootBase<thread_safe>::FromPage(page);
+  PartitionRoot<thread_safe>* root = PartitionRoot<thread_safe>::FromPage(page);
   const PartitionDirectMapExtent<thread_safe>* extent =
       PartitionDirectMapExtent<thread_safe>::FromPage(page);
   size_t unmap_size = extent->map_size;
@@ -78,8 +76,7 @@ template <bool thread_safe>
 ALWAYS_INLINE void PartitionRegisterEmptyPage(
     PartitionPage<thread_safe>* page) {
   DCHECK(page->is_empty());
-  PartitionRootBase<thread_safe>* root =
-      PartitionRootBase<thread_safe>::FromPage(page);
+  PartitionRoot<thread_safe>* root = PartitionRoot<thread_safe>::FromPage(page);
   root->lock_.AssertAcquired();
 
   // If the page is already registered as empty, give it another life.
@@ -168,8 +165,7 @@ DeferredUnmap PartitionPage<thread_safe>::FreeSlowPath() {
 }
 
 template <bool thread_safe>
-void PartitionPage<thread_safe>::Decommit(
-    PartitionRootBase<thread_safe>* root) {
+void PartitionPage<thread_safe>::Decommit(PartitionRoot<thread_safe>* root) {
   root->lock_.AssertAcquired();
   DCHECK(is_empty());
   DCHECK(!bucket->is_direct_mapped());
@@ -189,7 +185,7 @@ void PartitionPage<thread_safe>::Decommit(
 
 template <bool thread_safe>
 void PartitionPage<thread_safe>::DecommitIfPossible(
-    PartitionRootBase<thread_safe>* root) {
+    PartitionRoot<thread_safe>* root) {
   root->lock_.AssertAcquired();
   DCHECK(empty_cache_index >= 0);
   DCHECK(static_cast<unsigned>(empty_cache_index) < kMaxFreeableSpans);

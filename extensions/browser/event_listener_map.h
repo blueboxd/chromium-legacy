@@ -124,7 +124,7 @@ class EventListener {
 
   const bool is_for_service_worker_ = false;
 
-  const int64_t service_worker_version_id_ =
+  int64_t service_worker_version_id_ =
       blink::mojom::kInvalidServiceWorkerVersionId;
 
   // If this listener is for a service worker (i.e.

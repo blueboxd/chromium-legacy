@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/post_task.h"
+#include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
@@ -225,17 +226,28 @@ int64_t GetNewResourceIdSync(ServiceWorkerStorage* storage);
 // must be completed by the test using CompletePendingRead().
 // These is a convenience method AllExpectedReadsDone() which returns whether
 // there are any expected reads that have not yet happened.
-class MockServiceWorkerResponseReader : public ServiceWorkerResponseReader {
+class MockServiceWorkerResponseReader
+    : public ServiceWorkerResponseReader,
+      public storage::mojom::ServiceWorkerResourceReader {
  public:
   MockServiceWorkerResponseReader();
   ~MockServiceWorkerResponseReader() override;
 
-  // ServiceWorkerResponseReader overrides
+  mojo::PendingRemote<storage::mojom::ServiceWorkerResourceReader>
+  BindNewPipeAndPassRemote(base::OnceClosure disconnect_handler);
+
+  // ServiceWorkerResponseReader overrides:
   void ReadInfo(HttpResponseInfoIOBuffer* info_buf,
                 net::CompletionOnceCallback callback) override;
   void ReadData(net::IOBuffer* buf,
                 int buf_len,
                 net::CompletionOnceCallback callback) override;
+
+  // storage::mojom::ServiceWorkerResourceReader overrides:
+  void ReadResponseHead(
+      storage::mojom::ServiceWorkerResourceReader::ReadResponseHeadCallback
+          callback) override;
+  void ReadData(int64_t, ReadDataCallback callback) override;
 
   // Test helpers. ExpectReadInfo() and ExpectReadData() give precise control
   // over both the data to be written and the result to return.
@@ -244,20 +256,20 @@ class MockServiceWorkerResponseReader : public ServiceWorkerResponseReader {
 
   // Expect a call to ReadInfo() on this reader. For these functions, |len| will
   // be used as |response_data_size|, not as the length of this particular read.
-  void ExpectReadInfo(size_t len, bool async, int result);
-  void ExpectReadInfoOk(size_t len, bool async);
+  // TODO(https://crbug.com/1055677): Rename this to ExpectReadResponseHead().
+  void ExpectReadInfo(size_t len, int result);
+  void ExpectReadInfoOk(size_t len);
 
   // Expect a call to ReadData() on this reader. For these functions, |len| is
   // the length of the data to be written back; in ExpectReadDataOk(), |len| is
   // implicitly the length of |data|.
-  void ExpectReadData(const char* data, size_t len, bool async, int result);
-  void ExpectReadDataOk(const std::string& data, bool async);
+  void ExpectReadData(const char* data, size_t len, int result);
+  void ExpectReadDataOk(const std::string& data);
 
   // Convenient method for calling ExpectReadInfoOk() with the length being
   // |bytes_stored|, and ExpectReadDataOk() for each element of |stored_data|.
   void ExpectReadOk(const std::vector<std::string>& stored_data,
-                    const size_t bytes_stored,
-                    const bool async);
+                    const size_t bytes_stored);
 
   // Complete a pending async read. It is an error to call this function without
   // a pending async read (ie, a previous call to ReadInfo() or ReadData()
@@ -269,22 +281,30 @@ class MockServiceWorkerResponseReader : public ServiceWorkerResponseReader {
 
  private:
   struct ExpectedRead {
-    ExpectedRead(size_t len, bool async, int result)
-        : data(nullptr), len(len), info(true), async(async), result(result) {}
-    ExpectedRead(const char* data, size_t len, bool async, int result)
-        : data(data), len(len), info(false), async(async), result(result) {}
+    ExpectedRead(size_t len, int result)
+        : data(nullptr), len(len), info(true), result(result) {}
+    ExpectedRead(const char* data, size_t len, int result)
+        : data(data), len(len), info(false), result(result) {}
     const char* data;
     size_t len;
     bool info;
-    bool async;
     int result;
   };
 
   base::queue<ExpectedRead> expected_reads_;
+  size_t expected_max_data_bytes_ = 0;
+
   scoped_refptr<net::IOBuffer> pending_buffer_;
   size_t pending_buffer_len_;
   scoped_refptr<HttpResponseInfoIOBuffer> pending_info_;
   net::CompletionOnceCallback pending_callback_;
+
+  mojo::Receiver<storage::mojom::ServiceWorkerResourceReader> receiver_{this};
+  storage::mojom::ServiceWorkerResourceReader::ReadResponseHeadCallback
+      pending_read_response_head_callback_;
+  storage::mojom::ServiceWorkerResourceReader::ReadDataCallback
+      pending_read_data_callback_;
+  mojo::ScopedDataPipeProducerHandle body_;
 
   DISALLOW_COPY_AND_ASSIGN(MockServiceWorkerResponseReader);
 };

@@ -325,6 +325,8 @@ if (is_chromeos) {
       ]
     } else {
       source = "chromeos/bluetooth_pairing_dialog/bluetooth_pairing_dialog_resources.grd"
+
+      deps = [ "//chrome/browser/resources/chromeos/bluetooth_pairing_dialog:web_components" ]
     }
 
     defines = chrome_grit_defines

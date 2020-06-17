@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 22
+// Next MinVersion: 23
 
 module arc.mojom;
 
@@ -45,6 +45,22 @@ enum AccessibilityEventType {
   WINDOWS_CHANGED,
   VIEW_CONTEXT_CLICKED,
   ASSIST_READING_CONTEXT,
+};
+
+// ContentChangeType lists the possible sub types of WINDOW_STATE_CHANGED and
+// WINDOW_CONTENT_CHANGED events on Android ordered as same as developer guide
+// of return value of getContentChangeTypes.
+// https://developer.android.com/reference/android/view/accessibility/AccessibilityEvent?hl=en#getContentChangeTypes()
+[Extensible]
+enum ContentChangeType {
+  CONTENT_DESCRIPTION,
+  STATE_DESCRIPTION,
+  SUBTREE,
+  TEXT,
+  PANE_TITLE,
+  UNDEFINED,
+  PANE_APPEARED,
+  PANE_DISAPPEARED,
 };
 
 // Possible actions that can be performed on an AccessibilityNodeInfo.
@@ -356,6 +372,13 @@ enum AccessibilityEventStringProperty {
   CONTENT_DESCRIPTION,
 };
 
+// These fields are taken from List<Integer> like instance members of
+// AccessibilityEvent and AccessibilityRecord.
+[Extensible]
+enum AccessibilityEventIntListProperty{
+  CONTENT_CHANGE_TYPES,
+};
+
 // AccessibilityEventData is a struct to contain info of
 // AccessibilityEvent in Android.
 // https://developer.android.com/reference/android/view/accessibility/AccessibilityEvent.html
@@ -391,6 +414,8 @@ struct AccessibilityEventData {
   [MinVersion=21] map<AccessibilityEventIntProperty, int32>? int_properties;
   [MinVersion=21]
       map<AccessibilityEventStringProperty, string>? string_properties;
+  [MinVersion=23]
+      map<AccessibilityEventIntListProperty, array<int32>>? int_list_properties;
 };
 
 // AccessibilityActionData is a struct to contain info of AccessibilityAction in

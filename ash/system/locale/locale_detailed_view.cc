@@ -54,7 +54,7 @@ class LocaleItem : public ActionableView {
     views::Label* iso_code_label = TrayPopupUtils::CreateDefaultLabel();
     iso_code_label->SetEnabledColor(
         AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kTextPrimary,
+            AshColorProvider::ContentLayerType::kTextColorPrimary,
             AshColorProvider::AshColorMode::kDark));
     iso_code_label->SetAutoColorReadabilityEnabled(false);
     iso_code_label->SetText(base::i18n::ToUpper(
@@ -79,7 +79,7 @@ class LocaleItem : public ActionableView {
       checked_image->SetImage(gfx::CreateVectorIcon(
           kCheckCircleIcon, kMenuIconSize,
           AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-              AshColorProvider::ContentLayerType::kProminentIconButton,
+              AshColorProvider::ContentLayerType::kButtonIconColorProminent,
               kProminentIconButtonColor)));
       tri_view->AddView(TriView::Container::END, checked_image);
     }

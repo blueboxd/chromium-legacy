@@ -8,8 +8,11 @@
 
 #include <utility>
 
+#include "base/win/dispatch_stub.h"
 #include "base/win/scoped_variant.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using base::win::test::DispatchStub;
 
 namespace base {
 namespace win {
@@ -27,41 +30,6 @@ void InitializeVariantWithBstr(VARIANT* var) {
   var->vt = VT_BSTR;
   V_BSTR(var) = ::SysAllocString(kTestString);
 }
-
-// An unimplemented IDispatch subclass.
-class DispatchStub
-    : public Microsoft::WRL::RuntimeClass<
-          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          IDispatch> {
- public:
-  DispatchStub() = default;
-  DispatchStub(const DispatchStub&) = delete;
-  DispatchStub& operator=(const DispatchStub&) = delete;
-
-  // IDispatch:
-  IFACEMETHODIMP GetTypeInfoCount(UINT*) override { return E_NOTIMPL; }
-  IFACEMETHODIMP GetTypeInfo(UINT, LCID, ITypeInfo**) override {
-    return E_NOTIMPL;
-  }
-  IFACEMETHODIMP GetIDsOfNames(REFIID,
-                               LPOLESTR*,
-                               UINT,
-                               LCID,
-                               DISPID*) override {
-    return E_NOTIMPL;
-  }
-
-  IFACEMETHODIMP Invoke(DISPID,
-                        REFIID,
-                        LCID,
-                        WORD,
-                        DISPPARAMS*,
-                        VARIANT*,
-                        EXCEPINFO*,
-                        UINT*) override {
-    return E_NOTIMPL;
-  }
-};
 
 void ExpectRefCount(ULONG expected_refcount, IUnknown* object) {
   // In general, code should not check the values of AddRef() and Release().

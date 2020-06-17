@@ -122,7 +122,7 @@ public class SimpleAnimationLayout extends Layout {
         if (mLayoutTabs == null) return;
         boolean needUpdate = false;
         for (int i = mLayoutTabs.length - 1; i >= 0; i--) {
-            needUpdate = mLayoutTabs[i].updateSnap(dt) || needUpdate;
+            needUpdate = updateSnap(dt, mLayoutTabs[i]) || needUpdate;
         }
         if (needUpdate) requestUpdate();
     }
@@ -191,13 +191,15 @@ public class SimpleAnimationLayout extends Layout {
         forceAnimationToFinish();
 
         CompositorAnimationHandler handler = getAnimationHandler();
-        CompositorAnimator scaleAnimation = CompositorAnimator.ofFloatProperty(
+        CompositorAnimator scaleAnimation = CompositorAnimator.ofWritableFloatPropertyKey(
                 handler, newLayoutTab, LayoutTab.SCALE, 0f, 1f, FOREGROUND_ANIMATION_DURATION);
-        CompositorAnimator alphaAnimation = CompositorAnimator.ofFloatProperty(
+
+        CompositorAnimator alphaAnimation = CompositorAnimator.ofWritableFloatPropertyKey(
                 handler, newLayoutTab, LayoutTab.ALPHA, 0f, 1f, FOREGROUND_ANIMATION_DURATION);
-        CompositorAnimator xAnimation = CompositorAnimator.ofFloatProperty(
+
+        CompositorAnimator xAnimation = CompositorAnimator.ofWritableFloatPropertyKey(
                 handler, newLayoutTab, LayoutTab.X, originX, 0f, FOREGROUND_ANIMATION_DURATION);
-        CompositorAnimator yAnimation = CompositorAnimator.ofFloatProperty(
+        CompositorAnimator yAnimation = CompositorAnimator.ofWritableFloatPropertyKey(
                 handler, newLayoutTab, LayoutTab.Y, originY, 0f, FOREGROUND_ANIMATION_DURATION);
 
         mTabCreatedForegroundAnimation = new AnimatorSet();
@@ -240,15 +242,15 @@ public class SimpleAnimationLayout extends Layout {
         Collection<Animator> animationList = new ArrayList<>(5);
 
         // Step 1: zoom out the source tab and bring in the new tab
-        animationList.add(CompositorAnimator.ofFloatProperty(
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(
                 handler, sourceLayoutTab, LayoutTab.SCALE, 1f, scale, BACKGROUND_STEP1_DURATION));
-        animationList.add(CompositorAnimator.ofFloatProperty(
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(
                 handler, sourceLayoutTab, LayoutTab.X, 0f, margin, BACKGROUND_STEP1_DURATION));
-        animationList.add(CompositorAnimator.ofFloatProperty(
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(
                 handler, sourceLayoutTab, LayoutTab.Y, 0f, margin, BACKGROUND_STEP1_DURATION));
-        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.BORDER_SCALE, 1f / scale, 1f, BACKGROUND_STEP1_DURATION));
-        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.BORDER_ALPHA, 0f, 1f, BACKGROUND_STEP1_DURATION));
 
         AnimatorSet step1Source = new AnimatorSet();
@@ -265,13 +267,14 @@ public class SimpleAnimationLayout extends Layout {
 
         animationList = new ArrayList<>(4);
 
-        animationList.add(CompositorAnimator.ofFloatProperty(
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(
                 handler, newLayoutTab, LayoutTab.ALPHA, 0f, 1f, BACKGROUND_STEP1_DURATION / 2));
-        animationList.add(CompositorAnimator.ofFloatProperty(
+
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(
                 handler, newLayoutTab, LayoutTab.SCALE, 0f, scale, BACKGROUND_STEP1_DURATION));
-        animationList.add(CompositorAnimator.ofFloatProperty(
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(
                 handler, newLayoutTab, LayoutTab.X, originX, pauseX, BACKGROUND_STEP1_DURATION));
-        animationList.add(CompositorAnimator.ofFloatProperty(
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(
                 handler, newLayoutTab, LayoutTab.Y, originY, pauseY, BACKGROUND_STEP1_DURATION));
 
         AnimatorSet step1New = new AnimatorSet();
@@ -285,29 +288,32 @@ public class SimpleAnimationLayout extends Layout {
 
         // step 3: zoom in the source tab and slide down the new tab
         animationList = new ArrayList<>(7);
-        animationList.add(
-                CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab, LayoutTab.SCALE, scale,
-                        1f, BACKGROUND_STEP3_DURATION, BakedBezierInterpolator.TRANSFORM_CURVE));
-        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab, LayoutTab.X,
-                margin, 0f, BACKGROUND_STEP3_DURATION, BakedBezierInterpolator.TRANSFORM_CURVE));
-        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab, LayoutTab.Y,
-                margin, 0f, BACKGROUND_STEP3_DURATION, BakedBezierInterpolator.TRANSFORM_CURVE));
-        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
+                LayoutTab.SCALE, scale, 1f, BACKGROUND_STEP3_DURATION,
+                BakedBezierInterpolator.TRANSFORM_CURVE));
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
+                LayoutTab.X, margin, 0f, BACKGROUND_STEP3_DURATION,
+                BakedBezierInterpolator.TRANSFORM_CURVE));
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
+                LayoutTab.Y, margin, 0f, BACKGROUND_STEP3_DURATION,
+                BakedBezierInterpolator.TRANSFORM_CURVE));
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.BORDER_SCALE, 1f, 1f / scale, BACKGROUND_STEP3_DURATION,
                 BakedBezierInterpolator.TRANSFORM_CURVE));
-        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.BORDER_ALPHA, 1f, 0f, BACKGROUND_STEP3_DURATION,
                 BakedBezierInterpolator.TRANSFORM_CURVE));
 
-        animationList.add(CompositorAnimator.ofFloatProperty(
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(
                 handler, newLayoutTab, LayoutTab.ALPHA, 1f, 0f, BACKGROUND_STEP3_DURATION));
+
         if (getOrientation() == Orientation.PORTRAIT) {
-            animationList.add(CompositorAnimator.ofFloatProperty(handler, newLayoutTab, LayoutTab.Y,
-                    pauseY, getHeight(), BACKGROUND_STEP3_DURATION,
+            animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, newLayoutTab,
+                    LayoutTab.Y, pauseY, getHeight(), BACKGROUND_STEP3_DURATION,
                     BakedBezierInterpolator.FADE_OUT_CURVE));
         } else {
-            animationList.add(CompositorAnimator.ofFloatProperty(handler, newLayoutTab, LayoutTab.X,
-                    pauseX, getWidth(), BACKGROUND_STEP3_DURATION,
+            animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, newLayoutTab,
+                    LayoutTab.X, pauseX, getWidth(), BACKGROUND_STEP3_DURATION,
                     BakedBezierInterpolator.FADE_OUT_CURVE));
         }
 

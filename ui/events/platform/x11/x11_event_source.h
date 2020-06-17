@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "ui/events/events_export.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_types.h"
 
 using Time = unsigned long;
@@ -35,21 +36,20 @@ class PlatformEventDispatcher;
 class ScopedXEventDispatcher;
 
 // The XEventDispatcher interface is used in two different ways: the first is
-// when classes want to receive XEvent directly and second is to say if classes,
-// which also implement the PlatformEventDispatcher interface, are able to
-// process next translated from XEvent to ui::Event events. Only used with Ozone
-// X11 currently.
+// when classes want to receive x11::Event directly and second is to say if
+// classes, which also implement the PlatformEventDispatcher interface, are able
+// to process next translated from x11::Event to ui::Event events.
 class EVENTS_EXPORT XEventDispatcher {
  public:
-  // Sends XEvent to XEventDispatcher for handling. Returns true if the XEvent
-  // was dispatched, otherwise false. After the first XEventDispatcher returns
-  // true XEvent dispatching stops.
-  virtual bool DispatchXEvent(XEvent* xevent) = 0;
+  // Sends x11::Event to XEventDispatcher for handling. Returns true if the
+  // x11::Event was dispatched, otherwise false. After the first
+  // XEventDispatcher returns true x11::Event dispatching stops.
+  virtual bool DispatchXEvent(x11::Event* xevent) = 0;
 
   // XEventDispatchers can be used to test if they are able to process next
   // translated event sent by a PlatformEventSource. If so, they must make a
   // promise internally to process next event sent by PlatformEventSource.
-  virtual void CheckCanDispatchNextPlatformEvent(XEvent* xev);
+  virtual void CheckCanDispatchNextPlatformEvent(x11::Event* xev);
 
   // Tells that an event has been dispatched and an event handling promise must
   // be removed.
@@ -62,7 +62,7 @@ class EVENTS_EXPORT XEventDispatcher {
   virtual PlatformEventDispatcher* GetPlatformEventDispatcher();
 
  protected:
-  virtual ~XEventDispatcher() {}
+  virtual ~XEventDispatcher() = default;
 };
 
 // XEventObserver can be installed on a X11EventSource, and it
@@ -70,17 +70,17 @@ class EVENTS_EXPORT XEventDispatcher {
 class EVENTS_EXPORT XEventObserver {
  public:
   // Called before the dispatchers receive the event.
-  virtual void WillProcessXEvent(XEvent* event) = 0;
+  virtual void WillProcessXEvent(x11::Event* event) = 0;
 
   // Called after the event has been dispatched.
-  virtual void DidProcessXEvent(XEvent* event) = 0;
+  virtual void DidProcessXEvent(x11::Event* event) = 0;
 
  protected:
-  virtual ~XEventObserver() {}
+  virtual ~XEventObserver() = default;
 };
 
-// Responsible for notifying X11EventSource when new XEvents are available to
-// be processed/dispatched.
+// Responsible for notifying X11EventSource when new x11::Events are available
+// to be processed/dispatched.
 class X11EventWatcher {
  public:
   X11EventWatcher() = default;
@@ -149,18 +149,18 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
   // |last_seen_server_time_| with this value.
   Time GetCurrentServerTime();
 
-  // Adds a XEvent dispatcher to the XEvent dispatcher list.
+  // Adds a x11::Event dispatcher to the x11::Event dispatcher list.
   // Also calls XEventDispatcher::GetPlatformEventDispatcher
   // to explicitly add this |dispatcher| to a list of PlatformEventDispatchers
   // in case if XEventDispatcher has a PlatformEventDispatcher. Thus,
   // there is no need to separately add self to the list of
   // PlatformEventDispatchers. This is needed because XEventDispatchers are
-  // tested if they can receive an XEvent based on a XID target. If so, the
-  // translated XEvent into a PlatformEvent is sent to that
+  // tested if they can receive an x11::Event based on a XID target. If so, the
+  // translated x11::Event into a PlatformEvent is sent to that
   // PlatformEventDispatcher.
   void AddXEventDispatcher(XEventDispatcher* dispatcher);
 
-  // Removes an XEvent dispatcher from the XEvent dispatcher list.
+  // Removes an x11::Event dispatcher from the x11::Event dispatcher list.
   // Also explicitly removes an XEventDispatcher from a PlatformEventDispatcher
   // list if the XEventDispatcher has a PlatformEventDispatcher.
   void RemoveXEventDispatcher(XEventDispatcher* dispatcher);
@@ -177,7 +177,7 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
   std::unique_ptr<ScopedXEventDispatcher> OverrideXEventDispatcher(
       XEventDispatcher* dispatcher);
 
-  void ProcessXEvent(XEvent* xevent);
+  void ProcessXEvent(x11::Event* xevent);
 
   // x11::Connection::Delegate:
   bool ShouldContinueStream() const override;
@@ -185,7 +185,7 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
 
  protected:
   // Handles updates after event has been dispatched.
-  void PostDispatchEvent(XEvent* xevent);
+  void PostDispatchEvent(x11::Event* xevent);
 
  private:
   friend class ScopedXEventDispatcher;
@@ -194,10 +194,10 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
   // a translated event is going to be sent next, then dispatches the event and
   // notifies XEventDispatchers the event has been sent out and, most probably,
   // consumed.
-  void DispatchPlatformEvent(const PlatformEvent& event, XEvent* xevent);
+  void DispatchPlatformEvent(const PlatformEvent& event, x11::Event* xevent);
 
   // Sends XEvent to registered XEventDispatchers.
-  void DispatchXEventToXEventDispatchers(XEvent* xevent);
+  void DispatchXEventToXEventDispatchers(x11::Event* xevent);
 
   // PlatformEventSource:
   void StopCurrentEventStream() override;
@@ -213,7 +213,7 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
   XDisplay* display_;
 
   // Event currently being dispatched.
-  XEvent* dispatching_event_;
+  x11::Event* dispatching_event_;
 
   // State necessary for UpdateLastSeenServerTime
   bool dummy_initialized_;

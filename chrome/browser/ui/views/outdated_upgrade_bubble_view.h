@@ -24,7 +24,6 @@ class OutdatedUpgradeBubbleView : public views::BubbleDialogDelegateView {
 
   // views::BubbleDialogDelegateView:
   void WindowClosing() override;
-  base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void Init() override;
 

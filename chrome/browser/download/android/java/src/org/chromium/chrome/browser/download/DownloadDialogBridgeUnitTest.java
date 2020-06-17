@@ -28,6 +28,7 @@ import org.robolectric.shadows.ShadowLog;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.download.dialogs.DownloadDateTimePickerDialogCoordinator;
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogChoice;
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogCoordinator;
 import org.chromium.chrome.browser.download.dialogs.DownloadLocationDialogCoordinator;
@@ -43,6 +44,7 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 public class DownloadDialogBridgeUnitTest {
     private static final int FAKE_NATIVE_HOLDER = 1;
     private static final long INVALID_START_TIME = -1;
+    private static final long START_TIME = 1000;
     private static final long TOTAL_BYTES = 100;
     private static final @DownloadLocationDialogType int LOCATION_DIALOG_TYPE =
             org.chromium.chrome.browser.download.DownloadLocationDialogType.DEFAULT;
@@ -72,13 +74,16 @@ public class DownloadDialogBridgeUnitTest {
     @Mock
     DownloadLaterDialogCoordinator mDownloadLaterDialog;
 
+    @Mock
+    DownloadDateTimePickerDialogCoordinator mDateTimePickerDialog;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         ShadowLog.stream = System.out;
         mJniMocker.mock(DownloadDialogBridgeJni.TEST_HOOKS, mNativeMock);
-        mBridge =
-                new DownloadDialogBridge(FAKE_NATIVE_HOLDER, mDownloadLaterDialog, mLocationDialog);
+        mBridge = new DownloadDialogBridge(
+                FAKE_NATIVE_HOLDER, mDownloadLaterDialog, mDateTimePickerDialog, mLocationDialog);
     }
 
     @After
@@ -185,6 +190,42 @@ public class DownloadDialogBridgeUnitTest {
         verify(mNativeMock)
                 .onComplete(
                         anyLong(), any(), eq(NEW_SUGGESTED_PATH), eq(true), eq(INVALID_START_TIME));
+    }
+
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.DOWNLOAD_LATER})
+    public void testDownloadLaterComplete_downloadLater() {
+        doAnswer(invocation -> {
+            mBridge.onDownloadLaterDialogComplete(DownloadLaterDialogChoice.DOWNLOAD_LATER);
+            return null;
+        })
+                .when(mDownloadLaterDialog)
+                .showDialog(any(), any(), any());
+        doAnswer(invocation -> {
+            mBridge.onDownloadLocationDialogComplete(NEW_SUGGESTED_PATH);
+            return null;
+        })
+                .when(mLocationDialog)
+                .showDialog(any(), any(), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
+                        eq(SUGGESTED_PATH));
+
+        doAnswer(invocation -> {
+            mBridge.onDateTimePicked(START_TIME);
+            return null;
+        })
+                .when(mDateTimePickerDialog)
+                .showDialog(any(), any(), any());
+
+        mBridge.showDialog(
+                mActivity, mModalDialogManager, TOTAL_BYTES, LOCATION_DIALOG_TYPE, SUGGESTED_PATH);
+        verify(mDownloadLaterDialog).showDialog(any(), any(), any());
+        verify(mLocationDialog)
+                .showDialog(any(), any(), eq(TOTAL_BYTES), eq(LOCATION_DIALOG_TYPE),
+                        eq(SUGGESTED_PATH));
+        verify(mDateTimePickerDialog).showDialog(any(), any(), any());
+
+        verify(mNativeMock)
+                .onComplete(anyLong(), any(), eq(NEW_SUGGESTED_PATH), eq(false), eq(START_TIME));
     }
 
     @Test

@@ -40,6 +40,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_rar_analyzer.h"
 #include "chrome/services/file_util/public/cpp/sandboxed_zip_analyzer.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/policy/core/common/chrome_schema.h"
@@ -525,8 +526,12 @@ bool DeepScanningDialogDelegate::UploadData() {
           base::BindOnce(&DeepScanningDialogDelegate::StringRequestCallback,
                          weak_ptr_factory_.GetWeakPtr()));
 
-      PrepareRequest(DlpDeepScanningClientRequest::WEB_CONTENT_UPLOAD,
-                     request.get());
+      if (request->use_legacy_proto()) {
+        PrepareRequest(DlpDeepScanningClientRequest::WEB_CONTENT_UPLOAD,
+                       request.get());
+      } else {
+        PrepareRequest(enterprise_connectors::BULK_DATA_ENTRY, request.get());
+      }
       UploadTextForDeepScanning(std::move(request));
     }
   } else {
@@ -549,7 +554,11 @@ void DeepScanningDialogDelegate::PrepareFileRequest(
                      weak_ptr_factory_.GetWeakPtr(), path));
 
   FileSourceRequest* request_raw = request.get();
-  PrepareRequest(DlpDeepScanningClientRequest::FILE_UPLOAD, request_raw);
+  if (request->use_legacy_proto())
+    PrepareRequest(DlpDeepScanningClientRequest::FILE_UPLOAD, request_raw);
+  else
+    PrepareRequest(enterprise_connectors::FILE_ATTACHED, request_raw);
+
   request_raw->GetRequestData(
       base::BindOnce(&DeepScanningDialogDelegate::OnGotFileInfo,
                      weak_ptr_factory_.GetWeakPtr(), std::move(request), path));
@@ -575,6 +584,18 @@ void DeepScanningDialogDelegate::PrepareRequest(
   request->set_device_token(GetDMToken(Profile::FromBrowserContext(
                                            web_contents_->GetBrowserContext()))
                                 .value());
+}
+
+void DeepScanningDialogDelegate::PrepareRequest(
+    enterprise_connectors::AnalysisConnector connector,
+    BinaryUploadService::Request* request) {
+  request->set_device_token(GetDMToken(Profile::FromBrowserContext(
+                                           web_contents_->GetBrowserContext()))
+                                .value());
+  request->set_analysis_connector(connector);
+  request->set_url(data_.url.spec());
+  for (const std::string& tag : data_.settings.tags)
+    request->add_tag(tag);
 }
 
 void DeepScanningDialogDelegate::FillAllResultsWith(bool status) {

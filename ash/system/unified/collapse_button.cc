@@ -60,7 +60,7 @@ const char* CollapseButton::GetClassName() const {
 
 void CollapseButton::OnEnabledChanged() {
   const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconPrimary,
+      AshColorProvider::ContentLayerType::kIconColorPrimary,
       AshColorProvider::AshColorMode::kDark);
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(

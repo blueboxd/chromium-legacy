@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.support.test.filters.LargeTest;
 import android.util.Pair;
+
+import androidx.test.filters.LargeTest;
 
 import org.json.JSONException;
 import org.json.JSONObject;

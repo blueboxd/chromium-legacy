@@ -41,7 +41,6 @@ class CONTENT_EXPORT CacheStorageQuotaClient : public storage::QuotaClient {
                         DeletionCallback callback) override;
   void PerformStorageCleanup(blink::mojom::StorageType type,
                              base::OnceClosure callback) override;
-  bool DoesSupport(blink::mojom::StorageType type) const override;
 
   static storage::QuotaClientType GetClientTypeFromOwner(
       CacheStorageOwner owner);

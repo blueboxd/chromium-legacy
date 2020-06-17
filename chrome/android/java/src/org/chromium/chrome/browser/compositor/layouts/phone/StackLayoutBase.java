@@ -1332,7 +1332,7 @@ public abstract class StackLayoutBase extends Layout {
 
         // Update tab snapping
         for (int i = 0; i < tabVisibleCount; i++) {
-            if (mLayoutTabs[i].updateSnap(dt)) needUpdate = true;
+            if (updateSnap(dt, mLayoutTabs[i])) needUpdate = true;
         }
 
         if (needUpdate) requestUpdate();

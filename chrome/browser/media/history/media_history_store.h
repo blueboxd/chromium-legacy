@@ -88,7 +88,8 @@ class MediaHistoryStore : public base::RefCountedThreadSafe<MediaHistoryStore> {
     kFailedToWriteOrigin = 2,
     kFailedToWritePlayback = 3,
     kFailedToIncrementAggreatedWatchtime = 4,
-    kMaxValue = kFailedToIncrementAggreatedWatchtime,
+    kFailedToWriteBadOrigin = 5,
+    kMaxValue = kFailedToWriteBadOrigin,
   };
 
   // If we write a session into the database then we record the result to

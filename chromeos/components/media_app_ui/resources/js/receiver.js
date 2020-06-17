@@ -43,19 +43,11 @@ class ReceivedFile {
    * @return {!Promise<number>}
    */
   async deleteOriginalFile() {
-    try {
-      const deleteResponse =
-          /** @type {!DeleteFileResponse} */ (
-              await parentMessagePipe.sendMessage(
-                  Message.DELETE_FILE, {token: this.token}));
-      return deleteResponse.deleteResult;
-    } catch (/** @type {!Error} */ errorResponse) {
-      // TODO(b/156205603): use internal `chrome.crashReportPrivate.reportError`
-      // to report the error.
-      console.warn(errorResponse);
-      return DeleteResult.UNKNOWN_ERROR;
+    const deleteResponse =
+        /** @type {!DeleteFileResponse} */ (await parentMessagePipe.sendMessage(
+            Message.DELETE_FILE, {token: this.token}));
+    return deleteResponse.deleteResult;
     }
-  }
 
   /**
    * @override
@@ -63,20 +55,11 @@ class ReceivedFile {
    * @return {!Promise<number>}
    */
   async renameOriginalFile(newName) {
-    try {
-      const renameResponse =
-          /** @type {!RenameFileResponse} */ (
-              await parentMessagePipe.sendMessage(
-                  Message.RENAME_FILE,
-                  {token: this.token, newFilename: newName}));
-      return renameResponse.renameResult;
-    } catch (/** @type {!Error} */ errorResponse) {
-      // TODO(b/156205603): use internal `chrome.crashReportPrivate.reportError`
-      // to report the error.
-      console.warn(errorResponse);
-      return RenameResult.UNKNOWN_ERROR;
+    const renameResponse =
+        /** @type {!RenameFileResponse} */ (await parentMessagePipe.sendMessage(
+            Message.RENAME_FILE, {token: this.token, newFilename: newName}));
+    return renameResponse.renameResult;
     }
-  }
 }
 
 /**

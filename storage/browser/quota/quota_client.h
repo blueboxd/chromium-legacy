@@ -72,8 +72,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaClient
   virtual void PerformStorageCleanup(blink::mojom::StorageType type,
                                      base::OnceClosure callback) = 0;
 
-  virtual bool DoesSupport(blink::mojom::StorageType type) const = 0;
-
  protected:
   friend class RefCountedThreadSafe<QuotaClient>;
 

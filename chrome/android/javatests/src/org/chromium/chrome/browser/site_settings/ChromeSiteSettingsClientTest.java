@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.site_settings;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.graphics.Bitmap;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
 import org.junit.Rule;

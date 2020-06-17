@@ -24,8 +24,10 @@
 #include "chrome/browser/site_isolation/chrome_site_per_process_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/guest_view_base.h"
@@ -1488,7 +1490,10 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, NtpProcesses) {
       content::NotificationService::AllBrowserContextsAndSources());
 
   // Open a new tab and capture the initial state of the browser.
-  chrome::NewTab(browser());
+  // TODO(crbug/1094088): Replace the following with chrome::NewTab(browser());
+  // when fixed.
+  local_ntp_test_utils::OpenNewTab(browser(),
+                                   GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
   content::WebContents* tab1 =
@@ -1508,7 +1513,10 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, NtpProcesses) {
   EXPECT_EQ(0u, process_termination_tracker.size());
 
   // Open another new tab and capture the resulting state of the browser.
-  chrome::NewTab(browser());
+  // TODO(crbug/1094088): Replace the following with chrome::NewTab(browser());
+  // when fixed.
+  local_ntp_test_utils::OpenNewTab(browser(),
+                                   GURL(chrome::kChromeSearchLocalNtpUrl));
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_EQ(2, browser()->tab_strip_model()->active_index());
   content::WebContents* tab2 =

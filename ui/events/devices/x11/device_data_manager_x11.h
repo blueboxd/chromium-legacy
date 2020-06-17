@@ -19,8 +19,10 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform_event.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xinput.h"
 
 namespace ui {
 
@@ -133,53 +135,53 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
   // Get all event data in one pass. We extract only data types that we know
   // about (defined in enum DataType). The data is not processed (e.g. not
   // filled in by cached values) as in GetEventData.
-  void GetEventRawData(const XEvent& xev, EventData* data);
+  void GetEventRawData(const x11::Event& xev, EventData* data);
 
   // Get a datum of the specified type. Return true and the value
   // is updated if the data is found, false and value unchanged if the data is
   // not found. In the case of MT-B/XI2.2, the value can come from a previously
   // cached one (see the comment above last_seen_valuator_).
-  bool GetEventData(const XEvent& xev, const DataType type, double* value);
+  bool GetEventData(const x11::Event& xev, const DataType type, double* value);
 
   // Check if the event is an XI input event in the strict sense
   // (i.e. XIDeviceEvent). This rules out things like hierarchy changes,
   /// device changes, property changes and so on.
-  bool IsXIDeviceEvent(const XEvent& xev) const;
+  bool IsXIDeviceEvent(const x11::Event& xev) const;
 
   // Check if the event comes from touchpad devices.
-  bool IsTouchpadXInputEvent(const XEvent& xev) const;
+  bool IsTouchpadXInputEvent(const x11::Event& xev) const;
 
   // Check if the event comes from devices running CMT driver or using
   // CMT valuators (e.g. mouses). Note that doesn't necessarily mean the event
   // is a CMT event (e.g. it could be a mouse pointer move).
-  bool IsCMTDeviceEvent(const XEvent& xev) const;
+  bool IsCMTDeviceEvent(const x11::Event& xev) const;
 
   // Check if the event contains information about a ScrollClass, and
   // report which scroll axes are contained in this event, defined by
   // ScrollType.
-  int GetScrollClassEventDetail(const XEvent& xev) const;
+  int GetScrollClassEventDetail(const x11::Event& xev) const;
 
   // Check if the event comes from a device that has a ScrollClass, and
   // report which scroll axes it supports as a bit field, defined by
   // ScrollType.
-  int GetScrollClassDeviceDetail(const XEvent& xev) const;
+  int GetScrollClassDeviceDetail(const x11::Event& xev) const;
 
   // Check if the event is one of the CMT gesture events (scroll, fling,
   // metrics etc.).
-  bool IsCMTGestureEvent(const XEvent& xev) const;
+  bool IsCMTGestureEvent(const x11::Event& xev) const;
 
   // Returns true if the event is of the specific type, false if not.
-  bool IsScrollEvent(const XEvent& xev) const;
-  bool IsFlingEvent(const XEvent& xev) const;
-  bool IsCMTMetricsEvent(const XEvent& xev) const;
+  bool IsScrollEvent(const x11::Event& xev) const;
+  bool IsFlingEvent(const x11::Event& xev) const;
+  bool IsCMTMetricsEvent(const x11::Event& xev) const;
 
   // Returns true if the event has CMT start/end timestamps.
-  bool HasGestureTimes(const XEvent& xev) const;
+  bool HasGestureTimes(const x11::Event& xev) const;
 
   // Extract data from a scroll event (a motion event with the necessary
   // valuators). User must first verify the event type with IsScrollEvent.
   // Pointers shouldn't be NULL.
-  void GetScrollOffsets(const XEvent& xev,
+  void GetScrollOffsets(const x11::Event& xev,
                         float* x_offset,
                         float* y_offset,
                         float* x_offset_ordinal,
@@ -189,7 +191,7 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
   // Extract data from a scroll class event (smooth scrolling). User must
   // first verify the event type with GetScrollClassEventDetail.
   // Pointers shouldn't be NULL.
-  void GetScrollClassOffsets(const XEvent& xev,
+  void GetScrollClassOffsets(const x11::Event& xev,
                              double* x_offset,
                              double* y_offset);
 
@@ -200,7 +202,7 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
 
   // Extract data from a fling event. User must first verify the event type
   // with IsFlingEvent. Pointers shouldn't be NULL.
-  void GetFlingData(const XEvent& xev,
+  void GetFlingData(const x11::Event& xev,
                     float* vx,
                     float* vy,
                     float* vx_ordinal,
@@ -209,7 +211,7 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
 
   // Extract data from a CrOS metrics gesture event. User must first verify
   // the event type with IsCMTMetricsEvent. Pointers shouldn't be NULL.
-  void GetMetricsData(const XEvent& xev,
+  void GetMetricsData(const x11::Event& xev,
                       GestureMetricsType* type,
                       float* data1,
                       float* data2);
@@ -223,15 +225,15 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
 
   // Extract the start/end timestamps from CMT events. User must first verify
   // the event with HasGestureTimes. Pointers shouldn't be NULL.
-  void GetGestureTimes(const XEvent& xev, double* start_time, double* end_time);
+  void GetGestureTimes(const x11::Event& xev,
+                       double* start_time,
+                       double* end_time);
 
   // Normalize the data value on deviceid to fall into [0, 1].
   // *value = (*value - min_value_of_tp) / (max_value_of_tp - min_value_of_tp)
   // Returns true and sets the normalized value in|value| if normalization is
   // successful. Returns false and |value| is unchanged otherwise.
-  bool NormalizeData(int deviceid,
-                     const DataType type,
-                     double* value);
+  bool NormalizeData(int deviceid, const DataType type, double* value);
 
   // Extract the range of the data type. Return true if the range is available
   // and written into min & max, false if the range is not available.
@@ -249,6 +251,7 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
                             const std::vector<int>& other_devices);
 
   void SetValuatorDataForTest(XIDeviceEvent* xievent,
+                              x11::Input::DeviceEvent* devev,
                               DataType type,
                               double value);
 
@@ -263,11 +266,9 @@ class EVENTS_DEVICES_X11_EXPORT DeviceDataManagerX11
   bool IsDeviceEnabled(int device_id) const;
 
   // Returns true if |native_event| should be blocked.
-  bool IsEventBlocked(const XEvent& xev);
+  bool IsEventBlocked(const x11::Event& xev);
 
-  const std::vector<int>& master_pointers() const {
-    return master_pointers_;
-  }
+  const std::vector<int>& master_pointers() const { return master_pointers_; }
 
  protected:
   // DeviceHotplugEventObserver:

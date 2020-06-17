@@ -1744,7 +1744,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameHostImpl, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateState, OnUpdateState)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Unload_ACK, OnUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
@@ -2881,20 +2880,6 @@ void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
 
   // Since we didn't early return, it's safe to keep the commit state.
   commit_state_resetter.disable();
-}
-
-void RenderFrameHostImpl::OnUpdateState(const PageState& state) {
-  // TODO(creis): Verify the state's ISN matches the last committed FNE.
-
-  // Without this check, the renderer can trick the browser into using
-  // filenames it can't access in a future session restore.
-  if (!CanAccessFilesOfPageState(state)) {
-    bad_message::ReceivedBadMessage(
-        GetProcess(), bad_message::RFH_CAN_ACCESS_FILES_OF_PAGE_STATE);
-    return;
-  }
-
-  delegate_->UpdateStateForFrame(this, state);
 }
 
 RenderWidgetHostImpl* RenderFrameHostImpl::GetRenderWidgetHost() {
@@ -4709,6 +4694,20 @@ void RenderFrameHostImpl::ShowCreatedWindow(int pending_widget_routing_id,
 void RenderFrameHostImpl::RequestOverlayRoutingToken(
     RequestOverlayRoutingTokenCallback callback) {
   std::move(callback).Run(frame_token_);
+}
+
+void RenderFrameHostImpl::UpdateState(const PageState& state) {
+  // TODO(creis): Verify the state's ISN matches the last committed FNE.
+
+  // Without this check, the renderer can trick the browser into using
+  // filenames it can't access in a future session restore.
+  if (!CanAccessFilesOfPageState(state)) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFH_CAN_ACCESS_FILES_OF_PAGE_STATE);
+    return;
+  }
+
+  delegate_->UpdateStateForFrame(this, state);
 }
 
 void RenderFrameHostImpl::GetSavableResourceLinksCallback(

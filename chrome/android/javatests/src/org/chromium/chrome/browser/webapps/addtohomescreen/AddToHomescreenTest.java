@@ -8,10 +8,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Build;
-import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 
 import androidx.annotation.StringRes;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

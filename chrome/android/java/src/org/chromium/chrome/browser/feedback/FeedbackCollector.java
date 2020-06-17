@@ -221,12 +221,7 @@ public class FeedbackCollector implements Runnable {
         final Callback<FeedbackCollector> callback = mCallback;
         mCallback = null;
 
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
-            @Override
-            public void run() {
-                callback.onResult(FeedbackCollector.this);
-            }
-        });
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, callback.bind(this));
     }
 
     private void doWorkOnAllFeedbackSources(Callback<FeedbackSource> worker) {

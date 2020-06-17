@@ -142,8 +142,7 @@ class MediaActionButton : public views::ImageButton {
                     int icon_size,
                     MediaSessionAction action,
                     const base::string16& accessible_name)
-      : views::ImageButton(listener),
-        icon_size_(icon_size) {
+      : views::ImageButton(listener), icon_size_(icon_size) {
     SetInkDropMode(views::Button::InkDropMode::ON);
     set_has_ink_drop_action_on_click(true);
     SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
@@ -173,7 +172,7 @@ class MediaActionButton : public views::ImageButton {
     views::SetImageFromVectorIcon(
         this, GetVectorIconForMediaAction(action), icon_size_,
         AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kIconPrimary,
+            AshColorProvider::ContentLayerType::kIconColorPrimary,
             AshColorProvider::AshColorMode::kDark));
   }
 
@@ -273,7 +272,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   title_label->SetFontList(base_font_list.Derive(
       2, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD));
   title_label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextPrimary,
+      AshColorProvider::ContentLayerType::kTextColorPrimary,
       AshColorProvider::AshColorMode::kDark));
   title_label->SetAutoColorReadabilityEnabled(false);
   title_label->SetElideBehavior(gfx::ELIDE_TAIL);
@@ -284,7 +283,7 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   artist_label->SetFontList(base_font_list.Derive(
       0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::LIGHT));
   artist_label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextSecondary,
+      AshColorProvider::ContentLayerType::kTextColorSecondary,
       AshColorProvider::AshColorMode::kDark));
   artist_label->SetAutoColorReadabilityEnabled(false);
   artist_label->SetElideBehavior(gfx::ELIDE_TAIL);

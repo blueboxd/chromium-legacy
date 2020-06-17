@@ -34,13 +34,14 @@ std::unique_ptr<OSExchangeDataProvider> X11OSExchangeDataProviderOzone::Clone()
   return std::move(ret);
 }
 
-bool X11OSExchangeDataProviderOzone::DispatchXEvent(XEvent* xev) {
+bool X11OSExchangeDataProviderOzone::DispatchXEvent(x11::Event* x11_event) {
+  XEvent* xev = &x11_event->xlib_event();
   if (xev->xany.window != x_window())
     return false;
 
   switch (xev->type) {
     case x11::SelectionRequestEvent::opcode:
-      selection_owner().OnSelectionRequest(*xev);
+      selection_owner().OnSelectionRequest(*x11_event);
       return true;
     default:
       NOTIMPLEMENTED();

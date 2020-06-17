@@ -7,8 +7,12 @@
 #include <utility>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/metrics_util.h"
+#include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -113,6 +117,40 @@ base::string16 GetDeskDefaultName(size_t desk_index) {
                 "Wrong default desks' names.");
 
   return l10n_util::GetStringUTF16(kStringIds[desk_index]);
+}
+
+// Updates the |ShelfItem::is_on_active_desk| of the items associated with
+// |windows_on_inactive_desk| and |windows_on_active_desk|. The items of the
+// given windows will be updated, while the rest will remain unchanged. Either
+// or both window lists can be empty.
+void MaybeUpdateShelfItems(
+    const std::vector<aura::Window*>& windows_on_inactive_desk,
+    const std::vector<aura::Window*>& windows_on_active_desk) {
+  if (!features::IsPerDeskShelfEnabled())
+    return;
+
+  auto* shelf_model = ShelfModel::Get();
+  DCHECK(shelf_model);
+  std::vector<ShelfModel::ItemDeskUpdate> shelf_items_updates;
+
+  auto add_shelf_item_update = [&](aura::Window* window,
+                                   bool is_on_active_desk) {
+    const ShelfID shelf_id =
+        ShelfID::Deserialize(window->GetProperty(kShelfIDKey));
+    const int index = shelf_model->ItemIndexByID(shelf_id);
+
+    if (index < 0)
+      return;
+
+    shelf_items_updates.push_back({index, is_on_active_desk});
+  };
+
+  for (auto* window : windows_on_inactive_desk)
+    add_shelf_item_update(window, /*is_on_active_desk=*/false);
+  for (auto* window : windows_on_active_desk)
+    add_shelf_item_update(window, /*is_on_active_desk=*/true);
+
+  shelf_model->UpdateItemsForDeskChange(shelf_items_updates);
 }
 
 }  // namespace
@@ -631,6 +669,9 @@ bool DesksController::MoveWindowFromActiveDeskTo(
 
   active_desk_->MoveWindowToDesk(window, target_desk, target_root);
 
+  MaybeUpdateShelfItems(/*windows_on_inactive_desk=*/{window},
+                        /*windows_on_active_desk=*/{});
+
   Shell::Get()
       ->accessibility_controller()
       ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringFUTF8(
@@ -776,6 +817,8 @@ void DesksController::ActivateDeskInternal(const Desk* desk,
   old_active->Deactivate(update_window_activation);
   active_desk_->Activate(update_window_activation);
 
+  MaybeUpdateShelfItems(old_active->windows(), active_desk_->windows());
+
   for (auto& observer : observers_)
     observer.OnDeskActivationChanged(active_desk_, old_active);
 }
@@ -820,6 +863,8 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
         active_desk_->GetScopedNotifyContentChangedDisabler();
 
     removed_desk->MoveWindowsToDesk(active_desk_);
+
+    MaybeUpdateShelfItems({}, removed_desk_windows);
 
     // If overview mode is active, we add the windows of the removed desk to the
     // overview grid in the order of the new MRU (which changes after removing a

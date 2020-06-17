@@ -698,7 +698,7 @@ public final class ChildProcessLauncherHelperImpl {
                 pids.add(entry.getKey());
             });
 
-            responseHandler.post(() -> callback.onResult(map));
+            responseHandler.post(callback.bind(map));
         });
     }
 

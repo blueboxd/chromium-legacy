@@ -394,7 +394,7 @@ locale.  The strings in this file are specific to iOS.
         Edit Bookmark
       </message>
       <message name="IDS_IOS_BOOKMARK_EMPTY_MESSAGE" desc="Message shown on the Bookmark screen when there are no Bookmarks, explaining the purpose of the Bookmark screen.">
-          You can get back to a page that's important to you by adding a bookmark.
+          You can get back to a page that's important to you by adding a bookmark
       </message>
       <message name="IDS_IOS_BOOKMARK_EMPTY_TITLE" desc="Title shown on the Bookmark screen when there are no Bookmarks.">
           You'll find your bookmarks here
@@ -1495,7 +1495,7 @@ While in incognito, sites can't use cookies to see your browsing activity across
         Mark Unread
       </message>
       <message name="IDS_IOS_READING_LIST_NO_ENTRIES_MESSAGE" desc="Message shown on the Reading List screen when there are no entries, explaining the purpose of the Reading List screen.">
-          You can save pages to your reading list to find them again or read offline.
+          You can save pages to your reading list to find them again or read offline
       </message>
       <message name="IDS_IOS_READING_LIST_NO_ENTRIES_TITLE" desc="Title shown on the Reading List screen when there are no entries.">
           You'll find your reading list here
@@ -2042,6 +2042,9 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_TAB_GRID_INCOGNITO_TABS_EMPTY_STATE_TITLE" desc="Title shown in the Incognito Tabs page when the grid is empty. [iOS only]">
         No Incognito Tabs
+      </message>
+      <message name="IDS_IOS_TAB_GRID_INCOGNITO_TABS_EMPTY_MESSAGE" desc="Message shown in the Incognito Tabs page when the grid is empty, explaining that the user can open a new tab.">
+        To browse the web privately, add a new tab
       </message>
       <message name="IDS_IOS_TAB_GRID_INCOGNITO_TABS_EMPTY_TITLE" desc="Title shown above a message on the incognito tab switcher when there are no incognito tabs. [iOS only]">
         You'll find your Incognito tabs here

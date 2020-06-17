@@ -198,7 +198,7 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   SharedHandleState GetSharedHandleStateForPath(
       const base::FilePath& path,
       const url::Origin& origin,
-      const storage::IsolatedContext::ScopedFSHandle& file_system,
+      storage::IsolatedContext::ScopedFSHandle file_system,
       bool is_directory,
       NativeFileSystemPermissionContext::UserAction user_action);
 

@@ -163,7 +163,9 @@
 
       :host([narrow][showing-search]) #icon,
       :host([narrow][showing-search]) paper-spinner-lite {
-        margin-inline-start: 18px;  /* Line up with Menu icon. */
+        /* 18px to line up with the Menu icon by default. */
+        margin-inline-start:
+            var(--cr-toolbar-search-icon-margin-inline-start, 18px);
       }
     </style>
     <template is="dom-if" id="spinnerTemplate">

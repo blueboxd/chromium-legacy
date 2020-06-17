@@ -74,17 +74,50 @@ class IDNSpoofChecker {
     size_t trie_root_position;
   };
 
+  enum class Result {
+    // Spoof checks weren't performed because the domain wasn't IDN. Should
+    // never be returned from SafeToDisplayAsUnicode.
+    kNone,
+    // The domain passed all spoof checks.
+    kSafe,
+    // Failed ICU's standard spoof checks such as Greek mixing with Latin.
+    kICUSpoofChecks,
+    // Domain contains deviation characters.
+    kDeviationCharacters,
+    // Domain contains characters that are only allowed for certain TLDs, such
+    // as thorn (þ) used outside Icelandic.
+    kTLDSpecificCharacters,
+    // Domain has an unsafe middle dot.
+    kUnsafeMiddleDot,
+    // Domain is composed of only Latin-like characters from non Latin scripts.
+    // E.g. apple.com but apple in Cyrillic (xn--80ak6aa92e.com).
+    kWholeScriptConfusable,
+    // Domain is composed of only characters that look like digits.
+    kDigitLookalikes,
+    // Domain mixes Non-ASCII Latin with Non-Latin characters.
+    kNonAsciiLatinCharMixedWithNonLatin,
+    // Domain contains dangerous patterns that are mostly found when mixing
+    // Latin and CJK scripts. E.g. Katakana iteration mark (U+30FD) not preceded
+    // by Katakana.
+    kDangerousPattern,
+  };
+
   IDNSpoofChecker();
   ~IDNSpoofChecker();
-
-  // Returns true if |label| is safe to display as Unicode. In the event of
-  // library failure, all IDN inputs will be treated as unsafe.
+  // Returns kSafe if |label| is safe to display as Unicode and fills
+  // |top_level_domain_unicode| with the converted value. Otherwise, returns the
+  // reason of the failure and leaves |top_level_domain_unicode| unchanged.
+  // This method doesn't check for similarity to a top domain: If the input
+  // matches a top domain but is otherwise safe (e.g. googlé.com), the result
+  // will be kSafe.
+  // In the event of library failure, all IDN inputs will be treated as unsafe
+  // and the return value will be kUSpoofChecks.
   // See the function body for details on the specific safety checks performed.
-  // top_level_domain_unicode can be empty if top_level_domain is not well
+  // |top_level_domain_unicode| can be empty if |top_level_domain| is not well
   // formed punycode.
-  bool SafeToDisplayAsUnicode(base::StringPiece16 label,
-                              base::StringPiece top_level_domain,
-                              base::StringPiece16 top_level_domain_unicode);
+  Result SafeToDisplayAsUnicode(base::StringPiece16 label,
+                                base::StringPiece top_level_domain,
+                                base::StringPiece16 top_level_domain_unicode);
 
   // Returns the matching top domain if |hostname| or the last few components of
   // |hostname| looks similar to one of top domains listed in domains.list.

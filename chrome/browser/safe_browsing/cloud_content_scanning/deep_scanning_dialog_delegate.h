@@ -261,6 +261,8 @@ class DeepScanningDialogDelegate {
   // service.
   void PrepareRequest(DlpDeepScanningClientRequest::ContentSource trigger,
                       BinaryUploadService::Request* request);
+  void PrepareRequest(enterprise_connectors::AnalysisConnector connector,
+                      BinaryUploadService::Request* request);
 
   // Fills the arrays in |result_| with the given boolean status.
   void FillAllResultsWith(bool status);

@@ -113,7 +113,6 @@ def Initialize(output_directory=None, custom_deps=None, adb_path=None):
   This includes:
     - Libraries:
       - the android SDK ("android_sdk")
-      - pymock ("pymock")
     - Build products:
       - host & device forwarder binaries
           ("forwarder_device" and "forwarder_host")

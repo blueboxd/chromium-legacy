@@ -54,12 +54,11 @@ const char kMediaFeedsTestHTML[] =
     "  <head>%s</head>";
 
 const char kMediaFeedsTestHeadHTML[] =
-    "<link rel=feed type=\"application/ld+json\" "
+    "<link rel=media-feed type=\"application/ld+json\" "
     "href=\"/media-feed.json\"/>";
 
 const char kMediaFeedsMinTestHeadHTML[] =
-    "<link rel=feed type=\"application/ld+json\" "
-    "href=\"/media-feed-min.json\"/>";
+    "<link rel=media-feed href=\"/media-feed-min.json\"/>";
 
 struct TestData {
   std::string head_html;
@@ -974,22 +973,27 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     MediaFeedsDiscoveryBrowserTest,
     ::testing::Values(
-        TestData{"<link rel=feed type=\"application/ld+json\" "
+        TestData{"<link rel=media-feed type=\"application/ld+json\" "
                  "href=\"/test\"/>",
                  true},
-        TestData{"<link rel=feed type=\"application/ld+json\" href=\"/test\"/>",
+        TestData{"<link rel=media-feed href=\"/test\"/>", true},
+        TestData{"<link rel=media-feed type=\"application/ld+json\" "
+                 "href=\"/test\"/>",
                  false, false},
         TestData{"", false},
-        TestData{"<link rel=feed type=\"application/ld+json\" "
-                 "href=\"/test\"/><link rel=feed "
+        TestData{"<link rel=media-feed type=\"application/ld+json\" "
+                 "href=\"/test\"/><link rel=media-feed "
                  "type=\"application/ld+json\" href=\"/test2\"/>",
                  true},
-        TestData{"<link rel=feed type=\"application/ld+json\" "
+        TestData{"<link rel=media-feed type=\"application/ld+json\" "
                  "href=\"https://www.example.com/test\"/>",
                  false},
-        TestData{"<link rel=feed type=\"application/ld+json\" href=\"\"/>",
+        TestData{
+            "<link rel=media-feed type=\"application/ld+json\" href=\"\"/>",
+            false},
+        TestData{"<link rel=feed type=\"application/ld+json\" "
+                 "href=\"/test\"/>",
                  false},
-        TestData{"<link rel=feed href=\"/test\"/>", false},
         TestData{
             "<link rel=other type=\"application/ld+json\" href=\"/test\"/>",
             false}));

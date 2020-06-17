@@ -12,11 +12,9 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
-import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.crypto.CipherFactory;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.util.ColorUtils;
 
@@ -46,15 +44,6 @@ public class TabState {
     public static final String SAVED_TAB_STATE_FILE_PREFIX = "tab";
     public static final String SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO = "cryptonito";
 
-    /**
-     * Version number of the format used to save the WebContents navigation history, as returned by
-     * TabStateJni.get().getContentsStateAsByteBuffer(). Version labels:
-     *   0 - Chrome m18
-     *   1 - Chrome m25
-     *   2 - Chrome m26+
-     */
-    public static final int CONTENTS_STATE_CURRENT_VERSION = 2;
-
     /** Special value for mTimestampMillis. */
     private static final long TIMESTAMP_NOT_SET = -1;
 
@@ -66,53 +55,6 @@ public class TabState {
 
     /** Overrides the Chrome channel/package name to test a variant channel-specific behaviour. */
     private static String sChannelNameOverrideForTest;
-
-    /** Contains the state for a WebContents. */
-    public static class WebContentsState {
-        private final ByteBuffer mBuffer;
-        private int mVersion;
-
-        public WebContentsState(ByteBuffer buffer) {
-            mBuffer = buffer;
-        }
-
-        public ByteBuffer buffer() {
-            return mBuffer;
-        }
-
-        public int version() {
-            return mVersion;
-        }
-
-        public void setVersion(int version) {
-            mVersion = version;
-        }
-
-        /**
-         * Creates a WebContents from the buffer.
-         * @param isHidden Whether or not the tab initially starts hidden.
-         * @return Pointer A WebContents object.
-         */
-        public WebContents restoreContentsFromByteBuffer(boolean isHidden) {
-            return TabStateJni.get().restoreContentsFromByteBuffer(mBuffer, mVersion, isHidden);
-        }
-
-        /**
-         * Deletes navigation entries from this buffer matching predicate.
-         * @param predicate Handle for a deletion predicate interpreted by native code.
-                            Only valid during this call frame.
-         * @return WebContentsState A new state or null if nothing changed.
-         */
-        @Nullable
-        public WebContentsState deleteNavigationEntries(long predicate) {
-            ByteBuffer newBuffer =
-                    TabStateJni.get().deleteNavigationEntries(mBuffer, mVersion, predicate);
-            if (newBuffer == null) return null;
-            WebContentsState newState = new TabState.WebContentsState(newBuffer);
-            newState.setVersion(TabState.CONTENTS_STATE_CURRENT_VERSION);
-            return newState;
-        }
-    }
 
     /** Navigation history of the WebContents. */
     public WebContentsState contentsState;
@@ -333,19 +275,19 @@ public class TabState {
         if (buffer == null) return null;
 
         WebContentsState state = new WebContentsState(buffer);
-        state.setVersion(CONTENTS_STATE_CURRENT_VERSION);
+        state.setVersion(WebContentsState.CONTENTS_STATE_CURRENT_VERSION);
         return state;
     }
 
     /** Returns an ByteBuffer representing the state of the Tab's WebContents. */
-    protected static ByteBuffer getWebContentsStateAsByteBuffer(TabImpl tab) {
+    private static ByteBuffer getWebContentsStateAsByteBuffer(TabImpl tab) {
         LoadUrlParams pendingLoadParams = tab.getPendingLoadParams();
         if (pendingLoadParams == null) {
-            return getContentsStateAsByteBuffer(tab);
+            return WebContentsStateBridge.getContentsStateAsByteBuffer(tab);
         } else {
             Referrer referrer = pendingLoadParams.getReferrer();
-            return createSingleNavigationStateAsByteBuffer(pendingLoadParams.getUrl(),
-                    referrer != null ? referrer.getUrl() : null,
+            return WebContentsStateBridge.createSingleNavigationStateAsByteBuffer(
+                    pendingLoadParams.getUrl(), referrer != null ? referrer.getUrl() : null,
                     // Policy will be ignored for null referrer url, 0 is just a placeholder.
                     referrer != null ? referrer.getPolicy() : 0,
                     pendingLoadParams.getInitiatorOrigin(), tab.isIncognito());
@@ -431,18 +373,6 @@ public class TabState {
         if (file.exists() && !file.delete()) Log.e(TAG, "Failed to delete TabState: " + file);
     }
 
-    /** @return Title currently being displayed in the saved state's current entry. */
-    public String getDisplayTitleFromState() {
-        return TabStateJni.get().getDisplayTitleFromByteBuffer(
-                contentsState.buffer(), contentsState.version());
-    }
-
-    /** @return URL currently being displayed in the saved state's current entry. */
-    public String getVirtualUrlFromState() {
-        return TabStateJni.get().getVirtualUrlFromByteBuffer(
-                contentsState.buffer(), contentsState.version());
-    }
-
     /** @return Whether an incognito TabState was loaded by {@link #readState}. */
     public boolean isIncognito() {
         return mIsIncognito;
@@ -456,30 +386,6 @@ public class TabState {
     /** @return True if the tab has a theme color set. */
     public boolean hasThemeColor() {
         return themeColor != UNSPECIFIED_THEME_COLOR && ColorUtils.isValidThemeColor(themeColor);
-    }
-
-    /**
-     * Creates a WebContentsState for a tab that will be loaded lazily.
-     * @param url URL that is pending.
-     * @param referrerUrl URL for the referrer.
-     * @param referrerPolicy Policy for the referrer.
-     * @param initiatorOrigin Initiator of the navigation.
-     * @param isIncognito Whether or not the state is meant to be incognito (e.g. encrypted).
-     * @return ByteBuffer that represents a state representing a single pending URL.
-     */
-    public static ByteBuffer createSingleNavigationStateAsByteBuffer(String url, String referrerUrl,
-            int referrerPolicy, String initiatorOrigin, boolean isIncognito) {
-        return TabStateJni.get().createSingleNavigationStateAsByteBuffer(
-                url, referrerUrl, referrerPolicy, initiatorOrigin, isIncognito);
-    }
-
-    /**
-     * Returns the WebContents' state as a ByteBuffer.
-     * @param tab Tab to pickle.
-     * @return ByteBuffer containing the state of the WebContents.
-     */
-    public static ByteBuffer getContentsStateAsByteBuffer(Tab tab) {
-        return TabStateJni.get().getContentsStateAsByteBuffer(tab);
     }
 
     /**
@@ -529,26 +435,12 @@ public class TabState {
      */
     public static void createHistoricalTab(Tab tab) {
         if (!tab.isFrozen()) {
-            TabStateJni.get().createHistoricalTabFromContents(tab.getWebContents());
+            WebContentsStateBridge.createHistoricalTabFromContents(tab.getWebContents());
         } else {
             WebContentsState state = ((TabImpl) tab).getFrozenContentsState();
             if (state != null) {
-                TabStateJni.get().createHistoricalTab(state.buffer(), state.version());
+                WebContentsStateBridge.createHistoricalTab(state);
             }
         }
-    }
-
-    @NativeMethods
-    interface Natives {
-        WebContents restoreContentsFromByteBuffer(
-                ByteBuffer buffer, int savedStateVersion, boolean initiallyHidden);
-        ByteBuffer getContentsStateAsByteBuffer(Tab tab);
-        ByteBuffer deleteNavigationEntries(ByteBuffer state, int saveStateVersion, long predicate);
-        ByteBuffer createSingleNavigationStateAsByteBuffer(String url, String referrerUrl,
-                int referrerPolicy, String initiatorOrigin, boolean isIncognito);
-        String getDisplayTitleFromByteBuffer(ByteBuffer state, int savedStateVersion);
-        String getVirtualUrlFromByteBuffer(ByteBuffer state, int savedStateVersion);
-        void createHistoricalTab(ByteBuffer state, int savedStateVersion);
-        void createHistoricalTabFromContents(WebContents webContents);
     }
 }

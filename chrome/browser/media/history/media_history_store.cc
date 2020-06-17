@@ -200,7 +200,15 @@ void MediaHistoryStore::SavePlayback(
 
   // TODO(https://crbug.com/1052436): Remove the separate origin.
   auto origin = url::Origin::Create(watch_time.origin);
-  CHECK_EQ(origin, url::Origin::Create(watch_time.url));
+  if (origin != url::Origin::Create(watch_time.url)) {
+    DB()->RollbackTransaction();
+
+    base::UmaHistogramEnumeration(
+        MediaHistoryStore::kPlaybackWriteResultHistogramName,
+        MediaHistoryStore::PlaybackWriteResult::kFailedToWriteBadOrigin);
+
+    return;
+  }
 
   if (!CreateOriginId(origin)) {
     DB()->RollbackTransaction();

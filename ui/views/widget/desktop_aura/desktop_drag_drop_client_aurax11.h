@@ -22,6 +22,7 @@
 #include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/views/views_export.h"
 
@@ -80,7 +81,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   void RemoveObserver(aura::client::DragDropClientObserver* observer) override;
 
   // XEventDispatcher:
-  bool DispatchXEvent(XEvent* event) override;
+  bool DispatchXEvent(x11::Event* event) override;
 
   // aura::WindowObserver:
   void OnWindowDestroyed(aura::Window* window) override;

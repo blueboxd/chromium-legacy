@@ -19,6 +19,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -109,9 +110,9 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   void ReleasePointerGrab();
   void StackXWindowAbove(::Window window);
   void StackXWindowAtTop();
-  bool IsTargetedBy(const XEvent& xev) const;
+  bool IsTargetedBy(const x11::Event& xev) const;
   void WmMoveResize(int hittest, const gfx::Point& location) const;
-  void ProcessEvent(XEvent* xev);
+  void ProcessEvent(x11::Event* xev);
 
   void SetSize(const gfx::Size& size_in_pixels);
   void SetBounds(const gfx::Rect& requested_bounds);
@@ -193,7 +194,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   // Called when |xwindow_|'s _NET_FRAME_EXTENTS property is updated.
   void OnFrameExtentsUpdated();
 
-  void OnConfigureEvent(XEvent* xev);
+  void OnConfigureEvent(x11::Event* xev);
 
   void OnWorkspaceUpdated();
 
@@ -241,8 +242,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   virtual void OnXWindowWorkspaceChanged() = 0;
   virtual void OnXWindowLostPointerGrab() = 0;
   virtual void OnXWindowLostCapture() = 0;
-  virtual void OnXWindowSelectionEvent(XEvent* xev) = 0;
-  virtual void OnXWindowDragDropEvent(XEvent* xev) = 0;
+  virtual void OnXWindowSelectionEvent(x11::Event* xev) = 0;
+  virtual void OnXWindowDragDropEvent(x11::Event* xev) = 0;
   virtual base::Optional<gfx::Size> GetMinimumSizeForXWindow() = 0;
   virtual base::Optional<gfx::Size> GetMaximumSizeForXWindow() = 0;
   virtual void GetWindowMaskForXWindow(const gfx::Size& size,

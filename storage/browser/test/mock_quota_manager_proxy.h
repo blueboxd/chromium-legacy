@@ -26,8 +26,10 @@ class MockQuotaManagerProxy : public QuotaManagerProxy {
   MockQuotaManagerProxy(MockQuotaManager* quota_manager,
                         base::SingleThreadTaskRunner* task_runner);
 
-  void RegisterClient(scoped_refptr<QuotaClient> client,
-                      QuotaClientType client_type) override;
+  void RegisterClient(
+      scoped_refptr<QuotaClient> client,
+      QuotaClientType client_type,
+      const std::vector<blink::mojom::StorageType>& storage_types) override;
 
   virtual void SimulateQuotaManagerDestroyed();
 

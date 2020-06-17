@@ -124,7 +124,7 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
     tri_view->AddView(TriView::Container::CENTER, label);
 
     const SkColor image_color = AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kProminentIconButton,
+        AshColorProvider::ContentLayerType::kButtonIconColorProminent,
         AshColorProvider::AshColorMode::kDark);
     const gfx::ImageSkia icon =
         gfx::CreateVectorIcon(kSystemMenuAddConnectionIcon, image_color);

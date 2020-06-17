@@ -274,7 +274,7 @@ void DragHandle::ShowDragHandleTooltip() {
       this, nullptr /*parent_window*/, ContextualNudge::Position::kTop,
       gfx::Insets(), l10n_util::GetStringUTF16(IDS_ASH_DRAG_HANDLE_NUDGE),
       AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kTextPrimary,
+          AshColorProvider::ContentLayerType::kTextColorPrimary,
           AshColorProvider::AshColorMode::kDark),
       base::BindRepeating(&DragHandle::HandleTapOnNudge,
                           weak_factory_.GetWeakPtr()));

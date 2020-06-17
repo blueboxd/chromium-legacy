@@ -169,7 +169,7 @@ public class UpdateStatusProvider implements ActivityStateListener {
         mObservers.addObserver(observer);
 
         if (mStatus != null) {
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> observer.onResult(mStatus));
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, observer.bind(mStatus));
         } else {
             if (mOmahaQuery.getStatus() == Status.PENDING) {
                 mOmahaQuery.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

@@ -51,6 +51,10 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableOverviewRoundedCorners;
 // desk.
 ASH_PUBLIC_EXPORT extern const base::Feature kLimitAltTabToActiveDesk;
 
+// Limits the items on the shelf to the ones associated with windows the
+// currently active desk.
+ASH_PUBLIC_EXPORT extern const base::Feature kPerDeskShelf;
+
 // Enables notifications on the lock screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
 
@@ -162,6 +166,8 @@ ASH_PUBLIC_EXPORT extern const base::Feature kNotificationsInContextMenu;
 ASH_PUBLIC_EXPORT bool IsAllowAmbientEQEnabled();
 
 ASH_PUBLIC_EXPORT bool IsAltTabLimitedToActiveDesk();
+
+ASH_PUBLIC_EXPORT bool IsPerDeskShelfEnabled();
 
 ASH_PUBLIC_EXPORT bool IsAutoNightLightEnabled();
 

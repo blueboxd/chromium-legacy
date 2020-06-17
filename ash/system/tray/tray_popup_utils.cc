@@ -104,9 +104,8 @@ void ConfigureDefaultSizeAndFlex(TriView* tri_view,
   tri_view->SetMinSize(container,
                        gfx::Size(min_width, kTrayPopupItemMinHeight));
   constexpr int kTrayPopupItemMaxHeight = 144;
-  tri_view->SetMaxSize(
-      container,
-      gfx::Size(SizeRangeLayout::kAbsoluteMaxSize, kTrayPopupItemMaxHeight));
+  tri_view->SetMaxSize(container, gfx::Size(SizeRangeLayout::kAbsoluteMaxSize,
+                                            kTrayPopupItemMaxHeight));
 }
 
 gfx::Insets GetInkDropInsets(TrayPopupInkDropStyle ink_drop_style) {
@@ -231,8 +230,8 @@ views::ToggleButton* TrayPopupUtils::CreateToggleButton(
   constexpr SkColor kTrackAlpha = 0x66;
   auto GetColor = [](bool is_on, SkAlpha alpha = SK_AlphaOPAQUE) {
     AshColorProvider::ContentLayerType type =
-        is_on ? AshColorProvider::ContentLayerType::kProminentIconButton
-              : AshColorProvider::ContentLayerType::kTextPrimary;
+        is_on ? AshColorProvider::ContentLayerType::kButtonIconColorProminent
+              : AshColorProvider::ContentLayerType::kTextColorPrimary;
 
     return SkColorSetA(AshColorProvider::Get()->GetContentLayerColor(
                            type, AshColorProvider::AshColorMode::kDark),
@@ -291,7 +290,7 @@ views::Separator* TrayPopupUtils::CreateVerticalSeparator() {
   views::Separator* separator = new views::Separator();
   separator->SetPreferredHeight(24);
   separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kSeparator,
+      AshColorProvider::ContentLayerType::kSeparatorColor,
       AshColorProvider::AshColorMode::kLight));
   return separator;
 }
@@ -340,14 +339,13 @@ void TrayPopupUtils::InstallHighlightPathGenerator(
 views::Separator* TrayPopupUtils::CreateListItemSeparator(bool left_inset) {
   views::Separator* separator = new views::Separator();
   separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kSeparator,
+      AshColorProvider::ContentLayerType::kSeparatorColor,
       AshColorProvider::AshColorMode::kLight));
   separator->SetBorder(views::CreateEmptyBorder(
       kMenuSeparatorVerticalPadding - views::Separator::kThickness,
-      left_inset
-          ? kMenuExtraMarginFromLeftEdge + kMenuButtonSize +
-                kTrayPopupLabelHorizontalPadding
-          : 0,
+      left_inset ? kMenuExtraMarginFromLeftEdge + kMenuButtonSize +
+                       kTrayPopupLabelHorizontalPadding
+                 : 0,
       kMenuSeparatorVerticalPadding, 0));
   return separator;
 }

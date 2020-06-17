@@ -121,7 +121,7 @@ Future<Reply> SendRequest(x11::Connection* connection, WriteBuffer* buf) {
 
   struct iovec io[4];
   memset(&io, 0, sizeof(io));
-  if (size32 < connection->setup()->maximum_request_length) {
+  if (size32 < connection->setup().maximum_request_length) {
     xpr.count = 1;
     old_header->length = size32;
     io[2].iov_base = buf->data();
@@ -205,6 +205,14 @@ auto SwitchVar(T enum_val, bool condition, bool is_bitcase, T* switch_var) {
     DCHECK(!switch_int);
     *switch_var = enum_val;
   }
+}
+
+template <typename T>
+std::unique_ptr<T> MakeExtension(Connection* connection,
+                                 Future<QueryExtensionReply> future) {
+  auto reply = future.Sync();
+  return std::make_unique<T>(connection,
+                             reply ? *reply.reply : QueryExtensionReply{});
 }
 
 }  // namespace x11

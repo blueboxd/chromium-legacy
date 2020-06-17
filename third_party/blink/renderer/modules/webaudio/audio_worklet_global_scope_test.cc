@@ -296,7 +296,7 @@ class AudioWorkletGlobalScopeTest : public PageTestBase {
     EXPECT_TRUE(processor);
 
     Vector<scoped_refptr<AudioBus>> input_buses;
-    Vector<AudioBus*> output_buses;
+    Vector<scoped_refptr<AudioBus>> output_buses;
     HashMap<String, std::unique_ptr<AudioFloatArray>> param_data_map;
     scoped_refptr<AudioBus> input_bus =
         AudioBus::Create(1, kRenderQuantumFrames);

@@ -34,8 +34,7 @@ InfobarBannerInteractionHandler::~InfobarBannerInteractionHandler() = default;
 
 std::unique_ptr<OverlayRequestCallbackInstaller>
 InfobarBannerInteractionHandler::CreateInstaller() {
-  return std::make_unique<InfobarBannerOverlayRequestCallbackInstaller>(
-      request_support_, this);
+  return CreateBannerInstaller();
 }
 
 void InfobarBannerInteractionHandler::ShowModalButtonTapped(
@@ -67,4 +66,10 @@ void InfobarBannerInteractionHandler::InfobarVisibilityChanged(
     InfoBarIOS* infobar,
     bool visible) {
   BannerVisibilityChanged(infobar, visible);
+}
+
+std::unique_ptr<InfobarBannerOverlayRequestCallbackInstaller>
+InfobarBannerInteractionHandler::CreateBannerInstaller() {
+  return std::make_unique<InfobarBannerOverlayRequestCallbackInstaller>(
+      request_support_, this);
 }

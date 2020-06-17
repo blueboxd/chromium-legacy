@@ -282,6 +282,7 @@ class VIEWS_EXPORT WidgetDelegate {
   void SetShowIcon(bool show_icon);
   void SetShowTitle(bool show_title);
   void SetTitle(const base::string16& title);
+  void SetTitle(int title_message_id);
 #if defined(USE_AURA)
   void SetCenterTitle(bool center_title);
 #endif

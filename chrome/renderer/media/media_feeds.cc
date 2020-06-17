@@ -45,14 +45,9 @@ base::Optional<GURL> MediaFeeds::GetMediaFeedURL(content::RenderFrame* frame) {
     if (!elem.HasHTMLTagName("link"))
       continue;
 
-    // The <link> rel must be feed.
+    // The <link> rel must be media-feed.
     std::string rel = elem.GetAttribute("rel").Utf8();
-    if (!base::LowerCaseEqualsASCII(rel, "feed"))
-      continue;
-
-    // The <link> type must the JSON+LD mime type.
-    std::string type = elem.GetAttribute("type").Utf8();
-    if (!base::LowerCaseEqualsASCII(type, "application/ld+json"))
+    if (!base::LowerCaseEqualsASCII(rel, "media-feed"))
       continue;
 
     WebString href = elem.GetAttribute("href");

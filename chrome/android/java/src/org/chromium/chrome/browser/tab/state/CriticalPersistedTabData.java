@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
+import org.chromium.chrome.browser.tab.WebContentsState;
 import org.chromium.chrome.browser.tab.proto.CriticalPersistedTabData.CriticalPersistedTabDataProto;
 
 import java.util.Locale;
@@ -103,7 +104,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
         // This function will only be used to acquire the {@link CriticalPersistedTabData}
         // from the {@link Tab}.
         if (tabImpl.isInitialized()) {
-            TabState.WebContentsState webContentsState = TabState.getWebContentsState(tabImpl);
+            WebContentsState webContentsState = TabState.getWebContentsState(tabImpl);
             PersistedTabDataConfiguration config = PersistedTabDataConfiguration.get(
                     CriticalPersistedTabData.class, tab.isIncognito());
             CriticalPersistedTabData criticalPersistedTabData = new CriticalPersistedTabData(tab,
@@ -111,7 +112,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
                     webContentsState != null
                             ? TabState.getContentStateByteArray(webContentsState.buffer())
                             : null,
-                    TabState.CONTENTS_STATE_CURRENT_VERSION, TabAssociatedApp.getAppId(tab),
+                    WebContentsState.CONTENTS_STATE_CURRENT_VERSION, TabAssociatedApp.getAppId(tab),
                     TabThemeColorHelper.isUsingColorFromTabContents(tab)
                             ? TabThemeColorHelper.getColor(tab)
                             : TabState.UNSPECIFIED_THEME_COLOR,

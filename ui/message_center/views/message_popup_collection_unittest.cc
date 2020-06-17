@@ -571,6 +571,48 @@ TEST_F(MessagePopupCollectionTest, NotificationsMoveDown) {
   EXPECT_FALSE(IsAnimating());
 }
 
+TEST_F(MessagePopupCollectionTest, NotificationsMoveDownInverse) {
+  popup_collection()->set_inverse();
+
+  std::vector<std::string> ids;
+  for (size_t i = 0; i < kMaxVisiblePopupNotifications; ++i)
+    ids.push_back(AddNotification());
+
+  std::string dismissed_id = ids[kMaxVisiblePopupNotifications - 1];
+  std::string new_bottom_id = ids[kMaxVisiblePopupNotifications - 2];
+
+  AnimateUntilIdle();
+
+  EXPECT_EQ(kMaxVisiblePopupNotifications, GetPopupCounts());
+  EXPECT_FALSE(IsAnimating());
+
+  gfx::Rect dismissed = GetPopup(dismissed_id)->GetBoundsInScreen();
+
+  MessageCenter::Get()->MarkSinglePopupAsShown(dismissed_id, false);
+  EXPECT_TRUE(IsAnimating());
+
+  AnimateToMiddle();
+  EXPECT_GT(1.0f, GetPopup(dismissed_id)->GetOpacity());
+  EXPECT_EQ(dismissed_id, GetPopup(dismissed_id)->id());
+
+  AnimateToEnd();
+  EXPECT_EQ(ids[1], GetPopup(new_bottom_id)->id());
+  EXPECT_TRUE(IsAnimating());
+
+  gfx::Rect before = GetPopup(new_bottom_id)->GetBoundsInScreen();
+
+  AnimateToMiddle();
+  gfx::Rect moving = GetPopup(new_bottom_id)->GetBoundsInScreen();
+  EXPECT_GT(moving.bottom(), before.bottom());
+  EXPECT_GT(dismissed.bottom(), moving.bottom());
+
+  AnimateToEnd();
+  gfx::Rect after = GetPopup(new_bottom_id)->GetBoundsInScreen();
+  EXPECT_EQ(dismissed, after);
+  EXPECT_EQ(kMaxVisiblePopupNotifications - 1, GetPopupCounts());
+  EXPECT_FALSE(IsAnimating());
+}
+
 TEST_F(MessagePopupCollectionTest, NotificationsMoveUpForInverse) {
   popup_collection()->set_inverse();
 

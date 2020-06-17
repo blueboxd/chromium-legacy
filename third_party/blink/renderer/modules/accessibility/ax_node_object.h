@@ -167,6 +167,16 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   // ARIA attributes.
   ax::mojom::blink::Role AriaRoleAttribute() const final;
   bool HasAriaAttribute() const override;
+  void AriaDescribedbyElements(AXObjectVector&) const override;
+  void AriaOwnsElements(AXObjectVector&) const override;
+  bool SupportsARIAOwns() const override;
+  bool SupportsARIADragging() const override;
+  void Dropeffects(
+      Vector<ax::mojom::blink::Dropeffect>& dropeffects) const override;
+
+  // ARIA live-region features.
+  const AtomicString& LiveRegionStatus() const override;
+  const AtomicString& LiveRegionRelevant() const override;
 
   ax::mojom::blink::HasPopup HasPopup() const override;
 
@@ -285,6 +295,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   void AddValidationMessageChild();
   // For some nodes, only LayoutBuilderTraversal visits the necessary children.
   bool ShouldUseLayoutBuilderTraversal() const;
+  ax::mojom::blink::Dropeffect ParseDropeffect(String& dropeffect) const;
 
   DISALLOW_COPY_AND_ASSIGN(AXNodeObject);
 };

@@ -45,7 +45,6 @@ def main(argv):
 
   app = Application(backend="uia")
   app.connect(title_re='.*Chrome|.*Chromium')
-  window = app.top_window()
   # Wait for browser enrolling
   time.sleep(15)
 

@@ -101,8 +101,10 @@ class TestQuotaManagerProxy : public QuotaManagerProxy {
   TestQuotaManagerProxy()
       : QuotaManagerProxy(nullptr, nullptr), registered_client_(nullptr) {}
 
-  void RegisterClient(scoped_refptr<QuotaClient> client,
-                      QuotaClientType client_type) override {
+  void RegisterClient(
+      scoped_refptr<QuotaClient> client,
+      QuotaClientType client_type,
+      const std::vector<blink::mojom::StorageType>& storage_types) override {
     EXPECT_FALSE(registered_client_);
     registered_client_ = client;
   }

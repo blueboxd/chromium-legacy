@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_egl.h"
 
@@ -41,7 +42,7 @@ class GL_EXPORT NativeViewGLSurfaceEGLX11 : public NativeViewGLSurfaceEGL,
   std::unique_ptr<gfx::VSyncProvider> CreateVsyncProviderInternal() override;
 
   // XEventDispatcher:
-  bool DispatchXEvent(XEvent* xev) override;
+  bool DispatchXEvent(x11::Event* xev) override;
 
   std::vector<x11::Window> children_;
 

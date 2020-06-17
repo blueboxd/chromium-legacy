@@ -1,0 +1,19 @@
+<link rel="import" href="../../../html/polymer.html">
+
+<link rel="import" href="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.html">
+<link rel="import" href="chrome://resources/mojo/chromeos/services/network_health/public/mojom/network_health.mojom.html">
+<link rel="import" href="../../../cr_elements/shared_style_css.html">
+
+<dom-module id="network-health-summary">
+  <template>
+    <style>
+      #outer {
+        white-space: pre-wrap;
+      }
+    </style>
+    <div id="outer" class="cr-container-shadow">
+      <div id="network-health"></div>
+    </div>
+  </template>
+  <script src="network_health_summary.js"></script>
+</dom-module>

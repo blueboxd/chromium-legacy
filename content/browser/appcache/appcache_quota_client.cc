@@ -163,11 +163,6 @@ void AppCacheQuotaClient::PerformStorageCleanup(blink::mojom::StorageType type,
   std::move(callback).Run();
 }
 
-bool AppCacheQuotaClient::DoesSupport(StorageType type) const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return type == StorageType::kTemporary;
-}
-
 void AppCacheQuotaClient::DidDeleteAppCachesForOrigin(int rv) {
   // Finish the request by calling our callers callback.
   std::move(current_delete_request_callback_)

@@ -31,13 +31,23 @@ IDNConversionResult IDNToUnicodeWithAdjustments(
     base::StringPiece host,
     base::OffsetAdjuster::Adjustments* adjustments);
 
-bool IDNToUnicodeOneComponent(const base::char16* comp,
-                              size_t comp_len,
-                              base::StringPiece top_level_domain,
-                              base::StringPiece16 top_level_domain_unicode,
-                              bool enable_spoof_checks,
-                              base::string16* out,
-                              bool* has_idn_component);
+// Result of converting a single IDN component (i.e. label) to unicode.
+struct ComponentResult {
+  // Set to true if the component is converted to unicode.
+  bool converted = false;
+  // Set to true if the component is IDN, even if it's not converted to unicode.
+  bool has_idn_component = false;
+  // Result of the IDN spoof check.
+  IDNSpoofChecker::Result spoof_check_result = IDNSpoofChecker::Result::kNone;
+};
+
+ComponentResult IDNToUnicodeOneComponent(
+    const base::char16* comp,
+    size_t comp_len,
+    base::StringPiece top_level_domain,
+    base::StringPiece16 top_level_domain_unicode,
+    bool ignore_spoof_check_results,
+    base::string16* out);
 
 class AppendComponentTransform {
  public:
@@ -249,17 +259,17 @@ void GetTopLevelDomain(base::StringPiece host,
   tld16.reserve(top_level_domain->length());
   tld16.insert(tld16.end(), top_level_domain->begin(), top_level_domain->end());
 
-  // Convert the TLD to unicode with the spoof checks disabled.
-  bool tld_has_idn_component = false;
-  IDNToUnicodeOneComponent(tld16.data(), tld16.size(), std::string(),
-                           base::string16(), false /* enable_spoof_checks */,
-                           top_level_domain_unicode, &tld_has_idn_component);
+  // Convert the TLD to unicode, ignoring the spoof check results. This will
+  // always decode the input to unicode as long as it's valid punycode.
+  IDNToUnicodeOneComponent(
+      tld16.data(), tld16.size(), std::string(), base::string16(),
+      /*ignore_spoof_check_results=*/true, top_level_domain_unicode);
 }
 
 IDNConversionResult IDNToUnicodeWithAdjustmentsImpl(
     base::StringPiece host,
     base::OffsetAdjuster::Adjustments* adjustments,
-    bool enable_spoof_checks) {
+    bool ignore_spoof_check_results) {
   if (adjustments)
     adjustments->clear();
   // Convert the ASCII input to a base::string16 for ICU.
@@ -284,19 +294,23 @@ IDNConversionResult IDNToUnicodeWithAdjustmentsImpl(
       component_end = host16.length();  // For getting the last component.
     size_t component_length = component_end - component_start;
     size_t new_component_start = out16.length();
-    bool converted_idn = false;
+    ComponentResult component_result;
     if (component_end > component_start) {
       // Add the substring that we just found.
-      bool has_idn_component = false;
-      converted_idn = IDNToUnicodeOneComponent(
+      component_result = IDNToUnicodeOneComponent(
           host16.data() + component_start, component_length, top_level_domain,
-          top_level_domain_unicode, enable_spoof_checks, &out16,
-          &has_idn_component);
-      result.has_idn_component |= has_idn_component;
+          top_level_domain_unicode, ignore_spoof_check_results, &out16);
+      result.has_idn_component |= component_result.has_idn_component;
+      if (component_result.spoof_check_result !=
+              IDNSpoofChecker::Result::kNone &&
+          (result.spoof_check_result == IDNSpoofChecker::Result::kNone ||
+           result.spoof_check_result == IDNSpoofChecker::Result::kSafe)) {
+        result.spoof_check_result = component_result.spoof_check_result;
+      }
     }
     size_t new_component_length = out16.length() - new_component_start;
 
-    if (converted_idn && adjustments) {
+    if (component_result.converted && adjustments) {
       adjustments->push_back(base::OffsetAdjuster::Adjustment(
           component_start, component_length, new_component_length));
     }
@@ -312,7 +326,8 @@ IDNConversionResult IDNToUnicodeWithAdjustmentsImpl(
   if (result.has_idn_component) {
     result.matching_top_domain =
         g_idn_spoof_checker.Get().GetSimilarTopDomain(out16);
-    if (enable_spoof_checks && !result.matching_top_domain.domain.empty()) {
+    if (!ignore_spoof_check_results &&
+        !result.matching_top_domain.domain.empty()) {
       if (adjustments)
         adjustments->clear();
       result.result = host16;
@@ -327,22 +342,25 @@ IDNConversionResult IDNToUnicodeWithAdjustmentsImpl(
 IDNConversionResult IDNToUnicodeWithAdjustments(
     base::StringPiece host,
     base::OffsetAdjuster::Adjustments* adjustments) {
-  return IDNToUnicodeWithAdjustmentsImpl(host, adjustments, true);
+  return IDNToUnicodeWithAdjustmentsImpl(host, adjustments,
+                                         /*ignore_spoof_check_results=*/false);
 }
 
 IDNConversionResult UnsafeIDNToUnicodeWithAdjustments(
     base::StringPiece host,
     base::OffsetAdjuster::Adjustments* adjustments) {
-  return IDNToUnicodeWithAdjustmentsImpl(host, adjustments, false);
+  return IDNToUnicodeWithAdjustmentsImpl(host, adjustments,
+                                         /*ignore_spoof_check_results=*/true);
 }
 
 // Returns true if the given Unicode host component is safe to display to the
 // user. Note that this function does not deal with pure ASCII domain labels at
 // all even though it's possible to make up look-alike labels with ASCII
 // characters alone.
-bool IsIDNComponentSafe(base::StringPiece16 label,
-                        base::StringPiece top_level_domain,
-                        base::StringPiece16 top_level_domain_unicode) {
+IDNSpoofChecker::Result SpoofCheckIDNComponent(
+    base::StringPiece16 label,
+    base::StringPiece top_level_domain,
+    base::StringPiece16 top_level_domain_unicode) {
   return g_idn_spoof_checker.Get().SafeToDisplayAsUnicode(
       label, top_level_domain, top_level_domain_unicode);
 }
@@ -387,25 +405,23 @@ struct UIDNAWrapper {
 base::LazyInstance<UIDNAWrapper>::Leaky g_uidna = LAZY_INSTANCE_INITIALIZER;
 
 // Converts one component (label) of a host (between dots) to Unicode if safe.
-// If |enable_spoof_checks| is false and input is valid unicode, skips spoof
-// checks and always converts to unicode.
-// The result will be APPENDED to the given output string and will be the
-// same as the input if it is not IDN in ACE/punycode or the IDN is unsafe to
-// display.
-// Returns true if conversion was made. Sets |has_idn_component| to true if the
-// input has IDN, regardless of whether it was converted to unicode or not.
-bool IDNToUnicodeOneComponent(const base::char16* comp,
-                              size_t comp_len,
-                              base::StringPiece top_level_domain,
-                              base::StringPiece16 top_level_domain_unicode,
-                              bool enable_spoof_checks,
-                              base::string16* out,
-                              bool* has_idn_component) {
+// If |ignore_spoof_check_results| is true and input is valid unicode, ignores
+// spoof check results and always converts the input to unicode. The result will
+// be APPENDED to the given output string and will be the same as the input if
+// it is not IDN in ACE/punycode or the IDN is unsafe to display. Returns true
+// if conversion was made. Sets |has_idn_component| to true if the input has
+// IDN, regardless of whether it was converted to unicode or not.
+ComponentResult IDNToUnicodeOneComponent(
+    const base::char16* comp,
+    size_t comp_len,
+    base::StringPiece top_level_domain,
+    base::StringPiece16 top_level_domain_unicode,
+    bool ignore_spoof_check_results,
+    base::string16* out) {
   DCHECK(out);
-  DCHECK(has_idn_component);
-  *has_idn_component = false;
+  ComponentResult result;
   if (comp_len == 0)
-    return false;
+    return result;
 
   // Early return if the input cannot be an IDN component.
   // Valid punycode must not end with a dash.
@@ -414,7 +430,7 @@ bool IDNToUnicodeOneComponent(const base::char16* comp,
       memcmp(comp, kIdnPrefix, sizeof(kIdnPrefix)) != 0 ||
       comp[comp_len - 1] == '-') {
     out->append(comp, comp_len);
-    return false;
+    return result;
   }
 
   UIDNA* uidna = g_uidna.Get().value;
@@ -435,20 +451,21 @@ bool IDNToUnicodeOneComponent(const base::char16* comp,
   } while ((status == U_BUFFER_OVERFLOW_ERROR && info.errors == 0));
 
   if (U_SUCCESS(status) && info.errors == 0) {
-    *has_idn_component = true;
+    result.has_idn_component = true;
     // Converted successfully. At this point the length of the output string
     // is original_length + output_length which may be shorter than the current
     // length of |out|. Trim |out| and ensure that the converted component can
     // be safely displayed to the user.
     out->resize(original_length + output_length);
-    if (!enable_spoof_checks) {
-      return true;
-    }
-    if (IsIDNComponentSafe(
-            base::StringPiece16(out->data() + original_length,
-                                base::checked_cast<size_t>(output_length)),
-            top_level_domain, top_level_domain_unicode)) {
-      return true;
+    result.spoof_check_result = SpoofCheckIDNComponent(
+        base::StringPiece16(out->data() + original_length,
+                            base::checked_cast<size_t>(output_length)),
+        top_level_domain, top_level_domain_unicode);
+    DCHECK_NE(IDNSpoofChecker::Result::kNone, result.spoof_check_result);
+    if (ignore_spoof_check_results ||
+        result.spoof_check_result == IDNSpoofChecker::Result::kSafe) {
+      result.converted = true;
+      return result;
     }
   }
 
@@ -456,7 +473,7 @@ bool IDNToUnicodeOneComponent(const base::char16* comp,
   // original string and append the literal input.
   out->resize(original_length);
   out->append(comp, comp_len);
-  return false;
+  return result;
 }
 
 }  // namespace

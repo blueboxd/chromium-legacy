@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/modules/virtualkeyboard/virtual_keyboard.h"
 
+#include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
+#include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -15,6 +18,14 @@
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace blink {
+
+namespace {
+
+String FormatPx(int value) {
+  return String::Format("%dpx", value);
+}
+
+}  // namespace
 
 VirtualKeyboard::VirtualKeyboard(LocalFrame* frame)
     : ExecutionContextClient(frame ? frame->DomWindow()->GetExecutionContext()
@@ -60,6 +71,19 @@ void VirtualKeyboard::setOverlaysContent(bool overlays_content) {
 void VirtualKeyboard::VirtualKeyboardOverlayChanged(
     const gfx::Rect& keyboard_rect) {
   bounding_rect_ = DOMRect::FromFloatRect(FloatRect(gfx::RectF(keyboard_rect)));
+  LocalFrame* frame = GetFrame();
+  if (frame && frame->GetDocument()) {
+    DocumentStyleEnvironmentVariables& vars =
+        frame->GetDocument()->GetStyleEngine().EnsureEnvironmentVariables();
+    vars.SetVariable(UADefinedVariable::kKeyboardInsetTop,
+                     FormatPx(keyboard_rect.y()));
+    vars.SetVariable(UADefinedVariable::kKeyboardInsetLeft,
+                     FormatPx(keyboard_rect.x()));
+    vars.SetVariable(UADefinedVariable::kKeyboardInsetBottom,
+                     FormatPx(keyboard_rect.bottom()));
+    vars.SetVariable(UADefinedVariable::kKeyboardInsetRight,
+                     FormatPx(keyboard_rect.right()));
+  }
   DispatchEvent(*(MakeGarbageCollected<VirtualKeyboardGeometryChangeEvent>(
       event_type_names::kGeometrychange, bounding_rect_)));
 }

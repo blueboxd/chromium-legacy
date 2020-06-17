@@ -331,6 +331,8 @@ size_t AVIFImageDecoder::DecodeFrameCount() {
 
 void AVIFImageDecoder::InitializeNewFrame(size_t index) {
   auto& buffer = frame_buffer_cache_[index];
+  if (decode_to_half_float_)
+    buffer.SetPixelFormat(ImageFrame::PixelFormat::kRGBA_F16);
 
   buffer.SetOriginalFrameRect(IntRect(IntPoint(), Size()));
 
@@ -346,9 +348,6 @@ void AVIFImageDecoder::InitializeNewFrame(size_t index) {
   buffer.SetDisposalMethod(ImageFrame::kDisposeNotSpecified);
   buffer.SetAlphaBlendSource(ImageFrame::kBlendAtopBgcolor);
 
-  if (decode_to_half_float_)
-    buffer.SetPixelFormat(ImageFrame::PixelFormat::kRGBA_F16);
-
   // Leave all frames as being independent (the default) because we require all
   // frames be the same size.
   DCHECK_EQ(buffer.RequiredPreviousFrameIndex(), kNotFound);
@@ -360,6 +359,8 @@ void AVIFImageDecoder::Decode(size_t index) {
   // images where there's lots to ignore.
   if (Failed() || !IsAllDataReceived())
     return;
+
+  UpdateAggressivePurging(index);
 
   if (!DecodeImage(index)) {
     SetFailed();
@@ -381,9 +382,7 @@ void AVIFImageDecoder::Decode(size_t index) {
   }
 
   ImageFrame& buffer = frame_buffer_cache_[index];
-  DCHECK_NE(buffer.GetStatus(), ImageFrame::kFrameComplete);
-  if (decode_to_half_float_)
-    buffer.SetPixelFormat(ImageFrame::PixelFormat::kRGBA_F16);
+  DCHECK_EQ(buffer.GetStatus(), ImageFrame::kFrameEmpty);
 
   if (!InitFrameBuffer(index)) {
     DVLOG(1) << "Failed to create frame buffer...";

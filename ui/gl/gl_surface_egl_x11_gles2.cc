@@ -138,7 +138,8 @@ bool NativeViewGLSurfaceEGLX11GLES2::Resize(const gfx::Size& size,
   return true;
 }
 
-bool NativeViewGLSurfaceEGLX11GLES2::DispatchXEvent(XEvent* xev) {
+bool NativeViewGLSurfaceEGLX11GLES2::DispatchXEvent(x11::Event* x11_event) {
+  XEvent* xev = &x11_event->xlib_event();
   if (xev->type != Expose ||
       xev->xexpose.window != static_cast<Window>(window_))
     return false;

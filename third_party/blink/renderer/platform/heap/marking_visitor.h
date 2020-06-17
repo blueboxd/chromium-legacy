@@ -21,6 +21,10 @@ ALWAYS_INLINE bool IsHashTableDeleteValue(const void* value) {
 }  // namespace
 
 class BasePage;
+class HeapAllocator;
+enum class TracenessMemberConfiguration;
+template <typename T, TracenessMemberConfiguration tracenessConfiguration>
+class MemberBase;
 
 // Base visitor used to mark Oilpan objects on any thread.
 class PLATFORM_EXPORT MarkingVisitorCommon : public Visitor {
@@ -158,12 +162,6 @@ class PLATFORM_EXPORT MarkingVisitor
   // Returns whether an object is in construction.
   static bool IsInConstruction(HeapObjectHeader* header);
 
-  // Write barrier that adds a value the |slot| refers to to the set of marked
-  // objects. The barrier bails out if marking is off or the object is not yet
-  // marked. Returns true if the value has been marked on this call.
-  template <typename T>
-  static bool WriteBarrier(T** slot);
-
   static void GenerationalBarrier(Address slot, ThreadState* state);
 
   // Eagerly traces an already marked backing store ensuring that all its
@@ -189,11 +187,21 @@ class PLATFORM_EXPORT MarkingVisitor
   void FlushMarkingWorklists();
 
  private:
+  // Write barrier that adds a value the |slot| refers to to the set of marked
+  // objects. The barrier bails out if marking is off or the object is not yet
+  // marked. Returns true if the value has been marked on this call.
+  template <typename T>
+  static bool WriteBarrier(T** slot);
+
   // Exact version of the marking and generational write barriers.
   static bool WriteBarrierSlow(void*);
   static void GenerationalBarrierSlow(Address, ThreadState*);
   static bool MarkValue(void*, BasePage*, ThreadState*);
   static void TraceMarkedBackingStoreSlow(const void*);
+
+  friend class HeapAllocator;
+  template <typename T, TracenessMemberConfiguration tracenessConfiguration>
+  friend class MemberBase;
 };
 
 // static

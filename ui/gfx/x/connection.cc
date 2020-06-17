@@ -58,30 +58,35 @@ Connection* Connection::Get() {
 }
 
 Connection::Connection() : XProto(this), display_(OpenNewXDisplay()) {
-  if (!display_)
-    return;
+  if (display_) {
+    XSetEventQueueOwner(display_, XCBOwnsEventQueue);
 
-  XSetEventQueueOwner(display_, XCBOwnsEventQueue);
-
-  setup_ = std::make_unique<Setup>(Read<Setup>(
-      reinterpret_cast<const uint8_t*>(xcb_get_setup(XcbConnection()))));
-  default_screen_ = &setup_->roots[DefaultScreen(display_)];
-  default_root_depth_ = &*std::find_if(
-      default_screen_->allowed_depths.begin(),
-      default_screen_->allowed_depths.end(), [&](const Depth& depth) {
-        return depth.depth == default_screen_->root_depth;
-      });
-  defualt_root_visual_ = &*std::find_if(
-      default_root_depth_->visuals.begin(), default_root_depth_->visuals.end(),
-      [&](const VisualType visual) {
-        return visual.visual_id == default_screen_->root_visual;
-      });
+    setup_ = Read<Setup>(
+        reinterpret_cast<const uint8_t*>(xcb_get_setup(XcbConnection())));
+    default_screen_ = &setup_.roots[DefaultScreen(display_)];
+    default_root_depth_ = &*std::find_if(
+        default_screen_->allowed_depths.begin(),
+        default_screen_->allowed_depths.end(), [&](const Depth& depth) {
+          return depth.depth == default_screen_->root_depth;
+        });
+    default_root_visual_ = &*std::find_if(
+        default_root_depth_->visuals.begin(),
+        default_root_depth_->visuals.end(), [&](const VisualType visual) {
+          return visual.visual_id == default_screen_->root_visual;
+        });
+  } else {
+    // Default-initialize the setup data so we always have something to return.
+    setup_.roots.emplace_back();
+    default_screen_ = &setup_.roots[0];
+    default_screen_->allowed_depths.emplace_back();
+    default_root_depth_ = &default_screen_->allowed_depths[0];
+    default_root_depth_->visuals.emplace_back();
+    default_root_visual_ = &default_root_depth_->visuals[0];
+  }
 
   ExtensionManager::Init(this);
-  if (bigreq()) {
-    if (auto response = bigreq()->Enable({}).Sync())
-      extended_max_request_length_ = response->maximum_request_length;
-  }
+  if (auto response = bigreq().Enable({}).Sync())
+    extended_max_request_length_ = response->maximum_request_length;
 }
 
 Connection::~Connection() {
@@ -108,6 +113,10 @@ bool Connection::HasNextResponse() const {
   return !requests_.empty() &&
          CompareSequenceIds(XLastKnownRequestProcessed(display_),
                             requests_.front().sequence) >= 0;
+}
+
+bool Connection::Ready() const {
+  return display_ && !xcb_connection_has_error(XGetXCBConnection(display_));
 }
 
 void Connection::Flush() {

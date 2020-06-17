@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_glx.h"
 
@@ -28,7 +29,7 @@ class GL_EXPORT GLSurfaceGLXX11 : public NativeViewGLSurfaceGLX,
   void UnregisterEvents() override;
 
   // XEventDispatcher:
-  bool DispatchXEvent(XEvent* event) override;
+  bool DispatchXEvent(x11::Event* event) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLSurfaceGLXX11);

@@ -65,8 +65,8 @@ public class ChildConnectionAllocatorTest {
 
         @Override
         public ChildProcessConnection createConnection(Context context, ComponentName serviceName,
-                boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle,
-                String instanceName) {
+                ComponentName fallbackServiceName, boolean bindToCaller,
+                boolean bindAsExternalService, Bundle serviceBundle, String instanceName) {
             mLastServiceName = serviceName;
             mLastInstanceName = instanceName;
             if (mConnection == null) {

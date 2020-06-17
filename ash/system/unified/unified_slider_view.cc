@@ -43,8 +43,9 @@ SystemSlider::SystemSlider(views::SliderListener* listener)
 SkColor SystemSlider::GetThumbColor() const {
   using Type = AshColorProvider::ContentLayerType;
   return AshColorProvider::Get()->GetContentLayerColor(
-      (style() == RenderingStyle::kMinimalStyle) ? Type::kSliderThumbDisabled
-                                                 : Type::kSliderThumbEnabled,
+      (style() == RenderingStyle::kMinimalStyle)
+          ? Type::kSliderThumbColorDisabled
+          : Type::kSliderThumbColorEnabled,
       AshColorProvider::AshColorMode::kDark);
 }
 
@@ -109,9 +110,9 @@ const char* UnifiedSliderButton::GetClassName() const {
 
 void UnifiedSliderButton::SetVectorIcon(const gfx::VectorIcon& icon) {
   const SkColor toggled_color = AshColorProvider::Get()->GetContentLayerColor(
-      ContentLayerType::kIconSystemMenuToggled, AshColorMode::kDark);
+      ContentLayerType::kSystemMenuIconColorToggled, AshColorMode::kDark);
   const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-      ContentLayerType::kIconSystemMenu, AshColorMode::kDark);
+      ContentLayerType::kSystemMenuIconColor, AshColorMode::kDark);
 
   SetImage(views::Button::STATE_NORMAL,
            gfx::CreateVectorIcon(icon, icon_color));
@@ -132,14 +133,14 @@ void UnifiedSliderButton::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::Rect rect(GetContentsBounds());
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(
-      toggled_
-          ? AshColorProvider::Get()->GetControlsLayerColor(
-                AshColorProvider::ControlsLayerType::kActiveControlBackground,
-                AshColorProvider::AshColorMode::kDark)
-          : AshColorProvider::Get()->GetControlsLayerColor(
-                AshColorProvider::ControlsLayerType::kInactiveControlBackground,
-                AshColorProvider::AshColorMode::kDark));
+  flags.setColor(toggled_ ? AshColorProvider::Get()->GetControlsLayerColor(
+                                AshColorProvider::ControlsLayerType::
+                                    kControlBackgroundColorActive,
+                                AshColorProvider::AshColorMode::kDark)
+                          : AshColorProvider::Get()->GetControlsLayerColor(
+                                AshColorProvider::ControlsLayerType::
+                                    kControlBackgroundColorInactive,
+                                AshColorProvider::AshColorMode::kDark));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), kTrayItemCornerRadius,
                      flags);

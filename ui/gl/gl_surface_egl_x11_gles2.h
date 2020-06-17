@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface_egl_x11.h"
 
@@ -35,7 +36,7 @@ class GL_EXPORT NativeViewGLSurfaceEGLX11GLES2
 
  private:
   // XEventDispatcher:
-  bool DispatchXEvent(XEvent* xev) override;
+  bool DispatchXEvent(x11::Event* xev) override;
 
   EGLNativeWindowType parent_window_;
 

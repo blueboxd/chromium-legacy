@@ -280,8 +280,7 @@ void ManifestVerifier::RemoveInvalidPaymentApps() {
                 method.GetOrigin().spec() +
                 "\" and the \"supported_origins\" field in the payment method "
                 "manifest for \"" +
-                method.spec() +
-                "\" is not \"*\" and is not a list that includes \"" +
+                method.spec() + "\" is not a list that includes \"" +
                 app_origin + "\".");
     }
   }

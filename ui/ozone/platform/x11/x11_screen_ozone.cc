@@ -125,7 +125,7 @@ std::string X11ScreenOzone::GetCurrentWorkspace() {
   return x11_display_manager_->GetCurrentWorkspace();
 }
 
-bool X11ScreenOzone::DispatchXEvent(XEvent* xev) {
+bool X11ScreenOzone::DispatchXEvent(x11::Event* xev) {
   return x11_display_manager_->ProcessEvent(xev);
 }
 

@@ -69,9 +69,11 @@ void OSExchangeDataProviderX11::SetFileContents(
                  base::RefCountedString::TakeString(&file_contents_copy)));
 }
 
-bool OSExchangeDataProviderX11::DispatchXEvent(XEvent* xev) {
-  if (xev->type == SelectionRequest && xev->xany.window == x_window()) {
-    selection_owner().OnSelectionRequest(*xev);
+bool OSExchangeDataProviderX11::DispatchXEvent(x11::Event* x11_event) {
+  XEvent* xev = &x11_event->xlib_event();
+  if (xev->type == x11::SelectionRequestEvent::opcode &&
+      xev->xany.window == x_window()) {
+    selection_owner().OnSelectionRequest(*x11_event);
     return true;
   }
   return false;

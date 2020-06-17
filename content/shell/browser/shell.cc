@@ -548,7 +548,7 @@ std::unique_ptr<BluetoothChooser> Shell::RunBluetoothChooser(
     RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
   WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
-  if (web_test_control_host && switches::IsRunWebTestsSwitchPresent())
+  if (web_test_control_host)
     return web_test_control_host->RunBluetoothChooser(frame, event_handler);
   return nullptr;
 }
@@ -591,7 +591,7 @@ void Shell::RendererUnresponsive(
     RenderWidgetHost* render_widget_host,
     base::RepeatingClosure hang_monitor_restarter) {
   WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
-  if (web_test_control_host && switches::IsRunWebTestsSwitchPresent())
+  if (web_test_control_host)
     web_test_control_host->RendererUnresponsive();
 }
 
@@ -631,7 +631,7 @@ bool Shell::ShouldAllowRunningInsecureContent(WebContents* web_contents,
                                               const GURL& resource_url) {
   bool allowed_by_test = false;
   WebTestControlHost* web_test_control_host = WebTestControlHost::Get();
-  if (web_test_control_host && switches::IsRunWebTestsSwitchPresent()) {
+  if (web_test_control_host) {
     const base::DictionaryValue& test_flags =
         web_test_control_host->accumulated_web_test_runtime_flags_changes();
     test_flags.GetBoolean("running_insecure_content_allowed", &allowed_by_test);

@@ -21,6 +21,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_quota_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 using blink::mojom::StorageType;
 using storage::MockOriginData;
@@ -71,7 +72,10 @@ class BrowsingDataQuotaHelperTest : public testing::Test {
         new MockQuotaClient(quota_manager_->proxy(), origin_data,
                             storage::QuotaClientType::kFileSystem);
     quota_manager_->proxy()->RegisterClient(
-        client, storage::QuotaClientType::kFileSystem);
+        client, storage::QuotaClientType::kFileSystem,
+        {blink::mojom::StorageType::kTemporary,
+         blink::mojom::StorageType::kPersistent,
+         blink::mojom::StorageType::kSyncable});
     client->TouchAllOriginsAndNotify();
   }
 

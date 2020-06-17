@@ -4,6 +4,9 @@
 
 #include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
 
+#include <utility>
+
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/policy/messaging_layer/util/status_macros.h"
@@ -14,19 +17,38 @@
 namespace reporting {
 
 using policy::DMToken;
-using reporting::Destination;
-using reporting::Priority;
+
+ReportQueueConfiguration::ReportQueueConfiguration() = default;
+ReportQueueConfiguration::~ReportQueueConfiguration() = default;
 
 StatusOr<std::unique_ptr<ReportQueueConfiguration>>
 ReportQueueConfiguration::Create(const policy::DMToken& dm_token,
                                  Destination destination,
-                                 Priority priority) {
+                                 Priority priority,
+                                 PolicyCheckCallback policy_check_callback) {
   auto config = base::WrapUnique<ReportQueueConfiguration>(
       new ReportQueueConfiguration());
+
   RETURN_IF_ERROR(config->SetDMToken(dm_token));
   RETURN_IF_ERROR(config->SetDestination(destination));
   RETURN_IF_ERROR(config->SetPriority(priority));
+  RETURN_IF_ERROR(config->SetPolicyCheckCallback(policy_check_callback));
+
   return config;
+}
+
+Status ReportQueueConfiguration::SetPolicyCheckCallback(
+    PolicyCheckCallback policy_check_callback) {
+  if (policy_check_callback.is_null()) {
+    return (Status(error::INVALID_ARGUMENT,
+                   "PolicyCheckCallback must not be null"));
+  }
+  policy_check_callback_ = std::move(policy_check_callback);
+  return Status::StatusOK();
+}
+
+Status ReportQueueConfiguration::CheckPolicy() const {
+  return policy_check_callback_.Run();
 }
 
 Status ReportQueueConfiguration::SetDMToken(const DMToken& dm_token) {

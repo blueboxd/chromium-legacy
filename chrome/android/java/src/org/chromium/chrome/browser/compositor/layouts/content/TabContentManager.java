@@ -474,8 +474,7 @@ public class TabContentManager {
 
                             mRefectchedTabIds.add(tabId);
                             TabContentManagerJni.get().getEtc1TabThumbnail(mNativeTabContentManager,
-                                    TabContentManager.this, tabId,
-                                    (etc1) -> callback.onResult(etc1));
+                                    TabContentManager.this, tabId, callback);
                             return;
                         }
                     }

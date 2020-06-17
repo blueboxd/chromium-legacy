@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace gpu {
@@ -29,8 +30,8 @@ class VulkanSurfaceX11 : public VulkanSurface {
 
  private:
   class ExposeEventForwarder;
-  bool CanDispatchXEvent(const XEvent* event);
-  void ForwardXExposeEvent(const XEvent* event);
+  bool CanDispatchXEvent(const x11::Event* event);
+  void ForwardXExposeEvent(const x11::Event* event);
 
   const Window parent_window_;
   const Window window_;

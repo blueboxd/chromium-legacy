@@ -45,8 +45,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
 
   content::WebContentsConsoleObserver console_observer(active_tab);
 
-  // Navigate to the NTP.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  // Navigate to the local NTP.
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
   ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
             active_tab->GetController().GetVisibleEntry()->GetURL());
@@ -75,9 +76,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
 #endif
 IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
                        MAYBE_MicrophonePermission) {
-  // Open a new NTP.
+  // Open a new local NTP.
   content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
-      browser(), GURL(chrome::kChromeUINewTabURL));
+      browser(), GURL(chrome::kChromeSearchLocalNtpUrl));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
   ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
             active_tab->GetController().GetVisibleEntry()->GetURL());
@@ -116,12 +117,10 @@ IN_PROC_BROWSER_TEST_F(LocalNTPVoiceSearchSmokeTest,
   EXPECT_EQ(1, prompt_factory.TotalRequestCount());
   EXPECT_TRUE(prompt_factory.RequestTypeSeen(
       permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC));
-  // ...and that it showed the Google base URL, not the NTP URL.
-  const GURL google_base_url(UIThreadSearchTermsData().GoogleBaseURLValue());
-  EXPECT_TRUE(prompt_factory.RequestOriginSeen(google_base_url.GetOrigin()));
+  // ...and that it showed the local NTP URL.
   EXPECT_FALSE(prompt_factory.RequestOriginSeen(
       GURL(chrome::kChromeUINewTabURL).GetOrigin()));
-  EXPECT_FALSE(prompt_factory.RequestOriginSeen(
+  EXPECT_TRUE(prompt_factory.RequestOriginSeen(
       GURL(chrome::kChromeSearchLocalNtpUrl).GetOrigin()));
 
   // Now microphone permission for the NTP should be set.

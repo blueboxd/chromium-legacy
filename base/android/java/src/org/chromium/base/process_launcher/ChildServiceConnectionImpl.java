@@ -11,6 +11,7 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 
+import org.chromium.base.Log;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.compat.ApiHelperForQ;
 
@@ -19,12 +20,14 @@ import java.util.concurrent.Executor;
 /** Implementation of ChildServiceConnection that does connect to a service. */
 /* package */ class ChildServiceConnectionImpl
         implements ChildServiceConnection, ServiceConnection {
+    private static final String TAG = "ChildServiceConn";
+
     private final Context mContext;
     private final Intent mBindIntent;
     private final int mBindFlags;
     private final Handler mHandler;
     private final Executor mExecutor;
-    private final ChildServiceConnectionDelegate mDelegate;
+    private ChildServiceConnectionDelegate mDelegate;
     private final String mInstanceName;
     private boolean mBound;
 
@@ -76,13 +79,23 @@ import java.util.concurrent.Executor;
     }
 
     @Override
+    public void retire() {
+        mDelegate = null;
+        unbindServiceConnection();
+    }
+
+    @Override
     public void onServiceConnected(ComponentName className, final IBinder service) {
+        if (mDelegate == null) {
+            Log.w(TAG, "onServiceConnected after timeout " + className);
+            return;
+        }
         mDelegate.onServiceConnected(service);
     }
 
     // Called on the main thread to notify that the child service did not disconnect gracefully.
     @Override
     public void onServiceDisconnected(ComponentName className) {
-        mDelegate.onServiceDisconnected();
+        if (mDelegate != null) mDelegate.onServiceDisconnected();
     }
 }

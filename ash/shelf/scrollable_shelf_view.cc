@@ -5,7 +5,6 @@
 #include "ash/shelf/scrollable_shelf_view.h"
 
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/drag_drop/drag_image_view.h"
 #include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/screen_util.h"
@@ -117,11 +116,11 @@ class ScrollableShelfView::DragIconDropAnimationDelegate
   DragIconDropAnimationDelegate(views::View* original_view,
                                 const gfx::Rect& src_bounds_in_screen,
                                 const gfx::Rect& dst_bounds_in_screen,
-                                std::unique_ptr<DragImageView> proxy_view)
+                                views::UniqueWidgetPtr proxy_view_widget)
       : original_view_(original_view),
         src_bounds_in_screen_(src_bounds_in_screen),
         dst_bounds_in_screen_(dst_bounds_in_screen),
-        proxy_view_(std::move(proxy_view)) {}
+        proxy_view_widget_(std::move(proxy_view_widget)) {}
   ~DragIconDropAnimationDelegate() override = default;
 
   DragIconDropAnimationDelegate(const DragIconDropAnimationDelegate&) = delete;
@@ -130,14 +129,15 @@ class ScrollableShelfView::DragIconDropAnimationDelegate
 
   void StartAnimation() {
     ui::ScopedLayerAnimationSettings animation_settings(
-        proxy_view_->layer()->GetAnimator());
+        proxy_view_widget_->GetContentsView()->layer()->GetAnimator());
     animation_settings.SetTweenType(gfx::Tween::FAST_OUT_LINEAR_IN);
     animation_settings.SetPreemptionStrategy(
         ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
     animation_settings.AddObserver(this);
 
-    proxy_view_->layer()->SetTransform(gfx::TransformBetweenRects(
-        gfx::RectF(src_bounds_in_screen_), gfx::RectF(dst_bounds_in_screen_)));
+    proxy_view_widget_->GetContentsView()->layer()->SetTransform(
+        gfx::TransformBetweenRects(gfx::RectF(src_bounds_in_screen_),
+                                   gfx::RectF(dst_bounds_in_screen_)));
   }
 
   // ui::ImplicitAnimationObserver:
@@ -147,7 +147,7 @@ class ScrollableShelfView::DragIconDropAnimationDelegate
     // Destructs the proxy image view and shows the original drag view at the
     // end of animation.
     original_view_->layer()->SetOpacity(1.0f);
-    proxy_view_.reset();
+    proxy_view_widget_.reset();
   }
 
  private:
@@ -163,7 +163,7 @@ class ScrollableShelfView::DragIconDropAnimationDelegate
 
   // Placeholder icon representing |original_view_| that moves with the pointer
   // while being dragged.
-  std::unique_ptr<DragImageView> proxy_view_;
+  views::UniqueWidgetPtr proxy_view_widget_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -953,6 +953,7 @@ void ScrollableShelfView::Layout() {
 
 void ScrollableShelfView::ChildPreferredSizeChanged(views::View* child) {
   // Add/remove a shelf icon may change the layout strategy.
+  UpdateAvailableSpaceAndScroll();
   Layout();
 }
 
@@ -1036,7 +1037,7 @@ void ScrollableShelfView::ViewHierarchyChanged(
   if (details.parent != shelf_view_)
     return;
 
-  shelf_view_->UpdateVisibleIndices();
+  shelf_view_->UpdateShelfItemViewsVisibility();
 
   // When app scaling state needs update, hotseat bounds should change. Then
   // it is not meaningful to do further work in the current view bounds. So
@@ -1292,23 +1293,26 @@ void ScrollableShelfView::CreateDragIconProxyByLocationWithNoAnimation(
     views::View* replaced_view,
     float scale_factor,
     int blur_radius) {
-  drag_icon_ = std::make_unique<DragImageView>(
-      GetWidget()->GetNativeWindow()->GetRootWindow(),
-      ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
-  drag_icon_->SetImage(icon);
+  drag_icon_widget_ =
+      DragImageView::Create(GetWidget()->GetNativeWindow()->GetRootWindow(),
+                            ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+  DragImageView* drag_icon =
+      static_cast<DragImageView*>(drag_icon_widget_->GetContentsView());
+  drag_icon->SetImage(icon);
   const gfx::Rect replaced_view_screen_bounds =
       replaced_view->GetBoundsInScreen();
-  drag_icon_->SetBoundsInScreen(replaced_view_screen_bounds);
-  drag_icon_->GetWidget()->SetVisibilityAnimationTransition(
+  drag_icon->SetBoundsInScreen(replaced_view_screen_bounds);
+  drag_icon_widget_->SetVisibilityAnimationTransition(
       views::Widget::ANIMATE_NONE);
-  drag_icon_->SetWidgetVisible(true);
-  drag_icon_->SetPaintToLayer();
-  drag_icon_->layer()->SetFillsBoundsOpaquely(false);
+  drag_icon->SetWidgetVisible(true);
+  drag_icon->SetPaintToLayer();
+  drag_icon->layer()->SetFillsBoundsOpaquely(false);
 }
 
 void ScrollableShelfView::UpdateDragIconProxy(
     const gfx::Point& location_in_screen_coordinates) {
-  drag_icon_->SetScreenPosition(location_in_screen_coordinates);
+  static_cast<DragImageView*>(drag_icon_widget_->GetContentsView())
+      ->SetScreenPosition(location_in_screen_coordinates);
 
   if (IsDragIconWithinVisibleSpace()) {
     page_flip_timer_.AbandonAndStop();
@@ -1328,9 +1332,9 @@ void ScrollableShelfView::DestroyDragIconProxy() {
   ShelfAppButton* drag_view = shelf_view_->drag_view();
 
   const bool should_start_animation =
-      drag_view && !shelf_view_->dragged_off_shelf() && drag_icon_.get();
+      drag_view && !shelf_view_->dragged_off_shelf() && drag_icon_widget_;
   if (!should_start_animation) {
-    drag_icon_.reset();
+    drag_icon_widget_.reset();
     return;
   }
 
@@ -1347,7 +1351,7 @@ void ScrollableShelfView::DestroyDragIconProxy() {
   gfx::RectF target_bounds_in_local(mirrored_target_bounds_in_shelf_view);
   ConvertRectToTarget(shelf_view_, this, &target_bounds_in_local);
   if (!visible_space_.Contains(gfx::ToEnclosedRect(target_bounds_in_local))) {
-    drag_icon_.reset();
+    drag_icon_widget_.reset();
     drag_view->layer()->SetOpacity(1.0f);
     return;
   }
@@ -1358,19 +1362,18 @@ void ScrollableShelfView::DestroyDragIconProxy() {
   // The drag proxy is the DragImageView created for the DragAndDropHost which
   // could be either the ShelfView or ScrollableShelfView depending on where the
   // drag originated from.
-  std::unique_ptr<DragImageView> drag_proxy;
+  views::UniqueWidgetPtr drag_proxy;
   if (drag_originated_from_app_list) {
-    drag_proxy.reset(
-        shelf_view_->RetrieveDragIconProxyAndClearDragProxyState());
+    drag_proxy = shelf_view_->RetrieveDragIconProxyAndClearDragProxyState();
 
     // Handles the edge case that an app icon is dragged from AppListView to
     // ShelfView then it is pinned to another page.
-    drag_icon_.reset();
+    drag_icon_widget_.reset();
   } else {
-    drag_proxy = std::move(drag_icon_);
+    drag_proxy = std::move(drag_icon_widget_);
   }
 
-  gfx::Rect start_in_screen(drag_proxy->GetBoundsInScreen());
+  gfx::Rect start_in_screen(drag_proxy->GetContentsView()->GetBoundsInScreen());
 
   gfx::Rect end_in_screen = mirrored_target_bounds_in_shelf_view;
   ConvertRectToScreen(shelf_view_, &end_in_screen);
@@ -1410,7 +1413,7 @@ void ScrollableShelfView::OnImplicitAnimationsCompleted() {
   shelf_view_->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged,
                                         /*send_native_event=*/true);
 
-  if (!drag_icon_.get())
+  if (!drag_icon_widget_)
     return;
 
   if (IsDragIconWithinVisibleSpace())
@@ -2195,11 +2198,12 @@ void ScrollableShelfView::OnPageFlipTimer() {
   gfx::Rect visible_space_in_screen = visible_space_;
   views::View::ConvertRectToScreen(this, &visible_space_in_screen);
 
-  const gfx::Rect drag_icon_screen_bounds = drag_icon_->GetBoundsInScreen();
+  const gfx::Rect drag_icon_screen_bounds =
+      drag_icon_widget_->GetWindowBoundsInScreen();
 
   DCHECK(!visible_space_in_screen.Contains(drag_icon_screen_bounds));
 
-  // Calculates the page scrolling direction based on the |drag_icon_|'s
+  // Calculates the page scrolling direction based on the |drag_icon_widget_|'s
   // location and the bounds of the visible space.
   bool should_scroll_to_next;
   if (ShouldAdaptToRTL()) {
@@ -2223,7 +2227,8 @@ bool ScrollableShelfView::IsDragIconWithinVisibleSpace() const {
   gfx::Rect visible_space_in_screen = visible_space_;
   views::View::ConvertRectToScreen(this, &visible_space_in_screen);
 
-  const gfx::Rect drag_icon_screen_bounds = drag_icon_->GetBoundsInScreen();
+  const gfx::Rect drag_icon_screen_bounds =
+      drag_icon_widget_->GetContentsView()->GetBoundsInScreen();
 
   if (GetShelf()->IsHorizontalAlignment()) {
     return drag_icon_screen_bounds.x() >= visible_space_in_screen.x() &&

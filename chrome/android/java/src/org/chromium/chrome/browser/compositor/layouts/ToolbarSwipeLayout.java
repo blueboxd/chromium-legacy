@@ -298,12 +298,12 @@ public class ToolbarSwipeLayout extends Layout {
 
         if (mLeftTab != null) {
             mLeftTab.setX(leftX);
-            needUpdate = mLeftTab.updateSnap(dt) || needUpdate;
+            needUpdate = updateSnap(dt, mLeftTab) || needUpdate;
         }
 
         if (mRightTab != null) {
             mRightTab.setX(rightX);
-            needUpdate = mRightTab.updateSnap(dt) || needUpdate;
+            needUpdate = updateSnap(dt, mRightTab) || needUpdate;
         }
 
         if (needUpdate) requestUpdate();

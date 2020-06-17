@@ -52,7 +52,7 @@ public class StubbedProvider {
 
         @Override
         public void getAllItems(Callback<ArrayList<OfflineItem>> callback) {
-            mHandler.post(() -> callback.onResult(items));
+            mHandler.post(callback.bind(items));
         }
 
         @Override
@@ -84,7 +84,7 @@ public class StubbedProvider {
 
         @Override
         public void getItemById(ContentId id, Callback<OfflineItem> callback) {
-            mHandler.post(() -> callback.onResult(null));
+            mHandler.post(callback.bind(null));
         }
 
         @Override
@@ -100,7 +100,7 @@ public class StubbedProvider {
         @Override
         public void renameItem(
                 ContentId id, String name, Callback<Integer /*RenameResult*/> callback) {
-            mHandler.post(() -> callback.onResult(RenameResult.SUCCESS));
+            mHandler.post(callback.bind(RenameResult.SUCCESS));
         }
     }
 

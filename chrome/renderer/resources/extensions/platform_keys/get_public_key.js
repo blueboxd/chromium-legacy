@@ -15,7 +15,10 @@ function normalizeImportParams(importParams) {
     throw new Error('Algorithm: name: Missing or not a String');
   }
 
-  var filteredParams = { name: importParams.name };
+  var filteredParams = {
+    name: importParams.name,
+    namedCurve: importParams.namedCurve
+  };
 
   var hashIsNone = false;
   if (importParams.hash) {
@@ -29,9 +32,13 @@ function normalizeImportParams(importParams) {
     }
   }
 
+  if (importParams.name === 'ECDSA' && importParams.namedCurve !== 'P-256') {
+    throw new Error('Only P-256 named curve is supported.');
+  }
+
   // Apply WebCrypto's algorithm normalization.
   var resultParams = normalizeAlgorithm(filteredParams, 'ImportKey');
-  if (!resultParams ) {
+  if (!resultParams) {
     throw new Error('A required parameter was missing or out-of-range');
   }
   if (hashIsNone) {
@@ -47,7 +54,9 @@ function combineAlgorithms(algorithm, importParams) {
     algorithm.publicExponent = new Uint8Array(algorithm.publicExponent);
   }
 
-  algorithm.hash = importParams.hash;
+  if (importParams.hash) {
+    algorithm.hash = importParams.hash;
+  }
   return algorithm;
 }
 

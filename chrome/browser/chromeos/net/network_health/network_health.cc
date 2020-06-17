@@ -7,10 +7,10 @@
 #include <map>
 #include <vector>
 
-#include "chrome/browser/chromeos/net/network_health/public/mojom/network_health.mojom.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/services/network_config/in_process_instance.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
 
 namespace chromeos {
 namespace network_health {

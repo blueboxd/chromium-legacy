@@ -354,7 +354,9 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap& cursor_image,
   return image;
 }
 
-int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
+int CoalescePendingMotionEvents(const x11::Event* x11_event,
+                                x11::Event* last_event) {
+  const XEvent* xev = &x11_event->xlib_event();
   DCHECK(xev->type == x11::MotionNotifyEvent::opcode ||
          xev->type == x11::GeGenericEvent::opcode);
   auto* conn = x11::Connection::Get();
@@ -372,7 +374,7 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
           next_event.xmotion.window == xev->xmotion.window &&
           next_event.xmotion.subwindow == xev->xmotion.subwindow &&
           next_event.xmotion.state == xev->xmotion.state) {
-        *last_event = next_event;
+        *last_event = std::move(*it);
         it = conn->events().erase(it);
       } else {
         break;
@@ -384,6 +386,7 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
     DCHECK(event_type == XI_Motion || event_type == XI_TouchUpdate);
     is_motion = event_type == XI_Motion;
 
+    auto* ddmx11 = ui::DeviceDataManagerX11::GetInstance();
     for (auto it = conn->events().begin(); it != conn->events().end();) {
       auto& next_event = it->xlib_event();
 
@@ -404,10 +407,8 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
 
       if (next_event.type == x11::GeGenericEvent::opcode &&
           next_event.xgeneric.evtype == event_type &&
-          !ui::DeviceDataManagerX11::GetInstance()->IsCMTGestureEvent(
-              next_event) &&
-          ui::DeviceDataManagerX11::GetInstance()->GetScrollClassEventDetail(
-              next_event) == SCROLL_TYPE_NO_SCROLL) {
+          !ddmx11->IsCMTGestureEvent(*it) &&
+          ddmx11->GetScrollClassEventDetail(*it) == SCROLL_TYPE_NO_SCROLL) {
         XIDeviceEvent* next_xievent =
             static_cast<XIDeviceEvent*>(next_event.xcookie.data);
         // Confirm that the motion event is targeted at the same window
@@ -422,11 +423,7 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
             xievent->mods.latched == next_xievent->mods.latched &&
             xievent->mods.locked == next_xievent->mods.locked &&
             xievent->mods.effective == next_xievent->mods.effective) {
-          // Free the previous cookie.
-          if (num_coalesced > 0)
-            XFreeEventData(last_event->xany.display, &last_event->xcookie);
-          last_event->xcookie = next_event.xcookie;
-          next_event.xcookie.data = nullptr;
+          *last_event = std::move(*it);
           it = conn->events().erase(it);
           num_coalesced++;
           continue;

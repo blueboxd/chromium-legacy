@@ -64,7 +64,6 @@ const base::Feature* const kAllFeatures[] = {
     defined(OS_CHROMEOS)
     &kIPHFocusModeFeature,
     &kIPHGlobalMediaControlsFeature,
-    &kIPHPasswordsAccountStorageFeature,
     &kIPHReopenTabFeature,
     &kIPHWebUITabStripFeature,
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)

@@ -63,16 +63,16 @@ mediaApp.AbstractFile.prototype.overwriteOriginal;
 /**
  * A function that will delete the original file. Returns a promise that
  * resolves to an enum value (see DeleteResult in chromium message_types)
- * reflecting the result of the deletion. Returns a negative error code number
- * for unknown results.
+ * reflecting the result of the deletion. Errors encountered are thrown from the
+ * message pipe and handled by invoking functions in Google3.
  * @type {function(): !Promise<number>|undefined}
  */
 mediaApp.AbstractFile.prototype.deleteOriginalFile;
 /**
  * A function that will rename the original file. Returns a promise that
  * resolves to an enum value (see RenameResult in message_types) reflecting the
- * result of the rename. Returns a negative error code number for unknown
- * results.
+ * result of the rename. Errors encountered are thrown from the message pipe and
+ * handled by invoking functions in Google3.
  * @type {function(string): !Promise<number>|undefined}
  */
 mediaApp.AbstractFile.prototype.renameOriginalFile;

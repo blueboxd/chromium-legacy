@@ -23,6 +23,10 @@ class InfobarBannerOverlayRequestCallbackInstaller
       InfobarBannerInteractionHandler* interaction_handler);
   ~InfobarBannerOverlayRequestCallbackInstaller() override;
 
+ protected:
+  // OverlayRequestCallbackInstaller:
+  void InstallCallbacksInternal(OverlayRequest* request) override;
+
  private:
   // Used as a callback for OverlayResponses dispatched through |request|'s
   // callback manager.  The OverlayDispatchCallback is created with an
@@ -45,7 +49,6 @@ class InfobarBannerOverlayRequestCallbackInstaller
 
   // OverlayRequestCallbackInstaller:
   const OverlayRequestSupport* GetRequestSupport() const override;
-  void InstallCallbacksInternal(OverlayRequest* request) override;
 
   // The request support for |interaction_handler_|.
   const OverlayRequestSupport* request_support_ = nullptr;

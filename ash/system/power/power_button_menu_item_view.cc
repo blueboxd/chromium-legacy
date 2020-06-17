@@ -48,13 +48,13 @@ PowerButtonMenuItemView::PowerButtonMenuItemView(
   const AshColorProvider* color_provider = AshColorProvider::Get();
   icon_view_->SetImage(gfx::CreateVectorIcon(
       icon, color_provider->DeprecatedGetContentLayerColor(
-                AshColorProvider::ContentLayerType::kIconPrimary,
+                AshColorProvider::ContentLayerType::kIconColorPrimary,
                 kPowerButtonMenuItemIconColor)));
   AddChildView(icon_view_);
 
   title_->SetBackgroundColor(SK_ColorTRANSPARENT);
   title_->SetEnabledColor(color_provider->DeprecatedGetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextPrimary,
+      AshColorProvider::ContentLayerType::kTextColorPrimary,
       kPowerButtonMenuItemTitleColor));
   title_->SetText(title_text);
   AddChildView(title_);
@@ -119,7 +119,7 @@ void PowerButtonMenuItemView::PaintButtonContents(gfx::Canvas* canvas) {
   bounds.Inset(gfx::Insets(kItemBorderThickness));
   // Stroke.
   flags.setColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kFocusRing,
+      AshColorProvider::ControlsLayerType::kFocusRingColor,
       kPowerButtonMenuItemFocusColor));
   flags.setStrokeWidth(kItemBorderThickness);
   flags.setStyle(cc::PaintFlags::Style::kStroke_Style);

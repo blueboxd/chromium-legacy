@@ -42,7 +42,7 @@ class ResolutionNotificationControllerTest
         base::UTF8ToUTF16(display_manager()->GetDisplayNameForId(display_id));
     const base::string16 countdown = ui::TimeFormat::Simple(
         ui::TimeFormat::FORMAT_DURATION, ui::TimeFormat::LENGTH_LONG,
-        base::TimeDelta::FromSeconds(10));
+        base::TimeDelta::FromSeconds(15));
     if (::display::features::IsListAllDisplayModesEnabled()) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_RESOLUTION_REFRESH_CHANGE_DIALOG_CHANGED, display_name,
@@ -64,7 +64,7 @@ class ResolutionNotificationControllerTest
         base::UTF8ToUTF16(display_manager()->GetDisplayNameForId(display_id));
     const base::string16 countdown = ui::TimeFormat::Simple(
         ui::TimeFormat::FORMAT_DURATION, ui::TimeFormat::LENGTH_LONG,
-        base::TimeDelta::FromSeconds(10));
+        base::TimeDelta::FromSeconds(15));
     if (::display::features::IsListAllDisplayModesEnabled()) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_RESOLUTION_REFRESH_CHANGE_DIALOG_FALLBACK,

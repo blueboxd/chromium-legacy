@@ -2163,14 +2163,13 @@ IN_PROC_BROWSER_TEST_F(LocalNTPInterceptionWebRequestAPITest,
         return result == "true";
       };
 
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
   ASSERT_FALSE(GetAndResetOneGoogleBarRequestSeen());
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
-  ASSERT_TRUE(search::IsInstantNTP(web_contents));
-  ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
-            web_contents->GetController().GetVisibleEntry()->GetURL());
+  ASSERT_EQ(local_ntp_test_utils::GetFinalNtpUrl(browser()->profile()),
+            browser()
+                ->tab_strip_model()
+                ->GetActiveWebContents()
+                ->GetLastCommittedURL());
   WaitForOneGoogleBarDataUpdate();
   ASSERT_TRUE(GetAndResetOneGoogleBarRequestSeen());
 

@@ -102,8 +102,9 @@ IntRect InlineBox::PartialInvalidationVisualRect() const {
 }
 
 DOMNodeId InlineBox::OwnerNodeId() const {
-  return GetLineLayoutItem().GetNode()
-             ? DOMNodeIds::IdForNode(GetLineLayoutItem().GetNode())
+  return GetLineLayoutItem().GetNodeForOwnerNodeId()
+             ? DOMNodeIds::IdForNode(
+                   GetLineLayoutItem().GetNodeForOwnerNodeId())
              : kInvalidDOMNodeId;
 }
 

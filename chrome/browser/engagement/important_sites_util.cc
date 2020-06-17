@@ -21,6 +21,7 @@
 #include "chrome/browser/engagement/site_engagement_details.mojom.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/installable/installable_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -253,7 +254,6 @@ void PopulateInfoMapWithEngagement(
   // with the highest engagement score.
   for (const auto& detail : engagement_details) {
     if (detail.installed_bonus > 0) {
-      // This origin was recently launched from the home screen.
       MaybePopulateImportantInfoForReason(detail.origin, &content_origins,
                                           ImportantReason::HOME_SCREEN,
                                           base::nullopt, output);
@@ -434,6 +434,19 @@ bool ImportantSitesUtil::IsDialogDisabled(Profile* profile) {
 void ImportantSitesUtil::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kImportantSitesDialogHistory);
+}
+
+// static
+std::set<std::string> ImportantSitesUtil::GetInstalledRegisterableDomains(
+    Profile* profile) {
+  std::set<GURL> installed_origins = GetOriginsWithInstalledWebApps(profile);
+  std::set<std::string> registerable_domains;
+
+  for (auto& origin : installed_origins) {
+    registerable_domains.emplace(
+        ImportantSitesUtil::GetRegisterableDomainOrIP(origin));
+  }
+  return registerable_domains;
 }
 
 std::vector<ImportantDomainInfo>

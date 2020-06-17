@@ -376,6 +376,11 @@ class CORE_EXPORT NGFragmentItem {
                  scoped_refptr<const ShapeResultView> shape_result,
                  const NGTextOffset& text_offset,
                  const PhysicalSize& size);
+  // Create a generated text item.
+  NGFragmentItem(const NGInlineItem& inline_item,
+                 scoped_refptr<const ShapeResultView> shape_result,
+                 const String& text_content,
+                 const PhysicalSize& size);
 
   const LayoutBox* InkOverflowOwnerBox() const;
   LayoutBox* MutableInkOverflowOwnerBox();

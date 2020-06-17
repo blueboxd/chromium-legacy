@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.webapps;
 
 import static org.junit.Assert.assertTrue;
 
-import android.support.test.filters.LargeTest;
+import androidx.test.filters.LargeTest;
 
 import org.junit.Rule;
 import org.junit.Test;

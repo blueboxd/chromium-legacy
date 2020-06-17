@@ -2350,6 +2350,111 @@ bool AXNodeObject::HasAriaAttribute() const {
   return false;
 }
 
+void AXNodeObject::AriaDescribedbyElements(AXObjectVector& describedby) const {
+  AccessibilityChildrenFromAOMProperty(AOMRelationListProperty::kDescribedBy,
+                                       describedby);
+}
+
+void AXNodeObject::AriaOwnsElements(AXObjectVector& owns) const {
+  AccessibilityChildrenFromAOMProperty(AOMRelationListProperty::kOwns, owns);
+}
+
+bool AXNodeObject::SupportsARIAOwns() const {
+  if (!GetLayoutObject())
+    return false;
+  const AtomicString& aria_owns = GetAttribute(html_names::kAriaOwnsAttr);
+
+  return !aria_owns.IsEmpty();
+}
+
+// TODO : Aria-dropeffect and aria-grabbed are deprecated in aria 1.1
+// Also those properties are expected to be replaced by a new feature in
+// a future version of WAI-ARIA. After that we will re-implement them
+// following new spec.
+bool AXNodeObject::SupportsARIADragging() const {
+  const AtomicString& grabbed = GetAttribute(html_names::kAriaGrabbedAttr);
+  return EqualIgnoringASCIICase(grabbed, "true") ||
+         EqualIgnoringASCIICase(grabbed, "false");
+}
+
+ax::mojom::blink::Dropeffect AXNodeObject::ParseDropeffect(
+    String& dropeffect) const {
+  if (EqualIgnoringASCIICase(dropeffect, "copy"))
+    return ax::mojom::blink::Dropeffect::kCopy;
+  if (EqualIgnoringASCIICase(dropeffect, "execute"))
+    return ax::mojom::blink::Dropeffect::kExecute;
+  if (EqualIgnoringASCIICase(dropeffect, "link"))
+    return ax::mojom::blink::Dropeffect::kLink;
+  if (EqualIgnoringASCIICase(dropeffect, "move"))
+    return ax::mojom::blink::Dropeffect::kMove;
+  if (EqualIgnoringASCIICase(dropeffect, "popup"))
+    return ax::mojom::blink::Dropeffect::kPopup;
+  return ax::mojom::blink::Dropeffect::kNone;
+}
+
+void AXNodeObject::Dropeffects(
+    Vector<ax::mojom::blink::Dropeffect>& dropeffects) const {
+  if (!HasAttribute(html_names::kAriaDropeffectAttr))
+    return;
+
+  Vector<String> str_dropeffects;
+  TokenVectorFromAttribute(str_dropeffects, html_names::kAriaDropeffectAttr);
+
+  if (str_dropeffects.IsEmpty()) {
+    dropeffects.push_back(ax::mojom::blink::Dropeffect::kNone);
+    return;
+  }
+
+  for (auto&& str : str_dropeffects) {
+    dropeffects.push_back(ParseDropeffect(str));
+  }
+}
+
+//
+// ARIA live-region features.
+//
+
+const AtomicString& AXNodeObject::LiveRegionStatus() const {
+  DEFINE_STATIC_LOCAL(const AtomicString, live_region_status_assertive,
+                      ("assertive"));
+  DEFINE_STATIC_LOCAL(const AtomicString, live_region_status_polite,
+                      ("polite"));
+  DEFINE_STATIC_LOCAL(const AtomicString, live_region_status_off, ("off"));
+
+  const AtomicString& live_region_status =
+      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kLive);
+  // These roles have implicit live region status.
+  if (live_region_status.IsEmpty()) {
+    switch (RoleValue()) {
+      case ax::mojom::blink::Role::kAlert:
+        return live_region_status_assertive;
+      case ax::mojom::blink::Role::kLog:
+      case ax::mojom::blink::Role::kStatus:
+        return live_region_status_polite;
+      case ax::mojom::blink::Role::kTimer:
+      case ax::mojom::blink::Role::kMarquee:
+        return live_region_status_off;
+      default:
+        break;
+    }
+  }
+
+  return live_region_status;
+}
+
+const AtomicString& AXNodeObject::LiveRegionRelevant() const {
+  DEFINE_STATIC_LOCAL(const AtomicString, default_live_region_relevant,
+                      ("additions text"));
+  const AtomicString& relevant =
+      GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRelevant);
+
+  // Default aria-relevant = "additions text".
+  if (relevant.IsEmpty())
+    return default_live_region_relevant;
+
+  return relevant;
+}
+
 ax::mojom::blink::HasPopup AXNodeObject::HasPopup() const {
   const AtomicString& has_popup =
       GetAOMPropertyOrARIAAttribute(AOMStringProperty::kHasPopUp);

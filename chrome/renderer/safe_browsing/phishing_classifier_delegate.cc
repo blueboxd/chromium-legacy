@@ -85,10 +85,8 @@ void PhishingClassifierDelegate::SetPhishingModel(const std::string& model) {
   // detection.
   if (!model.empty()) {
     scorer = safe_browsing::Scorer::Create(model);
-    if (!scorer) {
-      DLOG(ERROR) << "Unable to create a PhishingScorer - corrupt model?";
+    if (!scorer)
       return;
-    }
   }
   for (auto* delegate : PhishingClassifierDelegates())
     delegate->SetPhishingScorer(scorer);

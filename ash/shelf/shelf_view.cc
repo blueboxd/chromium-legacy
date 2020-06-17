@@ -14,6 +14,7 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
@@ -40,6 +41,7 @@
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/containers/adapters.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -453,7 +455,7 @@ bool ShelfView::IsShelfViewHandlingDragAndDrop() const {
   // AppsGridView. When the drag originates from the shelf, the
   // ScrollableShelfView is the ApplicationDragAndDropHost, so ShelfView will
   // not have a drag proxy.
-  return drag_image_ != nullptr;
+  return !!drag_image_widget_;
 }
 
 int ShelfView::GetButtonSize() const {
@@ -838,41 +840,42 @@ void ShelfView::CreateDragIconProxyByLocationWithNoAnimation(
   drag_replaced_view_ = replaced_view;
   aura::Window* root_window =
       drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
-  drag_image_ = std::make_unique<DragImageView>(
+  drag_image_widget_ = DragImageView::Create(
       root_window, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
+  DragImageView* drag_image = GetDragImage();
   if (blur_radius > 0)
     SetDragImageBlur(icon.size(), blur_radius);
-  drag_image_->SetImage(icon);
-  gfx::Size size = drag_image_->GetPreferredSize();
+  drag_image->SetImage(icon);
+  gfx::Size size = drag_image->GetPreferredSize();
   size.set_width(size.width() * scale_factor);
   size.set_height(size.height() * scale_factor);
   gfx::Rect drag_image_bounds(origin_in_screen_coordinates, size);
-  drag_image_->SetBoundsInScreen(drag_image_bounds);
+  drag_image->SetBoundsInScreen(drag_image_bounds);
 
   // Turn off the default visibility animation.
-  drag_image_->GetWidget()->SetVisibilityAnimationTransition(
+  drag_image_widget_->SetVisibilityAnimationTransition(
       views::Widget::ANIMATE_NONE);
-  drag_image_->SetWidgetVisible(true);
+  drag_image->SetWidgetVisible(true);
   // Add a layer in order to ensure the icon properly animates when a drag
   // starts from AppsGridView and ends in the Shelf.
-  drag_image_->SetPaintToLayer();
-  drag_image_->layer()->SetFillsBoundsOpaquely(false);
+  drag_image->SetPaintToLayer();
+  drag_image->layer()->SetFillsBoundsOpaquely(false);
 }
 
 void ShelfView::UpdateDragIconProxy(
     const gfx::Point& location_in_screen_coordinates) {
-  // TODO(jennyz): Investigate why drag_image_ becomes null at this point per
-  // crbug.com/34722, while the app list item is still being dragged around.
-  if (drag_image_) {
-    drag_image_->SetScreenPosition(location_in_screen_coordinates -
-                                   drag_image_offset_);
+  // TODO(jennyz): Investigate why drag_image_widget_ becomes null at this point
+  // per crbug.com/34722, while the app list item is still being dragged around.
+  if (drag_image_widget_) {
+    GetDragImage()->SetScreenPosition(location_in_screen_coordinates -
+                                      drag_image_offset_);
   }
 }
 
 void ShelfView::UpdateDragIconProxyByLocation(
     const gfx::Point& origin_in_screen_coordinates) {
-  if (drag_image_)
-    drag_image_->SetScreenPosition(origin_in_screen_coordinates);
+  if (drag_image_widget_)
+    GetDragImage()->SetScreenPosition(origin_in_screen_coordinates);
 }
 
 bool ShelfView::IsDraggedView(const views::View* view) const {
@@ -932,7 +935,7 @@ void ShelfView::ConfigureChildView(views::View* view,
 }
 
 void ShelfView::CalculateIdealBounds() {
-  DCHECK(model()->item_count() == view_model()->view_size());
+  DCHECK(model()->item_count() == view_model_->view_size());
 
   const int button_spacing = ShelfConfig::Get()->button_spacing();
   const int separator_index = GetSeparatorIndex();
@@ -950,9 +953,18 @@ void ShelfView::CalculateIdealBounds() {
   // The padding is handled in ScrollableShelfView.
 
   const int button_size = GetButtonSize();
-  for (int i = 0; i < view_model()->view_size(); ++i) {
-    view_model()->set_ideal_bounds(i,
-                                   gfx::Rect(x, y, button_size, button_size));
+  for (int i = 0; i < view_model_->view_size(); ++i) {
+    const bool is_visible = view_model_->view_at(i)->GetVisible();
+    if (!is_visible) {
+      // Layout hidden views with empty bounds so they don't consume horizontal
+      // space. Note that |separator_index| cannot be the index of a hidden
+      // view.
+      DCHECK_NE(i, separator_index);
+      view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
+      continue;
+    }
+
+    view_model_->set_ideal_bounds(i, gfx::Rect(x, y, button_size, button_size));
 
     x = shelf()->PrimaryAxisValue(x + button_size + button_spacing, x);
     y = shelf()->PrimaryAxisValue(y, y + button_size + button_spacing);
@@ -1005,24 +1017,31 @@ int ShelfView::GetAvailableSpaceForAppIcons() const {
 }
 
 int ShelfView::GetSeparatorIndex() const {
-  for (int i = 0; i < model()->item_count() - 1; ++i) {
-    if (IsItemPinned(model()->items()[i]) &&
-        model()->items()[i + 1].type == TYPE_APP) {
-      return i;
-    }
+  // A separator is shown after the last pinned item only if it's followed by a
+  // visible app item.
+  int next_visible_app_item_index = -1;
+  for (int i = model()->item_count() - 1; i >= 0; --i) {
+    const auto& item = model()->items()[i];
+    if (IsItemPinned(item))
+      return next_visible_app_item_index != -1 ? i : -1;
+
+    if (item.type == TYPE_APP && item.is_on_active_desk)
+      next_visible_app_item_index = i;
   }
+
   return -1;
 }
 
 void ShelfView::DestroyDragIconProxy() {
-  drag_image_.reset();
+  drag_image_widget_.reset();
   drag_image_offset_ = gfx::Vector2d(0, 0);
 }
 
-DragImageView* ShelfView::RetrieveDragIconProxyAndClearDragProxyState() {
+views::UniqueWidgetPtr
+ShelfView::RetrieveDragIconProxyAndClearDragProxyState() {
   // TODO(https://crub.com/1045186): Make ScrollableShelfView the only
   // ApplicationDragAndDropHost in the view hierarchy, and remove this.
-  DragImageView* temp_drag_image_view = drag_image_.release();
+  views::UniqueWidgetPtr temp_drag_image_view = std::move(drag_image_widget_);
   DestroyDragIconProxy();
   return temp_drag_image_view;
 }
@@ -1248,6 +1267,10 @@ bool ShelfView::IsItemPinned(const ShelfItem& item) const {
   return IsPinnedShelfItemType(item.type);
 }
 
+bool ShelfView::IsItemVisible(const ShelfItem& item) const {
+  return IsItemPinned(item) || item.is_on_active_desk;
+}
+
 void ShelfView::OnTabletModeChanged() {
   // The layout change will happen as part of shelf config update.
 }
@@ -1401,22 +1424,23 @@ void ShelfView::CreateDragIconProxy(
   drag_replaced_view_ = replaced_view;
   aura::Window* root_window =
       drag_replaced_view_->GetWidget()->GetNativeWindow()->GetRootWindow();
-  drag_image_ = std::make_unique<DragImageView>(
+  drag_image_widget_ = DragImageView::Create(
       root_window, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
-  drag_image_->SetImage(icon);
-  gfx::Size size = drag_image_->GetPreferredSize();
+  DragImageView* drag_image = GetDragImage();
+  drag_image->SetImage(icon);
+  gfx::Size size = drag_image->GetPreferredSize();
   size.set_width(std::round(size.width() * scale_factor));
   size.set_height(std::round(size.height() * scale_factor));
   drag_image_offset_ = gfx::Vector2d(size.width() / 2, size.height() / 2) +
                        cursor_offset_from_center;
   gfx::Rect drag_image_bounds(
       location_in_screen_coordinates - drag_image_offset_, size);
-  drag_image_->SetBoundsInScreen(drag_image_bounds);
+  drag_image->SetBoundsInScreen(drag_image_bounds);
   if (!animate_visibility) {
-    drag_image_->GetWidget()->SetVisibilityAnimationTransition(
+    drag_image_widget_->SetVisibilityAnimationTransition(
         views::Widget::ANIMATE_NONE);
   }
-  drag_image_->SetWidgetVisible(true);
+  drag_image->SetWidgetVisible(true);
 }
 
 void ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
@@ -1435,7 +1459,7 @@ void ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
     // the item back into the shelf.
     if (GetBoundsForDragInsertInScreen().Contains(screen_location)) {
       drag_and_drop_host_->CreateDragIconProxyByLocationWithNoAnimation(
-          event.root_location(), drag_view_->GetImage(), drag_image_.get(),
+          event.root_location(), drag_view_->GetImage(), GetDragImage(),
           /*scale_factor=*/1.0f, /*blur_radius=*/0);
 
       // Destroy our proxy view item.
@@ -1479,7 +1503,7 @@ void ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
         model_->Move(current_index, model_->item_count() - 1);
       // Make the item partially disappear to show that it will get removed if
       // dropped.
-      drag_image_->SetOpacity(kDraggedImageOpacity);
+      GetDragImage()->SetOpacity(kDraggedImageOpacity);
     }
   }
 }
@@ -1520,7 +1544,7 @@ void ShelfView::FinalizeRipOffDrag(bool cancel) {
   if (cancel || snap_back) {
     if (!cancelling_drag_model_changed_) {
       // Only do something if the change did not come through a model change.
-      gfx::Rect drag_bounds = drag_image_->GetBoundsInScreen();
+      gfx::Rect drag_bounds = GetDragImage()->GetBoundsInScreen();
       gfx::Point relative_to = GetBoundsInScreen().origin();
       gfx::Rect target(
           gfx::PointAtOffsetFromOrigin(drag_bounds.origin() - relative_to),
@@ -1768,9 +1792,9 @@ void ShelfView::ShelfItemAdded(int model_index) {
   view_model_->Add(view, model_index);
 
   // Add child view so it has the same ordering as in the |view_model_|.
-  // Note: No need to call UpdateVisibleIndices() here directly, since it will
-  // be called by ScrollableShelfView::ViewHierarchyChanged() as a result of the
-  // below call.
+  // Note: No need to call UpdateShelfItemViewsVisibility() here directly, since
+  // it will be called by ScrollableShelfView::ViewHierarchyChanged() as a
+  // result of the below call.
   AddChildViewAt(view, model_index);
 
   // Give the button its ideal bounds. That way if we end up animating the
@@ -1817,7 +1841,7 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
     shelf_->tooltip()->Close();
 
   if (view->GetVisible() && view->layer()->opacity() > 0.0f) {
-    UpdateVisibleIndices();
+    UpdateShelfItemViewsVisibility();
 
     // The first animation fades out the view. When done we'll animate the rest
     // of the views to their target location.
@@ -1851,13 +1875,22 @@ void ShelfView::ShelfItemRemoved(int model_index, const ShelfItem& old_item) {
 }
 
 void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
-  const ShelfItem& item(model_->items()[model_index]);
-
   // Bail if the view and shelf sizes do not match. ShelfItemChanged may be
   // called here before ShelfItemAdded, due to ChromeLauncherController's
   // item initialization, which calls SetItem during ShelfItemAdded.
   if (static_cast<int>(model_->items().size()) != view_model_->view_size())
     return;
+
+  const ShelfItem& item = model_->items()[model_index];
+
+  // If there's a change in the item's active desk, perform the update at the
+  // end of this function in order to guarantee that both |model_| and
+  // |view_model_| are consistent if there are other changes in the item.
+  base::ScopedClosureRunner run_at_scope_exit;
+  if (old_item.is_on_active_desk != item.is_on_active_desk) {
+    run_at_scope_exit.ReplaceClosure(base::BindOnce(
+        &ShelfView::ShelfItemsUpdatedForDeskChange, base::Unretained(this)));
+  }
 
   if (old_item.type != item.type) {
     // Type changed, swap the views.
@@ -1904,6 +1937,20 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
     case TYPE_UNDEFINED:
       break;
   }
+}
+
+void ShelfView::ShelfItemsUpdatedForDeskChange() {
+  DCHECK(features::IsPerDeskShelfEnabled());
+
+  // The order here matters, since switching/removing desks, or moving windows
+  // between desks will affect shelf items' visibility, we need to update the
+  // visibility of the views first before we layout.
+  UpdateShelfItemViewsVisibility();
+  // Signal to the parent ScrollableShelfView so that it can recenter the items
+  // after their visibility have been updated (via
+  // `UpdateAvailableSpaceAndScroll()`).
+  PreferredSizeChanged();
+  LayoutToIdealBounds();
 }
 
 void ShelfView::ShelfItemMoved(int start_index, int target_index) {
@@ -2164,12 +2211,12 @@ bool ShelfView::CanPrepareForDrag(Pointer pointer,
 }
 
 void ShelfView::SetDragImageBlur(const gfx::Size& size, int blur_radius) {
-  drag_image_->SetPaintToLayer();
-  drag_image_->layer()->SetFillsBoundsOpaquely(false);
+  DragImageView* drag_image = GetDragImage();
+  drag_image->SetPaintToLayer();
+  drag_image->layer()->SetFillsBoundsOpaquely(false);
   const uint32_t radius = std::round(size.width() / 2.f);
-  drag_image_->layer()->SetRoundedCornerRadius(
-      {radius, radius, radius, radius});
-  drag_image_->layer()->SetBackgroundBlur(blur_radius);
+  drag_image->layer()->SetRoundedCornerRadius({radius, radius, radius, radius});
+  drag_image->layer()->SetBackgroundBlur(blur_radius);
 }
 
 bool ShelfView::ShouldHandleGestures(const ui::GestureEvent& event) const {
@@ -2190,12 +2237,20 @@ base::string16 ShelfView::GetTitleForChildView(const views::View* view) const {
   return item ? item->title : base::string16();
 }
 
-void ShelfView::UpdateVisibleIndices() {
+void ShelfView::UpdateShelfItemViewsVisibility() {
   visible_views_indices_.clear();
   for (int i = 0; i < view_model_->view_size(); ++i) {
-    // TODO(afakhry): For now all views are visible. Change this once we take
-    // inactive desks into account.
-    visible_views_indices_.push_back(i);
+    View* view = view_model_->view_at(i);
+    // To receive drag event continuously from |drag_view_| during the dragging
+    // off from the shelf, don't make |drag_view_| invisible. It will be
+    // eventually invisible and removed from the |view_model_| by
+    // FinalizeRipOffDrag().
+    const bool has_to_show = dragged_off_shelf_ && view == drag_view();
+    const bool is_visible = has_to_show || IsItemVisible(model()->items()[i]);
+    view->SetVisible(is_visible);
+
+    if (is_visible)
+      visible_views_indices_.push_back(i);
   }
 }
 
@@ -2218,6 +2273,10 @@ int ShelfView::CalculateAppIconsLayoutOffset() const {
 
   return shelf_->IsHorizontalAlignment() ? horizontal_inset
                                          : edge_padding_insets.top();
+}
+
+DragImageView* ShelfView::GetDragImage() {
+  return static_cast<DragImageView*>(drag_image_widget_->GetContentsView());
 }
 
 }  // namespace ash

@@ -120,10 +120,6 @@ void MockQuotaClient::PerformStorageCleanup(blink::mojom::StorageType type,
   std::move(callback).Run();
 }
 
-bool MockQuotaClient::DoesSupport(blink::mojom::StorageType type) const {
-  return true;
-}
-
 void MockQuotaClient::RunGetOriginUsage(const url::Origin& origin,
                                         blink::mojom::StorageType type,
                                         GetUsageCallback callback) {

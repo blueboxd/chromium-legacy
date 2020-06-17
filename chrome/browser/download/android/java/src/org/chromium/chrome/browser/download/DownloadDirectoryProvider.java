@@ -210,8 +210,7 @@ public class DownloadDirectoryProvider {
     public void getAllDirectoriesOptions(Callback<ArrayList<DirectoryOption>> callback) {
         // Use cache value.
         if (!mNeedsUpdate && mDirectoriesReady) {
-            PostTask.postTask(
-                    UiThreadTaskTraits.DEFAULT, () -> callback.onResult(mDirectoryOptions));
+            PostTask.postTask(UiThreadTaskTraits.DEFAULT, callback.bind(mDirectoryOptions));
             return;
         }
 

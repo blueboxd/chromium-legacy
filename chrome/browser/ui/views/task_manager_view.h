@@ -56,7 +56,6 @@ class TaskManagerView : public TableViewDelegate,
   // views::DialogDelegateView:
   views::View* GetInitiallyFocusedView() override;
   bool ExecuteWindowsCommand(int command_id) override;
-  base::string16 GetWindowTitle() const override;
   gfx::ImageSkia GetWindowIcon() override;
   std::string GetWindowName() const override;
   bool Accept() override;

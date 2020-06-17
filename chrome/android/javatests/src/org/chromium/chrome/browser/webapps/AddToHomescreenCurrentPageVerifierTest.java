@@ -8,7 +8,8 @@ import static org.junit.Assert.assertEquals;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.support.test.filters.LargeTest;
+
+import androidx.test.filters.LargeTest;
 
 import org.junit.Before;
 import org.junit.Rule;

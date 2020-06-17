@@ -7,10 +7,11 @@ package org.chromium.chrome.browser.toolbar.top;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
 import android.app.Activity;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Rule;
 import org.junit.Test;

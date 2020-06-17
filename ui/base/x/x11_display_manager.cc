@@ -24,7 +24,7 @@ constexpr int kMinXrandrVersion = 103;  // Need at least xrandr version 1.3
 XDisplayManager::XDisplayManager(Delegate* delegate)
     : delegate_(delegate),
       connection_(x11::Connection::Get()),
-      x_root_window_(connection_->default_screen()->root),
+      x_root_window_(connection_->default_screen().root),
       xrandr_version_(GetXrandrVersion()),
       workspace_handler_(this) {}
 
@@ -32,10 +32,10 @@ XDisplayManager::~XDisplayManager() = default;
 
 void XDisplayManager::Init() {
   if (IsXrandrAvailable()) {
-    auto* randr = connection_->randr();
-    xrandr_event_base_ = randr->first_event();
+    auto& randr = connection_->randr();
+    xrandr_event_base_ = randr.first_event();
 
-    randr->SelectInput(
+    randr.SelectInput(
         {x_root_window_, x11::RandR::NotifyMask::ScreenChange |
                              x11::RandR::NotifyMask::OutputChange |
                              x11::RandR::NotifyMask::CrtcChange});
@@ -61,7 +61,8 @@ void XDisplayManager::RemoveObserver(display::DisplayObserver* observer) {
   change_notifier_.RemoveObserver(observer);
 }
 
-bool XDisplayManager::CanProcessEvent(const XEvent& xev) {
+bool XDisplayManager::CanProcessEvent(const x11::Event& x11_event) {
+  const XEvent& xev = x11_event.xlib_event();
   return xev.type - xrandr_event_base_ ==
              x11::RandR::ScreenChangeNotifyEvent::opcode ||
          xev.type - xrandr_event_base_ == x11::RandR::NotifyEvent::opcode ||
@@ -71,8 +72,9 @@ bool XDisplayManager::CanProcessEvent(const XEvent& xev) {
               static_cast<uint32_t>(gfx::GetAtom("_NET_WORKAREA")));
 }
 
-bool XDisplayManager::ProcessEvent(XEvent* xev) {
-  DCHECK(xev);
+bool XDisplayManager::ProcessEvent(x11::Event* x11_event) {
+  DCHECK(x11_event);
+  XEvent* xev = &x11_event->xlib_event();
   int ev_type = xev->type - xrandr_event_base_;
   if (ev_type == x11::RandR::ScreenChangeNotifyEvent::opcode) {
     // Pass the event through to xlib.

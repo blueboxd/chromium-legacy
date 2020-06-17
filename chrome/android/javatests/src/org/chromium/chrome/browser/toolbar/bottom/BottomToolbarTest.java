@@ -13,9 +13,10 @@ import static org.chromium.chrome.test.util.ToolbarTestUtils.BOTTOM_TOOLBAR_TAB_
 import static org.chromium.chrome.test.util.ToolbarTestUtils.checkToolbarButtonVisibility;
 import static org.chromium.chrome.test.util.ToolbarTestUtils.checkToolbarVisibility;
 
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

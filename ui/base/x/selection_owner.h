@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/base/x/selection_utils.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -51,14 +52,14 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
   void ClearSelectionOwner();
 
   // It is our owner's responsibility to plumb X11 events on |xwindow_| to us.
-  void OnSelectionRequest(const XEvent& event);
-  void OnSelectionClear(const XEvent& event);
+  void OnSelectionRequest(const x11::Event& event);
+  void OnSelectionClear(const x11::Event& event);
 
   // Returns true if SelectionOwner can process the XPropertyEvent event,
   // |event|.
-  bool CanDispatchPropertyEvent(const XEvent& event);
+  bool CanDispatchPropertyEvent(const x11::Event& event);
 
-  void OnPropertyEvent(const XEvent& event);
+  void OnPropertyEvent(const x11::Event& event);
 
  private:
   // Holds state related to an incremental data transfer.
@@ -118,7 +119,7 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
   // Returns the incremental data transfer, if any, which was waiting for
   // |event|.
   std::vector<IncrementalTransfer>::iterator FindIncrementalTransferForEvent(
-      const XEvent& event);
+      const x11::Event& event);
 
   // Our X11 state.
   XDisplay* x_display_;

@@ -35,7 +35,6 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
@@ -345,8 +344,7 @@ bool DemoSession::ShouldDisplayInAppLauncher(const std::string& app_id) {
     return true;
   return app_id != GetScreensaverAppId() &&
          app_id != extensions::kWebStoreAppId &&
-         app_id != extension_misc::kGeniusAppId &&
-         app_id != default_web_apps::kHelpAppId;
+         app_id != extension_misc::kGeniusAppId;
 }
 
 // static

@@ -43,6 +43,9 @@ const base::Feature kEnableOverviewRoundedCorners{
 const base::Feature kLimitAltTabToActiveDesk{"LimitAltTabToActiveDesk",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPerDeskShelf{"PerDeskShelf",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kLockScreenNotifications{"LockScreenNotifications",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -130,6 +133,10 @@ bool IsAllowAmbientEQEnabled() {
 
 bool IsAltTabLimitedToActiveDesk() {
   return base::FeatureList::IsEnabled(kLimitAltTabToActiveDesk);
+}
+
+bool IsPerDeskShelfEnabled() {
+  return base::FeatureList::IsEnabled(kPerDeskShelf);
 }
 
 bool IsAutoNightLightEnabled() {

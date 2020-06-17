@@ -9,7 +9,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.chromium.weblayer.shell">
 
-    <application android:label="WebLayer shell">
+    <application android:label="WebLayer shell"
+        android:supportsRtl="true">
         <activity android:name="WebLayerShellActivity"
                   android:launchMode="singleTask"
                   android:theme="@style/ShellTheme"

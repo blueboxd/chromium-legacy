@@ -9,6 +9,7 @@
 
 #include "ash/app_list/views/app_list_drag_and_drop_host.h"
 #include "ash/ash_export.h"
+#include "ash/drag_drop/drag_image_view.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/shelf/scroll_arrow_view.h"
@@ -22,6 +23,8 @@
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/widget/unique_widget_ptr.h"
+#include "ui/views/widget/widget.h"
 
 namespace views {
 class FocusSearch;
@@ -129,7 +132,11 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   LayoutStrategy layout_strategy_for_test() const { return layout_strategy_; }
   gfx::Vector2dF scroll_offset_for_test() const { return scroll_offset_; }
 
-  const DragImageView* drag_icon_for_test() const { return drag_icon_.get(); }
+  const DragImageView* drag_icon_for_test() const {
+    return drag_icon_widget_ ? static_cast<DragImageView*>(
+                                   drag_icon_widget_->GetContentsView())
+                             : nullptr;
+  }
 
   int first_tappable_app_index() { return first_tappable_app_index_; }
   int last_tappable_app_index() { return last_tappable_app_index_; }
@@ -552,7 +559,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   // Replaces the dragged app icon during drag procedure. It ensures that the
   // app icon can be dragged out of the shelf view.
-  std::unique_ptr<DragImageView> drag_icon_;
+  views::UniqueWidgetPtr drag_icon_widget_;
 
   // The delegate to create the animation of moving the dropped icon to the
   // ideal place after drag release.

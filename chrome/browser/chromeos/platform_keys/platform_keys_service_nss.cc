@@ -48,13 +48,16 @@
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
+#include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/cert/x509_util_nss.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertificateDB.h"
 #include "third_party/boringssl/src/include/openssl/bn.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
+#include "third_party/boringssl/src/include/openssl/ec_key.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/nid.h"
 #include "third_party/boringssl/src/include/openssl/rsa.h"
 #include "third_party/cros_system_api/constants/pkcs11_custom_attributes.h"
 
@@ -1553,8 +1556,9 @@ bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
     LOG(WARNING) << "Could not extract public key of certificate.";
     return false;
   }
-  if (key_type_tmp != net::X509Certificate::kPublicKeyTypeRSA) {
-    LOG(WARNING) << "Keys of other type than RSA are not supported.";
+  if (key_type_tmp != net::X509Certificate::kPublicKeyTypeRSA &&
+      key_type_tmp != net::X509Certificate::kPublicKeyTypeECDSA) {
+    LOG(WARNING) << "Keys of other types than RSA and EC are not supported.";
     return false;
   }
 
@@ -1567,17 +1571,41 @@ bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
     LOG(WARNING) << "Could not extract public key of certificate.";
     return false;
   }
-  RSA* rsa = EVP_PKEY_get0_RSA(pkey.get());
-  if (!rsa) {
-    LOG(WARNING) << "Could not get RSA from PKEY.";
-    return false;
-  }
 
-  const BIGNUM* public_exponent;
-  RSA_get0_key(rsa, nullptr /* out_n */, &public_exponent, nullptr /* out_d */);
-  if (BN_get_word(public_exponent) != 65537L) {
-    LOG(ERROR) << "Rejecting RSA public exponent that is unequal 65537.";
-    return false;
+  switch (EVP_PKEY_type(pkey->type)) {
+    case EVP_PKEY_RSA: {
+      RSA* rsa = EVP_PKEY_get0_RSA(pkey.get());
+      if (!rsa) {
+        LOG(WARNING) << "Could not get RSA from PKEY.";
+        return false;
+      }
+      const BIGNUM* public_exponent;
+      RSA_get0_key(rsa, nullptr /* out_n */, &public_exponent,
+                   nullptr /* out_d */);
+      if (BN_get_word(public_exponent) != 65537L) {
+        LOG(ERROR) << "Rejecting RSA public exponent that is unequal 65537.";
+        return false;
+      }
+      break;
+    }
+    case EVP_PKEY_EC: {
+      EC_KEY* ec = EVP_PKEY_get0_EC_KEY(pkey.get());
+      if (!ec) {
+        LOG(WARNING) << "Could not get EC from PKEY.";
+        return false;
+      }
+
+      if (EC_GROUP_get_curve_name(EC_KEY_get0_group(ec)) !=
+          NID_X9_62_prime256v1) {
+        LOG(WARNING) << "Only P-256 named curve is supported.";
+        return false;
+      }
+      break;
+    }
+    default: {
+      LOG(WARNING) << "Only RSA and EC keys are supported.";
+      return false;
+    }
   }
 
   *key_type = key_type_tmp;

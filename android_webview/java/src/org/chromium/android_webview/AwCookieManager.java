@@ -216,7 +216,7 @@ public final class AwCookieManager {
         public void onResult(final Boolean result) {
             if (mHandler == null) return;
             assert mCallback != null;
-            mHandler.post(() -> mCallback.onResult(result));
+            mHandler.post(mCallback.bind(result));
         }
     }
 

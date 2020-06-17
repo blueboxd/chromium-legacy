@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/component_export.h"
@@ -39,8 +40,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerProxy
  public:
   using UsageAndQuotaCallback = QuotaManager::UsageAndQuotaCallback;
 
-  virtual void RegisterClient(scoped_refptr<QuotaClient> client,
-                              QuotaClientType client_type);
+  virtual void RegisterClient(
+      scoped_refptr<QuotaClient> client,
+      QuotaClientType client_type,
+      const std::vector<blink::mojom::StorageType>& storage_types);
   virtual void NotifyStorageAccessed(const url::Origin& origin,
                                      blink::mojom::StorageType type);
   virtual void NotifyStorageModified(QuotaClientType client_id,

@@ -77,6 +77,12 @@ class DeepScanningRequest : public download::DownloadItem::Observer {
   // Called to open the download. This is triggered by the timeout modal dialog.
   void OpenDownload();
 
+  // Populates a request with the appropriate data depending on the used proto.
+  void PrepareLegacyRequest(BinaryUploadService::Request* request,
+                            Profile* profile);
+  void PrepareConnectorRequest(BinaryUploadService::Request* request,
+                               Profile* profile);
+
   // The download item to scan. This is unowned, and could become nullptr if the
   // download is destroyed.
   download::DownloadItem* item_;

@@ -60,30 +60,18 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
   query_ = title;
   context_ = context;
 
-  // Show user-consent notice informing user about the feature if required.
-  if (consent_controller_->ShouldShowConsent()) {
-    if (!quick_answers_ui_controller_->is_showing_user_consent_view()) {
-      quick_answers_ui_controller_->CreateUserConsentView(anchor_bounds);
-      consent_controller_->StartConsent();
-    }
-
-    // Quick-Answers will only be displayed after explicit or tacit consent is
-    // obtained.
-    return;
-  }
-
-  if (!chromeos::features::IsQuickAnswersTextAnnotatorEnabled()) {
-    // If text annotator is not enabled, always shows quick answers view with
-    // placeholder. Otherwise, only shows quick answers view if the predicted
-    // intent is not |kUnknown| at |OnRequestPreprocessFinish|.
+  QuickAnswersRequest request = BuildRequest();
+  if (chromeos::features::IsQuickAnswersTextAnnotatorEnabled()) {
+    // Send the request for preprocessing. Only shows quick answers view if the
+    // predicted intent is not |kUnknown| at |OnRequestPreprocessFinish|.
+    quick_answers_client_->SendRequestForPreprocessing(request);
+  } else if (!MaybeShowUserConsent()) {
+    // Text annotator is not enabled and consent view is not showing, shows
+    // quick answers view with placeholder and send the request.
     quick_answers_ui_controller_->CreateQuickAnswersView(anchor_bounds, title_,
                                                          query_);
+    quick_answers_client_->SendRequest(request);
   }
-
-  QuickAnswersRequest request;
-  request.selected_text = title;
-  request.context = context;
-  quick_answers_client_->SendRequest(request);
 }
 
 void QuickAnswersControllerImpl::DismissQuickAnswers(bool is_active) {
@@ -141,20 +129,28 @@ void QuickAnswersControllerImpl::OnRequestPreprocessFinished(
     return;
   }
 
+  if (processed_request.preprocessed_output.intent_type ==
+      chromeos::quick_answers::IntentType::kUnknown) {
+    return;
+  }
+
   query_ = processed_request.preprocessed_output.query;
   title_ = processed_request.preprocessed_output.intent_text;
 
-  if (processed_request.preprocessed_output.intent_type !=
-      chromeos::quick_answers::IntentType::kUnknown) {
+  if (!MaybeShowUserConsent()) {
     quick_answers_ui_controller_->CreateQuickAnswersView(anchor_bounds_, title_,
                                                          query_);
+    quick_answers_client_->FetchQuickAnswers(processed_request);
   }
 }
 
 void QuickAnswersControllerImpl::OnRetryQuickAnswersRequest() {
-  QuickAnswersRequest request;
-  request.selected_text = query_;
-  quick_answers_client_->SendRequest(request);
+  QuickAnswersRequest request = BuildRequest();
+  if (chromeos::features::IsQuickAnswersTextAnnotatorEnabled()) {
+    quick_answers_client_->SendRequestForPreprocessing(request);
+  } else {
+    quick_answers_client_->SendRequest(request);
+  }
 }
 
 void QuickAnswersControllerImpl::OnQuickAnswerClick() {
@@ -196,4 +192,22 @@ void QuickAnswersControllerImpl::MaybeDismissQuickAnswersConsent() {
   quick_answers_ui_controller_->CloseUserConsentView();
 }
 
+bool QuickAnswersControllerImpl::MaybeShowUserConsent() {
+  if (consent_controller_->ShouldShowConsent()) {
+    // Show user-consent notice informing user about the feature if required.
+    if (!quick_answers_ui_controller_->is_showing_user_consent_view()) {
+      quick_answers_ui_controller_->CreateUserConsentView(anchor_bounds_);
+      consent_controller_->StartConsent();
+    }
+    return true;
+  }
+  return false;
+}
+
+QuickAnswersRequest QuickAnswersControllerImpl::BuildRequest() {
+  QuickAnswersRequest request;
+  request.selected_text = title_;
+  request.context = context_;
+  return request;
+}
 }  // namespace ash

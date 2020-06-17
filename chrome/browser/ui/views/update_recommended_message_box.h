@@ -27,14 +27,13 @@ class UpdateRecommendedMessageBox : public views::DialogDelegate {
   bool Accept() override;
   bool ShouldShowWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
-  base::string16 GetWindowTitle() const override;
   void DeleteDelegate() override;
   ui::ModalType GetModalType() const override;
   views::View* GetContentsView() override;
   views::Widget* GetWidget() override;
   const views::Widget* GetWidget() const override;
 
-  views::MessageBoxView* message_box_view_;
+  views::MessageBoxView* message_box_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateRecommendedMessageBox);
 };

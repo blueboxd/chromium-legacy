@@ -222,7 +222,7 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
         ThreadUtils.assertOnUiThread();
         if (!hasManageAccountsPermission()) {
             if (callback != null) {
-                ThreadUtils.postOnUiThread(() -> callback.onResult(false));
+                ThreadUtils.postOnUiThread(callback.bind(false));
             }
             return;
         }

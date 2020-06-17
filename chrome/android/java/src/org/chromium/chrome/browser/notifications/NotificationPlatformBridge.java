@@ -554,10 +554,18 @@ public class NotificationPlatformBridge {
         NotificationSuspender.maybeSuspendNotification(notification).then((suspended) -> {
             if (suspended) return;
             // Display notification as Chrome.
-            mNotificationManager.notify(notification);
-            NotificationUmaTracker.getInstance().onNotificationShown(
-                    NotificationUmaTracker.SystemNotificationType.SITES,
-                    notification.getNotification());
+            // Android may throw an exception on INotificationManager.enqueueNotificationWithTag,
+            // see crbug.com/1077027.
+            try {
+                mNotificationManager.notify(notification);
+                NotificationUmaTracker.getInstance().onNotificationShown(
+                        NotificationUmaTracker.SystemNotificationType.SITES,
+                        notification.getNotification());
+            } catch (RuntimeException e) {
+                Log.e(TAG, "Failed to send notification, the IPC message might be corrupted.");
+                NotificationUmaTracker.getInstance().onFailedToNotify(
+                        NotificationUmaTracker.SystemNotificationType.SITES);
+            }
         });
     }
 

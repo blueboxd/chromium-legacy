@@ -301,14 +301,48 @@ TEST_F(QuickAnswersClientTest, SendRequest) {
       &result_loader_factory_callback_);
 
   client_->SendRequest(*quick_answers_request);
-  client_->IntentGeneratorCallback(*quick_answers_request, "sel",
-                                   IntentType::kDictionary);
+  client_->IntentGeneratorCallback(*quick_answers_request, /*skip_fetch=*/false,
+                                   "sel", IntentType::kDictionary);
 
   std::unique_ptr<QuickAnswer> quick_answer = std::make_unique<QuickAnswer>();
   quick_answer->primary_answer = "answer";
   EXPECT_CALL(*mock_delegate_,
               OnQuickAnswerReceived(QuickAnswerEqual(&(*quick_answer))));
   client_->OnQuickAnswerReceived(std::move(quick_answer));
+}
+
+TEST_F(QuickAnswersClientTest, SendRequestForPreprocessing) {
+  std::unique_ptr<QuickAnswersRequest> quick_answers_request =
+      std::make_unique<QuickAnswersRequest>();
+  quick_answers_request->selected_text = "sel";
+
+  // Verify that |GenerateIntent| is called.
+  EXPECT_CALL(*mock_intent_generator_,
+              GenerateIntent(QuickAnswersRequestEqual(*quick_answers_request)));
+  QuickAnswersClient::SetIntentGeneratorFactoryForTesting(
+      &intent_generator_factory_callback_);
+
+  mock_result_loader_ =
+      std::make_unique<MockResultLoader>(&test_url_loader_factory_, nullptr);
+  EXPECT_CALL(*mock_result_loader_, Fetch(::testing::_)).Times(0);
+  QuickAnswersClient::SetResultLoaderFactoryForTesting(
+      &result_loader_factory_callback_);
+
+  client_->SendRequestForPreprocessing(*quick_answers_request);
+}
+
+TEST_F(QuickAnswersClientTest, FetchQuickAnswers) {
+  std::unique_ptr<QuickAnswersRequest> quick_answers_request =
+      std::make_unique<QuickAnswersRequest>();
+  quick_answers_request->preprocessed_output.query = "Define:sel";
+
+  mock_result_loader_ =
+      std::make_unique<MockResultLoader>(&test_url_loader_factory_, nullptr);
+  EXPECT_CALL(*mock_result_loader_, Fetch(::testing::Eq("Define:sel")));
+  QuickAnswersClient::SetResultLoaderFactoryForTesting(
+      &result_loader_factory_callback_);
+
+  client_->FetchQuickAnswers(*quick_answers_request);
 }
 
 TEST_F(QuickAnswersClientTest, NotSendRequestForUnknownIntent) {
@@ -326,8 +360,8 @@ TEST_F(QuickAnswersClientTest, NotSendRequestForUnknownIntent) {
   QuickAnswersClient::SetResultLoaderFactoryForTesting(
       &result_loader_factory_callback_);
 
-  client_->IntentGeneratorCallback(*quick_answers_request, "sel",
-                                   IntentType::kUnknown);
+  client_->IntentGeneratorCallback(*quick_answers_request, /*skip_fetch=*/false,
+                                   "sel", IntentType::kUnknown);
 }
 
 TEST_F(QuickAnswersClientTest, PreprocessDefinitionIntent) {
@@ -348,8 +382,8 @@ TEST_F(QuickAnswersClientTest, PreprocessDefinitionIntent) {
               OnRequestPreprocessFinished(
                   QuickAnswersRequestWithOutputEqual(*processed_request)));
 
-  client_->IntentGeneratorCallback(*quick_answers_request, "unfathomable",
-                                   IntentType::kDictionary);
+  client_->IntentGeneratorCallback(*quick_answers_request, /*skip_fetch=*/false,
+                                   "unfathomable", IntentType::kDictionary);
 }
 
 TEST_F(QuickAnswersClientTest, PreprocessTranslationIntent) {
@@ -370,8 +404,8 @@ TEST_F(QuickAnswersClientTest, PreprocessTranslationIntent) {
               OnRequestPreprocessFinished(
                   QuickAnswersRequestWithOutputEqual(*processed_request)));
 
-  client_->IntentGeneratorCallback(*quick_answers_request, "intent text",
-                                   IntentType::kTranslation);
+  client_->IntentGeneratorCallback(*quick_answers_request, /*skip_fetch=*/false,
+                                   "intent text", IntentType::kTranslation);
 }
 
 TEST_F(QuickAnswersClientTest, PreprocessUnitConversionIntent) {
@@ -392,8 +426,8 @@ TEST_F(QuickAnswersClientTest, PreprocessUnitConversionIntent) {
               OnRequestPreprocessFinished(
                   QuickAnswersRequestWithOutputEqual(*processed_request)));
 
-  client_->IntentGeneratorCallback(*quick_answers_request, "20ft",
-                                   IntentType::kUnit);
+  client_->IntentGeneratorCallback(*quick_answers_request, /*skip_fetch=*/false,
+                                   "20ft", IntentType::kUnit);
 }
 
 }  // namespace quick_answers

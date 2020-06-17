@@ -156,12 +156,12 @@ class DesktopResizerX11 : public DesktopResizer {
 };
 
 DesktopResizerX11::DesktopResizerX11()
-    : randr_(connection_.randr()),
-      screen_(connection_.default_screen()),
+    : randr_(&connection_.randr()),
+      screen_(&connection_.default_screen()),
       root_(screen_->root),
       exact_resize_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           "server-supports-exact-resize")) {
-  has_randr_ = !!randr_;
+  has_randr_ = randr_->present();
   if (has_randr_)
     randr_->SelectInput({root_, x11::RandR::NotifyMask::ScreenChange});
 }

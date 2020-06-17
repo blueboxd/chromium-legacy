@@ -35,9 +35,6 @@ class UninstallView : public views::ButtonListener,
   // Overridden form views::ButtonListener.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // Overridden from views::WidgetDelegate:
-  base::string16 GetWindowTitle() const override;
-
   // Overridden from ui::ComboboxModel:
   int GetItemCount() const override;
   base::string16 GetItemAt(int index) const override;

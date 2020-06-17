@@ -57,11 +57,12 @@ class AutoclickScrollCloseButton : public TopShortcutButton,
     EnableCanvasFlippingForRTLUI(false);
     SetPreferredSize(
         gfx::Size(kScrollButtonCloseSizeDips, kScrollButtonCloseSizeDips));
-    SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(
-                 kAutoclickCloseIcon,
-                 AshColorProvider::Get()->GetContentLayerColor(
-                     ContentLayerType::kIconPrimary, AshColorMode::kDark)));
+    SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(
+            kAutoclickCloseIcon,
+            AshColorProvider::Get()->GetContentLayerColor(
+                ContentLayerType::kIconColorPrimary, AshColorMode::kDark)));
   }
 
   ~AutoclickScrollCloseButton() override = default;
@@ -132,11 +133,11 @@ class AutoclickScrollButton : public CustomShapeButton,
             int64_t{AutoclickScrollView::kAutoclickScrollDelayMs}),
         base::BindRepeating(&AutoclickScrollButton::DoScrollAction,
                             base::Unretained(this)));
-    SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(
-            icon, AshColorProvider::Get()->GetContentLayerColor(
-                      ContentLayerType::kIconPrimary, AshColorMode::kDark)));
+    SetImage(views::Button::STATE_NORMAL,
+             gfx::CreateVectorIcon(
+                 icon, AshColorProvider::Get()->GetContentLayerColor(
+                           ContentLayerType::kIconColorPrimary,
+                           AshColorMode::kDark)));
     if (action_ == AutoclickController::ScrollPadAction::kScrollLeft ||
         action_ == AutoclickController::ScrollPadAction::kScrollRight) {
       size_ = gfx::Size(kScrollPadButtonHypotenuseDips / 2,
@@ -257,7 +258,7 @@ class AutoclickScrollButton : public CustomShapeButton,
     flags.setStyle(cc::PaintFlags::kStroke_Style);
     flags.setStrokeWidth(kScrollpadStrokeWidthDips);
     flags.setColor(AshColorProvider::Get()->GetContentLayerColor(
-        ContentLayerType::kSeparator, AshColorMode::kDark));
+        ContentLayerType::kSeparatorColor, AshColorMode::kDark));
     canvas->DrawPath(ComputePath(false /* only drawn edges */), flags);
 
     gfx::ImageSkia img = GetImageToPaint();

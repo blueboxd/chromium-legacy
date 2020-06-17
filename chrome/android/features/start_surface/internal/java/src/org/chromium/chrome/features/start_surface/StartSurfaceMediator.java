@@ -12,6 +12,7 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CA
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TASKS_SURFACE_BODY_TOP_MARGIN;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_CLICKLISTENER;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_HEIGHT;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_SELECTED_TAB_POSITION;
@@ -255,6 +256,15 @@ class StartSurfaceMediator
                     notifyStateChange();
                 }
             };
+
+            // For OMNIBOX_ONLY variation, the grid tab switcher uses the same parent view as the
+            // feed section. Thus, we only set the top margin for above section when we are not in
+            // OMNIBOX_ONLY.
+            if (surfaceMode != SurfaceMode.OMNIBOX_ONLY) {
+                mPropertyModel.set(TASKS_SURFACE_BODY_TOP_MARGIN,
+                        ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
+                                R.dimen.tasks_surface_body_top_margin));
+            }
         }
         mController.addOverviewModeObserver(this);
         mPreviousOverviewModeState = OverviewModeState.NOT_SHOWN;

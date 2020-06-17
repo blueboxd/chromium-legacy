@@ -25,7 +25,7 @@ class VulkanSurfaceX11::ExposeEventForwarder : public ui::XEventDispatcher {
   }
 
   // ui::XEventDispatcher:
-  bool DispatchXEvent(XEvent* xevent) override {
+  bool DispatchXEvent(x11::Event* xevent) override {
     if (!surface_->CanDispatchXEvent(xevent))
       return false;
     surface_->ForwardXExposeEvent(xevent);
@@ -85,7 +85,7 @@ VulkanSurfaceX11::VulkanSurfaceX11(VkInstance vk_instance,
       window_(window),
       expose_event_forwarder_(new ExposeEventForwarder(this)) {}
 
-VulkanSurfaceX11::~VulkanSurfaceX11() {}
+VulkanSurfaceX11::~VulkanSurfaceX11() = default;
 
 // VulkanSurface:
 bool VulkanSurfaceX11::Reshape(const gfx::Size& size,
@@ -96,12 +96,13 @@ bool VulkanSurfaceX11::Reshape(const gfx::Size& size,
   return VulkanSurface::Reshape(size, pre_transform);
 }
 
-bool VulkanSurfaceX11::CanDispatchXEvent(const XEvent* event) {
+bool VulkanSurfaceX11::CanDispatchXEvent(const x11::Event* x11_event) {
+  const XEvent* event = &x11_event->xlib_event();
   return event->type == Expose && event->xexpose.window == window_;
 }
 
-void VulkanSurfaceX11::ForwardXExposeEvent(const XEvent* event) {
-  XEvent forwarded_event = *event;
+void VulkanSurfaceX11::ForwardXExposeEvent(const x11::Event* event) {
+  XEvent forwarded_event = event->xlib_event();
   forwarded_event.xexpose.window = parent_window_;
   XSendEvent(gfx::GetXDisplay(), parent_window_, False, ExposureMask,
              &forwarded_event);

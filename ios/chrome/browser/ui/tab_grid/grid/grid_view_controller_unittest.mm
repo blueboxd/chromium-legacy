@@ -31,7 +31,8 @@
 @end
 
 // Fake object that conforms to GridViewControllerDelegate.
-@interface FakeGridViewControllerDelegate : NSObject<GridViewControllerDelegate>
+@interface FakeGridViewControllerDelegate
+    : NSObject <GridViewControllerDelegate>
 @property(nonatomic, assign) NSUInteger itemCount;
 @end
 @implementation FakeGridViewControllerDelegate

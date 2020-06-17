@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -29,7 +30,7 @@ class X11MenuRegistrar : public ui::XEventDispatcher {
   static X11MenuRegistrar* Get();
 
   // ui::XEventDispatcher
-  bool DispatchXEvent(XEvent* event) override;
+  bool DispatchXEvent(x11::Event* event) override;
 
  private:
   X11MenuRegistrar();

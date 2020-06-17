@@ -130,7 +130,7 @@ class ImeTitleView : public views::View, public views::ButtonListener {
         views::CreateSolidSidedBorder(
             0, 0, kMenuSeparatorWidth, 0,
             AshColorProvider::Get()->GetContentLayerColor(
-                AshColorProvider::ContentLayerType::kSeparator,
+                AshColorProvider::ContentLayerType::kSeparatorColor,
                 AshColorProvider::AshColorMode::kLight)),
         gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth, 0)));
     auto box_layout = std::make_unique<views::BoxLayout>(
@@ -236,7 +236,7 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
         views::CreateSolidSidedBorder(
             kMenuSeparatorWidth, 0, 0, 0,
             AshColorProvider::Get()->GetContentLayerColor(
-                AshColorProvider::ContentLayerType::kSeparator,
+                AshColorProvider::ContentLayerType::kSeparatorColor,
                 AshColorProvider::AshColorMode::kLight)),
         gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth,
                     kMenuExtraMarginFromLeftEdge)));
@@ -542,9 +542,10 @@ void ImeMenuTray::UpdateTrayLabel() {
   if (chromeos::extension_ime_util::IsArcIME(current_ime.id)) {
     CreateImageView();
     image_view_->SetImage(gfx::CreateVectorIcon(
-        kShelfGlobeIcon, AshColorProvider::Get()->GetContentLayerColor(
-                             AshColorProvider::ContentLayerType::kIconPrimary,
-                             AshColorProvider::AshColorMode::kDark)));
+        kShelfGlobeIcon,
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconColorPrimary,
+            AshColorProvider::AshColorMode::kDark)));
     return;
   }
 

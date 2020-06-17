@@ -4,6 +4,7 @@
 
 #import "ios/showcase/tab_grid/sc_grid_coordinator.h"
 
+#import "ios/chrome/browser/ui/tab_grid/grid/grid_drag_drop_handler.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_image_data_source.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_item.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_view_controller.h"
@@ -32,6 +33,8 @@
   gridViewController.theme = GridThemeLight;
   gridViewController.delegate =
       static_cast<id<GridViewControllerDelegate>>(self.alerter);
+  gridViewController.dragDropHandler =
+      static_cast<id<GridDragDropHandler>>(self.alerter);
   gridViewController.imageDataSource = self;
   self.alerter.baseViewController = gridViewController;
 

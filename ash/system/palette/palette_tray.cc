@@ -498,7 +498,7 @@ void PaletteTray::ShowBubble(bool show_by_click) {
   // Add horizontal separator between the title and tools.
   auto* separator = new views::Separator();
   separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kSeparator,
+      AshColorProvider::ContentLayerType::kSeparatorColor,
       AshColorProvider::AshColorMode::kLight));
   separator->SetBorder(views::CreateEmptyBorder(gfx::Insets(
       kPaddingBetweenTitleAndSeparator, 0, kMenuSeparatorVerticalPadding, 0)));

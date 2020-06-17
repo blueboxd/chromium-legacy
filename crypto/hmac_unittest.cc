@@ -324,3 +324,31 @@ TEST(HMACTest, TooLong) {
       data,
       std::string(calculated_hmac, calculated_hmac + sizeof(calculated_hmac))));
 }
+
+TEST(HMACTest, Bytes) {
+  // See RFC4231, section 4.7.
+  std::vector<uint8_t> key(131, 0xaa);
+  std::string data_str =
+      "Test Using Larger Than Block-Size Key - Hash Key First";
+  std::vector<uint8_t> data(data_str.begin(), data_str.end());
+  static uint8_t kKnownHMACSHA256[] = {
+      0x60, 0xe4, 0x31, 0x59, 0x1e, 0xe0, 0xb6, 0x7f, 0x0d, 0x8a, 0x26,
+      0xaa, 0xcb, 0xf5, 0xb7, 0x7f, 0x8e, 0x0b, 0xc6, 0x21, 0x37, 0x28,
+      0xc5, 0x14, 0x05, 0x46, 0x04, 0x0f, 0x0e, 0xe3, 0x7f, 0x54};
+
+  crypto::HMAC hmac(crypto::HMAC::SHA256);
+  ASSERT_TRUE(hmac.Init(key));
+
+  uint8_t calculated_hmac[kSHA256DigestSize];
+  ASSERT_TRUE(hmac.Sign(data, calculated_hmac));
+  EXPECT_EQ(0, memcmp(kKnownHMACSHA256, calculated_hmac, kSHA256DigestSize));
+
+  EXPECT_TRUE(hmac.Verify(data, calculated_hmac));
+  EXPECT_TRUE(hmac.VerifyTruncated(
+      data, base::make_span(calculated_hmac, kSHA256DigestSize / 2)));
+
+  data[0]++;
+  EXPECT_FALSE(hmac.Verify(data, calculated_hmac));
+  EXPECT_FALSE(hmac.VerifyTruncated(
+      data, base::make_span(calculated_hmac, kSHA256DigestSize / 2)));
+}

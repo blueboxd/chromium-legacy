@@ -54,6 +54,14 @@ TEST(ImageModelTest, CheckForImage) {
   EXPECT_TRUE(image_model.IsImage());
 }
 
+TEST(ImageModelTest, Size) {
+  EXPECT_EQ(gfx::Size(), ImageModel().Size());
+  EXPECT_EQ(gfx::Size(16, 16),
+            ImageModel::FromVectorIcon(GetVectorIcon(), -1, 16).Size());
+  EXPECT_EQ(gfx::Size(16, 16),
+            ImageModel::FromImage(gfx::test::CreateImage(16, 16)).Size());
+}
+
 TEST(ImageModelTest, CheckAssignVectorIcon) {
   VectorIconModel vector_icon_model_dest;
   VectorIconModel vector_icon_model_src =

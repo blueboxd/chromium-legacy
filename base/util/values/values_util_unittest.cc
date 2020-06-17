@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -6,11 +6,12 @@
 #define BASE_UTIL_VALUES_VALUES_UTIL_H_
 
 #include "base/optional.h"
-#include "base/time/time.h"
 #include "base/values.h"
 
 namespace base {
 class FilePath;
+class Time;
+class TimeDelta;
 class UnguessableToken;
 }  // namespace base
 

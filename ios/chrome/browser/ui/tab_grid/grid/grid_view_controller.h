@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_theme.h"
 
+@protocol GridDragDropHandler;
 @protocol GridEmptyView;
 @protocol GridImageDataSource;
 @class GridTransitionLayout;
@@ -48,6 +49,8 @@
 @property(nonatomic, assign) GridTheme theme;
 // Delegate is informed of user interactions in the grid UI.
 @property(nonatomic, weak) id<GridViewControllerDelegate> delegate;
+// Handles drag and drop interactions that involved the model layer.
+@property(nonatomic, weak) id<GridDragDropHandler> dragDropHandler;
 // Data source for images.
 @property(nonatomic, weak) id<GridImageDataSource> imageDataSource;
 // YES if the selected cell is visible in the grid.

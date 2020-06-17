@@ -12,6 +12,7 @@ group("closure_compile") {
     "cellular_setup:closure_compile",
     "multidevice_setup:closure_compile",
     "network:closure_compile",
+    "network_health:closure_compile",
     "quick_unlock:closure_compile",
     "smb_shares:closure_compile",
 
@@ -20,6 +21,7 @@ group("closure_compile") {
     # "network:closure_compile_module",
     # "quick_unlock:closure_compile_module",
     "bluetooth:closure_compile_module",
+    "network_health:closure_compile_module",
     "smb_shares:closure_compile_module",
   ]
 }
@@ -28,6 +30,7 @@ group("polymer3_elements") {
   public_deps = [
     "bluetooth:polymer3_elements",
     "network:polymer3_elements",
+    "network_health:polymer3_elements",
     "quick_unlock:polymer3_elements",
     "smb_shares:polymer3_elements",
   ]

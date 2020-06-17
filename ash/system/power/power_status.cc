@@ -107,7 +107,7 @@ class BatteryImageSource : public gfx::CanvasImageSource {
     canvas->ClipRect(clip_rect);
 
     const SkColor alert_color = AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kIconRed,
+        AshColorProvider::ContentLayerType::kIconAlert,
         AshColorProvider::AshColorMode::kDark);
     const bool use_alert_color =
         charge_level == min_charge_level && info_.alert_if_low;

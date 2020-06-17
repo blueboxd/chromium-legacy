@@ -4,9 +4,11 @@
 
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 
+#include <map>
 #include <string>
 
 #include "base/check.h"
+#include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/values.h"
@@ -35,8 +37,36 @@
 
 namespace extensions {
 
-ChromeComponentExtensionResourceManager::
-ChromeComponentExtensionResourceManager() {
+class ChromeComponentExtensionResourceManager::Data {
+ public:
+  using TemplateReplacementMap =
+      std::map<std::string, ui::TemplateReplacements>;
+
+  Data();
+  Data(const Data&) = delete;
+  Data& operator=(const Data&) = delete;
+  ~Data() = default;
+
+  const std::map<base::FilePath, int>& path_to_resource_id() const {
+    return path_to_resource_id_;
+  }
+
+  const TemplateReplacementMap& template_replacements() const {
+    return template_replacements_;
+  }
+
+ private:
+  void AddComponentResourceEntries(const GritResourceMap* entries, size_t size);
+
+  // A map from a resource path to the resource ID. Used by
+  // ChromeComponentExtensionResourceManager::IsComponentExtensionResource().
+  std::map<base::FilePath, int> path_to_resource_id_;
+
+  // A map from an extension ID to its i18n template replacements.
+  TemplateReplacementMap template_replacements_;
+};
+
+ChromeComponentExtensionResourceManager::Data::Data() {
   static const GritResourceMap kExtraComponentExtensionResources[] = {
 #if defined(OS_CHROMEOS)
     {"web_store/webstore_icon_128.png", IDR_WEBSTORE_APP_ICON_128},
@@ -56,18 +86,16 @@ ChromeComponentExtensionResourceManager() {
 #endif
   };
 
-  AddComponentResourceEntries(
-      kComponentExtensionResources,
-      kComponentExtensionResourcesSize);
+  AddComponentResourceEntries(kComponentExtensionResources,
+                              kComponentExtensionResourcesSize);
   AddComponentResourceEntries(kExtraComponentExtensionResources,
                               base::size(kExtraComponentExtensionResources));
 #if defined(OS_CHROMEOS)
   size_t file_manager_resource_size;
   const GritResourceMap* file_manager_resources =
       file_manager::GetFileManagerResources(&file_manager_resource_size);
-  AddComponentResourceEntries(
-      file_manager_resources,
-      file_manager_resource_size);
+  AddComponentResourceEntries(file_manager_resources,
+                              file_manager_resource_size);
 
   // ResourceBundle and g_browser_process are not always initialized in unit
   // tests.
@@ -75,16 +103,14 @@ ChromeComponentExtensionResourceManager() {
     ui::TemplateReplacements file_manager_replacements;
     ui::TemplateReplacementsFromDictionaryValue(*GetFileManagerStrings(),
                                                 &file_manager_replacements);
-    extension_template_replacements_[extension_misc::kFilesManagerAppId] =
+    template_replacements_[extension_misc::kFilesManagerAppId] =
         std::move(file_manager_replacements);
   }
 
   size_t keyboard_resource_size;
   const GritResourceMap* keyboard_resources =
       keyboard::GetKeyboardExtensionResources(&keyboard_resource_size);
-  AddComponentResourceEntries(
-      keyboard_resources,
-      keyboard_resource_size);
+  AddComponentResourceEntries(keyboard_resources, keyboard_resource_size);
 #endif
 
 #if BUILDFLAG(ENABLE_PDF)
@@ -98,49 +124,13 @@ ChromeComponentExtensionResourceManager() {
     ui::TemplateReplacements pdf_viewer_replacements;
     ui::TemplateReplacementsFromDictionaryValue(
         base::Value::AsDictionaryValue(dict), &pdf_viewer_replacements);
-    extension_template_replacements_[extension_misc::kPdfExtensionId] =
+    template_replacements_[extension_misc::kPdfExtensionId] =
         std::move(pdf_viewer_replacements);
   }
 #endif
 }
 
-ChromeComponentExtensionResourceManager::
-~ChromeComponentExtensionResourceManager() {}
-
-bool ChromeComponentExtensionResourceManager::IsComponentExtensionResource(
-    const base::FilePath& extension_path,
-    const base::FilePath& resource_path,
-    int* resource_id) const {
-  base::FilePath directory_path = extension_path;
-  base::FilePath resources_dir;
-  base::FilePath relative_path;
-  if (!base::PathService::Get(chrome::DIR_RESOURCES, &resources_dir) ||
-      !resources_dir.AppendRelativePath(directory_path, &relative_path)) {
-    return false;
-  }
-  relative_path = relative_path.Append(resource_path);
-  relative_path = relative_path.NormalizePathSeparators();
-
-  auto entry = path_to_resource_id_.find(relative_path);
-  if (entry != path_to_resource_id_.end()) {
-    *resource_id = entry->second;
-    return true;
-  }
-
-  return false;
-}
-
-const ui::TemplateReplacements*
-ChromeComponentExtensionResourceManager::GetTemplateReplacementsForExtension(
-    const std::string& extension_id) const {
-  auto it = extension_template_replacements_.find(extension_id);
-  if (it == extension_template_replacements_.end()) {
-    return nullptr;
-  }
-  return &it->second;
-}
-
-void ChromeComponentExtensionResourceManager::AddComponentResourceEntries(
+void ChromeComponentExtensionResourceManager::Data::AddComponentResourceEntries(
     const GritResourceMap* entries,
     size_t size) {
   base::FilePath gen_folder_path = base::FilePath().AppendASCII(
@@ -166,6 +156,48 @@ void ChromeComponentExtensionResourceManager::AddComponentResourceEntries(
       path_to_resource_id_[effective_path] = entries[i].value;
     }
   }
+}
+
+ChromeComponentExtensionResourceManager::
+    ChromeComponentExtensionResourceManager() = default;
+
+ChromeComponentExtensionResourceManager::
+    ~ChromeComponentExtensionResourceManager() = default;
+
+bool ChromeComponentExtensionResourceManager::IsComponentExtensionResource(
+    const base::FilePath& extension_path,
+    const base::FilePath& resource_path,
+    int* resource_id) const {
+  base::FilePath directory_path = extension_path;
+  base::FilePath resources_dir;
+  base::FilePath relative_path;
+  if (!base::PathService::Get(chrome::DIR_RESOURCES, &resources_dir) ||
+      !resources_dir.AppendRelativePath(directory_path, &relative_path)) {
+    return false;
+  }
+  relative_path = relative_path.Append(resource_path);
+  relative_path = relative_path.NormalizePathSeparators();
+
+  LazyInitData();
+  auto entry = data_->path_to_resource_id().find(relative_path);
+  if (entry == data_->path_to_resource_id().end())
+    return false;
+
+  *resource_id = entry->second;
+  return true;
+}
+
+const ui::TemplateReplacements*
+ChromeComponentExtensionResourceManager::GetTemplateReplacementsForExtension(
+    const std::string& extension_id) const {
+  LazyInitData();
+  auto it = data_->template_replacements().find(extension_id);
+  return it != data_->template_replacements().end() ? &it->second : nullptr;
+}
+
+void ChromeComponentExtensionResourceManager::LazyInitData() const {
+  if (!data_)
+    data_ = std::make_unique<Data>();
 }
 
 }  // namespace extensions

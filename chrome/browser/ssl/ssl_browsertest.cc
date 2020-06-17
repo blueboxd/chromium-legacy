@@ -3594,9 +3594,10 @@ class SSLUIWorkerFetchTest
     // content status (see crbug.com/890372). This ensures all error state is
     // cleared.
     chrome::NewTab(browser());
-    CheckErrorStateIsCleared();
-
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+    content::WaitForLoadStop(tab);
+
+    CheckErrorStateIsCleared();
 
     browser_client->SetMixedContentSettings(
         allow_running_insecure_content, strict_mixed_content_checking,

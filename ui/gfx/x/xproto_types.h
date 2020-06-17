@@ -109,6 +109,8 @@ class Future : public FutureBase {
  public:
   using Callback = base::OnceCallback<void(Response<Reply> response)>;
 
+  Future() : FutureBase(nullptr, base::nullopt) {}
+
   // Blocks until we receive the response from the server. Returns the response.
   Response<Reply> Sync() {
     Error* raw_error = nullptr;

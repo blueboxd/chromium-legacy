@@ -380,8 +380,8 @@ const SecurityContext& LocalDOMWindow::GetSecurityContext() const {
 
 bool LocalDOMWindow::CanExecuteScripts(
     ReasonForCallingCanExecuteScripts reason) {
-  DCHECK(GetFrame())
-      << "you are querying canExecuteScripts on a non-attached Window.";
+  if (!GetFrame())
+    return false;
 
   // Normally, scripts are not allowed in sandboxed contexts that disallow them.
   // However, there is an exception for cases when the script should bypass the

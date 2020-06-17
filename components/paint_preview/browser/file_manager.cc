@@ -10,6 +10,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/hash/hash.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/paint_preview/common/file_utils.h"
 #include "third_party/zlib/google/zip.h"
@@ -76,6 +77,10 @@ base::Optional<base::File::Info> FileManager::GetInfo(
   if (!base::GetFileInfo(path, &info))
     return base::nullopt;
   return info;
+}
+
+size_t FileManager::GetTotalDiskUsage() const {
+  return base::ComputeDirectorySize(root_directory_);
 }
 
 bool FileManager::DirectoryExists(const DirectoryKey& key) const {
@@ -193,8 +198,20 @@ bool FileManager::SerializePaintPreviewProto(const DirectoryKey& key,
   auto path = CreateOrGetDirectory(key, false);
   if (!path.has_value())
     return false;
-  return WriteProtoToFile(path->AppendASCII(kProtoName), proto) &&
-         (!compress || CompressDirectory(key));
+  bool result = WriteProtoToFile(path->AppendASCII(kProtoName), proto) &&
+                (!compress || CompressDirectory(key));
+
+  if (compress) {
+    auto info = GetInfo(key);
+    base::UmaHistogramMemoryKB(
+        "Browser.PaintPreview.Capture.CompressedOnDiskSize", info->size / 1000);
+  } else {
+    size_t size_bytes = base::ComputeDirectorySize(path.value());
+    base::UmaHistogramMemoryKB(
+        "Browser.PaintPreview.Capture.UncompressedOnDiskSize",
+        size_bytes / 1000);
+  }
+  return result;
 }
 
 std::unique_ptr<PaintPreviewProto> FileManager::DeserializePaintPreviewProto(

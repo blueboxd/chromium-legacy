@@ -57,10 +57,6 @@ void OneClickSigninDialogView::Hide() {
     dialog_view_->GetWidget()->Close();
 }
 
-base::string16 OneClickSigninDialogView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW);
-}
-
 ui::ModalType OneClickSigninDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
@@ -132,6 +128,7 @@ OneClickSigninDialogView::OneClickSigninDialogView(
   SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_UNDO_BUTTON));
+  SetTitle(IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE_NEW);
 
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));

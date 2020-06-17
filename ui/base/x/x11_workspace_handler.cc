@@ -51,7 +51,8 @@ std::string X11WorkspaceHandler::GetCurrentWorkspace() {
   return workspace_;
 }
 
-bool X11WorkspaceHandler::DispatchXEvent(XEvent* event) {
+bool X11WorkspaceHandler::DispatchXEvent(x11::Event* x11_event) {
+  XEvent* event = &x11_event->xlib_event();
   if (event->type != PropertyNotify ||
       event->xproperty.window != x_root_window_) {
     return false;

@@ -83,6 +83,7 @@ Status ReportQueue::Enqueue(google::protobuf::MessageLite* record,
 
 Status ReportQueue::AddRecord(base::StringPiece record,
                               EnqueueCallback callback) {
+  RETURN_IF_ERROR(config_->CheckPolicy());
   if (!sequenced_task_runner_->PostTask(
           FROM_HERE, base::BindOnce(&ReportQueue::SendRecordToStorage,
                                     base::Unretained(this), std::string(record),

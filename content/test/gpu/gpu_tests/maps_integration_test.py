@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import datetime
+import json
 import os
 import sys
 
@@ -94,7 +94,8 @@ class MapsIntegrationTest(
     dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
     print 'Maps\' devicePixelRatio is ' + str(dpr)
 
-    page = _GetMapsPageForUrl(url)
+    expected = _ReadPixelExpectations('maps_pixel_expectations.json')
+    page = _GetMapsPageForUrl(url, expected)
     # The bottom corners of Mac screenshots have black triangles due to the
     # rounded corners of Mac windows. So, crop the bottom few rows off now to
     # get rid of those. The triangles appear to be 5 pixels wide and tall
@@ -105,7 +106,7 @@ class MapsIntegrationTest(
     x1, y1, x2, y2 = _GetCropBoundaries(screenshot)
     screenshot = image_util.Crop(screenshot, x1, y1, x2 - x1, y2 - y1)
 
-    self._UploadTestResultToSkiaGold(_TEST_NAME, screenshot, page)
+    self._ValidateScreenshotSamplesWithSkiaGold(tab, page, screenshot, dpr)
 
   @classmethod
   def ExpectationsFiles(cls):
@@ -116,15 +117,22 @@ class MapsIntegrationTest(
     ]
 
 
-def _GetMapsPageForUrl(url):
+def _ReadPixelExpectations(expectations_file):
+  expectations_path = os.path.join(_DATA_PATH, expectations_file)
+  with open(expectations_path, 'r') as f:
+    json_contents = json.load(f)
+  return json_contents
+
+
+def _GetMapsPageForUrl(url, expected_colors):
   page = pixel_test_pages.PixelTestPage(
       url=url,
       name=_TEST_NAME,
       # Exact test_rect is arbitrary, just needs to encapsulate all pixels
       # that are tested.
       test_rect=[0, 0, 1000, 800],
-      grace_period_end=datetime.date(2020, 6, 22),
-      matching_algorithm=pixel_test_pages.VERY_PERMISSIVE_SOBEL_ALGO)
+      tolerance=10,
+      expected_colors=expected_colors)
   return page
 
 

@@ -44,7 +44,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) DatabaseQuotaClient
                         DeletionCallback callback) override;
   void PerformStorageCleanup(blink::mojom::StorageType type,
                              base::OnceClosure callback) override;
-  bool DoesSupport(blink::mojom::StorageType type) const override;
 
  private:
   ~DatabaseQuotaClient() override;

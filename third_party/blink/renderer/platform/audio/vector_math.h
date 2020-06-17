@@ -60,6 +60,9 @@ PLATFORM_EXPORT void PrepareFilterForConv(const float* filter_p,
 // Vector scalar multiply and then add.
 //
 // dest[k*dest_stride] += scale * source[k*source_stride]
+//
+// Note: Mac has a different implementation, and it may produce slightly
+// different results from what linux and windows would do.
 PLATFORM_EXPORT void Vsma(const float* source_p,
                           int source_stride,
                           const float* scale,

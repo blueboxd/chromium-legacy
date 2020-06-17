@@ -37,6 +37,7 @@ grit("resources") {
     "//chromeos/services/machine_learning/public/mojom:mojom_js",
     "//chromeos/services/multidevice_setup/public/mojom:mojom_js",
     "//chromeos/services/network_config/public/mojom:mojom_js",
+    "//chromeos/services/network_health/public/mojom:mojom_js",
   ]
 }
 

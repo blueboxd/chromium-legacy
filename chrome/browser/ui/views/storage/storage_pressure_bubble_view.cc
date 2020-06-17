@@ -71,6 +71,7 @@ StoragePressureBubbleView::StoragePressureBubbleView(
       origin_(std::move(origin)),
       ignored_(true) {
   SetButtons(ui::DIALOG_BUTTON_OK);
+  SetTitle(IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_TITLE);
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(
                      IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_BUTTON_LABEL));
@@ -83,11 +84,6 @@ StoragePressureBubbleView::~StoragePressureBubbleView() {
   if (ignored_) {
     RecordBubbleHistogramValue(StoragePressureBubbleHistogramValue::kIgnored);
   }
-}
-
-base::string16 StoragePressureBubbleView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(
-      IDS_SETTINGS_STORAGE_PRESSURE_BUBBLE_VIEW_TITLE);
 }
 
 void StoragePressureBubbleView::OnDialogAccepted() {

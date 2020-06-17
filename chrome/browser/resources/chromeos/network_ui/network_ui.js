@@ -47,12 +47,6 @@ const NetworkUI = (function() {
 
 
   /**
-   * Network Health mojo remote.
-   * @type {?chromeos.networkHealth.mojom.NetworkHealthServiceRemote}
-   */
-  let networkHealth = null;
-
-  /**
    * Creates and returns a typed HTMLTableCellElement.
    *
    * @return {!HTMLTableCellElement} A new td element.
@@ -534,22 +528,10 @@ const NetworkUI = (function() {
     });
   };
 
-  /**
-   * Requests the NetworkHealthState and updates the page.
-   */
-  const requestNetworkHealth = function() {
-    networkHealth.getHealthSnapshot().then(result => {
-      $('network-health').textContent = JSON.stringify(result, null, '\t');
-    });
-  };
-
   /** Initialize NetworkUI state. */
   const init = function() {
     networkConfig = network_config.MojoInterfaceProviderImpl.getInstance()
                         .getMojoServiceRemote();
-
-    networkHealth =
-        chromeos.networkHealth.mojom.NetworkHealthService.getRemote();
 
     /** Set the refresh rate if the interval is found in the url. */
     const interval = new URL(window.location.href).searchParams.get('refresh');
@@ -608,7 +590,6 @@ const NetworkUI = (function() {
     init();
     requestNetworks();
     requestGlobalPolicy();
-    requestNetworkHealth();
   });
 
   document.addEventListener('custom-item-selected', function(event) {

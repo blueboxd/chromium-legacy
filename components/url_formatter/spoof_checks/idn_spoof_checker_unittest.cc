@@ -1428,6 +1428,7 @@ TEST(IDNSpoofCheckerNoFixtureTest, UnsafeIDNToUnicodeWithDetails) {
     const char* const expected_matching_domain;
     // If true, the matching top domain is expected to be in top 500.
     const bool expected_is_top_500;
+    const IDNSpoofChecker::Result expected_spoof_check_result;
   } kTestCases[] = {
       {// An ASCII, top domain.
        "google.com", L"google.com", false,
@@ -1435,22 +1436,25 @@ TEST(IDNSpoofCheckerNoFixtureTest, UnsafeIDNToUnicodeWithDetails) {
        "",
        // ...And since we don't match it to a top domain, we don't know if it's
        // a top 500 domain.
-       false},
+       false, IDNSpoofChecker::Result::kNone},
       {// An ASCII domain that's not a top domain.
-       "not-top-domain.com", L"not-top-domain.com", false, "", false},
+       "not-top-domain.com", L"not-top-domain.com", false, "", false,
+       IDNSpoofChecker::Result::kNone},
       {// A unicode domain that's valid according to all of the rules in IDN
        // spoof checker except that it matches a top domain. Should be
-       // converted to punycode.
-       "xn--googl-fsa.com", L"googlé.com", true, "google.com", true},
+       // converted to punycode. Spoof check result is kSafe because top domain
+       // similarity isn't included in IDNSpoofChecker::Result.
+       "xn--googl-fsa.com", L"googlé.com", true, "google.com", true,
+       IDNSpoofChecker::Result::kSafe},
       {// A unicode domain that's not valid according to the rules in IDN spoof
-       // checker (mixed script) and it matches a top domain. Should be
-       // converted to punycode.
-       "xn--80ak6aa92e.com", L"аррӏе.com", true, "apple.com", true},
+       // checker (whole script confusable in Cyrillic) and it matches a top
+       // domain. Should be converted to punycode.
+       "xn--80ak6aa92e.com", L"аррӏе.com", true, "apple.com", true,
+       IDNSpoofChecker::Result::kWholeScriptConfusable},
       {// A unicode domain that's not valid according to the rules in IDN spoof
        // checker (mixed script) but it doesn't match a top domain.
        "xn--o-o-oai-26a223aia177a7ab7649d.com", L"ɴoτ-τoρ-ďoᛖaiɴ.com", true, "",
-       false},
-  };
+       false, IDNSpoofChecker::Result::kICUSpoofChecks}};
 
   for (const TestCase& test_case : kTestCases) {
     const url_formatter::IDNConversionResult result =
@@ -1461,6 +1465,7 @@ TEST(IDNSpoofCheckerNoFixtureTest, UnsafeIDNToUnicodeWithDetails) {
               result.matching_top_domain.domain);
     EXPECT_EQ(test_case.expected_is_top_500,
               result.matching_top_domain.is_top_500);
+    EXPECT_EQ(test_case.expected_spoof_check_result, result.spoof_check_result);
   }
 }
 

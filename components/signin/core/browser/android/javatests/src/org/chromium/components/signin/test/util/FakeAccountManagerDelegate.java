@@ -289,7 +289,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
     @Override
     public void createAddAccountIntent(Callback<Intent> callback) {
         ThreadUtils.assertOnUiThread();
-        ThreadUtils.postOnUiThread(() -> callback.onResult(null));
+        ThreadUtils.postOnUiThread(callback.bind(null));
     }
 
     @Override
@@ -300,7 +300,7 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
             return;
         }
 
-        ThreadUtils.postOnUiThread(() -> callback.onResult(true));
+        ThreadUtils.postOnUiThread(callback.bind(true));
     }
 
     private AccountHolder tryGetAccountHolder(Account account) {

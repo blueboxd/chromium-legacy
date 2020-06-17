@@ -374,7 +374,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
             try {
                 calendar = mCalendar.get();
             } catch (InterruptedException | ExecutionException e) {
-                mHandler.post(() -> cancelCallback.onResult(toEdit));
+                mHandler.post(cancelCallback.bind(toEdit));
                 return;
             }
             assert calendar != null;
@@ -397,7 +397,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
 
         // If the user clicks [Cancel], send |toEdit| card back to the caller (will return original
         // state, which could be null, a full card, or a partial card).
-        editor.setCancelCallback(() -> cancelCallback.onResult(toEdit));
+        editor.setCancelCallback(cancelCallback.bind(toEdit));
 
         // If the user clicks [Done], save changes on disk, mark the card "complete," and send it
         // back to the caller.

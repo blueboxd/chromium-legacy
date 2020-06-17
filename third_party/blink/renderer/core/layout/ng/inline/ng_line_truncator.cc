@@ -39,6 +39,7 @@ NGLineTruncator::NGLineTruncator(const NGLineInfo& line_info)
 const ComputedStyle& NGLineTruncator::EllipsisStyle() const {
   // The ellipsis is styled according to the line style.
   // https://drafts.csswg.org/css-ui/#ellipsing-details
+  DCHECK(line_style_);
   return *line_style_;
 }
 
@@ -68,10 +69,6 @@ LayoutUnit NGLineTruncator::PlaceEllipsisNextTo(
   DCHECK(ellipsized_layout_object->IsInline());
   DCHECK(ellipsized_layout_object->IsText() ||
          ellipsized_layout_object->IsAtomicInlineLevel());
-  NGTextFragmentBuilder builder(line_style_->GetWritingMode());
-  builder.SetText(ellipsized_layout_object, ellipsis_text_, &EllipsisStyle(),
-                  true /* is_ellipsis_style */,
-                  std::move(ellipsis_shape_result_));
 
   // Now the offset of the ellpisis is determined. Place the ellpisis into the
   // line box.
@@ -79,17 +76,23 @@ LayoutUnit NGLineTruncator::PlaceEllipsisNextTo(
       IsLtr(line_direction_)
           ? ellipsized_child->InlineOffset() + ellipsized_child->inline_size
           : ellipsized_child->InlineOffset() - ellipsis_width_;
-  LayoutUnit ellpisis_ascent;
+  NGLineHeightMetrics ellipsis_metrics;
   DCHECK(ellipsis_font_data_);
   if (ellipsis_font_data_) {
-    FontBaseline baseline_type = line_style_->GetFontBaseline();
-    NGLineHeightMetrics ellipsis_metrics(ellipsis_font_data_->GetFontMetrics(),
-                                         baseline_type);
-    ellpisis_ascent = ellipsis_metrics.ascent;
+    ellipsis_metrics = NGLineHeightMetrics(
+        ellipsis_font_data_->GetFontMetrics(), line_style_->GetFontBaseline());
   }
-  line_box->AddChild(builder.ToTextFragment(),
-                     LogicalOffset{ellipsis_inline_offset, -ellpisis_ascent},
-                     ellipsis_width_, 0);
+
+  DCHECK(ellipsis_text_);
+  DCHECK(ellipsis_shape_result_.get());
+  NGTextFragmentBuilder builder(line_style_->GetWritingMode());
+  builder.SetText(ellipsized_layout_object, ellipsis_text_, &EllipsisStyle(),
+                  NGStyleVariant::kEllipsis, std::move(ellipsis_shape_result_),
+                  {ellipsis_width_, ellipsis_metrics.LineHeight()});
+  line_box->AddChild(
+      builder.ToTextFragment(),
+      LogicalOffset{ellipsis_inline_offset, -ellipsis_metrics.ascent},
+      ellipsis_width_, 0);
   return ellipsis_inline_offset;
 }
 

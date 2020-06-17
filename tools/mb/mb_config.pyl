@@ -2130,7 +2130,7 @@
     ],
 
     'release_bot_enable_blink_heap_verification_dcheck_always_on': [
-      'release_bot', 'enable_blink_heap_verification', 'dcheck_always_on',
+      'release_bot_blink', 'enable_blink_heap_verification', 'dcheck_always_on',
     ],
 
     'release_bot_fuchsia': [
@@ -2194,7 +2194,7 @@
     ],
 
     'release_trybot_enable_blink_heap_verification': [
-      'release_trybot', 'enable_blink_heap_verification',
+      'release_trybot_blink', 'enable_blink_heap_verification',
     ],
 
     'release_trybot_fuchsia': [
@@ -2783,6 +2783,10 @@
 
     'release_trybot': {
       'mixins': ['release_bot', 'minimal_symbols', 'dcheck_always_on'],
+    },
+
+    'release_trybot_blink': {
+      'mixins': ['release_bot_blink', 'minimal_symbols', 'dcheck_always_on'],
     },
 
     'release_trybot_dcheck_off': {

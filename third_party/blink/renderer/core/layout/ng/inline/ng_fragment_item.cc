@@ -82,8 +82,33 @@ NGFragmentItem::NGFragmentItem(
     DCHECK_EQ(text_.shape_result->EndIndex(), EndOffset());
   }
 #endif
-  // TODO(kojii): Generated text not supported yet.
   DCHECK_NE(TextType(), NGTextType::kLayoutGenerated);
+  DCHECK(!IsFormattingContextRoot());
+}
+
+NGFragmentItem::NGFragmentItem(
+    const NGInlineItem& inline_item,
+    scoped_refptr<const ShapeResultView> shape_result,
+    const String& text_content,
+    const PhysicalSize& size)
+    : layout_object_(inline_item.GetLayoutObject()),
+      generated_text_({std::move(shape_result), text_content}),
+      rect_({PhysicalOffset(), size}),
+      type_(kGeneratedText),
+      sub_type_(static_cast<unsigned>(inline_item.TextType())),
+      style_variant_(static_cast<unsigned>(inline_item.StyleVariant())),
+      is_hidden_for_paint_(false),  // TODO(kojii): not supported yet.
+      text_direction_(static_cast<unsigned>(inline_item.Direction())),
+      ink_overflow_computed_(false),
+      is_dirty_(false),
+      is_last_for_node_(true) {
+#if DCHECK_IS_ON()
+  if (text_.shape_result) {
+    DCHECK_EQ(text_.shape_result->StartIndex(), StartOffset());
+    DCHECK_EQ(text_.shape_result->EndIndex(), EndOffset());
+  }
+#endif
+  DCHECK_EQ(TextType(), NGTextType::kLayoutGenerated);
   DCHECK(!IsFormattingContextRoot());
 }
 
@@ -127,6 +152,14 @@ NGFragmentItem::NGFragmentItem(NGLogicalLineItem&& line_item,
   }
 
   if (line_item.inline_item) {
+    if (UNLIKELY(line_item.text_content)) {
+      new (this) NGFragmentItem(
+          *line_item.inline_item, std::move(line_item.shape_result),
+          line_item.text_content,
+          ToPhysicalSize(line_item.MarginSize(), writing_mode));
+      return;
+    }
+
     new (this)
         NGFragmentItem(*line_item.inline_item,
                        std::move(line_item.shape_result), line_item.text_offset,

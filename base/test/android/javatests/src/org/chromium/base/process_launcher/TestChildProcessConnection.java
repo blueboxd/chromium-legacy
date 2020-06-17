@@ -31,6 +31,9 @@ public class TestChildProcessConnection extends ChildProcessConnection {
 
         @Override
         public void updateGroupImportance(int group, int importanceInGroup) {}
+
+        @Override
+        public void retire() {}
     }
 
     private int mPid;
@@ -44,7 +47,7 @@ public class TestChildProcessConnection extends ChildProcessConnection {
      */
     public TestChildProcessConnection(ComponentName serviceName, boolean bindToCaller,
             boolean bindAsExternalService, Bundle serviceBundle) {
-        super(null /* context */, serviceName, bindToCaller, bindAsExternalService,
+        super(null /* context */, serviceName, null, bindToCaller, bindAsExternalService,
                 serviceBundle, new ChildServiceConnectionFactory() {
                     @Override
                     public ChildServiceConnection createConnection(Intent bindIntent, int bindFlags,

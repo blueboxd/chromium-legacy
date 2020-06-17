@@ -35,6 +35,7 @@ DeepScanningFailureModalDialog::DeepScanningFailureModalDialog(
     base::OnceClosure cancel_callback,
     base::OnceClosure open_now_callback)
     : open_now_callback_(std::move(open_now_callback)) {
+  SetTitle(IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_TITLE);
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(
                      IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_ACCEPT_BUTTON));
@@ -80,10 +81,6 @@ bool DeepScanningFailureModalDialog::IsDialogButtonEnabled(
 
 bool DeepScanningFailureModalDialog::ShouldShowCloseButton() const {
   return false;
-}
-
-base::string16 DeepScanningFailureModalDialog::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_TITLE);
 }
 
 ui::ModalType DeepScanningFailureModalDialog::GetModalType() const {

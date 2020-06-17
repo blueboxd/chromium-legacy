@@ -1538,7 +1538,8 @@ void ServiceWorkerContextWrapper::InitOnCoreThread(
   if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(
         base::MakeRefCounted<ServiceWorkerQuotaClient>(this),
-        storage::QuotaClientType::kServiceWorker);
+        storage::QuotaClientType::kServiceWorker,
+        {blink::mojom::StorageType::kTemporary});
   }
 
   context_core_ = std::make_unique<ServiceWorkerContextCore>(

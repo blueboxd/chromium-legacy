@@ -2139,8 +2139,9 @@ jumbo_component("base") {
       sources += [
         "trace_event/trace_event_etw_export_win.cc",
         "trace_event/trace_event_etw_export_win.h",
+        "trace_event/trace_logging_minimal_win.cc",
+        "trace_event/trace_logging_minimal_win.h",
       ]
-      deps += [ "//base/trace_event/etw_manifest:chrome_events_win" ]
     }
 
     if (is_android) {
@@ -2944,6 +2945,8 @@ test("base_unittests") {
       "win/com_init_check_hook_unittest.cc",
       "win/com_init_util_unittest.cc",
       "win/core_winrt_util_unittest.cc",
+      "win/dispatch_stub.cc",
+      "win/dispatch_stub.h",
       "win/dllmain.cc",
       "win/embedded_i18n/language_selector_unittest.cc",
       "win/enum_variant_unittest.cc",

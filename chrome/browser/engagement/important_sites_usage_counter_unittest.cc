@@ -25,6 +25,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/mock_quota_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
 
 using ImportantDomainInfo = ImportantSitesUtil::ImportantDomainInfo;
 using content::DOMStorageContext;
@@ -56,7 +57,9 @@ class ImportantSitesUsageCounterTest : public testing::Test {
     auto* client = new storage::MockQuotaClient(
         quota_manager_->proxy(), data, storage::QuotaClientType::kFileSystem);
     quota_manager_->proxy()->RegisterClient(
-        client, storage::QuotaClientType::kFileSystem);
+        client, storage::QuotaClientType::kFileSystem,
+        {blink::mojom::StorageType::kTemporary,
+         blink::mojom::StorageType::kPersistent});
     client->TouchAllOriginsAndNotify();
   }
 

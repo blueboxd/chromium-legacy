@@ -9,7 +9,8 @@ import android.content.Intent;
 import android.os.ConditionVariable;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import com.google.android.gms.fido.fido2.api.common.ErrorCode;
 

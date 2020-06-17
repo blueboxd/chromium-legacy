@@ -28,9 +28,6 @@ namespace {
 
 using ResultType = ash::AppListSearchResultType;
 
-// Consistent with kScoreEpsilon in ChipRanker.
-// constexpr float kScoreEpsilon = 1e-5f;
-
 class TestSearchResult : public ChromeSearchResult {
  public:
   TestSearchResult(const std::string& id, ResultType type)
@@ -164,23 +161,6 @@ TEST_F(ChipRankerTest, AppsOnly) {
                                               HasScore(8.7))));
 }
 
-// Check that ranking only files has no effect.
-TEST_F(ChipRankerTest, FilesOnly) {
-  Mixer::SortedResults results = MakeSearchResults(
-      {"file1", "file2", "file3"},
-      {ResultType::kFileChip, ResultType::kDriveQuickAccessChip,
-       ResultType::kFileChip},
-      {0.9, 0.6, 0.4});
-
-  TrainRanker({"app", "file"});
-
-  ranker_->Rank(&results);
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("file1"), HasId("file2"),
-                                              HasId("file3"))));
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasScore(0.9), HasScore(0.6),
-                                              HasScore(0.4))));
-}
-
 // Check that ranking a non-chip result does not affect its score.
 TEST_F(ChipRankerTest, UnchangedItem) {
   Mixer::SortedResults results =
@@ -204,45 +184,18 @@ TEST_F(ChipRankerTest, UnchangedItem) {
 // depending on whether apps initially have identical scores.
 TEST_F(ChipRankerTest, DefaultInitialization) {
   Mixer::SortedResults results = MakeSearchResults(
-      {"app1", "app2", "app3", "file1", "file2"},
+      {"app1", "app2", "app3", "drive1", "drive2", "local1", "local2"},
       {ResultType::kInstalledApp, ResultType::kInstalledApp,
-       ResultType::kInstalledApp, ResultType::kFileChip, ResultType::kFileChip},
-      {8.9, 8.7, 8.5, 0.8, 0.7});
+       ResultType::kInstalledApp, ResultType::kDriveQuickAccessChip,
+       ResultType::kDriveQuickAccessChip, ResultType::kFileChip,
+       ResultType::kFileChip},
+      {8.9, 8.7, 8.5, 0.9, 0.7, 0.8, 0.6});
   ranker_->Rank(&results);
 
   EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("app1"), HasId("app2"),
-                                              HasId("file1"), HasId("app3"),
-                                              HasId("file2"))));
-}
-
-// When files have been trained much more than apps, two files should appear
-// before two apps.
-TEST_F(ChipRankerTest, FilesAboveApps) {
-  Mixer::SortedResults results =
-      MakeSearchResults({"app1", "app2", "file1", "file2"},
-                        {ResultType::kInstalledApp, ResultType::kInstalledApp,
-                         ResultType::kFileChip, ResultType::kFileChip},
-                        {8.9, 8.7, 0.8, 0.7});
-  TrainRanker({"app", "file", "file", "file", "file"});
-
-  ranker_->Rank(&results);
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("file1"), HasId("file2"),
-                                              HasId("app1"), HasId("app2"))));
-}
-
-// When apps have been trained much more than files, two apps should appear
-// before two files.
-TEST_F(ChipRankerTest, AppsAboveFiles) {
-  Mixer::SortedResults results =
-      MakeSearchResults({"app1", "app2", "file1", "file2"},
-                        {ResultType::kInstalledApp, ResultType::kInstalledApp,
-                         ResultType::kFileChip, ResultType::kFileChip},
-                        {8.9, 8.7, 0.8, 0.7});
-  TrainRanker({"file", "app", "app", "app", "app"});
-
-  ranker_->Rank(&results);
-  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("app1"), HasId("app2"),
-                                              HasId("file1"), HasId("file2"))));
+                                              HasId("drive1"), HasId("drive2"),
+                                              HasId("local1"), HasId("app3"),
+                                              HasId("local2"))));
 }
 
 }  // namespace app_list

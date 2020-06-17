@@ -122,19 +122,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   // Properties of interactive elements.
   String StringValue() const override;
 
-  // ARIA attributes.
-  void AriaDescribedbyElements(AXObjectVector&) const override;
-  void AriaOwnsElements(AXObjectVector&) const override;
-
-  bool SupportsARIADragging() const override;
-  void Dropeffects(
-      Vector<ax::mojom::blink::Dropeffect>& dropeffects) const override;
-  bool SupportsARIAOwns() const override;
-
-  // ARIA live-region features.
-  const AtomicString& LiveRegionStatus() const override;
-  const AtomicString& LiveRegionRelevant() const override;
-
   // AX name calc.
   String TextAlternative(bool recursive,
                          bool in_aria_labelled_by_traversal,
@@ -218,7 +205,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   bool CanIgnoreSpaceNextTo(LayoutObject*, bool is_after) const;
   bool HasAriaCellRole(Element*) const;
   bool IsPlaceholder() const;
-  ax::mojom::blink::Dropeffect ParseDropeffect(String& dropeffect) const;
   bool SelectionShouldFollowFocus() const;
 
   static ax::mojom::blink::TextDecorationStyle

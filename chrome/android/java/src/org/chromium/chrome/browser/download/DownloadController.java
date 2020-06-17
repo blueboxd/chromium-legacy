@@ -204,10 +204,11 @@ public class DownloadController {
 
         AndroidPermissionRequester.showMissingPermissionDialog(activity,
                 R.string.missing_storage_permission_download_education_text,
-                () -> permissionDelegate.requestPermissions(
+                ()
+                        -> permissionDelegate.requestPermissions(
                                 new String[] {permission.WRITE_EXTERNAL_STORAGE},
                                 permissionCallback),
-                () -> callback.onResult(Pair.create(false, null)));
+                callback.bind(Pair.create(false, null)));
     }
 
     /**

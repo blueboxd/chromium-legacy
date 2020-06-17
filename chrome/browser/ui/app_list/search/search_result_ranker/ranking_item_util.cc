@@ -42,8 +42,9 @@ RankingItemType RankingItemTypeFromSearchResult(
     case ash::AppListSearchResultType::kDriveQuickAccess:
       return RankingItemType::kDriveQuickAccess;
     case ash::AppListSearchResultType::kFileChip:
+      return RankingItemType::kZeroStateFileChip;
     case ash::AppListSearchResultType::kDriveQuickAccessChip:
-      return RankingItemType::kChip;
+      return RankingItemType::kDriveQuickAccessChip;
   }
 }
 

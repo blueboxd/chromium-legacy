@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/platform_event.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -28,13 +29,13 @@ class X11PropertyChangeWaiter : public XEventDispatcher {
 
  protected:
   // Returns whether the run loop can exit.
-  virtual bool ShouldKeepOnWaiting(XEvent* event);
+  virtual bool ShouldKeepOnWaiting(x11::Event* event);
 
   XID xwindow() const { return x_window_; }
 
  private:
   // XEventDispatcher:
-  bool DispatchXEvent(XEvent* event) override;
+  bool DispatchXEvent(x11::Event* event) override;
 
   XID x_window_;
   const char* property_;

@@ -74,18 +74,16 @@ class SharedImageBackingGLCommon : public SharedImageBacking {
     GLenum format = 0;
     GLenum type = 0;
     const gles2::Texture::CompatibilitySwizzle* swizzle = nullptr;
-    gles2::Texture::ImageState image_state = gles2::Texture::UNBOUND;
     bool is_cleared = false;
+    bool is_rgb_emulation = false;
+    bool framebuffer_attachment_angle = false;
     bool has_immutable_storage = false;
   };
-  void InitializeGLTexture(GLuint service_id,
-                           scoped_refptr<gl::GLImage> image,
-                           const InitializeGLTextureParams& params);
+  virtual bool InitializeGLTexture(GLuint service_id,
+                                   const InitializeGLTextureParams& params);
 
-  gles2::Texture* texture() const { return texture_; }
-  gles2::TexturePassthrough* texture_passthrough() const {
-    return passthrough_texture_.get();
-  }
+  GLenum GetGLTarget() const;
+  GLuint GetGLServiceId() const;
 
   virtual void BeginSkiaReadAccess() = 0;
 
@@ -110,8 +108,6 @@ class SharedImageBackingGLCommon : public SharedImageBacking {
       WGPUDevice device) final;
 
   bool IsPassthrough() const { return is_passthrough_; }
-  GLenum GetGLTarget() const;
-  GLuint GetGLServiceId() const;
 
   const bool is_passthrough_;
   gles2::Texture* texture_ = nullptr;
@@ -205,6 +201,10 @@ class SharedImageBackingGLImage : public SharedImageBackingGLCommon {
   SharedImageBackingGLImage& operator=(const SharedImageBackingGLImage& other) =
       delete;
   ~SharedImageBackingGLImage() override;
+
+  // SharedImageBackingGLCommon:
+  bool InitializeGLTexture(GLuint service_id,
+                           const InitializeGLTextureParams& params) override;
 
  private:
   // SharedImageBacking:

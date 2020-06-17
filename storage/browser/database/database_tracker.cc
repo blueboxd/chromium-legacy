@@ -103,7 +103,7 @@ DatabaseTracker::DatabaseTracker(const base::FilePath& profile_path,
   if (quota_manager_proxy) {
     quota_manager_proxy->RegisterClient(
         base::MakeRefCounted<DatabaseQuotaClient>(this),
-        QuotaClientType::kDatabase);
+        QuotaClientType::kDatabase, {blink::mojom::StorageType::kTemporary});
   }
 }
 

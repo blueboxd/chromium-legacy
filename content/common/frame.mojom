@@ -508,4 +508,7 @@ interface FrameHost {
 
   // Requests an overlay routing token.
   RequestOverlayRoutingToken() => (mojo_base.mojom.UnguessableToken token);
+
+  // Notifies the browser that this frame has new session history information.
+  UpdateState(PageState state);
 };

@@ -14,6 +14,7 @@
 #include "ui/base/x/x11_display_manager.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/x/event.h"
 #include "ui/ozone/public/platform_screen.h"
 
 namespace ui {
@@ -51,7 +52,7 @@ class X11ScreenOzone : public PlatformScreen,
   std::string GetCurrentWorkspace() override;
 
   // Overridden from ui::XEventDispatcher:
-  bool DispatchXEvent(XEvent* event) override;
+  bool DispatchXEvent(x11::Event* event) override;
 
  private:
   friend class X11ScreenOzoneTest;

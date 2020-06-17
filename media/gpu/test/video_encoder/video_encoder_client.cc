@@ -216,7 +216,7 @@ VideoEncoderClient::CreateBitstreamRef(
   auto decoder_buffer = DecoderBuffer::FromSharedMemoryRegion(
       base::UnsafeSharedMemoryRegion::TakeHandleForSerialization(
           it->second.Duplicate()),
-      0u /* offset */, output_buffer_size_);
+      0u /* offset */, metadata.payload_size_bytes);
   if (!decoder_buffer)
     return nullptr;
   decoder_buffer->set_timestamp(

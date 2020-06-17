@@ -627,7 +627,7 @@ void LockContentsView::FocusPreviousUser() {
 
 void LockContentsView::ShowAdbEnabled() {
   bottom_status_indicator_->SetIcon(
-      kLockScreenAlertIcon, AshColorProvider::ContentLayerType::kIconRed);
+      kLockScreenAlertIcon, AshColorProvider::ContentLayerType::kIconAlert);
   bottom_status_indicator_->SetText(
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SCREEN_UNVERIFIED_CODE_WARNING),
       gfx::kGoogleRed300);

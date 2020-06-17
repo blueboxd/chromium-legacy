@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.sync;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 
 import androidx.preference.Preference;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

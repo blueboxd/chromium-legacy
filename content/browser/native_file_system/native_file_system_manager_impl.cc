@@ -417,7 +417,7 @@ void NativeFileSystemManagerImpl::DeserializeHandle(
           data.handle_type() == NativeFileSystemHandleData::kDirectory;
 
       SharedHandleState handle_state = GetSharedHandleStateForPath(
-          root_path, origin, root.file_system,
+          root_path, origin, std::move(root.file_system),
           is_directory || !relative_path.empty(),
           NativeFileSystemPermissionContext::UserAction::kLoadFromStorage);
 
@@ -447,7 +447,8 @@ NativeFileSystemManagerImpl::CreateDirectoryEntryFromPath(
   auto url = CreateFileSystemURLFromPath(binding_context.origin, file_path);
 
   SharedHandleState shared_handle_state = GetSharedHandleStateForPath(
-      file_path, binding_context.origin, url.file_system, /*is_directory=*/true,
+      file_path, binding_context.origin, std::move(url.file_system),
+      /*is_directory=*/true,
       NativeFileSystemPermissionContext::UserAction::kOpen);
 
   return blink::mojom::NativeFileSystemEntry::New(
@@ -860,7 +861,7 @@ NativeFileSystemManagerImpl::CreateFileEntryFromPathImpl(
   auto url = CreateFileSystemURLFromPath(binding_context.origin, file_path);
 
   SharedHandleState shared_handle_state = GetSharedHandleStateForPath(
-      file_path, binding_context.origin, url.file_system,
+      file_path, binding_context.origin, std::move(url.file_system),
       /*is_directory=*/false, user_action);
 
   return blink::mojom::NativeFileSystemEntry::New(
@@ -873,7 +874,7 @@ NativeFileSystemManagerImpl::SharedHandleState
 NativeFileSystemManagerImpl::GetSharedHandleStateForPath(
     const base::FilePath& path,
     const url::Origin& origin,
-    const storage::IsolatedContext::ScopedFSHandle& file_system,
+    storage::IsolatedContext::ScopedFSHandle file_system,
     bool is_directory,
     NativeFileSystemPermissionContext::UserAction user_action) {
   scoped_refptr<NativeFileSystemPermissionGrant> read_grant, write_grant;

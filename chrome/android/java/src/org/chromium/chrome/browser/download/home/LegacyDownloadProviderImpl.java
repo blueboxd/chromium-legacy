@@ -170,7 +170,7 @@ class LegacyDownloadProviderImpl implements DownloadObserver, LegacyDownloadProv
     @Override
     public void getItemById(ContentId id, Callback<OfflineItem> callback) {
         assert false : "Not supported.";
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(null));
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, callback.bind(null));
     }
 
     @Override

@@ -172,8 +172,10 @@ class MockCacheStorageQuotaManagerProxy
                                     base::SingleThreadTaskRunner* task_runner)
       : MockQuotaManagerProxy(quota_manager, task_runner) {}
 
-  void RegisterClient(scoped_refptr<storage::QuotaClient> client,
-                      storage::QuotaClientType client_type) override {
+  void RegisterClient(
+      scoped_refptr<storage::QuotaClient> client,
+      storage::QuotaClientType client_type,
+      const std::vector<blink::mojom::StorageType>& storage_types) override {
     registered_clients_.push_back(std::move(client));
   }
 
@@ -2493,10 +2495,6 @@ class CacheStorageQuotaClientTest : public CacheStorageManagerTest {
     return callback_status_ == blink::mojom::QuotaStatusCode::kOk;
   }
 
-  bool QuotaDoesSupport(StorageType type) {
-    return quota_client_->DoesSupport(type);
-  }
-
   scoped_refptr<CacheStorageQuotaClient> quota_client_;
 
   blink::mojom::QuotaStatusCode callback_status_;
@@ -2607,14 +2605,6 @@ TEST_F(CacheStorageQuotaClientDiskOnlyTest, QuotaDeleteUnloadedOriginData) {
 
   EXPECT_TRUE(QuotaDeleteOriginData(origin1_));
   EXPECT_EQ(0, QuotaGetOriginUsage(origin1_));
-}
-
-TEST_P(CacheStorageQuotaClientTestP, QuotaDoesSupport) {
-  EXPECT_TRUE(QuotaDoesSupport(StorageType::kTemporary));
-  EXPECT_FALSE(QuotaDoesSupport(StorageType::kPersistent));
-  EXPECT_FALSE(QuotaDoesSupport(StorageType::kSyncable));
-  EXPECT_FALSE(QuotaDoesSupport(StorageType::kQuotaNotManaged));
-  EXPECT_FALSE(QuotaDoesSupport(StorageType::kUnknown));
 }
 
 INSTANTIATE_TEST_SUITE_P(

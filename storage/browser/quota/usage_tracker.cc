@@ -53,9 +53,6 @@ UsageTracker::UsageTracker(
 
   for (const auto& client_and_type : client_types) {
     QuotaClient* client = client_and_type.first;
-    if (!client->DoesSupport(type))
-      continue;
-
     QuotaClientType client_type = client_and_type.second;
     client_tracker_map_[client_type].push_back(
         std::make_unique<ClientUsageTracker>(this, client, type,

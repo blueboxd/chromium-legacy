@@ -59,7 +59,11 @@ decltype(auto) invoke(Functor&& f, Args&&... args) {
 // Reference: https://wg21.link/range.cmp
 namespace ranges {
 using equal_to = std::equal_to<>;
+using not_equal_to = std::not_equal_to<>;
+using greater = std::greater<>;
 using less = std::less<>;
+using greater_equal = std::greater_equal<>;
+using less_equal = std::less_equal<>;
 }  // namespace ranges
 
 }  // namespace util

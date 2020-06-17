@@ -10,7 +10,6 @@ import './signin_shared_css.js';
 import './strings.m.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 Polymer({
@@ -30,19 +29,6 @@ Polymer({
             'signinEmailConfirmationCreateProfileButtonSubtitle', newEmail);
     this.$.startSyncRadioButtonSubtitle.textContent = loadTimeData.getStringF(
         'signinEmailConfirmationStartSyncButtonSubtitle', newEmail);
-
-    document.addEventListener('keydown', this.onKeyDown_.bind(this));
-  },
-
-  onKeyDown_(e) {
-    // If the currently focused element isn't something that performs an action
-    // on "enter" being pressed and the user hits "enter", perform the default
-    // action of the dialog, which is "OK".
-    if (e.key == 'Enter' &&
-        !/^(A|CR-BUTTON)$/.test(getDeepActiveElement().tagName)) {
-      this.$.confirmButton.click();
-      e.preventDefault();
-    }
   },
 
   /** @private */

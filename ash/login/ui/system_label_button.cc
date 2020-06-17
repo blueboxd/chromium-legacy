@@ -110,7 +110,7 @@ void SystemLabelButton::SetAlertMode(bool alert_mode) {
     background_color_ = kSystemButtonBackgroundColorAlert;
   else {
     background_color_ = AshColorProvider::Get()->GetControlsLayerColor(
-        AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+        AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive,
         AshColorProvider::AshColorMode::kDark);
   }
 

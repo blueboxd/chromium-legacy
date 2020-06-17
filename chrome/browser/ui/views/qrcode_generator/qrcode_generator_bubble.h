@@ -68,7 +68,6 @@ class QRCodeGeneratorBubble : public QRCodeGeneratorBubbleView,
 
   // LocationBarBubbleDelegateView:
   View* GetInitiallyFocusedView() override;
-  base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   void WindowClosing() override;
   const char* GetClassName() const override;

@@ -333,7 +333,6 @@ LanguageSettingsPrivateEnableLanguageFunction::Run() {
   }
 
   translate_prefs->AddToLanguageList(language_code, /*force_blocked=*/false);
-  translate_prefs->ResetRecentTargetLanguage();
 
   return RespondNow(NoArguments());
 }
@@ -367,7 +366,9 @@ LanguageSettingsPrivateDisableLanguageFunction::Run() {
   }
 
   translate_prefs->RemoveFromLanguageList(language_code);
-  translate_prefs->ResetRecentTargetLanguage();
+  if (language_code == translate_prefs->GetRecentTargetLanguage()) {
+    translate_prefs->ResetRecentTargetLanguage();
+  }
 
   return RespondNow(NoArguments());
 }
@@ -397,7 +398,6 @@ LanguageSettingsPrivateSetEnableTranslationForLanguageFunction::Run() {
   } else {
     translate_prefs->BlockLanguage(language_code);
   }
-  translate_prefs->ResetRecentTargetLanguage();
 
   return RespondNow(NoArguments());
 }
@@ -450,7 +450,6 @@ LanguageSettingsPrivateMoveLanguageFunction::Run() {
   const int offset = 1;
   translate_prefs->RearrangeLanguage(language_code, where, offset,
                                      supported_language_codes);
-  translate_prefs->ResetRecentTargetLanguage();
 
   return RespondNow(NoArguments());
 }
@@ -492,8 +491,8 @@ LanguageSettingsPrivateGetSpellcheckWordsFunction::Run() {
   return RespondLater();
 }
 
-void
-LanguageSettingsPrivateGetSpellcheckWordsFunction::OnCustomDictionaryLoaded() {
+void LanguageSettingsPrivateGetSpellcheckWordsFunction::
+    OnCustomDictionaryLoaded() {
   SpellcheckService* service =
       SpellcheckServiceFactory::GetForContext(browser_context());
   service->GetCustomDictionary()->RemoveObserver(this);
@@ -501,9 +500,9 @@ LanguageSettingsPrivateGetSpellcheckWordsFunction::OnCustomDictionaryLoaded() {
   Release();
 }
 
-void
-LanguageSettingsPrivateGetSpellcheckWordsFunction::OnCustomDictionaryChanged(
-    const SpellcheckCustomDictionary::Change& dictionary_change) {
+void LanguageSettingsPrivateGetSpellcheckWordsFunction::
+    OnCustomDictionaryChanged(
+        const SpellcheckCustomDictionary::Change& dictionary_change) {
   NOTREACHED() << "SpellcheckCustomDictionary::Observer: "
                   "OnCustomDictionaryChanged() called before "
                   "OnCustomDictionaryLoaded()";
@@ -578,8 +577,7 @@ LanguageSettingsPrivateRemoveSpellcheckWordFunction::Run() {
 
 LanguageSettingsPrivateGetTranslateTargetLanguageFunction::
     LanguageSettingsPrivateGetTranslateTargetLanguageFunction()
-    : chrome_details_(this) {
-}
+    : chrome_details_(this) {}
 
 LanguageSettingsPrivateGetTranslateTargetLanguageFunction::
     ~LanguageSettingsPrivateGetTranslateTargetLanguageFunction() = default;
@@ -657,8 +655,7 @@ LanguageSettingsPrivateGetInputMethodListsFunction::Run() {
     InputMethodDescriptors ext_ime_descriptors;
     ime_state->GetInputMethodExtensions(&ext_ime_descriptors);
     PopulateInputMethodListFromDescriptors(
-        ext_ime_descriptors,
-        &input_method_lists.third_party_extension_imes);
+        ext_ime_descriptors, &input_method_lists.third_party_extension_imes);
   }
 
   return RespondNow(OneArgument(input_method_lists.ToValue()));

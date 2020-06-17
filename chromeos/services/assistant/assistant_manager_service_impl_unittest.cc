@@ -27,6 +27,7 @@
 #include "chromeos/services/assistant/test_support/mock_assistant_interaction_subscriber.h"
 #include "chromeos/services/assistant/test_support/mock_media_manager.h"
 #include "chromeos/services/assistant/test_support/scoped_assistant_client.h"
+#include "chromeos/services/assistant/test_support/scoped_device_actions.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "libassistant/shared/public/assistant_manager.h"
 #include "services/media_session/public/mojom/media_session.mojom-shared.h"
@@ -262,6 +263,7 @@ class AssistantManagerServiceImplTest : public testing::Test {
   base::test::SingleThreadTaskEnvironment task_environment;
 
   ScopedAssistantClient assistant_client_;
+  ScopedDeviceActions device_actions_;
   FullyInitializedAssistantState assistant_state_;
 
   std::unique_ptr<FakeServiceContext> service_context_;

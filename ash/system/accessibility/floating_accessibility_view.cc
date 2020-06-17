@@ -50,7 +50,7 @@ class DynamicRowView : public views::View {
 std::unique_ptr<views::Separator> CreateSeparator() {
   auto separator = std::make_unique<views::Separator>();
   separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kSeparator,
+      AshColorProvider::ContentLayerType::kSeparatorColor,
       AshColorProvider::AshColorMode::kDark));
   separator->SetPreferredHeight(kSeparatorHeight);
   int total_height = kUnifiedTopShortcutSpacing * 2 + kTrayItemSize;

@@ -19,11 +19,11 @@ import static org.chromium.chrome.browser.query_tiles.ListMatchers.matchList;
 import static org.chromium.chrome.browser.query_tiles.ViewActions.scrollTo;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
 import android.view.View;
 
 import androidx.test.espresso.assertion.ViewAssertions;
+import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matcher;
 import org.junit.Assert;

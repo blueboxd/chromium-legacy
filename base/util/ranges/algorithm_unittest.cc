@@ -311,4 +311,29 @@ TEST(RangesTest, SearchN) {
   EXPECT_EQ(ints + 6, ranges::search_n(ints, 3, 3, {}, &Int::value));
 }
 
+TEST(RangesTest, LowerBound) {
+  int array[] = {0, 0, 1, 1, 2, 2};
+
+  EXPECT_EQ(array, ranges::lower_bound(array, array + 6, -1));
+  EXPECT_EQ(array, ranges::lower_bound(array, array + 6, 0));
+  EXPECT_EQ(array + 2, ranges::lower_bound(array, array + 6, 1));
+  EXPECT_EQ(array + 4, ranges::lower_bound(array, array + 6, 2));
+  EXPECT_EQ(array + 6, ranges::lower_bound(array, array + 6, 3));
+
+  Int ints[] = {{0}, {0}, {1}, {1}, {2}, {2}};
+
+  EXPECT_EQ(ints, ranges::lower_bound(ints, -1, {}, &Int::value));
+  EXPECT_EQ(ints, ranges::lower_bound(ints, 0, {}, &Int::value));
+  EXPECT_EQ(ints + 2, ranges::lower_bound(ints, 1, {}, &Int::value));
+  EXPECT_EQ(ints + 4, ranges::lower_bound(ints, 2, {}, &Int::value));
+  EXPECT_EQ(ints + 6, ranges::lower_bound(ints, 3, {}, &Int::value));
+
+  const auto proj = [](const auto& i) { return 2 - i.value; };
+  EXPECT_EQ(ints, ranges::lower_bound(ints, 3, ranges::greater{}, proj));
+  EXPECT_EQ(ints, ranges::lower_bound(ints, 2, ranges::greater{}, proj));
+  EXPECT_EQ(ints + 2, ranges::lower_bound(ints, 1, ranges::greater{}, proj));
+  EXPECT_EQ(ints + 4, ranges::lower_bound(ints, 0, ranges::greater{}, proj));
+  EXPECT_EQ(ints + 6, ranges::lower_bound(ints, -1, ranges::greater{}, proj));
+}
+
 }  // namespace util

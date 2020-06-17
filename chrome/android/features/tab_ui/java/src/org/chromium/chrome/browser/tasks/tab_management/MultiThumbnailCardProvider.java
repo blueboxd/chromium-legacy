@@ -183,7 +183,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
             drawFaviconDrawableOnCanvasWithFrame(favicon, index);
             if (mThumbnailsToFetch.decrementAndGet() == 0) {
                 PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE,
-                        () -> mFinalCallback.onResult(mMultiThumbnailBitmap));
+                        mFinalCallback.bind(mMultiThumbnailBitmap));
             }
         }
 

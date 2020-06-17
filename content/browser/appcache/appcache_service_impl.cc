@@ -388,8 +388,9 @@ AppCacheServiceImpl::AppCacheServiceImpl(
       partition_(std::move(partition)) {
   if (quota_manager_proxy_.get()) {
     quota_client_ = base::MakeRefCounted<AppCacheQuotaClient>(AsWeakPtr());
-    quota_manager_proxy_->RegisterClient(quota_client_,
-                                         storage::QuotaClientType::kAppcache);
+    quota_manager_proxy_->RegisterClient(
+        quota_client_, storage::QuotaClientType::kAppcache,
+        {blink::mojom::StorageType::kTemporary});
   }
 }
 

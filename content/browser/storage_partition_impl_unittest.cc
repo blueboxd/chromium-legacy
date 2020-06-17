@@ -48,12 +48,15 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/cookie_manager.h"
+#include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_manager.h"
+#include "storage/browser/test/mock_quota_client.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -746,6 +749,13 @@ class StoragePartitionImplTest : public testing::Test {
           browser_context_->IsOffTheRecord(), browser_context_->GetPath(),
           GetIOThreadTaskRunner({}).get(),
           browser_context_->GetSpecialStoragePolicy());
+      auto quota_client = base::MakeRefCounted<storage::MockQuotaClient>(
+          quota_manager_->proxy(), base::span<const storage::MockOriginData>(),
+          storage::QuotaClientType::kFileSystem);
+      quota_manager_->proxy()->RegisterClient(
+          std::move(quota_client), storage::QuotaClientType::kFileSystem,
+          {blink::mojom::StorageType::kTemporary,
+           blink::mojom::StorageType::kPersistent});
     }
     return quota_manager_.get();
   }

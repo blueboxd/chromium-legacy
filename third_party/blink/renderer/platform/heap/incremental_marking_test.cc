@@ -254,18 +254,16 @@ class Object : public LinkedObject {
   void Trace(Visitor* visitor) const { LinkedObject::Trace(visitor); }
 };
 
-class RawPtrObjectWithManualWriteBarrier
-    : public GarbageCollected<RawPtrObjectWithManualWriteBarrier> {
+class ObjectWithWriteBarrier : public GarbageCollected<ObjectWithWriteBarrier> {
  public:
   void Trace(Visitor* v) const { v->Trace(object_); }
 
   void Set(Object* object) {
     object_ = object;
-    MarkingVisitor::WriteBarrier(&object_);
   }
 
  private:
-  Object* object_ = nullptr;
+  Member<Object> object_;
 };
 
 // =============================================================================
@@ -281,9 +279,9 @@ TEST_F(IncrementalMarkingTest, EnableDisableBarrier) {
   EXPECT_FALSE(ThreadState::Current()->IsIncrementalMarking());
 }
 
-TEST_F(IncrementalMarkingTest, ManualWriteBarrierTriggersWhenMarkingIsOn) {
+TEST_F(IncrementalMarkingTest, WriteBarrierTriggersWhenMarkingIsOn) {
   auto* object1 = MakeGarbageCollected<Object>();
-  auto* object2 = MakeGarbageCollected<RawPtrObjectWithManualWriteBarrier>();
+  auto* object2 = MakeGarbageCollected<ObjectWithWriteBarrier>();
   {
     ExpectWriteBarrierFires scope(ThreadState::Current(), {object1});
     EXPECT_FALSE(object1->IsMarked());
@@ -292,9 +290,9 @@ TEST_F(IncrementalMarkingTest, ManualWriteBarrierTriggersWhenMarkingIsOn) {
   }
 }
 
-TEST_F(IncrementalMarkingTest, ManualWriteBarrierBailoutWhenMarkingIsOff) {
+TEST_F(IncrementalMarkingTest, WriteBarrierBailoutWhenMarkingIsOff) {
   auto* object1 = MakeGarbageCollected<Object>();
-  auto* object2 = MakeGarbageCollected<RawPtrObjectWithManualWriteBarrier>();
+  auto* object2 = MakeGarbageCollected<ObjectWithWriteBarrier>();
   EXPECT_FALSE(object1->IsMarked());
   object2->Set(object1);
   EXPECT_FALSE(object1->IsMarked());

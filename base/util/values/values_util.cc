@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "base/unguessable_token.h"
 
 // Warning: The Values involved could be stored on persistent storage like files

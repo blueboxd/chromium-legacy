@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 
+#include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -47,8 +49,8 @@ void NavigateToNTPAndWaitUntilLoaded(Browser* browser, int delay) {
   // don't miss the 'loaded' message due to some race condition.
   content::DOMMessageQueue msg_queue(active_tab);
 
-  // Navigate to the NTP.
-  ui_test_utils::NavigateToURL(browser, GURL(chrome::kChromeUINewTabURL));
+  // Navigate to the local NTP.
+  ui_test_utils::NavigateToURL(browser, GURL(chrome::kChromeSearchLocalNtpUrl));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
   ASSERT_EQ(GURL(chrome::kChromeSearchLocalNtpUrl),
             active_tab->GetController().GetVisibleEntry()->GetURL());
@@ -159,10 +161,13 @@ void SetUserSelectedDefaultSearchProvider(Profile* profile,
 }
 
 GURL GetFinalNtpUrl(Profile* profile) {
-  if (search::GetNewTabPageURL(profile) == chrome::kChromeSearchLocalNtpUrl) {
-    // If chrome://newtab/ already maps to the local NTP, then that will load
-    // correctly, even without network.  The URL associated with the WebContents
-    // will stay chrome://newtab/
+  GURL ntp_url = base::FeatureList::IsEnabled(ntp_features::kWebUI)
+                     ? GURL(chrome::kChromeUINewTabPageURL)
+                     : GURL(chrome::kChromeSearchLocalNtpUrl);
+  if (search::GetNewTabPageURL(profile) == ntp_url) {
+    // If chrome://newtab/ already maps to the local/WebUI NTP, then that will
+    // load correctly, even without network.  The URL associated with the
+    // WebContents will stay chrome://newtab/
     return GURL(chrome::kChromeUINewTabURL);
   }
   // If chrome://newtab/ maps to a remote URL, then it will fail to load in a

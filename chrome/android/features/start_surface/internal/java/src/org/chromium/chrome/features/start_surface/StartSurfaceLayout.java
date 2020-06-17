@@ -209,7 +209,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         if (mLayoutTabs == null) return;
 
         assert mLayoutTabs.length >= 1;
-        boolean needUpdate = mLayoutTabs[0].updateSnap(dt);
+        boolean needUpdate = updateSnap(dt, mLayoutTabs[0]);
         if (needUpdate) requestUpdate();
     }
 
@@ -300,21 +300,18 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         Collection<Animator> animationList = new ArrayList<>(5);
 
         // Step 1: zoom out the source tab
-        animationList.add(CompositorAnimator.ofFloatProperty(
-                handler, sourceLayoutTab, LayoutTab.SCALE, () -> 1f, () -> {
-                    return target.get().width() / (getWidth() * mDpToPx);
-                }, ZOOMING_DURATION, Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
-        animationList.add(CompositorAnimator.ofFloatProperty(
-                handler, sourceLayoutTab, LayoutTab.X, () -> 0f, () -> {
-                    return target.get().left / mDpToPx;
-                }, ZOOMING_DURATION, Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
-        animationList.add(CompositorAnimator.ofFloatProperty(
-                handler, sourceLayoutTab, LayoutTab.Y, () -> 0f, () -> {
-                    return target.get().top / mDpToPx;
-                }, ZOOMING_DURATION, Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
+                LayoutTab.SCALE, 1.0f, target.get().width() / (getWidth() * mDpToPx),
+                ZOOMING_DURATION, Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
+                LayoutTab.X, 0f, target.get().left / mDpToPx, ZOOMING_DURATION,
+                Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
+                LayoutTab.Y, 0f, target.get().top / mDpToPx, ZOOMING_DURATION,
+                Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
         // TODO(crbug.com/964406): when shrinking to the bottom row, bottom of the tab goes up and
         // down, making the "create group" visible for a while.
-        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.MAX_CONTENT_HEIGHT, sourceLayoutTab.getUnclampedOriginalContentHeight(),
                 TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
                         ? Math.min(getWidth() / mThumbnailAspectRatio,
@@ -359,18 +356,18 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         Collection<Animator> animationList = new ArrayList<>(5);
 
         // Zoom in the source tab
-        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.SCALE, source.width() / (getWidth() * mDpToPx), 1, ZOOMING_DURATION,
                 Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
-        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab, LayoutTab.X,
-                source.left / mDpToPx, 0f, ZOOMING_DURATION,
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
+                LayoutTab.X, source.left / mDpToPx, 0f, ZOOMING_DURATION,
                 Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
-        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab, LayoutTab.Y,
-                source.top / mDpToPx, 0f, ZOOMING_DURATION,
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
+                LayoutTab.Y, source.top / mDpToPx, 0f, ZOOMING_DURATION,
                 Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
         // TODO(crbug.com/964406): when shrinking to the bottom row, bottom of the tab goes up and
         // down, making the "create group" visible for a while.
-        animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
+        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.MAX_CONTENT_HEIGHT,
                 TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne()
                         ? Math.min(getWidth() / mThumbnailAspectRatio,

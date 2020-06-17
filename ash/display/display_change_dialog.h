@@ -44,7 +44,7 @@ class ASH_EXPORT DisplayChangeDialog : public views::DialogDelegateView {
   friend class ResolutionNotificationControllerTest;
   FRIEND_TEST_ALL_PREFIXES(ResolutionNotificationControllerTest, Timeout);
 
-  static constexpr uint16_t kDefaultTimeoutInSeconds = 10;
+  static constexpr uint16_t kDefaultTimeoutInSeconds = 15;
 
   void OnConfirmButtonClicked();
 

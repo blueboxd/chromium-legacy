@@ -108,11 +108,17 @@ class MockFrameHost : public mojom::FrameHost {
     return request_overlay_routing_token_called_;
   }
 
+  bool is_page_state_updated() const { return is_page_state_updated_; }
+
   void RequestOverlayRoutingToken(
       media::RoutingTokenCallback callback) override {
     request_overlay_routing_token_called_++;
     if (overlay_routing_token_.has_value())
       std::move(callback).Run(overlay_routing_token_.value());
+  }
+
+  void UpdateState(const PageState& state) override {
+    is_page_state_updated_ = true;
   }
 
  protected:
@@ -238,6 +244,8 @@ class MockFrameHost : public mojom::FrameHost {
 
   size_t request_overlay_routing_token_called_ = 0;
   base::Optional<base::UnguessableToken> overlay_routing_token_;
+
+  bool is_page_state_updated_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockFrameHost);
 };
@@ -393,6 +401,10 @@ void TestRenderFrame::SetOverlayRoutingToken(
 
 size_t TestRenderFrame::RequestOverlayRoutingTokenCalled() {
   return mock_frame_host_->request_overlay_routing_token_called();
+}
+
+bool TestRenderFrame::IsPageStateUpdated() const {
+  return mock_frame_host_->is_page_state_updated();
 }
 
 mojom::FrameHost* TestRenderFrame::GetFrameHost() {

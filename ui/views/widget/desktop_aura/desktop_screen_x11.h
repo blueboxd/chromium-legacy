@@ -12,6 +12,7 @@
 #include "ui/base/x/x11_display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/event.h"
 #include "ui/views/linux_ui/device_scale_factor_observer.h"
 #include "ui/views/linux_ui/linux_ui.h"
 #include "ui/views/views_export.h"
@@ -57,7 +58,7 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
   std::string GetCurrentWorkspace() override;
 
   // ui::XEventDispatcher:
-  bool DispatchXEvent(XEvent* event) override;
+  bool DispatchXEvent(x11::Event* event) override;
 
   // DeviceScaleFactorObserver:
   void OnDeviceScaleFactorChanged() override;

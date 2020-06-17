@@ -76,8 +76,9 @@ void FloatingMenuButton::PaintButtonContents(gfx::Canvas* canvas) {
     flags.setAntiAlias(true);
     flags.setColor(AshColorProvider::Get()->GetControlsLayerColor(
         toggled_
-            ? AshColorProvider::ControlsLayerType::kActiveControlBackground
-            : AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+            ? AshColorProvider::ControlsLayerType::kControlBackgroundColorActive
+            : AshColorProvider::ControlsLayerType::
+                  kControlBackgroundColorInactive,
         AshColorProvider::AshColorMode::kDark));
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), size_ / 2, flags);
@@ -107,7 +108,7 @@ void FloatingMenuButton::SetId(int id) {
 
 void FloatingMenuButton::UpdateImage() {
   const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconPrimary,
+      AshColorProvider::ContentLayerType::kIconColorPrimary,
       AshColorProvider::AshColorMode::kDark);
   SetImage(
       views::Button::STATE_NORMAL,

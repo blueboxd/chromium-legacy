@@ -52,8 +52,13 @@ class HidChooserController : public ChooserController {
 
  private:
   void OnGotDevices(std::vector<device::mojom::HidDeviceInfoPtr> devices);
-  bool ShouldExcludeDevice(const device::mojom::HidDeviceInfo& device) const;
+  bool DisplayDevice(const device::mojom::HidDeviceInfo& device) const;
   bool FilterMatchesAny(const device::mojom::HidDeviceInfo& device) const;
+
+  // Add |device_info| to |device_map_|. The device is added to the chooser item
+  // representing the physical device. If the chooser item does not yet exist, a
+  // new item is appended. Returns true if an item was appended.
+  bool AddDeviceInfo(const device::mojom::HidDeviceInfo& device_info);
 
   std::vector<blink::mojom::HidDeviceFilterPtr> filters_;
   content::HidChooser::Callback callback_;
@@ -68,7 +73,12 @@ class HidChooserController : public ChooserController {
   // physical device may expose multiple HID interfaces. Keys are physical
   // device IDs, values are collections of HidDeviceInfo objects representing
   // the HID interfaces hosted by the physical device.
-  std::map<std::string, std::vector<device::mojom::HidDeviceInfoPtr>> devices_;
+  std::map<std::string, std::vector<device::mojom::HidDeviceInfoPtr>>
+      device_map_;
+
+  // An ordered list of physical device IDs that determines the order of items
+  // in the chooser.
+  std::vector<std::string> items_;
 
   base::WeakPtrFactory<HidChooserController> weak_factory_{this};
 

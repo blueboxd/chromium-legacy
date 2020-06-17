@@ -96,10 +96,6 @@ class UsageTrackerTestQuotaClient : public QuotaClient {
     std::move(callback).Run();
   }
 
-  bool DoesSupport(StorageType type) const override {
-    return type == StorageType::kTemporary;
-  }
-
   int64_t GetUsage(const url::Origin& origin) {
     auto found = origin_usage_map_.find(origin);
     if (found == origin_usage_map_.end())

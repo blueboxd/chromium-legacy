@@ -2228,6 +2228,9 @@ extern const char kLacrosSupportDescription[];
 extern const char kLimitAltTabToActiveDeskName[];
 extern const char kLimitAltTabToActiveDeskDescription[];
 
+extern const char kLimitShelfItemsToActiveDeskName[];
+extern const char kLimitShelfItemsToActiveDeskDescription[];
+
 extern const char kListAllDisplayModesName[];
 extern const char kListAllDisplayModesDescription[];
 

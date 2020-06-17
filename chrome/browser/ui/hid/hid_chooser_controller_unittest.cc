@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <set>
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -350,19 +353,11 @@ TEST_F(HidChooserControllerTest, OneItemForSamePhysicalDevice) {
   CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], 1, 1, "a", "001",
                             device::mojom::kPageSimulation, 5);
 
-  // This device has the same info as the first device except for the physical
-  // device ID. It should have a separate chooser item.
-  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[1], 1, 1, "a", "001",
-                            device::mojom::kPageGenericDesktop,
-                            device::mojom::kGenericDesktopGamePad);
-
   run_loop.Run();
 
-  EXPECT_EQ(2u, hid_chooser_controller->NumOptions());
+  EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
   EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
             hid_chooser_controller->GetOption(0));
-  EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
-            hid_chooser_controller->GetOption(1));
 
   EXPECT_CALL(callback, Run(testing::_))
       .WillOnce(testing::Invoke(
@@ -376,11 +371,33 @@ TEST_F(HidChooserControllerTest, OneItemForSamePhysicalDevice) {
 
             // Regression test for https://crbug.com/1069057. Ensure that the
             // set of options is still valid after the callback is run.
-            EXPECT_EQ(2u, hid_chooser_controller->NumOptions());
+            EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
             EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
                       hid_chooser_controller->GetOption(0));
           }));
   hid_chooser_controller->Select({0});
+}
+
+TEST_F(HidChooserControllerTest, NoMergeWithDifferentPhysicalDeviceIds) {
+  auto hid_chooser_controller = CreateHidChooserController({});
+
+  base::RunLoop run_loop;
+  fake_hid_chooser_view_.set_options_initialized_quit_closure(
+      run_loop.QuitClosure());
+
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], 1, 1, "a", "001",
+                            device::mojom::kPageGenericDesktop,
+                            device::mojom::kGenericDesktopGamePad);
+
+  // This device has the same info as the first device except for the physical
+  // device ID. It should have a separate chooser item.
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[1], 1, 1, "a", "001",
+                            device::mojom::kPageGenericDesktop,
+                            device::mojom::kGenericDesktopGamePad);
+
+  run_loop.Run();
+
+  EXPECT_EQ(2u, hid_chooser_controller->NumOptions());
 }
 
 TEST_F(HidChooserControllerTest, NoMergeWithEmptyPhysicalDeviceId) {

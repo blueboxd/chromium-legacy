@@ -9,7 +9,6 @@
 import os
 import unittest
 
-from pylib.constants import host_paths
 from pylib.utils import chrome_proxy_utils
 
 from devil.android import forwarder
@@ -18,8 +17,7 @@ from devil.android.sdk import adb_wrapper
 from py_utils import ts_proxy_server
 from py_utils import webpagereplay_go_server
 
-with host_paths.SysPath(host_paths.PYMOCK_PATH):
-  import mock  # pylint: disable=import-error
+import mock  # pylint: disable=import-error
 
 
 def _DeviceUtilsMock(test_serial, is_ready=True):

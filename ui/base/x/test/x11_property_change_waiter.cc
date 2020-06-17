@@ -42,16 +42,17 @@ void X11PropertyChangeWaiter::Wait() {
   dispatcher_.reset();
 }
 
-bool X11PropertyChangeWaiter::ShouldKeepOnWaiting(XEvent* event) {
+bool X11PropertyChangeWaiter::ShouldKeepOnWaiting(x11::Event* event) {
   // Stop waiting once we get a property change.
   return true;
 }
 
-bool X11PropertyChangeWaiter::DispatchXEvent(XEvent* xev) {
+bool X11PropertyChangeWaiter::DispatchXEvent(x11::Event* x11_event) {
+  XEvent* xev = &x11_event->xlib_event();
   if (!xev || !wait_ || xev->type != PropertyNotify ||
       xev->xproperty.window != x_window_ ||
       static_cast<x11::Atom>(xev->xproperty.atom) != gfx::GetAtom(property_) ||
-      ShouldKeepOnWaiting(xev)) {
+      ShouldKeepOnWaiting(x11_event)) {
     return false;
   }
 

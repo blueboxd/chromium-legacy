@@ -329,11 +329,7 @@ class CORE_EXPORT HTMLCanvasElement final
   static ContextFactoryVector& RenderingContextFactories();
   static CanvasRenderingContextFactory* GetRenderingContextFactory(int);
 
-  enum AccelerationCriteria {
-    kNormalAccelerationCriteria,
-    kIgnoreResourceLimitCriteria,
-  };
-  bool ShouldAccelerate(AccelerationCriteria) const;
+  bool ShouldAccelerate() const;
 
   void ParseAttribute(const AttributeModificationParams&) override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;

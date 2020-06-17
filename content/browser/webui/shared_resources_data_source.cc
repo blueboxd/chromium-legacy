@@ -187,6 +187,12 @@ const std::map<int, std::string> CreateChromeosMojoResourceIdToAliasMap() {
       {IDR_IP_ADDRESS_MOJOM_LITE_JS,
        "mojo/services/network/public/mojom/"
        "ip_address.mojom-lite.js"},
+      {IDR_NETWORK_HEALTH_MOJOM_HTML,
+       "mojo/chromeos/services/network_health/public/mojom/"
+       "network_health.mojom.html"},
+      {IDR_NETWORK_HEALTH_MOJOM_LITE_JS,
+       "mojo/chromeos/services/network_health/public/mojom/"
+       "network_health.mojom-lite.js"},
   };
 }
 #endif  // !defined(OS_CHROMEOS)

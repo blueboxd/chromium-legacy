@@ -24,9 +24,12 @@ enum class RankingItemType {
   kArcAppShortcut = 5,
   kZeroStateFile = 6,
   kDriveQuickAccess = 7,
-  kChip = 8,
+  // Deprecated:
+  // kChip = 8,
+  kZeroStateFileChip = 9,
+  kDriveQuickAccessChip = 10,
   // Add new types above this line.
-  kMaxValue = kChip,
+  kMaxValue = kDriveQuickAccessChip,
 };
 
 // Convert a |ChromeSearchResult| into its |RankingItemType|.

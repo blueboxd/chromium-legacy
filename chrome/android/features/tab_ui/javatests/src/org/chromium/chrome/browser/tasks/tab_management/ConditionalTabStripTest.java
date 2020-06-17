@@ -720,8 +720,8 @@ public class ConditionalTabStripTest {
         assertTrue(
                 "try to close tab at invalid index", index < stack.getTabs().length && index >= 0);
         LayoutTab layoutTab = stack.getTabs()[index].getLayoutTab();
-        float x = layoutTab.getCloseBounds().centerX();
-        float y = layoutTab.getCloseBounds().centerY();
+        float x = stack.getCloseBoundsOnLayoutTab(layoutTab).centerX();
+        float y = stack.getCloseBoundsOnLayoutTab(layoutTab).centerY();
         ChromeTabUtils.closeTabWithAction(InstrumentationRegistry.getInstrumentation(), cta,
                 ()
                         -> TestThreadUtils.runOnUiThreadBlocking(

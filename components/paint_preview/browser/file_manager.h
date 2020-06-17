@@ -48,6 +48,9 @@ class FileManager : public base::RefCountedThreadSafe<FileManager> {
   size_t GetSizeOfArtifacts(const DirectoryKey& key) const;
   base::Optional<base::File::Info> GetInfo(const DirectoryKey& key) const;
 
+  // Returns the total disk usage of all paint previews.
+  size_t GetTotalDiskUsage() const;
+
   // Returns true if the directory for |key| exists.
   bool DirectoryExists(const DirectoryKey& key) const;
 

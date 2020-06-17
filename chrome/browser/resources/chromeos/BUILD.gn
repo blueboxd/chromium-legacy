@@ -34,26 +34,6 @@ grit("multidevice_setup_resources") {
   output_dir = "$root_gen_dir/chrome"
 }
 
-grit("network_health_resources") {
-  source = "network_ui/network_health_resources.grd"
-
-  defines = chrome_grit_defines
-  outputs = [
-    "grit/network_health_resources.h",
-    "grit/network_health_resources_map.cc",
-    "grit/network_health_resources_map.h",
-    "network_health_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chrome"
-
-  deps = [ "//chrome/browser/chromeos/net/network_health/public/mojom:mojom_js_library_for_compile" ]
-
-  grit_flags = [
-    "-E",
-    "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
-  ]
-}
-
 group("closure_compile") {
   deps = [
     "accessibility/braille_ime:closure_compile",

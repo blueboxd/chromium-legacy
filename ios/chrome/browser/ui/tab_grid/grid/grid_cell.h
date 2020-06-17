@@ -32,6 +32,7 @@
 @property(nonatomic, weak) UIImage* snapshot;
 @property(nonatomic, copy) NSString* title;
 @property(nonatomic, assign) BOOL titleHidden;
+@property(nonatomic, readonly) UIBezierPath* visiblePath;
 @end
 
 // A GridCell for use in animated transitions that only shows selection state

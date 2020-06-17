@@ -16,9 +16,11 @@
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/policy/messaging_layer/encryption/encryption_module.h"
+#include "chrome/browser/policy/messaging_layer/encryption/test_encryption_module.h"
 #include "chrome/browser/policy/messaging_layer/proto/test.pb.h"
 #include "chrome/browser/policy/messaging_layer/public/report_queue_configuration.h"
 #include "chrome/browser/policy/messaging_layer/storage/storage_module.h"
+#include "chrome/browser/policy/messaging_layer/storage/test_storage_module.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 #include "chrome/browser/policy/messaging_layer/util/status_macros.h"
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
@@ -29,52 +31,15 @@
 namespace reporting {
 namespace {
 
+using PolicyCheckCallback =
+    reporting::ReportQueueConfiguration::PolicyCheckCallback;
+
 using base::MakeRefCounted;
 using policy::DMToken;
-using reporting::Destination;
-using reporting::EncryptedRecord;
-using reporting::Priority;
-using reporting::WrappedRecord;
-
-// A |StorageModule| that stores the wrapped record and priority and calls the
-// callback with an OK status.
-class TestStorageModule : public StorageModule {
- public:
-  TestStorageModule() = default;
-
-  void AddRecord(EncryptedRecord record,
-                 Priority priority,
-                 base::OnceCallback<void(Status)> callback) override {
-    ASSERT_TRUE(
-        wrapped_record_.ParseFromString(record.encrypted_wrapped_record()));
-    priority_ = priority;
-    std::move(callback).Run(Status::StatusOK());
-  }
-
-  WrappedRecord wrapped_record() { return wrapped_record_; }
-
-  Priority priority() { return priority_; }
-
- protected:
-  ~TestStorageModule() override = default;
-
- private:
-  WrappedRecord wrapped_record_;
-  Priority priority_;
-};
-
-// An |EncryptionModule| that does no encryption.
-class TestEncryptionModule : public EncryptionModule {
- public:
-  TestEncryptionModule() = default;
-
-  StatusOr<std::string> EncryptRecord(base::StringPiece record) const override {
-    return std::string(record);
-  }
-
- protected:
-  ~TestEncryptionModule() override = default;
-};
+using reporting::test::AlwaysFailsEncryptionModule;
+using reporting::test::AlwaysFailsStorageModule;
+using reporting::test::TestEncryptionModule;
+using reporting::test::TestStorageModule;
 
 // Creates a |ReportQueue| using |TestStorageModule| and |TestEncryptionModule|.
 // Allows access to the storage module for checking stored values.
@@ -88,7 +53,9 @@ class ReportQueueTest : public testing::Test {
         priority_(Priority::IMMEDIATE),
         dm_token_(DMToken::CreateValidTokenForTesting("FAKE_DM_TOKEN")),
         destination_(Destination::UPLOAD_EVENTS),
-        encryption_module_(MakeRefCounted<TestEncryptionModule>()) {}
+        encryption_module_(MakeRefCounted<TestEncryptionModule>()),
+        policy_check_callback_(base::BindRepeating(
+            []() -> Status { return Status::StatusOK(); })) {}
 
   // Allows specifying an alternative |TestStorageModule| for testing different
   // cases.
@@ -100,7 +67,9 @@ class ReportQueueTest : public testing::Test {
         priority_(Priority::IMMEDIATE),
         dm_token_(DMToken::CreateValidTokenForTesting("FAKE_DM_TOKEN")),
         destination_(Destination::UPLOAD_EVENTS),
-        encryption_module_(MakeRefCounted<TestEncryptionModule>()) {}
+        encryption_module_(MakeRefCounted<TestEncryptionModule>()),
+        policy_check_callback_(base::BindRepeating(
+            []() -> Status { return Status::StatusOK(); })) {}
 
   // Allows specifying an alternative |TestEncryptionModule| for testing
   // different cases.
@@ -113,11 +82,26 @@ class ReportQueueTest : public testing::Test {
         priority_(Priority::IMMEDIATE),
         dm_token_(DMToken::CreateValidTokenForTesting("FAKE_DM_TOKEN")),
         destination_(Destination::UPLOAD_EVENTS),
-        encryption_module_(encryption_module) {}
+        encryption_module_(encryption_module),
+        policy_check_callback_(base::BindRepeating(
+            []() -> Status { return Status::StatusOK(); })) {}
+
+  explicit ReportQueueTest(
+      ReportQueueConfiguration::PolicyCheckCallback policy_check_callback)
+      : completed_(base::WaitableEvent::ResetPolicy::MANUAL,
+                   base::WaitableEvent::InitialState::NOT_SIGNALED),
+        result_(error::INTERNAL, "initialized with non-ok status"),
+        storage_module_(MakeRefCounted<TestStorageModule>()),
+        priority_(Priority::IMMEDIATE),
+        dm_token_(DMToken::CreateValidTokenForTesting("FAKE_DM_TOKEN")),
+        destination_(Destination::UPLOAD_EVENTS),
+        encryption_module_(MakeRefCounted<TestEncryptionModule>()),
+        policy_check_callback_(std::move(policy_check_callback)) {}
 
   void SetUp() override {
     StatusOr<std::unique_ptr<ReportQueueConfiguration>> config_result =
-        ReportQueueConfiguration::Create(dm_token_, destination_, priority_);
+        ReportQueueConfiguration::Create(dm_token_, destination_, priority_,
+                                         policy_check_callback_);
 
     ASSERT_TRUE(config_result.ok());
 
@@ -154,6 +138,7 @@ class ReportQueueTest : public testing::Test {
   const DMToken dm_token_;
   const Destination destination_;
   scoped_refptr<TestEncryptionModule> encryption_module_;
+  PolicyCheckCallback policy_check_callback_;
 };
 
 // Enqueues a random string and ensures that the string arrives unaltered in the
@@ -214,21 +199,6 @@ TEST_F(ReportQueueTest, SuccessfulProtoRecord) {
   ASSERT_EQ(result_message.test(), test_message.test());
 }
 
-// A |TestStorageModule| that always fails on |AddRecord| calls.
-class AlwaysFailsStorageModule final : public TestStorageModule {
- public:
-  AlwaysFailsStorageModule() = default;
-
-  void AddRecord(EncryptedRecord record,
-                 Priority priority,
-                 base::OnceCallback<void(Status)> callback) override {
-    std::move(callback).Run(Status(error::UNKNOWN, "Failing for Tests"));
-  }
-
- protected:
-  ~AlwaysFailsStorageModule() override = default;
-};
-
 // A |ReportQueueTest| built with an |AlwaysFailsStorageModule|.
 class StorageFailsReportQueueTest : public ReportQueueTest {
  public:
@@ -251,19 +221,6 @@ TEST_F(StorageFailsReportQueueTest, CallSuccessCallbackFailure) {
   EXPECT_EQ(result_.error_code(), error::UNKNOWN);
 }
 
-// A |TestEncryptionModule| that always fails on |EncryptRecord| calls.
-class AlwaysFailsEncryptionModule final : public TestEncryptionModule {
- public:
-  AlwaysFailsEncryptionModule() = default;
-
-  StatusOr<std::string> EncryptRecord(base::StringPiece record) const override {
-    return Status(error::UNKNOWN, "Failing for Tests");
-  }
-
- protected:
-  ~AlwaysFailsEncryptionModule() override = default;
-};
-
 // A |ReportQueueTest| built with an |AlwaysFailsEncryptionModule|.
 class EncryptionFailsReportQueueTest : public ReportQueueTest {
  public:
@@ -284,6 +241,39 @@ TEST_F(EncryptionFailsReportQueueTest, CallSuccessCallFailure) {
 
   EXPECT_FALSE(result_.ok());
   EXPECT_EQ(result_.error_code(), error::UNKNOWN);
+}
+
+class ReportQueueRespectsPolicyTest : public ReportQueueTest {
+ public:
+  ReportQueueRespectsPolicyTest()
+      : ReportQueueTest(base::BindRepeating([]() -> Status {
+          return Status(error::UNAUTHENTICATED, "Failing for tests");
+        })) {}
+};
+
+TEST_F(ReportQueueRespectsPolicyTest, EnqueueStringFailsOnPolicy) {
+  constexpr char kTestString[] = "El-Chupacabra";
+  Status status = report_queue_->Enqueue(kTestString, std::move(callback_));
+  EXPECT_FALSE(status.ok());
+  EXPECT_EQ(status.error_code(), error::UNAUTHENTICATED);
+}
+
+TEST_F(ReportQueueRespectsPolicyTest, EnqueueProtoFailsOnPolicy) {
+  reporting::test::TestMessage test_message;
+  test_message.set_test("TEST_MESSAGE");
+  Status status = report_queue_->Enqueue(&test_message, std::move(callback_));
+  EXPECT_FALSE(status.ok());
+  EXPECT_EQ(status.error_code(), error::UNAUTHENTICATED);
+}
+
+TEST_F(ReportQueueRespectsPolicyTest, EnqueueValueFailsOnPolicy) {
+  constexpr char kTestKey[] = "TEST_KEY";
+  constexpr char kTestValue[] = "TEST_VALUE";
+  base::Value test_dict(base::Value::Type::DICTIONARY);
+  test_dict.SetStringKey(kTestKey, kTestValue);
+  Status status = report_queue_->Enqueue(test_dict, std::move(callback_));
+  EXPECT_FALSE(status.ok());
+  EXPECT_EQ(status.error_code(), error::UNAUTHENTICATED);
 }
 
 }  // namespace

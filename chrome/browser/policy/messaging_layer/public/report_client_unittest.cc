@@ -28,12 +28,14 @@ class ReportingClientTest : public testing::Test {
   const DMToken dm_token_ = DMToken::CreateValidTokenForTesting("TOKEN");
   const Destination destination_ = Destination::UPLOAD_EVENTS;
   const Priority priority_ = Priority::IMMEDIATE;
+  ReportQueueConfiguration::PolicyCheckCallback policy_checker_callback_ =
+      base::BindRepeating([]() { return Status::StatusOK(); });
 };
 
 // Tests that a ReportQueue can be created using the ReportingClient.
 TEST_F(ReportingClientTest, CreatesReportQueue) {
-  auto config_result =
-      ReportQueueConfiguration::Create(dm_token_, destination_, priority_);
+  auto config_result = ReportQueueConfiguration::Create(
+      dm_token_, destination_, priority_, policy_checker_callback_);
   EXPECT_TRUE(config_result.ok());
 
   auto report_queue_result =
@@ -44,16 +46,16 @@ TEST_F(ReportingClientTest, CreatesReportQueue) {
 
 // Ensures that created ReportQueues are actually different.
 TEST_F(ReportingClientTest, CreatesTwoDifferentReportQueues) {
-  auto config_result =
-      ReportQueueConfiguration::Create(dm_token_, destination_, priority_);
+  auto config_result = ReportQueueConfiguration::Create(
+      dm_token_, destination_, priority_, policy_checker_callback_);
   EXPECT_TRUE(config_result.ok());
 
   auto report_queue_result_1 =
       ReportingClient::CreateReportQueue(std::move(config_result.ValueOrDie()));
   EXPECT_TRUE(report_queue_result_1.ok());
 
-  config_result =
-      ReportQueueConfiguration::Create(dm_token_, destination_, priority_);
+  config_result = ReportQueueConfiguration::Create(
+      dm_token_, destination_, priority_, policy_checker_callback_);
   EXPECT_TRUE(config_result.ok());
 
   auto report_queue_result_2 =

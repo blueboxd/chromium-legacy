@@ -21,7 +21,7 @@ RoundedLabelButton::RoundedLabelButton(views::ButtonListener* listener,
                                        const base::string16& text)
     : views::LabelButton(listener, text) {
   SetEnabledTextColors(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextPrimary,
+      AshColorProvider::ContentLayerType::kTextColorPrimary,
       AshColorProvider::AshColorMode::kDark));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetBorder(views::CreateEmptyBorder(gfx::Insets()));
@@ -52,7 +52,7 @@ void RoundedLabelButton::PaintButtonContents(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+      AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive,
       kUnifiedMenuButtonColor));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawRoundRect(rect, kTrayItemCornerRadius, flags);

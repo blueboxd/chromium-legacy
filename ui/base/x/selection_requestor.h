@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/events/platform_event.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -60,13 +61,13 @@ class COMPONENT_EXPORT(UI_BASE) SelectionRequestor {
 
   // It is our owner's responsibility to plumb X11 SelectionNotify events on
   // |xwindow_| to us.
-  void OnSelectionNotify(const XEvent& event);
+  void OnSelectionNotify(const x11::Event& event);
 
   // Returns true if SelectionOwner can process the XChangeProperty event,
   // |event|.
-  bool CanDispatchPropertyEvent(const XEvent& event);
+  bool CanDispatchPropertyEvent(const x11::Event& event);
 
-  void OnPropertyEvent(const XEvent& event);
+  void OnPropertyEvent(const x11::Event& event);
 
  private:
   friend class SelectionRequestorTest;

@@ -296,7 +296,7 @@ struct CommitNavigationParams {
   // resources.
   bool can_load_local_resources = false;
 
-  // Opaque history state (received by FrameHostMsg_UpdateState).
+  // Opaque history state (received by UpdateState Mojo message).
   PageState page_state;
 
   // For browser-initiated navigations, this is the unique id of the

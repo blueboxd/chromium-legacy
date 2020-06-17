@@ -14,6 +14,7 @@
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/event_handler.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace ui {
 class KeyEvent;
@@ -92,12 +93,12 @@ class ASH_EXPORT TouchCalibratorController
     // Indicates that touch calibration is currently inactive.
     kInactive
   };
+
   CalibrationState state_ = CalibrationState::kInactive;
 
   // A map for TouchCalibrator view with the key as display id of the display
   // it is present in.
-  std::map<int64_t, std::unique_ptr<TouchCalibratorView>>
-      touch_calibrator_views_;
+  std::map<int64_t, views::UniqueWidgetPtr> touch_calibrator_widgets_;
 
   // The display which is being calibrated by the touch calibrator controller.
   // This is valid only if |is_calibrating| is set to true.

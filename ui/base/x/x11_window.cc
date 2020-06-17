@@ -1070,7 +1070,8 @@ void XWindow::OnFocusEvent(bool focus_in, int mode, int detail) {
   AfterActivationStateChanged();
 }
 
-bool XWindow::IsTargetedBy(const XEvent& xev) const {
+bool XWindow::IsTargetedBy(const x11::Event& x11_event) const {
+  const XEvent& xev = x11_event.xlib_event();
   ::Window target_window =
       (xev.type == x11::GeGenericEvent::opcode)
           ? static_cast<XIDeviceEvent*>(xev.xcookie.data)->event
@@ -1092,7 +1093,8 @@ void XWindow::WmMoveResize(int hittest, const gfx::Point& location) const {
 // Mouse/Key/Touch/Scroll events into ui::Events so they should not be handled
 // by PlatformWindow, which is supposed to use XWindow in Ozone builds. So
 // handling these events is disabled for Ozone.
-void XWindow::ProcessEvent(XEvent* xev) {
+void XWindow::ProcessEvent(x11::Event* x11_event) {
+  XEvent* xev = &x11_event->xlib_event();
   // We can lose track of the window's position when the window is reparented.
   // When the parent window is moved, we won't get an event, so the window's
   // position relative to the root window will get out-of-sync.  We can re-sync
@@ -1100,8 +1102,8 @@ void XWindow::ProcessEvent(XEvent* xev) {
   // ButtonRelease, MotionNotify) which include the pointer location both
   // relative to this window and relative to the root window, so we can
   // calculate this window's position from that information.
-  gfx::Point window_point = ui::EventLocationFromXEvent(*xev);
-  gfx::Point root_point = ui::EventSystemLocationFromXEvent(*xev);
+  gfx::Point window_point = ui::EventLocationFromXEvent(*x11_event);
+  gfx::Point root_point = ui::EventSystemLocationFromXEvent(*x11_event);
   if (!window_point.IsOrigin() && !root_point.IsOrigin()) {
     gfx::Point window_origin = gfx::Point() + (root_point - window_point);
     if (bounds_in_pixels_.origin() != window_origin) {
@@ -1132,7 +1134,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
                    xev->xfocus.detail);
       break;
     case ConfigureNotify:
-      OnConfigureEvent(xev);
+      OnConfigureEvent(x11_event);
       break;
     case x11::GeGenericEvent::opcode: {
       ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
@@ -1193,7 +1195,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
           pending_counter_value_is_extended_ = xev->xclient.data.l[4] != 0;
         }
       } else {
-        OnXWindowDragDropEvent(xev);
+        OnXWindowDragDropEvent(x11_event);
       }
       break;
     }
@@ -1224,7 +1226,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
       break;
     }
     case x11::SelectionNotifyEvent::opcode: {
-      OnXWindowSelectionEvent(xev);
+      OnXWindowSelectionEvent(x11_event);
       break;
     }
   }
@@ -1254,7 +1256,8 @@ void XWindow::OnWindowMapped() {
   }
 }
 
-void XWindow::OnConfigureEvent(XEvent* xev) {
+void XWindow::OnConfigureEvent(x11::Event* x11_event) {
+  XEvent* xev = &x11_event->xlib_event();
   DCHECK_EQ(xwindow_, xev->xconfigure.window);
   DCHECK_EQ(xwindow_, xev->xconfigure.event);
 

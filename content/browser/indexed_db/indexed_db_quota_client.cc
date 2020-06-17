@@ -161,8 +161,4 @@ void IndexedDBQuotaClient::PerformStorageCleanup(blink::mojom::StorageType type,
   std::move(callback).Run();
 }
 
-bool IndexedDBQuotaClient::DoesSupport(StorageType type) const {
-  return type == StorageType::kTemporary;
-}
-
 }  // namespace content

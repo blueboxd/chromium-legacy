@@ -44,7 +44,6 @@ class IndexedDBQuotaClient : public storage::QuotaClient {
                         DeletionCallback callback) override;
   void PerformStorageCleanup(blink::mojom::StorageType type,
                              base::OnceClosure callback) override;
-  bool DoesSupport(blink::mojom::StorageType type) const override;
 
  private:
   ~IndexedDBQuotaClient() override;

@@ -231,7 +231,7 @@ public class ContactEditor extends EditorBase<AutofillContact> {
 
         // If the user clicks [Cancel], send |toEdit| contact back to the caller, which was the
         // original state (could be null, a complete contact, a partial contact).
-        editor.setCancelCallback(() -> cancelCallback.onResult(toEdit));
+        editor.setCancelCallback(cancelCallback.bind(toEdit));
 
         editor.setDoneCallback(() -> {
             String name = null;

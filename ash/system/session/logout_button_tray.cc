@@ -151,12 +151,13 @@ void LogoutButtonTray::UpdateButtonTextAndImage() {
   } else {
     button_->SetText(base::string16());
     button_->SetAccessibleName(title);
-    button_->SetImage(views::Button::STATE_NORMAL,
-                      gfx::CreateVectorIcon(
-                          kShelfLogoutIcon,
-                          AshColorProvider::Get()->GetContentLayerColor(
-                              AshColorProvider::ContentLayerType::kIconPrimary,
-                              AshColorProvider::AshColorMode::kDark)));
+    button_->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(
+            kShelfLogoutIcon,
+            AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kIconColorPrimary,
+                AshColorProvider::AshColorMode::kDark)));
     button_->SetMinSize(gfx::Size(kTrayItemSize, kTrayItemSize));
   }
   UpdateVisibility();

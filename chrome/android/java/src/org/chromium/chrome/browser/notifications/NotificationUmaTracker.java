@@ -265,6 +265,13 @@ public class NotificationUmaTracker {
         }
     }
 
+    /**
+     * Tracks UMA when failed to notify {@link NotificationManager}.
+     */
+    public void onFailedToNotify(@SystemNotificationType int type) {
+        recordHistogram("Mobile.SystemNotification.NotifyFailure", type);
+    }
+
     private void logNotificationShown(@SystemNotificationType int type,
             @ChromeChannelDefinitions.ChannelId String channelId) {
         if (!mNotificationManager.areNotificationsEnabled()) {

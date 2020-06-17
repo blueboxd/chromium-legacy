@@ -249,7 +249,7 @@ StackedNotificationBar::StackedNotificationBar(
   message_center::MessageCenter::Get()->AddObserver(this);
 
   count_label_->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextSecondary,
+      AshColorProvider::ContentLayerType::kTextColorSecondary,
       AshColorProvider::AshColorMode::kLight));
   count_label_->SetFontList(views::Label::GetDefaultFontList().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
@@ -467,7 +467,7 @@ void StackedNotificationBar::OnPaint(gfx::Canvas* canvas) {
         gfx::PointF(bounds.bottom_left() - gfx::Vector2d(0, 1)),
         gfx::PointF(bounds.bottom_right() - gfx::Vector2d(0, 1)),
         AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kSeparator,
+            AshColorProvider::ContentLayerType::kSeparatorColor,
             AshColorProvider::AshColorMode::kLight));
   }
 }

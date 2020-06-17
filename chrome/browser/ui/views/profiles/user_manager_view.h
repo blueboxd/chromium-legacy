@@ -62,7 +62,6 @@ class UserManagerProfileDialogDelegate
   gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
   void DeleteDelegate() override;
-  base::string16 GetWindowTitle() const override;
   views::View* GetInitiallyFocusedView() override;
 
   UserManagerView* parent_;  // Not owned.
@@ -132,7 +131,6 @@ class UserManagerView : public views::DialogDelegateView {
   gfx::Size CalculatePreferredSize() const override;
 
   // views::DialogDelegateView:
-  base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
 
   views::WebView* web_view_;

@@ -25,6 +25,7 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CA
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TASKS_SURFACE_BODY_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEARCH_BUTTON_CLICK_LISTENER;
 
 import android.content.res.Resources;
@@ -33,6 +34,7 @@ import android.support.test.annotation.UiThreadTest;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.test.filters.SmallTest;
 
@@ -235,5 +237,18 @@ public class TasksViewBinderTest extends DummyUiActivityTestCase {
         mViewClicked.set(false);
         onView(withId(R.id.learn_more)).perform(click());
         assertTrue(mViewClicked.get());
+    }
+
+    @Test
+    @UiThreadTest
+    @SmallTest
+    public void testSetTasksSurfaceBodyTopMargin() {
+        ViewGroup.MarginLayoutParams params =
+                (ViewGroup.MarginLayoutParams) mTasksView.getBodyViewContainer().getLayoutParams();
+        assertEquals(0, params.topMargin);
+
+        mTasksViewPropertyModel.set(TASKS_SURFACE_BODY_TOP_MARGIN, 16);
+
+        assertEquals(16, params.topMargin);
     }
 }

@@ -480,7 +480,7 @@ public class PasswordSettingsTest {
     /** Requests showing an arbitrary password export error. */
     private void requestShowingExportError() {
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> { mHandler.getExportErrorCallback().onResult("Arbitrary error"); });
+                mHandler.getExportErrorCallback().bind("Arbitrary error"));
     }
 
     /**

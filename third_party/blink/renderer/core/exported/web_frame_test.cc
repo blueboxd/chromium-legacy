@@ -41,6 +41,7 @@
 #include "build/build_config.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/paint/paint_op_buffer.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/scroll_node.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -12837,6 +12838,90 @@ TEST_F(WebFrameTest, PrintIframeUnderDetached) {
   web_view_helper.InitializeAndLoad(base_url_ + "print-detached-iframe.html");
   TestFramePrinting(To<WebLocalFrameImpl>(
       web_view_helper.LocalMainFrame()->FirstChild()->FirstChild()));
+}
+
+namespace {
+
+struct TextRunDOMNodeIdInfo {
+  int glyph_len;
+  DOMNodeId dom_node_id;
+};
+
+// Given a PaintRecord and a starting DOMNodeId, recursively iterate over all of
+// the (nested) paint ops, and populate |text_runs| with the number of glyphs
+// and the DOMNodeId of each text run.
+void RecursiveCollectTextRunDOMNodeIds(
+    sk_sp<const PaintRecord> paint_record,
+    DOMNodeId dom_node_id,
+    std::vector<TextRunDOMNodeIdInfo>* text_runs) {
+  for (cc::PaintOpBuffer::Iterator it(paint_record.get()); it; ++it) {
+    if ((*it)->GetType() == cc::PaintOpType::DrawRecord) {
+      cc::DrawRecordOp* draw_record_op = static_cast<cc::DrawRecordOp*>(*it);
+      RecursiveCollectTextRunDOMNodeIds(draw_record_op->record, dom_node_id,
+                                        text_runs);
+    } else if ((*it)->GetType() == cc::PaintOpType::SetNodeId) {
+      cc::SetNodeIdOp* set_node_id_op = static_cast<cc::SetNodeIdOp*>(*it);
+      dom_node_id = set_node_id_op->node_id;
+    } else if ((*it)->GetType() == cc::PaintOpType::DrawTextBlob) {
+      cc::DrawTextBlobOp* draw_text_op = static_cast<cc::DrawTextBlobOp*>(*it);
+      SkTextBlob::Iter iter(*draw_text_op->blob);
+      SkTextBlob::Iter::Run run;
+      while (iter.next(&run)) {
+        TextRunDOMNodeIdInfo text_run_info;
+        text_run_info.glyph_len = run.fGlyphCount;
+        text_run_info.dom_node_id = dom_node_id;
+        text_runs->push_back(text_run_info);
+      }
+    }
+  }
+}
+
+}  // namespace
+
+TEST_F(WebFrameTest, FirstLetterHasDOMNodeIdWhenPrinting) {
+  // When printing, every DrawText painting op needs to have an associated
+  // DOM Node ID. This test ensures that when the first-letter style is used,
+  // the drawing op for the first letter is correctly associated with the same
+  // DOM Node ID as the following text.
+
+  // Load a web page with two elements containing the text
+  // "Hello" and "World", where "World" has a first-letter style.
+  RegisterMockedHttpURLLoad("first-letter.html");
+  frame_test_helpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "first-letter.html");
+
+  // Print the page and capture the PaintRecord.
+  WebPrintParams print_params;
+  WebSize page_size(500, 500);
+  print_params.print_content_area.width = page_size.width;
+  print_params.print_content_area.height = page_size.height;
+  WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
+  EXPECT_EQ(1, frame->PrintBegin(print_params, WebNode()));
+  PaintRecorder recorder;
+  frame->PrintPagesForTesting(recorder.beginRecording(IntRect()), page_size,
+                              page_size);
+  frame->PrintEnd();
+  sk_sp<PaintRecord> paint_record = recorder.finishRecordingAsPicture();
+
+  // Unpack the paint record and collect info about the text runs.
+  std::vector<TextRunDOMNodeIdInfo> text_runs;
+  RecursiveCollectTextRunDOMNodeIds(paint_record, 0, &text_runs);
+
+  // The first text run should be "Hello".
+  ASSERT_EQ(3U, text_runs.size());
+  EXPECT_EQ(5, text_runs[0].glyph_len);
+  EXPECT_NE(kInvalidDOMNodeId, text_runs[0].dom_node_id);
+
+  // The second text run should be "W", the first letter of "World".
+  EXPECT_EQ(1, text_runs[1].glyph_len);
+  EXPECT_NE(kInvalidDOMNodeId, text_runs[1].dom_node_id);
+
+  // The last text run should be "orld", the rest of "World".
+  EXPECT_EQ(4, text_runs[2].glyph_len);
+  EXPECT_NE(kInvalidDOMNodeId, text_runs[2].dom_node_id);
+
+  // The second and third text runs should have the same DOM Node ID.
+  EXPECT_EQ(text_runs[1].dom_node_id, text_runs[2].dom_node_id);
 }
 
 TEST_F(WebFrameTest, ExecuteCommandProducesUserGesture) {

@@ -30,6 +30,11 @@ class ASH_PUBLIC_EXPORT ShelfModelObserver {
   // Invoked after an item changes. |old_item| is the item before the change.
   virtual void ShelfItemChanged(int index, const ShelfItem& old_item) {}
 
+  // Invoked after |ShelfItem::is_on_active_desk| has been updated for all items
+  // associated with windows in the desks that are losing and gaining activation
+  // when the active desk is changed.
+  virtual void ShelfItemsUpdatedForDeskChange() {}
+
   // Invoked after a delegate changes, but before the old one is destroyed.
   // |delegate| is the new value and |old_delegate| is the previous value.
   virtual void ShelfItemDelegateChanged(const ShelfID& id,

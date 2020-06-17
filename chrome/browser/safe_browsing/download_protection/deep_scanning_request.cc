@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/safe_browsing/deep_scanning_failure_modal_dialog.h"
 #include "components/download/public/common/download_item.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/policy/core/browser/url_util.h"
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "components/prefs/pref_service.h"
@@ -206,6 +207,25 @@ void DeepScanningRequest::Start() {
   Profile* profile = Profile::FromBrowserContext(
       content::DownloadItemUtils::GetBrowserContext(item_));
 
+  if (request->use_legacy_proto())
+    PrepareLegacyRequest(request.get(), profile);
+  else
+    PrepareConnectorRequest(request.get(), profile);
+
+  upload_start_time_ = base::TimeTicks::Now();
+  BinaryUploadService* binary_upload_service =
+      download_service_->GetBinaryUploadService(profile);
+  if (binary_upload_service) {
+    binary_upload_service->MaybeUploadForDeepScanning(std::move(request));
+  } else {
+    OnScanComplete(BinaryUploadService::Result::UNKNOWN,
+                   DeepScanningClientResponse());
+  }
+}
+
+void DeepScanningRequest::PrepareLegacyRequest(
+    BinaryUploadService::Request* request,
+    Profile* profile) {
   if (trigger_ == DeepScanTrigger::TRIGGER_APP_PROMPT) {
     MalwareDeepScanningClientRequest malware_request;
     malware_request.set_population(
@@ -233,16 +253,18 @@ void DeepScanningRequest::Start() {
       request->set_request_malware_scan(std::move(malware_request));
     }
   }
+}
 
-  upload_start_time_ = base::TimeTicks::Now();
-  BinaryUploadService* binary_upload_service =
-      download_service_->GetBinaryUploadService(profile);
-  if (binary_upload_service) {
-    binary_upload_service->MaybeUploadForDeepScanning(std::move(request));
-  } else {
-    OnScanComplete(BinaryUploadService::Result::UNKNOWN,
-                   DeepScanningClientResponse());
-  }
+void DeepScanningRequest::PrepareConnectorRequest(
+    BinaryUploadService::Request* request,
+    Profile* profile) {
+  request->set_device_token(GetDMToken(profile).value());
+  request->set_analysis_connector(enterprise_connectors::FILE_DOWNLOADED);
+  if (item_->GetURL().is_valid())
+    request->set_url(item_->GetURL().spec());
+  for (const std::string& tag : analysis_settings_.tags)
+    request->add_tag(tag);
+  // TODO(crbug.com/1069069): Set CSD field.
 }
 
 void DeepScanningRequest::OnScanComplete(BinaryUploadService::Result result,

@@ -5,15 +5,10 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CHROME_COMPONENT_EXTENSION_RESOURCE_MANAGER_H_
 #define CHROME_BROWSER_EXTENSIONS_CHROME_COMPONENT_EXTENSION_RESOURCE_MANAGER_H_
 
-#include <stddef.h>
+#include <memory>
 
-#include <map>
-
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "extensions/browser/component_extension_resource_manager.h"
-
-struct GritResourceMap;
 
 namespace extensions {
 
@@ -31,15 +26,12 @@ class ChromeComponentExtensionResourceManager
       const std::string& extension_id) const override;
 
  private:
-  void AddComponentResourceEntries(const GritResourceMap* entries, size_t size);
+  class Data;
 
-  // A map from a resource path to the resource ID.  Used by
-  // IsComponentExtensionResource.
-  std::map<base::FilePath, int> path_to_resource_id_;
+  void LazyInitData() const;
 
-  // A map from an extension ID to its i18n template replacements.
-  std::map<std::string, ui::TemplateReplacements>
-      extension_template_replacements_;
+  // Logically const. Initialized on demand to keep browser start-up fast.
+  mutable std::unique_ptr<const Data> data_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeComponentExtensionResourceManager);
 };

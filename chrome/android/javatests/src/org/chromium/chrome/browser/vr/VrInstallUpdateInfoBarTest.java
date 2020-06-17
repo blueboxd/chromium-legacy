@@ -11,9 +11,10 @@ import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_V
 
 import android.graphics.PointF;
 import android.os.Build;
-import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

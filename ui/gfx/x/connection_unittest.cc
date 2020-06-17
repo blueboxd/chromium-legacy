@@ -18,9 +18,9 @@ namespace {
 Window CreateWindow(Connection* connection) {
   Window window = connection->GenerateId<Window>();
   auto create_window_future = connection->CreateWindow({
-      .depth = connection->default_root_depth()->depth,
+      .depth = connection->default_root_depth().depth,
       .wid = window,
-      .parent = connection->default_screen()->root,
+      .parent = connection->default_screen().root,
       .width = 1,
       .height = 1,
       .value_mask = CreateWindowAttribute::OverrideRedirect,

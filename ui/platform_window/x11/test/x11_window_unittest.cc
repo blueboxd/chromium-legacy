@@ -119,7 +119,7 @@ class WMStateWaiter : public X11PropertyChangeWaiter {
 
  private:
   // X11PropertyChangeWaiter:
-  bool ShouldKeepOnWaiting(XEvent* event) override {
+  bool ShouldKeepOnWaiting(x11::Event* event) override {
     std::vector<x11::Atom> hints;
     if (GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &hints))
       return base::Contains(hints, gfx::GetAtom(hint_)) != wait_till_set_;
@@ -218,12 +218,13 @@ class X11WindowTest : public testing::Test {
     return window;
   }
 
-  void DispatchSingleEventToWidget(XEvent* xev, XID window) {
+  void DispatchSingleEventToWidget(x11::Event* x11_event, XID window) {
+    XEvent* xev = &x11_event->xlib_event();
     XIDeviceEvent* device_event =
         static_cast<XIDeviceEvent*>(xev->xcookie.data);
     device_event->event = window;
     LOG(ERROR) << "____PROCESS " << xev;
-    event_source_->ProcessXEvent(xev);
+    event_source_->ProcessXEvent(x11_event);
   }
 
  private:

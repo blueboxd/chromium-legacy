@@ -312,18 +312,20 @@ void XShmImagePool::DispatchShmCompletionEvent(XShmCompletionEvent event) {
   }
 }
 
-bool XShmImagePool::CanDispatchXEvent(XEvent* xev) {
+bool XShmImagePool::CanDispatchXEvent(x11::Event* x11_event) {
+  const XEvent* xev = &x11_event->xlib_event();
   DCHECK(event_task_runner_->RunsTasksInCurrentSequence());
 
   if (xev->type != ui::ShmEventBase() + ShmCompletion)
     return false;
 
-  XShmCompletionEvent* shm_event = reinterpret_cast<XShmCompletionEvent*>(xev);
+  const auto* shm_event = reinterpret_cast<const XShmCompletionEvent*>(xev);
   return shm_event->drawable == drawable_;
 }
 
-bool XShmImagePool::DispatchXEvent(XEvent* xev) {
-  if (!CanDispatchXEvent(xev))
+bool XShmImagePool::DispatchXEvent(x11::Event* x11_event) {
+  XEvent* xev = &x11_event->xlib_event();
+  if (!CanDispatchXEvent(x11_event))
     return false;
 
   XShmCompletionEvent* shm_event = reinterpret_cast<XShmCompletionEvent*>(xev);

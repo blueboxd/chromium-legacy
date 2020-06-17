@@ -874,6 +874,256 @@ constexpr auto search_n(Range&& range,
                           value, std::move(pred), std::move(proj));
 }
 
+// [alg.nonmodifying] Mutating sequence operations
+// Reference: https://wg21.link/alg.modifying.operations
+
+// [alg.copy] Copy
+// Reference: https://wg21.link/alg.copy
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.move] Move
+// Reference: https://wg21.link/alg.move
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.swap] Swap
+// Reference: https://wg21.link/alg.swap
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.transform] Transform
+// Reference: https://wg21.link/alg.transform
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.replace] Replace
+// Reference: https://wg21.link/alg.replace
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.fill] Fill
+// Reference: https://wg21.link/alg.fill
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.generate] Generate
+// Reference: https://wg21.link/alg.generate
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.remove] Remove
+// Reference: https://wg21.link/alg.remove
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.unique] Unique
+// Reference: https://wg21.link/alg.unique
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.reverse] Reverse
+// Reference: https://wg21.link/alg.reverse
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.rotate] Rotate
+// Reference: https://wg21.link/alg.rotate
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.random.shuffle] Shuffle
+// Reference: https://wg21.link/alg.random.shuffle
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.nonmodifying] Sorting and related operations
+// Reference: https://wg21.link/alg.sorting
+
+// [alg.sort] Sorting
+// Reference: https://wg21.link/alg.sort
+
+// [sort] sort
+// Reference: https://wg21.link/sort
+
+// TODO(crbug.com/1095795): Implement.
+
+// [stable.sort] stable_sort
+// Reference: https://wg21.link/stable.sort
+
+// TODO(crbug.com/1095795): Implement.
+
+// [partial.sort] partial_sort
+// Reference: https://wg21.link/partial.sort
+
+// TODO(crbug.com/1095795): Implement.
+
+// [partial.sort.copy] partial_sort_copy
+// Reference: https://wg21.link/partial.sort.copy
+
+// TODO(crbug.com/1095795): Implement.
+
+// [is.sorted] is_sorted
+// Reference: https://wg21.link/is.sorted
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.nth.element] Nth element
+// Reference: https://wg21.link/alg.nth.element
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.binary.search] Binary search
+// Reference: https://wg21.link/alg.binary.search
+
+// [lower.bound] lower_bound
+// Reference: https://wg21.link/lower.bound
+
+// Preconditions: The elements `e` of `[first, last)` are partitioned with
+// respect to the expression `bool(invoke(comp, invoke(proj, e), value))`.
+//
+// Returns: The furthermost iterator `i` in the range `[first, last]` such that
+// for every iterator `j` in the range `[first, i)`,
+// `bool(invoke(comp, invoke(proj, *j), value))` is true.
+//
+// Complexity: At most `log(last - first) + O(1)` comparisons and projections.
+//
+// Reference: https://wg21.link/lower.bound#:~:text=ranges::lower_bound(I
+template <typename ForwardIterator,
+          typename T,
+          typename Proj = identity,
+          typename Comp = ranges::less>
+constexpr auto lower_bound(ForwardIterator first,
+                           ForwardIterator last,
+                           const T& value,
+                           Comp comp = {},
+                           Proj proj = {}) {
+  // The second arg is guaranteed to be `value`, so we'll simply apply the
+  // identity projection.
+  identity value_proj;
+  return std::lower_bound(
+      first, last, value,
+      internal::ProjectedBinaryPredicate(comp, proj, value_proj));
+}
+
+// Preconditions: The elements `e` of `[first, last)` are partitioned with
+// respect to the expression `bool(invoke(comp, invoke(proj, e), value))`.
+//
+// Returns: The furthermost iterator `i` in the range
+// `[begin(range), end(range)]` such that for every iterator `j` in the range
+// `[begin(range), i)`, `bool(invoke(comp, invoke(proj, *j), value))` is true.
+//
+// Complexity: At most `log(size(range)) + O(1)` comparisons and projections.
+//
+// Reference: https://wg21.link/lower.bound#:~:text=ranges::lower_bound(R
+template <typename Range,
+          typename T,
+          typename Proj = identity,
+          typename Comp = ranges::less>
+constexpr auto lower_bound(Range&& range,
+                           const T& value,
+                           Comp comp = {},
+                           Proj proj = {}) {
+  return ranges::lower_bound(ranges::begin(range), ranges::end(range), value,
+                             std::move(comp), std::move(proj));
+}
+
+// [upper.bound] upper_bound
+// Reference: https://wg21.link/upper.bound
+
+// TODO(crbug.com/1095795): Implement.
+
+// [equal.range] equal_range
+// Reference: https://wg21.link/equal.range
+
+// TODO(crbug.com/1095795): Implement.
+
+// [binary.search] binary_search
+// Reference: https://wg21.link/binary.search
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.partitions] Partitions
+// Reference: https://wg21.link/alg.partitions
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.merge] Merge
+// Reference: https://wg21.link/alg.merge
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.set.operations] Set operations on sorted structures
+// Reference: https://wg21.link/alg.set.operations
+
+// [includes] includes
+// Reference: https://wg21.link/includes
+
+// TODO(crbug.com/1095795): Implement.
+
+// [set.union] set_union
+// Reference: https://wg21.link/set.union
+
+// TODO(crbug.com/1095795): Implement.
+
+// [set.intersection] set_intersection
+// Reference: https://wg21.link/set.intersection
+
+// TODO(crbug.com/1095795): Implement.
+
+// [set.difference] set_difference
+// Reference: https://wg21.link/set.difference
+
+// TODO(crbug.com/1095795): Implement.
+
+// [set.symmetric.difference] set_symmetric_difference
+// Reference: https://wg21.link/set.symmetric.difference
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.heap.operations] Heap operations
+// Reference: https://wg21.link/alg.heap.operations
+
+// [push.heap] push_heap
+// Reference: https://wg21.link/push.heap
+
+// TODO(crbug.com/1095795): Implement.
+
+// [pop.heap] pop_heap
+// Reference: https://wg21.link/pop.heap
+
+// TODO(crbug.com/1095795): Implement.
+
+// [make.heap] make_heap
+// Reference: https://wg21.link/make.heap
+
+// TODO(crbug.com/1095795): Implement.
+
+// [sort.heap] sort_heap
+// Reference: https://wg21.link/sort.heap
+
+// TODO(crbug.com/1095795): Implement.
+
+// [is.heap] is_heap
+// Reference: https://wg21.link/is.heap
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.min.max] Minimum and maximum
+// Reference: https://wg21.link/alg.min.max
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.lex.comparison] Lexicographical comparison
+// Reference: https://wg21.link/alg.lex.comparison
+
+// TODO(crbug.com/1095795): Implement.
+
+// [alg.permutation.generators] Permutation generators
+// Reference: https://wg21.link/alg.permutation.generators
+
+// TODO(crbug.com/1095795): Implement.
+
 }  // namespace ranges
 
 }  // namespace util

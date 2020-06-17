@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/style_environment_variables.h"
 
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -12,6 +13,8 @@ namespace {
 
 // This is the default value for all safe-area-inset-* variables.
 static const char kSafeAreaInsetDefault[] = "0px";
+// This is the default value for all keyboard-inset-* variables.
+static const char kKeyboardInsetDefault[] = "0px";
 
 // Use this to set default values for environment variables when the root
 // instance is created.
@@ -24,6 +27,16 @@ void SetDefaultEnvironmentVariables(StyleEnvironmentVariables* instance) {
                         kSafeAreaInsetDefault);
   instance->SetVariable(UADefinedVariable::kSafeAreaInsetRight,
                         kSafeAreaInsetDefault);
+  if (RuntimeEnabledFeatures::VirtualKeyboardEnabled()) {
+    instance->SetVariable(UADefinedVariable::kKeyboardInsetTop,
+                          kKeyboardInsetDefault);
+    instance->SetVariable(UADefinedVariable::kKeyboardInsetLeft,
+                          kKeyboardInsetDefault);
+    instance->SetVariable(UADefinedVariable::kKeyboardInsetBottom,
+                          kKeyboardInsetDefault);
+    instance->SetVariable(UADefinedVariable::kKeyboardInsetRight,
+                          kKeyboardInsetDefault);
+  }
 }
 
 }  // namespace.
@@ -62,6 +75,18 @@ const AtomicString StyleEnvironmentVariables::GetVariableName(
       return "safe-area-inset-bottom";
     case UADefinedVariable::kSafeAreaInsetRight:
       return "safe-area-inset-right";
+    case UADefinedVariable::kKeyboardInsetTop:
+      DCHECK(RuntimeEnabledFeatures::VirtualKeyboardEnabled());
+      return "keyboard-inset-top";
+    case UADefinedVariable::kKeyboardInsetLeft:
+      DCHECK(RuntimeEnabledFeatures::VirtualKeyboardEnabled());
+      return "keyboard-inset-left";
+    case UADefinedVariable::kKeyboardInsetBottom:
+      DCHECK(RuntimeEnabledFeatures::VirtualKeyboardEnabled());
+      return "keyboard-inset-bottom";
+    case UADefinedVariable::kKeyboardInsetRight:
+      DCHECK(RuntimeEnabledFeatures::VirtualKeyboardEnabled());
+      return "keyboard-inset-right";
     default:
       break;
   }

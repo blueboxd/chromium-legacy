@@ -23,9 +23,9 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
-using message_center::Notification;
 using message_center::MessageCenter;
 using message_center::MessageView;
+using message_center::Notification;
 
 namespace ash {
 
@@ -82,7 +82,7 @@ class UnifiedMessageListView::MessageViewContainer
                   : views::CreateSolidSidedBorder(
                         0, 0, kUnifiedNotificationSeparatorThickness, 0,
                         AshColorProvider::Get()->GetContentLayerColor(
-                            AshColorProvider::ContentLayerType::kSeparator,
+                            AshColorProvider::ContentLayerType::kSeparatorColor,
                             AshColorProvider::AshColorMode::kLight)));
     const int top_radius = is_top ? kUnifiedTrayCornerRadius : 0;
     const int bottom_radius = is_bottom ? kUnifiedTrayCornerRadius : 0;

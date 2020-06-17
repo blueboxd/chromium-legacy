@@ -71,7 +71,8 @@ class ToastOverlayLabel : public views::Label {
     SetMultiLine(true);
     SetMaxLines(2);
     SetEnabledColor(AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextPrimary, kToastLabelColor));
+        AshColorProvider::ContentLayerType::kTextColorPrimary,
+        kToastLabelColor));
     SetSubpixelRenderingEnabled(false);
 
     int vertical_spacing =

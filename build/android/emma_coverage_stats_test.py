@@ -9,10 +9,8 @@ import unittest
 from xml.etree import ElementTree
 
 import emma_coverage_stats
-from pylib.constants import host_paths
 
-with host_paths.SysPath(host_paths.PYMOCK_PATH):
-  import mock  # pylint: disable=import-error
+import mock  # pylint: disable=import-error
 
 EMPTY_COVERAGE_STATS_DICT = {
   'files': {},

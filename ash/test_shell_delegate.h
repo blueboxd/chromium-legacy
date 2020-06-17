@@ -37,6 +37,7 @@ class TestShellDelegate : public ShellDelegate {
   CreateBackGestureContextualNudgeDelegate(
       BackGestureContextualNudgeController* controller) override;
   bool CanGoBack(gfx::NativeWindow window) const override;
+  bool ShouldWaitForTouchPressAck(gfx::NativeWindow window) override;
   void BindNavigableContentsFactory(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)
       override;
@@ -46,10 +47,17 @@ class TestShellDelegate : public ShellDelegate {
       override;
 
   void SetCanGoBack(bool can_go_back);
+  void SetShouldWaitForTouchAck(bool should_wait_for_touch_ack);
 
  private:
-  // True if the current top window can back.
+  // True if the current top window can go back.
   bool can_go_back_ = true;
+
+  // True if when performing back gesture on the top window, we should handle
+  // the event after the touch ack is received. Please refer to
+  // |BackGestureEventHandler::should_wait_for_touch_ack_| for detailed
+  // description.
+  bool should_wait_for_touch_ack_ = false;
 
   MultiDeviceSetupBinder multidevice_setup_binder_;
 

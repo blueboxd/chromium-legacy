@@ -11,6 +11,7 @@ import android.content.res.Resources;
 import android.graphics.RectF;
 
 import androidx.annotation.IntDef;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.MathUtils;
 import org.chromium.base.metrics.RecordUserAction;
@@ -151,6 +152,9 @@ public abstract class Stack {
      */
     private static final float LANDSCAPE_SWIPE_DRAG_TAB_OFFSET_DP = 40.f;
 
+    // TODO(dtrainor): Investigate removing this.
+    private static final float BORDER_THICKNESS_DP = 4.f;
+
     // External References
     protected TabList mTabList;
 
@@ -220,6 +224,9 @@ public abstract class Stack {
     // TODO(dtrainor): Expose 9-patch padding from resource manager.
     protected float mBorderTopPadding;
     private float mBorderLeftPadding;
+
+    // The slop amount in dp to detect a touch on the tab.  Cached values from values/dimens.xml.
+    private float mCompositorButtonSlop; // compositor_button_slop
 
     private boolean mIsStackForCurrentTabList;
 
@@ -864,7 +871,7 @@ public abstract class Stack {
                 cancelDiscardScrollingAnimation();
 
                 // Make sure we are well within the tab in the discard direction.
-                RectF target = mDiscardingTab.getLayoutTab().getClickTargetBounds();
+                RectF target = getClickTargetBoundsForLayoutTab(mDiscardingTab.getLayoutTab());
                 float distanceToEdge;
                 float edgeToEdge;
                 if (mCurrentMode == Orientation.PORTRAIT) {
@@ -1101,11 +1108,11 @@ public abstract class Stack {
                 && mOverviewAnimationType != OverviewAnimationType.DISCARD_ALL) {
             return;
         }
-        int clicked = getTabIndexAtPositon(x, y, LayoutTab.getTouchSlop());
+        int clicked = getTabIndexAtPositon(x, y, mCompositorButtonSlop);
         if (clicked >= 0) {
             // Check if the click was within the boundaries of the close button defined by its
             // visible coordinates.
-            if (mStackTabs[clicked].getLayoutTab().checkCloseHitTest(x, y)) {
+            if (checkCloseHitTestOnLayoutTab(x, y, mStackTabs[clicked].getLayoutTab())) {
                 // Tell the model to close the tab because the close button was pressed.  The
                 // model will then trigger a notification which will start the actual close
                 // process here if necessary.
@@ -1128,6 +1135,51 @@ public abstract class Stack {
                 mLayout.uiSelectingTab(time, mStackTabs[clicked].getId());
             }
         }
+    }
+
+    /**
+     * Tests if a point is inside the closing button of the tab.
+     *
+     * @param x The horizontal coordinate of the hit testing point.
+     * @param y The vertical coordinate of the hit testing point.
+     * @param layoutTab The {@link LayoutTab} to test on.
+     * @return  Whether the hit testing point is inside the tab.
+     */
+    @VisibleForTesting
+    public boolean checkCloseHitTestOnLayoutTab(float x, float y, LayoutTab layoutTab) {
+        RectF closeRectangle = getCloseBoundsOnLayoutTab(layoutTab);
+        return closeRectangle != null ? closeRectangle.contains(x, y) : false;
+    }
+
+    /**
+     * @param layoutTab The {@link LayoutTab} to check.
+     * @return The bounds of the {@link LayoutTab} of the close button. {@code null} if the close
+     *         button is not clickable.
+     */
+    @VisibleForTesting
+    public RectF getCloseBoundsOnLayoutTab(LayoutTab layoutTab) {
+        if (!layoutTab.get(LayoutTab.IS_TITLE_NEEDED) || !layoutTab.get(LayoutTab.IS_VISIBLE)
+                || layoutTab.get(LayoutTab.BORDER_CLOSE_BUTTON_ALPHA) < 0.5f
+                || layoutTab.get(LayoutTab.BORDER_ALPHA) < 0.5f
+                || layoutTab.get(LayoutTab.BORDER_ALPHA) != 1.0f
+                || Math.abs(layoutTab.get(LayoutTab.TILT_X_IN_DEGREES)) > 1.0f
+                || Math.abs(layoutTab.get(LayoutTab.TILT_Y_IN_DEGREES)) > 1.0f) {
+            return null;
+        }
+        RectF closePlacement = layoutTab.get(LayoutTab.CLOSE_PLACEMENT);
+        closePlacement.set(0, 0, LayoutTab.CLOSE_BUTTON_WIDTH_DP, LayoutTab.CLOSE_BUTTON_WIDTH_DP);
+        if (layoutTab.get(LayoutTab.CLOSE_BUTTON_IS_ON_RIGHT)) {
+            closePlacement.offset(layoutTab.getFinalContentWidth() - closePlacement.width(), 0.f);
+        }
+        if (closePlacement.bottom > layoutTab.getFinalContentHeight()
+                || closePlacement.right > layoutTab.getFinalContentWidth()) {
+            return null;
+        }
+        closePlacement.offset(layoutTab.get(LayoutTab.X) + layoutTab.get(LayoutTab.CLIPPED_X),
+                layoutTab.get(LayoutTab.Y) + layoutTab.get(LayoutTab.CLIPPED_Y));
+        closePlacement.inset(-mCompositorButtonSlop, -mCompositorButtonSlop);
+
+        return closePlacement;
     }
 
     /*
@@ -1155,6 +1207,7 @@ public abstract class Stack {
         mBorderTopPadding = res.getDimension(R.dimen.tabswitcher_border_frame_padding_top) * pxToDp;
         mBorderLeftPadding =
                 res.getDimension(R.dimen.tabswitcher_border_frame_padding_left) * pxToDp;
+        mCompositorButtonSlop = res.getDimension(R.dimen.compositor_button_slop) * pxToDp;
 
         // Just in case the density has changed, rebuild the OverScroller.
         mScroller = new StackScroller(context);
@@ -1221,7 +1274,7 @@ public abstract class Stack {
                 // This is a fail safe.  We should never have a situation where a dying
                 // {@link LayoutTab} can get accessed (the animation check should catch it).
                 if (!mStackTabs[i].isDying() && mStackTabs[i].getLayoutTab().isVisible()) {
-                    float d = mStackTabs[i].getLayoutTab().computeDistanceTo(x, y);
+                    float d = computeDistanceToLayoutTab(x, y, mStackTabs[i].getLayoutTab());
                     // Strict '<' is very important here because we might have several tab at
                     // the same place and we want the one above.
                     if (d < closestDistance) {
@@ -1233,6 +1286,38 @@ public abstract class Stack {
             }
         }
         return closestDistance <= slop ? closestIndex : -1;
+    }
+
+    /**
+     * Computes the Manhattan-ish distance to the edge of the tab.
+     * This distance is good enough for click detection.
+     *
+     * @param x          X coordinate of the hit testing point.
+     * @param y          Y coordinate of the hit testing point.
+     * @param layoutTab  The targeting tab.
+     * @return           The Manhattan-ish distance to the tab.
+     */
+    private static float computeDistanceToLayoutTab(float x, float y, LayoutTab layoutTab) {
+        final RectF bounds = getClickTargetBoundsForLayoutTab(layoutTab);
+        float dx = Math.max(bounds.left - x, x - bounds.right);
+        float dy = Math.max(bounds.top - y, y - bounds.bottom);
+        return Math.max(0.0f, Math.max(dx, dy));
+    }
+
+    /**
+     * @return The rectangle that represents the click target of the tab.
+     */
+    private static RectF getClickTargetBoundsForLayoutTab(LayoutTab layoutTab) {
+        final float borderScaled = BORDER_THICKNESS_DP * layoutTab.get(LayoutTab.BORDER_SCALE);
+        RectF bounds = layoutTab.get(LayoutTab.BOUNDS);
+        bounds.top = layoutTab.get(LayoutTab.Y) + layoutTab.get(LayoutTab.CLIPPED_Y) - borderScaled;
+        bounds.bottom = layoutTab.get(LayoutTab.Y) + layoutTab.get(LayoutTab.CLIPPED_Y)
+                + layoutTab.getFinalContentHeight() + borderScaled;
+        bounds.left =
+                layoutTab.get(LayoutTab.X) + layoutTab.get(LayoutTab.CLIPPED_X) - borderScaled;
+        bounds.right = layoutTab.get(LayoutTab.X) + layoutTab.get(LayoutTab.CLIPPED_X)
+                + layoutTab.getFinalContentWidth() + borderScaled;
+        return bounds;
     }
 
     /**

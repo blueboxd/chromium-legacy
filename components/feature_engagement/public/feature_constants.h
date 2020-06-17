@@ -21,7 +21,6 @@ extern const base::Feature kIPHDummyFeature;
     defined(OS_CHROMEOS)
 extern const base::Feature kIPHFocusModeFeature;
 extern const base::Feature kIPHGlobalMediaControlsFeature;
-extern const base::Feature kIPHPasswordsAccountStorageFeature;
 extern const base::Feature kIPHReopenTabFeature;
 extern const base::Feature kIPHWebUITabStripFeature;
 

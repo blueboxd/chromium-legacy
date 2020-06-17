@@ -38,16 +38,3 @@ windows_machine {
   container { ad_domain: "webprotect.com" }
 }
 
-windows_machine {
-  name: "webprotect-3"
-  machine_type: "win2016"
-  network_interface { network: "primary" }
-  container { ad_domain: "webprotect.com" }
-}
-
-windows_machine {
-  name: "webprotect-4"
-  machine_type: "win2016"
-  network_interface { network: "primary" }
-  container { ad_domain: "webprotect.com" }
-}

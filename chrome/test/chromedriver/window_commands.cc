@@ -1668,26 +1668,6 @@ Status ExecuteSendKeysToActiveElement(Session* session,
       web_view, key_list, false, &session->sticky_modifiers);
 }
 
-// TODO: Remove, applicationCache.status is deprecated in chrome
-Status ExecuteGetAppCacheStatus(Session* session,
-                                WebView* web_view,
-                                const base::DictionaryValue& params,
-                                std::unique_ptr<base::Value>* value,
-                                Timeout* timeout) {
-  return web_view->EvaluateScript(session->GetCurrentFrameId(),
-                                  "applicationCache.status", false, value);
-}
-
-// TODO: Remove, not used
-Status ExecuteIsBrowserOnline(Session* session,
-                              WebView* web_view,
-                              const base::DictionaryValue& params,
-                              std::unique_ptr<base::Value>* value,
-                              Timeout* timeout) {
-  return web_view->EvaluateScript(session->GetCurrentFrameId(),
-                                  "navigator.onLine", false, value);
-}
-
 Status ExecuteGetStorageItem(const char* storage,
                              Session* session,
                              WebView* web_view,

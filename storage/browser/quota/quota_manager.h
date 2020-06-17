@@ -333,8 +333,10 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
 
   // Called by clients via proxy.
   // Registers a quota client to the manager.
-  void RegisterClient(scoped_refptr<QuotaClient> client,
-                      QuotaClientType client_type);
+  void RegisterClient(
+      scoped_refptr<QuotaClient> client,
+      QuotaClientType client_type,
+      const std::vector<blink::mojom::StorageType>& storage_types);
 
   UsageTracker* GetUsageTracker(blink::mojom::StorageType type) const;
 
@@ -466,7 +468,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManager
   //
   // The QuotaClient instances pointed to by the map keys are guaranteed to be
   // alive, because they are owned by |clients_|.
-  base::flat_map<QuotaClient*, QuotaClientType> client_types_;
+  base::flat_map<blink::mojom::StorageType,
+                 base::flat_map<QuotaClient*, QuotaClientType>>
+      client_types_;
 
   std::unique_ptr<UsageTracker> temporary_usage_tracker_;
   std::unique_ptr<UsageTracker> persistent_usage_tracker_;

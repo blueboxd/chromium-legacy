@@ -150,7 +150,7 @@ std::string DesktopScreenX11::GetCurrentWorkspace() {
   return x11_display_manager_->GetCurrentWorkspace();
 }
 
-bool DesktopScreenX11::DispatchXEvent(XEvent* event) {
+bool DesktopScreenX11::DispatchXEvent(x11::Event* event) {
   return x11_display_manager_->CanProcessEvent(*event) &&
          x11_display_manager_->ProcessEvent(event);
 }

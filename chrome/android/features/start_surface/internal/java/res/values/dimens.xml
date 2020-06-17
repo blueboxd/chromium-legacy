@@ -4,4 +4,5 @@
      found in the LICENSE file. -->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <dimen name="ss_bottom_bar_height">64dp</dimen>
+    <dimen name="tasks_surface_body_top_margin">16dp</dimen>
 </resources>

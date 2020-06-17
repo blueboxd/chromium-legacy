@@ -62,6 +62,19 @@ struct NGLogicalLineItem {
         rect(LayoutUnit(), block_offset, LayoutUnit(), text_height),
         inline_size(inline_size),
         bidi_level(bidi_level) {}
+  NGLogicalLineItem(const NGInlineItem& inline_item,
+                    scoped_refptr<const ShapeResultView> shape_result,
+                    const String& text_content,
+                    LayoutUnit block_offset,
+                    LayoutUnit inline_size,
+                    LayoutUnit text_height,
+                    UBiDiLevel bidi_level)
+      : inline_item(&inline_item),
+        shape_result(std::move(shape_result)),
+        text_content(text_content),
+        rect(LayoutUnit(), block_offset, LayoutUnit(), text_height),
+        inline_size(inline_size),
+        bidi_level(bidi_level) {}
   NGLogicalLineItem(scoped_refptr<const NGPhysicalTextFragment> fragment,
                     LogicalOffset offset,
                     LayoutUnit inline_size,
@@ -156,6 +169,9 @@ struct NGLogicalLineItem {
   const NGInlineItem* inline_item = nullptr;
   scoped_refptr<const ShapeResultView> shape_result;
   NGTextOffset text_offset;
+
+  // Data to create a generated text fragment.
+  String text_content;
 
   LayoutObject* out_of_flow_positioned_box = nullptr;
   LayoutObject* unpositioned_float = nullptr;

@@ -119,9 +119,6 @@
   "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
     "structures": [1400],
   },
-  "chrome/browser/resources/chromeos/network_ui/network_health_resources.grd": {
-    "includes": [1410],
-  },
   "chrome/browser/resources/component_extension_resources.grd": {
     "includes": [1420],
     "structures": [1440],

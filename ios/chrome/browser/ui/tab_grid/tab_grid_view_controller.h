@@ -13,6 +13,7 @@
 @protocol ApplicationCommands;
 @protocol GridConsumer;
 @protocol GridCommands;
+@protocol GridDragDropHandler;
 @protocol GridImageDataSource;
 @protocol RecentTabsConsumer;
 @class RecentTabsTableViewController;
@@ -43,6 +44,10 @@
 // Delegates send updates from the UI layer to the model layer.
 @property(nonatomic, weak) id<GridCommands> regularTabsDelegate;
 @property(nonatomic, weak) id<GridCommands> incognitoTabsDelegate;
+
+// Handles drag and drop interactions that require the model layer.
+@property(nonatomic, weak) id<GridDragDropHandler> regularTabsDragDropHandler;
+@property(nonatomic, weak) id<GridDragDropHandler> incognitoTabsDragDropHandler;
 
 // Data sources provide lazy access to heavy-weight resources.
 @property(nonatomic, weak) id<GridImageDataSource> regularTabsImageDataSource;

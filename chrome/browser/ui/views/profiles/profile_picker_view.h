@@ -39,7 +39,6 @@ class ProfilePickerView : public views::DialogDelegateView {
 
   // views::DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
-  base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
 
   views::WebView* web_view_;

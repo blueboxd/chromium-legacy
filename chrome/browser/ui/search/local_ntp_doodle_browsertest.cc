@@ -353,13 +353,14 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
           DoAll(ReturnCachedLogo(LogoCallbackReason::CANCELED, base::nullopt),
                 ReturnFreshLogo(LogoCallbackReason::CANCELED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP and listen for console messages.
+  // Open a new blank tab, then go to local NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
 
   FailOnConsoleMessage console_observer(active_tab);
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),
               Eq(kSearchboxTopPx));
@@ -379,12 +380,13 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, base::nullopt),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP and listen for console messages.
+  // Open a new blank tab, then go to local NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   FailOnConsoleMessage console_observer(active_tab);
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),
               Eq(kSearchboxTopPx));
@@ -409,12 +411,13 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldShowDoodleWhenCached) {
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP and listen for console messages.
+  // Open a new blank tab, then go to local NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   FailOnConsoleMessage console_observer(active_tab);
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),
               Eq(kSearchboxTopPx));
@@ -454,11 +457,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldShowInteractiveLogo) {
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP.
+  // Open a new blank tab, then go to local NTP.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),
               Eq(kSearchboxTopPx));
@@ -491,11 +495,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP.
+  // Open a new blank tab, then go to local NTP.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),
               Eq(kSearchboxTopPx));
@@ -528,11 +533,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, base::nullopt),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP.
+  // Open a new blank tab, then go to local NTP.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   WaitForFadeIn(active_tab, "logo-default");
   EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),
@@ -566,11 +572,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, fresh_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP.
+  // Open a new blank tab, then go to local NTP.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   WaitForFadeIn(active_tab, "logo-doodle");
   EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),
@@ -615,10 +622,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, fresh_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP.
+  // Open a new blank tab, then go to local NTP.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   WaitForFadeIn(active_tab, "logo-doodle");
   EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),
@@ -652,10 +660,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldNotFadeFromInteractiveDoodle) {
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, base::nullopt),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP.
+  // Open a new blank tab, then go to local NTP.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),
               Eq(kSearchboxTopPx));
@@ -691,11 +700,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, fresh_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP.
+  // Open a new blank tab, then go to local NTP.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   WaitForFadeIn(active_tab, "logo-doodle");
   EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),
@@ -747,11 +757,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldUpdateMetadataWhenChanged) {
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, fresh_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP.
+  // Open a new blank tab, then go to local NTP.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),
               Eq(kSearchboxTopPx));
@@ -795,12 +806,13 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldAppendShareButtonWhenCached) {
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP and listen for console messages.
+  // Open a new blank tab, then go to local NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   FailOnConsoleMessage console_observer(active_tab);
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   EXPECT_TRUE(ElementExists(active_tab, "ddlsb"));
   EXPECT_TRUE(ElementExists(active_tab, "ddlsb-img"));
@@ -833,11 +845,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP and listen for console messages.
+  // Open a new blank tab, then go to local NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   FailOnConsoleMessage console_observer(active_tab);
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   EXPECT_FALSE(ElementExists(active_tab, "ddlsb"));
   EXPECT_FALSE(ElementExists(active_tab, "ddlsb-img"));
@@ -862,11 +875,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP and listen for console messages.
+  // Open a new blank tab, then go to local NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   FailOnConsoleMessage console_observer(active_tab);
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   EXPECT_FALSE(ElementExists(active_tab, "ddlsb"));
   EXPECT_FALSE(ElementExists(active_tab, "ddlsb-img"));
@@ -891,11 +905,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP and listen for console messages.
+  // Open a new blank tab, then go to local NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   FailOnConsoleMessage console_observer(active_tab);
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   EXPECT_FALSE(DialogIsOpen(active_tab, "ddlsd"));
   ASSERT_TRUE(content::ExecuteScript(
@@ -937,10 +952,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldOpenFacebookInShareDialog) {
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP and listen for console messages.
+  // Open a new blank tab, then go to local NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   ASSERT_TRUE(content::ExecuteScript(
       active_tab, "document.getElementById('ddlsb').click();"));
@@ -972,10 +988,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldOpenTwitterInShareDialog) {
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP and listen for console messages.
+  // Open a new blank tab, then go to local NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   ASSERT_TRUE(content::ExecuteScript(
       active_tab, "document.getElementById('ddlsb').click();"));
@@ -1006,10 +1023,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldCopyLinkInShareDialog) {
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP and listen for console messages.
+  // Open a new blank tab, then go to local NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   ASSERT_TRUE(content::ExecuteScript(
       active_tab, "document.getElementById('ddlsb').click();"));
@@ -1042,10 +1060,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogShareClicksNoEventId) {
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP and listen for console messages.
+  // Open a new blank tab, then go to local NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   // Replace window.open so we stay in the same tab.
   SetupWindowOpenTest(active_tab);
@@ -1103,10 +1122,11 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogShareClicksWithEventId) {
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP and listen for console messages.
+  // Open a new blank tab, then go to local NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   // Replace window.open so we stay in the same tab.
   SetupWindowOpenTest(active_tab);
@@ -1161,11 +1181,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldAnimateLogoWhenClicked) {
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP.
+  // Open a new blank tab, then go to local NTP.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),
               Eq(kSearchboxTopPx));
@@ -1223,11 +1244,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP.
+  // Open a new blank tab, then go to local NTP.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   // Share button should not be present pre-CTA click
   EXPECT_FALSE(ElementExists(active_tab, "ddlsb"));
@@ -1279,11 +1301,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogForSimpleDoodle) {
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP and listen for console messages.
+  // Open a new blank tab, then go to local NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   FailOnConsoleMessage console_observer(active_tab);
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   ASSERT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
 
@@ -1328,11 +1351,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldLogForAnimatedDoodle) {
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP and listen for console messages.
+  // Open a new blank tab, then go to local NTP and listen for console messages.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   FailOnConsoleMessage console_observer(active_tab);
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   ASSERT_THAT(GetComputedOpacity(active_tab, "logo-doodle"), Eq(1.0));
 
@@ -1381,11 +1405,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest, ShouldNotMoveFakeboxForIframeSizes) {
             ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
             ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-    // Open a new blank tab, then go to NTP.
+    // Open a new blank tab, then go to local NTP.
     content::WebContents* active_tab =
         local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
     base::HistogramTester histograms;
-    ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+    ui_test_utils::NavigateToURL(browser(),
+                                 GURL(chrome::kChromeSearchLocalNtpUrl));
 
     EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),
                 Eq(kSearchboxTopPx))
@@ -1412,11 +1437,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDoodleTest,
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, cached_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP.
+  // Open a new blank tab, then go to local NTP.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   // Initial dimensions are correct:
   EXPECT_THAT(*GetDimension(active_tab, searchbox(), "top"),
@@ -1511,11 +1537,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeDoodleTest,
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, fresh_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP.
+  // Open a new blank tab, then go to local NTP.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   WaitForFadeIn(active_tab, "logo-doodle");
   EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),
@@ -1570,11 +1597,12 @@ IN_PROC_BROWSER_TEST_F(LocalNTPDarkModeDoodleTest,
           ReturnCachedLogo(LogoCallbackReason::DETERMINED, fresh_logo),
           ReturnFreshLogo(LogoCallbackReason::REVALIDATED, base::nullopt)));
 
-  // Open a new blank tab, then go to NTP.
+  // Open a new blank tab, then go to local NTP.
   content::WebContents* active_tab =
       local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
   base::HistogramTester histograms;
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(),
+                               GURL(chrome::kChromeSearchLocalNtpUrl));
 
   WaitForFadeIn(active_tab, "logo-doodle");
   EXPECT_THAT(GetDimension(active_tab, searchbox(), "top"),

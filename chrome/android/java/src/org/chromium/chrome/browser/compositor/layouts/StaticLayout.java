@@ -46,11 +46,12 @@ public class StaticLayout extends Layout {
             mUnstalling = false;
             if (mLayoutTabs == null || mLayoutTabs.length == 0) return;
             CompositorAnimator
-                    .ofFloatProperty(getAnimationHandler(), mLayoutTabs[0], LayoutTab.SATURATION,
-                            mLayoutTabs[0].getSaturation(), 1.0f, HIDE_DURATION_MS)
+                    .ofWritableFloatPropertyKey(getAnimationHandler(), mLayoutTabs[0],
+                            LayoutTab.SATURATION, mLayoutTabs[0].getSaturation(), 1.0f,
+                            HIDE_DURATION_MS)
                     .start();
             CompositorAnimator
-                    .ofFloatProperty(getAnimationHandler(), mLayoutTabs[0],
+                    .ofWritableFloatPropertyKey(getAnimationHandler(), mLayoutTabs[0],
                             LayoutTab.STATIC_TO_VIEW_BLEND, mLayoutTabs[0].getStaticToViewBlend(),
                             0.0f, HIDE_DURATION_MS)
                     .start();
@@ -113,7 +114,7 @@ public class StaticLayout extends Layout {
     @Override
     protected void updateLayout(long time, long dt) {
         super.updateLayout(time, dt);
-        if (mLayoutTabs != null && mLayoutTabs.length > 0) mLayoutTabs[0].updateSnap(dt);
+        if (mLayoutTabs != null && mLayoutTabs.length > 0) updateSnap(dt, mLayoutTabs[0]);
     }
 
     @Override

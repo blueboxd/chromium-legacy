@@ -38,8 +38,9 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
   void SetText(LayoutObject*,
                const String& text,
                scoped_refptr<const ComputedStyle>,
-               bool is_ellipsis_style,
-               scoped_refptr<const ShapeResultView>);
+               NGStyleVariant style_variant,
+               scoped_refptr<const ShapeResultView>,
+               const LogicalSize& size);
 
   // Creates the fragment. Can only be called once.
   scoped_refptr<const NGPhysicalTextFragment> ToTextFragment();

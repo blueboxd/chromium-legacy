@@ -597,15 +597,10 @@ void NGInlineLayoutAlgorithm::PlaceHyphen(const NGInlineItemResult& item_result,
   DCHECK(item_result.hyphen_shape_result);
   DCHECK_EQ(hyphen_inline_size, item_result.HyphenInlineSize());
   const NGInlineItem& item = *item_result.item;
-  const WritingMode writing_mode = ConstraintSpace().GetWritingMode();
-  NGTextFragmentBuilder builder(writing_mode);
-  builder.SetText(
-      item.GetLayoutObject(), item_result.hyphen_string, item.Style(),
-      /* is_ellipsis_style */ false,
-      ShapeResultView::Create(item_result.hyphen_shape_result.get()));
-  DCHECK(!box->text_metrics.IsEmpty());
-  line_box_.AddChild(builder.ToTextFragment(), box->text_top,
-                     hyphen_inline_size, item.BidiLevel());
+  line_box_.AddChild(
+      item, ShapeResultView::Create(item_result.hyphen_shape_result.get()),
+      item_result.hyphen_string, box->text_top, hyphen_inline_size,
+      box->text_height, item.BidiLevel());
 }
 
 NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(

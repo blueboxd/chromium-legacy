@@ -137,6 +137,8 @@ class BinaryUploadService : public KeyedService {
     // Returns the URL to send the request to.
     const GURL& url() const { return url_; }
 
+    bool use_legacy_proto() { return use_legacy_proto_; }
+
     // Methods for modifying the DeepScanningClientRequest.
     void set_request_dlp_scan(DlpDeepScanningClientRequest dlp_request);
     void set_request_malware_scan(

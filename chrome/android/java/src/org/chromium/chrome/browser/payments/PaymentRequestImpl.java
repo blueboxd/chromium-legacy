@@ -1782,24 +1782,30 @@ public class PaymentRequestImpl
 
     @Override
     public void getShoppingCart(final Callback<ShoppingCart> callback) {
-        mHandler.post(() -> callback.onResult(mUiShoppingCart));
+        mHandler.post(callback.bind(mUiShoppingCart));
     }
 
     @Override
     public void getSectionInformation(@PaymentRequestUI.DataType final int optionType,
             final Callback<SectionInformation> callback) {
-        mHandler.post(() -> {
-            if (optionType == PaymentRequestUI.DataType.SHIPPING_ADDRESSES) {
-                callback.onResult(mShippingAddressesSection);
-            } else if (optionType == PaymentRequestUI.DataType.SHIPPING_OPTIONS) {
-                callback.onResult(mUiShippingOptions);
-            } else if (optionType == PaymentRequestUI.DataType.CONTACT_DETAILS) {
-                callback.onResult(mContactSection);
-            } else if (optionType == PaymentRequestUI.DataType.PAYMENT_METHODS) {
-                assert mPaymentMethodsSection != null;
-                callback.onResult(mPaymentMethodsSection);
-            }
-        });
+        SectionInformation result = null;
+        switch (optionType) {
+            case PaymentRequestUI.DataType.SHIPPING_ADDRESSES:
+                result = mShippingAddressesSection;
+                break;
+            case PaymentRequestUI.DataType.SHIPPING_OPTIONS:
+                result = mUiShippingOptions;
+                break;
+            case PaymentRequestUI.DataType.CONTACT_DETAILS:
+                result = mContactSection;
+                break;
+            case PaymentRequestUI.DataType.PAYMENT_METHODS:
+                result = mPaymentMethodsSection;
+                break;
+            default:
+                assert false;
+        }
+        mHandler.post(callback.bind(result));
     }
 
     @Override

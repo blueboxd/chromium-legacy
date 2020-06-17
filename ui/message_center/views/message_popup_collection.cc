@@ -226,8 +226,19 @@ void MessagePopupCollection::TransitionFromAnimation() {
   UpdateByAnimation();
 
   // If FADE_OUT animation is finished, remove the animated popup.
-  if (state_ == State::FADE_OUT)
+  if (state_ == State::FADE_OUT) {
+    // In inverse mode if the popups are not removed in the order they were
+    // added (the ones on the top are removed while the ones at the bottom stay)
+    // we need to move the remaining popups down. This might happen if the
+    // popups have different TTL.
+    bool move_down_needed = inverse_ && !AreAllAnimatingPopupsFirst();
     CloseAnimatingPopups();
+    if (move_down_needed) {
+      state_ = State::MOVE_DOWN;
+      MoveDownPopups();
+      return;
+    }
+  }
 
   if (state_ == State::FADE_IN || state_ == State::MOVE_DOWN ||
       (state_ == State::FADE_OUT && popup_items_.empty())) {
@@ -534,6 +545,16 @@ void MessagePopupCollection::ResetHotMode() {
   is_hot_ = false;
   hot_index_ = 0;
   hot_top_ = 0;
+}
+
+bool MessagePopupCollection::AreAllAnimatingPopupsFirst() const {
+  bool previous_item_was_animating = true;
+  for (const auto& item : popup_items_) {
+    if (item.is_animating && !previous_item_was_animating)
+      return false;
+    previous_item_was_animating = item.is_animating;
+  }
+  return true;
 }
 
 void MessagePopupCollection::CloseAnimatingPopups() {

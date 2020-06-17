@@ -186,7 +186,8 @@ class ChromeEnterpriseTestCase(EnterpriseTestCase):
     self.InstallChocolateyPackage(instance_name, 'chocolatey_core_extension',
                                   '1.3.3')
     self.InstallChocolateyPackageLatest(instance_name, 'sysinternals')
-    self.InstallPipPackagesLatest(instance_name, ['pywinauto', 'requests'])
+    self.InstallPipPackagesLatest(instance_name,
+                                  ['pywinauto', 'pyperclip', 'requests'])
 
     password = self._generatePassword()
     user_name = 'ui_user'

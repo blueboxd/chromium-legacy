@@ -320,11 +320,13 @@ void CacheStorageContextImpl::CreateQuotaClientsOnIOThread(
   quota_manager_proxy->RegisterClient(
       base::MakeRefCounted<CacheStorageQuotaClient>(
           manager, CacheStorageOwner::kCacheAPI),
-      storage::QuotaClientType::kServiceWorkerCache);
+      storage::QuotaClientType::kServiceWorkerCache,
+      {blink::mojom::StorageType::kTemporary});
   quota_manager_proxy->RegisterClient(
       base::MakeRefCounted<CacheStorageQuotaClient>(
           manager, CacheStorageOwner::kBackgroundFetch),
-      storage::QuotaClientType::kBackgroundFetch);
+      storage::QuotaClientType::kBackgroundFetch,
+      {blink::mojom::StorageType::kTemporary});
 }
 
 }  // namespace content

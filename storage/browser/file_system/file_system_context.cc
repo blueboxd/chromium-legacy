@@ -40,6 +40,8 @@
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/common/file_system/file_system_info.h"
 #include "storage/common/file_system/file_system_util.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
 namespace storage {
@@ -190,7 +192,7 @@ FileSystemContext::FileSystemContext(
     // Quota client assumes all backends have registered.
     quota_manager_proxy->RegisterClient(
         base::MakeRefCounted<FileSystemQuotaClient>(this),
-        QuotaClientType::kFileSystem);
+        QuotaClientType::kFileSystem, QuotaManagedStorageTypes());
   }
 
   sandbox_backend_->Initialize(this);
@@ -507,6 +509,27 @@ FileSystemContext::~FileSystemContext() {
   // TODO(crbug.com/823854) This is a leak. Delete env after the backends have
   // been deleted.
   env_override_.release();
+}
+
+std::vector<blink::mojom::StorageType>
+FileSystemContext::QuotaManagedStorageTypes() {
+  std::vector<blink::mojom::StorageType> quota_storage_types;
+  for (const auto& file_system_type_and_backend : backend_map_) {
+    FileSystemType file_system_type = file_system_type_and_backend.first;
+    blink::mojom::StorageType storage_type =
+        FileSystemTypeToQuotaStorageType(file_system_type);
+
+    // An more elegant way of filtering out non-quota-managed backends would be
+    // to call GetQuotaUtil() on backends. Unfortunately, the method assumes the
+    // backends are initialized.
+    if (storage_type == blink::mojom::StorageType::kUnknown ||
+        storage_type == blink::mojom::StorageType::kQuotaNotManaged) {
+      continue;
+    }
+
+    quota_storage_types.push_back(storage_type);
+  }
+  return quota_storage_types;
 }
 
 FileSystemOperation* FileSystemContext::CreateFileSystemOperation(

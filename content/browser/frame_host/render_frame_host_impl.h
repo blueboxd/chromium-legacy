@@ -1855,7 +1855,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // IPC Message handlers.
   void OnDetach();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
-  void OnUpdateState(const PageState& state);
   void OnUnloadACK();
   void OnContextMenu(const UntrustworthyContextMenuParams& params);
   void OnVisualStateResponse(uint64_t id);
@@ -1952,6 +1951,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          bool user_gesture) override;
   void RequestOverlayRoutingToken(
       RequestOverlayRoutingTokenCallback callback) override;
+  void UpdateState(const PageState& state) override;
 #if defined(OS_ANDROID)
   void UpdateUserGestureCarryoverInfo() override;
 #endif

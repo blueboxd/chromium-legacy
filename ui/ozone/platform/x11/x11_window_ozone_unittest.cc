@@ -16,6 +16,7 @@
 #include "ui/events/event.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/test/events_test_utils_x11.h"
+#include "ui/gfx/x/event.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
@@ -45,9 +46,7 @@ ACTION_P(CloneEvent, event_ptr) {
 // is more than enough.
 class TestScreen : public display::ScreenBase {
  public:
-  TestScreen() {
-    ProcessDisplayChanged({}, true);
-  }
+  TestScreen() { ProcessDisplayChanged({}, true); }
   ~TestScreen() override = default;
   TestScreen(const TestScreen& screen) = delete;
   TestScreen& operator=(const TestScreen& screen) = delete;
@@ -93,12 +92,13 @@ class X11WindowOzoneTest : public testing::Test {
     return std::move(window);
   }
 
-  void DispatchXEvent(XEvent* event, gfx::AcceleratedWidget widget) {
-    uint8_t ge_opcode = x11::GeGenericEvent::opcode;
-    DCHECK_EQ(ge_opcode, event->type);
+  void DispatchXEvent(x11::Event* event, gfx::AcceleratedWidget widget) {
+    DCHECK_EQ(x11::GeGenericEvent::opcode, event->xlib_event().type);
     XIDeviceEvent* device_event =
-        static_cast<XIDeviceEvent*>(event->xcookie.data);
+        static_cast<XIDeviceEvent*>(event->xlib_event().xcookie.data);
     device_event->event = widget;
+    event->As<x11::Input::DeviceEvent>()->event =
+        static_cast<x11::Window>(widget);
     event_source_->ProcessXEvent(event);
   }
 

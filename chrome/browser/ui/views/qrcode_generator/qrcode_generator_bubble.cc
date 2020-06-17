@@ -89,6 +89,7 @@ QRCodeGeneratorBubble::QRCodeGeneratorBubble(
   DCHECK(controller);
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
+  SetTitle(IDS_BROWSER_SHARING_QR_CODE_DIALOG_TITLE);
 
   base::RecordAction(base::UserMetricsAction("SharingQRCode.DialogLaunched"));
 }
@@ -154,10 +155,6 @@ void QRCodeGeneratorBubble::DisplayPlaceholderImage() {
 
 views::View* QRCodeGeneratorBubble::GetInitiallyFocusedView() {
   return textfield_url_;
-}
-
-base::string16 QRCodeGeneratorBubble::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_BROWSER_SHARING_QR_CODE_DIALOG_TITLE);
 }
 
 bool QRCodeGeneratorBubble::ShouldShowCloseButton() const {

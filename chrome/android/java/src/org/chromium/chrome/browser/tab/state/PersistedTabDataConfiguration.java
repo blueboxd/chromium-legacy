@@ -15,7 +15,9 @@ public enum PersistedTabDataConfiguration {
     // TODO(crbug.com/1059650) investigate should this go in the app code?
     // Also investigate if the storage instance should be shared.
     CRITICAL_PERSISTED_TAB_DATA("CPTD", new FilePersistedTabDataStorage()),
-    ENCRYPTED_CRITICAL_PERSISTED_TAB_DATA("ECPTD", new EncryptedFilePersistedTabDataStorage());
+    ENCRYPTED_CRITICAL_PERSISTED_TAB_DATA("ECPTD", new EncryptedFilePersistedTabDataStorage()),
+    MOCK_PERSISTED_TAB_DATA("MPTD", new FilePersistedTabDataStorage()),
+    ENCRYPTED_MOCK_PERSISTED_TAB_DATA("EMPTD", new EncryptedFilePersistedTabDataStorage());
 
     private static final Map<Class<? extends PersistedTabData>, PersistedTabDataConfiguration>
             sLookup = new HashMap<>();
@@ -26,6 +28,8 @@ public enum PersistedTabDataConfiguration {
         // TODO(crbug.com/1060187) remove static initializer and initialization lazy
         sLookup.put(CriticalPersistedTabData.class, CRITICAL_PERSISTED_TAB_DATA);
         sEncryptedLookup.put(CriticalPersistedTabData.class, ENCRYPTED_CRITICAL_PERSISTED_TAB_DATA);
+        sLookup.put(MockPersistedTabData.class, MOCK_PERSISTED_TAB_DATA);
+        sEncryptedLookup.put(MockPersistedTabData.class, ENCRYPTED_MOCK_PERSISTED_TAB_DATA);
     }
 
     public final String id;

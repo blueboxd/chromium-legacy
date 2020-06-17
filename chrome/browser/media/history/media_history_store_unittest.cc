@@ -361,6 +361,28 @@ TEST_P(MediaHistoryStoreUnitTest, MAYBE_SavePlayback) {
 
 // TODO(crbug.com/1087974).
 #if defined(THREAD_SANITIZER)
+#define MAYBE_SavePlayback_BadOrigin DISABLED_SavePlayback_BadOrigin
+#else
+#define MAYBE_SavePlayback_BadOrigin SavePlayback_BadOrigin
+#endif
+TEST_P(MediaHistoryStoreUnitTest, MAYBE_SavePlayback_BadOrigin) {
+  GURL url("http://google.com/test");
+  GURL url2("http://google.co.uk/test");
+  content::MediaPlayerWatchTime watch_time(url, url2.GetOrigin(),
+                                           base::TimeDelta::FromSeconds(60),
+                                           base::TimeDelta(), true, false);
+  service()->SavePlayback(watch_time);
+
+  // Verify that the origin and playbacks table are empty.
+  auto origins = GetOriginRowsSync(service());
+  auto playbacks = GetPlaybackRowsSync(service());
+
+  EXPECT_TRUE(playbacks.empty());
+  EXPECT_TRUE(origins.empty());
+}
+
+// TODO(crbug.com/1087974).
+#if defined(THREAD_SANITIZER)
 #define MAYBE_GetStats DISABLED_GetStats
 #else
 #define MAYBE_GetStats GetStats

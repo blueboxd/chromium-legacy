@@ -12,11 +12,9 @@ import tempfile
 import unittest
 
 from pylib.base import base_test_result
-from pylib.constants import host_paths
 from pylib.instrumentation import instrumentation_test_instance
 
-with host_paths.SysPath(host_paths.PYMOCK_PATH):
-  import mock  # pylint: disable=import-error
+import mock  # pylint: disable=import-error
 
 _INSTRUMENTATION_TEST_INSTANCE_PATH = (
     'pylib.instrumentation.instrumentation_test_instance.%s')

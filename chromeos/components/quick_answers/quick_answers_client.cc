@@ -125,13 +125,24 @@ void QuickAnswersClient::OnAssistantStateDestroyed() {
   assistant_state_ = nullptr;
 }
 
+void QuickAnswersClient::SendRequestForPreprocessing(
+    const QuickAnswersRequest& quick_answers_request) {
+  SendRequestInternal(quick_answers_request, /*skip_fetch=*/true);
+}
+
+void QuickAnswersClient::FetchQuickAnswers(
+    const QuickAnswersRequest& preprocessed_request) {
+  DCHECK(!preprocessed_request.preprocessed_output.query.empty());
+
+  result_loader_ =
+      CreateResultLoader(preprocessed_request.preprocessed_output.intent_type);
+  // Load and parse search result.
+  result_loader_->Fetch(preprocessed_request.preprocessed_output.query);
+}
+
 void QuickAnswersClient::SendRequest(
     const QuickAnswersRequest& quick_answers_request) {
-  RecordSelectedTextLength(quick_answers_request.selected_text.length());
-
-  // Generate intent from |quick_answers_request|.
-  intent_generator_ = CreateIntentGenerator(quick_answers_request);
-  intent_generator_->GenerateIntent(quick_answers_request);
+  SendRequestInternal(quick_answers_request, /*skip_fetch=*/false);
 }
 
 void QuickAnswersClient::OnQuickAnswerClick(ResultType result_type) {
@@ -168,12 +179,13 @@ std::unique_ptr<ResultLoader> QuickAnswersClient::CreateResultLoader(
 }
 
 std::unique_ptr<IntentGenerator> QuickAnswersClient::CreateIntentGenerator(
-    const QuickAnswersRequest& request) {
+    const QuickAnswersRequest& request,
+    bool skip_fetch) {
   if (g_testing_intent_generator_factory_callback)
     return g_testing_intent_generator_factory_callback->Run();
   return std::make_unique<IntentGenerator>(
       base::BindOnce(&QuickAnswersClient::IntentGeneratorCallback,
-                     weak_factory_.GetWeakPtr(), request));
+                     weak_factory_.GetWeakPtr(), request, skip_fetch));
 }
 
 void QuickAnswersClient::OnNetworkError() {
@@ -188,8 +200,19 @@ void QuickAnswersClient::OnQuickAnswerReceived(
   delegate_->OnQuickAnswerReceived(std::move(quick_answer));
 }
 
+void QuickAnswersClient::SendRequestInternal(
+    const QuickAnswersRequest& quick_answers_request,
+    bool skip_fetch) {
+  RecordSelectedTextLength(quick_answers_request.selected_text.length());
+
+  // Generate intent from |quick_answers_request|.
+  intent_generator_ = CreateIntentGenerator(quick_answers_request, skip_fetch);
+  intent_generator_->GenerateIntent(quick_answers_request);
+}
+
 void QuickAnswersClient::IntentGeneratorCallback(
     const QuickAnswersRequest& quick_answers_request,
+    bool skip_fetch,
     const std::string& intent_text,
     IntentType intent_type) {
   DCHECK(delegate_);
@@ -210,9 +233,8 @@ void QuickAnswersClient::IntentGeneratorCallback(
     }
   }
 
-  result_loader_ = CreateResultLoader(intent_type);
-  // Load and parse search result.
-  result_loader_->Fetch(processed_request.preprocessed_output.query);
+  if (!skip_fetch)
+    FetchQuickAnswers(processed_request);
 }
 
 base::TimeDelta QuickAnswersClient::GetImpressionDuration() const {

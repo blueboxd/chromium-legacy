@@ -68,7 +68,9 @@ bool InitializeXkb(XDisplay* display) {
   return true;
 }
 
-Time ExtractTimeFromXEvent(const XEvent& xevent) {
+Time ExtractTimeFromXEvent(const x11::Event& x11_event) {
+  const XEvent& xevent = x11_event.xlib_event();
+
   switch (xevent.type) {
     case x11::KeyEvent::Press:
     case x11::KeyEvent::Release:
@@ -90,7 +92,7 @@ Time ExtractTimeFromXEvent(const XEvent& xevent) {
     case x11::SelectionNotifyEvent::opcode:
       return xevent.xselection.time;
     case x11::GeGenericEvent::opcode:
-      if (DeviceDataManagerX11::GetInstance()->IsXIDeviceEvent(xevent))
+      if (DeviceDataManagerX11::GetInstance()->IsXIDeviceEvent(x11_event))
         return static_cast<XIDeviceEvent*>(xevent.xcookie.data)->time;
       else
         break;
@@ -229,8 +231,8 @@ X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
   if (!dispatching_event_)
     return base::nullopt;
 
-  XEvent* event = dispatching_event_;
-  DCHECK(event);
+  DCHECK(dispatching_event_);
+  XEvent* event = &dispatching_event_->xlib_event();
 
   bool is_xi2_event = event->type == x11::GeGenericEvent::opcode;
   int event_type = is_xi2_event
@@ -256,7 +258,7 @@ X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
   }
 
   if (is_valid_event)
-    return ui::EventSystemLocationFromXEvent(*event);
+    return ui::EventSystemLocationFromXEvent(*dispatching_event_);
   return base::nullopt;
 }
 
@@ -300,7 +302,7 @@ void X11EventSource::RestoreOverridenXEventDispatcher() {
 }
 
 void X11EventSource::DispatchPlatformEvent(const PlatformEvent& event,
-                                           XEvent* xevent) {
+                                           x11::Event* xevent) {
   DCHECK(event);
 
   // First, tell the XEventDispatchers, which can have PlatformEventDispatcher,
@@ -319,7 +321,7 @@ void X11EventSource::DispatchPlatformEvent(const PlatformEvent& event,
     dispatcher.PlatformEventDispatchFinished();
 }
 
-void X11EventSource::DispatchXEventToXEventDispatchers(XEvent* xevent) {
+void X11EventSource::DispatchXEventToXEventDispatchers(x11::Event* xevent) {
   bool stop_dispatching = false;
 
   for (auto& observer : observers_)
@@ -350,7 +352,7 @@ void X11EventSource::DispatchXEventToXEventDispatchers(XEvent* xevent) {
   overridden_dispatcher_restored_ = false;
 }
 
-void XEventDispatcher::CheckCanDispatchNextPlatformEvent(XEvent* xev) {}
+void XEventDispatcher::CheckCanDispatchNextPlatformEvent(x11::Event* xev) {}
 
 void XEventDispatcher::PlatformEventDispatchFinished() {}
 
@@ -358,7 +360,7 @@ PlatformEventDispatcher* XEventDispatcher::GetPlatformEventDispatcher() {
   return nullptr;
 }
 
-void X11EventSource::ProcessXEvent(XEvent* xevent) {
+void X11EventSource::ProcessXEvent(x11::Event* xevent) {
   auto translated_event = ui::BuildEventFromXEvent(*xevent);
   // Ignore native platform-events only if they correspond to mouse events.
   // Allow other types of events to still be handled
@@ -384,7 +386,8 @@ void X11EventSource::ProcessXEvent(XEvent* xevent) {
 ////////////////////////////////////////////////////////////////////////////////
 // X11EventSource, protected
 
-void X11EventSource::PostDispatchEvent(XEvent* xevent) {
+void X11EventSource::PostDispatchEvent(x11::Event* x11_event) {
+  XEvent* xevent = &x11_event->xlib_event();
   bool should_update_device_list = false;
 
   if (xevent->type == x11::GeGenericEvent::opcode) {
@@ -439,10 +442,10 @@ void X11EventSource::DispatchXEvent(x11::Event* event) {
   // returns, not to its initial value, otherwise nested message loops
   // will incorrectly think that the current event being dispatched is
   // an old event.  This means base::AutoReset should not be used.
-  dispatching_event_ = &event->xlib_event();
+  dispatching_event_ = event;
 
-  ProcessXEvent(&event->xlib_event());
-  PostDispatchEvent(&event->xlib_event());
+  ProcessXEvent(event);
+  PostDispatchEvent(event);
 
   dispatching_event_ = nullptr;
 }

@@ -84,6 +84,10 @@ class PLATFORM_EXPORT AudioDelayDSPKernel : public AudioDSPKernel {
 
   AudioFloatArray delay_times_;
 
+  // Temporary buffer used to hold the second sample for interpolation if
+  // needed.
+  AudioFloatArray temp_buffer_;
+
   size_t BufferLengthForDelay(double delay_time, double sample_rate) const;
 };
 

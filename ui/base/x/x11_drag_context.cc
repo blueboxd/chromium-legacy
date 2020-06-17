@@ -191,7 +191,8 @@ void XDragContext::MaskOperation(x11::Atom xdnd_operation,
     *drag_operation |= DragDropTypes::DRAG_LINK;
 }
 
-bool XDragContext::DispatchXEvent(XEvent* xev) {
+bool XDragContext::DispatchXEvent(x11::Event* x11_event) {
+  XEvent* xev = &x11_event->xlib_event();
   if (xev->type == PropertyNotify &&
       static_cast<x11::Atom>(xev->xproperty.atom) ==
           gfx::GetAtom(kXdndActionList)) {

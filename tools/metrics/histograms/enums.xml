@@ -1979,6 +1979,36 @@ Unknown properties are collapsed to zero. -->
   </int>
 </enum>
 
+<enum name="AndroidWebViewCrashInteraction">
+  <int value="0" label="FORCE_UPLOAD_BUTTON">
+    The user tapped the &quot;upload this crash report&quot; button.
+  </int>
+  <int value="1" label="FORCE_UPLOAD_NO_DIALOG">
+    The developer UI uploaded the crash report with no dialog because the user
+    met the criteria for crash uploads.
+  </int>
+  <int value="2" label="FORCE_UPLOAD_DIALOG_METERED_NETWORK">
+    The user was shown a dialog after tapping the upload button. The user
+    responded by uploading the crash report anyway.
+  </int>
+  <int value="3" label="FORCE_UPLOAD_DIALOG_CANCEL">
+    The user was shown a dialog after tapping the upload button. The user
+    responded by dismissing the dialog and did not upload the crash.
+  </int>
+  <int value="4" label="FILE_BUG_REPORT_BUTTON">
+    The user tapped the &quot;file bug report&quot; button.
+  </int>
+  <int value="5" label="FILE_BUG_REPORT_DIALOG_PROCEED">
+    The user was shown a dialog after tapping the &quot;file bug report&quot;
+    button. The user responded by proceeding to crbug.com.
+  </int>
+  <int value="6" label="FILE_BUG_REPORT_DIALOG_DISMISS">
+    The user was shown a dialog after tapping the &quot;file bug report&quot;
+    button. The user responded by dismissing the dialog and did not file a bug
+    report.
+  </int>
+</enum>
+
 <enum name="AndroidWebViewDevUiFragments">
   <int value="0" label="HOME_FRAGMENT"/>
   <int value="1" label="CRASHES_LIST_FRAGMENT"/>
@@ -41627,6 +41657,7 @@ from previous Chrome versions.
   <int value="1036565901" label="AssistPersonalInfo:enabled"/>
   <int value="1037961753" label="CCTIncognito:disabled"/>
   <int value="1038234679" label="PrefetchPrivacyChanges:disabled"/>
+  <int value="1038264914" label="PerDeskShelf:enabled"/>
   <int value="1042202617" label="RemoteCopyReceiver:enabled"/>
   <int value="1043291220" label="OverviewSwipeToClose:disabled"/>
   <int value="1043334401" label="disable-slimming-paint-invalidation"/>
@@ -41819,6 +41850,7 @@ from previous Chrome versions.
   <int value="1237297772" label="no-pings"/>
   <int value="1237659269"
       label="OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms:enabled"/>
+  <int value="1238190462" label="PerDeskShelf:disabled"/>
   <int value="1239720601" label="OmniboxZeroSuggestionsOnNTPRealbox:enabled"/>
   <int value="1240073971" label="ash-disable-smooth-screen-rotation"/>
   <int value="1242100010" label="AutofillProfileClientValidation:disabled"/>
@@ -44524,6 +44556,7 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Failed to write origin"/>
   <int value="3" label="Failed to write playback"/>
   <int value="4" label="Failed to increment aggregated watchtime"/>
+  <int value="5" label="Failed to store playback due to bad origin"/>
 </enum>
 
 <enum name="MediaHistorySessionWriteResult">
@@ -50628,6 +50661,19 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="requests sent"/>
   <int value="2" label="requests invalidated"/>
   <int value="3" label="(non-invalidated) replies received"/>
+</enum>
+
+<enum name="OnServiceConnectedTimedOutResult">
+  <int value="0" label="AlreadyConnected">
+    OnServiceConnected is already called. Everything worked as expected.
+  </int>
+  <int value="1" label="NotNeeded">
+    OnServiceConnected is not called and connection is not needed. Could for
+    example indicate the user closed the tab before timeout.
+  </int>
+  <int value="2" label="Fallback">
+    Timed out and perform fallback operation.
+  </int>
 </enum>
 
 <enum name="OobeUserClickTarget">

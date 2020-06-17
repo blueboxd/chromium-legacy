@@ -45,8 +45,9 @@ void NGTextFragmentBuilder::SetText(
     LayoutObject* layout_object,
     const String& text,
     scoped_refptr<const ComputedStyle> style,
-    bool is_ellipsis_style,
-    scoped_refptr<const ShapeResultView> shape_result) {
+    NGStyleVariant style_variant,
+    scoped_refptr<const ShapeResultView> shape_result,
+    const LogicalSize& size) {
   DCHECK(layout_object);
   DCHECK(style);
   DCHECK(shape_result);
@@ -55,10 +56,8 @@ void NGTextFragmentBuilder::SetText(
   text_ = text;
   text_offset_ = {shape_result->StartIndex(), shape_result->EndIndex()};
   resolved_direction_ = shape_result->Direction();
-  SetStyle(style, is_ellipsis_style ? NGStyleVariant::kEllipsis
-                                    : NGStyleVariant::kStandard);
-  size_ = {shape_result->SnappedWidth(),
-           NGLineHeightMetrics(*style).LineHeight()};
+  SetStyle(style, style_variant);
+  size_ = size;
   shape_result_ = std::move(shape_result);
   layout_object_ = layout_object;
 }

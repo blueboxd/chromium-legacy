@@ -10,9 +10,9 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import android.graphics.Bitmap;
-import android.support.test.filters.SmallTest;
 
 import androidx.core.util.AtomicFile;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Before;
 import org.junit.Rule;

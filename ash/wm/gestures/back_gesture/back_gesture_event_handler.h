@@ -6,6 +6,7 @@
 #define ASH_WM_GESTURES_BACK_GESTURE_BACK_GESTURE_EVENT_HANDLER_H_
 
 #include "ash/wm/gestures/back_gesture/back_gesture_metrics.h"
+#include "base/containers/flat_set.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/events/gestures/gesture_provider_aura.h"
@@ -81,6 +82,11 @@ class BackGestureEventHandler : public display::DisplayObserver,
   // only touch events from |first_touch_id_| will be recorded.
   gfx::Point last_touch_point_;
   ui::PointerId first_touch_id_ = ui::kPointerIdUnknown;
+
+  // Maintains the ids list of the touch events that are not generated from
+  // |first_touch_id_| when back gesture is performed. We need this so that we
+  // can ignore gesture events that are not generated from the first finger.
+  base::flat_set<uint32_t> other_touch_event_ids_list_;
 
   // Used to show the affordance while swiping from left edge to go to the
   // previous page.

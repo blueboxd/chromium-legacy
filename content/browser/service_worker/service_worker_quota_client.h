@@ -36,7 +36,6 @@ class ServiceWorkerQuotaClient : public storage::QuotaClient {
                         DeletionCallback callback) override;
   void PerformStorageCleanup(blink::mojom::StorageType type,
                              base::OnceClosure callback) override;
-  bool DoesSupport(blink::mojom::StorageType type) const override;
 
   static constexpr storage::QuotaClientType kType =
       storage::QuotaClientType::kServiceWorker;

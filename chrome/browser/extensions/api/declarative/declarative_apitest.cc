@@ -199,18 +199,9 @@ IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, PersistRules) {
   EXPECT_EQ(kTestTitle, GetTitle());
 }
 
-// Disabled for flakiness: http://crbug.com/851854
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_ExtensionLifetimeRulesHandling \
-  DISABLED_ExtensionLifetimeRulesHandling
-#else
-#define MAYBE_ExtensionLifetimeRulesHandling ExtensionLifetimeRulesHandling
-#endif
-
 // Test that the rules are correctly persisted and (de)activated during
 // changing the "installed" and "enabled" status of an extension.
-IN_PROC_BROWSER_TEST_F(DeclarativeApiTest,
-                       MAYBE_ExtensionLifetimeRulesHandling) {
+IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, ExtensionLifetimeRulesHandling) {
   TestExtensionDir ext_dir;
 
   // 1. Install the extension. Rules should become active.
@@ -276,17 +267,10 @@ IN_PROC_BROWSER_TEST_F(DeclarativeApiTest,
   EXPECT_EQ(0u, NumberOfRegisteredRules(extension_id));
 }
 
-// Disabled for flakiness: http://crbug.com/851854
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_NoTracesAfterUninstalling DISABLED_NoTracesAfterUninstalling
-#else
-#define MAYBE_NoTracesAfterUninstalling NoTracesAfterUninstalling
-#endif
-
 // When an extension is uninstalled, the state store deletes all preferences
 // stored for that extension. We need to make sure we don't store anything after
 // that deletion occurs.
-IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, MAYBE_NoTracesAfterUninstalling) {
+IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, NoTracesAfterUninstalling) {
   TestExtensionDir ext_dir;
 
   // 1. Install the extension. Verify that rules become active and some prefs

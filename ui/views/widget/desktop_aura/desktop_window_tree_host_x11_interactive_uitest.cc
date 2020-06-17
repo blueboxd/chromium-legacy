@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_x11.h"
 
+#include <xcb/xproto.h>
+
 #include <memory>
 
 #include "base/macros.h"
@@ -17,6 +19,7 @@
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/events/x/x11_event_translation.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -39,7 +42,7 @@ class ActivationWaiter : public ui::X11PropertyChangeWaiter {
 
  private:
   // ui::X11PropertyChangeWaiter:
-  bool ShouldKeepOnWaiting(XEvent* event) override {
+  bool ShouldKeepOnWaiting(x11::Event* event) override {
     XID xid = 0;
     ui::GetXIDProperty(ui::GetX11RootWindow(), "_NET_ACTIVE_WINDOW", &xid);
     return xid != window_;
@@ -88,23 +91,25 @@ void DispatchMouseMotionEvent(DesktopWindowTreeHostX11* desktop_host,
                               const gfx::Point& point_in_screen) {
   gfx::Rect bounds_in_screen = desktop_host->window()->GetBoundsInScreen();
 
-  Display* display = gfx::GetXDisplay();
-  XEvent xev;
-  xev.xmotion.type = MotionNotify;
-  xev.xmotion.display = display;
-  xev.xmotion.window = desktop_host->GetAcceleratedWidget();
-  xev.xmotion.root = DefaultRootWindow(display);
-  xev.xmotion.subwindow = 0;
-  xev.xmotion.time = x11::CurrentTime;
-  xev.xmotion.x = point_in_screen.x() - bounds_in_screen.x();
-  xev.xmotion.y = point_in_screen.y() - bounds_in_screen.y();
-  xev.xmotion.x_root = point_in_screen.x();
-  xev.xmotion.y_root = point_in_screen.y();
-  xev.xmotion.state = 0;
-  xev.xmotion.is_hint = NotifyNormal;
-  xev.xmotion.same_screen = x11::True;
+  auto* connection = x11::Connection::Get();
+  xcb_generic_event_t ge;
+  memset(&ge, 0, sizeof(ge));
+  auto* xev = reinterpret_cast<xcb_motion_notify_event_t*>(&ge);
+  xev->response_type = MotionNotify;
+  xev->event = desktop_host->GetAcceleratedWidget();
+  xev->root = static_cast<uint32_t>(connection->default_screen().root);
+  xev->child = 0;
+  xev->time = x11::CurrentTime;
+  xev->event_x = point_in_screen.x() - bounds_in_screen.x();
+  xev->event_y = point_in_screen.y() - bounds_in_screen.y();
+  xev->root_x = point_in_screen.x();
+  xev->root_y = point_in_screen.y();
+  xev->state = 0;
+  xev->detail = NotifyNormal;
+  xev->same_screen = x11::True;
 
-  ui::X11EventSource::GetInstance()->ProcessXEvent(&xev);
+  x11::Event x11_event(&ge, connection);
+  ui::X11EventSource::GetInstance()->ProcessXEvent(&x11_event);
 }
 
 }  // namespace

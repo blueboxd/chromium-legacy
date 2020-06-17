@@ -46,7 +46,8 @@ X11MenuRegistrar::~X11MenuRegistrar() {
     ui::X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
 }
 
-bool X11MenuRegistrar::DispatchXEvent(XEvent* event) {
+bool X11MenuRegistrar::DispatchXEvent(x11::Event* x11_event) {
+  XEvent* event = &x11_event->xlib_event();
   if (event->type != CreateNotify && event->type != DestroyNotify) {
     return false;
   }

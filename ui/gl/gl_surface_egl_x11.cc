@@ -104,7 +104,8 @@ NativeViewGLSurfaceEGLX11::CreateVsyncProviderInternal() {
   return std::make_unique<XrandrIntervalOnlyVSyncProvider>(GetXNativeDisplay());
 }
 
-bool NativeViewGLSurfaceEGLX11::DispatchXEvent(XEvent* x_event) {
+bool NativeViewGLSurfaceEGLX11::DispatchXEvent(x11::Event* x11_event) {
+  XEvent* x_event = &x11_event->xlib_event();
   // When ANGLE is used for EGL, it creates an X11 child window. Expose events
   // from this window need to be forwarded to this class.
   bool can_dispatch =

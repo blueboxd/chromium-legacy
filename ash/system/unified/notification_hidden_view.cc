@@ -38,7 +38,7 @@ void ShowLockScreenNotificationSettings() {
 NotificationHiddenView::NotificationHiddenView() {
   auto* label = new views::Label;
   label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextPrimary,
+      AshColorProvider::ContentLayerType::kTextColorPrimary,
       AshColorProvider::AshColorMode::kDark));
   label->SetAutoColorReadabilityEnabled(false);
   label->SetText(
@@ -51,7 +51,8 @@ NotificationHiddenView::NotificationHiddenView() {
   container->SetBackground(views::CreateBackgroundFromPainter(
       views::Painter::CreateSolidRoundRectPainter(
           AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-              AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+              AshColorProvider::ControlsLayerType::
+                  kControlBackgroundColorInactive,
               kUnifiedMenuButtonColor),
           kUnifiedTrayCornerRadius)));
 

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.test.crash;
 
-import android.support.test.filters.SmallTest;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Rule;
 import org.junit.Test;

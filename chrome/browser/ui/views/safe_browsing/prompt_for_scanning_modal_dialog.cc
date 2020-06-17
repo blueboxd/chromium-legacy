@@ -46,6 +46,7 @@ PromptForScanningModalDialog::PromptForScanningModalDialog(
     : web_contents_(web_contents),
       filename_(filename),
       open_now_callback_(std::move(open_now_callback)) {
+  SetTitle(IDS_DEEP_SCANNING_INFO_DIALOG_TITLE);
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_INFO_DIALOG_ACCEPT_BUTTON));
@@ -101,10 +102,6 @@ bool PromptForScanningModalDialog::IsDialogButtonEnabled(
 
 bool PromptForScanningModalDialog::ShouldShowCloseButton() const {
   return false;
-}
-
-base::string16 PromptForScanningModalDialog::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_INFO_DIALOG_TITLE);
 }
 
 ui::ModalType PromptForScanningModalDialog::GetModalType() const {

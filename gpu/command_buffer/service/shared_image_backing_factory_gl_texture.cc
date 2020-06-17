@@ -1004,43 +1004,18 @@ SharedImageBackingFactoryGLTexture::CreateSharedImage(
   auto result = std::make_unique<SharedImageBackingGLImage>(
       image, mailbox, format, size, color_space, usage, attribs,
       use_passthrough_);
-
-  // Create the service GL texture only after the GLImage and backing have
-  // been allocated.
-  // TODO(https://crbug.com/1092155): Do this lazily.
-  gl::GLApi* api = gl::g_current_gl_context;
-  ScopedRestoreTexture scoped_restore(api, target);
-  GLuint service_id = MakeTextureAndSetParameters(
-      api, target, for_framebuffer_attachment && texture_usage_angle_);
-
-  gles2::Texture::ImageState image_state = gles2::Texture::UNBOUND;
-  if (image->ShouldBindOrCopy() == gl::GLImage::BIND) {
-    bool is_bound = false;
-    if (is_rgb_emulation)
-      is_bound = image->BindTexImageWithInternalformat(target, GL_RGB);
-    else
-      is_bound = image->BindTexImage(target);
-    if (is_bound) {
-      image_state = gles2::Texture::BOUND;
-    } else {
-      LOG(ERROR) << "Failed to bind image to target.";
-      api->glDeleteTexturesFn(1, &service_id);
-      return nullptr;
-    }
-  } else if (use_passthrough_) {
-    image->CopyTexImage(target);
-    image_state = gles2::Texture::COPIED;
-  }
-
   SharedImageBackingGLCommon::InitializeGLTextureParams params;
   params.target = target;
   params.internal_format =
       is_rgb_emulation ? GL_RGB : image->GetInternalFormat();
   params.format = is_rgb_emulation ? GL_RGB : image->GetDataFormat();
   params.type = image->GetDataType();
-  params.image_state = image_state;
   params.is_cleared = true;
-  result->InitializeGLTexture(service_id, image, params);
+  params.is_rgb_emulation = is_rgb_emulation;
+  params.framebuffer_attachment_angle =
+      for_framebuffer_attachment && texture_usage_angle_;
+  if (!result->InitializeGLTexture(0, params))
+    return nullptr;
   return std::move(result);
 }
 
@@ -1062,7 +1037,7 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageForTest(
   params.format = viz::GLDataFormat(format);
   params.type = viz::GLDataType(format);
   params.is_cleared = is_cleared;
-  result->InitializeGLTexture(service_id, nullptr, params);
+  result->InitializeGLTexture(service_id, params);
   return std::move(result);
 }
 
@@ -1099,25 +1074,20 @@ bool SharedImageBackingFactoryGLTexture::CanImportGpuMemoryBuffer(
   return true;
 }
 
-void SharedImageBackingGLCommon::InitializeGLTexture(
+bool SharedImageBackingGLCommon::InitializeGLTexture(
     GLuint service_id,
-    scoped_refptr<gl::GLImage> image,
     const InitializeGLTextureParams& params) {
+  if (!service_id) {
+    gl::GLApi* api = gl::g_current_gl_context;
+    ScopedRestoreTexture scoped_restore(api, params.target);
+    service_id = MakeTextureAndSetParameters(
+        api, params.target, params.framebuffer_attachment_angle);
+  }
+
   if (IsPassthrough()) {
     passthrough_texture_ = base::MakeRefCounted<gles2::TexturePassthrough>(
         service_id, params.target);
-    if (image) {
-      passthrough_texture_->SetLevelImage(params.target, 0, image.get());
-      passthrough_texture_->set_is_bind_pending(params.image_state ==
-                                                gles2::Texture::UNBOUND);
-    }
-
-    // Get the texture size from ANGLE and set it on the passthrough texture.
-    GLint texture_memory_size = 0;
-    gl::GLApi* api = gl::g_current_gl_context;
-    api->glGetTexParameterivFn(params.target, GL_MEMORY_SIZE_ANGLE,
-                               &texture_memory_size);
-    passthrough_texture_->SetEstimatedSize(texture_memory_size);
+    passthrough_texture_->SetEstimatedSize(EstimatedSize(format(), size()));
   } else {
     texture_ = new gles2::Texture(service_id);
     texture_->SetLightweightRef();
@@ -1132,11 +1102,49 @@ void SharedImageBackingGLCommon::InitializeGLTexture(
                            params.is_cleared ? gfx::Rect(size()) : gfx::Rect());
     if (params.swizzle)
       texture_->SetCompatibilitySwizzle(params.swizzle);
-    if (image)
-      texture_->SetLevelImage(params.target, 0, image.get(),
-                              params.image_state);
     texture_->SetImmutable(true, params.has_immutable_storage);
   }
+
+  return true;
+}
+
+bool SharedImageBackingGLImage::InitializeGLTexture(
+    GLuint service_id,
+    const InitializeGLTextureParams& params) {
+  SharedImageBackingGLCommon::InitializeGLTexture(service_id, params);
+
+  gl::GLApi* api = gl::g_current_gl_context;
+  ScopedRestoreTexture scoped_restore(api, params.target);
+  api->glBindTextureFn(params.target, GetGLServiceId());
+
+  gles2::Texture::ImageState image_state = gles2::Texture::UNBOUND;
+  if (image_->ShouldBindOrCopy() == gl::GLImage::BIND) {
+    bool is_bound = false;
+    if (params.is_rgb_emulation) {
+      is_bound = image_->BindTexImageWithInternalformat(params.target, GL_RGB);
+    } else {
+      is_bound = image_->BindTexImage(params.target);
+    }
+
+    if (is_bound) {
+      image_state = gles2::Texture::BOUND;
+    } else {
+      LOG(ERROR) << "Failed to bind image to target.";
+      return false;
+    }
+  } else if (IsPassthrough()) {
+    image_->CopyTexImage(params.target);
+    image_state = gles2::Texture::COPIED;
+  }
+
+  if (IsPassthrough()) {
+    passthrough_texture_->SetLevelImage(params.target, 0, image_.get());
+    passthrough_texture_->set_is_bind_pending(image_state ==
+                                              gles2::Texture::UNBOUND);
+  } else {
+    texture_->SetLevelImage(params.target, 0, image_.get(), image_state);
+  }
+  return true;
 }
 
 std::unique_ptr<SharedImageBacking>
@@ -1267,6 +1275,8 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
                 SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT)) != 0;
 
   scoped_refptr<gl::GLImage> image;
+  std::unique_ptr<SharedImageBackingGLCommon> result;
+
   // TODO(piman): We pretend the texture was created in an ES2 context, so that
   // it can be used in other ES2 contexts, and so we have to pass gl_format as
   // the internal format in the LevelInfo. https://crbug.com/628064
@@ -1295,9 +1305,9 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
     level_info_internal_format = image->GetInternalFormat();
     if (color_space.IsValid())
       image->SetColorSpace(color_space);
+    needs_subimage_upload = !pixel_data.empty();
   }
 
-  std::unique_ptr<SharedImageBackingGLCommon> result;
   if (image) {
     result = std::make_unique<SharedImageBackingGLImage>(
         image, mailbox, format, size, color_space, usage, attribs,
@@ -1307,44 +1317,52 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
         mailbox, format, size, color_space, usage, use_passthrough_);
   }
 
-  // Create the service GL texture only after the GLImage and backing have
-  // been allocated.
-  // TODO(https://crbug.com/1092155): Do this lazily.
-  gl::GLApi* api = gl::g_current_gl_context;
-  ScopedRestoreTexture scoped_restore(api, target);
-  GLuint service_id = MakeTextureAndSetParameters(
-      api, target, for_framebuffer_attachment && texture_usage_angle_);
+  SharedImageBackingGLCommon::InitializeGLTextureParams params;
+  params.target = target;
+  params.internal_format = level_info_internal_format;
+  params.format = format_info.gl_format;
+  params.type = format_info.gl_type;
+  params.swizzle = format_info.swizzle;
+  params.is_cleared = pixel_data.empty() ? is_cleared : true;
+  params.has_immutable_storage = has_immutable_storage;
+  params.framebuffer_attachment_angle =
+      for_framebuffer_attachment && texture_usage_angle_;
+  if (!result->InitializeGLTexture(0, params))
+    return nullptr;
 
-  if (image) {
-    if (!image->BindTexImage(target)) {
-      LOG(ERROR) << "CreateSharedImage: Failed to bind image";
-      api->glDeleteTexturesFn(1, &service_id);
-      return nullptr;
+  // Allocate texture storage for non-GLImage-backed textures.
+  if (!image) {
+    gl::GLApi* api = gl::g_current_gl_context;
+    ScopedRestoreTexture scoped_restore(api, target);
+    api->glBindTextureFn(target, result->GetGLServiceId());
+
+    if (format_info.supports_storage) {
+      api->glTexStorage2DEXTFn(target, 1, format_info.storage_internal_format,
+                               size.width(), size.height());
+      has_immutable_storage = true;
+      needs_subimage_upload = !pixel_data.empty();
+    } else if (format_info.is_compressed) {
+      ScopedResetAndRestoreUnpackState scoped_unpack_state(api, attribs,
+                                                           !pixel_data.empty());
+      api->glCompressedTexImage2DFn(
+          target, 0, format_info.image_internal_format, size.width(),
+          size.height(), 0, pixel_data.size(), pixel_data.data());
+    } else {
+      ScopedResetAndRestoreUnpackState scoped_unpack_state(api, attribs,
+                                                           !pixel_data.empty());
+      api->glTexImage2DFn(target, 0, format_info.image_internal_format,
+                          size.width(), size.height(), 0,
+                          format_info.adjusted_format, format_info.gl_type,
+                          pixel_data.data());
     }
-    needs_subimage_upload = !pixel_data.empty();
-  } else if (format_info.supports_storage) {
-    api->glTexStorage2DEXTFn(target, 1, format_info.storage_internal_format,
-                             size.width(), size.height());
-    has_immutable_storage = true;
-    needs_subimage_upload = !pixel_data.empty();
-  } else if (format_info.is_compressed) {
-    ScopedResetAndRestoreUnpackState scoped_unpack_state(api, attribs,
-                                                         !pixel_data.empty());
-    api->glCompressedTexImage2DFn(target, 0, format_info.image_internal_format,
-                                  size.width(), size.height(), 0,
-                                  pixel_data.size(), pixel_data.data());
-  } else {
-    ScopedResetAndRestoreUnpackState scoped_unpack_state(api, attribs,
-                                                         !pixel_data.empty());
-    api->glTexImage2DFn(target, 0, format_info.image_internal_format,
-                        size.width(), size.height(), 0,
-                        format_info.adjusted_format, format_info.gl_type,
-                        pixel_data.data());
   }
 
   // If we are using a buffer or TexStorage API but have data to upload, do so
   // now via TexSubImage2D.
   if (needs_subimage_upload) {
+    gl::GLApi* api = gl::g_current_gl_context;
+    ScopedRestoreTexture scoped_restore(api, target);
+    api->glBindTextureFn(target, result->GetGLServiceId());
     ScopedResetAndRestoreUnpackState scoped_unpack_state(api, attribs,
                                                          !pixel_data.empty());
     api->glTexSubImage2DFn(target, 0, 0, 0, size.width(), size.height(),
@@ -1352,16 +1370,6 @@ SharedImageBackingFactoryGLTexture::CreateSharedImageInternal(
                            pixel_data.data());
   }
 
-  SharedImageBackingGLCommon::InitializeGLTextureParams params;
-  params.target = target;
-  params.internal_format = level_info_internal_format;
-  params.format = format_info.gl_format;
-  params.type = format_info.gl_type;
-  params.swizzle = format_info.swizzle;
-  params.image_state = gles2::Texture::BOUND;
-  params.is_cleared = pixel_data.empty() ? is_cleared : true;
-  params.has_immutable_storage = has_immutable_storage;
-  result->InitializeGLTexture(service_id, image, params);
   return std::move(result);
 }
 

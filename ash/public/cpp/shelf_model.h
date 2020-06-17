@@ -103,6 +103,18 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   // Resets the item at the specified index. The item's id should not change.
   void Set(int index, const ShelfItem& item);
 
+  // Updates the items' |is_on_active_desk| from the given vector
+  // |items_desk_updates|. Items whose indices are not included in
+  // |items_desk_updates| will remain unchanged.
+  struct ItemDeskUpdate {
+    // The index of the item being updated.
+    int index = -1;
+    // The new value of the item's |ShelfItem::is_on_active_desk|.
+    bool is_on_active_desk = false;
+  };
+  void UpdateItemsForDeskChange(
+      const std::vector<ItemDeskUpdate>& items_desk_updates);
+
   // Returns the ID of the currently active item, or an empty ShelfID if
   // nothing is currently active.
   const ShelfID& active_shelf_id() const { return active_shelf_id_; }

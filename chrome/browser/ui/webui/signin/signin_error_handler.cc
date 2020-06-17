@@ -89,13 +89,6 @@ void SigninErrorHandler::HandleInitializedWithSize(
     FireWebUIListener("switch-button-unavailable");
 
   signin::SetInitializedModalHeight(browser_, web_ui(), args);
-
-  // After the dialog is shown, some platforms might have an element focused.
-  // To be consistent, clear the focused element on all platforms.
-  // TODO(anthonyvd): Figure out why this is needed on Mac and not other
-  // platforms and if there's a way to start unfocused while avoiding this
-  // workaround.
-  FireWebUIListener("clear-focus");
 }
 
 void SigninErrorHandler::CloseDialog() {

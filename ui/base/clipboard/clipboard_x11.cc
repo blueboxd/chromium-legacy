@@ -33,6 +33,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
@@ -62,8 +63,8 @@ class SelectionChangeObserver : public XEventObserver {
   ~SelectionChangeObserver() override;
 
   // XEventObserver:
-  void WillProcessXEvent(XEvent* xev) override;
-  void DidProcessXEvent(XEvent* xev) override {}
+  void WillProcessXEvent(x11::Event* xev) override;
+  void DidProcessXEvent(x11::Event* xev) override {}
 
   int event_base_;
   x11::Atom clipboard_atom_;
@@ -107,7 +108,8 @@ SelectionChangeObserver* SelectionChangeObserver::GetInstance() {
   return base::Singleton<SelectionChangeObserver>::get();
 }
 
-void SelectionChangeObserver::WillProcessXEvent(XEvent* xev) {
+void SelectionChangeObserver::WillProcessXEvent(x11::Event* x11_event) {
+  XEvent* xev = &x11_event->xlib_event();
   if (xev->type == event_base_ + XFixesSelectionNotify) {
     XFixesSelectionNotifyEvent* ev =
         reinterpret_cast<XFixesSelectionNotifyEvent*>(xev);
@@ -237,9 +239,9 @@ class ClipboardX11::X11Details : public XEventDispatcher {
 
  private:
   // XEventDispatcher:
-  bool DispatchXEvent(XEvent* xev) override;
+  bool DispatchXEvent(x11::Event* xev) override;
 
-  bool CanDispatchXEvent(XEvent* xev);
+  bool CanDispatchXEvent(x11::Event* xev);
 
   // Our X11 state.
   Display* x_display_;
@@ -284,8 +286,8 @@ ClipboardX11::X11Details::X11Details()
       clipboard_owner_(x_display_, x_window_, gfx::GetAtom(kClipboard)),
       primary_owner_(x_display_, x_window_, x11::Atom::PRIMARY) {
   XStoreName(x_display_, x_window_, "Chromium clipboard");
-  x_window_events_.reset(
-      new XScopedEventSelector(x_window_, PropertyChangeMask));
+  x_window_events_ =
+      std::make_unique<XScopedEventSelector>(x_window_, PropertyChangeMask);
 
   if (X11EventSource::GetInstance())
     X11EventSource::GetInstance()->AddXEventDispatcher(this);
@@ -447,58 +449,60 @@ void ClipboardX11::X11Details::StoreCopyPasteDataAndWait() {
                       base::TimeTicks::Now() - start);
 }
 
-bool ClipboardX11::X11Details::CanDispatchXEvent(XEvent* xev) {
+bool ClipboardX11::X11Details::CanDispatchXEvent(x11::Event* x11_event) {
+  XEvent* xev = &x11_event->xlib_event();
   if (xev->xany.window == x_window_)
     return true;
 
   if (xev->type == PropertyNotify) {
-    return primary_owner_.CanDispatchPropertyEvent(*xev) ||
-           clipboard_owner_.CanDispatchPropertyEvent(*xev) ||
-           selection_requestor_.CanDispatchPropertyEvent(*xev);
+    return primary_owner_.CanDispatchPropertyEvent(*x11_event) ||
+           clipboard_owner_.CanDispatchPropertyEvent(*x11_event) ||
+           selection_requestor_.CanDispatchPropertyEvent(*x11_event);
   }
   return false;
 }
 
-bool ClipboardX11::X11Details::DispatchXEvent(XEvent* xev) {
-  if (!CanDispatchXEvent(xev))
+bool ClipboardX11::X11Details::DispatchXEvent(x11::Event* x11_event) {
+  XEvent* xev = &x11_event->xlib_event();
+  if (!CanDispatchXEvent(x11_event))
     return false;
 
   switch (xev->type) {
     case x11::SelectionRequestEvent::opcode: {
       if (xev->xselectionrequest.selection == XA_PRIMARY) {
-        primary_owner_.OnSelectionRequest(*xev);
+        primary_owner_.OnSelectionRequest(*x11_event);
       } else {
         // We should not get requests for the CLIPBOARD_MANAGER selection
         // because we never take ownership of it.
         DCHECK_EQ(GetCopyPasteSelection(),
                   static_cast<x11::Atom>(xev->xselectionrequest.selection));
-        clipboard_owner_.OnSelectionRequest(*xev);
+        clipboard_owner_.OnSelectionRequest(*x11_event);
       }
       break;
     }
     case x11::SelectionNotifyEvent::opcode: {
-      selection_requestor_.OnSelectionNotify(*xev);
+      selection_requestor_.OnSelectionNotify(*x11_event);
       break;
     }
     case x11::SelectionClearEvent::opcode: {
       if (xev->xselectionclear.selection == XA_PRIMARY) {
-        primary_owner_.OnSelectionClear(*xev);
+        primary_owner_.OnSelectionClear(*x11_event);
       } else {
         // We should not get requests for the CLIPBOARD_MANAGER selection
         // because we never take ownership of it.
         DCHECK_EQ(GetCopyPasteSelection(),
                   static_cast<x11::Atom>(xev->xselection.selection));
-        clipboard_owner_.OnSelectionClear(*xev);
+        clipboard_owner_.OnSelectionClear(*x11_event);
       }
       break;
     }
     case x11::PropertyNotifyEvent::opcode: {
-      if (primary_owner_.CanDispatchPropertyEvent(*xev))
-        primary_owner_.OnPropertyEvent(*xev);
-      if (clipboard_owner_.CanDispatchPropertyEvent(*xev))
-        clipboard_owner_.OnPropertyEvent(*xev);
-      if (selection_requestor_.CanDispatchPropertyEvent(*xev))
-        selection_requestor_.OnPropertyEvent(*xev);
+      if (primary_owner_.CanDispatchPropertyEvent(*x11_event))
+        primary_owner_.OnPropertyEvent(*x11_event);
+      if (clipboard_owner_.CanDispatchPropertyEvent(*x11_event))
+        clipboard_owner_.OnPropertyEvent(*x11_event);
+      if (selection_requestor_.CanDispatchPropertyEvent(*x11_event))
+        selection_requestor_.OnPropertyEvent(*x11_event);
       break;
     }
     default:
@@ -602,7 +606,7 @@ ClipboardX11::ReadAvailablePlatformSpecificFormatNames(
     if (auto response = future.Sync())
       types.push_back(base::UTF8ToUTF16(response->name));
     else
-      types.push_back({});
+      types.emplace_back();
   }
 
   return types;

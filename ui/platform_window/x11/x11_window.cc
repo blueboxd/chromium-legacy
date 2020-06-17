@@ -102,12 +102,15 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
 }
 
 // Coalesce touch/mouse events if needed
-bool CoalesceEventsIfNeeded(XEvent* const xev, EventType type, XEvent* out) {
+bool CoalesceEventsIfNeeded(x11::Event* const x11_event,
+                            EventType type,
+                            x11::Event* out) {
+  XEvent* xev = &x11_event->xlib_event();
   if (xev->type == x11::MotionNotifyEvent::opcode ||
       (xev->type == x11::GeGenericEvent::opcode &&
        (type == ui::ET_TOUCH_MOVED || type == ui::ET_MOUSE_MOVED ||
         type == ui::ET_MOUSE_DRAGGED))) {
-    return ui::CoalescePendingMotionEvents(xev, out) > 0;
+    return ui::CoalescePendingMotionEvents(x11_event, out) > 0;
   }
   return false;
 }
@@ -529,18 +532,19 @@ void X11Window::SetX11ExtensionDelegate(X11ExtensionDelegate* delegate) {
   x11_extension_delegate_ = delegate;
 }
 
-bool X11Window::HandleAsAtkEvent(XEvent* xev) {
+bool X11Window::HandleAsAtkEvent(x11::Event* x11_event) {
 #if !BUILDFLAG(USE_ATK)
   // TODO(crbug.com/1014934): Support ATK in Ozone/X11.
   NOTREACHED();
   return false;
 #else
+  XEvent* xev = &x11_event->xlib_event();
   DCHECK(xev);
   if (!x11_extension_delegate_ || (xev->type != x11::KeyEvent::Press &&
                                    xev->type != x11::KeyEvent::Release)) {
     return false;
   }
-  auto atk_key_event = AtkKeyEventFromXEvent(xev);
+  auto atk_key_event = AtkKeyEventFromXEvent(x11_event);
   return x11_extension_delegate_->OnAtkKeyEvent(atk_key_event.get());
 #endif
 }
@@ -550,7 +554,7 @@ bool X11Window::HandleAsAtkEvent(XEvent* xev) {
 // able to process next translated event sent by it. So, it's done through
 // |handle_next_event_| internal flag, used in subsequent CanDispatchEvent
 // call.
-void X11Window::CheckCanDispatchNextPlatformEvent(XEvent* xev) {
+void X11Window::CheckCanDispatchNextPlatformEvent(x11::Event* xev) {
   if (is_shutting_down_)
     return;
   current_xevent_ = XWindow::IsTargetedBy(*xev) ? xev : nullptr;
@@ -564,7 +568,7 @@ PlatformEventDispatcher* X11Window::GetPlatformEventDispatcher() {
   return this;
 }
 
-bool X11Window::DispatchXEvent(XEvent* xev) {
+bool X11Window::DispatchXEvent(x11::Event* xev) {
   if (!XWindow::IsTargetedBy(*xev))
     return false;
   XWindow::ProcessEvent(xev);
@@ -596,7 +600,7 @@ uint32_t X11Window::DispatchEvent(const PlatformEvent& event) {
   return POST_DISPATCH_STOP_PROPAGATION;
 }
 
-void X11Window::DispatchUiEvent(ui::Event* event, XEvent* xev) {
+void X11Window::DispatchUiEvent(ui::Event* event, x11::Event* xev) {
   auto* window_manager = X11WindowManager::GetInstance();
   DCHECK(window_manager);
 
@@ -624,7 +628,7 @@ void X11Window::DispatchUiEvent(ui::Event* event, XEvent* xev) {
     return located_events_grabber->DispatchUiEvent(event, xev);
   }
 
-  XEvent last_xev;
+  x11::Event last_xev;
   std::unique_ptr<ui::Event> last_motion;
   bool coalesced = CoalesceEventsIfNeeded(xev, event->type(), &last_xev);
   if (coalesced) {
@@ -648,9 +652,6 @@ void X11Window::DispatchUiEvent(ui::Event* event, XEvent* xev) {
     platform_window_delegate_->DispatchEvent(event);
 #endif
   }
-
-  if (coalesced)
-    XFreeEventData(last_xev.xgeneric.display, &last_xev.xcookie);
 }
 
 void X11Window::OnXWindowCreated() {
@@ -753,21 +754,21 @@ void X11Window::OnXWindowLostPointerGrab() {
     x11_extension_delegate_->OnLostMouseGrab();
 }
 
-void X11Window::OnXWindowSelectionEvent(XEvent* xev) {
+void X11Window::OnXWindowSelectionEvent(x11::Event* xev) {
   if (x_event_delegate_)
     x_event_delegate_->OnXWindowSelectionEvent(xev);
 #if defined(USE_OZONE)
   DCHECK(drag_drop_client_);
-  drag_drop_client_->OnSelectionNotify(xev->xselection);
+  drag_drop_client_->OnSelectionNotify(xev->xlib_event().xselection);
 #endif
 }
 
-void X11Window::OnXWindowDragDropEvent(XEvent* xev) {
+void X11Window::OnXWindowDragDropEvent(x11::Event* xev) {
   if (x_event_delegate_)
     x_event_delegate_->OnXWindowDragDropEvent(xev);
 #if defined(USE_OZONE)
   DCHECK(drag_drop_client_);
-  drag_drop_client_->HandleXdndEvent(xev->xclient);
+  drag_drop_client_->HandleXdndEvent(xev->xlib_event().xclient);
 #endif
 }
 

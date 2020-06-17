@@ -327,6 +327,10 @@ general rules of thumb can be helpful in navigating how to structure changes:
   find a product in the Chromium repositories that depends on that line of code
   or else the line of code should be removed.
 
+  Completely new additions to the project (for example, support for a new OS
+  or architecture, or a new top-level directory for a new sub-project) must
+  be approved by [//ENG_REVIEW_OWNERS](../ENG_REVIEW_OWNERS).
+
 - **Code should only be moved to a central location (e.g., //base) when
   multiple consumers would benefit.** We should resist the temptation to
   build overly generic common libraries as that can lead to code bloat and

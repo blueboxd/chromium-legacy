@@ -299,7 +299,7 @@ class DragDropControllerTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    drag_drop_controller_.reset(new TestDragDropController);
+    drag_drop_controller_ = std::make_unique<TestDragDropController>();
     drag_drop_controller_->set_should_block_during_drag_drop(false);
     drag_drop_controller_->set_enabled(true);
     aura::client::SetDragDropClient(Shell::GetPrimaryRootWindow(),
@@ -330,14 +330,15 @@ class DragDropControllerTest : public AshTestBase {
   }
 
   const gfx::ImageSkia& GetDragImage() {
-    return drag_drop_controller_->drag_image_.get()->GetImage();
+    return static_cast<DragImageView*>(
+               drag_drop_controller_->drag_image_widget_->GetContentsView())
+        ->GetImage();
   }
 
   aura::Window* GetDragImageWindow() {
-    return drag_drop_controller_->drag_image_.get()
-               ? drag_drop_controller_->drag_image_->GetWidget()
-                     ->GetNativeWindow()
-               : NULL;
+    return drag_drop_controller_->drag_image_widget_
+               ? drag_drop_controller_->drag_image_widget_->GetNativeWindow()
+               : nullptr;
   }
 
   DragDropTracker* drag_drop_tracker() {
@@ -1051,6 +1052,8 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
 
     drag_drop_controller_->DragCancel();
     CompleteCancelAnimation();
+    // Make sure all pending tasks complete to finish cancellation.
+    base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ("5,5", observer.window_location_on_destroying().ToString());
   }
@@ -1083,6 +1086,8 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
 
     drag_drop_controller_->DragCancel();
     CompleteCancelAnimation();
+    // Make sure all pending tasks complete to finish cancellation.
+    base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ("405,405", observer.window_location_on_destroying().ToString());
   }

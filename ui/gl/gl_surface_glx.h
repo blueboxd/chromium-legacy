@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface.h"
@@ -100,10 +101,10 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX {
   virtual void UnregisterEvents() = 0;
 
   // Forwards Expose event to child window.
-  void ForwardExposeEvent(XEvent* xevent);
+  void ForwardExposeEvent(x11::Event* xevent);
 
   // Checks if event is Expose for child window.
-  bool CanHandleEvent(XEvent* xevent);
+  bool CanHandleEvent(x11::Event* xevent);
 
   gfx::AcceleratedWidget window() const { return window_; }
 

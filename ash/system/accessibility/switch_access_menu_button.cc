@@ -46,10 +46,10 @@ SwitchAccessMenuButton::SwitchAccessMenuButton(std::string action_name,
       kLabelTopPaddingDefaultDip);
 
   SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconPrimary,
+      AshColorProvider::ContentLayerType::kIconColorPrimary,
       AshColorProvider::AshColorMode::kDark);
   SkColor label_color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextPrimary,
+      AshColorProvider::ContentLayerType::kTextColorPrimary,
       AshColorProvider::AshColorMode::kDark);
 
   image_view_->SetImage(gfx::CreateVectorIcon(icon, kIconSizeDip, icon_color));

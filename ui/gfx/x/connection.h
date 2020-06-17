@@ -44,15 +44,20 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
     return extended_max_request_length_;
   }
 
-  const Setup* setup() const { return setup_.get(); }
-  const Screen* default_screen() const { return default_screen_; }
-  const Depth* default_root_depth() const { return default_root_depth_; }
-  const VisualType* default_root_visual() const { return defualt_root_visual_; }
+  const Setup& setup() const { return setup_; }
+  const Screen& default_screen() const { return *default_screen_; }
+  const Depth& default_root_depth() const { return *default_root_depth_; }
+  const VisualType& default_root_visual() const {
+    return *default_root_visual_;
+  }
 
   template <typename T>
   T GenerateId() {
     return static_cast<T>(xcb_generate_id(XcbConnection()));
   }
+
+  // Is the connection up and error-free?
+  bool Ready() const;
 
   // Write all requests to the socket.
   void Flush();
@@ -92,10 +97,10 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
 
   uint32_t extended_max_request_length_ = 0;
 
-  std::unique_ptr<Setup> setup_;
-  const Screen* default_screen_ = nullptr;
-  const Depth* default_root_depth_ = nullptr;
-  const VisualType* defualt_root_visual_ = nullptr;
+  Setup setup_;
+  Screen* default_screen_ = nullptr;
+  Depth* default_root_depth_ = nullptr;
+  VisualType* default_root_visual_ = nullptr;
 
   std::list<Event> events_;
 

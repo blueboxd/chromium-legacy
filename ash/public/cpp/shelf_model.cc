@@ -214,6 +214,18 @@ void ShelfModel::Set(int index, const ShelfItem& item) {
   }
 }
 
+void ShelfModel::UpdateItemsForDeskChange(
+    const std::vector<ItemDeskUpdate>& items_desk_updates) {
+  for (const auto& item : items_desk_updates) {
+    const int index = item.index;
+    DCHECK(index >= 0 && index < item_count());
+    items_[index].is_on_active_desk = item.is_on_active_desk;
+  }
+
+  for (auto& observer : observers_)
+    observer.ShelfItemsUpdatedForDeskChange();
+}
+
 // TODO(manucornet): Add some simple unit tests for this method.
 void ShelfModel::SetActiveShelfID(const ShelfID& shelf_id) {
   if (active_shelf_id_ == shelf_id)

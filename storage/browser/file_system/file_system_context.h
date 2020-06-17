@@ -26,6 +26,7 @@
 #include "storage/browser/file_system/sandbox_file_system_backend_delegate.h"
 #include "storage/browser/file_system/task_runner_bound_observer_list.h"
 #include "storage/common/file_system/file_system_types.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -321,6 +322,12 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
   friend class base::DeleteHelper<FileSystemContext>;
   friend class base::RefCountedDeleteOnSequence<FileSystemContext>;
   ~FileSystemContext();
+
+  // The list of quota-managed storage types covered by file system backends.
+  //
+  // This is called during the constructor, before the file system backends are
+  // initialized.
+  std::vector<blink::mojom::StorageType> QuotaManagedStorageTypes();
 
   // Creates a new FileSystemOperation instance by getting an appropriate
   // FileSystemBackend for |url| and calling the backend's corresponding

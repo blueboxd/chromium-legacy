@@ -86,6 +86,29 @@ public class CrashesListFragment extends DevUiBaseFragment {
                 "Android.WebView.DevUi.CrashList.CollectionState", state, CollectionState.COUNT);
     }
 
+    // These values are persisted to logs. Entries should not be renumbered and
+    // numeric values should never be reused.
+    @IntDef({CrashInteraction.FORCE_UPLOAD_BUTTON, CrashInteraction.FORCE_UPLOAD_NO_DIALOG,
+            CrashInteraction.FORCE_UPLOAD_DIALOG_METERED_NETWORK,
+            CrashInteraction.FORCE_UPLOAD_DIALOG_CANCEL, CrashInteraction.FILE_BUG_REPORT_BUTTON,
+            CrashInteraction.FILE_BUG_REPORT_DIALOG_PROCEED,
+            CrashInteraction.FILE_BUG_REPORT_DIALOG_DISMISS})
+    private @interface CrashInteraction {
+        int FORCE_UPLOAD_BUTTON = 0;
+        int FORCE_UPLOAD_NO_DIALOG = 1;
+        int FORCE_UPLOAD_DIALOG_METERED_NETWORK = 2;
+        int FORCE_UPLOAD_DIALOG_CANCEL = 3;
+        int FILE_BUG_REPORT_BUTTON = 4;
+        int FILE_BUG_REPORT_DIALOG_PROCEED = 5;
+        int FILE_BUG_REPORT_DIALOG_DISMISS = 6;
+        int COUNT = 7;
+    }
+
+    private static void logCrashInteraction(@CrashInteraction int action) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.WebView.DevUi.CrashList.CrashInteraction", action, CrashInteraction.COUNT);
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -231,7 +254,10 @@ public class CrashesListFragment extends DevUiBaseFragment {
             // Report button is only clickable if the crash report is uploaded.
             if (crashInfo.uploadState == UploadState.UPLOADED) {
                 bugButton.setEnabled(true);
-                bugButton.setOnClickListener(v -> { buildCrashBugDialog(crashInfo).show(); });
+                bugButton.setOnClickListener(v -> {
+                    logCrashInteraction(CrashInteraction.FILE_BUG_REPORT_BUTTON);
+                    buildCrashBugDialog(crashInfo).show();
+                });
             } else {
                 bugButton.setEnabled(false);
             }
@@ -248,11 +274,22 @@ public class CrashesListFragment extends DevUiBaseFragment {
                                         "You are connected to a metered network or cellular data."
                                         + " Do you want to proceed?")
                                 .setPositiveButton("Upload",
-                                        (dialog, id) -> attemptUploadCrash(crashInfo.localId))
-                                .setNegativeButton("Cancel", (dialog, id) -> dialog.dismiss())
+                                        (dialog, id) -> {
+                                            logCrashInteraction(
+                                                    CrashInteraction
+                                                            .FORCE_UPLOAD_DIALOG_METERED_NETWORK);
+                                            attemptUploadCrash(crashInfo.localId);
+                                        })
+                                .setNegativeButton("Cancel",
+                                        (dialog, id) -> {
+                                            logCrashInteraction(
+                                                    CrashInteraction.FORCE_UPLOAD_DIALOG_CANCEL);
+                                            dialog.dismiss();
+                                        })
                                 .create()
                                 .show();
                     } else {
+                        logCrashInteraction(CrashInteraction.FORCE_UPLOAD_NO_DIALOG);
                         attemptUploadCrash(crashInfo.localId);
                     }
                 });
@@ -457,9 +494,14 @@ public class CrashesListFragment extends DevUiBaseFragment {
         dialogBuilder.setMessage(
                 "This crash has already been reported to our crash system. Do you want to share "
                 + "more information, such as steps to reproduce the crash?");
-        dialogBuilder.setPositiveButton("Provide more info",
-                (dialog, id) -> startActivity(new CrashBugUrlFactory(crashInfo).getReportIntent()));
-        dialogBuilder.setNegativeButton("Dismiss", (dialog, id) -> dialog.dismiss());
+        dialogBuilder.setPositiveButton("Provide more info", (dialog, id) -> {
+            logCrashInteraction(CrashInteraction.FILE_BUG_REPORT_DIALOG_PROCEED);
+            startActivity(new CrashBugUrlFactory(crashInfo).getReportIntent());
+        });
+        dialogBuilder.setNegativeButton("Dismiss", (dialog, id) -> {
+            logCrashInteraction(CrashInteraction.FILE_BUG_REPORT_DIALOG_DISMISS);
+            dialog.dismiss();
+        });
         return dialogBuilder.create();
     }
 

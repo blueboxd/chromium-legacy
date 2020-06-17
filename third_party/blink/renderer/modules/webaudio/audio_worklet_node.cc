@@ -95,7 +95,7 @@ void AudioWorkletHandler::Process(uint32_t frames_to_process) {
   // the rendering in the AudioWorkletGlobalScope.
   if (processor_ && !processor_->hasErrorOccured()) {
     Vector<scoped_refptr<AudioBus>> input_buses;
-    Vector<AudioBus*> output_buses;
+    Vector<scoped_refptr<AudioBus>> output_buses;
     for (unsigned i = 0; i < NumberOfInputs(); ++i) {
       // If the input is not connected, inform the processor of that
       // fact by setting the bus to null.
@@ -104,8 +104,7 @@ void AudioWorkletHandler::Process(uint32_t frames_to_process) {
       input_buses.push_back(bus);
     }
     for (unsigned i = 0; i < NumberOfOutputs(); ++i)
-      output_buses.push_back(Output(i).Bus());
-
+      output_buses.push_back(WrapRefCounted(Output(i).Bus()));
     for (const auto& param_name : param_value_map_.Keys()) {
       auto* const param_handler = param_handler_map_.at(param_name);
       AudioFloatArray* param_values = param_value_map_.at(param_name);

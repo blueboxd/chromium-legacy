@@ -72,34 +72,34 @@ class ASH_EXPORT AshColorProvider {
 
   // Types of Controls layer.
   enum class ControlsLayerType {
-    kHairlineBorder,
-    kActiveControlBackground,
-    kInactiveControlBackground,
-    kFocusRing,
+    kHairlineBorderColor,
+    kControlBackgroundColorActive,
+    kControlBackgroundColorInactive,
+    kFocusRingColor,
   };
 
   enum class ContentLayerType {
-    kSeparator,
-    kTextPrimary,
-    kTextSecondary,
-    kIconPrimary,
-    kIconSecondary,
-    kIconRed,
+    kSeparatorColor,
+    kTextColorPrimary,
+    kTextColorSecondary,
+    kIconColorPrimary,
+    kIconColorSecondary,
+    kIconAlert,
     // Color for prominent icon button, e.g, "Add connection" icon button inside
     // VPN detailed view.
-    kProminentIconButton,
+    kButtonIconColorProminent,
+
+    // The default color for button labels.
+    kButtonLabelColor,
 
     // Color for system menu icon buttons with inverted dark mode colors, e.g,
     // FeaturePodIconButton
-    kIconSystemMenu,
-    kIconSystemMenuToggled,
+    kSystemMenuIconColor,
+    kSystemMenuIconColorToggled,
 
     // Color for sliders (volume, brightness etc.)
-    kSliderThumbEnabled,
-    kSliderThumbDisabled,
-
-    // The default color for button labels.
-    kButtonLabel,
+    kSliderThumbColorEnabled,
+    kSliderThumbColorDisabled,
   };
 
   // Attributes of ripple, includes the base color, opacity of inkdrop and

@@ -12,6 +12,7 @@
 
 #include "base/memory/singleton.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 
 namespace ui {

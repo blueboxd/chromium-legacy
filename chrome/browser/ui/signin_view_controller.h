@@ -146,6 +146,8 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   void OnReauthDismissed();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SignInViewControllerBrowserTest,
+                           ErrorDialogDefaultFocus);
   friend class login_ui_test_utils::SigninViewControllerTestUtil;
   friend class SigninReauthViewControllerBrowserTest;
 

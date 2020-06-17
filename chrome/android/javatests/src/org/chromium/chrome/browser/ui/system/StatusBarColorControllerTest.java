@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.ui.system;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
-import android.support.test.filters.LargeTest;
 
 import androidx.annotation.ColorInt;
+import androidx.test.filters.LargeTest;
 
 import org.junit.Assert;
 import org.junit.Before;

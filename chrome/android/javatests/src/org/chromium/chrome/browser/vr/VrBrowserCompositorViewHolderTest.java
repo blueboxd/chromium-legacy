@@ -7,8 +7,9 @@ package org.chromium.chrome.browser.vr;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_SVR;
 
 import android.os.Build;
-import android.support.test.filters.MediumTest;
 import android.view.ViewGroup;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

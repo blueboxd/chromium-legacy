@@ -12,6 +12,7 @@
 #include "ui/base/x/selection_utils.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 
 namespace ui {
@@ -54,7 +55,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragContext {
   // action list.
   int GetDragOperation() const;
 
-  bool DispatchXEvent(XEvent* event);
+  bool DispatchXEvent(x11::Event* event);
 
  private:
   // Called to request the next target from the source window. This is only

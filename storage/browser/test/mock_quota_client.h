@@ -70,7 +70,6 @@ class MockQuotaClient : public QuotaClient {
                         DeletionCallback callback) override;
   void PerformStorageCleanup(blink::mojom::StorageType type,
                              base::OnceClosure callback) override;
-  bool DoesSupport(blink::mojom::StorageType type) const override;
 
  private:
   ~MockQuotaClient() override;

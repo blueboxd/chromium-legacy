@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "ui/events/event.h"
 #include "ui/events/events_export.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 
 namespace ui {
@@ -21,23 +22,24 @@ class MouseWheelEvent;
 class TouchEvent;
 
 // Translates a XEvent into a ui::Event.
-EVENTS_EXPORT std::unique_ptr<Event> BuildEventFromXEvent(const XEvent& xev);
+EVENTS_EXPORT std::unique_ptr<Event> BuildEventFromXEvent(
+    const x11::Event& xev);
 
 // Convenience function that translates XEvent into ui::KeyEvent
 EVENTS_EXPORT std::unique_ptr<KeyEvent> BuildKeyEventFromXEvent(
-    const XEvent& xev);
+    const x11::Event& xev);
 
 // Convenience function that translates XEvent into ui::MouseEvent
 EVENTS_EXPORT std::unique_ptr<MouseEvent> BuildMouseEventFromXEvent(
-    const XEvent& xev);
+    const x11::Event& xev);
 
 // Convenience function that translates XEvent into ui::MouseWheelEvent
 EVENTS_EXPORT std::unique_ptr<MouseWheelEvent> BuildMouseWheelEventFromXEvent(
-    const XEvent& xev);
+    const x11::Event& xev);
 
 // Convenience function that translates XEvent into ui::TouchEvent
 EVENTS_EXPORT std::unique_ptr<TouchEvent> BuildTouchEventFromXEvent(
-    const XEvent& xev);
+    const x11::Event& xev);
 
 }  // namespace ui
 

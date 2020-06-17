@@ -5,6 +5,8 @@
 #include "ui/base/x/selection_requestor.h"
 
 #include <stddef.h>
+#include <xcb/xcb.h>
+
 #include <memory>
 
 #include "base/bind.h"
@@ -17,9 +19,12 @@
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace ui {
 
@@ -40,17 +45,18 @@ class SelectionRequestorTest : public testing::Test {
     ui::SetStringProperty(x_window_, requestor_->x_property_,
                           gfx::GetAtom("STRING"), value);
 
-    XEvent xev;
-    xev.type = SelectionNotify;
-    xev.xselection.serial = 0u;
-    xev.xselection.display = x_display_;
-    xev.xselection.requestor = x_window_;
-    xev.xselection.selection = static_cast<uint32_t>(selection);
-    xev.xselection.target = static_cast<uint32_t>(target);
-    xev.xselection.property = static_cast<uint32_t>(requestor_->x_property_);
-    xev.xselection.time = x11::CurrentTime;
-    xev.xselection.type = SelectionNotify;
-    requestor_->OnSelectionNotify(xev);
+    xcb_generic_event_t ge;
+    memset(&ge, 0, sizeof(ge));
+    auto* event = reinterpret_cast<xcb_selection_notify_event_t*>(&ge);
+    event->response_type = x11::SelectionNotifyEvent::opcode;
+    event->sequence = 0;
+    event->requestor = x_window_;
+    event->selection = static_cast<uint32_t>(selection);
+    event->target = static_cast<uint32_t>(target);
+    event->property = static_cast<uint32_t>(requestor_->x_property_);
+    event->time = x11::CurrentTime;
+
+    requestor_->OnSelectionNotify(x11::Event(&ge, x11::Connection::Get()));
   }
 
  protected:

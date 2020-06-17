@@ -87,6 +87,11 @@ class ASH_EXPORT QuickAnswersControllerImpl
  private:
   void MaybeDismissQuickAnswersConsent();
 
+  // Return true if the user consent view is showing.
+  bool MaybeShowUserConsent();
+
+  chromeos::quick_answers::QuickAnswersRequest BuildRequest();
+
   // Bounds of the anchor view.
   gfx::Rect anchor_bounds_;
 

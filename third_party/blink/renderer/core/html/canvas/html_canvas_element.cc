@@ -1092,7 +1092,7 @@ bool HTMLCanvasElement::OriginClean() const {
 }
 
 bool HTMLCanvasElement::ShouldAccelerate2dContext() const {
-  return ShouldAccelerate(kNormalAccelerationCriteria);
+  return ShouldAccelerate();
 }
 
 CanvasResourceDispatcher* HTMLCanvasElement::GetOrCreateResourceDispatcher() {
@@ -1108,7 +1108,7 @@ bool HTMLCanvasElement::PushFrame(scoped_refptr<CanvasResource> image,
   return false;
 }
 
-bool HTMLCanvasElement::ShouldAccelerate(AccelerationCriteria criteria) const {
+bool HTMLCanvasElement::ShouldAccelerate() const {
   if (context_ && !IsRenderingContext2D())
     return false;
 
@@ -1168,7 +1168,14 @@ void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
     if (external_canvas2d_bridge->IsValid())
       canvas2d_bridge_ = std::move(external_canvas2d_bridge);
   } else {
-    if (ShouldAccelerate(kNormalAccelerationCriteria)) {
+    // If the canvas meets the criteria to use accelerated-GPU rendering, and
+    // the user signals that the canvas will not be read frequently through
+    // getImageData, which is a slow operation with GPU, the canvas will try to
+    // use accelerated-GPU rendering.
+    // If any of the two conditions fails, or if the creation of accelerated
+    // resource provider fails, the canvas will fallback to CPU rendering.
+    if (ShouldAccelerate() &&
+        !context_->CreationAttributes().will_read_frequently) {
       canvas2d_bridge_ =
           Create2DLayerBridge(Canvas2DLayerBridge::kEnableAcceleration);
     }
@@ -1274,8 +1281,7 @@ void HTMLCanvasElement::DidMoveToNewDocument(Document& old_document) {
 void HTMLCanvasElement::WillDrawImageTo2DContext(CanvasImageSource* source) {
   if (SharedGpuContext::AllowSoftwareToAcceleratedCanvasUpgrade() &&
       source->IsAccelerated() && GetOrCreateCanvas2DLayerBridge() &&
-      !canvas2d_bridge_->IsAccelerated() &&
-      ShouldAccelerate(kIgnoreResourceLimitCriteria)) {
+      !canvas2d_bridge_->IsAccelerated() && ShouldAccelerate()) {
     std::unique_ptr<Canvas2DLayerBridge> surface =
         Create2DLayerBridge(Canvas2DLayerBridge::kEnableAcceleration);
     if (surface) {

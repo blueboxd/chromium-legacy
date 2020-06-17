@@ -85,6 +85,9 @@ class ImportantSitesUtil {
       size_t max_results);
 #endif
 
+  static std::set<std::string> GetInstalledRegisterableDomains(
+      Profile* profile);
+
   // Record the sites that the user chose to blacklist from clearing (in the
   // Clear Browsing Dialog) and the sites they ignored. The blacklisted sites
   // are NOT cleared as they are 'blacklisted' from the clear operation.

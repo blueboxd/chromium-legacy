@@ -206,7 +206,7 @@ void HomeToOverviewNudgeController::ShowNudge() {
       ContextualNudge::Position::kBottom, gfx::Insets(kNudgeMargins),
       l10n_util::GetStringUTF16(IDS_ASH_HOME_TO_OVERVIEW_CONTEXTUAL_NUDGE),
       AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kTextPrimary,
+          AshColorProvider::ContentLayerType::kTextColorPrimary,
           AshColorProvider::AshColorMode::kDark),
       base::BindRepeating(&HomeToOverviewNudgeController::HandleNudgeTap,
                           weak_factory_.GetWeakPtr()));

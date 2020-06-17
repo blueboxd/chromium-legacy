@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.tab;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -49,8 +50,8 @@ public class TabStateTest {
         File tabStateFile = new File(mTestTabModelDirectory.getBaseDirectory(), info.filename);
         TabState tabState = TabState.restoreTabState(tabStateFile, false);
         Assert.assertNotNull(tabState);
-        Assert.assertEquals(info.url, tabState.getVirtualUrlFromState());
-        Assert.assertEquals(info.title, tabState.getDisplayTitleFromState());
+        Assert.assertEquals(info.url, tabState.contentsState.getVirtualUrlFromState());
+        Assert.assertEquals(info.title, tabState.contentsState.getDisplayTitleFromState());
         Assert.assertEquals(info.version, tabState.contentsState.version());
     }
 

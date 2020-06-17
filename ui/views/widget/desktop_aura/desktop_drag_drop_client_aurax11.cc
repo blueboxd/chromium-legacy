@@ -214,12 +214,13 @@ void DesktopDragDropClientAuraX11::RemoveObserver(
   NOTIMPLEMENTED();
 }
 
-bool DesktopDragDropClientAuraX11::DispatchXEvent(XEvent* event) {
+bool DesktopDragDropClientAuraX11::DispatchXEvent(x11::Event* x11_event) {
+  XEvent* event = &x11_event->xlib_event();
   if (!target_current_context() ||
       event->xany.window != target_current_context()->source_window()) {
     return false;
   }
-  return target_current_context()->DispatchXEvent(event);
+  return target_current_context()->DispatchXEvent(x11_event);
 }
 
 void DesktopDragDropClientAuraX11::OnWindowDestroyed(aura::Window* window) {

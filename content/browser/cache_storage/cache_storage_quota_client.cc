@@ -72,13 +72,6 @@ void CacheStorageQuotaClient::PerformStorageCleanup(
   std::move(callback).Run();
 }
 
-bool CacheStorageQuotaClient::DoesSupport(
-    blink::mojom::StorageType type) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  return type == blink::mojom::StorageType::kTemporary;
-}
-
 // static
 storage::QuotaClientType CacheStorageQuotaClient::GetClientTypeFromOwner(
     CacheStorageOwner owner) {

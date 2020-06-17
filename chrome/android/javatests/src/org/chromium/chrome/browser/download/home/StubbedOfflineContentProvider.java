@@ -60,12 +60,12 @@ public class StubbedOfflineContentProvider implements OfflineContentProvider {
 
     @Override
     public void getItemById(ContentId id, Callback<OfflineItem> callback) {
-        mHandler.post(() -> callback.onResult(null));
+        mHandler.post(callback.bind(null));
     }
 
     @Override
     public void getAllItems(Callback<ArrayList<OfflineItem>> callback) {
-        mHandler.post(() -> callback.onResult(mItems));
+        mHandler.post(callback.bind(mItems));
     }
 
     @Override
@@ -110,6 +110,6 @@ public class StubbedOfflineContentProvider implements OfflineContentProvider {
 
     @Override
     public void renameItem(ContentId id, String name, Callback<Integer /*RenameResult*/> callback) {
-        mHandler.post(() -> callback.onResult(RenameResult.SUCCESS));
+        mHandler.post(callback.bind(RenameResult.SUCCESS));
     }
 }

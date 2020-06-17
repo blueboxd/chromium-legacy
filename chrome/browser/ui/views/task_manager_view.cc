@@ -165,10 +165,6 @@ bool TaskManagerView::ExecuteWindowsCommand(int command_id) {
   return false;
 }
 
-base::string16 TaskManagerView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_TASK_MANAGER_TITLE);
-}
-
 gfx::ImageSkia TaskManagerView::GetWindowIcon() {
 #if defined(OS_CHROMEOS)
   return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
@@ -278,6 +274,7 @@ TaskManagerView::TaskManagerView()
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(IDS_TASK_MANAGER_KILL));
   SetHasWindowSizeControls(true);
+  SetTitle(IDS_TASK_MANAGER_TITLE);
 
   // Avoid calling Accept() when closing the dialog, since Accept() here means
   // "kill task" (!).

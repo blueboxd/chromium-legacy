@@ -30,8 +30,10 @@ class MockBGFQuotaManagerProxy : public storage::MockQuotaManagerProxy {
             base::ThreadTaskRunnerHandle::Get().get()) {}
 
   // Ignore quota client, it is irrelevant for these tests.
-  void RegisterClient(scoped_refptr<storage::QuotaClient> client,
-                      storage::QuotaClientType client_type) override {}
+  void RegisterClient(
+      scoped_refptr<storage::QuotaClient> client,
+      storage::QuotaClientType client_type,
+      const std::vector<blink::mojom::StorageType>& storage_types) override {}
 
   void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                         const url::Origin& origin,

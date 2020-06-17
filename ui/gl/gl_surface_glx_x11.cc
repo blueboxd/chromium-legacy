@@ -31,7 +31,7 @@ void GLSurfaceGLXX11::UnregisterEvents() {
     X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
 }
 
-bool GLSurfaceGLXX11::DispatchXEvent(XEvent* event) {
+bool GLSurfaceGLXX11::DispatchXEvent(x11::Event* event) {
   if (!CanHandleEvent(event))
     return false;
   ForwardExposeEvent(event);

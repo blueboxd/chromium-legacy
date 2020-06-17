@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <xcb/xcb.h>
 
 #include <cstring>
 #include <memory>
@@ -26,47 +27,57 @@
 #include "ui/events/x/events_x_utils.h"
 #include "ui/events/x/x11_event_translation.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/xproto.h"
 
 namespace ui {
 
 namespace {
 
 // Initializes the passed-in Xlib event.
-void InitButtonEvent(XEvent* event,
+void InitButtonEvent(x11::Event* event,
                      bool is_press,
                      const gfx::Point& location,
                      int button,
                      int state) {
-  memset(event, 0, sizeof(*event));
+  xcb_generic_event_t generic_event;
+  memset(&generic_event, 0, sizeof(generic_event));
+  auto* button_event =
+      reinterpret_cast<xcb_button_press_event_t*>(&generic_event);
 
   // We don't bother setting fields that the event code doesn't use, such as
   // x_root/y_root and window/root/subwindow.
-  XButtonEvent* button_event = &(event->xbutton);
-  button_event->type =
+  button_event->response_type =
       is_press ? x11::ButtonEvent::Press : x11::ButtonEvent::Release;
-  button_event->x = location.x();
-  button_event->y = location.y();
-  button_event->button = button;
+  button_event->event_x = location.x();
+  button_event->event_y = location.y();
+  button_event->detail = button;
   button_event->state = state;
+
+  *event = x11::Event(&generic_event, x11::Connection::Get());
 }
 
 #if !defined(OS_CHROMEOS)
 // Initializes the passed-in Xlib event.
 void InitKeyEvent(Display* display,
-                  XEvent* event,
+                  x11::Event* event,
                   bool is_press,
                   int keycode,
                   int state) {
-  memset(event, 0, sizeof(*event));
+  xcb_generic_event_t generic_event;
+  memset(&generic_event, 0, sizeof(generic_event));
+  auto* key_event = reinterpret_cast<xcb_key_press_event_t*>(&generic_event);
 
   // We don't bother setting fields that the event code doesn't use, such as
   // x_root/y_root and window/root/subwindow.
-  XKeyEvent* key_event = &(event->xkey);
-  key_event->display = display;
-  key_event->type = is_press ? x11::KeyEvent::Press : x11::KeyEvent::Release;
-  key_event->keycode = keycode;
+  key_event->response_type =
+      is_press ? x11::KeyEvent::Press : x11::KeyEvent::Release;
+  key_event->detail = keycode;
   key_event->state = state;
+
+  *event = x11::Event(&generic_event, x11::Connection::Get());
 }
 #endif
 
@@ -79,7 +90,7 @@ float ComputeRotationAngle(float twist) {
   return rotation_angle;
 }
 
-std::string FlooredEventLocationString(const XEvent& xev) {
+std::string FlooredEventLocationString(const x11::Event& xev) {
   return gfx::ToFlooredPoint(gfx::PointF(ui::EventLocationFromXEvent(xev)))
       .ToString();
 }
@@ -103,7 +114,7 @@ class EventsXTest : public testing::Test {
 };
 
 TEST_F(EventsXTest, ButtonEvents) {
-  XEvent event;
+  x11::Event event;
   gfx::Point location(5, 10);
   gfx::Vector2d offset;
 
@@ -174,7 +185,7 @@ TEST_F(EventsXTest, ButtonEvents) {
 }
 
 TEST_F(EventsXTest, AvoidExtraEventsOnWheelRelease) {
-  XEvent event;
+  x11::Event event;
   gfx::Point location(5, 10);
 
   InitButtonEvent(&event, true, location, 4, 0);
@@ -189,12 +200,16 @@ TEST_F(EventsXTest, AvoidExtraEventsOnWheelRelease) {
 }
 
 TEST_F(EventsXTest, EnterLeaveEvent) {
-  XEvent event;
-  event.xcrossing.type = x11::CrossingEvent::EnterNotify;
-  event.xcrossing.x = 10;
-  event.xcrossing.y = 20;
-  event.xcrossing.x_root = 110;
-  event.xcrossing.y_root = 120;
+  auto* connection = x11::Connection::Get();
+  xcb_generic_event_t ge;
+  memset(&ge, 0, sizeof(ge));
+  auto* enter = reinterpret_cast<xcb_enter_notify_event_t*>(&ge);
+  enter->response_type = x11::CrossingEvent::EnterNotify;
+  enter->event_x = 10;
+  enter->event_y = 20;
+  enter->root_x = 110;
+  enter->root_y = 120;
+  x11::Event event(&ge, connection);
 
   // Mouse enter events are converted to mouse move events to be consistent with
   // the way views handle mouse enter. See comments for EnterNotify case in
@@ -204,18 +219,19 @@ TEST_F(EventsXTest, EnterLeaveEvent) {
   EXPECT_EQ("10,20", ui::EventLocationFromXEvent(event).ToString());
   EXPECT_EQ("110,120", ui::EventSystemLocationFromXEvent(event).ToString());
 
-  event.xcrossing.type = x11::CrossingEvent::LeaveNotify;
-  event.xcrossing.x = 30;
-  event.xcrossing.y = 40;
-  event.xcrossing.x_root = 230;
-  event.xcrossing.y_root = 240;
+  enter->response_type = x11::CrossingEvent::LeaveNotify;
+  enter->event_x = 30;
+  enter->event_y = 40;
+  enter->root_x = 230;
+  enter->root_y = 240;
+  event = x11::Event(&ge, connection);
   EXPECT_EQ(ui::ET_MOUSE_EXITED, ui::EventTypeFromXEvent(event));
   EXPECT_EQ("30,40", ui::EventLocationFromXEvent(event).ToString());
   EXPECT_EQ("230,240", ui::EventSystemLocationFromXEvent(event).ToString());
 }
 
 TEST_F(EventsXTest, ClickCount) {
-  XEvent event;
+  x11::Event event;
   gfx::Point location(5, 10);
 
   base::TimeDelta time_stamp = base::TimeTicks::Now().since_origin() -
@@ -223,7 +239,9 @@ TEST_F(EventsXTest, ClickCount) {
   for (int i = 1; i <= 3; ++i) {
     InitButtonEvent(&event, true, location, 1, 0);
     {
-      event.xbutton.time = time_stamp.InMilliseconds() & UINT32_MAX;
+      uint32_t time = time_stamp.InMilliseconds() & UINT32_MAX;
+      event.xlib_event().xbutton.time = time;
+      event.As<x11::ButtonEvent>()->time = static_cast<x11::Time>(time);
       auto mouseev = ui::BuildMouseEventFromXEvent(event);
       EXPECT_EQ(ui::ET_MOUSE_PRESSED, mouseev->type());
       EXPECT_EQ(i, mouseev->GetClickCount());
@@ -231,7 +249,9 @@ TEST_F(EventsXTest, ClickCount) {
 
     InitButtonEvent(&event, false, location, 1, 0);
     {
-      event.xbutton.time = time_stamp.InMilliseconds();
+      uint32_t time = time_stamp.InMilliseconds() & UINT32_MAX;
+      event.xlib_event().xbutton.time = time;
+      event.As<x11::ButtonEvent>()->time = static_cast<x11::Time>(time);
       auto mouseev = ui::BuildMouseEventFromXEvent(event);
       EXPECT_EQ(ui::ET_MOUSE_RELEASED, mouseev->type());
       EXPECT_EQ(i, mouseev->GetClickCount());
@@ -247,10 +267,9 @@ TEST_F(EventsXTest, TouchEventBasic) {
   std::vector<Valuator> valuators;
 
   // Init touch begin with tracking id 5, touch id 0.
-  valuators.push_back(Valuator(DeviceDataManagerX11::DT_TOUCH_MAJOR, 20));
-  valuators.push_back(
-      Valuator(DeviceDataManagerX11::DT_TOUCH_ORIENTATION, 0.3f));
-  valuators.push_back(Valuator(DeviceDataManagerX11::DT_TOUCH_PRESSURE, 100));
+  valuators.emplace_back(DeviceDataManagerX11::DT_TOUCH_MAJOR, 20);
+  valuators.emplace_back(DeviceDataManagerX11::DT_TOUCH_ORIENTATION, 0.3f);
+  valuators.emplace_back(DeviceDataManagerX11::DT_TOUCH_PRESSURE, 100);
   ui::ScopedXI2Event scoped_xevent;
   scoped_xevent.InitTouchEvent(0, XI_TouchBegin, 5, gfx::Point(10, 10),
                                valuators);
@@ -265,8 +284,7 @@ TEST_F(EventsXTest, TouchEventBasic) {
 
   // Touch update, with new orientation info.
   valuators.clear();
-  valuators.push_back(
-      Valuator(DeviceDataManagerX11::DT_TOUCH_ORIENTATION, 0.5f));
+  valuators.emplace_back(DeviceDataManagerX11::DT_TOUCH_ORIENTATION, 0.5f);
   scoped_xevent.InitTouchEvent(0, XI_TouchUpdate, 5, gfx::Point(20, 20),
                                valuators);
   EXPECT_EQ(ui::ET_TOUCH_MOVED, ui::EventTypeFromXEvent(*scoped_xevent));
@@ -279,10 +297,9 @@ TEST_F(EventsXTest, TouchEventBasic) {
 
   // Another touch with tracking id 6, touch id 1.
   valuators.clear();
-  valuators.push_back(Valuator(DeviceDataManagerX11::DT_TOUCH_MAJOR, 100));
-  valuators.push_back(
-      Valuator(DeviceDataManagerX11::DT_TOUCH_ORIENTATION, 0.9f));
-  valuators.push_back(Valuator(DeviceDataManagerX11::DT_TOUCH_PRESSURE, 500));
+  valuators.emplace_back(DeviceDataManagerX11::DT_TOUCH_MAJOR, 100);
+  valuators.emplace_back(DeviceDataManagerX11::DT_TOUCH_ORIENTATION, 0.9f);
+  valuators.emplace_back(DeviceDataManagerX11::DT_TOUCH_PRESSURE, 500);
   scoped_xevent.InitTouchEvent(0, XI_TouchBegin, 6, gfx::Point(200, 200),
                                valuators);
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromXEvent(*scoped_xevent));
@@ -296,7 +313,7 @@ TEST_F(EventsXTest, TouchEventBasic) {
   // Touch with tracking id 5 should have old radius/angle value and new pressue
   // value.
   valuators.clear();
-  valuators.push_back(Valuator(DeviceDataManagerX11::DT_TOUCH_PRESSURE, 50));
+  valuators.emplace_back(DeviceDataManagerX11::DT_TOUCH_PRESSURE, 50);
   scoped_xevent.InitTouchEvent(0, XI_TouchEnd, 5, gfx::Point(30, 30),
                                valuators);
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromXEvent(*scoped_xevent));
@@ -310,7 +327,7 @@ TEST_F(EventsXTest, TouchEventBasic) {
   // Touch with tracking id 6 should have old angle/pressure value and new
   // radius value.
   valuators.clear();
-  valuators.push_back(Valuator(DeviceDataManagerX11::DT_TOUCH_MAJOR, 50));
+  valuators.emplace_back(DeviceDataManagerX11::DT_TOUCH_MAJOR, 50);
   scoped_xevent.InitTouchEvent(0, XI_TouchEnd, 6, gfx::Point(200, 200),
                                valuators);
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromXEvent(*scoped_xevent));
@@ -465,7 +482,7 @@ TEST_F(EventsXTest, ImeFabricatedKeyEvents) {
   };
   for (unsigned int state : state_to_be_fabricated) {
     for (int is_char = 0; is_char < 2; ++is_char) {
-      XEvent x_event;
+      x11::Event x_event;
       InitKeyEvent(display, &x_event, true, 0, state);
       auto key_event = ui::BuildKeyEventFromXEvent(x_event);
       if (is_char) {
@@ -484,7 +501,7 @@ TEST_F(EventsXTest, ImeFabricatedKeyEvents) {
   };
   for (unsigned int state : state_to_be_not_fabricated) {
     for (int is_char = 0; is_char < 2; ++is_char) {
-      XEvent x_event;
+      x11::Event x_event;
       InitKeyEvent(display, &x_event, true, 0, state);
       auto key_event = ui::BuildKeyEventFromXEvent(x_event);
       if (is_char) {
@@ -520,41 +537,46 @@ base::TimeTicks TimeTicksFromMillis(int64_t millis) {
 }  // namespace
 
 TEST_F(EventsXTest, TimestampRolloverAndAdjustWhenDecreasing) {
-  XEvent event;
+  x11::Event event;
   InitButtonEvent(&event, true, gfx::Point(5, 10), 1, 0);
 
   test::ScopedEventTestTickClock clock;
   clock.SetNowTicks(TimeTicksFromMillis(0x100000001));
   ResetTimestampRolloverCountersForTesting();
 
-  event.xbutton.time = 0xFFFFFFFF;
+  event.xlib_event().xbutton.time = 0xFFFFFFFF;
+  event.As<x11::ButtonEvent>()->time = static_cast<x11::Time>(0xFFFFFFFF);
   EXPECT_EQ(TimeTicksFromMillis(0xFFFFFFFF), ui::EventTimeFromXEvent(event));
 
   clock.SetNowTicks(TimeTicksFromMillis(0x100000007));
   ResetTimestampRolloverCountersForTesting();
 
-  event.xbutton.time = 3;
+  event.xlib_event().xbutton.time = 3;
+  event.As<x11::ButtonEvent>()->time = static_cast<x11::Time>(3);
   EXPECT_EQ(TimeTicksFromMillis(0x100000000 + 3),
             ui::EventTimeFromXEvent(event));
 }
 
 TEST_F(EventsXTest, NoTimestampRolloverWhenMonotonicIncreasing) {
-  XEvent event;
+  x11::Event event;
   InitButtonEvent(&event, true, gfx::Point(5, 10), 1, 0);
 
   test::ScopedEventTestTickClock clock;
   clock.SetNowTicks(TimeTicksFromMillis(10));
   ResetTimestampRolloverCountersForTesting();
 
-  event.xbutton.time = 6;
+  event.xlib_event().xbutton.time = 6;
+  event.As<x11::ButtonEvent>()->time = static_cast<x11::Time>(6);
   EXPECT_EQ(TimeTicksFromMillis(6), ui::EventTimeFromXEvent(event));
-  event.xbutton.time = 7;
+  event.xlib_event().xbutton.time = 7;
+  event.As<x11::ButtonEvent>()->time = static_cast<x11::Time>(7);
   EXPECT_EQ(TimeTicksFromMillis(7), ui::EventTimeFromXEvent(event));
 
   clock.SetNowTicks(TimeTicksFromMillis(0x100000005));
   ResetTimestampRolloverCountersForTesting();
 
-  event.xbutton.time = 0xFFFFFFFF;
+  event.xlib_event().xbutton.time = 0xFFFFFFFF;
+  event.As<x11::ButtonEvent>()->time = static_cast<x11::Time>(0xFFFFFFFF);
   EXPECT_EQ(TimeTicksFromMillis(0xFFFFFFFF), ui::EventTimeFromXEvent(event));
 }
 

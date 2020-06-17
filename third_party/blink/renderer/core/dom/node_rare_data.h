@@ -222,7 +222,7 @@ class GC_PLUGIN_IGNORE("Manual dispatch implemented in NodeData.") NodeRareData
   Member<FlatTreeNodeData> flat_tree_node_data_;
   // Keeps strong scroll timeline pointers linked to this node to ensure
   // the timelines are alive as long as the node is alive.
-  HeapHashSet<Member<ScrollTimeline>> scroll_timelines_;
+  Member<HeapHashSet<Member<ScrollTimeline>>> scroll_timelines_;
 
   DISALLOW_COPY_AND_ASSIGN(NodeRareData);
 };

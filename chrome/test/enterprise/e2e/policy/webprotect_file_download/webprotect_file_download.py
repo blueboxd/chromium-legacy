@@ -29,10 +29,12 @@ class WebProtectFileDownloadTest(ChromeEnterpriseTestCase):
                    '856f301d-cfda-414d-97a6-1bfb46d94293', 'String')
     instance_name = 'webprotect-1'
     self.RunCommand(instance_name, 'gpupdate /force')
+
     local_dir = os.path.dirname(os.path.abspath(__file__))
     output = self.RunUITest(
         instance_name,
         os.path.join(local_dir, 'webprotect_file_download_webdriver.py'))
+
     self.assertIn('Encrypted blocked', output)
     self.assertIn('Large file blocked', output)
     self.assertIn('Unknown malware scanning', output)

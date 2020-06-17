@@ -7,6 +7,7 @@
 
 #include "ui/base/x/x11_os_exchange_data_provider.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/event.h"
 
 namespace ui {
 
@@ -27,7 +28,7 @@ class X11OSExchangeDataProviderOzone : public XOSExchangeDataProvider,
   std::unique_ptr<OSExchangeDataProvider> Clone() const override;
 
   // XEventDispatcher:
-  bool DispatchXEvent(XEvent* xev) override;
+  bool DispatchXEvent(x11::Event* xev) override;
 };
 
 }  // namespace ui

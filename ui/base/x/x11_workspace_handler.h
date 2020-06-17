@@ -10,6 +10,7 @@
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/xproto.h"
 
@@ -40,7 +41,7 @@ class COMPONENT_EXPORT(UI_BASE_X) X11WorkspaceHandler
 
  private:
   // ui::XEventDispatcher
-  bool DispatchXEvent(XEvent* event) override;
+  bool DispatchXEvent(x11::Event* event) override;
 
   void OnWorkspaceResponse(x11::GetPropertyResponse response);
 

@@ -9,6 +9,7 @@
 #include <xcb/xcb.h>
 
 #include <cstdint>
+#include <utility>
 
 #include "base/component_export.h"
 
@@ -22,6 +23,18 @@ void ReadEvent(Event* event, Connection* connection, const uint8_t* buffer);
 
 class COMPONENT_EXPORT(X11) Event {
  public:
+  // Used to create events for testing.
+  template <typename T>
+  Event(XEvent* xlib_event, T&& xproto_event) {
+    sequence_valid_ = true;
+    sequence_ = xlib_event_.xany.serial;
+    custom_allocated_xlib_event_ = true;
+    xlib_event_ = *xlib_event;
+    type_id_ = T::type_id;
+    deleter_ = [](void* event) { delete reinterpret_cast<T*>(event); };
+    event_ = new T(std::forward<T>(xproto_event));
+  }
+
   Event();
   Event(xcb_generic_event_t* xcb_event,
         Connection* connection,

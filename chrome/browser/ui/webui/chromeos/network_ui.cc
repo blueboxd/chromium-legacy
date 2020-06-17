@@ -23,8 +23,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/network_health_resources.h"
-#include "chrome/grit/network_health_resources_map.h"
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_device_handler.h"
@@ -32,6 +30,7 @@
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
 #include "components/device_event_log/device_event_log.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
@@ -403,10 +402,6 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   html->UseStringsJs();
   html->AddResourcePath("network_ui.css", IDR_NETWORK_UI_CSS);
   html->AddResourcePath("network_ui.js", IDR_NETWORK_UI_JS);
-  html->AddResourcePath("mojo/network_health/network_health.mojom.html",
-                        IDR_NETWORK_HEALTH_MOJOM_HTML);
-  html->AddResourcePath("mojo/network_health/network_health.mojom-lite.js",
-                        IDR_NETWORK_HEALTH_MOJOM_LITE_JS);
   html->SetDefaultResource(IDR_NETWORK_UI_HTML);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),

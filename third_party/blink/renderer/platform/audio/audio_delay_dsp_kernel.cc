@@ -26,7 +26,9 @@
 #include "third_party/blink/renderer/platform/audio/audio_delay_dsp_kernel.h"
 
 #include <cmath>
+
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
+#include "third_party/blink/renderer/platform/audio/vector_math.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -38,13 +40,15 @@ AudioDelayDSPKernel::AudioDelayDSPKernel(AudioDSPKernelProcessor* processor,
                                          size_t processing_size_in_frames)
     : AudioDSPKernel(processor),
       write_index_(0),
-      delay_times_(processing_size_in_frames) {}
+      delay_times_(processing_size_in_frames),
+      temp_buffer_(processing_size_in_frames) {}
 
 AudioDelayDSPKernel::AudioDelayDSPKernel(double max_delay_time,
                                          float sample_rate)
     : AudioDSPKernel(sample_rate),
       max_delay_time_(max_delay_time),
-      write_index_(0) {
+      write_index_(0),
+      temp_buffer_(audio_utilities::kRenderQuantumFrames) {
   DCHECK_GT(max_delay_time_, 0.0);
   DCHECK_LE(max_delay_time_, kMaxDelayTimeSeconds);
   DCHECK(std::isfinite(max_delay_time_));
@@ -59,10 +63,12 @@ AudioDelayDSPKernel::AudioDelayDSPKernel(double max_delay_time,
 size_t AudioDelayDSPKernel::BufferLengthForDelay(double max_delay_time,
                                                  double sample_rate) const {
   // Compute the length of the buffer needed to handle a max delay of
-  // |maxDelayTime|. One is added to handle the case where the actual delay
-  // equals the maximum delay.
-  return 1 + audio_utilities::TimeToSampleFrame(max_delay_time, sample_rate,
-                                                audio_utilities::kRoundUp);
+  // |maxDelayTime|. Add an additional render quantum frame size so we can
+  // vectorize the delay processing.  The extra space is needed so that writes
+  // to the buffer won't overlap reads from the buffer.
+  return audio_utilities::kRenderQuantumFrames +
+         audio_utilities::TimeToSampleFrame(max_delay_time, sample_rate,
+                                            audio_utilities::kRoundUp);
 }
 
 bool AudioDelayDSPKernel::HasSampleAccurateValues() {
@@ -159,9 +165,9 @@ void AudioDelayDSPKernel::ProcessKRate(const float* source,
   // delay time is constant for the current render.
   //
   // TODO(crbug.com/1012198): There are still some further optimizations that
-  // could be done.  interp_factor could be a float to eliminate several
-  // conversions between floats and doubles.  It might be possible to get rid
-  // of the wrapping if the buffer were longer.  This may aslo allow
+  // could be done.  |interpolation_factor| could be a float to eliminate
+  // several conversions between floats and doubles.  It might be possible to
+  // get rid of the wrapping if the buffer were longer.  This may also allow
   // |write_index_| to be different from |read_index1| or |read_index2| which
   // simplifies the loop a bit.
 
@@ -171,6 +177,7 @@ void AudioDelayDSPKernel::ProcessKRate(const float* source,
   double desired_delay_frames = delay_time * sample_rate;
   int w_index = write_index_;
   double read_position = w_index + buffer_length - desired_delay_frames;
+
   if (read_position >= buffer_length)
     read_position -= buffer_length;
 
@@ -178,35 +185,77 @@ void AudioDelayDSPKernel::ProcessKRate(const float* source,
   // |read_index2| are the indices of the frames to be used for
   // interpolation.
   int read_index1 = static_cast<int>(read_position);
-  int read_index2 = (read_index1 + 1) % buffer_length;
-  float interp_factor = read_position - read_index1;
-
-  float* w = &buffer[w_index];
-  float* r1 = &buffer[read_index1];
-  float* r2 = &buffer[read_index2];
+  float interpolation_factor = read_position - read_index1;
   float* buffer_end = &buffer[buffer_length];
+  float* write_pointer = &buffer[w_index];
 
-  for (unsigned i = 0; i < frames_to_process; ++i) {
-    // Copy the latest sample into the buffer.  Needed because
-    // w_index could be the same as read_index1 or read_index2.
-    *w++ = *source++;
-    float sample1 = *r1++;
-    float sample2 = *r2++;
+  DCHECK_GE(static_cast<unsigned>(buffer_length), frames_to_process);
 
-    // Update the indices and wrap them to the beginning of the buffer if
-    // needed.
-    if (w >= buffer_end)
-      w = buffer;
-    if (r1 >= buffer_end)
-      r1 = buffer;
-    if (r2 >= buffer_end)
-      r2 = buffer;
+  // sample1 and sample2 hold the current and next samples in the buffer.
+  // These are used for interoplating the delay value.  To reduce memory
+  // usage and an extra memcpy, sample1 can be the same as destination.
+  float* sample1 = destination;
 
-    // Linearly interpolate between samples.
-    *destination++ = sample1 + interp_factor * (sample2 - sample1);
+  // Copy data from the source into the buffer, starting at the write index.
+  // The buffer is circular, so carefully handle the wrapping of the write
+  // pointer.
+  int remainder = buffer_length - w_index;
+
+  memcpy(write_pointer, source,
+         sizeof(*write_pointer) *
+             std::min(static_cast<int>(frames_to_process), remainder));
+  memcpy(buffer, source + remainder,
+         sizeof(*write_pointer) *
+             std::max(0, static_cast<int>(frames_to_process) - remainder));
+
+  write_pointer += frames_to_process;
+  if (write_pointer >= buffer_end) {
+    write_pointer -= buffer_length;
   }
 
-  write_index_ = w - buffer;
+  write_index_ = write_pointer - buffer;
+
+  // Now copy out the samples from the buffer, starting at the read pointer,
+  // carefully handling wrapping of the read pointer.
+  float* read_pointer = &buffer[read_index1];
+
+  remainder = buffer_end - read_pointer;
+  memcpy(sample1, read_pointer,
+         sizeof(*sample1) *
+             std::min(static_cast<int>(frames_to_process), remainder));
+  memcpy(sample1 + remainder, buffer,
+         sizeof(*sample1) *
+             std::max(0, static_cast<int>(frames_to_process) - remainder));
+
+  // If interpolation_factor = 0, we don't need to do any interpolation and
+  // sample1 contains the desried values.  We can skip the following code.
+  if (interpolation_factor != 0) {
+    DCHECK_LE(frames_to_process, temp_buffer_.size());
+
+    int read_index2 = (read_index1 + 1) % buffer_length;
+    float* sample2 = temp_buffer_.Data();
+
+    read_pointer = &buffer[read_index2];
+    remainder = buffer_end - read_pointer;
+    memcpy(sample2, read_pointer,
+           sizeof(*sample1) *
+               std::min(static_cast<int>(frames_to_process), remainder));
+    memcpy(sample2 + remainder, buffer,
+           sizeof(*sample1) *
+               std::max(0, static_cast<int>(frames_to_process) - remainder));
+
+    // Interpolate samples, where f = interpolation_factor
+    //   dest[k] = sample1[k] + f*(sample2[k] - sample1[k]);
+
+    // sample2[k] = sample2[k] - sample1[k]
+    vector_math::Vsub(sample2, 1, sample1, 1, sample2, 1, frames_to_process);
+
+    // dest[k] = dest[k] + f*sample2[k]
+    //         = sample1[k] + f*(sample2[k] - sample1[k]);
+    //
+    vector_math::Vsma(sample2, 1, interpolation_factor, destination, 1,
+                      frames_to_process);
+  }
 }
 
 void AudioDelayDSPKernel::Process(const float* source,

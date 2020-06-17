@@ -6,8 +6,9 @@ package org.chromium.chrome.browser.tabmodel;
 
 import android.app.Activity;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.util.Pair;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -578,9 +579,10 @@ public class TabPersistentStoreTest {
             for (int j = 0; j < info.numRegularTabs; j++) {
                 TabState currentState = TabState.restoreTabState(
                         mMockDirectory.getDataDirectory(), info.contents[j].tabId);
+                Assert.assertEquals(info.contents[j].title,
+                        currentState.contentsState.getDisplayTitleFromState());
                 Assert.assertEquals(
-                        info.contents[j].title, currentState.getDisplayTitleFromState());
-                Assert.assertEquals(info.contents[j].url, currentState.getVirtualUrlFromState());
+                        info.contents[j].url, currentState.contentsState.getVirtualUrlFromState());
             }
         }
     }

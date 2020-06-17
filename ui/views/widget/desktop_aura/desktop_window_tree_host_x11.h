@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/x11/x11_window.h"
@@ -40,8 +41,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   friend class DesktopWindowTreeHostX11HighDPITest;
 
   // Overridden from ui::XEventDelegate.
-  void OnXWindowSelectionEvent(XEvent* xev) override;
-  void OnXWindowDragDropEvent(XEvent* xev) override;
+  void OnXWindowSelectionEvent(x11::Event* xev) override;
+  void OnXWindowDragDropEvent(x11::Event* xev) override;
 
   // Casts PlatformWindow into XWindow and returns the result. This is a temp
   // solution to access XWindow, which is subclassed by the X11Window, which is

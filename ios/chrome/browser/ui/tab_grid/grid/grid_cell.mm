@@ -177,6 +177,10 @@ void PositionView(UIView* view, CGPoint point) {
   if (_theme == theme)
     return;
 
+  // This background color must be set to avoid the corners behind the rounded
+  // layer from showing when dragging and dropping.
+  self.backgroundColor = [UIColor colorNamed:kGridBackgroundColor];
+
   self.iconView.backgroundColor = UIColor.clearColor;
   switch (theme) {
     // This is necessary for iOS 13 because on iOS 13, this will return
@@ -249,6 +253,12 @@ void PositionView(UIView* view, CGPoint point) {
 - (void)setTitleHidden:(BOOL)titleHidden {
   self.titleLabel.hidden = titleHidden;
   _titleHidden = titleHidden;
+}
+
+- (UIBezierPath*)visiblePath {
+  return [UIBezierPath
+      bezierPathWithRoundedRect:self.bounds
+                   cornerRadius:self.contentView.layer.cornerRadius];
 }
 
 #pragma mark - Private

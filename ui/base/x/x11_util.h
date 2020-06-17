@@ -25,6 +25,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform_event.h"
 #include "ui/gfx/icc_profile.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_types.h"
 
 typedef unsigned long Cursor;
@@ -144,7 +145,7 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap& bitmap,
 // the queue, and return the number eliminated, storing the last one in
 // |last_event|.
 COMPONENT_EXPORT(UI_BASE_X)
-int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event);
+int CoalescePendingMotionEvents(const x11::Event* xev, x11::Event* last_event);
 
 // Hides the host cursor.
 COMPONENT_EXPORT(UI_BASE_X) void HideHostCursor();

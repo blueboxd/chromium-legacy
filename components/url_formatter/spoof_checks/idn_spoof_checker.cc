@@ -353,7 +353,7 @@ IDNSpoofChecker::~IDNSpoofChecker() {
   uspoof_close(checker_);
 }
 
-bool IDNSpoofChecker::SafeToDisplayAsUnicode(
+IDNSpoofChecker::Result IDNSpoofChecker::SafeToDisplayAsUnicode(
     base::StringPiece16 label,
     base::StringPiece top_level_domain,
     base::StringPiece16 top_level_domain_unicode) {
@@ -363,8 +363,9 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
                    base::checked_cast<int32_t>(label.size()), nullptr, &status);
   // If uspoof_check fails (due to library failure), or if any of the checks
   // fail, treat the IDN as unsafe.
-  if (U_FAILURE(status) || (result & USPOOF_ALL_CHECKS))
-    return false;
+  if (U_FAILURE(status) || (result & USPOOF_ALL_CHECKS)) {
+    return Result::kICUSpoofChecks;
+  }
 
   icu::UnicodeString label_string(FALSE /* isTerminated */, label.data(),
                                   base::checked_cast<int32_t>(label.size()));
@@ -381,21 +382,21 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
   // as Unicode would be canonicalized to 'fuss' by GURL and is displayed as
   // such. See http://crbug.com/595263 .
   if (deviation_characters_.containsSome(label_string))
-    return false;
+    return Result::kDeviationCharacters;
 
   // Disallow Icelandic confusables for domains outside Iceland's ccTLD (.is).
   if (label_string.length() > 1 && top_level_domain != "is" &&
       icelandic_characters_.containsSome(label_string))
-    return false;
+    return Result::kTLDSpecificCharacters;
 
   // Disallow Latin Schwa (U+0259) for domains outside Azerbaijan's ccTLD (.az).
   if (label_string.length() > 1 && top_level_domain != "az" &&
       label_string.indexOf("ə") != -1)
-    return false;
+    return Result::kTLDSpecificCharacters;
 
   // Disallow middle dot (U+00B7) when unsafe.
   if (HasUnsafeMiddleDot(label_string, top_level_domain)) {
-    return false;
+    return Result::kUnsafeMiddleDot;
   }
 
   // If there's no script mixing, the input is regarded as safe without any
@@ -411,7 +412,8 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
   //  - Korean: Hangul, Han, Common
   result &= USPOOF_RESTRICTION_LEVEL_MASK;
   if (result == USPOOF_ASCII)
-    return true;
+    return Result::kSafe;
+
   if (result == USPOOF_SINGLE_SCRIPT_RESTRICTIVE &&
       kana_letters_exceptions_.containsNone(label_string) &&
       combining_diacritics_exceptions_.containsNone(label_string)) {
@@ -419,15 +421,15 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
       if (IsLabelWholeScriptConfusableForScript(*script.get(), label_string) &&
           !IsWholeScriptConfusableAllowedForTLD(*script.get(), top_level_domain,
                                                 top_level_domain_unicode)) {
-        return false;
+        return Result::kWholeScriptConfusable;
       }
     }
-    return true;
+    return Result::kSafe;
   }
 
   // Disallow domains that contain only numbers and number-spoofs.
   if (IsDigitLookalike(label_string))
-    return false;
+    return Result::kDigitLookalikes;
 
   // Additional checks for |label| with multiple scripts, one of which is Latin.
   // Disallow non-ASCII Latin letters to mix with a non-Latin script.
@@ -436,7 +438,7 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
   // because script mixing of LGC is already rejected.
   if (non_ascii_latin_letters_.containsSome(label_string) &&
       !lgc_letters_n_ascii_.containsAll(label_string))
-    return false;
+    return Result::kNonAsciiLatinCharMixedWithNonLatin;
 
   icu::RegexMatcher* dangerous_pattern =
       reinterpret_cast<icu::RegexMatcher*>(DangerousPatternTLS().Get());
@@ -526,7 +528,10 @@ bool IDNSpoofChecker::SafeToDisplayAsUnicode(
     DangerousPatternTLS().Set(dangerous_pattern);
   }
   dangerous_pattern->reset(label_string);
-  return !dangerous_pattern->find();
+  if (dangerous_pattern->find()) {
+    return Result::kDangerousPattern;
+  }
+  return Result::kSafe;
 }
 
 TopDomainEntry IDNSpoofChecker::GetSimilarTopDomain(

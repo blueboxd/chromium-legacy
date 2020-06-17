@@ -229,6 +229,11 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   void ClosePopupsOutsideWorkArea();
   void RemoveClosedPopupItems();
 
+  // Returns true if all the animating popups are at the beginning of the
+  // collection or the queue is empty. Returns false only if there is an
+  // animating popup after a non-animating one.
+  bool AreAllAnimatingPopupsFirst() const;
+
   // Stops all the animation and closes all the popups immediately.
   void CloseAllPopupsNow();
 

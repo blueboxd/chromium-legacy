@@ -133,7 +133,12 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
 
   enum LatencyMode { kNormalLatency, kLowLatency };
 
-  void CreateContext(OpacityMode, LatencyMode = kNormalLatency);
+  enum class ReadFrequencyMode { kWillReadFrequency, kWillNotReadFrequency };
+
+  void CreateContext(
+      OpacityMode,
+      LatencyMode = kNormalLatency,
+      ReadFrequencyMode = ReadFrequencyMode::kWillNotReadFrequency);
   ScriptState* GetScriptState() {
     return ToScriptStateForMainWorld(canvas_element_->GetFrame());
   }
@@ -200,12 +205,16 @@ CanvasRenderingContext2DTest::CanvasRenderingContext2DTest()
       opaque_bitmap_(IntSize(10, 10), kOpaqueBitmap),
       alpha_bitmap_(IntSize(10, 10), kTransparentBitmap) {}
 
-void CanvasRenderingContext2DTest::CreateContext(OpacityMode opacity_mode,
-                                                 LatencyMode latency_mode) {
+void CanvasRenderingContext2DTest::CreateContext(
+    OpacityMode opacity_mode,
+    LatencyMode latency_mode,
+    ReadFrequencyMode read_frequency_mode) {
   String canvas_type("2d");
   CanvasContextCreationAttributesCore attributes;
   attributes.alpha = opacity_mode == kNonOpaque;
   attributes.desynchronized = latency_mode == kLowLatency;
+  attributes.will_read_frequently =
+      read_frequency_mode == ReadFrequencyMode::kWillReadFrequency;
   canvas_element_->GetCanvasRenderingContext(canvas_type, attributes);
 }
 
@@ -1040,6 +1049,25 @@ TEST_F(CanvasRenderingContext2DTest,
   EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
 }
 
+TEST_F(CanvasRenderingContext2DTest,
+       UnacceleratedIfNormalLatencyWillReadFrequently) {
+  CreateContext(kNonOpaque, kNormalLatency,
+                ReadFrequencyMode::kWillReadFrequency);
+  DrawSomething();
+  EXPECT_TRUE(Context2D()->getContextAttributes()->willReadFrequently());
+  EXPECT_FALSE(
+      CanvasElement().GetOrCreateCanvas2DLayerBridge()->IsAccelerated());
+}
+
+TEST_F(CanvasRenderingContext2DTest,
+       UnacceleratedIfLowLatencyWillReadFrequently) {
+  CreateContext(kNonOpaque, kLowLatency, ReadFrequencyMode::kWillReadFrequency);
+  // No need to set-up the layer bridge when testing low latency mode.
+  DrawSomething();
+  EXPECT_TRUE(Context2D()->getContextAttributes()->willReadFrequently());
+  EXPECT_FALSE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
+}
+
 class CanvasRenderingContext2DTestAccelerated
     : public CanvasRenderingContext2DTest {
  protected:
@@ -1138,6 +1166,7 @@ TEST_F(CanvasRenderingContext2DTestAccelerated, LowLatencyIsNotSingleBuffered) {
   // No need to set-up the layer bridge when testing low latency mode.
   DrawSomething();
   EXPECT_TRUE(Context2D()->getContextAttributes()->desynchronized());
+  EXPECT_FALSE(Context2D()->getContextAttributes()->willReadFrequently());
   EXPECT_TRUE(CanvasElement().LowLatencyEnabled());
   EXPECT_FALSE(
       CanvasElement()
@@ -1177,6 +1206,7 @@ TEST_F(CanvasRenderingContext2DTestImageChromium, LowLatencyIsSingleBuffered) {
   // No need to set-up the layer bridge when testing low latency mode.
   DrawSomething();
   EXPECT_TRUE(Context2D()->getContextAttributes()->desynchronized());
+  EXPECT_FALSE(Context2D()->getContextAttributes()->willReadFrequently());
   EXPECT_TRUE(CanvasElement().LowLatencyEnabled());
   EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
   EXPECT_TRUE(CanvasElement()
@@ -1221,6 +1251,7 @@ TEST_F(CanvasRenderingContext2DTestSwapChain, LowLatencyIsSingleBuffered) {
   // No need to set-up the layer bridge when testing low latency mode.
   DrawSomething();
   EXPECT_TRUE(Context2D()->getContextAttributes()->desynchronized());
+  EXPECT_FALSE(Context2D()->getContextAttributes()->willReadFrequently());
   EXPECT_TRUE(CanvasElement().LowLatencyEnabled());
   EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
   EXPECT_TRUE(CanvasElement()

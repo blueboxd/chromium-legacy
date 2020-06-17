@@ -43,7 +43,8 @@ void ExpandTypes(std::vector<std::string>* list) {
     list->push_back(kMimeTypeTextUtf8);
 }
 
-XID FindXEventTarget(const XEvent& xev) {
+XID FindXEventTarget(const x11::Event& x11_event) {
+  const XEvent& xev = x11_event.xlib_event();
   XID target = xev.xany.window;
   if (xev.type == x11::GeGenericEvent::opcode)
     target = static_cast<XIDeviceEvent*>(xev.xcookie.data)->event;
@@ -124,8 +125,9 @@ X11ClipboardOzone::~X11ClipboardOzone() {
   X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
 }
 
-bool X11ClipboardOzone::DispatchXEvent(XEvent* xev) {
-  if (FindXEventTarget(*xev) != x_window_)
+bool X11ClipboardOzone::DispatchXEvent(x11::Event* x11_event) {
+  XEvent* xev = &x11_event->xlib_event();
+  if (FindXEventTarget(*x11_event) != x_window_)
     return false;
 
   switch (xev->type) {
@@ -137,7 +139,7 @@ bool X11ClipboardOzone::DispatchXEvent(XEvent* xev) {
 
   if (using_xfixes_ &&
       xev->type == xfixes_event_base_ + XFixesSetSelectionOwnerNotify) {
-    return OnSetSelectionOwnerNotify(xev);
+    return OnSetSelectionOwnerNotify(x11_event);
   }
 
   return false;
@@ -278,9 +280,9 @@ bool X11ClipboardOzone::OnSelectionNotify(const XSelectionEvent& event) {
   return false;
 }
 
-bool X11ClipboardOzone::OnSetSelectionOwnerNotify(XEvent* xev) {
+bool X11ClipboardOzone::OnSetSelectionOwnerNotify(x11::Event* xev) {
   XFixesSelectionNotifyEvent* event =
-      reinterpret_cast<XFixesSelectionNotifyEvent*>(xev);
+      reinterpret_cast<XFixesSelectionNotifyEvent*>(&xev->xlib_event());
 
   // Reset state and fetch remote clipboard if there is a new remote owner.
   auto selection = static_cast<x11::Atom>(event->selection);

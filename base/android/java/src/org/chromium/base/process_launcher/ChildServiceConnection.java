@@ -10,4 +10,5 @@ package org.chromium.base.process_launcher;
     void unbindServiceConnection();
     boolean isBound();
     void updateGroupImportance(int group, int importanceInGroup);
+    void retire();
 }

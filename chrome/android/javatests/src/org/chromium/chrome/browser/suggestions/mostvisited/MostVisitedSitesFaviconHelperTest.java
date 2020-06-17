@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.suggestions.mostvisited;
 
 import android.graphics.Bitmap;
-import android.support.test.filters.MediumTest;
 
 import androidx.core.util.AtomicFile;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

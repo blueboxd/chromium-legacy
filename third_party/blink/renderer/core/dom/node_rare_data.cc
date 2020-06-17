@@ -44,9 +44,8 @@
 namespace blink {
 
 struct SameSizeAsNodeRareData {
-  Member<void*> willbe_member_[4];
+  Member<void*> willbe_member_[5];
   unsigned bitfields_;
-  HeapHashSet<Member<void*>> scroll_timelines_;
 };
 
 static_assert(sizeof(NodeRareData) == sizeof(SameSizeAsNodeRareData),
@@ -111,10 +110,14 @@ NodeRenderingData& NodeRenderingData::SharedEmptyData() {
 }
 
 void NodeRareData::RegisterScrollTimeline(ScrollTimeline* timeline) {
-  scroll_timelines_.insert(timeline);
+  if (!scroll_timelines_) {
+    scroll_timelines_ =
+        MakeGarbageCollected<HeapHashSet<Member<ScrollTimeline>>>();
+  }
+  scroll_timelines_->insert(timeline);
 }
 void NodeRareData::UnregisterScrollTimeline(ScrollTimeline* timeline) {
-  scroll_timelines_.erase(timeline);
+  scroll_timelines_->erase(timeline);
 }
 
 void NodeRareData::TraceAfterDispatch(blink::Visitor* visitor) const {

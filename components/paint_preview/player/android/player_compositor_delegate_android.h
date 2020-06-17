@@ -73,6 +73,7 @@ class PlayerCompositorDelegateAndroid : public PlayerCompositorDelegate {
   base::android::ScopedJavaGlobalRef<jobject> java_ref_;
 
   int request_id_;
+  base::TimeTicks startup_timestamp_;
 
   base::WeakPtrFactory<PlayerCompositorDelegateAndroid> weak_factory_{this};
 

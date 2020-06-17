@@ -3796,6 +3796,12 @@ const char kLimitAltTabToActiveDeskDescription[] =
     "Limits the windows listed in Alt-Tab to the ones in the currently active "
     "virtual desk";
 
+const char kLimitShelfItemsToActiveDeskName[] =
+    "Limit Shelf items to active desk";
+const char kLimitShelfItemsToActiveDeskDescription[] =
+    "Limits items on the shelf to the ones associated with windows on the "
+    "active desk";
+
 const char kListAllDisplayModesName[] = "List all display modes";
 const char kListAllDisplayModesDescription[] =
     "Enables listing all external displays' modes in the display settings.";

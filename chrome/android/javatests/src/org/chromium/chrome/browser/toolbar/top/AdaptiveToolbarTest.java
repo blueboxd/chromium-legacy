@@ -25,7 +25,8 @@ import static org.chromium.chrome.test.util.ToolbarTestUtils.checkToolbarVisibil
 
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Rule;

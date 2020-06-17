@@ -538,6 +538,7 @@ void MetricsService::InitializeMetricsState() {
   local_state_->SetInteger(prefs::kMetricsSessionID, session_id_);
 
   // Notify stability metrics providers about the launch.
+  UMA_HISTOGRAM_BOOLEAN("UMA.MetricsService.Initialize", true);
   provider.LogLaunch();
   provider.CheckLastSessionEndCompleted();
 

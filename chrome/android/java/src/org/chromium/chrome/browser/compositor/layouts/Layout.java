@@ -77,6 +77,8 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     /** Length of the unstalling animation. **/
     public static final long UNSTALLED_ANIMATION_DURATION_MS = 500;
 
+    private static final float SNAP_SPEED = 1.0f; // dp per second
+
     // Drawing area properties.
     private float mWidthDp;
     private float mHeightDp;
@@ -112,6 +114,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
 
     // The ratio of dp to px.
     protected final float mDpToPx;
+    protected final float mPxToDp;
 
     /**
      * The {@link Layout} is not usable until sizeChanged is called.
@@ -133,6 +136,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
 
         mCurrentOrientation = Orientation.UNSET;
         mDpToPx = context.getResources().getDisplayMetrics().density;
+        mPxToDp = 1 / mDpToPx;
     }
 
     /**
@@ -274,6 +278,41 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
         for (int i = 0; i < mSceneOverlays.size(); i++) {
             mSceneOverlays.get(i).updateOverlay(time, dt);
         }
+    }
+
+    /**
+     * Update snapping to pixel. To be called once every frame.
+     *
+     * TODO(crbug.com/1070281): Temporary placement. This is some Mediator logic and should move to
+     * the appropriate location when doing MVC.
+     *
+     * @param dt The delta time between update frames in ms.
+     * @param layoutTab The {@link LayoutTab} that needs to be updating.
+     * @return   True if the snapping requests to render at least one more frame.
+     */
+    protected boolean updateSnap(long dt, LayoutTab layoutTab) {
+        final float step = dt * SNAP_SPEED / 1000.0f;
+        final float renderX = layoutTab.get(LayoutTab.RENDER_X);
+        final float renderY = layoutTab.get(LayoutTab.RENDER_Y);
+        final float x = updateSnap(step, renderX, layoutTab.get(LayoutTab.X));
+        final float y = updateSnap(step, renderY, layoutTab.get(LayoutTab.Y));
+        final boolean change = x != renderX || y != renderY;
+        layoutTab.set(LayoutTab.RENDER_X, x);
+        layoutTab.set(LayoutTab.RENDER_Y, y);
+        return change;
+    }
+
+    private float updateSnap(float step, float current, float ref) {
+        if (Math.abs(current - ref) > mPxToDp) return ref;
+        final float refRounded = Math.round(ref * mDpToPx) * mPxToDp;
+        if (refRounded < ref) {
+            current -= step;
+            current = Math.max(refRounded, current);
+        } else {
+            current += step;
+            current = Math.min(refRounded, current);
+        }
+        return current;
     }
 
     /**

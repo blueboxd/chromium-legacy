@@ -4,10 +4,9 @@
 
 package org.chromium.chrome.browser.search_engines.settings;
 
-import android.support.test.filters.SmallTest;
-
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

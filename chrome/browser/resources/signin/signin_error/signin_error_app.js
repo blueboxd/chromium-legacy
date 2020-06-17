@@ -65,23 +65,13 @@ Polymer({
     },
   },
 
-  /** @private {?function(!Event)} */
-  boundKeyDownHandler_: null,
-
   /** @override */
   attached() {
-    this.boundKeyDownHandler_ = this.onKeyDown_.bind(this);
-    document.addEventListener('keydown', this.boundKeyDownHandler_);
-
     this.addWebUIListener('switch-button-unavailable', () => {
       this.switchButtonUnavailable_ = true;
+      // Move focus to the only displayed button in this case.
+      this.$$('#confirmButton').focus();
     });
-  },
-
-  /** @override */
-  detached() {
-    document.removeEventListener('keydown', this.boundKeyDownHandler_);
-    this.boundKeyDownHandler_ = null;
   },
 
   /** @private */
@@ -97,17 +87,5 @@ Polymer({
   /** @private */
   onLearnMore_() {
     chrome.send('learnMore');
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  onKeyDown_(e) {
-    if (e.key == 'Enter' &&
-        !/^(A|CR-BUTTON)$/.test(e.composedPath()[0].tagName)) {
-      this.onConfirm_();
-      e.preventDefault();
-    }
   },
 });

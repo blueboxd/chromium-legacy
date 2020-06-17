@@ -39,6 +39,10 @@ bool TestShellDelegate::CanGoBack(gfx::NativeWindow window) const {
   return can_go_back_;
 }
 
+bool TestShellDelegate::ShouldWaitForTouchPressAck(gfx::NativeWindow window) {
+  return should_wait_for_touch_ack_;
+}
+
 void TestShellDelegate::BindNavigableContentsFactory(
     mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver) {}
 
@@ -51,6 +55,11 @@ void TestShellDelegate::BindMultiDeviceSetup(
 
 void TestShellDelegate::SetCanGoBack(bool can_go_back) {
   can_go_back_ = can_go_back;
+}
+
+void TestShellDelegate::SetShouldWaitForTouchAck(
+    bool should_wait_for_touch_ack) {
+  should_wait_for_touch_ack_ = should_wait_for_touch_ack;
 }
 
 }  // namespace ash

@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
-import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

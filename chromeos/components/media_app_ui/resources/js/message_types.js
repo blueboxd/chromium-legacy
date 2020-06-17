@@ -27,7 +27,6 @@ const Message = {
  * @enum {number}
  */
 const DeleteResult = {
-  UNKNOWN_ERROR: -1,
   SUCCESS: 0,
   FILE_MOVED: 1,
 };
@@ -84,7 +83,6 @@ let NavigateMessage;
  * @enum {number}
  */
 const RenameResult = {
-  UNKNOWN_ERROR: -1,
   SUCCESS: 0,
   FILE_EXISTS: 1,
 };

@@ -11,12 +11,10 @@ import json
 import os
 import unittest
 
-from pylib.constants import host_paths
 from pylib.utils import gold_utils
 from py_utils import tempfile_ext
 
-with host_paths.SysPath(host_paths.PYMOCK_PATH):
-  import mock  # pylint: disable=import-error
+import mock  # pylint: disable=import-error
 
 _SkiaGoldArgs = collections.namedtuple('_SkiaGoldArgs', [
     'local_pixel_tests',

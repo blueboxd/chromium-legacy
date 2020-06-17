@@ -12,6 +12,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -24,23 +25,17 @@ struct Valuator {
   double value;
 };
 
-struct XEventDeleter {
-  void operator()(XEvent* event);
-};
-
 class ScopedXI2Event {
  public:
   ScopedXI2Event();
   ~ScopedXI2Event();
 
-  operator XEvent*() { return event_.get(); }
+  operator x11::Event*() { return &event_; }
 
-  // Initializes a XEvent with for the appropriate type with the specified data.
-  // Note that ui::EF_ flags should be passed as |flags|, not the native ones in
-  // <X11/X.h>.
-  void InitKeyEvent(EventType type,
-                    KeyboardCode key_code,
-                    int flags);
+  // Initializes a x11::Event with for the appropriate type with the specified
+  // data. Note that ui::EF_ flags should be passed as |flags|, not the native
+  // ones in <X11/X.h>.
+  void InitKeyEvent(EventType type, KeyboardCode key_code, int flags);
   void InitMotionEvent(const gfx::Point& location,
                        const gfx::Point& root_location,
                        int flags);
@@ -59,9 +54,7 @@ class ScopedXI2Event {
                               const gfx::Point& location,
                               int flags);
 
-  void InitGenericMouseWheelEvent(int deviceid,
-                                  int wheel_delta,
-                                  int flags);
+  void InitGenericMouseWheelEvent(int deviceid, int wheel_delta, int flags);
 
   void InitScrollEvent(int deviceid,
                        int x_offset,
@@ -88,7 +81,7 @@ class ScopedXI2Event {
 
   void SetUpValuators(const std::vector<Valuator>& valuators);
 
-  std::unique_ptr<XEvent, XEventDeleter> event_;
+  x11::Event event_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedXI2Event);
 };

@@ -84,6 +84,14 @@ bool ImageModel::IsImage() const {
   return image_ && !image_.value().IsEmpty();
 }
 
+gfx::Size ImageModel::Size() const {
+  if (IsVectorIcon()) {
+    const int icon_size = GetVectorIcon().icon_size();
+    return gfx::Size(icon_size, icon_size);
+  }
+  return IsImage() ? GetImage().Size() : gfx::Size();
+}
+
 const VectorIconModel ImageModel::GetVectorIcon() const {
   DCHECK(IsVectorIcon());
   return vector_icon_model_.value();

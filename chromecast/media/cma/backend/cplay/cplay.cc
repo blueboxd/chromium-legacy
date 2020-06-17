@@ -246,7 +246,7 @@ Parameters ReadArgs(int argc, char* argv[]) {
   Parameters params;
   params.cast_audio_json_path = CastAudioJson::GetFilePath();
   int opt;
-  while ((opt = getopt(argc, argv, "i:o:c:v:d:r:")) != -1) {
+  while ((opt = getopt(argc, argv, "i:o:c:v:d:r:s")) != -1) {
     switch (opt) {
       case 'i':
         params.input_file_path = base::FilePath(optarg);

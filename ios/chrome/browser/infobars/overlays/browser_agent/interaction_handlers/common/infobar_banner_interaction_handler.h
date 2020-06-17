@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/infobar_interaction_handler.h"
 
 class OverlayRequestSupport;
+class InfobarBannerOverlayRequestCallbackInstaller;
 
 namespace web {
 class WebState;
@@ -43,7 +44,10 @@ class InfobarBannerInteractionHandler
   std::unique_ptr<OverlayRequestCallbackInstaller> CreateInstaller() override;
   void InfobarVisibilityChanged(InfoBarIOS* infobar, bool visible) override;
 
- private:
+  // Creates the infobar banner callback installer for this handler.
+  virtual std::unique_ptr<InfobarBannerOverlayRequestCallbackInstaller>
+  CreateBannerInstaller();
+
   // The request support passed on initialization.  Only interactions with
   // supported requests should be handled by this instance.
   const OverlayRequestSupport* request_support_ = nullptr;

@@ -37,7 +37,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.paint_preview.PaintPreviewHelper;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.rlz.RevenueStats;
-import org.chromium.chrome.browser.tab.TabState.WebContentsState;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
@@ -878,8 +877,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         assert state != null;
         mFrozenContentsState = state.contentsState;
         mTimestampMillis = state.timestampMillis;
-        mUrl = new GURL(state.getVirtualUrlFromState());
-        mTitle = state.getDisplayTitleFromState();
+        mUrl = new GURL(state.contentsState.getVirtualUrlFromState());
+        mTitle = state.contentsState.getDisplayTitleFromState();
         mLaunchTypeAtCreation = state.tabLaunchTypeAtCreation;
         mRootId = state.rootId == Tab.INVALID_TAB_ID ? mId : state.rootId;
     }
@@ -1432,8 +1431,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             TraceEvent.begin("Tab.unfreezeContents");
             assert mFrozenContentsState != null;
 
-            WebContents webContents =
-                    mFrozenContentsState.restoreContentsFromByteBuffer(isHidden());
+            WebContents webContents = WebContentsStateBridge.restoreContentsFromByteBuffer(
+                    mFrozenContentsState, isHidden());
             if (webContents == null) {
                 // State restore failed, just create a new empty web contents as that is the best
                 // that can be done at this point. TODO(jcivelli) http://b/5910521 - we should show
@@ -1479,7 +1478,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     @CalledByNative
     private void deleteNavigationEntriesFromFrozenState(long predicate) {
         if (mFrozenContentsState == null) return;
-        WebContentsState newState = mFrozenContentsState.deleteNavigationEntries(predicate);
+        WebContentsState newState =
+                WebContentsStateBridge.deleteNavigationEntries(mFrozenContentsState, predicate);
         if (newState != null) {
             mFrozenContentsState = newState;
             notifyNavigationEntriesDeleted();

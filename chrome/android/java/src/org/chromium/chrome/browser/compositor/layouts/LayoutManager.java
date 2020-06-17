@@ -200,6 +200,8 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         @Override
         public void didCloseTab(int tabId, boolean incognito) {
             tabClosed(tabId, incognito, false);
+            mCurrentTab =
+                    getTabModelSelector() != null ? getTabModelSelector().getCurrentTab() : null;
         }
 
         @Override
@@ -614,8 +616,9 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     }
 
     private void tabClosed(int tabId, boolean incognito, boolean tabRemoved) {
-        mCurrentTab = getTabModelSelector() != null ? getTabModelSelector().getCurrentTab() : null;
-        int nextTabId = mCurrentTab != null ? mCurrentTab.getId() : Tab.INVALID_TAB_ID;
+        Tab currentTab =
+                getTabModelSelector() != null ? getTabModelSelector().getCurrentTab() : null;
+        int nextTabId = currentTab != null ? currentTab.getId() : Tab.INVALID_TAB_ID;
         tabClosed(tabId, nextTabId, incognito, tabRemoved);
     }
 

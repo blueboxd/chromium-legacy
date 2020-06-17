@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
@@ -40,7 +41,8 @@ constexpr int kMaxUriDecodeLen = 2048;
 std::string FormatTemplate(int resource_id,
                            const ui::TemplateReplacements& replacements) {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-  base::RefCountedMemory* bytes = bundle.LoadDataResourceBytes(resource_id);
+  scoped_refptr<base::RefCountedMemory> bytes =
+      bundle.LoadDataResourceBytes(resource_id);
   base::StringPiece string_piece(reinterpret_cast<const char*>(bytes->front()),
                                  bytes->size());
   return ui::ReplaceTemplateExpressions(

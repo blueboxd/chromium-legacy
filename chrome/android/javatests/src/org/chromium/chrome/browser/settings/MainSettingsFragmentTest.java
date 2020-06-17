@@ -5,11 +5,11 @@
 package org.chromium.chrome.browser.settings;
 
 import android.accounts.Account;
-import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 import androidx.preference.Preference;
+import androidx.test.filters.SmallTest;
 
 import org.junit.After;
 import org.junit.Assert;

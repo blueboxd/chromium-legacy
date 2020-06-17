@@ -1141,6 +1141,9 @@ void TabletModeController::FinishInitTabletMode() {
 }
 
 void TabletModeController::DeleteScreenshot() {
+  if (screenshot_layer_)
+    VLOG(1) << "Tablet screenshot layer destroyed.";
+
   screenshot_layer_.reset();
   screenshot_taken_callback_.Cancel();
   screenshot_set_callback_.Cancel();
@@ -1180,6 +1183,8 @@ void TabletModeController::TakeScreenshot(aura::Window* top_window) {
   screenshot_request->set_result_selection(request_bounds);
   screenshot_window->layer()->RequestCopyOfOutput(
       std::move(screenshot_request));
+
+  VLOG(1) << "Tablet screenshot requested.";
 }
 
 void TabletModeController::OnScreenshotTaken(
@@ -1210,6 +1215,8 @@ void TabletModeController::OnScreenshotTaken(
                                             top_window->layer());
 
   std::move(on_screenshot_taken).Run();
+
+  VLOG(1) << "Tablet screenshot layer created.";
 }
 
 bool TabletModeController::CalculateIsInTabletPhysicalState() const {

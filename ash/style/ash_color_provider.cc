@@ -218,16 +218,16 @@ SkColor AshColorProvider::GetControlsLayerColorImpl(
     AshColorMode color_mode) const {
   SkColor light_color, dark_color;
   switch (type) {
-    case ControlsLayerType::kHairlineBorder:
+    case ControlsLayerType::kHairlineBorderColor:
       light_color = SkColorSetA(SK_ColorBLACK, 0x24);  // 14%
       dark_color = SkColorSetA(SK_ColorWHITE, 0x24);
       break;
-    case ControlsLayerType::kInactiveControlBackground:
+    case ControlsLayerType::kControlBackgroundColorInactive:
       light_color = SkColorSetA(SK_ColorBLACK, 0x0D);  // 5%
       dark_color = SkColorSetA(SK_ColorWHITE, 0x1A);   // 10%
       break;
-    case ControlsLayerType::kActiveControlBackground:
-    case ControlsLayerType::kFocusRing:
+    case ControlsLayerType::kControlBackgroundColorActive:
+    case ControlsLayerType::kFocusRingColor:
       light_color = gfx::kGoogleBlue600;
       dark_color = gfx::kGoogleBlue300;
       break;
@@ -240,45 +240,46 @@ SkColor AshColorProvider::GetContentLayerColorImpl(
     AshColorMode color_mode) const {
   SkColor light_color, dark_color;
   switch (type) {
-    case ContentLayerType::kSeparator:
+    case ContentLayerType::kSeparatorColor:
       light_color = SkColorSetA(SK_ColorBLACK, 0x24);  // 14%
       dark_color = SkColorSetA(SK_ColorWHITE, 0x24);
       break;
-    case ContentLayerType::kTextPrimary:
+    case ContentLayerType::kTextColorPrimary:
       return cros_colors::ResolveColor(ColorName::kCrosDefaultTextColor,
                                        color_mode);
-    case ContentLayerType::kTextSecondary:
+    case ContentLayerType::kTextColorSecondary:
       return cros_colors::ResolveColor(
           ColorName::kCrosDefaultTextColorSecondary, color_mode);
-    case ContentLayerType::kIconPrimary:
+    case ContentLayerType::kIconColorPrimary:
       return cros_colors::ResolveColor(ColorName::kCrosDefaultIconColorPrimary,
                                        color_mode);
-    case ContentLayerType::kIconSecondary:
+    case ContentLayerType::kIconColorSecondary:
       light_color = dark_color = gfx::kGoogleGrey500;
       break;
-    case ContentLayerType::kIconRed:
+    case ContentLayerType::kIconAlert:
       light_color = gfx::kGoogleRed600;
       dark_color = gfx::kGoogleRed300;
       break;
-    case ContentLayerType::kProminentIconButton:
-    case ContentLayerType::kSliderThumbEnabled:
+    case ContentLayerType::kButtonIconColorProminent:
+    case ContentLayerType::kSliderThumbColorEnabled:
       return cros_colors::ResolveColor(
           ColorName::kCrosDefaultIconColorProminent, color_mode);
-    case ContentLayerType::kSliderThumbDisabled:
+    case ContentLayerType::kButtonLabelColor:
+      light_color = gfx::kGoogleGrey700;
+      dark_color = gfx::kGoogleGrey200;
+      break;
+    case ContentLayerType::kSliderThumbColorDisabled:
       light_color = gfx::kGoogleGrey600;
       dark_color = gfx::kGoogleGrey600;
       break;
-    case ContentLayerType::kIconSystemMenu:
+    case ContentLayerType::kSystemMenuIconColor:
       light_color = gfx::kGoogleGrey700;
       dark_color = gfx::kGoogleGrey200;
       break;
-    case ContentLayerType::kIconSystemMenuToggled:
+    case ContentLayerType::kSystemMenuIconColorToggled:
       light_color = gfx::kGoogleGrey200;
       dark_color = gfx::kGoogleGrey900;
       break;
-    case ContentLayerType::kButtonLabel:
-      light_color = gfx::kGoogleGrey700;
-      dark_color = gfx::kGoogleGrey200;
   }
   return IsLightMode(color_mode) ? light_color : dark_color;
 }

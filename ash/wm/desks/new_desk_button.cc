@@ -92,7 +92,7 @@ void NewDeskButton::UpdateButtonState() {
   SetEnabled(enabled);
 
   background_color_ = AshColorProvider::Get()->GetControlsLayerColor(
-      AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+      AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive,
       AshColorProvider::AshColorMode::kDark);
   if (!enabled)
     background_color_ = AshColorProvider::GetDisabledColor(background_color_);

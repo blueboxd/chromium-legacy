@@ -68,7 +68,7 @@ class BackButton : public CustomShapeButton {
     gfx::ImageSkia image = gfx::CreateVectorIcon(
         kUnifiedMenuArrowBackIcon,
         AshColorProvider::Get()->GetContentLayerColor(
-            ContentLayerType::kIconPrimary, AshColorMode::kDark));
+            ContentLayerType::kIconColorPrimary, AshColorMode::kDark));
     SetImage(views::Button::STATE_NORMAL, image);
     SetImageHorizontalAlignment(ALIGN_RIGHT);
     SetImageVerticalAlignment(ALIGN_MIDDLE);
@@ -146,7 +146,7 @@ TriView* DetailedViewDelegate::CreateTitleRow(int string_id) {
 views::View* DetailedViewDelegate::CreateTitleSeparator() {
   views::Separator* separator = new views::Separator();
   separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
-      ContentLayerType::kSeparator, AshColorMode::kDark));
+      ContentLayerType::kSeparatorColor, AshColorMode::kDark));
   separator->SetBorder(views::CreateEmptyBorder(
       kTitleRowProgressBarHeight - views::Separator::kThickness, 0, 0, 0));
   return separator;
@@ -159,7 +159,7 @@ void DetailedViewDelegate::ShowStickyHeaderSeparator(views::View* view,
         views::CreateSolidSidedBorder(
             0, 0, kTraySeparatorWidth, 0,
             AshColorProvider::Get()->GetContentLayerColor(
-                ContentLayerType::kSeparator, AshColorMode::kDark)),
+                ContentLayerType::kSeparatorColor, AshColorMode::kDark)),
         gfx::Insets(kMenuSeparatorVerticalPadding, 0,
                     kMenuSeparatorVerticalPadding - kTraySeparatorWidth, 0)));
   } else {
@@ -172,7 +172,7 @@ void DetailedViewDelegate::ShowStickyHeaderSeparator(views::View* view,
 views::Separator* DetailedViewDelegate::CreateListSubHeaderSeparator() {
   views::Separator* separator = new views::Separator();
   separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
-      ContentLayerType::kSeparator, AshColorMode::kDark));
+      ContentLayerType::kSeparatorColor, AshColorMode::kDark));
   separator->SetBorder(views::CreateEmptyBorder(
       kMenuSeparatorVerticalPadding - views::Separator::kThickness, 0, 0, 0));
   return separator;
@@ -189,8 +189,9 @@ HoverHighlightView* DetailedViewDelegate::CreateScrollListItem(
   else
     item->AddIconAndLabel(
         gfx::CreateVectorIcon(
-            icon, AshColorProvider::Get()->GetContentLayerColor(
-                      ContentLayerType::kIconPrimary, AshColorMode::kDark)),
+            icon,
+            AshColorProvider::Get()->GetContentLayerColor(
+                ContentLayerType::kIconColorPrimary, AshColorMode::kDark)),
         text);
   return item;
 }

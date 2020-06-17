@@ -52,20 +52,23 @@ FutureBase& FutureBase::operator=(FutureBase&& future) {
 }
 
 void FutureBase::SyncImpl(Error** raw_error, uint8_t** raw_reply) {
-  DCHECK(sequence_);
+  if (!sequence_)
+    return;
   *raw_reply = reinterpret_cast<uint8_t*>(
       xcb_wait_for_reply(connection_->XcbConnection(), *sequence_, raw_error));
   sequence_ = base::nullopt;
 }
 
 void FutureBase::SyncImpl(Error** raw_error) {
-  DCHECK(sequence_);
+  if (!sequence_)
+    return;
   *raw_error = xcb_request_check(connection_->XcbConnection(), {*sequence_});
   sequence_ = base::nullopt;
 }
 
 void FutureBase::OnResponseImpl(ResponseCallback callback) {
-  DCHECK(sequence_);
+  if (!sequence_)
+    return;
   connection_->AddRequest(*sequence_, std::move(callback));
   sequence_ = base::nullopt;
 }

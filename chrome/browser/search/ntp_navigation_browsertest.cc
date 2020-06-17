@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/feature_list.h"
 #include "base/strings/strcat.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -27,7 +29,8 @@ class NtpNavigationBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// Verify that the local NTP commits in a SiteInstance with the local NTP URL.
+// Verify that the NTP URL commits in a SiteInstance with the local NTP URL or
+// the WebUI NTP URL.
 IN_PROC_BROWSER_TEST_F(NtpNavigationBrowserTest, VerifyNtpSiteInstance) {
   GURL ntp_url(chrome::kChromeUINewTabURL);
   ui_test_utils::NavigateToURL(browser(), ntp_url);
@@ -36,8 +39,11 @@ IN_PROC_BROWSER_TEST_F(NtpNavigationBrowserTest, VerifyNtpSiteInstance) {
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(ntp_url, web_contents->GetLastCommittedURL());
 
+  GURL webui_ntp_url(chrome::kChromeUINewTabPageURL);
   GURL local_ntp_url(base::StrCat({chrome::kChromeSearchScheme, "://",
                                    chrome::kChromeSearchLocalNtpHost, "/"}));
-  ASSERT_EQ(local_ntp_url,
+
+  ASSERT_EQ(base::FeatureList::IsEnabled(ntp_features::kWebUI) ? webui_ntp_url
+                                                               : local_ntp_url,
             web_contents->GetMainFrame()->GetSiteInstance()->GetSiteURL());
 }

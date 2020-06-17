@@ -120,7 +120,8 @@ SelectionData SelectionRequestor::RequestAndWaitForTypes(
   return SelectionData();
 }
 
-void SelectionRequestor::OnSelectionNotify(const XEvent& event) {
+void SelectionRequestor::OnSelectionNotify(const x11::Event& x11_event) {
+  const XEvent& event = x11_event.xlib_event();
   Request* request = GetCurrentRequest();
   x11::Atom event_property = static_cast<x11::Atom>(event.xselection.property);
   if (!request || request->completed ||
@@ -157,13 +158,14 @@ void SelectionRequestor::OnSelectionNotify(const XEvent& event) {
   }
 }
 
-bool SelectionRequestor::CanDispatchPropertyEvent(const XEvent& event) {
+bool SelectionRequestor::CanDispatchPropertyEvent(const x11::Event& x11_event) {
+  const XEvent& event = x11_event.xlib_event();
   return event.xproperty.window == x_window_ &&
          static_cast<x11::Atom>(event.xproperty.atom) == x_property_ &&
          event.xproperty.state == PropertyNewValue;
 }
 
-void SelectionRequestor::OnPropertyEvent(const XEvent& event) {
+void SelectionRequestor::OnPropertyEvent(const x11::Event& event) {
   Request* request = GetCurrentRequest();
   if (!request || !request->data_sent_incrementally)
     return;
@@ -264,7 +266,7 @@ void SelectionRequestor::BlockTillSelectionNotifyForRequest(Request* request) {
       if (!conn->events().empty()) {
         x11::Event event = std::move(events.front());
         events.pop_front();
-        dispatcher_->DispatchXEvent(&event.xlib_event());
+        dispatcher_->DispatchXEvent(&event);
       }
     }
   }

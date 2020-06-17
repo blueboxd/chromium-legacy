@@ -67,7 +67,7 @@ class ImeListItemView : public ActionableView {
     views::Label* id_label = TrayPopupUtils::CreateDefaultLabel();
     if (use_unified_theme) {
       id_label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kTextPrimary,
+          AshColorProvider::ContentLayerType::kTextColorPrimary,
           AshColorProvider::AshColorMode::kDark));
       id_label->SetAutoColorReadabilityEnabled(false);
     }
@@ -165,7 +165,7 @@ class KeyboardStatusRow : public views::View {
     keyboard_image->SetImage(gfx::CreateVectorIcon(
         kImeMenuOnScreenKeyboardIcon, kMenuIconSize,
         AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kIconPrimary,
+            AshColorProvider::ContentLayerType::kIconColorPrimary,
             AshColorProvider::AshColorMode::kLight)));
     tri_view->AddView(TriView::Container::START, keyboard_image);
 
@@ -271,7 +271,7 @@ void ImeListView::AppendImeListAndProperties(
     views::View* ime_view = new ImeListItemView(
         this, list[i].short_name, list[i].name, selected,
         AshColorProvider::Get()->DeprecatedGetContentLayerColor(
-            AshColorProvider::ContentLayerType::kProminentIconButton,
+            AshColorProvider::ContentLayerType::kButtonIconColorProminent,
             kProminentIconButtonColor),
         use_unified_theme_);
     scroll_content()->AddChildView(ime_view);
@@ -287,7 +287,7 @@ void ImeListView::AppendImeListAndProperties(
           TrayPopupUtils::CreateListItemSeparator(true));
 
       const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconPrimary,
+          AshColorProvider::ContentLayerType::kIconColorPrimary,
           AshColorProvider::AshColorMode::kLight);
       // Adds the property items.
       for (size_t i = 0; i < property_list.size(); i++) {
@@ -353,8 +353,9 @@ void ImeListView::HandleButtonPressed(views::Button* sender,
 }
 
 void ImeListView::VisibilityChanged(View* starting_from, bool is_visible) {
-  if (!is_visible || (should_focus_ime_after_selection_with_keyboard_ &&
-                      last_item_selected_with_keyboard_) ||
+  if (!is_visible ||
+      (should_focus_ime_after_selection_with_keyboard_ &&
+       last_item_selected_with_keyboard_) ||
       !current_ime_view_) {
     return;
   }

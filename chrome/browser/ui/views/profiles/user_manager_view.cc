@@ -37,7 +37,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/webview/webview.h"
@@ -73,6 +72,7 @@ UserManagerProfileDialogDelegate::UserManagerProfileDialogDelegate(
     const GURL& url)
     : parent_(parent), web_view_(web_view), email_address_(email_address) {
   SetHasWindowSizeControls(true);
+  SetTitle(IDS_PROFILES_GAIA_SIGNIN_TITLE);
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_use_custom_frame(false);
 
@@ -141,10 +141,6 @@ ui::ModalType UserManagerProfileDialogDelegate::GetModalType() const {
 void UserManagerProfileDialogDelegate::DeleteDelegate() {
   OnDialogDestroyed();
   delete this;
-}
-
-base::string16 UserManagerProfileDialogDelegate::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_PROFILES_GAIA_SIGNIN_TITLE);
 }
 
 views::View* UserManagerProfileDialogDelegate::GetInitiallyFocusedView() {
@@ -329,6 +325,7 @@ UserManagerView::UserManagerView()
       user_manager_started_showing_(base::Time()) {
   SetButtons(ui::DIALOG_BUTTON_NONE);
   SetHasWindowSizeControls(true);
+  SetTitle(IDS_PRODUCT_NAME);
   set_use_custom_frame(false);
   keep_alive_ = std::make_unique<ScopedKeepAlive>(
       KeepAliveOrigin::USER_MANAGER_VIEW, KeepAliveRestartOption::DISABLED);
@@ -475,10 +472,6 @@ bool UserManagerView::AcceleratorPressed(const ui::Accelerator& accelerator) {
 
 gfx::Size UserManagerView::CalculatePreferredSize() const {
   return gfx::Size(UserManager::kWindowWidth, UserManager::kWindowHeight);
-}
-
-base::string16 UserManagerView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 
 void UserManagerView::WindowClosing() {

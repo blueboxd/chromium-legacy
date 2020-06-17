@@ -23,7 +23,10 @@ import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.memory.MemoryPressureCallback;
+import org.chromium.base.metrics.RecordHistogram;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -36,6 +39,7 @@ import javax.annotation.concurrent.GuardedBy;
 public class ChildProcessConnection {
     private static final String TAG = "ChildProcessConn";
     private static final int NUM_BINDING_STATES = ChildBindingState.MAX_VALUE + 1;
+    private static final int FALLBACK_TIMEOUT_IN_SECONDS = 10;
 
     /**
      * Used to notify the consumer about the process start. These callbacks will be invoked before
@@ -107,9 +111,13 @@ public class ChildProcessConnection {
         }
     }
 
+    // Only accessed on launcher thread.
+    private static boolean sFallbackEnabled;
+
     private final Handler mLauncherHandler;
     private final Executor mLauncherExecutor;
-    private final ComponentName mServiceName;
+    private ComponentName mServiceName;
+    private final ComponentName mFallbackServiceName;
 
     // Parameters passed to the child process through the service binding intent.
     // If the service gets recreated by the framework the intent will be reused, so these parameters
@@ -159,17 +167,31 @@ public class ChildProcessConnection {
     // Process ID of the corresponding child process.
     private int mPid;
 
+    // Factory which tests can override to intercept ChildServiceConnection creation.
+    private final ChildServiceConnectionFactory mConnectionFactory;
+
+    // ChildServiceConnectionDelegate for this class which is responsible for posting callbacks to
+    // the launcher thread, if needed.
+    private final ChildServiceConnectionDelegate mConnectionDelegate;
+
+    // Instance named used on Android 10 and above to create separate instances from the same
+    // <service> manifest declaration.
+    private final String mInstanceName;
+
+    // Use Context.BIND_EXTERNAL_SERVICE flag for this service.
+    private final boolean mBindAsExternalService;
+
     // Strong binding will make the service priority equal to the priority of the activity.
-    private final ChildServiceConnection mStrongBinding;
+    private ChildServiceConnection mStrongBinding;
 
     // Moderate binding will make the service priority equal to the priority of a visible process
     // while the app is in the foreground.
     // This is also used as the initial binding before any priorities are set.
-    private final ChildServiceConnection mModerateBinding;
+    private ChildServiceConnection mModerateBinding;
 
     // Low priority binding maintained in the entire lifetime of the connection, i.e. between calls
     // to start() and stop().
-    private final ChildServiceConnection mWaivedBinding;
+    private ChildServiceConnection mWaivedBinding;
 
     // Refcount of bindings.
     private int mStrongBindingCount;
@@ -208,28 +230,32 @@ public class ChildProcessConnection {
     @GuardedBy("sBindingStateLock")
     private boolean mCleanExit;
 
-    public ChildProcessConnection(Context context, ComponentName serviceName, boolean bindToCaller,
-            boolean bindAsExternalService, Bundle serviceBundle, String instanceName) {
-        this(context, serviceName, bindToCaller, bindAsExternalService, serviceBundle,
-                null /* connectionFactory */, instanceName);
+    public ChildProcessConnection(Context context, ComponentName serviceName,
+            ComponentName fallbackServiceName, boolean bindToCaller, boolean bindAsExternalService,
+            Bundle serviceBundle, String instanceName) {
+        this(context, serviceName, fallbackServiceName, bindToCaller, bindAsExternalService,
+                serviceBundle, null /* connectionFactory */, instanceName);
     }
 
     @VisibleForTesting
     public ChildProcessConnection(final Context context, ComponentName serviceName,
-            boolean bindToCaller, boolean bindAsExternalService, Bundle serviceBundle,
-            ChildServiceConnectionFactory connectionFactory, String instanceName) {
+            ComponentName fallbackServiceName, boolean bindToCaller, boolean bindAsExternalService,
+            Bundle serviceBundle, ChildServiceConnectionFactory connectionFactory,
+            String instanceName) {
         mLauncherHandler = new Handler();
         mLauncherExecutor = (Runnable runnable) -> {
             mLauncherHandler.post(runnable);
         };
         assert isRunningOnLauncherThread();
         mServiceName = serviceName;
+        mFallbackServiceName = fallbackServiceName;
         mServiceBundle = serviceBundle != null ? serviceBundle : new Bundle();
         mServiceBundle.putBoolean(ChildProcessConstants.EXTRA_BIND_TO_CALLER, bindToCaller);
         mBindToCaller = bindToCaller;
-
+        mInstanceName = instanceName;
+        mBindAsExternalService = bindAsExternalService;
         if (connectionFactory == null) {
-            connectionFactory = new ChildServiceConnectionFactory() {
+            mConnectionFactory = new ChildServiceConnectionFactory() {
                 @Override
                 public ChildServiceConnection createConnection(Intent bindIntent, int bindFlags,
                         ChildServiceConnectionDelegate delegate, String instanceName) {
@@ -237,11 +263,13 @@ public class ChildProcessConnection {
                             mLauncherHandler, mLauncherExecutor, delegate, instanceName);
                 }
             };
+        } else {
+            mConnectionFactory = connectionFactory;
         }
 
         // Methods on the delegate are can be called on launcher thread or UI thread, so need to
         // handle both cases. See BindService for details.
-        ChildServiceConnectionDelegate delegate = new ChildServiceConnectionDelegate() {
+        mConnectionDelegate = new ChildServiceConnectionDelegate() {
             @Override
             public void onServiceConnected(final IBinder service) {
                 if (mLauncherHandler.getLooper() == Looper.myLooper()) {
@@ -261,21 +289,25 @@ public class ChildProcessConnection {
             }
         };
 
+        createBindings(sFallbackEnabled ? mFallbackServiceName : mServiceName);
+    }
+
+    private void createBindings(ComponentName serviceName) {
         Intent intent = new Intent();
         intent.setComponent(serviceName);
-        if (serviceBundle != null) {
-            intent.putExtras(serviceBundle);
+        if (mServiceBundle != null) {
+            intent.putExtras(mServiceBundle);
         }
 
         int defaultFlags = Context.BIND_AUTO_CREATE
-                | (bindAsExternalService ? Context.BIND_EXTERNAL_SERVICE : 0);
+                | (mBindAsExternalService ? Context.BIND_EXTERNAL_SERVICE : 0);
 
-        mModerateBinding =
-                connectionFactory.createConnection(intent, defaultFlags, delegate, instanceName);
-        mStrongBinding = connectionFactory.createConnection(
-                intent, defaultFlags | Context.BIND_IMPORTANT, delegate, instanceName);
-        mWaivedBinding = connectionFactory.createConnection(
-                intent, defaultFlags | Context.BIND_WAIVE_PRIORITY, delegate, instanceName);
+        mModerateBinding = mConnectionFactory.createConnection(
+                intent, defaultFlags, mConnectionDelegate, mInstanceName);
+        mStrongBinding = mConnectionFactory.createConnection(
+                intent, defaultFlags | Context.BIND_IMPORTANT, mConnectionDelegate, mInstanceName);
+        mWaivedBinding = mConnectionFactory.createConnection(intent,
+                defaultFlags | Context.BIND_WAIVE_PRIORITY, mConnectionDelegate, mInstanceName);
     }
 
     public final IChildProcessService getService() {
@@ -608,9 +640,55 @@ public class ChildProcessConnection {
         }
         if (!success) return false;
 
+        if (!sFallbackEnabled && mFallbackServiceName != null) {
+            mLauncherHandler.postDelayed(
+                    this::checkBindTimeOut, FALLBACK_TIMEOUT_IN_SECONDS * 1000);
+        }
+
         mWaivedBinding.bindServiceConnection();
         updateBindingState();
         return true;
+    }
+
+    // NOTE: Keep values in sync with OnServiceConnectedTimedOutResult in enums.xml.
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface TimeoutResult {
+        int ALREADY_CONNECTED = 0;
+        int NOT_NEEDED = 1;
+        int FALLBACK = 2;
+        int NUM_ENTRIES = 3;
+    }
+
+    private void checkBindTimeOut() {
+        assert isRunningOnLauncherThread();
+        assert mFallbackServiceName != null;
+        final String histogramName =
+                "Android.ChildProcessLauncher.OnServiceConnectedTimedOutResult";
+        if (mDidOnServiceConnected || mServiceDisconnected) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    histogramName, TimeoutResult.ALREADY_CONNECTED, TimeoutResult.NUM_ENTRIES);
+            return;
+        }
+        if (mUnbound) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    histogramName, TimeoutResult.NOT_NEEDED, TimeoutResult.NUM_ENTRIES);
+            return;
+        }
+
+        RecordHistogram.recordEnumeratedHistogram(
+                histogramName, TimeoutResult.FALLBACK, TimeoutResult.NUM_ENTRIES);
+        Log.w(TAG, "Fallback to " + mFallbackServiceName);
+        sFallbackEnabled = true;
+        boolean isStrongBindingBound = mStrongBinding.isBound();
+        boolean isModerateBindingBound = mModerateBinding.isBound();
+        boolean isWaivedBindingBound = mWaivedBinding.isBound();
+        mStrongBinding.retire();
+        mModerateBinding.retire();
+        mWaivedBinding.retire();
+        createBindings(mFallbackServiceName);
+        if (isStrongBindingBound) mStrongBinding.bindServiceConnection();
+        if (isModerateBindingBound) mModerateBinding.bindServiceConnection();
+        if (isWaivedBindingBound) mWaivedBinding.bindServiceConnection();
     }
 
     @VisibleForTesting

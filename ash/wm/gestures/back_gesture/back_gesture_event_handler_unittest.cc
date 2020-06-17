@@ -111,6 +111,10 @@ class BackGestureEventHandlerTest : public AshTestBase {
         base::TimeDelta::FromMilliseconds(100), 3);
   }
 
+  TestShellDelegate* GetShellDelegate() {
+    return static_cast<TestShellDelegate*>(Shell::Get()->shell_delegate());
+  }
+
   aura::Window* top_window() { return top_window_.get(); }
 
  private:
@@ -739,6 +743,104 @@ TEST_F(BackGestureEventHandlerTest,
             split_view_controller->state());
   EXPECT_EQ(0, target_back_press.accelerator_count());
   EXPECT_EQ(0, target_back_release.accelerator_count());
+}
+
+TEST_F(BackGestureEventHandlerTest, IgnoreSecondFinger) {
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
+
+  const gfx::Point start_point(0, 100);
+  const gfx::Point end_point(200, 100);
+
+  // Scenario 1:
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressTouchId(0, base::make_optional(start_point));
+  generator->MoveTouch(end_point);
+  // Without releasing the first finger, now press and release the second
+  // finger.
+  generator->PressTouchId(1);
+  generator->ReleaseTouchId(1);
+  // Then release the first finger. Back should be able to be performed.
+  generator->ReleaseTouchId(0);
+  EXPECT_EQ(1, target_back_press.accelerator_count());
+  EXPECT_EQ(1, target_back_release.accelerator_count());
+
+  // Scenario 2:
+  wm::ActivateWindow(top_window());
+  generator->PressTouchId(0, base::make_optional(start_point));
+  generator->MoveTouch(end_point);
+  // Without releasing the first finger, now press the second finger.
+  generator->PressTouchId(1);
+  // Release the first finger and then the second finger.
+  generator->ReleaseTouchId(0);
+  generator->ReleaseTouchId(1);
+  // Test that back should still be able to be performed.
+  EXPECT_EQ(2, target_back_press.accelerator_count());
+  EXPECT_EQ(2, target_back_release.accelerator_count());
+
+  // Scenario 3:
+  wm::ActivateWindow(top_window());
+  GetShellDelegate()->SetShouldWaitForTouchAck(
+      /*should_wait_for_touch_ack=*/true);
+  generator->PressTouchId(0, base::make_optional(start_point));
+  generator->MoveTouch(end_point);
+  // Without releasing the first finger, now press and release the second
+  // finger.
+  generator->PressTouchId(1);
+  generator->ReleaseTouchId(1);
+  // Then release the first finger. Back should be able to be performed.
+  generator->ReleaseTouchId(0);
+  EXPECT_EQ(3, target_back_press.accelerator_count());
+  EXPECT_EQ(3, target_back_release.accelerator_count());
+
+  // Scenario 4:
+  wm::ActivateWindow(top_window());
+  generator->PressTouchId(0, base::make_optional(start_point));
+  generator->MoveTouch(end_point);
+  // Without releasing the first finger, now press the second finger.
+  generator->PressTouchId(1);
+  // Release the first finger and then the second finger.
+  generator->ReleaseTouchId(0);
+  generator->ReleaseTouchId(1);
+  // Test that back should still be able to be performed.
+  EXPECT_EQ(4, target_back_press.accelerator_count());
+  EXPECT_EQ(4, target_back_release.accelerator_count());
+}
+
+TEST_F(BackGestureEventHandlerTest, CancelledEventOnSecondFinger) {
+  ui::TestAcceleratorTarget target_back_press, target_back_release;
+  RegisterBackPressAndRelease(&target_back_press, &target_back_release);
+
+  const gfx::Point start_point(0, 100);
+  const gfx::Point end_point(200, 100);
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressTouchId(0, base::make_optional(start_point));
+  generator->MoveTouch(end_point);
+  // Without releasing the first finger, now press the second finger.
+  generator->PressTouchId(1);
+  // Then release the first finger. Back should be able to be performed.
+  generator->ReleaseTouchId(0);
+  EXPECT_EQ(1, target_back_press.accelerator_count());
+  EXPECT_EQ(1, target_back_release.accelerator_count());
+  generator->ReleaseTouchId(1);
+  // Manually dispatch a ui::ET_TOUCH_CANCELLED event to the second finger to
+  // simulate what's happending in real world.
+  ui::TouchEvent event = ui::TouchEvent(
+      ui::ET_TOUCH_CANCELLED, start_point, base::TimeTicks::Now(),
+      ui::PointerDetails(ui::EventPointerType::kTouch,
+                         /*pointer_id=*/1, /*radius_x=*/5.0f,
+                         /*radius_y=*/5.0, /*force=*/1.0f));
+  ui::Event::DispatcherApi(&event).set_target(top_window());
+  Shell::Get()->back_gesture_event_handler()->OnTouchEvent(&event);
+
+  wm::ActivateWindow(top_window());
+  generator->PressTouchId(0, base::make_optional(start_point));
+  generator->MoveTouch(end_point);
+  generator->ReleaseTouchId(0);
+  // Test that back should still be able to be performed.
+  EXPECT_EQ(2, target_back_press.accelerator_count());
+  EXPECT_EQ(2, target_back_release.accelerator_count());
 }
 
 // Tests that swiping on the backdrop to minimize a non-resizable app will not

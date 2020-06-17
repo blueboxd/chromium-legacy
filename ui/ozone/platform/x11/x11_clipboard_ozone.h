@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/ozone/public/platform_clipboard.h"
@@ -51,11 +52,11 @@ class X11ClipboardOzone : public PlatformClipboard, public XEventDispatcher {
   struct SelectionState;
 
   // XEventDispatcher:
-  bool DispatchXEvent(XEvent* xev) override;
+  bool DispatchXEvent(x11::Event* xev) override;
 
   bool OnSelectionRequest(const XSelectionRequestEvent& event);
   bool OnSelectionNotify(const XSelectionEvent& event);
-  bool OnSetSelectionOwnerNotify(XEvent* xev);
+  bool OnSetSelectionOwnerNotify(x11::Event* xev);
 
   // Returns an X atom for a clipboard buffer type.
   x11::Atom SelectionAtomForBuffer(ClipboardBuffer buffer) const;

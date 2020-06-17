@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 
 namespace ui {
@@ -27,7 +28,7 @@ typedef enum {
   KAtkMod5Mask = 1 << 7,
 } AtkKeyModifierMask;
 
-std::unique_ptr<AtkKeyEventStruct> AtkKeyEventFromXEvent(XEvent* xev);
+std::unique_ptr<AtkKeyEventStruct> AtkKeyEventFromXEvent(x11::Event* xev);
 
 }  // namespace ui
 

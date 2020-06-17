@@ -19,6 +19,7 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 
 namespace ui {
@@ -66,7 +67,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool
 
   void DispatchShmCompletionEvent(XShmCompletionEvent event);
 
-  bool CanDispatchXEvent(XEvent* xev);
+  bool CanDispatchXEvent(x11::Event* xev);
 
   const scoped_refptr<base::SequencedTaskRunner> host_task_runner_;
   const scoped_refptr<base::SequencedTaskRunner> event_task_runner_;
@@ -98,7 +99,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool
   };
 
   // XEventDispatcher:
-  bool DispatchXEvent(XEvent* xev) override;
+  bool DispatchXEvent(x11::Event* xev) override;
 
   void InitializeOnGpu();
   void TeardownOnGpu();

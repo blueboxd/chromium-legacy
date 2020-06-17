@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {
@@ -25,8 +26,8 @@ class XEventWaiter : public ui::XEventObserver {
   ~XEventWaiter() override;
 
   // ui::XEventObserver:
-  void DidProcessXEvent(XEvent* xev) override {}
-  void WillProcessXEvent(XEvent* xev) override;
+  void DidProcessXEvent(x11::Event* xev) override {}
+  void WillProcessXEvent(x11::Event* xev) override;
 
   // Returns atom that indidates that the XEvent is marker event.
   static x11::Atom MarkerEventAtom();

@@ -228,7 +228,7 @@ gfx::ImageSkia ConnectingVpnImage(double animation) {
   float floored_animation_value =
       std::floor(animation * kNumFadeImages) / kNumFadeImages;
   const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kIconPrimary,
+      AshColorProvider::ContentLayerType::kIconColorPrimary,
       AshColorProvider::AshColorMode::kLight);
   return gfx::CreateVectorIcon(
       kNetworkVpnIcon,
@@ -451,19 +451,19 @@ SkColor GetDefaultColorForIconType(IconType icon_type) {
   switch (icon_type) {
     case ICON_TYPE_TRAY_OOBE:
       return AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconPrimary,
+          AshColorProvider::ContentLayerType::kIconColorPrimary,
           AshColorProvider::AshColorMode::kLight);
     case ICON_TYPE_FEATURE_POD:
       return AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconSystemMenu,
+          AshColorProvider::ContentLayerType::kSystemMenuIconColor,
           AshColorProvider::AshColorMode::kDark);
     case ICON_TYPE_FEATURE_POD_TOGGLED:
       return AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconSystemMenuToggled,
+          AshColorProvider::ContentLayerType::kSystemMenuIconColorToggled,
           AshColorProvider::AshColorMode::kDark);
     default:
       return AshColorProvider::Get()->GetContentLayerColor(
-          AshColorProvider::ContentLayerType::kIconPrimary,
+          AshColorProvider::ContentLayerType::kIconColorPrimary,
           AshColorProvider::AshColorMode::kDark);
   }
 }

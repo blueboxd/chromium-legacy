@@ -7,7 +7,8 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
-import android.support.test.filters.SmallTest;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Rule;
 import org.junit.Test;

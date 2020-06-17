@@ -15,7 +15,6 @@
 
 namespace blink {
 
-class AudioBus;
 class AudioWorkletProcessor;
 class AudioWorkletProcessorDefinition;
 class CrossThreadAudioWorkletProcessorInfo;
@@ -76,14 +75,6 @@ class MODULES_EXPORT AudioWorkletGlobalScope final : public WorkletGlobalScope {
       const String& name,
       MessagePortChannel,
       scoped_refptr<SerializedScriptValue> node_options);
-
-  // Invokes the JS audio processing function from an instance of
-  // AudioWorkletProcessor, along with given AudioBuffer from the audio graph.
-  bool Process(
-      AudioWorkletProcessor*,
-      Vector<scoped_refptr<AudioBus>>* input_buses,
-      Vector<AudioBus*>* output_buses,
-      HashMap<String, std::unique_ptr<AudioFloatArray>>* param_value_map);
 
   AudioWorkletProcessorDefinition* FindDefinition(const String& name);
 

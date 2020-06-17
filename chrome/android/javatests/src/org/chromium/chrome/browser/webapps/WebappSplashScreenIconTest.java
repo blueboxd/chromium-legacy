@@ -5,9 +5,10 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.graphics.drawable.BitmapDrawable;
-import android.support.test.filters.SmallTest;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Before;

@@ -7,6 +7,7 @@
 #include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/image/image_skia.h"
@@ -274,6 +275,10 @@ void WidgetDelegate::SetTitle(const base::string16& title) {
   params_.title = title;
   if (GetWidget())
     GetWidget()->UpdateWindowTitle();
+}
+
+void WidgetDelegate::SetTitle(int title_message_id) {
+  SetTitle(l10n_util::GetStringUTF16(title_message_id));
 }
 
 #if defined(USE_AURA)

@@ -7,14 +7,11 @@ package org.chromium.chrome.browser.download.dialogs;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-import android.app.Activity;
+import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.TimePicker;
-
-import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,13 +28,10 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
-import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modaldialog.ModalDialogProperties.ButtonType;
 import org.chromium.ui.modelutil.PropertyModel;
-
-import java.lang.ref.WeakReference;
 
 /**
  * Test to verify download date time picker.
@@ -54,23 +48,17 @@ public class DownloadDateTimePickerDialogTest {
     @Mock
     private DownloadDateTimePickerDialogCoordinator.Controller mController;
 
-    @Mock
-    private WindowAndroid mWindowAndroid;
-
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mActivityTestRule.startMainActivityOnBlankPage();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            when(mWindowAndroid.getActivity())
-                    .thenReturn(new WeakReference<Activity>(mActivityTestRule.getActivity()));
-
             long now = System.currentTimeMillis();
             mModel = new PropertyModel.Builder(DownloadDateTimePickerDialogProperties.ALL_KEYS)
                              .with(DownloadDateTimePickerDialogProperties.STATE, State.DATE)
                              .with(DownloadDateTimePickerDialogProperties.INITIAL_TIME, now)
                              .with(DownloadDateTimePickerDialogProperties.MIN_TIME, now)
-                             .with(DownloadDateTimePickerDialogProperties.MIN_TIME,
+                             .with(DownloadDateTimePickerDialogProperties.MAX_TIME,
                                      now + DownloadDateTimePickerDialogCoordinator.MAX_TIME)
                              .build();
             mDialog = new DownloadDateTimePickerDialogCoordinator();
@@ -80,7 +68,7 @@ public class DownloadDateTimePickerDialogTest {
     }
 
     private void showDialog() {
-        mDialog.showDialog(mWindowAndroid, mModel);
+        mDialog.showDialog(mActivityTestRule.getActivity(), getModalDialogManager(), mModel);
     }
 
     private ModalDialogManager getModalDialogManager() {

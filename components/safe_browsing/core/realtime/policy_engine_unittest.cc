@@ -95,7 +95,8 @@ TEST_F(RealTimePolicyEngineTest, TestCanPerformFullURLLookup_SmallMemorySize) {
                                {{kRealTimeUrlLookupMemoryThresholdMb,
                                  base::NumberToString(
                                      memory_size_threshold)}}}},
-      /* disabled_features */ {});
+      /* disabled_features */ {
+          {kRealTimeUrlLookupEnabledForAllAndroidDevices, {}}});
   pref_service_.SetUserPref(
       unified_consent::prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
       std::make_unique<base::Value>(true));

@@ -12,10 +12,8 @@ import androidx.annotation.NonNull;
 
 import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.download.dialogs.DownloadDateTimePickerDialogProperties.State;
-import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
-import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -69,16 +67,14 @@ public class DownloadDateTimePickerDialogCoordinator implements ModalDialogPrope
      * @param windowAndroid The window android handle that provides contexts.
      * @param model The model that defines the application data used to update the UI view.
      */
-    public void showDialog(WindowAndroid windowAndroid, PropertyModel model) {
-        Activity activity = windowAndroid.getActivity().get();
-
-        // If the activity has gone away, just clean up the native pointer.
-        if (activity == null) {
+    public void showDialog(
+            Activity activity, ModalDialogManager modalDialogManager, PropertyModel model) {
+        if (activity == null || modalDialogManager == null) {
             onDismiss(null, DialogDismissalCause.ACTIVITY_DESTROYED);
             return;
         }
 
-        mModalDialogManager = ((ModalDialogManagerHolder) (activity)).getModalDialogManager();
+        mModalDialogManager = modalDialogManager;
         mModel = model;
         mView = (DownloadDateTimePickerView) LayoutInflater.from(activity).inflate(
                 R.layout.download_later_date_time_picker_dialog, null);

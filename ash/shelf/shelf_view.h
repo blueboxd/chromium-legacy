@@ -35,6 +35,7 @@
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view_model.h"
+#include "ui/views/widget/unique_widget_ptr.h"
 
 namespace ui {
 class SimpleMenuModel;
@@ -183,8 +184,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   void DestroyDragIconProxy() override;
 
-  // Transfers ownership of |drag_image_|, and cleans up DragIconProxy state.
-  DragImageView* RetrieveDragIconProxyAndClearDragProxyState();
+  // Transfers ownership of |drag_image_widget_|, and cleans up DragIconProxy
+  // state.
+  views::UniqueWidgetPtr RetrieveDragIconProxyAndClearDragProxyState();
 
   bool ShouldStartDrag(
       const std::string& app_id,
@@ -213,6 +215,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Returns whether |item| should belong in the pinned section of the shelf.
   bool IsItemPinned(const ShelfItem& item) const;
 
+  // Returns whether |item| should be visible or hidden.
+  bool IsItemVisible(const ShelfItem& item) const;
+
   // Update the layout when entering or exiting tablet mode. Have the owning
   // widget call this instead of observing changes ourselves to ensure this
   // happens after the tablet related changes in ShelfController.
@@ -236,8 +241,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Returns the ShelfAppButton associated with |id|.
   ShelfAppButton* GetShelfAppButton(const ShelfID& id);
 
-  // Updates |visible_views_indices_| when the scrollable shelf is enabled.
-  void UpdateVisibleIndices();
+  // Updates the visibility of the views of the shelf items and the
+  // |visible_views_indices_|.
+  void UpdateShelfItemViewsVisibility();
 
   // If there is animation associated with |view| in |bounds_animator_|,
   // stops the animation.
@@ -429,6 +435,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   void ShelfItemAdded(int model_index) override;
   void ShelfItemRemoved(int model_index, const ShelfItem& old_item) override;
   void ShelfItemChanged(int model_index, const ShelfItem& old_item) override;
+  void ShelfItemsUpdatedForDeskChange() override;
   void ShelfItemMoved(int start_index, int target_index) override;
   void ShelfItemDelegateChanged(const ShelfID& id,
                                 ShelfItemDelegate* old_delegate,
@@ -503,6 +510,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   base::string16 GetTitleForChildView(const views::View* view) const;
 
   int CalculateAppIconsLayoutOffset() const;
+
+  // Get the |drag_image_widget_| content view as DragImageView.
+  DragImageView* GetDragImage();
 
   // The model; owned by Launcher.
   ShelfModel* model_;
@@ -583,7 +593,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // The image proxy for drag operations when a drag and drop host exists and
   // the item can be dragged outside the app grid.
-  std::unique_ptr<DragImageView> drag_image_;
+  views::UniqueWidgetPtr drag_image_widget_;
 
   // The cursor offset to the middle of the dragged item.
   gfx::Vector2d drag_image_offset_;

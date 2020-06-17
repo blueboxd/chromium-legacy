@@ -26,6 +26,7 @@
 #if defined(USE_X11)
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/x/x11_event_translation.h"  // nogncheck
+#include "ui/gfx/x/event.h"                     // nogncheck
 #include "ui/gfx/x/x11.h"                       // nogncheck
 #include "ui/gfx/x/x11_types.h"                 // nogncheck
 #endif
@@ -433,12 +434,16 @@ TEST(EventTest, KeyEventCode) {
 #if defined(USE_X11)
 namespace {
 
-void SetKeyEventTimestamp(XEvent* event, int64_t time) {
-  event->xkey.time = time & UINT32_MAX;
+void SetKeyEventTimestamp(x11::Event* event, int64_t time64) {
+  uint32_t time = time64 & UINT32_MAX;
+  event->xlib_event().xkey.time = time;
+  event->As<x11::KeyEvent>()->time = static_cast<x11::Time>(time);
 }
 
-void AdvanceKeyEventTimestamp(XEvent* event) {
-  event->xkey.time++;
+void AdvanceKeyEventTimestamp(x11::Event* event) {
+  uint32_t time = event->xlib_event().xkey.time + 1;
+  event->xlib_event().xkey.time = time;
+  event->As<x11::KeyEvent>()->time = static_cast<x11::Time>(time);
 }
 
 }  // namespace
@@ -466,8 +471,12 @@ TEST(EventTest, AutoRepeat) {
   native_event_a_pressed_nonstandard_state.InitKeyEvent(ET_KEY_PRESSED, VKEY_A,
                                                         kNativeCodeA);
   // IBUS-GTK uses the mask (1 << 25) to detect reposted event.
-  static_cast<XEvent*>(native_event_a_pressed_nonstandard_state)->xkey.state |=
-      1 << 25;
+  {
+    x11::Event& event = *native_event_a_pressed_nonstandard_state;
+    int mask = event.xlib_event().xkey.state | 1 << 25;
+    event.xlib_event().xkey.state = mask;
+    event.As<x11::KeyEvent>()->state = static_cast<x11::KeyButMask>(mask);
+  }
 
   int64_t ticks_base =
       (base::TimeTicks::Now() - base::TimeTicks()).InMilliseconds() - 5000;
@@ -811,11 +820,12 @@ TEST(EventTest, EventLatencyOSMouseWheelHistogram) {
   DeviceDataManagerX11::CreateInstance();
 
   // Initializes a native event and uses it to generate a MouseWheel event.
-  XEvent native_event;
-  memset(&native_event, 0, sizeof(XEvent));
-  XButtonEvent* button_event = &(native_event.xbutton);
-  button_event->type = x11::ButtonEvent::Press;
-  button_event->button = 4;  // A valid wheel button number between min and max.
+  xcb_generic_event_t ge;
+  memset(&ge, 0, sizeof(ge));
+  auto* button = reinterpret_cast<xcb_button_press_event_t*>(&ge);
+  button->response_type = x11::ButtonEvent::Press;
+  button->detail = 4;  // A valid wheel button number between min and max.
+  x11::Event native_event(&ge, x11::Connection::Get());
   auto mouse_ev = ui::BuildMouseWheelEventFromXEvent(native_event);
   histogram_tester.ExpectTotalCount("Event.Latency.OS.MOUSE_WHEEL", 1);
 #endif

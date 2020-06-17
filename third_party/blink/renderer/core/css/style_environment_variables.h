@@ -25,6 +25,16 @@ enum class UADefinedVariable {
   kSafeAreaInsetLeft,
   kSafeAreaInsetBottom,
   kSafeAreaInsetRight,
+
+  // The keyboard area insets are four environment variables that define a
+  // virtual keyboard rectangle by its top, right, bottom, and left insets
+  // from the edge of the viewport.
+  // Explainers:
+  // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/VirtualKeyboardAPI/explainer.md
+  kKeyboardInsetTop,
+  kKeyboardInsetLeft,
+  kKeyboardInsetBottom,
+  kKeyboardInsetRight,
 };
 
 // StyleEnvironmentVariables stores user agent and user defined CSS environment

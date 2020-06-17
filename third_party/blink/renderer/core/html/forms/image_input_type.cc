@@ -38,7 +38,7 @@
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
-#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -111,7 +111,7 @@ bool ImageInputType::TypeShouldForceLegacyLayout() const {
 LayoutObject* ImageInputType::CreateLayoutObject(const ComputedStyle& style,
                                                  LegacyLayout legacy) const {
   if (use_fallback_content_)
-    return LayoutObjectFactory::CreateBlockFlow(GetElement(), style, legacy);
+    return LayoutObject::CreateObject(&GetElement(), style, legacy);
   LayoutImage* image = new LayoutImage(&GetElement());
   image->SetImageResource(MakeGarbageCollected<LayoutImageResource>());
   return image;

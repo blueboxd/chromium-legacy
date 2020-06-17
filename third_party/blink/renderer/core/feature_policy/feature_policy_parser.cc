@@ -25,6 +25,16 @@
 
 namespace blink {
 namespace {
+namespace internal {
+// Following is the intermediate represetnation(IR) of feature policy.
+// Parsing of syntax structures is done in this IR, but semantic checks, e.g.
+// whether feature_name is valid, are not yet performed.
+struct FeaturePolicyDeclarationNode {
+  String feature_name;
+  Vector<String> allowlist;
+};
+using FeaturePolicyNode = Vector<FeaturePolicyDeclarationNode>;
+}  // namespace internal
 
 class ParsingContext {
  public:
@@ -44,14 +54,15 @@ class ParsingContext {
   ParsedFeaturePolicy Parse(const String& policy);
 
  private:
+  ParsedFeaturePolicy ParseIR(const internal::FeaturePolicyNode& root);
+  internal::FeaturePolicyNode ParseToIR(const String& policy);
+
   // normally 1 char = 1 byte
   // max length to parse = 2^16 = 64 kB
   static constexpr wtf_size_t MAX_LENGTH_PARSE = 1 << 16;
 
-  // Parse a single feature entry. e.g. feature_a ORIGIN_A ORIGIN_B.
-  // feature_entry = feature_name ' ' allowlist
   base::Optional<ParsedFeaturePolicyDeclaration> ParseFeature(
-      const String& input);
+      const internal::FeaturePolicyDeclarationNode&);
 
   struct ParsedAllowlist {
     std::vector<url::Origin> allowed_origins;
@@ -299,30 +310,13 @@ ParsingContext::ParsedAllowlist ParsingContext::ParseAllowlist(
 }
 
 base::Optional<ParsedFeaturePolicyDeclaration> ParsingContext::ParseFeature(
-    const String& input) {
-  // Split removes extra whitespaces by default
-  Vector<String> tokens;
-  input.Split(' ', tokens);
-
-  // Empty policy. Skip.
-  if (tokens.IsEmpty())
-    return base::nullopt;
-
-  // Break tokens into head & tail, where
-  // head = feature_name
-  // tail = origins
-  // After feature_name has been parsed, take tail of tokens vector by
-  // erasing the first element.
+    const internal::FeaturePolicyDeclarationNode& declaration_node) {
   base::Optional<mojom::blink::FeaturePolicyFeature> feature =
-      ParseFeatureName(/* feature_name */ tokens.front());
-
-  tokens.erase(tokens.begin());
-
-  ParsedAllowlist parsed_allowlist =
-      ParseAllowlist(/* origin_strings */ tokens);
-
+      ParseFeatureName(declaration_node.feature_name);
   if (!feature)
     return base::nullopt;
+
+  ParsedAllowlist parsed_allowlist = ParseAllowlist(declaration_node.allowlist);
 
   // If same feature appeared more than once, only the first one counts.
   if (FeatureObserved(*feature))
@@ -337,13 +331,32 @@ base::Optional<ParsedFeaturePolicyDeclaration> ParsingContext::ParseFeature(
 }
 
 ParsedFeaturePolicy ParsingContext::Parse(const String& policy) {
+  return ParseIR(ParseToIR(policy));
+}
+
+ParsedFeaturePolicy ParsingContext::ParseIR(
+    const internal::FeaturePolicyNode& root) {
   ParsedFeaturePolicy parsed_policy;
+  for (const internal::FeaturePolicyDeclarationNode& declaration_node : root) {
+    base::Optional<ParsedFeaturePolicyDeclaration> parsed_feature =
+        ParseFeature(declaration_node);
+    if (parsed_feature) {
+      ReportFeatureUsage(parsed_feature->feature);
+      parsed_policy.push_back(*parsed_feature);
+    }
+  }
+  ReportAllowlistTypeUsage();
+  return parsed_policy;
+}
+
+internal::FeaturePolicyNode ParsingContext::ParseToIR(const String& policy) {
+  internal::FeaturePolicyNode root;
 
   if (policy.length() > MAX_LENGTH_PARSE) {
     logger_.Error("Feature policy declaration exceeds size limit(" +
                   String::Number(policy.length()) + ">" +
                   String::Number(MAX_LENGTH_PARSE) + ")");
-    return parsed_policy;
+    return {};
   }
 
   // RFC2616, section 4.2 specifies that headers appearing multiple times can be
@@ -370,18 +383,26 @@ ParsedFeaturePolicy ParsingContext::Parse(const String& policy) {
     }
 
     for (const String& feature_entry : feature_entries) {
-      base::Optional<ParsedFeaturePolicyDeclaration> parsed_feature =
-          ParseFeature(feature_entry);
-      if (parsed_feature) {
-        ReportFeatureUsage(parsed_feature->feature);
-        parsed_policy.push_back(*parsed_feature);
-      }
+      Vector<String> tokens;
+      feature_entry.Split(' ', tokens);
+
+      if (tokens.IsEmpty())
+        continue;
+
+      internal::FeaturePolicyDeclarationNode declaration_node;
+      // Break tokens into head & tail, where
+      // head = feature_name
+      // tail = allowlist
+      // After feature_name has been set, take tail of tokens vector by
+      // erasing the first element.
+      declaration_node.feature_name = std::move(tokens.front());
+      tokens.erase(tokens.begin());
+      declaration_node.allowlist = std::move(tokens);
+      root.push_back(declaration_node);
     }
   }
 
-  ReportAllowlistTypeUsage();
-
-  return parsed_policy;
+  return root;
 }
 
 }  // namespace

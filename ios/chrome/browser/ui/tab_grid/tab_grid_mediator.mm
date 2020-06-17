@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 
+#import <MobileCoreServices/UTCoreTypes.h>
+#import <UIKit/UIKit.h>
 #include <memory>
 
 #include "base/bind.h"
@@ -14,7 +16,9 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
+#import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
 #include "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/browser_util.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
@@ -32,6 +36,7 @@
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
+#import "net/base/mac/url_conversions.h"
 #include "ui/gfx/image/image.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -269,26 +274,7 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
 }
 
 - (void)insertNewItemAtIndex:(NSUInteger)index {
-  // The incognito mediator's Browser is briefly set to nil after the last
-  // incognito tab is closed.  This occurs because the incognito BrowserState
-  // needs to be destroyed to correctly clear incognito browsing data.  Don't
-  // attempt to create a new WebState with a nil BrowserState.
-  if (!self.browser)
-    return;
-
-  DCHECK(self.browserState);
-  web::WebState::CreateParams params(self.browserState);
-  std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
-
-  GURL newTabURL(kChromeUINewTabURL);
-  web::NavigationManager::WebLoadParams loadParams(newTabURL);
-  loadParams.transition_type = ui::PAGE_TRANSITION_TYPED;
-  webState->GetNavigationManager()->LoadURLWithParams(loadParams);
-
-  self.webStateList->InsertWebState(
-      base::checked_cast<int>(index), std::move(webState),
-      (WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE),
-      WebStateOpener());
+  [self insertNewItemAtIndex:index withURL:GURL(kChromeUINewTabURL)];
 }
 
 - (void)moveItemWithID:(NSString*)itemID toIndex:(NSUInteger)destinationIndex {
@@ -360,6 +346,117 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   DCHECK(self.browserState);
   [SnapshotCacheFactory::GetForBrowserState(self.browserState)
       removeMarkedImages];
+}
+
+#pragma mark GridCommands helpers
+
+- (void)insertNewItemAtIndex:(NSUInteger)index withURL:(const GURL&)newTabURL {
+  // The incognito mediator's Browser is briefly set to nil after the last
+  // incognito tab is closed.  This occurs because the incognito BrowserState
+  // needs to be destroyed to correctly clear incognito browsing data.  Don't
+  // attempt to create a new WebState with a nil BrowserState.
+  if (!self.browser)
+    return;
+
+  DCHECK(self.browserState);
+  web::WebState::CreateParams params(self.browserState);
+  std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
+
+  web::NavigationManager::WebLoadParams loadParams(newTabURL);
+  loadParams.transition_type = ui::PAGE_TRANSITION_TYPED;
+  webState->GetNavigationManager()->LoadURLWithParams(loadParams);
+
+  self.webStateList->InsertWebState(
+      base::checked_cast<int>(index), std::move(webState),
+      (WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE),
+      WebStateOpener());
+}
+
+#pragma mark - GridDragDropHandler
+
+- (UIDragItem*)dragItemForItemWithID:(NSString*)itemID {
+  web::WebState* webState = GetWebStateWithId(self.webStateList, itemID);
+  return CreateTabDragItem(webState);
+}
+
+- (UIDropOperation)dropOperationForDropSession:(id<UIDropSession>)session {
+  UIDragItem* dragItem = session.localDragSession.items.firstObject;
+
+  // Tab move operations only originate from Chrome so a local object is used.
+  // Local objects allow synchronous drops, whereas NSItemProvider only allows
+  // asynchronous drops.
+  if ([dragItem.localObject isKindOfClass:[TabInfo class]]) {
+    TabInfo* tabInfo = static_cast<TabInfo*>(dragItem.localObject);
+    if (self.browserState->IsOffTheRecord() && tabInfo.incognito) {
+      return UIDropOperationMove;
+    }
+    if (!self.browserState->IsOffTheRecord() && !tabInfo.incognito) {
+      return UIDropOperationMove;
+    }
+    // Tabs of different profiles (regular/incognito) cannot be dropped.
+    return UIDropOperationForbidden;
+  }
+
+  // All URLs originating from Chrome create a new tab (as opposed to moving a
+  // tab).
+  if ([dragItem.localObject isKindOfClass:[NSURL class]]) {
+    return UIDropOperationCopy;
+  }
+
+  // URLs are accepted when drags originate from outside Chrome.
+  NSArray<NSString*>* acceptableTypes = @[ (__bridge NSString*)kUTTypeURL ];
+  if ([session hasItemsConformingToTypeIdentifiers:acceptableTypes]) {
+    return UIDropOperationCopy;
+  }
+
+  // Other UTI types such as image data or file data cannot be dropped.
+  return UIDropOperationForbidden;
+}
+
+- (void)dropItem:(UIDragItem*)dragItem
+               toIndex:(NSUInteger)destinationIndex
+    fromSameCollection:(BOOL)fromSameCollection {
+  // Tab move operations only originate from Chrome so a local object is used.
+  // Local objects allow synchronous drops, whereas NSItemProvider only allows
+  // asynchronous drops.
+  if ([dragItem.localObject isKindOfClass:[TabInfo class]]) {
+    TabInfo* tabInfo = static_cast<TabInfo*>(dragItem.localObject);
+    if (!fromSameCollection) {
+      // Move tab across Browsers.
+      MoveTabToBrowser(tabInfo.tabID, self.browser, destinationIndex);
+      return;
+    }
+    // Reorder tab within same grid.
+    int sourceIndex = GetIndexOfTabWithId(self.webStateList, tabInfo.tabID);
+    if (sourceIndex >= 0)
+      self.webStateList->MoveWebStateAt(sourceIndex, destinationIndex);
+    return;
+  }
+
+  // Handle URLs from within Chrome synchronously using a local object.
+  if ([dragItem.localObject isKindOfClass:[NSURL class]]) {
+    NSURL* droppedURL = static_cast<NSURL*>(dragItem.localObject);
+    [self insertNewItemAtIndex:destinationIndex
+                       withURL:net::GURLWithNSURL(droppedURL)];
+    return;
+  }
+
+  // Handle URLs from other apps asynchronously, as synchronous is not possible
+  // with NSItemProvider.
+  NSItemProvider* itemProvider = dragItem.itemProvider;
+  if ([itemProvider canLoadObjectOfClass:[NSURL class]]) {
+    auto loadHandler =
+        ^(id<NSItemProviderReading> providedItem, NSError* error) {
+          dispatch_async(dispatch_get_main_queue(), ^{
+            NSURL* droppedURL = static_cast<NSURL*>(providedItem);
+            [self insertNewItemAtIndex:destinationIndex
+                               withURL:net::GURLWithNSURL(droppedURL)];
+          });
+        };
+    [itemProvider loadObjectOfClass:[NSURL class]
+                  completionHandler:loadHandler];
+    return;
+  }
 }
 
 #pragma mark - GridImageDataSource

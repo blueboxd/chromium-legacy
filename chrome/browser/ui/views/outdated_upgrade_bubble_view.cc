@@ -85,10 +85,6 @@ void OutdatedUpgradeBubbleView::WindowClosing() {
   g_upgrade_bubble = nullptr;
 }
 
-base::string16 OutdatedUpgradeBubbleView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_TITLE);
-}
-
 bool OutdatedUpgradeBubbleView::ShouldShowCloseButton() const {
   return true;
 }
@@ -158,6 +154,7 @@ OutdatedUpgradeBubbleView::OutdatedUpgradeBubbleView(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(auto_update_enabled_ ? IDS_REINSTALL_APP
                                                      : IDS_REENABLE_UPDATES));
+  SetTitle(IDS_UPGRADE_BUBBLE_TITLE);
   SetAcceptCallback(base::BindOnce(&OutdatedUpgradeBubbleView::OnDialogAccepted,
                                    base::Unretained(this)));
   SetCloseCallback(

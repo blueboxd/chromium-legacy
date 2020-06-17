@@ -79,7 +79,7 @@ void CustomShapeButton::PaintCustomShapePath(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   const SkColor button_color =
       AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-          AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+          AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive,
           kUnifiedMenuButtonColor);
   flags.setColor(GetEnabled()
                      ? button_color

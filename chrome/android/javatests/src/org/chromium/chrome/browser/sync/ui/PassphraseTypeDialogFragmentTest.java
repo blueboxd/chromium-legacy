@@ -5,10 +5,11 @@
 package org.chromium.chrome.browser.sync.ui;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.SmallTest;
 import android.widget.CheckedTextView;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
+
+import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
 import org.junit.Rule;

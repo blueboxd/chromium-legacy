@@ -117,7 +117,8 @@ void SelectionOwner::ClearSelectionOwner() {
   format_map_ = SelectionFormatMap();
 }
 
-void SelectionOwner::OnSelectionRequest(const XEvent& event) {
+void SelectionOwner::OnSelectionRequest(const x11::Event& x11_event) {
+  const XEvent& event = x11_event.xlib_event();
   XID requestor = event.xselectionrequest.requestor;
   x11::Atom requested_target =
       static_cast<x11::Atom>(event.xselectionrequest.target);
@@ -164,19 +165,19 @@ void SelectionOwner::OnSelectionRequest(const XEvent& event) {
   XSendEvent(x_display_, requestor, x11::False, 0, &reply);
 }
 
-void SelectionOwner::OnSelectionClear(const XEvent& event) {
+void SelectionOwner::OnSelectionClear(const x11::Event& event) {
   DLOG(ERROR) << "SelectionClear";
 
   // TODO(erg): If we receive a SelectionClear event while we're handling data,
   // we need to delay clearing.
 }
 
-bool SelectionOwner::CanDispatchPropertyEvent(const XEvent& event) {
-  return event.xproperty.state == PropertyDelete &&
+bool SelectionOwner::CanDispatchPropertyEvent(const x11::Event& event) {
+  return event.xlib_event().xproperty.state == PropertyDelete &&
          FindIncrementalTransferForEvent(event) != incremental_transfers_.end();
 }
 
-void SelectionOwner::OnPropertyEvent(const XEvent& event) {
+void SelectionOwner::OnPropertyEvent(const x11::Event& event) {
   auto it = FindIncrementalTransferForEvent(event);
   if (it == incremental_transfers_.end())
     return;
@@ -295,7 +296,8 @@ void SelectionOwner::CompleteIncrementalTransfer(
 }
 
 std::vector<SelectionOwner::IncrementalTransfer>::iterator
-SelectionOwner::FindIncrementalTransferForEvent(const XEvent& event) {
+SelectionOwner::FindIncrementalTransferForEvent(const x11::Event& x11_event) {
+  const XEvent& event = x11_event.xlib_event();
   for (auto it = incremental_transfers_.begin();
        it != incremental_transfers_.end(); ++it) {
     if (it->window == event.xproperty.window &&

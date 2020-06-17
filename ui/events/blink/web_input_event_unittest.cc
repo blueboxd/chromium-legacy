@@ -22,6 +22,7 @@
 #if defined(USE_X11)
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/x/x11_event_translation.h"  // nogncheck
+#include "ui/gfx/x/event.h"                     // nogncheck
 #include "ui/gfx/x/x11.h"                       // nogncheck
 #include "ui/gfx/x/x11_types.h"                 // nogncheck
 #endif
@@ -105,7 +106,8 @@ TEST(WebInputEventTest, TestMakeWebKeyboardEventWindowsKeyCode) {
   {
     // Press left Ctrl.
     xev.InitKeyEvent(ET_KEY_PRESSED, VKEY_CONTROL, 0);
-    XEvent* xevent = xev;
+    x11::Event* x11_event = xev;
+    XEvent* xevent = &x11_event->xlib_event();
     xevent->xkey.keycode =
         KeycodeConverter::DomCodeToNativeKeycode(DomCode::CONTROL_LEFT);
     auto event = ui::BuildKeyEventFromXEvent(*xev);
@@ -115,7 +117,8 @@ TEST(WebInputEventTest, TestMakeWebKeyboardEventWindowsKeyCode) {
   {
     // Press right Ctrl.
     xev.InitKeyEvent(ET_KEY_PRESSED, VKEY_CONTROL, 0);
-    XEvent* xevent = xev;
+    x11::Event* x11_event = xev;
+    XEvent* xevent = &x11_event->xlib_event();
     xevent->xkey.keycode =
         KeycodeConverter::DomCodeToNativeKeycode(DomCode::CONTROL_RIGHT);
     auto event = ui::BuildKeyEventFromXEvent(*xev);
@@ -221,7 +224,8 @@ TEST(WebInputEventTest, TestMakeWebKeyboardEventKeyPadKeyCode) {
       continue;
 
     xev.InitKeyEvent(ET_KEY_PRESSED, test_case.ui_keycode, EF_NONE);
-    XEvent* xevent = xev;
+    x11::Event* x11_event = xev;
+    XEvent* xevent = &x11_event->xlib_event();
     xevent->xkey.keycode =
         XKeysymToKeycode(gfx::GetXDisplay(), test_case.x_keysym);
     if (!xevent->xkey.keycode)

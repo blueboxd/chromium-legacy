@@ -314,6 +314,9 @@ GraphicsLayer* PaintLayerScrollableArea::GraphicsLayerForScrolling() const {
 
 GraphicsLayer* PaintLayerScrollableArea::GraphicsLayerForHorizontalScrollbar()
     const {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return nullptr;
+
   // See crbug.com/343132.
   DisableCompositingQueryAsserts disabler;
 
@@ -326,6 +329,9 @@ GraphicsLayer* PaintLayerScrollableArea::GraphicsLayerForHorizontalScrollbar()
 
 GraphicsLayer* PaintLayerScrollableArea::GraphicsLayerForVerticalScrollbar()
     const {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return nullptr;
+
   // See crbug.com/343132.
   DisableCompositingQueryAsserts disabler;
 
@@ -335,6 +341,9 @@ GraphicsLayer* PaintLayerScrollableArea::GraphicsLayerForVerticalScrollbar()
 }
 
 GraphicsLayer* PaintLayerScrollableArea::GraphicsLayerForScrollCorner() const {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return nullptr;
+
   // See crbug.com/343132.
   DisableCompositingQueryAsserts disabler;
 
@@ -510,10 +519,6 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
 
   TRACE_EVENT1("devtools.timeline", "ScrollLayer", "data",
                inspector_scroll_layer_event::Data(GetLayoutBox()));
-
-  // FIXME(420741): Resolve circular dependency between scroll offset and
-  // compositing state, and remove this disabler.
-  DisableCompositingQueryAsserts disabler;
 
   // Update the positions of our child layers (if needed as only fixed layers
   // should be impacted by a scroll).
@@ -1119,10 +1124,6 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
   // the data changes, then this will try to re-snap.
   SetSnapContainerDataNeedsUpdate(true);
   {
-    // Hits in
-    // compositing/overflow/automatically-opt-into-composited-scrolling-after-style-change.html.
-    DisableCompositingQueryAsserts disabler;
-
     UpdateScrollbarEnabledState();
 
     UpdateScrollbarProportions();
@@ -1134,7 +1135,6 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
     UpdateScrollableAreaSet();
   }
 
-  DisableCompositingQueryAsserts disabler;
   PositionOverflowControls();
 }
 
@@ -1898,8 +1898,10 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
   // FIXME, this should eventually be removed, once we are certain that
   // composited controls get correctly positioned on a compositor update. For
   // now, conservatively leaving this unchanged.
-  if (Layer()->HasCompositedLayerMapping())
+  if (Layer()->HasCompositedLayerMapping()) {
+    DisableCompositingQueryAsserts disabler;
     Layer()->GetCompositedLayerMapping()->PositionOverflowControlsLayers();
+  }
 }
 
 void PaintLayerScrollableArea::UpdateScrollCornerStyle() {
@@ -2379,6 +2381,7 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
 void PaintLayerScrollableArea::UpdateCompositingLayersAfterScroll() {
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
+  DisableCompositingQueryAsserts disabler;
   PaintLayerCompositor* compositor = GetLayoutBox()->View()->Compositor();
   if (!compositor || !compositor->InCompositingMode())
     return;
@@ -2626,9 +2629,6 @@ Vector<IntRect> PaintLayerScrollableArea::GetTickmarks() const {
 void PaintLayerScrollableArea::ScrollbarManager::SetHasHorizontalScrollbar(
     bool has_scrollbar) {
   if (has_scrollbar) {
-    // This doesn't hit in any tests, but since the equivalent code in
-    // setHasVerticalScrollbar does, presumably this code does as well.
-    DisableCompositingQueryAsserts disabler;
     if (!h_bar_) {
       h_bar_ = CreateScrollbar(kHorizontalScrollbar);
       h_bar_is_attached_ = 1;
@@ -2647,7 +2647,6 @@ void PaintLayerScrollableArea::ScrollbarManager::SetHasHorizontalScrollbar(
 void PaintLayerScrollableArea::ScrollbarManager::SetHasVerticalScrollbar(
     bool has_scrollbar) {
   if (has_scrollbar) {
-    DisableCompositingQueryAsserts disabler;
     if (!v_bar_) {
       v_bar_ = CreateScrollbar(kVerticalScrollbar);
       v_bar_is_attached_ = 1;

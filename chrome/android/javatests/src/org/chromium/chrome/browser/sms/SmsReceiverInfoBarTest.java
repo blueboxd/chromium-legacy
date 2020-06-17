@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.sms;
 
-import android.support.test.filters.MediumTest;
 import android.widget.EditText;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Assert;
 import org.junit.Before;

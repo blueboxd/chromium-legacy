@@ -623,9 +623,7 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
   LoadHTML("<input type=\"text\" id=\"elt_text\"></input>");
 
   // We should NOT have gotten a form state change notification yet.
-  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_UpdateState::ID));
-  render_thread_->sink().ClearMessages();
+  EXPECT_FALSE(frame()->IsPageStateUpdated());
 
   // Change the value of the input. We should have gotten an update state
   // notification. We need to spin the message loop to catch this update.
@@ -633,8 +631,8 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
       "document.getElementById('elt_text').value = 'foo';");
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
-      FrameHostMsg_UpdateState::ID));
+  // Check the page state is updated after the value of the input is changed.
+  EXPECT_TRUE(frame()->IsPageStateUpdated());
 }
 
 class RenderViewImplEmulatingPopupTest : public RenderViewImplTest {

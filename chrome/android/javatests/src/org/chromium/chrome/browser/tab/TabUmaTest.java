@@ -5,7 +5,8 @@
 package org.chromium.chrome.browser.tab;
 
 import android.support.test.InstrumentationRegistry;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -250,7 +251,7 @@ public class TabUmaTest {
 
             TabState state = new TabState();
             try (FileInputStream fileInputStream = new FileInputStream(file)) {
-                state.contentsState = new TabState.WebContentsState(
+                state.contentsState = new WebContentsState(
                         fileInputStream.getChannel().map(FileChannel.MapMode.READ_ONLY,
                                 fileInputStream.getChannel().position(), file.length()));
                 state.contentsState.setVersion(2);

@@ -67,7 +67,7 @@ class MoreButton : public views::Button {
         2));
 
     const SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kIconPrimary,
+        AshColorProvider::ContentLayerType::kIconColorPrimary,
         AshColorProvider::AshColorMode::kDark);
 
     if (!features::IsSystemTrayMicGainSettingEnabled()) {
@@ -102,7 +102,7 @@ class MoreButton : public views::Button {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
-        AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+        AshColorProvider::ControlsLayerType::kControlBackgroundColorInactive,
         kUnifiedMenuButtonColor));
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->DrawRoundRect(rect, kTrayItemCornerRadius, flags);

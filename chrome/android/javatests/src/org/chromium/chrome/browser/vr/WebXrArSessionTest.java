@@ -8,7 +8,8 @@ import static org.chromium.chrome.browser.vr.WebXrArTestFramework.PAGE_LOAD_TIME
 import static org.chromium.chrome.browser.vr.WebXrArTestFramework.POLL_TIMEOUT_SHORT_MS;
 
 import android.os.Build;
-import android.support.test.filters.MediumTest;
+
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

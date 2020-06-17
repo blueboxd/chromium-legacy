@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_TAB_STATE_H_
-#define CHROME_BROWSER_ANDROID_TAB_STATE_H_
+#ifndef CHROME_BROWSER_ANDROID_WEB_CONTENTS_STATE_H_
+#define CHROME_BROWSER_ANDROID_WEB_CONTENTS_STATE_H_
 
 #include <vector>
 
@@ -23,7 +23,7 @@ class WebContentsState {
       const sessions::SerializedNavigationEntry& entry)>;
 
   static base::android::ScopedJavaLocalRef<jobject>
-      GetContentsStateAsByteBuffer(JNIEnv* env, TabAndroid* tab);
+  GetContentsStateAsByteBuffer(JNIEnv* env, TabAndroid* tab);
 
   // Returns a new buffer without the navigations matching |predicate|.
   // Returns null if no deletions happened.
@@ -36,13 +36,17 @@ class WebContentsState {
 
   // Extracts display title from serialized tab data on restore
   static base::android::ScopedJavaLocalRef<jstring>
-      GetDisplayTitleFromByteBuffer(JNIEnv* env, void* data,
-                                    int size, int saved_state_version);
+  GetDisplayTitleFromByteBuffer(JNIEnv* env,
+                                void* data,
+                                int size,
+                                int saved_state_version);
 
   // Extracts virtual url from serialized tab data on restore
-  static base::android::ScopedJavaLocalRef<jstring>
-      GetVirtualUrlFromByteBuffer(JNIEnv* env, void* data,
-                                  int size, int saved_state_version);
+  static base::android::ScopedJavaLocalRef<jstring> GetVirtualUrlFromByteBuffer(
+      JNIEnv* env,
+      void* data,
+      int size,
+      int saved_state_version);
 
   // Restores a WebContents from the passed in state.
   static base::android::ScopedJavaLocalRef<jobject>
@@ -62,4 +66,4 @@ class WebContentsState {
                                           jboolean is_off_the_record);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_TAB_STATE_H_
+#endif  // CHROME_BROWSER_ANDROID_WEB_CONTENTS_STATE_H_

@@ -82,6 +82,8 @@ class TestRenderFrame : public RenderFrameImpl {
 
   size_t RequestOverlayRoutingTokenCalled();
 
+  bool IsPageStateUpdated() const;
+
  protected:
   explicit TestRenderFrame(RenderFrameImpl::CreateParams params);
 

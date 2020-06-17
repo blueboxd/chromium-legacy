@@ -179,6 +179,8 @@
   self.adaptor.incognitoMediator = self.incognitoTabsMediator;
   baseViewController.regularTabsDelegate = self.regularTabsMediator;
   baseViewController.incognitoTabsDelegate = self.incognitoTabsMediator;
+  baseViewController.regularTabsDragDropHandler = self.regularTabsMediator;
+  baseViewController.incognitoTabsDragDropHandler = self.incognitoTabsMediator;
   baseViewController.regularTabsImageDataSource = self.regularTabsMediator;
   baseViewController.incognitoTabsImageDataSource = self.incognitoTabsMediator;
 

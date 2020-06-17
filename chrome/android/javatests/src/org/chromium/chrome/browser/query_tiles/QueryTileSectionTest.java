@@ -18,9 +18,10 @@ import static org.chromium.chrome.browser.query_tiles.ListMatchers.matchList;
 import static org.chromium.chrome.browser.query_tiles.TileMatchers.withChip;
 import static org.chromium.chrome.browser.query_tiles.ViewActions.scrollTo;
 
-import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.TextView;
+
+import androidx.test.filters.SmallTest;
 
 import org.hamcrest.Matcher;
 import org.junit.After;

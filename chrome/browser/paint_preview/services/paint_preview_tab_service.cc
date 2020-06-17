@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
@@ -62,6 +63,14 @@ PaintPreviewTabService::PaintPreviewTabService(
       FROM_HERE, base::BindOnce(&FileManager::ListUsedKeys, GetFileManager()),
       base::BindOnce(&PaintPreviewTabService::InitializeCache,
                      weak_ptr_factory_.GetWeakPtr()));
+  GetTaskRunner()->PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::BindOnce(&FileManager::GetTotalDiskUsage, GetFileManager()),
+      base::BindOnce([](size_t size_bytes) {
+        base::UmaHistogramMemoryKB(
+            "Browser.PaintPreview.TabService.DiskUsageAtStartup",
+            size_bytes / 1000);
+      }));
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   java_ref_.Reset(Java_PaintPreviewTabService_Constructor(

@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.toolbar.bottom;
 import static org.chromium.chrome.test.util.ToolbarTestUtils.BOTTOM_TOOLBAR;
 import static org.chromium.chrome.test.util.ToolbarTestUtils.checkToolbarVisibility;
 
-import android.support.test.filters.MediumTest;
+import androidx.test.filters.MediumTest;
 
 import org.junit.Before;
 import org.junit.Rule;

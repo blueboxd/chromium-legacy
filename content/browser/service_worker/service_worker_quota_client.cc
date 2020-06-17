@@ -107,8 +107,4 @@ void ServiceWorkerQuotaClient::PerformStorageCleanup(
   context_->PerformStorageCleanup(std::move(callback));
 }
 
-bool ServiceWorkerQuotaClient::DoesSupport(StorageType type) const {
-  return type == StorageType::kTemporary;
-}
-
 }  // namespace content

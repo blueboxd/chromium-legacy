@@ -14,6 +14,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_change_notifier.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace views {
@@ -34,7 +35,7 @@ class X11ScreenOzoneTest;
 // Scale Factor information and simple hooks are delegated to API clients
 // through |XDisplayManager::Delegate| interface. To get notifications about
 // dynamic display changes, clients must register |DisplayObserver| instances
-// and feed |XDisplayManager| with |XEvent|s.
+// and feed |XDisplayManager| with |x11::Event|s.
 //
 // All bounds and size values are assumed to be expressed in pixels.
 class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager
@@ -47,8 +48,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XDisplayManager
 
   void Init();
   bool IsXrandrAvailable() const;
-  bool CanProcessEvent(const XEvent& xev);
-  bool ProcessEvent(XEvent* xev);
+  bool CanProcessEvent(const x11::Event& xev);
+  bool ProcessEvent(x11::Event* xev);
   void UpdateDisplayList();
   void DispatchDelayedDisplayListUpdate();
   display::Display GetPrimaryDisplay() const;

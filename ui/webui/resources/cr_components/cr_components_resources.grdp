@@ -258,6 +258,12 @@
     <structure name="IDR_WEBUI_CHROMEOS_NETWORK_MOJO_INTERFACE_PROVIDER_JS"
                file="cr_components/chromeos/network/mojo_interface_provider.js"
                type="chrome_html" />
+    <structure name="IDR_CR_COMPONENTS_CHROMEOS_NETWORK_HEALTH_SUMMARY_HTML"
+               file="cr_components/chromeos/network_health/network_health_summary.html"
+               type="chrome_html" />
+    <structure name="IDR_CR_COMPONENTS_CHROMEOS_NETWORK_HEALTH_SUMMARY_JS"
+               file="cr_components/chromeos/network_health/network_health_summary.js"
+               type="chrome_html" />
 
     <!-- Shared between settings and add new share flow. -->
     <structure name="IDR_WEBUI_CHROMEOS_SMB_SHARES_SMB_BROWSER_PROXY_HTML"

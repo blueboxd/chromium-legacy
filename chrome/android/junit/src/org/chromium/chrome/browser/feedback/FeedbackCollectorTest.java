@@ -283,8 +283,8 @@ public class FeedbackCollectorTest {
         @SuppressWarnings("unchecked")
         Callback<FeedbackCollector> callback = mock(Callback.class);
 
-        FeedbackCollector collector = new EmptyFeedbackCollector(
-                mActivity, mProfile, null, null, null, null, false, callback);
+        FeedbackCollector collector = new EmptyFeedbackCollector(mActivity, mProfile, null, null,
+                null, null, false, (result) -> callback.onResult(result));
 
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         verify(callback, times(1)).onResult(any());
@@ -304,8 +304,8 @@ public class FeedbackCollectorTest {
         @SuppressWarnings("unchecked")
         Callback<FeedbackCollector> callback = mock(Callback.class);
 
-        FeedbackCollector collector = new EmptyFeedbackCollector(
-                mActivity, mProfile, null, CATEGORY_TAG, DESCRIPTION, null, false, callback) {
+        FeedbackCollector collector = new EmptyFeedbackCollector(mActivity, mProfile, null,
+                CATEGORY_TAG, DESCRIPTION, null, false, (result) -> callback.onResult(result)) {
             @Override
             protected List<FeedbackSource> buildSynchronousFeedbackSources(
                     Profile profile, String url, String feedbackContext,
@@ -334,7 +334,8 @@ public class FeedbackCollectorTest {
         Callback<FeedbackCollector> callback = mock(Callback.class);
 
         FeedbackCollector collector = new EmptyFeedbackCollector(mActivity, mProfile, null,
-                CATEGORY_TAG, DESCRIPTION, FEEDBACK_CONTEXT, false, callback) {
+                CATEGORY_TAG, DESCRIPTION, FEEDBACK_CONTEXT, false,
+                (result) -> callback.onResult(result)) {
             @Override
             protected List<FeedbackSource> buildSynchronousFeedbackSources(
                     Profile profile, String url, String feedbackContext,
@@ -368,8 +369,8 @@ public class FeedbackCollectorTest {
 
         final List<AsyncFeedbackSource> sources = buildAsyncronousFeedbackSources();
 
-        FeedbackCollector collector = new EmptyFeedbackCollector(
-                mActivity, mProfile, null, CATEGORY_TAG, DESCRIPTION, null, false, callback) {
+        FeedbackCollector collector = new EmptyFeedbackCollector(mActivity, mProfile, null,
+                CATEGORY_TAG, DESCRIPTION, null, false, (result) -> callback.onResult(result)) {
             @Override
             protected List<AsyncFeedbackSource> buildAsynchronousFeedbackSources(Profile profile) {
                 return sources;
@@ -396,8 +397,8 @@ public class FeedbackCollectorTest {
 
         final List<AsyncFeedbackSource> sources = buildAsyncronousFeedbackSources();
 
-        FeedbackCollector collector = new EmptyFeedbackCollector(
-                mActivity, mProfile, null, CATEGORY_TAG, DESCRIPTION, null, false, callback) {
+        FeedbackCollector collector = new EmptyFeedbackCollector(mActivity, mProfile, null,
+                CATEGORY_TAG, DESCRIPTION, null, false, (result) -> callback.onResult(result)) {
             @Override
             protected List<AsyncFeedbackSource> buildAsynchronousFeedbackSources(Profile profile) {
                 return sources;
@@ -434,8 +435,8 @@ public class FeedbackCollectorTest {
 
         final List<AsyncFeedbackSource> sources = buildAsyncronousFeedbackSources();
 
-        FeedbackCollector collector = new EmptyFeedbackCollector(
-                mActivity, mProfile, null, CATEGORY_TAG, DESCRIPTION, null, false, callback) {
+        FeedbackCollector collector = new EmptyFeedbackCollector(mActivity, mProfile, null,
+                CATEGORY_TAG, DESCRIPTION, null, false, (result) -> callback.onResult(result)) {
             @Override
             protected List<AsyncFeedbackSource> buildAsynchronousFeedbackSources(Profile profile) {
                 return sources;
@@ -463,8 +464,8 @@ public class FeedbackCollectorTest {
 
         final List<AsyncFeedbackSource> sources = buildAsyncronousFeedbackSources();
 
-        EmptyFeedbackCollector collector = new EmptyFeedbackCollector(
-                mActivity, mProfile, null, CATEGORY_TAG, DESCRIPTION, null, true, callback);
+        EmptyFeedbackCollector collector = new EmptyFeedbackCollector(mActivity, mProfile, null,
+                CATEGORY_TAG, DESCRIPTION, null, true, (result) -> callback.onResult(result));
 
         Bitmap bitmap = createBitmap();
         collector.mMockScreenshotSource.triggerDone(bitmap);
@@ -489,8 +490,8 @@ public class FeedbackCollectorTest {
 
         final List<AsyncFeedbackSource> sources = buildAsyncronousFeedbackSources();
 
-        EmptyFeedbackCollector collector = new EmptyFeedbackCollector(
-                mActivity, mProfile, null, CATEGORY_TAG, DESCRIPTION, null, true, callback);
+        EmptyFeedbackCollector collector = new EmptyFeedbackCollector(mActivity, mProfile, null,
+                CATEGORY_TAG, DESCRIPTION, null, true, (result) -> callback.onResult(result));
 
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
         // We should not get a callback until the screenshot task finishes, even if that extends
@@ -520,8 +521,8 @@ public class FeedbackCollectorTest {
 
         final List<AsyncFeedbackSource> sources = buildAsyncronousFeedbackSources();
 
-        EmptyFeedbackCollector collector = new EmptyFeedbackCollector(
-                mActivity, mProfile, null, CATEGORY_TAG, DESCRIPTION, null, true, callback);
+        EmptyFeedbackCollector collector = new EmptyFeedbackCollector(mActivity, mProfile, null,
+                CATEGORY_TAG, DESCRIPTION, null, true, (result) -> callback.onResult(result));
 
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
@@ -546,8 +547,8 @@ public class FeedbackCollectorTest {
 
         final List<AsyncFeedbackSource> sources = buildAsyncronousFeedbackSources();
 
-        EmptyFeedbackCollector collector = new EmptyFeedbackCollector(
-                mActivity, mProfile, null, CATEGORY_TAG, DESCRIPTION, null, true, callback);
+        EmptyFeedbackCollector collector = new EmptyFeedbackCollector(mActivity, mProfile, null,
+                CATEGORY_TAG, DESCRIPTION, null, true, (result) -> callback.onResult(result));
 
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 
@@ -574,8 +575,8 @@ public class FeedbackCollectorTest {
 
         final List<AsyncFeedbackSource> sources = buildAsyncronousFeedbackSources();
 
-        EmptyFeedbackCollector collector = new EmptyFeedbackCollector(
-                mActivity, mProfile, null, CATEGORY_TAG, DESCRIPTION, null, false, callback);
+        EmptyFeedbackCollector collector = new EmptyFeedbackCollector(mActivity, mProfile, null,
+                CATEGORY_TAG, DESCRIPTION, null, false, (result) -> callback.onResult(result));
 
         Bitmap bitmap = createBitmap();
         ThreadUtils.runOnUiThreadBlocking(() -> collector.setScreenshot(bitmap));
@@ -594,8 +595,8 @@ public class FeedbackCollectorTest {
 
         final List<AsyncFeedbackSource> sources = buildAsyncronousFeedbackSources();
 
-        EmptyFeedbackCollector collector = new EmptyFeedbackCollector(
-                mActivity, mProfile, null, CATEGORY_TAG, DESCRIPTION, null, true, callback);
+        EmptyFeedbackCollector collector = new EmptyFeedbackCollector(mActivity, mProfile, null,
+                CATEGORY_TAG, DESCRIPTION, null, true, (result) -> callback.onResult(result));
 
         {
             collector.mMockScreenshotSource.triggerDone(null);
@@ -627,8 +628,8 @@ public class FeedbackCollectorTest {
 
         final List<AsyncFeedbackSource> sources = buildAsyncronousFeedbackSources();
 
-        EmptyFeedbackCollector collector = new EmptyFeedbackCollector(
-                mActivity, mProfile, null, CATEGORY_TAG, DESCRIPTION, null, true, callback);
+        EmptyFeedbackCollector collector = new EmptyFeedbackCollector(mActivity, mProfile, null,
+                CATEGORY_TAG, DESCRIPTION, null, true, (result) -> callback.onResult(result));
 
         ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
 

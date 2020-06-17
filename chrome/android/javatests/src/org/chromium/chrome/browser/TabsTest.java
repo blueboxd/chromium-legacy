@@ -537,8 +537,9 @@ public class TabsTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         final LayoutManagerChrome layoutManager = updateTabsViewSize();
         StackLayout layout = (StackLayout) layoutManager.getOverviewLayout();
+        Stack stack = layout.getTabStackAtIndex(0);
         Assert.assertTrue("Position is not in the active area of the close button",
-                layout.getTabStackAtIndex(0).getTabs()[0].getLayoutTab().checkCloseHitTest(x, y));
+                stack.checkCloseHitTestOnLayoutTab(x, y, stack.getTabs()[0].getLayoutTab()));
         ChromeTabUtils.closeTabWithAction(InstrumentationRegistry.getInstrumentation(), cta,
                 ()
                         -> InstrumentationRegistry.getInstrumentation().runOnMainSync(

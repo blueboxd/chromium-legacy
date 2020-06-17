@@ -92,6 +92,7 @@ class COMPONENT_EXPORT(UI_BASE) ImageModel {
   bool IsEmpty() const;
   bool IsVectorIcon() const;
   bool IsImage() const;
+  gfx::Size Size() const;
   // Only valid if IsVectorIcon() or IsImage() return true, respectively.
   const VectorIconModel GetVectorIcon() const;
   const gfx::Image GetImage() const;

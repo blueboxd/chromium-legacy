@@ -16,6 +16,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/x/test/x11_property_change_waiter.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_path.h"
@@ -38,7 +39,7 @@ class MinimizeWaiter : public ui::X11PropertyChangeWaiter {
 
  private:
   // ui::X11PropertyChangeWaiter:
-  bool ShouldKeepOnWaiting(XEvent* event) override {
+  bool ShouldKeepOnWaiting(x11::Event* event) override {
     std::vector<x11::Atom> wm_states;
     if (ui::GetAtomArrayProperty(xwindow(), "_NET_WM_STATE", &wm_states)) {
       return !base::Contains(wm_states, gfx::GetAtom("_NET_WM_STATE_HIDDEN"));
@@ -72,7 +73,7 @@ class StackingClientListWaiter : public ui::X11PropertyChangeWaiter {
 
  private:
   // ui::X11PropertyChangeWaiter:
-  bool ShouldKeepOnWaiting(XEvent* event) override {
+  bool ShouldKeepOnWaiting(x11::Event* event) override {
     std::vector<XID> stack;
     ui::GetXWindowStack(ui::GetX11RootWindow(), &stack);
     return !std::all_of(

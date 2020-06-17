@@ -40,7 +40,8 @@ XEventWaiter::~XEventWaiter() {
   ui::X11EventSource::GetInstance()->RemoveXEventObserver(this);
 }
 
-void XEventWaiter::WillProcessXEvent(XEvent* xev) {
+void XEventWaiter::WillProcessXEvent(x11::Event* x11_event) {
+  XEvent* xev = &x11_event->xlib_event();
   if (xev->xany.type == ClientMessage &&
       static_cast<x11::Atom>(xev->xclient.message_type) == MarkerEventAtom()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,

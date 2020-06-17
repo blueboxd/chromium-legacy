@@ -25,10 +25,11 @@ constexpr int kDisabledAlpha = 0x61;
 SkColor TrayPopupItemStyle::GetIconColor(ColorStyle color_style,
                                          bool use_unified_theme) {
   const SkColor kBaseIconColor =
-      use_unified_theme ? AshColorProvider::Get()->GetContentLayerColor(
-                              AshColorProvider::ContentLayerType::kIconPrimary,
-                              AshColorProvider::AshColorMode::kDark)
-                        : gfx::kChromeIconGrey;
+      use_unified_theme
+          ? AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kIconColorPrimary,
+                AshColorProvider::AshColorMode::kDark)
+          : gfx::kChromeIconGrey;
   switch (color_style) {
     case ColorStyle::ACTIVE:
       return kBaseIconColor;
@@ -59,10 +60,11 @@ TrayPopupItemStyle::~TrayPopupItemStyle() = default;
 
 SkColor TrayPopupItemStyle::GetTextColor() const {
   const SkColor kBaseTextColor =
-      use_unified_theme_ ? AshColorProvider::Get()->GetContentLayerColor(
-                               AshColorProvider::ContentLayerType::kTextPrimary,
-                               AshColorProvider::AshColorMode::kDark)
-                         : SkColorSetA(SK_ColorBLACK, 0xDE);
+      use_unified_theme_
+          ? AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kTextColorPrimary,
+                AshColorProvider::AshColorMode::kDark)
+          : SkColorSetA(SK_ColorBLACK, 0xDE);
 
   switch (color_style_) {
     case ColorStyle::ACTIVE:

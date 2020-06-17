@@ -59,9 +59,8 @@
             on-click="onSwitchToExistingProfile_">
           $i18n{signinErrorSwitchLabel}
         </cr-button>
-        <cr-button id="closeButton"
-            hidden="[[switchButtonUnavailable_]]"
-            on-click="onConfirm_">
+        <cr-button id="closeButton" hidden="[[switchButtonUnavailable_]]"
+            on-click="onConfirm_" autofocus>
           $i18n{signinErrorCloseLabel}
         </cr-button>
         <cr-button id="confirmButton" hidden="[[!switchButtonUnavailable_]]"

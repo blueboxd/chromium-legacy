@@ -82,9 +82,9 @@ void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
   // Set XEventDelegate to receive selection, drag&drop and raw key events.
   //
   // TODO(https://crbug.com/990756): There are two cases of this delegate:
-  // XEvents for DragAndDrop client and raw key events. DragAndDrop could be
-  // unified so that DragAndrDropClientOzone is used and XEvent are handled on
-  // platform level.
+  // x11::Events for DragAndDrop client and raw key events. DragAndDrop could be
+  // unified so that DragAndrDropClientOzone is used and x11::Event are handled
+  // on platform level.
   static_cast<ui::X11Window*>(platform_window())->SetXEventDelegate(this);
 }
 
@@ -101,15 +101,17 @@ DesktopWindowTreeHostX11::CreateDragDropClient(
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11 implementation:
 
-void DesktopWindowTreeHostX11::OnXWindowSelectionEvent(XEvent* xev) {
-  DCHECK(xev);
+void DesktopWindowTreeHostX11::OnXWindowSelectionEvent(x11::Event* x11_event) {
+  DCHECK(x11_event);
   DCHECK(drag_drop_client_);
+  XEvent* xev = &x11_event->xlib_event();
   drag_drop_client_->OnSelectionNotify(xev->xselection);
 }
 
-void DesktopWindowTreeHostX11::OnXWindowDragDropEvent(XEvent* xev) {
-  DCHECK(xev);
+void DesktopWindowTreeHostX11::OnXWindowDragDropEvent(x11::Event* x11_event) {
+  DCHECK(x11_event);
   DCHECK(drag_drop_client_);
+  XEvent* xev = &x11_event->xlib_event();
   drag_drop_client_->HandleXdndEvent(xev->xclient);
 }
 

@@ -11,6 +11,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/unguessable_token_android.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "base/unguessable_token.h"
@@ -84,18 +85,26 @@ PlayerCompositorDelegateAndroid::PlayerCompositorDelegateAndroid(
           base::BindOnce(
               &base::android::RunRunnableAndroid,
               ScopedJavaGlobalRef<jobject>(j_compositor_error_callback))),
-      request_id_(0) {
+      request_id_(0),
+      startup_timestamp_(base::TimeTicks::Now()) {
   java_ref_.Reset(env, j_object);
 }
 
 void PlayerCompositorDelegateAndroid::OnCompositorReady(
     mojom::PaintPreviewCompositor::Status status,
     mojom::PaintPreviewBeginCompositeResponsePtr composite_response) {
-  if (status != mojom::PaintPreviewCompositor::Status::kSuccess &&
-      compositor_error_) {
+  bool compositor_started =
+      status == mojom::PaintPreviewCompositor::Status::kSuccess;
+  base::UmaHistogramBoolean(
+      "Browser.PaintPreview.Player.CompositorProcessStartedCorrectly",
+      compositor_started);
+  if (!compositor_started && compositor_error_) {
     std::move(compositor_error_).Run();
     return;
   }
+  base::UmaHistogramTimes(
+      "Browser.PaintPreview.Player.CompositorProcessStartupTime",
+      base::TimeTicks::Now() - startup_timestamp_);
   JNIEnv* env = base::android::AttachCurrentThread();
 
   std::vector<base::UnguessableToken> all_guids;
@@ -216,6 +225,10 @@ void PlayerCompositorDelegateAndroid::OnBitmapCallback(
   } else {
     base::android::RunRunnableAndroid(j_error_callback);
   }
+  if (request_id == 0) {
+    base::UmaHistogramTimes("Browser.PaintPreview.Player.TimeToFirstBitmap",
+                            base::TimeTicks::Now() - startup_timestamp_);
+  }
 }
 
 void PlayerCompositorDelegateAndroid::OnClick(
@@ -229,6 +242,7 @@ void PlayerCompositorDelegateAndroid::OnClick(
       gfx::Rect(static_cast<int>(j_x), static_cast<int>(j_y), 1U, 1U));
   if (res.empty())
     return;
+  base::UmaHistogramBoolean("Browser.PaintPreview.Player.LinkClicked", true);
   // TODO(crbug/1061435): Resolve cases where there are multiple links.
   // For now just return the first in the list.
   Java_PlayerCompositorDelegateImpl_onLinkClicked(

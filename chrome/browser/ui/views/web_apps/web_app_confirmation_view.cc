@@ -54,6 +54,7 @@ WebAppConfirmationView::WebAppConfirmationView(
   DCHECK(web_app_info_);
   SetButtonLabel(ui::DIALOG_BUTTON_OK,
                  l10n_util::GetStringUTF16(IDS_CREATE_SHORTCUTS_BUTTON_LABEL));
+  SetTitle(IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE);
   const ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   set_margins(layout_provider->GetDialogInsetsForContentType(views::CONTROL,
                                                              views::TEXT));
@@ -155,10 +156,6 @@ views::View* WebAppConfirmationView::GetInitiallyFocusedView() {
 
 ui::ModalType WebAppConfirmationView::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
-}
-
-base::string16 WebAppConfirmationView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE);
 }
 
 bool WebAppConfirmationView::ShouldShowCloseButton() const {

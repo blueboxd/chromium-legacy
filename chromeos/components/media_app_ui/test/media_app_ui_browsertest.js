@@ -492,14 +492,15 @@ TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
   // Prevent the trusted context throwing errors resulting JS errors.
   guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
   guestMessagePipe.rethrowErrors = false;
-  // Test UNKNOWN_ERROR case by not having a directory handle.
-  currentDirectoryHandle = undefined;
+  // Test it throws an error by simulating a failed directory change.
+  simulateLosingAccessToDirectory();
 
   const messageDeleteNoOp = {deleteLastFile: true};
   testResponse = await guestMessagePipe.sendMessage('test', messageDeleteNoOp);
 
   assertEquals(
-      'deleteOriginalFile resolved UNKNOWN_ERROR',
+      'deleteOriginalFile failed Error: Error: delete-file: Delete failed. ' +
+          'File without launch directory.',
       testResponse.testQueryResult);
   testDone();
 });
@@ -635,7 +636,7 @@ TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
   // Prevent the trusted context throwing errors resulting JS errors.
   guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
   guestMessagePipe.rethrowErrors = false;
-  // Test UNKNOWN_ERROR case by simulating a failed directory change.
+  // Test it throws an error by simulating a failed directory change.
   simulateLosingAccessToDirectory();
 
   const messageRenameNoOp = {renameLastFile: 'new_file_name_2.png'};
@@ -643,7 +644,8 @@ TEST_F('MediaAppUIBrowserTest', 'RenameOriginalIPC', async () => {
 
   assertEquals(
       testResponse.testQueryResult,
-      'renameOriginalFile resolved UNKNOWN_ERROR');
+      'renameOriginalFile failed Error: Error: rename-file: Rename failed. ' +
+          'File without launch directory.');
   testDone();
 });
 

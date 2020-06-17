@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
@@ -20,13 +19,10 @@
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
-#include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
 #include "chrome/browser/ui/views/passwords/password_items_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/feature_engagement/public/feature_constants.h"
-#include "components/feature_engagement/public/tracker.h"
 #include "content/public/browser/storage_partition.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/combobox_model.h"
@@ -52,8 +48,6 @@
 #include "ui/views/view_class_properties.h"
 
 namespace {
-
-constexpr int kAccountStoragePromoWidth = 240;
 
 struct ComboboxItem {
   base::string16 combobox_text;
@@ -420,12 +414,11 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
 
     // The |username_dropdown_| should observe the animating layout manager to
     // close the dropdown menu when the animation starts.
-    observed_animating_layout_for_username_dropdown_ = std::make_unique<
+    observed_animating_layout_ = std::make_unique<
         ScopedObserver<views::AnimatingLayoutManager,
                        views::AnimatingLayoutManager::Observer>>(
         username_dropdown_);
-    observed_animating_layout_for_username_dropdown_->Add(animating_layout);
-    observed_animating_layout_for_iph_.Add(animating_layout);
+    observed_animating_layout_->Add(animating_layout);
 
     // The account picker is only visible in Save bubbble, not Update bubble.
     if (destination_dropdown_)
@@ -454,9 +447,7 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
 }
 
 PasswordSaveUpdateWithAccountStoreView::
-    ~PasswordSaveUpdateWithAccountStoreView() {
-  CloseIPHBubbleIfOpen();
-}
+    ~PasswordSaveUpdateWithAccountStoreView() = default;
 
 PasswordBubbleControllerBase*
 PasswordSaveUpdateWithAccountStoreView::GetController() {
@@ -494,17 +485,6 @@ void PasswordSaveUpdateWithAccountStoreView::OnContentChanged(
           IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
     UpdateBubbleUIElements();
     DialogModelChanged();
-  }
-}
-
-void PasswordSaveUpdateWithAccountStoreView::OnWidgetDestroying(
-    views::Widget* widget) {
-  // IPH bubble is getting closed.
-  if (account_storage_promo_ && account_storage_promo_->GetWidget() == widget) {
-    observed_account_storage_promo_.Remove(widget);
-    iph_tracker_->Dismissed(
-        feature_engagement::kIPHPasswordsAccountStorageFeature);
-    account_storage_promo_ = nullptr;
   }
 }
 
@@ -550,7 +530,6 @@ bool PasswordSaveUpdateWithAccountStoreView::ShouldShowCloseButton() const {
 void PasswordSaveUpdateWithAccountStoreView::AddedToWidget() {
   static_cast<views::Label*>(GetBubbleFrameView()->title())
       ->SetAllowCharacterBreak(true);
-  OpenIPHBubbleIfAppropriate();
 }
 
 void PasswordSaveUpdateWithAccountStoreView::OnThemeChanged() {
@@ -569,13 +548,6 @@ void PasswordSaveUpdateWithAccountStoreView::OnThemeChanged() {
         password_view_button_, kEyeCrossedIcon,
         GetDefaultSizeOfVectorIcon(kEyeCrossedIcon), icon_color);
   }
-}
-
-void PasswordSaveUpdateWithAccountStoreView::OnLayoutIsAnimatingChanged(
-    views::AnimatingLayoutManager* source,
-    bool is_animating) {
-  if (!is_animating)
-    OpenIPHBubbleIfAppropriate();
 }
 
 void PasswordSaveUpdateWithAccountStoreView::TogglePasswordVisibility() {
@@ -627,12 +599,6 @@ void PasswordSaveUpdateWithAccountStoreView::UpdateBubbleUIElements() {
   if (!destination_dropdown_)
     return;
 
-  // If it's not a save bubble anymore, close the IPH because the account picker
-  // will disappear. If it has become a save bubble, the IPH will get triggered
-  // after the animation finishes.
-  if (controller_.IsCurrentStateUpdate())
-    CloseIPHBubbleIfOpen();
-
   destination_dropdown_->SetVisible(!controller_.IsCurrentStateUpdate());
 }
 
@@ -647,45 +613,4 @@ PasswordSaveUpdateWithAccountStoreView::CreateFooterView() {
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return label;
-}
-
-void PasswordSaveUpdateWithAccountStoreView::OpenIPHBubbleIfAppropriate() {
-  // Nothing to do if the account picker doesn't exist.
-  if (!destination_dropdown_)
-    return;
-
-  // IPH is shown only where the destination dropdown is shown (i.e. only for
-  // Save bubble).
-  if (controller_.IsCurrentStateUpdate())
-    return;
-
-  if (!iph_tracker_) {
-    iph_tracker_ = feature_engagement::TrackerFactory::GetForBrowserContext(
-        controller_.GetProfile());
-  }
-
-  if (!iph_tracker_->ShouldTriggerHelpUI(
-          feature_engagement::kIPHPasswordsAccountStorageFeature)) {
-    return;
-  }
-  // Make sure the Save/Update bubble doesn't get closed when the IPH bubble is
-  // opened.
-  bool close_save_bubble_on_deactivate_original_value = close_on_deactivate();
-  set_close_on_deactivate(false);
-
-  account_storage_promo_ = FeaturePromoBubbleView::CreateOwned(
-      /*anchor_view=*/destination_dropdown_,
-      /*arrow=*/views::BubbleBorder::RIGHT_CENTER,
-      /*activation_action=*/
-      FeaturePromoBubbleView::ActivationAction::ACTIVATE,
-      IDS_PASSWORD_MANAGER_IPH_TITLE_SAVE_TO_ACCOUNT,
-      IDS_PASSWORD_MANAGER_IPH_BODY_SAVE_TO_ACCOUNT, kAccountStoragePromoWidth);
-  set_close_on_deactivate(close_save_bubble_on_deactivate_original_value);
-  observed_account_storage_promo_.Add(account_storage_promo_->GetWidget());
-}
-
-void PasswordSaveUpdateWithAccountStoreView::CloseIPHBubbleIfOpen() {
-  if (!account_storage_promo_)
-    return;
-  account_storage_promo_->CloseBubble();
 }

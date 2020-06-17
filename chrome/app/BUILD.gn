@@ -227,7 +227,6 @@ source_set("chrome_content_browser_overlay_manifest") {
 
   if (is_chromeos) {
     deps += [
-      "//chrome/browser/chromeos/net/network_health/public/mojom",
       "//chrome/browser/ui/webui/chromeos/add_supervision:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/crostini_installer:mojo_bindings",
       "//chrome/browser/ui/webui/chromeos/crostini_upgrader:mojo_bindings",
@@ -238,6 +237,7 @@ source_set("chrome_content_browser_overlay_manifest") {
       "//chromeos/services/media_perception/public/mojom",
       "//chromeos/services/multidevice_setup/public/mojom",
       "//chromeos/services/network_config/public/mojom",
+      "//chromeos/services/network_health/public/mojom",
       "//media/capture/video/chromeos/mojom:cros_camera",
     ]
   }

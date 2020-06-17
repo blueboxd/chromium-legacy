@@ -388,14 +388,16 @@ bool IsTargetSpaceTransformBackFaceVisible(
   return to_target.IsBackFaceVisible();
 }
 
-bool IsTransformToRootOf3DRenderingContextVisible(
+bool IsTransformToRootOf3DRenderingContextBackFaceVisible(
     Layer* layer,
     int transform_tree_index,
     const PropertyTrees* property_trees) {
-  return true;
+  // We do not skip back face invisible layers on main thread as target space
+  // transform will not be available here.
+  return false;
 }
 
-bool IsTransformToRootOf3DRenderingContextVisible(
+bool IsTransformToRootOf3DRenderingContextBackFaceVisible(
     LayerImpl* layer,
     int transform_tree_index,
     const PropertyTrees* property_trees) {
@@ -1201,7 +1203,7 @@ bool CC_EXPORT IsLayerBackFaceVisible(LayerImpl* layer,
                                       int transform_tree_index,
                                       const PropertyTrees* property_trees) {
   if (layer->layer_tree_impl()->settings().enable_transform_interop) {
-    return IsTransformToRootOf3DRenderingContextVisible(
+    return IsTransformToRootOf3DRenderingContextBackFaceVisible(
         layer, transform_tree_index, property_trees);
   } else {
     return IsTargetSpaceTransformBackFaceVisible(layer, transform_tree_index,
@@ -1213,7 +1215,7 @@ bool CC_EXPORT IsLayerBackFaceVisible(Layer* layer,
                                       int transform_tree_index,
                                       const PropertyTrees* property_trees) {
   if (layer->layer_tree_host()->GetSettings().enable_transform_interop) {
-    return IsTransformToRootOf3DRenderingContextVisible(
+    return IsTransformToRootOf3DRenderingContextBackFaceVisible(
         layer, transform_tree_index, property_trees);
   } else {
     return IsTargetSpaceTransformBackFaceVisible(layer, transform_tree_index,

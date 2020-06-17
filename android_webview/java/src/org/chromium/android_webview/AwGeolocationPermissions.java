@@ -101,7 +101,7 @@ public final class AwGeolocationPermissions {
      */
     public void getAllowed(String origin, final org.chromium.base.Callback<Boolean> callback) {
         final boolean finalAllowed = isOriginAllowed(origin);
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(finalAllowed));
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, callback.bind(finalAllowed));
     }
 
     /**
@@ -114,7 +114,7 @@ public final class AwGeolocationPermissions {
                 origins.add(name.substring(PREF_PREFIX.length()));
             }
         }
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> callback.onResult(origins));
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, callback.bind(origins));
     }
 
     /**
